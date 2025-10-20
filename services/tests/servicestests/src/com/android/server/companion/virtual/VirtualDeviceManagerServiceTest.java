@@ -16,9 +16,13 @@
 
 package com.android.server.companion.virtual;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
+import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_INVALID;
+import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_SENSORS;
 import static android.content.Context.DEVICE_ID_DEFAULT;
@@ -48,7 +52,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertThrows;
 
-import android.app.WindowConfiguration;
+import static java.util.Objects.requireNonNull;
+
 import android.app.admin.DevicePolicyManager;
 import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
@@ -98,6 +103,8 @@ import android.os.LocaleList;
 import android.os.PowerManager;
 import android.os.Process;
 import android.os.RemoteException;
+import android.os.UserHandle;
+import android.os.UserManager;
 import android.os.WorkSource;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -106,6 +113,7 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 import android.util.ArraySet;
+import android.util.Pair;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.WindowManager;
@@ -158,12 +166,11 @@ public class VirtualDeviceManagerServiceTest {
     private static final int DEVICE_OWNER_UID_2 = DEVICE_OWNER_UID_1 + 1;
     private static final int UID_1 = 0;
     private static final int UID_2 = 10;
-    private static final int UID_3 = 10000;
-    private static final int UID_4 = 10001;
+    private static final String PACKAGE_1 = "com.foo";
+    private static final String PACKAGE_2 = "com.bar";
     private static final int PRODUCT_ID = 10;
     private static final int VENDOR_ID = 5;
     private static final String UNIQUE_ID = "uniqueid";
-    private static final String PHYS = "phys";
     private static final int INPUT_DEVICE_ID = 53;
     private static final int HEIGHT = 1800;
     private static final int WIDTH = 900;
@@ -244,6 +251,8 @@ public class VirtualDeviceManagerServiceTest {
     @Mock
     private VirtualDeviceImpl.PendingTrampolineCallback mPendingTrampolineCallback;
     @Mock
+    private UserManager mUserManager;
+    @Mock
     private DevicePolicyManager mDevicePolicyManagerMock;
     @Mock
     private InputManagerInternal mInputManagerInternalMock;
@@ -259,8 +268,6 @@ public class VirtualDeviceManagerServiceTest {
     private IVirtualDeviceSoundEffectListener mSoundEffectListener;
     @Mock
     private IVirtualDisplayCallback mVirtualDisplayCallback;
-    @Mock
-    private Consumer<ArraySet<Integer>> mRunningAppsChangedCallback;
     @Mock
     private VirtualDeviceManagerInternal.AppsOnVirtualDeviceListener mAppsOnVirtualDeviceListener;
     @Mock
@@ -304,7 +311,7 @@ public class VirtualDeviceManagerServiceTest {
         Intent blockedAppIntent = BlockedAppStreamingActivity.createIntent(
                 activityInfo, mAssociationInfo.getDisplayName());
         gwpc.canActivityBeLaunched(activityInfo, blockedAppIntent,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
+                WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
                 /* isResultExpected = */ false, /* intentSender= */ null);
         return blockedAppIntent;
     }
@@ -352,6 +359,7 @@ public class VirtualDeviceManagerServiceTest {
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));
         doReturn(mContext).when(mContext).createContextAsUser(any(), anyInt());
         doNothing().when(mContext).sendBroadcastAsUser(any(), any());
+        when(mContext.getSystemService(Context.USER_SERVICE)).thenReturn(mUserManager);
         when(mContext.getSystemService(Context.DEVICE_POLICY_SERVICE)).thenReturn(
                 mDevicePolicyManagerMock);
         when(mContext.getSystemService(Context.WINDOW_SERVICE)).thenReturn(mWindowManager);
@@ -546,6 +554,147 @@ public class VirtualDeviceManagerServiceTest {
     }
 
     @Test
+    public void getDevicePolicyForDisplayId() {
+        VirtualDeviceParams params = new VirtualDeviceParams.Builder()
+                .setDevicePolicy(POLICY_TYPE_RECENTS, DEVICE_POLICY_CUSTOM)
+                .setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM)
+                .setDevicePolicy(POLICY_TYPE_SENSORS, DEVICE_POLICY_CUSTOM)
+                .build();
+        mDeviceImpl.close();
+        mDeviceImpl = createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, params);
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
+
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_1, POLICY_TYPE_RECENTS))
+                .isEqualTo(DEVICE_POLICY_CUSTOM);
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_1, POLICY_TYPE_ACTIVITY))
+                .isEqualTo(DEVICE_POLICY_CUSTOM);
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_1, POLICY_TYPE_SENSORS))
+                .isEqualTo(DEVICE_POLICY_CUSTOM);
+
+        mDeviceImpl.setDevicePolicyForDisplay(
+            DISPLAY_ID_1, POLICY_TYPE_RECENTS, DEVICE_POLICY_DEFAULT);
+        mDeviceImpl.setDevicePolicyForDisplay(
+            DISPLAY_ID_1, POLICY_TYPE_ACTIVITY, DEVICE_POLICY_DEFAULT);
+
+        // Device-level policy is unchanged.
+        assertThat(mVdm.getDevicePolicy(mDeviceImpl.getDeviceId(), POLICY_TYPE_RECENTS))
+                .isEqualTo(DEVICE_POLICY_CUSTOM);
+        assertThat(mVdm.getDevicePolicy(mDeviceImpl.getDeviceId(), POLICY_TYPE_ACTIVITY))
+                .isEqualTo(DEVICE_POLICY_CUSTOM);
+
+        // Display-level policy is changed.
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_1, POLICY_TYPE_RECENTS))
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_1, POLICY_TYPE_ACTIVITY))
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_1, POLICY_TYPE_SENSORS))
+                .isEqualTo(DEVICE_POLICY_CUSTOM);
+    }
+
+    @Test
+    public void getDevicePolicyForDisplayId_unownedDisplay() {
+        VirtualDeviceParams params = new VirtualDeviceParams.Builder()
+                .setDevicePolicy(POLICY_TYPE_RECENTS, DEVICE_POLICY_CUSTOM)
+                .setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM)
+                .setDevicePolicy(POLICY_TYPE_SENSORS, DEVICE_POLICY_CUSTOM)
+                .build();
+        mDeviceImpl.close();
+        mDeviceImpl = createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, params);
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
+
+        assertThat(mVdm.getDevicePolicyForDisplayId(Display.DEFAULT_DISPLAY, POLICY_TYPE_RECENTS))
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
+        assertThat(mVdm.getDevicePolicyForDisplayId(Display.DEFAULT_DISPLAY, POLICY_TYPE_ACTIVITY))
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
+        assertThat(mVdm.getDevicePolicyForDisplayId(Display.DEFAULT_DISPLAY, POLICY_TYPE_SENSORS))
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
+
+        // Non-existent display.
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_2, POLICY_TYPE_RECENTS))
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_2, POLICY_TYPE_ACTIVITY))
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_2, POLICY_TYPE_SENSORS))
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
+    public void allowedUsers_nearbyStreamingNotControlled_onlyAllowedUsers() {
+        when(mUserManager.getAllProfiles()).thenReturn(
+                List.of(UserHandle.of(10), UserHandle.of(20), UserHandle.of(30)));
+        when(mDevicePolicyManagerMock.getNearbyAppStreamingPolicy(anyInt()))
+                .thenReturn(NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY);
+        VirtualDeviceParams params = new VirtualDeviceParams.Builder()
+                .setAllowedUsers(Set.of(UserHandle.of(10), UserHandle.of(20))) // 30 not allowed
+                .build();
+        mDeviceImpl.close();
+        mDeviceImpl = createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, params);
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
+
+        assertThat(isUserAllowed(DISPLAY_ID_1, 10)).isTrue();
+        assertThat(isUserAllowed(DISPLAY_ID_1, 20)).isTrue();
+        assertThat(isUserAllowed(DISPLAY_ID_1, 30)).isFalse();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
+    public void allowedUsers_nearbyStreamingSameManagedAccountOnly_onlyAllowedMatchingAccount() {
+        when(mUserManager.getAllProfiles()).thenReturn(
+                List.of(UserHandle.of(10), UserHandle.of(20), UserHandle.of(30)));
+        when(mDevicePolicyManagerMock.getNearbyAppStreamingPolicy(anyInt()))
+                .thenReturn(NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY);
+        VirtualDeviceParams params = new VirtualDeviceParams.Builder()
+                .setAllowedUsers(Set.of(UserHandle.of(10), UserHandle.of(20))) // 30 not allowed
+                .setUsersWithMatchingAccounts(
+                        Set.of(UserHandle.of(10), UserHandle.of(30))) // 20 not allowed
+                .build();
+        mDeviceImpl.close();
+        mDeviceImpl = createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, params);
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
+
+        assertThat(isUserAllowed(DISPLAY_ID_1, 10)).isTrue();
+        assertThat(isUserAllowed(DISPLAY_ID_1, 20)).isFalse();
+        assertThat(isUserAllowed(DISPLAY_ID_1, 30)).isFalse();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
+    public void allowedUsers_allowedUsersEmpty_allUsersAllowed() {
+        when(mUserManager.getAllProfiles()).thenReturn(
+                List.of(UserHandle.of(10), UserHandle.of(20), UserHandle.of(30)));
+        when(mDevicePolicyManagerMock.getNearbyAppStreamingPolicy(anyInt()))
+                .thenReturn(NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY);
+        VirtualDeviceParams params = new VirtualDeviceParams.Builder().build();
+        mDeviceImpl.close();
+        mDeviceImpl = createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, params);
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
+
+        assertThat(isUserAllowed(DISPLAY_ID_1, 10)).isTrue();
+        assertThat(isUserAllowed(DISPLAY_ID_1, 20)).isTrue();
+        assertThat(isUserAllowed(DISPLAY_ID_1, 30)).isTrue();
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
+    public void allowedUsers_userRestrictionFlagDisabled_allUsersAllowed() {
+        when(mUserManager.getAllProfiles()).thenReturn(
+                List.of(UserHandle.of(10), UserHandle.of(20), UserHandle.of(30)));
+        when(mDevicePolicyManagerMock.getNearbyAppStreamingPolicy(anyInt()))
+                .thenReturn(NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY);
+        VirtualDeviceParams params = new VirtualDeviceParams.Builder()
+                .setAllowedUsers(Set.of(UserHandle.of(10))) // Ignored
+                .build();
+        mDeviceImpl.close();
+        mDeviceImpl = createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, params);
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
+
+        assertThat(isUserAllowed(DISPLAY_ID_1, 10)).isTrue();
+        assertThat(isUserAllowed(DISPLAY_ID_1, 20)).isTrue();
+        assertThat(isUserAllowed(DISPLAY_ID_1, 30)).isTrue();
+    }
+
+    @Test
     public void deviceOwner_cannotMessWithAnotherDeviceTheyDoNotOwn() {
         VirtualDeviceImpl unownedDevice =
                 createVirtualDevice(VIRTUAL_DEVICE_ID_2, DEVICE_OWNER_UID_2);
@@ -678,7 +827,7 @@ public class VirtualDeviceManagerServiceTest {
     public void getDeviceIdsForUid_differentUidOnDevice_returnsNull() {
         addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
         mDeviceImpl.getDisplayWindowPolicyControllerForTest(DISPLAY_ID_1).onRunningAppsChanged(
-                Sets.newArraySet(UID_2));
+                Sets.newArraySet(new Pair<>(UID_2, PACKAGE_2)));
 
         assertThat(mLocalService.getDeviceIdsForUid(UID_1)).isEmpty();
         assertThat(mVdmNative.getDeviceIdsForUid(UID_1)).isEmpty();
@@ -688,7 +837,7 @@ public class VirtualDeviceManagerServiceTest {
     public void getDeviceIdsForUid_oneUidOnDevice_returnsCorrectId() {
         addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
         mDeviceImpl.getDisplayWindowPolicyControllerForTest(DISPLAY_ID_1).onRunningAppsChanged(
-                Sets.newArraySet(UID_1));
+                Sets.newArraySet(new Pair<>(UID_1, PACKAGE_1)));
 
         int deviceId = mDeviceImpl.getDeviceId();
         assertThat(mLocalService.getDeviceIdsForUid(UID_1)).containsExactly(deviceId);
@@ -700,7 +849,7 @@ public class VirtualDeviceManagerServiceTest {
         addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
 
         mDeviceImpl.getDisplayWindowPolicyControllerForTest(DISPLAY_ID_1).onRunningAppsChanged(
-                Sets.newArraySet(UID_1, UID_2));
+                Sets.newArraySet(new Pair<>(UID_1, PACKAGE_1), new Pair<>(UID_2, PACKAGE_2)));
 
         int deviceId = mDeviceImpl.getDeviceId();
         assertThat(mLocalService.getDeviceIdsForUid(UID_1)).containsExactly(deviceId);
@@ -714,7 +863,7 @@ public class VirtualDeviceManagerServiceTest {
         addVirtualDisplay(secondDevice, DISPLAY_ID_2);
 
         secondDevice.getDisplayWindowPolicyControllerForTest(DISPLAY_ID_2).onRunningAppsChanged(
-                Sets.newArraySet(UID_1));
+                Sets.newArraySet(new Pair<>(UID_1, PACKAGE_1)));
 
         int deviceId = secondDevice.getDeviceId();
         assertThat(mLocalService.getDeviceIdsForUid(UID_1)).containsExactly(deviceId);
@@ -730,9 +879,9 @@ public class VirtualDeviceManagerServiceTest {
 
 
         mDeviceImpl.getDisplayWindowPolicyControllerForTest(DISPLAY_ID_1).onRunningAppsChanged(
-                Sets.newArraySet(UID_1));
+                Sets.newArraySet(new Pair<>(UID_1, PACKAGE_1)));
         secondDevice.getDisplayWindowPolicyControllerForTest(DISPLAY_ID_2).onRunningAppsChanged(
-                Sets.newArraySet(UID_1, UID_2));
+                Sets.newArraySet(new Pair<>(UID_1, PACKAGE_1), new Pair<>(UID_2, PACKAGE_2)));
 
         assertThat(mLocalService.getDeviceIdsForUid(UID_1)).containsExactly(
                 mDeviceImpl.getDeviceId(), secondDevice.getDeviceId());
@@ -745,7 +894,8 @@ public class VirtualDeviceManagerServiceTest {
         addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
         mDeviceImpl.createVirtualKeyboard(KEYBOARD_CONFIG, BINDER);
 
-        mVdms.notifyRunningAppsChanged(mDeviceImpl.getDeviceId(), Sets.newArraySet(UID_1));
+        mDeviceImpl.getDisplayWindowPolicyControllerForTest(DISPLAY_ID_1).onRunningAppsChanged(
+                Sets.newArraySet(new Pair<>(UID_1, PACKAGE_1)));
 
         LocaleList localeList = mLocalService.getPreferredLocaleListForUid(UID_1);
         assertThat(localeList).isEqualTo(
@@ -754,7 +904,9 @@ public class VirtualDeviceManagerServiceTest {
 
     @Test
     public void getPreferredLocaleListForApp_noKeyboardAttached_nullLocaleHints() {
-        mVdms.notifyRunningAppsChanged(mDeviceImpl.getDeviceId(), Sets.newArraySet(UID_1));
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
+        mDeviceImpl.getDisplayWindowPolicyControllerForTest(DISPLAY_ID_1).onRunningAppsChanged(
+                Sets.newArraySet(new Pair<>(UID_1, PACKAGE_1)));
 
         // no preceding call to createVirtualKeyboard()
         assertThat(mLocalService.getPreferredLocaleListForUid(UID_1)).isNull();
@@ -788,8 +940,10 @@ public class VirtualDeviceManagerServiceTest {
         mDeviceImpl.createVirtualKeyboard(firstKeyboardConfig, BINDER);
         secondDevice.createVirtualKeyboard(secondKeyboardConfig, secondBinder);
 
-        mVdms.notifyRunningAppsChanged(mDeviceImpl.getDeviceId(), Sets.newArraySet(UID_1));
-        mVdms.notifyRunningAppsChanged(secondDevice.getDeviceId(), Sets.newArraySet(UID_1));
+        mDeviceImpl.getDisplayWindowPolicyControllerForTest(DISPLAY_ID_1).onRunningAppsChanged(
+                Sets.newArraySet(new Pair<>(UID_1, PACKAGE_1)));
+        secondDevice.getDisplayWindowPolicyControllerForTest(DISPLAY_ID_2).onRunningAppsChanged(
+                Sets.newArraySet(new Pair<>(UID_1, PACKAGE_1)));
 
         LocaleList localeList = mLocalService.getPreferredLocaleListForUid(UID_1);
         assertThat(localeList).isEqualTo(
@@ -821,7 +975,7 @@ public class VirtualDeviceManagerServiceTest {
     @Test
     public void onPersistentDeviceIdsRemoved_listenersNotified() {
         mLocalService.registerPersistentDeviceIdRemovedListener(mPersistentDeviceIdRemovedListener);
-        mLocalService.onPersistentDeviceIdsRemoved(Set.of(mDeviceImpl.getPersistentDeviceId()));
+        mVdms.onPersistentDeviceIdsRemoved(Set.of(mDeviceImpl.getPersistentDeviceId()));
         TestableLooper.get(this).processAllMessages();
 
         verify(mPersistentDeviceIdRemovedListener).accept(mDeviceImpl.getPersistentDeviceId());
@@ -912,51 +1066,16 @@ public class VirtualDeviceManagerServiceTest {
     @Test
     public void onAppsOnVirtualDeviceChanged_singleVirtualDevice_listenersNotified() {
         ArraySet<Integer> uids = new ArraySet<>(Arrays.asList(UID_1, UID_2));
+        ArraySet<Pair<Integer, String>> packageUids = new ArraySet<>(Arrays.asList(
+                new Pair<>(UID_1, PACKAGE_1), new Pair<>(UID_2, PACKAGE_2)));
         mLocalService.registerAppsOnVirtualDeviceListener(mAppsOnVirtualDeviceListener);
 
-        mVdms.notifyRunningAppsChanged(mDeviceImpl.getDeviceId(), uids);
+        mVdms.onRunningAppsChanged(
+                mDeviceImpl.getDeviceId(), VIRTUAL_DEVICE_OWNER_PACKAGE, uids, packageUids);
         TestableLooper.get(this).processAllMessages();
 
-        verify(mAppsOnVirtualDeviceListener).onAppsOnAnyVirtualDeviceChanged(uids);
-    }
-
-    @Test
-    public void onAppsOnVirtualDeviceChanged_multipleVirtualDevices_listenersNotified() {
-        createVirtualDevice(VIRTUAL_DEVICE_ID_2, DEVICE_OWNER_UID_2);
-
-        ArraySet<Integer> uidsOnDevice1 = new ArraySet<>(Arrays.asList(UID_1, UID_2));
-        ArraySet<Integer> uidsOnDevice2 = new ArraySet<>(Arrays.asList(UID_3, UID_4));
-        mLocalService.registerAppsOnVirtualDeviceListener(mAppsOnVirtualDeviceListener);
-
-        // Notifies that the running apps on the first virtual device has changed.
-        mVdms.notifyRunningAppsChanged(mDeviceImpl.getDeviceId(), uidsOnDevice1);
-        TestableLooper.get(this).processAllMessages();
-        verify(mAppsOnVirtualDeviceListener).onAppsOnAnyVirtualDeviceChanged(
-                new ArraySet<>(Arrays.asList(UID_1, UID_2)));
-
-        // Notifies that the running apps on the second virtual device has changed.
-        mVdms.notifyRunningAppsChanged(VIRTUAL_DEVICE_ID_2, uidsOnDevice2);
-        TestableLooper.get(this).processAllMessages();
-        // The union of the apps running on both virtual devices are sent to the listeners.
-        verify(mAppsOnVirtualDeviceListener).onAppsOnAnyVirtualDeviceChanged(
-                new ArraySet<>(Arrays.asList(UID_1, UID_2, UID_3, UID_4)));
-
-        // Notifies that the running apps on the first virtual device has changed again.
-        uidsOnDevice1.remove(UID_2);
-        mVdms.notifyRunningAppsChanged(mDeviceImpl.getDeviceId(), uidsOnDevice1);
-        mLocalService.onAppsOnVirtualDeviceChanged();
-        TestableLooper.get(this).processAllMessages();
-        // The union of the apps running on both virtual devices are sent to the listeners.
-        verify(mAppsOnVirtualDeviceListener).onAppsOnAnyVirtualDeviceChanged(
-                new ArraySet<>(Arrays.asList(UID_1, UID_3, UID_4)));
-
-        // Notifies that the running apps on the first virtual device has changed but with the same
-        // set of UIDs.
-        mVdms.notifyRunningAppsChanged(mDeviceImpl.getDeviceId(), uidsOnDevice1);
-        mLocalService.onAppsOnVirtualDeviceChanged();
-        TestableLooper.get(this).processAllMessages();
-        // Listeners should not be notified.
-        verifyNoMoreInteractions(mAppsOnVirtualDeviceListener);
+        verify(mAppsOnVirtualDeviceListener).onAppsRunningOnVirtualDeviceChanged(
+                mDeviceImpl.getDeviceId(), uids);
     }
 
     @Test
@@ -1168,13 +1287,20 @@ public class VirtualDeviceManagerServiceTest {
     }
 
     @Test
-    public void closedDevice_lateCallToRunningAppsChanged_isIgnored() {
+    public void closedDevice_emptyRunningApps_sent() {
         mLocalService.registerAppsOnVirtualDeviceListener(mAppsOnVirtualDeviceListener);
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
         int deviceId = mDeviceImpl.getDeviceId();
-        mDeviceImpl.close();
-        mVdms.notifyRunningAppsChanged(deviceId, Sets.newArraySet(UID_1));
+        mDeviceImpl.getDisplayWindowPolicyControllerForTest(DISPLAY_ID_1).onRunningAppsChanged(
+                Sets.newArraySet(new Pair<>(UID_2, PACKAGE_2)));
         TestableLooper.get(this).processAllMessages();
-        verify(mAppsOnVirtualDeviceListener, never()).onAppsOnAnyVirtualDeviceChanged(any());
+        verify(mAppsOnVirtualDeviceListener)
+                .onAppsRunningOnVirtualDeviceChanged(deviceId, Sets.newArraySet(UID_2));
+
+        mDeviceImpl.close();
+        TestableLooper.get(this).processAllMessages();
+        verify(mAppsOnVirtualDeviceListener)
+                .onAppsRunningOnVirtualDeviceChanged(deviceId, new ArraySet<>());
     }
 
     @Test
@@ -1278,7 +1404,7 @@ public class VirtualDeviceManagerServiceTest {
         Intent blockedAppIntent = BlockedAppStreamingActivity.createIntent(
                 activityInfo, mAssociationInfo.getDisplayName());
         gwpc.canActivityBeLaunched(activityInfo, blockedAppIntent,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
+                WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
                 /* isResultExpected = */ false, /* intentSender= */ null);
 
         verify(mContext, never()).startActivityAsUser(argThat(intent ->
@@ -1300,7 +1426,7 @@ public class VirtualDeviceManagerServiceTest {
         Intent blockedAppIntent = BlockedAppStreamingActivity.createIntent(
                 activityInfo, mAssociationInfo.getDisplayName());
         gwpc.canActivityBeLaunched(activityInfo, blockedAppIntent,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
+                WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
                 /* isResultExpected = */ false, /* intentSender= */ null);
 
         verify(mContext).startActivityAsUser(argThat(intent ->
@@ -1322,39 +1448,11 @@ public class VirtualDeviceManagerServiceTest {
         Intent blockedAppIntent = BlockedAppStreamingActivity.createIntent(
                 activityInfo, mAssociationInfo.getDisplayName());
         gwpc.canActivityBeLaunched(activityInfo, blockedAppIntent,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
+                WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
                 /* isResultExpected = */ false, /* intentSender= */ null);
 
         verify(mContext).startActivityAsUser(argThat(intent ->
                 intent.filterEquals(blockedAppIntent)), any(), any());
-    }
-
-    @Test
-    public void registerRunningAppsChangedListener_onRunningAppsChanged_listenersNotified() {
-        ArraySet<Integer> uids = new ArraySet<>(Arrays.asList(UID_1, UID_2));
-        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
-        GenericWindowPolicyController gwpc = mDeviceImpl.getDisplayWindowPolicyControllerForTest(
-                DISPLAY_ID_1);
-
-        gwpc.onRunningAppsChanged(uids);
-        mDeviceImpl.onRunningAppsChanged(uids);
-
-        assertThat(gwpc.getRunningAppsChangedListenersSizeForTesting()).isEqualTo(1);
-        verify(mRunningAppsChangedCallback).accept(new ArraySet<>(Arrays.asList(UID_1, UID_2)));
-    }
-
-    @Test
-    public void noRunningAppsChangedListener_onRunningAppsChanged_doesNotThrowException() {
-        ArraySet<Integer> uids = new ArraySet<>(Arrays.asList(UID_1, UID_2));
-        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
-        GenericWindowPolicyController gwpc = mDeviceImpl.getDisplayWindowPolicyControllerForTest(
-                DISPLAY_ID_1);
-        gwpc.unregisterRunningAppsChangedListener(mDeviceImpl);
-
-        // This call should not throw any exceptions.
-        gwpc.onRunningAppsChanged(uids);
-
-        assertThat(gwpc.getRunningAppsChangedListenersSizeForTesting()).isEqualTo(0);
     }
 
     @Test
@@ -1369,7 +1467,7 @@ public class VirtualDeviceManagerServiceTest {
                 /* displayOnRemoteDevices */ true,
                 /* targetDisplayCategory */ null);
         assertThat(gwpc.canActivityBeLaunched(activityInfo, intent,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
+                WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
                 /* isResultExpected = */ false, /* intentSender= */ null))
                 .isTrue();
     }
@@ -1401,7 +1499,7 @@ public class VirtualDeviceManagerServiceTest {
         // register interceptor and intercept intent
         mDeviceImpl.registerIntentInterceptor(interceptor, intentFilter);
         assertThat(gwpc.canActivityBeLaunched(activityInfo, intent,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
+                WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
                 /* isResultExpected = */ false, /* intentSender= */ null))
                 .isFalse();
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
@@ -1414,7 +1512,7 @@ public class VirtualDeviceManagerServiceTest {
         // unregister interceptor and launch activity
         mDeviceImpl.unregisterIntentInterceptor(interceptor);
         assertThat(gwpc.canActivityBeLaunched(activityInfo, intent,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
+                WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
                 /* isResultExpected = */ false, /* intentSender= */ null))
                 .isTrue();
     }
@@ -1446,7 +1544,7 @@ public class VirtualDeviceManagerServiceTest {
         mDeviceImpl.registerIntentInterceptor(interceptor, intentFilter);
 
         assertThat(gwpc.canActivityBeLaunched(activityInfo, intent,
-                WindowConfiguration.WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
+                WINDOWING_MODE_FULLSCREEN, DISPLAY_ID_1, /* isNewTask= */ false,
                 /* isResultExpected = */ false, /* intentSender= */ null))
                 .isTrue();
     }
@@ -1584,7 +1682,6 @@ public class VirtualDeviceManagerServiceTest {
                         mPendingTrampolineCallback,
                         mActivityListener,
                         mSoundEffectListener,
-                        mRunningAppsChangedCallback,
                         params,
                         new DisplayManagerGlobal(mIDisplayManager),
                         new VirtualCameraController(DEVICE_POLICY_DEFAULT, virtualDeviceId),
@@ -1641,5 +1738,19 @@ public class VirtualDeviceManagerServiceTest {
                 .setTimeApproved(0)
                 .setLastTimeConnected(0)
                 .build();
+    }
+
+    private boolean isUserAllowed(int displayId, int userId) {
+        GenericWindowPolicyController gwpc =
+                requireNonNull(mDeviceImpl.getDisplayWindowPolicyControllerForTest(displayId));
+        gwpc.setActivityLaunchDefaultAllowed(true);
+        ActivityInfo activityInfo = new ActivityInfo();
+        activityInfo.packageName = "com.example";
+        activityInfo.name = "com.example.MainActivity";
+        activityInfo.applicationInfo = new ApplicationInfo();
+        activityInfo.applicationInfo.uid = UserHandle.getUid(userId, /* appId = */ 0);
+        activityInfo.flags = FLAG_CAN_DISPLAY_ON_REMOTE_DEVICES;
+        return gwpc.canContainActivity(
+                activityInfo, WINDOWING_MODE_FULLSCREEN, displayId, /* isNewTask = */ true);
     }
 }

@@ -129,7 +129,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
                 mediaHierarchyManager = mediaHierarchyManager,
                 scrimTransitionController =
                     LockscreenShadeScrimTransitionController(
-                        scrimController = scrimController,
+                        scrimController = { scrimController },
                         context = context,
                         configurationController = configurationController,
                         dumpManager = mock(),

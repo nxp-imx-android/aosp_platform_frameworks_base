@@ -103,8 +103,7 @@
     <item msgid="1049450003868150455">"<xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX">aptX™</xliff:g> аудио"</item>
     <item msgid="2908219194098827570">"<xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX_HD">aptX™ HD</xliff:g> аудио"</item>
     <item msgid="3825367753087348007">"LDAC"</item>
-    <item msgid="328951785723550863">"LC3"</item>
-    <item msgid="506175145534048710">"Opus"</item>
+    <item msgid="8637806944387141612">"Opus"</item>
   </string-array>
   <string-array name="bluetooth_a2dp_codec_summaries">
     <item msgid="8868109554557331312">"Системийн сонголтыг ашиглах (Өгөгдмөл)"</item>
@@ -113,8 +112,7 @@
     <item msgid="8627333814413492563">"<xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX">aptX™</xliff:g> аудио"</item>
     <item msgid="3517061573669307965">"<xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX_HD">aptX™ HD</xliff:g> аудио"</item>
     <item msgid="2553206901068987657">"LDAC"</item>
-    <item msgid="3940992993241040716">"LC3"</item>
-    <item msgid="7940970833006181407">"Opus"</item>
+    <item msgid="3026476115049855657">"Opus"</item>
   </string-array>
   <string-array name="bluetooth_a2dp_codec_sample_rate_titles">
     <item msgid="926809261293414607">"Системийн сонголтыг ашиглах (Өгөгдмөл)"</item>
@@ -207,7 +205,7 @@
   <string-array name="window_animation_scale_entries">
     <item msgid="2675263395797191850">"Дүрс амилуулалт идэвхгүй"</item>
     <item msgid="5790132543372767872">"Дүрс амилуулах далайц .5x"</item>
-    <item msgid="2529692189302148746">"Дүрс амилуулах далайц 1x"</item>
+    <item msgid="2529692189302148746">"Анимацийн масштаб 1x"</item>
     <item msgid="8072785072237082286">"Дүрс амилуулах далайц 1.5x"</item>
     <item msgid="3531560925718232560">"Дүрс амилуулалтын далайц 2x"</item>
     <item msgid="4542853094898215187">"Дүрс амилуулалтын далайц 5x"</item>

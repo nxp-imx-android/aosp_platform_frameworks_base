@@ -57,6 +57,11 @@ constructor(
                 R.bool.config_improveLargeScreenInteractionOnLockscreen
             )
 
+    /** Whether showing the accessibility button on the bouncer is enabled. */
+    val isShowAccessibilityButtonOnBouncerEnabledInConfig: Boolean
+        get() =
+            applicationContext.resources.getBoolean(R.bool.config_showAccessibilityButtonOnBouncer)
+
     /**
      * Preferred side of the screen where the input area on the bouncer should be. This is
      * applicable for large screen devices (foldables and tablets).

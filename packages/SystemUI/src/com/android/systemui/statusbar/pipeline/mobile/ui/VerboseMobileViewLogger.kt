@@ -119,7 +119,7 @@ constructor(@VerboseMobileViewLog private val buffer: LogBuffer) {
                 str1 = parentView.getIdForLogging()
                 int1 = subId
                 bool1 = icon != null
-                int2 = icon?.res ?: -1
+                int2 = icon?.resId ?: -1
             },
             {
                 "Binder[subId=$int1, viewId=$str1] received new network type icon: " +

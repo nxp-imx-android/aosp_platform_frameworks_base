@@ -125,7 +125,7 @@ class MediaProjectionRecentsViewControllerTest : SysuiTestCase() {
         controller.onRecentAppClicked(fullScreenTask, taskView)
 
         assertThat(getStartedTaskActivityOptions(fullScreenTask.taskId).launchDisplayId)
-            .isEqualTo(fullScreenTask.displayId)
+            .isEqualTo(context.displayId)
     }
 
     @Test

@@ -59,6 +59,7 @@ fun ContentScope.QuickQuickSettings(
                 keys = { it.spec },
                 elementKey = { it.spec.toElementKey() },
                 horizontalPadding = dimensionResource(R.dimen.qs_tile_margin_horizontal),
+                modifier = Modifier.sysuiResTag("qqs_tile_layout"),
             ) { sizedTile, interactionSource ->
                 Tile(
                     tile = sizedTile.tile,
@@ -72,7 +73,7 @@ fun ContentScope.QuickQuickSettings(
                     detailsViewModel = null,
                     isVisible = listening,
                     bounceableInfo = null,
-                    interactionSource = interactionSource,
+                    interactionSourceFromParent = interactionSource,
                 )
             }
         } else {
@@ -108,7 +109,6 @@ fun ContentScope.QuickQuickSettings(
                         // There should be no QuickQuickSettings when the details view is enabled.
                         detailsViewModel = null,
                         isVisible = listening,
-                        interactionSource = null,
                     )
                 }
             }

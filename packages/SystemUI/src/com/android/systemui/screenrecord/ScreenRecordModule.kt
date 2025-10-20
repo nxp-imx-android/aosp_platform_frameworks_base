@@ -16,7 +16,9 @@
 
 package com.android.systemui.screenrecord
 
+import com.android.systemui.CoreStartable
 import com.android.systemui.Flags
+import com.android.systemui.NoOpCoreStartable
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
@@ -40,16 +42,17 @@ import com.android.systemui.qs.tiles.impl.screenrecord.domain.interactor.ScreenR
 import com.android.systemui.qs.tiles.impl.screenrecord.domain.ui.mapper.ScreenRecordTileMapper
 import com.android.systemui.res.R
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
+import com.android.systemui.screenrecord.data.repository.LegacyScreenRecordingStartStopRepository
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepository
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepositoryImpl
-import com.android.systemui.screenrecord.domain.interactor.LegacyScreenRecordingStartStopInteractor
-import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
-import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingStartStopInteractor
+import com.android.systemui.screenrecord.data.repository.ScreenRecordingServiceRepository
+import com.android.systemui.screenrecord.data.repository.ScreenRecordingStartStopRepository
 import com.android.systemui.settings.UserTracker
 import dagger.Binds
 import dagger.Lazy
 import dagger.Module
 import dagger.Provides
+import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.StringKey
 import java.util.concurrent.Executor
@@ -74,6 +77,19 @@ interface ScreenRecordModule {
 
     companion object {
         private const val SCREEN_RECORD_TILE_SPEC = "screenrecord"
+
+        @Provides
+        @IntoMap
+        @ClassKey(ScreenRecordingCoreStartable::class)
+        fun bindScreenRecordingCoreStartable(
+            implLazy: Lazy<ScreenRecordingCoreStartable>
+        ): CoreStartable {
+            if (Flags.restoreShowTapsSetting()) {
+                return implLazy.get()
+            } else {
+                return NoOpCoreStartable()
+            }
+        }
 
         @Provides
         @SysUISingleton
@@ -109,15 +125,15 @@ interface ScreenRecordModule {
 
         @Provides
         @SysUISingleton
-        fun provideScreenRecordingStartStopInteractor(
-            legacyScreenRecordingStartStopInteractor:
-                Lazy<LegacyScreenRecordingStartStopInteractor>,
-            screenRecordingServiceInteractor: Lazy<ScreenRecordingServiceInteractor>,
-        ): ScreenRecordingStartStopInteractor {
+        fun provideScreenRecordingStartStopRepository(
+            legacyScreenRecordingStartStopRepository:
+                Lazy<LegacyScreenRecordingStartStopRepository>,
+            screenRecordingServiceRepository: Lazy<ScreenRecordingServiceRepository>,
+        ): ScreenRecordingStartStopRepository {
             return if (Flags.thinScreenRecordingService()) {
-                    screenRecordingServiceInteractor
+                    screenRecordingServiceRepository
                 } else {
-                    legacyScreenRecordingStartStopInteractor
+                    legacyScreenRecordingStartStopRepository
                 }
                 .get()
         }

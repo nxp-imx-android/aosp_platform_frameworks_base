@@ -18,7 +18,7 @@ package com.android.systemui.screencapture.common.data.repository
 
 import android.graphics.Bitmap
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.shared.system.ActivityManagerWrapper
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
@@ -30,8 +30,12 @@ interface ScreenCaptureThumbnailRepository {
     suspend fun loadThumbnail(taskId: Int): Result<Bitmap>
 }
 
-/** Default implementation of [ScreenCaptureThumbnailRepository]. */
-@ScreenCaptureScope
+/**
+ * Default implementation of [ScreenCaptureThumbnailRepository].
+ *
+ * Captures new thumbnail on request, falls back to cached thumbnail if capture fails.
+ */
+@ScreenCaptureUiScope
 class ScreenCaptureThumbnailRepositoryImpl
 @Inject
 constructor(
@@ -41,7 +45,11 @@ constructor(
 
     override suspend fun loadThumbnail(taskId: Int): Result<Bitmap> =
         withContext(bgContext) {
-            activityManager.takeTaskThumbnail(taskId).thumbnail?.let { Result.success(it) }
+            getLatestThumbnail(taskId)?.let { Result.success(it) }
                 ?: Result.failure(IllegalStateException("Could not get thumbnail for task $taskId"))
         }
+
+    private fun getLatestThumbnail(taskId: Int): Bitmap? =
+        activityManager.takeTaskThumbnail(taskId).thumbnail
+            ?: activityManager.getTaskThumbnail(taskId, false).thumbnail
 }

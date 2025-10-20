@@ -88,10 +88,10 @@ public class PackageMetadataCacheTest {
 
     @Test
     public void testGetMetadataForPackage_packageManagerThrowsException_returnsNull()
-        throws PackageManager.NameNotFoundException {
+            throws PackageManager.NameNotFoundException {
 
         when(mockPackageManager.getPackageInfo(anyString(), anyInt()))
-            .thenThrow(new PackageManager.NameNotFoundException());
+                .thenThrow(new PackageManager.NameNotFoundException());
 
         assertThat(packageMetadataCache.getMetadataForPackage("com.example.app")).isNull();
     }
@@ -102,21 +102,21 @@ public class PackageMetadataCacheTest {
         packageInfo.applicationInfo = new ApplicationInfo();
         packageInfo.applicationInfo.name = packageName;
         try {
-            when(mockPackageManager
-                    .getPackageInfo(eq(packageName), eq(PackageManager.GET_META_DATA)))
-            .thenReturn(packageInfo);
+            when(mockPackageManager.getPackageInfo(
+                            eq(packageName), eq(PackageManager.GET_META_DATA)))
+                    .thenReturn(packageInfo);
         } catch (PackageManager.NameNotFoundException e) {
         }
         when(mockPackageManager.getApplicationLabel(eq(packageInfo.applicationInfo)))
-            .thenReturn(label);
+                .thenReturn(label);
         when(mockPackageManager.getApplicationIcon(eq(packageInfo.applicationInfo)))
-            .thenReturn(icon);
+                .thenReturn(icon);
     }
 
     private Drawable createTestDrawable() {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        Bitmap bitmap = BitmapFactory.decodeResource(
-                context.getResources(), R.drawable.black_32x32);
+        Bitmap bitmap =
+                BitmapFactory.decodeResource(context.getResources(), R.drawable.black_32x32);
         return new BitmapDrawable(context.getResources(), bitmap);
     }
 }

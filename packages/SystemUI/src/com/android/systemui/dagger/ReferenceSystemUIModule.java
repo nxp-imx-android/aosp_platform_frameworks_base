@@ -33,8 +33,8 @@ import com.android.systemui.actioncorner.ActionCornerModule;
 import com.android.systemui.battery.BatterySaverModule;
 import com.android.systemui.clipboardoverlay.dagger.ClipboardOverlayOverrideModule;
 import com.android.systemui.communal.posturing.dagger.NoopPosturingModule;
+import com.android.systemui.display.dagger.ReferenceSysUIDisplaySubcomponent;
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
-import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent;
 import com.android.systemui.display.data.repository.DisplayPhoneModule;
 import com.android.systemui.display.ui.viewmodel.ConnectingDisplayViewModel;
 import com.android.systemui.dock.DockManager;
@@ -46,7 +46,6 @@ import com.android.systemui.emergency.EmergencyGestureModule;
 import com.android.systemui.inputdevice.tutorial.KeyboardTouchpadTutorialModule;
 import com.android.systemui.keyboard.shortcut.ShortcutHelperModule;
 import com.android.systemui.keyguard.dagger.KeyguardModule;
-import com.android.systemui.keyguard.ui.composable.blueprint.DefaultBlueprintModule;
 import com.android.systemui.keyguard.ui.view.layout.blueprints.KeyguardBlueprintModule;
 import com.android.systemui.keyguard.ui.view.layout.sections.KeyguardSectionsModule;
 import com.android.systemui.lowlight.dagger.NoopAmbientLightModeMonitorModule;
@@ -66,14 +65,12 @@ import com.android.systemui.reardisplay.RearDisplayModule;
 import com.android.systemui.recents.Recents;
 import com.android.systemui.recents.RecentsImplementation;
 import com.android.systemui.recents.RecentsModule;
-import com.android.systemui.rotationlock.DeviceStateAutoRotateModule;
 import com.android.systemui.rotationlock.RotationLockModule;
 import com.android.systemui.rotationlock.RotationLockNewModule;
 import com.android.systemui.scene.SceneContainerFrameworkModule;
 import com.android.systemui.screenshot.ReferenceScreenshotModule;
 import com.android.systemui.settings.MultiUserUtilsModule;
 import com.android.systemui.settings.UserTracker;
-import com.android.systemui.settings.brightness.dagger.BrightnessSliderModule;
 import com.android.systemui.shade.NotificationShadeWindowControllerImpl;
 import com.android.systemui.shade.ShadeModule;
 import com.android.systemui.startable.Dependencies;
@@ -139,13 +136,10 @@ import javax.inject.Provider;
         AccessibilityRepositoryModule.class,
         AospPolicyModule.class,
         BatterySaverModule.class,
-        BrightnessSliderModule.class,
         CentralSurfacesModule.class,
         ClipboardOverlayOverrideModule.class,
         CollapsedStatusBarFragmentStartableModule.class,
         ConnectingDisplayViewModel.StartableModule.class,
-        DefaultBlueprintModule.class,
-        DeviceStateAutoRotateModule.class,
         DisplayPhoneModule.class,
         EmergencyGestureModule.class,
         GestureModule.class,
@@ -189,13 +183,13 @@ import javax.inject.Provider;
         ContextualEducationModule.class,
         ActionCornerModule.class,
 }, subcomponents = {
-        SystemUIPhoneDisplaySubcomponent.class
+        ReferenceSysUIDisplaySubcomponent.class
 })
 public abstract class ReferenceSystemUIModule {
 
     @Binds
     abstract SystemUIDisplaySubcomponent.Factory systemUIDisplaySubcomponentFactory(
-            SystemUIPhoneDisplaySubcomponent.Factory factory);
+            ReferenceSysUIDisplaySubcomponent.Factory factory);
 
     @SysUISingleton
     @Provides

@@ -37,11 +37,11 @@ import static android.view.WindowManager.LayoutParams.TYPE_NOTIFICATION_SHADE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_OCCLUDING;
-import static android.view.WindowManager.TRANSIT_NONE;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.view.WindowManager.TRANSIT_SLEEP;
 import static android.view.WindowManager.TRANSIT_WAKE;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
+import static android.window.DesktopExperienceFlags.ENABLE_FILTER_REMOVING_DISPLAY_BUGFIX;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS_LIGHT;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_KEEP_SCREEN_ON;
@@ -250,8 +250,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     @Nullable
     DeviceStateAutoRotateSettingController mDeviceStateAutoRotateSettingController;
 
-    // Whether tasks have moved and we need to rank the tasks before next OOM scoring
-    private boolean mTaskLayersChanged = true;
+    /** If tasks are moved, then the layer rank needs to be updated before next OOM scoring. */
+    boolean mTaskLayersChanged = true;
     private int mTmpTaskLayerRank;
     private final RankTaskLayersRunnable mRankTaskLayersRunnable = new RankTaskLayersRunnable();
     private Region mTmpOccludingRegion;
@@ -454,6 +454,10 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         // Go through the children in z-order starting at the top-most
         for (int i = mChildren.size() - 1; i >= 0; --i) {
             final DisplayContent dc = mChildren.get(i);
+            if (ENABLE_FILTER_REMOVING_DISPLAY_BUGFIX.isTrue()
+                    && (dc.isRemoved() || dc.isRemoving())) {
+                continue;
+            }
             changed |= dc.updateFocusedWindowLocked(mode, updateInputWindows, topFocusedDisplayId);
             final WindowState newFocus = dc.mCurrentFocus;
             if (newFocus != null) {
@@ -1004,7 +1008,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     break;
                 case MSG_SEND_SLEEP_TRANSITION:
                     synchronized (mService.mGlobalLock) {
-                        sendSleepTransition((DisplayContent) msg.obj);
+                        sendSleepTransition();
                     }
                     break;
                 default:
@@ -1271,7 +1275,17 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             if (taskDisplayArea.topRunningActivity() == null) {
                 int userId = mWmService.getUserAssignedToDisplay(taskDisplayArea.getDisplayId());
                 startHomeOnTaskDisplayArea(userId, reason, taskDisplayArea,
-                        false /* allowInstrumenting */, false /* fromHomeKey */);
+                        false /* allowInstrumenting */, false /* fromHomeKey */, true /* onTop */);
+            }
+        });
+    }
+
+    void startHomeOnDisplaysWithNoHome(String reason) {
+        forAllTaskDisplayAreas(taskDisplayArea -> {
+            if (taskDisplayArea.getHomeActivity() == null) {
+                int userId = mWmService.getUserAssignedToDisplay(taskDisplayArea.getDisplayId());
+                startHomeOnTaskDisplayArea(userId, reason, taskDisplayArea,
+                        false /* allowInstrumenting */, false /* fromHomeKey */, false /* onTop */);
             }
         });
     }
@@ -1292,7 +1306,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         final DisplayContent display = getDisplayContentOrCreate(displayId);
         return display.reduceOnAllTaskDisplayAreas((taskDisplayArea, result) ->
                         result | startHomeOnTaskDisplayArea(userId, reason, taskDisplayArea,
-                                allowInstrumenting, fromHomeKey),
+                                allowInstrumenting, fromHomeKey, true /* onTop */),
                 false /* initValue */);
     }
 
@@ -1308,7 +1322,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
      * - Use the secondary home defined in the config.
      */
     boolean startHomeOnTaskDisplayArea(int userId, String reason, TaskDisplayArea taskDisplayArea,
-            boolean allowInstrumenting, boolean fromHomeKey) {
+            boolean allowInstrumenting, boolean fromHomeKey, boolean onTop) {
         // Fallback to top focused display area if the provided one is invalid.
         if (taskDisplayArea == null) {
             final Task rootTask = getTopDisplayFocusedRootTask();
@@ -1364,7 +1378,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         final String myReason = reason + ":" + userId + ":" + UserHandle.getUserId(
                 aInfo.applicationInfo.uid) + ":" + taskDisplayArea.getDisplayId();
         mService.getActivityStartController().startHomeActivity(homeIntent, aInfo, myReason,
-                taskDisplayArea);
+                taskDisplayArea, onTop);
         return true;
     }
 
@@ -1518,7 +1532,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         }
         int userId = mWmService.getUserAssignedToDisplay(taskDisplayArea.getDisplayId());
         return startHomeOnTaskDisplayArea(userId, myReason, taskDisplayArea,
-                false /* allowInstrumenting */, false /* fromHomeKey */);
+                false /* allowInstrumenting */, false /* fromHomeKey */, true /* onTop */);
     }
 
     /**
@@ -1575,6 +1589,14 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         if (display == null || display.isRemoved() || !display.isHomeSupported()) {
             // Can't launch home on display that doesn't support home.
             return false;
+        }
+
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()
+                && DesktopExperienceFlags.ENABLE_MIRROR_DISPLAY_NO_ACTIVITY.isTrue()) {
+            if (!display.mDisplay.canHostTasks()) {
+                // Can't launch home on display that cannot host tasks.
+                return false;
+            }
         }
 
         return true;
@@ -1674,70 +1696,35 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         final Task topFocusedRootTask =
                 dc != null ? dc.getFocusedRootTask() : getTopDisplayFocusedRootTask();
 
-        if (Flags.returnAllVisibleActivitiesForVis()) {
-            final ArrayList<ActivityAssistInfo> visibleActivitiesInFocusedRoot = new ArrayList<>();
-            final Consumer<ActivityRecord> collectFromFocusedRoot = activity -> {
-                if (activity.isVisibleRequested()) {
-                    visibleActivitiesInFocusedRoot.add(new ActivityAssistInfo(activity));
-                }
-            };
-            final Consumer<ActivityRecord> collectFromNonFocusedRoot = activity -> {
-                if (activity.isVisibleRequested()) {
-                    topVisibleActivities.add(new ActivityAssistInfo(activity));
-                }
-            };
-            final Consumer<Task> collectFromDisplay = leafTaskFragment -> {
-                if (!leafTaskFragment.isVisibleRequested()) {
-                    return;
-                }
-                if (leafTaskFragment.getRootTask() == topFocusedRootTask) {
-                    leafTaskFragment.forAllActivities(collectFromFocusedRoot);
-                } else {
-                    leafTaskFragment.forAllActivities(collectFromNonFocusedRoot);
-                }
-            };
-
-            if (dc != null) {
-                dc.forAllRootTasks(collectFromDisplay);
-            } else {
-                // Traverse all displays.
-                forAllRootTasks(collectFromDisplay);
+        final ArrayList<ActivityAssistInfo> visibleActivitiesInFocusedRoot = new ArrayList<>();
+        final Consumer<ActivityRecord> collectFromFocusedRoot = activity -> {
+            if (activity.isVisibleRequested()) {
+                visibleActivitiesInFocusedRoot.add(new ActivityAssistInfo(activity));
             }
-            topVisibleActivities.addAll(0, visibleActivitiesInFocusedRoot);
+        };
+        final Consumer<ActivityRecord> collectFromNonFocusedRoot = activity -> {
+            if (activity.isVisibleRequested()) {
+                topVisibleActivities.add(new ActivityAssistInfo(activity));
+            }
+        };
+        final Consumer<Task> collectFromDisplay = rootTask -> {
+            if (!rootTask.isVisibleRequested()) {
+                return;
+            }
+            if (rootTask == topFocusedRootTask) {
+                rootTask.forAllActivities(collectFromFocusedRoot);
+            } else {
+                rootTask.forAllActivities(collectFromNonFocusedRoot);
+            }
+        };
+
+        if (dc != null) {
+            dc.forAllRootTasks(collectFromDisplay);
         } else {
-            final ArrayList<ActivityAssistInfo> activityAssistInfos = new ArrayList<>();
-            final Consumer<Task> collectVisibleActivities = rootTask -> {
-                // Get top activity from a visible root task and add it to the list.
-                if (rootTask.shouldBeVisible(null /* starting */)) {
-                    final ActivityRecord top = rootTask.getTopNonFinishingActivity();
-                    if (top != null) {
-                        activityAssistInfos.clear();
-                        activityAssistInfos.add(new ActivityAssistInfo(top));
-                        // Check if the activity on the split screen.
-                        top.getTask().forOtherAdjacentTasks(task -> {
-                            final ActivityRecord adjacentActivityRecord =
-                                    task.getTopNonFinishingActivity();
-                            if (adjacentActivityRecord != null) {
-                                activityAssistInfos.add(
-                                        new ActivityAssistInfo(adjacentActivityRecord));
-                            }
-                        });
-                        if (rootTask == topFocusedRootTask) {
-                            topVisibleActivities.addAll(0, activityAssistInfos);
-                        } else {
-                            topVisibleActivities.addAll(activityAssistInfos);
-                        }
-                    }
-                }
-            };
-
-            if (dc != null) {
-                dc.forAllRootTasks(collectVisibleActivities);
-            } else {
-                // Traverse all displays.
-                forAllRootTasks(collectVisibleActivities);
-            }
+            // Traverse all displays.
+            forAllRootTasks(collectFromDisplay);
         }
+        topVisibleActivities.addAll(0, visibleActivitiesInFocusedRoot);
 
         return topVisibleActivities;
     }
@@ -2202,7 +2189,13 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     task.clearLastRecentsAnimationTransaction(false /* forceRemoveOverlay */);
                 } else {
                     // Reset the original task surface
-                    task.resetSurfaceControlTransforms();
+                    // TODO (b/448208017): Investigate why this line isn't WAI in fullscreen case,
+                    // and find a different workaround for freeform case when this is fixed.
+                    if (!DesktopExperienceFlags
+                            .ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN
+                            .isTrue()) {
+                        task.resetSurfaceControlTransforms();
+                    }
                 }
 
                 // The organized TaskFragment is becoming empty because this activity is reparented
@@ -2392,13 +2385,14 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             mService.getTaskChangeNotificationController().notifyActivityPinned(r);
         } else {
             mService.getTaskChangeNotificationController().notifyActivityUnpinned();
+            // Revoke the TRUSTED_OVERLAY here as a blanket policy.
+            if (task.getSurfaceControl() != null) {
+                mWmService.mTransactionFactory.get()
+                        .setTrustedOverlay(task.getSurfaceControl(), false)
+                        .apply();
+            }
         }
         mWindowManager.mPolicy.setPipVisibilityLw(inPip);
-        if (task.getSurfaceControl() != null) {
-            mWmService.mTransactionFactory.get()
-                    .setTrustedOverlay(task.getSurfaceControl(), inPip)
-                    .apply();
-        }
     }
 
     void executeAppTransitionForAllDisplay() {
@@ -2563,39 +2557,39 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         return result;
     }
 
-    void sendSleepTransition(final DisplayContent display) {
+    void sendSleepTransition() {
         // We don't actually care about collecting anything here. We really just want
         // this as a signal to the transition-player.
         final Transition transition = new Transition(TRANSIT_SLEEP, 0 /* flags */,
-                display.mTransitionController, mWmService.mSyncEngine);
+                mTransitionController, mWmService.mSyncEngine);
         final TransitionController.OnStartCollect sendSleepTransition = (deferred) -> {
-            if (deferred && !display.shouldSleep()) {
+            if (deferred && !mService.isSleepingOrShuttingDownLocked()) {
                 transition.abort();
             } else {
-                mService.mChainTracker.start("enterPip1", transition);
-                display.mTransitionController.requestStartTransition(transition,
+                mService.mChainTracker.start("deferredSleep", transition);
+                mTransitionController.requestStartTransition(transition,
                         null /* trigger */, null /* remote */, null /* display */);
                 mService.mChainTracker.end();
                 // Force playing immediately so that unrelated ops can't be collected.
                 transition.playNow();
             }
         };
-        if (!display.mTransitionController.isCollecting()) {
+        if (!mTransitionController.isCollecting()) {
             // Since this bypasses sync, submit directly ignoring whether sync-engine
             // is active.
             if (mWindowManager.mSyncEngine.hasActiveSync()) {
                 Slog.w(TAG, "Ongoing sync outside of a transition.");
             }
-            display.mTransitionController.moveToCollecting(transition);
+            mTransitionController.moveToCollecting(transition);
             sendSleepTransition.onCollectStarted(false /* deferred */);
         } else {
-            display.mTransitionController.startCollectOrQueue(transition,
-                    sendSleepTransition);
+            mTransitionController.startCollectOrQueue(transition, sendSleepTransition);
         }
     }
 
-    void applySleepTokens(boolean applyToRootTasks) {
-        boolean scheduledSleepTransition = false;
+    void applySleepTokens(@NonNull ActionChain chain) {
+        boolean scheduleSleepTransition = false;
+        Transition newWakeTransition = null;
 
         for (int displayNdx = getChildCount() - 1; displayNdx >= 0; --displayNdx) {
             // Set the sleeping state of the display.
@@ -2604,44 +2598,21 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             if (displayShouldSleep == display.isSleeping()) {
                 continue;
             }
-            final boolean wasSleeping = display.isSleeping();
             display.setIsSleeping(displayShouldSleep);
+            scheduleSleepTransition |= displayShouldSleep && display.isScreenSleeping();
 
-            if (display.mTransitionController.isShellTransitionsEnabled()
-                    && !scheduledSleepTransition
-                    // Only care if there are actual sleep states.
-                    && displayShouldSleep && display.isScreenSleeping()) {
-                scheduledSleepTransition = true;
-
-                if (!mHandler.hasMessages(MSG_SEND_SLEEP_TRANSITION)) {
-                    mHandler.sendMessageDelayed(
-                            mHandler.obtainMessage(MSG_SEND_SLEEP_TRANSITION, display),
-                            SLEEP_TRANSITION_WAIT_MILLIS);
-                }
-            }
-
-            if (!applyToRootTasks) {
-                continue;
-            }
-
-            final ActionChain chain = mService.mChainTracker.startTransit("sleepTokens");
             // Prepare transition before resume top activity, so it can be collected.
             if (!displayShouldSleep && display.mTransitionController.isShellTransitionsEnabled()
                     && !chain.isCollecting()) {
-                // Use NONE if keyguard is not showing.
-                int transit = TRANSIT_NONE;
                 Task startTask = null;
                 int flags = 0;
                 if (display.isKeyguardOccluded()) {
                     startTask = display.getTaskOccludingKeyguard();
                     flags = TRANSIT_FLAG_KEYGUARD_OCCLUDING;
-                    transit = WindowManager.TRANSIT_KEYGUARD_OCCLUDE;
-                }
-                if (wasSleeping) {
-                    transit = TRANSIT_WAKE;
                 }
                 chain.attachTransition(
-                        display.mTransitionController.createTransition(transit, flags));
+                        display.mTransitionController.createTransition(TRANSIT_WAKE, flags));
+                newWakeTransition = chain.getTransition();
                 display.mTransitionController.requestStartTransition(chain.getTransition(),
                         startTask, null /* remoteTransition */, null /* displayChange */);
             }
@@ -2670,11 +2641,35 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     rootTask.ensureActivitiesVisible(null /* starting */);
                 }
             });
-            mService.mChainTracker.endPartial();
         }
-
-        if (!scheduledSleepTransition) {
+        if (newWakeTransition != null) {
+            newWakeTransition.setAllReady();
+        }
+        if (scheduleSleepTransition) {
+            scheduleSleepTransition();
+        } else {
             mHandler.removeMessages(MSG_SEND_SLEEP_TRANSITION);
+        }
+    }
+
+    private void scheduleSleepTransition() {
+        if (!mService.getTransitionController().isShellTransitionsEnabled()) return;
+        if (mHandler.hasMessages(MSG_SEND_SLEEP_TRANSITION)) return;
+        mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_SEND_SLEEP_TRANSITION),
+                SLEEP_TRANSITION_WAIT_MILLIS);
+    }
+
+    void sleepAllDisplays() {
+        boolean scheduleSleepTransition = false;
+        for (int displayNdx = getChildCount() - 1; displayNdx >= 0; --displayNdx) {
+            // Set the sleeping state of the display.
+            final DisplayContent display = getChildAt(displayNdx);
+            if (display.isSleeping()) continue;
+            display.setIsSleeping(true);
+            scheduleSleepTransition |= display.isScreenSleeping();
+        }
+        if (scheduleSleepTransition) {
+            scheduleSleepTransition();
         }
     }
 
@@ -2810,6 +2805,10 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             // Drop any cached DisplayInfos associated with this display id - the values are now
             // out of date given this display added event.
             mWmService.mPossibleDisplayInfoMapper.removePossibleDisplayInfos(displayId);
+
+            // We serve a map from display IDs to respective values, so we need to notify client
+            // when the display is added.
+            mService.onTaskMoveAllowedChanged();
         }
     }
 
@@ -2871,6 +2870,10 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             } else {
                 removeDisplayContent(displayContent);
             }
+
+            // We serve a map from display IDs to respective values, so we need to notify client
+            // when the display is removed.
+            mService.onTaskMoveAllowedChanged();
         }
     }
 
@@ -2964,7 +2967,10 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     void invalidateTaskLayers() {
         if (!mTaskLayersChanged) {
             mTaskLayersChanged = true;
-            mService.mH.post(mRankTaskLayersRunnable);
+            if (!com.android.window.flags.Flags.rankTaskLayerWithWindowLayout()
+                    || !mWindowManager.mWindowPlacerLocked.isLayoutDeferred()) {
+                mService.mH.post(mRankTaskLayersRunnable);
+            }
         }
     }
 
@@ -3058,16 +3064,18 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
     // Tries to put all activity tasks to sleep. Returns true if all tasks were
     // successfully put to sleep.
-    boolean putTasksToSleep(boolean allowDelay, boolean shuttingDown) {
+    boolean putTasksToSleep(boolean shuttingDown) {
         final boolean[] result = {true};
         forAllRootTasks(task -> {
-            if (allowDelay) {
-                result[0] &= task.goToSleepIfPossible(shuttingDown);
-            } else {
-                task.ensureActivitiesVisible(null /* starting */);
-            }
+            result[0] &= task.goToSleepIfPossible(shuttingDown);
         });
         return result[0];
+    }
+
+    void putTasksToSleepNow() {
+        forAllRootTasks(task -> {
+            task.ensureActivitiesVisible(null /* starting */);
+        });
     }
 
     ActivityRecord findActivity(Intent intent, ActivityInfo info, boolean compareIntentFilters) {
@@ -3142,6 +3150,11 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             if (candidateRoot != null && canLaunchOnDisplay(r, candidateRoot)) {
                 return candidateRoot;
             }
+        }
+
+        final Task candidateRoot = launchParams != null ? launchParams.mPreferredRootTask : null;
+        if (candidateRoot != null && canLaunchOnDisplay(r, candidateRoot)) {
+            return candidateRoot;
         }
 
         // Next preference goes to the task id set in the activity options.
@@ -3850,6 +3863,9 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         for (int i = getChildCount() - 1; i >= 0; --i) {
             final DisplayContent display = getChildAt(i);
             display.dump(pw, prefix, dumpAll);
+        }
+        if (mDeviceStateAutoRotateSettingController != null) {
+            mDeviceStateAutoRotateSettingController.dump(prefix, pw);
         }
     }
 

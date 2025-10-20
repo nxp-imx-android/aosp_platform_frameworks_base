@@ -106,6 +106,7 @@ final class VibrationStepConductor {
     private Vibration.EndInfo mCancelledVibrationEndInfo = null;
     private boolean mCancelledImmediately = false;  // hard stop
     private int mPendingVibrateSteps;
+    // TODO(b/421857859): remove this once flag remove_sequential_combination is removed
     private int mRemainingStartSequentialEffectSteps;
     private int mSuccessfulVibratorOnSteps;
     private int mFailedVibratorOnSteps;
@@ -193,9 +194,8 @@ final class VibrationStepConductor {
             expectIsVibrationThread(true);
         }
 
-        if (Flags.adaptiveHapticsEnabled()) {
-            waitForVibrationParamsIfRequired();
-        }
+        waitForVibrationParamsIfRequired();
+
         // Scale resolves the default amplitudes from the effect before scaling them.
         mVibration.scaleEffects(mVibrationScaler);
 
@@ -204,11 +204,18 @@ final class VibrationStepConductor {
             // of unsupported segments. The original effect will be ignored.
             return false;
         }
-        CombinedVibration.Sequential sequentialEffect = toSequential(mVibration.getEffectToPlay());
-        mPendingVibrateSteps++;
-        // This count is decremented at the completion of the step, so we don't subtract one.
-        mRemainingStartSequentialEffectSteps = sequentialEffect.getEffects().size();
-        mNextSteps.offer(new StartSequentialEffectStep(this, sequentialEffect));
+        if (Flags.removeSequentialCombination()) {
+            mNextSteps.offer(new StartCombinedVibrationStep(this, mVibration.getEffectToPlay()));
+            mPendingVibrateSteps++;
+            mRemainingStartSequentialEffectSteps = 0;
+        } else {
+            CombinedVibration.Sequential sequentialEffect =
+                    toSequential(mVibration.getEffectToPlay());
+            mPendingVibrateSteps++;
+            // This count is decremented at the completion of the step, so we don't subtract one.
+            mRemainingStartSequentialEffectSteps = sequentialEffect.getEffects().size();
+            mNextSteps.offer(new StartSequentialEffectStep(this, sequentialEffect));
+        }
         // Vibration will start playing in the Vibrator, following the effect timings and delays.
         // Report current time as the vibration start time, for debugging.
         mVibration.stats.reportStarted();
@@ -241,7 +248,7 @@ final class VibrationStepConductor {
 
     /**
      * Calculate the {@link Vibration.EndInfo} based on the current queue state and the expected
-     * number of {@link StartSequentialEffectStep} to be played.
+     * number of steps to be played.
      */
     @Nullable
     public Vibration.EndInfo calculateVibrationEndInfo() {
@@ -256,25 +263,16 @@ final class VibrationStepConductor {
             // Vibration still running.
             return null;
         }
-        if (Flags.vibrationThreadHandlingHalFailure()) {
-            if (mFailedVibratorOnSteps > 0) {
-                // Some steps failed to dispatch vibration to the vibrator HAL.
-                return new Vibration.EndInfo(Status.IGNORED_ERROR_DISPATCHING);
-            }
-            if (mSuccessfulVibratorOnSteps > 0) {
-                // Some steps played successfully, and there was no failure.
-                return new Vibration.EndInfo(Status.FINISHED);
-            }
-            // No step was successful or failed, nothing played.
-            return new Vibration.EndInfo(Status.IGNORED_UNSUPPORTED);
-        } else {
-            // No pending steps, and something happened.
-            if (mSuccessfulVibratorOnSteps > 0) {
-                return new Vibration.EndInfo(Status.FINISHED);
-            }
-            // If no step was able to turn the vibrator ON successfully.
-            return new Vibration.EndInfo(Status.IGNORED_UNSUPPORTED);
+        if (mFailedVibratorOnSteps > 0) {
+            // Some steps failed to dispatch vibration to the vibrator HAL.
+            return new Vibration.EndInfo(Status.IGNORED_ERROR_DISPATCHING);
         }
+        if (mSuccessfulVibratorOnSteps > 0) {
+            // Some steps played successfully, and there was no failure.
+            return new Vibration.EndInfo(Status.FINISHED);
+        }
+        // No step was successful or failed, nothing played.
+        return new Vibration.EndInfo(Status.IGNORED_UNSUPPORTED);
     }
 
     /**
@@ -690,6 +688,7 @@ final class VibrationStepConductor {
         }
     }
 
+    // TODO(b/421857859): remove this once flag remove_sequential_combination is removed
     private static CombinedVibration.Sequential toSequential(CombinedVibration effect) {
         if (effect instanceof CombinedVibration.Sequential) {
             return (CombinedVibration.Sequential) effect;

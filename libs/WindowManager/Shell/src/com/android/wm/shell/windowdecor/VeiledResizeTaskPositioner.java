@@ -111,7 +111,8 @@ public class VeiledResizeTaskPositioner implements TaskPositioner, Transitions.T
     }
 
     @Override
-    public Rect onDragPositioningStart(int ctrlType, int displayId, float x, float y) {
+    public Rect onDragPositioningStart(@CtrlType int ctrlType, int displayId, float x, float y,
+            @InputMethodType int inputMethodType) {
         mCtrlType = ctrlType;
         mTaskBoundsAtDragStart.set(
                 mWindowDecoration.getTaskInfo().configuration.windowConfiguration.getBounds());
@@ -217,7 +218,7 @@ public class VeiledResizeTaskPositioner implements TaskPositioner, Transitions.T
     private InteractionJankMonitor.Configuration.Builder createLongTimeoutJankConfigBuilder(
             @Cuj.CujType int cujType) {
         return InteractionJankMonitor.Configuration.Builder
-                .withSurface(cujType, mWindowDecoration.getContext(),
+                .withSurface(cujType, mWindowDecoration.getDecorWindowContext(),
                         mWindowDecoration.getTaskSurface(), mHandler)
                 .setTimeout(LONG_CUJ_TIMEOUT_MS);
     }

@@ -85,7 +85,7 @@ class ZenModeIconViewModelTest : SysuiTestCase() {
 
             val loadedIcon = underTest.icon as Icon.Loaded
             assertThat(loadedIcon.contentDescription).isEqualTo(ContentDescription.Loaded(modeName))
-            assertThat(loadedIcon.res).isEqualTo(R.drawable.ic_zen_mode_type_driving)
+            assertThat(loadedIcon.resId).isEqualTo(R.drawable.ic_zen_mode_type_driving)
         }
 
     @Test
@@ -125,7 +125,7 @@ class ZenModeIconViewModelTest : SysuiTestCase() {
 
             val loadedIcon = actualIcon as Icon.Loaded
 
-            assertThat(loadedIcon.res).isEqualTo(R.drawable.ic_zen_mode_type_bedtime)
+            assertThat(loadedIcon.resId).isEqualTo(R.drawable.ic_zen_mode_type_bedtime)
             assertThat(loadedIcon.contentDescription)
                 .isEqualTo(ContentDescription.Loaded(highPriModeName))
         }
@@ -152,7 +152,7 @@ class ZenModeIconViewModelTest : SysuiTestCase() {
             val actualIcon = underTest.icon
             assertThat(actualIcon).isInstanceOf(Icon.Loaded::class.java)
             val loadedIcon = actualIcon as Icon.Loaded
-            assertThat(loadedIcon.res).isEqualTo(R.drawable.ic_zen_mode_type_driving)
+            assertThat(loadedIcon.resId).isEqualTo(R.drawable.ic_zen_mode_type_driving)
             assertThat(loadedIcon.contentDescription).isEqualTo(ContentDescription.Loaded(modeName))
 
             fakeZenModeRepository.deactivateMode(modeId)
@@ -193,7 +193,7 @@ class ZenModeIconViewModelTest : SysuiTestCase() {
             var currentIcon = underTest.icon
             assertThat(currentIcon).isInstanceOf(Icon.Loaded::class.java)
             var loadedIcon = currentIcon as Icon.Loaded
-            assertThat(loadedIcon.res).isEqualTo(R.drawable.ic_zen_mode_type_bedtime)
+            assertThat(loadedIcon.resId).isEqualTo(R.drawable.ic_zen_mode_type_bedtime)
             assertThat(loadedIcon.contentDescription)
                 .isEqualTo(ContentDescription.Loaded(highPriModeName))
 
@@ -207,8 +207,8 @@ class ZenModeIconViewModelTest : SysuiTestCase() {
 
             assertThat(loadedIcon.contentDescription)
                 .isEqualTo(ContentDescription.Loaded(lowPriModeName))
-            // Resource ID should be null, but the drawable should be present.
-            assertThat(loadedIcon.res).isNull()
+            assertThat(loadedIcon.resId).isEqualTo(CUSTOM_ICON_RES_ID)
+            assertThat(loadedIcon.packageName).isEqualTo(CUSTOM_PACKAGE_NAME)
             assertThat(loadedIcon.drawable).isEqualTo(CUSTOM_DRAWABLE)
         }
 

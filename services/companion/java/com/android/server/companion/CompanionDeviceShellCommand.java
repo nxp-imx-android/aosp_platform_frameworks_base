@@ -29,6 +29,7 @@ import android.companion.datatransfer.PermissionSyncRequest;
 import android.net.MacAddress;
 import android.os.Binder;
 import android.os.ParcelUuid;
+import android.os.PersistableBundle;
 import android.os.ShellCommand;
 import android.util.Base64;
 import android.util.proto.ProtoOutputStream;
@@ -36,6 +37,7 @@ import android.util.proto.ProtoOutputStream;
 import com.android.server.companion.association.AssociationRequestsProcessor;
 import com.android.server.companion.association.AssociationStore;
 import com.android.server.companion.association.DisassociationProcessor;
+import com.android.server.companion.datasync.DataSyncProcessor;
 import com.android.server.companion.datatransfer.SystemDataTransferProcessor;
 import com.android.server.companion.datatransfer.contextsync.BitmapUtils;
 import com.android.server.companion.datatransfer.contextsync.CrossDeviceSyncController;
@@ -44,7 +46,11 @@ import com.android.server.companion.devicepresence.ObservableUuid;
 import com.android.server.companion.transport.CompanionTransportManager;
 
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 class CompanionDeviceShellCommand extends ShellCommand {
     private static final String TAG = "CDM_CompanionDeviceShellCommand";
@@ -58,6 +64,7 @@ class CompanionDeviceShellCommand extends ShellCommand {
     private final SystemDataTransferProcessor mSystemDataTransferProcessor;
     private final AssociationRequestsProcessor mAssociationRequestsProcessor;
     private final BackupRestoreProcessor mBackupRestoreProcessor;
+    private final DataSyncProcessor mDataSyncProcessor;
 
     CompanionDeviceShellCommand(CompanionDeviceManagerService service,
             AssociationStore associationStore,
@@ -66,7 +73,8 @@ class CompanionDeviceShellCommand extends ShellCommand {
             SystemDataTransferProcessor systemDataTransferProcessor,
             AssociationRequestsProcessor associationRequestsProcessor,
             BackupRestoreProcessor backupRestoreProcessor,
-            DisassociationProcessor disassociationProcessor) {
+            DisassociationProcessor disassociationProcessor,
+            DataSyncProcessor dataSyncProcessor) {
         mService = service;
         mAssociationStore = associationStore;
         mDevicePresenceProcessor = devicePresenceProcessor;
@@ -75,6 +83,7 @@ class CompanionDeviceShellCommand extends ShellCommand {
         mAssociationRequestsProcessor = associationRequestsProcessor;
         mBackupRestoreProcessor = backupRestoreProcessor;
         mDisassociationProcessor = disassociationProcessor;
+        mDataSyncProcessor = dataSyncProcessor;
     }
 
     @Override
@@ -104,13 +113,20 @@ class CompanionDeviceShellCommand extends ShellCommand {
                     int userId = getNextIntArgRequired();
                     String packageName = getNextArgRequired();
                     String address = getNextArgRequired();
-                    String deviceProfile = getNextArg();
+                    String deviceProfile = Optional.ofNullable(getNextArg())
+                            .filter(arg -> !"null".equalsIgnoreCase(arg))
+                            .orElse(null);
                     boolean selfManaged = getNextBooleanArg();
+                    String permissionsArg = getNextArg();
+                    Set<String> permissions = new HashSet<>();
+                    if (permissionsArg != null) {
+                        permissions.addAll(Arrays.asList(permissionsArg.split(",")));
+                    }
                     final MacAddress macAddress = MacAddress.fromString(address);
                     mAssociationRequestsProcessor.createAssociation(userId, packageName, macAddress,
                             deviceProfile, deviceProfile, /* associatedDevice= */ null, selfManaged,
                             /* callback= */ null, /* resultReceiver= */ null,
-                            /* deviceIcon= */ null, /* skipRoleGrant= */ false);
+                            /* deviceIcon= */ null, /* skipRoleGrant= */ false, permissions);
                 }
                 break;
 
@@ -462,6 +478,51 @@ class CompanionDeviceShellCommand extends ShellCommand {
                     break;
                 }
 
+                case "set-local-metadata": {
+                    int userId = getNextIntArgRequired();
+                    String feature = getNextArgRequired();
+                    String key = getNextArgRequired();
+                    String value = getNextArgRequired();
+                    PersistableBundle bundle = mDataSyncProcessor.getLocalMetadata(userId)
+                            .getPersistableBundle(feature);
+                    if (bundle == null) {
+                        bundle = new PersistableBundle();
+                    }
+                    if (value == "null") {
+                        bundle.remove(key);
+                    } else {
+                        try {
+                            bundle.putInt(key, Integer.parseInt(value));
+                        } catch (Exception e) {
+                            bundle.putString(key, value);
+                        }
+                    }
+                    mDataSyncProcessor.setLocalMetadata(userId, feature, bundle);
+                    out.println("Set local metadata for user " + userId + " key " + key
+                            + " value " + value);
+                    break;
+                }
+
+                case "get-local-metadata": {
+                    int userId = getNextIntArgRequired();
+                    String feature = getNextArgRequired();
+                    String key = getNextArgRequired();
+                    PersistableBundle bundle = mDataSyncProcessor.getLocalMetadata(userId)
+                            .getPersistableBundle(feature);
+                    out.println(bundle.getString(key, "null"));
+                    break;
+                }
+
+                case "clear-local-metadata": {
+                    int userId = getNextIntArgRequired();
+                    PersistableBundle bundle = mDataSyncProcessor.getLocalMetadata(userId);
+                    bundle.keySet().stream().forEach(key -> {
+                        mDataSyncProcessor.setLocalMetadata(userId, key, null);
+                    });
+                    out.println("Cleared local metadata for user " + userId);
+                    break;
+                }
+
                 default:
                     return handleDefaultCommands(cmd);
             }
@@ -617,5 +678,15 @@ class CompanionDeviceShellCommand extends ShellCommand {
         pw.println("      Get perm sync state for the association.");
         pw.println("  remove-perm-sync-state <ASSOCIATION_ID>");
         pw.println("      Remove perm sync state for the association.");
+
+        pw.println("  set-local-metadata <USER_ID> <FEATURE_KEY> <KEY> <VALUE>");
+        pw.println("      Set local metadata for the user.");
+        pw.println("      USE FOR DEBUGGING AND/OR TESTING PURPOSES ONLY.");
+        pw.println("  get-local-metadata <USER_ID> <FEATURE_KEY> <KEY>");
+        pw.println("      Fetch local metadata for the user at a given key.");
+        pw.println("      USE FOR DEBUGGING AND/OR TESTING PURPOSES ONLY.");
+        pw.println("  clear-local-metadata <USER_ID>");
+        pw.println("      Clear local metadata for the user.");
+        pw.println("      USE FOR DEBUGGING AND/OR TESTING PURPOSES ONLY.");
     }
 }

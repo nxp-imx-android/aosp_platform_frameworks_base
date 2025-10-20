@@ -16,49 +16,71 @@
 
 package com.android.systemui.desktop.domain.interactor
 
-import android.content.testableContext
+import android.content.res.Configuration
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class DesktopInteractorTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
-    private val underTest = kosmos.desktopInteractor
+
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
+    private val Kosmos.underTest: DesktopInteractor by Kosmos.Fixture { desktopInteractor }
 
     @Test
-    fun isDesktopFeatureSetEnabled_false() =
+    fun isDesktopForFalsingPurposes_false() =
         kosmos.runTest {
-            val isDesktopFeatureSetEnabled by collectLastValue(underTest.isDesktopFeatureSetEnabled)
+            val isDesktopForFalsingPurposes by
+                collectLastValue(underTest.isDesktopForFalsingPurposes)
 
-            testableContext.orCreateTestableResources.addOverride(
-                R.bool.config_enableDesktopFeatureSet,
-                false,
-            )
+            overrideResource(R.bool.config_isDesktopForFalsingPurposes, false)
+            configurationController.onConfigurationChanged(Configuration())
 
-            assertThat(isDesktopFeatureSetEnabled).isFalse()
+            assertThat(isDesktopForFalsingPurposes).isFalse()
         }
 
     @Test
-    fun isDesktopFeatureSetEnabled_true() =
+    fun isDesktopForFalsingPurposes_true() =
         kosmos.runTest {
-            val isDesktopFeatureSetEnabled by collectLastValue(underTest.isDesktopFeatureSetEnabled)
+            val isDesktopForFalsingPurposes by
+                collectLastValue(underTest.isDesktopForFalsingPurposes)
 
-            testableContext.orCreateTestableResources.addOverride(
-                R.bool.config_enableDesktopFeatureSet,
-                true,
-            )
+            overrideResource(R.bool.config_isDesktopForFalsingPurposes, true)
+            configurationController.onConfigurationChanged(Configuration())
 
-            assertThat(isDesktopFeatureSetEnabled).isTrue()
+            assertThat(isDesktopForFalsingPurposes).isTrue()
+        }
+
+    @Test
+    fun useDesktopStatusBar_false() =
+        kosmos.runTest {
+            val useDesktopStatusBar by collectLastValue(underTest.useDesktopStatusBar)
+
+            overrideResource(R.bool.config_useDesktopStatusBar, false)
+            configurationController.onConfigurationChanged(Configuration())
+
+            assertThat(useDesktopStatusBar).isFalse()
+        }
+
+    @Test
+    fun useDesktopStatusBar_true() =
+        kosmos.runTest {
+            val useDesktopStatusBar by collectLastValue(underTest.useDesktopStatusBar)
+
+            overrideResource(R.bool.config_useDesktopStatusBar, true)
+            configurationController.onConfigurationChanged(Configuration())
+
+            assertThat(useDesktopStatusBar).isTrue()
         }
 }

@@ -29,7 +29,7 @@ import java.util.Objects;
 /**
  * System private API for passing profiler settings.
  *
- * {@hide}
+ * @hide
  */
 public class ProfilerInfo implements Parcelable {
     // Regular profiling which provides different modes of profiling at some performance cost.

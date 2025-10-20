@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"ချိတ်ဆက်နေသည်"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> ချိတ်ဆက်ပြီးပြီ"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"တွဲချိတ်နေသည်…"</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"တွဲချိတ်၍ မရပါ"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"ချိတ်ဆက်၍ မရပါ"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> ချိတ်ဆက်ပြီးပြီ (ဖုန်းမရှိပါ)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> ချိတ်ဆက်ပြီးပြီ (မီဒီယာ မရှိပါ)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> ချိတ်ပြီးပြီ (ဖုန်း (သို့) မီဒီယာ မရှိပါ)"</string>
@@ -116,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"သုံးနေသည် (ညာဘက်သီးသန့်)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"သုံးနေသည် (ဘယ်နှင့်ညာ)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"ဝန်းကျင်အသံ အပ်ဒိတ်လုပ်၍ မရလိုက်ပါ"</string>
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"အသင့်သုံးကို အပ်ဒိတ်လုပ်၍မရလိုက်ပါ"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"ရွေးထားသည်"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"အသုံးပြုနေသည် (မီဒီယာသီးသန့်)။ ဘက်ထရီ <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>။"</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"အသုံးပြုနေသည် (မီဒီယာသီးသန့်)။ ဘက်ထရီ L- <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>၊ R- <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>။"</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"ဧည့်သည်စက်ပစ္စည်း။ ဘက်ထရီ <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>။"</string>
@@ -345,7 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"ဤမုဒ်ကို ဖွင့်ထားသည့်အခါ MAC ကျပန်းပြုလုပ်ထားသည့် ကွန်ရက်သို့ ချိတ်ဆက်လိုက်သည့်အခါတိုင်း ဤစက်၏ MAC လိပ်စာ ပြောင်းသွားနိုင်သည်။"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"အခမဲ့ မဟုတ်ပါ"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"အခမဲ့"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"မှတ်တမ်းကြားခံနယ် အရွယ်အစားများ"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"မှတ်တမ်းယာယီကြားခံနယ် အရွယ်အစား"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"လော့ ဘာဖားတွက် လော့ဂါးဆိုက် ရွေး"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"မှတ်တမ်းထိန်းသိမ်းပေးသည့် သိုလှောင်ခန်းကို ရှင်းလင်းမလား။"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"အမြဲတမ်းမှတ်တမ်းတင်ခြင်းစနစ်ဖြင့် ကျွန်ုပ်တို့ကစောင့်ကြည့်ခြင်းမရှိတော့သည့်အခါ သင့်စက်ပစ္စည်းပေါ်ရှိ ဒေတာမှတ်တမ်းစနစ်ကို ကျွန်ုပ်တို့က ဖျက်ရပါလိမ့်မည်။"</string>
@@ -392,7 +396,7 @@
     <string name="media_category" msgid="8122076702526144053">"မီဒီယာ"</string>
     <string name="debug_monitoring_category" msgid="1597387133765424994">"စောင့်ကြည့်စစ်ဆေးခြင်း"</string>
     <string name="window_management_category" msgid="2015535427098365170">"ဝင်းဒိုး စီမံခန့်ခွဲမှု"</string>
-    <string name="strict_mode" msgid="889864762140862437">"တင်းကြပ်သောစနစ် ဖွင့်ရန်"</string>
+    <string name="strict_mode" msgid="889864762140862437">"သတိပေးမုဒ် ဖွင့်ရန်"</string>
     <string name="strict_mode_summary" msgid="1838248687233554654">"အက်ပ်လုပ်ဆောင်မှု ရှည်ကြာလျှင် စကရင်အချက်ပြသည်"</string>
     <string name="pointer_location" msgid="7516929526199520173">"မြား၏တည်နေရာ"</string>
     <string name="pointer_location_summary" msgid="957120116989798464">"လက်ရှိထိတွေ့မှုဒေတာကို ဖန်သားပေါ်တွင်ထပ်၍ ပြသသည်"</string>
@@ -540,7 +544,7 @@
     <string name="battery_info_status_charging_on_hold" msgid="6364355145521694438">"အားသွင်းခြင်းကို ခဏရပ်ထားသည်"</string>
     <string name="battery_info_status_charging_v2" msgid="6118522107222245505">"အားသွင်းနေသည်"</string>
     <string name="battery_info_status_charging_fast_v2" msgid="1825439848151256589">"အမြန်အားသွင်းခြင်း"</string>
-    <string name="disabled_by_admin_summary_text" msgid="5343911767402923057">"စီမံခန့်ခွဲသူမှ ထိန်းချုပ်ပါသည်"</string>
+    <string name="disabled_by_admin_summary_text" msgid="5343911767402923057">"စီမံခန့်ခွဲသူက ထိန်းချုပ်ထားသည်"</string>
     <string name="disabled_by_app_ops_text" msgid="8373595926549098012">"ကန့်သတ်ဆက်တင်ဖြင့် ထိန်းချုပ်ထားသည်"</string>
     <string name="disabled_in_phone_call_text" msgid="6568931334337318320">"ဖုန်းခေါ်ဆိုနေချိန်တွင် မရနိုင်ပါ"</string>
     <string name="disabled" msgid="8017887509554714950">"ပိတ်ထားပြီး"</string>
@@ -664,7 +668,7 @@
     <string name="user_grant_admin_title" msgid="5157031020083343984">"ဤအသုံးပြုသူကို စီမံခန့်ခွဲသူအဖြစ် သတ်မှတ်မလား။"</string>
     <string name="user_grant_admin_message" msgid="1673791931033486709">"စီမံခန့်ခွဲသူများ၌ အခြားအသုံးပြုသူများတွင်မရှိသော အထူးဆောင်ရွက်ခွင့်များရှိသည်။ စီမံခန့်ခွဲသူက အသုံးပြုသူအားလုံးကို စီမံခြင်း၊ ဤစက်ပစ္စည်းကို အပ်ဒိတ်လုပ်ခြင်း (သို့) ပြင်ဆင်သတ်မှတ်ခြင်း၊ ဆက်တင်များပြင်ဆင်ခြင်း၊ ထည့်သွင်းထားသောအက်ပ်အားလုံးကို ကြည့်ခြင်းနှင့် အခြားသူများအတွက် စီမံခန့်ခွဲသူ ဆောင်ရွက်ခွင့်များပေးခြင်း (သို့) ရုပ်သိမ်းခြင်းတို့ လုပ်နိုင်သည်။"</string>
     <string name="user_grant_admin_button" msgid="5441486731331725756">"စီမံခန့်ခွဲသူအဖြစ် သတ်မှတ်ရန်"</string>
-    <string name="user_setup_dialog_title" msgid="8037342066381939995">"အသုံးပြုသူကို ယခုသတ်မှတ်မလား။"</string>
+    <string name="user_setup_dialog_title" msgid="8037342066381939995">"အသုံးပြုသူကို ယခုသတ်မှတ်မလား"</string>
     <string name="user_setup_dialog_message" msgid="269931619868102841">"သူသည် သူ၏နေရာကို စက်တွင် ယခုသတ်မှတ်နိုင်ရမည်"</string>
     <string name="user_setup_profile_dialog_message" msgid="4788197052296962620">"ယခု ကိုယ်ရေးအချက်အလက်ကို အစီအမံလုပ်မည်လား?"</string>
     <string name="user_setup_button_setup_now" msgid="1708269547187760639">"ယခု သတ်မှတ်ပါမည်"</string>

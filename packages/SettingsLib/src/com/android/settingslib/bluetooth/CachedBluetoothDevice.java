@@ -29,7 +29,6 @@ import android.bluetooth.BluetoothLeBroadcastReceiveState;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothUuid;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -55,6 +54,7 @@ import androidx.annotation.WorkerThread;
 import com.android.internal.util.ArrayUtils;
 import com.android.settingslib.R;
 import com.android.settingslib.Utils;
+import com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils;
 import com.android.settingslib.flags.Flags;
 import com.android.settingslib.utils.ThreadUtils;
 import com.android.settingslib.widget.AdaptiveOutlineDrawable;
@@ -77,6 +77,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -146,6 +150,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
      */
     private long mConnectAttempted = -1;
     private long mBondFailureTimeMillis = -1;
+    private long mConnectionFailureTimeMillis = -1;
     private boolean mIsAclConnectedBrEdr = false;
     private boolean mIsAclConnectedLe = false;
 
@@ -218,6 +223,10 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                     dispatchAttributesChanged();
                 }
             };
+
+    private final ScheduledExecutorService mBluetoothFailureTimerScheduler =
+            Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture<?> mBluetoothFailureFuture = null;
 
     CachedBluetoothDevice(Context context, LocalBluetoothProfileManager profileManager,
             BluetoothDevice device) {
@@ -361,7 +370,27 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                 updatePreferredTransport();
             }
 
-            HearingAidStatsLogUtils.updateHistoryIfNeeded(mContext, this, profile, newProfileState);
+            HearingDeviceStatsLogUtils.updateHistoryIfNeeded(mContext, this, profile,
+                    newProfileState);
+        }
+
+        if (Flags.enableBluetoothDiagnosis() && !isBusy()) {
+            if (isProfileConnectedFail()) {
+                mConnectionFailureTimeMillis = SystemClock.elapsedRealtime();
+                Log.d(TAG, "Detect connection failure at " + mConnectionFailureTimeMillis);
+                dispatchAttributesChanged();
+                cancelFailureScheduledFutureIfNeeded();
+                mBluetoothFailureFuture =
+                        mBluetoothFailureTimerScheduler.schedule(
+                                this::dispatchAttributesChanged,
+                                BluetoothUtils.CAN_NOT_CONNECT_TIME_OUT_MILLS,
+                                TimeUnit.MILLISECONDS);
+            } else if (mConnectionFailureTimeMillis > -1) {
+                Log.d(TAG, "Connection failure timestamp cleared");
+                mConnectionFailureTimeMillis = -1;
+                dispatchAttributesChanged();
+                cancelFailureScheduledFutureIfNeeded();
+            }
         }
 
         fetchActiveDevices();
@@ -390,6 +419,12 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                         ? BluetoothDevice.TRANSPORT_LE
                         : BluetoothDevice.TRANSPORT_BREDR)) {
             Log.w(TAG, "Fail to set preferred transport");
+        }
+    }
+
+    private void cancelFailureScheduledFutureIfNeeded() {
+        if (mBluetoothFailureFuture != null) {
+            mBluetoothFailureFuture.cancel(/* mayInterruptIfRunning= */ false);
         }
     }
 
@@ -678,9 +713,6 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
     void fillData() {
         updateProfiles();
         fetchActiveDevices();
-        migratePhonebookPermissionChoice();
-        migrateMessagePermissionChoice();
-
         dispatchAttributesChanged();
     }
 
@@ -1090,7 +1122,9 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                     "onUuidChanged: Time since last connect/manual disconnect="
                             + (SystemClock.elapsedRealtime() - lastConnectAttempted)
                             + ", last connect attempt: "
-                            + mConnectAttempted);
+                            + mConnectAttempted
+                            + ", device: "
+                            + mDevice.getAnonymizedAddress());
         }
 
         /*
@@ -1120,6 +1154,13 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             if (Flags.enableBluetoothDiagnosis()) {
                 if (prevBondState == BluetoothDevice.BOND_BONDING) {
                     mBondFailureTimeMillis = SystemClock.elapsedRealtime();
+                    Log.d(TAG, "Detect bonding failure at " + mBondFailureTimeMillis);
+                    cancelFailureScheduledFutureIfNeeded();
+                    mBluetoothFailureFuture =
+                            mBluetoothFailureTimerScheduler.schedule(
+                                    this::refresh,
+                                    BluetoothUtils.CAN_NOT_PAIR_TIME_OUT_MILLS,
+                                    TimeUnit.MILLISECONDS);
                 }
             }
         }
@@ -1137,10 +1178,12 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
 
             // Saves this device as just bonded and checks if it's an hearing device after
             // profiles are connected. This is for judging whether to display the survey.
-            HearingAidStatsLogUtils.addToJustBonded(getAddress());
+            HearingDeviceStatsLogUtils.addToJustBonded(getAddress());
 
             if (Flags.enableBluetoothDiagnosis()) {
                 mBondFailureTimeMillis = -1;
+                Log.d(TAG, "Bond success");
+                cancelFailureScheduledFutureIfNeeded();
             }
         }
 
@@ -1207,6 +1250,10 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
 
     public long getBondFailureTimeMillis() {
         return mBondFailureTimeMillis;
+    }
+
+    public long getConnectionFailureTimeMillis() {
+        return mConnectionFailureTimeMillis;
     }
 
     public BluetoothClass getBtClass() {
@@ -1343,54 +1390,6 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
 
     public interface Callback {
         void onDeviceAttributesChanged();
-    }
-
-    // Migrates data from old data store (in Settings app's shared preferences) to new (in Bluetooth
-    // app's shared preferences).
-    private void migratePhonebookPermissionChoice() {
-        SharedPreferences preferences = mContext.getSharedPreferences(
-                "bluetooth_phonebook_permission", Context.MODE_PRIVATE);
-        if (!preferences.contains(mDevice.getAddress())) {
-            return;
-        }
-
-        if (mDevice.getPhonebookAccessPermission() == BluetoothDevice.ACCESS_UNKNOWN) {
-            int oldPermission =
-                    preferences.getInt(mDevice.getAddress(), BluetoothDevice.ACCESS_UNKNOWN);
-            if (oldPermission == BluetoothDevice.ACCESS_ALLOWED) {
-                mDevice.setPhonebookAccessPermission(BluetoothDevice.ACCESS_ALLOWED);
-            } else if (oldPermission == BluetoothDevice.ACCESS_REJECTED) {
-                mDevice.setPhonebookAccessPermission(BluetoothDevice.ACCESS_REJECTED);
-            }
-        }
-
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.remove(mDevice.getAddress());
-        editor.commit();
-    }
-
-    // Migrates data from old data store (in Settings app's shared preferences) to new (in Bluetooth
-    // app's shared preferences).
-    private void migrateMessagePermissionChoice() {
-        SharedPreferences preferences = mContext.getSharedPreferences(
-                "bluetooth_message_permission", Context.MODE_PRIVATE);
-        if (!preferences.contains(mDevice.getAddress())) {
-            return;
-        }
-
-        if (mDevice.getMessageAccessPermission() == BluetoothDevice.ACCESS_UNKNOWN) {
-            int oldPermission =
-                    preferences.getInt(mDevice.getAddress(), BluetoothDevice.ACCESS_UNKNOWN);
-            if (oldPermission == BluetoothDevice.ACCESS_ALLOWED) {
-                mDevice.setMessageAccessPermission(BluetoothDevice.ACCESS_ALLOWED);
-            } else if (oldPermission == BluetoothDevice.ACCESS_REJECTED) {
-                mDevice.setMessageAccessPermission(BluetoothDevice.ACCESS_REJECTED);
-            }
-        }
-
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.remove(mDevice.getAddress());
-        editor.commit();
     }
 
     private void processPhonebookAccess() {
@@ -2544,6 +2543,9 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         final short tmpRssi = mRssi;
         final boolean tmpJustDiscovered = mJustDiscovered;
         final HearingAidInfo tmpHearingAidInfo = mHearingAidInfo;
+        final long tmpConnectAttempted = mConnectAttempted;
+        final boolean tmpIsAclConnectedBrEdr = mIsAclConnectedBrEdr;
+        final boolean tmpIsAclConnectedLe = mIsAclConnectedLe;
 
         // Set main device from sub device
         release();
@@ -2558,6 +2560,9 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         mRssi = newMainDevice.mRssi;
         mJustDiscovered = newMainDevice.mJustDiscovered;
         mHearingAidInfo = newMainDevice.mHearingAidInfo;
+        mConnectAttempted = newMainDevice.mConnectAttempted;
+        mIsAclConnectedBrEdr = newMainDevice.mIsAclConnectedBrEdr;
+        mIsAclConnectedLe = newMainDevice.mIsAclConnectedLe;
         fillData();
 
         // Set sub device from backup
@@ -2566,6 +2571,9 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         newMainDevice.mRssi = tmpRssi;
         newMainDevice.mJustDiscovered = tmpJustDiscovered;
         newMainDevice.mHearingAidInfo = tmpHearingAidInfo;
+        newMainDevice.mConnectAttempted = tmpConnectAttempted;
+        newMainDevice.mIsAclConnectedBrEdr = tmpIsAclConnectedBrEdr;
+        newMainDevice.mIsAclConnectedLe = tmpIsAclConnectedLe;
         newMainDevice.fillData();
 
         // Add the sub device back into mMemberDevices with correct hash

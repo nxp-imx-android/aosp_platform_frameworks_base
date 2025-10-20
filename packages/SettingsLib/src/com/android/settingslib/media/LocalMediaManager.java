@@ -208,8 +208,7 @@ public class LocalMediaManager implements BluetoothCallback {
      * Connect the MediaDevice to transfer media
      *
      * @param connectDevice the MediaDevice
-     * @param routingChangeInfo the invocation details of the connect device request. See {@link
-     *     RoutingChangeInfo}
+     * @param routingChangeInfo the invocation details of the connect device request.
      * @return {@code true} if successfully call, otherwise return {@code false}
      */
     public boolean connectDevice(
@@ -245,8 +244,7 @@ public class LocalMediaManager implements BluetoothCallback {
      * to attempt to discover the device.
      *
      * @param suggestion the suggested device to connect to.
-     * @param routingChangeInfo the invocation details of the connect device request. See {@link
-     *     RoutingChangeInfo}
+     * @param routingChangeInfo the invocation details of the connect device request.
      */
     public void connectSuggestedDevice(
             @NonNull SuggestedDeviceState suggestion,
@@ -436,22 +434,25 @@ public class LocalMediaManager implements BluetoothCallback {
      * Add a MediaDevice to let it play current media.
      *
      * @param device MediaDevice
+     * @param routingChangeInfo the invocation details of the media routing change.
      * @return If add device successful return {@code true}, otherwise return {@code false}
      */
-    public boolean addDeviceToPlayMedia(MediaDevice device) {
+    public boolean addDeviceToPlayMedia(MediaDevice device, RoutingChangeInfo routingChangeInfo) {
         mInfoMediaManager.setDeviceState(device, MediaDeviceState.STATE_GROUPING);
-        return mInfoMediaManager.addDeviceToPlayMedia(device);
+        return mInfoMediaManager.addDeviceToPlayMedia(device, routingChangeInfo);
     }
 
     /**
      * Remove a {@code device} from current media.
      *
      * @param device MediaDevice
+     * @param routingChangeInfo the invocation details of the media routing change.
      * @return If device stop successful return {@code true}, otherwise return {@code false}
      */
-    public boolean removeDeviceFromPlayMedia(MediaDevice device) {
+    public boolean removeDeviceFromPlayMedia(
+            MediaDevice device, RoutingChangeInfo routingChangeInfo) {
         mInfoMediaManager.setDeviceState(device, MediaDeviceState.STATE_GROUPING);
-        return mInfoMediaManager.removeDeviceFromPlayMedia(device);
+        return mInfoMediaManager.removeDeviceFromPlayMedia(device, routingChangeInfo);
     }
 
     /**
@@ -898,7 +899,7 @@ public class LocalMediaManager implements BluetoothCallback {
     }
 
     private class ConnectingSuggestedDeviceState {
-        private static final int SCAN_DURATION_MS = 10000;
+        private static final int SCAN_AND_CONNECTION_DURATION_MS = 30000;
 
         @NonNull final SuggestedDeviceState mSuggestedDeviceState;
         @NonNull final DeviceCallback mDeviceCallback;
@@ -987,7 +988,7 @@ public class LocalMediaManager implements BluetoothCallback {
             registerCallback(mDeviceCallback);
             startScan();
             mConnectSuggestedDeviceHandler.postDelayed(
-                    mConnectionAttemptFinishedRunnable, SCAN_DURATION_MS);
+                    mConnectionAttemptFinishedRunnable, SCAN_AND_CONNECTION_DURATION_MS);
         }
     }
 }

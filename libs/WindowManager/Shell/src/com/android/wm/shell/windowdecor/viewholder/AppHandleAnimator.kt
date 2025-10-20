@@ -86,6 +86,11 @@ class AppHandleAnimator(appHandleView: View, private val captionHandle: ImageBut
 
     /** Animate appearance/disappearance of caption's handle. */
     fun animateCaptionHandleAlpha(startValue: Float, endValue: Float) {
+        // DrawingHandle's alpha change is handled by HandleMenuAnimator.
+        if (DesktopExperienceFlags.ENABLE_DRAWING_APP_HANDLE.isTrue) {
+            return
+        }
+
         cancelCaptionHandleAlphaAnimation()
         visibilityAnimator.cancel()
         animator =

@@ -650,6 +650,15 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
             if (mParent != null && mParent.mDisplayContent != null
                     && mDisplayContent != mParent.mDisplayContent) {
                 onDisplayChanged(mParent.mDisplayContent);
+            } else if ((mParent == null || mParent.mDisplayContent == null)
+                    && asDisplayContent() == null
+                    && mDisplayContent != null) {
+                // This window container is detached from a display, but calling
+                // onDisplayChanged(null) causes NPE. Losing a window container that can host
+                // movable tasks means the task move allowed value of the old DisplayContent may
+                // change, so explicitly notify it.
+                // TODO(b/422700507): make onDisplayChanged(null) work
+                mDisplayContent.onDescendantsTaskMoveAllowedChanged();
             }
             onParentChanged(mParent, oldParent);
         }
@@ -689,7 +698,8 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     }
 
     void setInitialSurfaceControlProperties(Builder b) {
-        setSurfaceControl(b.setCallsite("WindowContainer.setInitialSurfaceControlProperties").build());
+        setSurfaceControl(
+                b.setCallsite("WindowContainer.setInitialSurfaceControlProperties").build());
         if (showSurfaceOnCreation()) {
             getSyncTransaction().show(mSurfaceControl);
         }
@@ -1070,9 +1080,18 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      * @param dc The display this container is on after changes.
      */
     void onDisplayChanged(DisplayContent dc) {
-        if (mDisplayContent != null && mDisplayContent != dc) {
+        final boolean displayContentChanged = (mDisplayContent != dc);
+        if (mDisplayContent != null && displayContentChanged) {
             if (asWindowState() == null) {
                 mTransitionController.collect(this);
+            }
+        }
+        if (mIsTaskMoveAllowed && displayContentChanged) {
+            if (mDisplayContent != null) {
+                mDisplayContent.onDescendantsTaskMoveAllowedChanged();
+            }
+            if (dc != null) {
+                dc.onDescendantsTaskMoveAllowedChanged();
             }
         }
         mDisplayContent = dc;
@@ -1462,7 +1481,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_NOSENSOR) {
             // NOSENSOR means the display's "natural" orientation, so return that.
             if (mDisplayContent != null) {
-                return mDisplayContent.getNaturalConfigurationOrientation();
+                return mDisplayContent.getNaturalOrientation();
             }
         } else if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LOCKED) {
             // LOCKED means the activity's orientation remains unchanged, so return existing value.
@@ -1626,6 +1645,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         return source;
     }
 
+    /** Returns true if unspecified orientation should be reported to parent. */
     boolean providesOrientation() {
         return fillsParent();
     }
@@ -1649,12 +1669,15 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      * lifecycle. A container may fill its parent but have no content in it, so it would be
      * equivalent to not existing.
      *
-     * TODO(b/409417223): Consolidate with {@link #matchParentBounds}.
+     * TODO b/409417223 - remove this method and replace it with #matchParentBounds
      */
     boolean fillsParentBounds() {
-        final int windowingMode = getWindowingMode();
-        return windowingMode == WINDOWING_MODE_FULLSCREEN
-                || (windowingMode != WINDOWING_MODE_PINNED && matchParentBounds());
+        if (!com.android.window.flags.Flags.refactorMatchParentBounds()) {
+            final int windowingMode = getWindowingMode();
+            return windowingMode == WINDOWING_MODE_FULLSCREEN
+                    || (windowingMode != WINDOWING_MODE_PINNED && matchParentBounds());
+        }
+        return matchParentBounds();
     }
 
     /**
@@ -1668,22 +1691,46 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         if (childCount == 0) {
             return false;
         }
-        for (int i = 0; i < childCount; i++) {
+
+        TaskFragment.AdjacentVisibilityHelper adjacentVisibilityHelper = null;
+        for (int i = childCount - 1; i >= 0; --i) {
             final WindowContainer<?> child = getChildAt(i);
             if (child.fillsParentBounds() && child.hasFillingContent()) {
                 // At least one child fills this container and has content filling itself.
                 return true;
             }
-            if (child.asTaskFragment() != null
-                    && child.asTaskFragment().hasAdjacentTaskFragment()) {
-                // There's at least one child adjacent task fragment. Consider the parent filling
-                // as long as all of the adjacent task fragments have filling content. Whether
-                // or not they fill the parent in union is not important.
-                final boolean allFillingContent = child.hasFillingContent()
-                        && !child.asTaskFragment().forOtherAdjacentTaskFragments(
-                            tf -> !tf.hasFillingContent());
-                if (allFillingContent) {
-                    return true;
+
+            if (com.android.window.flags.Flags.fixTfAdjacentVisibility()) {
+                final TaskFragment tf = child.asTaskFragment();
+                if (tf != null) {
+                    if (tf.hasAdjacentTaskFragment() && adjacentVisibilityHelper == null) {
+                        adjacentVisibilityHelper =
+                                tf.getAdjacentTaskFragments().getVisibilityHelper(
+                                        TaskFragment::hasFillingContent);
+                    }
+                    if (adjacentVisibilityHelper != null) {
+                        adjacentVisibilityHelper.process(tf);
+                        if (adjacentVisibilityHelper.isAllAdjacentTaskFragmentProcessed()) {
+                            if (adjacentVisibilityHelper.occludesParent()) {
+                                return true;
+                            } else {
+                                adjacentVisibilityHelper = null;
+                            }
+                        }
+                    }
+                }
+            } else {
+                if (child.asTaskFragment() != null
+                        && child.asTaskFragment().hasAdjacentTaskFragment()) {
+                    // There's at least one child adjacent task fragment. Consider the parent
+                    // filling as long as all of the adjacent task fragments have filling content.
+                    // Whether or not they fill the parent in union is not important.
+                    final boolean allFillingContent = child.hasFillingContent()
+                            && !child.asTaskFragment().forOtherAdjacentTaskFragments(
+                                    tf -> !tf.hasFillingContent());
+                    if (allFillingContent) {
+                        return true;
+                    }
                 }
             }
         }
@@ -3239,15 +3286,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         }, true /* traverseTopToBottom */);
     }
 
-    // It is replaced by WindowState#getDimController().
-    @Deprecated
-    Dimmer getDimmer() {
-        if (mParent == null) {
-            return null;
-        }
-        return mParent.getDimmer();
-    }
-
     void setSurfaceControl(SurfaceControl sc) {
         mSurfaceControl = sc;
     }
@@ -3786,14 +3824,21 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         }
 
         mIsTaskMoveAllowed = isTaskMoveAllowed;
+        if (mDisplayContent != null) {
+            mDisplayContent.onDescendantsTaskMoveAllowedChanged();
+        }
     }
 
     boolean getIsTaskMoveAllowed() {
         return mIsTaskMoveAllowed;
     }
 
+    // LINT.IfChange(canHoldSelfMovableTasks)
     boolean canHoldSelfMovableTasks() {
         // Is a TaskDisplayArea or a root Task.
+        // Keep these types in sync with types we are traversing in
+        // DisplayContent#updateIsTaskMoveAllowedOnDisplay.
         return (asTaskDisplayArea() != null) || (asTask() != null && asTask().isRootTask());
     }
+    // LINT.ThenChange(DisplayContent.java:updateIsTaskMoveAllowedOnDisplay)
 }

@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_OPTIONAL_BUBBLE_OVERFLOW;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -25,6 +26,7 @@ import static junit.framework.Assert.assertNotNull;
 import static junit.framework.TestCase.assertEquals;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -52,6 +54,7 @@ import androidx.test.filters.SmallTest;
 import com.android.internal.logging.testing.UiEventLoggerFake;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.bubbles.BubbleData.TimeSource;
+import com.android.wm.shell.bubbles.logging.BubbleLogger;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.BubbleBarUpdate;
@@ -1403,12 +1406,14 @@ public class BubbleDataTest extends ShellTestCase {
         sendUpdatedEntryAtTime(mEntryA1, 1000);
         sendUpdatedEntryAtTime(mEntryA2, 2000);
         mBubbleData.setListener(mListener);
+        assertThat(mBubbleA1.showInShade()).isTrue();
 
         mBubbleData.setSelectedBubbleAndExpandStack(mBubbleA1);
 
         verifyUpdateReceived();
         assertSelectionChangedTo(mBubbleA1);
         assertExpandedChangedTo(true);
+        assertThat(mBubbleA1.showInShade()).isFalse();
     }
 
     @Test
@@ -1416,6 +1421,7 @@ public class BubbleDataTest extends ShellTestCase {
         sendUpdatedEntryAtTime(mEntryA1, 1000);
         sendUpdatedEntryAtTime(mEntryA2, 2000);
         mBubbleData.setListener(mListener);
+        assertThat(mBubbleA1.showInShade()).isTrue();
 
         mBubbleData.setSelectedBubbleAndExpandStack(mBubbleA1, BubbleBarLocation.LEFT);
 
@@ -1423,6 +1429,7 @@ public class BubbleDataTest extends ShellTestCase {
         assertSelectionChangedTo(mBubbleA1);
         assertExpandedChangedTo(true);
         assertLocationChangedTo(BubbleBarLocation.LEFT);
+        assertThat(mBubbleA1.showInShade()).isFalse();
     }
 
     @Test
@@ -1468,6 +1475,84 @@ public class BubbleDataTest extends ShellTestCase {
         verifyUpdateReceived();
         assertThat(mUpdateCaptor.getValue().showOverflowChanged).isTrue();
         assertThat(mBubbleData.getOverflowBubbles()).isEmpty();
+    }
+
+    @Test
+    public void testExpandAndSelectBubbleFromLauncher_sameSelection() {
+        sendUpdatedEntryAtTime(mEntryA1, 1000);
+        assertThat(mBubbleA1.showInShade()).isTrue();
+
+        mBubbleData.expandAndSelectBubbleFromLauncher(mBubbleA1);
+        assertThat(mBubbleA1.showInShade()).isFalse();
+        assertThat(mBubbleData.isExpanded()).isTrue();
+    }
+
+    @Test
+    public void testExpandAndSelectBubbleFromLauncher_newSelection() {
+        sendUpdatedEntryAtTime(mEntryA1, 1000);
+        sendUpdatedEntryAtTime(mEntryA2, 1000);
+        assertThat(mBubbleA1.showInShade()).isTrue();
+        assertThat(mBubbleA2.showInShade()).isTrue();
+        assertThat(mBubbleData.getSelectedBubble()).isEqualTo(mBubbleA2);
+
+        mBubbleData.expandAndSelectBubbleFromLauncher(mBubbleA1);
+        assertThat(mBubbleA1.showInShade()).isFalse();
+        assertThat(mBubbleA2.showInShade()).isTrue();
+        assertThat(mBubbleData.isExpanded()).isTrue();
+    }
+
+    @Test
+    public void testJumpcutBubbleSwitch() {
+        mBubbleData.setListener(mListener);
+
+        mBubbleData.jumpcutBubbleSwitch(mBubbleA1, mBubbleC1);
+
+        verifyUpdateReceived();
+        BubbleData.Update update = mUpdateCaptor.getValue();
+        assertThat(update.addedBubble).isEqualTo(mBubbleA1);
+        assertThat(update.jumpcutBubbleSwitchClosingBubble).isEqualTo(mBubbleC1);
+        assertThat(update.removedBubbles).isEmpty();
+    }
+
+    @Test
+    public void testToBubbleBarUpdate_suppressAnimationForJumpcutBubbleSwitch() {
+        spyOn(mBubbleA1);
+        doReturn(true).when(mBubbleA1).isJumpcutBubbleSwitching();
+        mBubbleData.setListener(mListener);
+        mBubbleData.jumpcutBubbleSwitch(mBubbleA1, mBubbleC1);
+
+        verifyUpdateReceived();
+        BubbleData.Update update = mUpdateCaptor.getValue();
+        BubbleBarUpdate bubbleBarUpdate = update.toBubbleBarUpdate();
+
+        assertThat(bubbleBarUpdate.suppressAnimation).isTrue();
+        assertThat(bubbleBarUpdate.removedBubbles).hasSize(1);
+        assertThat(bubbleBarUpdate.removedBubbles.get(0).getKey()).isEqualTo(mBubbleC1.getKey());
+        assertThat(bubbleBarUpdate.removedBubbles.get(0).getRemovalReason())
+                .isEqualTo(Bubbles.DISMISS_JUMPCUT_BUBBLE_SWITCH);
+    }
+
+    @Test
+    public void testSensitiveNotificationProtection_active() {
+        mBubbleData.setSensitiveNotificationProtectionActive(true);
+        sendUpdatedEntryAtTime(mEntryA1, 1000);
+        Bubble bubbleA1 = mBubbleData.getBubbleInStackWithKey(mEntryA1.getKey());
+        assertThat(bubbleA1.showFlyout()).isFalse();
+    }
+
+    @Test
+    public void testSensitiveNotificationProtection_notActive() {
+        mBubbleData.setSensitiveNotificationProtectionActive(true);
+        sendUpdatedEntryAtTime(mEntryA1, 1000);
+        Bubble bubbleA1 = mBubbleData.getBubbleInStackWithKey(mEntryA1.getKey());
+        assertThat(bubbleA1.showFlyout()).isFalse();
+
+        mBubbleData.setSensitiveNotificationProtectionActive(false);
+        sendUpdatedEntryAtTime(mEntryA1, 1000);
+        sendUpdatedEntryAtTime(mEntryA2, 1000);
+        assertThat(bubbleA1.showFlyout()).isTrue();
+        Bubble bubbleA2 = mBubbleData.getBubbleInStackWithKey(mEntryA1.getKey());
+        assertThat(bubbleA2.showFlyout()).isTrue();
     }
 
     private void verifyUpdateReceived() {

@@ -17,6 +17,7 @@
 package com.android.server.wm;
 
 import static android.graphics.Bitmap.CompressFormat.JPEG;
+import static android.graphics.Bitmap.CompressFormat.PNG;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -25,7 +26,6 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import android.annotation.NonNull;
 import android.app.ActivityTaskManager;
 import android.graphics.Bitmap;
-import android.graphics.PixelFormat;
 import android.hardware.HardwareBuffer;
 import android.os.Process;
 import android.os.SystemClock;
@@ -36,7 +36,6 @@ import android.window.TaskSnapshot;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.policy.TransitionAnimation;
 import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.BaseAppSnapshotPersister.LowResSnapshotSupplier;
@@ -74,6 +73,7 @@ class SnapshotPersistQueue {
     private final UserManagerInternal mUserManagerInternal;
     private boolean mShutdown;
     final int mMaxTotalStoreQueue;
+    final ConvertingRecord mConvertingRecord = new ConvertingRecord();
 
     SnapshotPersistQueue() {
         mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
@@ -177,17 +177,13 @@ class SnapshotPersistQueue {
     }
 
     private void addToQueueInternal(WriteQueueItem item, boolean insertToFront) {
-        if (Flags.extendingPersistenceSnapshotQueueDepth()) {
-            final Iterator<WriteQueueItem> iterator = mWriteQueue.iterator();
-            while (iterator.hasNext()) {
-                final WriteQueueItem next = iterator.next();
-                if (item.isDuplicateOrExclusiveItem(next)) {
-                    iterator.remove();
-                    break;
-                }
+        final Iterator<WriteQueueItem> iterator = mWriteQueue.iterator();
+        while (iterator.hasNext()) {
+            final WriteQueueItem next = iterator.next();
+            if (item.isDuplicateOrExclusiveItem(next)) {
+                iterator.remove();
+                break;
             }
-        } else {
-            mWriteQueue.removeFirstOccurrence(item);
         }
         if (insertToFront) {
             mWriteQueue.addFirst(item);
@@ -215,15 +211,6 @@ class SnapshotPersistQueue {
 
     @GuardedBy("mLock")
     private void ensureStoreQueueDepthLocked() {
-        if (!Flags.extendingPersistenceSnapshotQueueDepth()) {
-            while (mStoreQueueItems.size() > MAX_HW_STORE_QUEUE_DEPTH) {
-                final StoreWriteQueueItem item = mStoreQueueItems.poll();
-                mWriteQueue.remove(item);
-                Slog.i(TAG, "Queue is too deep! Purged item with index=" + item.mId);
-            }
-            return;
-        }
-
         // Rules for store queue depth:
         //  - Hardware render involved items < MAX_HW_STORE_QUEUE_DEPTH
         //  - Total (SW + HW) items < mMaxTotalStoreQueue
@@ -235,7 +222,7 @@ class SnapshotPersistQueue {
             final StoreWriteQueueItem item = iterator.next();
             totalStoreCount++;
             boolean removeItem = false;
-            if (mustPersistByHardwareRender(item.mSnapshot)) {
+            if (TaskSnapshotConvertUtil.mustPersistByHardwareRender(item.mSnapshot)) {
                 hwStoreCount++;
                 if (hwStoreCount > MAX_HW_STORE_QUEUE_DEPTH) {
                     removeItem = true;
@@ -282,6 +269,7 @@ class SnapshotPersistQueue {
                             if (next.isReady(mUserManagerInternal)) {
                                 isReadyToWrite = true;
                                 next.onDequeuedLocked();
+                                next.onProcess();
                             } else if (!mShutdown) {
                                 mWriteQueue.addLast(next);
                             } else {
@@ -301,6 +289,7 @@ class SnapshotPersistQueue {
                         SystemClock.sleep(DELAY_MS);
                     }
                 }
+                mConvertingRecord.reset();
                 synchronized (mLock) {
                     final boolean writeQueueEmpty = mWriteQueue.isEmpty();
                     if (!writeQueueEmpty && !mPaused) {
@@ -348,26 +337,14 @@ class SnapshotPersistQueue {
         void onDequeuedLocked() {
         }
 
+        /**
+         * Called when this queue item will start process.
+         */
+        void onProcess() { }
+
         boolean isDuplicateOrExclusiveItem(WriteQueueItem testItem) {
             return false;
         }
-    }
-
-    static boolean mustPersistByHardwareRender(@NonNull TaskSnapshot snapshot) {
-        final int pixelFormat;
-        final boolean hasProtectedContent;
-        if (Flags.reduceTaskSnapshotMemoryUsage()) {
-            pixelFormat = snapshot.getHardwareBufferFormat();
-            hasProtectedContent = snapshot.hasProtectedContent();
-        } else {
-            final HardwareBuffer hwBuffer = snapshot.getHardwareBuffer();
-            pixelFormat = hwBuffer.getFormat();
-            hasProtectedContent = TransitionAnimation.hasProtectedContent(hwBuffer);
-        }
-        return !Flags.extendingPersistenceSnapshotQueueDepth()
-                || (pixelFormat != PixelFormat.RGB_565 && pixelFormat != PixelFormat.RGBA_8888)
-                || !snapshot.isRealSnapshot()
-                || hasProtectedContent;
     }
 
     StoreWriteQueueItem createStoreWriteQueueItem(int id, int userId, TaskSnapshot snapshot,
@@ -376,10 +353,37 @@ class SnapshotPersistQueue {
         return new StoreWriteQueueItem(id, userId, snapshot, provider, lowResSnapshotConsumer);
     }
 
+    // Check if a task snapshot is(or will) convert a low-res snapshot.
+    boolean isConvertingToLowRes(int taskId, int userId) {
+        if (!mUserManagerInternal.isUserUnlocked(userId) || mShutdown) {
+            return false;
+        }
+        if (mConvertingRecord.isProcess(taskId, userId)) {
+            return true;
+        }
+        // Only peek the up-coming one
+        synchronized (mLock) {
+            final StoreWriteQueueItem item = mStoreQueueItems.peek();
+            return item != null && item.mId == taskId && item.mUserId == userId
+                    && item.mLowResSnapshotConsumer != null;
+        }
+    }
+
+    void updateKnownLowResSnapshotIfPossible(int id, TaskSnapshot lowResSnapshot) {
+        synchronized (mLock) {
+            for (StoreWriteQueueItem item : mStoreQueueItems) {
+                if (item.mId == id && item.updateKnownLowResSnapshotIfPossible(lowResSnapshot)) {
+                    break;
+                }
+            }
+        }
+    }
+
     class StoreWriteQueueItem extends WriteQueueItem {
         private final int mId;
         private final TaskSnapshot mSnapshot;
         private final Consumer<LowResSnapshotSupplier> mLowResSnapshotConsumer;
+        private TaskSnapshot mKnownLowResSnapshot;
 
         StoreWriteQueueItem(int id, int userId, TaskSnapshot snapshot,
                 PersistInfoProvider provider,
@@ -398,6 +402,7 @@ class SnapshotPersistQueue {
             mStoreQueueItems.removeIf(item -> {
                 if (item.equals(this) && item.mSnapshot != mSnapshot) {
                     item.mSnapshot.removeReference(TaskSnapshot.REFERENCE_PERSIST);
+                    item.removeKnownLowResSnapshot();
                     return true;
                 }
                 return false;
@@ -409,6 +414,29 @@ class SnapshotPersistQueue {
         @Override
         void onDequeuedLocked() {
             mStoreQueueItems.remove(this);
+        }
+
+        @Override
+        void onProcess() {
+            if (mLowResSnapshotConsumer != null) {
+                mConvertingRecord.processing(mId, mUserId);
+            }
+        }
+
+        boolean updateKnownLowResSnapshotIfPossible(TaskSnapshot lowResSnapshot) {
+            if (mSnapshot.getId() == lowResSnapshot.getId() && mKnownLowResSnapshot == null) {
+                mKnownLowResSnapshot = lowResSnapshot;
+                mKnownLowResSnapshot.addReference(TaskSnapshot.REFERENCE_WILL_UPDATE_TO_CACHE);
+                return true;
+            }
+            return false;
+        }
+
+        private void removeKnownLowResSnapshot() {
+            if (mKnownLowResSnapshot != null) {
+                mKnownLowResSnapshot.removeReference(
+                        TaskSnapshot.REFERENCE_WILL_UPDATE_TO_CACHE);
+            }
         }
 
         @Override
@@ -484,7 +512,8 @@ class SnapshotPersistQueue {
             }
             final File file = mPersistInfoProvider.getHighResolutionBitmapFile(mId, mUserId);
             try (FileOutputStream fos = new FileOutputStream(file)) {
-                swBitmap.compress(JPEG, COMPRESS_QUALITY, fos);
+                swBitmap.compress(Flags.respectRequestedTaskSnapshotResolution() ? PNG : JPEG,
+                        COMPRESS_QUALITY, fos);
             } catch (IOException e) {
                 Slog.e(TAG, "Unable to open " + file + " for persisting.", e);
                 return false;
@@ -522,6 +551,10 @@ class SnapshotPersistQueue {
                 mLowResSnapshotConsumer.accept(new LowResSnapshotSupplier() {
                     @Override
                     public TaskSnapshot getLowResSnapshot() {
+                        if (mKnownLowResSnapshot != null) {
+                            lowResBitmap.recycle();
+                            return mKnownLowResSnapshot;
+                        }
                         final TaskSnapshot result = TaskSnapshotConvertUtil
                                 .convertLowResSnapshot(mSnapshot, lowResBitmap);
                         lowResBitmap.recycle();
@@ -531,10 +564,12 @@ class SnapshotPersistQueue {
                     @Override
                     public void abort() {
                         lowResBitmap.recycle();
+                        removeKnownLowResSnapshot();
                     }
                 });
             } else {
                 lowResBitmap.recycle();
+                removeKnownLowResSnapshot();
             }
 
             return true;
@@ -552,6 +587,7 @@ class SnapshotPersistQueue {
         void onRemovedFromWriteQueue() {
             mStoreQueueItems.remove(this);
             mSnapshot.removeReference(TaskSnapshot.REFERENCE_PERSIST);
+            removeKnownLowResSnapshot();
         }
 
         @Override
@@ -635,6 +671,25 @@ class SnapshotPersistQueue {
         pw.println(prefix + "PersistQueue contains:");
         for (int i = items.length - 1; i >= 0; --i) {
             pw.println(prefix + "  " + items[i] + "");
+        }
+    }
+
+    // The current writing task.
+    private static class ConvertingRecord {
+        int mTaskId;
+        int mUserId;
+
+        void reset() {
+            processing(0, 0);
+        }
+
+        synchronized void processing(int taskId, int userId) {
+            mTaskId = taskId;
+            mUserId = userId;
+        }
+
+        synchronized boolean isProcess(int taskId, int userId) {
+            return mTaskId == taskId && mUserId == userId;
         }
     }
 }

@@ -28,6 +28,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.deviceentry.data.repository.DeviceEntryRepository
+import com.android.systemui.Flags
 import com.android.systemui.keyguard.KeyguardWmStateRefactor
 import com.android.systemui.keyguard.data.repository.KeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode.Companion.isWakeAndUnlock
@@ -95,7 +96,7 @@ constructor(
         scope.launch("$TAG#listenForAodToAwake") {
             powerInteractor.detailedWakefulness
                 .let { flow ->
-                    if (!KeyguardWmStateRefactor.isEnabled) {
+                    if (!Flags.wakefulnessForAnimations() && !KeyguardWmStateRefactor.isEnabled) {
                         // This works around some timing issues pre-refactor that are no longer an
                         // issue (and this causes problems with the flag enabled).
                         flow.debounce(50L)
@@ -103,7 +104,7 @@ constructor(
                         flow
                     }
                 }
-                .filterRelevantKeyguardStateAnd { wakefulness -> wakefulness.isAwake() }
+                .filterRelevantKeyguardStateAnd { wakefulness -> wakefulness.isAwakeForAnimations() }
                 .sample(wakeToGoneInteractor.canWakeDirectlyToGone, ::Pair)
                 .collect {
                     (
@@ -180,10 +181,12 @@ constructor(
                                 ownerReason = "listen for aod to awake",
                             )
                         } else if (shouldTransitionToOccluded) {
-                            startTransitionTo(
-                                toState = KeyguardState.OCCLUDED,
-                                ownerReason = "waking up and isOccluded=true",
-                            )
+                            if (!SceneContainerFlag.isEnabled) {
+                                startTransitionTo(
+                                    toState = KeyguardState.OCCLUDED,
+                                    ownerReason = "waking up and isOccluded=true",
+                                )
+                            }
                         }
                     }
                 }

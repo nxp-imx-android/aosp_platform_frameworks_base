@@ -17,9 +17,9 @@ package com.android.systemui.lowlight
 
 import android.os.Flags
 import android.os.UserHandle
+import androidx.annotation.VisibleForTesting
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.CoreStartable
-import com.android.systemui.common.domain.interactor.BatteryInteractorDeprecated
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.dreams.domain.interactor.DreamSettingsInteractor
@@ -38,7 +38,6 @@ import com.android.systemui.lowlightclock.LowLightDockEvent
 import com.android.systemui.lowlightclock.LowLightLogger
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.statusbar.pipeline.battery.domain.interactor.BatteryInteractor
-import com.android.systemui.statusbar.pipeline.battery.shared.StatusBarUniversalBatteryDataSource
 import com.android.systemui.user.domain.interactor.UserLockedInteractor
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
@@ -46,13 +45,16 @@ import com.android.systemui.util.kotlin.BooleanFlowOperators.not
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.flowOf
@@ -78,7 +80,6 @@ constructor(
     private val uiEventLogger: UiEventLogger,
     private val lowLightBehaviorShellCommand: LowLightBehaviorShellCommand,
     private val lowLightShellCommand: LowLightShellCommand,
-    batteryInteractorDeprecated: BatteryInteractorDeprecated,
     batteryInteractor: BatteryInteractor,
 ) : CoreStartable {
 
@@ -86,13 +87,7 @@ constructor(
     private val isScreenOn = not(displayStateInteractor.isDefaultDisplayOff).distinctUntilChanged()
 
     /** Whether device is plugged in */
-    private val isPluggedIn =
-        if (StatusBarUniversalBatteryDataSource.isEnabled) {
-                batteryInteractor.isPluggedIn
-            } else {
-                batteryInteractorDeprecated.isDevicePluggedIn
-            }
-            .distinctUntilChanged()
+    private val isPluggedIn = batteryInteractor.isPluggedIn.distinctUntilChanged()
 
     /** Whether the device is currently in a low-light environment. */
     private val isLowLightFromSensor =
@@ -157,11 +152,14 @@ constructor(
      * Whether the device is idle (lockscreen showing or dreaming or asleep) and not in doze/AOD, as
      * we do not want to override doze/AOD with lowlight dream.
      */
+    @OptIn(FlowPreview::class)
     private val isDeviceIdleAndNotDozing: Flow<Boolean> =
         allOf(
             not(anyDoze),
             anyOf(
-                keyguardInteractor.isDreaming,
+                keyguardInteractor.isDreaming.debounce(
+                    DREAM_STATE_DEBOUNCE_DURATION_MS.milliseconds
+                ),
                 keyguardInteractor.isKeyguardShowing,
                 powerInteractor.isAsleep,
             ),
@@ -213,6 +211,22 @@ constructor(
             activeLowLightAction
                 .flatMapLatestConflated { activeAction ->
                     activeAction?.let {
+                        if (
+                            com.android.systemui.Flags.disableScreenOffLowLightBehavior() &&
+                                it.behavior == LowLightDisplayBehavior.SCREEN_OFF
+                        ) {
+                            // TODO(b/444624435): This low light action choice is not currently
+                            //  selectable in settings and does not work as intended. Suppressing
+                            //  the dream while it is running causes it to finish immediately. We
+                            //  don't track low light state or activate low light actions when
+                            //  unlocked, meaning pressing power button starts the dream, then
+                            //  activates this action, which causes the dream to immediately finish.
+                            //  To the user, it will seem like the power button did nothing. Due to
+                            //  these issues, we do nothing here to prevent users from seeing more
+                            //  serious bugs.
+                            return@flatMapLatestConflated flowOf(null)
+                        }
+
                         shouldTrackLowLight(it.behavior).map { enabled ->
                             if (enabled) it.action.get() else null
                         }
@@ -224,5 +238,7 @@ constructor(
 
     companion object {
         private const val TAG = "LowLightBehaviorCoreStartable"
+
+        @VisibleForTesting const val DREAM_STATE_DEBOUNCE_DURATION_MS = 100
     }
 }

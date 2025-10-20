@@ -20,6 +20,8 @@ import android.annotation.Nullable;
 
 import com.android.modules.utils.ravenwood.RavenwoodHelper;
 
+import org.junit.runner.Description;
+
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -31,6 +33,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 public class RavenwoodInternalUtils {
     public static final String TAG = "Ravenwood";
@@ -42,12 +45,12 @@ public class RavenwoodInternalUtils {
 
     /**
      * If set to "1", we enable the verbose logging.
-     *
+     * <p>
      * (See also InitLogging() in http://ac/system/libbase/logging.cpp)
      */
     public static final boolean RAVENWOOD_VERBOSE_LOGGING =
             "1".equals(System.getenv("RAVENWOOD_VERBOSE"))
-            || "1".equals(System.getProperty("ravenwood.verbose"));
+                    || "1".equals(System.getProperty("ravenwood.verbose"));
 
     private static boolean sEnableExtraRuntimeCheck =
             "1".equals(System.getenv("RAVENWOOD_ENABLE_EXTRA_RUNTIME_CHECK"));
@@ -68,21 +71,24 @@ public class RavenwoodInternalUtils {
         return sEnableExtraRuntimeCheck;
     }
 
-    /** Simple logging method. */
+    /**
+     * Simple logging method.
+     */
     public static void log(String tag, String message) {
         // Avoid using Android's Log class, which could be broken for various reasons.
         // (e.g. the JNI file doesn't exist for whatever reason)
         System.out.print(tag + ": " + message + "\n");
     }
 
-    /** Simple logging method. */
+    /**
+     * Simple logging method.
+     */
     private void log(String tag, String format, Object... args) {
         log(tag, String.format(format, args));
     }
 
     /**
-     * Internal implementation of
-     * {@link android.platform.test.ravenwood.RavenwoodRule#loadJniLibrary(String)}
+     * Internal implementation of {@link android.platform.test.ravenwood.RavenwoodRule#loadJniLibrary(String)}
      */
     public static void loadJniLibrary(String libname) {
         if (isOnRavenwood()) {
@@ -170,14 +176,16 @@ public class RavenwoodInternalUtils {
 
     /**
      * @return the full directory path that contains the "ravenwood-runtime" files.
-     *
+     * <p>
      * This method throws if called on the device side.
      */
     public static String getRavenwoodRuntimePath() {
         return RavenwoodHelper.getRavenwoodRuntimePath();
     }
 
-    /** Close an {@link AutoCloseable}. */
+    /**
+     * Close an {@link AutoCloseable}.
+     */
     public static void closeQuietly(AutoCloseable c) {
         if (c != null) {
             try {
@@ -188,7 +196,9 @@ public class RavenwoodInternalUtils {
         }
     }
 
-    /** Close a {@link FileDescriptor}. */
+    /**
+     * Close a {@link FileDescriptor}.
+     */
     public static void closeQuietly(FileDescriptor fd) {
         var is = new FileInputStream(fd);
         closeQuietly(is);
@@ -221,7 +231,7 @@ public class RavenwoodInternalUtils {
 
     /**
      * Run a supplier and swallow the exception, if any.
-     *
+     * <p>
      * It's a dangerous function. Only use it in an exception handler where we don't want to crash.
      */
     @Nullable
@@ -236,7 +246,7 @@ public class RavenwoodInternalUtils {
 
     /**
      * Run a runnable and swallow the exception, if any.
-     *
+     * <p>
      * It's a dangerous function. Only use it in an exception handler where we don't want to crash.
      */
     public static void runIgnoringException(@NonNull Runnable r) {
@@ -254,7 +264,9 @@ public class RavenwoodInternalUtils {
         return stringWriter.toString();
     }
 
-    /** Same as {@link Integer#parseInt(String)} but accepts null and returns null. */
+    /**
+     * Same as {@link Integer#parseInt(String)} but accepts null and returns null.
+     */
     @Nullable
     public static Integer parseNullableInt(@Nullable String value) {
         if (value == null) {
@@ -269,5 +281,72 @@ public class RavenwoodInternalUtils {
     @Nullable
     public static <T> T withDefault(@Nullable T value, @Nullable T def) {
         return value != null ? value : def;
+    }
+
+
+    private static final Pattern sWildcardValidater =
+            Pattern.compile("[^\\w.*$]");
+
+    /**
+     * Convert a wildcard string using "*" and "**" to match Java classnames.
+     * <p>
+     * The input string can only contain alnum, "$", "." and "*".
+     */
+    public static Pattern parseClassNameWildcard(String pattern) {
+        // Convert "**" -> match anything (== .*)
+        // Convert "*" -> match anything except for periods (== [^.]*)
+        // Convert "." -> \.
+
+        if (sWildcardValidater.matcher(pattern).find()) {
+            throw new IllegalArgumentException(
+                    "Invalid character found in wildcard '" + pattern + "'");
+        }
+
+        // Save "**" to something else and convert it back to ".*" at the end.
+        String temp = pattern.replace("**", "@@");
+        temp = temp.replace(".", "\\.");
+        temp = temp.replace("$", "\\$");
+        temp = temp.replace("*", "[^.]*");
+        temp = temp.replace("@@", ".*");
+        return Pattern.compile(temp);
+    }
+
+    /**
+     * @return true if it's a junit4 test method.
+     */
+    public static Boolean isTestMethod(@NonNull Class<?> clazz, @NonNull Method method) {
+        return method.getAnnotation(org.junit.Test.class) != null;
+    }
+
+    private static final Pattern sParamsPattern = Pattern.compile("\\[.*$");
+
+    /**
+     * Take a {@link Description#getMethodName()} result and extract the "real" method name,
+     * i.e. without the parameters.
+     */
+    public static String getMethodNameFromMethodDescription(@NonNull String methodDescriptionName) {
+        return sParamsPattern.matcher(methodDescriptionName).replaceFirst("");
+    }
+
+    /**
+     * @return a canonical name of a test method. {@code clazz} may be a subclass of
+     * {@link Method#getDeclaringClass()}.
+     */
+    public static String toCanonicalTestName(@NonNull Class<?> clazz, @NonNull Method method) {
+        return clazz.getName() + "#" + method.getName();
+    }
+
+    /**
+     * @return a canonical name of a test method.
+     */
+    public static String toCanonicalTestName(@NonNull Description description) {
+        if (!description.isTest()) {
+            // It's a test class.
+            return description.getClassName();
+        } else {
+            // It's a test method
+            return description.getClassName() + "#" + getMethodNameFromMethodDescription(
+                    description.getMethodName());
+        }
     }
 }

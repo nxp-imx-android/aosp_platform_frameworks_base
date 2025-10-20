@@ -15,6 +15,7 @@
 package api
 
 import (
+	"fmt"
 	"slices"
 
 	"github.com/google/blueprint/proptools"
@@ -28,9 +29,11 @@ const conscrypt = "conscrypt.module.public.api"
 const i18n = "i18n.module.public.api"
 const virtualization = "framework-virtualization"
 const location = "framework-location"
+const networkSecurityConfig = "framework-network-security-config"
 const platformCrashrecovery = "framework-platformcrashrecovery"
 const ondeviceintelligence = "framework-ondeviceintelligence-platform"
 const platformTelephony = "framework-platformtelephony"
+const telecom = "framework-telecom"
 
 var core_libraries_modules = []string{art, conscrypt, i18n}
 
@@ -42,7 +45,39 @@ var core_libraries_modules = []string{art, conscrypt, i18n}
 // APIs.
 // In addition, the modules in this list are allowed to contribute to test APIs
 // stubs.
-var non_updatable_modules = []string{virtualization, location, platformCrashrecovery, ondeviceintelligence, platformTelephony}
+var non_updatable_modules = []string{virtualization, location, networkSecurityConfig, platformCrashrecovery, ondeviceintelligence, platformTelephony}
+
+// Map of RELEASE_ flags and the module associated with the flag.
+type moduleFlagInfo struct {
+	// Whether to include the module in the non updatable modules list if the flag is enabled
+	include bool
+
+	// Name of the module associated with the flag
+	moduleName string
+}
+
+var releaseFlagToModule = map[string]moduleFlagInfo{
+	"RELEASE_TELECOM_MAINLINE_MODULE": {
+	    // Do NOT include telecom as a non updatable module if the release flag is enabled for
+	    // mainline.
+		include: false,
+		moduleName: telecom,
+	},
+}
+
+// getNonUpdatableModules returns a list of modules that are not yet updatable,
+// and hence they can still compile against hidden APIs. It will also include
+// modules defined in releaseFlagToModule if the associated RELEASE_ flag
+// is DISABLED (meaning the module is not updatable).
+func getNonUpdatableModules(config android.Config) []string {
+	nonUpdatableModules := slices.Clone(non_updatable_modules)
+	for releaseFlag, flagInfo := range releaseFlagToModule {
+		if config.GetBuildFlagBool(releaseFlag) == flagInfo.include {
+			nonUpdatableModules = append(nonUpdatableModules, flagInfo.moduleName)
+		}
+	}
+	return nonUpdatableModules
+}
 
 // The intention behind this soong plugin is to generate a number of "merged"
 // API-related modules that would otherwise require a large amount of very
@@ -263,11 +298,11 @@ func createMergedPublicExportableStubs(ctx android.LoadHookContext, modules prop
 	ctx.CreateModule(java.LibraryFactory, &props)
 }
 
-func createMergedSystemStubs(ctx android.LoadHookContext, modules proptools.Configurable[[]string]) {
+func createMergedSystemStubs(ctx android.LoadHookContext, modules proptools.Configurable[[]string], nonUpdatableModules []string) {
 	// First create the all-updatable-modules-system-stubs
 	{
 		updatable_modules := modules.Clone()
-		removeAll(updatable_modules, non_updatable_modules)
+		removeAll(updatable_modules, nonUpdatableModules)
 		transformConfigurableArray(updatable_modules, "", ".stubs.system")
 		props := libraryProps{}
 		props.Name = proptools.StringPtr("all-updatable-modules-system-stubs")
@@ -280,7 +315,7 @@ func createMergedSystemStubs(ctx android.LoadHookContext, modules proptools.Conf
 	// Now merge all-updatable-modules-system-stubs and stubs from non-updatable modules
 	// into all-modules-system-stubs.
 	{
-		static_libs := transformArray(non_updatable_modules, "", ".stubs.system")
+		static_libs := transformArray(nonUpdatableModules, "", ".stubs.system")
 		static_libs = append(static_libs, "all-updatable-modules-system-stubs")
 		props := libraryProps{}
 		props.Name = proptools.StringPtr("all-modules-system-stubs")
@@ -292,11 +327,11 @@ func createMergedSystemStubs(ctx android.LoadHookContext, modules proptools.Conf
 	}
 }
 
-func createMergedSystemExportableStubs(ctx android.LoadHookContext, modules proptools.Configurable[[]string]) {
+func createMergedSystemExportableStubs(ctx android.LoadHookContext, modules proptools.Configurable[[]string], nonUpdatableModules []string) {
 	// First create the all-updatable-modules-system-stubs
 	{
 		updatable_modules := modules.Clone()
-		removeAll(updatable_modules, non_updatable_modules)
+		removeAll(updatable_modules, nonUpdatableModules)
 		transformConfigurableArray(updatable_modules, "", ".stubs.exportable.system")
 		props := libraryProps{}
 		props.Name = proptools.StringPtr("all-updatable-modules-system-stubs-exportable")
@@ -309,7 +344,7 @@ func createMergedSystemExportableStubs(ctx android.LoadHookContext, modules prop
 	// Now merge all-updatable-modules-system-stubs and stubs from non-updatable modules
 	// into all-modules-system-stubs.
 	{
-		static_libs := transformArray(non_updatable_modules, "", ".stubs.exportable.system")
+		static_libs := transformArray(nonUpdatableModules, "", ".stubs.exportable.system")
 		static_libs = append(static_libs, "all-updatable-modules-system-stubs-exportable")
 		props := libraryProps{}
 		props.Name = proptools.StringPtr("all-modules-system-stubs-exportable")
@@ -321,33 +356,33 @@ func createMergedSystemExportableStubs(ctx android.LoadHookContext, modules prop
 	}
 }
 
-func createMergedTestStubsForNonUpdatableModules(ctx android.LoadHookContext) {
+func createMergedTestStubsForNonUpdatableModules(ctx android.LoadHookContext, nonUpdatableModules []string) {
 	props := libraryProps{}
 	props.Name = proptools.StringPtr("all-non-updatable-modules-test-stubs")
-	props.Static_libs = proptools.NewSimpleConfigurable(transformArray(non_updatable_modules, "", ".stubs.test"))
+	props.Static_libs = proptools.NewSimpleConfigurable(transformArray(nonUpdatableModules, "", ".stubs.test"))
 	props.Sdk_version = proptools.StringPtr("module_current")
 	props.Visibility = []string{"//frameworks/base"}
 	props.Is_stubs_module = proptools.BoolPtr(true)
 	ctx.CreateModule(java.LibraryFactory, &props)
 }
 
-func createMergedTestExportableStubsForNonUpdatableModules(ctx android.LoadHookContext) {
+func createMergedTestExportableStubsForNonUpdatableModules(ctx android.LoadHookContext, nonUpdatableModules []string) {
 	props := libraryProps{}
 	props.Name = proptools.StringPtr("all-non-updatable-modules-test-stubs-exportable")
-	props.Static_libs = proptools.NewSimpleConfigurable(transformArray(non_updatable_modules, "", ".stubs.exportable.test"))
+	props.Static_libs = proptools.NewSimpleConfigurable(transformArray(nonUpdatableModules, "", ".stubs.exportable.test"))
 	props.Sdk_version = proptools.StringPtr("module_current")
 	props.Visibility = []string{"//frameworks/base"}
 	props.Is_stubs_module = proptools.BoolPtr(true)
 	ctx.CreateModule(java.LibraryFactory, &props)
 }
 
-func createMergedFrameworkImpl(ctx android.LoadHookContext, modules proptools.Configurable[[]string]) {
+func createMergedFrameworkImpl(ctx android.LoadHookContext, modules proptools.Configurable[[]string], nonUpdatableModules []string) {
 	modules = modules.Clone()
 	// This module is for the "framework-all" module, which should not include the core libraries.
 	removeAll(modules, core_libraries_modules)
 	// Remove the modules that belong to non-updatable APEXes since those are allowed to compile
 	// against unstable APIs.
-	removeAll(modules, non_updatable_modules)
+	removeAll(modules, nonUpdatableModules)
 	// First create updatable-framework-module-impl, which contains all updatable modules.
 	// This module compiles against module_lib SDK.
 	{
@@ -363,7 +398,7 @@ func createMergedFrameworkImpl(ctx android.LoadHookContext, modules proptools.Co
 	// Now create all-framework-module-impl, which contains updatable-framework-module-impl
 	// and all non-updatable modules. This module compiles against hidden APIs.
 	{
-		static_libs := transformArray(non_updatable_modules, "", ".impl")
+		static_libs := transformArray(nonUpdatableModules, "", ".impl")
 		static_libs = append(static_libs, "updatable-framework-module-impl")
 		props := libraryProps{}
 		props.Name = proptools.StringPtr("all-framework-module-impl")
@@ -374,12 +409,12 @@ func createMergedFrameworkImpl(ctx android.LoadHookContext, modules proptools.Co
 	}
 }
 
-func createMergedFrameworkModuleLibExportableStubs(ctx android.LoadHookContext, modules proptools.Configurable[[]string]) {
+func createMergedFrameworkModuleLibExportableStubs(ctx android.LoadHookContext, modules proptools.Configurable[[]string], nonUpdatableModules []string) {
 	modules = modules.Clone()
 	// The user of this module compiles against the "core" SDK and against non-updatable modules,
 	// so remove to avoid dupes.
 	removeAll(modules, core_libraries_modules)
-	removeAll(modules, non_updatable_modules)
+	removeAll(modules, nonUpdatableModules)
 	transformConfigurableArray(modules, "", ".stubs.exportable.module_lib")
 	props := libraryProps{}
 	props.Name = proptools.StringPtr("framework-updatable-stubs-module_libs_api-exportable")
@@ -390,12 +425,12 @@ func createMergedFrameworkModuleLibExportableStubs(ctx android.LoadHookContext, 
 	ctx.CreateModule(java.LibraryFactory, &props)
 }
 
-func createMergedFrameworkModuleLibStubs(ctx android.LoadHookContext, modules proptools.Configurable[[]string]) {
+func createMergedFrameworkModuleLibStubs(ctx android.LoadHookContext, modules proptools.Configurable[[]string], nonUpdatableModules []string) {
 	modules = modules.Clone()
 	// The user of this module compiles against the "core" SDK and against non-updatable modules,
 	// so remove to avoid dupes.
 	removeAll(modules, core_libraries_modules)
-	removeAll(modules, non_updatable_modules)
+	removeAll(modules, nonUpdatableModules)
 	transformConfigurableArray(modules, "", ".stubs.module_lib")
 	props := libraryProps{}
 	props.Name = proptools.StringPtr("framework-updatable-stubs-module_libs_api")
@@ -406,12 +441,12 @@ func createMergedFrameworkModuleLibStubs(ctx android.LoadHookContext, modules pr
 	ctx.CreateModule(java.LibraryFactory, &props)
 }
 
-func createMergedFrameworkSystemServerExportableStubs(ctx android.LoadHookContext, bootclasspath, system_server_classpath proptools.Configurable[[]string]) {
+func createMergedFrameworkSystemServerExportableStubs(ctx android.LoadHookContext, bootclasspath, system_server_classpath proptools.Configurable[[]string], nonUpdatableModules []string) {
 	// The user of this module compiles against the "core" SDK and against non-updatable bootclasspathModules,
 	// so remove to avoid dupes.
 	bootclasspathModules := bootclasspath.Clone()
 	removeAll(bootclasspathModules, core_libraries_modules)
-	removeAll(bootclasspathModules, non_updatable_modules)
+	removeAll(bootclasspathModules, nonUpdatableModules)
 	transformConfigurableArray(bootclasspathModules, "", ".stubs.exportable.module_lib")
 
 	system_server_classpath = system_server_classpath.Clone()
@@ -446,14 +481,28 @@ func createMergedTxts(
 	baseTxtModulePrefix string,
 	stubsTypeSuffix string,
 	doDist bool,
+	checkedIn bool,
 ) {
+
+	if checkedIn && doDist {
+		ctx.ModuleErrorf("Checked in api txt files cannot be disted.")
+	}
+
+	checkedInPrefix := ""
+	if checkedIn {
+		checkedInPrefix = "checked-in-"
+	}
+
 	var textFiles []MergedTxtDefinition
 
-	tagSuffix := []string{".api.txt}", ".removed-api.txt}"}
+	tagSuffix := []string{
+		fmt.Sprintf(".%sapi.txt}", checkedInPrefix),
+		fmt.Sprintf(".%sremoved-api.txt}", checkedInPrefix),
+	}
 	distFilename := []string{"android.txt", "android-removed.txt"}
 	for i, f := range []string{"current.txt", "removed.txt"} {
 		textFiles = append(textFiles, MergedTxtDefinition{
-			TxtFilename:  f,
+			TxtFilename:  checkedInPrefix + f,
 			DistFilename: distFilename[i],
 			BaseTxt:      ":" + baseTxtModulePrefix + f,
 			Modules:      bootclasspath,
@@ -461,7 +510,7 @@ func createMergedTxts(
 			Scope:        "public",
 		})
 		textFiles = append(textFiles, MergedTxtDefinition{
-			TxtFilename:  f,
+			TxtFilename:  checkedInPrefix + f,
 			DistFilename: distFilename[i],
 			BaseTxt:      ":" + baseTxtModulePrefix + "system-" + f,
 			Modules:      bootclasspath,
@@ -469,7 +518,7 @@ func createMergedTxts(
 			Scope:        "system",
 		})
 		textFiles = append(textFiles, MergedTxtDefinition{
-			TxtFilename:  f,
+			TxtFilename:  checkedInPrefix + f,
 			DistFilename: distFilename[i],
 			BaseTxt:      ":" + baseTxtModulePrefix + "module-lib-" + f,
 			Modules:      bootclasspath,
@@ -477,7 +526,7 @@ func createMergedTxts(
 			Scope:        "module-lib",
 		})
 		textFiles = append(textFiles, MergedTxtDefinition{
-			TxtFilename:  f,
+			TxtFilename:  checkedInPrefix + f,
 			DistFilename: distFilename[i],
 			BaseTxt:      ":" + baseTxtModulePrefix + "system-server-" + f,
 			Modules:      system_server_classpath,
@@ -496,20 +545,24 @@ func (a *CombinedApis) createInternalModules(ctx android.LoadHookContext) {
 	if ctx.Config().VendorConfig("ANDROID").Bool("include_nonpublic_framework_api") {
 		bootclasspath.AppendSimpleValue(a.properties.Conditional_bootclasspath)
 	}
-	createMergedTxts(ctx, bootclasspath, system_server_classpath, "non-updatable-", "-", false)
-	createMergedTxts(ctx, bootclasspath, system_server_classpath, "non-updatable-exportable-", "-exportable-", true)
+
+	nonUpdatableModules := getNonUpdatableModules(ctx.Config())
+
+	createMergedTxts(ctx, bootclasspath, system_server_classpath, "non-updatable-", "-", false, false)
+	createMergedTxts(ctx, bootclasspath, system_server_classpath, "non-updatable-", "-", false, true)
+	createMergedTxts(ctx, bootclasspath, system_server_classpath, "non-updatable-exportable-", "-exportable-", true, false)
 
 	createMergedPublicStubs(ctx, bootclasspath)
-	createMergedSystemStubs(ctx, bootclasspath)
-	createMergedTestStubsForNonUpdatableModules(ctx)
-	createMergedFrameworkModuleLibStubs(ctx, bootclasspath)
-	createMergedFrameworkImpl(ctx, bootclasspath)
+	createMergedSystemStubs(ctx, bootclasspath, nonUpdatableModules)
+	createMergedTestStubsForNonUpdatableModules(ctx, nonUpdatableModules)
+	createMergedFrameworkModuleLibStubs(ctx, bootclasspath, nonUpdatableModules)
+	createMergedFrameworkImpl(ctx, bootclasspath, nonUpdatableModules)
 
 	createMergedPublicExportableStubs(ctx, bootclasspath)
-	createMergedSystemExportableStubs(ctx, bootclasspath)
-	createMergedTestExportableStubsForNonUpdatableModules(ctx)
-	createMergedFrameworkModuleLibExportableStubs(ctx, bootclasspath)
-	createMergedFrameworkSystemServerExportableStubs(ctx, bootclasspath, system_server_classpath)
+	createMergedSystemExportableStubs(ctx, bootclasspath, nonUpdatableModules)
+	createMergedTestExportableStubsForNonUpdatableModules(ctx, nonUpdatableModules)
+	createMergedFrameworkModuleLibExportableStubs(ctx, bootclasspath, nonUpdatableModules)
+	createMergedFrameworkSystemServerExportableStubs(ctx, bootclasspath, system_server_classpath, nonUpdatableModules)
 
 	createMergedAnnotationsFilegroups(ctx, bootclasspath, system_server_classpath)
 
@@ -534,6 +587,15 @@ func createSrcs(modules proptools.Configurable[[]string], tag string) proptools.
 }
 
 // Creates an array of "<prefix><m><suffix>", for each m in <modules>.
+type transformArrayProcessor struct {
+	prefix, suffix string
+}
+
+func (p transformArrayProcessor) PostProcess(modules []string) []string {
+	return transformArray(modules, p.prefix, p.suffix)
+}
+
+// Creates an array of "<prefix><m><suffix>", for each m in <modules>.
 func transformArray(modules []string, prefix, suffix string) []string {
 	a := make([]string, 0, len(modules))
 	for _, module := range modules {
@@ -542,31 +604,24 @@ func transformArray(modules []string, prefix, suffix string) []string {
 	return a
 }
 
-// Creates an array of "<prefix><m><suffix>", for each m in <modules>.
 func transformConfigurableArray(modules proptools.Configurable[[]string], prefix, suffix string) {
-	modules.AddPostProcessor(func(s []string) []string {
-		return transformArray(s, prefix, suffix)
-	})
+	modules.AddPostProcessor(transformArrayProcessor{prefix, suffix})
 }
 
 func removeAll(s proptools.Configurable[[]string], vs []string) {
-	s.AddPostProcessor(func(s []string) []string {
-		a := make([]string, 0, len(s))
-		for _, module := range s {
-			if !slices.Contains(vs, module) {
-				a = append(a, module)
-			}
-		}
-		return a
-	})
+	s.AddPostProcessor(removeAllPostProcessor{vs})
 }
 
-func remove(s []string, v string) []string {
-	s2 := make([]string, 0, len(s))
-	for _, sv := range s {
-		if sv != v {
-			s2 = append(s2, sv)
+type removeAllPostProcessor struct {
+	vs []string
+}
+
+func (p removeAllPostProcessor) PostProcess(s []string) []string {
+	a := make([]string, 0, len(s))
+	for _, module := range s {
+		if !slices.Contains(p.vs, module) {
+			a = append(a, module)
 		}
 	}
-	return s2
+	return a
 }

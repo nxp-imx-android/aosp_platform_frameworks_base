@@ -74,6 +74,7 @@ stubs_defaults {
         ":framework-sdkextensions-sources",
         ":framework-sdksandbox-sources",
         ":framework-statsd-sources",
+        ":framework-telecom-internal-sources",
         ":framework-tethering-srcs",
         ":framework-uwb-updatable-sources",
         ":framework-wifi-updatable-sources",
@@ -295,7 +296,7 @@ doc_defaults {
     // TODO(b/169090544): remove below aidl includes.
     aidl: {
         include_dirs: [
-            "frameworks/av/aidl",
+            "frameworks/av/media/aidl",
             "frameworks/base/media/aidl",
             "frameworks/native/libs/permission/aidl",
         ],

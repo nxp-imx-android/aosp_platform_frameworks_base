@@ -199,6 +199,14 @@ class WindowWakeUpPolicy {
         // If we're given an invalid display id to wake, fall back to waking default display
         final int displayIdToWake =
                 displayId == Display.INVALID_DISPLAY ? Display.DEFAULT_DISPLAY : displayId;
+        // When there is a request to wakeup a default display, we would want to wakeup the displays
+        // in the default and the adjacent groups
+        if (com.android.server.display.feature.flags.Flags.separateTimeouts()
+                && com.android.server.power.feature.flags.Flags.wakeAdjacentDisplaysOnWakeupCall()
+                && displayIdToWake == Display.DEFAULT_DISPLAY) {
+            wakeUp(wakeTime, reason, details);
+            return;
+        }
         mPowerManager.wakeUp(wakeTime, reason, "android.policy:" + details, displayIdToWake);
     }
 }

@@ -37,7 +37,7 @@ import com.android.internal.telecom.RemoteServiceCallback;
  *
  * @see android.telecom.ConnectionServiceAdapter
  *
- * {@hide}
+ * @hide
  */
 oneway interface IConnectionServiceAdapter {
     void handleCreateConnectionComplete(

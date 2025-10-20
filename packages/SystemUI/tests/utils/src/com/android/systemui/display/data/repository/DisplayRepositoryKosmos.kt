@@ -25,8 +25,8 @@ import com.android.app.displaylib.fakes.FakePerDisplayRepository
 import com.android.systemui.SysUICutoutProvider
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.configurationState
+import com.android.systemui.display.dagger.ReferenceSysUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
-import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.kosmos.Kosmos
@@ -37,7 +37,14 @@ import com.android.systemui.plugins.fakeDarkIconDispatcher
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ongoingActivityChipsViewModel
 import com.android.systemui.statusbar.core.statusBarIconRefreshInteractor
+import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
+import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
+import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
+import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
+import com.android.systemui.statusbar.gesture.swipeStatusBarAwayGestureHandler
+import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
+import com.android.systemui.statusbar.layout.mockStatusBarContentInsetsProvider
 import com.android.systemui.statusbar.mockCommandQueue
 import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher
 import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment
@@ -49,6 +56,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBar
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewModelFactory
+import com.android.systemui.statusbar.policy.statusBarConfigurationController
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.statusbar.ui.systemBarUtilsState
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
@@ -64,49 +72,73 @@ val Kosmos.sysUiDefaultDisplaySubcomponentLifecycleListeners by Fixture {
 }
 
 fun Kosmos.createFakeDisplaySubcomponent(
-    coroutineScope: CoroutineScope = testScope.backgroundScope,
-    displayStateRepository: DisplayStateRepository = this.displayStateRepository,
-    displayStateInteractor: DisplayStateInteractor = this.displayStateInteractor,
-    statusbarIconRefreshInteractorFromConstructor: StatusBarIconRefreshInteractor =
-        this.statusBarIconRefreshInteractor,
+    coroutineScope: () -> CoroutineScope = { testScope.backgroundScope },
+    displayStateRepository: () -> DisplayStateRepository = { this.displayStateRepository },
+    displayStateInteractor: () -> DisplayStateInteractor = { this.displayStateInteractor },
+    statusbarIconRefreshInteractorFromConstructor: () -> StatusBarIconRefreshInteractor = {
+        this.statusBarIconRefreshInteractor
+    },
     homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel =
         this.homeStatusBarViewModelFactory,
-    homeStatusBarViewBinder: HomeStatusBarViewBinder = this.homeStatusBarViewBinder,
-    statusBarRootFactory: StatusBarRootFactory = this.statusBarRootFactory,
-    ongoingActivityChipsViewModel: OngoingActivityChipsViewModel =
-        this.ongoingActivityChipsViewModel,
-    darkIconDispatcher: DarkIconDispatcher = this.fakeDarkIconDispatcher,
-    sysUiDarkIconDispatcher: SysuiDarkIconDispatcher = this.fakeDarkIconDispatcher,
-    systemBarUtilsState: SystemBarUtilsState = this.systemBarUtilsState,
-    configurationState: ConfigurationState = this.configurationState,
-): SystemUIPhoneDisplaySubcomponent {
-    return object : SystemUIPhoneDisplaySubcomponent {
+    homeStatusBarViewBinder: () -> HomeStatusBarViewBinder = { this.homeStatusBarViewBinder },
+    statusBarRootFactory: () -> StatusBarRootFactory = { this.statusBarRootFactory },
+    ongoingActivityChipsViewModel: () -> OngoingActivityChipsViewModel = {
+        this.ongoingActivityChipsViewModel
+    },
+    statusBarContentInsetsProvider: () -> StatusBarContentInsetsProvider = {
+        this.mockStatusBarContentInsetsProvider
+    },
+    darkIconDispatcher: () -> DarkIconDispatcher = { this.fakeDarkIconDispatcher },
+    sysUiDarkIconDispatcher: () -> SysuiDarkIconDispatcher = { this.fakeDarkIconDispatcher },
+    systemBarUtilsState: () -> SystemBarUtilsState = { this.systemBarUtilsState },
+    configurationState: () -> ConfigurationState = { this.configurationState },
+    disableFlagsInteractor: () -> DisableFlagsInteractor = { this.disableFlagsInteractor },
+    swipeStatusBarAwayGestureHandler: () -> SwipeStatusBarAwayGestureHandler = {
+        this.swipeStatusBarAwayGestureHandler
+    },
+    statusBarConfigurationController: () -> StatusBarConfigurationController = {
+        this.statusBarConfigurationController
+    },
+): ReferenceSysUIDisplaySubcomponent {
+    return object : ReferenceSysUIDisplaySubcomponent {
         override val displayCoroutineScope: CoroutineScope
-            get() = coroutineScope
+            get() = coroutineScope()
 
         override val displayStateRepository: DisplayStateRepository
-            get() = displayStateRepository
+            get() = displayStateRepository()
 
         override val displayStateInteractor: DisplayStateInteractor
-            get() = displayStateInteractor
+            get() = displayStateInteractor()
 
         override val statusBarIconRefreshInteractor: StatusBarIconRefreshInteractor =
-            statusbarIconRefreshInteractorFromConstructor
+            statusbarIconRefreshInteractorFromConstructor()
 
         override val lifecycleListeners: Set<SystemUIDisplaySubcomponent.LifecycleListener> =
             sysUiDefaultDisplaySubcomponentLifecycleListeners
 
         override val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel
-            get() = ongoingActivityChipsViewModel
+            get() = ongoingActivityChipsViewModel()
+
+        override val statusBarContentInsetsProvider: StatusBarContentInsetsProvider
+            get() = statusBarContentInsetsProvider()
 
         override val systemBarUtilsState: SystemBarUtilsState
-            get() = systemBarUtilsState
+            get() = systemBarUtilsState()
+
+        override val statusBarConfigurationController: StatusBarConfigurationController
+            get() = statusBarConfigurationController()
 
         override val configurationState: ConfigurationState
-            get() = configurationState
+            get() = configurationState()
 
         override val sysUICutoutProvider: SysUICutoutProvider
             get() = mock<SysUICutoutProvider>()
+
+        override val disableFlagsInteractor: DisableFlagsInteractor
+            get() = disableFlagsInteractor()
+
+        override val swipeStatusBarAwayGestureHandler: SwipeStatusBarAwayGestureHandler
+            get() = swipeStatusBarAwayGestureHandler()
 
         override val homeStatusBarComponentFactory: HomeStatusBarComponent.Factory
             get() = mock<HomeStatusBarComponent.Factory>()
@@ -118,10 +150,10 @@ fun Kosmos.createFakeDisplaySubcomponent(
             get() = mock<StatusBarWindowStateController>()
 
         override val darkIconDispatcher: DarkIconDispatcher
-            get() = darkIconDispatcher
+            get() = darkIconDispatcher()
 
         override val sysuiDarkIconDispatcher: SysuiDarkIconDispatcher
-            get() = sysUiDarkIconDispatcher
+            get() = sysUiDarkIconDispatcher()
 
         override val homeStatusBarViewModelFactory: HomeStatusBarViewModelFactory
             get() =
@@ -132,15 +164,15 @@ fun Kosmos.createFakeDisplaySubcomponent(
                 }
 
         override val homeStatusBarViewBinder: HomeStatusBarViewBinder
-            get() = homeStatusBarViewBinder
+            get() = homeStatusBarViewBinder()
 
         override val statusBarRootFactory: StatusBarRootFactory
-            get() = statusBarRootFactory
+            get() = statusBarRootFactory()
     }
 }
 
 val Kosmos.sysuiDefaultDisplaySubcomponent by Fixture {
-    createFakeDisplaySubcomponent(testScope.backgroundScope)
+    createFakeDisplaySubcomponent({ testScope.backgroundScope })
 }
 
 val Kosmos.fakeSysuiDisplayComponentFactory by Fixture {
@@ -158,7 +190,7 @@ val Kosmos.displaySubcomponentPerDisplayRepository by Fixture {
 }
 
 val Kosmos.displayPhoneSubcomponentPerDisplayRepository by Fixture {
-    FakePerDisplayRepository<SystemUIPhoneDisplaySubcomponent>().apply {
+    FakePerDisplayRepository<ReferenceSysUIDisplaySubcomponent>().apply {
         add(Display.DEFAULT_DISPLAY, sysuiDefaultDisplaySubcomponent)
     }
 }

@@ -18,6 +18,7 @@
 
 package com.android.systemui.shade.ui.viewmodel
 
+import android.app.ActivityManager
 import android.content.Intent
 import android.provider.Settings
 import android.view.ViewGroup
@@ -54,16 +55,15 @@ import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIc
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModelKairos
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
+import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
 /** Models UI state for the shade header. */
-@OptIn(ExperimentalCoroutinesApi::class)
 class ShadeHeaderViewModel
 @AssistedInject
 constructor(
@@ -83,7 +83,8 @@ constructor(
     val kairosNetwork: KairosNetwork,
     val mobileIconsViewModelKairos: dagger.Lazy<MobileIconsViewModelKairos>,
     private val dualShadeEducationInteractor: DualShadeEducationInteractor,
-    private val desktopInteractor: DesktopInteractor,
+    desktopInteractor: DesktopInteractor,
+    @Assisted private val ignoreTestHarness: Boolean,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("ShadeHeaderViewModel.hydrator")
@@ -147,13 +148,24 @@ constructor(
         isMicCameraIndicationEnabled || isLocationIndicationEnabled
     }
 
+    /**
+     * Avoid showing the dual shade educational tooltips in test harness mode and not explicitly
+     * allowed, as the tooltip may interfere with test automation.
+     */
+    private val disableEducationTooltips =
+        !ignoreTestHarness && ActivityManager.isRunningInUserTestHarness()
+
     val animateNotificationsChipBounce: Boolean
         get() =
-            dualShadeEducationInteractor.education == DualShadeEducationModel.ForNotificationsShade
+            !disableEducationTooltips &&
+                dualShadeEducationInteractor.education ==
+                    DualShadeEducationModel.ForNotificationsShade
 
     val animateSystemIconChipBounce: Boolean
         get() =
-            dualShadeEducationInteractor.education == DualShadeEducationModel.ForQuickSettingsShade
+            !disableEducationTooltips &&
+                dualShadeEducationInteractor.education ==
+                    DualShadeEducationModel.ForQuickSettingsShade
 
     val longerDateText: String by
         hydrator.hydratedStateOf(
@@ -181,17 +193,17 @@ constructor(
 
     val inactiveChipHighlight: ChipHighlightModel
         get() =
-            if (isDesktopFeatureSetEnabled) {
+            if (useDesktopStatusBar) {
                 ChipHighlightModel.Transparent
             } else {
                 ChipHighlightModel.Weak
             }
 
-    private val isDesktopFeatureSetEnabled: Boolean by
+    private val useDesktopStatusBar: Boolean by
         hydrator.hydratedStateOf(
-            traceName = "isDesktopFeatureSetEnabled",
-            initialValue = desktopInteractor.isDesktopFeatureSetEnabled.value,
-            source = desktopInteractor.isDesktopFeatureSetEnabled,
+            traceName = "useDesktopStatusBar",
+            initialValue = desktopInteractor.useDesktopStatusBar.value,
+            source = desktopInteractor.useDesktopStatusBar,
         )
 
     override suspend fun onActivated(): Nothing {
@@ -209,7 +221,7 @@ constructor(
 
     /** Notifies that the clock was clicked. */
     fun onClockClicked() {
-        if (shadeModeInteractor.isDualShade && isDesktopFeatureSetEnabled) {
+        if (shadeModeInteractor.isDualShade && useDesktopStatusBar) {
             toggleNotificationShade(
                 loggingReason = "ShadeHeaderViewModel.onClockChipClicked",
                 launchClockActivityOnCollapse = false,
@@ -226,7 +238,7 @@ constructor(
         }
         toggleNotificationShade(
             loggingReason = "ShadeHeaderViewModel.onNotificationIconChipClicked",
-            launchClockActivityOnCollapse = !isDesktopFeatureSetEnabled,
+            launchClockActivityOnCollapse = !useDesktopStatusBar,
         )
     }
 
@@ -286,6 +298,6 @@ constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(): ShadeHeaderViewModel
+        fun create(ignoreTestHarness: Boolean = false): ShadeHeaderViewModel
     }
 }

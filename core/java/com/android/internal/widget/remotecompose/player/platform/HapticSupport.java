@@ -15,7 +15,6 @@
  */
 package com.android.internal.widget.remotecompose.player.platform;
 
-
 import com.android.internal.widget.remotecompose.core.CoreDocument;
 
 /** Provides haptic support */
@@ -24,30 +23,30 @@ public class HapticSupport {
     private static final int[] sHapticTable;
 
     static {
-        sHapticTable = new int[] {
-                android.view.HapticFeedbackConstants.NO_HAPTICS,
-                android.view.HapticFeedbackConstants.LONG_PRESS,
-                android.view.HapticFeedbackConstants.VIRTUAL_KEY,
-                android.view.HapticFeedbackConstants.KEYBOARD_TAP,
-                android.view.HapticFeedbackConstants.CLOCK_TICK,
-                android.view.HapticFeedbackConstants.CONTEXT_CLICK,
-                android.view.HapticFeedbackConstants.KEYBOARD_PRESS,
-                android.view.HapticFeedbackConstants.KEYBOARD_RELEASE,
-                android.view.HapticFeedbackConstants.VIRTUAL_KEY_RELEASE,
-                android.view.HapticFeedbackConstants.TEXT_HANDLE_MOVE,
-                android.view.HapticFeedbackConstants.GESTURE_START,
-                android.view.HapticFeedbackConstants.GESTURE_END,
-                android.view.HapticFeedbackConstants.CONFIRM,
-                android.view.HapticFeedbackConstants.REJECT,
-                android.view.HapticFeedbackConstants.TOGGLE_ON,
-                android.view.HapticFeedbackConstants.TOGGLE_OFF,
-                android.view.HapticFeedbackConstants.GESTURE_THRESHOLD_ACTIVATE,
-                android.view.HapticFeedbackConstants.GESTURE_THRESHOLD_DEACTIVATE,
-                android.view.HapticFeedbackConstants.DRAG_START,
-                android.view.HapticFeedbackConstants.SEGMENT_TICK,
-                android.view.HapticFeedbackConstants.SEGMENT_FREQUENT_TICK,
-        };
-
+        sHapticTable =
+                new int[] {
+                    android.view.HapticFeedbackConstants.NO_HAPTICS,
+                    android.view.HapticFeedbackConstants.LONG_PRESS,
+                    android.view.HapticFeedbackConstants.VIRTUAL_KEY,
+                    android.view.HapticFeedbackConstants.KEYBOARD_TAP,
+                    android.view.HapticFeedbackConstants.CLOCK_TICK,
+                    android.view.HapticFeedbackConstants.CONTEXT_CLICK,
+                    android.view.HapticFeedbackConstants.KEYBOARD_PRESS,
+                    android.view.HapticFeedbackConstants.KEYBOARD_RELEASE,
+                    android.view.HapticFeedbackConstants.VIRTUAL_KEY_RELEASE,
+                    android.view.HapticFeedbackConstants.TEXT_HANDLE_MOVE,
+                    android.view.HapticFeedbackConstants.GESTURE_START,
+                    android.view.HapticFeedbackConstants.GESTURE_END,
+                    android.view.HapticFeedbackConstants.CONFIRM,
+                    android.view.HapticFeedbackConstants.REJECT,
+                    android.view.HapticFeedbackConstants.TOGGLE_ON,
+                    android.view.HapticFeedbackConstants.TOGGLE_OFF,
+                    android.view.HapticFeedbackConstants.GESTURE_THRESHOLD_ACTIVATE,
+                    android.view.HapticFeedbackConstants.GESTURE_THRESHOLD_DEACTIVATE,
+                    android.view.HapticFeedbackConstants.DRAG_START,
+                    android.view.HapticFeedbackConstants.SEGMENT_TICK,
+                    android.view.HapticFeedbackConstants.SEGMENT_FREQUENT_TICK,
+                };
     }
 
     /**

@@ -21,8 +21,11 @@ import android.app.admin.devicePolicyManager
 import android.app.role.RoleManager
 import android.app.role.roleManager
 import android.app.supervision.SupervisionManager
+import android.app.supervision.flags.Flags
 import android.content.ComponentName
 import android.os.UserHandle
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -50,8 +53,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
@@ -120,6 +125,7 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
     fun getProperties_returnsGenericPinSupervisionResources() =
         testScope.runTest {
             val currentSupervisionModel by collectLastValue(underTest.supervision)
@@ -166,6 +172,7 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
     fun getProperties_returnsParentalControlsResources() =
         testScope.runTest {
             val currentSupervisionModel by collectLastValue(underTest.supervision)
@@ -195,7 +202,7 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
             val expectedLabel = context.getString(R.string.status_bar_supervision)
             val expectedIcon = context.getDrawable(R.drawable.ic_supervision)
             val expectedDisclaimerText =
-                context.getString(R.string.monitoring_description_parental_controls)
+                context.getString(R.string.monitoring_description_parental_controls_legacy)
             val expectedFooterText =
                 context.getString(R.string.quick_settings_disclosure_parental_controls)
             assertEquals(expectedLabel, currentSupervisionModel!!.label)
@@ -212,6 +219,7 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
     fun getProperties_isSupervisionProfileOwner_returnsParentalControlsResources() =
         testScope.runTest {
             val currentSupervisionModel by collectLastValue(underTest.supervision)
@@ -249,7 +257,7 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
             val expectedLabel = context.getString(R.string.status_bar_supervision)
             val expectedIcon = context.getDrawable(R.drawable.ic_supervision)
             val expectedDisclaimerText =
-                context.getString(R.string.monitoring_description_parental_controls)
+                context.getString(R.string.monitoring_description_parental_controls_legacy)
             val expectedFooterText =
                 context.getString(R.string.quick_settings_disclosure_parental_controls)
             assertEquals(expectedLabel, currentSupervisionModel!!.label)
@@ -263,6 +271,33 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
                     eq(RoleManager.ROLE_SYSTEM_SUPERVISION),
                     eq(UserHandle.of(USER_ID)),
                 )
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
+    fun getProperties_uiUpdatesEnabled_returnsNewParentalControlsResources() =
+        testScope.runTest {
+            val currentSupervisionModel by collectLastValue(underTest.supervision)
+
+            assertNotNull(currentSupervisionModel)
+            verify(supervisionManager)
+                .registerSupervisionListener(supervisionListenerCaptor.capture())
+            verify(supervisionManager).isSupervisionEnabledForUser(eq(USER_ID))
+
+            supervisionListenerCaptor.lastValue.onSupervisionEnabled(USER_ID)
+
+            val expectedLabel = context.getString(R.string.status_bar_supervision)
+            val expectedIcon = context.getDrawable(R.drawable.ic_pin_supervision)
+            val expectedDisclaimerText =
+                context.getString(R.string.monitoring_description_parental_controls)
+            val expectedFooterText =
+                context.getString(R.string.quick_settings_disclosure_parental_controls)
+            assertEquals(expectedLabel, currentSupervisionModel!!.label)
+            assertTrue(currentSupervisionModel!!.icon.toBitmap()!!.sameAs(expectedIcon.toBitmap()))
+            assertEquals(expectedDisclaimerText, currentSupervisionModel!!.disclaimerText)
+            assertEquals(expectedFooterText, currentSupervisionModel!!.footerText)
+
+            verify(roleManager, never()).getRoleHoldersAsUser(any(), any())
         }
 
     @Test

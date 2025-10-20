@@ -34,7 +34,6 @@ import com.android.wm.shell.TestHandler
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.DisplayController
-import com.android.wm.shell.desktopmode.DesktopModeEventLogger
 import com.android.wm.shell.util.StubTransaction
 import com.android.wm.shell.windowdecor.DragResizeInputListener.TaskResizeInputEventReceiver
 import com.google.common.truth.Truth.assertThat
@@ -298,7 +297,6 @@ class DragResizeInputListenerTest : ShellTestCase() {
                 }
             },
             mock<DisplayController>(),
-            mock<DesktopModeEventLogger>(),
         )
 
     private class TestInitializationCallback : Runnable {
@@ -322,7 +320,6 @@ class DragResizeInputListenerTest : ShellTestCase() {
             choreographer: Choreographer,
             displayLayoutSizeSupplier: Supplier<Size?>,
             touchRegionConsumer: Consumer<Region?>,
-            desktopModeEventLogger: DesktopModeEventLogger,
         ): TaskResizeInputEventReceiver = mockInputEventReceiver
     }
 }

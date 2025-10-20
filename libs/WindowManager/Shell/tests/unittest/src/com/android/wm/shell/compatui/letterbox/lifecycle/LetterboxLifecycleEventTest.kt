@@ -23,17 +23,16 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventType.CLOSE
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventType.OPEN
 import com.android.wm.shell.util.testLetterboxLifecycleEvent
-import org.junit.Test
-import org.junit.runner.RunWith
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.junit.Test
+import org.junit.runner.RunWith
 
 /**
  * Tests for [LetterboxLifecycleEvent].
  *
- * Build/Install/Run:
- *  atest WMShellUnitTests:LetterboxLifecycleEventTest
+ * Build/Install/Run: atest WMShellUnitTests:LetterboxLifecycleEventTest
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
@@ -42,138 +41,71 @@ class LetterboxLifecycleEventTest : ShellTestCase() {
     @Test
     fun `asLetterboxLifecycleEventType returns the right type for OPEN modes`() {
         testLetterboxLifecycleEvent {
-            inputChange {
-                mode = WindowManager.TRANSIT_OPEN
-            }
-            useChange { change ->
-                assertEquals(OPEN, change.asLetterboxLifecycleEventType())
-            }
-            inputChange {
-                mode = WindowManager.TRANSIT_TO_FRONT
-            }
-            useChange { change ->
-                assertEquals(OPEN, change.asLetterboxLifecycleEventType())
-            }
-            inputChange {
-                mode = WindowManager.TRANSIT_PREPARE_BACK_NAVIGATION
-            }
-            useChange { change ->
-                assertEquals(OPEN, change.asLetterboxLifecycleEventType())
-            }
+            inputChange { mode = WindowManager.TRANSIT_OPEN }
+            useChange { change -> assertEquals(OPEN, change.asLetterboxLifecycleEventType()) }
+            inputChange { mode = WindowManager.TRANSIT_TO_FRONT }
+            useChange { change -> assertEquals(OPEN, change.asLetterboxLifecycleEventType()) }
+            inputChange { mode = WindowManager.TRANSIT_PREPARE_BACK_NAVIGATION }
+            useChange { change -> assertEquals(OPEN, change.asLetterboxLifecycleEventType()) }
         }
     }
 
     @Test
     fun `asLetterboxLifecycleEventType returns the right type for CLOSE modes`() {
         testLetterboxLifecycleEvent {
-            inputChange {
-                mode = WindowManager.TRANSIT_CLOSE
-            }
-            useChange { change ->
-                assertEquals(CLOSE, change.asLetterboxLifecycleEventType())
-            }
-            inputChange {
-                mode = WindowManager.TRANSIT_TO_BACK
-            }
-            useChange { change ->
-                assertEquals(CLOSE, change.asLetterboxLifecycleEventType())
-            }
+            inputChange { mode = WindowManager.TRANSIT_CLOSE }
+            useChange { change -> assertEquals(CLOSE, change.asLetterboxLifecycleEventType()) }
+            inputChange { mode = WindowManager.TRANSIT_TO_BACK }
+            useChange { change -> assertEquals(CLOSE, change.asLetterboxLifecycleEventType()) }
         }
     }
 
     @Test
     fun `isActivityChange returns true if activityTransitionInfo is present`() {
         testLetterboxLifecycleEvent {
-            inputChange {
-            }
-            useChange { change ->
-                assertFalse(change.isActivityChange())
-            }
-            inputChange {
-                activityTransitionInfo { }
-            }
-            useChange { change ->
-                assertTrue(change.isActivityChange())
-            }
+            inputChange {}
+            useChange { change -> assertFalse(change.isActivityChange()) }
+            inputChange { activityTransitionInfo {} }
+            useChange { change -> assertTrue(change.isActivityChange()) }
         }
     }
 
     @Test
     fun `isChangeForALeafTask returns true if the task is a leaf`() {
         testLetterboxLifecycleEvent {
-            inputChange {
-            }
-            useChange { change ->
-                assertFalse(change.isChangeForALeafTask())
-            }
+            inputChange {}
+            useChange { change -> assertFalse(change.isChangeForALeafTask()) }
 
-            inputChange {
-                runningTaskInfo { }
-            }
-            useChange { change ->
-                assertFalse(change.isChangeForALeafTask())
-            }
+            inputChange { runningTaskInfo {} }
+            useChange { change -> assertFalse(change.isChangeForALeafTask()) }
 
-            inputChange {
-                runningTaskInfo { ti ->
-                    activityTransitionInfo {
-                    }
-                }
-            }
-            useChange { change ->
-                assertFalse(change.isChangeForALeafTask())
-            }
+            inputChange { runningTaskInfo { ti -> activityTransitionInfo {} } }
+            useChange { change -> assertFalse(change.isChangeForALeafTask()) }
 
-            inputChange {
-                runningTaskInfo { ti ->
-                    ti.appCompatTaskInfo.setIsLeafTask(true)
-                }
-            }
-            useChange { change ->
-                assertTrue(change.isChangeForALeafTask())
-            }
+            inputChange { runningTaskInfo { ti -> ti.appCompatTaskInfo.setIsLeafTask(true) } }
+            useChange { change -> assertTrue(change.isChangeForALeafTask()) }
         }
     }
 
     @Test
     fun `isChangeForALeafTask returns true if the Change has Activity target`() {
         testLetterboxLifecycleEvent {
-            inputChange {
-            }
-            useChange { change ->
-                assertFalse(change.isChangeForALeafTask())
-            }
+            inputChange {}
+            useChange { change -> assertFalse(change.isChangeForALeafTask()) }
 
-            inputChange {
-                activityTransitionInfo {
-                }
-            }
-            useChange { change ->
-                assertTrue(change.isChangeForALeafTask())
-            }
+            inputChange { activityTransitionInfo {} }
+            useChange { change -> assertTrue(change.isChangeForALeafTask()) }
         }
     }
 
     @Test
     fun `isTranslucent returns the value from TaskInfo `() {
         testLetterboxLifecycleEvent {
-            inputChange {
-                runningTaskInfo { ti ->
-                    ti.isTopActivityTransparent = false
-                }
-            }
-            useChange { change ->
-                assertFalse(change.isTranslucent())
-            }
+            inputChange { runningTaskInfo { ti -> ti.isTopActivityTransparent = false } }
+            useChange { change -> assertFalse(change.isTranslucent()) }
 
-            inputChange {
-                runningTaskInfo { ti ->
-                    ti.isTopActivityTransparent = true
-                }
-            }
-            useChange { change ->
-                assertTrue(change.isTranslucent())
-            }
+            inputChange { runningTaskInfo { ti -> ti.isTopActivityTransparent = true } }
+            useChange { change -> assertTrue(change.isTranslucent()) }
         }
     }
 }

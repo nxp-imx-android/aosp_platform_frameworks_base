@@ -387,7 +387,10 @@ public class CaptioningManager {
         private static final CaptionStyle DEFAULT_CUSTOM;
         private static final CaptionStyle UNSPECIFIED;
 
-        /** The default caption style used to fill in unspecified values. @hide */
+        /**
+         * The default caption style used to fill in unspecified values.
+         * @hide
+         */
         public static final CaptionStyle DEFAULT;
 
         /** @hide */

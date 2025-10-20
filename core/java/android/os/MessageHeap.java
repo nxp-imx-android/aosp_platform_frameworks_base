@@ -90,54 +90,73 @@ public final class MessageHeap {
         return Message.compareMessages(mHeap[x], mHeap[y]);
     }
 
-    private void swap(int x, int y) {
-        Message tmp = mHeap[x];
-        mHeap[x] = mHeap[y];
-        mHeap[y] = tmp;
-        mHeap[x].heapIndex = x;
-        mHeap[y].heapIndex = y;
-    }
-
     private void siftDown(int i) {
-        int smallest = i;
-        int right, left;
+        final Message m = mHeap[i];
+        final int numElements = mNumElements;
+        int half = numElements >>> 1;
+        boolean sifted = false;
 
-        while (true) {
-            right = rightNodeIdx(i);
-            left = leftNodeIdx(i);
+        while (i < half) {
+            // Find the child to sift down to.
+            int childIdx = leftNodeIdx(i);
+            Message child = mHeap[childIdx];
+            int rightIdx = childIdx + 1;
 
-            if (right < mNumElements && compareMessagesByIdx(right, smallest) < 0) {
-                smallest = right;
+            if (rightIdx < numElements) {
+                final Message right = mHeap[rightIdx];
+                if (Message.compareMessages(right, child) < 0) {
+                    childIdx = rightIdx;
+                    child = right;
+                }
             }
 
-            if (left < mNumElements && compareMessagesByIdx(left, smallest) < 0) {
-                smallest = left;
+            if (Message.compareMessages(m, child) <= 0) {
+                // We've found a child that is less than or equal to our message, so we can't
+                // traverse down.
+                break;
             }
 
-            if (smallest != i) {
-                swap(i, smallest);
-                i = smallest;
-                continue;
-            }
-            break;
+            // Sift the child up and continue traversing down.
+            mHeap[i] = child;
+            child.heapIndex = i;
+            i = childIdx;
+            sifted = true;
+        }
+
+        // We've arrived at the final position. Store our message, if it moved.
+        if (sifted) {
+            mHeap[i] = m;
+            m.heapIndex = i;
         }
     }
 
     private boolean siftUp(int i) {
-        boolean swapped = false;
-        /*
-         * We never pass null to compareMessages here, mHeap[i] is known to be occupied as is
-         * its parent node
-         */
-        while (i != 0 && Message.compareMessages(mHeap[i], getParentNode(i)) < 0) {
-            int p = parentNodeIdx(i);
+        final Message m = mHeap[i];
+        boolean sifted = false;
 
-            swap(i, p);
-            swapped = true;
+        // While we're not at the top of the heap, we can try to sift up.
+        while (i > 0) {
+            int p = parentNodeIdx(i);
+            Message parent = mHeap[p];
+            if (Message.compareMessages(parent, m) < 0) {
+                // We've found a parent that is less than our message, so we can't sift up.
+                break;
+            }
+
+            // Sift the parent down and continue traversing up.
+            mHeap[i] = parent;
+            parent.heapIndex = i;
             i = p;
+            sifted = true;
         }
 
-        return swapped;
+        // We've arrived at the final position. Store our message, if it moved.
+        if (sifted) {
+            mHeap[i] = m;
+            m.heapIndex = i;
+        }
+
+        return sifted;
     }
 
     private void maybeGrow() {
@@ -205,6 +224,7 @@ public final class MessageHeap {
             mHeap[0] = mHeap[mNumElements];
             mHeap[0].heapIndex = 0;
             mHeap[mNumElements] = null;
+            ret.heapIndex = -1;
 
             siftDown(0);
 
@@ -222,11 +242,12 @@ public final class MessageHeap {
         if (i >= mNumElements || mNumElements == 0 || i < 0) {
             throw new IllegalArgumentException("Index " + i + " out of bounds: "
                     + mNumElements);
-        } else if (i == (mNumElements - 1)) {
+        }
+        mNumElements--;
+        mHeap[i].heapIndex = -1;
+        if (i == mNumElements) {
             mHeap[i] = null;
-            mNumElements--;
         } else {
-            mNumElements--;
             mHeap[i] = mHeap[mNumElements];
             mHeap[i].heapIndex = i;
             mHeap[mNumElements] = null;
@@ -234,17 +255,17 @@ public final class MessageHeap {
                 siftDown(i);
             }
         }
-        /* Don't shink here, let the caller do this once it has removed all matching items. */
+        /* Don't shrink here, let the caller do this once it has removed all matching items. */
     }
 
     public void removeMessage(@NonNull Message m) throws IllegalArgumentException {
-        // We set this index to be out of range so that we don't attempt to remove this message from
-        // the heap a second time (e.g. when it's processed on the MessageStack freelist).
         remove(m.heapIndex);
-        m.heapIndex = -1;
     }
 
     public void removeAll() {
+        for (int i = 0; i < mNumElements; i++) {
+            mHeap[i].heapIndex = -1;
+        }
         mHeap = new Message[INITIAL_SIZE];
         mNumElements = 0;
     }

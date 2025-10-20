@@ -381,7 +381,7 @@ public class PipTransitionState {
                 ? new SurfaceControl(leash, "PipTransitionState") : null;
     }
 
-    @Nullable TaskInfo getPipTaskInfo() {
+    @Nullable public TaskInfo getPipTaskInfo() {
         return mPipTaskInfo;
     }
 

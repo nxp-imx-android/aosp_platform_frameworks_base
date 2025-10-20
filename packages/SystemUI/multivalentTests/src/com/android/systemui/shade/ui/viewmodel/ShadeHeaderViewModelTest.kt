@@ -3,6 +3,8 @@ package com.android.systemui.shade.ui.viewmodel
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.testableContext
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.provider.AlarmClock
 import android.provider.Settings
 import android.telephony.SubscriptionManager.PROFILE_CLASS_UNSET
@@ -11,6 +13,7 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.EnableSceneContainer
@@ -55,11 +58,12 @@ import org.mockito.Mockito.verify
 class ShadeHeaderViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val underTest by lazy { kosmos.shadeHeaderViewModel }
+    private val Kosmos.underTest by
+        Kosmos.Fixture { shadeHeaderViewModelFactory.create(ignoreTestHarness = true) }
 
     @Before
     fun setUp() {
-        underTest.activateIn(kosmos.testScope)
+        kosmos.underTest.activateIn(kosmos.testScope)
     }
 
     @Test
@@ -75,9 +79,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onClockClicked_enableDesktopFeatureSetFalse_launchesClock() =
+    fun onClockClicked_enableDesktopStatusBarFalse_launchesClock() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(enable = false)
+            setUseDesktopStatusBar(enable = false)
             underTest.onClockClicked()
 
             verify(activityStarter)
@@ -88,9 +92,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onClockClicked_enableDesktopFeatureSetTrueAndSingleShade_launchesClock() =
+    fun onClockClicked_enableDesktopStatusBarTrueAndSingleShade_launchesClock() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(enable = true)
+            setUseDesktopStatusBar(enable = true)
             enableSingleShade()
 
             underTest.onClockClicked()
@@ -103,9 +107,10 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onClockClicked_enableDesktopFeatureSetTrueAndDualShade_openNotifShade() =
+    @EnableFlags(FLAG_DUAL_SHADE)
+    fun onClockClicked_enableDesktopStatusBarTrueAndDualShade_openNotifShade() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(enable = true)
+            setUseDesktopStatusBar(enable = true)
             enableDualShade()
             setDeviceEntered(true)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
@@ -119,9 +124,10 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onClockClicked_enableDesktopFeatureSetTrueOnNotifShade_closesShade() =
+    @EnableFlags(FLAG_DUAL_SHADE)
+    fun onClockClicked_enablesetDesktopStatusBarTrueOnNotifShade_closesShade() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(enable = true)
+            setUseDesktopStatusBar(enable = true)
             enableDualShade()
             setDeviceEntered(true)
             setOverlay(Overlays.NotificationsShade)
@@ -135,9 +141,10 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onClockClicked_enableDesktopFeatureSetTrueOnQSShade_openNotifShade() =
+    @EnableFlags(FLAG_DUAL_SHADE)
+    fun onClockClicked_enableDesktopStatusBarTrueOnQSShade_openNotifShade() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(enable = true)
+            setUseDesktopStatusBar(enable = true)
             enableDualShade()
             setDeviceEntered(true)
             setOverlay(Overlays.QuickSettingsShade)
@@ -152,17 +159,18 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun enableDesktopFeatureSetTrue_inactiveChipHighlightReturnsTransparent() =
+    @EnableFlags(FLAG_DUAL_SHADE)
+    fun enableDesktopStatusBarTrue_inactiveChipHighlightReturnsTransparent() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(enable = true)
+            setUseDesktopStatusBar(enable = true)
 
             assertThat(underTest.inactiveChipHighlight).isEqualTo(ChipHighlightModel.Transparent)
         }
 
     @Test
-    fun enableDesktopFeatureSetTrue_inactiveChipHighlightReturnsWeak() =
+    fun enableDesktopStatusBarTrue_inactiveChipHighlightReturnsWeak() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(enable = false)
+            setUseDesktopStatusBar(enable = false)
 
             assertThat(underTest.inactiveChipHighlight).isEqualTo(ChipHighlightModel.Weak)
         }
@@ -180,6 +188,7 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun onSystemIconChipClicked_locked_collapsesShadeToLockscreen() =
         kosmos.runTest {
             disableDualShade()
@@ -192,6 +201,7 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun onSystemIconChipClicked_lockedOnQsShade_collapsesShadeToLockscreen() =
         kosmos.runTest {
             enableDualShade()
@@ -207,6 +217,7 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun onSystemIconChipClicked_lockedOnNotifShade_expandsQsShade() =
         kosmos.runTest {
             enableDualShade()
@@ -223,6 +234,7 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun onSystemIconChipClicked_unlocked_collapsesShadeToGone() =
         kosmos.runTest {
             disableDualShade()
@@ -235,6 +247,7 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun onSystemIconChipClicked_unlockedOnQsShade_collapsesShadeToGone() =
         kosmos.runTest {
             enableDualShade()
@@ -250,6 +263,7 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun onSystemIconChipClicked_unlockedOnNotifShade_expandsQsShade() =
         kosmos.runTest {
             enableDualShade()
@@ -266,6 +280,7 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun onNotificationIconChipClicked_lockedOnNotifShade_collapsesShadeToLockscreen_opensClock() =
         kosmos.runTest {
             enableDualShade()
@@ -286,6 +301,7 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun onNotificationIconChipClicked_lockedOnQsShade_expandsNotifShade() =
         kosmos.runTest {
             enableDualShade()
@@ -302,6 +318,7 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun onNotificationIconChipClicked_unlockedOnNotifShade_collapsesShadeToGone_opensClock() =
         kosmos.runTest {
             enableDualShade()
@@ -322,6 +339,7 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun onNotificationIconChipClicked_unlockedOnQsShade_expandsNotifShade() =
         kosmos.runTest {
             enableDualShade()
@@ -437,9 +455,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         assertThat(deviceEntryInteractor.isDeviceEntered.value).isEqualTo(isEntered)
     }
 
-    private fun Kosmos.setEnableDesktopFeatureSet(enable: Boolean) {
+    private fun Kosmos.setUseDesktopStatusBar(enable: Boolean) {
         testableContext.orCreateTestableResources.addOverride(
-            R.bool.config_enableDesktopFeatureSet,
+            R.bool.config_useDesktopStatusBar,
             enable,
         )
         configurationController.onConfigurationChanged(Configuration())

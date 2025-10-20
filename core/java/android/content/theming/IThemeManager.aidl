@@ -19,21 +19,21 @@ package android.content.theming;
 import android.content.theming.ThemeSettings;
 import android.content.theming.IThemeSettingsCallback;
 
-/** {@hide} */
+/** @hide */
 interface IThemeManager {
-    /** {@hide} */
+    /** @hide */
     boolean registerThemeSettingsCallback(in IThemeSettingsCallback callback);
-    /** {@hide} */
+    /** @hide */
     boolean unregisterThemeSettingsCallback(in IThemeSettingsCallback callback);
 
-    /** {@hide} */
+    /** @hide */
     @EnforcePermission("UPDATE_THEME_SETTINGS")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.UPDATE_THEME_SETTINGS)")
     boolean updateThemeSettings(in ThemeSettings newSettings);
 
-    /** {@hide} */
+    /** @hide */
     ThemeSettings getThemeSettings();
 
-    /** {@hide} */
+    /** @hide */
     ThemeSettings getThemeSettingsOrDefault();
 }

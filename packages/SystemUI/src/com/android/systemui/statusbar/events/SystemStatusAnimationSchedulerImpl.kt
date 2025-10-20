@@ -23,6 +23,7 @@ import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.AnimatorSet
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.Flags.fixDotNotVisibleRace
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.privacy.PrivacyItem
@@ -137,6 +138,15 @@ constructor(
     override fun onStatusEvent(event: StatusEvent) {
         Assert.isMainThread()
 
+        val priorityCondition =
+            if (fixDotNotVisibleRace()) {
+                (event.priority >= (scheduledEvent.value?.priority ?: -1)) &&
+                    (event.priority >= (currentlyDisplayedEvent?.priority ?: -1))
+            } else {
+                (event.priority > (scheduledEvent.value?.priority ?: -1)) &&
+                    (event.priority > (currentlyDisplayedEvent?.priority ?: -1))
+            }
+
         // Ignore any updates until the system is up and running. However, for important events that
         // request to be force visible (like privacy), ignore whether it's too early.
         if ((isTooEarly() && !event.forceVisible) || !isImmersiveIndicatorEnabled()) {
@@ -156,13 +166,10 @@ constructor(
             // location, and one that requests any other privacy item(s).
             logger?.logNotifyEvent(event)
             notifyTransitionToPersistentDot(event)
-        } else if (
-            (event.priority > (scheduledEvent.value?.priority ?: -1)) &&
-                (event.priority > (currentlyDisplayedEvent?.priority ?: -1)) &&
-                !hasPersistentDot
-        ) {
-            // a event can only be scheduled if no other event is in progress or it has a higher
-            // priority. If a persistent dot is currently displayed, don't schedule the event.
+        } else if (priorityCondition && !hasPersistentDot) {
+            // An event can only be scheduled if no other event is in progress or it has equal or
+            // higher priority. If a persistent dot is currently displayed, don't schedule the
+            // event.
             logger?.logScheduleEvent(event)
             scheduleEvent(event)
         } else if (currentlyDisplayedEvent?.shouldUpdateFromEvent(event) == true) {
@@ -179,6 +186,16 @@ constructor(
 
     override fun removePersistentDot() {
         Assert.isMainThread()
+
+        if (fixDotNotVisibleRace() && _animationState.value == AnimationQueued) {
+            // If we're in the queued state, it means an event has been scheduled but the
+            // debounce period hasn't passed yet. If we're removing the dot, it's because the
+            // event that triggered the animation is no longer active, so we should just cancel
+            // the animation
+            scheduledEvent.value = null
+            _animationState.value = Idle
+            return
+        }
 
         // If there is an event scheduled currently, set its forceVisible flag to false, such that
         // it will never transform into a persistent dot

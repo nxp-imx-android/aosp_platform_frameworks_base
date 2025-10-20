@@ -87,7 +87,7 @@ import java.util.List;
  * System private API for talking with the activity manager service.  This
  * provides calls from the application back to the activity manager.
  *
- * {@hide}
+ * @hide
  */
 interface IActivityManager {
     // WARNING: when these transactions are updated, check if they are any callers on the native
@@ -207,6 +207,7 @@ interface IActivityManager {
     oneway void finishReceiver(in IBinder who, int resultCode, in String resultData, in Bundle map,
             boolean abortBroadcast, int flags);
     void attachApplication(in IApplicationThread app, long startSeq);
+    void attachNativeApplication(in IBinder nativeThread, long startSeq);
     void finishAttachApplication(long startSeq, long timestampApplicationOnCreateNs);
     List<ActivityManager.RunningTaskInfo> getTasks(int maxNum);
     @UnsupportedAppUsage

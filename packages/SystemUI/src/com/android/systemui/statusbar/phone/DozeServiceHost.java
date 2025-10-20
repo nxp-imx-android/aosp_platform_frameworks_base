@@ -42,6 +42,7 @@ import com.android.systemui.biometrics.AuthController;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFingerprintAuthInteractor;
+import com.android.systemui.display.DisplayExtensionsKt;
 import com.android.systemui.doze.DozeHost;
 import com.android.systemui.doze.DozeLog;
 import com.android.systemui.doze.DozeReceiver;
@@ -134,7 +135,7 @@ public final class DozeServiceHost implements DozeHost {
             SysuiStatusBarStateController statusBarStateController,
             DeviceProvisionedController deviceProvisionedController,
             HeadsUpManager headsUpManager, BatteryController batteryController,
-            ScrimController scrimController,
+            Lazy<ScrimController> scrimController,
             Lazy<BiometricUnlockController> biometricUnlockControllerLazy,
             Lazy<AssistManager> assistManagerLazy,
             DozeScrimController dozeScrimController, KeyguardUpdateMonitor keyguardUpdateMonitor,
@@ -157,7 +158,7 @@ public final class DozeServiceHost implements DozeHost {
         mDeviceProvisionedController = deviceProvisionedController;
         mHeadsUpManager = headsUpManager;
         mBatteryController = batteryController;
-        mScrimController = scrimController;
+        mScrimController = SceneContainerFlag.isEnabled() ? null : scrimController.get();
         mBiometricUnlockControllerLazy = biometricUnlockControllerLazy;
         mAssistManagerLazy = assistManagerLazy;
         mDozeScrimController = dozeScrimController;
@@ -204,14 +205,12 @@ public final class DozeServiceHost implements DozeHost {
             callback.onPowerSaveChanged(active);
         }
 
-        if (com.android.systemui.Flags.newDozingKeyguardStates()) {
-            if (active) {
-                // listen for screen off fingerprint pulse events when battery saver
-                // is suppressing AOD
-                startCollectingScreenOffFingerprintPulseEvents();
-            } else if (!listenForScreenOffFingerprintPulseEvents()) {
-                stopCollectingUsUdfpsScreenOffPulseEvents();
-            }
+        if (active) {
+            // listen for screen off fingerprint pulse events when battery saver
+            // is suppressing AOD
+            startCollectingScreenOffFingerprintPulseEvents();
+        } else if (!listenForScreenOffFingerprintPulseEvents()) {
+            stopCollectingUsUdfpsScreenOffPulseEvents();
         }
     }
 
@@ -310,7 +309,7 @@ public final class DozeServiceHost implements DozeHost {
             return;
         }
 
-        if (reason == DozeLog.PULSE_REASON_SENSOR_WAKE_REACH) {
+        if (mScrimController != null && reason == DozeLog.PULSE_REASON_SENSOR_WAKE_REACH) {
             mScrimController.setWakeLockScreenSensorActive(true);
         }
 
@@ -333,7 +332,9 @@ public final class DozeServiceHost implements DozeHost {
                 mPulsing = false;
                 callback.onPulseFinished(); // requestState(DozeMachine.State.DOZE_PULSE_DONE)
                 mCentralSurfaces.updateNotificationPanelTouchState();
-                mScrimController.setWakeLockScreenSensorActive(false);
+                if (mScrimController != null) {
+                    mScrimController.setWakeLockScreenSensorActive(false);
+                }
                 setPulsing(false);
             }
 
@@ -408,7 +409,7 @@ public final class DozeServiceHost implements DozeHost {
 
     @Override
     public void extendPulse(int reason) {
-        if (reason == DozeLog.PULSE_REASON_SENSOR_WAKE_REACH) {
+        if (mScrimController != null && reason == DozeLog.PULSE_REASON_SENSOR_WAKE_REACH) {
             mScrimController.setWakeLockScreenSensorActive(true);
         }
         if (mDozeScrimController.isPulsing() && mHeadsUpManager.hasNotifications()) {
@@ -437,6 +438,11 @@ public final class DozeServiceHost implements DozeHost {
     @Override
     public void onSlpiTap(float screenX, float screenY) {
         if (screenX < 0 || screenY < 0) return;
+        // Coordinates are reported in the highest resolution;
+        // scale the coordinates to the current resolution
+        float scaleFactor = DisplayExtensionsKt.getDisplayScaleFactor(mContext.getDisplay());
+        screenX *= scaleFactor;
+        screenY *= scaleFactor;
         dispatchTouchEventToAmbientIndicationContainer(screenX, screenY);
 
         mDozeInteractor.setLastTapToWakePosition(new Point((int) screenX, (int) screenY));
@@ -504,7 +510,7 @@ public final class DozeServiceHost implements DozeHost {
     public void cancelGentleSleep() {
         mPendingScreenOffCallback = null;
         mHasPendingScreenOffCallbackChangeListener.onHasPendingScreenOffCallbackChanged(false);
-        if (mScrimController.getState() == ScrimState.OFF) {
+        if (mScrimController != null && mScrimController.getState() == ScrimState.OFF) {
             mCentralSurfaces.updateScrimController();
         }
     }
@@ -596,21 +602,18 @@ public final class DozeServiceHost implements DozeHost {
     }
 
     private void startCollectingScreenOffFingerprintPulseEvents() {
-        if (com.android.systemui.Flags.newDozingKeyguardStates()) {
-            if (listenForScreenOffFingerprintPulseEvents()) {
-                if (mUdfpsScreenOffFingerprintPulseEventCollectingJob != null) return;
-                mUdfpsScreenOffFingerprintPulseEventCollectingJob = JavaAdapterKt.collectFlow(
-                        mScope,
-                        mScope.getCoroutineContext(),
-                        mDeviceEntryFingerprintAuthInteractor.getFingerprintHelp(),
-                        state -> {
-                            for (Callback callback : mCallbacks) {
-                                callback.onFingerprintPulseWhileScreenOff(state);
-                            }
+        if (listenForScreenOffFingerprintPulseEvents()) {
+            if (mUdfpsScreenOffFingerprintPulseEventCollectingJob != null) return;
+            mUdfpsScreenOffFingerprintPulseEventCollectingJob = JavaAdapterKt.collectFlow(
+                    mScope,
+                    mScope.getCoroutineContext(),
+                    mDeviceEntryFingerprintAuthInteractor.getFingerprintHelp(),
+                    state -> {
+                        for (Callback callback : mCallbacks) {
+                            callback.onFingerprintPulseWhileScreenOff(state);
                         }
-                );
-            }
-            return;
+                    }
+            );
         }
     }
 

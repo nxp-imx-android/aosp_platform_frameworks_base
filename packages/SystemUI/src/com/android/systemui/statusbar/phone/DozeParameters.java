@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.phone;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -30,8 +29,6 @@ import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Log;
 import android.util.MathUtils;
-import com.android.systemui.minmode.MinModeManager;
-import com.android.systemui.minmode.MinModeManagerUtilsKt;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -39,16 +36,18 @@ import androidx.annotation.VisibleForTesting;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.systemui.Dumpable;
-import com.android.systemui.Flags;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
+import com.android.systemui.display.flags.DisplayComponentRepositoryFlag;
 import com.android.systemui.doze.AlwaysOnDisplayPolicy;
 import com.android.systemui.doze.DozeScreenState;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.keyguard.domain.interactor.DozeInteractor;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
 import com.android.systemui.keyguard.shared.model.KeyguardState;
+import com.android.systemui.minmode.MinModeManager;
+import com.android.systemui.minmode.MinModeManagerUtilsKt;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
@@ -63,6 +62,7 @@ import com.android.systemui.util.settings.SecureSettings;
 
 import java.io.PrintWriter;
 import java.util.Optional;
+import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 
@@ -125,6 +125,7 @@ public class DozeParameters implements
     protected DozeParameters(
             Context context,
             @Background Handler handler,
+            @Main Executor uiExecutor,
             @Main Resources resources,
             AmbientDisplayConfiguration ambientDisplayConfiguration,
             AlwaysOnDisplayPolicy alwaysOnDisplayPolicy,
@@ -160,7 +161,12 @@ public class DozeParameters implements
         mSecureSettings = secureSettings;
         mMinModeManager = minModeManager;
 
-        keyguardUpdateMonitor.registerCallback(mKeyguardVisibilityCallback);
+        if (DisplayComponentRepositoryFlag.INSTANCE.isEagerInitializationEnabled()) {
+            uiExecutor.execute(
+                    () -> keyguardUpdateMonitor.registerCallback(mKeyguardVisibilityCallback));
+        } else {
+            keyguardUpdateMonitor.registerCallback(mKeyguardVisibilityCallback);
+        }
         tunerService.addTunable(
                 this,
                 Settings.Secure.DOZE_ALWAYS_ON,
@@ -285,10 +291,11 @@ public class DozeParameters implements
 
     /**
      * Checks if always on is available and enabled for the current user.
+     * If minmode is active, always on is enabled to control the screen off animation.
      * @return {@code true} if enabled and available.
      */
     public boolean getAlwaysOn() {
-        return mDozeAlwaysOn && !mBatteryController.isAodPowerSave() && !isMinModeActive();
+        return (mDozeAlwaysOn && !mBatteryController.isAodPowerSave()) || isMinModeActive();
     }
 
     /**
@@ -362,8 +369,12 @@ public class DozeParameters implements
         return mScreenOffAnimationController.shouldShowLightRevealScrim();
     }
 
+    /**
+     * Whether we should animate the transition to or from Dozing.
+     * This is true if either the screen off animation controller or minmode is active.
+     */
     public boolean shouldAnimateDozingChange() {
-        return mScreenOffAnimationController.shouldAnimateDozingChange() && !isMinModeActive();
+        return mScreenOffAnimationController.shouldAnimateDozingChange() || isMinModeActive();
     }
 
     /**

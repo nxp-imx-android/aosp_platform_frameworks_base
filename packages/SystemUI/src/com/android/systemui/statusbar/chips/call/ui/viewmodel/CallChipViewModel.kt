@@ -258,6 +258,7 @@ constructor(
 
         return OngoingActivityChipModel.Active(
             key = key,
+            notificationKey = state.notificationKey,
             icon = icon,
             managingPackageName = state.packageName,
             content = content,

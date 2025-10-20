@@ -49,7 +49,6 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableFlags(SystemStatusIconsInCompose.FLAG_NAME)
-@android.platform.test.annotations.EnabledOnRavenwood
 class ManagedProfileIconViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
@@ -127,7 +126,7 @@ class ManagedProfileIconViewModelTest : SysuiTestCase() {
 
         private val expectedManagedProfileIcon =
             Icon.Resource(
-                res = TEST_ICON_RES_ID,
+                resId = TEST_ICON_RES_ID,
                 contentDescription = ContentDescription.Loaded(TEST_ACCESSIBILITY_STRING),
             )
     }

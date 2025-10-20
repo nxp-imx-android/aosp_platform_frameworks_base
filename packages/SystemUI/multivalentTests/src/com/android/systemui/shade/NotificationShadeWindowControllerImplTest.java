@@ -23,6 +23,8 @@ import static android.view.WindowManager.LayoutParams.FLAG_SECURE;
 import static android.view.WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER;
 import static android.view.WindowManager.LayoutParams.INPUT_FEATURE_SENSITIVE_FOR_PRIVACY;
 
+import static com.android.window.flags.Flags.FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -176,7 +178,9 @@ public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
                 mKosmos.getNotificationShadeWindowModel(),
                 mKosmos::getCommunalInteractor,
                 mKosmos.getShadeLayoutParams(),
-                mKosmos.getTopUiController());
+                mKosmos.getTopUiController(),
+                mKosmos.getKeyguardSurfaceBehindInteractor(),
+                mKosmos.getJavaAdapter());
         mNotificationShadeWindowController.setScrimsVisibilityListener((visibility) -> {});
         mNotificationShadeWindowController.fetchWindowRootView();
 
@@ -272,6 +276,31 @@ public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
 
         verify(mWindowManager).updateViewLayout(any(), mLayoutParameters.capture());
         assertThat((mLayoutParameters.getValue().flags & FLAG_SHOW_WALLPAPER) != 0).isTrue();
+    }
+
+    @EnableFlags(FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH)
+    @Test
+    public void attach_pendingDisplayChange_wallpaperVisible() {
+        mNotificationShadeWindowController.attach();
+        clearInvocations(mWindowManager);
+
+        mNotificationShadeWindowController.setPendingDisplayChange(true);
+
+        verify(mWindowManager).updateViewLayout(any(), mLayoutParameters.capture());
+        assertThat((mLayoutParameters.getValue().flags & FLAG_SHOW_WALLPAPER) != 0).isTrue();
+    }
+
+    @EnableFlags(FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH)
+    @Test
+    public void attach_pendingDisplayChangeFinished_wallpaperNotVisible() {
+        mNotificationShadeWindowController.attach();
+        mNotificationShadeWindowController.setPendingDisplayChange(true);
+        clearInvocations(mWindowManager);
+
+        mNotificationShadeWindowController.setPendingDisplayChange(false);
+
+        verify(mWindowManager).updateViewLayout(any(), mLayoutParameters.capture());
+        assertThat((mLayoutParameters.getValue().flags & FLAG_SHOW_WALLPAPER) != 0).isFalse();
     }
 
     @Test
@@ -561,6 +590,15 @@ public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
     }
 
     @Test
+    public void isAnimatingGoneToAod() {
+        mNotificationShadeWindowController.setIsAnimatingGoneToAod(true);
+        verify(mNotificationShadeWindowView).setVisibility(eq(View.VISIBLE));
+
+        mNotificationShadeWindowController.setIsAnimatingGoneToAod(false);
+        verify(mNotificationShadeWindowView).setVisibility(eq(View.INVISIBLE));
+    }
+
+    @Test
     public void setKeyguardFadingAway_doesNothing_whenForceHidden() {
         // GIVEN the panel is visible force-hidden at the end of an activity launch
         mNotificationShadeWindowController.setLaunchingActivity(true);
@@ -571,6 +609,19 @@ public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
         // WHEN keyguard is fading away, followed by the panel not being force-hidden anymore
         mNotificationShadeWindowController.setKeyguardFadingAway(true);
         mNotificationShadeWindowController.setLaunchingActivity(false);
+
+        // THEN the panel remains invisible
+        verify(mNotificationShadeWindowView, never()).setVisibility(eq(View.VISIBLE));
+    }
+
+    @Test
+    @EnableSceneContainer
+    public void setKeyguardFadingAway_doesNothing_sceneContainerEnabled() {
+        // GIVEN the panel is visible
+        reset(mNotificationShadeWindowView);
+
+        // WHEN keyguard is fading away, followed by the panel not being force-hidden anymore
+        mNotificationShadeWindowController.setKeyguardFadingAway(true);
 
         // THEN the panel remains invisible
         verify(mNotificationShadeWindowView, never()).setVisibility(eq(View.VISIBLE));

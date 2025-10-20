@@ -25,7 +25,7 @@ import org.junit.runners.JUnit4
 class AppSearchDataYamlConverterTest {
 
     @Test
-    fun convertGenericDocumentsToYaml_withScalarTypes_succeeds() {
+    fun convertGenericDocumentToYaml_withScalarTypes_succeeds() {
         val doc = GenericDocument.Builder<GenericDocument.Builder<*>>("ns1", "doc1", "TestSchema")
           .setPropertyString("stringProp", "hello world")
           .setPropertyLong("longProp", 123L)
@@ -35,15 +35,15 @@ class AppSearchDataYamlConverterTest {
           .setCreationTimestampMillis(1000L)
           .build()
 
-        val yaml = AppSearchDataYamlConverter.convertGenericDocumentsToYaml(
-          arrayOf(doc),
+        val yaml = AppSearchDataYamlConverter.convertGenericDocumentToYaml(
+          doc,
           /* keepEmptyValues= */ true,
           /* keepNullValues= */ true,
           /* keepGenericDocumentProperties= */ true
         )
 
         val expectedYaml = """
-                - id: doc1
+                  id: doc1
                   namespace: ns1
                   schemaType: TestSchema
                   creationTimestampMillis: 1000
@@ -58,7 +58,7 @@ class AppSearchDataYamlConverterTest {
     }
 
     @Test
-    fun convertGenericDocumentsToYaml_withoutDefaultValues_filtersProperties() {
+    fun convertGenericDocumentToYaml_withoutDefaultValues_filtersProperties() {
         val doc = GenericDocument.Builder<GenericDocument.Builder<*>>("ns2", "doc2", "FilterSchema")
           .setPropertyString("emptyString", "")
           .setPropertyString("realString", "value")
@@ -66,15 +66,15 @@ class AppSearchDataYamlConverterTest {
           .setPropertyBoolean("falseBoolean", false)
           .build()
 
-        val yaml = AppSearchDataYamlConverter.convertGenericDocumentsToYaml(
-          arrayOf(doc),
+        val yaml = AppSearchDataYamlConverter.convertGenericDocumentToYaml(
+          doc,
           /* keepEmptyValues= */ false,
           /* keepNullValues= */ false,
           /* keepGenericDocumentProperties= */ false
         )
 
         val expectedYaml = """
-              - falseBoolean: false
+                falseBoolean: false
                 realString: value
                 zeroLong: 0
         """.trimIndent()
@@ -82,38 +82,38 @@ class AppSearchDataYamlConverterTest {
     }
 
     @Test
-    fun convertGenericDocumentsToYaml_withoutDocProperties_filtersProperties() {
+    fun convertGenericDocumentToYaml_withoutDocProperties_filtersProperties() {
         val doc = GenericDocument.Builder<GenericDocument.Builder<*>>("ns3", "doc3", "NoDocProps")
           .setPropertyString("prop", "value")
           .build()
 
-        val yaml = AppSearchDataYamlConverter.convertGenericDocumentsToYaml(
-          arrayOf(doc),
+        val yaml = AppSearchDataYamlConverter.convertGenericDocumentToYaml(
+          doc,
           /* keepEmptyValues= */ true,
           /* keepNullValues= */ true,
           /* keepGenericDocumentProperties= */ false
         )
 
-        val expectedYaml = "- prop: value"
+        val expectedYaml = "prop: value"
         assertThat(yaml.trim()).isEqualTo(expectedYaml)
     }
 
     @Test
-    fun convertGenericDocumentsToYaml_withArrayTypes_succeeds() {
+    fun convertGenericDocumentToYaml_withArrayTypes_succeeds() {
         val doc = GenericDocument.Builder<GenericDocument.Builder<*>>("ns1", "doc4", "ArraySchema")
           .setPropertyString("stringArr", "a", "b", "c")
           .setPropertyLong("longArr", 1L, 2L)
           .build()
 
-        val yaml = AppSearchDataYamlConverter.convertGenericDocumentsToYaml(
-          arrayOf(doc),
+        val yaml = AppSearchDataYamlConverter.convertGenericDocumentToYaml(
+          doc,
           /* keepEmptyValues= */ true,
           /* keepNullValues= */ true,
           /* keepGenericDocumentProperties= */ false
         )
 
         val expectedYaml = """
-                - stringArr:
+                  stringArr:
                     - a
                     - b
                     - c
@@ -125,7 +125,7 @@ class AppSearchDataYamlConverterTest {
     }
 
     @Test
-    fun convertGenericDocumentsToYaml_withNestedDocument_succeeds() {
+    fun convertGenericDocumentToYaml_withNestedDocument_succeeds() {
         val nestedDoc = GenericDocument.Builder<GenericDocument.Builder<*>>("nestedNs", "nestedId", "Nested")
           .setPropertyString("nestedProp", "I am nested")
           .build()
@@ -134,22 +134,22 @@ class AppSearchDataYamlConverterTest {
           .setPropertyDocument("nestedDoc", nestedDoc)
           .build()
 
-        val yaml = AppSearchDataYamlConverter.convertGenericDocumentsToYaml(
-          arrayOf(mainDoc),
+        val yaml = AppSearchDataYamlConverter.convertGenericDocumentToYaml(
+          mainDoc,
           /* keepEmptyValues= */ true,
           /* keepNullValues= */ true,
           /* keepGenericDocumentProperties= */ false
         )
 
         val expectedYaml = """
-                - nestedDoc:
+                  nestedDoc:
                     nestedProp: I am nested
             """.trimIndent()
         assertThat(yaml.trim()).isEqualTo(expectedYaml)
     }
 
     @Test
-    fun convertGenericDocumentsToYaml_withArrayOfNestedDocuments_succeeds() {
+    fun convertGenericDocumentToYaml_withArrayOfNestedDocuments_succeeds() {
         val nestedDoc1 = GenericDocument.Builder<GenericDocument.Builder<*>>("ns", "n1", "Nested")
           .setPropertyString("prop", "first")
           .setCreationTimestampMillis(0L)
@@ -164,15 +164,15 @@ class AppSearchDataYamlConverterTest {
           .setCreationTimestampMillis(1000L)
           .build()
 
-        val yaml = AppSearchDataYamlConverter.convertGenericDocumentsToYaml(
-          arrayOf(mainDoc),
+        val yaml = AppSearchDataYamlConverter.convertGenericDocumentToYaml(
+          mainDoc,
           /* keepEmptyValues= */ true,
           /* keepNullValues= */ true,
           /* keepGenericDocumentProperties= */ true
         )
 
       val expectedYaml = """
-            - id: main
+              id: main
               namespace: ns
               schemaType: Main
               creationTimestampMillis: 1000
@@ -192,53 +192,5 @@ class AppSearchDataYamlConverterTest {
                   prop: second
         """.trimIndent()
         assertThat(yaml.trim()).isEqualTo(expectedYaml)
-    }
-
-    @Test
-    fun convertGenericDocumentsToYaml_withMultipleDocuments_succeeds() {
-        val doc1 = GenericDocument.Builder<GenericDocument.Builder<*>>("ns", "id1", "MySchema")
-          .setPropertyString("prop", "val1")
-          .setCreationTimestampMillis(0L)
-          .build()
-        val doc2 = GenericDocument.Builder<GenericDocument.Builder<*>>("ns", "id2", "MySchema")
-          .setPropertyString("prop", "val2")
-          .setCreationTimestampMillis(1L)
-          .build()
-
-        val yaml = AppSearchDataYamlConverter.convertGenericDocumentsToYaml(
-          arrayOf(doc1, doc2),
-          /* keepEmptyValues= */ false,
-          /* keepNullValues= */ false,
-          /* keepGenericDocumentProperties= */ true
-        )
-
-        val expectedYaml = """
-                - id: id1
-                  namespace: ns
-                  schemaType: MySchema
-                  creationTimestampMillis: 0
-                  score: 0
-                  prop: val1
-                - id: id2
-                  namespace: ns
-                  schemaType: MySchema
-                  creationTimestampMillis: 1
-                  score: 0
-                  prop: val2
-            """.trimIndent()
-
-        assertThat(yaml.trim()).isEqualTo(expectedYaml)
-    }
-
-    @Test
-    fun convertGenericDocumentsToYaml_withEmptyArray_returnsEmptyList() {
-        val yaml = AppSearchDataYamlConverter.convertGenericDocumentsToYaml(
-          arrayOf(),
-          /* keepEmptyValues= */ true,
-          /* keepNullValues= */ true,
-          /* keepGenericDocumentProperties= */ true
-        )
-
-        assertThat(yaml.trim()).isEqualTo("")
     }
 }

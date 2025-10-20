@@ -25,6 +25,7 @@ import android.os.SystemClock
 import android.os.SystemProperties
 import android.os.UserHandle
 import android.view.Choreographer
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
 import android.view.WindowManager.TRANSIT_CHANGE
@@ -96,7 +97,6 @@ sealed class DragToDesktopTransitionHandler(
 ) : TransitionHandler {
 
     protected val rectEvaluator = RectEvaluator(Rect())
-    private val launchHomeIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
 
     private lateinit var splitScreenController: SplitScreenController
     private var transitionState: TransitionState? = null
@@ -140,6 +140,14 @@ sealed class DragToDesktopTransitionHandler(
             return
         }
 
+        val launchHomeIntent =
+            Intent(Intent.ACTION_MAIN).apply {
+                if (taskInfo.displayId != DEFAULT_DISPLAY) {
+                    addCategory(Intent.CATEGORY_SECONDARY_HOME)
+                } else {
+                    addCategory(Intent.CATEGORY_HOME)
+                }
+            }
         val options =
             ActivityOptions.makeBasic().apply {
                 setTransientLaunch()
@@ -759,6 +767,17 @@ sealed class DragToDesktopTransitionHandler(
             startT.apply()
             finishCallback.onTransitionFinished(/* wct= */ null)
             startTransitionFinishCb.onTransitionFinished(/* wct= */ null)
+            // For splitscreen, dragging upward to "cancel" actually is a signal from the user
+            // that we want to go to fullscreen. We will cancel the desktop transition, let
+            // splitscreen go back to where it was, and then expand to fullscreen.
+            // TODO (b/396438812): Let this be a single transition that actually goes straight
+            // to fullscreen
+            if (state is TransitionState.FromSplit) {
+                splitScreenController.moveTaskToFullscreen(
+                    state.draggedTaskId,
+                    SplitScreenController.EXIT_REASON_DRAG_TO_FULLSCREEN,
+                )
+            }
             clearState()
             return
         }

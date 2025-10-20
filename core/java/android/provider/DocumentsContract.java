@@ -97,7 +97,7 @@ public final class DocumentsContract {
      */
     public static final String PROVIDER_INTERFACE = "android.content.action.DOCUMENTS_PROVIDER";
 
-    /** {@hide} */
+    /** @hide */
     @Deprecated
     public static final String EXTRA_PACKAGE_NAME = Intent.EXTRA_PACKAGE_NAME;
 
@@ -106,12 +106,12 @@ public final class DocumentsContract {
      * If the value is true, the local/device storage root must be
      * visible in DocumentsUI.
      *
-     * {@hide}
+     * @hide
      */
     @SystemApi
     public static final String EXTRA_SHOW_ADVANCED = "android.provider.extra.SHOW_ADVANCED";
 
-    /** {@hide} */
+    /** @hide */
     public static final String EXTRA_TARGET_URI = "android.content.extra.TARGET_URI";
 
     /**
@@ -204,7 +204,7 @@ public final class DocumentsContract {
      * {@link android.Manifest.permission#INTERACT_ACROSS_USERS_FULL} for the set user(s) to be
      * excluded.
      *
-     * {@hide}
+     * @hide
      */
     @SystemApi
     @FlaggedApi(android.multiuser.Flags.FLAG_ENABLE_MOVING_CONTENT_INTO_PRIVATE_SPACE)
@@ -241,14 +241,14 @@ public final class DocumentsContract {
 
     /**
      * The action to manage document in Downloads root in DocumentsUI.
-     *  {@hide}
+     * @hide
      */
     @SystemApi
     public static final String ACTION_MANAGE_DOCUMENT = "android.provider.action.MANAGE_DOCUMENT";
 
     /**
      * The action to launch the settings of this root.
-     * {@hide}
+     * @hide
      */
     @SystemApi
     public static final String
@@ -256,7 +256,7 @@ public final class DocumentsContract {
 
     /**
      * External Storage Provider's authority string
-     * {@hide}
+     * @hide
      */
     @SystemApi
     public static final String EXTERNAL_STORAGE_PROVIDER_AUTHORITY =
@@ -264,15 +264,15 @@ public final class DocumentsContract {
 
     /**
      * Download Manager's authority string
-     * {@hide}
+     * @hide
      */
     @SystemApi
     public static final String DOWNLOADS_PROVIDER_AUTHORITY = Downloads.Impl.AUTHORITY;
 
-    /** {@hide} */
+    /** @hide */
     public static final String EXTERNAL_STORAGE_PRIMARY_EMULATED_ROOT_ID = "primary";
 
-    /** {@hide} */
+    /** @hide */
     public static final String PACKAGE_DOCUMENTS_UI = "com.android.documentsui";
 
     /**
@@ -420,6 +420,87 @@ public final class DocumentsContract {
          * Type: INTEGER (long)
          */
         public static final String COLUMN_SIZE = OpenableColumns.SIZE;
+
+        /**
+         * Column indicating the synchronization state of the document's contents represented as a
+         * bitmask, {@code null} if not provided. This is an optional column.
+         * Type: Integer (int)
+         *
+         * @see #SYNC_STATE_FLAG_AVAILABLE_LOCALLY
+         * @see #SYNC_STATE_FLAG_LOCAL_CHANGES
+         * @see #SYNC_STATE_FLAG_REMOTE_CHANGES
+         * @see #SYNC_STATE_FLAG_UPLOAD_PROGRESS
+         * @see #SYNC_STATE_FLAG_DOWNLOAD_PROGRESS
+         * @see #SYNC_STATE_FLAG_UPLOAD_ERROR
+         * @see #SYNC_STATE_FLAG_DOWNLOAD_ERROR
+         */
+        @FlaggedApi(Flags.FLAG_ENABLE_SYNC_STATE)
+        public static final String COLUMN_CONTENT_SYNC_STATE_FLAGS = "content_sync_state_flags";
+
+        /**
+         * Flag indicating that the document's contents are available locally.
+         *
+         * @see #COLUMN_CONTENT_SYNC_STATE_FLAGS
+         */
+        @FlaggedApi(Flags.FLAG_ENABLE_SYNC_STATE)
+        public static final int SYNC_STATE_FLAG_AVAILABLE_LOCALLY = 1 << 0;
+
+        /**
+         * Flag indicating that the local version of the document has changes that require an
+         * upload. This flag is only meaningful if {@link #SYNC_STATE_FLAG_AVAILABLE_LOCALLY} is
+         * also set.
+         *
+         * @see #COLUMN_CONTENT_SYNC_STATE_FLAGS
+         */
+        @FlaggedApi(Flags.FLAG_ENABLE_SYNC_STATE)
+        public static final int SYNC_STATE_FLAG_LOCAL_CHANGES = 1 << 1;
+
+        /**
+         * Flag indicating that the local version of the document has remote changes that require a
+         * download, or that the document is not available locally but exists remotely.
+         *
+         * @see #COLUMN_CONTENT_SYNC_STATE_FLAGS
+         */
+        @FlaggedApi(Flags.FLAG_ENABLE_SYNC_STATE)
+        public static final int SYNC_STATE_FLAG_REMOTE_CHANGES = 1 << 2;
+
+        /**
+         * Flag indicating that an upload of local changes is currently in progress. This flag
+         * typically implies {@link #SYNC_STATE_FLAG_AVAILABLE_LOCALLY} and
+         * {@link #SYNC_STATE_FLAG_LOCAL_CHANGES} are also set.
+         *
+         * @see #COLUMN_CONTENT_SYNC_STATE_FLAGS
+         */
+        @FlaggedApi(Flags.FLAG_ENABLE_SYNC_STATE)
+        public static final int SYNC_STATE_FLAG_UPLOAD_PROGRESS = 1 << 3;
+
+        /**
+         * Flag indicating that a download of remote changes is currently in progress. This flag
+         * typically implies {@link #SYNC_STATE_FLAG_REMOTE_CHANGES} is also set.
+         *
+         * @see #COLUMN_CONTENT_SYNC_STATE_FLAGS
+         */
+        @FlaggedApi(Flags.FLAG_ENABLE_SYNC_STATE)
+        public static final int SYNC_STATE_FLAG_DOWNLOAD_PROGRESS = 1 << 4;
+
+        /**
+         * Flag indicating that the last upload attempt resulted in an error. This flag typically
+         * implies {@link #SYNC_STATE_FLAG_AVAILABLE_LOCALLY} and
+         * {@link #SYNC_STATE_FLAG_LOCAL_CHANGES} are also set.
+         *
+         * @see #COLUMN_CONTENT_SYNC_STATE_FLAGS
+         */
+        @FlaggedApi(Flags.FLAG_ENABLE_SYNC_STATE)
+        public static final int SYNC_STATE_FLAG_UPLOAD_ERROR = 1 << 5;
+
+        /**
+         * Flag indicating that the last download attempt resulted in an error. This flag typically
+         * implies {@link #SYNC_STATE_FLAG_REMOTE_CHANGES} is also set.
+         *
+         * @see #COLUMN_CONTENT_SYNC_STATE_FLAGS
+         */
+        @FlaggedApi(Flags.FLAG_ENABLE_SYNC_STATE)
+        public static final int SYNC_STATE_FLAG_DOWNLOAD_ERROR = 1 << 6;
 
         /**
          * MIME type of a document which is a directory that may contain
@@ -825,7 +906,7 @@ public final class DocumentsContract {
          * users.
          *
          * @see #COLUMN_FLAGS
-         * {@hide}
+         * @hide
          */
         @SystemApi
         public static final int FLAG_ADVANCED = 1 << 16;
@@ -835,7 +916,7 @@ public final class DocumentsContract {
          *
          * @see #COLUMN_FLAGS
          * @see DocumentsContract#ACTION_DOCUMENT_ROOT_SETTINGS
-         * {@hide}
+         * @hide
          */
         @SystemApi
         public static final int FLAG_HAS_SETTINGS = 1 << 17;
@@ -844,7 +925,7 @@ public final class DocumentsContract {
          * Flag indicating that this root is on removable SD card storage.
          *
          * @see #COLUMN_FLAGS
-         * {@hide}
+         * @hide
          */
         @SystemApi
         public static final int FLAG_REMOVABLE_SD = 1 << 18;
@@ -853,7 +934,7 @@ public final class DocumentsContract {
          * Flag indicating that this root is on removable USB storage.
          *
          * @see #COLUMN_FLAGS
-         * {@hide}
+         * @hide
          */
         @SystemApi
         public static final int FLAG_REMOVABLE_USB = 1 << 19;
@@ -889,49 +970,49 @@ public final class DocumentsContract {
 
     /**
      * Optional result (I'm thinking boolean) answer to a question.
-     * {@hide}
+     * @hide
      */
     public static final String EXTRA_RESULT = "result";
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final String METHOD_CREATE_DOCUMENT = "android:createDocument";
-    /** {@hide} */
+    /** @hide */
     public static final String METHOD_RENAME_DOCUMENT = "android:renameDocument";
-    /** {@hide} */
+    /** @hide */
     public static final String METHOD_DELETE_DOCUMENT = "android:deleteDocument";
-    /** {@hide} */
+    /** @hide */
     public static final String METHOD_COPY_DOCUMENT = "android:copyDocument";
-    /** {@hide} */
+    /** @hide */
     public static final String METHOD_MOVE_DOCUMENT = "android:moveDocument";
-    /** {@hide} */
+    /** @hide */
     public static final String METHOD_IS_CHILD_DOCUMENT = "android:isChildDocument";
-    /** {@hide} */
+    /** @hide */
     public static final String METHOD_REMOVE_DOCUMENT = "android:removeDocument";
-    /** {@hide} */
+    /** @hide */
     public static final String METHOD_EJECT_ROOT = "android:ejectRoot";
-    /** {@hide} */
+    /** @hide */
     public static final String METHOD_FIND_DOCUMENT_PATH = "android:findDocumentPath";
-    /** {@hide} */
+    /** @hide */
     public static final String METHOD_CREATE_WEB_LINK_INTENT = "android:createWebLinkIntent";
-    /** {@hide} */
+    /** @hide */
     public static final String METHOD_GET_DOCUMENT_METADATA = "android:getDocumentMetadata";
-    /** {@hide} */
+    /** @hide */
     @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
     public static final String METHOD_TRASH_DOCUMENT = "android:trashDocument";
-    /** {@hide} */
+    /** @hide */
     @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
     public static final String METHOD_RESTORE_DOCUMENT_FROM_TRASH =
             "android:restoreDocumentFromTrash";
 
-    /** {@hide} */
+    /** @hide */
     public static final String EXTRA_PARENT_URI = "parentUri";
-    /** {@hide} */
+    /** @hide */
     public static final String EXTRA_URI = "uri";
-    /** {@hide} */
+    /** @hide */
     public static final String EXTRA_URI_PERMISSIONS = "uriPermissions";
 
-    /** {@hide} */
+    /** @hide */
     public static final String EXTRA_OPTIONS = "options";
 
     private static final String PATH_ROOT = "root";
@@ -1035,7 +1116,7 @@ public final class DocumentsContract {
                 buildDocumentUri(authority, documentId), user.getIdentifier());
     }
 
-    /** {@hide} */
+    /** @hide */
     public static Uri buildBaseDocumentUri(String authority) {
         return getBaseDocumentUriBuilder(authority).build();
     }
@@ -1075,7 +1156,7 @@ public final class DocumentsContract {
                 .appendPath(documentId).build();
     }
 
-    /** {@hide} */
+    /** @hide */
     public static Uri buildDocumentUriMaybeUsingTree(Uri baseUri, String documentId) {
         if (isTreeUri(baseUri)) {
             return buildDocumentUriUsingTree(baseUri, documentId);
@@ -1282,7 +1363,7 @@ public final class DocumentsContract {
         return isRootUri(context, uri, 2 /* pathSize */);
     }
 
-    /** {@hide} */
+    /** @hide */
     public static boolean isContentUri(@Nullable Uri uri) {
         return uri != null && ContentResolver.SCHEME_CONTENT.equals(uri.getScheme());
     }
@@ -1371,7 +1452,7 @@ public final class DocumentsContract {
     /**
      * Extract the search query from a Bundle
      * {@link #QUERY_ARG_DISPLAY_NAME}.
-     * {@hide}
+     * @hide
      */
     public static String getSearchDocumentsQuery(@NonNull Bundle bundle) {
         Preconditions.checkNotNull(bundle, "bundle can not be null");
@@ -1382,7 +1463,7 @@ public final class DocumentsContract {
      * Build URI that append the query parameter {@link PARAM_MANAGE} to
      * enable the manage mode.
      * @see DocumentsProvider#queryChildDocumentsForManage(String parentDocId, String[], String)
-     * {@hide}
+     * @hide
      */
     @SystemApi
     public static @NonNull Uri setManageMode(@NonNull Uri uri) {
@@ -1393,7 +1474,7 @@ public final class DocumentsContract {
     /**
      * Extract the manage mode from a URI built by
      * {@link #setManageMode(Uri)}.
-     * {@hide}
+     * @hide
      */
     @SystemApi
     public static boolean isManageMode(@NonNull Uri uri) {

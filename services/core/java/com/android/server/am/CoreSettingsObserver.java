@@ -18,6 +18,7 @@ package com.android.server.am;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.UserIdInt;
 import android.app.ActivityThread;
 import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
@@ -26,6 +27,7 @@ import android.content.Context;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.UserHandle;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.util.IntArray;
@@ -34,6 +36,7 @@ import android.widget.WidgetFlags;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.util.NamedLock;
 import com.android.server.utils.Slogf;
 
 import java.util.ArrayList;
@@ -49,12 +52,11 @@ import java.util.Objects;
  * disk I/O operations. Note: This class assumes that all core settings reside
  * in {@link Settings.Secure}.
  */
-final class CoreSettingsObserver extends ContentObserver {
+class CoreSettingsObserver extends ContentObserver {
+    private static final String TAG = CoreSettingsObserver.class.getSimpleName();
+    protected static final boolean DEBUG = false;
 
-    private static final String TAG = "CoreSettingsObserver";
-    private static final boolean DEBUG = false;
-
-    private final Object mLock = new Object();
+    protected final Object mLock = NamedLock.create("CoreSettingsObserverLock");
 
     private static class DeviceConfigEntry<T> {
         String namespace;
@@ -100,6 +102,8 @@ final class CoreSettingsObserver extends ContentObserver {
                 Settings.Global.DEBUG_VIEW_ATTRIBUTES_APPLICATION_PACKAGE, String.class);
         sGlobalSettingToTypeMap.put(
                 Settings.Global.ANGLE_DEBUG_PACKAGE, String.class);
+        sGlobalSettingToTypeMap.put(
+                Settings.Global.ANGLE_DYNAMIC_DENYLIST, String.class);
         sGlobalSettingToTypeMap.put(
                 Settings.Global.ANGLE_GL_DRIVER_ALL_ANGLE, int.class);
         sGlobalSettingToTypeMap.put(
@@ -179,12 +183,13 @@ final class CoreSettingsObserver extends ContentObserver {
     @GuardedBy("mLock")
     private final Bundle mCoreSettings = new Bundle();
 
-    private final ActivityManagerService mActivityManagerService;
+    protected final ActivityManagerService mActivityManagerService;
 
     @Nullable
     private VirtualDeviceManager mVirtualDeviceManager;
 
-    public CoreSettingsObserver(ActivityManagerService activityManagerService) {
+    protected CoreSettingsObserver(
+            ActivityManagerService activityManagerService, boolean initialize) {
         super(activityManagerService.mHandler);
 
         if (!sDeviceConfigContextEntriesLoaded) {
@@ -197,8 +202,25 @@ final class CoreSettingsObserver extends ContentObserver {
         }
 
         mActivityManagerService = activityManagerService;
-        beginObserveCoreSettings();
-        sendCoreSettings();
+        if (initialize) {
+            beginObserveCoreSettings(/* allUsers */ false);
+            sendCoreSettings();
+        }
+    }
+
+    /**
+     * Factory method for creating a {@link CoreSettingsObserver} instance.
+     * This method returns a multi-user aware observer if the corresponding feature flag is enabled.
+     *
+     * @param activityManagerService The {@link ActivityManagerService} instance.
+     * @return A new {@link CoreSettingsObserver} instance.
+     */
+    static CoreSettingsObserver create(ActivityManagerService activityManagerService) {
+        if (android.multiuser.Flags.coreSettingsMultiUser()) {
+            return new CoreSettingsObserverMultiUser(activityManagerService);
+        } else {
+            return new CoreSettingsObserver(activityManagerService, /* initialize */ true);
+        }
     }
 
     private static void loadDeviceConfigContextEntries(Context context) {
@@ -210,12 +232,31 @@ final class CoreSettingsObserver extends ContentObserver {
     }
 
     /**
-     * Gets a deep copy of the core settings.
+     * Gets a deep copy of the core settings for a specific user.
+     *
+     * <p>Note: This base implementation is not multi-user aware and returns a single set of
+     * settings, ignoring the user ID. The multi-user logic is handled by the
+     * {@link CoreSettingsObserverMultiUser} subclass.
+     *
+     * @param userId The user ID for which to retrieve the settings.
+     * @return A deep copy of the core settings {@link Bundle}.
      */
-    public Bundle getCoreSettings() {
+    public Bundle getCoreSettings(@UserIdInt int userId) {
         synchronized (mLock) {
             return mCoreSettings.deepCopy();
         }
+    }
+
+    /**
+     * Called when a user is starting.
+     */
+    public void onUserStarting(@UserIdInt int userId) {
+    }
+
+    /**
+     * Called when a user is stopping.
+     */
+    public void onUserStopping(@UserIdInt int userId) {
     }
 
     @Override
@@ -226,7 +267,7 @@ final class CoreSettingsObserver extends ContentObserver {
         sendCoreSettings();
     }
 
-    private IntArray getVirtualDeviceIds() {
+    protected final IntArray getVirtualDeviceIds() {
         if (mVirtualDeviceManager == null) {
             mVirtualDeviceManager = mActivityManagerService.mContext.getSystemService(
                     VirtualDeviceManager.class);
@@ -247,7 +288,7 @@ final class CoreSettingsObserver extends ContentObserver {
      * Populates the core settings bundle with the latest values and sends them to app processes
      * via {@link ActivityThread}.
      */
-    private void sendCoreSettings() {
+    protected void sendCoreSettings() {
         Context context = mActivityManagerService.mContext;
 
         // Create a temporary bundle to store the settings that will be sent.
@@ -261,7 +302,8 @@ final class CoreSettingsObserver extends ContentObserver {
             // Global settings and device config values do not vary across devices, so we can
             // populate them once.
             Bundle globalSettingsBundle = new Bundle(sGlobalSettingToTypeMap.size());
-            populateSettings(context, globalSettingsBundle, sGlobalSettingToTypeMap);
+            populateSettings(context, context.getUserId(), globalSettingsBundle,
+                    sGlobalSettingToTypeMap);
             Bundle deviceConfigBundle = new Bundle(sDeviceConfigEntries.size());
             populateSettingsFromDeviceConfig(deviceConfigBundle);
 
@@ -284,8 +326,10 @@ final class CoreSettingsObserver extends ContentObserver {
                     Slogf.d(TAG, "Populating settings for deviceId: %d", deviceId);
                 }
                 Bundle deviceBundle = new Bundle();
-                populateSettings(deviceContext, deviceBundle, sSecureSettingToTypeMap);
-                populateSettings(deviceContext, deviceBundle, sSystemSettingToTypeMap);
+                populateSettings(deviceContext, deviceContext.getUserId(), deviceBundle,
+                        sSecureSettingToTypeMap);
+                populateSettings(deviceContext, deviceContext.getUserId(), deviceBundle,
+                        sSystemSettingToTypeMap);
 
                 // Copy global settings and device config values.
                 deviceBundle.putAll(globalSettingsBundle);
@@ -300,9 +344,9 @@ final class CoreSettingsObserver extends ContentObserver {
 
             // For non-device-aware case, populate all settings into the single bundle.
             settingsToSend = new Bundle();
-            populateSettings(context, settingsToSend, sSecureSettingToTypeMap);
-            populateSettings(context, settingsToSend, sSystemSettingToTypeMap);
-            populateSettings(context, settingsToSend, sGlobalSettingToTypeMap);
+            populateSettings(context, context.getUserId(), settingsToSend, sSecureSettingToTypeMap);
+            populateSettings(context, context.getUserId(), settingsToSend, sSystemSettingToTypeMap);
+            populateSettings(context, context.getUserId(), settingsToSend, sGlobalSettingToTypeMap);
             populateSettingsFromDeviceConfig(settingsToSend);
         }
 
@@ -314,22 +358,23 @@ final class CoreSettingsObserver extends ContentObserver {
         mActivityManagerService.onCoreSettingsChange(settingsToSend);
     }
 
-    private void beginObserveCoreSettings() {
+    protected final void beginObserveCoreSettings(boolean allUsers) {
         ContentResolver cr = mActivityManagerService.mContext.getContentResolver();
+        final int user = allUsers ? UserHandle.USER_ALL : UserHandle.USER_SYSTEM;
 
         for (String setting : sSecureSettingToTypeMap.keySet()) {
             Uri uri = Settings.Secure.getUriFor(setting);
-            cr.registerContentObserver(uri, false, this);
+            cr.registerContentObserver(uri, false, this, user);
         }
 
         for (String setting : sSystemSettingToTypeMap.keySet()) {
             Uri uri = Settings.System.getUriFor(setting);
-            cr.registerContentObserver(uri, false, this);
+            cr.registerContentObserver(uri, false, this, user);
         }
 
         for (String setting : sGlobalSettingToTypeMap.keySet()) {
             Uri uri = Settings.Global.getUriFor(setting);
-            cr.registerContentObserver(uri, false, this);
+            cr.registerContentObserver(uri, false, this, user);
         }
 
         HashSet<String> deviceConfigNamespaces = new HashSet<>();
@@ -344,22 +389,24 @@ final class CoreSettingsObserver extends ContentObserver {
     }
 
     /**
-     * Populates the given bundle with settings from the given map.
+     * Populates settings {@link Bundle} with values from the SettingsProvider for a specific user.
      *
-     * @param context The context to use for retrieving the settings.
-     * @param snapshot The bundle to populate.
-     * @param map The map of settings to retrieve.
+     * @param context {@link Context} used to access the {@link android.content.ContentResolver}.
+     * @param userId The user ID for whom the settings are being retrieved.
+     * @param snapshot The {@link Bundle} to be populated with the settings.
+     * @param map A map where keys are setting names and values are their data types.
      */
     @VisibleForTesting
-    void populateSettings(Context context, Bundle snapshot, Map<String, Class<?>> map) {
+    protected final void populateSettings(
+            Context context, @UserIdInt int userId, Bundle snapshot, Map<String, Class<?>> map) {
         final ContentResolver cr = context.getContentResolver();
         for (Map.Entry<String, Class<?>> entry : map.entrySet()) {
             String setting = entry.getKey();
             final String value;
             if (map == sSecureSettingToTypeMap) {
-                value = Settings.Secure.getStringForUser(cr, setting, cr.getUserId());
+                value = Settings.Secure.getStringForUser(cr, setting, userId);
             } else if (map == sSystemSettingToTypeMap) {
-                value = Settings.System.getStringForUser(cr, setting, cr.getUserId());
+                value = Settings.System.getStringForUser(cr, setting, userId);
             } else {
                 value = Settings.Global.getString(cr, setting);
             }
@@ -385,7 +432,7 @@ final class CoreSettingsObserver extends ContentObserver {
     }
 
     @SuppressWarnings("unchecked")
-    private static void populateSettingsFromDeviceConfig(Bundle bundle) {
+    protected static final void populateSettingsFromDeviceConfig(Bundle bundle) {
         for (DeviceConfigEntry<?> entry : sDeviceConfigEntries) {
             if (entry.type == String.class) {
                 String defaultValue = ((DeviceConfigEntry<String>) entry).defaultValue;

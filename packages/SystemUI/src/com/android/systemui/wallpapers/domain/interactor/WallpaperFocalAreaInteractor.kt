@@ -34,7 +34,6 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInterac
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionState
-import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -53,6 +52,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
@@ -73,49 +73,40 @@ constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val shouldCollectFocalArea =
-        hasFocalArea
-            .flatMapLatest { hasFocalArea ->
-                if (!hasFocalArea) {
-                    return@flatMapLatest flowOf(false)
-                }
-
-                if (SceneContainerFlag.isEnabled) {
-                    sceneInteractor.transitionState.map { transitionState ->
-                        transitionState.isLockscreenIdleWithoutShades() ||
-                            transitionState.isTransitioningToLockscreenFromNonShade()
-                    }
-                } else {
-                    combine(
-                            keyguardTransitionInteractor.startedKeyguardTransitionStep,
-                            // Emit bounds when finishing transition to LOCKSCREEN to avoid race
-                            // condition with COMMAND_WAKING_UP
-                            keyguardTransitionInteractor
-                                .transition(
-                                    edge = Edge.create(to = Scenes.Lockscreen),
-                                    edgeWithoutSceneContainer =
-                                        Edge.create(to = KeyguardState.LOCKSCREEN),
-                                )
-                                .filter { it.transitionState == TransitionState.FINISHED },
-                            ::Pair,
-                        )
-                        // Enforce collecting wallpaperFocalAreaBounds after rebooting
-                        .onStart {
-                            emit(
-                                Pair(
-                                    TransitionStep(to = KeyguardState.LOCKSCREEN),
-                                    TransitionStep(),
-                                )
-                            )
-                        }
-                        .map { (transitionStep, _) ->
-                            // Subscribe to bounds within the period of transitioning to the
-                            // lockscreen, prior to any transitions away.
-                            transitionStep.to == KeyguardState.LOCKSCREEN &&
-                                transitionStep.from != KeyguardState.LOCKSCREEN
-                        }
-                }
+        hasFocalArea.flatMapLatest { hasFocalArea ->
+            if (!hasFocalArea) {
+                return@flatMapLatest flowOf(false)
             }
-            .distinctUntilChanged()
+
+            if (SceneContainerFlag.isEnabled) {
+                sceneInteractor.transitionState.map { transitionState ->
+                    transitionState.isLockscreenIdleWithoutShades() ||
+                        transitionState.isTransitioningToLockscreenFromNonShade()
+                }
+            } else {
+                merge(
+                        keyguardTransitionInteractor.startedKeyguardTransitionStep
+                            .map { transitionStep ->
+                                transitionStep.to == KeyguardState.LOCKSCREEN &&
+                                    transitionStep.from != KeyguardState.LOCKSCREEN
+                            }
+                            .distinctUntilChanged(),
+                        // Emit bounds when finishing transition to LOCKSCREEN to avoid
+                        // getWallpaperTarget() and getPrevWallpaperTarget() are null and fail
+                        // to send command
+                        keyguardTransitionInteractor
+                            .transition(
+                                edge = Edge.create(to = Scenes.Lockscreen),
+                                edgeWithoutSceneContainer =
+                                    Edge.create(to = KeyguardState.LOCKSCREEN),
+                            )
+                            .filter { it.transitionState == TransitionState.FINISHED }
+                            .map { true },
+                    )
+                    // Enforce collecting wallpaperFocalAreaBounds after rebooting
+                    .onStart { emit(true) }
+            }
+        }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val wallpaperFocalAreaBoundsOnLockscreen: Flow<RectF> =

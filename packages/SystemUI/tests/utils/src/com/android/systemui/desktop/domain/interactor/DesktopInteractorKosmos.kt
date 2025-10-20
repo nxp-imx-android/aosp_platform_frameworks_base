@@ -16,9 +16,12 @@
 
 package com.android.systemui.desktop.domain.interactor
 
+import android.content.res.Configuration
 import android.content.res.mainResources
+import android.content.testableContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
+import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.configurationController
 
 val Kosmos.desktopInteractor: DesktopInteractor by
@@ -29,3 +32,13 @@ val Kosmos.desktopInteractor: DesktopInteractor by
             configurationController = configurationController,
         )
     }
+
+fun Kosmos.enableUsingDesktopStatusBar() {
+    testableContext.orCreateTestableResources.addOverride(R.bool.config_useDesktopStatusBar, true)
+    configurationController.onConfigurationChanged(Configuration())
+}
+
+fun Kosmos.disableDesktopStatusBar() {
+    testableContext.orCreateTestableResources.addOverride(R.bool.config_useDesktopStatusBar, false)
+    configurationController.onConfigurationChanged(Configuration())
+}

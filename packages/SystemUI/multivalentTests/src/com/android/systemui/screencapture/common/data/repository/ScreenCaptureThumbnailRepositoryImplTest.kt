@@ -66,7 +66,7 @@ class ScreenCaptureThumbnailRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun loadThumbnail_failsToTakeThumbnail_returnsNull() =
+    fun loadThumbnail_failsToTakeThumbnail_fallsBackToCachedThumbnail() =
         kosmos.runTest {
             // Arrange
             val thumbnailRepository =
@@ -75,6 +75,8 @@ class ScreenCaptureThumbnailRepositoryImplTest : SysuiTestCase() {
                     activityManager =
                         activityManagerWrapper.stub {
                             on { takeTaskThumbnail(any()) } doReturn ThumbnailData(thumbnail = null)
+                            on { getTaskThumbnail(any(), any()) } doReturn
+                                ThumbnailData(thumbnail = fakeThumbnail)
                         },
                 )
 
@@ -83,6 +85,32 @@ class ScreenCaptureThumbnailRepositoryImplTest : SysuiTestCase() {
 
             // Assert
             verify(activityManagerWrapper).takeTaskThumbnail(eq(123))
+            verify(activityManagerWrapper).getTaskThumbnail(eq(123), eq(false))
+            assertThat(result.isSuccess).isTrue()
+            assertThat(result.getOrNull()?.sameAs(fakeThumbnail)).isTrue()
+        }
+
+    @Test
+    fun loadThumbnail_failsToTakeThumbnailAndNoCache_returnsFailure() =
+        kosmos.runTest {
+            // Arrange
+            val thumbnailRepository =
+                ScreenCaptureThumbnailRepositoryImpl(
+                    bgContext = testDispatcher,
+                    activityManager =
+                        activityManagerWrapper.stub {
+                            on { takeTaskThumbnail(any()) } doReturn ThumbnailData(thumbnail = null)
+                            on { getTaskThumbnail(any(), any()) } doReturn
+                                ThumbnailData(thumbnail = null)
+                        },
+                )
+
+            // Act
+            val result = thumbnailRepository.loadThumbnail(123)
+
+            // Assert
+            verify(activityManagerWrapper).takeTaskThumbnail(eq(123))
+            verify(activityManagerWrapper).getTaskThumbnail(eq(123), eq(false))
             assertThat(result.isFailure).isTrue()
         }
 }

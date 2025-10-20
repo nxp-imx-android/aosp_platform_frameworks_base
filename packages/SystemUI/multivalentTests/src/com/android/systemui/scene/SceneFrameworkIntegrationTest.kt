@@ -393,6 +393,31 @@ class SceneFrameworkIntegrationTest : SysuiTestCase() {
             assertCurrentScene(Scenes.Lockscreen)
         }
 
+    @Test
+    fun swipeDownOnLockscreen_goesToShade() =
+        kosmos.runTest {
+            assertCurrentScene(Scenes.Lockscreen)
+            val actions by collectLastValue(lockscreenUserActionsViewModel.actions)
+            val downDestinationSceneKey =
+                (actions?.get(Swipe.Down) as? UserActionResult.ChangeScene)?.toScene
+            assertThat(downDestinationSceneKey).isEqualTo(Scenes.Shade)
+            emulateUserDrivenSceneTransition(to = downDestinationSceneKey)
+            assertCurrentScene(Scenes.Shade)
+        }
+
+    @Test
+    fun swipeDownOnShade_goesToQuickSettings() =
+        kosmos.runTest {
+            emulateUserDrivenSceneTransition(to = Scenes.Shade)
+            assertCurrentScene(Scenes.Shade)
+            val actions by collectLastValue(shadeUserActionsViewModel.actions)
+            val downDestinationSceneKey =
+                (actions?.get(Swipe.Down) as? UserActionResult.ChangeScene)?.toScene
+            assertThat(downDestinationSceneKey).isEqualTo(Scenes.QuickSettings)
+            emulateUserDrivenSceneTransition(to = downDestinationSceneKey)
+            assertCurrentScene(Scenes.QuickSettings)
+        }
+
     /**
      * Asserts that the current scene in the view-model matches what's expected.
      *

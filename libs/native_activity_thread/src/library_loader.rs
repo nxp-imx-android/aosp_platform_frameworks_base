@@ -50,7 +50,6 @@ pub struct LinkerNamespace {
     namespace: NonNull<android_namespace_t>,
 }
 
-#[allow(dead_code)]
 impl LinkerNamespace {
     pub fn as_ptr(&self) -> *mut android_namespace_t {
         self.namespace.as_ptr()
@@ -58,14 +57,12 @@ impl LinkerNamespace {
 }
 
 /// NamespaceFactory creates linker namespaces.
-#[allow(dead_code)]
 pub struct NamespaceFactory {
     base_name: String,
     // Used to assign a serial number to each namespace name to make it unique.
     serial: u32,
 }
 
-#[allow(dead_code)]
 impl NamespaceFactory {
     pub fn new(base_name: String) -> Self {
         Self { base_name, serial: 0 }
@@ -109,12 +106,10 @@ impl NamespaceFactory {
 }
 
 /// LoadedLibrary represents a library loaded to the memory space of the process.
-#[allow(dead_code)]
 pub struct LoadedLibrary {
     library_handle: *mut c_void,
 }
 
-#[allow(dead_code)]
 impl LoadedLibrary {
     /// Load a library to the process memory space.
     ///

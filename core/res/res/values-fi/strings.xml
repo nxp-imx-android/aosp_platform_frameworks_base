@@ -166,7 +166,7 @@
     <string name="cfTemplateForwardedTime" msgid="735042369233323609">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: <xliff:g id="DIALING_NUMBER">{1}</xliff:g> <xliff:g id="TIME_DELAY">{2}</xliff:g> sekunnin päästä"</string>
     <string name="cfTemplateRegistered" msgid="5619930473441550596">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: ei siirretty"</string>
     <string name="cfTemplateRegisteredTime" msgid="5222794399642525045">"<xliff:g id="BEARER_SERVICE_CODE">{0}</xliff:g>: ei siirretty"</string>
-    <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Mobiiliverkkoa koskeva turvallisuus"</string>
+    <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Mobiiliverkon turvallisuus"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Salaus, ilmoitukset salaamattomista verkoista"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"Laitteen tunnus jaettu"</string>
     <string name="scIDIssueSummaryNotificationWithCellularID" msgid="8371590113242615316">"Klo <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> lähellä oleva verkko tallensi laitteesi yksilöllisen tunnuksen (<xliff:g id="CELLULAR_IDENTIFIER">%2$s</xliff:g>), kun käytössä oli SIM-kortti, jonka <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> tarjoaa"</string>
@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Vaihda työprofiiliin"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Siirry henkilökohtaiseen profiiliin: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Siirry työprofiiliin: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"Yhteystiedot"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"pääsy yhteystietoihin"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Yhteystiedot ja tilit"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"pääsyn yhteystietoihin ja näkee listan tileistä, joille voi tallentaa yhteystietoja tällä laitteella"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Sijainti"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"pääsy laitteen sijaintiin"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Kalenteri"</string>
@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"silmien liikkeiden tarkka seuranta"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Liike- ja aluedata"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"silmien, kasvojen ja vartalon seuranta sekä alueen skannaaminen"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Tarkka data pään liikkeistä ja alueesta"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"pään liikkeiden tarkka seuranta ja alueen skannaaminen"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Tarkka liike- ja aluedata"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"skannaa alueen tarkasti ja seuraa pään liikkeitä"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Noutaa ikkunan sisältöä"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Tarkistaa käyttämäsi ikkunan sisältö."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Ottaa kosketuksella tutkimisen käyttöön"</string>
@@ -639,6 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Sallii sovelluksen määrittää UVB-taajuutta käyttävien laitteiden sijainnin suhteessa toisiinsa"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"käyttää lähellä olevia Wi-Fi-laitteita"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Sallii sovelluksen ilmoittaa ja määrittää lähellä olevien Wi-Fi-laitteiden suhteellisen sijainnin sekä yhdistää niihin"</string>
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"pääsy lähiverkon laitteisiin"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Sallii sovelluksen käyttää paikallisen verkon laitteita"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"määrittää laitteiden suhteellisen sijainnin"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Sallii sovelluksen määrittää lähellä olevien laitteiden sijainnin suhteessa toisiinsa"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Ensisijaiset NFC-maksupalvelutiedot"</string>
@@ -683,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Sallii sovelluksen skannata ympäristöä."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"ympäröivän alueen tarkka skannaaminen"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Sallii sovelluksen skannata ympäristöä tarkasti."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"XR-datan seuranta taustalla"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"pääsy XR-seurantaan taustalla"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Sallii sovellukselle pääsyn XR-dataan taustalla."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"näppäinten kaappaus"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Antaa sovelluksen kaapata näppäimiä ennen kuin järjestelmä voi käsitellä järjestelmän pikanäppäimiä ja toimintoja."</string>
@@ -1052,6 +1054,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Oikein!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Yritä uudelleen"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Yritä uudelleen"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Käytä kaikkia ominaisuuksia avaamalla lukitus."</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Kasvojentunnistusavauksen yrityksiä tehty suurin sallittu määrä."</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Ei SIM-korttia"</string>
@@ -1621,6 +1627,9 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"Pyytänyt <xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>)"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"Kyllä"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"Ei"</string>
+    <string name="emergency_location_notification_title" msgid="917557758257778958">"Sijainti jaettu hätätilanteessa"</string>
+    <string name="emergency_location_notification_message" msgid="1877038822515882885">"Hätäkeskus sai sijaintisi operaattorilta"</string>
+    <string name="emergency_location_notification_learn_more" msgid="8718634939217070481">"Lue lisää"</string>
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"Poistoraja ylittynyt"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"Tilin <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g> synkronointityypissä <xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g> on <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> poistettua kohdetta. Mitä tehdään?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"Poista kohteet"</string>
@@ -1791,8 +1800,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Molempien äänenvoimakkuuspainikkeiden pitkään painaminen laittaa päälle esteettömyysominaisuuden <xliff:g id="SERVICE">%1$s</xliff:g>. Tämä voi muuttaa laitteesi toimintaa.\n\nVoit muuttaa tätä pikanäppäintä kohdassa Asetukset &gt; Esteettömyys."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Laita päälle"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Älä laita päälle"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"PÄÄLLÄ"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"EI PÄÄLLÄ"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Saako <xliff:g id="SERVICE">%1$s</xliff:g> laitteesi täyden käyttöoikeuden?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Täysi käyttöoikeus sopii saavutettavuussovelluksille, mutta ei useimmille sovelluksille."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Näytön katselu ja ohjaus"</string>
@@ -1806,6 +1817,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Aloita ominaisuuden käyttö napauttamalla sitä:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Valitse ominaisuudet, joita käytetään esteettömyyspainikkeella"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Valitse ominaisuudet, joita käytetään äänenvoimakkuuspikanäppäimillä"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> on laitettu pois päältä"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Muokkaa pikakuvakkeita"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Valmis"</string>
@@ -1984,8 +2005,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Järjestelmänvalvojan päivittämä.\nTarkista myönnetyt luvat asetuksista"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Järjestelmänvalvoja poisti tämän."</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Virransäästö laittaa tumman teeman päälle ja rajoittaa tai laittaa pois päältä taustatoimintoja, tiettyjä ominaisuuksia sekä joitakin visuaalisia tehosteita ja verkkoyhteyksiä."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Virransäästö laittaa tumman teeman päälle ja rajoittaa tai laittaa pois päältä taustatoimintoja, tiettyjä ominaisuuksia sekä joitakin visuaalisia tehosteita ja verkkoyhteyksiä."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Virransäästö laittaa tumman teeman päälle ja rajoittaa tai laittaa pois päältä taustatoimintoja, tiettyjä ominaisuuksia sekä joitakin visuaalisia tehosteita ja verkkoyhteyksiä."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Virransäästö laittaa tumman teeman päälle ja rajoittaa tai laittaa pois päältä taustatoimintoja, tiettyjä ominaisuuksia sekä joitakin visuaalisia tehosteita ja verkkoyhteyksiä."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Data Saver estää joitakin sovelluksia lähettämästä tai vastaanottamasta tietoja taustalla, jotta datan käyttöä voidaan vähentää. Käytössäsi oleva sovellus voi yhä käyttää dataa, mutta se saattaa tehdä niin tavallista harvemmin. Tämä voi tarkoittaa esimerkiksi sitä, että kuva ladataan vasta, kun kosketat sitä."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Laitetaanko Data Saver päälle?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Laita päälle"</string>
@@ -2047,12 +2068,9 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"Suurenna"</string>
     <string name="close_button_text" msgid="10603510034455258">"Sulje"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
-    <skip />
+    <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
+    <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
+    <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"Vastaa"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"Video"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"Hylkää"</string>
@@ -2363,8 +2381,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"IMPI:n lukituksen avaamisen PIN-koodi"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"Verkon alijoukon palveluntarjoajan lukituksen avaamisen PIN-koodi"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"Pyydetään SIM-kortin verkkoversion lukituksen avaamista…"</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="6742563947637715645">"Pyydetään SIM-kortin verkkoversion alijoukon lukituksen avaamista…"</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="2033399698172403560">"Pyydetään SIM-kortin palveluntarjoajaversion lukituksen avaamista…"</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"Pyydetään SIM-kortin verkkoversion alijoukon lukituksen avaamista…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"Pyydetään SIM-kortin palveluntarjoajaversion lukituksen avaamista…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"Pyydetään SIM-kortin yritysversion lukituksen avaamista…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"Pyydetään lukituksen avausta PUK-koodilla…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"Pyydetään lukituksen avausta PUK-koodilla…"</string>
@@ -2390,15 +2408,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"Pyydetään lukituksen avausta PUK-koodilla…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"Pyydetään lukituksen avausta PUK-koodilla…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"SIM-kortin verkkoversion lukituksen avauspyyntö ei onnistunut."</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="3372797822292089708">"SIM-kortin verkkoversion alijoukon lukituksen avauspyyntö ei onnistunut."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="1878443146720411381">"SIM-kortin palveluntarjoajaversion lukituksen avauspyyntö ei onnistunut."</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"SIM-kortin verkkoversion alijoukon lukituksen avauspyyntö ei onnistunut."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"SIM-kortin palveluntarjoajaversion lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"SIM-kortin yritysversion lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"SIM-kortin lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"RUIM-kortin verkko1-version lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"RUIM-kortin verkko2-version lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"RUIM-kortin hrpd-version lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"RUIM-kortin yritysversion lukituksen avauspyyntö ei onnistunut."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="3801002648649640407">"RUIM-kortin palveluntarjoajaversion lukituksen avauspyyntö ei onnistunut."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"RUIM-kortin palveluntarjoajaversion lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"RUIM-kortin lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"Lukituksen avaus PUK-koodilla ei onnistunut."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"Lukituksen avaus PUK-koodilla ei onnistunut."</string>
@@ -2418,13 +2436,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"Verkon alijoukon palveluntarjoajan lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"SIM-kortin verkkoversion lukituksen avaus onnistui."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"SIM-kortin verkkoversion alijoukon lukituksen avaus onnistui."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="8249342930499801740">"SIM-kortin palveluntarjoajaversion lukituksen avaus onnistui."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"SIM-kortin palveluntarjoajaversion lukituksen avaus onnistui."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"SIM-kortin yritysversion lukituksen avaus onnistui."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"SIM-kortin lukituksen avaaminen onnistui."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"RUIM-kortin verkko1-version lukituksen avaus onnistui."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"RUIM-kortin verkko2-version lukituksen avaus onnistui."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"RUIM-kortin hrpd-version lukituksen avaus onnistui."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6020936629725666932">"RUIM-kortin palveluntarjoajaversion lukituksen avaus onnistui."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"RUIM-kortin palveluntarjoajaversion lukituksen avaus onnistui."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"RUIM-kortin yritysversion lukituksen avaus onnistui."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"RUIM-kortin lukituksen avaaminen onnistui."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"Lukituksen avaus PUK-koodilla ei onnistunut."</string>
@@ -2580,27 +2598,22 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Sovellukset"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Sormenjälkiäsi ei voi enää tunnistaa. Ota sormenjälkiavaus uudelleen käyttöön."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Tietoturva ja yksityisyys"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
-    <skip />
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Silence (Hiljennä)"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"Avaa näytön lukitus ja yhdistä USB uudelleen"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"Avaa näytön lukitus, jotta voit yhdistää USB:n"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"Lisäsuojaus edellyttää, että avaat näytön lukituksen USB-yhteyden muodostamista varten"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"Lisäsuojaus edellyttää, että avaat näytön lukituksen USB-yhteyden muodostamista varten"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"Lisäsuojaus edellyttää, että näytön lukitus on avattu nopeampaa latausta varten"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"Lisäsuojaus edellyttää, että avaat näytön lukituksen, jotta voit ladata laitteen nopeammin tai muodostaa USB-yhteyden"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Hiljennä"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Ilmoitukset hiljennetty"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"Et saa lisäsuojauksen USB-ilmoituksia ennen kuin käynnistät laitteen uudelleen"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Epäilyttävää USB-toimintaa"</string>
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
-    <skip />
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"USB-datasignaali on poistettu käytöstä"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Onko sormenjälkiavauksessa ongelmia?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Katso napauttamalla vinkkejä lukituksen avaamiseen"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Lopeta vilkkuminen"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Sammuta TV painamalla virtapainiketta pitkään"</string>
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Järjestelmäresurssien ilmoitukset"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Resurssien liikakäyttö"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Sovellus \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" käyttää liikaa resursseja."</string>
 </resources>

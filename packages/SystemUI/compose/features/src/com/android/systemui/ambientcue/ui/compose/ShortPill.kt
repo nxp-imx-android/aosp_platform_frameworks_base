@@ -17,6 +17,7 @@
 package com.android.systemui.ambientcue.ui.compose
 
 import android.view.Surface.ROTATION_90
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateFloat
@@ -48,6 +49,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +57,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -76,10 +80,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.ambientcue.ui.compose.modifier.animatedActionBorder
+import com.android.systemui.ambientcue.ui.utils.AmbientCueAnimationState
 import com.android.systemui.ambientcue.ui.utils.FilterUtils
 import com.android.systemui.ambientcue.ui.viewmodel.ActionType
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 import com.android.systemui.res.R
+import kotlinx.coroutines.delay
 
 @Composable
 fun ShortPill(
@@ -89,10 +95,11 @@ fun ShortPill(
     visible: Boolean = true,
     expanded: Boolean = false,
     rotation: Int = 0,
+    taskBarMode: Boolean = false,
     onClick: () -> Unit = {},
     onCloseClick: () -> Unit = {},
+    onAnimationStateChange: (Int, AmbientCueAnimationState) -> Unit = { _, _ -> },
 ) {
-    val outlineColor = if (isSystemInDarkTheme()) Color.White else Color.Black
     val backgroundColor = if (isSystemInDarkTheme()) Color.Black else Color.White
     val scrimColor = MaterialTheme.colorScheme.primaryFixedDim
     val minSize = 48.dp
@@ -101,6 +108,10 @@ fun ShortPill(
     val shortPillBoxWidth = 48.dp
     val shortPillBoxLength = 68.dp
     val transitionTween: TweenSpec<Float> = tween(250, delayMillis = 200)
+    val showAnimationInProgress = remember { mutableStateOf(false) }
+    val hideAnimationInProgress = remember { mutableStateOf(false) }
+    val expandAnimationInProgress = remember { mutableStateOf(false) }
+    val collapseAnimationInProgress = remember { mutableStateOf(false) }
 
     val visibleState = remember { MutableTransitionState(false) }
     visibleState.targetState = visible
@@ -140,6 +151,27 @@ fun ShortPill(
             if (it) 0.4f else 0f
         }
 
+    val blurRadius = remember { Animatable(4f) }
+    LaunchedEffect(Unit) {
+        delay(BLUR_DURATION_MILLIS)
+        blurRadius.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(durationMillis = BLUR_FADE_DURATION_MILLIS),
+        )
+    }
+
+    AmbientCueJankMonitorComposable(
+        visibleTargetState = visibleState.targetState,
+        enterProgress = enterProgress,
+        expanded = expanded,
+        expansionAlpha = expansionAlpha,
+        showAnimationInProgress = showAnimationInProgress,
+        hideAnimationInProgress = hideAnimationInProgress,
+        expandAnimationInProgress = expandAnimationInProgress,
+        collapseAnimationInProgress = collapseAnimationInProgress,
+        onAnimationStateChange = onAnimationStateChange,
+    )
+
     // State variables to store the measured size and position of the main pill.
     var pillContentSize by remember { mutableStateOf(IntSize.Zero) }
     var pillContentPosition by remember { mutableStateOf(Offset.Zero) }
@@ -163,12 +195,13 @@ fun ShortPill(
                 // SmartScrim
                 val halfWidth = size.width / 2f
                 val halfHeight = size.height / 2f
+                val smartScrimRadius = 50.dp.toPx()
                 if (!(halfWidth > 0) || !(halfHeight > 0)) return@drawBehind
                 val scrimBrush =
                     Brush.radialGradient(
                         colors = listOf(scrimColor, scrimColor.copy(alpha = 0f)),
                         center = Offset.Zero,
-                        radius = if (horizontal) halfWidth else halfHeight,
+                        radius = if (horizontal) smartScrimRadius * 0.9f else halfHeight,
                     )
                 translate(
                     left =
@@ -176,17 +209,17 @@ fun ShortPill(
                         else {
                             if (rotation == ROTATION_90) size.width else 0f
                         },
-                    top = if (horizontal) size.height else halfHeight,
+                    top = if (taskBarMode) size.height else halfHeight,
                 ) {
                     scale(
-                        scaleX = if (horizontal) 1f else 0.3f,
-                        scaleY = if (horizontal) 0.3f else 1f,
+                        scaleX = if (horizontal) 4.12f else 0.3f,
+                        scaleY = 1f,
                         pivot = Offset.Zero,
                     ) {
                         drawCircle(
                             brush = scrimBrush,
                             alpha = smartScrimAlpha + smartScrimAlphaBoost,
-                            radius = if (horizontal) halfWidth else halfHeight,
+                            radius = if (horizontal) smartScrimRadius else halfHeight,
                             center = Offset.Zero,
                         )
                     }
@@ -202,7 +235,6 @@ fun ShortPill(
         val pillModifier =
             Modifier.clip(RoundedCornerShape(16.dp))
                 .background(backgroundColor)
-                .animatedActionBorder(strokeWidth = 1.dp, cornerRadius = 16.dp, visible = visible)
                 .widthIn(0.dp, minSize * 2)
                 .padding(4.dp)
 
@@ -248,44 +280,66 @@ fun ShortPill(
                                 pillContentPosition = coordinates.positionInParent()
                             },
                 ) {
-                    Row(
-                        horizontalArrangement =
-                            Arrangement.spacedBy(-4.dp, Alignment.CenterHorizontally),
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = pillModifier.defaultMinSize(minWidth = minSize),
-                    ) {
-                        filteredActions.take(3).fastForEach { action ->
-                            Icon(action, backgroundColor)
-                            if (actions.size == 1) {
-                                Text(
-                                    text = action.label,
-                                    color = outlineColor,
-                                    style = actionTextStyle,
-                                    overflow = TextOverflow.Ellipsis,
-                                    maxLines = 1,
-                                    modifier = Modifier.padding(horizontal = 8.dp),
-                                )
-                            } else if (
-                                filteredActions.size == 1 &&
-                                    action.actionType == ActionType.MR &&
-                                    action.icon.repeatCount > 0
-                            ) {
-                                Text(
-                                    text = action.label,
-                                    color = outlineColor,
-                                    style = actionTextStyle,
-                                    overflow = TextOverflow.Ellipsis,
-                                    maxLines = 1,
-                                    modifier = Modifier.padding(start = 8.dp).weight(1f),
-                                )
-                                Text(
-                                    text = "+${action.icon.repeatCount}",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(start = 6.dp, end = 3.dp),
-                                )
+                    Box {
+                        Row(
+                            horizontalArrangement =
+                                Arrangement.spacedBy(-4.dp, Alignment.CenterHorizontally),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = pillModifier.defaultMinSize(minWidth = minSize),
+                        ) {
+                            filteredActions.take(3).fastForEach { action ->
+                                Icon(action, backgroundColor)
+                                if (actions.size == 1) {
+                                    Text(
+                                        text = action.label,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        style = actionTextStyle,
+                                        overflow = TextOverflow.Ellipsis,
+                                        maxLines = 1,
+                                        modifier = Modifier.padding(horizontal = 8.dp),
+                                    )
+                                } else if (
+                                    filteredActions.size == 1 &&
+                                        action.actionType == ActionType.MR &&
+                                        action.icon.repeatCount > 0
+                                ) {
+                                    Text(
+                                        text = action.label,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        style = actionTextStyle,
+                                        overflow = TextOverflow.Ellipsis,
+                                        maxLines = 1,
+                                        modifier = Modifier.padding(start = 8.dp).weight(1f),
+                                    )
+                                    Text(
+                                        text = "+${action.icon.repeatCount}",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(start = 6.dp, end = 3.dp),
+                                    )
+                                }
                             }
                         }
+
+                        // Inner glow
+                        Box(
+                            Modifier.matchParentSize()
+                                // Prevent the border from being invisible due to blur.
+                                .animatedActionBorder(
+                                    strokeWidth = 1.dp,
+                                    cornerRadius = 16.dp,
+                                    visible = visible,
+                                )
+                                .blur(
+                                    blurRadius.value.dp,
+                                    edgeTreatment = BlurredEdgeTreatment.Unbounded,
+                                )
+                                .animatedActionBorder(
+                                    strokeWidth = 1.dp,
+                                    cornerRadius = 16.dp,
+                                    visible = visible,
+                                )
+                        )
                     }
                 }
 
@@ -310,14 +364,36 @@ fun ShortPill(
                                 pillContentPosition = coordinates.positionInParent()
                             },
                 ) {
-                    Column(
-                        verticalArrangement =
-                            Arrangement.spacedBy(-4.dp, Alignment.CenterVertically),
-                        modifier = pillModifier.defaultMinSize(minHeight = minSize),
-                    ) {
-                        filteredActions.take(3).fastForEach { action ->
-                            Icon(action, backgroundColor)
+                    Box {
+                        Column(
+                            verticalArrangement =
+                                Arrangement.spacedBy(-4.dp, Alignment.CenterVertically),
+                            modifier = pillModifier.defaultMinSize(minHeight = minSize),
+                        ) {
+                            filteredActions.take(3).fastForEach { action ->
+                                Icon(action, backgroundColor)
+                            }
                         }
+
+                        // Inner glow
+                        Box(
+                            Modifier.matchParentSize()
+                                // Prevent the border from being invisible due to blur.
+                                .animatedActionBorder(
+                                    strokeWidth = 1.dp,
+                                    cornerRadius = 16.dp,
+                                    visible = visible,
+                                )
+                                .blur(
+                                    blurRadius.value.dp,
+                                    edgeTreatment = BlurredEdgeTreatment.Unbounded,
+                                )
+                                .animatedActionBorder(
+                                    strokeWidth = 1.dp,
+                                    cornerRadius = 16.dp,
+                                    visible = visible,
+                                )
+                        )
                     }
                 }
 
@@ -384,13 +460,14 @@ private fun Icon(action: ActionViewModel, backgroundColor: Color, modifier: Modi
         contentDescription = stringResource(id = R.string.ambient_cue_icon_content_description),
         modifier =
             modifier
+                .padding(2.dp)
                 .then(
                     if (action.actionType == ActionType.MR) {
-                        Modifier.size(20.dp)
+                        Modifier.size(16.dp)
                     } else {
-                        Modifier.size(19.25.dp)
+                        Modifier.size(16.dp)
                             .border(
-                                width = 0.75.dp,
+                                width = 0.5.dp,
                                 color = MaterialTheme.colorScheme.outline,
                                 shape = CircleShape,
                             )
@@ -402,3 +479,5 @@ private fun Icon(action: ActionViewModel, backgroundColor: Color, modifier: Modi
 }
 
 private val closeButtonTouchTargetSize = 36.dp
+private const val BLUR_DURATION_MILLIS = 1500L
+private const val BLUR_FADE_DURATION_MILLIS = 500

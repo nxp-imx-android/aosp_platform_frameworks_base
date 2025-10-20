@@ -30,12 +30,6 @@ class RavenizerOptions(
     /** Output jar file */
     val outJar: SetOnce<String> = SetOnce(""),
 
-    /** Whether to enable test validation. */
-    val enableValidation: SetOnce<Boolean> = SetOnce(true),
-
-    /** Whether the validation failure is fatal or not. */
-    val fatalValidation: SetOnce<Boolean> = SetOnce(true),
-
     /** Whether to remove mockito and dexmaker classes. */
     val stripMockito: SetOnce<Boolean> = SetOnce(false),
 
@@ -51,12 +45,6 @@ class RavenizerOptions(
 
             "--in-jar" -> inJar.set(nextArg()).ensureFileExists()
             "--out-jar" -> outJar.set(nextArg())
-
-            "--enable-validation" -> enableValidation.set(true)
-            "--disable-validation" -> enableValidation.set(false)
-
-            "--fatal-validation" -> fatalValidation.set(true)
-            "--no-fatal-validation" -> fatalValidation.set(false)
 
             "--strip-mockito" -> stripMockito.set(true)
             "--no-strip-mockito" -> stripMockito.set(false)
@@ -86,8 +74,6 @@ class RavenizerOptions(
         return """
             inJar=$inJar,
             outJar=$outJar,
-            enableValidation=$enableValidation,
-            fatalValidation=$fatalValidation,
             stripMockito=$stripMockito,
             numShards=$numShards,
         """.trimIndent() + '\n' + super.dumpFields()

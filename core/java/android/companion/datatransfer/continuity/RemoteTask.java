@@ -26,15 +26,14 @@ import android.os.Parcelable;
 import java.util.Objects;
 
 /**
- * This represents a task currently running on another device owned by the user. This is returned
- * by the {@link TaskContinuityManager#getRemoteTasks()} method.
+ * This represents a task currently running on another device owned by the user. This is returned by
+ * the {@link TaskContinuityManager#getRemoteTasks()} method.
  *
- * Consumers should use this class to display remote tasks to the user in an interface (such as
+ * <p>Consumers should use this class to display remote tasks to the user in an interface (such as
  * the device's launcher). When the user wishes to hand off this task to the current device, this
  * object can be passed back to {@link TaskContinuityManager#requestHandoff}.
  *
  * @hide
- *
  */
 @SystemApi
 @FlaggedApi(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
@@ -49,17 +48,17 @@ public final class RemoteTask implements Parcelable {
     @Nullable private final Icon mIcon;
 
     public static final @NonNull Parcelable.Creator<RemoteTask> CREATOR =
-        new Parcelable.Creator<RemoteTask>() {
-            @Override
-            public RemoteTask createFromParcel(Parcel in) {
-                return new RemoteTask(in);
-            }
+            new Parcelable.Creator<RemoteTask>() {
+                @Override
+                public RemoteTask createFromParcel(Parcel in) {
+                    return new RemoteTask(in);
+                }
 
-            @Override
-            public RemoteTask[] newArray(int size) {
-                return new RemoteTask[size];
-            }
-        };
+                @Override
+                public RemoteTask[] newArray(int size) {
+                    return new RemoteTask[size];
+                }
+            };
 
     RemoteTask(@NonNull Builder builder) {
         mId = builder.mId;
@@ -79,23 +78,25 @@ public final class RemoteTask implements Parcelable {
         mSourceDeviceName = in.readString();
         mLastUsedTimestampMillis = in.readLong();
         if (in.readInt() != 0) {
-            mIcon = in.readParcelable(Icon.class.getClassLoader(), android.graphics.drawable.Icon.class);
+            mIcon =
+                    in.readParcelable(
+                            Icon.class.getClassLoader(), android.graphics.drawable.Icon.class);
         } else {
             mIcon = null;
         }
     }
 
     /**
-     * Returns the ID of this task on the remote device. This is the same ID provided by
-     * {@link ActivityManager.RunningTaskInfo#taskId}
+     * Returns the ID of this task on the remote device. This is the same ID provided by {@link
+     * ActivityManager.RunningTaskInfo#taskId}
      */
     public int getId() {
         return mId;
     }
 
     /**
-     * Returns the device ID of the remote device. This is guaranteed to be a unique identifier
-     * for the device.
+     * Returns the device ID of the remote device. This is guaranteed to be a unique identifier for
+     * the device.
      */
     public int getDeviceId() {
         return mDeviceId;
@@ -121,24 +122,20 @@ public final class RemoteTask implements Parcelable {
 
     /**
      * Returns if this task is eligible to be handed off to the current device. This indicates the
-     * topmost activity of the task on the remote device has enabled Handoff via
-     * {@link Activity.setHandoffEnabled}.
+     * topmost activity of the task on the remote device has enabled Handoff via {@link
+     * Activity.setHandoffEnabled}.
      */
     public boolean isHandoffEnabled() {
         return mIsHandoffEnabled;
     }
 
-    /**
-     * Returns the name of the source device.
-     */
+    /** Returns the name of the source device. */
     @NonNull
     public String getSourceDeviceName() {
         return mSourceDeviceName;
     }
 
-    /**
-     * Returns the last used timestamp of the task.
-     */
+    /** Returns the last used timestamp of the task. */
     public long getLastUsedTimestampMillis() {
         return mLastUsedTimestampMillis;
     }
@@ -151,13 +148,13 @@ public final class RemoteTask implements Parcelable {
     @Override
     public int hashCode() {
         return Objects.hash(
-            mId,
-            mDeviceId,
-            mLabel,
-            mIcon,
-            mIsHandoffEnabled,
-            mSourceDeviceName,
-            mLastUsedTimestampMillis);
+                mId,
+                mDeviceId,
+                mLabel,
+                mIcon,
+                mIsHandoffEnabled,
+                mSourceDeviceName,
+                mLastUsedTimestampMillis);
     }
 
     @Override
@@ -192,9 +189,7 @@ public final class RemoteTask implements Parcelable {
         }
     }
 
-    /**
-     * Builder for {@link RemoteTask}.
-     */
+    /** Builder for {@link RemoteTask}. */
     public static final class Builder {
         private int mId = 0;
         private int mDeviceId = 0;
@@ -236,8 +231,8 @@ public final class RemoteTask implements Parcelable {
         }
 
         /**
-         * Sets the device ID of the remote device. This is guaranteed to be a unique identifier
-         * for the device.
+         * Sets the device ID of the remote device. This is guaranteed to be a unique identifier for
+         * the device.
          *
          * @param deviceId The device ID of the remote device.
          */
@@ -251,7 +246,7 @@ public final class RemoteTask implements Parcelable {
          * Sets if the task is eligible to be handed off to the current device.
          *
          * @param isHandoffEnabled Whether the task is eligible to be handed off to the current
-         * device.
+         *     device.
          */
         @NonNull
         public Builder setHandoffEnabled(boolean isHandoffEnabled) {

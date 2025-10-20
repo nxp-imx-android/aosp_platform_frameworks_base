@@ -156,6 +156,7 @@ import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionController;
 import com.android.systemui.statusbar.policy.ZenModeController;
 import com.android.systemui.statusbar.policy.data.repository.FakeDeviceProvisioningRepository;
+import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.util.FakeEventLog;
 import com.android.systemui.util.settings.FakeGlobalSettings;
@@ -169,7 +170,6 @@ import com.android.wm.shell.bubbles.BubbleData;
 import com.android.wm.shell.bubbles.BubbleDataRepository;
 import com.android.wm.shell.bubbles.BubbleEducationController;
 import com.android.wm.shell.bubbles.BubbleEntry;
-import com.android.wm.shell.bubbles.BubbleLogger;
 import com.android.wm.shell.bubbles.BubbleOverflow;
 import com.android.wm.shell.bubbles.BubbleResizabilityChecker;
 import com.android.wm.shell.bubbles.BubbleStackView;
@@ -181,6 +181,8 @@ import com.android.wm.shell.bubbles.Bubbles;
 import com.android.wm.shell.bubbles.StackEducationView;
 import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
+import com.android.wm.shell.bubbles.logging.BubbleLogger;
+import com.android.wm.shell.bubbles.logging.BubbleSessionTracker;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
@@ -330,6 +332,8 @@ public class BubblesTest extends SysuiTestCase {
     @Mock
     private BubbleLogger mBubbleLogger;
     @Mock
+    private BubbleSessionTracker mSessionTracker;
+    @Mock
     private BubbleEducationController mEducationController;
     @Mock
     private TaskStackListenerImpl mTaskStackListener;
@@ -440,7 +444,9 @@ public class BubblesTest extends SysuiTestCase {
                 mNotificationShadeWindowModel,
                 mKosmos::getCommunalInteractor,
                 mKosmos.getShadeLayoutParams(),
-                mKosmos.getTopUiController()
+                mKosmos.getTopUiController(),
+                mKosmos.getKeyguardSurfaceBehindInteractor(),
+                mKosmos.getJavaAdapter()
         );
         mNotificationShadeWindowController.fetchWindowRootView();
         mNotificationShadeWindowController.attach();
@@ -496,7 +502,8 @@ public class BubblesTest extends SysuiTestCase {
                         Optional.of(mock(Bubbles.class)),
                         mContext,
                         mock(NotificationManager.class),
-                        mock(NotificationSettingsInteractor.class)
+                        mock(NotificationSettingsInteractor.class),
+                        mock(DeviceProvisioningInteractor.class)
                 );
         interruptionDecisionProvider.start();
 
@@ -542,7 +549,8 @@ public class BubblesTest extends SysuiTestCase {
                 new BubbleResizabilityChecker(),
                 mHomeIntentProvider,
                 mAppInfoProvider,
-                Optional.empty());
+                Optional.empty(),
+                mSessionTracker);
         mBubbleController.setExpandListener(mBubbleExpandListener);
         spyOn(mBubbleController);
 
@@ -1667,17 +1675,20 @@ public class BubblesTest extends SysuiTestCase {
         final Bubble bubble = createBubble(workProfileUserId, workPkg);
         assertEquals(workProfileUserId, bubble.getUser().getIdentifier());
 
-        final Context context = setUpContextWithPackageManager(workPkg, null /* AppInfo */);
+        final Context context = setUpContextWithPackageManager(workPkg, /* info= */ null,
+                mock(PackageManager.class));
         when(context.getResources()).thenReturn(mContext.getResources());
+
         final Context userContext = setUpContextWithPackageManager(workPkg,
-                mock(ApplicationInfo.class));
+                mock(ApplicationInfo.class), mock(PackageManager.class));
 
         // If things are working correctly, CentralSurfaces.getPackageManagerForUser will call this
         when(context.createPackageContextAsUser(eq(workPkg), anyInt(), eq(workUser)))
                 .thenReturn(userContext);
 
         BubbleViewInfoTask.BubbleViewInfo info = BubbleViewInfoTask.BubbleViewInfo.populate(context,
-                () -> new BubbleTaskView(mock(TaskView.class), mock(Executor.class)),
+                () -> new BubbleTaskView(mock(TaskView.class), mock(Executor.class),
+                        mBubbleController),
                 mPositioner,
                 mBubbleController.getStackView(),
                 new BubbleIconFactory(mContext,
@@ -2802,15 +2813,14 @@ public class BubblesTest extends SysuiTestCase {
     }
 
     /** Creates a context that will return a PackageManager with specific AppInfo. */
-    private Context setUpContextWithPackageManager(String pkg, ApplicationInfo info)
-            throws Exception {
-        final PackageManager pm = mock(PackageManager.class);
+    private Context setUpContextWithPackageManager(String pkg, ApplicationInfo info,
+            PackageManager pm) throws Exception {
         when(pm.getApplicationInfo(eq(pkg), anyInt())).thenReturn(info);
 
         if (info != null) {
             Drawable d = mock(Drawable.class);
             when(d.getBounds()).thenReturn(new Rect());
-            when(pm.getApplicationIcon(anyString())).thenReturn(d);
+            when(info.loadUnbadgedIcon(pm)).thenReturn(d);
             when(pm.getUserBadgedIcon(any(), any())).thenReturn(d);
         }
 

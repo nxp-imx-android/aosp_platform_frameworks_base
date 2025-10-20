@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"S\'està connectant…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> Connectat"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"S\'està vinculant..."</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"No es pot fer la vinculació"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"No es pot establir la connexió"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> connectat (sense accés al telèfon)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> connectat (sense contingut multimèdia)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> connectat (sense telèfon ni multimèdia)"</string>
@@ -116,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Actiu (només el dret)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Actiu (esquerre i dret)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"No s\'ha pogut actualitzar l\'entorn"</string>
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"No s\'ha pogut actualitzar el valor predefinit"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Seleccionat"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Actiu (només contingut multimèdia). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de bateria."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Actiu (només contingut multimèdia), E: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g> de bateria, D: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> de bateria."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Dispositiu convidat. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de bateria."</string>
@@ -345,7 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Quan aquest mode està activat, és possible que l’adreça MAC d\'aquest dispositiu canviï cada vegada que es connecti a una xarxa amb l\'aleatorització d\'adreces MAC activada"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"D\'ús mesurat"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"D\'ús no mesurat"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Mides de la memòria cau del registre"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Mida de la memòria cau del registre"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Selecciona la mida de la memòria intermèdia del registre"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Vols esborrar l\'emmagatzematge persistent del registrador?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Quan deixem de supervisar amb el registrador persistent, hem d\'esborrar les dades del registrador que hi ha al teu dispositiu."</string>
@@ -402,7 +406,7 @@
     <string name="show_key_presses_summary" msgid="725387457373015024">"Mostra avisos visuals en prémer tecles físiques"</string>
     <string name="touchpad_visualizer" msgid="3707916068870825115">"Mostra l\'entrada del ratolí tàctil"</string>
     <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"Superposició de pantalla que mostra les dades d\'entrada del ratolí tàctil i els gestos reconeguts"</string>
-    <string name="show_screen_updates" msgid="2078782895825535494">"Canvis de superfície"</string>
+    <string name="show_screen_updates" msgid="2078782895825535494">"Mostra canvis de superfície"</string>
     <string name="show_screen_updates_summary" msgid="2126932969682087406">"Il·lumina superfícies de finestres en actualitzar-se"</string>
     <string name="show_hw_screen_updates" msgid="2021286231267747506">"Actualitzacions de visualitzacions"</string>
     <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"Il·lumina visualitzacions de finestres creades"</string>
@@ -699,7 +703,7 @@
     <string name="grant_admin" msgid="4323199171790522574">"Sí, converteix-lo en administrador"</string>
     <string name="not_grant_admin" msgid="3557849576157702485">"No, no el converteixis en administrador"</string>
     <string name="guest_exit_dialog_button" msgid="1736401897067442044">"Surt"</string>
-    <string name="guest_exit_dialog_title_non_ephemeral" msgid="7675327443743162986">"Desar l\'activitat de convidat?"</string>
+    <string name="guest_exit_dialog_title_non_ephemeral" msgid="7675327443743162986">"Vols desar l\'activitat de convidat?"</string>
     <string name="guest_exit_dialog_message_non_ephemeral" msgid="223385323235719442">"Pots desar l\'activitat de la sessió actual o suprimir totes les apps i dades"</string>
     <string name="guest_exit_clear_data_button" msgid="3425812652180679014">"Suprimeix"</string>
     <string name="guest_exit_save_data_button" msgid="3690974510644963547">"Desa"</string>

@@ -31,6 +31,7 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.KEY_GESTURE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_SETTINGS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
+import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TOP_ROW_KEY;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TRIPLETAP;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TWOFINGER_DOUBLETAP;
 
@@ -46,6 +47,7 @@ import android.util.ArraySet;
 import android.util.Slog;
 import android.view.accessibility.AccessibilityManager;
 
+import com.android.internal.R;
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType;
 
 import java.util.Collections;
@@ -213,6 +215,7 @@ public final class ShortcutUtils {
                     Settings.Secure.ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED;
             case QUICK_SETTINGS -> Settings.Secure.ACCESSIBILITY_QS_TARGETS;
             case KEY_GESTURE -> Settings.Secure.ACCESSIBILITY_KEY_GESTURE_TARGETS;
+            case TOP_ROW_KEY -> Settings.Secure.ACCESSIBILITY_TOP_ROW_KEY_TARGETS;
             default -> throw new IllegalArgumentException(
                     "Unsupported user shortcut type: " + type);
         };
@@ -236,8 +239,30 @@ public final class ShortcutUtils {
             case Settings.Secure.ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED ->
                     TWOFINGER_DOUBLETAP;
             case Settings.Secure.ACCESSIBILITY_KEY_GESTURE_TARGETS -> KEY_GESTURE;
+            case Settings.Secure.ACCESSIBILITY_TOP_ROW_KEY_TARGETS -> TOP_ROW_KEY;
             default -> throw new IllegalArgumentException(
                     "Unsupported user shortcut key: " + key);
+        };
+    }
+
+    /**
+     * Returns a string resource to label the given {@link UserShortcutType}.
+     *
+     * @param type The shortcut type.
+     * @return An appropriate string resource for the type.
+     */
+    @SuppressLint("SwitchIntDef")
+    public static int typeToString(@UserShortcutType int type) {
+        return switch (type) {
+            case SOFTWARE -> R.string.accessibility_shortcut_label_button;
+            case GESTURE -> R.string.accessibility_shortcut_label_gesture;
+            case HARDWARE -> R.string.accessibility_shortcut_label_volume_keys;
+            case QUICK_SETTINGS -> R.string.accessibility_shortcut_label_quick_settings;
+            case TRIPLETAP -> R.string.accessibility_shortcut_label_triple_tap;
+            // TWOFINGER_DOUBLETAP is currently unsupported.
+            // KEY_GESTURE is not user-facing, so it has no label.
+            case TOP_ROW_KEY -> R.string.accessibility_shortcut_label_top_row_key;
+            default -> throw new IllegalStateException("Unsupported user shortcut type " + type);
         };
     }
 

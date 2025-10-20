@@ -25,6 +25,8 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
+import com.android.systemui.bouncer.domain.interactor.bouncerIsNotShowing
+import com.android.systemui.bouncer.domain.interactor.bouncerIsShowing
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
@@ -163,6 +165,7 @@ class KeyguardInteractorTest : SysuiTestCase() {
             assertThat(secureCameraActive()).isTrue()
 
             bouncerRepository.setPrimaryShow(true)
+            kosmos.bouncerIsShowing()
             assertThat(secureCameraActive()).isFalse()
         }
 
@@ -254,10 +257,12 @@ class KeyguardInteractorTest : SysuiTestCase() {
 
             // Show bouncer
             bouncerRepository.setPrimaryShow(true)
+            kosmos.bouncerIsShowing()
             assertThat(secureCameraActive()).isFalse()
 
             // WHEN device is unlocked (and therefore the bouncer is no longer showing)
             bouncerRepository.setPrimaryShow(false)
+            kosmos.bouncerIsNotShowing()
 
             // THEN we still show secure camera as *not* active
             assertThat(secureCameraActive()).isFalse()
@@ -372,6 +377,32 @@ class KeyguardInteractorTest : SysuiTestCase() {
 
             // Shade reset should not affect dismiss alpha when not dismissible
             shadeRepository.setLegacyShadeExpansion(0f)
+            assertThat(dismissAlpha[0]).isEqualTo(1f)
+            assertThat(dismissAlpha.size).isEqualTo(1)
+        }
+
+    @Test
+    fun dismissAlpha_doesNotEmitWhenQsIsExpandedAndKeyguardDismissible() =
+        testScope.runTest {
+            val dismissAlpha by collectValues(underTest.dismissAlpha)
+            assertThat(dismissAlpha[0]).isEqualTo(1f)
+            assertThat(dismissAlpha.size).isEqualTo(1)
+
+            keyguardTransitionRepository.sendTransitionSteps(from = AOD, to = LOCKSCREEN, testScope)
+
+            // QS is fully expanded
+            shadeRepository.setQsExpansion(1f)
+
+            // User begins to swipe up when dimissible
+            repository.setStatusBarState(StatusBarState.KEYGUARD)
+            repository.setKeyguardDismissible(true)
+
+            shadeRepository.setLegacyShadeExpansion(0.5f)
+            runCurrent()
+
+            shadeRepository.setLegacyShadeExpansion(0.98f)
+            runCurrent()
+
             assertThat(dismissAlpha[0]).isEqualTo(1f)
             assertThat(dismissAlpha.size).isEqualTo(1)
         }
@@ -675,6 +706,7 @@ class KeyguardInteractorTest : SysuiTestCase() {
         testScope.runTest {
             val primaryBouncerShowing by collectLastValue(underTest.primaryBouncerShowing)
             bouncerRepository.setPrimaryShow(true)
+            kosmos.bouncerIsShowing()
             runCurrent()
             assertThat(primaryBouncerShowing).isTrue()
         }
@@ -684,6 +716,7 @@ class KeyguardInteractorTest : SysuiTestCase() {
         testScope.runTest {
             val primaryBouncerShowing by collectLastValue(underTest.primaryBouncerShowing)
             bouncerRepository.setPrimaryShowingSoon(true)
+            kosmos.bouncerIsShowing()
             runCurrent()
             assertThat(primaryBouncerShowing).isTrue()
         }

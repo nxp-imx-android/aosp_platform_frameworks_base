@@ -23,7 +23,7 @@ import android.telecom.DisconnectCause;
 import android.os.ResultReceiver;
 
 /**
- * {@hide}
+ * @hide
  */
 oneway interface ICallControl {
     void setActive(String callId, in ResultReceiver callback);

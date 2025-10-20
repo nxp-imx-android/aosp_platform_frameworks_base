@@ -20,9 +20,7 @@ import static android.content.Intent.ACTION_PACKAGE_ADDED;
 import static android.content.Intent.EXTRA_CHANGED_COMPONENT_NAME_LIST;
 import static android.content.pm.PackageManager.MATCH_SYSTEM_ONLY;
 import static android.view.KeyEvent.KEYCODE_BACK;
-import static android.view.MotionEvent.ACTION_CANCEL;
 import static android.view.MotionEvent.ACTION_DOWN;
-import static android.view.MotionEvent.ACTION_UP;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON;
 import static android.window.BackEvent.EDGE_NONE;
 
@@ -76,7 +74,6 @@ import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
-import android.view.View;
 import android.view.accessibility.AccessibilityManager;
 import android.view.inputmethod.InputMethodManager;
 
@@ -115,8 +112,7 @@ import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeViewController;
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy;
-import com.android.systemui.shade.domain.interactor.ShadeInteractor;
-import com.android.systemui.shade.domain.interactor.ShadeModeInteractor;
+import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor;
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.shared.recents.ILauncherProxy;
 import com.android.systemui.shared.recents.ISystemUiProxy;
@@ -176,9 +172,9 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
     private final ScreenPinningRequest mScreenPinningRequest;
     private final NotificationShadeWindowController mStatusBarWinController;
     private final Provider<SceneInteractor> mSceneInteractor;
-    private final Provider<ShadeInteractor> mShadeInteractor;
-    private final Provider<ShadeModeInteractor> mShadeModeInteractor;
     private final StatusBarTouchShadeDisplayPolicy mShadeDisplayPolicy;
+
+    private final ShadeExpansionTargetDisplayInteractor mShadeExpansionTargetDisplayInteractor;
 
     private final Runnable mConnectionRunnable = () ->
             internalConnectToCurrentUser("runnable: startConnectionToCurrentUser");
@@ -210,9 +206,6 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
 
     private boolean mIsSystemOrVisibleBgUser;
     private int mCurrentBoundedUserId = -1;
-    private boolean mInputFocusTransferStarted;
-    private float mInputFocusTransferStartY;
-    private long mInputFocusTransferStartMillis;
     private int mNavBarMode = NAV_BAR_MODE_3BUTTON;
 
     @VisibleForTesting
@@ -234,7 +227,6 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             });
         }
 
-        // TODO: change the method signature to use (boolean inputFocusTransferStarted)
         @Override
         public void onStatusBarTouchEvent(MotionEvent event) {
             moveShadeWindowIfNeeded(event);
@@ -243,59 +235,34 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
                         + " on display without notification shade");
                 return;
             }
-            verifyCallerAndClearCallingIdentity("onStatusBarTouchEvent", () -> {
+            verifyCallerAndClearCallingIdentityPostMain("onStatusBarTouchEvent", () -> {
                 if (SceneContainerFlag.isEnabled()) {
                     //TODO(b/329863123) implement latency tracking for shade scene
                     Log.i(TAG_OPS, "Scene container enabled. Latency tracking not started.");
-                } else if (event.getActionMasked() == ACTION_DOWN) {
-                    mShadeViewControllerLazy.get().startExpandLatencyTracking();
-                }
-                mHandler.post(() -> {
+
                     int action = event.getActionMasked();
                     if (action == ACTION_DOWN) {
-                        mInputFocusTransferStarted = true;
-                        mInputFocusTransferStartY = event.getY();
-                        mInputFocusTransferStartMillis = event.getEventTime();
-
                         // If scene framework is enabled, set the scene container window to
-                        // visible and let the touch "slip" into that window.
-                        if (SceneContainerFlag.isEnabled()) {
-                            mSceneInteractor.get().onRemoteUserInputStarted("launcher swipe");
-                        } else {
-                            mShadeViewControllerLazy.get().startInputFocusTransfer();
-                        }
+                        // visible so we can start dispatching touches to it.
+                        mSceneInteractor.get().onRemoteUserInputStarted("launcher swipe");
                     }
-                    if (action == ACTION_UP || action == ACTION_CANCEL) {
-                        mInputFocusTransferStarted = false;
-
-                        if (!SceneContainerFlag.isEnabled()) {
-                            float velocity = (event.getY() - mInputFocusTransferStartY)
-                                    / (event.getEventTime() - mInputFocusTransferStartMillis);
-                            if (action == ACTION_CANCEL) {
-                                mShadeViewControllerLazy.get().cancelInputFocusTransfer();
-                            } else {
-                                mShadeViewControllerLazy.get().finishInputFocusTransfer(velocity);
-                            }
-                        } else if (action == ACTION_UP) {
-                            // Gesture was too short to be picked up by scene container touch
-                            // handling; programmatically start the transition to the shade.
-                            onShadeExpansionGesture(event, "short launcher swipe");
-                        }
-                    }
-                    event.recycle();
-                });
+                    mStatusBarWinController.getWindowRootView().dispatchTouchEvent(event);
+                } else {
+                    mShadeViewControllerLazy.get().handleExternalTouch(event);
+                }
             });
         }
 
         @VisibleForTesting
         public void moveShadeWindowIfNeeded(MotionEvent event) {
-            if (ShadeWindowGoesAround.isEnabled() && SceneContainerFlag.isEnabled()) {
+            if (ShadeWindowGoesAround.isEnabled()) {
                 Trace.beginSection("LauncherProxyService#moveShadeWindowIfNeeded");
                 // TODO: b/407496148 - Refactor to use DisplayMetricsRepository instead
                 final DisplayInfo displayInfo = new DisplayInfo();
                 mDisplayTracker.getDisplay(event.getDisplayId()).getDisplayInfo(displayInfo);
-                int displayWidth = displayInfo.logicalWidth;
-                mShadeDisplayPolicy.onStatusBarOrLauncherTouched(event, displayWidth);
+                // Gestures on the launcher homescreen always open the notifications shade.
+                mShadeExpansionTargetDisplayInteractor.setExpansionIntentForNotificationElement(
+                        event.getDisplayId());
                 Trace.endSection();
             }
         }
@@ -305,9 +272,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             if (ShadeWindowGoesAround.isEnabled() && !SceneContainerFlag.isEnabled()) {
                 // For legacy shade case, don't attempt to handle touch events on display that
                 // doesn't have the shade. They're handled with SceneContainerFlag enabled.
-                boolean touchingDisplayWithoutShade =
-                        event.getDisplayId() != mShadeDisplayPolicy.getDisplayId().getValue();
-                return touchingDisplayWithoutShade;
+                return event.getDisplayId() != mShadeDisplayPolicy.getDisplayId().getValue();
             }
             return false;
         }
@@ -319,9 +284,9 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
                 if (SceneContainerFlag.isEnabled()) {
                     int action = event.getActionMasked();
                     if (action == ACTION_DOWN) {
+                        // If scene framework is enabled, set the scene container window to
+                        // visible so we can start dispatching touches to it.
                         mSceneInteractor.get().onRemoteUserInputStarted("trackpad swipe");
-                    } else if (action == ACTION_UP) {
-                        onShadeExpansionGesture(event, "short trackpad swipe");
                     }
                     mStatusBarWinController.getWindowRootView().dispatchTouchEvent(event);
                 } else {
@@ -506,31 +471,6 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         public void toggleQuickSettingsPanel() {
             verifyCallerAndClearCallingIdentityPostMain("toggleQuickSettingsPanel", () ->
                     mCommandQueue.toggleQuickSettingsPanel());
-        }
-
-        private void onShadeExpansionGesture(MotionEvent event, String reason) {
-            if (!SceneContainerFlag.isEnabled()) {
-                return;
-            }
-            if (!mShadeModeInteractor.get().isDualShade()) {
-                mShadeInteractor.get().expandNotificationsShade(reason, null);
-            }
-
-            final DisplayInfo displayInfo = new DisplayInfo();
-            mDisplayTracker.getDisplay(event.getDisplayId()).getDisplayInfo(displayInfo);
-            boolean isLeftSide = event.getX() < displayInfo.logicalWidth / 2f;
-
-            boolean isRtlLayout =
-                    mContext.getResources().getConfiguration().getLayoutDirection()
-                            == View.LAYOUT_DIRECTION_RTL;
-
-            boolean isStartSide = (isLeftSide && !isRtlLayout) || (!isLeftSide && isRtlLayout);
-
-            if (isStartSide) {
-                mShadeInteractor.get().expandNotificationsShade(reason, null);
-            } else {
-                mShadeInteractor.get().expandQuickSettingsShade(reason, null);
-            }
         }
 
         private boolean verifyCaller(String reason) {
@@ -769,9 +709,8 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             NotificationShadeWindowController statusBarWinController,
             PerDisplayRepository<SysUiState> perDisplaySysUiStateRepository,
             Provider<SceneInteractor> sceneInteractor,
-            Provider<ShadeInteractor> shadeInteractor,
-            Provider<ShadeModeInteractor> shadeModeInteractor,
             StatusBarTouchShadeDisplayPolicy shadeDisplayPolicy,
+            ShadeExpansionTargetDisplayInteractor shadeExpansionTargetDisplayInteractor,
             UserTracker userTracker,
             UserManager userManager,
             WakefulnessLifecycle wakefulnessLifecycle,
@@ -813,9 +752,8 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         mScreenPinningRequest = screenPinningRequest;
         mStatusBarWinController = statusBarWinController;
         mSceneInteractor = sceneInteractor;
-        mShadeInteractor = shadeInteractor;
-        mShadeModeInteractor = shadeModeInteractor;
         mShadeDisplayPolicy = shadeDisplayPolicy;
+        mShadeExpansionTargetDisplayInteractor = shadeExpansionTargetDisplayInteractor;
         mUserTracker = userTracker;
         mConnectionBackoffAttempts = 0;
         mRecentsComponentName = ComponentName.unflattenFromString(context.getString(
@@ -1021,12 +959,6 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
     }
 
     public void cleanupAfterDeath() {
-        if (mInputFocusTransferStarted) {
-            mHandler.post(() -> {
-                mInputFocusTransferStarted = false;
-                mShadeViewControllerLazy.get().cancelInputFocusTransfer();
-            });
-        }
         mIsPrevServiceCleanedUp = true;
         startConnectionToCurrentUser();
     }
@@ -1391,9 +1323,6 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         pw.print("  mBound="); pw.println(mBound);
         pw.print("  mCurrentBoundedUserId="); pw.println(mCurrentBoundedUserId);
         pw.print("  mConnectionBackoffAttempts="); pw.println(mConnectionBackoffAttempts);
-        pw.print("  mInputFocusTransferStarted="); pw.println(mInputFocusTransferStarted);
-        pw.print("  mInputFocusTransferStartY="); pw.println(mInputFocusTransferStartY);
-        pw.print("  mInputFocusTransferStartMillis="); pw.println(mInputFocusTransferStartMillis);
         pw.print("  mActiveNavBarRegion="); pw.println(mActiveNavBarRegion);
         pw.print("  mNavBarMode="); pw.println(mNavBarMode);
         pw.print("  mIsPrevServiceCleanedUp="); pw.println(mIsPrevServiceCleanedUp);

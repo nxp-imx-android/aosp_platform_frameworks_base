@@ -81,10 +81,7 @@ class DesktopConfigImpl(
     override fun useWindowShadow(isFocusedWindow: Boolean): Boolean =
         USE_WINDOW_SHADOWS || (isFocusedWindow && USE_WINDOW_SHADOWS_FOCUSED_WINDOW)
 
-    override fun shouldSetBackground(taskInfo: TaskInfo): Boolean =
-        taskInfo.isFreeform &&
-            (!isVeiledResizeEnabled ||
-                DesktopModeFlags.ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS.isTrue)
+    override fun shouldSetBackground(taskInfo: TaskInfo): Boolean = taskInfo.isFreeform
 
     override val maxTaskLimit: Int =
         SystemProperties.getInt(

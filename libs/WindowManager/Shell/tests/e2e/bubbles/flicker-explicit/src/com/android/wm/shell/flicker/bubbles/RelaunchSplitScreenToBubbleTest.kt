@@ -21,19 +21,17 @@ import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.device.apphelpers.StandardAppHelper
-import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.ShowWhenLockedAppHelper
 import com.android.wm.shell.Flags
-import com.android.wm.shell.Utils
+import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.EnterBubbleTestCases
-import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
+import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import com.android.wm.shell.flicker.utils.SplitScreenUtils.enterSplit
 import org.junit.FixMethodOrder
 import org.junit.Rule
-import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
@@ -58,8 +56,7 @@ import org.junit.runners.MethodSorters
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class RelaunchSplitScreenToBubbleTest : BubbleFlickerTestBase(),
-    EnterBubbleTestCases {
+class RelaunchSplitScreenToBubbleTest : BubbleFlickerTestBase(), EnterBubbleTestCases {
 
     companion object {
         val testApp2: StandardAppHelper = ShowWhenLockedAppHelper(instrumentation)
@@ -90,21 +87,11 @@ class RelaunchSplitScreenToBubbleTest : BubbleFlickerTestBase(),
         )
     }
 
-    @get:Rule
-    val setUpRule = ApplyPerParameterRule(
-        Utils.testSetupRule(NavBar.MODE_GESTURAL).around(recordTraceWithTransitionRule),
+    @get:Rule(order = 1)
+    val setUpRule = RunOncePerParameterRule(
+        wrappedRule = testSetupRule(NavBar.MODE_GESTURAL).around(recordTraceWithTransitionRule),
     )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
-
-    @Test
-    @FlakyTest(bugId = 437224803)
-    override fun launcherWindowIsAlwaysVisible() {
-    }
-
-    @Test
-    @FlakyTest(bugId = 437224803)
-    override fun launcherLayerIsAlwaysVisible() {
-    }
 }

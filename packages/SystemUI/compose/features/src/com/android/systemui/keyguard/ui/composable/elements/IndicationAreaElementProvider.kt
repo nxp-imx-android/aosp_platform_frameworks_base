@@ -20,27 +20,27 @@ import android.content.Context
 import android.view.View
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementContentScope
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.binder.KeyguardIndicationAreaBinder
 import com.android.systemui.keyguard.ui.view.KeyguardIndicationArea
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardIndicationAreaViewModel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.KeyguardIndicationController
 import javax.inject.Inject
-import kotlin.collections.List
 import kotlinx.coroutines.DisposableHandle
 
+@SysUISingleton
 class IndicationAreaElementProvider
 @Inject
 constructor(
@@ -48,24 +48,24 @@ constructor(
     private val indicationAreaViewModel: KeyguardIndicationAreaViewModel,
     private val indicationController: KeyguardIndicationController,
 ) : LockscreenElementProvider {
-    override val elements: List<LockscreenElement> by lazy { listOf(indicationAreaElement) }
+    override val elements: List<LockscreenElement> by lazy { listOf(IndicationAreaElement()) }
 
-    private val indicationAreaElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.IndicationArea
-            override val context = this@IndicationAreaElementProvider.context
+    private inner class IndicationAreaElement : LockscreenElement {
+        override val key = LockscreenElementKeys.IndicationArea
+        override val context = this@IndicationAreaElementProvider.context
+        override val source = ElementSource.STANDARD
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                IndicationArea()
-            }
+        @Composable
+        override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
+            IndicationArea(context)
         }
+    }
 
     @Composable
-    fun IndicationArea(modifier: Modifier = Modifier) {
+    fun IndicationArea(
+        lockscreenElementContext: LockscreenElementContext?,
+        modifier: Modifier = Modifier,
+    ) {
         val (disposable, setDisposable) = remember { mutableStateOf<DisposableHandle?>(null) }
 
         AndroidView(
@@ -83,7 +83,8 @@ constructor(
                 view
             },
             onRelease = { disposable?.dispose() },
-            modifier = modifier.fillMaxSize(),
+            modifier =
+                modifier.fillMaxSize().then(lockscreenElementContext?.burnInModifier ?: Modifier),
         )
     }
 }

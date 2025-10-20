@@ -235,7 +235,7 @@ final class InputMonitor {
                 consumer.mWindowHandle.inputConfig |= InputConfig.DUPLICATE_TOUCH_TO_WALLPAPER;
                 break;
             case INPUT_CONSUMER_PIP:
-                // This is a valid consumer type, but we don't need any additional configurations.
+                consumer.mWindowHandle.inputConfig |= InputConfig.DISPLAY_TOPOLOGY_AWARE;
                 break;
             case INPUT_CONSUMER_RECENTS_ANIMATION:
                 consumer.mWindowHandle.inputConfig &= ~InputConfig.NOT_FOCUSABLE;
@@ -258,8 +258,6 @@ final class InputMonitor {
         inputWindowHandle.setTouchOcclusionMode(w.getTouchOcclusionMode());
         inputWindowHandle.setPaused(w.mActivityRecord != null && w.mActivityRecord.paused);
         inputWindowHandle.setWindowToken(w.mClient.asBinder());
-
-        inputWindowHandle.setName(w.getName());
 
         // Update layout params flags to force the window to be not touch modal. We do this to
         // restrict the window's touchable region to the task even if it requests touches outside

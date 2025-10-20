@@ -49,6 +49,7 @@ import android.util.IntArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.wm.BackgroundActivityStartController.BalVerdict;
+import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -186,43 +187,43 @@ class BackgroundLaunchProcessController {
                 // no tokens to allow anything
                 return BalVerdict.BLOCK;
             }
-            if (isCheckingForFgsStart) {
-                // check if any token allows foreground service starts
-                for (int i = mBackgroundStartPrivileges.size(); i-- > 0; ) {
-                    if (mBackgroundStartPrivileges.valueAt(i).allowsBackgroundFgsStarts()) {
-                        return new BalVerdict(BAL_ALLOW_TOKEN, "process allowed by token");
+            List<IBinder> binderTokens = new ArrayList<>();
+            for (int i = mBackgroundStartPrivileges.size(); i-- > 0; ) {
+                BackgroundStartPrivileges backgroundStartPrivileges =
+                        mBackgroundStartPrivileges.valueAt(i);
+                if (isCheckingForFgsStart) {
+                    if (!backgroundStartPrivileges.allowsBackgroundFgsStarts()) {
+                        continue;
                     }
+                    return new BalVerdict(BAL_ALLOW_TOKEN, "process allowed by token");
                 }
-                return BalVerdict.BLOCK;
-            }
-            if (mBackgroundActivityStartCallback == null) {
-                // without a callback just check if any token allows background activity starts
-                for (int i = mBackgroundStartPrivileges.size(); i-- > 0; ) {
-                    if (mBackgroundStartPrivileges.valueAt(i)
-                            .allowsBackgroundActivityStarts()) {
-                        return new BalVerdict(BAL_ALLOW_TOKEN, "process allowed by token")
-                                .allowNewTask();
-                    }
+                if (!backgroundStartPrivileges.allowsBackgroundActivityStarts()) {
+                    continue;
                 }
-                return BalVerdict.BLOCK;
+                if (backgroundStartPrivileges.getOriginatingToken() == null) {
+                    // internal token - always allow
+                    return new BalVerdict(BAL_ALLOW_TOKEN, "process allowed by token")
+                            .allowNewTask();
+                }
+                if (mBackgroundActivityStartCallback == null) {
+                    // without a callback accept any token
+                    return new BalVerdict(BAL_ALLOW_TOKEN, "process allowed by token")
+                            .allowNewTask();
+                }
+                if (!Flags.balIgnoreCallback()) {
+                    binderTokens.add(backgroundStartPrivileges.getOriginatingToken());
+                }
             }
-            List<IBinder> binderTokens = getOriginatingTokensThatAllowBal();
             if (binderTokens.isEmpty()) {
                 // no tokens to allow anything
                 return BalVerdict.BLOCK;
             }
-
-            // The callback will decide.
+            // The callback will decide if the token is accepted.
             BackgroundActivityStartCallback.BackgroundActivityStartCallbackResult
                     activityStartAllowed = mBackgroundActivityStartCallback.isActivityStartAllowed(
                     binderTokens, uid, packageName);
             if (!activityStartAllowed.allowed()) {
                 return BalVerdict.BLOCK;
-            }
-            if (activityStartAllowed.token() == null) {
-                return new BalVerdict(BAL_ALLOW_TOKEN,
-                        "process allowed by callback (token ignored) tokens: " + binderTokens)
-                        .allowNewTask();
             }
             return new BalVerdict(BAL_ALLOW_NOTIFICATION_TOKEN,
                     "process allowed by callback (token: " + activityStartAllowed.token()

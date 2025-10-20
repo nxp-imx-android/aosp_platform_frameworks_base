@@ -21,7 +21,6 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
@@ -50,18 +49,6 @@ class ScreenCaptureRecordParametersModelInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun testChangingTarget() =
-        kosmos.runTest {
-            val newTarget = ScreenCaptureTarget.App(taskId = 1)
-            val target by collectLastValue(underTest.parameters.map { it.target })
-            assertThat(target).isNotEqualTo(newTarget)
-
-            underTest.setRecordTarget(newTarget)
-
-            assertThat(target).isEqualTo(newTarget)
-        }
-
-    @Test
     fun testChangingShouldShowTaps() =
         kosmos.runTest {
             val newShouldShowTaps = true
@@ -71,5 +58,18 @@ class ScreenCaptureRecordParametersModelInteractorTest : SysuiTestCase() {
             underTest.setShouldShowTaps(newShouldShowTaps)
 
             assertThat(shouldShowTaps).isEqualTo(newShouldShowTaps)
+        }
+
+    @Test
+    fun testChangingShouldShowFrontCamera() =
+        kosmos.runTest {
+            val newShouldShowFrontCamera = true
+            val shouldShowFrontCamera by
+                collectLastValue(underTest.parameters.map { it.shouldShowFrontCamera })
+            assertThat(shouldShowFrontCamera).isNotEqualTo(newShouldShowFrontCamera)
+
+            underTest.setShouldShowFrontCamera(newShouldShowFrontCamera)
+
+            assertThat(shouldShowFrontCamera).isEqualTo(newShouldShowFrontCamera)
         }
 }

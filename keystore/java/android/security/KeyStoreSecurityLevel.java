@@ -23,6 +23,7 @@ import android.os.Binder;
 import android.os.RemoteException;
 import android.os.ServiceSpecificException;
 import android.os.StrictMode;
+import android.security.Flags;
 import android.security.keystore.BackendBusyException;
 import android.security.keystore.KeyStoreConnectException;
 import android.system.keystore2.AuthenticatorSpec;
@@ -61,6 +62,26 @@ public class KeyStoreSecurityLevel {
             // This should prompt the caller drop the reference to this operation and retry.
             Log.e(TAG, "Could not connect to Keystore.", e);
             throw new KeyStoreException(ResponseCode.SYSTEM_ERROR, "", e.getMessage());
+        }
+    }
+
+    private <R> R retryBusyException(CheckedRemoteRequest<R> request) throws KeyStoreException {
+        while (true) {
+            try {
+                return request.execute();
+            } catch (ServiceSpecificException e) {
+                // Retry on backend busy.
+                if (e.errorCode == ResponseCode.BACKEND_BUSY) {
+                    Log.w(TAG, "Backend is busy, retrying");
+                    long backOffHint = (long) (Math.random() * 80 + 20);
+                    interruptedPreservingSleep(backOffHint);
+                } else {
+                    throw KeyStore2.getKeyStoreException(e.errorCode, e.getMessage());
+                }
+            } catch (RemoteException e) {
+                Log.e(TAG, "Could not connect to Keystore.", e);
+                throw new KeyStoreException(ResponseCode.SYSTEM_ERROR, "", e.getMessage());
+            }
         }
     }
 
@@ -145,10 +166,15 @@ public class KeyStoreSecurityLevel {
             Collection<KeyParameter> args, int flags, byte[] entropy)
             throws KeyStoreException {
         StrictMode.noteDiskWrite();
-
-        return handleExceptions(() -> mSecurityLevel.generateKey(
-                descriptor, attestationKey, args.toArray(new KeyParameter[args.size()]),
-                flags, entropy));
+        if (Flags.threadSafeKeyGeneration()) {
+            return retryBusyException(() -> mSecurityLevel.generateKey(
+                    descriptor, attestationKey, args.toArray(new KeyParameter[args.size()]),
+                    flags, entropy));
+        } else {
+            return handleExceptions(() -> mSecurityLevel.generateKey(
+                    descriptor, attestationKey, args.toArray(new KeyParameter[args.size()]),
+                    flags, entropy));
+        }
     }
 
     /**

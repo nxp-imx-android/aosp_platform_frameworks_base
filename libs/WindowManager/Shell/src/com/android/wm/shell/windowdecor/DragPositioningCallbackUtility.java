@@ -16,20 +16,40 @@
 
 package com.android.wm.shell.windowdecor;
 
+import static android.view.InputDevice.SOURCE_MOUSE;
+import static android.view.InputDevice.SOURCE_TOUCHSCREEN;
+import static android.view.MotionEvent.TOOL_TYPE_ERASER;
+import static android.view.MotionEvent.TOOL_TYPE_FINGER;
+import static android.view.MotionEvent.TOOL_TYPE_MOUSE;
+import static android.view.MotionEvent.TOOL_TYPE_PALM;
+import static android.view.MotionEvent.TOOL_TYPE_STYLUS;
+import static android.view.MotionEvent.TOOL_TYPE_UNKNOWN;
+
 import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_BOTTOM;
 import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_LEFT;
 import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_RIGHT;
 import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_TOP;
 import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_UNDEFINED;
+import static com.android.wm.shell.windowdecor.DragPositioningCallback.INPUT_METHOD_TYPE_MOUSE;
+import static com.android.wm.shell.windowdecor.DragPositioningCallback.INPUT_METHOD_TYPE_STYLUS;
+import static com.android.wm.shell.windowdecor.DragPositioningCallback.INPUT_METHOD_TYPE_TOUCH;
+import static com.android.wm.shell.windowdecor.DragPositioningCallback.INPUT_METHOD_TYPE_TOUCHPAD;
+import static com.android.wm.shell.windowdecor.DragPositioningCallback.INPUT_METHOD_TYPE_UNKNOWN;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.util.DisplayMetrics;
+import android.view.MotionEvent;
 import android.view.SurfaceControl;
 import android.window.DesktopModeFlags;
 
 import com.android.wm.shell.R;
 import com.android.wm.shell.common.DisplayController;
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod;
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger;
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 
 /**
  * Utility class that contains logic common to classes implementing {@link DragPositioningCallback}
@@ -140,6 +160,23 @@ public class DragPositioningCallbackUtility {
             isAspectRatioMaintained = false;
         }
 
+        int taskId = windowDecoration.getTaskInfo().taskId;
+        PinnedLayerController pinnedLayerController = windowDecoration.getPinnedLayerController();
+        if (pinnedLayerController != null && pinnedLayerController.isPinned(taskId)) {
+            if (isExceedingPinnedLayerConstraint(repositionTaskBounds.width(),
+                    stableBounds.width())) {
+                repositionTaskBounds.left = oldLeft;
+                repositionTaskBounds.right = oldRight;
+                isAspectRatioMaintained = false;
+            }
+            if (isExceedingPinnedLayerConstraint(repositionTaskBounds.height(),
+                    stableBounds.height())) {
+                repositionTaskBounds.top = oldTop;
+                repositionTaskBounds.bottom = oldBottom;
+                isAspectRatioMaintained = false;
+            }
+        }
+
         // If the application is unresizeable and any bounds have been set back to their old
         // location or to a stable bound edge, reset all the bounds to maintain the applications
         // aspect ratio.
@@ -156,6 +193,12 @@ public class DragPositioningCallbackUtility {
         return oldLeft != repositionTaskBounds.left || oldTop != repositionTaskBounds.top
                 || oldRight != repositionTaskBounds.right
                 || oldBottom != repositionTaskBounds.bottom;
+    }
+
+    private static boolean isExceedingPinnedLayerConstraint(int taskDimension,
+            int screenDimension) {
+        double maxDimension = screenDimension * 0.7;
+        return (double) taskDimension > maxDimension;
     }
 
     /**
@@ -259,6 +302,31 @@ public class DragPositioningCallbackUtility {
                 && repositionedHeight > maxResizeBounds.height() && isSizeIncreasing;
     }
 
+    /**
+     * Returns the corresponding input method type used such as a finger or stylus, if known.
+     */
+    @DragPositioningCallback.InputMethodType
+    public static int getInputMethodFromMotionEvent(@Nullable MotionEvent e) {
+        if (e == null) return INPUT_METHOD_TYPE_UNKNOWN;
+
+        final int toolType = e.getToolType(e.findPointerIndex(e.getPointerId(0)));
+        return switch (toolType) {
+            case TOOL_TYPE_STYLUS -> INPUT_METHOD_TYPE_STYLUS;
+            case TOOL_TYPE_MOUSE -> INPUT_METHOD_TYPE_MOUSE;
+            case TOOL_TYPE_FINGER -> {
+                final int source = e.getSource();
+                if (source == SOURCE_MOUSE) {
+                    yield INPUT_METHOD_TYPE_TOUCHPAD;
+                } else if (source == SOURCE_TOUCHSCREEN) {
+                    yield INPUT_METHOD_TYPE_TOUCH;
+                }
+                yield INPUT_METHOD_TYPE_UNKNOWN;
+            }
+            case TOOL_TYPE_ERASER, TOOL_TYPE_PALM, TOOL_TYPE_UNKNOWN -> INPUT_METHOD_TYPE_UNKNOWN;
+            default -> INPUT_METHOD_TYPE_UNKNOWN;
+        };
+    }
+
     private static float getMinWidth(DisplayController displayController,
             WindowDecorationWrapper windowDecoration, boolean canEnterDesktopMode) {
         return windowDecoration.getTaskInfo().minWidth < 0 ? getDefaultMinWidth(displayController,
@@ -312,5 +380,17 @@ public class DragPositioningCallbackUtility {
          * @param taskId id of this positioner's {@link WindowDecoration}
          */
         void onDragMove(int taskId);
+
+        /**
+         * Inform the implementing class that a drag resize has started.
+         */
+        default void onDragResizeStarted(int taskId, @NonNull ResizeTrigger resizeTrigger,
+                @NonNull InputMethod inputMethod, @NonNull Rect startTaskBounds) {}
+
+        /**
+         * Inform the implementing class that a drag resize has ended.
+         */
+        default void onDragResizeEnded(int taskId, @NonNull ResizeTrigger resizeTrigger,
+                @NonNull InputMethod inputMethod, @NonNull Rect endTaskBounds) {}
     }
 }

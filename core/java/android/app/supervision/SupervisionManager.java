@@ -38,6 +38,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.RemoteException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * This class provides information about and manages supervision.
  *
@@ -62,6 +65,11 @@ public class SupervisionManager {
                         } else {
                             onSupervisionDisabled(userId);
                         }
+                    }
+
+                    @Override
+                    public void onPolicyChanged(Policy policy) {
+                        // TODO (b/446219213): Implement listener
                     }
                 };
 
@@ -120,15 +128,31 @@ public class SupervisionManager {
             "android.app.supervision.action.DISABLE_SUPERVISION";
 
     /**
-     * SupervisionService's identifier for setting policies or restrictions in
-     * {@link DevicePolicyManager}.
+     * Activity Action: Ask the user for supervision approval.
+     *
+     * <p>Matching activities from apps that hold the {@link
+     * android.app.role.RoleManager#ROLE_SUPERVISION} role will be included as alternative approval
+     * options in the activity started by the intent returned from {@link
+     * #createConfirmSupervisionCredentialsIntent()}.
+     *
+     * <p>A result code of {@link android.app.Activity#RESULT_OK} indicates successful supervision
+     * approval confirmation.
+     *
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_CONFIRM_SUPERVISION_APPROVAL =
+            "android.app.supervision.action.CONFIRM_SUPERVISION_APPROVAL";
+
+    /**
+     * SupervisionService's identifier for setting policies or restrictions in {@link
+     * DevicePolicyManager}.
      *
      * @hide
      */
     public static final String SUPERVISION_SYSTEM_ENTITY = SupervisionManager.class.getName();
 
     /** @hide */
-    @UnsupportedAppUsage
     public SupervisionManager(Context context, @Nullable ISupervisionManager service) {
         mContext = context;
         mService = service;
@@ -315,15 +339,29 @@ public class SupervisionManager {
     }
 
     /**
-     * Registers a listener to be notified on supervision state changes.
+     * Registers a listener to be notified on supervision state changes for the current user .
      *
      * @param listener Listener to be registered. Can't be null.
      * @hide
      */
     public void registerSupervisionListener(@NonNull SupervisionListener listener) {
+        registerSupervisionListenerForUser(mContext.getUserId(), listener);
+    }
+
+    /**
+     * Registers a listener to be notified on supervision state changes for a given user.
+     *
+     * <p>The listener will only be notified on supervision state changes for the specified user.
+     *
+     * @param userId the int ID of the user to register the listener for.
+     * @param listener Listener to be registered. Can't be null.
+     * @hide
+     */
+    public void registerSupervisionListenerForUser(
+            @UserIdInt int userId, @NonNull SupervisionListener listener) {
         if (mService != null) {
             try {
-                mService.registerSupervisionListener(mContext.getUserId(), listener.mListener);
+                mService.registerSupervisionListener(userId, listener.mListener);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
@@ -340,6 +378,44 @@ public class SupervisionManager {
         if (mService != null) {
             try {
                 mService.unregisterSupervisionListener(listener.mListener);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+    }
+
+    /**
+     * Returns a list of all policies that have been set by supervision apps.
+     *
+     * @return The list of policies
+     * @see Policy
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    @NonNull
+    public List<Policy> getPolicies() {
+        if (mService != null) {
+            try {
+                return mService.getPolicies(mContext.getUserId());
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+
+        return new ArrayList<>();
+    }
+
+    /**
+     * Sets a policy.
+     *
+     * @param policy The policy to set.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    public void setPolicy(@NonNull Policy policy) {
+        if (mService != null) {
+            try {
+                mService.setPolicy(mContext.getUserId(), policy);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }

@@ -270,7 +270,6 @@ public class IntentFirewall {
                 Slog.e(TAG, "Remote exception while retrieving packages", ex);
             }
         }
-
         EventLogTags.writeIfwIntentMatched(intentType, shortComponent, callerUid,
                 callerPackageCount, callerPackages, intent.getAction(), resolvedType,
                 intent.getDataString(), intent.getFlags());
@@ -289,31 +288,31 @@ public class IntentFirewall {
      * LOG_PACKAGES_SUFFICIENT_LENGTH, in which case it will stop and return what it has.
      */
     private static String joinPackages(String[] packages) {
-        boolean first = true;
+        // packages is guaranteed to be non-null and not empty. the content of it also non-null
+        // and not empty because it is returned by PackageManager.getPackagesForUid().
         StringBuilder sb = new StringBuilder();
         for (int i=0; i<packages.length; i++) {
             String pkg = packages[i];
-
-            // + 1 length for the comma. This logic technically isn't correct for the first entry,
-            // but it's not critical.
-            if (sb.length() + pkg.length() + 1 < LOG_PACKAGES_MAX_LENGTH) {
-                if (!first) {
-                    sb.append(',');
-                } else {
-                    first = false;
-                }
-                sb.append(pkg);
-            } else if (sb.length() >= LOG_PACKAGES_SUFFICIENT_LENGTH) {
-                return sb.toString();
+            if (sb.length() + pkg.length() <= LOG_PACKAGES_MAX_LENGTH) {
+                // only if the length after appending is still within max length, do we append this
+                // package. also append an extra comma at the end.
+                sb.append(pkg).append(',');
+            } else if (sb.length() > LOG_PACKAGES_SUFFICIENT_LENGTH) {
+                // keep in mind the sb includes a trailing comma. So the test to break is > not >=
+                break;
             }
         }
-        if (sb.length() == 0 && packages.length > 0) {
+        if (sb.isEmpty()) {
             String pkg = packages[0];
             // truncating from the end - the last part of the package name is more likely to be
             // interesting/unique
+            // This means all packages were individually longer than LOG_PACKAGES_MAX_LENGTH.
+            // packages[0] is safe to access because packages.length > 0.
+            // String.substring is safe because pkg.length() > LOG_PACKAGES_MAX_LENGTH
             return pkg.substring(pkg.length() - LOG_PACKAGES_MAX_LENGTH + 1) + '-';
         }
-        return null;
+        // Remove the last trailing comma before returning.
+        return sb.substring(0, sb.length() - 1);
     }
 
     public static File getRulesDir() {

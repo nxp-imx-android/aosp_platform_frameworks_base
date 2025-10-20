@@ -41,13 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Ufuna ukukhipha okubuyekeziwe kule app?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Ufuna ukukhipha okubuyekeziwe kule app kubo bonke abasebenzisi?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Ufuna ukukhipha le app kubo bonke abasebenzisi?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"Ufuna ukukhipha le app kumsebenzisi \'ongu-<xliff:g id="USER_NAME">%1$s</xliff:g>\'?"</string>
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Khipha le app wenzela umsebenzisi \"u-<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"I-app ayitholakalanga"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Awukwazi ukukhipha le app"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Ayikhishiwe i-app"</string>
     <string name="title_archive" msgid="2876455228073419830">"Ufuna ukugcina le app isikhathi eside?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Ufuna ukubagcinela le app isikhathi eside bonke abasebenzisi bakho?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"Ingabe ufuna ukufaka le app kungobo yomlando uyifakele umsebenzisi \'ongu-<xliff:g id="USER_NAME">%1$s</xliff:g>\'?"</string>
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Faka le app kungobo yomlando wenzela umsebenzisi \"u-<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Ufuna ukubuyisa le app?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Kudingeka wenze okuthile"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Isitoreji asanele"</string>
@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Ukuze ubuyise le app, kuzodingeka ufake i-<xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Kube nenkinga ngesikhathi sizama ukubuyisa le app"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"I-<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> iyingxenye ye-app elandelayo: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Le app ivinjiwe. Ukusiza ukugcina idivayisi yakho nedatha ziphephile, ama-app avela konjiniyela abaqinisekisiwe kuphela angafakwa.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Funda kabanzi mayelana nokuqinisekiswa konjiniyela&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Le app ayizange ibuyekezwe. Ukusiza ukugcina idivayisi yakho nedatha ziphephile, izibuyekezo kuphela ezivela konjiniyela abaqinisekisiwe ezingafakwa.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Funda kabanzi mayelana nokuqinisekiswa konjiniyela&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Le app ayizange ifakwe. Ama-app onjiniyela abangaqinisekisiwe angase angaphephi.&lt;/p&gt; &lt;p&gt;Kudingeka ukuxhumeka kwe-inthanethi ukuze uqinisekise unjiniyela we-app. Hlola ukuxhuma kwakho, bese uzama ukufaka futhi. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Funda kabanzi mayelana nokuqinisekiswa konjiniyela&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Le app ayizange ibuyekezwe. Izibuyekezo ezivela konjiniyela abangaqinisekisiwe kungenzeka zingabi eziphephile.&lt;/p&gt; &lt;p&gt;Ukuxhumeka kwe-inthanethi kuyadingeka ukuze kuqinisekiswe unjiniyela we-app. Hlola ukuxhuma kwakho, bese uzama ukubuyekeza futhi. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Funda kabanzi mayelana nokuqinisekiswa konjiniyela&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Kube nenkinga ngokuqinisekisa unjiniyela wale app. Ama-app avela konjiniyela abangaqinisekisiwe kungenzeka angaphephi, ngakho-ke i-app ayizange ifakwe.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Funda kabanzi mayelana nokuqinisekiswa konjiniyela&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Kube nenkinga ngokuqinisekisa unjiniyela wale app. Izibuyekezo ezivela konjiniyela abangaqinisekisiwe kungenzeka zingaphephi, ngakho-ke i-app ayizange ibuyekezwe.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Funda kabanzi mayelana nokuqinisekiswa konjiniyela&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Le app ivaliwe ngoba kube nenkinga yokuqinisekisa unjiniyela. Ukusiza ukugcina idivayisi yakho nedatha ziphephile, ama-app avela konjiniyela abaqinisekisiwe kuphela angafakwa.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Funda kabanzi mayelana nokuqinisekiswa konjiniyela&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"Le app ayibuyekezwanga ngoba kube nenkinga ekuqinisekiseni unjiniyela. Ukusiza ukugcina idivayisi yakho nedatha ziphephile, izibuyekezo kuphela ezivela konjiniyela abaqinisekisiwe ezingafakwa.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Funda kabanzi mayelana nokuqinisekiswa konjiniyela&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Uma uyifaka ngaphandle kokuqinisekisa, ukhumbule ukuthi ama-app onjiniyela abangaqinisekisiwe angase abeke idivayisi nedatha yakho engcupheni."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Uma ubuyekeza ngaphandle kokuqinisekisa, ukhumbule ukuthi okubuyekeziwe konjiniyela abangaqinisekisiwe kungase kufake idivayisi nedatha yakho engcupheni."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Akaqinisekisiwe unjiniyela we-app"</string>
@@ -135,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Buyisela"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Khipha okubuyekeziwe"</string>
     <string name="button_settings" msgid="3837571366246132287">"Amasethingi"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Zama futhi"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Ikhophi ye-<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

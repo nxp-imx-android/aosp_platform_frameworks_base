@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.notification.stack;
 
+import static com.android.systemui.Flags.notificationFixHunShadows;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
@@ -33,6 +35,7 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.shade.transition.LargeScreenShadeInterpolator;
 import com.android.systemui.statusbar.NotificationShelf;
 import com.android.systemui.statusbar.notification.SourceType;
+import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeIconView;
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView;
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator;
@@ -151,6 +154,10 @@ public class StackScrollAlgorithm {
         getNotificationChildrenStates(algorithmState);
     }
 
+    private static boolean isEmptyShadeView(ExpandableView v) {
+        return v instanceof EmptyShadeView || v instanceof EmptyShadeIconView;
+    }
+
     private void updateAlphaState(StackScrollAlgorithmState algorithmState,
             AmbientState ambientState) {
         for (ExpandableView view : algorithmState.visibleChildren) {
@@ -200,15 +207,16 @@ public class StackScrollAlgorithm {
 
             // On the final call to {@link #resetViewState}, the alpha is set back to 1f but
             // ambientState.isExpansionChanging() is now false. This causes a flicker on the
-            // EmptyShadeView after the shade is collapsed. Make sure the empty shade view
-            // isn't visible unless the shade is expanded.
-            if (view instanceof EmptyShadeView && ambientState.getExpansionFraction() == 0f) {
+            // EmptyShadeView or the FooterView after the shade is collapsed. Make sure these views
+            // aren't visible unless the shade is expanded.
+            if (ambientState.getExpansionFraction() == 0f && (isEmptyShadeView(view) || (
+                    SceneContainerFlag.isEnabled() && view instanceof FooterView))) {
                 viewState.setAlpha(0f);
             }
 
             // For EmptyShadeView if on keyguard, we need to control the alpha to create
             // a nice transition when the user is dragging down the notification panel.
-            if (view instanceof EmptyShadeView && ambientState.isOnKeyguard()) {
+            if (isEmptyShadeView(view) && ambientState.isOnKeyguard()) {
                 final float fractionToShade = ambientState.getFractionToShade();
                 viewState.setAlpha(ShadeInterpolation.getContentAlpha(fractionToShade));
             }
@@ -464,7 +472,7 @@ public class StackScrollAlgorithm {
                 if (v == ambientState.getShelf()) {
                     continue;
                 }
-                if (v instanceof EmptyShadeView) {
+                if (isEmptyShadeView(v)) {
                     emptyShadeVisible = true;
                 }
                 if (!SceneContainerFlag.isEnabled() && v instanceof FooterView footerView) {
@@ -512,6 +520,8 @@ public class StackScrollAlgorithm {
             }
 
             if (ambientState.getShelf() != null) {
+                // TODO(b/443808383): the shelfStart calculated here does not equal to the value
+                //  calculated in updateChildState() when a notification is pulsing
                 final float shelfStart = ambientState.getStackEndHeight()
                         - ambientState.getShelf().getIntrinsicHeight()
                         - mPaddingBetweenElements;
@@ -714,12 +724,14 @@ public class StackScrollAlgorithm {
         );
         if (view instanceof FooterView) {
             if (SceneContainerFlag.isEnabled()) {
-                final float footerEnd =
-                        stackTop + viewState.getYTranslation() + view.getIntrinsicHeight();
-                final boolean noSpaceForFooter = footerEnd > ambientState.getStackCutoff();
-                ((FooterView.FooterViewState) viewState).hideContent =
-                        noSpaceForFooter || (ambientState.isClearAllInProgress()
-                                && !hasNonClearableNotifs(algorithmState));
+                if (!ambientState.isExpansionChanging()) {
+                    final float footerEnd =
+                            stackTop + viewState.getYTranslation() + view.getIntrinsicHeight();
+                    final boolean noSpaceForFooter = footerEnd > ambientState.getStackCutoff();
+                    ((FooterView.FooterViewState) viewState).hideContent =
+                            noSpaceForFooter || (ambientState.isClearAllInProgress()
+                                    && !hasNonClearableNotifs(algorithmState));
+                }
             } else {
                 // TODO(b/333445519): shouldBeHidden should reflect whether the shade is closed
                 //  already, so we shouldn't need to use ambientState here. However,
@@ -739,7 +751,7 @@ public class StackScrollAlgorithm {
                 }
             }
         } else {
-            if (view instanceof EmptyShadeView) {
+            if (isEmptyShadeView(view)) {
                 float fullHeight = SceneContainerFlag.isEnabled()
                         ? ambientState.getStackCutoff() - ambientState.getStackTop()
                         : ambientState.getLayoutMaxHeight() + mMarginBottom
@@ -1297,7 +1309,7 @@ public class StackScrollAlgorithm {
                 if (childrenOnTop != 0.0f) {
                     // To elevate the later HUN over previous HUN when multiple HUNs exist
                     childrenOnTop++;
-                } else {
+                } else if (ambientState.isShadeExpanded() || !notificationFixHunShadows()) {
                     // Handles HUN shadow when Shade is opened, and AmbientState.mScrollY > 0
                     // Calculate the HUN's z-value based on its overlapping fraction with QQS Panel.
                     // When scrolling down shade to make HUN back to in-position in Notif Panel,
@@ -1309,6 +1321,9 @@ public class StackScrollAlgorithm {
                             1.0f,
                             overlap / childViewState.height
                     );
+                } else {
+                    // Increment by one to add the full shadow when the shade is closed.
+                    childrenOnTop++;
                 }
                 childViewState.setZTranslation(baseZ
                         + childrenOnTop * mPinnedZTranslationExtra);

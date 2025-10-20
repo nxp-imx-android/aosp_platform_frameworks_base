@@ -15,13 +15,19 @@
  */
 package android.app;
 
+import static android.platform.test.ravenwood.RavenwoodProxyHelper.sNotImplementedHandler;
+
 import android.annotation.NonNull;
+import android.content.ContentProvider;
 import android.content.Context;
+import android.content.IContentProvider;
 import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
 import android.platform.test.ravenwood.RavenwoodEnvironment;
+import android.platform.test.ravenwood.RavenwoodProxyHelper;
 import android.platform.test.ravenwood.RavenwoodSystemServer;
 import android.platform.test.ravenwood.RavenwoodUtils;
+import android.provider.Settings;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -61,6 +67,9 @@ public final class RavenwoodAppDriver {
 
     @GuardedBy("mLoadedApkCache")
     private final Map<String, LoadedApk> mLoadedApkCache = new HashMap<>();
+
+    @GuardedBy("mProviders")
+    private final Map<String, IContentProvider> mProviders = new HashMap<>();
 
     /** This is an empty instance created by Objenesis. None of its fields are initialized. */
     private final ActivityThread mActivityThread;
@@ -110,7 +119,6 @@ public final class RavenwoodAppDriver {
         var uiAutomation = new UiAutomation(
                 mInstContext, new IUiAutomationConnection.Default());
 
-        var instArgs = Bundle.EMPTY;
         try {
             var clazz = Class.forName(env.getInstrumentationClass());
             mInstrumentation = (Instrumentation) clazz.getConstructor().newInstance();
@@ -123,7 +131,6 @@ public final class RavenwoodAppDriver {
 
         // Need to set it, as it's used by LoadedApk afer this.
         mActivityThread.mInstrumentation = mInstrumentation;
-        InstrumentationRegistry.registerInstance(mInstrumentation, instArgs);
 
         // Create the Application instance, which will be the "target" context.
         var application = mTargetLoadedApk.makeApplicationInner(
@@ -139,11 +146,25 @@ public final class RavenwoodAppDriver {
         mActivityThread.mInitialApplication = application;
         mTargetContext = appContext;
 
-        mInstrumentation.onCreate(instArgs);
+        mInstrumentation.onCreate(Bundle.EMPTY);
         mInstrumentation.callApplicationOnCreate(application);
 
         // Maybe do it first?
         RavenwoodSystemServer.init(mSystemContextImpl);
+
+        // Register a stub settings provider that always return nothing
+        var mockSettings = RavenwoodProxyHelper.newProxy(
+                IContentProvider.class,
+                IContentProvider.descriptor,
+                (proxy, method, args) -> switch (method.getName()) {
+                    case "call" -> Bundle.EMPTY;
+                    default -> sNotImplementedHandler.invoke(proxy, method, args);
+                });
+        synchronized (mProviders) {
+            mProviders.put(Settings.AUTHORITY, mockSettings);
+        }
+
+        reset();
     }
 
     /**
@@ -244,5 +265,18 @@ public final class RavenwoodAppDriver {
 
     public Instrumentation getInstrumentation() {
         return mInstrumentation;
+    }
+
+    public IContentProvider getProvider(Context context, String auth) {
+        synchronized (mProviders) {
+            return mProviders.get(ContentProvider.getAuthorityWithoutUserId(auth));
+        }
+    }
+
+    /**
+     * Reset some global state.
+     */
+    public void reset() {
+        InstrumentationRegistry.registerInstance(mInstrumentation, Bundle.EMPTY);
     }
 }

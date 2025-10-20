@@ -24,8 +24,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,11 +43,14 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrainHeight
@@ -62,6 +67,7 @@ import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
+import com.android.systemui.res.R
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel
 
 object BundleHeader {
@@ -98,6 +104,9 @@ fun BundleHeader(viewModel: BundleHeaderViewModel, modifier: Modifier = Modifier
                         timestampRange(startMillis = 150, endMillis = 250, easing = LinearEasing) {
                             fade(BundleHeader.Elements.PreviewIcon1)
                         }
+                        timestampRange(startMillis = 150, endMillis = 250, easing = LinearEasing) {
+                            fade(NotificationRowPrimitives.Elements.ExpandedNumber)
+                        }
                         timestampRange(
                             startMillis = 50,
                             endMillis = 300,
@@ -131,7 +140,13 @@ fun BundleHeader(viewModel: BundleHeaderViewModel, modifier: Modifier = Modifier
         onDispose { viewModel.composeScope = null }
     }
 
-    Box(modifier) {
+    // In most cases the height is expected to be equal to the header height dimension's value, but
+    // it is set as the minimum here so that the header can resize if necessary for larger font
+    // or display sizes.
+    Box(
+        modifier =
+            modifier.heightIn(min = dimensionResource(R.dimen.notification_bundle_header_height))
+    ) {
         Background(background = viewModel.backgroundDrawable, modifier = Modifier.matchParentSize())
         SceneTransitionLayout(
             state = state,
@@ -178,14 +193,23 @@ private fun ContentScope.BundleHeaderContent(
             viewModel.bundleIcon,
             large = false, // BundleHeader is always small
             modifier =
-                Modifier.padding(start = 16.dp, end = 8.dp)
+                Modifier.padding(start = 16.dp, end = 16.dp)
                     .align(Alignment.CenterVertically)
+                    .width(40.dp)
                     // Has to be a shared element because we may have a semi-transparent background
                     .element(NotificationRowPrimitives.Elements.NotificationIconBackground),
         )
+
+        // Set FontWeight.ExtraBold if bold text adjustment is enabled
+        // because titleMediumEmphasized is already bold
+        val config = LocalConfiguration.current
+        val isBoldTextEnabled = config.fontWeightAdjustment > 0
         Text(
             text = stringResource(viewModel.titleText),
-            style = MaterialTheme.typography.titleMediumEmphasized,
+            style =
+                MaterialTheme.typography.titleMediumEmphasized.copy(
+                    fontWeight = if (isBoldTextEnabled) FontWeight.ExtraBold else FontWeight.Bold
+                ),
             color = MaterialTheme.colorScheme.primary,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,

@@ -16,12 +16,15 @@
 
 package com.android.systemui.keyevent
 
+import android.app.contextualsearch.ContextualSearchManager
 import android.content.res.Resources
 import android.hardware.input.InputManager
 import android.hardware.input.InputManager.KeyGestureEventHandler
 import android.hardware.input.InputManager.KeyGestureEventListener
 import android.hardware.input.KeyGestureEvent
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TASKBAR
@@ -30,9 +33,12 @@ import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
+import com.android.systemui.LauncherProxyService
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
-import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureKeyboardShortcutInteractor
+import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
+import com.android.systemui.shared.recents.ILauncherProxy
 import com.android.systemui.statusbar.CommandQueue
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -44,6 +50,7 @@ import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnit
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
@@ -55,8 +62,15 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     @JvmField @Rule var mockitoRule = MockitoJUnit.rule()
     @Mock private lateinit var inputManager: InputManager
     @Mock private lateinit var commandQueue: CommandQueue
-    @Mock private lateinit var shadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy
+    @Mock
+    private lateinit var shadeExpansionTargetDisplayInteractor:
+        ShadeExpansionTargetDisplayInteractor
+    @Mock
+    private lateinit var screenCaptureKeyboardShortcutInteractor:
+        ScreenCaptureKeyboardShortcutInteractor
     @Mock private lateinit var resources: Resources
+    @Mock private lateinit var launcherProxyService: LauncherProxyService
+    @Mock private lateinit var launcherProxy: ILauncherProxy
     @Captor private lateinit var keyGestureEventsCaptor: ArgumentCaptor<List<Int>>
     @Captor
     private lateinit var keyGestureEventHandlerCaptor: ArgumentCaptor<KeyGestureEventHandler>
@@ -67,13 +81,16 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
 
     @Before
     fun setup() {
+        whenever(launcherProxyService.proxy).thenReturn(launcherProxy)
         underTest =
             SysUIKeyGestureEventInitializer(
                 context.mainExecutor,
                 resources,
                 inputManager,
                 commandQueue,
-                shadeDisplayPolicy,
+                shadeExpansionTargetDisplayInteractor,
+                screenCaptureKeyboardShortcutInteractor,
+                launcherProxyService,
             )
     }
 
@@ -81,6 +98,8 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     @EnableFlags(
         com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI,
         com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
+        com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT,
+        com.android.hardware.input.Flags.FLAG_ENABLE_CONTEXTUAL_SEARCH_DESKTOP_ENTRYPOINTS,
     )
     fun start_flagEnabled_registerKeyGestureEvents() {
         underTest.start()
@@ -91,6 +110,8 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
                 .containsExactly(
                     KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL,
                     KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL,
+                    KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
+                    KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH,
                 )
         }
     }
@@ -99,6 +120,8 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     @DisableFlags(
         com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI,
         com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
+        com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT,
+        com.android.hardware.input.Flags.FLAG_ENABLE_CONTEXTUAL_SEARCH_DESKTOP_ENTRYPOINTS,
     )
     fun start_flagDisabled_noRegisterKeyGestureEvents() {
         underTest.start()
@@ -120,7 +143,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
             /* focusedToken= */ null,
         )
 
-        verify(shadeDisplayPolicy).onNotificationPanelKeyboardShortcut()
+        verify(shadeExpansionTargetDisplayInteractor).onNotificationPanelKeyboardShortcut()
         verify(commandQueue).toggleNotificationsPanel()
     }
 
@@ -138,8 +161,46 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
             /* focusedToken= */ null,
         )
 
-        verify(shadeDisplayPolicy).onQSPanelKeyboardShortcut()
+        verify(shadeExpansionTargetDisplayInteractor).onQSPanelKeyboardShortcut()
         verify(commandQueue).toggleQuickSettingsPanel()
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT)
+    fun handleKeyGestureEvent_eventTypeTakePartialScreenshot_callsScreenCaptureInteractor() {
+        underTest.start()
+        verify(inputManager)
+            .registerKeyGestureEventHandler(any(), keyGestureEventHandlerCaptor.capture())
+
+        keyGestureEventHandlerCaptor.value.handleKeyGestureEvent(
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT)
+                .build(),
+            /* focusedToken= */ null,
+        )
+
+        verify(screenCaptureKeyboardShortcutInteractor).attemptPartialRegionScreenshot()
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_CONTEXTUAL_SEARCH_DESKTOP_ENTRYPOINTS)
+    fun handleKeyGestureEvent_eventTypeContextualSearch_invokesContextualSearch() {
+        underTest.start()
+        verify(inputManager)
+            .registerKeyGestureEventHandler(any(), keyGestureEventHandlerCaptor.capture())
+
+        keyGestureEventHandlerCaptor.value.handleKeyGestureEvent(
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH)
+                .build(),
+            /* focusedToken= */ null,
+        )
+
+        verify(launcherProxy)
+            .invokeContextualSearch(
+                eq(ContextualSearchManager.ENTRYPOINT_KEYBOARD_SHORTCUT),
+                eq(null),
+            )
     }
 
     @Test

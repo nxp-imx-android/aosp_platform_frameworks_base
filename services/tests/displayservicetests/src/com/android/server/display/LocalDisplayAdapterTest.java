@@ -51,6 +51,8 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.Spline;
 import android.view.Display;
 import android.view.DisplayAddress;
@@ -64,7 +66,7 @@ import androidx.test.runner.AndroidJUnit4;
 
 import com.android.dx.mockito.inline.extended.StaticMockitoSession;
 import com.android.internal.R;
-import com.android.server.LocalServices;
+import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.server.display.LocalDisplayAdapter.BacklightAdapter;
 import com.android.server.display.color.ColorDisplayService;
 import com.android.server.display.feature.DisplayManagerFlags;
@@ -78,6 +80,7 @@ import com.google.common.truth.Truth;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -155,6 +158,11 @@ public class LocalDisplayAdapterTest {
     private static final List<Integer> mDisplayOffloadSupportedStates
             = new ArrayList<>(List.of(Display.STATE_DOZE_SUSPEND));
 
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+    @Rule
+    public LocalServiceKeeperRule mLocalServiceKeeperRule = new LocalServiceKeeperRule();
+
     @Before
     public void setUp() throws Exception {
         mMockitoSession = mockitoSession()
@@ -163,15 +171,14 @@ public class LocalDisplayAdapterTest {
                 .startMocking();
         mHandler = new Handler(Looper.getMainLooper());
         doReturn(mMockedResources).when(mMockedContext).getResources();
-        LocalServices.removeServiceForTest(LightsManager.class);
-        LocalServices.addService(LightsManager.class, mMockedLightsManager);
-        LocalServices.removeServiceForTest(ColorDisplayService.ColorDisplayServiceInternal.class);
-        LocalServices.addService(ColorDisplayService.ColorDisplayServiceInternal.class,
+        mLocalServiceKeeperRule.overrideLocalService(LightsManager.class, mMockedLightsManager);
+        mLocalServiceKeeperRule.overrideLocalService(
+                ColorDisplayService.ColorDisplayServiceInternal.class,
                 mMockedColorDisplayServiceInternal);
         mInjector = new Injector();
         when(mSurfaceControlProxy.getBootDisplayModeSupport()).thenReturn(true);
         mAdapter = new LocalDisplayAdapter(mMockedSyncRoot, mMockedContext, mHandler,
-                mListener, mFlags, mMockedDisplayNotificationManager, mInjector);
+                mListener, mFlags, mMockedDisplayNotificationManager, mInjector, false);
         spyOn(mAdapter);
         doReturn(mMockedContext).when(mAdapter).getOverlayContext();
 
@@ -555,10 +562,10 @@ public class LocalDisplayAdapterTest {
 
         assertDisplayDpi(
                 mListener.addedDisplays.get(0).getDisplayDeviceInfoLocked(), PORT_A, 100, 100,
-                136);
+                0);
         assertDisplayDpi(
                 mListener.addedDisplays.get(1).getDisplayDeviceInfoLocked(), PORT_B, 100, 100,
-                136);
+                0);
     }
 
     private static class DisplayModeWrapper {
@@ -852,53 +859,7 @@ public class LocalDisplayAdapterTest {
     }
 
     @Test
-    public void testAfterOnModeChanged_presentationOffsetsAreNotUpdatedWithFlagOff()
-            throws Exception {
-        doReturn(false).when(mFlags).isDispatchDisplayModeWithVsyncOffsetsEnabled();
-        long appVsyncOffsetNanosMode1 = 100;
-        long presentationDeadlineNanosMode1 = 200;
-        long appVsyncOffsetNanosMode2 = 101;
-        long presentationDeadlineNanosMode2 = 201;
-        SurfaceControl.DisplayMode displayMode1 = createFakeDisplayMode(0, 1920, 1080, 60f,
-                appVsyncOffsetNanosMode1, presentationDeadlineNanosMode1);
-        SurfaceControl.DisplayMode displayMode2 = createFakeDisplayMode(1, 1920, 1080, 120f,
-                appVsyncOffsetNanosMode2, presentationDeadlineNanosMode2);
-        SurfaceControl.DisplayMode[] modes =
-                new SurfaceControl.DisplayMode[]{displayMode1, displayMode2};
-        FakeDisplay display = new FakeDisplay(PORT_A, modes, 0, displayMode1.peakRefreshRate);
-        setUpDisplay(display);
-        updateAvailableDisplays();
-        mAdapter.registerLocked();
-        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
-        assertThat(mListener.addedDisplays.size()).isEqualTo(1);
-        assertThat(mListener.changedDisplays).isEmpty();
-
-        DisplayDeviceInfo displayDeviceInfo = mListener.addedDisplays.get(
-                0).getDisplayDeviceInfoLocked();
-        assertEquals(appVsyncOffsetNanosMode1, displayDeviceInfo.appVsyncOffsetNanos);
-        assertEquals(presentationDeadlineNanosMode1, displayDeviceInfo.presentationDeadlineNanos);
-
-        long newAppVsyncOffsetNanos = 400;
-        long newPresentationDeadlineNanos = 500;
-
-        mInjector.getTransmitter().sendOnModeChanged(display,
-                1, (long) displayMode2.peakRefreshRate, newAppVsyncOffsetNanos,
-                newPresentationDeadlineNanos);
-        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
-        assertTrue(mListener.traversalRequested);
-
-        DisplayDevice displayDevice = mListener.changedDisplays.get(0);
-        displayDevice.applyPendingDisplayDeviceInfoChangesLocked();
-        displayDeviceInfo = mListener.addedDisplays.get(0).getDisplayDeviceInfoLocked();
-        // Returns the values captured through mode.
-        assertEquals(appVsyncOffsetNanosMode2, displayDeviceInfo.appVsyncOffsetNanos);
-        assertEquals(presentationDeadlineNanosMode2, displayDeviceInfo.presentationDeadlineNanos);
-        assertThat(mListener.changedDisplays.size()).isEqualTo(1);
-    }
-
-    @Test
     public void testAfterOnModeChanged_presentationOffsetsAreUpdatedWithFlagOn() throws Exception {
-        doReturn(true).when(mFlags).isDispatchDisplayModeWithVsyncOffsetsEnabled();
         long appVsyncOffsetNanosMode1 = 100;
         long presentationDeadlineNanosMode1 = 200;
         long appVsyncOffsetNanosMode2 = 101;
@@ -925,9 +886,10 @@ public class LocalDisplayAdapterTest {
         long newAppVsyncOffsetNanos = 400;
         long newPresentationDeadlineNanos = 500;
 
-        mInjector.getTransmitter().sendOnModeChanged(display,
+        mInjector.getTransmitter().sendOnModeAndFrameRateOverridesChanged(display,
                 1, (long) displayMode2.peakRefreshRate, newAppVsyncOffsetNanos,
-                newPresentationDeadlineNanos);
+                newPresentationDeadlineNanos, new FrameRateOverride[0],
+                /*supportedRefreshRates*/ new float[0]);
         waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
         assertTrue(mListener.traversalRequested);
 
@@ -941,8 +903,8 @@ public class LocalDisplayAdapterTest {
     }
 
     @Test
+    @EnableFlags(com.android.graphics.surfaceflinger.flags.Flags.FLAG_SUPPORTED_REFRESH_RATE_UPDATE)
     public void testOnModeAndFrameRateOverridesChanged() throws Exception {
-        doReturn(true).when(mFlags).isDispatchDisplayModeWithVsyncOffsetsEnabled();
         doReturn(true).when(mFlags).isSingleAppEventForModeAndFrameRateOverrideEnabled();
         long appVsyncOffsetNanosMode1 = 100;
         long presentationDeadlineNanosMode1 = 200;
@@ -974,9 +936,10 @@ public class LocalDisplayAdapterTest {
         long newPresentationDeadlineNanos = 500;
 
         FrameRateOverride[] frameRateOverrides = new FrameRateOverride[1];
+        float[] supportedRefreshRates = {120.f, 60.f, 40.f, 30.f, 24.f, 20.f};
         mInjector.getTransmitter().sendOnModeAndFrameRateOverridesChanged(display,
                 /*modeId*/ 1, (long) displayMode2.peakRefreshRate, newAppVsyncOffsetNanos,
-                newPresentationDeadlineNanos, frameRateOverrides);
+                newPresentationDeadlineNanos, frameRateOverrides, supportedRefreshRates);
         waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
         assertTrue(mListener.traversalRequested);
 
@@ -989,6 +952,7 @@ public class LocalDisplayAdapterTest {
         assertThat(mListener.changedDisplays.size()).isEqualTo(1);
         activeMode = getModeById(displayDeviceInfo, displayDeviceInfo.modeId);
         assertThat(activeMode.matches(1920, 1080, 120f)).isTrue();
+        assertEquals(supportedRefreshRates.length, displayDeviceInfo.supportedRefreshRates.length);
     }
 
     @Test
@@ -1972,23 +1936,15 @@ public class LocalDisplayAdapterTest {
             waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
         }
 
-        public void sendOnModeChanged(FakeDisplay display, int modeId,
-                long renderPeriod, long appVsyncOffsetNanos, long presentationDeadlineNanos)
-                throws InterruptedException {
-            mHandler.post(() -> mListener.onModeChanged(/* timestampNanos = */ 0,
-                    display.address.getPhysicalDisplayId(), modeId, renderPeriod,
-                    appVsyncOffsetNanos, presentationDeadlineNanos));
-            waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
-        }
-
         public void sendOnModeAndFrameRateOverridesChanged(FakeDisplay display, int modeId,
                 long renderPeriod, long appVsyncOffsetNanos, long presentationDeadlineNanos,
-                FrameRateOverride[] frameRateOverrides) throws InterruptedException {
+                FrameRateOverride[] frameRateOverrides, float[] supportedRefreshRates)
+                throws InterruptedException {
 
             mHandler.post(() -> mListener.onModeAndFrameRateOverridesChanged(
                     /* timestampNanos = */ 0, display.address.getPhysicalDisplayId(), modeId,
                     renderPeriod, appVsyncOffsetNanos, presentationDeadlineNanos,
-                    frameRateOverrides));
+                    frameRateOverrides, supportedRefreshRates));
             waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
         }
     }
@@ -2012,7 +1968,8 @@ public class LocalDisplayAdapterTest {
 
         @Override
         public DisplayDeviceConfig createDisplayDeviceConfig(Context context,
-                long physicalDisplayId, boolean isFirstDisplay, DisplayManagerFlags flags) {
+                long physicalDisplayId, int port, boolean isFirstDisplay,
+                DisplayManagerFlags flags) {
             return mMockDisplayDeviceConfig;
         }
 

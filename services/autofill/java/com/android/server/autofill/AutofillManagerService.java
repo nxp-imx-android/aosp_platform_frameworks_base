@@ -18,6 +18,7 @@ package com.android.server.autofill;
 
 import static android.Manifest.permission.MANAGE_AUTO_FILL;
 import static android.content.Context.AUTOFILL_MANAGER_SERVICE;
+import static android.os.UserManager.isVisibleBackgroundUsersEnabled;
 import static android.view.autofill.AutofillManager.MAX_TEMP_AUGMENTED_SERVICE_DURATION_MS;
 import static android.view.autofill.AutofillManager.getSmartSuggestionModeToString;
 
@@ -95,6 +96,7 @@ import com.android.server.autofill.ui.AutoFillUI;
 import com.android.server.infra.AbstractMasterSystemService;
 import com.android.server.infra.FrameworkResourcesServiceNameResolver;
 import com.android.server.infra.SecureSettingsServiceNameResolver;
+import com.android.server.pm.UserManagerInternal;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -147,6 +149,9 @@ public final class AutofillManagerService
     @GuardedBy("sLock")
     private static int sVisibleDatasetsMaxCount = 0;
 
+    static boolean sSupportMultiUserMultiDisplay = Flags.supportMultiUserMultiDisplay()
+            && isVisibleBackgroundUsersEnabled();
+
     /**
      * Object used to set the name of the augmented autofill service.
      */
@@ -160,6 +165,8 @@ public final class AutofillManagerService
     final FrameworkResourcesServiceNameResolver mFieldClassificationResolver;
 
     private final AutoFillUI mUi;
+    @GuardedBy("mLock")
+    private final SparseArray<AutoFillUI> mUis = new SparseArray<>();
     final ComponentName mCredentialAutofillService;
 
     private final LocalLog mRequestsHistory = new LocalLog(20);
@@ -171,6 +178,7 @@ public final class AutofillManagerService
 
     private final LocalService mLocalService = new LocalService();
     private final ActivityManagerInternal mAm;
+    private final UserManagerInternal mUm;
 
     private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -185,7 +193,22 @@ public final class AutofillManagerService
                 synchronized (mLock) {
                     visitServicesLocked((s) -> s.forceRemoveFinishedSessionsLocked());
                 }
-                mUi.hideAll(null);
+                if (sSupportMultiUserMultiDisplay) {
+                    final int userId = getSendingUserId();
+                    if (userId >= 0) {
+                        // The Broadcast was sent by a specific user, so hide UI for this particular
+                        // user.
+                        hideAutoFillUIForUser(userId);
+                    } else {
+                        // The Broadcast was sent by the system, so hide UI for all users.
+                        final int[] userIds = mUm.getUserIds();
+                        for (int i = 0; i < userIds.length; i++) {
+                            hideAutoFillUIForUser(userIds[i]);
+                        }
+                    }
+                } else {
+                    mUi.hideAll(null);
+                }
             }
         }
     };
@@ -248,6 +271,7 @@ public final class AutofillManagerService
                 UserManager.DISALLOW_AUTOFILL, PACKAGE_UPDATE_POLICY_REFRESH_EAGER);
         mUi = new AutoFillUI(ActivityThread.currentActivityThread().getSystemUiContext());
         mAm = LocalServices.getService(ActivityManagerInternal.class);
+        mUm = LocalServices.getService(UserManagerInternal.class);
 
         DeviceConfig.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_AUTOFILL,
                 ActivityThread.currentApplication().getMainExecutor(),
@@ -444,14 +468,36 @@ public final class AutofillManagerService
     @Override // from AbstractMasterSystemService
     protected AutofillManagerServiceImpl newServiceLocked(@UserIdInt int resolvedUserId,
             boolean disabled) {
+        AutoFillUI ui;
+        if (sSupportMultiUserMultiDisplay) {
+            ui = mUis.get(resolvedUserId);
+            if (ui == null) {
+                final int displayId = mUm.getMainDisplayAssignedToUser(resolvedUserId);
+                final Context context =
+                        ActivityThread.currentActivityThread().getSystemUiContext(displayId);
+                final Context userContext =
+                        context.createContextAsUser(UserHandle.of(resolvedUserId), 0);
+                ui = new AutoFillUI(userContext);
+                if (sDebug) {
+                    Slog.d(TAG, "Creating AutoFillUI as user " + userContext.getUserId()
+                            + " on display " + userContext.getDisplayId());
+                }
+                mUis.put(resolvedUserId, ui);
+            }
+        } else {
+            ui = mUi;
+        }
         return new AutofillManagerServiceImpl(this, mLock, mUiLatencyHistory, mWtfHistory,
-                resolvedUserId, mUi, mAutofillCompatState, disabled, mDisabledInfoCache);
+                resolvedUserId, ui, mAutofillCompatState, disabled, mDisabledInfoCache);
     }
 
     @Override // AbstractMasterSystemService
     protected void onServiceRemoved(@NonNull AutofillManagerServiceImpl service,
             @UserIdInt int userId) {
         service.destroyLocked();
+        if (sSupportMultiUserMultiDisplay) {
+            mUis.remove(userId);
+        }
         mDisabledInfoCache.remove(userId);
         mAutofillCompatState.removeCompatibilityModeRequests(userId);
     }
@@ -481,7 +527,18 @@ public final class AutofillManagerService
     @Override // from SystemService
     public void onUserSwitching(@Nullable TargetUser from, @NonNull TargetUser to) {
         if (sDebug) Slog.d(TAG, "Hiding UI when user switched");
-        mUi.hideAll(null);
+        if (sSupportMultiUserMultiDisplay) {
+            hideAutoFillUIForUser(from.getUserIdentifier());
+        } else {
+            mUi.hideAll(null);
+        }
+    }
+
+    private void hideAutoFillUIForUser(@UserIdInt int userId) {
+        final AutoFillUI ui = mUis.get(userId);
+        if (ui != null) {
+            ui.hideAll(null);
+        }
     }
 
     @SmartSuggestionMode int getSupportedSmartSuggestionModesLocked() {
@@ -1117,13 +1174,18 @@ public final class AutofillManagerService
 
     private final class LocalService extends AutofillManagerInternal {
         @Override
-        public void onBackKeyPressed() {
-            if (sDebug) Slog.d(TAG, "onBackKeyPressed()");
-            mUi.hideAll(null);
+        public void onBackKeyPressed(@UserIdInt int userId) {
+            if (sDebug) Slog.d(TAG, "onBackKeyPressed():userId=" + userId);
+            if (sSupportMultiUserMultiDisplay) {
+                hideAutoFillUIForUser(userId);
+            } else {
+                mUi.hideAll(null);
+            }
             synchronized (mLock) {
                 final AutofillManagerServiceImpl service =
-                        getServiceForUserWithLocalBinderIdentityLocked(
-                            UserHandle.getCallingUserId());
+                        getServiceForUserWithLocalBinderIdentityLocked(sSupportMultiUserMultiDisplay
+                                ? userId
+                                : UserHandle.getCallingUserId());
                 service.onBackKeyPressed();
             }
         }
@@ -2208,7 +2270,14 @@ public final class AutofillManagerService
             }
 
             if (uiOnly) {
-                mUi.dump(pw);
+                if (sSupportMultiUserMultiDisplay) {
+                    for (int i = 0; i < mUis.size(); i++) {
+                        final AutoFillUI ui = mUis.get(i);
+                        ui.dump(pw);
+                    }
+                } else {
+                    mUi.dump(pw);
+                }
                 return;
             }
 
@@ -2253,7 +2322,14 @@ public final class AutofillManagerService
                     }
                     pw.println("User data constraints: ");
                     UserData.dumpConstraints(prefix, pw);
-                    mUi.dump(pw);
+                    if (sSupportMultiUserMultiDisplay) {
+                        for (int i = 0; i < mUis.size(); i++) {
+                            final AutoFillUI ui = mUis.get(i);
+                            ui.dump(pw);
+                        }
+                    } else {
+                        mUi.dump(pw);
+                    }
                     pw.print("Autofill Compat State: ");
                     mAutofillCompatState.dump(prefix, pw);
                     pw.print("from device config: ");

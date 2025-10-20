@@ -48,13 +48,13 @@ static struct {
 
 class NativeKeyCharacterMap {
 public:
-    NativeKeyCharacterMap(int32_t deviceId, std::unique_ptr<KeyCharacterMap> map)
+    NativeKeyCharacterMap(DeviceId deviceId, std::unique_ptr<KeyCharacterMap> map)
           : mDeviceId(deviceId), mMap(std::move(map)) {}
 
     ~NativeKeyCharacterMap() {
     }
 
-    inline int32_t getDeviceId() const {
+    inline DeviceId getDeviceId() const {
         return mDeviceId;
     }
 
@@ -63,11 +63,11 @@ public:
     }
 
 private:
-    int32_t mDeviceId;
+    DeviceId mDeviceId;
     std::unique_ptr<KeyCharacterMap> mMap;
 };
 
-jobject android_view_KeyCharacterMap_create(JNIEnv* env, int32_t deviceId,
+jobject android_view_KeyCharacterMap_create(JNIEnv* env, DeviceId deviceId,
                                             std::unique_ptr<KeyCharacterMap> kcm) {
     NativeKeyCharacterMap* nativeMap = new NativeKeyCharacterMap(deviceId, std::move(kcm));
     if (!nativeMap) {

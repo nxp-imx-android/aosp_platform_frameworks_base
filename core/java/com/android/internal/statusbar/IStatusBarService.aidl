@@ -60,6 +60,8 @@ interface IStatusBarService
     @UnsupportedAppUsage
     void setIconVisibility(String slot, boolean visible);
     @UnsupportedAppUsage
+    int getIcon(String slot);
+    @UnsupportedAppUsage
     void removeIcon(String slot);
     /**
      * Sets the new IME window status.

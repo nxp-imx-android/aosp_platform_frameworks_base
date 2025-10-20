@@ -16,9 +16,6 @@
 
 package android.service.wallpaper;
 
-import static android.app.Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING;
-import static android.app.Flags.enableWallpaperTransformSurfaceControlCommand;
-import static android.app.Flags.liveWallpaperContentHandling;
 import static android.app.WallpaperManager.COMMAND_FREEZE;
 import static android.app.WallpaperManager.COMMAND_TRANSFORM_SURFACE_CONTROL;
 import static android.app.WallpaperManager.COMMAND_UNFREEZE;
@@ -35,7 +32,6 @@ import android.animation.AnimationHandler;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
-import android.annotation.FlaggedApi;
 import android.annotation.FloatRange;
 import android.annotation.MainThread;
 import android.annotation.NonNull;
@@ -391,7 +387,6 @@ public abstract class WallpaperService extends Service {
         private SurfaceControl mScreenshotSurfaceControl;
         private Point mScreenshotSize = new Point();
 
-        private final boolean mEnableTransformSurfaceControlCommand;
         private final boolean mDisableDrawWakeLock;
 
         final BaseSurfaceHolder mSurfaceHolder = new BaseSurfaceHolder() {
@@ -406,13 +401,13 @@ public abstract class WallpaperService extends Service {
 
             @Override
             public void onRelayoutContainer() {
-                Message msg = mCaller.obtainMessage(MSG_UPDATE_SURFACE);
+                Message msg = mCaller.obtainMessageI(MSG_UPDATE_SURFACE, /* forceRelayout= */ 1);
                 mCaller.sendMessage(msg);
             }
 
             @Override
             public void onUpdateSurface() {
-                Message msg = mCaller.obtainMessage(MSG_UPDATE_SURFACE);
+                Message msg = mCaller.obtainMessageI(MSG_UPDATE_SURFACE, /* forceRelayout= */ 1);
                 mCaller.sendMessage(msg);
             }
 
@@ -585,7 +580,6 @@ public abstract class WallpaperService extends Service {
         public Engine(Supplier<Long> clockFunction, Handler handler) {
             mClockFunction = clockFunction;
             mHandler = handler;
-            mEnableTransformSurfaceControlCommand = enableWallpaperTransformSurfaceControlCommand();
             mDisableDrawWakeLock = CompatChanges.isChangeEnabled(DISABLE_DRAW_WAKE_LOCK_WALLPAPER)
                     && disableDrawWakeLock();
         }
@@ -723,7 +717,8 @@ public abstract class WallpaperService extends Service {
                     ? (mWindowFlags&~WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
                     : (mWindowFlags|WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
             if (mCreated) {
-                updateSurface(false, -1, false);
+                Message msg = mCaller.obtainMessageI(MSG_UPDATE_SURFACE, /* forceRelayout= */ 0);
+                mCaller.sendMessage(msg);
             }
         }
 
@@ -738,11 +733,12 @@ public abstract class WallpaperService extends Service {
         public void setOffsetNotificationsEnabled(boolean enabled) {
             mWindowPrivateFlags = enabled
                     ? (mWindowPrivateFlags |
-                        WindowManager.LayoutParams.PRIVATE_FLAG_WANTS_OFFSET_NOTIFICATIONS)
+                    WindowManager.LayoutParams.PRIVATE_FLAG_WANTS_OFFSET_NOTIFICATIONS)
                     : (mWindowPrivateFlags &
-                        ~WindowManager.LayoutParams.PRIVATE_FLAG_WANTS_OFFSET_NOTIFICATIONS);
+                            ~WindowManager.LayoutParams.PRIVATE_FLAG_WANTS_OFFSET_NOTIFICATIONS);
             if (mCreated) {
-                updateSurface(false, -1, false);
+                Message msg = mCaller.obtainMessageI(MSG_UPDATE_SURFACE, /* forceRelayout= */ 0);
+                mCaller.sendMessage(msg);
             }
         }
 
@@ -758,7 +754,7 @@ public abstract class WallpaperService extends Service {
             }
         }
 
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage
         public void setFixedSizeAllowed(boolean allowed) {
             mFixedSizeAllowed = allowed;
@@ -955,7 +951,6 @@ public abstract class WallpaperService extends Service {
          * unchanged
          */
         @Nullable
-        @FlaggedApi(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
         public WallpaperDescription onApplyWallpaper(@SetWallpaperFlags int which) {
             return null;
         }
@@ -1368,20 +1363,17 @@ public abstract class WallpaperService extends Service {
                             (mDisplay.getInstallOrientation() + mDisplay.getRotation()) % 4);
                         mSurfaceControl.setTransformHint(transformHint);
                         if (mBbqSurfaceControl == null) {
-                            if (mEnableTransformSurfaceControlCommand) {
-                                mTransformSurfaceControl = new SurfaceControl.Builder()
-                                        .setName("Wallpaper Transform wrapper")
-                                        .setHidden(false)
-                                        .setParent(mSurfaceControl)
-                                        .setCallsite("Wallpaper#relayout")
-                                        .build();
-                            }
+                            mTransformSurfaceControl = new SurfaceControl.Builder()
+                                    .setName("Wallpaper Transform wrapper")
+                                    .setHidden(false)
+                                    .setParent(mSurfaceControl)
+                                    .setCallsite("Wallpaper#relayout")
+                                    .build();
                             mBbqSurfaceControl = new SurfaceControl.Builder()
                                     .setName("Wallpaper BBQ wrapper")
                                     .setHidden(false)
                                     .setBLASTLayer()
-                                    .setParent(mEnableTransformSurfaceControlCommand
-                                            ? mTransformSurfaceControl : mSurfaceControl)
+                                    .setParent(mTransformSurfaceControl)
                                     .setCallsite("Wallpaper#relayout")
                                     .build();
                             SurfaceControl.Transaction transaction =
@@ -1394,10 +1386,8 @@ public abstract class WallpaperService extends Service {
                             }
                             transaction.setDefaultFrameRateCompatibility(mBbqSurfaceControl,
                                     frameRateCompat).apply();
-                            if (mEnableTransformSurfaceControlCommand) {
-                                // TODO: b/406967924 - remove after creating public APIs
-                                sendTransformSurfaceControl();
-                            }
+                            // TODO: b/406967924 - remove after creating public APIs
+                            sendTransformSurfaceControl();
                         }
                         // Propagate transform hint from WM, so we can use the right hint for the
                         // first frame.
@@ -2256,8 +2246,7 @@ public abstract class WallpaperService extends Service {
             if (mScreenshotSurfaceControl != null) {
                 new SurfaceControl.Transaction()
                         .remove(mScreenshotSurfaceControl)
-                        .show(mEnableTransformSurfaceControlCommand
-                                ? mTransformSurfaceControl : mBbqSurfaceControl)
+                        .show(mTransformSurfaceControl)
                         .apply();
                 mScreenshotSurfaceControl = null;
             }
@@ -2354,8 +2343,7 @@ public abstract class WallpaperService extends Service {
             // Place on top everything else.
             t.setLayer(mScreenshotSurfaceControl, Integer.MAX_VALUE);
             t.show(mScreenshotSurfaceControl);
-            t.hide(mEnableTransformSurfaceControlCommand
-                    ? mTransformSurfaceControl : mBbqSurfaceControl);
+            t.hide(mTransformSurfaceControl);
             t.apply();
 
             return true;
@@ -2485,6 +2473,13 @@ public abstract class WallpaperService extends Service {
             }
 
             return ret;
+        }
+
+        /**
+         * @hide
+         */
+        public SurfaceControl getRenderingSurfaceControl() {
+            return mBbqSurfaceControl;
         }
     }
 
@@ -2702,11 +2697,7 @@ public abstract class WallpaperService extends Service {
         private void doAttachEngine() {
             Trace.beginSection("WPMS.onCreateEngine");
             Engine engine;
-            if (liveWallpaperContentHandling()) {
-                engine = onCreateEngine(mDescription);
-            } else {
-                engine = onCreateEngine();
-            }
+            engine = onCreateEngine(mDescription);
             Trace.endSection();
             mEngine = engine;
             Trace.beginSection("WPMS.mConnection.attachEngine-" + mDisplayId);
@@ -2786,7 +2777,7 @@ public abstract class WallpaperService extends Service {
                     return;
                 }
                 case MSG_UPDATE_SURFACE:
-                    mEngine.updateSurface(true, -1, false);
+                    mEngine.updateSurface(message.arg1 != 0, -1, false);
                     break;
                 case MSG_ZOOM:
                     mEngine.setZoom(Float.intBitsToFloat(message.arg1));
@@ -3029,7 +3020,6 @@ public abstract class WallpaperService extends Service {
      * @param description content to display
      * @return the rendering engine
      */
-    @FlaggedApi(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     @MainThread
     @Nullable
     public Engine onCreateEngine(@NonNull WallpaperDescription description) {

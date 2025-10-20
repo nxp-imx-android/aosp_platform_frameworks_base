@@ -16,10 +16,14 @@
 
 package android.companion;
 
+import static android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_APP_STREAMING;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_AUTOMOTIVE_PROJECTION;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_COMPUTER;
+import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_MEDICAL;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_WATCH;
+import static android.Manifest.permission.USE_COMPANION_TRANSPORTS;
+import static android.companion.AssociationInfo.METADATA_TIMESTAMP;
 import static android.graphics.drawable.Icon.TYPE_URI;
 import static android.graphics.drawable.Icon.TYPE_URI_ADAPTIVE_BITMAP;
 
@@ -31,6 +35,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresFeature;
 import android.annotation.RequiresPermission;
+import android.annotation.StringDef;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
@@ -61,6 +66,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.OutcomeReceiver;
 import android.os.ParcelFileDescriptor;
+import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.service.notification.NotificationListenerService;
@@ -201,6 +207,9 @@ public final class CompanionDeviceManager {
     /** @hide */
     @IntDef(flag = true, prefix = { "FLAG_" }, value = {
             FLAG_CALL_METADATA,
+            FLAG_TASK_CONTINUITY,
+            FLAG_UNIVERSAL_MODES,
+            FLAG_UNIVERSAL_CLIPBOARD,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface DataSyncTypes {}
@@ -208,9 +217,65 @@ public final class CompanionDeviceManager {
     /**
      * Used by {@link #enableSystemDataSyncForTypes(int, int)}}.
      * Sync call metadata like muting, ending and silencing a call.
-     *
      */
-    public static final int FLAG_CALL_METADATA = 1;
+    public static final int FLAG_CALL_METADATA = 1 << 0;
+
+    /**
+     * Used by {@link #enableSystemDataSyncForTypes(int, int)}}.
+     * Synchronize task continuity data like open tasks, and enable this transport for Handoff.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    public static final int FLAG_TASK_CONTINUITY = 1 << 1;
+
+    /**
+     * Used by {@link #enableSystemDataSyncForTypes(int, int)}}.
+     * Synchronize contextual modes such as DND, bedtime mode, etc. for Mode Sync.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @RequiresPermission(Manifest.permission.REQUEST_COMPANION_SELF_MANAGED)
+    public static final int FLAG_UNIVERSAL_MODES = 1 << 2;
+
+    /**
+     * Used by {@link #enableSystemDataSyncForTypes(int, int)}}.
+     * Synchronize copied content across devices for Universal Clipboard.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @RequiresPermission(Manifest.permission.REQUEST_COMPANION_SELF_MANAGED)
+    public static final int FLAG_UNIVERSAL_CLIPBOARD = 1 << 3;
+
+    /**
+     * The feature name for task continuity manager.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    public static final String FEATURE_TASK_CONTINUITY = "task_continuity_manager";
+
+    /**
+     * The feature name for the mode Sync.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    public static final String FEATURE_MODE_SYNC = "mode_sync";
+
+    /**
+     * The feature name for airplane mode sync.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    public static final String FEATURE_AIRPLANE_MODE_SYNC = "airplane_mode_sync";
+
+    /** @hide */
+    @StringDef(prefix = { "FEATURE_" }, value = {
+            FEATURE_TASK_CONTINUITY,
+            FEATURE_MODE_SYNC,
+            FEATURE_AIRPLANE_MODE_SYNC,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FeatureName {}
 
     /**
      * A device, returned in the activity result of the {@link IntentSender} received in
@@ -236,54 +301,97 @@ public final class CompanionDeviceManager {
      */
     public static final String EXTRA_ASSOCIATION = "android.companion.extra.ASSOCIATION";
 
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = "MESSAGE_", value = {MESSAGE_ONEWAY_PCC, MESSAGE_REQUEST_PING,
+            MESSAGE_ONEWAY_PING, MESSAGE_REQUEST_REMOTE_AUTHENTICATION,
+            MESSAGE_REQUEST_CONTEXT_SYNC, MESSAGE_ONEWAY_TASK_CONTINUITY,
+            MESSAGE_REQUEST_PERMISSION_RESTORE, MESSAGE_REQUEST_METADATA_UPDATE,
+            MESSAGE_ONEWAY_TO_WEARABLE})
+    public @interface MessageType {}
+
+
+    /**
+     * Message header assigned to PCC (Private Compute Core) messages.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_TRUSTED_DEVICES)
+    @SystemApi
+    @RequiresPermission(ACCESS_COMPANION_MESSAGE_PCC)
+    public static final int MESSAGE_ONEWAY_PCC = 0x43806767; // +PCC
     /**
      * Test message type without a designated callback.
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_REQUEST_PING = 0x63807378; // ?PIN
     /**
      * Test message type without a response.
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_ONEWAY_PING = 0x43807378; // +PIN
     /**
      * Message header assigned to the remote authentication handshakes.
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_REQUEST_REMOTE_AUTHENTICATION = 0x63827765; // ?RMA
     /**
      * Message header assigned to the telecom context sync metadata.
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_REQUEST_CONTEXT_SYNC = 0x63678883; // ?CXS
     /**
      * Message header assigned to task continuity messages.
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_ONEWAY_TASK_CONTINUITY = 0x43678884; // +TSK
     /**
      * Message header assigned to the permission restore request.
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_REQUEST_PERMISSION_RESTORE = 0x63826983; // ?RES
+    /**
+     * Message header assigned to local metadata update broadcast message.
+     * CDM will automatically broadcast the metadata update to paired devices. This symbol serves
+     * as a reference to prevent message type conflicts and should not be used by external services.
+     *
+     * @hide
+     */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
+    public static final int MESSAGE_REQUEST_METADATA_UPDATE = 0x63776885; // ?MDU
     /**
      * Message header assigned to the one-way message sent from the wearable device.
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_ONEWAY_FROM_WEARABLE = 0x43708287; // +FRW
     /**
      * Message header assigned to the one-way message sent to the wearable device.
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_ONEWAY_TO_WEARABLE = 0x43847987; // +TOW
+
+    /**
+     * Message header assigned to the one-way message sent to the CrossDeviceSync system app.
+     *
+     * @hide
+     */
+    public static final int MESSAGE_ONEWAY_CROSS_DEVICE_SYNC = 0x43676883; // +CDS
 
     /**
      * Callback for applications to receive updates about and the outcome of
@@ -543,6 +651,7 @@ public final class CompanionDeviceManager {
     @RequiresPermission(anyOf = {
             REQUEST_COMPANION_PROFILE_WATCH,
             REQUEST_COMPANION_PROFILE_COMPUTER,
+            REQUEST_COMPANION_PROFILE_MEDICAL,
             REQUEST_COMPANION_PROFILE_APP_STREAMING,
             REQUEST_COMPANION_PROFILE_AUTOMOTIVE_PROJECTION
             }, conditional = true)
@@ -614,7 +723,8 @@ public final class CompanionDeviceManager {
      * @param associationId id of the device association.
      * @param flags system data types to be enabled.
      */
-    public void enableSystemDataSyncForTypes(int associationId, @DataSyncTypes int flags) {
+    public void enableSystemDataSyncForTypes(int associationId,
+            @RequiresPermission @DataSyncTypes int flags) {
         if (mService == null) {
             Log.w(TAG, "CompanionDeviceManager service is not available.");
             return;
@@ -637,7 +747,8 @@ public final class CompanionDeviceManager {
      * @param associationId id of the device association.
      * @param flags system data types to be disabled.
      */
-    public void disableSystemDataSyncForTypes(int associationId, @DataSyncTypes int flags) {
+    public void disableSystemDataSyncForTypes(int associationId,
+            @RequiresPermission @DataSyncTypes int flags) {
         if (mService == null) {
             Log.w(TAG, "CompanionDeviceManager service is not available.");
             return;
@@ -1047,7 +1158,7 @@ public final class CompanionDeviceManager {
      * @see com.android.server.companion.transport.Transport
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public void addOnTransportsChangedListener(
             @NonNull @CallbackExecutor Executor executor,
             @NonNull Consumer<List<AssociationInfo>> listener) {
@@ -1075,7 +1186,7 @@ public final class CompanionDeviceManager {
      *
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public void removeOnTransportsChangedListener(
             @NonNull Consumer<List<AssociationInfo>> listener) {
         if (mService == null) {
@@ -1101,15 +1212,43 @@ public final class CompanionDeviceManager {
     }
 
     /**
+     * Returns the list of all associations with transports that are currently attached.
+     *
+     * @return the list of associations
+     * @hide
+     */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
+    public List<AssociationInfo> getAllAssociationsWithTransports() {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return Collections.emptyList();
+        }
+
+        try {
+            return mService.getAllAssociationsWithTransports();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Sends a message to associated remote devices. The target associations must already have a
      * connected transport.
      *
+     * @param messageType message type for the message.
+     * @param data message data.
+     * @param associationIds association ids (representing the remote devices) to send the
+     *                       message to.
+     *
      * @see #attachSystemDataTransport(int, InputStream, OutputStream)
+     * @see #associate(AssociationRequest, Executor, Callback)
      *
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
-    public void sendMessage(int messageType, @NonNull byte[] data, @NonNull int[] associationIds) {
+    @FlaggedApi(Flags.FLAG_TRUSTED_DEVICES)
+    @SystemApi
+    public void sendMessage(@MessageType int messageType, @NonNull byte[] data,
+            @NonNull int[] associationIds) {
         if (mService == null) {
             Log.w(TAG, "CompanionDeviceManager service is not available.");
             return;
@@ -1131,9 +1270,10 @@ public final class CompanionDeviceManager {
      *                 sender and the message payload as a byte array.
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    @FlaggedApi(Flags.FLAG_TRUSTED_DEVICES)
+    @SystemApi
     public void addOnMessageReceivedListener(
-            @NonNull @CallbackExecutor Executor executor, int messageType,
+            @NonNull @CallbackExecutor Executor executor, @MessageType int messageType,
             @NonNull BiConsumer<Integer, byte[]> listener) {
         if (mService == null) {
             Log.w(TAG, "CompanionDeviceManager service is not available.");
@@ -1161,7 +1301,8 @@ public final class CompanionDeviceManager {
      *
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    @FlaggedApi(Flags.FLAG_TRUSTED_DEVICES)
+    @SystemApi
     public void removeOnMessageReceivedListener(int messageType,
             @NonNull BiConsumer<Integer, byte[]> listener) {
         if (mService == null) {
@@ -1200,7 +1341,7 @@ public final class CompanionDeviceManager {
      * @see com.android.server.companion.transport.Transport
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public void addOnTransportEventListener(
             @NonNull @CallbackExecutor Executor executor,
             int associationId,
@@ -1230,7 +1371,7 @@ public final class CompanionDeviceManager {
      * @see com.android.server.companion.transport.Transport
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public void removeOnTransportEventListener(int associationId,
             @NonNull Consumer<Integer> listener) {
         if (mService == null) {
@@ -1256,6 +1397,143 @@ public final class CompanionDeviceManager {
                     iterator.remove();
                 }
             }
+        }
+    }
+
+    /**
+     * Registers a listener to receive device presence events for specific associations.
+     *
+     * <p>This method establishes a single listener for a given {@code serviceName}.
+     * If a listener is already registered for the same service, it will be replaced.
+     *
+     * @param associationIds The specific association IDs to listen for.
+     * @param serviceName A unique, stable name for the calling service. This name is used to
+     *                    identify and manage the listener.
+     * @param executor The executor on which to deliver the callback.
+     * @param listener The listener that will receive the events.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    public void setOnDevicePresenceEventListener(
+            @NonNull int[] associationIds,
+            @NonNull String serviceName,
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull Consumer<DevicePresenceEvent> listener) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return;
+        }
+        Objects.requireNonNull(associationIds, "associationIds cannot be null.");
+        Objects.requireNonNull(serviceName, "serviceName cannot be null.");
+        Objects.requireNonNull(executor, "Executor cannot be null");
+        Objects.requireNonNull(listener, "Listener cannot be null");
+
+        if (associationIds.length == 0) {
+            throw new IllegalArgumentException("associationIds cannot be empty.");
+        }
+
+        final OnDevicePresenceEventListenerProxy proxy =
+                new OnDevicePresenceEventListenerProxy(executor, listener);
+        try {
+            mService.setOnDevicePresenceEventListener(
+                    associationIds, serviceName, proxy, mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+
+    /**
+     * Unregisters the listener associated with the given {@code serviceName}.
+     *
+     * @param serviceName The unique name that was used to {@link #setOnDevicePresenceEventListener(
+     *                    int[], String, Executor, Consumer)
+     *                    register the listener}.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    public void removeOnDevicePresenceEventListener(@NonNull String serviceName) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return;
+        }
+        Objects.requireNonNull(serviceName, "serviceName cannot be null");
+
+        try {
+            mService.removeOnDevicePresenceEventListener(serviceName, mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Registers a listener to receive results for actions requested via
+     * {@link #requestAction(ActionRequest, String, int[])}.
+     *
+     * <p>This method establishes a single listener for a given {@code serviceName}.
+     * If a listener is already registered for the same service, it will be replaced.
+     *
+     * @param associationIds The specific association IDs to listen for.
+     * @param serviceName A unique, stable name for the calling service. This name is used to
+     *                    identify and manage the listener.
+     * @param executor The executor on which to deliver the callback.
+     * @param listener The listener that will receive the action results.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    public void setOnActionResultListener(
+            @NonNull int[] associationIds,
+            @NonNull String serviceName,
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull BiConsumer<Integer, ActionResult> listener) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return;
+        }
+
+        Objects.requireNonNull(associationIds, "associationIds cannot be null.");
+        Objects.requireNonNull(serviceName, "serviceName cannot be null.");
+        Objects.requireNonNull(executor, "Executor cannot be null.");
+        Objects.requireNonNull(listener, "Listener cannot be null.");
+
+        if (associationIds.length == 0) {
+            throw new IllegalArgumentException("associationIds cannot be empty.");
+        }
+
+        final OnActionResultListenerProxy proxy =
+                new OnActionResultListenerProxy(executor, listener);
+        try {
+            mService.setOnActionResultListener(
+                    associationIds, serviceName, proxy, mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Unregisters the action result listener associated with the given {@code serviceName}.
+     *
+     * @param serviceName The unique name that was used to
+     *                    {@link #setOnActionResultListener(int[], String, Executor,
+     *                    BiConsumer)
+     *                    register the listener}.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @RequiresPermission(Manifest.permission.USE_COMPANION_TRANSPORTS)
+    public void removeOnActionResultListener(@NonNull String serviceName) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return;
+        }
+        Objects.requireNonNull(serviceName, "serviceName cannot be null.");
+        try {
+            mService.removeOnActionResultListener(serviceName, mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
         }
     }
 
@@ -1444,7 +1722,7 @@ public final class CompanionDeviceManager {
      * <p>Caller app must implement the {@link CompanionDeviceService} to receive callbacks via
      * {@link CompanionDeviceService#onDevicePresenceEvent(DevicePresenceEvent)}.
      * The system will bind to the implemented {@link CompanionDeviceService} to deliver the
-     * callbacks./p>
+     * callbacks.</p>
      *
      * <p>Calling app must check for feature presence of
      * {@link PackageManager#FEATURE_COMPANION_DEVICE_SETUP} before calling this API.</p>
@@ -1639,10 +1917,12 @@ public final class CompanionDeviceManager {
      * @param associationId the unique {@link AssociationInfo#getId ID} assigned to the Association
      * recorded by CompanionDeviceManager
      *
+     * @deprecated use {@link #notifyDevicePresence(int, DevicePresenceEvent)} instead.
      * @hide
      */
     @SystemApi
     @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED)
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
     public void notifyDeviceAppeared(int associationId) {
         if (mService == null) {
             Log.w(TAG, "CompanionDeviceManager service is not available.");
@@ -1665,11 +1945,13 @@ public final class CompanionDeviceManager {
      *
      * @param associationId the unique {@link AssociationInfo#getId ID} assigned to the Association
      * recorded by CompanionDeviceManager
-
+     *
+     * @deprecated use {@link #notifyDevicePresence(int, DevicePresenceEvent)} instead.
      * @hide
      */
     @SystemApi
     @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED)
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
     public void notifyDeviceDisappeared(int associationId) {
         if (mService == null) {
             Log.w(TAG, "CompanionDeviceManager service is not available.");
@@ -1678,6 +1960,66 @@ public final class CompanionDeviceManager {
 
         try {
             mService.notifySelfManagedDeviceDisappeared(associationId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Allows a companion app to report a device presence event to the system.
+     * This causes the system to bind/unbind to the companion app. For example, system will bind
+     * the app when sending a
+     * {@link DevicePresenceEvent#EVENT_SELF_MANAGED_APPEARED},
+     * meanwhile a {@link DevicePresenceEvent#EVENT_SELF_MANAGED_DISAPPEARED} will unbind the app.
+     *
+     * <p>This API is only available for the companion apps that manage the connectivity by
+     * themselves.</p>
+     *
+     * @param associationId the unique {@link AssociationInfo#getId ID} assigned to the Association
+     * recorded by CompanionDeviceManager
+     * @param event for device presence
+     *
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED)
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    public void notifyDevicePresence(int associationId, @NonNull DevicePresenceEvent event) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return;
+        }
+
+        try {
+            mService.notifyDevicePresence(associationId, event);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Allows a companion app to report the result of an action that was requested by the system.
+     * <p>
+     * This API should be called after the app has received a request via
+     * {@link CompanionDeviceService#onActionRequested(AssociationInfo, ActionRequest)}.
+     * This API is only available for companion apps that manage their own connectivity.
+     *
+     * @param result The {@link ActionResult} to report to the system.
+     *
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED)
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    public void notifyActionResult(int associationId, @NonNull ActionResult result) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return;
+        }
+        Objects.requireNonNull(result, "ActionResult cannot be null.");
+
+        try {
+            mService.notifyActionResult(associationId, result);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -1737,7 +2079,8 @@ public final class CompanionDeviceManager {
      *
      * <p>
      * Note: The initial user consent is collected via
-     * {@link #buildPermissionTransferUserConsentIntent(int) a permission transfer user consent dialog}.
+     * {@link #buildPermissionTransferUserConsentIntent(int) a permission transfer user consent
+     * dialog}.
      * After the user has made their initial selection, they can toggle the permission transfer
      * feature in the settings.
      * This method always returns the state of the toggle setting.
@@ -1968,6 +2311,74 @@ public final class CompanionDeviceManager {
         }
     }
 
+    /**
+     * Sets the metadata for this device. If the metadata for the feature is already set, then
+     * it will be overwritten. The client feature service can use this metadata to store
+     * feature-relevant data to be shared with associated devices.
+     *
+     * @param userId The user id of the user for which this metadata is set.
+     * @param feature The feature name for this metadata.
+     * @param value The bundle containing feature-relevant metadata.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    public void setLocalMetadata(@UserIdInt int userId, @NonNull @FeatureName String feature,
+            @Nullable PersistableBundle value) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return;
+        }
+
+        if (METADATA_TIMESTAMP.equals(feature)) {
+            throw new IllegalArgumentException("Cannot set metadata timestamp");
+        }
+
+        try {
+            mService.setLocalMetadata(userId, feature, value);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Forwards an action request from a system service to the appropriate companion app.
+     * This will bind the companion app's service if it is not already bound, and then
+     * deliver the action request via a
+     * {@link CompanionDeviceService#onActionRequested(AssociationInfo, ActionRequest)}.
+     *
+     * <p>This method allows multiple system services to safely share a resource, such as
+     * scanning or advertising. An action is only started for the first service that requests it
+     * (using {@link ActionRequest#OP_ACTIVATE}) and is only stopped when the very last
+     * service releases its request (using {@link ActionRequest#OP_DEACTIVATE}).
+     *
+     * @param request The {@link ActionRequest} to perform. Use
+     *                {@link ActionRequest.Builder} to construct this object.
+     * @param serviceName A unique, stable name for the calling service (e.g.,
+     *                     "task_continuity_manager"). This name is used by the system to
+     *                     differentiate requests from different callers.
+     * @param associationIds The array of association IDs to target with this action.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    public void requestAction(@NonNull ActionRequest request, @NonNull String serviceName,
+            int[] associationIds) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return;
+        }
+
+        Objects.requireNonNull(request, "ActionRequest can not be null");
+        Objects.requireNonNull(serviceName, "serviceName can not be null");
+
+        try {
+            mService.requestAction(request, serviceName, associationIds);
+        }  catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     private static class AssociationRequestCallbackProxy extends IAssociationRequestCallback.Stub {
         private final Handler mHandler;
         private final Callback mCallback;
@@ -2083,6 +2494,41 @@ public final class CompanionDeviceManager {
         @Override
         public void onTransportEvent(int eventCode) {
             mExecutor.execute(() -> mListener.accept(eventCode));
+        }
+    }
+
+    private static class OnDevicePresenceEventListenerProxy
+            extends IOnDevicePresenceEventListener.Stub {
+        private final Executor mExecutor;
+        private final Consumer<DevicePresenceEvent> mListener;
+
+        private OnDevicePresenceEventListenerProxy(Executor executor,
+                Consumer<DevicePresenceEvent> listener) {
+            mExecutor = executor;
+            mListener = listener;
+        }
+
+        @Override
+        public void onDevicePresence(DevicePresenceEvent event) {
+            mExecutor.execute(() -> mListener.accept(event));
+        }
+    }
+
+
+    private static class OnActionResultListenerProxy
+            extends IOnActionResultListener.Stub {
+        private final Executor mExecutor;
+        private final BiConsumer<Integer, ActionResult> mListener;
+
+        private OnActionResultListenerProxy(Executor executor,
+                BiConsumer<Integer, ActionResult> listener) {
+            mExecutor = executor;
+            mListener = listener;
+        }
+
+        @Override
+        public void onActionResult(int associationId, ActionResult result) {
+            mExecutor.execute(() -> mListener.accept(associationId, result));
         }
     }
 

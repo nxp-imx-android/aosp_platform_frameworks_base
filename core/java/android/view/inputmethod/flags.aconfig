@@ -56,17 +56,6 @@ flag {
 }
 
 flag {
-    name: "consistent_get_current_input_method_info"
-    namespace: "input_method"
-    description: "Use BindingController as the source of truth in getCurrentInputMethodInfo"
-    bug: "355034523"
-    is_fixed_read_only: true
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "ime_switcher_revamp"
     is_exported: true
     namespace: "input_method"
@@ -220,4 +209,49 @@ flag {
   namespace: "input_method"
   description: "Deprecate unsupported show/hide flags."
   bug: "322992891"
+}
+
+flag {
+  name: "fix_navbar_dead_zone"
+  namespace: "input_method"
+  description: "Fix DeadZone consuming events for navbar"
+  bug: "364856257"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
+  name: "unify_skip_animation_once_with_initially_visible"
+  namespace: "input_method"
+  description: "Deprecating skipAnimationOnce and using initiallyVisible instead."
+  bug: "440511879"
+}
+
+flag {
+  name: "remove_navbar_dead_zone"
+  namespace: "input_method"
+  description: "Remove DeadZone from IME navbar"
+  bug: "364856257"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
+  name: "guard_input_method_list_apis"
+  namespace: "input_method"
+  description: "Guards getInputMethodList, getEnabledInputMethodList, getEnabledInputMethodSubtypeList APIs with permission."
+  bug: "417788162"
+  is_exported: true
+}
+
+flag {
+  name: "compute_ime_parent_null_ime_window"
+  namespace: "input_method"
+  description: "Allows computeImeParent to return a non-null value (i.e. the parent of the IME Container) even when the IME window is set to null."
+  bug: "446170643"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }

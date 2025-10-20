@@ -161,8 +161,6 @@ import java.util.concurrent.TimeUnit;
 class PackageManagerShellCommand extends ShellCommand {
     /** Path for streaming APK content */
     private static final String STDIN_PATH = "-";
-    /** Path where ART profiles snapshots are dumped for the shell user */
-    private final static String ART_PROFILE_SNAPSHOT_DEBUG_LOCATION = "/data/misc/profman/";
     private static final int DEFAULT_STAGED_READY_TIMEOUT_MS = 60 * 1000;
     private static final String TAG = "PackageManagerShellCommand";
     private static final Set<String> UNSUPPORTED_INSTALL_CMD_OPTS = Set.of(
@@ -353,6 +351,8 @@ class PackageManagerShellCommand extends ShellCommand {
                     return runSupportsMultipleUsers();
                 case "get-max-users":
                     return runGetMaxUsers();
+                case "get-remaining-user-count":
+                    return runGetRemainingCreatableUserCount();
                 case "get-max-running-users":
                     return runGetMaxRunningUsers();
                 case "set-home-activity":
@@ -406,6 +406,8 @@ class PackageManagerShellCommand extends ShellCommand {
                     return runGetDeveloperVerificationServiceProvider();
                 case "set-developer-verification-result":
                     return runSetDeveloperVerificationResult();
+                case "clear-developer-verification-result":
+                    return runClearDeveloperVerificationResult();
                 default: {
                     if (ART_SERVICE_COMMANDS.contains(cmd)) {
                         return runArtServiceCommand();
@@ -2019,8 +2021,16 @@ class PackageManagerShellCommand extends ShellCommand {
             pw.println("Error: package name not specified");
             return 1;
         }
+
         final int translatedUserId =
                 translateUserId(userId, UserHandle.USER_NULL, "runInstallExisting");
+        UserManagerInternal umi =
+                LocalServices.getService(UserManagerInternal.class);
+        UserInfo userInfo = umi.getUserInfo(translatedUserId);
+        if (userInfo == null) {
+            throw new IllegalArgumentException(
+                    "The user " + translatedUserId + " doesn't exist");
+        }
 
         int installReason = PackageManager.INSTALL_REASON_UNKNOWN;
         try {
@@ -3388,15 +3398,74 @@ class PackageManagerShellCommand extends ShellCommand {
     }
 
     public int runSupportsMultipleUsers() {
-        getOutPrintWriter().println("Is multiuser supported: "
+        getOutPrintWriter().println("Are multiple switchable users supported: "
                 + UserManager.supportsMultipleUsers());
         return 0;
     }
 
-    public int runGetMaxUsers() {
-        getOutPrintWriter().println("Maximum supported users: "
-                + UserManager.getMaxSupportedUsers());
-        return 0;
+    /** Implementation of get-max-users */
+    public int runGetMaxUsers() throws RemoteException {
+        String userType = null;
+        String opt;
+        while ((opt = getNextOption()) != null) {
+            if ("--user-type".equals(opt)) {
+                if (!android.multiuser.Flags.consistentMaxUsers()) {
+                    getErrPrintWriter().println("Error: consistent_max_users flag is not enabled");
+                    return 1;
+                }
+                if (userType != null) {
+                    getErrPrintWriter().println("Error: more than one user type was specified");
+                    return 1;
+                }
+                userType = getNextArgRequired();
+            } else {
+                getErrPrintWriter().println("Error: unknown option " + opt);
+                return 1;
+            }
+        }
+        IUserManager um = IUserManager.Stub.asInterface(
+                ServiceManager.getService(Context.USER_SERVICE));
+        if (userType == null) {
+            getOutPrintWriter().println("Maximum supported switchable users: "
+                    + UserManager.getMaxSwitchableUsers());
+            return 0;
+        } else {
+            getOutPrintWriter().println("Maximum supported users of type " + userType + ": "
+                    + um.getCurrentAllowedNumberOfUsers(userType));
+            return 0;
+        }
+    }
+
+    /** Implementation of get-remaining-user-count */
+    public int runGetRemainingCreatableUserCount() throws RemoteException {
+        if (!android.multiuser.Flags.consistentMaxUsers()) {
+            getErrPrintWriter().println("Error: consistent_max_users flag is not enabled");
+            return 1;
+        }
+        String userType = null;
+        String opt;
+        while ((opt = getNextOption()) != null) {
+            if ("--user-type".equals(opt)) {
+                if (userType != null) {
+                    getErrPrintWriter().println("Error: more than one user type was specified");
+                    return 1;
+                }
+                userType = getNextArgRequired();
+            } else {
+                getErrPrintWriter().println("Error: unknown option " + opt);
+                return 1;
+            }
+        }
+        IUserManager um = IUserManager.Stub.asInterface(
+                ServiceManager.getService(Context.USER_SERVICE));
+        if (userType != null) {
+            getOutPrintWriter().println("Remaining creatable users of type " + userType + ": "
+                    + um.getRemainingCreatableUserCount(userType));
+            return 0;
+        } else {
+            getErrPrintWriter().println("No user type was specified");
+            return 1;
+        }
     }
 
     public int runGetMaxRunningUsers() {
@@ -4749,6 +4818,19 @@ class PackageManagerShellCommand extends ShellCommand {
         return 0;
     }
 
+    private int runClearDeveloperVerificationResult() {
+        final PrintWriter pw = getOutPrintWriter();
+        try {
+            final IPackageInstaller installer = mInterface.getPackageInstaller();
+            final String packageName = getNextArg();
+            installer.clearDeveloperVerificationExperiment(packageName);
+        } catch (Exception e) {
+            pw.println("Failure [" + e.getMessage() + "]");
+            return 1;
+        }
+        return 0;
+    }
+
     @Override
     public void onHelp() {
         final PrintWriter pw = getOutPrintWriter();
@@ -5100,7 +5182,17 @@ class PackageManagerShellCommand extends ShellCommand {
         pw.println("      --all: display all restrictions for the given user");
         pw.println("          This option is used without restriction key");
         pw.println("");
-        pw.println("  get-max-users");
+        if (android.multiuser.Flags.consistentMaxUsers()) {
+            pw.println("  get-max-users [--user-type USER_TYPE]");
+            pw.println("    Returns the current maximum allowed number of users of type USER_TYPE.");
+            pw.println("    If USER_TYPE is not specified, will instead return the number of");
+            pw.println("    supported regular switchable users (excluding guest and demo users).");
+            pw.println("");
+            pw.println("  get-remaining-user-count --user-type USER_TYPE");
+            pw.println("    Returns the number of users of the given USER_TYPE that can be created.");
+        } else {
+            pw.println("  get-max-users");
+        }
         pw.println("");
         pw.println("  get-max-running-users");
         pw.println("");
@@ -5151,6 +5243,7 @@ class PackageManagerShellCommand extends ShellCommand {
         pw.println("");
         pw.println("  clear-package-preferred-activities <PACKAGE>");
         pw.println("    Remove the preferred activity mappings for the given package.");
+        pw.println("");
         pw.println("  wait-for-handler --timeout <MILLIS>");
         pw.println("    Wait for a given amount of time till the package manager handler finishes");
         pw.println("    handling all pending messages.");
@@ -5177,15 +5270,19 @@ class PackageManagerShellCommand extends ShellCommand {
         pw.println("    Displays the component name of the domain verification agent on device.");
         pw.println("    If the component isn't enabled, an error message will be displayed.");
         pw.println("      --user: return the agent of the given user (SYSTEM_USER if unspecified)");
+        pw.println("");
         pw.println("  get-package-storage-stats [--user <USER_ID>] <PACKAGE>");
         pw.println("    Return the storage stats for the given app, if present");
+        pw.println("");
         pw.println("  get-developer-verification-policy [--user USER_ID]");
         pw.println("    Display current verification enforcement policy which will be applied to");
         pw.println("    all the future installation sessions");
         pw.println("      --user: show the policy of the given user (SYSTEM_USER if unspecified)");
+        pw.println("");
         pw.println("  get-developer-verification-service-provider");
         pw.println("    Displays component name of developer verification service provider.");
         pw.println("      --user: show the policy of the given user (SYSTEM_USER if unspecified)");
+        pw.println("");
         pw.println("  set-developer-verification-result PACKAGE POLICY RESULT [RESULT...]");
         pw.println("    Set the developer verification enforcement policy and the result(s)");
         pw.println("    in sequence for the next N verification sessions for the given app where");
@@ -5204,6 +5301,12 @@ class PackageManagerShellCommand extends ShellCommand {
         pw.println("        5 [timeout]: Verification timed out.");
         pw.println("        6 [disconnect]: Verification service disconnected.");
         pw.println("        7 [infeasible]: Verification service was unavailable.");
+        pw.println("");
+        pw.println("  clear-developer-verification-result [PACKAGE]");
+        pw.println("    Clear any previously set developer verification enforcement policy and");
+        pw.println("    result for the given app using set-developer-verification-result.");
+        pw.println("    If the package name is not specified, clear all previously set");
+        pw.println("    developer verification enforcement policy and results of future sessions");
         pw.println("");
         pw.println("");
         printArtServiceHelp();

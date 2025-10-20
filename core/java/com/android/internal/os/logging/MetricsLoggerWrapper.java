@@ -84,9 +84,10 @@ public class MetricsLoggerWrapper {
         }
 
         ProcfsMemoryUtil.MemorySnapshot m = ProcfsMemoryUtil.readMemorySnapshotFromProcfs();
-        int oom_score_adj = ProcfsMemoryUtil.readOomScoreAdjFromProcfs();
-        Runtime runtime = Runtime.getRuntime();
-        FrameworkStatsLog.write(FrameworkStatsLog.POSTGC_MEMORY_SNAPSHOT,
+        if (m != null) {
+            int oom_score_adj = ProcfsMemoryUtil.readOomScoreAdjFromProcfs();
+            Runtime runtime = Runtime.getRuntime();
+            FrameworkStatsLog.write(FrameworkStatsLog.POSTGC_MEMORY_SNAPSHOT,
                 m.uid, processName, pid,
                 oom_score_adj,
                 m.rssInKilobytes,
@@ -101,5 +102,6 @@ public class MetricsLoggerWrapper {
                 runtime.freeMemory(),
                 runtime.totalMemory(),
                 runtime.maxMemory());
+        }
     }
 }

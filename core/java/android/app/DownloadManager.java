@@ -139,7 +139,7 @@ public class DownloadManager {
      */
     public final static String COLUMN_STATUS = Downloads.Impl.COLUMN_STATUS;
 
-    /** {@hide} */
+    /** @hide */
     public final static String COLUMN_FILE_NAME_HINT = Downloads.Impl.COLUMN_FILE_NAME_HINT;
 
     /**
@@ -179,7 +179,7 @@ public class DownloadManager {
      */
     public static final String COLUMN_MEDIAPROVIDER_URI = Downloads.Impl.COLUMN_MEDIAPROVIDER_URI;
 
-    /** {@hide} */
+    /** @hide */
     public static final String COLUMN_DESTINATION = Downloads.Impl.COLUMN_DESTINATION;
 
     /** @hide */
@@ -342,7 +342,7 @@ public class DownloadManager {
      */
     public static final String EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS = "extra_click_download_ids";
 
-    /** {@hide} */
+    /** @hide */
     @SystemApi
     public static final String ACTION_DOWNLOAD_COMPLETED =
             "android.intent.action.DOWNLOAD_COMPLETED";
@@ -1075,7 +1075,7 @@ public class DownloadManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     public void setAccessFilename(boolean accessFilename) {
         mAccessFilename = accessFilename;
@@ -1105,10 +1105,17 @@ public class DownloadManager {
            callExtras.putLongArray(android.provider.Downloads.EXTRA_IDS, ids);
            callExtras.putStringArray(android.provider.Downloads.EXTRA_MIME_TYPES,
                    mimeTypes);
-           client.call(android.provider.Downloads.CALL_MEDIASTORE_DOWNLOADS_DELETED,
-                   null, callExtras);
+            if (client != null) {
+                client.call(
+                        android.provider.Downloads.CALL_MEDIASTORE_DOWNLOADS_DELETED,
+                        null,
+                        callExtras);
+            } else {
+                throw new IllegalStateException(
+                        "Could not acquire stable provider for " + mBaseUri);
+            }
         } catch (RemoteException e) {
-            // Should not happen
+            throw e.rethrowFromSystemServer();
         }
     }
 
@@ -1394,13 +1401,13 @@ public class DownloadManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public static boolean isActiveNetworkExpensive(Context context) {
         // TODO: connect to NetworkPolicyManager
         return false;
     }
 
-    /** {@hide} */
+    /** @hide */
     public static long getActiveNetworkWarningBytes(Context context) {
         // TODO: connect to NetworkPolicyManager
         return -1;
@@ -1511,7 +1518,7 @@ public class DownloadManager {
      * {@link android.provider.MediaStore.Downloads} collection to make them available to user
      * as part of Downloads.
      *
-     * {@hide}
+     * @hide
      */
     @Deprecated
     public long addCompletedDownload(String title, String description,
@@ -1532,7 +1539,7 @@ public class DownloadManager {
      * {@link Environment#getExternalStoragePublicDirectory(String)} with
      * {@link Environment#DIRECTORY_DOWNLOADS}).
      *
-     * {@hide}
+     * @hide
      *
      * @deprecated Apps should instead contribute files to
      * {@link android.provider.MediaStore.Downloads} collection to make them available to user

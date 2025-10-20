@@ -96,6 +96,7 @@ final class InputMethodBindingController {
     @GuardedBy("ImfLock.class") private boolean mVisibleBound;
     @GuardedBy("ImfLock.class") private boolean mSupportsStylusHw;
     @GuardedBy("ImfLock.class") private boolean mSupportsConnectionlessStylusHw;
+    @GuardedBy("ImfLock.class") @Nullable private String mImeIdToRestoreOnNextSession;
 
     /** The display id for which the latest startInput was called. */
     @GuardedBy("ImfLock.class") private int mDisplayIdToShowIme = INVALID_DISPLAY;
@@ -378,6 +379,12 @@ final class InputMethodBindingController {
      */
     @GuardedBy("ImfLock.class")
     private final ServiceConnection mMainConnection = new ServiceConnection() {
+        @Override
+        public void onBindingDied(ComponentName name) {
+            synchronized (ImfLock.class) {
+                unbindCurrentMethod();
+            }
+        }
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "IMMS.onServiceConnected");
@@ -670,6 +677,24 @@ final class InputMethodBindingController {
         if (isVisibleBound()) {
             unbindVisibleConnection();
         }
+    }
+
+    /**
+     * IMMS may temporarily set a different IME based on device policy of the editor. Original IME
+     * will be restored in next startInput.
+     * @param methodId
+     */
+    @GuardedBy("ImfLock.class")
+    void setImeIdToRestoreOnNextSession(@Nullable String methodId) {
+        mImeIdToRestoreOnNextSession = methodId;
+    }
+
+    /**
+     * @see #setImeIdToRestoreOnNextSession(String)
+     */
+    @GuardedBy("ImfLock.class")
+    @Nullable String getImeIdToRestoreOnNextSession() {
+        return mImeIdToRestoreOnNextSession;
     }
 
     /**

@@ -16,7 +16,6 @@
 
 package com.android.server.wm;
 
-import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.content.res.Configuration.UI_MODE_TYPE_VR_HEADSET;
@@ -234,9 +233,7 @@ final class AppCompatUtils {
             appCompatTaskInfo.cameraCompatTaskInfo.cameraCompatMode =
                     AppCompatCameraPolicy.getCameraCompatSimReqOrientationMode(top);
             appCompatTaskInfo.cameraCompatTaskInfo.displayRotation =
-                    Flags.enableCameraCompatCheckDeviceRotationBugfix()
-                            ? AppCompatCameraPolicy.getCameraDeviceRotation(top)
-                            : ROTATION_UNDEFINED;
+                    AppCompatCameraPolicy.getCameraDeviceRotation(top);
         }
         appCompatTaskInfo.setHasMinAspectRatioOverride(top.mAppCompatController
                 .getDesktopAspectRatioPolicy().hasMinAspectRatioOverride(task));
@@ -312,12 +309,31 @@ final class AppCompatUtils {
         inOutConfig.windowConfiguration.getAppBounds().offset(offsetX, offsetY);
     }
 
+    static void adjustCropBoundsForSurfaceInsets(@NonNull Rect cropBounds,
+            @NonNull WindowState mainWindow) {
+        // Surface insets are usually set for dialog style window for shadow effect to expand
+        // the surface. If dialog inherits letterboxed bounds, this could lead to cropped dialog
+        // as surface is offset due to insets. Account for insets in the window crop.
+        cropBounds.right +=
+                mainWindow.mAttrs.surfaceInsets.left + mainWindow.mAttrs.surfaceInsets.right;
+        cropBounds.bottom +=
+                mainWindow.mAttrs.surfaceInsets.top + mainWindow.mAttrs.surfaceInsets.bottom;
+    }
+
     /**
      * Return {@code true} if window is currently in desktop mode.
      */
     static boolean isInDesktopMode(@NonNull Context context,
             @WindowingMode int parentWindowingMode) {
         return parentWindowingMode == WINDOWING_MODE_FREEFORM && canEnterDesktopMode(context);
+    }
+
+    /**
+     * Return {@code true} if the given display area is desktop-first.
+     */
+    static boolean isDesktopFirst(@Nullable TaskDisplayArea taskDisplayArea) {
+        return taskDisplayArea != null
+                && taskDisplayArea.getWindowingMode() == WINDOWING_MODE_FREEFORM;
     }
 
     /**

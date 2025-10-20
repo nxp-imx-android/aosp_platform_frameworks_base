@@ -16,40 +16,42 @@
 
 package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 
-import android.content.ComponentName
-import android.graphics.Bitmap
-import androidx.collection.LruCache
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
+import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
+import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.coroutineScope
 
-private data class AppModel(val app: ComponentName, val icon: Bitmap)
+class RecordDetailsAppSelectorViewModel
+@AssistedInject
+constructor(private val recentTasksViewModel: RecentTasksViewModel) : HydratedActivatable() {
 
-class RecordDetailsAppSelectorViewModel @AssistedInject constructor() : HydratedActivatable() {
-
-    private val thumbnailsCache: LruCache<ComponentName, Bitmap> = LruCache(3)
-    val apps: List<RecordDetailsAppViewModel> =
-        emptyList<AppModel>().map { appModel ->
-            RecordDetailsAppViewModel(
-                icon = appModel.icon,
-                onSelect = { onAppSelected(appModel.app) },
-                loadThumbnail = {
-                    thumbnailsCache[appModel.app]
-                        ?: loadThumbnail(appModel.app).also { loadedThumbnail ->
-                            thumbnailsCache.put(appModel.app, loadedThumbnail)
-                        }
-                },
-            )
-        }
-
-    private fun onAppSelected(app: ComponentName) {}
-
-    override suspend fun onActivated() {
-        super.onActivated()
+    val recentTasks: List<ScreenCaptureRecentTask>? by derivedStateOf {
+        recentTasksViewModel.targets.value?.withoutPostRecordingActivity()
     }
 
-    private suspend fun loadThumbnail(app: ComponentName): Bitmap {
-        TODO("Not implemented yet")
+    override suspend fun onActivated() {
+        coroutineScope {
+            launchTraced("RecordDetailsAppSelectorViewModel#recentTasksViewModel") {
+                recentTasksViewModel.activate()
+            }
+        }
+    }
+
+    fun createTaskViewModel(task: ScreenCaptureRecentTask): RecentTaskViewModel =
+        recentTasksViewModel.createViewModelFor(task) as RecentTaskViewModel
+
+    private fun List<ScreenCaptureRecentTask>.withoutPostRecordingActivity():
+        List<ScreenCaptureRecentTask> {
+        return filter { task ->
+            SmallScreenPostRecordingActivity::class.qualifiedName != task.component?.className
+        }
     }
 
     @AssistedFactory

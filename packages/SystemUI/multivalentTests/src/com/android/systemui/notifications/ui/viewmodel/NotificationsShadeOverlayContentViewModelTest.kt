@@ -18,20 +18,26 @@ package com.android.systemui.notifications.ui.viewmodel
 
 import android.app.StatusBarManager.DISABLE2_QUICK_SETTINGS
 import android.content.res.Configuration
-import android.content.testableContext
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.geometry.Rect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.Flags.FLAG_NOTIFICATION_SHADE_BLUR
+import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.domain.interactor.AuthenticationResult
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
-import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.keyguard.ui.transitions.blurConfig
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
@@ -47,7 +53,6 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
-import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.ui.viewmodel.notificationsShadeOverlayContentViewModel
 import com.android.systemui.statusbar.core.StatusBarForDesktop
@@ -56,61 +61,86 @@ import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.testKosmos
 import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
-@EnableSceneContainer
+@EnableFlags(FLAG_SCENE_CONTAINER, FLAG_DUAL_SHADE)
 class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val testScope = kosmos.testScope
-    private val sceneInteractor by lazy { kosmos.sceneInteractor }
-    private val underTest by lazy { kosmos.notificationsShadeOverlayContentViewModel }
+    private val Kosmos.underTest by Fixture { notificationsShadeOverlayContentViewModel }
 
     @Before
-    fun setUp() {
-        kosmos.sceneContainerStartable.start()
-        kosmos.enableDualShade()
-        kosmos.runCurrent()
-        underTest.activateIn(testScope)
-    }
+    fun setUp() =
+        with(kosmos) {
+            sceneContainerStartable.start()
+            enableDualShade()
+            underTest.activateIn(testScope)
+        }
 
     @Test
-    fun showHeader_desktopFeatureSetDisabled_true() =
-        testScope.runTest {
-            setEnableDesktopFeatureSet(false)
+    fun showHeader_desktopStatusBarDisabled_true() =
+        kosmos.runTest {
+            setUseDesktopStatusBar(false)
+
             assertThat(underTest.showHeader).isTrue()
         }
 
     @Test
     @EnableFlags(StatusBarForDesktop.FLAG_NAME)
-    fun showHeader_desktopFeatureSetEnabled_statusBarForDesktopEnabled_false() =
-        testScope.runTest {
-            setEnableDesktopFeatureSet(true)
+    fun showHeader_desktopStatusBarEnabled_statusBarForDesktopEnabled_false() =
+        kosmos.runTest {
+            setUseDesktopStatusBar(true)
+
             assertThat(underTest.showHeader).isFalse()
         }
 
     @Test
     @DisableFlags(StatusBarForDesktop.FLAG_NAME)
-    fun showHeader_desktopFeatureSetEnabled_statusBarForDesktopDisabled_true() =
-        testScope.runTest {
-            setEnableDesktopFeatureSet(true)
+    fun showHeader_desktopStatusBarEnabled_statusBarForDesktopDisabled_true() =
+        kosmos.runTest {
+            setUseDesktopStatusBar(true)
+
             assertThat(underTest.showHeader).isTrue()
         }
 
     @Test
+    @DisableFlags(StatusBarForDesktop.FLAG_NAME)
+    fun alignmentOnWideScreens_statusBarForDesktopDisabled_start() =
+        kosmos.runTest {
+            setUseDesktopStatusBar(false)
+
+            assertThat(underTest.alignmentOnWideScreens).isEqualTo(Alignment.Start)
+        }
+
+    @Test
+    @EnableFlags(StatusBarForDesktop.FLAG_NAME)
+    fun alignmentOnWideScreens_configDisabled_statusBarForDesktopEnabled_start() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_notificationShadeOnTopEnd, false)
+            enableDualShade(wideLayout = true)
+
+            assertThat(underTest.alignmentOnWideScreens).isEqualTo(Alignment.Start)
+        }
+
+    @Test
+    @EnableFlags(StatusBarForDesktop.FLAG_NAME)
+    fun alignmentOnWideScreens_configEnabled_statusBarForDesktopEnabled_end() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_notificationShadeOnTopEnd, true)
+            enableDualShade(wideLayout = true)
+
+            assertThat(underTest.alignmentOnWideScreens).isEqualTo(Alignment.End)
+        }
+
+    @Test
     fun onScrimClicked_hidesShade() =
-        testScope.runTest {
+        kosmos.runTest {
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             sceneInteractor.showOverlay(Overlays.NotificationsShade, "test")
             assertThat(currentOverlays).contains(Overlays.NotificationsShade)
@@ -122,7 +152,7 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
     @Test
     fun deviceLocked_hidesShade() =
-        testScope.runTest {
+        kosmos.runTest {
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             unlockDevice()
             sceneInteractor.showOverlay(Overlays.NotificationsShade, "test")
@@ -135,9 +165,9 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
     @Test
     fun shadeNotTouchable_hidesShade() =
-        testScope.runTest {
+        kosmos.runTest {
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            val isShadeTouchable by collectLastValue(kosmos.shadeInteractor.isShadeTouchable)
+            val isShadeTouchable by collectLastValue(shadeInteractor.isShadeTouchable)
             assertThat(isShadeTouchable).isTrue()
             sceneInteractor.showOverlay(Overlays.NotificationsShade, "test")
             assertThat(currentOverlays).contains(Overlays.NotificationsShade)
@@ -149,40 +179,36 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
     @Test
     fun showMedia_activeMedia_true() =
-        testScope.runTest {
-            kosmos.mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = true))
-            runCurrent()
+        kosmos.runTest {
+            mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = true))
 
             assertThat(underTest.showMedia).isTrue()
         }
 
     @Test
     fun showMedia_InactiveMedia_false() =
-        testScope.runTest {
-            kosmos.mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = false))
-            runCurrent()
+        kosmos.runTest {
+            mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = false))
 
             assertThat(underTest.showMedia).isFalse()
         }
 
     @Test
     fun showMedia_noMedia_false() =
-        testScope.runTest {
-            kosmos.mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = true))
-            kosmos.mediaPipelineRepository.clearCurrentUserMedia()
-            runCurrent()
+        kosmos.runTest {
+            mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = true))
+            mediaPipelineRepository.clearCurrentUserMedia()
 
             assertThat(underTest.showMedia).isFalse()
         }
 
     @Test
     fun showMedia_qsDisabled_false() =
-        testScope.runTest {
-            kosmos.mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = true))
-            kosmos.fakeDisableFlagsRepository.disableFlags.update {
+        kosmos.runTest {
+            mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = true))
+            fakeDisableFlagsRepository.disableFlags.update {
                 it.copy(disable2 = DISABLE2_QUICK_SETTINGS)
             }
-            runCurrent()
 
             assertThat(underTest.showMedia).isFalse()
         }
@@ -190,9 +216,8 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
     @Test
     @DisableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
     fun transparencyEnabled_shadeBlurFlagOff_isDisabled() =
-        testScope.runTest {
-            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
-            runCurrent()
+        kosmos.runTest {
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = true
 
             assertThat(underTest.isTransparencyEnabled).isFalse()
         }
@@ -200,9 +225,8 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
     @Test
     @EnableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
     fun transparencyEnabled_shadeBlurFlagOn_blurSupported_isEnabled() =
-        testScope.runTest {
-            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
-            runCurrent()
+        kosmos.runTest {
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = true
 
             assertThat(underTest.isTransparencyEnabled).isTrue()
         }
@@ -210,72 +234,118 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
     @Test
     @EnableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
     fun transparencyEnabled_shadeBlurFlagOn_blurUnsupported_isDisabled() =
-        testScope.runTest {
-            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = false
-            runCurrent()
+        kosmos.runTest {
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = false
 
             assertThat(underTest.isTransparencyEnabled).isFalse()
         }
 
     @Test
-    fun shadeModeChanged_single_switchesToShadeScene() =
-        testScope.runTest {
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+    @EnableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
+    fun calculateTargetBlurRadius() =
+        kosmos.runTest {
+            // Only bouncer shown: no blur.
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+            assertThat(
+                    underTest.calculateTargetBlurRadius(
+                        transitionState =
+                            TransitionState.Idle(
+                                currentScene = Scenes.Lockscreen,
+                                currentOverlays = setOf(Overlays.Bouncer),
+                            )
+                    )
+                )
+                .isEqualTo(0f)
 
-            kosmos.enableDualShade()
-            kosmos.shadeInteractor.expandNotificationsShade("test")
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            assertThat(currentOverlays).contains(Overlays.NotificationsShade)
+            // Notifications shade and bouncer shown: apply blur.
+            assertThat(
+                    underTest.calculateTargetBlurRadius(
+                        transitionState =
+                            TransitionState.Idle(
+                                currentScene = Scenes.Lockscreen,
+                                currentOverlays =
+                                    setOf(Overlays.Bouncer, Overlays.NotificationsShade),
+                            )
+                    )
+                )
+                .isEqualTo(blurConfig.maxBlurRadiusPx)
 
-            kosmos.enableSingleShade()
-            assertThat(currentScene).isEqualTo(Scenes.Shade)
-            assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
+            // No bouncer shown: no blur.
+            assertThat(
+                    underTest.calculateTargetBlurRadius(
+                        transitionState =
+                            TransitionState.Idle(
+                                currentScene = Scenes.Lockscreen,
+                                currentOverlays = setOf(Overlays.NotificationsShade),
+                            )
+                    )
+                )
+                .isEqualTo(0)
+
+            // Blur not supported: no blur.
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = false
+            assertThat(
+                    underTest.calculateTargetBlurRadius(
+                        transitionState =
+                            TransitionState.Idle(
+                                currentScene = Scenes.Lockscreen,
+                                currentOverlays =
+                                    setOf(Overlays.Bouncer, Overlays.NotificationsShade),
+                            )
+                    )
+                )
+                .isEqualTo(0f)
         }
 
     @Test
-    fun shadeModeChanged_split_switchesToShadeScene() =
-        testScope.runTest {
+    fun shadeModeChanged_single_switchesToShadeScene() =
+        kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
 
-            kosmos.enableDualShade()
-            kosmos.shadeInteractor.expandNotificationsShade("test")
+            enableDualShade()
+            shadeInteractor.expandNotificationsShade("test")
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
             assertThat(currentOverlays).contains(Overlays.NotificationsShade)
 
-            kosmos.enableSplitShade()
+            enableSingleShade()
             assertThat(currentScene).isEqualTo(Scenes.Shade)
             assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
         }
 
-    private fun TestScope.lockDevice() {
+    private fun Kosmos.lockDevice() {
         val currentScene by collectLastValue(sceneInteractor.currentScene)
-        kosmos.powerInteractor.setAsleepForTest()
-        runCurrent()
+        powerInteractor.setAsleepForTest()
 
         assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
     }
 
-    private fun setEnableDesktopFeatureSet(enable: Boolean) {
-        kosmos.testableContext.orCreateTestableResources.addOverride(
-            R.bool.config_enableDesktopFeatureSet,
-            enable,
-        )
-        kosmos.configurationController.onConfigurationChanged(Configuration())
-    }
-
-    private suspend fun TestScope.unlockDevice() {
+    private suspend fun Kosmos.unlockDevice() {
         val currentScene by collectLastValue(sceneInteractor.currentScene)
-        kosmos.powerInteractor.setAwakeForTest()
-        runCurrent()
-        assertThat(
-                kosmos.authenticationInteractor.authenticate(
-                    FakeAuthenticationRepository.DEFAULT_PIN
-                )
-            )
+        powerInteractor.setAwakeForTest()
+        assertThat(authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN))
             .isEqualTo(AuthenticationResult.SUCCEEDED)
 
         assertThat(currentScene).isEqualTo(Scenes.Gone)
+    }
+
+    @Test
+    fun onShadeBoundsChanged_forwardsToShadeOverlayInteractor() =
+        kosmos.runTest {
+            var shadeBounds: android.graphics.Rect? = null
+            shadeInteractor.addShadeOverlayBoundsListener { shadeBounds = it }
+            assertThat(shadeBounds).isNull()
+
+            val bounds = Rect(0f, 0f, 100f, 100f)
+            val expectedShadeBounds = android.graphics.Rect(0, 0, 100, 100)
+            underTest.onShadeOverlayBoundsChanged(bounds)
+
+            assertThat(shadeBounds).isEqualTo(expectedShadeBounds)
+        }
+
+    private fun Kosmos.setUseDesktopStatusBar(enable: Boolean) {
+        enableDualShade(wideLayout = true)
+        overrideResource(R.bool.config_useDesktopStatusBar, enable)
+        configurationController.onConfigurationChanged(Configuration())
     }
 }

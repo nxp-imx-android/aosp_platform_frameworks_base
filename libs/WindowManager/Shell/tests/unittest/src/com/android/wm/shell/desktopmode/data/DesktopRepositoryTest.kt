@@ -20,10 +20,10 @@ import android.graphics.Rect
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
+import android.util.ArrayMap
 import android.util.ArraySet
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
-import androidx.compose.ui.test.cancel
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.wm.shell.MockToken
@@ -62,6 +62,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.isNull
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -196,6 +197,30 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         repo.addTask(SECOND_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
         assertThat(repo.getFreeformTasksInZOrder(DEFAULT_DISPLAY)).isEmpty()
         assertThat(repo.getFreeformTasksInZOrder(SECOND_DISPLAY)).containsExactly(1)
+    }
+
+    @Test
+    fun addTask_withSavedBounds_updatesDeskObject() {
+        val taskId = 1
+        // Create a freeform task to and add it to the desk first.
+        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+
+        // Assume the user adjusts the bounds of the task.
+        val boundsBeforeSnapOrMaximize = Rect(100, 200, 300, 400)
+
+        // Then, user snaps or maximizes this task.
+        repo.saveBoundsBeforeSnapOrMaximize(taskId, boundsBeforeSnapOrMaximize)
+
+        // Calling addTask again will call updateTaskInDesk, which should copy the previous
+        // bounds to the desk object.
+        // taskBounds parameter below can be seen as the current bounds of the task in its maximized
+        // or snapped state.
+        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true, taskBounds = Rect(0, 0, 1280, 800))
+
+        val desk = repo.getAllDesks().find { it.deskId == DEFAULT_DESKTOP_ID }
+        assertNotNull(desk)
+        assertThat(desk.boundsBeforeSnapOrMaximizeByTaskId[taskId])
+            .isEqualTo(boundsBeforeSnapOrMaximize)
     }
 
     @Test
@@ -476,8 +501,20 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             val expectedDesks2 = repo.getAllDesks()
 
             inOrder(persistentRepository).run {
-                verify(persistentRepository).addOrUpdateRepository(DEFAULT_USER_ID, expectedDesks1)
-                verify(persistentRepository).addOrUpdateRepository(DEFAULT_USER_ID, expectedDesks2)
+                verify(persistentRepository)
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesks1,
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
+                verify(persistentRepository)
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesks2,
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
             }
         }
 
@@ -559,9 +596,19 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             assertThat(repo.getLeftTiledTask(deskId = DEFAULT_DESKTOP_ID)).isNull()
             inOrder(persistentRepository).run {
                 verify(persistentRepository)
-                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksAfterAdding)
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesksAfterAdding,
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
                 verify(persistentRepository)
-                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksAfterRemoval)
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesksAfterRemoval,
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
             }
         }
     }
@@ -624,9 +671,19 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             assertThat(repo.getRightTiledTask(deskId = DEFAULT_DESKTOP_ID)).isNull()
             inOrder(persistentRepository).run {
                 verify(persistentRepository)
-                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksAfterAdding)
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesksAfterAdding,
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
                 verify(persistentRepository)
-                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksAfterRemoval)
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesksAfterRemoval,
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
             }
         }
     }
@@ -1106,11 +1163,26 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             assertThat(tasks).containsExactly(7, 6, 5).inOrder()
             inOrder(persistentRepository).run {
                 verify(persistentRepository)
-                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksInOrder[0])
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesksInOrder[0],
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
                 verify(persistentRepository)
-                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksInOrder[1])
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesksInOrder[1],
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
                 verify(persistentRepository)
-                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksInOrder[2])
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesksInOrder[2],
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
             }
         }
 
@@ -1232,14 +1304,34 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             expectedDesksInOrder.add(repo.getAllDesks().map { it.deepCopy() })
             inOrder(persistentRepository).run {
                 verify(persistentRepository)
-                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksInOrder[0])
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesksInOrder[0],
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
                 verify(persistentRepository)
-                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksInOrder[1])
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesksInOrder[1],
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
                 verify(persistentRepository)
-                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksInOrder[2])
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesksInOrder[2],
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
                 // Triggers once for updateTask and once for minimize task
                 verify(persistentRepository, times(2))
-                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksInOrder[3])
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesksInOrder[3],
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
             }
         }
 
@@ -1373,22 +1465,53 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
             inOrder(persistentRepository).run {
                 verify(persistentRepository)
-                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksAfterAddingTask)
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesksAfterAddingTask,
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
                 verify(persistentRepository)
-                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksAfterRemovingTask)
+                    .addOrUpdateRepository(
+                        DEFAULT_USER_ID,
+                        expectedDesksAfterRemovingTask,
+                        DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
+                    )
             }
         }
     }
 
     @Test
-    fun removeTask_removesTaskBoundsBeforeMaximize() {
-        val taskId = 1
-        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
-        repo.saveBoundsBeforeMaximize(taskId, Rect(0, 0, 200, 200))
+    fun removeTask_removesTaskBoundsBeforeSnapOrMaximize() {
 
+        val taskId = 1
+        // Create a freeform task to and add it to the desk first.
+        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+
+        // Assume the user adjusts the bounds of the task.
+        val boundsBeforeSnapOrMaximize = Rect(100, 200, 300, 400)
+
+        // Then, user snaps or maximizes this task.
+        repo.saveBoundsBeforeSnapOrMaximize(taskId, boundsBeforeSnapOrMaximize)
+
+        // Calling addTask again will call updateTaskInDesk, which should copy the previous
+        // bounds to the desk object.
+        // taskBounds parameter below can be seen as the current bounds of the task in its maximized
+        // or snapped state.
+        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true, taskBounds = Rect(0, 0, 1280, 800))
+
+        // Task is removed due to drag-exit or other reasons like closing the app.
         repo.removeTask(taskId)
 
-        assertThat(repo.removeBoundsBeforeMaximize(taskId)).isNull()
+        // Verify bounds are removed from repository's sparse array
+        // (boundsBeforeSnapOrMaximizeByTaskId)
+        assertThat(repo.removeBoundsBeforeSnapOrMaximize(taskId)).isNull()
+
+        // Verify bounds are removed from desk object as well
+        val desk = repo.getAllDesks().find { it.deskId == DEFAULT_DESKTOP_ID }
+        assertNotNull(desk)
+        assertThat(desk.boundsBeforeSnapOrMaximizeByTaskId.containsKey(taskId)).isFalse()
     }
 
     @Test
@@ -1439,23 +1562,38 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    fun saveBoundsBeforeMaximize_boundsSavedByTaskId() {
+    fun saveBoundsBeforeSnapOrMaximize_boundsSavedByTaskId() {
         val taskId = 1
         val bounds = Rect(0, 0, 200, 200)
 
-        repo.saveBoundsBeforeMaximize(taskId, bounds)
+        repo.saveBoundsBeforeSnapOrMaximize(taskId, bounds)
 
-        assertThat(repo.removeBoundsBeforeMaximize(taskId)).isEqualTo(bounds)
+        assertThat(repo.removeBoundsBeforeSnapOrMaximize(taskId)).isEqualTo(bounds)
     }
 
     @Test
-    fun removeBoundsBeforeMaximize_returnsNullAfterBoundsRemoved() {
+    fun saveBoundsBeforeSnapOrMaximize_alreadyExists_doesNotOverwrite() {
+        val taskId = 1
+        val initialBounds = Rect(0, 0, 200, 200)
+        val newBounds = Rect(10, 10, 300, 300)
+
+        // Save initial bounds
+        repo.saveBoundsBeforeSnapOrMaximize(taskId, initialBounds)
+        // Attempt to save new bounds, which should be ignored
+        repo.saveBoundsBeforeSnapOrMaximize(taskId, newBounds)
+
+        // Verify that the initial bounds are still the ones stored
+        assertThat(repo.removeBoundsBeforeSnapOrMaximize(taskId)).isEqualTo(initialBounds)
+    }
+
+    @Test
+    fun removeBoundsBeforeSnapOrMaximize_returnsNullAfterBoundsRemoved() {
         val taskId = 1
         val bounds = Rect(0, 0, 200, 200)
-        repo.saveBoundsBeforeMaximize(taskId, bounds)
-        repo.removeBoundsBeforeMaximize(taskId)
+        repo.saveBoundsBeforeSnapOrMaximize(taskId, bounds)
+        repo.removeBoundsBeforeSnapOrMaximize(taskId)
 
-        val boundsBeforeMaximize = repo.removeBoundsBeforeMaximize(taskId)
+        val boundsBeforeMaximize = repo.removeBoundsBeforeSnapOrMaximize(taskId)
 
         assertThat(boundsBeforeMaximize).isNull()
     }
@@ -1840,7 +1978,12 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             val expectedDesksAfterRemovingDesk = repo.getAllDesks().map { it.deepCopy() }
 
             verify(persistentRepository)
-                .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksAfterRemovingDesk)
+                .addOrUpdateRepository(
+                    DEFAULT_USER_ID,
+                    expectedDesksAfterRemovingDesk,
+                    DEFAULT_DESKTOP_ID,
+                    ArrayMap(),
+                )
         }
 
     @Test
@@ -2004,12 +2147,15 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         repo.addRightTiledTaskToDesk(SECOND_DISPLAY, 12, 7)
         repo.addLeftTiledTaskToDesk(SECOND_DISPLAY, 13, 7)
         repo.preserveDisplay(SECOND_DISPLAY, UNIQUE_DISPLAY_ID)
+        val preservedDisplay = repo.removePreservedDisplay(UNIQUE_DISPLAY_ID)
 
-        assertThat(repo.getPreservedTaskBounds(UNIQUE_DISPLAY_ID))
-            .isEqualTo(mapOf(12 to TEST_TASK_BOUNDS, 13 to secondTaskBounds))
-        assertThat(repo.getPreservedDeskIds(UNIQUE_DISPLAY_ID)).containsExactly(7)
-        assertThat(repo.getPreservedTilingData(UNIQUE_DISPLAY_ID, 7))
-            .isEqualTo(DesktopRepository.PreservedTiledAppData(13, 12))
+        if (preservedDisplay != null) {
+            assertThat(repo.getPreservedTaskBounds(preservedDisplay))
+                .isEqualTo(mapOf(12 to TEST_TASK_BOUNDS, 13 to secondTaskBounds))
+            assertThat(repo.getPreservedDeskIds(preservedDisplay)).containsExactly(7)
+            assertThat(repo.getPreservedTilingData(preservedDisplay, 7))
+                .isEqualTo(DesktopRepository.PreservedTiledAppData(13, 12))
+        } else fail("Expected to find preserved display.")
     }
 
     @Test
@@ -2035,9 +2181,9 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         repo.addDesk(SECOND_DISPLAY, deskId = SECOND_DISPLAY)
 
         repo.preserveDisplay(SECOND_DISPLAY, UNIQUE_DISPLAY_ID)
+        val preservedDisplay = repo.removePreservedDisplay(UNIQUE_DISPLAY_ID)
 
-        assertThat(repo.getPreservedTaskBounds(UNIQUE_DISPLAY_ID)).isEmpty()
-        assertThat(repo.getPreservedDeskIds(UNIQUE_DISPLAY_ID)).isEmpty()
+        assertThat(preservedDisplay).isNull()
     }
 
     @Test
@@ -2087,11 +2233,11 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             isVisible = true,
             taskBounds = TEST_TASK_BOUNDS,
         )
-        repo.saveBoundsBeforeMaximize(taskId = 10, bounds = Rect(10, 10, 100, 100))
+        repo.saveBoundsBeforeSnapOrMaximize(taskId = 10, bounds = Rect(10, 10, 100, 100))
 
         repo.removeTaskFromDesk(deskId = 6, taskId = 10)
 
-        assertThat(repo.removeBoundsBeforeMaximize(taskId = 10)).isNull()
+        assertThat(repo.removeBoundsBeforeSnapOrMaximize(taskId = 10)).isNull()
     }
 
     @Test
@@ -2432,6 +2578,195 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(repo.getNextDeskId(3)).isNull()
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun addDesk_transientDesk_persistentRepoNotUpdated() = runTest {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+
+        repo.addDesk(
+            displayId = 0,
+            deskId = 1,
+            uniqueDisplayId = UNIQUE_DISPLAY_ID,
+            transientDesk = true,
+        )
+
+        assertThat(listener.lastAddition).isNull()
+        verify(persistentRepository, never())
+            .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
+        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun addTiledTasks_toTransientDesk_persistentRepoNotUpdated() = runTest {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+
+        repo.addDesk(
+            displayId = 0,
+            deskId = 1,
+            uniqueDisplayId = UNIQUE_DISPLAY_ID,
+            transientDesk = true,
+        )
+        repo.addLeftTiledTaskToDesk(displayId = 0, taskId = 2, deskId = 1)
+        repo.addRightTiledTaskToDesk(displayId = 0, taskId = 3, deskId = 1)
+
+        assertThat(listener.lastAddition).isNull()
+        verify(persistentRepository, never())
+            .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
+        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX,
+    )
+    fun addActiveTask_toTransientDesk_persistentRepoNotUpdated() = runTest {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+
+        repo.addDesk(
+            displayId = 0,
+            deskId = 1,
+            uniqueDisplayId = UNIQUE_DISPLAY_ID,
+            transientDesk = true,
+        )
+        repo.addTaskToDesk(
+            displayId = 0,
+            deskId = 1,
+            taskId = 2,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+
+        assertThat(listener.lastAddition).isNull()
+        verify(persistentRepository, never())
+            .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
+        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX,
+    )
+    fun removeActiveTask_fromTransientDesk_listenersNotUpdated() = runTest {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+
+        repo.addDesk(
+            displayId = 0,
+            deskId = 1,
+            uniqueDisplayId = UNIQUE_DISPLAY_ID,
+            transientDesk = true,
+        )
+        repo.addTaskToDesk(
+            displayId = 0,
+            deskId = 1,
+            taskId = 2,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.removeTaskFromDesk(deskId = 1, taskId = 2)
+
+        assertThat(listener.lastAddition).isNull()
+        assertThat(listener.lastRemoval).isNull()
+        verify(persistentRepository, never())
+            .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
+        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX,
+    )
+    fun preserveDesk_transientDeskRemoved() = runTest {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+        repo.addDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 1,
+            uniqueDisplayId = UNIQUE_DISPLAY_ID,
+            transientDesk = true,
+        )
+        repo.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 1,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+
+        repo.preserveDesk(deskId = 1, uniqueDisplayId = UNIQUE_DISPLAY_ID)
+
+        val allDesks = repo.getAllDesks()
+        // We only have the default desk left.
+        assertThat(allDesks.size).isEqualTo(1)
+        assertThat(allDesks.first().deskId).isEqualTo(DEFAULT_DESKTOP_ID)
+        assertThat(listener.lastRemoval).isNull()
+        verify(persistentRepository, never())
+            .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
+        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX,
+    )
+    fun minimizeTask_inTransientDesk_persistentRepoNotUpdated() = runTest {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+
+        repo.addDesk(
+            displayId = 0,
+            deskId = 1,
+            uniqueDisplayId = UNIQUE_DISPLAY_ID,
+            transientDesk = true,
+        )
+        repo.addTaskToDesk(
+            displayId = 0,
+            deskId = 1,
+            taskId = 2,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.minimizeTaskInDesk(displayId = 0, deskId = 1, taskId = 2)
+
+        assertThat(listener.lastAddition).isNull()
+        verify(persistentRepository, never())
+            .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
+        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
+    }
+
+    @Test
+    fun hasBoundsBeforeSnapOrMaximize_boundsExist_returnsTrue() {
+        val taskId = 123
+        val taskInfo = TestRunningTaskInfoBuilder().setTaskId(taskId).build()
+        val bounds = Rect(0, 0, 100, 100)
+        repo.saveBoundsBeforeSnapOrMaximize(taskId, bounds)
+
+        assertThat(repo.hasBoundsBeforeSnapOrMaximize(taskInfo)).isTrue()
+    }
+
+    @Test
+    fun hasBoundsBeforeSnapOrMaximize_noBounds_returnsFalse() {
+        val taskId = 456
+        val taskInfo = TestRunningTaskInfoBuilder().setTaskId(taskId).build()
+
+        // taskId and its bounds are not saved into the storage.
+        assertThat(repo.hasBoundsBeforeSnapOrMaximize(taskInfo)).isFalse()
+    }
+
     private class TestDeskChangeListener : DesktopRepository.DeskChangeListener {
         var lastAddition: LastAddition? = null
             private set
@@ -2527,6 +2862,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         private const val DEFAULT_USER_ID = 1000
         private const val DEFAULT_DESKTOP_ID = 0
         private const val UNIQUE_DISPLAY_ID = "uniqueDisplayId"
+        private const val UNIQUE_DISPLAY_ID2 = "uniqueDisplayId2"
         private val TEST_TASK_BOUNDS = Rect(100, 100, 200, 200)
 
         @JvmStatic

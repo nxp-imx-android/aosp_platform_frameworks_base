@@ -56,6 +56,8 @@ applications that come with the platform
     <privapp-permissions package="com.android.launcher3">
         <permission name="android.permission.WRITE_SECURE_SETTINGS"/>
         <permission name="android.permission.READ_SYSTEM_GRAMMATICAL_GENDER"/>
+        <permission name="android.permission.READ_REMOTE_TASKS"/>
+        <permission name="android.permission.REQUEST_TASK_HANDOFF"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.location.fused">
@@ -186,6 +188,7 @@ applications that come with the platform
         <permission name="android.permission.READ_SYSTEM_GRAMMATICAL_GENDER"/>
         <permission name="android.permission.UPDATE_CONFIG"/>
         <permission name="android.permission.SEND_SAFETY_CENTER_UPDATE" />
+        <permission name="android.permission.MONITOR_DEFAULT_SMS_PACKAGE"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.privatespace">
@@ -236,6 +239,7 @@ applications that come with the platform
         <!-- Permissions required for reading and logging compat changes -->
         <permission name="android.permission.LOG_COMPAT_CHANGE" />
         <permission name="android.permission.READ_COMPAT_CHANGE_CONFIG" />
+        <permission name="android.permission.UPDATE_APP_OPS_STATS"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.server.security.authenticationpolicy">
@@ -451,6 +455,8 @@ applications that come with the platform
         <permission name="android.permission.REQUEST_COMPANION_SELF_MANAGED" />
         <permission name="android.permission.REQUEST_OBSERVE_DEVICE_UUID_PRESENCE" />
         <permission name="android.permission.ACCESS_COMPANION_INFO" />
+        <permission name="android.permission.READ_REMOTE_TASKS" />
+        <permission name="android.permission.REQUEST_TASK_HANDOFF" />
 
         <!-- Permission required for testing registering pull atom callbacks. -->
         <permission name="android.permission.REGISTER_STATS_PULL_ATOM"/>
@@ -497,6 +503,7 @@ applications that come with the platform
         <permission name="android.permission.NEARBY_WIFI_DEVICES" />
         <permission name="android.permission.MANAGE_WIFI_INTERFACES" />
         <permission name="android.permission.OVERRIDE_WIFI_CONFIG" />
+        <permission name="android.permission.WIFI_SET_DEVICE_MOBILITY_STATE" />
         <!-- Permission needed for CTS test - ConcurrencyTest#testP2pExternalApprover
              P2P external approver API sets require MANAGE_WIFI_NETWORK_SELECTION permission. -->
         <permission name="android.permission.MANAGE_WIFI_NETWORK_SELECTION" />
@@ -541,6 +548,8 @@ applications that come with the platform
         <permission name="android.permission.MEDIA_CONTENT_CONTROL"/>
         <permission name="android.permission.MODIFY_AUDIO_ROUTING"/>
         <permission name="android.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED"/>
+        <!-- Permission required for CTS test - MediaSessionTest -->
+        <permission name="android.permission.OVERRIDE_MEDIA_SESSION_OWNER"/>
         <!-- Permission required for CTS test - CallAudioInterceptionTest -->
         <permission name="android.permission.CALL_AUDIO_INTERCEPTION"/>
         <!-- Permission required for CTS test - CtsAttributionSourceTestCases -->
@@ -656,6 +665,8 @@ applications that come with the platform
         <permission name="android.permission.OBSERVE_ROLE_HOLDERS"/>
         <!-- Permission required for CTS test - CtsRoleTestCases -->
         <permission name="android.permission.GET_ROLE_HOLDERS"/>
+        <!-- Permission required for CTS test - CtsAnomalyDetectorTests -->
+        <permission name="android.permission.CONFIGURE_ANOMALY_DETECTOR"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">
@@ -724,5 +735,9 @@ applications that come with the platform
 
     <privapp-permissions package="com.android.wm.shell">
         <permission name="android.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE" />
+    </privapp-permissions>
+
+    <privapp-permissions package="com.android.crossdevicesync">
+        <permission name="android.permission.INTERACT_ACROSS_USERS" />
     </privapp-permissions>
 </permissions>

@@ -15,6 +15,10 @@
  */
 package com.android.keyguard;
 
+import static android.security.Flags.lockscreenTimeoutDeactivatePinPad;
+
+import static com.android.keyguard.NumPadAnimatableKt.DISABLED_BACKGROUND_ALPHA;
+import static com.android.keyguard.NumPadAnimatableKt.DISABLED_FOREGROUND_ALPHA;
 import static com.android.systemui.Flags.bouncerUiRevamp2;
 
 import android.content.Context;
@@ -45,7 +49,7 @@ import com.android.systemui.res.R;
 /**
  * Viewgroup for the bouncer numpad button, specifically for digits.
  */
-public class NumPadKey extends ViewGroup implements NumPadAnimationListener {
+public class NumPadKey extends ViewGroup implements NumPadAnimationListener, NumPadAnimatable {
     // list of "ABC", etc per digit, starting with '0'
     static String sKlondike[];
 
@@ -141,7 +145,7 @@ public class NumPadKey extends ViewGroup implements NumPadAnimationListener {
         Drawable background = getBackground();
         if (background instanceof GradientDrawable) {
             mAnimator = new NumPadAnimator(context, background.mutate(),
-                    R.style.NumPadKey, mDigitText, null);
+                    R.style.NumPadKey, mDigitText, null, this);
         } else {
             mAnimator = null;
         }
@@ -155,6 +159,19 @@ public class NumPadKey extends ViewGroup implements NumPadAnimationListener {
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
         mOrientation = newConfig.orientation;
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        if (mAnimator == null || !lockscreenTimeoutDeactivatePinPad()) {
+            return;
+        }
+        if (enabled) {
+            mAnimator.enable();
+        } else {
+            mAnimator.disable();
+        }
     }
 
     /**
@@ -172,6 +189,9 @@ public class NumPadKey extends ViewGroup implements NumPadAnimationListener {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (lockscreenTimeoutDeactivatePinPad() && !isEnabled()) {
+            return super.onTouchEvent(event);
+        }
         switch(event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 doHapticKeyClick();
@@ -183,6 +203,12 @@ public class NumPadKey extends ViewGroup implements NumPadAnimationListener {
                 break;
         }
         return super.onTouchEvent(event);
+    }
+
+    @Override
+    public void setAlpha(float fgAlpha, float bgAlpha) {
+        mDigitText.setAlpha(fgAlpha);
+        getBackground().mutate().setAlpha(i(bgAlpha));
     }
 
     @Override
@@ -242,7 +268,7 @@ public class NumPadKey extends ViewGroup implements NumPadAnimationListener {
     @Override
     public void setProgress(float progress) {
         if (mAnimator != null) {
-            mAnimator.setProgress(progress);
+            mAnimator.setProgress(progress, isEnabled());
         }
     }
 

@@ -20,11 +20,22 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.shade.data.repository.privacyChipRepository
 import com.android.systemui.statusbar.data.repository.statusBarModeRepository
+import com.android.systemui.statusbar.featurepods.av.AvControlsChipModule
 import com.android.systemui.statusbar.featurepods.av.shared.model.AvControlsChipModel
 import com.android.systemui.statusbar.featurepods.av.shared.model.SensorActivityModel
+import javax.inject.Provider
 import kotlinx.coroutines.flow.MutableStateFlow
 
-val Kosmos.avControlsChipInteractorImpl: AvControlsChipInteractor by
+val Kosmos.avControlsChipInteractor: AvControlsChipInteractor by
+    Kosmos.Fixture {
+        AvControlsChipModule()
+            .provideAvControlsChipInteractor(
+                avControlsChipSupported = Provider { avControlsChipInteractorImpl },
+                avControlsChipNotSupported = Provider { noOpAvControlsChipInteractor },
+            )
+    }
+
+val Kosmos.avControlsChipInteractorImpl: AvControlsChipInteractorImpl by
     Kosmos.Fixture {
         AvControlsChipInteractorImpl(
             backgroundScope = backgroundScope,
@@ -33,14 +44,14 @@ val Kosmos.avControlsChipInteractorImpl: AvControlsChipInteractor by
         )
     }
 
+val Kosmos.noOpAvControlsChipInteractor: NoOpAvControlsChipInteractor by
+    Kosmos.Fixture { NoOpAvControlsChipInteractor() }
+
 val Kosmos.fakeAvControlsChipInteractor: FakeAvControlsChipInteractor by
     Kosmos.Fixture { FakeAvControlsChipInteractor() }
 
 class FakeAvControlsChipInteractor : AvControlsChipInteractor {
-    override val isEnabled: MutableStateFlow<Boolean> = MutableStateFlow(true)
     override val model: MutableStateFlow<AvControlsChipModel> =
         MutableStateFlow(AvControlsChipModel(sensorActivityModel = SensorActivityModel.Inactive))
     override val isShowingAvChip: MutableStateFlow<Boolean> = MutableStateFlow(false)
-
-    override fun initialize() {}
 }

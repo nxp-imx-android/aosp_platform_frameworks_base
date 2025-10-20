@@ -49,15 +49,16 @@ import com.android.internal.pm.pkg.component.ParsedUsesPermissionImpl
 import com.android.server.pm.pkg.AndroidPackage
 import com.android.server.testutils.mockThrowOnUnmocked
 import com.android.server.testutils.whenever
-import org.junit.Rule
 import java.security.KeyPairGenerator
 import java.security.PublicKey
 import java.util.UUID
 import kotlin.contracts.ExperimentalContracts
+import org.junit.Rule
 
 @ExperimentalContracts
 @EnableFlags(android.content.pm.Flags.FLAG_INCLUDE_FEATURE_FLAGS_IN_PACKAGE_CACHER,
-        android.permission.flags.Flags.FLAG_PURPOSE_DECLARATION_ENABLED)
+    android.permission.flags.Flags.FLAG_PPD_INSTALL_TIME_ENABLED
+)
 class AndroidPackageTest : ParcelableComponentTest(AndroidPackage::class, PackageImpl::class) {
 
     @get:Rule
@@ -323,6 +324,11 @@ class AndroidPackageTest : ParcelableComponentTest(AndroidPackage::class, Packag
             PackageImpl::setAttributionsAreUserVisible,
             true
         ),
+        getSetByValue(
+            AndroidPackage::hasPccComponents,
+            PackageImpl::setHasPccComponents,
+            true
+        ),
         getSetByValue2(
             AndroidPackage::getOverlayables,
             PackageImpl::addOverlayable,
@@ -488,12 +494,13 @@ class AndroidPackageTest : ParcelableComponentTest(AndroidPackage::class, Packag
         getSetByValue(
             AndroidPackage::getUsesPermissionMapping,
             PackageImpl::addUsesPermission,
-            mapOf("test.USES_PERMISSION_MAPPING" to ParsedUsesPermissionImpl("test.USES_PERMISSION_MAPPING", 0, setOf())),
+            mapOf("test.USES_PERMISSION_MAPPING" to ParsedUsesPermissionImpl("test.USES_PERMISSION_MAPPING", 0, setOf(), setOf())),
             transformSet = {
                 ParsedUsesPermissionImpl(
                         "test.USES_PERMISSION_MAPPING",
                         0,
                         setOf(),
+                        setOf()
                     )
             },
             compare = { first, second ->
@@ -587,34 +594,6 @@ class AndroidPackageTest : ParcelableComponentTest(AndroidPackage::class, Packag
             "isSystemExt",
             PackageImpl::setSystemExt,
             true
-        ),
-        getSetByValue(
-            AndroidPackage::getAlternateLauncherIconResIds,
-            PackageImpl::setAlternateLauncherIconResIds,
-            intArrayOf(3, 5, 7),
-            compare = { first, second ->
-                equalBy(
-                    first, second,
-                    { it.size },
-                    { it[0] },
-                    { it[1] },
-                    { it[2] }
-                )
-            }
-        ),
-        getSetByValue(
-            AndroidPackage::getAlternateLauncherLabelResIds,
-            PackageImpl::setAlternateLauncherLabelResIds,
-            intArrayOf(3, 5, 7),
-            compare = { first, second ->
-                equalBy(
-                    first, second,
-                    { it.size },
-                    { it[0] },
-                    { it[1] },
-                    { it[2] }
-                )
-            }
         ),
     )
 

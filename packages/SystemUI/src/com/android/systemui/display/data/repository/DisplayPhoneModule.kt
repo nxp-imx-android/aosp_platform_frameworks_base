@@ -18,21 +18,21 @@ package com.android.systemui.display.data.repository
 
 import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.display.dagger.ReferenceSysUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
-import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent
 import dagger.Module
 import dagger.Provides
 
 @Module
 object DisplayPhoneModule {
 
-    @Suppress("UNCHECKED_CAST") // Guaranteed to be a SystemUIPhoneDisplaySubcomponent
+    @Suppress("UNCHECKED_CAST") // Guaranteed to be a ReferenceSysUIDisplaySubcomponent
     @Provides
     @SysUISingleton
     fun displayPhoneSubcomponentRepository(
         perDisplaySubcomponentRepository: PerDisplayRepository<SystemUIDisplaySubcomponent>
-    ): PerDisplayRepository<SystemUIPhoneDisplaySubcomponent> {
+    ): PerDisplayRepository<ReferenceSysUIDisplaySubcomponent> {
         return perDisplaySubcomponentRepository
-            as PerDisplayRepository<SystemUIPhoneDisplaySubcomponent>
+            as PerDisplayRepository<ReferenceSysUIDisplaySubcomponent>
     }
 }

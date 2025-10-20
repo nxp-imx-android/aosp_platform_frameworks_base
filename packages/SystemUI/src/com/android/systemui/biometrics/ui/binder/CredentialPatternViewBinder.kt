@@ -26,6 +26,11 @@ object CredentialPatternViewBinder {
 
         view.repeatWhenAttached {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
+                if (com.android.systemui.Flags.msdlFeedback()) {
+                    lockPatternView.setExternalHapticsPlayer {
+                        viewModel.performPatternDotFeedback()
+                    }
+                }
                 // observe credential validation attempts and submit/cancel buttons
                 launch {
                     viewModel.header.collect { header ->

@@ -40,6 +40,11 @@ enum class KeyguardState {
      * DOZING is an example of special version of this state. Dreams may be implemented by third
      * parties to present their own UI over keyguard, like a screensaver.
      */
+    @Deprecated(
+        "This state won't exist anymore when scene container gets enabled. If you are " +
+            "writing prod code today, make sure to either use flag aware APIs in " +
+            "[KeyguardTransitionInteractor] or flag appropriately with [SceneContainerFlag]."
+    )
     DREAMING,
     /**
      * The device has entered a special low-power mode within SystemUI, also called the Always-on
@@ -97,6 +102,11 @@ enum class KeyguardState {
      */
     UNDEFINED,
     /** An activity is displaying over the keyguard. */
+    @Deprecated(
+        "This state won't exist anymore when scene container gets enabled. If you are " +
+            "writing prod code today, make sure to either use flag aware APIs in " +
+            "[KeyguardTransitionInteractor] or flag appropriately with [SceneContainerFlag]."
+    )
     OCCLUDED;
 
     fun checkValidState() {
@@ -119,14 +129,14 @@ enum class KeyguardState {
         return when (this) {
             OFF,
             DOZING,
-            DREAMING,
             AOD,
             ALTERNATE_BOUNCER,
-            OCCLUDED,
             LOCKSCREEN -> this
             GLANCEABLE_HUB,
             PRIMARY_BOUNCER,
             GONE,
+            OCCLUDED,
+            DREAMING,
             UNDEFINED -> UNDEFINED
         }
     }
@@ -135,14 +145,14 @@ enum class KeyguardState {
         return when (this) {
             OFF,
             DOZING,
-            DREAMING,
             AOD,
             ALTERNATE_BOUNCER,
-            OCCLUDED,
             LOCKSCREEN -> Scenes.Lockscreen
             GLANCEABLE_HUB -> Scenes.Communal
             PRIMARY_BOUNCER -> Overlays.Bouncer
             GONE -> Scenes.Gone
+            OCCLUDED -> Scenes.Occluded
+            DREAMING -> Scenes.Dream
             UNDEFINED -> null
         }
     }
@@ -153,7 +163,7 @@ enum class KeyguardState {
          * Whether the device is awake ([PowerInteractor.isAwake]) when we're FINISHED in the given
          * keyguard state.
          */
-        fun deviceIsAwakeInState(state: KeyguardState): Boolean {
+        fun deviceIsAwakeInState(state: KeyguardState, scene: ContentKey?): Boolean {
             state.checkValidState()
             return when (state) {
                 OFF -> false
@@ -166,16 +176,20 @@ enum class KeyguardState {
                 LOCKSCREEN -> true
                 GONE -> true
                 OCCLUDED -> true
-                UNDEFINED -> true
+                UNDEFINED -> deviceIsAwakeInScene(scene!!)
             }
+        }
+
+        private fun deviceIsAwakeInScene(scene: ContentKey): Boolean {
+            return scene != Scenes.Dream
         }
 
         /**
          * Whether the device is awake ([PowerInteractor.isAsleep]) when we're FINISHED in the given
          * keyguard state.
          */
-        fun deviceIsAsleepInState(state: KeyguardState): Boolean {
-            return !deviceIsAwakeInState(state)
+        fun deviceIsAsleepInState(state: KeyguardState, scene: ContentKey?): Boolean {
+            return !deviceIsAwakeInState(state, scene)
         }
     }
 }

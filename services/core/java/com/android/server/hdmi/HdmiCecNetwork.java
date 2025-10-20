@@ -617,7 +617,8 @@ public class HdmiCecNetwork {
         if (originalOpcode == Constants.MESSAGE_SET_AUDIO_VOLUME_LEVEL) {
 
             @DeviceFeatures.FeatureSupportStatus int featureSupport =
-                    reason == Constants.ABORT_UNRECOGNIZED_OPCODE
+                    (reason == Constants.ABORT_UNRECOGNIZED_OPCODE
+                            || reason == Constants.ABORT_INVALID_OPERAND)
                             ? DeviceFeatures.FEATURE_NOT_SUPPORTED
                             : DeviceFeatures.FEATURE_SUPPORT_UNKNOWN;
 
@@ -796,6 +797,14 @@ public class HdmiCecNetwork {
         }
         if (type == HdmiDeviceInfo.DEVICE_AUDIO_SYSTEM) {
             mCecSwitches.add(path);
+        }
+        for (int i = 0; i < mDeviceInfos.size(); i++) {
+            int key = mDeviceInfos.keyAt(i);
+            int physicalAddress = mDeviceInfos.get(key).getPhysicalAddress();
+            if (isParentPath(path, physicalAddress)) {
+                invokeDeviceEventListener(mDeviceInfos.get(key),
+                        HdmiControlManager.DEVICE_EVENT_ADD_DEVICE);
+            }
         }
         return false;
     }

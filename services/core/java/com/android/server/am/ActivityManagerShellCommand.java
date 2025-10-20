@@ -944,6 +944,10 @@ final class ActivityManagerShellCommand extends ShellCommand {
                             "Error: Not allowed to start background user activity"
                                     + " that shouldn't be displayed for all users.");
                     return 1;
+                case ActivityManager.START_NOT_ALLOWED_FOR_HEADLESS_SYSTEM_USER:
+                    out.println(
+                            "Error: Activity not started, not allowed for headless system user.");
+                    return 1;
                 default:
                     out.println(
                             "Error: Activity not started, unknown error code " + res);
@@ -1296,7 +1300,7 @@ final class ActivityManagerShellCommand extends ShellCommand {
             if (isFullCompact) {
                 pw.println("Executing full compaction for " + app.mPid);
                 synchronized (mInternal.mProcLock) {
-                    mInternal.mOomAdjuster.mCachedAppOptimizer.compactApp(app,
+                    mInternal.getCachedAppOptimizer().compactApp(app,
                             CachedAppOptimizer.CompactProfile.FULL,
                             CachedAppOptimizer.CompactSource.SHELL, true);
                 }
@@ -1304,7 +1308,7 @@ final class ActivityManagerShellCommand extends ShellCommand {
             } else if (isSomeCompact) {
                 pw.println("Executing some compaction for " + app.mPid);
                 synchronized (mInternal.mProcLock) {
-                    mInternal.mOomAdjuster.mCachedAppOptimizer.compactApp(app,
+                    mInternal.getCachedAppOptimizer().compactApp(app,
                             CachedAppOptimizer.CompactProfile.SOME,
                             CachedAppOptimizer.CompactSource.SHELL, true);
                 }
@@ -1313,7 +1317,7 @@ final class ActivityManagerShellCommand extends ShellCommand {
         } else if (op.equals("system")) {
             pw.println("Executing system compaction");
             synchronized (mInternal.mProcLock) {
-                mInternal.mOomAdjuster.mCachedAppOptimizer.compactAllSystem();
+                mInternal.getCachedAppOptimizer().compactAllSystem();
             }
             pw.println("Finished system compaction");
         } else if (op.equals("native")) {
@@ -1329,10 +1333,10 @@ final class ActivityManagerShellCommand extends ShellCommand {
                 return -1;
             }
             if (isFullCompact) {
-                mInternal.mOomAdjuster.mCachedAppOptimizer.compactNative(
+                mInternal.getCachedAppOptimizer().compactNative(
                         CachedAppOptimizer.CompactProfile.FULL, pid);
             } else if (isSomeCompact) {
-                mInternal.mOomAdjuster.mCachedAppOptimizer.compactNative(
+                mInternal.getCachedAppOptimizer().compactNative(
                         CachedAppOptimizer.CompactProfile.SOME, pid);
             } else {
                 getErrPrintWriter().println("Error: unknown compaction type '" + op + "'");
@@ -1365,9 +1369,9 @@ final class ActivityManagerShellCommand extends ShellCommand {
             synchronized (mInternal.mProcLock) {
                 proc.mOptRecord.setFreezeSticky(isSticky);
                 if (freeze) {
-                    mInternal.mOomAdjuster.mCachedAppOptimizer.forceFreezeAppAsyncLSP(proc);
+                    mInternal.getCachedAppOptimizer().forceFreezeAppAsyncLSP(proc);
                 } else {
-                    mInternal.mOomAdjuster.mCachedAppOptimizer.unfreezeAppLSP(proc, 0, true);
+                    mInternal.getCachedAppOptimizer().unfreezeAppLSP(proc, 0, true);
                 }
             }
         }

@@ -103,8 +103,7 @@
     <item msgid="1049450003868150455">"אודיו <xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX">aptX™</xliff:g>"</item>
     <item msgid="2908219194098827570">"אודיו <xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX_HD">aptX™ HD</xliff:g>"</item>
     <item msgid="3825367753087348007">"LDAC"</item>
-    <item msgid="328951785723550863">"LC3"</item>
-    <item msgid="506175145534048710">"Opus"</item>
+    <item msgid="8637806944387141612">"Opus"</item>
   </string-array>
   <string-array name="bluetooth_a2dp_codec_summaries">
     <item msgid="8868109554557331312">"שימוש בבחירת המערכת (ברירת המחדל)"</item>
@@ -113,8 +112,7 @@
     <item msgid="8627333814413492563">"אודיו <xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX">aptX™</xliff:g>"</item>
     <item msgid="3517061573669307965">"אודיו <xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX_HD">aptX™ HD</xliff:g>"</item>
     <item msgid="2553206901068987657">"LDAC"</item>
-    <item msgid="3940992993241040716">"LC3"</item>
-    <item msgid="7940970833006181407">"Opus"</item>
+    <item msgid="3026476115049855657">"Opus"</item>
   </string-array>
   <string-array name="bluetooth_a2dp_codec_sample_rate_titles">
     <item msgid="926809261293414607">"שימוש בבחירת המערכת (ברירת המחדל)"</item>
@@ -297,7 +295,7 @@
   <string-array name="shade_display_awareness_summaries">
     <item msgid="2964753205732912921">"לוח ההתראות מופיע רק במסך המכשיר"</item>
     <item msgid="1955398604822147783">"הצגת לוח ההתראות במסך חיצוני אחד"</item>
-    <item msgid="391477482416751568">"הצגת לוח ההתראות במסך שבו הייתה האינטראקציה האחרונה עם שורת הסטטוס"</item>
+    <item msgid="391477482416751568">"לוח ההתראות יופיע במסך שבו הייתה האינטראקציה האחרונה עם שורת הסטטוס"</item>
     <item msgid="1746820128097981528">"הצגת לוח ההתראות במסך האחרון שבו המשתמש התמקד"</item>
   </string-array>
   <string-array name="shade_display_awareness_values">

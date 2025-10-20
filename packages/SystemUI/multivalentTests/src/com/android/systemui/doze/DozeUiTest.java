@@ -22,12 +22,14 @@ import static com.android.systemui.doze.DozeMachine.State.DOZE_AOD_PAUSED;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_REQUEST_PULSE;
 import static com.android.systemui.doze.DozeMachine.State.INITIALIZED;
 import static com.android.systemui.doze.DozeMachine.State.UNINITIALIZED;
+import static com.android.systemui.Flags.FLAG_DOZE_TIME_TICK_INVALID_STATE_CHECK;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -41,7 +43,6 @@ import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.systemui.DejankUtils;
-import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.statusbar.phone.DozeParameters;
 import com.android.systemui.util.concurrency.FakeExecutor;
@@ -118,6 +119,26 @@ public class DozeUiTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_DOZE_TIME_TICK_INVALID_STATE_CHECK)
+    public void attemptToScheduleTimeTickWhileInInvalidStateFails() {
+        mDozeUi.transitionTo(UNINITIALIZED, INITIALIZED);
+        mDozeUi.transitionTo(INITIALIZED, DOZE_AOD);
+
+        verify(mAlarmManager).setExact(anyInt(), anyLong(), eq("doze_time_tick"), any(), any());
+        clearInvocations(mAlarmManager);
+
+        // This relys on the fakeExecutor not running so that the unschedule isn't called
+        mDozeUi.transitionTo(DOZE_AOD, DOZE_AOD_PAUSED);
+
+        // Now request an errant time tick while in this invalid state
+        mDozeUi.scheduleTimeTick();
+
+        verify(mDozeLog).traceTimeTickIgnored(DOZE_AOD_PAUSED);
+        verify(mAlarmManager, never())
+                .setExact(anyInt(), anyLong(), eq("doze_time_tick"), any(), any());
+    }
+
+    @Test
     public void transitionSetsAnimateWakeup_noAlwaysOn() {
         mDozeUi.transitionTo(UNINITIALIZED, DOZE);
         verify(mHost).setAnimateWakeup(eq(false));
@@ -132,7 +153,6 @@ public class DozeUiTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
     public void onPulseStarted_quickPickupRequestsPulsingWithoutUI() {
         mDozeUi.transitionTo(UNINITIALIZED, INITIALIZED);
         mDozeUi.transitionTo(INITIALIZED, DOZE_AOD);
@@ -147,7 +167,6 @@ public class DozeUiTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
     public void onPulseStarted_udfpsLongpressRequestsPulsingWithoutUI() {
         mDozeUi.transitionTo(UNINITIALIZED, INITIALIZED);
         mDozeUi.transitionTo(INITIALIZED, DOZE_AOD);
@@ -162,7 +181,6 @@ public class DozeUiTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
     public void onPulseStarted_fingerprintPulseShowAuthUI() {
         mDozeUi.transitionTo(UNINITIALIZED, INITIALIZED);
         mDozeUi.transitionTo(INITIALIZED, DOZE_AOD);
@@ -179,7 +197,6 @@ public class DozeUiTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
     public void onPulseStarted_fingerprintPulseShowFullUI() {
         mDozeUi.transitionTo(UNINITIALIZED, INITIALIZED);
         mDozeUi.transitionTo(INITIALIZED, DOZE_AOD);

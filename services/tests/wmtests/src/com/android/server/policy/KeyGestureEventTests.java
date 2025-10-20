@@ -29,7 +29,6 @@ import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_HOME_ALL_A
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_HOME_ASSIST;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_HOME_NOTIFICATION_PANEL;
 
-import android.app.ActivityTaskManager;
 import android.app.role.RoleManager;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -51,7 +50,6 @@ import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 
 @Presubmit
 @MediumTest
@@ -159,7 +157,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
     public void setUp() {
         setUpPhoneWindowManager(/*supportSettingsUpdate*/ true, /* supportFeature */ "");
         mPhoneWindowManager.overrideLaunchHome();
-        mPhoneWindowManager.overrideEnableBugReportTrigger(true);
         mPhoneWindowManager.overrideStatusBarManagerInternal();
         mPhoneWindowManager.overrideStartActivity();
         mPhoneWindowManager.overrideSendBroadcast();
@@ -269,9 +266,21 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
     }
 
     @Test
-    public void testKeyGestureTriggerBugReport() throws RemoteException {
+    public void testKeyGestureTriggerBugReport_opensBugHandler() throws RemoteException {
+        mPhoneWindowManager.overrideBugHandler(true);
+
         sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT);
-        mPhoneWindowManager.assertTakeBugreport(true);
+        mPhoneWindowManager.assertOpenBugHandler();
+    }
+
+    @Test
+    public void testKeyGestureTriggerBugReport_takeBugReportIfHandlerNotPresent()
+            throws RemoteException {
+        mPhoneWindowManager.overrideDebuggable(true);
+        mPhoneWindowManager.overrideBugHandler(false);
+
+        sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT);
+        mPhoneWindowManager.assertTakeBugReport();
     }
 
     @Test
@@ -487,14 +496,5 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
         mPhoneWindowManager.assertActivityTargetLaunched(
                 new ComponentName("com.test", "com.test.BookmarkTest"));
 
-    }
-
-    @Test
-    public void testKeyGesture_quitFocusedTask() throws RemoteException {
-        mPhoneWindowManager.overrideFocusedRootTask(
-                Mockito.mock(ActivityTaskManager.RootTaskInfo.class));
-        sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK);
-
-        mPhoneWindowManager.assertTaskClosed();
     }
 }

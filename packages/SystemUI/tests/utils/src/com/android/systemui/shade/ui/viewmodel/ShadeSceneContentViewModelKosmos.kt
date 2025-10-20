@@ -17,6 +17,8 @@
 package com.android.systemui.shade.ui.viewmodel
 
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testDispatcher
@@ -30,7 +32,7 @@ import com.android.systemui.qs.panels.ui.viewmodel.quickQuickSettingsViewModelFa
 import com.android.systemui.qs.ui.viewmodel.quickSettingsContainerViewModelFactory
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
-import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
+import com.android.systemui.shade.domain.interactor.shadeStatusBarComponentsInteractor
 import com.android.systemui.unfold.domain.interactor.unfoldTransitionInteractor
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 
@@ -42,7 +44,6 @@ val Kosmos.shadeSceneContentViewModel: ShadeSceneContentViewModel by Fixture {
         quickQuickSettingsViewModel = quickQuickSettingsViewModelFactory,
         mediaCarouselInteractor = mediaCarouselInteractor,
         shadeModeInteractor = shadeModeInteractor,
-        disableFlagsInteractor = disableFlagsInteractor,
         footerActionsViewModelFactory = footerActionsViewModelFactory,
         footerActionsController = footerActionsController,
         unfoldTransitionInteractor = unfoldTransitionInteractor,
@@ -52,6 +53,9 @@ val Kosmos.shadeSceneContentViewModel: ShadeSceneContentViewModel by Fixture {
         mediaViewModelFactory = mediaViewModelFactory,
         windowRootViewBlurInteractor = windowRootViewBlurInteractor,
         mediaInRowInLandscapeViewModelFactory = mediaInRowInLandscapeViewModelFactory,
+        keyguardInteractor = keyguardInteractor,
+        blurConfig = blurConfig,
+        shadeStatusBarComponentsInteractor = shadeStatusBarComponentsInteractor,
     )
 }
 

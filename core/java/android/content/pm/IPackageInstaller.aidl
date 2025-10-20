@@ -32,7 +32,7 @@ import android.os.UserHandle;
 
 import android.graphics.Bitmap;
 
-/** {@hide} */
+/** @hide */
 interface IPackageInstaller {
     int createSession(in PackageInstaller.SessionParams params, String installerPackageName,
             String installerAttributionTag, int userId);
@@ -110,4 +110,5 @@ interface IPackageInstaller {
     DeveloperVerificationUserConfirmationInfo getDeveloperVerificationUserConfirmationInfo(int sessionId);
 
     void addDeveloperVerificationExperiment(String packageName, int verificationPolicy, in int[] results);
+    void clearDeveloperVerificationExperiment(String packagename);
 }

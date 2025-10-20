@@ -21,20 +21,20 @@ import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
-import com.android.wm.shell.Utils
-import com.android.wm.shell.flicker.bubbles.testcase.ExpandBubbleTestCases
-import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
+import com.android.wm.shell.Utils.testSetupRule
+import com.android.wm.shell.flicker.bubbles.testcase.ExpandBubbleFromHomeTestCases
+import com.android.wm.shell.flicker.bubbles.utils.AssumptionRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaBackKey
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.expandBubbleAppViaTapOnBubbleStack
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
-import org.junit.Assume.assumeFalse
-import org.junit.Before
+import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameters
 
 /**
  * Test clicking bubble to expand a bubble that was in collapsed state.
@@ -52,7 +52,7 @@ import org.junit.runners.Parameterized
  * ```
  * Verified tests:
  * - [BubbleFlickerTestBase]
- * - [ExpandBubbleTestCases]
+ * - [ExpandBubbleFromHomeTestCases]
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RequiresDevice
@@ -60,7 +60,7 @@ import org.junit.runners.Parameterized
 @Presubmit
 @RunWith(Parameterized::class)
 class ExpandBubbleViaBubbleStackTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    ExpandBubbleTestCases {
+    ExpandBubbleFromHomeTestCases {
 
     companion object {
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
@@ -72,23 +72,23 @@ class ExpandBubbleViaBubbleStackTest(navBar: NavBar) : BubbleFlickerTestBase(),
             tearDownAfterTransition = { testApp.exit(wmHelper) }
         )
 
-        @Parameterized.Parameters(name = "{0}")
+        @Parameters(name = "{0}")
         @JvmStatic
-        fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL, NavBar.MODE_3BUTTON)
+        fun data(): List<NavBar> = NavBar.entries
     }
 
-    @get:Rule
-    val setUpRule = ApplyPerParameterRule(
-        Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
+    @get:Rule(order = 1)
+    val assumptionRule = AssumptionRule(
+        condition = { !tapl.isTablet },
+        message = "This test is for compact phones",
+    )
+
+    @get:Rule(order = 2)
+    val setUpRule = RunOncePerParameterRule(
+        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
         params = arrayOf(navBar),
     )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
-
-    @Before
-    override fun setUp() {
-        assumeFalse(tapl.isTablet)
-        super.setUp()
-    }
 }

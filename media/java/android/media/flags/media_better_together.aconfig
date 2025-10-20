@@ -62,6 +62,13 @@ flag {
 }
 
 flag {
+    name: "enable_preferred_device_fixes"
+    namespace: "media_better_together"
+    description: "Prevents MediaRouter2 from changing routing policies in specific situations where it shouldn't change them."
+    bug: "448815259"
+}
+
+flag {
     name: "enable_suggested_device_api"
     is_exported: true
     namespace: "media_better_together"
@@ -85,6 +92,13 @@ flag {
     namespace: "media_solutions"
     description: "Exposes RoutingController#getTransferableRoutes() (previously hidden) to the public API."
     bug: "323154573"
+}
+
+flag {
+    name: "enable_media_route_2_provider_info_builder_caching"
+    namespace: "media_better_together"
+    description: "Enables caching for mPackageName and mIsSystem of provider info in MediaRoute2ProviderInfo."
+    bug: "441980279"
 }
 
 flag {
@@ -146,17 +160,10 @@ flag {
 }
 
 flag {
-  name: "enable_output_switcher_redesign"
-  namespace: "media_better_together"
-  description: "Enables visual update for the Media Output Switcher"
-  bug: "388296370"
-}
-
-flag {
-    name: "allow_output_switcher_list_rearrangement_within_timeout"
+    name: "use_suggested_device_connection_manager"
     namespace: "media_better_together"
-    description: "Allows Output Switcher device list to rearrange items within a short time after opening."
-    bug: "425986844"
+    description: "Use a separate class to manage the Suggested Device connection in Media Controls."
+    bug: "442856281"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -258,4 +265,11 @@ flag {
     namespace: "media_better_together"
     description: "Add a preference for device suggestions in the media settings page"
     bug: "415096359"
+}
+
+flag {
+    name: "release_ringtone_as_api"
+    namespace: "telecom"
+    description: "Flag for unhiding ringtone APIs"
+    bug: "450092456"
 }

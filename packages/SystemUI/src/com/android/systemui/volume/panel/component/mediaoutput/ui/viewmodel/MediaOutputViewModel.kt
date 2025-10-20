@@ -23,7 +23,9 @@ import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Color
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.media.dialog.MediaSwitchingType
 import com.android.systemui.res.R
+import com.android.systemui.volume.dialog.domain.interactor.ExpandedAudioTileDetailsFeatureInteractor
 import com.android.systemui.volume.domain.model.AudioOutputDevice
 import com.android.systemui.volume.panel.component.mediaoutput.domain.interactor.MediaOutputActionsInteractor
 import com.android.systemui.volume.panel.component.mediaoutput.domain.interactor.MediaOutputComponentInteractor
@@ -49,6 +51,7 @@ constructor(
     private val actionsInteractor: MediaOutputActionsInteractor,
     private val mediaOutputComponentInteractor: MediaOutputComponentInteractor,
     private val uiEventLogger: UiEventLogger,
+    private val expandedAudioTileDetailsFeatureInteractor: ExpandedAudioTileDetailsFeatureInteractor,
 ) {
 
     val connectedDeviceViewModel: StateFlow<ConnectedDeviceViewModel?> =
@@ -189,6 +192,11 @@ constructor(
         actionsInteractor.onBarClick(
             (result as? Result.Data<MediaOutputComponentModel>)?.data,
             expandable,
+            if (expandedAudioTileDetailsFeatureInteractor.isEnabled()) {
+                MediaSwitchingType.OUTPUT
+            } else {
+                null
+            },
         )
     }
 }

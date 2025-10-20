@@ -46,7 +46,7 @@ import java.util.List;
 /**
  * System private per-application interface to the window manager.
  *
- * {@hide}
+ * @hide
  */
 interface IWindowSession {
 

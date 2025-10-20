@@ -147,6 +147,22 @@ public class AppCompatLetterboxPolicyTest extends WindowTestsBase {
         });
     }
 
+
+    @EnableFlags(Flags.FLAG_ADD_SURFACE_INSETS_FOR_CROP)
+    @Test
+    public void testGetCropBoundsIfNeeded_appliesCropWithSurfaceInsets() {
+        runTestScenario((robot) -> {
+            robot.configureWindowStateWithSurfaceInsets(new Rect(78, 78, 78, 78));
+            robot.activity().createActivityWithComponent();
+            robot.activity().setTopActivityVisible(/* isVisible */ true);
+            robot.setIsLetterboxedForFixedOrientationAndAspectRatio(/* inLetterbox */ true);
+            robot.conf().setLetterboxActivityCornersRounded(/* rounded */ true);
+
+            robot.activity().configureTopActivityBounds(new Rect(50, 0, 150, 100));
+            robot.checkWindowStateHasCropBoundsWithSurfaceInsets();
+        });
+    }
+
     @Test
     public void testGetRoundedCornersRadius_withRoundedCornersFromInsets() {
         runTestScenario((robot) -> {
@@ -260,6 +276,35 @@ public class AppCompatLetterboxPolicyTest extends WindowTestsBase {
         });
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
+    public void testHide_clearsLetterboxInsets_shellPolicy() {
+        runTestScenario((robot) -> {
+            // Setup: configure window state and create a visible activity.
+            robot.configureWindowState();
+            robot.activity().createActivityWithComponent();
+            robot.activity().setTopActivityVisible(true);
+
+            final Rect windowFrame = new Rect(robot.activity().top().getTask().getBounds());
+            final Rect expectedInsets =
+                    new Rect(/* left */10, /* top */20, /* right */10, /* bottom */20);
+            windowFrame.inset(expectedInsets);
+            robot.configureWindowStateFrame(windowFrame);
+
+            // Trigger letterbox layout. This should calculate and store the letterbox bounds.
+            robot.startLetterbox();
+
+            // Verify initial state: letterbox is active and insets are non-empty.
+            robot.checkLetterboxInsets(expectedInsets);
+
+            // Hide the letterbox. This should clear the stored bounds.
+            robot.hideLetterbox();
+
+            // Verify final state: letterbox is hidden and insets are now empty.
+            robot.checkLetterboxInsets(new Rect());
+        });
+    }
+
     /**
      * Runs a test scenario providing a Robot.
      */
@@ -300,6 +345,19 @@ public class AppCompatLetterboxPolicyTest extends WindowTestsBase {
 
         void startLetterbox() {
             getAppCompatLetterboxPolicy().start(mWindowState);
+        }
+
+        void hideLetterbox() {
+            getAppCompatLetterboxPolicy().mLetterboxPolicyState.hide();
+        }
+
+        void checkLetterboxInsets(@NonNull Rect expected) {
+            assertEquals(expected, getAppCompatLetterboxPolicy().getLetterboxInsets());
+        }
+
+        private void configureWindowStateWithSurfaceInsets(@NonNull Rect surfaceInsets) {
+            configureWindowState();
+            mWindowState.mAttrs.surfaceInsets.set(surfaceInsets);
         }
 
         void configureWindowStateWithTaskBar(boolean hasInsetsRoundedCorners) {
@@ -374,6 +432,16 @@ public class AppCompatLetterboxPolicyTest extends WindowTestsBase {
             } else {
                 assertNull(cropBounds);
             }
+        }
+
+        void checkWindowStateHasCropBoundsWithSurfaceInsets() {
+            final Rect expected = Rect.copyOrNull(activity().top().getBounds());
+            AppCompatUtils.adjustCropBoundsForSurfaceInsets(expected, mWindowState);
+            final Rect actual = getAppCompatLetterboxPolicy().getCropBoundsIfNeeded(
+                    mWindowState);
+            assertNotNull(actual);
+            assertEquals(expected.width(), actual.width());
+            assertEquals(expected.height(), actual.height());
         }
 
         void checkTaskBarIsExpanded(boolean expected) {

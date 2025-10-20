@@ -75,6 +75,7 @@ import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_RESTORE_TRANSIENT_ORDER;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_ADJACENT_ROOTS;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_ALWAYS_ON_TOP;
+import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_EXCLUDE_INSETS_TYPES;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_IS_TRIMMABLE;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_KEYGUARD_STATE;
@@ -108,6 +109,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
+import android.app.IApplicationThread;
 import android.app.WindowConfiguration;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -340,7 +342,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         try {
             synchronized (mGlobalLock) {
                 Transition transition = Transition.fromBinder(transitionToken);
-                if (mTransitionController.getTransitionPlayer() == null && transition == null) {
+                if (mTransitionController.isFlushing() && transition == null) {
                     Slog.w(TAG, "Using shell transitions API for legacy transitions.");
                     if (t == null) {
                         throw new IllegalArgumentException("Can't use legacy transitions in"
@@ -706,23 +708,16 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
 
                 if ((entry.getValue().getChangeMask()
                         & WindowContainerTransaction.Change.CHANGE_FORCE_NO_PIP) != 0) {
-                    if (com.android.wm.shell.Flags.enableRecentsBookendTransition()) {
-                        // If we are using a bookend transition, then the transition that we need
-                        // to disable pip on finish is the original transient transition, not the
-                        // bookend transition
-                        final Transition transientHideTransition =
-                                mTransitionController.getTransientHideTransitionForContainer(wc);
-                        if (transientHideTransition != null) {
-                            transientHideTransition.setCanPipOnFinish(false);
-                        } else {
-                            ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS,
-                                    "Set do-not-pip: no task");
-                        }
+                    // If we are using a bookend transition, then the transition that we need
+                    // to disable pip on finish is the original transient transition, not the
+                    // bookend transition
+                    final Transition transientHideTransition =
+                            mTransitionController.getTransientHideTransitionForContainer(wc);
+                    if (transientHideTransition != null) {
+                        transientHideTransition.setCanPipOnFinish(false);
                     } else {
-                        // Disable entering pip (eg. when recents pretends to finish itself)
-                        if (transition != null) {
-                            transition.setCanPipOnFinish(false /* canPipOnFinish */);
-                        }
+                        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS,
+                                "Set do-not-pip: no task");
                     }
                 }
                 // A bit hacky, but we need to detect "remove PiP" so that we can "wrap" the
@@ -1338,6 +1333,15 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     if (isLockTaskModeViolation(wc.getParent(), wc.asTask(), isInLockTaskMode)) {
                         break;
                     }
+                }  else if (type == HIERARCHY_OP_TYPE_REPARENT && hop.getNewParent() != null) {
+                    final WindowContainer parentWc = WindowContainer.fromBinder(hop.getNewParent());
+                    final Task parentTask = parentWc != null ? parentWc.asTask() : null;
+                    if (parentTask != null && parentTask.isLeafTask()
+                            && parentTask.hasDirectChildActivities()) {
+                        Slog.w(TAG, "Skip applying hierarchy operation " + hop
+                                + " on a leaf task.");
+                        break;
+                    }
                 }
                 if (syncId >= 0) {
                     addToSyncSet(syncId, wc);
@@ -1496,10 +1500,6 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 break;
             }
             case HIERARCHY_OP_TYPE_RESTORE_TRANSIENT_ORDER: {
-                if (!com.android.wm.shell.Flags.enableRecentsBookendTransition()) {
-                    // Only allow restoring transient order when finishing a transition
-                    if (!chain.isFinishing()) break;
-                }
                 // Validate the container
                 final WindowContainer container = WindowContainer.fromBinder(hop.getContainer());
                 if (container == null) {
@@ -1532,16 +1532,14 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 final TaskDisplayArea taskDisplayArea = thisTask.getTaskDisplayArea();
                 taskDisplayArea.moveRootTaskBehindRootTask(thisTask.getRootTask(), restoreAt);
 
-                if (com.android.wm.shell.Flags.enableRecentsBookendTransition()) {
-                    // Because we are in a transient launch transition, the requested visibility of
-                    // tasks does not actually change for the transient-hide tasks, but we do want
-                    // the restoration of these transient-hide tasks to top to be a part of this
-                    // finish transition
-                    final Transition collectingTransition = chain.getTransition();
-                    if (collectingTransition != null) {
-                        collectingTransition.updateChangesForRestoreTransientHideTasks(
-                                transientLaunchTransition);
-                    }
+                // Because we are in a transient launch transition, the requested visibility of
+                // tasks does not actually change for the transient-hide tasks, but we do want
+                // the restoration of these transient-hide tasks to top to be a part of this
+                // finish transition
+                final Transition collectingTransition = chain.getTransition();
+                if (collectingTransition != null) {
+                    collectingTransition.updateChangesForRestoreTransientHideTasks(
+                            transientLaunchTransition);
                 }
 
                 effects |= TRANSACT_EFFECTS_LIFECYCLE;
@@ -1680,6 +1678,19 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     effects |= TRANSACT_EFFECTS_LIFECYCLE;
                 }
                 break;
+            }
+            case HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE: {
+                final Transition transition = chain.getTransition();
+                if (transition == null) {
+                    Slog.e(TAG, "No transition to set animation delegate on");
+                    break;
+                }
+                final IBinder appThread = hop.getCaller();
+                if (appThread == null) {
+                    Slog.e(TAG, "No appThread provided to SET_ANIMATION_DELEGATE");
+                    break;
+                }
+                transition.mRemoteDelegate = IApplicationThread.Stub.asInterface(appThread);
             }
         }
         return effects;
@@ -2359,6 +2370,13 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 task.reparent((Task) newParent,
                         hop.getToTop() ? POSITION_TOP : POSITION_BOTTOM,
                         false /*moveParents*/, "processChildrenTaskReparentHierarchyOp");
+            }
+            if (hop.getClearWindowingMode()) {
+                if (task.isRootTask()) {
+                    task.setRootTaskWindowingMode(WINDOWING_MODE_UNDEFINED);
+                } else {
+                    task.setWindowingMode(WINDOWING_MODE_UNDEFINED);
+                }
             }
         }
 

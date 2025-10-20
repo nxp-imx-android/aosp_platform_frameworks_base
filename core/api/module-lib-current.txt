@@ -139,8 +139,8 @@ package android.content.pm {
 
   @FlaggedApi("android.permission.flags.enhanced_confirmation_mode_apis_enabled") public class SignedPackage {
     method @NonNull public byte[] getCertificateDigest();
-    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @Nullable public byte[] getCertificateDigestOrNull();
     method @NonNull public String getPackageName();
+    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public boolean hasCertificateDigest();
   }
 
 }
@@ -225,7 +225,7 @@ package android.media {
     method @Nullable public android.os.IBinder get();
   }
 
-  @FlaggedApi("android.media.audio.ringtone_vibration_utils_api") public class Utils {
+  @FlaggedApi("android.media.audio.ringtone_vibration_utils_api") public final class RingtoneVibrationUtils {
     method @FlaggedApi("android.media.audio.ringtone_vibration_utils_api") public static boolean hasVibrationParameter(@Nullable android.net.Uri);
     field @FlaggedApi("android.media.audio.ringtone_vibration_utils_api") public static final String SYNCHRONIZED_VIBRATION = "synchronized";
     field @FlaggedApi("android.media.audio.ringtone_vibration_utils_api") public static final String VIBRATION_URI_PARAM = "vibration_uri";
@@ -616,14 +616,6 @@ package android.se.omapi {
     method @FlaggedApi("android.nfc.enable_nfc_mainline") @NonNull public android.os.IBinder getOrThrow() throws android.se.omapi.SeServiceManager.ServiceNotFoundException;
     method @FlaggedApi("android.nfc.enable_nfc_mainline") public void register(@NonNull android.os.IBinder);
     method @FlaggedApi("android.nfc.enable_nfc_mainline") @Nullable public android.os.IBinder tryGet();
-  }
-
-}
-
-package android.telecom {
-
-  public abstract class ConnectionService extends android.app.Service {
-    method @Nullable @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public android.telecom.Connection onCreateUnknownConnection(@NonNull android.telecom.PhoneAccountHandle, @NonNull android.telecom.ConnectionRequest);
   }
 
 }

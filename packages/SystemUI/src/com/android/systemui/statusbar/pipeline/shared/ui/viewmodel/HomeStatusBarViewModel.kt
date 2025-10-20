@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 
 import android.annotation.ColorInt
+import android.content.res.Resources
 import android.graphics.Rect
 import android.graphics.RectF
 import android.view.Display
@@ -29,6 +30,7 @@ import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayId
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -38,16 +40,16 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.keyguard.shared.model.KeyguardState.OCCLUDED
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.lifecycle.Activatable
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.plugins.DarkIconDispatcher
-import com.android.systemui.scene.domain.interactor.SceneContainerOcclusionInteractor
+import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
@@ -63,13 +65,11 @@ import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationSt
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.StatusBarPopupChipsViewModel
-import com.android.systemui.statusbar.headsup.shared.StatusBarNoHunBehavior
 import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarBoundsViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsetsViewModelStore
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
-import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
-import com.android.systemui.statusbar.notification.headsup.PinnedStatus
+import com.android.systemui.statusbar.notification.icon.domain.interactor.StatusBarNotificationIconsInteractor
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.domain.interactor.DarkIconInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
@@ -77,6 +77,7 @@ import com.android.systemui.statusbar.phone.domain.interactor.LightsOutInteracto
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryNextToPercentViewModel
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
+import com.android.systemui.statusbar.pipeline.shared.StatusBarShowIconsInSecureCamera
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarIconBlockListInteractor
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarInteractor
 import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityModel
@@ -158,7 +159,13 @@ interface HomeStatusBarViewModel : Activatable {
     /** All supported activity chips, whether they are currently active or not. */
     val ongoingActivityChips: ChipsVisibilityModel
 
-    /** Invoked each time a chip's on-screen bounds have changed. */
+    /**
+     * Invoked each time a chip's on-screen bounds have changed.
+     *
+     * @param key if [Flags.statusBarHunAnimationCall()] is enabled, then the key is the raw
+     *   notification key without any prefixes. If the flag is disabled, then the key is the chip's
+     *   full key, possibly including prefixes or non-notification keys.
+     */
     fun onChipBoundsChanged(key: String, bounds: RectF)
 
     /** Notifies that the system icons container was clicked. */
@@ -166,6 +173,9 @@ interface HomeStatusBarViewModel : Activatable {
 
     /** Notifies that the notification icons container was clicked. */
     fun onNotificationIconChipClicked()
+
+    /** Notifies that there is an intent to start expansion of a shade */
+    fun onShadeExpansionIntent(eventX: Float, statusBarWidth: Int)
 
     /** Whether the QS Chip should be highlighted. */
     val isQuickSettingsChipHighlighted: Boolean
@@ -236,7 +246,10 @@ interface HomeStatusBarViewModel : Activatable {
     val areaDark: IsAreaDark
 
     /** True if the desktop status bar is enabled. */
-    val isDesktopStatusBarEnabled: Boolean
+    val useDesktopStatusBar: Boolean
+
+    /** Emits `true` whenever there is at least one status bar notification. */
+    val hasStatusBarNotifications: Boolean
 
     /** Interface for the assisted factory, to allow for providing a fake in tests */
     interface HomeStatusBarViewModelFactory {
@@ -247,26 +260,28 @@ interface HomeStatusBarViewModel : Activatable {
 class HomeStatusBarViewModelImpl
 @AssistedInject
 constructor(
-    @DisplayId thisDisplayId: Int,
+    @field:DisplayId @DisplayId private val thisDisplayId: Int,
     override val batteryNextToPercentViewModel: BatteryNextToPercentViewModel.Factory,
     override val unifiedBatteryViewModel: BatteryViewModel.BasedOnUserSetting.Factory,
     override val systemStatusIconsViewModelFactory: SystemStatusIconsViewModel.Factory,
     override val statusBarBoundsViewModelFactory: StatusBarBoundsViewModel.Factory,
     override val appHandlesViewModelFactory: AppHandlesViewModel.Factory,
     tableLoggerFactory: TableLogBufferFactory,
+    @DisplayAware private val resources: Resources,
     @DisplayAware homeStatusBarInteractor: HomeStatusBarInteractor,
     homeStatusBarIconBlockListInteractor: HomeStatusBarIconBlockListInteractor,
     lightsOutInteractor: LightsOutInteractor,
     notificationsInteractor: ActiveNotificationsInteractor,
     desktopInteractor: DesktopInteractor,
     darkIconInteractor: DarkIconInteractor,
-    headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
     keyguardInteractor: KeyguardInteractor,
+    statusBarNotificationIconsInteractor: StatusBarNotificationIconsInteractor,
     override val operatorNameViewModel: StatusBarOperatorNameViewModel,
     private val sceneInteractor: SceneInteractor,
-    sceneContainerOcclusionInteractor: SceneContainerOcclusionInteractor,
+    occlusionInteractor: KeyguardOcclusionInteractor,
     private val shadeInteractor: ShadeInteractor,
+    private val shadeExpansionTargetDisplayInteractor: ShadeExpansionTargetDisplayInteractor,
     shareToAppChipViewModel: ShareToAppChipViewModel,
     @DisplayAware private val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel,
     statusBarPopupChipsViewModelFactory: StatusBarPopupChipsViewModel.Factory,
@@ -276,23 +291,25 @@ constructor(
     @Background bgDispatcher: CoroutineDispatcher,
     shadeDisplaysInteractor: Provider<ShadeDisplaysInteractor>,
     private val uiEventLogger: StatusBarChipsUiEventLogger,
-) : HomeStatusBarViewModel, ExclusiveActivatable() {
-
-    private val hydrator = Hydrator(traceName = "HomeStatusBarViewModel.hydrator")
+) : HomeStatusBarViewModel, HydratedActivatable() {
 
     val tableLogger = tableLoggerFactory.getOrCreate(tableLogBufferName(thisDisplayId), 200)
 
     private val statusBarPopupChips by lazy { statusBarPopupChipsViewModelFactory.create() }
 
     override val isTransitioningFromLockscreenToOccluded: StateFlow<Boolean> =
-        keyguardTransitionInteractor
-            .isInTransition(Edge.create(from = LOCKSCREEN, to = OCCLUDED))
-            .distinctUntilChanged()
-            .logDiffsForTable(
-                tableLogBuffer = tableLogger,
-                columnName = COL_LOCK_TO_OCCLUDED,
-                initialValue = false,
-            )
+        if (SceneContainerFlag.isEnabled) {
+                flowOf(false)
+            } else {
+                keyguardTransitionInteractor
+                    .isInTransition(Edge.create(from = LOCKSCREEN, to = OCCLUDED))
+                    .distinctUntilChanged()
+                    .logDiffsForTable(
+                        tableLogBuffer = tableLogger,
+                        columnName = COL_LOCK_TO_OCCLUDED,
+                        initialValue = false,
+                    )
+            }
             .stateIn(bgDisplayScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
     override val transitionFromLockscreenToDreamStartedEvent: Flow<Unit> =
@@ -376,7 +393,7 @@ constructor(
         combine(
                 sceneInteractor.currentScene,
                 isShadeVisibleOnAnyDisplay,
-                sceneContainerOcclusionInteractor.invisibleDueToOcclusion,
+                occlusionInteractor.isKeyguardOccluded,
                 isShadeWindowOnThisDisplay,
             ) { currentScene, isShadeVisibleOnAnyDisplay, isOccluded, isShadeWindowOnThisDisplay ->
                 if (isOccluded) {
@@ -428,11 +445,9 @@ constructor(
             .flowOn(bgDispatcher)
 
     override val areaDark: IsAreaDark by
-        hydrator.hydratedStateOf(
-            traceName = "areaDark",
-            initialValue = IsAreaDark { true },
-            source = darkIconInteractor.isAreaDark(thisDisplayId),
-        )
+        darkIconInteractor
+            .isAreaDark(thisDisplayId)
+            .hydratedStateOf(traceName = "areaDark", initialValue = IsAreaDark { true })
 
     private val currentKeyguardState: Flow<KeyguardState> =
         keyguardTransitionInteractor.currentKeyguardState.onEach {
@@ -443,25 +458,28 @@ constructor(
             )
         }
 
-    override val isDesktopStatusBarEnabled: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isDesktopStatusBarEnabled",
+    override val useDesktopStatusBar: Boolean by
+        desktopInteractor.useDesktopStatusBar.hydratedStateOf(
+            traceName = "useDesktopStatusBar",
             initialValue = false,
-            source = desktopInteractor.isDesktopFeatureSetEnabled,
         )
 
     override val isQuickSettingsChipHighlighted: Boolean by
-        hydrator.hydratedStateOf(
+        shadeInteractor.isQsExpanded.hydratedStateOf(
             traceName = "isQsChipHighlighted",
             initialValue = false,
-            source = shadeInteractor.isQsExpanded,
         )
 
     override val isNotificationsChipHighlighted: Boolean by
-        hydrator.hydratedStateOf(
+        shadeInteractor.isNotificationsExpanded.hydratedStateOf(
             traceName = "isNotificationsChipHighlighted",
             initialValue = false,
-            source = shadeInteractor.isNotificationsExpanded,
+        )
+
+    override val hasStatusBarNotifications: Boolean by
+        statusBarNotificationIconsInteractor.hasStatusBarNotifications.hydratedStateOf(
+            traceName = "hasStatusBarNotifications",
+            initialValue = false,
         )
 
     /**
@@ -496,27 +514,24 @@ constructor(
             .traceEach(trackGroup(TRACK_GROUP, "isHomeStatusBarAllowed"), logcat = true)
             .stateIn(bgDisplayScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
+    private val shouldHideStatusBarForSecureCamera =
+        if (StatusBarShowIconsInSecureCamera.isEnabled) {
+            homeStatusBarInteractor.shouldHideStatusBarForSecureCamera
+        } else {
+            keyguardInteractor.isSecureCameraActive
+        }
+
     private val shouldHomeStatusBarBeVisible =
         combine(
                 isHomeStatusBarAllowed,
-                keyguardInteractor.isSecureCameraActive,
-                headsUpNotificationInteractor.statusBarHeadsUpStatus,
+                shouldHideStatusBarForSecureCamera,
                 isTransitioningFromGoneToDream,
                 keyguardInteractor.isKeyguardVisible,
             ) {
                 isHomeStatusBarAllowed,
-                isSecureCameraActive,
-                headsUpState,
+                shouldHideStatusBarForSecureCamera,
                 isGoneToDream,
                 isKeyguardVisible ->
-                val showForHeadsUp =
-                    if (StatusBarNoHunBehavior.isEnabled) {
-                        false
-                    } else {
-                        // HUNs can appear on lockscreen if face auth with bypass is enabled, in
-                        // which case we need to show the HUN app name in the status bar
-                        headsUpState.isPinned
-                    }
                 // When launching the camera over the lockscreen, the status icons would typically
                 // become visible momentarily before animating out, since we're not yet aware that
                 // the launching camera activity is fullscreen. Even once the activity finishes
@@ -527,13 +542,12 @@ constructor(
                 // Similar to launching the camera: when dream is launched, the icons are
                 // momentarily visible because the dream animation has finished, but SysUI has not
                 // been informed that the dream is full-screen. See b/273314977.
-                showForHeadsUp ||
-                    (isHomeStatusBarAllowed &&
-                        !isSecureCameraActive &&
-                        !isGoneToDream &&
-                        // In legacy code, check if keyguard is visible to cover canceled
-                        // transitions. In Flexi, the scene state is enough to cover this case.
-                        if (!SceneContainerFlag.isEnabled) !isKeyguardVisible else true)
+                isHomeStatusBarAllowed &&
+                    !shouldHideStatusBarForSecureCamera &&
+                    !isGoneToDream &&
+                    // In legacy code, check if keyguard is visible to cover canceled
+                    // transitions. In Flexi, the scene state is enough to cover this case.
+                    if (!SceneContainerFlag.isEnabled) !isKeyguardVisible else true
             }
             .distinctUntilChanged()
             .logDiffsForTable(
@@ -543,32 +557,16 @@ constructor(
             )
             .stateIn(bgDisplayScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
-    /**
-     * True if we need to hide the usual start side content in order to show the heads up
-     * notification info.
-     */
-    private val hideStartSideContentForHeadsUp: Flow<Boolean> =
-        if (StatusBarNoHunBehavior.isEnabled) {
-            flowOf(false)
-        } else {
-            headsUpNotificationInteractor.statusBarHeadsUpStatus.map {
-                it == PinnedStatus.PinnedBySystem
-            }
-        }
+    private val shadeInvocationSplitRatio: Float =
+        resources.getFloat(R.dimen.config_invocationGestureSplitRatio)
 
     override val shouldShowOperatorNameView: Flow<Boolean> =
         combine(
                 shouldHomeStatusBarBeVisible,
-                hideStartSideContentForHeadsUp,
                 homeStatusBarInteractor.visibilityViaDisableFlags,
                 homeStatusBarInteractor.shouldShowOperatorName,
-            ) {
-                shouldStatusBarBeVisible,
-                hideStartSideContentForHeadsUp,
-                visibilityViaDisableFlags,
-                shouldShowOperator ->
+            ) { shouldStatusBarBeVisible, visibilityViaDisableFlags, shouldShowOperator ->
                 shouldStatusBarBeVisible &&
-                    !hideStartSideContentForHeadsUp &&
                     visibilityViaDisableFlags.isSystemInfoAllowed &&
                     shouldShowOperator
             }
@@ -581,12 +579,10 @@ constructor(
             .flowOn(bgDispatcher)
 
     override val canShowOngoingActivityChips: Flow<Boolean> =
-        combine(
+        combine(isHomeStatusBarAllowed, shouldHideStatusBarForSecureCamera) {
             isHomeStatusBarAllowed,
-            keyguardInteractor.isSecureCameraActive,
-            hideStartSideContentForHeadsUp,
-        ) { isHomeStatusBarAllowed, isSecureCameraActive, hideStartSideContentForHeadsUp ->
-            isHomeStatusBarAllowed && !isSecureCameraActive && !hideStartSideContentForHeadsUp
+            shouldHideStatusBarForSecureCamera ->
+            isHomeStatusBarAllowed && !shouldHideStatusBarForSecureCamera
         }
 
     private val chipsVisibilityModel: StateFlow<ChipsVisibilityModel> =
@@ -607,14 +603,13 @@ constructor(
             )
 
     override val ongoingActivityChips: ChipsVisibilityModel by
-        hydrator.hydratedStateOf(
+        chipsVisibilityModel.hydratedStateOf(
             traceName = "ongoingActivityChips",
             initialValue =
                 ChipsVisibilityModel(
                     chips = MultipleOngoingActivityChipsModel(),
                     areChipsAllowed = false,
                 ),
-            source = chipsVisibilityModel,
         )
 
     override fun onChipBoundsChanged(key: String, bounds: RectF) {
@@ -639,6 +634,17 @@ constructor(
         )
     }
 
+    override fun onShadeExpansionIntent(eventX: Float, statusBarWidth: Int) {
+        val isRtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        shadeExpansionTargetDisplayInteractor.setExpansionIntentFromStatusBarEvent(
+            eventX = eventX,
+            displayId = thisDisplayId,
+            statusBarWidth = statusBarWidth,
+            shadeInvocationSplitRatio = shadeInvocationSplitRatio,
+            isRtl = isRtl,
+        )
+    }
+
     private val hasOngoingActivityChips =
         if (StatusBarChipsModernization.isEnabled) {
             chipsVisibilityModel.map { it.chips.active.any { chip -> !chip.isHidden } }
@@ -654,16 +660,10 @@ constructor(
         }
 
     override val isClockVisible: Flow<VisibilityModel> =
-        combine(
-                shouldHomeStatusBarBeVisible,
-                hideStartSideContentForHeadsUp,
-                homeStatusBarInteractor.visibilityViaDisableFlags,
-            ) { shouldStatusBarBeVisible, hideStartSideContentForHeadsUp, visibilityViaDisableFlags
-                ->
-                val showClock =
-                    shouldStatusBarBeVisible &&
-                        visibilityViaDisableFlags.isClockAllowed &&
-                        !hideStartSideContentForHeadsUp
+        combine(shouldHomeStatusBarBeVisible, homeStatusBarInteractor.visibilityViaDisableFlags) {
+                shouldStatusBarBeVisible,
+                visibilityViaDisableFlags ->
+                val showClock = shouldStatusBarBeVisible && visibilityViaDisableFlags.isClockAllowed
                 // Always use View.INVISIBLE here, so that animations work
                 VisibilityModel(showClock.toVisibleOrInvisible(), visibilityViaDisableFlags.animate)
             }
@@ -743,9 +743,8 @@ constructor(
     @View.Visibility
     private fun Boolean.toVisibleOrInvisible(): Int = if (this) View.VISIBLE else View.INVISIBLE
 
-    override suspend fun onActivated(): Nothing {
+    override suspend fun onActivated() {
         coroutineScope {
-            launch { hydrator.activate() }
             if (StatusBarPopupChips.isEnabled) {
                 launch { statusBarPopupChips.activate() }
             }

@@ -73,7 +73,7 @@ import android.os.UserHandle;
 import android.view.KeyEvent;
 
 /**
- * {@hide}
+ * @hide
  */
 interface IAudioService {
     // C++ and Java methods below.
@@ -607,6 +607,12 @@ interface IAudioService {
 
     int abandonAudioFocusForTest(in IAudioFocusDispatcher fd, in String clientId,
             in AudioAttributes aa, in String callingPackageName);
+
+    @EnforcePermission("MODIFY_AUDIO_SETTINGS_PRIVILEGED")
+    boolean enterFocusIsolation(int uid, IBinder cb);
+
+    @EnforcePermission("MODIFY_AUDIO_SETTINGS_PRIVILEGED")
+    boolean exitFocusIsolation(IBinder cb, int mode);
 
     long getFadeOutDurationOnFocusLossMillis(in AudioAttributes aa);
 

@@ -1740,6 +1740,25 @@ public final class InputManagerGlobal {
     }
 
     /**
+     * @see InputManager#createVirtualGamepad(VirtualGamepadConfig)
+     */
+    @NonNull
+    @RequiresPermission(Manifest.permission.INJECT_EVENTS)
+    public VirtualGamepad createVirtualGamepad(@NonNull VirtualGamepadConfig config) {
+        IVirtualGamepad virtualGamepad;
+        try {
+            // Pass a token to the server so that the server can be notified when the calling
+            // process has died and therefore clean up the virtual device.
+            final IBinder token = new Binder(
+                    "android.hardware.input.VirtualGamepad:" + config.name);
+            virtualGamepad = mIm.createVirtualGamepad(token, config);
+            return new VirtualGamepad(config, virtualGamepad);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * @see InputManager#setPointerIcon(PointerIcon, int, int, int, IBinder)
      */
     public boolean setPointerIcon(PointerIcon icon, int displayId, int deviceId, int pointerId,
@@ -1759,7 +1778,8 @@ public final class InputManagerGlobal {
         // check in InputManagerService#requestPointerCapture would not result in the exception
         // being propagated to the caller.
         if (mode != View.POINTER_CAPTURE_MODE_UNCAPTURED
-                && mode != View.POINTER_CAPTURE_MODE_ABSOLUTE) {
+                && mode != View.POINTER_CAPTURE_MODE_ABSOLUTE
+                && mode != View.POINTER_CAPTURE_MODE_RELATIVE) {
             throw new IllegalArgumentException("Invalid pointer capture mode " + mode);
         }
 

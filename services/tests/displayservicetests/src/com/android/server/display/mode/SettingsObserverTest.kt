@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.provider.Settings
 import android.util.SparseArray
+import android.util.SparseBooleanArray
 import android.view.Display
 import android.view.SurfaceControl.RefreshRateRange
 import android.view.SurfaceControl.RefreshRateRanges
@@ -146,9 +147,6 @@ class SettingsObserverTest {
 
     @Test
     fun testSettingsRefreshRates(@TestParameter testCase: SettingsRefreshRateTestCase) {
-        whenever(mockFlags.isPeakRefreshRatePhysicalLimitEnabled)
-                .thenReturn(testCase.peakRefreshRatePhysicalLimitEnabled)
-
         val displayModeDirector = DisplayModeDirector(
             spyContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
 
@@ -205,46 +203,50 @@ class SettingsObserverTest {
         val minRefreshRate: Float,
         val peakRefreshRate: Float,
         val defaultRefreshRate: Float,
-        val peakRefreshRatePhysicalLimitEnabled: Boolean,
         val expectedPrimaryRefreshRateRanges: RefreshRateRanges,
         val expectedAppRefreshRateRanges: RefreshRateRanges,
     ) {
-        NO_LIMIT(0f, 0f, 0f, false, RANGES_NO_LIMIT, RANGES_NO_LIMIT),
-        NO_LIMIT_WITH_PHYSICAL_RR(0f, 0f, 0f, true, RANGES_NO_LIMIT, RANGES_NO_LIMIT),
+        NO_LIMIT_WITH_PHYSICAL_RR(0f, 0f, 0f, RANGES_NO_LIMIT, RANGES_NO_LIMIT),
+        LIMITS_0_0_90_WITH_PHYSICAL_RR(0f, 0f, 90f, RANGES_NO_LIMIT_90, RANGES_NO_LIMIT),
+        LIMITS_0_90_0_WITH_PHYSICAL_RR(0f, 90f, 0f, RANGES_90, RANGES_90),
+        LIMITS_0_90_60_WITH_PHYSICAL_RR(0f, 90f, 60f, RANGES_90_60, RANGES_90),
+        LIMITS_0_90_120_WITH_PHYSICAL_RR(0f, 90f, 120f, RANGES_90, RANGES_90),
+        LIMITS_90_0_0_WITH_PHYSICAL_RR(90f, 0f, 0f, RANGES_MIN90, RANGES_NO_LIMIT),
+        LIMITS_90_0_120_WITH_PHYSICAL_RR(90f, 0f, 120f, RANGES_MIN90_90TO120, RANGES_NO_LIMIT),
+        LIMITS_90_0_60_WITH_PHYSICAL_RR(90f, 0f, 60f, RANGES_MIN90, RANGES_NO_LIMIT),
+        LIMITS_90_120_0_WITH_PHYSICAL_RR(90f, 120f, 0f, RANGES_90TO120, RANGES_120),
+        LIMITS_90_60_0_WITH_PHYSICAL_RR(90f, 60f, 0f, RANGES_90TO90, RANGES_90),
+        LIMITS_60_120_90_WITH_PHYSICAL_RR(60f, 120f, 90f, RANGES_60TO120_60TO90, RANGES_120),
+    }
 
-        LIMITS_0_0_90(0f, 0f, 90f, false, RANGES_NO_LIMIT_90, RANGES_NO_LIMIT),
-        LIMITS_0_0_90_WITH_PHYSICAL_RR(0f, 0f, 90f, true, RANGES_NO_LIMIT_90, RANGES_NO_LIMIT),
+    @Test
+    fun testSettingsRefreshRates_peakRefreshRateIgnoredForArr() {
+        whenever(mockFlags.hasArrSupportFlag()).thenReturn(true)
+        val displayModeDirector = DisplayModeDirector(
+            spyContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
+        displayModeDirector.injectHasArrSupport(SparseBooleanArray().apply {
+            append(Display.DEFAULT_DISPLAY, true)
+        })
 
-        LIMITS_0_90_0(0f, 90f, 0f, false, RANGES_NO_LIMIT_90, RANGES_NO_LIMIT_90),
-        LIMITS_0_90_0_WITH_PHYSICAL_RR(0f, 90f, 0f, true, RANGES_90, RANGES_90),
+        val modes = arrayOf(
+            Display.Mode(1, 1000, 1000, 60f),
+            Display.Mode(2, 1000, 1000, 90f),
+            Display.Mode(3, 1000, 1000, 120f)
+        )
+        displayModeDirector.injectSupportedModesByDisplay(SparseArray<Array<Display.Mode>>().apply {
+            append(Display.DEFAULT_DISPLAY, modes)
+        })
+        displayModeDirector.injectDefaultModeByDisplay(SparseArray<Display.Mode>().apply {
+            append(Display.DEFAULT_DISPLAY, modes[0])
+        })
 
-        LIMITS_0_90_60(0f, 90f, 60f, false, RANGES_NO_LIMIT_60, RANGES_NO_LIMIT_90),
-        LIMITS_0_90_60_WITH_PHYSICAL_RR(0f, 90f, 60f, true, RANGES_90_60, RANGES_90),
+        val specs = displayModeDirector.getDesiredDisplayModeSpecsWithInjectedFpsSettings(
+            0f, 90f, 120f)
 
-        LIMITS_0_90_120(0f, 90f, 120f, false, RANGES_NO_LIMIT_90, RANGES_NO_LIMIT_90),
-        LIMITS_0_90_120_WITH_PHYSICAL_RR(0f, 90f, 120f, true, RANGES_90, RANGES_90),
-
-        LIMITS_90_0_0(90f, 0f, 0f, false, RANGES_MIN90, RANGES_NO_LIMIT),
-        LIMITS_90_0_0_WITH_PHYSICAL_RR(90f, 0f, 0f, true, RANGES_MIN90, RANGES_NO_LIMIT),
-
-        LIMITS_90_0_120(90f, 0f, 120f, false, RANGES_MIN90_90TO120, RANGES_NO_LIMIT),
-        LIMITS_90_0_120_WITH_PHYSICAL_RR(90f,
-            0f,
-            120f,
-            true,
-            RANGES_MIN90_90TO120,
-            RANGES_NO_LIMIT),
-
-        LIMITS_90_0_60(90f, 0f, 60f, false, RANGES_MIN90, RANGES_NO_LIMIT),
-        LIMITS_90_0_60_WITH_PHYSICAL_RR(90f, 0f, 60f, true, RANGES_MIN90, RANGES_NO_LIMIT),
-
-        LIMITS_90_120_0(90f, 120f, 0f, false, RANGES_MIN90_90TO120, RANGES_NO_LIMIT_120),
-        LIMITS_90_120_0_WITH_PHYSICAL_RR(90f, 120f, 0f, true, RANGES_90TO120, RANGES_120),
-
-        LIMITS_90_60_0(90f, 60f, 0f, false, RANGES_MIN90_90TO90, RANGES_NO_LIMIT_90),
-        LIMITS_90_60_0_WITH_PHYSICAL_RR(90f, 60f, 0f, true, RANGES_90TO90, RANGES_90),
-
-        LIMITS_60_120_90(60f, 120f, 90f, false, RANGES_MIN60_60TO90, RANGES_NO_LIMIT_120),
-        LIMITS_60_120_90_WITH_PHYSICAL_RR(60f, 120f, 90f, true, RANGES_60TO120_60TO90, RANGES_120),
+        // Peak refresh rate is not added to physical limit, however it is added to render limit
+        assertWithMessage("Primary RefreshRateRanges: ")
+            .that(specs.primary).isEqualTo(RANGES_NO_LIMIT_90)
+        assertWithMessage("App RefreshRateRanges: ")
+            .that(specs.appRequest).isEqualTo(RANGES_NO_LIMIT_90)
     }
 }

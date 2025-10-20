@@ -68,7 +68,7 @@ import static com.android.internal.util.FrameworkStatsLog.APP_START_OCCURRED__PA
 import static com.android.internal.util.FrameworkStatsLog.APP_START_OCCURRED__PACKAGE_STOPPED_STATE__PACKAGE_STATE_STOPPED;
 import static com.android.server.am.MemoryStatUtil.MemoryStat;
 import static com.android.server.am.MemoryStatUtil.readMemoryStatFromFilesystem;
-import static com.android.server.am.ProcessList.INVALID_ADJ;
+import static com.android.server.am.psc.Constants.INVALID_ADJ;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_METRICS;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -80,6 +80,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityOptions;
 import android.app.ActivityOptions.SourceInfo;
+import android.app.ApplicationExitInfo;
 import android.app.ApplicationStartInfo;
 import android.app.WaitResult;
 import android.app.WindowConfiguration.WindowingMode;
@@ -749,12 +750,6 @@ class ActivityMetricsLogger {
                     + " newActivityCreated=" + newActivityCreated + " info=" + info);
         }
 
-        if (launchedActivity.isReportedDrawn() && launchedActivity.isVisible()) {
-            // Launched activity is already visible. We cannot measure windows drawn delay.
-            abort(launchingState, "launched activity already visible");
-            return;
-        }
-
         // If the launched activity is started from an existing active transition, it will be put
         // into the transition info.
         if (info != null && info.canCoalesce(launchedActivity)) {
@@ -777,6 +772,11 @@ class ActivityMetricsLogger {
                 startLaunchTrace(info);
             }
             scheduleCheckActivityToBeDrawnIfSleeping(launchedActivity);
+            abortIfAlreadyVisible(launchedActivity, launchingState);
+            return;
+        }
+
+        if (abortIfAlreadyVisible(launchedActivity, launchingState)) {
             return;
         }
 
@@ -822,6 +822,19 @@ class ActivityMetricsLogger {
                 scheduleCheckActivityToBeDrawn(prevInfo.mLastLaunchedActivity, 0 /* delay */);
             }
         }
+    }
+
+    /**
+     * Returns {@code true} if the launched activity is already visible, indicating that window
+     * draw delay cannot be measured and the operation should be aborted.
+     */
+    private boolean abortIfAlreadyVisible(@NonNull ActivityRecord launchedActivity,
+            @NonNull LaunchingState launchingState) {
+        if (launchedActivity.isReportedDrawn() && launchedActivity.isVisible()) {
+            abort(launchingState, "launched activity already visible");
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -1256,8 +1269,8 @@ class ActivityMetricsLogger {
         final int packageState = stopped
                 ? APP_START_OCCURRED__PACKAGE_STOPPED_STATE__PACKAGE_STATE_STOPPED
                 : APP_START_OCCURRED__PACKAGE_STOPPED_STATE__PACKAGE_STATE_NORMAL;
-
         final boolean firstLaunch = wasFirstLaunch(info);
+
         FrameworkStatsLog.write(
                 FrameworkStatsLog.APP_START_OCCURRED,
                 info.applicationInfo.uid,
@@ -1306,6 +1319,10 @@ class ActivityMetricsLogger {
         }
 
         logAppStartMemoryStateCapture(info);
+
+        if (android.app.Flags.logAppRestartOccurred()) {
+            logAppRestartOccurred(info);
+        }
     }
 
     private boolean isIncrementalLoading(String packageName, int userId) {
@@ -1543,6 +1560,12 @@ class ActivityMetricsLogger {
             return;
         }
 
+        if (info.type != TYPE_TRANSITION_COLD_LAUNCH) {
+            // We don't know the baseline for process' MemoryStat, so the current values only
+            // make sense if it's a cold launch.
+            return;
+        }
+
         final int pid = info.processRecord.getPid();
         final int uid = info.applicationInfo.uid;
         final MemoryStat memoryStat = readMemoryStatFromFilesystem(uid, pid);
@@ -1561,6 +1584,50 @@ class ActivityMetricsLogger {
                 memoryStat.rssInBytes,
                 memoryStat.cacheInBytes,
                 memoryStat.swapInBytes);
+    }
+
+    private void logAppRestartOccurred(TransitionInfoSnapshot info) {
+        if (info.processRecord == null || info.processRecord.isAppRestartLogged()) {
+            return;
+        }
+        info.processRecord.setAppRestartLogged();
+
+        final ApplicationExitInfo lastExitInfo = info.processRecord.getLastExitInfo();
+        if (lastExitInfo == null) {
+            return;
+        }
+
+        final int startType;
+        if (info.type == TYPE_TRANSITION_COLD_LAUNCH) {
+            startType = FrameworkStatsLog.APP_RESTART_OCCURRED__TYPE__COLD;
+        } else if (info.type == TYPE_TRANSITION_WARM_LAUNCH) {
+            startType = FrameworkStatsLog.APP_RESTART_OCCURRED__TYPE__WARM;
+        } else {
+            return;
+        }
+
+        final long millisSinceLastExit = System.currentTimeMillis() - lastExitInfo.getTimestamp();
+
+        FrameworkStatsLog.write(
+                FrameworkStatsLog.APP_RESTART_OCCURRED,
+                info.applicationInfo.uid,
+                startType,
+                millisSinceLastExit,
+                lastExitInfo.getReason(),
+                lastExitInfo.getSubReason(),
+                lastExitInfo.getImportance());
+
+        if (DEBUG_METRICS) {
+            final String message = String.format(
+                    "APP_RESTART_OCCURRED(%s, %s, %s, lastExit={%.1fs ago, %s / %s})",
+                    info.applicationInfo.uid,
+                    info.packageName,
+                    WaitResult.launchStateToString(info.getLaunchState()),
+                    millisSinceLastExit / 1000.0,
+                    ApplicationExitInfo.reasonCodeToString(lastExitInfo.getReason()),
+                    ApplicationExitInfo.subreasonToString(lastExitInfo.getSubReason()));
+            Slog.i(TAG, message);
+        }
     }
 
     /**
@@ -1802,7 +1869,8 @@ class ActivityMetricsLogger {
         // Beginning a launch is timing sensitive and so should be observed as soon as possible.
         mLaunchObserver.onActivityLaunched(info.mLaunchingState.mStartUptimeNs,
                 info.mLastLaunchedActivity.mActivityComponent, temperature,
-                info.mLastLaunchedActivity.mUserId);
+                info.mLastLaunchedActivity.processName,
+                info.mLastLaunchedActivity.getUid());
 
         Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
     }

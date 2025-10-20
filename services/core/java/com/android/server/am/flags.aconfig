@@ -185,36 +185,6 @@ flag {
 }
 
 flag {
-    name: "push_broadcast_state_to_oomadjuster"
-    namespace: "backstage_power"
-    description: "Migrate OomAdjuster pulled broadcast state to a push model"
-    bug: "401350498"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "cache_content_capture_service"
-    namespace: "system_performance"
-    description: "Seed ContentCaptureManager into the bound application's initial service cache"
-    bug: "414380203"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "push_activity_state_to_oomadjuster"
-    namespace: "backstage_power"
-    description: "Migrate OomAdjuster pulled activity state to a push model"
-    bug: "401350380"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_long_method_tracing_on_anr_timer"
     namespace: "stability"
     description: "Enable Long Method Tracing for ANR Timer"
@@ -254,10 +224,57 @@ flag {
 }
 
 flag {
-    name: "psc_batch_update"
+    name: "rollout_computer_control"
+    namespace: "core_experiments_team_internal"
+    description: "Rolls out the computer_control namespace."
+    bug: "436480687"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "psc_batch_service_updates"
     namespace: "backstage_power"
-    description: "Batch ProcessStateController updates triggered while a BatchSession is active."
-    bug: "399680824"
+    description: "Batch Service related ProcessStateController updates and auto trigger the update on state changes."
+    bug: "452726859"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "unsampled_freeze_atom_logging"
+    namespace: "system_performance"
+    description: "Whether to log 100% of APP_FREEZE_CHANGED atoms."
+    bug: "450077375"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "unsampled_compact_atom_logging"
+    namespace: "system_performance"
+    description: "Whether to log 100% of APP_COMPACTED_V2 atoms."
+    bug: "450077375"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "app_start_info_process_name_fix"
+    namespace: "system_performance"
+    description: "Use process name to lookup ProcessRecord."
+    bug: "443136429"
+}
+
+flag {
+    name: "service_check_calling_pkg"
+    namespace: "backstage_power"
+    description: "Throw security exception on service APIs if calling package doesn't match calling uid."
+    bug: "308138385"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

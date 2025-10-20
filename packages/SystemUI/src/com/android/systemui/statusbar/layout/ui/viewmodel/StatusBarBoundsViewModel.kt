@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.layout.ui.viewmodel
 import android.graphics.Rect
 import android.view.View
 import androidx.compose.runtime.getValue
+import com.android.systemui.clock.ClockModernization
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
@@ -82,6 +83,12 @@ constructor(
             source = _dateBounds,
         )
 
+    /**
+     * The on-screen bounds of the clock implemented in compose (used when the clock modernization
+     * feature is enabled. This is a hydrated value.
+     */
+    private val _composeClockBounds = MutableStateFlow(Rect())
+
     private val _clockBounds: Flow<Rect> =
         conflatedCallbackFlow {
                 val layoutListener =
@@ -99,7 +106,12 @@ constructor(
         hydrator.hydratedStateOf(
             traceName = "StatusBar.clockBounds",
             initialValue = Rect(),
-            source = _clockBounds,
+            source =
+                if (ClockModernization.isEnabled) {
+                    _composeClockBounds
+                } else {
+                    _clockBounds
+                },
         )
 
     override suspend fun onActivated(): Nothing {
@@ -108,6 +120,11 @@ constructor(
 
     fun updateDateBounds(bounds: Rect) {
         _dateBounds.value = bounds
+    }
+
+    fun updateComposeClockBounds(bounds: Rect) {
+        ClockModernization.isUnexpectedlyInLegacyMode()
+        _composeClockBounds.value = bounds
     }
 
     @AssistedFactory

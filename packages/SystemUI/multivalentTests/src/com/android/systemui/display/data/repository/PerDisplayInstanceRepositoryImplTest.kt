@@ -19,17 +19,24 @@ package com.android.systemui.display.data.repository
 import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.app.displaylib.DisplayInstanceLifecycleManager
 import com.android.app.displaylib.PerDisplayInstanceProviderWithSetup
 import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import java.util.concurrent.Executors
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -48,8 +55,10 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
         kosmos.fakePerDisplayInstanceProviderWithSetupAndTeardown
     private val lifecycleManager = kosmos.fakeDisplayInstanceLifecycleManager
 
-    private val underTest: PerDisplayInstanceRepositoryImpl<TestPerDisplayInstance> =
+    // lazy as only certain tests use this. Other instantiate it from scratch.
+    private val underTest: PerDisplayInstanceRepositoryImpl<TestPerDisplayInstance> by lazy {
         kosmos.createPerDisplayInstanceRepository(overrideLifecycleManager = null)
+    }
 
     @Before
     fun addDisplays() = runBlocking {
@@ -129,6 +138,8 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
 
     @Test
     fun start_registersDumpable() {
+        underTest
+
         verify(kosmos.dumpManager).registerNormalDumpable(anyString(), any())
     }
 
@@ -251,12 +262,133 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
                             }
                         },
                     lifecycleManager = null,
+                    kosmos.testDispatcher,
                     testScope.backgroundScope,
                     displayRepository,
                     perDisplayDumpHelper,
                 )
 
             assertThat(perDisplayRepo[NON_DEFAULT_DISPLAY_ID]).isEqualTo(instanceSetUp)
+        }
+
+    private fun createTestPerDisplayInstanceRepositoryImpl(
+        createInstanceEagerly: Boolean,
+        displayIdsFlow: MutableStateFlow<Set<Int>>,
+        displayToInstanceMap: MutableMap<Int, TestPerDisplayInstance?>,
+    ): PerDisplayInstanceRepositoryImpl<TestPerDisplayInstance> =
+        PerDisplayInstanceRepositoryImpl(
+            debugName = "fakePerDisplayInstanceRepository",
+            instanceProvider =
+                object : PerDisplayInstanceProviderWithSetup<TestPerDisplayInstance> {
+                    override fun setupInstance(instance: TestPerDisplayInstance) {}
+
+                    override fun createInstance(displayId: Int): TestPerDisplayInstance? {
+                        displayToInstanceMap[displayId] = TestPerDisplayInstance(displayId)
+                        return displayToInstanceMap[displayId]
+                    }
+                },
+            lifecycleManager =
+                object : DisplayInstanceLifecycleManager {
+                    override val displayIds: StateFlow<Set<Int>> = displayIdsFlow
+                },
+            kosmos.testDispatcher,
+            testScope.backgroundScope,
+            kosmos.displayRepository,
+            kosmos.perDisplayDumpHelper,
+            createInstanceEagerly = createInstanceEagerly,
+        )
+
+    @Test
+    fun setupInstance_doNotCreateEagerly_shouldNotCreateInstanceImmediately() =
+        kosmos.runTest {
+            val displayIdsFlow = MutableStateFlow<Set<Int>>(emptySet())
+            val displayToInstanceMap = mutableMapOf<Int, TestPerDisplayInstance?>()
+            createTestPerDisplayInstanceRepositoryImpl(
+                createInstanceEagerly = false,
+                displayIdsFlow = displayIdsFlow,
+                displayToInstanceMap = displayToInstanceMap,
+            )
+
+            displayIdsFlow.emit(setOf(DEFAULT_DISPLAY_ID, NON_DEFAULT_DISPLAY_ID))
+
+            assertThat(displayToInstanceMap[DEFAULT_DISPLAY_ID]).isNull()
+            assertThat(displayToInstanceMap[NON_DEFAULT_DISPLAY_ID]).isNull()
+        }
+
+    @Test
+    fun setupInstance_createEagerly_shouldCreateInstanceImmediately() =
+        kosmos.runTest {
+            val displayIdsFlow = MutableStateFlow<Set<Int>>(emptySet())
+            val displayToInstanceMap = mutableMapOf<Int, TestPerDisplayInstance?>()
+            createTestPerDisplayInstanceRepositoryImpl(
+                createInstanceEagerly = true,
+                displayIdsFlow = displayIdsFlow,
+                displayToInstanceMap = displayToInstanceMap,
+            )
+            kosmos.createPerDisplayInstanceRepository(
+                overrideLifecycleManager =
+                    object : DisplayInstanceLifecycleManager {
+                        override val displayIds: StateFlow<Set<Int>> = displayIdsFlow
+                    },
+                createInstanceEagerly = true,
+            )
+
+            displayIdsFlow.emit(setOf(DEFAULT_DISPLAY_ID, NON_DEFAULT_DISPLAY_ID))
+
+            assertThat(displayToInstanceMap[DEFAULT_DISPLAY_ID]).isNotNull()
+            assertThat(displayToInstanceMap[NON_DEFAULT_DISPLAY_ID]).isNotNull()
+        }
+
+    @Test
+    fun perDisplay_creatingDefaultInstanceInMainThread_correctThread() =
+        testScope.runTest {
+            Executors.newSingleThreadExecutor().asCoroutineDispatcher().use { mainThreadContext ->
+                Executors.newSingleThreadExecutor().asCoroutineDispatcher().use { bgThreadContext ->
+                    Executors.newSingleThreadExecutor().asCoroutineDispatcher().use { waitContext ->
+                        val mainThreadId =
+                            withContext(mainThreadContext) { Thread.currentThread().threadId() }
+                        val bgThreadId =
+                            withContext(bgThreadContext) { Thread.currentThread().threadId() }
+                        assertThat(mainThreadId).isNotEqualTo(bgThreadId)
+
+                        lifecycleManager.displayIds.value = emptySet()
+
+                        kosmos.createPerDisplayInstanceRepository(
+                            overrideLifecycleManager = lifecycleManager,
+                            createInstanceEagerly = true,
+                            mainThreadForDefaultDisplayEagerlyCreation = true,
+                            mainThreadContext = mainThreadContext,
+                            bgThreadContext = bgThreadContext,
+                        )
+
+                        lifecycleManager.displayIds.value = setOf(DEFAULT_DISPLAY_ID)
+
+                        withContext(waitContext) {
+                            fakePerDisplayInstanceProviderWithTeardown.awaitCreation()
+                        }
+
+                        assertThat(
+                                fakePerDisplayInstanceProviderWithTeardown.created
+                                    .first()
+                                    .creationThread
+                            )
+                            .isEqualTo(mainThreadId)
+
+                        lifecycleManager.displayIds.value =
+                            setOf(DEFAULT_DISPLAY_ID, NON_DEFAULT_DISPLAY_ID)
+
+                        withContext(waitContext) {
+                            fakePerDisplayInstanceProviderWithTeardown.awaitCreation()
+                        }
+                        assertThat(
+                                fakePerDisplayInstanceProviderWithTeardown.created
+                                    .last()
+                                    .creationThread
+                            )
+                            .isEqualTo(bgThreadId)
+                    }
+                }
+            }
         }
 
     private fun createDisplay(displayId: Int): Display =

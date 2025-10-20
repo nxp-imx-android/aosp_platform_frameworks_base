@@ -18,6 +18,7 @@ package com.android.server.pm.verify.developer;
 import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE;
 import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN;
 
+import android.annotation.Nullable;
 import android.content.pm.PackageInstaller;
 import android.content.pm.verify.developer.DeveloperVerificationStatus;
 import android.os.Handler;
@@ -29,6 +30,7 @@ import com.android.server.pm.PackageInstallerSession;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class DeveloperVerifierExperimentProvider {
     @GuardedBy("mExperiments")
@@ -61,7 +63,8 @@ public class DeveloperVerifierExperimentProvider {
             mExperiments.put(packageName,
                     new ExperimentConfiguration(verificationPolicy, validStatuses));
         }
-        final String token = "addExperiment:" + packageName;
+        final String token = getExperimentToken(packageName);
+        // Remove any previously set cleaning task for this package
         mHandler.removeCallbacksAndEqualMessages(token);
         // Automatically remove the experiment after timeout
         mHandler.postDelayed(() -> {
@@ -71,6 +74,32 @@ public class DeveloperVerifierExperimentProvider {
         }, token, EXPERIMENT_TIMEOUT_MILLIS);
     }
 
+    /**
+     * Remove the experiment for a package. If the package name is null, clear all experiments.
+     */
+    public void clearExperiment(@Nullable String packageName) {
+        if (packageName == null) {
+            Set<String> packages = mExperiments.keySet();
+            synchronized (mExperiments) {
+                mExperiments.clear();
+            }
+            // Remove all previously set cleaning tasks
+            for (int i = 0; i < packages.size(); i++) {
+                final String pkg = packages.iterator().next();
+                mHandler.removeCallbacksAndEqualMessages(getExperimentToken(pkg));
+            }
+        } else {
+            synchronized (mExperiments) {
+                mExperiments.remove(packageName);
+            }
+            // Remove any previously set cleaning task for this package
+            mHandler.removeCallbacksAndEqualMessages(getExperimentToken(packageName));
+        }
+    }
+
+    private String getExperimentToken(String packageName) {
+        return "addExperiment:" + packageName;
+    }
     /**
      * Check if the provider has an experiment for the given package.
      */

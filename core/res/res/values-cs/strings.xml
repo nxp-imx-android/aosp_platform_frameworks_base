@@ -338,8 +338,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Přepnout na pracovní profil"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Přepnout na osobní verzi aplikace <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Přepnout na pracovní verzi aplikace <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"Kontakty"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"přístup ke kontaktům"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Kontakty a účty"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"přístup ke kontaktům a zobrazení seznamu účtů, které mohou na tomto zařízení ukládat kontakty"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Poloha"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"přístup k poloze tohoto zařízení"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Kalendář"</string>
@@ -372,8 +372,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"přesné sledování pohybů oka"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Data o pohybu a oblasti"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"sledování očí, obličeje, těla a analyzování oblasti"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Data o oblasti a přesném pohybu hlavy"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"přesné sledování hlavy a analyzování oblasti"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Přesná data o pohybu a oblasti"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"přesné skenování oblasti a sledování hlavy"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Načítat obsah oken"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Může prozkoumávat obsah oken, se kterými pracujete."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Zapnout funkci Prozkoumání dotykem"</string>
@@ -641,6 +641,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Aplikace bude moci zjišťovat vzájemnou pozici mezi ultra-širokopásmovými zařízeními v okolí"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"interakce se zařízeními Wi-Fi v okolí"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Umožňuje aplikaci inzerovat, připojovat se a odhadovat relativní polohu zařízení Wi-Fi v okolí"</string>
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"přístup k zařízením v místní síti"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Umožňuje aplikaci získat přístup k zařízením v místní síti"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"zjišťování vzájemné pozice mezi zařízeními v okolí"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Aplikace bude moci zjišťovat vzájemnou pozici mezi zařízeními v okolí"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Informace o preferované platební službě NFC"</string>
@@ -685,7 +687,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Umožňuje aplikaci analyzovat vaše okolí."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"přesná analýza okolní oblasti"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Umožňuje aplikaci přesně analyzovat vaše okolí."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"sledování dat rozšířené reality na pozadí"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"přístup ke sledování XR na pozadí"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Umožňuje aplikaci přístup k datům rozšířené reality na pozadí."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"zachytávat klávesy"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Umožňuje aplikaci zachytit události kláves dříve, než systém dostane možnost zpracovat systémové zkratky a akce."</string>
@@ -1041,7 +1043,7 @@
     <string name="keyguard_password_entry_touch_hint" msgid="4032288032993261520"><font size="17">"Klepnutím zadáte heslo"</font></string>
     <string name="keyguard_password_enter_password_code" msgid="2751130557661643482">"Zadejte heslo pro odemknutí"</string>
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Zadejte kód PIN pro odemknutí"</string>
-    <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Nesprávný kód PIN."</string>
+    <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Nesprávný PIN."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Chcete-li telefon odemknout, stiskněte Menu a poté 0."</string>
     <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Číslo tísňové linky"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Žádný signál"</string>
@@ -1054,6 +1056,8 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Správně!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Zkusit znovu"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Zkusit znovu"</string>
+    <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Odemknete kliknutím"</string>
+    <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Odemknete stisknutím libovolné klávesy"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Funkce a data jsou k dispozici po odemčení"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Překročili jste maximální povolený počet pokusů o odemknutí obličejem."</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Žádná SIM karta"</string>
@@ -1623,6 +1627,9 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"Požadavek od uživatele <xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>)"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"Ano"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"Ne"</string>
+    <string name="emergency_location_notification_title" msgid="917557758257778958">"Poloha v nouzi byla sdílena"</string>
+    <string name="emergency_location_notification_message" msgid="1877038822515882885">"Tísňová linka získala vaši polohu od operátora"</string>
+    <string name="emergency_location_notification_learn_more" msgid="8718634939217070481">"Další informace"</string>
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"Byl překročen limit mazání."</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"Počet smazaných položek pro <xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g> (účet <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g>): <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g>. Co chcete dělat?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"Smazat položky."</string>
@@ -1745,7 +1752,7 @@
     <string name="kg_forgot_pattern_button_text" msgid="406145459223122537">"Zapomenuté gesto"</string>
     <string name="kg_wrong_pattern" msgid="1342812634464179931">"Nesprávné gesto"</string>
     <string name="kg_wrong_password" msgid="2384677900494439426">"Nesprávné heslo"</string>
-    <string name="kg_wrong_pin" msgid="3680925703673166482">"Nesprávný kód PIN"</string>
+    <string name="kg_wrong_pin" msgid="3680925703673166482">"Nesprávný PIN"</string>
     <string name="kg_pattern_instructions" msgid="8366024510502517748">"Zadejte gesto"</string>
     <string name="kg_sim_pin_instructions" msgid="6479401489471690359">"Zadejte kód PIN SIM karty"</string>
     <string name="kg_pin_instructions" msgid="7355933174673539021">"Zadejte kód PIN"</string>
@@ -1754,7 +1761,7 @@
     <string name="kg_puk_enter_pin_hint" msgid="8190982314659429770">"Zadejte požadovaný kód PIN."</string>
     <string name="kg_enter_confirm_pin_hint" msgid="6372557107414074580">"Potvrďte požadovaný kód PIN."</string>
     <string name="kg_sim_unlock_progress_dialog_message" msgid="5743634657721110967">"Odblokování SIM karty…"</string>
-    <string name="kg_password_wrong_pin_code" msgid="9013856346870572451">"Nesprávný kód PIN."</string>
+    <string name="kg_password_wrong_pin_code" msgid="9013856346870572451">"Nesprávný PIN."</string>
     <string name="kg_invalid_sim_pin_hint" msgid="4821601451222564077">"Zadejte kód PIN o délce 4–8 číslic."</string>
     <string name="kg_invalid_sim_puk_hint" msgid="2539364558870734339">"Kód PUK by měl obsahovat 8 číslic."</string>
     <string name="kg_invalid_puk" msgid="4809502818518963344">"Znovu zadejte správný kód PUK. Opakovanými pokusy SIM kartu trvale deaktivujete."</string>
@@ -1793,8 +1800,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Podržením obou tlačítek hlasitosti po dobu několika sekund zapnete funkci pro usnadnění přístupu <xliff:g id="SERVICE">%1$s</xliff:g>. Tato funkce může změnit fungování zařízení.\n\nZkratku můžete nastavit na jinou funkci v Nastavení &gt; Přístupnost."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Zapnout"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Nezapínat"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"ZAP"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"VYP"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Chcete službě <xliff:g id="SERVICE">%1$s</xliff:g> povolit plnou kontrolu nad vaším zařízením?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Plná kontrola je vhodná u aplikací, které vám pomáhají s usnadněním přístupu. U většiny aplikací však vhodná není."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Zobrazení a ovládání obrazovky"</string>
@@ -1808,6 +1817,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Chcete-li některou funkci začít používat, klepněte na ni:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Vyberte funkce, které budete používat s tlačítkem přístupnosti"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Vyberte funkce, které budete používat se zkratkou tlačítek hlasitosti"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Služba <xliff:g id="SERVICE_NAME">%s</xliff:g> byla vypnuta"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Upravit zkratky"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Hotovo"</string>
@@ -1986,8 +2005,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Aktualizováno administrátorem.\nUdělená oprávnění si můžete prohlédnout v nastavení."</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Smazáno administrátorem"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Spořič baterie zapíná tmavý motiv a omezuje či vypíná aktivitu na pozadí, některé vizuální efekty, některé funkce a připojení k některým sítím."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Spořič baterie zapíná tmavý motiv a omezuje či vypíná aktivitu na pozadí, některé vizuální efekty, některé funkce a připojení k některým sítím."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Spořič baterie zapíná tmavý motiv a omezuje či vypíná aktivitu na pozadí, některé vizuální efekty, některé funkce a připojení k některým sítím."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Spořič baterie zapíná tmavý motiv a omezuje či vypíná aktivitu na pozadí, některé vizuální efekty, některé funkce a připojení k některým sítím."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"S cílem snížit spotřebu dat brání spořič dat některým aplikacím odesílat nebo přijímat data na pozadí. Aplikace, kterou právě používáte, sice data využívat může, ale méně často. Může to například znamenat, že obrázky se zobrazí, až na ně klepnete."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Chcete zapnout Spořič dat?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Zapnout"</string>
@@ -2020,7 +2039,7 @@
     <string name="zen_mode_trigger_summary_range_symbol_combination" msgid="1804900738798069619">"<xliff:g id="START">%1$s</xliff:g>–<xliff:g id="END">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_summary_range_words" msgid="7228261413029290750">"<xliff:g id="START">%1$s</xliff:g> – <xliff:g id="END">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_summary_combined" msgid="6492381546327807669">"<xliff:g id="DAYS">%1$s</xliff:g>, <xliff:g id="TIMES">%2$s</xliff:g>"</string>
-    <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"V libovolném kalendáři"</string>
+    <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"Libovolný kalendář"</string>
     <string name="muted_by" msgid="91464083490094950">"Hodinky <xliff:g id="THIRD_PARTY">%1$s</xliff:g> některé zvuky vypínají."</string>
     <string name="system_error_wipe_data" msgid="5910572292172208493">"V zařízení došlo k internímu problému. Dokud neprovedete obnovení továrních dat, může být nestabilní."</string>
     <string name="system_error_manufacturer" msgid="703545241070116315">"V zařízení došlo k internímu problému. Další informace vám sdělí výrobce."</string>
@@ -2049,12 +2068,9 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"Maximalizovat"</string>
     <string name="close_button_text" msgid="10603510034455258">"Zavřít"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
-    <skip />
+    <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
+    <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
+    <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"Přijmout"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"Video"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"Odmítnout"</string>
@@ -2365,8 +2381,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"Kód PIN pro odemknutí identity IMPI"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"Kód PIN pro odblokování poskytovatelů služeb pro podskupinu sítí"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"Žádost o odblokování sítě pro SIM kartu…"</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="6742563947637715645">"Žádost o odblokování podskupiny sítí pro SIM…"</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="2033399698172403560">"Žádost o odblokování poskytovatelů služeb pro SIM kartu…"</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"Žádost o odblokování podskupiny sítí pro SIM…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"Žádost o odblokování poskytovatelů služeb pro SIM kartu…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"Žádost o odblokování podnikové sítě pro SIM kartu…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"Žádost o odemknutí kódem PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"Žádost o odemknutí kódem PUK…"</string>
@@ -2392,15 +2408,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"Žádost o odemknutí kódem PUK…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"Žádost o odemknutí kódem PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"Požadavek na odblokování sítě pro SIM kartu se nezdařil."</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="3372797822292089708">"Požadavek na odblokování podskupiny sítí pro SIM se nezdařil."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="1878443146720411381">"Požadavek na odblokování poskytovatelů služeb pro SIM kartu se nezdařil."</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"Požadavek na odblokování podskupiny sítí pro SIM se nezdařil."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"Požadavek na odblokování poskytovatelů služeb pro SIM kartu se nezdařil."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"Požadavek na odblokování podnikové sítě pro SIM kartu se nezdařil."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"Požadavek na odemknutí SIM karty se nezdařil."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"Požadavek na odblokování sítě1 pro kartu RUIM se nezdařil."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"Požadavek na odblokování sítě2 pro kartu RUIM se nezdařil."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"Požadavek na odblokování sítě Hrpd pro kartu RUIM se nezdařil."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"Požadavek na odblokování podnikové sítě pro kartu RUIM se nezdařil."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="3801002648649640407">"Požadavek na odblokování poskytovatele služeb pro kartu RUIM se nezdařil."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"Požadavek na odblokování poskytovatele služeb pro kartu RUIM se nezdařil."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"Požadavek na odblokování karty RUIM se nezdařil."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"Odemknutí kódem PUK se nezdařilo."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"Odemknutí kódem PUK se nezdařilo."</string>
@@ -2420,13 +2436,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"Požadavek na odblokování poskytovatelů služeb pro podskupinu sítí se nezdařil."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"Odblokování sítě pro SIM kartu proběhlo úspěšně."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"Odblokování podskupiny sítí pro SIM proběhlo úspěšně."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="8249342930499801740">"Odblokování poskytovatelů služeb pro SIM kartu proběhlo úspěšně."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"Odblokování poskytovatelů služeb pro SIM kartu proběhlo úspěšně."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"Odblokování podnikové sítě pro SIM kartu proběhlo úspěšně."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"Odemknutí SIM karty proběhlo úspěšně"</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"Odblokování sítě1 pro kartu RUIM proběhlo úspěšně."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"Odblokování sítě2 pro kartu RUIM proběhlo úspěšně."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"Odblokování sítě Hrpd pro kartu RUIM proběhlo úspěšně."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6020936629725666932">"Odblokování poskytovatele služeb pro kartu RUIM proběhlo úspěšně."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"Odblokování poskytovatele služeb pro kartu RUIM proběhlo úspěšně."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"Odblokování podnikové sítě pro kartu RUIM proběhlo úspěšně."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"Odblokování karty RUIM proběhlo úspěšně."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"Odemknutí kódem PUK proběhlo úspěšně."</string>
@@ -2582,27 +2598,22 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplikace"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Vaše otisky prstů se nedaří rozpoznat. Nastavte odemknutí otiskem prstu znovu."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Zabezpečení a ochrana soukromí"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"Odemkněte obrazovku a připojte USB znovu"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"K připojení přes USB odemkněte obrazovku"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"K připojení přes USB vyžaduje pokročilá ochrana odemknutí obrazovky"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"K připojení přes USB vyžaduje pokročilá ochrana odemknutí obrazovky"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"K rychlejšímu nabíjení vyžaduje pokročilá ochrana odemknutí obrazovky"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"K rychlejšímu nabíjení nebo připojení přes USB vyžaduje pokročilá ochrana odemknutí obrazovky"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Ztlumit"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Oznámení ztlumena"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"Oznámení pokročilé ochrany týkající se USB budete dostávat až po restartu zařízení"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Podezřelá aktivita USB"</string>
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
-    <skip />
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"Datový signál USB byl deaktivován"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Máte s odemknutím otiskem prstu potíže?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Klepnutím zobrazíte tipy pro snazší odemykání"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Neblikat"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Televizi vypnete dlouhým podržením vypínače"</string>
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Upozornění na systémové zdroje"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Nadměrné využití zdrojů"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> využívá příliš mnoho zdrojů."</string>
 </resources>

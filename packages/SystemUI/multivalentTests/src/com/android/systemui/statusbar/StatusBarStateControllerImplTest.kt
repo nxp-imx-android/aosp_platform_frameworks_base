@@ -16,11 +16,15 @@
 
 package com.android.systemui.statusbar
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.logging.uiEventLoggerFake
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
+import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
@@ -42,20 +46,19 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.setTransition
-import com.android.systemui.scene.domain.interactor.sceneContainerOcclusionInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
-import com.android.systemui.statusbar.domain.interactor.keyguardOcclusionInteractor
 import com.android.systemui.testKosmos
-import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyFloat
@@ -87,6 +90,11 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
 
     init {
         mSetFlagsRule.setFlagsParameterization(flags)
+    }
+
+    @Before
+    fun setUp() {
+        kosmos.sceneContainerStartable.start()
     }
 
     @Test
@@ -203,6 +211,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun start_hydratesStatusBarState_whileLocked() =
         kosmos.runTest {
             disableDualShade()
@@ -242,7 +251,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
 
             sceneInteractor.changeScene(toScene = Scenes.Communal, loggingReason = "reason")
             assertThat(currentScene).isEqualTo(Scenes.Communal)
-            assertThat(statusBarState).isEqualTo(StatusBarState.KEYGUARD)
+            assertThat(statusBarState).isEqualTo(StatusBarState.SHADE_LOCKED)
 
             sceneInteractor.changeScene(toScene = Scenes.Lockscreen, loggingReason = "reason")
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
@@ -251,6 +260,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun start_hydratesStatusBarState_withAlternateBouncer() =
         kosmos.runTest {
             disableDualShade()
@@ -288,7 +298,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
         }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(FLAG_SCENE_CONTAINER, FLAG_DUAL_SHADE)
     fun start_hydratesStatusBarState_dualShade_whileLocked() =
         kosmos.runTest {
             kosmos.enableDualShade()
@@ -391,7 +401,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
         }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(FLAG_SCENE_CONTAINER, FLAG_DUAL_SHADE)
     fun start_hydratesStatusBarState_whileUnlocked_dualShade() =
         kosmos.runTest {
             enableDualShade()
@@ -455,13 +465,9 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
 
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            val isOccluded by
-                collectLastValue(sceneContainerOcclusionInteractor.invisibleDueToOcclusion)
-            keyguardOcclusionInteractor.setWmNotifiedShowWhenLockedActivityOnTop(
-                showWhenLockedActivityOnTop = true,
-                taskInfo = mock(),
-            )
-            assertThat(isOccluded).isTrue()
+
+            sceneInteractor.changeScene(toScene = Scenes.Occluded, loggingReason = "reason")
+            assertThat(currentScene).isEqualTo(Scenes.Occluded)
 
             // Call start to begin hydrating based on the scene framework:
             underTest.start()
@@ -476,7 +482,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
         }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(FLAG_SCENE_CONTAINER, FLAG_DUAL_SHADE)
     fun start_hydratesStatusBarState_whileOccluded_dualShade() =
         kosmos.runTest {
             enableDualShade()
@@ -492,13 +498,9 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            val isOccluded by
-                collectLastValue(sceneContainerOcclusionInteractor.invisibleDueToOcclusion)
-            keyguardOcclusionInteractor.setWmNotifiedShowWhenLockedActivityOnTop(
-                showWhenLockedActivityOnTop = true,
-                taskInfo = mock(),
-            )
-            assertThat(isOccluded).isTrue()
+
+            sceneInteractor.changeScene(toScene = Scenes.Occluded, loggingReason = "reason")
+            assertThat(currentScene).isEqualTo(Scenes.Occluded)
 
             // Call start to begin hydrating based on the scene framework:
             underTest.start()
@@ -522,9 +524,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             underTest.start()
             underTest.setLeaveOpenOnKeyguardHide(true)
             sceneInteractor.snapToScene(Scenes.Lockscreen, "")
-            fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
-            )
+            fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.None)
 
             fakeKeyguardTransitionRepository.sendTransitionSteps(
                 from = KeyguardState.AOD,

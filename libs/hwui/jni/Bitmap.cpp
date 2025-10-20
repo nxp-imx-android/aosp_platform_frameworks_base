@@ -563,6 +563,13 @@ static void Bitmap_recycle(JNIEnv* env, jobject, jlong bitmapHandle) {
     bitmap->freePixels();
 }
 
+static void Bitmap_noop(BitmapWrapper* bitmap) {
+}
+
+static jlong Bitmap_getNativeNoop(JNIEnv*, jobject) {
+    return static_cast<jlong>(reinterpret_cast<uintptr_t>(&Bitmap_noop));
+}
+
 static void Bitmap_reconfigure(JNIEnv* env, jobject clazz, jlong bitmapHandle,
         jint width, jint height, jint configHandle, jboolean requestPremul) {
     LocalScopedBitmap bitmap(bitmapHandle);
@@ -777,48 +784,27 @@ static binder_status_t writeBlob(AParcel* parcel, uint64_t bitmapId, const SkBit
                                             bitmap.width(), bitmap.height(), size);
         base::unique_fd fd;
 
-        if (com::android::graphics::hwui::flags::bitmap_use_memfd()) {
-            fd.reset(syscall(__NR_memfd_create, ashmemId.c_str(), MFD_CLOEXEC | MFD_ALLOW_SEALING));
-            if (fd.get() < 0) {
-                return STATUS_NO_MEMORY;
-            }
+        fd.reset(syscall(__NR_memfd_create, ashmemId.c_str(), MFD_CLOEXEC | MFD_ALLOW_SEALING));
+        if (fd.get() < 0) {
+            return STATUS_NO_MEMORY;
+        }
 
-            ssize_t written = write(fd.get(), data, size);
-            if (written != size) {
-                return STATUS_NO_MEMORY;
-            }
+        ssize_t written = write(fd.get(), data, size);
+        if (written != size) {
+            return STATUS_NO_MEMORY;
+        }
 
-            if (fcntl(fd, F_ADD_SEALS,
-                      // Disallow growing / shrinking.
-                      F_SEAL_GROW | F_SEAL_SHRINK
-                      // If immutable, disallow writing.
-                      // Use F_SEAL_FUTURE_WRITE instead of F_SEAL_WRITE to work around a bug in
-                      // pre-6.7 kernels.
-                      // There are no writable mappings made prior to this, so both seals are
-                      // functionally equivalent.
-                      // See: b/409846908#comment39
-                      | (immutable ? F_SEAL_FUTURE_WRITE : 0))) {
-                return STATUS_UNKNOWN_ERROR;
-            }
-
-        } else {
-            fd.reset(ashmem_create_region(ashmemId.c_str(), size));
-            if (fd.get() < 0) {
-                return STATUS_NO_MEMORY;
-            }
-
-            {
-                void* dest = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd.get(), 0);
-                if (dest == MAP_FAILED) {
-                    return STATUS_NO_MEMORY;
-                }
-                memcpy(dest, data, size);
-                munmap(dest, size);
-            }
-
-            if (immutable && ashmem_set_prot_region(fd.get(), PROT_READ) < 0) {
-                return STATUS_UNKNOWN_ERROR;
-            }
+        if (fcntl(fd, F_ADD_SEALS,
+                    // Disallow growing / shrinking.
+                    F_SEAL_GROW | F_SEAL_SHRINK
+                    // If immutable, disallow writing.
+                    // Use F_SEAL_FUTURE_WRITE instead of F_SEAL_WRITE to work around a bug in
+                    // pre-6.7 kernels.
+                    // There are no writable mappings made prior to this, so both seals are
+                    // functionally equivalent.
+                    // See: b/409846908#comment39
+                    | (immutable ? F_SEAL_FUTURE_WRITE : 0))) {
+            return STATUS_UNKNOWN_ERROR;
         }
 
         // Workaround b/149851140 in AParcel_writeParcelFileDescriptor
@@ -978,10 +964,6 @@ static bool shouldParcelAsMutable(SkBitmap& bitmap, AParcel* parcel) {
     // If the bitmap is immutable, then parcel as immutable.
     if (bitmap.isImmutable()) {
         return false;
-    }
-
-    if (!com::android::graphics::hwui::flags::bitmap_parcel_ashmem_as_immutable()) {
-        return true;
     }
 
     // If we're going to copy the bitmap to ashmem and write that to the parcel,
@@ -1419,6 +1401,7 @@ static const JNINativeMethod gBitmapMethods[] = {
         {"nativeCopyAshmemConfig", "(JI)Landroid/graphics/Bitmap;", (void*)Bitmap_copyAshmemConfig},
         {"nativeGetAshmemFD", "(J)I", (void*)Bitmap_getAshmemFd},
         {"nativeGetNativeFinalizer", "()J", (void*)Bitmap_getNativeFinalizer},
+        {"nativeGetNativeNoop", "()J", (void*)Bitmap_getNativeNoop},
         {"nativeRecycle", "(J)V", (void*)Bitmap_recycle},
         {"nativeReconfigure", "(JIIIZ)V", (void*)Bitmap_reconfigure},
         {"nativeCompress", "(JIILjava/io/OutputStream;[B)Z", (void*)Bitmap_compress},

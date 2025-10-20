@@ -25,7 +25,6 @@ import static android.view.MotionEvent.ACTION_UP;
 import static com.android.app.tracing.TrackGroupUtils.trackGroup;
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_NOTIFICATION_SHADE_SCROLL_FLING;
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_SHADE_CLEAR_ALL;
-import static com.android.systemui.Flags.magneticNotificationSwipes;
 import static com.android.systemui.Flags.physicalNotificationMovement;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_NEWS;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_PROMO;
@@ -95,14 +94,12 @@ import com.android.systemui.Dumpable;
 import com.android.systemui.ExpandHelper;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.flags.Flags;
-import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.shade.QSHeaderBoundsProvider;
 import com.android.systemui.shade.TouchLogger;
 import com.android.systemui.statusbar.NotificationShelf;
 import com.android.systemui.statusbar.StatusBarState;
-import com.android.systemui.statusbar.headsup.shared.StatusBarNoHunBehavior;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.FakeShadowView;
 import com.android.systemui.statusbar.notification.LaunchAnimationParameters;
@@ -112,6 +109,8 @@ import com.android.systemui.statusbar.notification.PhysicsPropertyAnimator;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
+import com.android.systemui.statusbar.notification.emptyshade.ui.shared.flag.ShowIconInEmptyShade;
+import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeIconView;
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView;
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimationEvent;
@@ -124,7 +123,6 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.notification.row.StackScrollerDecorView;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
-import com.android.systemui.statusbar.notification.shared.NotificationContentAlphaOptimization;
 import com.android.systemui.statusbar.notification.shared.NotificationHeadsUpCycling;
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
@@ -176,7 +174,7 @@ public class NotificationStackScrollLayout
     public static final float BACKGROUND_ALPHA_DIMMED = 0.7f;
     private static final String TAG = "StackScroller";
     private static final boolean SPEW = Log.isLoggable(TAG, Log.VERBOSE);
-
+    private static final boolean DEBUG_CHILD_HEIGHT_CHANGE = false;
     private boolean mShadeNeedsToClose = false;
 
     @VisibleForTesting
@@ -303,7 +301,7 @@ public class NotificationStackScrollLayout
     private boolean mShouldShowShelfOnly;
     protected boolean mScrollingEnabled;
     protected FooterView mFooterView;
-    protected EmptyShadeView mEmptyShadeView;
+    protected StackScrollerDecorView mEmptyShadeView;
     private boolean mClearAllInProgress;
     private boolean mFlingAfterUpEvent;
     /**
@@ -378,7 +376,6 @@ public class NotificationStackScrollLayout
     private final ArrayList<ExpandableView> mTmpSortedChildren = new ArrayList<>();
     private final ArrayList<ExpandableView> mTmpNonOverlapChildren = new ArrayList<>();
     private final ArrayDeque<ExpandableView> mTmpStack = new ArrayDeque<>();
-    protected ViewGroup mQsHeader;
 
     @Nullable
     private QSHeaderBoundsProvider mQSHeaderBoundsProvider;
@@ -630,8 +627,10 @@ public class NotificationStackScrollLayout
     private final ExpandableView.OnHeightChangedListener mOnChildHeightChangedListener =
             new ExpandableView.OnHeightChangedListener() {
                 @Override
-                public void onHeightChanged(ExpandableView view, boolean needsAnimation) {
-                    onChildHeightChanged(view, needsAnimation);
+                public void onHeightChanged(ExpandableView view, boolean needsAnimation,
+                        String caller) {
+                    onChildHeightChanged(view, needsAnimation,
+                            caller + " => NSSL.EV.onHeightChanged");
                 }
 
                 @Override
@@ -1056,7 +1055,8 @@ public class NotificationStackScrollLayout
 
     private void notifyHeightChangeListener(ExpandableView view, boolean needsAnimation) {
         if (mOnHeightChangedListener != null) {
-            mOnHeightChangedListener.onHeightChanged(view, needsAnimation);
+            mOnHeightChangedListener.onHeightChanged(view, needsAnimation,
+                    "NSSL.notifyHeightChangeListener");
         }
 
         if (mOnHeightChangedRunnable != null) {
@@ -1234,18 +1234,10 @@ public class NotificationStackScrollLayout
             // Give The Algorithm information regarding the QS height so it can layout notifications
             // properly. Needed for some devices that grows notifications down-to-top
             int height;
-            if (QSComposeFragment.isEnabled()) {
-                if (mQSHeaderBoundsProvider != null) {
-                    height = mQSHeaderBoundsProvider.getHeightProvider().invoke();
-                } else {
-                    height = 0;
-                }
+            if (mQSHeaderBoundsProvider != null) {
+                height = mQSHeaderBoundsProvider.getHeightProvider().invoke();
             } else {
-                if (mQsHeader != null) {
-                    height = mQsHeader.getHeight();
-                } else {
-                    height = 0;
-                }
+                height = 0;
             }
             mStackScrollAlgorithm.updateQSFrameTop(height);
         }
@@ -1366,7 +1358,7 @@ public class NotificationStackScrollLayout
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         // The received drawBounds are relative to the Window, but NSSL  expects a rect relative to
         // its own position, so we need to offset it in case the NSSL has some horizontal margins.
-        drawBounds.offset(-getX(), 0f);
+        drawBounds.offset(-getX(), -getY());
         if (mAmbientState.getDrawBounds() != drawBounds) {
             mAmbientState.setDrawBounds(drawBounds);
             updateStackEndHeightAndStackHeight(mAmbientState.getExpansionFraction());
@@ -2221,14 +2213,8 @@ public class NotificationStackScrollLayout
         return Math.min(mMaxLayoutHeight, mCurrentStackHeight);
     }
 
-    public void setQsHeader(ViewGroup qsHeader) {
-        QSComposeFragment.assertInLegacyMode();
-        mQsHeader = qsHeader;
-    }
-
     public void setQsHeaderBoundsProvider(QSHeaderBoundsProvider qsHeaderBoundsProvider) {
         SceneContainerFlag.assertInLegacyMode();
-        QSComposeFragment.isUnexpectedlyInLegacyMode();
         mQSHeaderBoundsProvider = qsHeaderBoundsProvider;
     }
 
@@ -4378,20 +4364,11 @@ public class NotificationStackScrollLayout
 
     protected boolean isInsideQsHeader(MotionEvent ev) {
         SceneContainerFlag.assertInLegacyMode();
-        if (QSComposeFragment.isEnabled()) {
-            if (mQSHeaderBoundsProvider == null) {
-                return false;
-            } else {
-                mQSHeaderBoundsProvider.getBoundsOnScreenProvider().invoke(mQsHeaderBound);
-            }
+        if (mQSHeaderBoundsProvider == null) {
+            return false;
         } else {
-            if (mQsHeader == null) {
-                return false;
-            } else {
-                mQsHeader.getBoundsOnScreen(mQsHeaderBound);
-            }
+            mQSHeaderBoundsProvider.getBoundsOnScreenProvider().invoke(mQsHeaderBound);
         }
-
         /**
          * One-handed mode defines a feature FEATURE_ONE_HANDED of DisplayArea {@link DisplayArea}
          * that will translate down the Y-coordinate whole window screen type except for
@@ -4401,9 +4378,7 @@ public class NotificationStackScrollLayout
          * of DisplayArea into relative coordinates for all windows, we need to correct the
          * QS Head bounds here.
          */
-        int left =
-                QSComposeFragment.isEnabled() ? mQSHeaderBoundsProvider.getLeftProvider().invoke()
-                        : mQsHeader.getLeft();
+        int left = mQSHeaderBoundsProvider.getLeftProvider().invoke();
         final int xOffset = Math.round(ev.getRawX() - ev.getX() + left);
         final int yOffset = Math.round(ev.getRawY() - ev.getY());
         mQsHeaderBound.offsetTo(xOffset, yOffset);
@@ -4870,9 +4845,7 @@ public class NotificationStackScrollLayout
                 if (SceneContainerFlag.isEnabled()) {
                     setHeadsUpAnimatingAway(false);
                 }
-                if (NotificationContentAlphaOptimization.isEnabled()) {
-                    resetChildAlpha();
-                }
+                resetChildAlpha();
             } else {
                 mGroupExpansionManager.collapseGroups();
                 mExpandHelper.cancelImmediately();
@@ -4902,7 +4875,11 @@ public class NotificationStackScrollLayout
         }
     }
 
-    void onChildHeightChanged(ExpandableView view, boolean needsAnimation) {
+    void onChildHeightChanged(ExpandableView view, boolean needsAnimation, String caller) {
+        if (DEBUG_CHILD_HEIGHT_CHANGE) {
+            Log.d(TAG, caller + " => NSSL.onChildHeightChanged: needsAnimation=" + needsAnimation);
+        }
+
         boolean previouslyNeededAnimation = mAnimateStackYForContentHeightChange;
         if (needsAnimation) {
             mAnimateStackYForContentHeightChange = true;
@@ -5155,7 +5132,11 @@ public class NotificationStackScrollLayout
         }
 
         if (mEmptyShadeView != null) {
-            mEmptyShadeView.setTextColors(onSurface, onSurfaceVariant);
+            if (ShowIconInEmptyShade.isEnabled()) {
+                ((EmptyShadeIconView) mEmptyShadeView).setContentColor(onSurface);
+            } else {
+                ((EmptyShadeView) mEmptyShadeView).setTextColors(onSurface, onSurfaceVariant);
+            }
         }
     }
 
@@ -5281,7 +5262,8 @@ public class NotificationStackScrollLayout
         addView(mFooterView, index);
     }
 
-    public void setEmptyShadeView(EmptyShadeView emptyShadeView) {
+    /** Bind the {@link EmptyShadeView} to the NSSL. */
+    public void setEmptyShadeView(StackScrollerDecorView emptyShadeView) {
         int index = -1;
         if (mEmptyShadeView != null) {
             index = indexOfChild(mEmptyShadeView);
@@ -5834,11 +5816,6 @@ public class NotificationStackScrollLayout
 
     void onStatePostChange(boolean fromShadeLocked) {
         boolean onKeyguard = onKeyguard();
-
-        if (mHeadsUpAppearanceController != null && !StatusBarNoHunBehavior.isEnabled()) {
-            mHeadsUpAppearanceController.onStateChanged();
-        }
-
         setExpandingEnabled(!onKeyguard);
         requestChildrenUpdate();
         onUpdateRowStates();
@@ -6324,23 +6301,6 @@ public class NotificationStackScrollLayout
                 getChildrenWithBackground()
         );
 
-        if (!magneticNotificationSwipes()) {
-            RoundableTargets targets = mController
-                    .getNotificationTargetsHelper()
-                    .findRoundableTargets(
-                            (ExpandableNotificationRow) viewSwiped,
-                            this,
-                            mSectionsManager);
-
-            mController.getNotificationRoundnessManager()
-                    .setViewsAffectedBySwipe(
-                            targets.getBefore(),
-                            targets.getSwiped(),
-                            targets.getAfter());
-            mController.getNotificationRoundnessManager()
-                    .setRoundnessForAffectedViews(/* roundness */ 1f);
-        }
-
         updateFirstAndLastBackgroundViews();
         requestDisallowInterceptTouchEvent(true);
         updateContinuousShadowDrawing();
@@ -6349,10 +6309,6 @@ public class NotificationStackScrollLayout
 
     void onSwipeEnd() {
         updateFirstAndLastBackgroundViews();
-        if (!magneticNotificationSwipes()) {
-            mController.getNotificationRoundnessManager()
-                    .setViewsAffectedBySwipe(null, null, null);
-        }
         // Round bottom corners for notification right before shelf.
         mShelf.updateAppearance();
     }
@@ -6815,6 +6771,8 @@ public class NotificationStackScrollLayout
      * Request an animation whenever the toppadding changes next
      */
     public void animateNextTopPaddingChange() {
+        // With SceneContainer enabled, NSSL receives smooth stackTop changes. No need to animate.
+        SceneContainerFlag.assertInLegacyMode();
         mAnimateNextTopPaddingChange = true;
     }
 
@@ -7290,7 +7248,7 @@ public class NotificationStackScrollLayout
         }
 
         changedRow.setChildrenExpanded(expanded);
-        onChildHeightChanged(changedRow, false /* needsAnimation */);
+        onChildHeightChanged(changedRow, false /* needsAnimation */, "NSSL.onGroupExpandChanged");
 
         runAfterAnimationFinished(changedRow::onFinishedExpansionChange);
     }

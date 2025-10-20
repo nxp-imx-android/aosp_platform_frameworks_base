@@ -32,14 +32,19 @@ import static com.android.server.SystemTimeZone.TIME_ZONE_CONFIDENCE_LOW;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.UiAutomation;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.BroadcastReceiver;
 import android.os.HandlerThread;
 import android.os.Process;
 import android.os.UserHandle;
@@ -62,6 +67,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
@@ -69,15 +75,12 @@ import java.time.InstantSource;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * White-box unit tests for {@link NotifyingTimeZoneChangeListener}.
- */
+/** White-box unit tests for {@link NotifyingTimeZoneChangeListener}. */
 @RunWith(JUnitParamsRunner.class)
 @EnableFlags(Flags.FLAG_DATETIME_NOTIFICATIONS)
 public class NotifyingTimeZoneChangeListenerTest {
 
-    @ClassRule
-    public static final SetFlagsRule.ClassRule mClassRule = new SetFlagsRule.ClassRule();
+    @ClassRule public static final SetFlagsRule.ClassRule mClassRule = new SetFlagsRule.ClassRule();
 
     @Rule(order = 0)
     public final SetFlagsRule mSetFlagsRule = mClassRule.createSetFlagsRule();
@@ -92,7 +95,6 @@ public class NotifyingTimeZoneChangeListenerTest {
     private static final String INTERACT_ACROSS_USERS_FULL_PERMISSION =
             "android.permission.INTERACT_ACROSS_USERS_FULL";
 
-    @Mock
     private Context mContext;
     private UiAutomation mUiAutomation;
 
@@ -102,6 +104,8 @@ public class NotifyingTimeZoneChangeListenerTest {
     private FakeServiceConfigAccessor mServiceConfigAccessor;
     private FakeEnvironment mFakeEnvironment;
     private int mUid;
+
+    @Mock private KeyguardManager mockKeyguardManager;
 
     private NotifyingTimeZoneChangeListener mTimeZoneChangeTracker;
 
@@ -116,34 +120,42 @@ public class NotifyingTimeZoneChangeListenerTest {
         mHandlerThread.start();
         mHandler = new TestHandler(mHandlerThread.getLooper());
 
-        ConfigurationInternal config = new ConfigurationInternal.Builder()
-                .setUserId(mUid)
-                .setTelephonyDetectionFeatureSupported(true)
-                .setGeoDetectionFeatureSupported(true)
-                .setTelephonyFallbackSupported(false)
-                .setGeoDetectionRunInBackgroundEnabled(false)
-                .setEnhancedMetricsCollectionEnabled(false)
-                .setUserConfigAllowed(true)
-                .setAutoDetectionEnabledSetting(false)
-                .setLocationEnabledSetting(true)
-                .setGeoDetectionEnabledSetting(false)
-                .setNotificationsSupported(true)
-                .setNotificationsTrackingSupported(true)
-                .setNotificationsEnabledSetting(false)
-                .setManualChangeTrackingSupported(false)
-                .build();
+        ConfigurationInternal config =
+                new ConfigurationInternal.Builder()
+                        .setUserId(mUid)
+                        .setTelephonyDetectionFeatureSupported(true)
+                        .setGeoDetectionFeatureSupported(true)
+                        .setTelephonyFallbackSupported(false)
+                        .setGeoDetectionRunInBackgroundEnabled(false)
+                        .setEnhancedMetricsCollectionEnabled(false)
+                        .setUserConfigAllowed(true)
+                        .setAutoDetectionEnabledSetting(false)
+                        .setLocationEnabledSetting(true)
+                        .setGeoDetectionEnabledSetting(false)
+                        .setNotificationsSupported(true)
+                        .setNotificationsTrackingSupported(true)
+                        .setNotificationsEnabledSetting(false)
+                        .setManualChangeTrackingSupported(false)
+                        .build();
 
         mServiceConfigAccessor = spy(new FakeServiceConfigAccessor());
         mServiceConfigAccessor.initializeCurrentUserConfiguration(config);
 
         mContext = InstrumentationRegistry.getInstrumentation().getContext();
+
         mUiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
         mUiAutomation.adoptShellPermissionIdentity(INTERACT_ACROSS_USERS_FULL_PERMISSION);
 
         mNotificationManager = new FakeNotificationManager(mContext, InstantSource.system());
 
-        mTimeZoneChangeTracker = new NotifyingTimeZoneChangeListener(mHandler, mContext,
-                mServiceConfigAccessor, mNotificationManager, mFakeEnvironment);
+        mTimeZoneChangeTracker =
+                new NotifyingTimeZoneChangeListener(
+                        mHandler,
+                        mContext,
+                        mServiceConfigAccessor,
+                        mNotificationManager,
+                        mFakeEnvironment,
+                        mockKeyguardManager);
     }
 
     @After
@@ -175,8 +187,8 @@ public class NotifyingTimeZoneChangeListenerTest {
 
         mTimeZoneChangeTracker.process(expectedTimeZoneChangeRecord.getEvent());
 
-        assertEquals(expectedTimeZoneChangeRecord,
-                mTimeZoneChangeTracker.getLastTimeZoneChangeRecord());
+        assertEquals(
+                expectedTimeZoneChangeRecord, mTimeZoneChangeTracker.getLastTimeZoneChangeRecord());
         assertEquals(0, mNotificationManager.getNotifications().size());
         mHandler.assertTotalMessagesEnqueued(0);
     }
@@ -204,8 +216,8 @@ public class NotifyingTimeZoneChangeListenerTest {
 
         mTimeZoneChangeTracker.process(expectedTimeZoneChangeRecord.getEvent());
 
-        assertEquals(expectedTimeZoneChangeRecord,
-                mTimeZoneChangeTracker.getLastTimeZoneChangeRecord());
+        assertEquals(
+                expectedTimeZoneChangeRecord, mTimeZoneChangeTracker.getLastTimeZoneChangeRecord());
         assertEquals(0, mNotificationManager.getNotifications().size());
         mHandler.assertTotalMessagesEnqueued(1);
     }
@@ -517,14 +529,71 @@ public class NotifyingTimeZoneChangeListenerTest {
         mHandler.assertTotalMessagesEnqueued(2);
     }
 
+    @Test
+    @EnableFlags(android.timezone.flags.Flags.FLAG_ENABLE_AUTOMATIC_TIME_ZONE_REJECTION_LOGGING)
+    public void process_automaticDetection_deviceLocked_defersHeuristic() {
+        enableNotificationsWithManualChangeTracking();
+        Mockito.when(mockKeyguardManager.isDeviceLocked()).thenReturn(true);
+
+        TimeZoneChangeEvent event =
+                new TimeZoneChangeEvent(
+                        /* elapsedRealtimeMillis= */ 0,
+                        /* unixEpochTimeMillis= */ 1726597800000L,
+                        /* origin= */ ORIGIN_TELEPHONY,
+                        /* userId= */ mUid,
+                        /* oldZoneId= */ "Europe/Paris",
+                        /* newZoneId= */ "Europe/London",
+                        /* oldConfidence= */ TIME_ZONE_CONFIDENCE_HIGH,
+                        /* newConfidence= */ TIME_ZONE_CONFIDENCE_HIGH,
+                        /* cause= */ "NO_REASON");
+
+        mTimeZoneChangeTracker.process(event);
+
+        // Verify that the heuristic callback is NOT posted immediately.
+        mHandler.assertTotalMessagesEnqueued(0);
+
+        // Simulate unlocking the device.
+        Intent userPresentIntent = new Intent(Intent.ACTION_USER_PRESENT);
+        mTimeZoneChangeTracker.mUserPresentReceiver.onReceive(mContext, userPresentIntent);
+
+        // Now, the handler message should be enqueued.
+        mHandler.assertTotalMessagesEnqueued(1);
+
+    }
+
+    @Test
+    @EnableFlags(android.timezone.flags.Flags.FLAG_ENABLE_AUTOMATIC_TIME_ZONE_REJECTION_LOGGING)
+    public void process_automaticDetection_deviceUnlocked_notDefersHeuristic() {
+        enableNotificationsWithManualChangeTracking();
+        Mockito.when(mockKeyguardManager.isDeviceLocked()).thenReturn(false);
+
+        TimeZoneChangeEvent event =
+                new TimeZoneChangeEvent(
+                        /* elapsedRealtimeMillis= */ 0,
+                        /* unixEpochTimeMillis= */ 1726597800000L,
+                        /* origin= */ ORIGIN_TELEPHONY,
+                        /* userId= */ mUid,
+                        /* oldZoneId= */ "Europe/Paris",
+                        /* newZoneId= */ "Europe/London",
+                        /* oldConfidence= */ TIME_ZONE_CONFIDENCE_HIGH,
+                        /* newConfidence= */ TIME_ZONE_CONFIDENCE_HIGH,
+                        /* cause= */ "NO_REASON");
+
+        mTimeZoneChangeTracker.process(event);
+
+        // Verify that the heuristic callback is posted immediately.
+        mHandler.assertTotalMessagesEnqueued(1);
+    }
+
     private void enableLocationTimeZoneDetection() {
         ConfigurationInternal oldConfiguration =
                 mServiceConfigAccessor.getCurrentUserConfigurationInternal();
-        ConfigurationInternal newConfiguration = toBuilder(oldConfiguration)
-                .setAutoDetectionEnabledSetting(true)
-                .setGeoDetectionFeatureSupported(true)
-                .setGeoDetectionEnabledSetting(true)
-                .build();
+        ConfigurationInternal newConfiguration =
+                toBuilder(oldConfiguration)
+                        .setAutoDetectionEnabledSetting(true)
+                        .setGeoDetectionFeatureSupported(true)
+                        .setGeoDetectionEnabledSetting(true)
+                        .build();
 
         mServiceConfigAccessor.simulateCurrentUserConfigurationInternalChange(newConfiguration);
     }
@@ -532,12 +601,13 @@ public class NotifyingTimeZoneChangeListenerTest {
     private void enableTelephonyTimeZoneDetection() {
         ConfigurationInternal oldConfiguration =
                 mServiceConfigAccessor.getCurrentUserConfigurationInternal();
-        ConfigurationInternal newConfiguration = toBuilder(oldConfiguration)
-                .setAutoDetectionEnabledSetting(true)
-                .setGeoDetectionEnabledSetting(false)
-                .setTelephonyDetectionFeatureSupported(true)
-                .setTelephonyFallbackSupported(true)
-                .build();
+        ConfigurationInternal newConfiguration =
+                toBuilder(oldConfiguration)
+                        .setAutoDetectionEnabledSetting(true)
+                        .setGeoDetectionEnabledSetting(false)
+                        .setTelephonyDetectionFeatureSupported(true)
+                        .setTelephonyFallbackSupported(true)
+                        .build();
 
         mServiceConfigAccessor.simulateCurrentUserConfigurationInternalChange(newConfiguration);
     }
@@ -545,12 +615,13 @@ public class NotifyingTimeZoneChangeListenerTest {
     private void enableTimeZoneNotifications() {
         ConfigurationInternal oldConfiguration =
                 mServiceConfigAccessor.getCurrentUserConfigurationInternal();
-        ConfigurationInternal newConfiguration = toBuilder(oldConfiguration)
-                .setNotificationsSupported(true)
-                .setNotificationsTrackingSupported(true)
-                .setNotificationsEnabledSetting(true)
-                .setManualChangeTrackingSupported(false)
-                .build();
+        ConfigurationInternal newConfiguration =
+                toBuilder(oldConfiguration)
+                        .setNotificationsSupported(true)
+                        .setNotificationsTrackingSupported(true)
+                        .setNotificationsEnabledSetting(true)
+                        .setManualChangeTrackingSupported(false)
+                        .build();
 
         mServiceConfigAccessor.simulateCurrentUserConfigurationInternalChange(newConfiguration);
     }
@@ -558,12 +629,13 @@ public class NotifyingTimeZoneChangeListenerTest {
     private void enableNotificationsWithManualChangeTracking() {
         ConfigurationInternal oldConfiguration =
                 mServiceConfigAccessor.getCurrentUserConfigurationInternal();
-        ConfigurationInternal newConfiguration = toBuilder(oldConfiguration)
-                .setNotificationsSupported(true)
-                .setNotificationsTrackingSupported(true)
-                .setNotificationsEnabledSetting(true)
-                .setManualChangeTrackingSupported(true)
-                .build();
+        ConfigurationInternal newConfiguration =
+                toBuilder(oldConfiguration)
+                        .setNotificationsSupported(true)
+                        .setNotificationsTrackingSupported(true)
+                        .setNotificationsEnabledSetting(true)
+                        .setManualChangeTrackingSupported(true)
+                        .build();
 
         mServiceConfigAccessor.simulateCurrentUserConfigurationInternalChange(newConfiguration);
     }
@@ -571,10 +643,11 @@ public class NotifyingTimeZoneChangeListenerTest {
     private void disableTimeZoneAutoDetection() {
         ConfigurationInternal oldConfiguration =
                 mServiceConfigAccessor.getCurrentUserConfigurationInternal();
-        ConfigurationInternal newConfiguration = toBuilder(oldConfiguration)
-                .setAutoDetectionEnabledSetting(false)
-                .setGeoDetectionEnabledSetting(false)
-                .build();
+        ConfigurationInternal newConfiguration =
+                toBuilder(oldConfiguration)
+                        .setAutoDetectionEnabledSetting(false)
+                        .setGeoDetectionEnabledSetting(false)
+                        .build();
 
         mServiceConfigAccessor.simulateCurrentUserConfigurationInternalChange(newConfiguration);
     }
@@ -607,8 +680,8 @@ public class NotifyingTimeZoneChangeListenerTest {
         }
 
         @Override
-        public void notifyAsUser(@Nullable String tag, int id, Notification notification,
-                UserHandle user) {
+        public void notifyAsUser(
+                @Nullable String tag, int id, Notification notification, UserHandle user) {
             mNotifications.add(notification);
         }
 

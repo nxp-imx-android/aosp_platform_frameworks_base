@@ -133,6 +133,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="@integer/biometric_dialog_text_gravity"
                 android:paddingTop="16dp"
+                android:accessibilityHeading="true"
                 app:layout_constraintBottom_toTopOf="@+id/subtitle"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

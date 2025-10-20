@@ -41,7 +41,6 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.UserManager;
-import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.view.Display;
@@ -63,7 +62,6 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.keyguard.KeyguardUpdateMonitor;
-import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastDispatcher;
@@ -93,6 +91,7 @@ import com.android.systemui.util.settings.FakeGlobalSettings;
 import com.android.systemui.util.settings.FakeSettings;
 import com.android.systemui.util.settings.GlobalSettings;
 import com.android.systemui.util.settings.SecureSettings;
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -150,6 +149,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     @Mock private UserLogoutInteractor mLogoutInteractor;
     @Mock private OnBackInvokedDispatcher mOnBackInvokedDispatcher;
     @Mock private PowerManager mPowerManager;
+    @Mock private WindowRootViewBlurInteractor mBlurInteractor;
     @Captor private ArgumentCaptor<OnBackInvokedCallback> mOnBackInvokedCallback;
 
     private TestableLooper mTestableLooper;
@@ -213,7 +213,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
                 mLogoutInteractor,
                 mInteractor,
                 () -> new FakeDisplayWindowPropertiesRepository(mContext),
-                mPowerManager
+                mPowerManager,
+                mBlurInteractor
         );
         mGlobalActionsDialogLite.setZeroDialogPressDelayForTesting();
 
@@ -924,7 +925,6 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_TV_GLOBAL_ACTIONS_FOCUS)
     public void testCreateActionItems_noneTv_actionsNotFocuseableAndClickable() {
         // Test like a TV, which only has standby and shut down.
         mGlobalActionsDialogLite = spy(mGlobalActionsDialogLite);
@@ -959,7 +959,6 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_TV_GLOBAL_ACTIONS_FOCUS)
     public void testCreateActionItems_tv_actionsFocusableAndClickable() {
         // Test like a TV, which only has standby and shut down.
         mGlobalActionsDialogLite = spy(mGlobalActionsDialogLite);

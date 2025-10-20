@@ -163,9 +163,10 @@ bool transformPaint(ColorTransform transform, SkPaint* paint) {
 bool transformPaint(ColorTransform transform, SkPaint* paint, BitmapPalette palette) {
     bool shouldInvert = false;
     if (transform == ColorTransform::Invert) {
-        if (palette != BitmapPalette::Barcode && palette != BitmapPalette::Colorful) {
-            // When the transform is Invert we invert any image that is not deemed "colorful"
-            // or a barcode, regardless of calculated image brightness.
+        if (palette != BitmapPalette::GrayScale && palette != BitmapPalette::Barcode &&
+            palette != BitmapPalette::Colorful) {
+            // When the transform is Invert we invert any image that is not deemed "colorful",
+            // "gray-scale" or a barcode, regardless of calculated image brightness.
             shouldInvert = true;
         }
     }

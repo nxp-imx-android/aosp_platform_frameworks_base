@@ -32,12 +32,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
-import com.android.systemui.shade.data.repository.shadeRepository
-import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
-import com.android.systemui.shade.domain.interactor.enableSplitShade
-import com.android.systemui.shade.domain.interactor.shadeModeInteractor
-import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.notification.data.model.activeNotificationModel
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
@@ -59,8 +54,8 @@ import platform.test.runner.parameterized.Parameters
 class LockscreenUpperRegionViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private val kosmos: Kosmos = testKosmos()
-
-    private lateinit var underTest: LockscreenUpperRegionViewModel
+    private val Kosmos.underTest by
+        Kosmos.Fixture { lockscreenUpperRegionViewModelFactory.create() }
     private val activationJob = Job()
 
     companion object {
@@ -78,8 +73,7 @@ class LockscreenUpperRegionViewModelTest(flags: FlagsParameterization) : SysuiTe
     @Before
     fun setup() {
         with(kosmos) {
-            shadeRepository.setShadeLayoutWide(false)
-            underTest = lockscreenUpperRegionViewModelFactory.create()
+            enableSingleShade()
             underTest.activateIn(testScope, activationJob)
         }
     }
@@ -89,7 +83,7 @@ class LockscreenUpperRegionViewModelTest(flags: FlagsParameterization) : SysuiTe
     fun isNotificationsVisible_hasNotifications_true() =
         kosmos.runTest {
             setupState(hasNotifications = true)
-            assertThat(underTest.isNotificationsVisible).isTrue()
+            assertThat(underTest.isNotificationStackActive).isTrue()
         }
 
     @Test
@@ -97,10 +91,11 @@ class LockscreenUpperRegionViewModelTest(flags: FlagsParameterization) : SysuiTe
     fun isNotificationsVisible_hasNoNotifications_false() =
         kosmos.runTest {
             setupState(hasNotifications = false)
-            assertThat(underTest.isNotificationsVisible).isFalse()
+            assertThat(underTest.isNotificationStackActive).isFalse()
         }
 
     @Test
+    @EnableSceneContainer
     fun unfoldTranslations() =
         kosmos.runTest {
             val maxTranslation = prepareConfiguration()
@@ -132,25 +127,12 @@ class LockscreenUpperRegionViewModelTest(flags: FlagsParameterization) : SysuiTe
             assertThat(underTest.unfoldTranslations.end).isZero()
         }
 
-    private fun Kosmos.setupState(
-        shadeMode: ShadeMode = ShadeMode.Single,
-        clockSize: ClockSize = ClockSize.SMALL,
-        hasNotifications: Boolean = false,
-        shadeLayoutWide: Boolean? = null,
-    ) {
-        val isWideScreen by collectLastValue(shadeRepository.isWideScreen)
-        val legacyUseSplitShade by collectLastValue(shadeRepository.legacyUseSplitShade)
+    private fun Kosmos.setupState(hasNotifications: Boolean = false) {
         val collectedClockSize by collectLastValue(keyguardClockInteractor.clockSize)
-        val collectedShadeMode by collectLastValue(shadeModeInteractor.shadeMode)
         val areAnyNotificationsPresent by
-            collectLastValue(kosmos.activeNotificationsInteractor.areAnyNotificationsPresent)
-        when (shadeMode) {
-            ShadeMode.Dual -> enableDualShade(wideLayout = shadeLayoutWide)
-            ShadeMode.Single -> enableSingleShade()
-            ShadeMode.Split -> enableSplitShade()
-        }
-        fakeKeyguardClockRepository.setClockSize(clockSize)
-        kosmos.activeNotificationListRepository.activeNotifications.value =
+            collectLastValue(activeNotificationsInteractor.areAnyNotificationsPresent)
+        fakeKeyguardClockRepository.setClockSize(ClockSize.SMALL)
+        activeNotificationListRepository.activeNotifications.value =
             ActiveNotificationsStore.Builder()
                 .apply {
                     if (hasNotifications) {
@@ -165,12 +147,7 @@ class LockscreenUpperRegionViewModelTest(flags: FlagsParameterization) : SysuiTe
                 }
                 .build()
         runCurrent()
-        if (shadeLayoutWide != null) {
-            assertThat(isWideScreen).isEqualTo(shadeLayoutWide)
-            assertThat(legacyUseSplitShade).isEqualTo(shadeLayoutWide)
-        }
-        assertThat(collectedShadeMode).isEqualTo(shadeMode)
-        assertThat(collectedClockSize).isEqualTo(clockSize)
+        assertThat(collectedClockSize).isEqualTo(ClockSize.SMALL)
         assertThat(areAnyNotificationsPresent).isEqualTo(hasNotifications)
     }
 

@@ -17,6 +17,7 @@
 package com.android.internal.widget;
 
 import static android.app.Flags.notificationsRedesignTemplates;
+import static android.app.Flags.notificationTransparentBadgeRing;
 
 import static com.android.internal.widget.MessagingGroup.IMAGE_DISPLAY_LOCATION_EXTERNAL;
 import static com.android.internal.widget.MessagingGroup.IMAGE_DISPLAY_LOCATION_INLINE;
@@ -32,6 +33,7 @@ import android.annotation.StyleRes;
 import android.app.Notification;
 import android.app.Person;
 import android.app.RemoteInputHistoryItem;
+import android.app.SetNotificationBackgroundColorRefactor;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Rect;
@@ -173,6 +175,7 @@ public class ConversationLayout extends FrameLayout
     private int mSpacingForExpander;
     private int mSpacingForImage;
     private LinearLayout mConversationContentView;
+    private int mDefaultStartMargin;
     private int mSummarizationStartMargin;
 
     public ConversationLayout(@NonNull Context context) {
@@ -215,6 +218,21 @@ public class ConversationLayout extends FrameLayout
         mImportanceRingView = findViewById(R.id.conversation_icon_badge_ring);
         mConversationIconBadge = findViewById(R.id.conversation_icon_badge);
         mConversationIconBadgeBg = findViewById(R.id.conversation_icon_badge_bg);
+        mConversationFacePile = findViewById(R.id.conversation_face_pile);
+
+        if (transparentBadgeRingEnabled()) {
+            mConversationIconView.setOutlineProvider(
+                    PeopleHelper.getBadgeCutoutOutlineProvider(mConversationIconView,
+                            mConversationIconBadge));
+            mConversationFacePile.setOutlineProvider(
+                    PeopleHelper.getBadgeCutoutOutlineProvider(mConversationFacePile,
+                            mConversationIconBadge));
+            if (SetNotificationBackgroundColorRefactor.isEnabled()) {
+                mConversationIconBadgeBg.setImageTintList(ColorStateList.valueOf(
+                    android.R.color.transparent));
+            }
+        }
+
         if (notificationsRedesignTemplates()) {
             // The left_icon in the header has the default rounded square background. Make sure
             // we're using the circular background instead.
@@ -254,6 +272,11 @@ public class ConversationLayout extends FrameLayout
             if (wasGone != isGone) {
                 mConversationIconBadge.animate().cancel();
                 mConversationIconBadge.setVisibility(visibility);
+            }
+
+            if (transparentBadgeRingEnabled()) {
+                mConversationIconView.setClipToOutline(true);
+                mConversationFacePile.setClipToOutline(true);
             }
         });
         // When the small icon is gone, hide the rest of the badge
@@ -302,7 +325,6 @@ public class ConversationLayout extends FrameLayout
                 R.dimen.conversation_badge_protrusion_group_expanded);
         mExpandedGroupBadgeProtrusionFacePile = getResources().getDimensionPixelSize(
                 R.dimen.conversation_badge_protrusion_group_expanded_face_pile);
-        mConversationFacePile = findViewById(R.id.conversation_face_pile);
         mFacePileAvatarSize = getResources().getDimensionPixelSize(
                 R.dimen.conversation_face_pile_avatar_size);
         mFacePileAvatarSizeExpandedGroup = getResources().getDimensionPixelSize(
@@ -340,6 +362,8 @@ public class ConversationLayout extends FrameLayout
         });
 
         mConversationContentView = findViewById(R.id.notification_main_column);
+        mDefaultStartMargin = getResources().getDimensionPixelSize(
+                R.dimen.notification_2025_content_margin_start);
         mSummarizationStartMargin = getResources().getDimensionPixelSize(
                 R.dimen.notification_2025_content_margin_start_summarization);
     }
@@ -1141,12 +1165,15 @@ public class ConversationLayout extends FrameLayout
      */
     @RemotableViewMethod
     public void setNotificationBackgroundColor(int color) {
+        SetNotificationBackgroundColorRefactor.assertInLegacyMode();
         mNotificationBackgroundColor = color;
         applyNotificationBackgroundColor(mConversationIconBadgeBg);
     }
 
     private void applyNotificationBackgroundColor(ImageView view) {
-        view.setImageTintList(ColorStateList.valueOf(mNotificationBackgroundColor));
+        view.setImageTintList(ColorStateList.valueOf(
+                transparentBadgeRingEnabled() ? android.R.color.transparent
+                        : mNotificationBackgroundColor));
     }
 
     @RemotableViewMethod
@@ -1689,11 +1716,12 @@ public class ConversationLayout extends FrameLayout
             }
         }
         mMessagingLinearLayout.setMaxDisplayedLines(maxLines);
-        if (isShowingSummarization()) {
+
+        if (mIsCollapsed) {
             ViewGroup.LayoutParams lp = mConversationContentView.getLayoutParams();
-            if (lp != null && lp instanceof MarginLayoutParams) {
-                final MarginLayoutParams mlp = (MarginLayoutParams) lp;
-                mlp.setMarginStart(mSummarizationStartMargin);
+            if (lp instanceof MarginLayoutParams mlp) {
+                mlp.setMarginStart(
+                        isShowingSummarization() ? mSummarizationStartMargin : mDefaultStartMargin);
                 // this happens before layout, so we don't need to explicitly ask for one
             }
         }
@@ -1750,6 +1778,10 @@ public class ConversationLayout extends FrameLayout
     @Nullable
     public ConversationHeaderData getConversationHeaderData() {
         return mConversationHeaderData;
+    }
+
+    private static boolean transparentBadgeRingEnabled() {
+        return notificationsRedesignTemplates() && notificationTransparentBadgeRing();
     }
 
     private static class TouchDelegateComposite extends TouchDelegate {

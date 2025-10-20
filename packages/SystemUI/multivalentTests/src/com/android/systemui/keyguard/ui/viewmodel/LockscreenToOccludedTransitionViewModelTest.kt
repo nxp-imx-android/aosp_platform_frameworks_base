@@ -23,6 +23,7 @@ import com.android.systemui.common.ui.data.repository.FakeConfigurationRepositor
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.flags.fakeFeatureFlagsClassic
@@ -36,7 +37,10 @@ import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
+import com.android.systemui.scene.data.repository.Transition
+import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ShadeTestUtil
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.testKosmos
@@ -52,6 +56,7 @@ import platform.test.runner.parameterized.Parameters
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
+@DisableSceneContainer
 class LockscreenToOccludedTransitionViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val kosmos =
         testKosmos().apply {
@@ -89,7 +94,8 @@ class LockscreenToOccludedTransitionViewModelTest(flags: FlagsParameterization) 
     @Test
     fun lockscreenFadeOut_shadeNotExpanded() =
         testScope.runTest {
-            val values by collectValues(underTest.lockscreenAlpha)
+            val viewState = ViewStateAccessor(alpha = { 0.8f })
+            val values by collectValues(underTest.lockscreenAlpha(viewState))
             shadeExpanded(false)
             runCurrent()
 
@@ -106,8 +112,8 @@ class LockscreenToOccludedTransitionViewModelTest(flags: FlagsParameterization) 
                 testScope = testScope,
             )
             assertThat(values.size).isEqualTo(5)
-            assertThat(values[0]).isEqualTo(1f)
-            assertThat(values[1]).isEqualTo(1f)
+            assertThat(values[0]).isEqualTo(0.8f)
+            assertThat(values[1]).isEqualTo(0.8f)
             assertThat(values[2]).isIn(Range.open(0f, 1f))
             assertThat(values[3]).isIn(Range.open(0f, 1f))
             assertThat(values[4]).isEqualTo(0f)
@@ -116,7 +122,8 @@ class LockscreenToOccludedTransitionViewModelTest(flags: FlagsParameterization) 
     @Test
     fun lockscreenFadeOut_shadeExpanded() =
         testScope.runTest {
-            val values by collectValues(underTest.lockscreenAlpha)
+            val viewState = ViewStateAccessor(alpha = { 1f })
+            val values by collectValues(underTest.lockscreenAlpha(viewState))
             shadeExpanded(true)
             runCurrent()
 
@@ -202,6 +209,7 @@ class LockscreenToOccludedTransitionViewModelTest(flags: FlagsParameterization) 
                     ),
                 testScope = testScope,
             )
+            kosmos.setSceneTransition(Transition(Scenes.Lockscreen, Scenes.Occluded))
 
             values.forEach { assertThat(it).isEqualTo(0f) }
         }

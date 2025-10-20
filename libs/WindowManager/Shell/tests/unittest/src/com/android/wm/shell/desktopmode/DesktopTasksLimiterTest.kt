@@ -235,13 +235,29 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     }
 
     @Test
-    fun onTransitionReady_pendingTransition_noTaskChange_taskVisible_taskIsNotMinimized() {
+    fun onTransitionReady_pendingTransition_noTaskChange_taskVis_wmInvis_taskIsMinimized() {
         desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
         desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
         val transition = Binder()
         val task = setUpFreeformTask()
         markTaskVisible(task)
         addPendingMinimizeChange(transition, taskId = task.taskId)
+        task.isVisible = false
+
+        callOnTransitionReady(transition, TransitionInfoBuilder(TRANSIT_OPEN).build())
+
+        assertThat(desktopTaskRepo.isMinimizedTask(taskId = task.taskId)).isTrue()
+    }
+
+    @Test
+    fun onTransitionReady_pendingTransition_noTaskChange_taskVis_wmVis_taskIsNotMinimized() {
+        desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        val transition = Binder()
+        val task = setUpFreeformTask()
+        markTaskVisible(task)
+        addPendingMinimizeChange(transition, taskId = task.taskId)
+        task.isVisible = true
 
         callOnTransitionReady(transition, TransitionInfoBuilder(TRANSIT_OPEN).build())
 

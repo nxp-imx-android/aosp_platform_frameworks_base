@@ -53,6 +53,13 @@ flag {
 }
 
 flag {
+    name: "query_user_type_supported"
+    namespace: "multiuser"
+    description: "Infrastructure to determine whether a given user type is supported."
+    bug: "413464199"
+}
+
+flag {
     name: "support_communal_profile_nextgen"
     is_exported: true
     namespace: "multiuser"
@@ -422,16 +429,6 @@ flag {
 }
 
 flag {
-    name: "move_set_screen_lock_dialog_to_settings_app"
-    namespace: "profile_experiences"
-    description: "Move the set screen lock dialog and activity from the platform to the Settings app for theming."
-    bug: "407327874"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
      name: "hsu_not_admin"
      namespace: "multiuser"
      description: "The Headless System User is not an Admin user"
@@ -451,4 +448,53 @@ flag {
      namespace: "multiuser"
      description: "For user restrictions about adding or editing shared or private Wi-Fi configurations"
      bug: "390240471"
+}
+
+flag {
+     name: "hsu_allowlist_activities"
+     namespace: "multiuser"
+     description: "Adds an allowlist mechanism to decide which activities can be launched when the current user is the headless system user"
+     bug: "412177078"
+}
+
+flag {
+    name: "hsu_allowlist_notifications"
+    namespace: "multiuser"
+    description: "Adds an allowlist mechanism to device which notifications can be shown when the current user is the headless system user"
+    bug: "412176703"
+}
+
+flag {
+    name: "private_space_file_limit_check_timeout"
+    namespace: "profile_experiences"
+    description: "Add a timeout for file limit checks during file transfer to private space"
+    bug: "421920538"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+     name: "user_filter_refactoring"
+     namespace: "multiuser"
+     description: "Refactored some getUsers() methods to use a UserFilter object"
+     bug: "419086491"
+}
+
+flag {
+    name: "core_settings_multi_user"
+    namespace: "multiuser"
+    description: "Make CoreSettingsObserver multi-user aware."
+    bug: "439474431"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+     name: "user_removal_minor_apis_2026"
+     is_exported: true
+     namespace: "multiuser"
+     description: "Expose some multi-user related methods as @TestApi / @SystemApi"
+     bug: "444663119"
 }

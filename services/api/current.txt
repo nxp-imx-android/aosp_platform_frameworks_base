@@ -57,6 +57,21 @@ package com.android.server.appop {
 
 }
 
+package com.android.server.permission {
+
+  @FlaggedApi("android.permission.flags.access_local_network_permission_enabled") public interface PermissionBpfMap {
+    method public void removeAppId(int);
+    method public void removeUser(int);
+    method public void setUidsPermissionBits(@NonNull android.util.SparseIntArray);
+  }
+
+  @FlaggedApi("android.permission.flags.access_local_network_permission_enabled") public interface PermissionManagerLocal {
+    method @FlaggedApi("android.permission.flags.access_local_network_permission_enabled") public void registerBpfMap(@NonNull com.android.server.permission.PermissionBpfMap, @NonNull java.util.List<java.lang.String>);
+    method @FlaggedApi("android.permission.flags.access_local_network_permission_enabled") public void unregisterBpfMap(@NonNull com.android.server.permission.PermissionBpfMap);
+  }
+
+}
+
 package com.android.server.pm {
 
   public interface PackageManagerLocal {
@@ -197,6 +212,7 @@ package com.android.server.pm.pkg {
     method public boolean isPrivileged();
     method public boolean isSystem();
     method public boolean isUpdatedSystemApp();
+    method @FlaggedApi("android.content.pm.verified_dexopt") public boolean shouldVerifyCompilationArtifacts();
   }
 
   public interface PackageUserState {

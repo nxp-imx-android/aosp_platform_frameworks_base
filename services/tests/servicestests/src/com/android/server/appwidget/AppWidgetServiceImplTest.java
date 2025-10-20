@@ -200,7 +200,6 @@ public class AppWidgetServiceImplTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PLAY_STORE_PIN_WIDGETS)
     public void testRequestPinAppWidget_otherProvider_installPackagesPermission() {
         mUiAutomation.adoptShellPermissionIdentity(Manifest.permission.INSTALL_PACKAGES);
         ComponentName otherProvider = null;
@@ -514,6 +513,85 @@ public class AppWidgetServiceImplTest {
             verifyRestoreUpdateRecord(
                     actualUpdatesByHost.get(key), mockUpdatesByHost.get(key));
         }
+    }
+
+    @Test
+    public void testProviderIdEquals_sameValues() {
+        final int APP_ID = 10123;
+        final int primaryUserId = 0;
+        final int primaryProfileUid = UserHandle.getUid(primaryUserId, APP_ID);
+        final ComponentName componentName = new ComponentName(mPkgName, "cls1");
+
+        AppWidgetServiceImpl.ProviderId id1 =
+                new AppWidgetServiceImpl.ProviderId(primaryProfileUid, componentName);
+        AppWidgetServiceImpl.ProviderId id2 =
+                new AppWidgetServiceImpl.ProviderId(primaryProfileUid, componentName);
+
+        assertThat(id1.equals(id2)).isTrue();
+        assertThat(id1.hashCode()).isEqualTo(id2.hashCode());
+    }
+
+    @Test
+    public void testProviderIdEquals_differentUid_notEqual() {
+        final int APP_ID = 10123;
+        final int primaryUserId = 0;
+        final int primaryProfileUid = UserHandle.getUid(primaryUserId, APP_ID);
+        final int workProfileUserId = 10;
+        final int workProfileUid = UserHandle.getUid(workProfileUserId, APP_ID);
+        final ComponentName componentName = new ComponentName(mPkgName, "cls1");
+
+        AppWidgetServiceImpl.ProviderId id1 =
+                new AppWidgetServiceImpl.ProviderId(primaryProfileUid, componentName);
+        AppWidgetServiceImpl.ProviderId id2 =
+                new AppWidgetServiceImpl.ProviderId(workProfileUid, componentName);
+
+        assertThat(id1.equals(id2)).isFalse();
+    }
+
+    @Test
+    public void testProviderIdEquals_knownUid_differentComponent_notEqual() {
+        final int APP_ID = 10123;
+        final int primaryUserId = 0;
+        final int primaryProfileUid = UserHandle.getUid(primaryUserId, APP_ID);
+        final ComponentName componentName1 = new ComponentName(mPkgName, "cls1");
+        final ComponentName componentName2 = new ComponentName(mPkgName, "cls2");
+
+        AppWidgetServiceImpl.ProviderId id1 = new AppWidgetServiceImpl.ProviderId(primaryProfileUid,
+                componentName1);
+        AppWidgetServiceImpl.ProviderId id2 = new AppWidgetServiceImpl.ProviderId(primaryProfileUid,
+                componentName2);
+
+        assertThat(id1.equals(id2)).isFalse();
+    }
+
+    @Test
+    public void testProviderIdEquals_unknownUid_differentRestoredProfileId_notEqual() {
+        final int UNKNOWN_UID = -1;
+        final int primaryUserId = 0;
+        final int workUserId = 10;
+        final ComponentName componentName = new ComponentName(mPkgName, "cls1");
+
+        AppWidgetServiceImpl.ProviderId id1 = new AppWidgetServiceImpl.ProviderId(UNKNOWN_UID,
+                componentName, primaryUserId);
+        AppWidgetServiceImpl.ProviderId id2 = new AppWidgetServiceImpl.ProviderId(UNKNOWN_UID,
+                componentName, workUserId);
+
+        assertThat(id1.equals(id2)).isFalse();
+    }
+
+    @Test
+    public void testProviderIdEquals_unknownUid_sameProfileId_areEqual() {
+        final int unknownUid = -1;
+        final int primaryUserId = 0;
+        final ComponentName componentName = new ComponentName(mPkgName, "cls1");
+
+        AppWidgetServiceImpl.ProviderId id1 = new AppWidgetServiceImpl.ProviderId(unknownUid,
+                componentName, primaryUserId);
+        AppWidgetServiceImpl.ProviderId id2 = new AppWidgetServiceImpl.ProviderId(unknownUid,
+                componentName, primaryUserId);
+
+        assertThat(id1.equals(id2)).isTrue();
+        assertThat(id1.hashCode()).isEqualTo(id2.hashCode());
     }
 
     private void verifyRestoreUpdateRecord(

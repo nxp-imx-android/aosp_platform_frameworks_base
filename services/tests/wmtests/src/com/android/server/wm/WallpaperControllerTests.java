@@ -42,7 +42,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -53,6 +52,7 @@ import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.DisplayCutout;
 import android.view.DisplayInfo;
@@ -66,6 +66,8 @@ import android.view.SurfaceControl;
 import android.view.WindowManager;
 
 import androidx.test.filters.SmallTest;
+
+import com.android.window.flags.Flags;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -270,6 +272,7 @@ public class WallpaperControllerTests extends WindowTestsBase {
         assertEquals(otherWindowInitialZoom, wallpaperWindow.mWallpaperZoomOut, .01f);
     }
 
+    @EnableFlags(Flags.FLAG_CHOOSING_VISIBLE_AS_WALLPAPER_TARGET)
     @Test
     public void testUpdateWallpaperTarget() {
         final DisplayContent dc = mDisplayContent;
@@ -280,6 +283,13 @@ public class WallpaperControllerTests extends WindowTestsBase {
 
         dc.mWallpaperController.adjustWallpaperWindows();
         assertEquals(appWin, dc.mWallpaperController.getWallpaperTarget());
+
+        // The wallpaper target become invisible, so it should adjust to the next target.
+        appWin.mActivityRecord.setVisibleRequested(false);
+        dc.mWallpaperController.adjustWallpaperWindows();
+        assertEquals(homeWin, dc.mWallpaperController.getWallpaperTarget());
+        appWin.mActivityRecord.setVisibleRequested(true);
+
         // The wallpaper target is gone, so it should adjust to the next target.
         appWin.removeImmediately();
         assertEquals(homeWin, dc.mWallpaperController.getWallpaperTarget());
@@ -341,7 +351,8 @@ public class WallpaperControllerTests extends WindowTestsBase {
     public void testWallpaperTokenWindowingMode() {
         final DisplayContent dc = mWm.mRoot.getDefaultDisplay();
         final WallpaperWindowToken token = new WallpaperWindowToken(mWm, mock(IBinder.class),
-                true, dc, true /* ownerCanManageAppTokens */);
+                null /* options */);
+        dc.addWindowToken(token);
 
         // The wallpaper should have requested override fullscreen windowing mode, so the
         // configuration (windowing mode) propagation from display won't change it.
@@ -564,7 +575,8 @@ public class WallpaperControllerTests extends WindowTestsBase {
 
     private WindowState createWallpaperWindow(DisplayContent dc) {
         final WindowToken wallpaperWindowToken = new WallpaperWindowToken(mWm, mock(IBinder.class),
-                true /* explicit */, dc, true /* ownerCanManageAppTokens */);
+                null /* options */);
+        dc.addWindowToken(wallpaperWindowToken);
         return newWindowBuilder("wallpaperWindow", TYPE_WALLPAPER).setWindowToken(
                 wallpaperWindowToken).build();
     }

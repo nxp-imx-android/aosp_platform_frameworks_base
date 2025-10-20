@@ -24,11 +24,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalViewConfiguration
@@ -379,5 +381,116 @@ class ContentTest {
         // NestedSceneTransitionLayoutState ones.
         assertThat(nestedMiddle.ancestors).containsExactly(outerState)
         assertThat(nestedInner.ancestors).containsExactly(outerState, middleState).inOrder()
+    }
+
+    @Test
+    fun currentElementAlpha() {
+        var lastAlpha: Float? = null
+
+        val state =
+            rule.runOnUiThread {
+                MutableSceneTransitionLayoutStateForTests(
+                    SceneA,
+                    transitions =
+                        transitions { from(SceneA, to = SceneB) { fade(TestElements.Foo) } },
+                )
+            }
+        val scope =
+            rule.setContentAndCreateMainScope {
+                SceneTransitionLayout(state) {
+                    scene(SceneA) {}
+                    scene(SceneB) {
+                        LaunchedEffect(Unit) {
+                            snapshotFlow { TestElements.Foo.currentAlpha() }
+                                .collect { lastAlpha = it }
+                        }
+
+                        Box(Modifier.element(TestElements.Foo).fillMaxSize())
+                    }
+                }
+            }
+
+        assertThat(lastAlpha).isNull()
+
+        var progress by mutableStateOf(0f)
+        scope.launch { state.startTransition(transition(SceneA, SceneB, progress = { progress })) }
+        rule.waitForIdle()
+        assertThat(lastAlpha).isWithin(0.01f).of(0f)
+
+        progress = 0.25f
+        rule.waitForIdle()
+        assertThat(lastAlpha).isWithin(0.01f).of(0.25f)
+
+        progress = 0.5f
+        rule.waitForIdle()
+        assertThat(lastAlpha).isWithin(0.01f).of(0.5f)
+
+        progress = 0.75f
+        rule.waitForIdle()
+        assertThat(lastAlpha).isWithin(0.01f).of(0.75f)
+
+        progress = 1f
+        rule.waitForIdle()
+        assertThat(lastAlpha).isWithin(0.01f).of(1f)
+    }
+
+    @Test
+    fun currentElementScale() {
+        var lastScale: Scale? = null
+
+        val state =
+            rule.runOnUiThread {
+                MutableSceneTransitionLayoutStateForTests(
+                    SceneA,
+                    transitions =
+                        transitions {
+                            from(SceneA, to = SceneB) {
+                                scaleDraw(TestElements.Foo, scaleX = 0f, scaleY = 0.6f)
+                            }
+                        },
+                )
+            }
+        val scope =
+            rule.setContentAndCreateMainScope {
+                SceneTransitionLayout(state) {
+                    scene(SceneA) {}
+                    scene(SceneB) {
+                        LaunchedEffect(Unit) {
+                            snapshotFlow { TestElements.Foo.currentScale() }
+                                .collect { lastScale = it }
+                        }
+
+                        Box(Modifier.element(TestElements.Foo).fillMaxSize())
+                    }
+                }
+            }
+
+        assertThat(lastScale).isNull()
+
+        var progress by mutableStateOf(0f)
+        scope.launch { state.startTransition(transition(SceneA, SceneB, progress = { progress })) }
+        rule.waitForIdle()
+        assertThat(lastScale?.scaleX).isWithin(0.01f).of(0f)
+        assertThat(lastScale?.scaleY).isWithin(0.01f).of(0.6f)
+
+        progress = 0.25f
+        rule.waitForIdle()
+        assertThat(lastScale?.scaleX).isWithin(0.01f).of(0.25f)
+        assertThat(lastScale?.scaleY).isWithin(0.01f).of(0.7f)
+
+        progress = 0.5f
+        rule.waitForIdle()
+        assertThat(lastScale?.scaleX).isWithin(0.01f).of(0.5f)
+        assertThat(lastScale?.scaleY).isWithin(0.01f).of(0.8f)
+
+        progress = 0.75f
+        rule.waitForIdle()
+        assertThat(lastScale?.scaleX).isWithin(0.01f).of(0.75f)
+        assertThat(lastScale?.scaleY).isWithin(0.01f).of(0.9f)
+
+        progress = 1f
+        rule.waitForIdle()
+        assertThat(lastScale?.scaleX).isWithin(0.01f).of(1f)
+        assertThat(lastScale?.scaleY).isWithin(0.01f).of(1f)
     }
 }

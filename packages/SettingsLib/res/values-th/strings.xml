@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"กำลังเชื่อมต่อ…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"เชื่อมต่อแล้ว<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"กำลังจับคู่อุปกรณ์..."</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"จับคู่ไม่ได้"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"เชื่อมต่อไม่ได้"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"เชื่อมต่อแล้ว (ไม่รวมโทรศัพท์)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"เชื่อมต่อแล้ว (ไม่รวมสื่อ)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"เชื่อมต่อแล้ว (ไม่รวมโทรศัพท์หรือสื่อ)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -116,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"ใช้งานอยู่ (เฉพาะข้างขวา)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"ใช้งานอยู่ (ข้างซ้ายและขวา)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"อัปเดตเสียงแวดล้อมไม่ได้"</string>
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"ไม่สามารถอัปเดตค่าที่กำหนดล่วงหน้า"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"เลือกแล้ว"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"ใช้งานอยู่ (สื่อเท่านั้น) แบตเตอรี่ <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"ใช้งานอยู่ (สื่อเท่านั้น) แบตเตอรี่ข้างซ้าย: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, ข้างขวา: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>"</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"อุปกรณ์ของผู้ใช้ชั่วคราว แบตเตอรี่ <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
@@ -345,7 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"เมื่อเปิดใช้โหมดนี้ ที่อยู่ MAC ของอุปกรณ์อาจเปลี่ยนทุกครั้งที่เชื่อมต่อกับเครือข่ายซึ่งเปิดใช้การสุ่ม MAC"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"แบบจำกัดปริมาณ"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"ไม่มีการวัดปริมาณอินเทอร์เน็ต"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"ขนาดบัฟเฟอร์ของตัวบันทึก"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"ขนาดบัฟเฟอร์ของตัวบันทึก"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"เลือกขนาดตัวบันทึกต่อบัฟเฟอร์บันทึก"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"ล้างพื้นที่เก็บข้อมูลถาวรของตัวบันทึกไหม"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"เมื่อเราเลิกตรวจสอบด้วยตัวบันทึกถาวร เราต้องลบ Resident ของข้อมูลตัวบันทึกบนอุปกรณ์ของคุณ"</string>
@@ -399,7 +403,7 @@
     <string name="show_touches" msgid="8437666942161289025">"แสดงการแตะ"</string>
     <string name="show_touches_summary" msgid="3692861665994502193">"แสดงผลตอบสนองแบบภาพเมื่อแตะ"</string>
     <string name="show_key_presses" msgid="6360141722735900214">"แสดงการกดแป้น"</string>
-    <string name="show_key_presses_summary" msgid="725387457373015024">"แสดงฟีดแบ็กที่เป็นภาพสำหรับการกดแป้นพิมพ์"</string>
+    <string name="show_key_presses_summary" msgid="725387457373015024">"แสดงผลตอบสนองแบบภาพเมื่อกดแป้นพิมพ์"</string>
     <string name="touchpad_visualizer" msgid="3707916068870825115">"แสดงอินพุตของทัชแพด"</string>
     <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"การซ้อนทับบนหน้าจอที่แสดงข้อมูลอินพุตของทัชแพดและท่าทางสัมผัสที่จดจำได้"</string>
     <string name="show_screen_updates" msgid="2078782895825535494">"แสดงการอัปเดตพื้นผิว"</string>

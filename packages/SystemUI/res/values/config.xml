@@ -58,18 +58,6 @@
          prevent wasting cpu cycles on the dimming animation -->
     <bool name="config_navigation_bar_enable_auto_dim_no_visible_wallpaper">true</bool>
 
-    <!-- The maximum number of tiles in the QuickQSPanel -->
-    <integer name="quick_qs_panel_max_tiles">4</integer>
-
-    <!-- The maximum number of rows in the QuickQSPanel -->
-    <integer name="quick_qs_panel_max_rows">2</integer>
-
-    <!-- The number of columns in the QuickSettings -->
-    <integer name="quick_settings_num_columns">2</integer>
-
-    <!-- The number of rows in the QuickSettings -->
-    <integer name="quick_settings_max_rows">4</integer>
-
     <!-- The number of rows in the paginated grid QuickSettings -->
     <integer name="quick_settings_paginated_grid_num_rows">4</integer>
 
@@ -88,25 +76,10 @@
     <!-- The number of columns in the Split Shade QuickSettings -->
     <integer name="quick_settings_split_shade_num_columns">4</integer>
 
-    <!-- Override column number for quick settings.
-    For now, this value has effect only when flag lockscreen.enable_landscape is enabled.
-    TODO (b/293252410) - change this comment/resource when flag is enabled -->
-    <integer name="small_land_lockscreen_quick_settings_num_columns">2</integer>
-
-    <!-- Override row number for quick settings.
-    For now, this value has effect only when flag lockscreen.enable_landscape is enabled.
-    TODO (b/293252410) - change this comment/resource when flag is enabled -->
-    <integer name="small_land_lockscreen_quick_settings_max_rows">2</integer>
-
     <!-- The number of columns that the top level tiles span in the QuickSettings -->
 
-    <!-- The default tiles to display in QuickSettings -->
+    <!-- The default tiles to display in QuickSettings-->
     <string name="quick_settings_tiles_default" translatable="false">
-        internet,bt,flashlight,dnd,alarm,airplane,controls,wallet,rotation,battery,cast,screenrecord,mictoggle,cameratoggle,custom(com.android.permissioncontroller/.permission.service.v33.SafetyCenterQsTileService)
-    </string>
-
-    <!-- The default tiles to display in QuickSettings with the new UI -->
-    <string name="quick_settings_tiles_new_default" translatable="false">
         internet,bt,dnd,cast,flashlight,airplane,rotation,wallet,alarm,controls,screenrecord,battery
     </string>
 
@@ -120,7 +93,7 @@
 
     <!-- Tiles native to System UI. Order should match "quick_settings_tiles_default" -->
     <string name="quick_settings_tiles_stock" translatable="false">
-        internet,bt,flashlight,dnd,modes_dnd,alarm,airplane,controls,wallet,rotation,battery,cast,screenrecord,mictoggle,cameratoggle,location,hotspot,inversion,saver,dark,work,night,reverse,reduce_brightness,qr_code_scanner,onehanded,color_correction,dream,font_scaling,record_issue,hearing_devices,notes,desktopeffects
+        internet,wifi,bt,flashlight,dnd,modes_dnd,alarm,airplane,controls,wallet,rotation,battery,cast,screenrecord,mictoggle,cameratoggle,location,hotspot,inversion,saver,dark,work,night,reverse,reduce_brightness,qr_code_scanner,onehanded,color_correction,dream,font_scaling,record_issue,hearing_devices,notes,desktopeffects,cell
     </string>
 
     <!-- The tiles to display in QuickSettings -->
@@ -298,6 +271,19 @@
          proximity_sensor_secondary_threshold is used. This allows one to implement a latching
          mechanism for noisy sensors. -->
     <item name="proximity_sensor_secondary_threshold_latch" translatable="false" format="float" type="dimen"></item>
+
+    <!-- Override value to use for the doze activity sensor.  -->
+    <string name="doze_activity_sensor_type" translatable="false"></string>
+
+    <!-- If using doze_activity_sensor_type, specifies a threshold value to distinguish active and
+         inactive break points. A sensor value less than this is considered "inactive". -->
+    <item name="doze_activity_sensor_threshold" translatable="false" format="float" type="dimen"></item>
+
+    <!-- If using doze_activity_sensor_type, specifies a threshold value to distinguish active and
+         inactive break points. A sensor value more than this is considered "active". If not set,
+         doze_activity_sensor_threshold is used. This allows one to implement a latching mechanism
+         for noisy sensors. -->
+    <item name="doze_activity_sensor_threshold_latch" translatable="false" format="float" type="dimen"></item>
 
     <!-- Doze: pulse parameter - how long does it take to fade in? -->
     <integer name="doze_pulse_duration_in">130</integer>
@@ -690,10 +676,6 @@
     <!-- TODO(b/411449027): This config is deprecated. Remove with the launch of SceneContainer. -->
     <bool name="force_config_use_split_notification_shade">false</bool>
 
-    <!-- Whether to disable split shade on this configuration, and use dual shade instead. -->
-    <!-- TODO(b/411449027): Remove this config once it is true on all configurations. -->
-    <bool name="config_disableSplitShade">false</bool>
-
     <!-- Whether we use large screen shade header which takes only one row compared to QS header -->
     <bool name="config_use_large_screen_shade_header">false</bool>
 
@@ -1012,46 +994,6 @@
     <!-- Configuration to set Learn more in device logs as URL link -->
     <bool name="log_access_confirmation_learn_more_as_link">true</bool>
 
-    <!-- [START] MULTI SHADE -->
-    <!-- Whether the device should use dual shade. If false, the device uses single shade. -->
-    <bool name="dual_shade_enabled">true</bool>
-    <!--
-    When in dual shade, where should the horizontal split be on the screen to help determine whether
-    the user is pulling down the left shade or the right shade. Must be between 0.0 and 1.0,
-    inclusive. In other words: how much of the left-hand side of the screen, when pulled down on,
-    would reveal the left-hand side shade.
-
-    More concretely:
-    A value of 0.67 means that the left two-thirds of the screen are dedicated to the left-hand side
-    shade and the remaining one-third of the screen on the right is dedicated to the right-hand side
-    shade.
-    -->
-    <dimen name="dual_shade_split_fraction">0.67</dimen>
-    <!-- Width of the left-hand side shade. -->
-    <dimen name="left_shade_width">436dp</dimen>
-    <!-- Width of the right-hand side shade. -->
-    <dimen name="right_shade_width">436dp</dimen>
-    <!--
-    Opaque version of the scrim that shows up behind dual shades. The alpha channel is driven
-    programmatically.
-    -->
-    <color name="opaque_scrim">#D9D9D9</color>
-    <!-- Maximum opacity when the scrim that shows up behind the dual shades is fully visible. -->
-    <dimen name="dual_shade_scrim_alpha">0.1</dimen>
-    <!--
-    The amount that the user must swipe down when the shade is fully collapsed to automatically
-    expand once the user lets go of the shade. If the user swipes less than this amount, the shade
-    will automatically revert back to fully collapsed once the user stops swiping.
-    -->
-    <dimen name="shade_swipe_expand_threshold">0.5</dimen>
-    <!--
-    The amount that the user must swipe up when the shade is fully expanded to automatically
-    collapse once the user lets go of the shade. If the user swipes less than this amount, the shade
-    will automatically revert back to fully expanded once the user stops swiping.
-    -->
-    <dimen name="shade_swipe_collapse_threshold">0.5</dimen>
-    <!-- [END] MULTI SHADE -->
-
     <!-- Time (in ms) to delay the bouncer views from showing when passive auth may be used for
     device entry. -->
     <integer name="primary_bouncer_passive_auth_delay">500</integer>
@@ -1121,15 +1063,29 @@
     <string-array name="config_useActivityLogoForBiometricPrompt" translatable="false"/>
 
     <!--
-    Whether to enable the desktop specific feature set.
+    Whether to use the desktop screen size in screenshot test.
 
-    Refrain from using this from code that needs to make decisions
-    regarding the size or density of the display.
-
-    Variant owners and OEMs should override this to true when they want to
-    enable the desktop specific features.
+    Note: this config is only used for testing. It is overridden to true by desktop.
     -->
-    <bool name="config_enableDesktopFeatureSet">false</bool>
+    <bool name="config_testDesktopScreenSize">false</bool>
+
+    <!--
+    Whether to enable showing the shade header feature.
+
+    By default, the Shade header is shown. This should be overridden to true by desktop.
+    -If true, always show status bar instead.
+    -If false (default), show the shade header when shade is.
+    -->
+    <bool name="config_useDesktopStatusBar">false</bool>
+
+    <!--
+    Whether this is a desktop device for purposes of falsing.
+
+    By default, Falsing is enabled. This should be overridden to true by desktop.
+    -If true, it means this is a desktop device for purposes of falsing, and falsing will be skipped
+    -If false (default), Falsing is enabled.
+    -->
+    <bool name="config_isDesktopForFalsingPurposes">false</bool>
 
     <!-- The dream component used when the device is low light environment. -->
     <string translatable="false" name="config_lowLightDreamComponent"/>
@@ -1153,14 +1109,23 @@
     <!-- Whether to enable the desktop specific audio tile details view. -->
     <bool name="config_enableDesktopAudioTileDetailsView">false</bool>
 
+    <!-- Whether to enable audio input routing. -->
+    <bool name="config_enableInputRouting">false</bool>
+
     <!-- If AOD can show an ambient version of the wallpaper (-1 means ignore) -->
     <integer name="config_dozeSupportsAodWallpaperOverride">-1</integer>
 
     <!-- Whether to enable large screen UI for screen capture. -->
     <bool name="config_enableLargeScreenScreencapture">false</bool>
 
+    <!-- Whether to show the large screen privacy indicator. -->
+    <bool name="config_largeScreenPrivacyIndicator">false</bool>
+
     <!-- Whether to enable features improving large screen interaction -->
     <bool name="config_improveLargeScreenInteractionOnLockscreen">false</bool>
+
+    <!-- Show the accessibility button on the bouncer. -->
+    <bool name="config_showAccessibilityButtonOnBouncer">false</bool>
 
     <!-- Whether to enable "Sign out" button on keyguard's status bar  -->
     <bool name="config_enableSignOutButtonOnKeyguardStatusBar">false</bool>
@@ -1178,6 +1143,17 @@
     <!-- Indicates post recording flow to use flat bottom bar to save vertical space -->
     <bool name="screen_record_post_recording_flat_bottom_bar">false</bool>
 
+    <!--
+    Whether to enable use brightness mirror in the QuickSettings shade overlay.
+
+    By default, when a user interacts with the brightness slider, the rest of the
+    Quick Settings shade overlay fades out to reduce distraction.
+    -If true (default), the Quick Settings shade overlay will fade out when the brightness slider
+     is used.
+    -If false, the Quick Settings shade overlay will remain visible during brightness adjustments.
+    -->
+    <bool name="config_useBrightnessMirrorInOverlay">true</bool>
+
     <!-- List of allowed tiles for headless system user's quick settings.
 
          Some example values are 'alarm', 'internet', 'bt' (bluetooth),
@@ -1192,4 +1168,14 @@
 
     <!-- Whether to hide notifications shade when the user presses ALL_APPS key. -->
     <bool name="config_enableHideNotificationsShadeOnAllAppsKey">false</bool>
+
+    <!-- Indicates whether the tapping to open qs panel is supported -->
+    <bool name="config_statusBarTapToExpandShade">false</bool>
+
+    <!--
+    The package name of the assistant that can show an icon in the status bar.
+    When desktop status bar is enabled AND the primary assistant app package
+    name is this string, an icon is shown on the status bar for quick access.
+    -->
+    <string name="config_statusBarAssistantPackage" translatable="false" />
 </resources>

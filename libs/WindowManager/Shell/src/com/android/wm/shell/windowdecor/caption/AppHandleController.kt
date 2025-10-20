@@ -19,6 +19,9 @@ package com.android.wm.shell.windowdecor.caption
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo.CONFIG_FONT_SCALE
+import android.content.pm.ActivityInfo.CONFIG_LOCALE
+import android.content.pm.ActivityInfo.CONFIG_UI_MODE
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
@@ -48,6 +51,7 @@ import com.android.wm.shell.desktopmode.CaptionState
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
+import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -85,19 +89,19 @@ import kotlinx.coroutines.launch
 class AppHandleController(
     taskInfo: RunningTaskInfo,
     windowDecorViewHostSupplier: WindowDecorViewHostSupplier<WindowDecorViewHost>,
-    private val context: Context,
     private val userContext: Context,
     private val transitions: Transitions,
     private val displayController: DisplayController,
     private val taskResourceLoader: WindowDecorTaskResourceLoader,
     private val splitScreenController: SplitScreenController,
     private val desktopUserRepositories: DesktopUserRepositories,
-    private val taskOrganizer: ShellTaskOrganizer,
+    taskOrganizer: ShellTaskOrganizer,
     private val taskSurface: SurfaceControl,
     private val decorationSurface: SurfaceControl,
     @ShellMainThread private val mainHandler: Handler,
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
     @ShellMainThread private val mainScope: CoroutineScope,
+    @ShellBackgroundThread bgScope: CoroutineScope,
     private val windowManagerWrapper: WindowManagerWrapper,
     private val multiInstanceHelper: MultiInstanceHelper,
     private val windowDecorHandleRepository: WindowDecorCaptionRepository,
@@ -121,6 +125,8 @@ class AppHandleController(
     CaptionController<WindowDecorLinearLayout>(
         taskInfo,
         windowDecorViewHostSupplier,
+        taskOrganizer,
+        bgScope,
         surfaceControlBuilderSupplier,
         surfaceControlViewHostFactory,
     ),
@@ -151,7 +157,8 @@ class AppHandleController(
 
     private val isEducationOrHandleReportingEnabled =
         Flags.enableDesktopWindowingAppHandleEducation() ||
-            Flags.enableDesktopWindowingAppToWebEducationIntegration() ||
+            DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
+                .isTrue ||
             DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
     private val display
         get() = displayController.getDisplay(taskInfo.displayId)
@@ -175,6 +182,14 @@ class AppHandleController(
             traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
             name = "AppHandleController#relayout",
         ) {
+            // Check for relevant configuration changes
+            val oldConfig = this.taskInfo.configuration
+            val newConfig = params.runningTaskInfo.configuration
+            val diff = newConfig.diff(oldConfig)
+            // Check for UI mode (dark/light), locale, or font scale changes
+            val configChanged =
+                (diff and (CONFIG_UI_MODE or CONFIG_LOCALE or CONFIG_FONT_SCALE)) != 0
+
             val captionLayout =
                 super.relayout(
                     params,
@@ -186,8 +201,22 @@ class AppHandleController(
                     wct,
                 )
 
-            handleMenu?.relayout(startT, captionLayout.captionX, captionLayout.captionY)
-            openByDefaultDialog?.relayout(taskInfo)
+            handleMenu?.relayout(
+                startT,
+                taskInfo.configuration,
+                captionLayout.captionX,
+                captionLayout.captionY,
+            )
+
+            if (configChanged && isOpenByDefaultDialogActive) {
+                // Config changed, so destroy the old dialog and create a new one.
+                // The new one will inflate with the correct resources.
+                openByDefaultDialog?.dismiss() // Triggers onDialogDismissed, setting it to null
+                createOpenByDefaultDialog()
+            } else {
+                // No config change, just relayout the existing dialog for size/position changes.
+                openByDefaultDialog?.relayout(taskInfo)
+            }
 
             updateViewHolder(captionLayout)
 
@@ -202,23 +231,22 @@ class AppHandleController(
 
     private fun notifyNoCaption() {
         if (!desktopState.canEnterDesktopMode || !isEducationOrHandleReportingEnabled) return
-        windowDecorHandleRepository.notifyCaptionChanged(CaptionState.NoCaption())
+        windowDecorHandleRepository.notifyCaptionChanged(CaptionState.NoCaption(taskInfo.taskId))
     }
 
     private fun notifyCaptionStateChanged(captionLayoutResult: CaptionRelayoutResult) {
         if (!desktopState.canEnterDesktopMode || !isEducationOrHandleReportingEnabled) return
-        if (!isCaptionVisible || !hasGlobalFocus) {
+        if (!isCaptionVisible) {
             notifyNoCaption()
             return
         }
         val captionState =
             CaptionState.AppHandle(
-                taskInfo,
-                isHandleMenuActive,
-                getCurrentAppHandleBounds(captionLayoutResult),
-                appToWebRepository.isCapturedLinkAvailable(),
-                getAppHandleIdentifier(captionLayoutResult),
-                hasGlobalFocus,
+                runningTaskInfo = taskInfo,
+                isHandleMenuExpanded = isHandleMenuActive,
+                globalAppHandleBounds = getCurrentAppHandleBounds(captionLayoutResult),
+                appHandleIdentifier = getAppHandleIdentifier(captionLayoutResult),
+                isFocused = hasGlobalFocus,
             )
         windowDecorHandleRepository.notifyCaptionChanged(captionState)
     }
@@ -248,13 +276,32 @@ class AppHandleController(
         }
 
     /** Returns the current bounds relative to the parent task. */
-    private fun getCurrentAppHandleBounds(captionLayoutResult: CaptionRelayoutResult): Rect =
-        Rect(
-            captionLayoutResult.captionX,
-            captionLayoutResult.captionY,
-            captionLayoutResult.captionX + captionLayoutResult.captionWidth,
-            captionLayoutResult.captionHeight,
-        )
+    private fun getCurrentAppHandleBounds(captionLayoutResult: CaptionRelayoutResult): Rect {
+        val bounds =
+            Rect(
+                captionLayoutResult.captionX,
+                captionLayoutResult.captionY,
+                captionLayoutResult.captionX + captionLayoutResult.captionWidth,
+                captionLayoutResult.captionY + captionLayoutResult.captionHeight,
+            )
+
+        if (
+            splitScreenController.getSplitPosition(taskInfo.taskId) ==
+                SPLIT_POSITION_BOTTOM_OR_RIGHT
+        ) {
+            if (splitScreenController.isLeftRightSplit) {
+                // If this is the right split task, add left stage's width.
+                val rightStageBounds =
+                    Rect().also { splitScreenController.getStageBounds(Rect(), it) }
+                bounds.offset(rightStageBounds.left, /* dy= */ 0)
+            } else {
+                val bottomStageBounds =
+                    Rect().also { splitScreenController.getRefStageBounds(Rect(), it) }
+                bounds.offset(/* dx= */ 0, bottomStageBounds.top)
+            }
+        }
+        return bounds
+    }
 
     /**
      * Dispose of the view used to forward inputs in status bar region. Intended to be used any time
@@ -304,7 +351,7 @@ class AppHandleController(
         if (isOpenByDefaultDialogActive) return
         openByDefaultDialog =
             OpenByDefaultDialog(
-                context,
+                decorWindowContext,
                 userContext,
                 transitions,
                 taskInfo,
@@ -319,6 +366,7 @@ class AppHandleController(
                         openByDefaultDialog = null
                     }
                 },
+                desktopModeUiEventLogger,
             )
     }
 
@@ -383,6 +431,7 @@ class AppHandleController(
                     isBrowserApp = isBrowserApp,
                     openInAppOrBrowserIntent = openInAppOrBrowserIntent,
                     desktopModeUiEventLogger = desktopModeUiEventLogger,
+                    captionView = viewHolder.captionHandle,
                     captionWidth = captionLayoutResult.captionWidth,
                     captionHeight = captionLayoutResult.captionHeight,
                     captionX = captionLayoutResult.captionX,
@@ -392,8 +441,12 @@ class AppHandleController(
                     show(
                         openInAppOrBrowserClickListener = { intent ->
                             windowDecorationActions.onOpenInBrowser(taskInfo.taskId, intent)
-                            appToWebRepository.onCapturedLinkUsed()
-                            if (Flags.enableDesktopWindowingAppToWebEducationIntegration()) {
+                            appToWebRepository.onCapturedLinkUsed(taskInfo.taskId)
+                            if (
+                                DesktopExperienceFlags
+                                    .ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
+                                    .isTrue
+                            ) {
                                 windowDecorHandleRepository.onAppToWebUsage()
                             }
                         },
@@ -475,7 +528,7 @@ class AppHandleController(
                 captionWidth = captionLayoutResult.captionWidth,
                 windowManagerWrapper = windowManagerWrapper,
                 desktopState = desktopState,
-                context = context,
+                context = decorWindowContext,
                 snapshotList = snapshotList,
                 onIconClickListener = { requestedTaskId ->
                     closeManageWindowsMenu()
@@ -494,25 +547,18 @@ class AppHandleController(
         SystemBarUtils.getStatusBarHeight(decorWindowContext.resources, display.cutout)
 
     override fun getCaptionWidth(): Int =
-        context.resources.getDimensionPixelSize(R.dimen.desktop_mode_fullscreen_decor_caption_width)
+        decorWindowContext.resources.getDimensionPixelSize(
+            R.dimen.desktop_mode_fullscreen_decor_caption_width
+        )
 
     override val occludingElements: List<OccludingElement> = emptyList()
 
-    override fun releaseViews(
-        wct: WindowContainerTransaction,
-        t: SurfaceControl.Transaction,
-    ): Boolean {
-        closeHandleMenu()
-        closeManageWindowsMenu()
-        disposeStatusBarInputLayer()
-        return super.releaseViews(wct, t)
-    }
-
-    override fun close() {
+    override fun close(wct: WindowContainerTransaction, t: SurfaceControl.Transaction): Boolean {
         closeHandleMenu()
         closeManageWindowsMenu()
         disposeStatusBarInputLayer()
         viewHolder.close()
         notifyNoCaption()
+        return super.close(wct, t)
     }
 }

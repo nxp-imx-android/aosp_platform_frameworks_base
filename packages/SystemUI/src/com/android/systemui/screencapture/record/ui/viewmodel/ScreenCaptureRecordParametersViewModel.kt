@@ -18,7 +18,6 @@ package com.android.systemui.screencapture.record.ui.viewmodel
 
 import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.HydratedActivatable
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordParametersInteractor
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import dagger.assisted.AssistedFactory
@@ -35,15 +34,15 @@ constructor(private val interactor: ScreenCaptureRecordParametersInteractor) :
             .map { it.audioSource }
             .hydratedStateOf("ScreenCaptureAudioSourceViewModel#audioSource", null)
 
-    val target: ScreenCaptureTarget? by
-        interactor.parameters
-            .map { it.target }
-            .hydratedStateOf("ScreenCaptureAudioSourceViewModel#target", null)
-
     val shouldShowTaps: Boolean? by
         interactor.parameters
             .map { it.shouldShowTaps }
             .hydratedStateOf("ScreenCaptureAudioSourceViewModel#shouldShowTaps", null)
+
+    val shouldShowFrontCamera: Boolean? by
+        interactor.parameters
+            .map { it.shouldShowFrontCamera }
+            .hydratedStateOf("ScreenCaptureAudioSourceViewModel#shouldShowFrontCamera", null)
 
     var shouldRecordDevice: Boolean
         get() =
@@ -89,12 +88,12 @@ constructor(private val interactor: ScreenCaptureRecordParametersInteractor) :
         interactor.setAudioSource(audioSource)
     }
 
-    fun setRecordTarget(target: ScreenCaptureTarget) {
-        interactor.setRecordTarget(target)
-    }
-
     fun setShouldShowTaps(shouldShowTaps: Boolean) {
         interactor.setShouldShowTaps(shouldShowTaps)
+    }
+
+    fun setShouldShowFrontCamera(shouldShowFrontCamera: Boolean) {
+        interactor.setShouldShowFrontCamera(shouldShowFrontCamera)
     }
 
     @AssistedFactory

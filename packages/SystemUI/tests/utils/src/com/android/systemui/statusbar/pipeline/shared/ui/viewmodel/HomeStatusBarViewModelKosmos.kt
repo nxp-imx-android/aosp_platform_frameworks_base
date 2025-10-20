@@ -16,16 +16,18 @@
 
 package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 
+import android.content.res.mainResources
 import android.content.testableContext
 import com.android.systemui.desktop.domain.interactor.desktopInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardOcclusionInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.log.table.tableLogBufferFactory
-import com.android.systemui.scene.domain.interactor.sceneContainerOcclusionInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.shade.display.domain.interactor.shadeExpansionTargetDisplayInteractor
 import com.android.systemui.shade.domain.interactor.shadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.shareToAppChipViewModel
@@ -37,8 +39,8 @@ import com.android.systemui.statusbar.layout.ui.viewmodel.appHandlesViewModelFac
 import com.android.systemui.statusbar.layout.ui.viewmodel.multiDisplayStatusBarContentInsetsViewModelStore
 import com.android.systemui.statusbar.layout.ui.viewmodel.statusBarBoundsViewModelFactory
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
+import com.android.systemui.statusbar.notification.icon.domain.interactor.statusBarNotificationIconsInteractor
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.connectedDisplaysStatusBarNotificationIconViewStoreFactory
-import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.darkIconInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.lightsOutInteractor
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.batteryViewModelBasedOnSettingFactory
@@ -78,19 +80,21 @@ var Kosmos.homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel by
                 statusBarBoundsViewModelFactory,
                 appHandlesViewModelFactory,
                 tableLogBufferFactory,
+                mainResources,
                 homeStatusBarInteractor,
                 homeStatusBarIconBlockListInteractor,
                 lightsOutInteractor,
                 activeNotificationsInteractor,
                 desktopInteractor,
                 darkIconInteractor,
-                headsUpNotificationInteractor,
                 keyguardTransitionInteractor,
                 keyguardInteractor,
+                statusBarNotificationIconsInteractor,
                 statusBarOperatorNameViewModel,
                 sceneInteractor,
-                sceneContainerOcclusionInteractor,
+                keyguardOcclusionInteractor,
                 shadeInteractor,
+                shadeExpansionTargetDisplayInteractor,
                 shareToAppChipViewModel,
                 ongoingActivityChipsViewModel,
                 statusBarPopupChipsViewModelFactory,

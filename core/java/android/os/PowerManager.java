@@ -173,7 +173,7 @@ public final class PowerManager {
      * Requires the {@link android.Manifest.permission#DEVICE_POWER} permission.
      * </p>
      *
-     * {@hide}
+     * @hide
      */
     public static final int DOZE_WAKE_LOCK = OsProtoEnums.DOZE_WAKE_LOCK; // 0x00000040
 
@@ -187,7 +187,7 @@ public final class PowerManager {
      * Requires the {@link android.Manifest.permission#DEVICE_POWER} permission.
      * </p>
      *
-     * {@hide}
+     * @hide
      */
     public static final int DRAW_WAKE_LOCK = OsProtoEnums.DRAW_WAKE_LOCK; // 0x00000080
 
@@ -452,6 +452,14 @@ public final class PowerManager {
     @FlaggedApi(Flags.FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
     public @interface FlagAmbientSuppression{}
 
+    /** @hide */
+    @IntDef(flag = true, prefix = {"USER_ACTIVITY_FLAG_"}, value = {
+            USER_ACTIVITY_FLAG_INDIRECT,
+            USER_ACTIVITY_FLAG_NO_CHANGE_LIGHTS,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface UserActivityFlag{}
+
     /**
      *
      * Convert the user activity event to a string for debugging purposes.
@@ -687,6 +695,7 @@ public final class PowerManager {
             WAKE_REASON_LIFT,
             WAKE_REASON_BIOMETRIC,
             WAKE_REASON_DOCK,
+            WAKE_REASON_DOZE_STOPPED,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface WakeReason{}
@@ -834,6 +843,13 @@ public final class PowerManager {
     public static final int WAKE_REASON_DOCK = 18;
 
     /**
+     * Wake up reason code: Waking the dream because the dozing was stopped directly through dream
+     * APIs rather than some other more specific reason.
+     * @hide
+     */
+    public static final int WAKE_REASON_DOZE_STOPPED = 19;
+
+    /**
      * Convert the wake reason to a string for debugging purposes.
      * @hide
      */
@@ -858,6 +874,7 @@ public final class PowerManager {
             case WAKE_REASON_LIFT: return "WAKE_REASON_LIFT";
             case WAKE_REASON_BIOMETRIC: return "WAKE_REASON_BIOMETRIC";
             case WAKE_REASON_DOCK: return "WAKE_REASON_DOCK";
+            case WAKE_REASON_DOZE_STOPPED: return "WAKE_REASON_DOZE_STOPPED";
             default: return Integer.toString(wakeReason);
         }
     }
@@ -1320,7 +1337,7 @@ public final class PowerManager {
             mScreenTimeoutPolicyListeners = new ArrayMap<>();
 
     /**
-     * {@hide}
+     * @hide
      */
     public PowerManager(Context context, IPowerManager service, IThermalService thermalService,
             Handler handler) {
@@ -1586,7 +1603,7 @@ public final class PowerManager {
             android.Manifest.permission.DEVICE_POWER,
             android.Manifest.permission.USER_ACTIVITY
     })
-    public void userActivity(long when, int event, int flags) {
+    public void userActivity(long when, @UserActivityEvent int event, @UserActivityFlag int flags) {
         try {
             mService.userActivity(mContext.getDisplayId(), when, event, flags);
         } catch (RemoteException e) {
@@ -3597,14 +3614,6 @@ public final class PowerManager {
     @SdkConstant(SdkConstant.SdkConstantType.BROADCAST_INTENT_ACTION)
     public static final String ACTION_POWER_SAVE_WHITELIST_CHANGED
             = "android.os.action.POWER_SAVE_WHITELIST_CHANGED";
-
-    /**
-     * @hide Intent that is broadcast when the set of temporarily allowlisted apps has changed.
-     * This broadcast is only sent to registered receivers.
-     */
-    @SdkConstant(SdkConstant.SdkConstantType.BROADCAST_INTENT_ACTION)
-    public static final String ACTION_POWER_SAVE_TEMP_WHITELIST_CHANGED
-            = "android.os.action.POWER_SAVE_TEMP_WHITELIST_CHANGED";
 
     /**
      * Intent that is broadcast when Low Power Standby is enabled or disabled.

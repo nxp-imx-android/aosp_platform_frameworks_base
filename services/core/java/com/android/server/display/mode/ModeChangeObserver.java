@@ -129,8 +129,9 @@ final class ModeChangeObserver {
             return;
         }
         DisplayAddress address = display.getAddress();
-        if (address instanceof DisplayAddress.Physical physical) {
-            long physicalDisplayId = physical.getPhysicalDisplayId();
+        if (address != null
+                && address.getPhysicalDisplayId() != DisplayAddress.INVALID_DISPLAY_ID) {
+            long physicalDisplayId = address.getPhysicalDisplayId();
             mPhysicalIdToLogicalIdMap.put(physicalDisplayId, displayId);
             Set<Integer> modes = mRejectedModesMap.get(physicalDisplayId);
             mVotesStorage.updateVote(displayId, Vote.PRIORITY_REJECTED_MODES,
@@ -146,8 +147,9 @@ final class ModeChangeObserver {
                 continue;
             }
             DisplayAddress address = display.getAddress();
-            if (address instanceof DisplayAddress.Physical physical) {
-                mPhysicalIdToLogicalIdMap.put(physical.getPhysicalDisplayId(),
+            if (address != null
+                    && address.getPhysicalDisplayId() != DisplayAddress.INVALID_DISPLAY_ID) {
+                mPhysicalIdToLogicalIdMap.put(address.getPhysicalDisplayId(),
                         display.getDisplayId());
             }
         }

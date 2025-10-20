@@ -369,7 +369,7 @@ public abstract class AugmentedAutofillService extends Service {
      * replies to a
      * {@link #onFillRequest(FillRequest, CancellationSignal, FillController, FillCallback)}
      * by calling {@link FillCallback#onSuccess(FillResponse)}. Hence, the service should call
-     * {@link #getFillEventHistory() before finishing the {@link FillCallback}.
+     * {@link #getFillEventHistory()} before finishing the {@link FillCallback}.
      *
      * <p>Also note that the events from the dropdown suggestion UI is not stored in the history
      * since the service owns the UI.

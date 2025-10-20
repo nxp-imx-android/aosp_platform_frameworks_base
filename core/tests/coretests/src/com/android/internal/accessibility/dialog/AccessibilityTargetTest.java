@@ -31,11 +31,11 @@ import java.util.stream.IntStream;
 
 @RunWith(AndroidJUnit4.class)
 public class AccessibilityTargetTest {
-    private static final int[] EXPECTED_TYPES_GESTURE = { HARDWARE, SOFTWARE, GESTURE };
+    private static final int[] EXPECTED_TYPES = { HARDWARE, SOFTWARE, GESTURE };
 
     @Test
-    public void isRecognizedShortcutType_expectedType_gestureIncluded_isTrue() {
-        for (int type : EXPECTED_TYPES_GESTURE) {
+    public void isRecognizedShortcutType_expectedType_isTrue() {
+        for (int type : EXPECTED_TYPES) {
             if (!AccessibilityTarget.isRecognizedShortcutType(type)) {
                 throw new AssertionError(
                         "Shortcut type " + type + " should be recognized");
@@ -44,9 +44,9 @@ public class AccessibilityTargetTest {
     }
 
     @Test
-    public void isRecognizedShortcutType_notExpectedType_gestureIncluded_isFalse() {
+    public void isRecognizedShortcutType_notExpectedType_isFalse() {
         for (int type: ShortcutConstants.USER_SHORTCUT_TYPES) {
-            if (IntStream.of(EXPECTED_TYPES_GESTURE).noneMatch(x -> x == type)) {
+            if (IntStream.of(EXPECTED_TYPES).noneMatch(x -> x == type)) {
                 if (AccessibilityTarget.isRecognizedShortcutType(type)) {
                     throw new AssertionError(
                             "Shortcut type " + type + " should not be recognized");

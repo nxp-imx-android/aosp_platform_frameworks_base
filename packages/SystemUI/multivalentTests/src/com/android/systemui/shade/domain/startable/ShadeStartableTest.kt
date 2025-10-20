@@ -16,12 +16,16 @@
 
 package com.android.systemui.shade.domain.startable
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper.RunWithLooper
 import android.view.Display
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
+import com.android.systemui.Flags
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
@@ -42,7 +46,6 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.fakeSceneDataSource
 import com.android.systemui.shade.ShadeExpansionChangeEvent
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
-import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
@@ -51,11 +54,9 @@ import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.notification.stack.notificationStackScrollLayoutController
 import com.android.systemui.statusbar.notificationShadeDepthController
-import com.android.systemui.statusbar.phone.scrimController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.math.max
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
@@ -65,7 +66,6 @@ import org.mockito.kotlin.verify
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWithLooper(setAsMainLooper = true)
 @RunWith(ParameterizedAndroidJunit4::class)
@@ -73,7 +73,7 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
-    private val underTest: ShadeStartable by lazy { kosmos.shadeStartable }
+    private val Kosmos.underTest: ShadeStartable by Kosmos.Fixture { shadeStartable }
 
     companion object {
         @JvmStatic
@@ -96,9 +96,10 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
                 add(
                     Display.DEFAULT_DISPLAY,
                     createFakeDisplaySubcomponent(
-                        displayStateRepository = displayStateRepository,
-                        displayStateInteractor =
-                            createDisplayStateInteractor(displayStateRepository),
+                        displayStateRepository = { displayStateRepository },
+                        displayStateInteractor = {
+                            createDisplayStateInteractor(displayStateRepository)
+                        },
                     ),
                 )
             }
@@ -108,6 +109,7 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_DUAL_SHADE)
     fun hydrateShadeMode_dualShadeDisabled() =
         kosmos.runTest {
             val shadeMode by collectLastValue(shadeMode)
@@ -128,7 +130,7 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun hydrateShadeMode_dualShadeEnabled() =
         kosmos.runTest {
             val shadeMode by collectLastValue(shadeMode)
@@ -220,60 +222,41 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
     @EnableSceneContainer
     fun hydrateFullWidth_singleShade() =
         kosmos.runTest {
-            val isWideScreen by collectLastValue(shadeRepository.isWideScreen)
-            val legacyUseSplitShade by collectLastValue(shadeRepository.legacyUseSplitShade)
             enableSingleShade()
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(true)
-            assertThat(scrimController.clipQsScrim).isFalse()
-            assertThat(isWideScreen).isFalse()
-            assertThat(legacyUseSplitShade).isFalse()
         }
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun hydrateFullWidth_splitShade() =
         kosmos.runTest {
-            val isWideScreen by collectLastValue(shadeRepository.isWideScreen)
-            val legacyUseSplitShade by collectLastValue(shadeRepository.legacyUseSplitShade)
             enableSplitShade()
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(false)
-            assertThat(scrimController.clipQsScrim).isFalse()
-            assertThat(isWideScreen).isTrue()
-            assertThat(legacyUseSplitShade).isTrue()
         }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun hydrateFullWidth_dualShade_narrowScreen() =
         kosmos.runTest {
-            val isWideScreen by collectLastValue(shadeRepository.isWideScreen)
-            val legacyUseSplitShade by collectLastValue(shadeRepository.legacyUseSplitShade)
             enableDualShade(wideLayout = false)
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(true)
-            assertThat(scrimController.clipQsScrim).isFalse()
-            assertThat(isWideScreen).isFalse()
-            assertThat(legacyUseSplitShade).isFalse()
         }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun hydrateFullWidth_dualShade_wideScreen() =
         kosmos.runTest {
-            val isWideScreen by collectLastValue(shadeRepository.isWideScreen)
-            val legacyUseSplitShade by collectLastValue(shadeRepository.legacyUseSplitShade)
             enableDualShade(wideLayout = true)
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(false)
-            assertThat(scrimController.clipQsScrim).isFalse()
-            assertThat(isWideScreen).isTrue()
-            assertThat(legacyUseSplitShade).isTrue()
         }
 
     private fun Kosmos.changeScene(

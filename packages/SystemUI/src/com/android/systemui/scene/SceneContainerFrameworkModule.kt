@@ -24,12 +24,12 @@ import com.android.systemui.scene.domain.interactor.WindowRootViewVisibilityInte
 import com.android.systemui.scene.domain.resolver.HomeSceneFamilyResolverModule
 import com.android.systemui.scene.domain.startable.KeyguardStateCallbackStartable
 import com.android.systemui.scene.domain.startable.SceneContainerStartable
-import com.android.systemui.scene.domain.startable.ScrimStartable
 import com.android.systemui.scene.domain.startable.StatusBarStartable
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneContainerConfig
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.SceneContainerTransitions
+import com.android.systemui.scene.ui.composable.SceneNavigationDistances
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -47,6 +47,7 @@ import dagger.multibindings.IntoMap
             EmptySceneModule::class,
             GoneSceneModule::class,
             LockscreenSceneModule::class,
+            OccludedSceneModule::class,
             QuickSettingsSceneModule::class,
             ShadeSceneModule::class,
             QuickSettingsShadeOverlayModule::class,
@@ -64,11 +65,6 @@ interface SceneContainerFrameworkModule {
     @IntoMap
     @ClassKey(SceneContainerStartable::class)
     fun containerStartable(impl: SceneContainerStartable): CoreStartable
-
-    @Binds
-    @IntoMap
-    @ClassKey(ScrimStartable::class)
-    fun scrimStartable(impl: ScrimStartable): CoreStartable
 
     @Binds
     @IntoMap
@@ -99,6 +95,7 @@ interface SceneContainerFrameworkModule {
                         Scenes.Gone,
                         Scenes.Communal,
                         Scenes.Dream,
+                        Scenes.Occluded,
                         Scenes.Lockscreen,
                         Scenes.QuickSettings,
                         Scenes.Shade,
@@ -110,15 +107,7 @@ interface SceneContainerFrameworkModule {
                         Overlays.QuickSettingsShade,
                         Overlays.Bouncer,
                     ),
-                navigationDistances =
-                    mapOf(
-                        Scenes.Gone to 0,
-                        Scenes.Lockscreen to 0,
-                        Scenes.Communal to 1,
-                        Scenes.Dream to 2,
-                        Scenes.Shade to 3,
-                        Scenes.QuickSettings to 4,
-                    ),
+                navigationDistances = SceneNavigationDistances,
                 transitionsBuilder = SceneContainerTransitions(),
             )
         }

@@ -25,10 +25,7 @@ import android.view.KeyEvent
 /** Test data for Key gestures tests in {@link KeyGestureControllerTests} */
 object KeyGestureTestData {
 
-    // All Key gestures that should always happen regardless of whether focused window captures the
-    // keys should go in this list.
-    // (i.e. Shortcuts and keys handled in INTERCEPT_SHORTCUTS_BEFORE_KEY_CAPTURE stage)
-    val NON_CAPTURABLE_SYSTEM_GESTURES =
+    val MULTI_KEY_SYSTEM_GESTURES =
         arrayOf(
             KeyGestureData(
                 "VOLUME_DOWN + POWER -> Screenshot Chord",
@@ -89,6 +86,13 @@ object KeyGestureTestData {
                     KeyGestureEvent.ACTION_GESTURE_COMPLETE,
                 ),
             ),
+        )
+
+    // All Key gestures that should always happen regardless of whether focused window captures the
+    // keys should go in this list.
+    // (i.e. Shortcuts and keys handled in INTERCEPT_SHORTCUTS_BEFORE_KEY_CAPTURE stage)
+    val NON_CAPTURABLE_SYSTEM_GESTURES =
+        arrayOf(
             KeyGestureData(
                 "META + H -> Go Home",
                 intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_H),
@@ -166,13 +170,13 @@ object KeyGestureTestData {
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
             KeyGestureData(
-                "META + CTRL + W -> Quit focused task",
+                "META + CTRL + W -> Quit focused desktop task",
                 intArrayOf(
                     KeyEvent.KEYCODE_META_LEFT,
                     KeyEvent.KEYCODE_CTRL_LEFT,
                     KeyEvent.KEYCODE_W,
                 ),
-                KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK,
+                KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK,
                 intArrayOf(KeyEvent.KEYCODE_W),
                 KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
@@ -309,9 +313,9 @@ object KeyGestureTestData {
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
             KeyGestureData(
-                "FULLSCREEN -> Turns a task into fullscreen",
+                "FULLSCREEN -> Toggles the focused task's fullscreen state",
                 intArrayOf(KeyEvent.KEYCODE_FULLSCREEN),
-                KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION,
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN,
                 intArrayOf(KeyEvent.KEYCODE_FULLSCREEN),
                 0,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
@@ -324,6 +328,22 @@ object KeyGestureTestData {
                 0,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
                 isGestureHandlerRegistered = true,
+            ),
+            KeyGestureData(
+                "META + BRIGHTNESS_UP -> Keyboard Backlight Up",
+                intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_BRIGHTNESS_UP),
+                KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_UP,
+                intArrayOf(KeyEvent.KEYCODE_BRIGHTNESS_UP),
+                KeyEvent.META_META_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            ),
+            KeyGestureData(
+                "META + BRIGHTNESS_DOWN -> Keyboard Backlight Down",
+                intArrayOf(KeyEvent.KEYCODE_META_RIGHT, KeyEvent.KEYCODE_BRIGHTNESS_DOWN),
+                KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_DOWN,
+                intArrayOf(KeyEvent.KEYCODE_BRIGHTNESS_DOWN),
+                KeyEvent.META_META_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
         )
 
@@ -377,10 +397,10 @@ object KeyGestureTestData {
     val CAPTURABLE_SYSTEM_GESTURES =
         arrayOf(
             KeyGestureData(
-                "META + A -> Launch Assistant",
-                intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_A),
+                "META + Space -> Launch Assistant",
+                intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_SPACE),
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT,
-                intArrayOf(KeyEvent.KEYCODE_A),
+                intArrayOf(KeyEvent.KEYCODE_SPACE),
                 KeyEvent.META_META_ON,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
@@ -413,6 +433,14 @@ object KeyGestureTestData {
                 intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_Q),
                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL,
                 intArrayOf(KeyEvent.KEYCODE_Q),
+                KeyEvent.META_META_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            ),
+            KeyGestureData(
+                "META + A -> Contextual Search",
+                intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_A),
+                KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH,
+                intArrayOf(KeyEvent.KEYCODE_A),
                 KeyEvent.META_META_ON,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
@@ -697,6 +725,18 @@ object KeyGestureTestData {
                 KeyEvent.META_META_ON,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
                 isGestureHandlerRegistered = true,
+            ),
+            KeyGestureData(
+                "META + CTRL + S -> Take Partial Screenshot",
+                intArrayOf(
+                    KeyEvent.KEYCODE_META_LEFT,
+                    KeyEvent.KEYCODE_CTRL_LEFT,
+                    KeyEvent.KEYCODE_S,
+                ),
+                KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
+                intArrayOf(KeyEvent.KEYCODE_S),
+                KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
             KeyGestureData(
                 "SYSRQ -> Take Screenshot",

@@ -18,7 +18,6 @@ package com.android.wm.shell.bubbles;
 
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_BUBBLES;
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_WITH_CLASS_NAME;
-import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 
 import android.annotation.NonNull;
 import android.content.Context;
@@ -42,11 +41,11 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.ContrastColorUtil;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.shared.TypefaceUtils;
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -281,7 +280,9 @@ public class BubbleOverflowContainerView extends LinearLayout {
 
             updateEmptyStateVisibility();
 
-            ProtoLog.d(WM_SHELL_BUBBLES, "Apply overflow update, added=%s removed=%s",
+            BubbleLog.d(
+                    "BubbleOverflowContainerView.applyUpdate() Apply overflow "
+                            + "update, added=%s removed=%s",
                     (toAdd != null ? toAdd.getKey() : "null"),
                     (toRemove != null ? toRemove.getKey() : "null"));
         }

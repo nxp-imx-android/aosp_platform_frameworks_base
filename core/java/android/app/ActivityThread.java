@@ -195,6 +195,7 @@ import android.system.ErrnoException;
 import android.telephony.TelephonyFrameworkInitializer;
 import android.util.AndroidRuntimeException;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.DisplayMetrics;
 import android.util.EventLog;
 import android.util.Log;
@@ -232,6 +233,7 @@ import android.window.SizeConfigurationBuckets;
 import android.window.SplashScreen;
 import android.window.SplashScreenView;
 import android.window.TaskFragmentTransaction;
+import android.window.TaskSnapshotManager;
 import android.window.WindowContextInfo;
 import android.window.WindowProviderService;
 import android.window.WindowTokenClientController;
@@ -294,10 +296,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * This manages the execution of the main thread in an
@@ -305,7 +309,7 @@ import java.util.function.Consumer;
  * broadcasts, and other operations on it as the activity
  * manager requests.
  *
- * {@hide}
+ * @hide
  */
 @android.ravenwood.annotation.RavenwoodKeepPartialClass(comment =
         "Initialization logic is in ActivityThread_ravenwood and RavenwoodAppDriver."
@@ -1168,6 +1172,42 @@ public final class ActivityThread extends ClientTransactionHandler
         ApplicationThread() {
         }
 
+        @Override
+        public boolean onTransact(int code, Parcel data, Parcel reply, int flags)
+                throws RemoteException {
+            boolean checkApplicationThreadCalledBySystem =
+                    android.security.Flags.checkApplicationThreadCalledBySystem();
+            if (Build.IS_DEBUGGABLE || checkApplicationThreadCalledBySystem) {
+                int callingUid = Binder.getCallingUid();
+                if (callingUid != Process.ROOT_UID && callingUid != Process.SYSTEM_UID) {
+                    String[] packagesForUid =
+                            getSystemContext().getPackageManager().getPackagesForUid(callingUid);
+                    String packageName;
+                    if (packagesForUid == null || packagesForUid.length == 0) {
+                        packageName = "unknown";
+                    } else if (packagesForUid.length == 1) {
+                        packageName = packagesForUid[0];
+                    } else {
+                        packageName = Arrays.asList(packagesForUid).stream().sorted().collect(
+                                Collectors.joining(", "));
+                    }
+                    Slog.wtf(TAG, "ApplicationThread called by non-system process"
+                            + " (callingUid: " + callingUid
+                            + "; packageName: " + packageName
+                            + "; code: " + code
+                            + "; flags: " + flags
+                            + ")");
+                    if (checkApplicationThreadCalledBySystem) {
+                        throw new SecurityException(
+                                "ApplicationThread called by non-system process"
+                                        + " (callingUid: " + callingUid
+                                        + "; packageName: " + packageName + ")");
+                    }
+                }
+            }
+            return super.onTransact(code, data, reply, flags);
+        }
+
         private static final String DB_CONNECTION_INFO_HEADER = "  %8s %8s %14s %5s %5s %5s  %s";
         private static final String DB_CONNECTION_INFO_FORMAT = "  %8s %8s %14s %5d %5d %5d  %s";
         private static final String DB_POOL_INFO_HEADER = "  %13s %13s %13s  %s";
@@ -1411,10 +1451,8 @@ public final class ActivityThread extends ClientTransactionHandler
             ApplicationSharedMemory instance =
                     ApplicationSharedMemory.fromFileDescriptor(
                             applicationSharedMemoryFd, /* mutable= */ false);
-            if (android.content.pm.Flags.cacheSdkSystemFeatures()) {
-                SystemFeaturesCache.setInstance(
-                        new SystemFeaturesCache(instance.readSystemFeaturesCache()));
-            }
+            SystemFeaturesCache.setInstance(
+                    new SystemFeaturesCache(instance.readSystemFeaturesCache()));
             instance.closeFileDescriptor();
             ApplicationSharedMemory.setInstance(instance);
 
@@ -1457,10 +1495,10 @@ public final class ActivityThread extends ClientTransactionHandler
         private void updateCompatOverrideScale(CompatibilityInfo info) {
             if (info.hasOverrideScaling()) {
                 CompatibilityInfo.setOverrideInvertedScale(info.applicationInvertedScale,
-                        info.applicationDensityInvertedScale);
+                        info.applicationDensityInvertedScale, info.overrideDensityDisplayIds);
             } else {
                 CompatibilityInfo.setOverrideInvertedScale(/* invertScale */ 1f,
-                        /* densityInvertScale */1f);
+                        /* densityInvertScale */1f, /* densityDisplayIds */ null);
             }
         }
 
@@ -1902,6 +1940,13 @@ public final class ActivityThread extends ClientTransactionHandler
                 pw.print(assetAlloc);
             }
 
+            // Task Snapshot
+            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+                if (TaskSnapshotManager.isUsed()) {
+                    TaskSnapshotManager.getInstance().dump(pw);
+                }
+            }
+
             // Unreachable native memory
             if (dumpUnreachable) {
                 boolean showContents = ((mBoundApplication != null)
@@ -1914,6 +1959,8 @@ public final class ActivityThread extends ClientTransactionHandler
             if (dumpAllocatorStats) {
                 Debug.logAllocatorStats();
             }
+
+            pw.println(" ");
         }
 
         @NeverCompile
@@ -6338,6 +6385,10 @@ public final class ActivityThread extends ClientTransactionHandler
         onCoreSettingsChange();
     }
 
+    /**
+     * Handles updates to core settings. This may trigger a relaunch of all activities if
+     * settings that affect the UI, like debug view attributes, have changed.
+     */
     private void onCoreSettingsChange() {
         if (updateDebugViewAttributeState()) {
             // request all activities to relaunch for the changes to take place
@@ -6779,7 +6830,7 @@ public final class ActivityThread extends ClientTransactionHandler
         final ActivityRelaunchItem activityRelaunchItem = new ActivityRelaunchItem(
                 r.token, null /* pendingResults */, null /* pendingIntents */,
                 0 /* configChanges */, mergedConfiguration, r.mPreserveWindow,
-                r.getActivityWindowInfo());
+                r.getActivityWindowInfo(), r.activity.getDisplayId());
         // Make sure to match the existing lifecycle state in the end of the transaction.
         final ActivityLifecycleItem lifecycleRequest =
                 TransactionExecutorHelper.getLifecycleRequestForCurrentState(r);
@@ -7091,8 +7142,8 @@ public final class ActivityThread extends ClientTransactionHandler
             return;
         }
         mLastReportedDeviceId = deviceId;
-        ArrayList<Context> nonUIContexts = new ArrayList<>();
-        // Update Application and Service contexts with implicit device association.
+        final Set<Context> nonUIContexts = new ArraySet<>();
+        // Update non UI contexts with implicit device association.
         // UI Contexts are able to derived their device Id association from the display.
         synchronized (mResourcesManager) {
             final int numApps = mAllApplications.size();
@@ -7108,6 +7159,13 @@ public final class ActivityThread extends ClientTransactionHandler
                 }
             }
         }
+        synchronized (mProviderMap) {
+            final int numContentProviders = mLocalProviders.size();
+            for (int i = 0; i < numContentProviders; i++) {
+                nonUIContexts.add(mLocalProviders.valueAt(i).mLocalProvider.getContext());
+            }
+        }
+
         for (Context context : nonUIContexts) {
             try {
                 context.updateDeviceId(deviceId);
@@ -8034,8 +8092,7 @@ public final class ActivityThread extends ClientTransactionHandler
 
             // Propagate Content Capture options
             app.setContentCaptureOptions(data.contentCaptureOptions);
-            if (android.view.contentcapture.flags.Flags.warmUpBackgroundThreadForContentCapture()
-                    && data.contentCaptureOptions != null) {
+            if (data.contentCaptureOptions != null) {
                 if (data.contentCaptureOptions.enableReceiver
                         && !data.contentCaptureOptions.lite) {
                     // Warm up the background thread when:
@@ -8102,7 +8159,7 @@ public final class ActivityThread extends ClientTransactionHandler
                                 data.appInfo.packageName,
                                 PackageManager.GET_META_DATA /*flags*/,
                                 UserHandle.myUserId());
-                if (info.metaData != null) {
+                if (info != null && info.metaData != null) {
                     final int preloadedFontsResource = info.metaData.getInt(
                             ApplicationInfo.METADATA_PRELOADED_FONTS, 0);
                     if (preloadedFontsResource != 0) {
@@ -8547,18 +8604,13 @@ public final class ActivityThread extends ClientTransactionHandler
                             Slog.v(TAG, "incProviderRef: Now unstable - "
                                     + prc.holder.info.name);
                         }
-                        if (Flags.skipRefContentProvider()) {
-                            // If the provider is persistent process and has unstable
-                            // connection, then we don't need to increment the ref count
-                            // in the activity manager.
-                            if (prc != null && prc.holder != null
-                                        && !prc.holder.noReleaseNeededIfUnstable) {
-                                ActivityManager.getService().refContentProvider(
-                                        prc.holder.connection, 0, 1);
-                            }
-                        } else {
+                        // If the provider is persistent process and has unstable
+                        // connection, then we don't need to increment the ref count
+                        // in the activity manager.
+                        if (prc != null && prc.holder != null
+                                    && !prc.holder.noReleaseNeededIfUnstable) {
                             ActivityManager.getService().refContentProvider(
-                                        prc.holder.connection, 0, 1);
+                                    prc.holder.connection, 0, 1);
                         }
                     } catch (RemoteException e) {
                         //do nothing content provider object is dead any way
@@ -8658,16 +8710,11 @@ public final class ActivityThread extends ClientTransactionHandler
                                 Slog.v(TAG, "releaseProvider: No longer unstable - "
                                         + prc.holder.info.name);
                             }
-                            if (Flags.skipRefContentProvider()) {
-                                // If the provider is persistent process and has unstable
-                                // connection, then we don't need to decrement the ref count
-                                // in the activity manager.
-                                if (prc != null && prc.holder != null
-                                        && !prc.holder.noReleaseNeededIfUnstable) {
-                                    ActivityManager.getService().refContentProvider(
-                                            prc.holder.connection, 0, -1);
-                                }
-                            } else {
+                            // If the provider is persistent process and has unstable
+                            // connection, then we don't need to decrement the ref count
+                            // in the activity manager.
+                            if (prc != null && prc.holder != null
+                                    && !prc.holder.noReleaseNeededIfUnstable) {
                                 ActivityManager.getService().refContentProvider(
                                         prc.holder.connection, 0, -1);
                             }
@@ -9157,8 +9204,20 @@ public final class ActivityThread extends ClientTransactionHandler
         }
     }
 
+    /**
+     * Gets the core settings for the default device.
+     *
+     * On HSUM devices, core settings for a non-system user might not be available immediately
+     * after the user's process starts.
+     * In such cases, this method returns an empty Bundle to prevent crashes.
+     */
     private Bundle getCoreSettingsForDefaultDeviceLocked() {
-        return getCoreSettingsForDeviceLocked(Context.DEVICE_ID_DEFAULT);
+        Bundle bundle = getCoreSettingsForDeviceLocked(Context.DEVICE_ID_DEFAULT);
+        if (bundle == null) {
+            Log.w(TAG, "Core settings not yet available for current user; returning empty bundle");
+            return Bundle.EMPTY;
+        }
+        return bundle;
     }
 
     private Bundle getCoreSettingsForDeviceLocked(int deviceId) {

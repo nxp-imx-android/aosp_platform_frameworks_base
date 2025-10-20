@@ -53,6 +53,8 @@ import com.android.systemui.keyguard.domain.interactor.fromLockscreenTransitionI
 import com.android.systemui.keyguard.domain.interactor.fromPrimaryBouncerTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardClockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardOcclusionInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardSurfaceBehindInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.pulseExpansionInteractor
 import com.android.systemui.keyguard.ui.viewmodel.glanceableHubToLockscreenTransitionViewModel
@@ -65,9 +67,7 @@ import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.domain.interactor.sceneBackInteractor
-import com.android.systemui.scene.domain.interactor.sceneContainerOcclusionInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
-import com.android.systemui.scene.domain.startable.scrimStartable
 import com.android.systemui.scene.ui.view.mockWindowRootViewProvider
 import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
 import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
@@ -75,10 +75,13 @@ import com.android.systemui.settings.brightness.data.repository.brightnessMirror
 import com.android.systemui.settings.displayTracker
 import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
+import com.android.systemui.shade.data.repository.shadeConfigRepository
+import com.android.systemui.shade.data.repository.shadeDialogContextInteractor
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeLayoutParams
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
+import com.android.systemui.shade.domain.interactor.shadeStatusBarComponentsInteractor
 import com.android.systemui.shade.shadeController
 import com.android.systemui.shade.ui.viewmodel.notificationShadeWindowModel
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModePerDisplayRepository
@@ -201,6 +204,7 @@ class KosmosJavaAdapter() {
     val qsLongPressEffect by lazy { kosmos.qsLongPressEffect }
     val shadeController by lazy { kosmos.shadeController }
     val shadeRepository by lazy { kosmos.shadeRepository }
+    val shadeConfigRepository by lazy { kosmos.shadeConfigRepository }
     val shadeInteractor by lazy { kosmos.shadeInteractor }
     val notificationShadeWindowModel by lazy { kosmos.notificationShadeWindowModel }
     val visualStabilityProvider by lazy { kosmos.visualStabilityProvider }
@@ -211,8 +215,7 @@ class KosmosJavaAdapter() {
     val alternateBouncerInteractor by lazy { kosmos.alternateBouncerInteractor }
 
     val scrimController by lazy { kosmos.scrimController }
-    val scrimStartable by lazy { kosmos.scrimStartable }
-    val sceneContainerOcclusionInteractor by lazy { kosmos.sceneContainerOcclusionInteractor }
+    val keyguardOcclusionInteractor by lazy { kosmos.keyguardOcclusionInteractor }
     val msdlPlayer by lazy { kosmos.fakeMSDLPlayer }
 
     val shadeModeInteractor by lazy { kosmos.shadeModeInteractor }
@@ -241,6 +244,7 @@ class KosmosJavaAdapter() {
     val mockNotificationDismissibilityProvider by lazy {
         kosmos.mockNotificationDismissibilityProvider
     }
+    val shadeDialogContextInteractor by lazy { kosmos.shadeDialogContextInteractor }
     val mockNotifCollection by lazy { kosmos.mockNotifCollection }
     val expandableNotificationRowLogger by lazy { kosmos.expandableNotificationRowLogger }
     val mockHeadsUpManager by lazy { kosmos.mockHeadsUpManager }
@@ -254,6 +258,8 @@ class KosmosJavaAdapter() {
     val secureLockDeviceInteractor by lazy { kosmos.secureLockDeviceInteractor }
     val systemUIDialogManager by lazy { kosmos.systemUIDialogManager }
     val displayRepository by lazy { kosmos.displayRepository }
+    val shadeStatusBarComponentsInteractor by lazy { kosmos.shadeStatusBarComponentsInteractor }
+    val keyguardSurfaceBehindInteractor by lazy { kosmos.keyguardSurfaceBehindInteractor }
 
     /** Use if you need a unique or mutate-able row */
     fun createRow(): ExpandableNotificationRow {

@@ -32,9 +32,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
@@ -42,19 +40,19 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.modifiers.height
-import com.android.compose.modifiers.padding
 import com.android.compose.theme.PlatformTheme
 import com.android.keyguard.dagger.KeyguardStatusBarViewComponent
 import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
+import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.NotificationPanelView
@@ -67,6 +65,7 @@ import dagger.Lazy
 import javax.inject.Inject
 import kotlin.collections.List
 
+@SysUISingleton
 class StatusBarElementProvider
 @Inject
 constructor(
@@ -75,21 +74,18 @@ constructor(
     private val notificationPanelView: Lazy<NotificationPanelView>,
     private val viewModel: KeyguardStatusBarViewModel,
 ) : LockscreenElementProvider {
-    override val elements: List<LockscreenElement> by lazy { listOf(statusBarElement) }
+    override val elements: List<LockscreenElement> by lazy { listOf(StatusBarElement()) }
 
-    private val statusBarElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.StatusBar
-            override val context = this@StatusBarElementProvider.context
+    private inner class StatusBarElement : LockscreenElement {
+        override val key = LockscreenElementKeys.StatusBar
+        override val context = this@StatusBarElementProvider.context
+        override val source = ElementSource.STANDARD
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                StatusBar(modifier = Modifier.fillMaxWidth())
-            }
+        @Composable
+        override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
+            StatusBar(modifier = Modifier.fillMaxWidth())
         }
+    }
 
     @Composable
     fun StatusBar(modifier: Modifier = Modifier) {
@@ -115,10 +111,6 @@ constructor(
                     object : ShadeViewStateProvider {
                         override val lockscreenShadeDragProgress: Float = 0f
                         override val panelViewExpandedHeight: Float = 0f
-
-                        override fun shouldHeadsUpBeVisible(): Boolean {
-                            return false
-                        }
                     }
 
                 componentFactory.build(view, provider).keyguardStatusBarViewController
@@ -164,7 +156,6 @@ constructor(
 
     @Composable
     private fun SignOutButton() {
-        val context = LocalContext.current
         if (viewModel.isSignOutButtonVisible) {
             Button(
                 onClick = viewModel::onSignOut,

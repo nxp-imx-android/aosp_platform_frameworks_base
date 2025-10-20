@@ -17,8 +17,10 @@
 package com.android.settingslib.widget
 
 import android.annotation.SuppressLint
+import android.graphics.Rect
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import androidx.annotation.DrawableRes
@@ -132,10 +134,17 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
         var prevItemIndex = -2
         var previousParent: Preference? = null
         var currentParent: Preference? = null
+        var itemSkipped = true
         for (i in 0..<itemCount) {
             val preference = getItem(i)!!
             // If the preference is a group divider, skip this index (resulting in new group)
             if (isGroupDivider(preference)) {
+                itemPositionStates[i] = 0
+                itemSkipped = true
+                continue
+            }
+            // Ignore if the preference is ChainedMixin
+            if (preference is ChainedMixin) {
                 itemPositionStates[i] = 0
                 continue
             }
@@ -146,11 +155,14 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
             //     - We've hit an expanded Expandable parent
             //     - We've changed parent (except: if parent is null, or we hit an Expandable child)
             previousParent = currentParent
-            currentParent = preference.parent
+            val parent = preference.parent
+            if (parent !is ChainedMixin) {
+                currentParent = parent
+            }
             val isExpandedParent = preference is Expandable && preference.isExpanded()
             val isExpandedChild = currentParent is Expandable && currentParent.isExpanded()
             val changedParent = previousParent != currentParent && currentParent != null
-            if (prevItemIndex != i - 1 || isExpandedParent || (changedParent && !isExpandedChild)) {
+            if (itemSkipped || isExpandedParent || (changedParent && !isExpandedChild)) {
                 closeGroup(itemPositionStates, prevItemIndex)
                 itemPositionStates[i] = android.R.attr.state_first
                 prevItemIndex = i
@@ -159,6 +171,7 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
                 itemPositionStates[i] = android.R.attr.state_middle
                 prevItemIndex = i
             }
+            itemSkipped = false
         }
         // Close current group
         closeGroup(itemPositionStates, prevItemIndex)
@@ -178,31 +191,51 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
 
     /** handle roundCorner background */
     private fun updateBackground(holder: PreferenceViewHolder, position: Int) {
-        val context = holder.itemView.context
         val v = holder.itemView
-        if (SettingsThemeHelper.isExpressiveTheme(context)) {
-            val drawableStateLayout = holder.itemView as? DrawableStateLayout
-            if (drawableStateLayout != null) {
-                val iconFrame =
-                    holder.findViewById(androidx.preference.R.id.icon_frame)
-                        ?: holder.findViewById(android.R.id.icon_frame)
-                val hasIconSpace = iconFrame != null && iconFrame.visibility != View.GONE
-                drawableStateLayout.extraDrawableState =
-                    stateSetOf(mItemPositionStates[position], hasIconSpace)
-            } else {
-                val backgroundRes = getRoundCornerDrawableRes(position, isSelected = false)
-                val (paddingStart, paddingEnd) = getStartEndPadding(position)
-                v.setPaddingRelative(paddingStart, v.paddingTop, paddingEnd, v.paddingBottom)
-                v.clipToOutline = backgroundRes != 0
-                v.setBackgroundResource(backgroundRes)
+        val drawableStateLayout = holder.itemView as? DrawableStateLayout
+        if (position < mItemPositionStates.size &&
+                drawableStateLayout != null && mItemPositionStates[position] != 0) {
+            if (v.background == null) {
+                // Make sure the stateful drawable is set for expressive UI
+                v.setBackgroundResource(R.drawable.settingslib_round_background_stateful)
             }
-        } else {
-            v.setBackgroundResource(mLegacyBackgroundRes)
+
+            val background = v.background
+            if (background != null) {
+                val backgroundPadding = Rect()
+                background.getPadding(backgroundPadding)
+                // We can't remove the padding set in XML because the same layout was also
+                // used when expressive theme isn't enabled, or when expressive theme is enabled
+                // but this adapter isn't used. Hence, we have to do setPaddingRelative() here
+                // to apply the padding from the background.
+                v.setPadding(
+                    backgroundPadding.left,
+                    backgroundPadding.top,
+                    backgroundPadding.right,
+                    backgroundPadding.bottom,
+                )
+            }
+            val iconFrame =
+                holder.findViewById(androidx.preference.R.id.icon_frame)
+                    ?: holder.findViewById(android.R.id.icon_frame)
+            val hasIconSpace = iconFrame != null && iconFrame.visibility != View.GONE
+            drawableStateLayout.extraDrawableState =
+                stateSetOf(mItemPositionStates[position], hasIconSpace)
+        } else { // Handle the background of the preferences that are group divider
+            val backgroundRes = getRoundCornerDrawableRes(position, isSelected = false)
+            val (paddingStart, paddingEnd) = getStartEndPadding(position)
+            v.setPaddingRelative(paddingStart, v.paddingTop, paddingEnd, v.paddingBottom)
+            v.clipToOutline = backgroundRes != 0
+            v.setBackgroundResource(backgroundRes)
         }
     }
 
     private fun getStartEndPadding(position: Int): Pair<Int, Int> {
         val item = getItem(position)
+        if (position >= mItemPositionStates.size) {
+            Log.e(TAG, "IndexOutOfBounds: ${item?.title} in $position")
+            return 0 to 0
+        }
         val positionState = mItemPositionStates[position]
         return when {
             // This item handles edge to edge itself
@@ -272,6 +305,7 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
                 || preference is SpacePreference
 
     companion object {
+        private val TAG = "SettingsPrefGroupAdapter"
         private val STATE_SET_NONE = intArrayOf()
         private val STATE_SET_SINGLE = intArrayOf(android.R.attr.state_single)
         private val STATE_SET_FIRST = intArrayOf(android.R.attr.state_first)

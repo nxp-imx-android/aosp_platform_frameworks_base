@@ -151,7 +151,7 @@ object NotificationCustomContentMemoryVerifier {
                 computeDrawableSize(drawable.foreground) +
                     computeDrawableSize(drawable.background) +
                     computeDrawableSize(drawable.monochrome)
-            is BitmapDrawable -> drawable.bitmap.allocationByteCount
+            is BitmapDrawable -> drawable?.bitmap?.allocationByteCount ?: 0 // CAN be null in prod.
             // People can sneak large drawables into those custom memory views via resources -
             // we use the intrisic size as a proxy for how much memory rendering those will
             // take.

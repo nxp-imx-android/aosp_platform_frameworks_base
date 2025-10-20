@@ -98,17 +98,13 @@ final class ContentProviderRecord extends ContentProviderRecordInternal
         holder.noReleaseNeeded = noReleaseNeeded;
         holder.connection = conn;
         holder.mLocal = local;
-
-        if (android.app.Flags.skipRefContentProvider()) {
-            if (conn == null || conn.provider == null || conn.provider.proc == null) {
-                return holder;
-            }
-            final int procState = conn.provider.proc.getCurProcState();
-            if (procState == PROCESS_STATE_PERSISTENT || procState == PROCESS_STATE_PERSISTENT_UI) {
-                holder.noReleaseNeededIfUnstable = true;
-            }
+        if (conn == null || conn.provider == null || conn.provider.proc == null) {
+            return holder;
         }
-
+        final int procState = conn.provider.proc.getCurProcState();
+        if (procState == PROCESS_STATE_PERSISTENT || procState == PROCESS_STATE_PERSISTENT_UI) {
+            holder.noReleaseNeededIfUnstable = true;
+        }
         return holder;
     }
 

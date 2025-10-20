@@ -17,6 +17,7 @@
 package com.android.wm.shell.common;
 
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
+import static android.view.Display.INVALID_DISPLAY;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -69,7 +70,9 @@ public class DisplayController {
     private final DesktopState mDesktopState;
 
     private final SparseArray<DisplayRecord> mDisplays = new SparseArray<>();
+
     private final ArrayList<OnDisplaysChangedListener> mDisplayChangedListeners = new ArrayList<>();
+
     private DisplayTopology mDisplayTopology;
 
     public DisplayController(Context context, IWindowManager wmService, ShellInit shellInit,
@@ -123,6 +126,19 @@ public class DisplayController {
     public String getDisplayUniqueId(int displayId) {
         final DisplayRecord r = mDisplays.get(displayId);
         return r != null ? r.mUniqueId : null;
+    }
+
+    /**
+     * Gets the displayId associated with the provided uniqueId, if it is associated with one.
+     * Because this calls an IPC, we should only use this in time sensitive cases where we suspect
+     * DisplayManager has more up to date information than mDisplays (i.e., during reboot). For
+     * other cases, use getAllDisplaysByUniqueId below.
+     */
+    public int getDisplayIdByUniqueIdBlocking(String uniqueId) {
+        for (Display display : mDisplayManager.getDisplays()) {
+            if (uniqueId.equals(display.getUniqueId())) return display.getDisplayId();
+        }
+        return INVALID_DISPLAY;
     }
 
     /**
@@ -184,9 +200,26 @@ public class DisplayController {
      * Updates the insets for a given display.
      */
     public void updateDisplayInsets(int displayId, InsetsState state) {
+        final Rect oldStableBounds = new Rect();
+        final Rect newStableBounds = new Rect();
+        final DisplayLayout oldDisplayLayout = getDisplayLayout(displayId);
+        if (oldDisplayLayout != null) {
+            oldDisplayLayout.getStableBounds(oldStableBounds);
+        }
         final DisplayRecord r = mDisplays.get(displayId);
         if (r != null) {
             r.setInsets(state);
+        }
+        final DisplayLayout newDisplayLayout = getDisplayLayout(displayId);
+        if (newDisplayLayout != null) {
+            newDisplayLayout.getStableBounds(newStableBounds);
+        }
+
+        if (!oldStableBounds.equals(newStableBounds)) {
+            for (int i = 0; i < mDisplayChangedListeners.size(); ++i) {
+                mDisplayChangedListeners.get(i).onStableInsetsChanging(
+                        displayId, oldDisplayLayout);
+            }
         }
     }
 
@@ -336,12 +369,13 @@ public class DisplayController {
             final Context perDisplayContext = (displayId == Display.DEFAULT_DISPLAY)
                     ? mContext
                     : mContext.createDisplayContext(display);
+            DisplayLayout oldLayout = dr.mDisplayLayout;
             final Context context = perDisplayContext.createConfigurationContext(newConfig);
             final DisplayLayout displayLayout = dr.createLayout(context, display);
             dr.setDisplayLayout(context, displayLayout);
             for (int i = 0; i < mDisplayChangedListeners.size(); ++i) {
                 mDisplayChangedListeners.get(i).onDisplayConfigurationChanged(
-                        displayId, newConfig);
+                        displayId, newConfig, oldLayout);
             }
         }
     }
@@ -572,6 +606,22 @@ public class DisplayController {
          */
         default void onDisplayConfigurationChanged(int displayId, Configuration newConfig) {}
 
+        /**
+         * Called when a display's window-container configuration changes, includes old layout.
+         */
+        default void onDisplayConfigurationChanged(int displayId, Configuration newConfig,
+                DisplayLayout oldLayout) {
+            this.onDisplayConfigurationChanged(displayId, newConfig);
+        }
+
+        /**
+         * Notifies listeners of a stable insets change.
+         * This is usually called after a configuration change when the system components update
+         * their bounds.
+         * @param displayId display who's layout is changing.
+         * @param oldLayout the layout of this display before the change is applied.
+         */
+        default void onStableInsetsChanging(int displayId, DisplayLayout oldLayout) {}
         /**
          * Called when a display is removed.
          */

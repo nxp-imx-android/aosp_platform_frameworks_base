@@ -60,6 +60,13 @@ public class FloatingToolbarRoot extends LinearLayout {
         mContentRect.set(contentRect);
     }
 
+    /**
+     * Sets the Rect that shows the selection toolbar content to empty.
+     */
+    public void setContentRectEmpty() {
+        mContentRect.setEmpty();
+    }
+
     @Override
     @SuppressLint("ClickableViewAccessibility")
     public boolean dispatchTouchEvent(MotionEvent event) {

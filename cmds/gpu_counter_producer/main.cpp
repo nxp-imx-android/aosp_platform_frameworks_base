@@ -21,8 +21,13 @@
 #include <log/log.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
+
+#include <string>
+
+#include <android-base/properties.h>
+
+using android::base::GetProperty;
 
 #define _LOG(level, msg, ...)                                 \
     do {                                                      \
@@ -34,13 +39,11 @@
 #define LOG_WARN(msg, ...) _LOG(W, msg, ##__VA_ARGS__)
 #define LOG_INFO(msg, ...) _LOG(I, msg, ##__VA_ARGS__)
 
-#define NELEM(x) (sizeof(x) / sizeof(x[0]))
-
 typedef void (*FN_PTR)(void);
 
-const char* kProducerPaths[] = {
-        "libgpudataproducer.so",
-};
+#define LIBRARY_PATH_PROPERTY "graphics.gpu.profiler.counter_producer_lib"
+#define DEFAULT_LIBRARY_PATH "libgpudataproducer.so"
+
 const char* kPidFileName = "/data/local/tmp/gpu_counter_producer.pid";
 
 static FN_PTR loadLibrary(const char* lib) {
@@ -144,11 +147,11 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    std::string libPath = GetProperty(
+        LIBRARY_PATH_PROPERTY, DEFAULT_LIBRARY_PATH);
+
     dlerror(); // Clear any possibly ignored previous error.
-    FN_PTR startFunc = nullptr;
-    for (int i = 0; startFunc == nullptr && i < NELEM(kProducerPaths); i++) {
-        startFunc = loadLibrary(kProducerPaths[i]);
-    }
+    FN_PTR startFunc = loadLibrary(libPath.c_str());
 
     if (startFunc == nullptr) {
         LOG_ERR("Did not find the producer library");

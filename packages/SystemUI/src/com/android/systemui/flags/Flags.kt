@@ -71,11 +71,6 @@ object Flags {
     val NEW_UNLOCK_SWIPE_ANIMATION = releasedFlag("new_unlock_swipe_animation")
     val CHARGING_RIPPLE = resourceBooleanFlag(R.bool.flag_charging_ripple, "charging_ripple")
 
-    // TODO(b/254512676): Tracking Bug
-    @JvmField
-    val LOCKSCREEN_CUSTOM_CLOCKS =
-        resourceBooleanFlag(R.bool.config_enableLockScreenCustomClocks, "lockscreen_custom_clocks")
-
     /** Flag to control the revamp of keyguard biometrics progress animation */
     // TODO(b/244313043): Tracking bug
     @JvmField val BIOMETRICS_ANIMATION_REVAMP = unreleasedFlag("biometrics_animation_revamp")
@@ -150,11 +145,6 @@ object Flags {
     // TODO(b/269787742): Tracking Bug
     @JvmField
     val ENABLE_NEW_QS_EDIT_MODE = unreleasedFlag("enable_new_qs_edit_mode", teamfood = false)
-
-    // 600- status bar
-
-    // TODO(b/291315866): Tracking Bug
-    @JvmField val SIGNAL_CALLBACK_DEPRECATION = releasedFlag("signal_callback_deprecation")
 
     // TODO(b/311222557): Tracking bug
     val ROAMING_INDICATOR_VIA_DISPLAY_INFO = releasedFlag("roaming_indicator_via_display_info")
@@ -252,10 +242,6 @@ object Flags {
     val USER_TRACKER_BACKGROUND_CALLBACKS = unreleasedFlag("user_tracker_background_callbacks")
 
     // 2700 - unfold transitions
-    // TODO(b/265764985): Tracking Bug
-    @Keep
-    @JvmField
-    val ENABLE_DARK_VIGNETTE_WHEN_FOLDING = unreleasedFlag("enable_dark_vignette_when_folding")
 
     // TODO(b/316157842): Tracking Bug
     // Adds extra delay to notifications measure

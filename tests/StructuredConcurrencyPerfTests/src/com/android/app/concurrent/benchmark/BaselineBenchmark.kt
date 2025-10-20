@@ -20,25 +20,33 @@ package com.android.app.concurrent.benchmark
 import androidx.benchmark.BlackHole
 import androidx.benchmark.ExperimentalBlackHoleApi
 import com.android.app.concurrent.benchmark.base.BaseConcurrentBenchmark
-import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark
-import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark.Companion.ExecutorThreadScopeBuilder
-import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark.Companion.HandlerThreadImmediateScopeBuilder
-import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark.Companion.HandlerThreadScopeBuilder
-import com.android.app.concurrent.benchmark.base.BaseExecutorBenchmark
-import com.android.app.concurrent.benchmark.base.BaseExecutorBenchmark.Companion.ExecutorThreadBuilder
-import com.android.app.concurrent.benchmark.base.BaseExecutorBenchmark.Companion.HandlerThreadBuilder
-import com.android.app.concurrent.benchmark.util.SimpleStateHolder
-import com.android.app.concurrent.benchmark.util.SimpleSynchronousState
+import com.android.app.concurrent.benchmark.base.BaseSchedulerBenchmark
+import com.android.app.concurrent.benchmark.base.ConcurrentBenchmarkRule
+import com.android.app.concurrent.benchmark.event.BaseEventBenchmark
+import com.android.app.concurrent.benchmark.event.EventContextProvider
+import com.android.app.concurrent.benchmark.event.FlowWritableEventBuilder
+import com.android.app.concurrent.benchmark.event.SimpleEvent
+import com.android.app.concurrent.benchmark.event.SimplePublisherImpl
+import com.android.app.concurrent.benchmark.event.SimpleState
+import com.android.app.concurrent.benchmark.event.SimpleSynchronousState
+import com.android.app.concurrent.benchmark.event.SimpleWritableEventBuilder
+import com.android.app.concurrent.benchmark.event.WritableEventFactory
+import com.android.app.concurrent.benchmark.event.asSuspendableObserver
+import com.android.app.concurrent.benchmark.util.CyclicCountDownBarrier
+import com.android.app.concurrent.benchmark.util.ExecutorServiceCoroutineScopeBuilder
+import com.android.app.concurrent.benchmark.util.ExecutorThreadBuilder
+import com.android.app.concurrent.benchmark.util.HandlerThreadBuilder
+import com.android.app.concurrent.benchmark.util.HandlerThreadImmediateScopeBuilder
+import com.android.app.concurrent.benchmark.util.HandlerThreadScopeBuilder
 import com.android.app.concurrent.benchmark.util.ThreadFactory
-import com.android.app.concurrent.benchmark.util.asSuspendableObserver
 import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.startCoroutine
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.junit.FixMethodOrder
@@ -56,7 +64,7 @@ class SingleThreadSumDoubleBaselineBenchmark() : BaseConcurrentBenchmark() {
     @Test
     fun benchmark() {
         var sum = 0.0
-        benchmarkRule.runBenchmark { mainBlock { n -> sum += n.toDouble() } }
+        benchmarkRule.runBenchmark { onEachIteration { n -> sum += n.toDouble() } }
         BlackHole.consume(sum)
     }
 }
@@ -68,7 +76,7 @@ class SingleThreadSum1xDoMathBaselineBenchmark() : BaseConcurrentBenchmark() {
     @Test
     fun benchmark() {
         var sum = 0.0
-        benchmarkRule.runBenchmark { mainBlock { n -> sum += doMath(n) } }
+        benchmarkRule.runBenchmark { onEachIteration { n -> sum += doMath(n) } }
         BlackHole.consume(sum)
     }
 }
@@ -80,14 +88,14 @@ class SingleThreadSum2xDoMathBaselineBenchmark() : BaseConcurrentBenchmark() {
     @Test
     fun benchmark() {
         var sum = 0.0
-        benchmarkRule.runBenchmark { mainBlock { n -> sum += doMath(doMath(n)) } }
+        benchmarkRule.runBenchmark { onEachIteration { n -> sum += doMath(doMath(n)) } }
         BlackHole.consume(sum)
     }
 }
 
 @RunWith(Parameterized::class)
-class ExecutorDispatchBaselineBenchmark(param: ThreadFactory<ExecutorService, Executor>) :
-    BaseExecutorBenchmark(param) {
+class ExecutorDispatchBaselineBenchmark(param: ThreadFactory<Any, Executor>) :
+    BaseSchedulerBenchmark<Executor>(param) {
 
     companion object {
         @Parameters(name = "{0}")
@@ -99,11 +107,14 @@ class ExecutorDispatchBaselineBenchmark(param: ThreadFactory<ExecutorService, Ex
     fun benchmark() {
         var sum = 0.0
         benchmarkRule.runBenchmark {
-            onEachIteration(count = 1) { n, barrier ->
-                val next = doMath(n)
-                executor.execute {
-                    sum += doMath(next)
-                    barrier.countDown()
+            withBarrier(count = 1) {
+                beforeFirstIteration { barrier -> scheduler.execute { barrier.countDown() } }
+                onEachIteration { n, barrier ->
+                    val next = doMath(n)
+                    scheduler.execute {
+                        sum += doMath(next)
+                        barrier.countDown()
+                    }
                 }
             }
         }
@@ -113,8 +124,8 @@ class ExecutorDispatchBaselineBenchmark(param: ThreadFactory<ExecutorService, Ex
 
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class StartIntrinsicCoroutineBaselineBenchmark(param: ThreadFactory<ExecutorService, Executor>) :
-    BaseExecutorBenchmark(param) {
+class StartIntrinsicCoroutineBaselineBenchmark(param: ThreadFactory<Any, Executor>) :
+    BaseSchedulerBenchmark<Executor>(param) {
 
     companion object {
         @Parameters(name = "{0}")
@@ -125,29 +136,33 @@ class StartIntrinsicCoroutineBaselineBenchmark(param: ThreadFactory<ExecutorServ
     @Test
     fun benchmark() {
         var sum = 0.0
+        suspend fun doMath2x(n: Int, barrier: CyclicCountDownBarrier): Double {
+            val next = doMath(n)
+            return suspendCoroutine { continuation: Continuation<Double> ->
+                scheduler.execute {
+                    continuation.resume(doMath(next))
+                    barrier.countDown()
+                }
+            }
+        }
         benchmarkRule.runBenchmark {
-            onEachIteration(count = 1) { n, barrier ->
-                suspend {
-                        val next = doMath(n)
-                        suspendCoroutine { continuation: Continuation<Double> ->
-                            executor.execute {
-                                continuation.resume(doMath(next))
-                                barrier.countDown()
-                            }
-                        }
-                    }
-                    .startCoroutine(
-                        Continuation(
-                            context = EmptyCoroutineContext,
-                            resumeWith = { r: Result<Double> ->
-                                if (r.isSuccess) {
-                                    sum += r.getOrNull()!!
-                                } else {
-                                    error(r.exceptionOrNull()!!)
-                                }
-                            },
+            withBarrier(count = 1) {
+                beforeFirstIteration { barrier -> scheduler.execute { barrier.countDown() } }
+                onEachIteration { n, barrier ->
+                    suspend { doMath2x(n, barrier) }
+                        .startCoroutine(
+                            Continuation(
+                                context = EmptyCoroutineContext,
+                                resumeWith = { r: Result<Double> ->
+                                    if (r.isSuccess) {
+                                        sum += r.getOrNull()!!
+                                    } else {
+                                        error(r.exceptionOrNull()!!)
+                                    }
+                                },
+                            )
                         )
-                    )
+                }
             }
         }
         BlackHole.consume(sum)
@@ -156,8 +171,8 @@ class StartIntrinsicCoroutineBaselineBenchmark(param: ThreadFactory<ExecutorServ
 
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class ResumeIntrinsicCoroutineBaselineBenchmark(param: ThreadFactory<ExecutorService, Executor>) :
-    BaseExecutorBenchmark(param) {
+class ResumeIntrinsicCoroutineBaselineBenchmark(param: ThreadFactory<Any, Executor>) :
+    BaseSchedulerBenchmark<Executor>(param) {
 
     companion object {
         @Parameters(name = "{0}")
@@ -169,30 +184,33 @@ class ResumeIntrinsicCoroutineBaselineBenchmark(param: ThreadFactory<ExecutorSer
     fun benchmark() {
         var sum = 0.0
         val nextInput = SimpleSynchronousState<Double>()
-        benchmarkRule.runBenchmark {
-            beforeFirstIteration(count = 1) { barrier ->
-                suspend {
-                        while (true) {
-                            val next = nextInput.awaitValue()
-                            sum += suspendCoroutine { continuation: Continuation<Double> ->
-                                executor.execute {
-                                    continuation.resume(doMath(next))
-                                    barrier.countDown()
-                                }
-                            }
-                        }
+        suspend fun doMathForever(barrier: CyclicCountDownBarrier) {
+            while (true) {
+                val next = nextInput.awaitValue()
+                sum += suspendCoroutine { continuation: Continuation<Double> ->
+                    scheduler.execute {
+                        continuation.resume(doMath(next))
+                        barrier.countDown()
                     }
-                    .startCoroutine(
-                        Continuation(
-                            context = EmptyCoroutineContext,
-                            resumeWith = { r: Result<Unit> ->
-                                r.exceptionOrNull()?.let { error(it) }
-                            },
-                        )
-                    )
-                nextInput.putValueOrThrow(0.00)
+                }
             }
-            mainBlock { n -> nextInput.putValueOrThrow(doMath(n)) }
+        }
+        benchmarkRule.runBenchmark {
+            withBarrier(count = 1) {
+                beforeFirstIteration { barrier ->
+                    suspend { doMathForever(barrier) }
+                        .startCoroutine(
+                            Continuation(
+                                context = EmptyCoroutineContext,
+                                resumeWith = { r: Result<Unit> ->
+                                    r.exceptionOrNull()?.let { error(it) }
+                                },
+                            )
+                        )
+                    nextInput.putValueOrThrow(0.00)
+                }
+            }
+            onEachIteration { n -> nextInput.putValueOrThrow(doMath(n)) }
         }
         BlackHole.consume(sum)
     }
@@ -201,14 +219,14 @@ class ResumeIntrinsicCoroutineBaselineBenchmark(param: ThreadFactory<ExecutorSer
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class LaunchCoroutineBaselineBenchmark(param: ThreadFactory<Any, CoroutineScope>) :
-    BaseCoroutineBenchmark(param) {
+    BaseSchedulerBenchmark<CoroutineScope>(param) {
 
     companion object {
         @Parameters(name = "{0}")
         @JvmStatic
         fun getDispatchers() =
             listOf(
-                ExecutorThreadScopeBuilder,
+                ExecutorServiceCoroutineScopeBuilder,
                 HandlerThreadScopeBuilder,
                 HandlerThreadImmediateScopeBuilder,
             )
@@ -218,11 +236,14 @@ class LaunchCoroutineBaselineBenchmark(param: ThreadFactory<Any, CoroutineScope>
     fun benchmark() {
         var sum = 0.0
         benchmarkRule.runBenchmark {
-            onEachIteration(count = 1) { n, barrier ->
-                val next = doMath(n)
-                bgScope.launch {
-                    sum += doMath(next)
-                    barrier.countDown()
+            withBarrier(count = 1) {
+                beforeFirstIteration { barrier -> scheduler.launch { barrier.countDown() } }
+                onEachIteration { n, barrier ->
+                    val next = doMath(n)
+                    scheduler.launch {
+                        sum += doMath(next)
+                        barrier.countDown()
+                    }
                 }
             }
         }
@@ -233,14 +254,14 @@ class LaunchCoroutineBaselineBenchmark(param: ThreadFactory<Any, CoroutineScope>
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class MutableStateFlowBaselineBenchmark(param: ThreadFactory<Any, CoroutineScope>) :
-    BaseCoroutineBenchmark(param) {
+    BaseSchedulerBenchmark<CoroutineScope>(param) {
 
     companion object {
         @Parameters(name = "{0}")
         @JvmStatic
         fun getDispatchers() =
             listOf(
-                ExecutorThreadScopeBuilder,
+                ExecutorServiceCoroutineScopeBuilder,
                 HandlerThreadScopeBuilder,
                 HandlerThreadImmediateScopeBuilder,
             )
@@ -251,15 +272,17 @@ class MutableStateFlowBaselineBenchmark(param: ThreadFactory<Any, CoroutineScope
         var sum = 0.0
         val state = MutableStateFlow(0.00)
         benchmarkRule.runBenchmark {
-            beforeFirstIteration(count = 1) { barrier ->
-                bgScope.launch {
-                    state.collect { next ->
-                        sum += doMath(next)
-                        barrier.countDown()
+            withBarrier(count = 1) {
+                beforeFirstIteration { barrier ->
+                    scheduler.launch {
+                        state.collect { next ->
+                            sum += doMath(next)
+                            barrier.countDown()
+                        }
                     }
                 }
             }
-            mainBlock { n -> state.value = doMath(n) }
+            onEachIteration { n -> state.value = doMath(n) }
         }
         BlackHole.consume(sum)
     }
@@ -267,8 +290,8 @@ class MutableStateFlowBaselineBenchmark(param: ThreadFactory<Any, CoroutineScope
 
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class StateHolderBaselineBenchmark(param: ThreadFactory<ExecutorService, Executor>) :
-    BaseExecutorBenchmark(param) {
+class SimpleObservableStateBaselineBenchmark(param: ThreadFactory<Any, Executor>) :
+    BaseSchedulerBenchmark<Executor>(param) {
 
     companion object {
         @Parameters(name = "{0}") @JvmStatic fun getDispatchers() = listOf(ExecutorThreadBuilder)
@@ -277,15 +300,19 @@ class StateHolderBaselineBenchmark(param: ThreadFactory<ExecutorService, Executo
     @Test
     fun benchmark() {
         var sum = 0.0
-        val state = SimpleStateHolder(0.0)
+        val state = SimpleState(0.0)
         benchmarkRule.runBenchmark {
-            beforeFirstIteration(count = 1) { barrier ->
-                state.addListener(executor, notifyInitial = true) { next ->
-                    sum += doMath(next)
-                    barrier.countDown()
+            withBarrier(count = 1) {
+                beforeFirstIteration { barrier ->
+                    state.listen { next ->
+                        scheduler.execute {
+                            sum += doMath(next)
+                            barrier.countDown()
+                        }
+                    }
                 }
             }
-            mainBlock { n -> state.value = doMath(n) }
+            onEachIteration { n -> state.value = doMath(n) }
         }
         BlackHole.consume(sum)
     }
@@ -293,9 +320,8 @@ class StateHolderBaselineBenchmark(param: ThreadFactory<ExecutorService, Executo
 
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class StateHolderIntrinsicCoroutineBaselineBenchmark(
-    param: ThreadFactory<ExecutorService, Executor>
-) : BaseExecutorBenchmark(param) {
+class SimplePublisherIntrinsicCoroutineBaselineBenchmark(param: ThreadFactory<Any, Executor>) :
+    BaseSchedulerBenchmark<Executor>(param) {
 
     companion object {
         @Parameters(name = "{0}") @JvmStatic fun getDispatchers() = listOf(ExecutorThreadBuilder)
@@ -304,24 +330,80 @@ class StateHolderIntrinsicCoroutineBaselineBenchmark(
     @Test
     fun benchmark() {
         var sum = 0.0
-        val state = SimpleStateHolder(0.00)
-        val stateWatcher = state.asSuspendableObserver(executor)
+        val state = SimplePublisherImpl<Double>()
+        val stateWatcher = state.asSuspendableObserver(scheduler)
         benchmarkRule.runBenchmark {
-            beforeFirstIteration(count = 1) { barrier ->
-                suspend fun collectLambda(): Nothing {
-                    while (true) {
-                        val next = stateWatcher.awaitNextValue()
-                        sum += doMath(next)
-                        barrier.countDown()
+            withBarrier(count = 1) {
+                beforeFirstIteration { barrier ->
+                    scheduler.execute { barrier.countDown() }
+                    suspend fun collectLambda(): Nothing {
+                        while (true) {
+                            val next = stateWatcher.awaitNextValue()
+                            sum += doMath(next)
+                            barrier.countDown()
+                        }
                     }
+                    ::collectLambda.startCoroutine(
+                        Continuation(context = EmptyCoroutineContext, resumeWith = {})
+                    )
                 }
-                ::collectLambda.startCoroutine(
-                    Continuation(context = EmptyCoroutineContext, resumeWith = {})
-                )
             }
-            mainBlock { n -> state.value = doMath(n) }
+            onEachIteration { n -> state.publish(doMath(n)) }
         }
         BlackHole.consume(sum)
+    }
+}
+
+private sealed interface GenericBaselineBenchmark<T, E : Any>
+    where T : WritableEventFactory<E>, T : EventContextProvider<E> {
+    val benchmarkRule: ConcurrentBenchmarkRule
+    val context: T
+
+    @Test
+    fun benchmark_doMathBg() {
+        val state = context.createWritableEvent(0.00)
+        var sum = 0.0
+        benchmarkRule.runBenchmark {
+            withBarrier(count = 1) {
+                beforeFirstIteration { barrier ->
+                    context.read {
+                        state.observe { next ->
+                            sum += doMath(next)
+                            barrier.countDown()
+                        }
+                    }
+                }
+            }
+            onEachIteration { n -> context.write { state.update(doMath(n)) } }
+        }
+    }
+}
+
+@RunWith(Parameterized::class)
+class SimpleGenericBaselineBenchmark(param: ThreadFactory<Any, Executor>) :
+    BaseEventBenchmark<Executor, SimpleWritableEventBuilder>(
+        param,
+        { SimpleWritableEventBuilder(it) },
+    ),
+    GenericBaselineBenchmark<SimpleWritableEventBuilder, SimpleEvent<*>> {
+
+    companion object {
+        @Parameters(name = "{0}") @JvmStatic fun getDispatchers() = listOf(ExecutorThreadBuilder)
+    }
+}
+
+@RunWith(Parameterized::class)
+class FlowGenericBaselineBenchmark(param: ThreadFactory<Any, CoroutineScope>) :
+    BaseEventBenchmark<CoroutineScope, FlowWritableEventBuilder>(
+        param,
+        { FlowWritableEventBuilder(it) },
+    ),
+    GenericBaselineBenchmark<FlowWritableEventBuilder, Flow<*>> {
+
+    companion object {
+        @Parameters(name = "{0}")
+        @JvmStatic
+        fun getDispatchers() = listOf(ExecutorServiceCoroutineScopeBuilder)
     }
 }
 

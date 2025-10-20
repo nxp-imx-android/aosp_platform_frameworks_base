@@ -27,6 +27,7 @@ import com.android.systemui.statusbar.notification.promoted.PromotedNotification
 import com.android.systemui.statusbar.notification.row.ImageResult
 import com.android.systemui.statusbar.notification.row.LazyImage
 import com.android.systemui.statusbar.notification.row.shared.ImageModel
+import java.time.Duration
 
 data class PromotedNotificationContentModels(
     /** The potentially redacted version of the content that will be exposed to the public */
@@ -90,6 +91,9 @@ data class PromotedNotificationContentModel(
 
     // for ProgressStyle:
     val newProgress: NotificationProgressModel?,
+
+    // for MetricStyle:
+    val metrics: List<Metric>?,
     val notificationView: View?,
 ) {
     class Builder(val key: String) {
@@ -116,6 +120,9 @@ data class PromotedNotificationContentModel(
         // for ProgressStyle:
         var newProgress: NotificationProgressModel? = null
 
+        // for MetricStyle:
+        var metrics: List<Metric>? = null
+
         var notificationView: View? = null
 
         fun build() =
@@ -139,6 +146,7 @@ data class PromotedNotificationContentModel(
                 verificationIcon = verificationIcon,
                 verificationText = verificationText,
                 newProgress = newProgress,
+                metrics = metrics,
                 notificationView = notificationView,
             )
     }
@@ -172,15 +180,48 @@ data class PromotedNotificationContentModel(
     /** The fields needed to render the old-style progress bar. */
     data class OldProgress(val progress: Int, val max: Int, val isIndeterminate: Boolean)
 
+    sealed interface Metric {
+        val label: CharSequence
+
+        sealed interface TimeDifference : Metric {
+            val isTimer: Boolean
+            val useAdaptiveFormat: Boolean
+
+            data class Instant(
+                val zeroTime: java.time.Instant,
+                override val isTimer: Boolean,
+                override val useAdaptiveFormat: Boolean,
+                override val label: CharSequence,
+            ) : TimeDifference
+
+            data class ElapsedRealtime(
+                val zeroElapsedRealtime: Long,
+                override val isTimer: Boolean,
+                override val useAdaptiveFormat: Boolean,
+                override val label: CharSequence,
+            ) : TimeDifference
+
+            data class Paused(
+                val pausedDuration: Duration,
+                override val isTimer: Boolean,
+                override val useAdaptiveFormat: Boolean,
+                override val label: CharSequence,
+            ) : TimeDifference
+        }
+
+        data class Text(val metricValue: CharSequence, override val label: CharSequence) : Metric
+    }
+
     /** The promotion-eligible style of a notification, or [Style.Ineligible] if not. */
     enum class Style {
         Base, // style == null
         CollapsedBase, // style == null
-        BigPicture,
         BigText,
         Call,
         CollapsedCall,
         Progress,
+        Metric,
+        MetricSingle,
         Ineligible,
     }
 

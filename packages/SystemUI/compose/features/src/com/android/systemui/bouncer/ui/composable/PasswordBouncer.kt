@@ -18,9 +18,17 @@
 
 package com.android.systemui.bouncer.ui.composable
 
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextObfuscationMode
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +37,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -41,6 +50,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onInterceptKeyBeforeSoftKeyboard
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -49,14 +59,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.PlatformIconButton
+import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.bouncer.ui.viewmodel.PasswordBouncerViewModel
 import com.android.systemui.common.ui.compose.SelectedUserAwareInputConnection
+import com.android.systemui.common.ui.compose.SelectedUserAwareLocalContext
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.res.R
 
 /** UI for the input part of a password-requiring version of the bouncer. */
 @Composable
-internal fun PasswordBouncer(viewModel: PasswordBouncerViewModel, modifier: Modifier = Modifier) {
+internal fun ContentScope.PasswordBouncer(
+    viewModel: PasswordBouncerViewModel,
+    modifier: Modifier = Modifier,
+) {
     val focusRequester = remember { FocusRequester() }
     val isTextFieldFocusRequested by
         viewModel.isTextFieldFocusRequested.collectAsStateWithLifecycle()
@@ -70,6 +86,7 @@ internal fun PasswordBouncer(viewModel: PasswordBouncerViewModel, modifier: Modi
     val animateFailure: Boolean by viewModel.animateFailure.collectAsStateWithLifecycle()
     val isImeSwitcherButtonVisible by
         viewModel.isImeSwitcherButtonVisible.collectAsStateWithLifecycle()
+    val isPasswordRevealed by viewModel.isPasswordRevealed.collectAsStateWithLifecycle()
     val selectedUserId by viewModel.selectedUserId.collectAsStateWithLifecycle()
 
     DisposableEffect(Unit) { onDispose { viewModel.onHidden() } }
@@ -83,45 +100,92 @@ internal fun PasswordBouncer(viewModel: PasswordBouncerViewModel, modifier: Modi
 
     val color = MaterialTheme.colorScheme.onSurfaceVariant
 
+    ResetFocusIfNeeded(layoutState.transitionState, viewModel)
+
     SelectedUserAwareInputConnection(selectedUserId) {
-        OutlinedSecureTextField(
-            state = viewModel.textFieldState,
-            enabled = isInputEnabled,
-            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-            keyboardOptions =
-                KeyboardOptions(
-                    autoCorrectEnabled = false,
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done,
-                ),
-            onKeyboardAction = { viewModel.onAuthenticateKeyPressed() },
-            modifier =
-                modifier
-                    .width(dimensionResource(id = R.dimen.keyguard_password_field_width))
-                    .sysuiResTag("bouncer_text_entry")
-                    .focusRequester(focusRequester)
-                    .onFocusChanged { viewModel.onTextFieldFocusChanged(it.isFocused) }
-                    .onInterceptKeyBeforeSoftKeyboard { keyEvent ->
-                        if (keyEvent.key == Key.Back) {
-                            viewModel.onImeDismissed()
-                            true
-                        } else {
-                            false
-                        }
-                    },
-            trailingIcon =
-                if (isImeSwitcherButtonVisible) {
-                    { ImeSwitcherButton(viewModel, color) }
-                } else {
-                    null
+        SelectedUserAwareLocalContext(selectedUserId) {
+            OutlinedSecureTextField(
+                state = viewModel.textFieldState,
+                enabled = isInputEnabled,
+                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                keyboardOptions =
+                    KeyboardOptions(
+                        autoCorrectEnabled = false,
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done,
+                    ),
+                onKeyboardAction = { viewModel.onAuthenticateKeyPressed() },
+                textObfuscationMode =
+                    if (isPasswordRevealed) TextObfuscationMode.Visible
+                    else TextObfuscationMode.Hidden,
+                modifier =
+                    modifier
+                        .width(dimensionResource(id = R.dimen.keyguard_password_field_width))
+                        .sysuiResTag("bouncer_text_entry")
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { viewModel.onTextFieldFocusChanged(it.isFocused) }
+                        .onInterceptKeyBeforeSoftKeyboard { keyEvent ->
+                            if (keyEvent.key == Key.Back) {
+                                viewModel.onImeDismissed()
+                                true
+                            } else {
+                                false
+                            }
+                        },
+                trailingIcon = {
+                    trailingIcons(viewModel, color, isImeSwitcherButtonVisible, isPasswordRevealed)
                 },
-            shape = RoundedCornerShape(28.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors =
+                    OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = color,
+                        unfocusedBorderColor = color,
+                    ),
+            )
+        }
+    }
+}
+
+@Composable
+private fun trailingIcons(
+    viewModel: PasswordBouncerViewModel,
+    color: Color,
+    isImeSwitcherButtonVisible: Boolean,
+    isPasswordRevealed: Boolean,
+) {
+    if (!viewModel.isMoreIndicatorsAndButtonsEnabled) {
+        if (isImeSwitcherButtonVisible) {
+            ImeSwitcherButton(viewModel, color)
+        }
+        return
+    }
+
+    Row() {
+        if (isImeSwitcherButtonVisible) {
+            ImeSwitcherButton(viewModel, color)
+        }
+        IconButton(
+            onClick = {
+                if (isPasswordRevealed) {
+                    viewModel.onHidePasswordButtonClicked()
+                } else {
+                    viewModel.onRevealPasswordButtonClicked()
+                }
+            },
             colors =
-                OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = color,
-                    unfocusedBorderColor = color,
+                IconButtonDefaults.filledIconButtonColors(
+                    contentColor = color,
+                    containerColor = Color.Transparent,
                 ),
-        )
+        ) {
+            Icon(
+                imageVector =
+                    if (isPasswordRevealed) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                contentDescription = null,
+                // 24p matches the size of ImeSwitcherButton's icon
+                modifier = Modifier.size(24.dp),
+            )
+        }
     }
 }
 
@@ -139,4 +203,17 @@ private fun ImeSwitcherButton(viewModel: PasswordBouncerViewModel, color: Color)
                 containerColor = Color.Transparent,
             ),
     )
+}
+
+@Composable
+private fun ResetFocusIfNeeded(
+    transitionState: TransitionState,
+    viewModel: PasswordBouncerViewModel,
+) {
+    val focusManager = LocalFocusManager.current
+    SideEffect {
+        if (viewModel.shouldResetFocus(transitionState)) {
+            focusManager.clearFocus()
+        }
+    }
 }

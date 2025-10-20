@@ -60,7 +60,7 @@
     <string name="accessibility_split_top" msgid="2789329702027147146">"Rozdeliť hore"</string>
     <string name="accessibility_split_bottom" msgid="8694551025220868191">"Rozdeliť dole"</string>
     <string name="one_handed_tutorial_title" msgid="4583241688067426350">"Používanie režimu jednej ruky"</string>
-    <string name="one_handed_tutorial_description" msgid="3486582858591353067">"Ukončíte potiahnutím z dolnej časti obrazovky nahor alebo klepnutím kdekoľvek nad aplikáciu"</string>
+    <string name="one_handed_tutorial_description" msgid="3486582858591353067">"Režim ukončíte potiahnutím z dolnej časti obrazovky nahor alebo klepnutím kdekoľvek nad aplikáciu"</string>
     <string name="accessibility_action_start_one_handed" msgid="5070337354072861426">"Spustiť režim jednej ruky"</string>
     <string name="accessibility_action_stop_one_handed" msgid="1369940261782179442">"Ukončiť režim jednej ruky"</string>
     <string name="bubbles_settings_button_description" msgid="1301286017420516912">"Nastavenia bublín aplikácie <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
@@ -96,8 +96,6 @@
     <string name="notification_bubble_title" msgid="6082910224488253378">"Bublina"</string>
     <string name="manage_bubbles_text" msgid="7730624269650594419">"Spravovať"</string>
     <string name="accessibility_bubble_dismissed" msgid="8367471990421247357">"Bublina bola zavretá."</string>
-    <string name="bubble_shortcut_label" msgid="666269077944378311">"Bubliny"</string>
-    <string name="bubble_shortcut_long_label" msgid="6088437544312894043">"Zobraziť bubliny"</string>
     <string name="restart_button_description" msgid="4564728020654658478">"Ak chcete zlepšiť zobrazenie, klepnutím túto aplikáciu reštartujte"</string>
     <string name="user_aspect_ratio_settings_button_hint" msgid="734835849600713016">"Zmeniť pomer strán tejto aplikácie v Nastaveniach"</string>
     <string name="user_aspect_ratio_settings_button_description" msgid="4315566801697411684">"Zmeniť pomer strán"</string>
@@ -169,7 +167,7 @@
     <string name="app_header_talkback_action_minimize_button_text" msgid="7491054416186901764">"Minimalizovať okno aplikácie"</string>
     <string name="app_header_talkback_action_close_button_text" msgid="5159612596378268926">"Zavrieť okno aplikácie"</string>
     <string name="open_by_default_settings_text" msgid="2526548548598185500">"Otvárať podľa predvolených nastavení"</string>
-    <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"Vyberte, ako sa majú v tejto aplikácii otvárať webové odkazy"</string>
+    <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"Vyberte, ako sa majú otvárať webové odkazy pre túto aplikáciu"</string>
     <string name="open_by_default_dialog_in_app_text" msgid="6978022419634199806">"V aplikácii"</string>
     <string name="open_by_default_dialog_in_browser_text" msgid="8042769465958497081">"V prehliadači"</string>
     <string name="open_by_default_dialog_dismiss_button_text" msgid="3487238795534582291">"OK"</string>

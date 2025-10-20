@@ -16,7 +16,6 @@
 
 package com.android.systemui.media.dialog;
 
-import static com.android.media.flags.Flags.enableOutputSwitcherRedesign;
 import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_GO_TO_APP;
 import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_NONE;
 import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_TRANSFER;
@@ -63,7 +62,6 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
     private static final String TAG = "MediaOutputAdapterBase";
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
     protected final List<MediaItem> mMediaItemList = new CopyOnWriteArrayList<>();
-    private boolean mShouldGroupSelectedMediaItems = true;
 
     public MediaOutputAdapterBase(MediaSwitchingController controller) {
         mController = controller;
@@ -73,8 +71,9 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
     }
 
     boolean isCurrentlyConnected(MediaDevice device) {
-        return TextUtils.equals(device.getId(),
-                mController.getCurrentConnectedMediaDevice().getId())
+        MediaDevice currentConnectedMediaDevice = mController.getCurrentConnectedMediaDevice();
+        return (currentConnectedMediaDevice != null
+                && TextUtils.equals(device.getId(), currentConnectedMediaDevice.getId()))
                 || (!mController.hasGroupPlayback() && device.isSelected());
     }
 
@@ -88,31 +87,6 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
 
     int getCurrentActivePosition() {
         return mCurrentActivePosition;
-    }
-
-    /** Refreshes the RecyclerView dataset and forces re-render. */
-    public void updateItems() {
-        mMediaItemList.clear();
-        mMediaItemList.addAll(mController.getMediaItemList());
-        if (mShouldGroupSelectedMediaItems) {
-            if (!mController.hasGroupPlayback()) {
-                // Don't group devices if initially there isn't more than one selected.
-                mShouldGroupSelectedMediaItems = false;
-            }
-        }
-        notifyDataSetChanged();
-    }
-
-    @Override
-    public long getItemId(int position) {
-        if (position >= mMediaItemList.size()) {
-            Log.d(TAG, "Incorrect position for item id: " + position);
-            return position;
-        }
-        MediaItem currentMediaItem = mMediaItemList.get(position);
-        return currentMediaItem.getMediaDevice().isPresent()
-                ? currentMediaItem.getMediaDevice().get().getId().hashCode()
-                : position;
     }
 
     @Override
@@ -147,8 +121,6 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
                 Log.d(TAG, "#" + position + ": " + device);
             }
 
-            boolean isDeviceGroup = false;
-            boolean hideGroupItem = false;
             GroupStatus groupStatus = null;
             OngoingSessionStatus ongoingSessionStatus = null;
             ConnectionState connectionState = ConnectionState.DISCONNECTED;
@@ -179,14 +151,6 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
                     clickListener = v -> cancelMuteAwaitConnection();
                 } else if (device.getState() == MediaDeviceState.STATE_GROUPING) {
                     connectionState = ConnectionState.CONNECTING;
-                } else if (!enableOutputSwitcherRedesign() && mShouldGroupSelectedMediaItems
-                        && mController.hasGroupPlayback() && device.isSelected()
-                        && !device.isInputDevice()) {
-                    if (mediaItem.isFirstDeviceInGroup()) {
-                        isDeviceGroup = true;
-                    } else {
-                        hideGroupItem = true;
-                    }
                 } else { // A connected or disconnected device.
                     subtitle = device.hasSubtext() ? device.getSubtextString() : null;
                     ongoingSessionStatus = getOngoingSessionStatus(device);
@@ -213,20 +177,16 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
                 }
             }
 
-            if (connectionState == ConnectionState.CONNECTED || isDeviceGroup) {
+            if (connectionState == ConnectionState.CONNECTED) {
                 mCurrentActivePosition = position;
             }
 
-            if (isDeviceGroup) {
-                renderDeviceGroupItem();
-            } else {
-                renderDeviceItem(hideGroupItem, device, connectionState, restrictVolumeAdjustment,
-                        groupStatus, ongoingSessionStatus, clickListener, deviceDisabled, subtitle,
-                        deviceStatusIcon);
-            }
+            renderDeviceItem(device, connectionState, restrictVolumeAdjustment,
+                    groupStatus, ongoingSessionStatus, clickListener, deviceDisabled, subtitle,
+                    deviceStatusIcon);
         }
 
-        protected abstract void renderDeviceItem(boolean hideGroupItem, MediaDevice device,
+        protected abstract void renderDeviceItem(MediaDevice device,
                 ConnectionState connectionState, boolean restrictVolumeAdjustment,
                 GroupStatus groupStatus, OngoingSessionStatus ongoingSessionStatus,
                 View.OnClickListener clickListener, boolean deviceDisabled, String subtitle,
@@ -274,11 +234,6 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
             return Api34Impl.getDeviceStatusIconBasedOnSelectionBehavior(device, mContext);
         }
 
-        protected void onExpandGroupButtonClicked() {
-            mShouldGroupSelectedMediaItems = false;
-            notifyDataSetChanged();
-        }
-
         protected void onGroupActionTriggered(boolean isChecked, MediaDevice device) {
             disableSeekBar();
             if (isChecked && device.isSelectable()) {
@@ -316,26 +271,13 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
         @VisibleForTesting
         void showCustomEndSessionDialog(MediaDevice device) {
             MediaSessionReleaseDialog mediaSessionReleaseDialog = new MediaSessionReleaseDialog(
-                    mContext, () -> transferOutput(device),
-                    mController.getColorSchemeLegacy().getColorButtonBackground(),
-                    mController.getColorSchemeLegacy().getColorItemContent());
+                    mContext, () -> transferOutput(device), mController.getColorScheme());
             mediaSessionReleaseDialog.show();
         }
 
         private void cancelMuteAwaitConnection() {
             mController.cancelMuteAwaitConnection();
             notifyDataSetChanged();
-        }
-
-        protected String getDeviceItemContentDescription(@NonNull MediaDevice device) {
-            return mContext.getString(
-                    device.getDeviceType() == MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE
-                            ? R.string.accessibility_bluetooth_name
-                            : R.string.accessibility_cast_name, device.getName());
-        }
-
-        protected String getGroupItemContentDescription(String sessionName) {
-            return mContext.getString(R.string.accessibility_cast_name, sessionName);
         }
     }
 

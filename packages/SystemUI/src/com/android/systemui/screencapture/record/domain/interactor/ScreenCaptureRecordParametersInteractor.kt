@@ -16,28 +16,33 @@
 
 package com.android.systemui.screencapture.record.domain.interactor
 
-import com.android.systemui.screencapture.common.ScreenCapture
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
+import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.record.data.repository.ScreenCaptureRecordParametersRepository
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
+import com.android.systemui.screenrecord.data.repository.ScreenRecordingServiceRepository
 import javax.inject.Inject
 
-@ScreenCapture
+@ScreenCaptureScope
 class ScreenCaptureRecordParametersInteractor
 @Inject
-constructor(private val repository: ScreenCaptureRecordParametersRepository) {
+constructor(
+    private val serviceRepository: ScreenRecordingServiceRepository,
+    private val repository: ScreenCaptureRecordParametersRepository,
+) {
 
     val parameters = repository.parameters
 
     fun setAudioSource(audioSource: ScreenRecordingAudioSource) {
+        serviceRepository.updateAudioSource(audioSource)
         repository.updateParameters { it.copy(audioSource = audioSource) }
     }
 
-    fun setRecordTarget(target: ScreenCaptureTarget) {
-        repository.updateParameters { it.copy(target = target) }
+    fun setShouldShowTaps(shouldShowTaps: Boolean) {
+        serviceRepository.updateShouldShowTaps(shouldShowTaps)
+        repository.updateParameters { it.copy(shouldShowTaps = shouldShowTaps) }
     }
 
-    fun setShouldShowTaps(shouldShowTaps: Boolean) {
-        repository.updateParameters { it.copy(shouldShowTaps = shouldShowTaps) }
+    fun setShouldShowFrontCamera(shouldShowFrontCamera: Boolean) {
+        repository.updateParameters { it.copy(shouldShowFrontCamera = shouldShowFrontCamera) }
     }
 }

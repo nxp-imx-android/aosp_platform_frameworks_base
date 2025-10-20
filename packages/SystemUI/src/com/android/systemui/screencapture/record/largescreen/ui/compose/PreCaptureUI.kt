@@ -16,7 +16,6 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
-import android.graphics.Rect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,9 +33,9 @@ import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureColors
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
-import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.ScreenCaptureRegion
-import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.ScreenCaptureType
 
 /** Main component for the pre-capture UI. */
 @Composable
@@ -50,11 +49,20 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                     .zIndex(1f)
         ) {
             PreCaptureToolbar(
-                viewModel = viewModel,
-                expanded = true,
-                onCloseClick = { viewModel.closeUI() },
+                viewModel = viewModel.toolbarViewModel,
+                selectedCaptureType = viewModel.captureType,
+                selectedCaptureRegion = viewModel.captureRegion,
+                onCaptureTypeSelected = viewModel::updateCaptureType,
+                onCaptureRegionSelected = viewModel::updateCaptureRegion,
+                onCloseClick = viewModel::closeUi,
             )
         }
+
+        val iconResourceId =
+            when (viewModel.captureType) {
+                ScreenCaptureType.SCREENSHOT -> R.drawable.ic_screen_capture_camera
+                ScreenCaptureType.RECORDING -> R.drawable.ic_screenrecord
+            }
 
         when (viewModel.captureRegion) {
             ScreenCaptureRegion.FULLSCREEN -> {
@@ -70,40 +78,65 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                         icon =
                             loadIcon(
                                     viewModel = viewModel,
-                                    resId = R.drawable.ic_screen_capture_camera,
+                                    resId = iconResourceId,
                                     contentDescription = null,
                                 )
                                 .value,
-                        text = stringResource(R.string.screen_capture_fullscreen_screenshot_button),
-                        onClick = { viewModel.takeFullscreenScreenshot() },
+                        text =
+                            stringResource(
+                                when (viewModel.captureType) {
+                                    ScreenCaptureType.SCREENSHOT ->
+                                        R.string.screen_capture_fullscreen_screenshot_button
+                                    ScreenCaptureType.RECORDING ->
+                                        R.string.screen_capture_fullscreen_record_button
+                                }
+                            ),
+                        onClick = viewModel::beginCapture,
                     )
                 }
             }
 
             ScreenCaptureRegion.PARTIAL -> {
-                // TODO(b/427541309) Set the initial width and height of the RegionBox based on the
-                // viewmodel state.
-                val icon by
-                    loadIcon(
-                        viewModel = viewModel,
-                        resId = R.drawable.ic_screen_capture_camera,
-                        contentDescription = null,
+                val regionBox = viewModel.regionBox
+                // To avoid a race condition where the UI is displayed before the initial region box
+                // dimensions are calculated, we only compose the RegionBox once its initial state
+                // is ready.
+                if (regionBox != null) {
+                    val icon by
+                        loadIcon(
+                            viewModel = viewModel,
+                            resId = iconResourceId,
+                            contentDescription = null,
+                        )
+                    RegionBox(
+                        initialRect = regionBox,
+                        buttonText =
+                            stringResource(
+                                id =
+                                    when (viewModel.captureType) {
+                                        ScreenCaptureType.SCREENSHOT ->
+                                            R.string.screen_capture_region_selection_button
+                                        ScreenCaptureType.RECORDING ->
+                                            R.string.screen_capture_record_region_selection_button
+                                    }
+                            ),
+                        buttonIcon = icon,
+                        onRegionSelected = { regionBoxRect ->
+                            viewModel.updateRegionBoxBounds(regionBoxRect)
+                            viewModel.toolbarViewModel.updateOpacityForRegionBox(
+                                isInteracting = false,
+                                regionBoxBounds = regionBoxRect,
+                            )
+                        },
+                        onInteractionStateChanged = { isInteracting ->
+                            viewModel.toolbarViewModel.updateOpacityForRegionBox(
+                                isInteracting = isInteracting,
+                                regionBoxBounds = viewModel.regionBox,
+                            )
+                        },
+                        onCaptureClick = viewModel::beginCapture,
                     )
-                RegionBox(
-                    buttonText =
-                        stringResource(
-                            id =
-                                when (viewModel.captureType) {
-                                    ScreenCaptureType.SCREENSHOT ->
-                                        R.string.screen_capture_region_selection_button
-                                    ScreenCaptureType.SCREEN_RECORD ->
-                                        R.string.screen_capture_record_region_selection_button
-                                }
-                        ),
-                    buttonIcon = icon,
-                    onRegionSelected = { rect: Rect -> viewModel.updateRegionBox(rect) },
-                    onCaptureClick = { viewModel.takePartialScreenshot() },
-                )
+                }
             }
 
             ScreenCaptureRegion.APP_WINDOW -> {}

@@ -83,6 +83,9 @@ interface DesksOrganizer {
     /** The desk for a given change, if any. */
     fun getDeskIdFromChange(change: TransitionInfo.Change): Int?
 
+    /** The desk for a given task info, if any. */
+    fun getDeskIdFromTaskInfo(taskInfo: TaskInfo): Int?
+
     /**
      * Returns the desk id in which the task in the given change is located at the end of a
      * transition, if any.
@@ -96,7 +99,10 @@ interface DesksOrganizer {
     fun isDeskActiveAtEnd(change: TransitionInfo.Change, deskId: Int): Boolean
 
     /** Allows for other classes to respond to task changes this organizer receives. */
-    fun setOnDesktopTaskInfoChangedListener(listener: (ActivityManager.RunningTaskInfo) -> Unit)
+    fun addOnDesktopTaskInfoChangedListener(listener: (ActivityManager.RunningTaskInfo) -> Unit)
+
+    /** Allows for other classes to respond to task vanishes this organizer receives. */
+    fun addOnDesktopTaskVanishedListener(listener: (ActivityManager.RunningTaskInfo) -> Unit)
 
     /** Move a desk to the given display area. */
     fun moveDeskToDisplay(

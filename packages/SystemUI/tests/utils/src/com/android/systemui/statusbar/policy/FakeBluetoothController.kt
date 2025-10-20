@@ -27,6 +27,7 @@ class FakeBluetoothController : BluetoothController {
 
     private var callbacks = mutableListOf<Callback>()
     private var enabled = false
+    private var supportedProfiles = emptyList<Int>()
 
     override fun addCallback(listener: Callback) {
         callbacks += listener
@@ -63,6 +64,12 @@ class FakeBluetoothController : BluetoothController {
     override fun canConfigBluetooth(): Boolean = false
 
     override fun getConnectedDevices(): MutableList<CachedBluetoothDevice> = Collections.emptyList()
+
+    override fun getSupportedProfiles(): List<Int> = supportedProfiles
+
+    fun setSupportedProfiles(profiles: List<Int>) {
+        supportedProfiles = profiles
+    }
 
     override fun addOnMetadataChangedListener(
         device: CachedBluetoothDevice?,

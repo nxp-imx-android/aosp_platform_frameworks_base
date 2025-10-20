@@ -32,7 +32,6 @@ import android.os.Binder;
 import android.os.LocaleList;
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.Postsubmit;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.DisplayMetrics;
@@ -409,34 +408,31 @@ public class ResourcesManagerTest {
 
     @Test
     @SmallTest
-    @RequiresFlagsEnabled(Flags.FLAG_IGNORE_NON_PUBLIC_CONFIG_DIFF_FOR_RESOURCES_KEY)
-    public void testNonPublicDiffOverrideConfigShareImpl() {
-        final Configuration overrideConfig1 = new Configuration();
-        overrideConfig1.densityDpi = 100;
-        overrideConfig1.windowConfiguration.setAppBounds(0, 0, 500, 1000);
-        final Resources resources1 = mResourcesManager.getResources(
-                null, APP_ONE_RES_DIR, null, null, null, null, null, overrideConfig1,
-                CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
+    public void testUpdateActivityResourcesOverrideWindowConfiguration() {
+        final Binder activity = new Binder();
+        final Resources activityResources = mResourcesManager.createBaseTokenResources(
+                activity, null, null, null, null, null, Display.DEFAULT_DISPLAY,
+                null, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
+        final Configuration overrideConfig = new Configuration();
+        overrideConfig.windowConfiguration.getBounds().set(0, 0, 500, 1000);
+        // Simulate the usage of Activity#createConfigurationContext.
+        final Resources overrideConfigResources = mResourcesManager.getResources(
+                activity, null, null, null, null, null, Display.DEFAULT_DISPLAY,
+                overrideConfig, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
+        // This is a key step to make the non-window configuration fields have the same value
+        // (which were assigned from ResourcesManager#applyDisplayMetricsToConfiguration). And the
+        // following update shouldn't create the ResourcesKey that finds the same ResourcesImpl.
+        final Configuration newActivityOverrideConfig =
+                new Configuration(overrideConfigResources.getConfiguration());
+        newActivityOverrideConfig.windowConfiguration.getBounds().set(100, 200, 600, 1200);
+        mResourcesManager.updateResourcesForActivity(activity, newActivityOverrideConfig,
+                Display.DEFAULT_DISPLAY);
 
-        final Configuration overrideConfig2 = new Configuration(overrideConfig1);
-        // WindowConfiguration is not a public API field. It shouldn't affect resources.
-        overrideConfig2.windowConfiguration.getAppBounds().offset(100, 100);
-        final Resources resources2 = mResourcesManager.getResources(
-                null, APP_ONE_RES_DIR, null, null, null, null, null, overrideConfig2,
-                CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
-
-        // Verify that ResourcesKey distinguishes undefined fields.
-        final Configuration emptyConfig = new Configuration();
-        final Resources resources3 = mResourcesManager.getResources(
-                null, APP_ONE_RES_DIR, null, null, null, null, null, emptyConfig,
-                CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
-
-        assertNotNull(resources1);
-        assertNotNull(resources2);
-        assertNotNull(emptyConfig);
-        assertSame(resources1.getImpl(), resources2.getImpl());
-        assertNotSame(resources3.getImpl(), resources1.getImpl());
-        assertNotSame(resources3.getImpl(), resources2.getImpl());
+        // Verifies that the update applies the configuration to the correct ResourcesImpl.
+        assertEquals(overrideConfig.windowConfiguration.getBounds(),
+                overrideConfigResources.getConfiguration().windowConfiguration.getBounds());
+        assertEquals(newActivityOverrideConfig.windowConfiguration.getBounds(),
+                activityResources.getConfiguration().windowConfiguration.getBounds());
     }
 
     @Test

@@ -19,6 +19,7 @@ package android.app.jank.tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
@@ -33,12 +34,17 @@ import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.ScrollView;
 
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
 import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.Direction;
 import androidx.test.uiautomator.UiDevice;
+import androidx.test.uiautomator.UiObject2;
 import androidx.test.uiautomator.Until;
 
 import org.junit.Before;
@@ -48,6 +54,7 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This file contains tests that verify the proper functionality of the Jank Tracking feature.
@@ -101,7 +108,10 @@ public class IntegrationTests {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_DETAILED_APP_JANK_METRICS_API)
+    @RequiresFlagsEnabled({
+        Flags.FLAG_DETAILED_APP_JANK_METRICS_API,
+        Flags.FLAG_RETAIN_WIDGET_PARAMETERS
+    })
     public void reportJankStats_confirmPendingStatsIncreases() {
         Activity jankTrackerActivity = mJankTrackerActivityRule.launchActivity(null);
         mDevice.wait(Until.findObject(
@@ -115,14 +125,25 @@ public class IntegrationTests {
                 jankTracker.getPendingJankStats();
         assertEquals(0, pendingStats.size());
 
-        editText.reportAppJankStats(JankUtils.getAppJankStats());
+        AppJankStats jankStat = JankUtils.getAppJankStats();
+        editText.reportAppJankStats(jankStat);
 
         // wait until pending results are available.
         JankUtils.waitForResults(jankTracker, WAIT_FOR_PENDING_JANKSTATS_MS);
 
         pendingStats = jankTracker.getPendingJankStats();
-
         assertEquals(1, pendingStats.size());
+
+        JankDataProcessor.PendingJankStat pendingJankStat =
+                pendingStats.entrySet().iterator().next().getValue();
+        assertNotNull(pendingJankStat);
+
+        assertEquals(jankStat.getWidgetId(), pendingJankStat.getWidgetId());
+        assertEquals(jankStat.getJankyFrameCount(), pendingJankStat.getJankyFrames());
+        assertEquals(jankStat.getTotalFrameCount(), pendingJankStat.getTotalFrames());
+        assertEquals(jankStat.getUid(), pendingJankStat.getUid());
+        assertEquals(jankStat.getWidgetCategory(), pendingJankStat.getWidgetCategory());
+        assertEquals(jankStat.getWidgetState(), pendingJankStat.getWidgetState());
     }
 
     @Test
@@ -244,5 +265,132 @@ public class IntegrationTests {
         pendingStats = jankTracker.getPendingJankStats();
 
         assertEquals(0, pendingStats.size());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_INSTRUMENT_LISTVIEW_SCROLL_STATES)
+    public void confirmListView_reportsStateChanges() {
+        String resourceIdPkg = "android.app.jank.tests";
+
+        try (ActivityScenario<ListViewActivity> scenario =
+                ActivityScenario.launch(ListViewActivity.class)) {
+            UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+            UiObject2 listview = device.findObject(By.res(resourceIdPkg, "list_view_id"));
+            assertNotNull(listview);
+
+            // This should result in two widget state additions being added the active state being
+            // fling and the none state.
+            listview.fling(Direction.DOWN, 1000);
+
+            scenario.onActivity(
+                    activity -> {
+                        ListView listView = activity.findViewById(R.id.list_view_id);
+                        JankTracker jankTracker = listView.getJankTracker();
+
+                        ArrayList<StateTracker.StateData> stateData = new ArrayList<>();
+                        jankTracker.getAllUiStates(stateData);
+                        Map<String, Integer> aggregateData =
+                                JankUtils.aggregateCountsByState(stateData);
+
+                        long flingCount = aggregateData.get(AppJankStats.WIDGET_STATE_FLINGING);
+                        long idleCount = aggregateData.get(AppJankStats.WIDGET_STATE_NONE);
+                        assertEquals(1, flingCount);
+                        assertEquals(1, idleCount);
+                    });
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.toString());
+        }
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_INSTRUMENT_SCROLLVIEW_SCROLL_STATES)
+    public void confirmScrollView_reportsFlingStateChanges() {
+        String resourceIdPkg = "android.app.jank.tests";
+
+        try (ActivityScenario<ScrollViewActivity> scenario =
+                ActivityScenario.launch(ScrollViewActivity.class)) {
+            UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+            UiObject2 scrollview = device.findObject(By.res(resourceIdPkg, "scroll_view_id"));
+            assertNotNull(scrollview);
+
+            scrollview.fling(Direction.DOWN, 1000);
+            scenario.onActivity(
+                    activity -> {
+                        ScrollView scrollView = activity.findViewById(R.id.scroll_view_id);
+                        JankTracker jankTracker = scrollView.getJankTracker();
+
+                        HashMap<String, JankDataProcessor.PendingJankStat> pendingStats =
+                                jankTracker.getPendingJankStats();
+                        assertNotNull(pendingStats);
+
+                        int flingCount = 0;
+                        for (var entry : pendingStats.keySet()) {
+                            if (entry.contains(AppJankStats.WIDGET_STATE_FLINGING)) {
+                                flingCount++;
+                            }
+                        }
+
+                        assertEquals("ScrollView Fling State Count", 1, flingCount);
+
+                        ArrayList<StateTracker.StateData> stateData = new ArrayList<>();
+                        jankTracker.getAllUiStates(stateData);
+                        int scrollStateNoneCount = 0;
+                        for (StateTracker.StateData state : stateData) {
+                            if (state.mWidgetState.equals(AppJankStats.WIDGET_STATE_NONE)) {
+                                scrollStateNoneCount++;
+                            }
+                        }
+                        assertEquals("ScrollView None State Count", 1, scrollStateNoneCount);
+                    });
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.toString());
+        }
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_INSTRUMENT_SCROLLVIEW_SCROLL_STATES)
+    public void confirmScrollView_reportsScrollStateChanges() {
+        String resourceIdPkg = "android.app.jank.tests";
+
+        try (ActivityScenario<ScrollViewActivity> scenario =
+                ActivityScenario.launch(ScrollViewActivity.class)) {
+            UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+            UiObject2 scrollview = device.findObject(By.res(resourceIdPkg, "scroll_view_id"));
+            assertNotNull(scrollview);
+
+            scrollview.scroll(Direction.DOWN, .1f);
+            scenario.onActivity(
+                    activity -> {
+                        ScrollView scrollView = activity.findViewById(R.id.scroll_view_id);
+                        JankTracker jankTracker = scrollView.getJankTracker();
+
+                        HashMap<String, JankDataProcessor.PendingJankStat> pendingStats =
+                                jankTracker.getPendingJankStats();
+
+                        assertNotNull(pendingStats);
+                        int scrollStateCount = 0;
+                        for (var entry : pendingStats.keySet()) {
+                            if (entry.contains(AppJankStats.WIDGET_STATE_SCROLLING)) {
+                                scrollStateCount++;
+                            }
+                        }
+                        assertEquals("ScrollView Scroll State Count", 1, scrollStateCount);
+
+                        ArrayList<StateTracker.StateData> stateData = new ArrayList<>();
+                        jankTracker.getAllUiStates(stateData);
+                        int scrollStateNoneCount = 0;
+                        for (StateTracker.StateData state : stateData) {
+                            if (state.mWidgetState.equals(AppJankStats.WIDGET_STATE_NONE)) {
+                                scrollStateNoneCount++;
+                            }
+                        }
+                        assertEquals("ScrollView None State Count", 1, scrollStateNoneCount);
+                    });
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.toString());
+        }
     }
 }

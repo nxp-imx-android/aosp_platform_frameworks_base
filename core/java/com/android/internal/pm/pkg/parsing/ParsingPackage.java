@@ -416,16 +416,11 @@ public interface ParsingPackage {
     ParsingPackage setOnBackInvokedCallbackEnabled(boolean enableOnBackInvokedCallback);
 
     /**
-     * Set the drawable resources id array of the alternate icons that are parsing from the
-     * AndroidManifest file
+     * Sets whether this application has any component that should run in
+     * the Private Compute Core sandbox.
+     * @see android.R.styleable#AndroidManifestPrivateCompute
      */
-    ParsingPackage setAlternateLauncherIconResIds(int[] alternateLauncherIconResIds);
-
-    /**
-     * Set the string resources id array of the alternate labels that are parsing from the
-     * AndroidManifest file
-     */
-    ParsingPackage setAlternateLauncherLabelResIds(int[] alternateLauncherLabelResIds);
+    ParsingPackage setHasPccComponents(boolean hasPccComponents);
 
     @CallSuper
     ParsedPackage hideAsParsed();

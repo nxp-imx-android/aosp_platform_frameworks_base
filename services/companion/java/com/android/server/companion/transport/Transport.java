@@ -16,10 +16,13 @@
 
 package com.android.server.companion.transport;
 
+import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_CROSS_DEVICE_SYNC;
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_FROM_WEARABLE;
+import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_PCC;
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_PING;
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TO_WEARABLE;
 import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_CONTEXT_SYNC;
+import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_METADATA_UPDATE;
 import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_PERMISSION_RESTORE;
 import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_PING;
 import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_REMOTE_AUTHENTICATION;
@@ -311,9 +314,11 @@ public abstract class Transport {
     private void processOneway(int message, byte[] data) {
         switch (message) {
             case MESSAGE_ONEWAY_PING:
+            case MESSAGE_ONEWAY_PCC:
             case MESSAGE_ONEWAY_FROM_WEARABLE:
             case MESSAGE_ONEWAY_TO_WEARABLE:
-            case MESSAGE_ONEWAY_TASK_CONTINUITY: {
+            case MESSAGE_ONEWAY_TASK_CONTINUITY:
+            case MESSAGE_ONEWAY_CROSS_DEVICE_SYNC: {
                 callback(message, data);
                 break;
             }
@@ -331,18 +336,25 @@ public abstract class Transport {
                 sendMessage(MESSAGE_RESPONSE_SUCCESS, sequence, data);
                 break;
             }
-            case MESSAGE_REQUEST_CONTEXT_SYNC:
-            case MESSAGE_REQUEST_REMOTE_AUTHENTICATION: {
-                callback(message, data);
-                sendMessage(MESSAGE_RESPONSE_SUCCESS, sequence, EmptyArray.BYTE);
-                break;
-            }
             case MESSAGE_REQUEST_PERMISSION_RESTORE: {
                 try {
                     callback(message, data);
                     sendMessage(MESSAGE_RESPONSE_SUCCESS, sequence, EmptyArray.BYTE);
                 } catch (Exception e) {
                     Slog.w(TAG, "Failed to restore permissions");
+                    sendMessage(MESSAGE_RESPONSE_FAILURE, sequence, EmptyArray.BYTE);
+                }
+                break;
+            }
+            case MESSAGE_REQUEST_CONTEXT_SYNC:
+            case MESSAGE_REQUEST_REMOTE_AUTHENTICATION:
+            case MESSAGE_REQUEST_METADATA_UPDATE: {
+                try {
+                    callback(message, data);
+                    sendMessage(MESSAGE_RESPONSE_SUCCESS, sequence, EmptyArray.BYTE);
+                } catch (Exception e) {
+                    Slog.w(TAG, "Failed to execute callback for request 0x"
+                            + Integer.toHexString(message));
                     sendMessage(MESSAGE_RESPONSE_FAILURE, sequence, EmptyArray.BYTE);
                 }
                 break;

@@ -16,6 +16,8 @@
 
 package com.android.systemui.topwindoweffects.domain.interactor
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -23,6 +25,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.shared.Flags
 import com.android.systemui.testKosmos
 import com.android.systemui.topwindoweffects.data.repository.fakeSqueezeEffectRepository
 import com.google.common.truth.Truth.assertThat
@@ -73,12 +76,12 @@ class SqueezeEffectInteractorTest : SysuiTestCase() {
             assertThat(powerButtonSemantics).isNull()
         }
 
+    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_INITIAL_RUMBLE)
     @Test
     fun powerButtonSemantics_powerKeyDownAsSingleGestureAndEnabled_withRumble_startsEffect() =
         kosmos.runTest {
             fakeSqueezeEffectRepository.isEffectEnabled.value = true
             fakeSqueezeEffectRepository.isPowerButtonPressedAsSingleGesture.value = true
-            fakeSqueezeEffectRepository.shouldUseHapticRumble = true
 
             val powerButtonSemantics by collectLastValue(underTest.powerButtonSemantics)
 
@@ -86,12 +89,12 @@ class SqueezeEffectInteractorTest : SysuiTestCase() {
                 .isEqualTo(PowerButtonSemantics.START_SQUEEZE_WITH_RUMBLE)
         }
 
+    @DisableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_INITIAL_RUMBLE)
     @Test
     fun powerButtonSemantics_powerKeyDownAsSingleGestureAndEnabled_withoutRumble_startsEffect() =
         kosmos.runTest {
             fakeSqueezeEffectRepository.isEffectEnabled.value = true
             fakeSqueezeEffectRepository.isPowerButtonPressedAsSingleGesture.value = true
-            fakeSqueezeEffectRepository.shouldUseHapticRumble = false
 
             val powerButtonSemantics by collectLastValue(underTest.powerButtonSemantics)
 

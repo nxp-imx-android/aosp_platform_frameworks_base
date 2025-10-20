@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"සම්බන්ධ වෙමින්…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"සම්බන්ධිත<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"යුගල කරමින්…"</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"යුගල කළ නොහැක"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"සම්බන්ධ කළ නොහැක"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"සම්බන්ධිතයි (දුරකථනය නැත) <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"සම්බන්ධිතයි (මාධ්‍ය නැත)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"සම්බන්ධිතයි (දුරකථනය හෝ මාධ්‍ය නැත) <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -116,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"සක්‍රිය (දකුණ පමණි)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"සක්‍රිය (වම සහ දකුණ)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"වටපිටාව යාවත්කාලීන කළ නොහැකි විය"</string>
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"පෙර සැකසීම යාවත්කාලීන කළ නොහැකි විය"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"තෝරන ලදි"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"ක්‍රියාත්මකයි (මාධ්‍ය පමණයි). බැටරිය <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"ක්‍රියාත්මකයි (මාධ්‍ය පමණයි), බැටරිය ව: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, ද: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"ආගන්තුක උපාංගය. බැටරිය <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
@@ -345,7 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"මෙම ප්‍රකාරය සබල විට, මෙම උපාංගයේ MAC ලිපිනය එය MAC සසම්භාවීකරණය සබල කර ඇති ජාලයකට සම්බන්ධ වන එක් එක් අවස්ථාවල වෙනස් විය හැකිය."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"මනිනු ලැබේ"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"මනින්නේ නැත"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"ලෝගයේ අන්තරාවක ප්‍රමාණය"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"ලොගර් අන්තරාචයේ ප්‍රමාණය"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"ලොග අන්තරාවකට ලෝගයේ ප්‍රමාණය තෝරන්න"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"ලොගකරු නොනවතින ගබඩාව හිස් කරන්නද?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"අප තවදුරටත් නොනවතින ලොගකරුවකු සමගින් නිරීක්ෂණය නොකරන විට, අපට ඔබේ උපාංගය මත නේවාසික ලොගකරු දත්ත මැකීමට අවශ්‍ය වේ."</string>

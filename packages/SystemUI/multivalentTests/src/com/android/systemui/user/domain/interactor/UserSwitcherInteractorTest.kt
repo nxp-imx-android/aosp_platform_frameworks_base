@@ -138,7 +138,11 @@ class UserSwitcherInteractorTest : SysuiTestCase() {
         mSetFlagsRule.enableFlags(AConfigFlags.FLAG_SWITCH_USER_ON_BG)
         spyContext = spy(context)
         keyguardReply =
-            KeyguardInteractorFactory.create(featureFlags = kosmos.fakeFeatureFlagsClassic)
+            KeyguardInteractorFactory.create(
+                backgroundDispatcher = kosmos.testDispatcher,
+                context = spyContext,
+                featureFlags = kosmos.fakeFeatureFlagsClassic,
+            )
         keyguardRepository = keyguardReply.repository
         userRepository = FakeUserRepository()
         refreshUsersScheduler =

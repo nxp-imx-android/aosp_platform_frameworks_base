@@ -528,7 +528,7 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
             mSessionInfos.add(newSession);
         }
 
-        mCallback.onSessionCreated(this, requestId, newSession);
+        notifySessionCreated(requestId, newSession);
     }
 
     @GuardedBy("mLock")
@@ -683,26 +683,27 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
             return;
         }
 
-        mCallback.onSessionReleased(this, releasedSession);
+        notifySessionReleased(releasedSession);
     }
 
     private void dispatchSessionCreated(long requestId, RoutingSessionInfo session) {
         mHandler.sendMessage(
-                obtainMessage(mCallback::onSessionCreated, this, requestId, session));
+                obtainMessage(this::notifySessionCreated, requestId, session));
     }
 
     private void dispatchSessionUpdated(RoutingSessionInfo session) {
         mHandler.sendMessage(
                 obtainMessage(
-                        mCallback::onSessionUpdated,
+                        this::notifySessionUpdated,
                         this,
                         session,
-                        /* packageNamesWithRoutingSessionOverrides= */ Set.of()));
+                        /* packageNamesWithRoutingSessionOverrides= */ Set.of(),
+                        /* shouldShowVolumeUi= */ false));
     }
 
     private void dispatchSessionReleased(RoutingSessionInfo session) {
         mHandler.sendMessage(
-                obtainMessage(mCallback::onSessionReleased, this, session));
+                obtainMessage(this::notifySessionReleased, session));
     }
 
     private RoutingSessionInfo assignProviderIdForSession(RoutingSessionInfo sessionInfo) {
@@ -727,7 +728,7 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
             return;
         }
 
-        mCallback.onRequestFailed(this, requestId, reason);
+        notifyRequestFailed(requestId, reason);
     }
 
     private void disconnect() {
@@ -738,7 +739,7 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
             setAndNotifyProviderState(null);
             synchronized (mLock) {
                 for (RoutingSessionInfo sessionInfo : mSessionInfos) {
-                    mCallback.onSessionReleased(this, sessionInfo);
+                    notifySessionReleased(sessionInfo);
                 }
                 if (Flags.enableMirroringInMediaRouter2()) {
                     for (var callback : mSystemSessionCallbacks.values()) {

@@ -80,14 +80,11 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     fun setUp() {
         MockitoAnnotations.initMocks(this)
         whenever(windowControllerStore.defaultDisplay).thenReturn(windowController)
-        mDependency.injectTestDependency(
-            StatusBarWindowControllerStore::class.java,
-            windowControllerStore,
-        )
         context.ensureTestableResources()
         view = spy(createStatusBarView(context))
         whenever(view.rootWindowInsets).thenReturn(emptyWindowInsets())
         whenever(view.viewRootImpl).thenReturn(mock(ViewRootImpl::class.java))
+        view.updateTouchableRegion(DEFAULT_TOUCHABLE_REGION)
 
         val contextForSecondaryDisplay =
             SysuiTestableContext(
@@ -101,6 +98,8 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
                 )
             )
         viewForSecondaryDisplay = spy(createStatusBarView(contextForSecondaryDisplay))
+        whenever(viewForSecondaryDisplay.viewRootImpl).thenReturn(mock(ViewRootImpl::class.java))
+        viewForSecondaryDisplay.updateTouchableRegion(DEFAULT_TOUCHABLE_REGION)
     }
 
     @Test
@@ -256,14 +255,43 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     @Test
     @DisableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
     fun onAttachedToWindow_connectedDisplayFlagOff_updatesWindowHeight() {
+        view.setStatusBarWindowControllerStore(windowControllerStore)
+
         view.onAttachedToWindow()
 
         verify(windowController).refreshStatusBarHeight()
     }
 
     @Test
+    @DisableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
+    fun onAttachedToWindow_connectedDisplayFlagOff_updatesWindowHeightAfterControllerStoreSet() {
+        // windowControllerStore is not yet set in the view
+        view.onAttachedToWindow()
+
+        view.setStatusBarWindowControllerStore(windowControllerStore)
+
+        verify(windowController).refreshStatusBarHeight()
+    }
+
+    @Test
+    @DisableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
+    fun onAttachedToWindow_connectedDisplayFlagOff_updatesWindowHeightOnceAfterControllerStoreSet() {
+        // windowControllerStore is not yet set in the view
+        view.onAttachedToWindow()
+
+        view.setStatusBarWindowControllerStore(windowControllerStore)
+        view.setStatusBarWindowControllerStore(windowControllerStore)
+        view.setStatusBarWindowControllerStore(windowControllerStore)
+        view.setStatusBarWindowControllerStore(windowControllerStore)
+
+        verify(windowController, times(1)).refreshStatusBarHeight()
+    }
+
+    @Test
     @EnableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
     fun onAttachedToWindow_connectedDisplayFlagOn_doesNotUpdateWindowHeight() {
+        view.setStatusBarWindowControllerStore(windowControllerStore)
+
         view.onAttachedToWindow()
 
         verify(windowController, never()).refreshStatusBarHeight()
@@ -272,6 +300,8 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     @Test
     @DisableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
     fun onConfigurationChanged_connectedDisplayFlagOff_updatesWindowHeight() {
+        view.setStatusBarWindowControllerStore(windowControllerStore)
+
         view.onConfigurationChanged(Configuration())
         view.onConfigurationChanged(Configuration())
         view.onConfigurationChanged(Configuration())
@@ -283,6 +313,8 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     @Test
     @EnableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
     fun onConfigurationChanged_connectedDisplayFlagOn_neverUpdatesWindowHeight() {
+        view.setStatusBarWindowControllerStore(windowControllerStore)
+
         view.onConfigurationChanged(Configuration())
         view.onConfigurationChanged(Configuration())
         view.onConfigurationChanged(Configuration())
@@ -457,7 +489,7 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     fun onConfigurationChanged_systemIconsHeightChanged_containerHeightIsUpdated() {
         val newHeight = 123456
         context.orCreateTestableResources.addOverride(
-            R.dimen.status_bar_system_icons_height,
+            R.dimen.status_bar_icon_container_height,
             newHeight,
         )
 
@@ -584,4 +616,8 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
             /* frameWidth = */ 0,
             /* frameHeight = */ 0,
         )
+
+    companion object {
+        val DEFAULT_TOUCHABLE_REGION = Region(0, 0, 500, 500)
+    }
 }

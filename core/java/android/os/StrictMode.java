@@ -339,31 +339,31 @@ public final class StrictMode {
      */
     public static final int PENALTY_GATHER = 1 << 31;
 
-    /** {@hide} */
+    /** @hide */
     public static final int PENALTY_LOG = 1 << 30;
-    /** {@hide} */
+    /** @hide */
     public static final int PENALTY_DIALOG = 1 << 29;
-    /** {@hide} */
+    /** @hide */
     public static final int PENALTY_DEATH = 1 << 28;
-    /** {@hide} */
+    /** @hide */
     public static final int PENALTY_FLASH = 1 << 27;
-    /** {@hide} */
+    /** @hide */
     public static final int PENALTY_DROPBOX = 1 << 26;
-    /** {@hide} */
+    /** @hide */
     public static final int PENALTY_DEATH_ON_NETWORK = 1 << 25;
-    /** {@hide} */
+    /** @hide */
     public static final int PENALTY_DEATH_ON_CLEARTEXT_NETWORK = 1 << 24;
-    /** {@hide} */
+    /** @hide */
     public static final int PENALTY_DEATH_ON_FILE_URI_EXPOSURE = 1 << 23;
 
     /** @hide */
     public static final int PENALTY_ALL = 0xffff0000;
 
-    /** {@hide} */
+    /** @hide */
     public static final int NETWORK_POLICY_ACCEPT = 0;
-    /** {@hide} */
+    /** @hide */
     public static final int NETWORK_POLICY_LOG = 1;
-    /** {@hide} */
+    /** @hide */
     public static final int NETWORK_POLICY_REJECT = 2;
 
     /**
@@ -381,7 +381,7 @@ public final class StrictMode {
     /** The current VmPolicy in effect. */
     private static volatile VmPolicy sVmPolicy = VmPolicy.LAX;
 
-    /** {@hide} */
+    /** @hide */
     @TestApi
     public interface ViolationLogger {
 
@@ -424,7 +424,7 @@ public final class StrictMode {
         void onVmViolation(Violation v);
     }
 
-    /** {@hide} */
+    /** @hide */
     @TestApi
     public static void setViolationLogger(ViolationLogger listener) {
         if (listener == null) {

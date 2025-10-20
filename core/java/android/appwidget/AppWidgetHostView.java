@@ -436,8 +436,8 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
             maxHeight = Math.max(maxHeight, paddedSize.getHeight());
         }
         if (paddedSizes.equals(
-                widgetManager.getAppWidgetOptions(mAppWidgetId).<SizeF>getParcelableArrayList(
-                        AppWidgetManager.OPTION_APPWIDGET_SIZES))) {
+                widgetManager.getAppWidgetOptions(mAppWidgetId).getParcelableArrayList(
+                        AppWidgetManager.OPTION_APPWIDGET_SIZES, SizeF.class))) {
             return;
         }
         Bundle options = newOptions.deepCopy();

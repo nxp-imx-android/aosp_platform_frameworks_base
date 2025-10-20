@@ -218,7 +218,6 @@ filegroup {
         "tests/src/**/systemui/statusbar/phone/PhoneStatusBarViewControllerTest.kt",
         "tests/src/**/systemui/statusbar/phone/PhoneStatusBarViewTest.kt",
         "tests/src/**/systemui/statusbar/phone/StatusBarBoundsProviderTest.kt",
-        "tests/src/**/systemui/statusbar/pipeline/airplane/ui/viewmodel/AirplaneModeViewModelImplTest.kt",
         "tests/src/**/systemui/statusbar/pipeline/mobile/data/repository/prod/MobileConnectionsRepositoryKairosAdapterTest.kt",
         "tests/src/**/systemui/statusbar/pipeline/mobile/data/repository/prod/MobileConnectionsRepositoryTest.kt",
         "tests/src/**/systemui/statusbar/pipeline/mobile/ui/view/ModernStatusBarMobileViewTest.kt",
@@ -559,6 +558,11 @@ android_library {
         "androidx.datastore_datastore-preferences",
         "androidx.media3.media3-common",
         "androidx.media3.media3-session",
+        "androidx.ink_ink-authoring",
+        "androidx.ink_ink-brush",
+        "androidx.ink_ink-nativeloader",
+        "androidx.ink_ink-rendering",
+        "androidx.ink_ink-strokes",
         "com.google.android.material_material",
         "device_state_flags_lib",
         "kotlinx_coroutines_android",
@@ -702,6 +706,9 @@ java_library {
         "tests/utils/src/com/android/systemui/util/concurrency/FakeExecutor.java",
         "tests/utils/src/com/android/systemui/util/time/FakeSystemClock.java",
     ],
+    libs: [
+        "androidx.annotation_annotation",
+    ],
     jarjar_rules: ":jarjar-rules-shared",
 }
 
@@ -812,8 +819,6 @@ android_library {
     use_resource_processor: true,
     manifest: "tests/AndroidManifest-base.xml",
     resource_dirs: [],
-
-    kotlin_lang_version: "1.9",
 
     additional_manifests: ["tests/AndroidManifest.xml"],
     srcs: [

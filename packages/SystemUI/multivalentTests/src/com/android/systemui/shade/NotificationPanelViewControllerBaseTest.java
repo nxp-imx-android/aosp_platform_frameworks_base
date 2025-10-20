@@ -39,7 +39,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.animation.Animator;
-import android.annotation.IdRes;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Handler;
@@ -52,8 +51,6 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.ViewTreeObserver;
 import android.view.accessibility.AccessibilityManager;
-
-import androidx.constraintlayout.widget.ConstraintSet;
 
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.UiEventLogger;
@@ -96,10 +93,9 @@ import com.android.systemui.model.SysUiState;
 import com.android.systemui.navigationbar.NavigationBarController;
 import com.android.systemui.navigationbar.NavigationModeController;
 import com.android.systemui.plugins.ActivityStarter;
-import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.qs.QS;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
-import com.android.systemui.qs.QSFragmentLegacy;
+import com.android.systemui.qs.composefragment.QSFragmentCompose;
 import com.android.systemui.res.R;
 import com.android.systemui.screenrecord.ScreenRecordUxController;
 import com.android.systemui.settings.brightness.data.repository.BrightnessMirrorShowingRepository;
@@ -253,8 +249,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
     @Mock protected NotificationListContainer mNotificationListContainer;
     @Mock protected UnlockedScreenOffAnimationController mUnlockedScreenOffAnimationController;
     @Mock protected QS mQs;
-    @Mock protected QSFragmentLegacy mQSFragment;
-    @Mock protected ViewGroup mQsHeader;
+    @Mock protected QSFragmentCompose mQSFragment;
     @Mock protected ViewParent mViewParent;
     @Mock protected ViewTreeObserver mViewTreeObserver;
     @Mock protected DreamingToLockscreenTransitionViewModel
@@ -301,8 +296,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
     protected View.OnLayoutChangeListener mLayoutChangeListener;
     protected ShadeRepository mShadeRepository;
     protected FakeMSDLPlayer mMSDLPlayer = mKosmos.getMsdlPlayer();
-    protected WindowRootViewBlurInteractor mWindowRootViewBlurInteractor =
-            mKosmos.getWindowRootViewBlurInteractor();
+    protected WindowRootViewBlurInteractor mWindowRootViewBlurInteractor;
 
     protected BrightnessMirrorShowingRepository mBrightnessMirrorShowingRepository =
             mKosmos.getBrightnessMirrorShowingRepository();
@@ -327,6 +321,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
         mFeatureFlags.set(Flags.QS_USER_DETAIL_SHORTCUT, false);
 
         mMainDispatcher = getMainDispatcher();
+        mWindowRootViewBlurInteractor = mKosmos.getWindowRootViewBlurInteractor();
         mFakeKeyguardRepository = mKosmos.getKeyguardRepository();
         mFakeKeyguardClockRepository = new FakeKeyguardClockRepository();
         mKeyguardClockInteractor = mKosmos.getKeyguardClockInteractor();
@@ -349,7 +344,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
         mShadeInteractor = new ShadeInteractorImpl(
                 mTestScope.getBackgroundScope(),
                 mKosmos.getDeviceProvisioningInteractor(),
-                mKosmos.getDisableFlagsInteractor(),
                 mDozeParameters,
                 mFakeKeyguardRepository,
                 mKeyguardTransitionInteractor,
@@ -359,8 +353,11 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 new ShadeInteractorLegacyImpl(
                         mTestScope.getBackgroundScope(),
                         mFakeKeyguardRepository,
-                        mShadeRepository
-                ));
+                        mShadeRepository,
+                        mKosmos.getShadeConfigRepository()
+                ),
+                mKosmos.getSceneInteractor(),
+                mKosmos.getShadeStatusBarComponentsInteractor());
         SystemClock systemClock = new FakeSystemClock();
         mStatusBarStateController = new StatusBarStateControllerImpl(
                 mUiEventLogger,
@@ -370,7 +367,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 () -> mShadeInteractor,
                 () -> mKosmos.getDeviceUnlockedInteractor(),
                 () -> mKosmos.getSceneInteractor(),
-                () -> mKosmos.getSceneContainerOcclusionInteractor(),
                 () -> mKosmos.getKeyguardClockInteractor(),
                 () -> mKosmos.getSceneBackInteractor(),
                 () -> mKosmos.getAlternateBouncerInteractor());
@@ -408,7 +404,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
         when(mFragmentService.getFragmentHostManager(mView)).thenReturn(mFragmentHostManager);
         FlingAnimationUtils.Builder flingAnimationUtilsBuilder = new FlingAnimationUtils.Builder(
                 mDisplayMetrics);
-        when(mScreenOffAnimationController.shouldAnimateClockChange()).thenReturn(true);
         when(mQs.getView()).thenReturn(mView);
         when(mQSFragment.getView()).thenReturn(mView);
         when(mNaturalScrollingSettingObserver.isNaturalScrollingEnabled()).thenReturn(true);
@@ -453,7 +448,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                                 () -> mShadeInteractor,
                                 () -> mKosmos.getDeviceUnlockedInteractor(),
                                 () -> mKosmos.getSceneInteractor(),
-                                () -> mKosmos.getSceneContainerOcclusionInteractor(),
                                 () -> mKosmos.getKeyguardClockInteractor(),
                                 () -> mKosmos.getSceneBackInteractor(),
                                 () -> mKosmos.getAlternateBouncerInteractor()),
@@ -502,7 +496,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
             }
         }).when(mViewTreeObserver).addOnGlobalLayoutListener(any());
         when(mView.getParent()).thenReturn(mViewParent);
-        when(mQs.getHeader()).thenReturn(mQsHeader);
         when(mDownMotionEvent.getAction()).thenReturn(MotionEvent.ACTION_DOWN);
         when(mSysUiState.setFlag(anyLong(), anyBoolean())).thenReturn(mSysUiState);
 
@@ -676,71 +669,13 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
         }
     }
 
-    protected void triggerPositionClockAndNotifications() {
-        mNotificationPanelViewController.onQsSetExpansionHeightCalled(false);
-    }
-
-    protected FalsingManager.FalsingTapListener getFalsingTapListener() {
-        for (View.OnAttachStateChangeListener listener : mOnAttachStateChangeListeners) {
-            listener.onViewAttachedToWindow(mView);
-        }
-        assertThat(mFalsingManager.getTapListeners().size()).isEqualTo(1);
-        return mFalsingManager.getTapListeners().get(0);
-    }
-
-    protected void givenViewAttached() {
-        for (View.OnAttachStateChangeListener listener : mOnAttachStateChangeListeners) {
-            listener.onViewAttachedToWindow(mView);
-        }
-    }
-
-    protected ConstraintSet.Layout getConstraintSetLayout(@IdRes int id) {
-        ConstraintSet constraintSet = new ConstraintSet();
-        constraintSet.clone(mNotificationContainerParent);
-        return constraintSet.getConstraint(id).layout;
-    }
-
     protected void enableSplitShade(boolean enabled) {
         when(mResources.getBoolean(R.bool.config_use_split_notification_shade)).thenReturn(enabled);
         mNotificationPanelViewController.updateResources();
     }
 
-    protected void updateSmallestScreenWidth(int smallestScreenWidthDp) {
-        Configuration configuration = new Configuration();
-        configuration.smallestScreenWidthDp = smallestScreenWidthDp;
-        mConfigurationController.onConfigurationChanged(configuration);
-    }
-
     protected boolean onTouchEvent(MotionEvent ev) {
         return mNotificationPanelViewController.handleExternalTouch(ev);
-    }
-
-    protected void setDozing(boolean dozing, boolean dozingAlwaysOn) {
-        when(mDozeParameters.getAlwaysOn()).thenReturn(dozingAlwaysOn);
-        mNotificationPanelViewController.setDozing(
-                /* dozing= */ dozing,
-                /* animate= */ false
-        );
-    }
-
-    protected void setIsFullWidth(boolean fullWidth) {
-        float nsslWidth = fullWidth ? PANEL_WIDTH : PANEL_WIDTH / 2f;
-        when(mNotificationStackScrollLayoutController.getWidth()).thenReturn(nsslWidth);
-        triggerLayoutChange();
-    }
-
-    protected void triggerLayoutChange() {
-        mLayoutChangeListener.onLayoutChange(
-                mView,
-                /* left= */ 0,
-                /* top= */ 0,
-                /* right= */ 0,
-                /* bottom= */ 0,
-                /* oldLeft= */ 0,
-                /* oldTop= */ 0,
-                /* oldRight= */ 0,
-                /* oldBottom= */ 0
-        );
     }
 
     protected CoroutineDispatcher getMainDispatcher() {

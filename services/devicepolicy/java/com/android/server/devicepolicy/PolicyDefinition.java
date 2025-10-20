@@ -58,7 +58,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-final class PolicyDefinition<V> {
+public final class PolicyDefinition<V> {
 
     static final String TAG = "PolicyDefinition";
 
@@ -293,7 +293,7 @@ final class PolicyDefinition<V> {
             new PackageSetPolicySerializer());
 
 
-    static PolicyDefinition<Boolean> SCREEN_CAPTURE_DISABLED = new PolicyDefinition<>(
+    public static PolicyDefinition<Boolean> SCREEN_CAPTURE_DISABLED = new PolicyDefinition<>(
             new NoArgsPolicyKey(DevicePolicyIdentifiers.SCREEN_CAPTURE_DISABLED_POLICY),
             TRUE_MORE_RESTRICTIVE,
             POLICY_FLAG_INHERITABLE,
@@ -392,6 +392,23 @@ final class PolicyDefinition<V> {
                     PolicyEnforcerCallbacks::setCrossProfileWidgetProviderPolicy,
                     new PackageSetPolicySerializer());
 
+    static final PolicyDefinition<Integer> COMMON_CRITERIA_MODE =
+            new PolicyDefinition<>(
+                    new NoArgsPolicyKey(
+                            DevicePolicyIdentifiers.COMMON_CRITERIA_MODE_POLICY),
+                    new MostRestrictive<>(
+                            List.of(
+                                    new IntegerPolicyValue(
+                                            DevicePolicyManager.COMMON_CRITERIA_MODE_ENABLED),
+                                    new IntegerPolicyValue(
+                                            DevicePolicyManager.COMMON_CRITERIA_MODE_DISABLED)
+                            )
+                    ),
+                    POLICY_FLAG_GLOBAL_ONLY_POLICY,
+                    PolicyEnforcerCallbacks::noOp,
+                    new IntegerPolicySerializer()
+            );
+
     private static final Map<String, PolicyDefinition<?>> POLICY_DEFINITIONS = new HashMap<>();
     private static Map<String, Integer> USER_RESTRICTION_FLAGS = new HashMap<>();
 
@@ -448,6 +465,10 @@ final class PolicyDefinition<V> {
         POLICY_DEFINITIONS.put(
                 DevicePolicyIdentifiers.CROSS_PROFILE_WIDGET_PROVIDER_POLICY,
                 CROSS_PROFILE_WIDGET_PROVIDER);
+        POLICY_DEFINITIONS.put(
+                DevicePolicyIdentifiers.COMMON_CRITERIA_MODE_POLICY,
+                COMMON_CRITERIA_MODE
+        );
 
         // User Restriction Policies
         USER_RESTRICTION_FLAGS.put(UserManager.DISALLOW_MODIFY_ACCOUNTS, /* flags= */ 0);
@@ -556,6 +577,8 @@ final class PolicyDefinition<V> {
                 UserManager.DISALLOW_SIM_GLOBALLY,
                 POLICY_FLAG_GLOBAL_ONLY_POLICY);
         USER_RESTRICTION_FLAGS.put(UserManager.DISALLOW_ASSIST_CONTENT, /* flags= */ 0);
+        USER_RESTRICTION_FLAGS.put(UserManager.DISALLOW_CHANGE_NEAR_FIELD_COMMUNICATION_RADIO,
+                POLICY_FLAG_GLOBAL_ONLY_POLICY);
 
         if (com.android.net.thread.platform.flags.Flags.threadUserRestrictionEnabled()) {
             USER_RESTRICTION_FLAGS.put(
@@ -689,7 +712,7 @@ final class PolicyDefinition<V> {
      * Callers must ensure that {@code policyType} have implemented an appropriate
      * {@link Object#equals} implementation.
      */
-    private PolicyDefinition(
+    public PolicyDefinition(
             @NonNull PolicyKey key,
             ResolutionMechanism<V> resolutionMechanism,
             QuadFunction<V, Context, Integer, PolicyKey, CompletableFuture<Boolean>>

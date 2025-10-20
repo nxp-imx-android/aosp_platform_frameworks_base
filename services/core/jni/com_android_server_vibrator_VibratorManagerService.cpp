@@ -20,6 +20,7 @@
 
 #include <aidl/android/hardware/vibrator/IVibratorManager.h>
 #include <android/binder_ibinder_jni.h>
+#include <android_os_vibrator.h>
 #include <nativehelper/JNIHelp.h>
 #include <utils/Log.h>
 #include <utils/misc.h>
@@ -169,6 +170,15 @@ public:
     }
 
     std::shared_ptr<IVibratorManager> managerHal() {
+        if (android_os_vibrator_haptic_pcm_generation()) {
+            if (mManagerHalProvider) {
+                return mManagerHalProvider->getHal();
+            }
+            if (mHal) {
+                return mHal->getHal();
+            }
+            return nullptr;
+        }
         return mManagerHalProvider ? mManagerHalProvider->getHal() : nullptr;
     }
 
@@ -420,6 +430,9 @@ static jobject nativeStartSessionWithCallback(JNIEnv* env, jclass /* clazz */, j
     env->GetIntArrayRegion(vibratorIds, 0, size, reinterpret_cast<jint*>(ids.data()));
     auto status = hal->startSession(ids, config, callback, &session);
     service->processManagerStatus(status, __func__);
+    if (session == nullptr) {
+        return nullptr;
+    }
     return AIBinder_toJavaBinder(env, session->asBinder().get());
 }
 

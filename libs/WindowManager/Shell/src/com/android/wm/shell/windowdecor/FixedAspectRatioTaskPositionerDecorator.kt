@@ -51,10 +51,11 @@ class FixedAspectRatioTaskPositionerDecorator(
         displayId: Int,
         x: Float,
         y: Float,
+        @DragPositioningCallback.InputMethodType inputMethodType: Int,
     ): Rect {
         originalCtrlType = ctrlType
         if (!requiresFixedAspectRatio()) {
-            return super.onDragPositioningStart(originalCtrlType, displayId, x, y)
+            return super.onDragPositioningStart(originalCtrlType, displayId, x, y, inputMethodType)
         }
 
         lastRepositionedBounds.set(getBounds(windowDecoration.taskInfo))
@@ -79,7 +80,13 @@ class FixedAspectRatioTaskPositionerDecorator(
                     edgeResizeCtrlType =
                         originalCtrlType +
                             if (y < verticalMidPoint) CTRL_TYPE_TOP else CTRL_TYPE_BOTTOM
-                    super.onDragPositioningStart(edgeResizeCtrlType, displayId, x, y)
+                    super.onDragPositioningStart(
+                        edgeResizeCtrlType,
+                        displayId,
+                        x,
+                        y,
+                        inputMethodType,
+                    )
                 }
                 CTRL_TYPE_TOP,
                 CTRL_TYPE_BOTTOM -> {
@@ -87,12 +94,18 @@ class FixedAspectRatioTaskPositionerDecorator(
                     edgeResizeCtrlType =
                         originalCtrlType +
                             if (x < horizontalMidPoint) CTRL_TYPE_LEFT else CTRL_TYPE_RIGHT
-                    super.onDragPositioningStart(edgeResizeCtrlType, displayId, x, y)
+                    super.onDragPositioningStart(
+                        edgeResizeCtrlType,
+                        displayId,
+                        x,
+                        y,
+                        inputMethodType,
+                    )
                 }
                 // If resize is corner resize, no alteration to the ctrlType needs to be made.
                 else -> {
                     edgeResizeCtrlType = CTRL_TYPE_UNDEFINED
-                    super.onDragPositioningStart(originalCtrlType, displayId, x, y)
+                    super.onDragPositioningStart(originalCtrlType, displayId, x, y, inputMethodType)
                 }
             }
         )

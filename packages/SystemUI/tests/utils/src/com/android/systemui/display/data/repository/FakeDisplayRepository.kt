@@ -26,7 +26,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 import org.mockito.kotlin.mock
 
@@ -126,9 +125,7 @@ class FakeDisplayRepository @Inject constructor() : DisplayRepository {
     override val pendingDisplay: Flow<PendingDisplay?>
         get() = pendingDisplayFlow
 
-    private val _defaultDisplayOff: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    override val defaultDisplayOff: Flow<Boolean>
-        get() = _defaultDisplayOff.asStateFlow()
+    override val defaultDisplayOff = MutableStateFlow(false)
 
     override fun getDisplay(displayId: Int): Display? {
         return displays.value.find { it.displayId == displayId }
@@ -148,7 +145,7 @@ class FakeDisplayRepository @Inject constructor() : DisplayRepository {
     suspend fun emitDisplayChangeEvent(displayId: Int) = _displayChangeEvent.emit(displayId)
 
     fun setDefaultDisplayOff(defaultDisplayOff: Boolean) {
-        _defaultDisplayOff.value = defaultDisplayOff
+        this.defaultDisplayOff.value = defaultDisplayOff
     }
 }
 

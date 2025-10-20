@@ -678,28 +678,6 @@ public class SettingsState {
             return false;
         }
 
-        // Aconfig flags are always boot stable, so we anytime we write one, we stage it to be
-        // applied on reboot.
-        if (Flags.stageAllAconfigFlags()) {
-            int slashIndex = name.indexOf("/");
-            boolean stageFlag = isConfigSettingsKey(mKey)
-                    && slashIndex != -1
-                    && slashIndex != 0
-                    && slashIndex != name.length();
-
-            if (stageFlag) {
-                String namespace = name.substring(0, slashIndex);
-                String flag = name.substring(slashIndex + 1);
-
-                boolean isAconfig = mNamespaceDefaults.containsKey(namespace)
-                        && mNamespaceDefaults.get(namespace).containsKey(name);
-
-                if (isAconfig) {
-                    name = "staged/" + namespace + "*" + flag;
-                }
-            }
-        }
-
         final boolean isNameTooLong = name.length() > SettingsState.MAX_LENGTH_PER_STRING;
         final boolean isValueTooLong =
                 value != null && value.length() > SettingsState.MAX_LENGTH_PER_STRING;
@@ -850,18 +828,7 @@ public class SettingsState {
         for (String key : keyValues.keySet()) {
             String value = keyValues.get(key);
 
-            // Rename key if it's an aconfig flag.
             String flagName = key;
-            if (Flags.stageAllAconfigFlags() && isConfigSettingsKey(mKey)) {
-                int slashIndex = flagName.indexOf("/");
-                boolean stageFlag = slashIndex > 0 && slashIndex != flagName.length();
-                boolean isAconfig = trunkFlagMap != null && trunkFlagMap.containsKey(flagName);
-                if (stageFlag && isAconfig) {
-                    String flagWithoutNamespace = flagName.substring(slashIndex + 1);
-                    flagName = "staged/" + namespace + "*" + flagWithoutNamespace;
-                }
-            }
-
             String oldValue = null;
             Setting state = mSettings.get(flagName);
             if (state == null) {

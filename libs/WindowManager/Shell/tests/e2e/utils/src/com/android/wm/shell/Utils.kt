@@ -57,12 +57,34 @@ object Utils {
      * @param rotation the screen rotation to apply, which defaults to [Rotation.ROTATION_0]
      * @return the [RuleChain] to set up the [navigationMode] and [rotation].
      */
-    fun testSetupRule(navigationMode: NavBar, rotation: Rotation = Rotation.ROTATION_0): RuleChain {
+    fun testSetupRuleFunctional(
+            navigationMode: NavBar,
+            rotation: Rotation = Rotation.ROTATION_0,
+    ) = testSetupRule(navigationMode, rotation, skipRulesForFlickerTest = true)
+
+    /**
+     * A helper method to initialize a [RuleChain] to set up [navigationMode] and screen [rotation].
+     *
+     * @param navigationMode the navigation mode to set up, either one of [NavBar.MODE_GESTURAL]
+     * or [NavBar.MODE_3BUTTON].
+     * @param rotation the screen rotation to apply, which defaults to [Rotation.ROTATION_0]
+     * @param skipFlickerRules whether to skip rules needed only for flicker tests
+     * @return the [RuleChain] to set up the [navigationMode] and [rotation].
+     */
+    fun testSetupRule(
+            navigationMode: NavBar,
+            rotation: Rotation = Rotation.ROTATION_0,
+            skipRulesForFlickerTest: Boolean = false,
+    ): RuleChain {
         return RuleChain.outerRule(ArtifactSaverRule())
             .around(UnlockScreenRule())
             .around(NavigationModeRule(navigationMode.value, false))
             .around(
-                LaunchAppRule(MessagingAppHelper(instrumentation), clearCacheAfterParsing = false)
+                if (skipRulesForFlickerTest) {
+                    RuleChain.emptyRuleChain()
+                } else {
+                    LaunchAppRule(MessagingAppHelper(instrumentation), clearCacheAfterParsing = false)
+                }
             )
             .around(RemoveAllTasksButHomeRule())
             .around(

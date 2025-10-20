@@ -589,7 +589,7 @@ public class MediaPlayer extends PlayerBase
        call.
        // FIXME: unhide.
        // FIXME: add link to getMetadata(boolean, boolean)
-       {@hide}
+       @hide
      */
     public static final boolean METADATA_UPDATE_ONLY = true;
 
@@ -597,7 +597,7 @@ public class MediaPlayer extends PlayerBase
        Constant to retrieve all the metadata.
        // FIXME: unhide.
        // FIXME: add link to getMetadata(boolean, boolean)
-       {@hide}
+       @hide
      */
     @UnsupportedAppUsage
     public static final boolean METADATA_ALL = false;
@@ -606,7 +606,7 @@ public class MediaPlayer extends PlayerBase
        Constant to enable the metadata filter during retrieval.
        // FIXME: unhide.
        // FIXME: add link to getMetadata(boolean, boolean)
-       {@hide}
+       @hide
      */
     public static final boolean APPLY_METADATA_FILTER = true;
 
@@ -614,7 +614,7 @@ public class MediaPlayer extends PlayerBase
        Constant to disable the metadata filter during retrieval.
        // FIXME: unhide.
        // FIXME: add link to getMetadata(boolean, boolean)
-       {@hide}
+       @hide
      */
     @UnsupportedAppUsage
     public static final boolean BYPASS_METADATA_FILTER = false;
@@ -751,7 +751,7 @@ public class MediaPlayer extends PlayerBase
      *
      * @return A parcel suitable to hold a request for the native
      * player.
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public Parcel newRequest() {
@@ -772,7 +772,7 @@ public class MediaPlayer extends PlayerBase
      *
      * @param reply Output parcel with the data returned by the
      * native player.
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public void invoke(Parcel request, Parcel reply) {
@@ -1596,11 +1596,7 @@ public class MediaPlayer extends PlayerBase
     private void broadcastRoutingChange() {
         AudioManager.resetAudioPortGeneration();
         synchronized (mRoutingChangeListeners) {
-            // Prevent the case where an event is triggered by registering a routing change
-            // listener via the media player.
-            if (mEnableSelfRoutingMonitor) {
-                baseUpdateDeviceIds(getRoutedDevicesInternal());
-            }
+            baseUpdateDeviceIds(getRoutedDevicesInternal());
             for (NativeRoutingEventHandlerDelegate delegate
                     : mRoutingChangeListeners.values()) {
                 delegate.notifyClient();
@@ -2147,7 +2143,7 @@ public class MediaPlayer extends PlayerBase
      *
      * @return The metadata, possibly empty. null if an error occured.
      // FIXME: unhide.
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public Metadata getMetadata(final boolean update_only,
@@ -2186,7 +2182,7 @@ public class MediaPlayer extends PlayerBase
      * @return The call status code.
      *
      // FIXME: unhide.
-     * {@hide}
+     * @hide
      */
     public int setMetadataFilter(Set<Integer> allow, Set<Integer> block) {
         // Do our serialization manually instead of calling
@@ -2365,7 +2361,7 @@ public class MediaPlayer extends PlayerBase
      * @param key key indicates the parameter to be set.
      * @param value value of the parameter to be set.
      * @return true if the parameter is set successfully, false otherwise
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     private native boolean setParameter(int key, Parcel value);
@@ -3424,7 +3420,7 @@ public class MediaPlayer extends PlayerBase
      * @param reply Parcel with audio/video duration info for battery
                     tracking usage
      * @return The status code.
-     * {@hide}
+     * @hide
      */
     public native static int native_pullBatteryData(Parcel reply);
 
@@ -3453,7 +3449,7 @@ public class MediaPlayer extends PlayerBase
      * @throws IllegalArgumentException if the retransmit endpoint is supplied,
      * but invalid.
      *
-     * {@hide} pending API council
+     * @hide pending API council
      */
     @UnsupportedAppUsage
     public void setRetransmitEndpoint(InetSocketAddress endpoint)
@@ -4607,7 +4603,7 @@ public class MediaPlayer extends PlayerBase
     /** Failed to handle timed text track properly.
      * @see android.media.MediaPlayer.OnInfoListener
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int MEDIA_INFO_TIMED_TEXT_ERROR = 900;
@@ -5248,12 +5244,12 @@ public class MediaPlayer extends PlayerBase
      * provided to the DRM engine plugin using provideKeyResponse. When the
      * response is for an offline key request, a key-set identifier is returned that
      * can be used to later restore the keys to a new session with the method
-     * {@ link # restoreKeys}.
+     * {@link #restoreKeys}.
      * When the response is for a streaming or release request, null is returned.
      *
      * @param keySetId When the response is for a release request, keySetId identifies
      * the saved key associated with the release request (i.e., the same keySetId
-     * passed to the earlier {@ link # getKeyRequest} call. It MUST be null when the
+     * passed to the earlier {@link #getKeyRequest} call. It MUST be null when the
      * response is for either streaming or offline key requests.
      *
      * @param response the byte array response from the server

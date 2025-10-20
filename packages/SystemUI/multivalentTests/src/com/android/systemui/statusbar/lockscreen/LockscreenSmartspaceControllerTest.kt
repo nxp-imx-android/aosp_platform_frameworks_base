@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.lockscreen
 
+import android.app.WallpaperManager
 import android.app.smartspace.SmartspaceAction
 import android.app.smartspace.SmartspaceManager
 import android.app.smartspace.SmartspaceSession
@@ -36,8 +37,10 @@ import android.testing.TestableLooper.RunWithLooper
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.colorextraction.ColorExtractor.OnColorsChangedListener
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.colorextraction.SysuiColorExtractor
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.flags.FeatureFlags
 import com.android.systemui.plugins.ActivityStarter
@@ -83,6 +86,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWithLooper(setAsMainLooper = true)
@@ -107,6 +111,8 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
     @Mock private lateinit var userTracker: UserTracker
 
     @Mock private lateinit var contentResolver: ContentResolver
+
+    @Mock private lateinit var sysuiColorExtractor: SysuiColorExtractor
 
     @Mock private lateinit var configurationController: ConfigurationController
 
@@ -142,6 +148,9 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
 
     @Captor private lateinit var settingsObserverCaptor: ArgumentCaptor<ContentObserver>
 
+    @Captor
+    private lateinit var onColorsChangedListenerCaptor: ArgumentCaptor<OnColorsChangedListener>
+
     @Captor private lateinit var configChangeListenerCaptor: ArgumentCaptor<ConfigurationListener>
 
     @Captor private lateinit var statusBarStateListenerCaptor: ArgumentCaptor<StateListener>
@@ -155,6 +164,7 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
     private lateinit var sessionListener: OnTargetsAvailableListener
     private lateinit var userListener: UserTracker.Callback
     private lateinit var settingsObserver: ContentObserver
+    private lateinit var onColorsChangedListener: OnColorsChangedListener
     private lateinit var configChangeListener: ConfigurationListener
     private lateinit var statusBarStateListener: StateListener
     private lateinit var bypassStateChangeListener:
@@ -229,6 +239,7 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
                 secureSettings,
                 userTracker,
                 contentResolver,
+                sysuiColorExtractor,
                 configurationController,
                 statusBarStateController,
                 deviceProvisionedController,
@@ -347,6 +358,34 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
 
         // THEN we request a new smartspace update
         verify(smartspaceSession).requestSmartspaceUpdate()
+    }
+
+    @Test
+    fun testLockscreenWallpaperColorChange_updatesBackgroundColor() {
+        `when`(sysuiColorExtractor.getWallpaperColors(anyInt())).thenReturn(mock())
+
+        // GIVEN a connected smartspace session
+        connectSession()
+
+        // WHEN the lock screen wallpaper changes
+        onColorsChangedListener.onColorsChanged(sysuiColorExtractor, WallpaperManager.FLAG_LOCK)
+
+        // THEN we update the new background color according to the lock screen wallpaper.
+        verify(smartspaceView).setHighContrastBackgroundColor(anyInt())
+    }
+
+    @Test
+    fun testHomeScreenWallpaperColorChange_doesNotUpdateBackgroundColor() {
+        `when`(sysuiColorExtractor.getWallpaperColors(anyInt())).thenReturn(mock())
+
+        // GIVEN a connected smartspace session
+        connectSession()
+
+        // WHEN the home screen wallpaper changes
+        onColorsChangedListener.onColorsChanged(sysuiColorExtractor, WallpaperManager.FLAG_SYSTEM)
+
+        // We don't update the background color for the home screen wallpaper.
+        verify(smartspaceView, never()).setHighContrastBackgroundColor(anyInt())
     }
 
     @Test
@@ -741,6 +780,7 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         verify(smartspaceSession).close()
         verify(userTracker).removeCallback(userListener)
         verify(contentResolver).unregisterContentObserver(settingsObserver)
+        verify(sysuiColorExtractor).removeOnColorsChangedListener(onColorsChangedListener)
         verify(configurationController).removeCallback(configChangeListener)
         verify(statusBarStateController).removeCallback(statusBarStateListener)
         verify(keyguardBypassController)
@@ -793,6 +833,7 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         // THEN no calls to createSmartspaceSession should occur
         verify(smartspaceManager, never()).createSmartspaceSession(any())
         // THEN no listeners should be registered
+        verify(sysuiColorExtractor, never()).addOnColorsChangedListener(any())
         verify(configurationController, never()).addCallback(any())
     }
 
@@ -848,6 +889,10 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
                 eq(UserHandle.USER_ALL),
             )
         settingsObserver = settingsObserverCaptor.value
+
+        verify(sysuiColorExtractor)
+            .addOnColorsChangedListener(onColorsChangedListenerCaptor.capture())
+        onColorsChangedListener = onColorsChangedListenerCaptor.value
 
         verify(configurationController).addCallback(configChangeListenerCaptor.capture())
         configChangeListener = configChangeListenerCaptor.value
@@ -1012,6 +1057,10 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
                 override fun registerConfigProvider(plugin: BcSmartspaceConfigPlugin?) {}
 
                 override fun setPrimaryTextColor(color: Int) {}
+
+                // This is needed because `verify(smartspaceView, never())` doesn't work with the
+                // interface default method.
+                override fun setHighContrastBackgroundColor(wallpaperColorHints: Int) {}
 
                 override fun setUiSurface(uiSurface: String) {}
 

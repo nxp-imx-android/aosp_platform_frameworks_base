@@ -21,21 +21,21 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
-import com.android.systemui.screencapture.record.largescreen.ui.compose.LargeScreenCaptureRecordContent
+import com.android.systemui.screencapture.record.largescreen.ui.compose.LargeScreenCaptureContent
 import com.android.systemui.screencapture.record.smallscreen.ui.compose.SmallScreenCaptureRecordContent
 import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordViewModel
 import dagger.Lazy
 import javax.inject.Inject
 
 /** Entry point for Record composable content. */
-@ScreenCaptureScope
+@ScreenCaptureUiScope
 class ScreenCaptureRecordContent
 @Inject
 constructor(
     private val screenCaptureRecordViewModelFactory: ScreenCaptureRecordViewModel.Factory,
-    private val largeScreenCaptureRecordContent: Lazy<LargeScreenCaptureRecordContent>,
+    private val largeScreenCaptureContent: Lazy<LargeScreenCaptureContent>,
     private val smallScreenCaptureRecordContent: Lazy<SmallScreenCaptureRecordContent>,
 ) : ScreenCaptureContent {
 
@@ -49,7 +49,7 @@ constructor(
             remember(viewModel.isLargeScreen) {
                 derivedStateOf {
                     when (viewModel.isLargeScreen) {
-                        true -> largeScreenCaptureRecordContent.get()
+                        true -> largeScreenCaptureContent.get()
                         false -> smallScreenCaptureRecordContent.get()
                         else -> null
                     }

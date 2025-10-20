@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Csatlakozás…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Csatlakoztatva<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Párosítás..."</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Nem lehet párosítani"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Nem sikerült kapcsolódni"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Csatlakoztatva (telefonhang nélkül)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Csatlakoztatva (médiahang nélkül)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Csatlakoztatva (nincs telefon- és médiahang)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -116,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Aktív (csak jobb)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Aktív (bal és jobb)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Nem sikerült módosítani a környezetet"</string>
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"Nem sikerült frissíteni a beállításkészletet"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Kijelölve"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Aktív (csak médiatartalom lejátszása esetén). Akkumulátor töltöttségi szintje: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Aktív (csak médiatartalom lejátszása esetén). Akkumulátorok töltöttségi szintje: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g> (bal) és <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> (jobb)."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Vendégeszköz. Akkumulátor töltöttségi szintje: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
@@ -284,7 +288,7 @@
     <string name="adb_pairing_device_dialog_title" msgid="7141739231018530210">"Párosítás eszközzel"</string>
     <string name="adb_pairing_device_dialog_pairing_code_label" msgid="3639239786669722731">"Wi‑Fi-párosítókód"</string>
     <string name="adb_pairing_device_dialog_failed_title" msgid="3426758947882091735">"Sikertelen párosítás"</string>
-    <string name="adb_pairing_device_dialog_failed_msg" msgid="6611097519661997148">"Győződjön meg arról, hogy az eszköz a megfelelő hálózathoz csatlakozik."</string>
+    <string name="adb_pairing_device_dialog_failed_msg" msgid="6611097519661997148">"Figyeljen arra, hogy az eszköz ugyanahhoz a hálózathoz csatlakozzon."</string>
     <string name="adb_wireless_qrcode_summary" msgid="8051414549011801917">"Párosítsa az eszközt Wi-Fi-n keresztül QR-kód beolvasásával"</string>
     <string name="adb_wireless_verifying_qrcode_text" msgid="6123192424916029207">"Eszköz párosítása…"</string>
     <string name="adb_qrcode_pairing_device_failed_msg" msgid="6936292092592914132">"Nem sikerült az eszközzel való párosítás. Vagy helytelen volt a QR-kód, vagy az eszköz másik hálózathoz csatlakozott."</string>
@@ -345,7 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Ha ez a mód be van kapcsolva, akkor ennek az eszköznek a MAC-címe minden alkalommal módosulhat, amikor olyan hálózathoz csatlakozik, amelyen engedélyezve van a MAC-címek randomizálása."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Forgalomkorlátos"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Nem forgalomkorlátos"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Naplózási puffer mérete"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Naplózási pufferméret"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Naplózási pufferméret kiválasztása"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Törli a naplózó program állandó tárhelyét?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Ha az állandó naplózó programot már nem használjuk tovább, kötelesek vagyunk törölni a naplózott adatokat eszközéről."</string>
@@ -397,15 +401,15 @@
     <string name="pointer_location" msgid="7516929526199520173">"Mutató helye"</string>
     <string name="pointer_location_summary" msgid="957120116989798464">"A fedvény mutatja az aktuális érintési adatokat"</string>
     <string name="show_touches" msgid="8437666942161289025">"Koppintások megjelenítése"</string>
-    <string name="show_touches_summary" msgid="3692861665994502193">"Koppintások vizuális visszajelzésének megjelenítése"</string>
+    <string name="show_touches_summary" msgid="3692861665994502193">"Koppintások vizuális visszajelzése"</string>
     <string name="show_key_presses" msgid="6360141722735900214">"Gomblenyomások mutatása"</string>
-    <string name="show_key_presses_summary" msgid="725387457373015024">"Fizikai gomblenyomások vizuális visszajelzéseinek mutatása"</string>
+    <string name="show_key_presses_summary" msgid="725387457373015024">"Fizikai gomblenyomások vizuális visszajelzése"</string>
     <string name="touchpad_visualizer" msgid="3707916068870825115">"Az érintőpados bevitel megjelenítése"</string>
     <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"Képernyőfedvény érintőpados beviteli adatokkal és felismert kézmozdulatokkal"</string>
-    <string name="show_screen_updates" msgid="2078782895825535494">"Felületfrissítések megj."</string>
-    <string name="show_screen_updates_summary" msgid="2126932969682087406">"A teljes ablakfelület villogjon frissítéskor."</string>
+    <string name="show_screen_updates" msgid="2078782895825535494">"Felületfrissítések"</string>
+    <string name="show_screen_updates_summary" msgid="2126932969682087406">"A teljes ablakfelület villogjon frissítéskor"</string>
     <string name="show_hw_screen_updates" msgid="2021286231267747506">"Frissítések megjelenítése"</string>
-    <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"Ablakos Flash-nézetek megjelenítéskor"</string>
+    <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"Nézetek villogtatása ablakokon belül rajzoláskor"</string>
     <string name="show_hw_layers_updates" msgid="5268370750002509767">"Hardverréteg-frissítések"</string>
     <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"Frissítéskor a hardverrétegek zölden villognak."</string>
     <string name="debug_hw_overdraw" msgid="8944851091008756796">"GPU tartalom-felülírási hibakeresés"</string>
@@ -416,7 +420,7 @@
     <string name="usb_audio_disable_routing" msgid="3367656923544254975">"Hangátirányítás tiltása - USB"</string>
     <string name="usb_audio_disable_routing_summary" msgid="8768242894849534699">"Hangátirányítás tiltása az USB-s hangeszközöknél"</string>
     <string name="debug_layout" msgid="1659216803043339741">"Elrendezéshatárok"</string>
-    <string name="debug_layout_summary" msgid="8825829038287321978">"Kliphatárok, margók stb. megjelenítése."</string>
+    <string name="debug_layout_summary" msgid="8825829038287321978">"Kliphatárok, margók stb. megjelenítése"</string>
     <string name="force_rtl_layout_all_locales" msgid="8690762598501599796">"Elrendezés jobbról balra"</string>
     <string name="force_rtl_layout_all_locales_summary" msgid="6663016859517239880">"Elrendezés jobbról balra minden nyelvnél"</string>
     <string name="transparent_navigation_bar" msgid="1933192171384678484">"Átlátszó navigációs sáv"</string>
@@ -540,7 +544,7 @@
     <string name="battery_info_status_charging_on_hold" msgid="6364355145521694438">"A töltés szünetel"</string>
     <string name="battery_info_status_charging_v2" msgid="6118522107222245505">"Töltés…"</string>
     <string name="battery_info_status_charging_fast_v2" msgid="1825439848151256589">"Gyors töltés…"</string>
-    <string name="disabled_by_admin_summary_text" msgid="5343911767402923057">"Rendszergazda által irányítva"</string>
+    <string name="disabled_by_admin_summary_text" msgid="5343911767402923057">"A rendszergazda felügyeli"</string>
     <string name="disabled_by_app_ops_text" msgid="8373595926549098012">"Korlátozott beállítás vezérli"</string>
     <string name="disabled_in_phone_call_text" msgid="6568931334337318320">"Nem áll rendelkezésre hívások közben"</string>
     <string name="disabled" msgid="8017887509554714950">"Letiltva"</string>

@@ -42,6 +42,7 @@ import android.os.Handler;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.service.carrier.CarrierService;
+import android.telecom.PhoneAccount;
 import android.telecom.TelecomManager;
 import android.telephony.AccessNetworkConstants.AccessNetworkType;
 import android.telephony.data.ApnSetting;
@@ -2664,8 +2665,18 @@ public class CarrierConfigManager {
      * Where {@code config_device_respects_hold_carrier_config} is false, the value of
      * this carrier configuration is ignored.
      * @hide
+     * @deprecated All carriers should support holding.
      */
+    @Deprecated
     public static final String KEY_ALLOW_HOLD_IN_IMS_CALL_BOOL = "allow_hold_in_ims_call";
+
+    /**
+     * Flag indicating whether the carrier supports auto-unholding the background call on remotely
+     * disconnected calls.
+     */
+    @FlaggedApi(Flags.FLAG_SUPPORT_AUTO_UNHOLD)
+    public static final String KEY_AUTO_UNHOLD_ON_REMOTE_DISCONNECT_BOOL =
+            "auto_unhold_on_remote_disconnect_bool";
 
     /**
      * Flag indicating whether the carrier supports call deflection for an incoming IMS call.
@@ -2705,7 +2716,7 @@ public class CarrierConfigManager {
      * When {@code false}, indicates that adding a call is disabled when there is an ongoing video
      * call or when there is an ongoing call on wifi which was downgraded from video and VoWifi is
      * turned off.
-     * When {@code true), indicates that another call can be added during an ongoing video call.
+     * When {@code true}, indicates that another call can be added during an ongoing video call.
      * <p>
      * This is {@code true} by default.
      */
@@ -7522,7 +7533,7 @@ public class CarrierConfigManager {
          * {@link SmsManager#SMS_RP_CAUSE_MESSAGE_INCOMPATIBLE_WITH_PROTOCOL_STATE}
          * {@link SmsManager#SMS_RP_CAUSE_INFORMATION_ELEMENT_NON_EXISTENT}
          * {@link SmsManager#SMS_RP_CAUSE_PROTOCOL_ERROR}
-         * {@link SmsManager#SMS_RP_CAUSE_INTERWORKING_UNSPECIFIED
+         * {@link SmsManager#SMS_RP_CAUSE_INTERWORKING_UNSPECIFIED}
          */
         public static final String KEY_SMS_RP_CAUSE_VALUES_TO_RETRY_OVER_IMS_INT_ARRAY =
                 KEY_PREFIX + "sms_rp_cause_values_to_retry_over_ims_int_array";
@@ -9862,6 +9873,7 @@ public class CarrierConfigManager {
      * <li>4 = {@link android.telephony.NetworkRegistrationInfo#SERVICE_TYPE_VIDEO}</li>
      * <li>5 = {@link android.telephony.NetworkRegistrationInfo#SERVICE_TYPE_EMERGENCY}</li>
      * <li>6 = {@link android.telephony.NetworkRegistrationInfo#SERVICE_TYPE_MMS}</li>
+     * <li>7 = {@link android.telephony.NetworkRegistrationInfo#SERVICE_TYPE_EMERGENCY_SMS}</li>
      * </ul>
      * <p>
      * An example config for two PLMNs "123411" and "123412":
@@ -9883,6 +9895,28 @@ public class CarrierConfigManager {
      */
     public static final String KEY_CARRIER_SUPPORTED_SATELLITE_SERVICES_PER_PROVIDER_BUNDLE =
             "carrier_supported_satellite_services_per_provider_bundle";
+
+    /**
+     * A string array containing the list of supported emergency satellite PLMNs. The satellite
+     * services supported by these PLMNs are defined by
+     * {@link #KEY_CARRIER_SUPPORTED_SATELLITE_SERVICES_PER_PROVIDER_BUNDLE}.
+     * <p>
+     * This config is empty by default.
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public static final String KEY_SATELLITE_SUPPORTED_EMERGENCY_PLMN_STRING_ARRAY =
+            "satellite_supported_emergency_plmn_string_array";
+
+    /**
+     * A string array containing the list of supported disaster satellite PLMNs. The satellite
+     * services supported by these PLMNs are defined by
+     * {@link #KEY_CARRIER_SUPPORTED_SATELLITE_SERVICES_PER_PROVIDER_BUNDLE}.
+     * <p>
+     * This config is empty by default.
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public static final String KEY_SATELLITE_SUPPORTED_DISASTER_PLMN_STRING_ARRAY =
+            "satellite_supported_disaster_plmn_string_array";
 
     /**
      * A PersistableBundle that contains a list of key-value pairs, where keys are satellite
@@ -10134,7 +10168,7 @@ public class CarrierConfigManager {
      * If the carrier would like to allow the device to use satellite connection when data roaming
      * is off, this key should be set to {@code true}.
      *
-     * The default value is {@code false} i.e. disallow satellite data when data roaming is off.
+     * The default value is {@code true} i.e. allow satellite data when data roaming is off.
      */
     @FlaggedApi(Flags.FLAG_SATELLITE_25Q4_APIS)
     public static final String KEY_SATELLITE_IGNORE_DATA_ROAMING_SETTING_BOOL =
@@ -10157,7 +10191,7 @@ public class CarrierConfigManager {
      * An integer key holds the time interval for refreshing or re-querying the satellite
      * entitlement status from the entitlement server to ensure it is the latest.
      *
-     * The default value is 7 days.
+     * The default value is 1 day.
      */
     public static final String KEY_SATELLITE_ENTITLEMENT_STATUS_REFRESH_DAYS_INT =
             "satellite_entitlement_status_refresh_days_int";
@@ -10454,6 +10488,13 @@ public class CarrierConfigManager {
             "supports_video_back_tone_bool";
 
     /**
+     * Indicates if the carrier supports a unidirectional video service call (UVS).
+     */
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_IS_USING_UNIDIRECTIONAL_VIDEO_SERVICE)
+    public static final String KEY_SUPPORTS_UNIDIRECTIONAL_VIDEO_SERVICE_BOOL =
+            "supports_unidirectional_video_service_bool";
+
+    /**
      * Determines the default RTT mode.
      *
      * Upon first boot, when the user has not yet set a value for their preferred RTT mode,
@@ -10602,6 +10643,21 @@ public class CarrierConfigManager {
      */
     public static final String KEY_UNTHROTTLE_DATA_RETRY_WHEN_TAC_CHANGES_BOOL =
             "unthrottle_data_retry_when_tac_changes_bool";
+
+    /**
+     * Indicates if the carrier supports Customized Ringing Signal (CRS).
+     * The Customized Ringing Signal (CRS) is an operator-specific feature that allows a
+     * subscriber to customize the media played to the called party during the establishment
+     * of an incoming call. When the MT call is received, the device will present the CRS
+     * media instead of its standard ringtone. This CRS media can consist of audio, video,
+     * still images, or any combination thereof.
+     *
+     * If true, telephony will handle incoming calls with CRS media as specified
+     * by the vendor IMS stack.
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
+    public static final String KEY_SUPPORTS_CUSTOMIZED_RINGING_SIGNAL_BOOL =
+            "supports_customized_ringing_signal_bool";
 
     /**
      * A list of premium capabilities the carrier supports. Applications can prompt users to
@@ -10921,9 +10977,8 @@ public class CarrierConfigManager {
     /**
      * Auto data network switch policy between primary and opportunistic profiles in the same
      * subscription group: switching is disabled.
-     *
-     * @hide
      */
+    @FlaggedApi(Flags.FLAG_EXPOSE_OPPT_AUTO_DATA_SWITCH_POLICIES)
     public static final int OPP_AUTO_DATA_SWITCH_POLICY_DISABLED = 0;
 
     /**
@@ -10936,9 +10991,8 @@ public class CarrierConfigManager {
      *
      * <p>The system behavior may change over releases. Carriers can override with specific policies
      * below if carriers would like a consistent behavior.
-     *
-     * @hide
      */
+    @FlaggedApi(Flags.FLAG_EXPOSE_OPPT_AUTO_DATA_SWITCH_POLICIES)
     public static final int OPP_AUTO_DATA_SWITCH_POLICY_FOLLOW_SYSTEM = Integer.MAX_VALUE;
 
     /**
@@ -10950,9 +11004,8 @@ public class CarrierConfigManager {
      *
      * <p>The availability-based switch is also restricted by the device resource config
      * {@code auto_data_switch_availability_stability_time_threshold_millis}.
-     *
-     * @hide
      */
+    @FlaggedApi(Flags.FLAG_EXPOSE_OPPT_AUTO_DATA_SWITCH_POLICIES)
     public static final int OPP_AUTO_DATA_SWITCH_POLICY_FOR_AVAILABILITY =
             OPP_AUTO_DATA_SWITCH_POLICY_BITMASK_AVAILABILITY;
 
@@ -10969,9 +11022,8 @@ public class CarrierConfigManager {
      * <p>Performance based policy implicitly include availability based policy, that is, when
      * primary or opportunistic is out of service, follow the same behavior for policy
      * {@link #OPP_AUTO_DATA_SWITCH_POLICY_FOR_AVAILABILITY}.
-     *
-     * @hide
      */
+    @FlaggedApi(Flags.FLAG_EXPOSE_OPPT_AUTO_DATA_SWITCH_POLICIES)
     public static final int OPP_AUTO_DATA_SWITCH_POLICY_FOR_PERFORMANCE =
             OPP_AUTO_DATA_SWITCH_POLICY_BITMASK_AVAILABILITY
                     | OPP_AUTO_DATA_SWITCH_POLICY_BITMASK_PERFORMANCE;
@@ -10990,10 +11042,46 @@ public class CarrierConfigManager {
      * policies or specific policy according to the business user cases.
      *
      * <p>None of the policies here impact the auto data switch between primary networks.
-     * @hide
      */
+    @FlaggedApi(Flags.FLAG_EXPOSE_OPPT_AUTO_DATA_SWITCH_POLICIES)
     public static final String KEY_OPP_AUTO_DATA_SWITCH_POLICY_INT =
             "opp_auto_data_switch_policy_int";
+
+    /**
+     * Battery level threshold (in percentage) to trigger an audio alert.
+     * <p>
+     * This flag defines the minimum battery percentage at which an audio alert will be played.
+     * When the device battery level falls below this threshold, a tone or audio warning
+     * may be triggered to notify the user.
+     * </p>
+     * <p>Type: Integer</p>
+     * <p>Valid values: 0–100</p>
+     * <p>Default value: {@link PhoneAccount.LOW_BATTERY_ALERT_DISABLED} (feature disabled)</p>
+     * <p>If the value is set to {@link PhoneAccount.LOW_BATTERY_ALERT_DISABLED},
+     * the audio alert for low battery is not enabled.</p>
+     *
+     */
+    @FlaggedApi(Flags.FLAG_SUPPORT_LOW_BATTERY_ALERT)
+    public static final String KEY_LOW_BATTERY_ALERT_THRESHOLD_INT =
+            "low_battery_alert_threshold_int";
+
+    /**
+     * Interval between consecutive battery alert tones, in seconds.
+     * <p>
+     * This flag controls how frequently (in seconds) an alert tone should be played
+     * after the battery level drops below the defined threshold.
+     * A shorter interval means more frequent alerts.
+     * </p>
+     * <p>Type: Integer</p>
+     * <p>Valid values: 0 or greater</p>
+     * <p>Default value: {@link PhoneAccount.LOW_BATTERY_ALERT_DISABLED} (feature disabled)</p>
+     * <p>If set to {@link PhoneAccount.LOW_BATTERY_ALERT_DISABLED},
+     * the alert tone is disabled entirely.</p>
+     *
+     */
+    @FlaggedApi(Flags.FLAG_SUPPORT_LOW_BATTERY_ALERT)
+    public static final String KEY_LOW_BATTERY_ALERT_INTERVAL_INT =
+            "low_battery_alert_interval_int";
 
     /** The default value for every variable. */
     private static final PersistableBundle sDefaults;
@@ -11002,6 +11090,7 @@ public class CarrierConfigManager {
         sDefaults = new PersistableBundle();
         sDefaults.putString(KEY_CARRIER_CONFIG_VERSION_STRING, "");
         sDefaults.putBoolean(KEY_ALLOW_HOLD_IN_IMS_CALL_BOOL, true);
+        sDefaults.putBoolean(KEY_AUTO_UNHOLD_ON_REMOTE_DISCONNECT_BOOL, false);
         sDefaults.putBoolean(KEY_CARRIER_ALLOW_DEFLECT_IMS_CALL_BOOL, false);
         sDefaults.putBoolean(KEY_CARRIER_ALLOW_TRANSFER_IMS_CALL_BOOL, false);
         sDefaults.putBoolean(KEY_ALWAYS_PLAY_REMOTE_HOLD_TONE_BOOL, false);
@@ -11640,7 +11729,8 @@ public class CarrierConfigManager {
                 KEY_TELEPHONY_NETWORK_CAPABILITY_PRIORITIES_STRING_ARRAY, new String[] {
                         "eims:90", "supl:80", "mms:70", "xcap:70", "cbs:50", "mcx:50", "fota:50",
                         "ims:40", "rcs:40", "dun:30", "enterprise:20", "internet:20",
-                        "prioritize_bandwidth:20", "prioritize_latency:20"
+                        "prioritize_bandwidth:20", "prioritize_latency:20",
+                        "prioritize_unified_communications:20"
                 });
         sDefaults.putStringArray(
                 KEY_TELEPHONY_DATA_SETUP_RETRY_RULES_STRING_ARRAY, new String[] {
@@ -11654,7 +11744,8 @@ public class CarrierConfigManager {
                                 + "-3|65543|65547|2252|2253|2254, retry_interval=2500",
                         "capabilities=mms|supl|cbs|rcs, retry_interval=2000",
                         "capabilities=internet|enterprise|dun|ims|fota|xcap|mcx|"
-                                + "prioritize_bandwidth|prioritize_latency, retry_interval="
+                                + "prioritize_bandwidth|prioritize_latency|"
+                                + "prioritize_unified_communications, retry_interval="
                                 + "2500|3000|5000|10000|15000|20000|40000|60000|120000|240000|"
                                 + "600000|1200000|1800000, maximum_retries=20"
                 });
@@ -11667,6 +11758,12 @@ public class CarrierConfigManager {
         sDefaults.putPersistableBundle(
                 KEY_CARRIER_SUPPORTED_SATELLITE_SERVICES_PER_PROVIDER_BUNDLE,
                 PersistableBundle.EMPTY);
+        sDefaults.putStringArray(
+                KEY_SATELLITE_SUPPORTED_EMERGENCY_PLMN_STRING_ARRAY,
+                new String[0]);
+        sDefaults.putStringArray(
+                KEY_SATELLITE_SUPPORTED_DISASTER_PLMN_STRING_ARRAY,
+                new String[0]);
         sDefaults.putPersistableBundle(KEY_SATELLITE_CONFIGS_PER_PLMN_BUNDLE,
                 PersistableBundle.EMPTY);
         sDefaults.putPersistableBundle(
@@ -11703,9 +11800,9 @@ public class CarrierConfigManager {
         sDefaults.putBoolean(KEY_REMOVE_SATELLITE_PLMN_IN_MANUAL_NETWORK_SCAN_BOOL, true);
         sDefaults.putInt(KEY_SATELLITE_DATA_SUPPORT_MODE_INT,
                 CarrierConfigManager.SATELLITE_DATA_SUPPORT_ONLY_RESTRICTED);
-        sDefaults.putBoolean(KEY_SATELLITE_IGNORE_DATA_ROAMING_SETTING_BOOL, false);
+        sDefaults.putBoolean(KEY_SATELLITE_IGNORE_DATA_ROAMING_SETTING_BOOL, true);
         sDefaults.putBoolean(KEY_OVERRIDE_WFC_ROAMING_MODE_WHILE_USING_NTN_BOOL, true);
-        sDefaults.putInt(KEY_SATELLITE_ENTITLEMENT_STATUS_REFRESH_DAYS_INT, 7);
+        sDefaults.putInt(KEY_SATELLITE_ENTITLEMENT_STATUS_REFRESH_DAYS_INT, 1);
         sDefaults.putBoolean(KEY_SATELLITE_ENTITLEMENT_SUPPORTED_BOOL, false);
         sDefaults.putString(KEY_SATELLITE_ENTITLEMENT_APP_NAME_STRING, "androidSatmode");
         sDefaults.putString(KEY_SATELLITE_INFORMATION_REDIRECT_URL_STRING, "");
@@ -11740,6 +11837,7 @@ public class CarrierConfigManager {
         sDefaults.putBoolean(KEY_SUPPORTS_CALL_COMPOSER_BOOL, false);
         sDefaults.putBoolean(KEY_SUPPORTS_BUSINESS_CALL_COMPOSER_BOOL, false);
         sDefaults.putBoolean(KEY_SUPPORTS_VIDEO_RINGBACK_BOOL, false);
+        sDefaults.putBoolean(KEY_SUPPORTS_UNIDIRECTIONAL_VIDEO_SERVICE_BOOL, false);
         sDefaults.putString(KEY_CALL_COMPOSER_PICTURE_SERVER_URL_STRING, "");
         sDefaults.putBoolean(KEY_USE_ACS_FOR_RCS_BOOL, false);
         sDefaults.putBoolean(KEY_NETWORK_TEMP_NOT_METERED_SUPPORTED_BOOL, true);
@@ -11754,6 +11852,7 @@ public class CarrierConfigManager {
         sDefaults.putString(KEY_CARRIER_PROVISIONING_APP_STRING, "");
         sDefaults.putBoolean(KEY_DISPLAY_NO_DATA_NOTIFICATION_ON_PERMANENT_FAILURE_BOOL, false);
         sDefaults.putBoolean(KEY_UNTHROTTLE_DATA_RETRY_WHEN_TAC_CHANGES_BOOL, false);
+        sDefaults.putBoolean(KEY_SUPPORTS_CUSTOMIZED_RINGING_SIGNAL_BOOL, false);
         sDefaults.putBoolean(KEY_VONR_SETTING_VISIBILITY_BOOL, true);
         sDefaults.putBoolean(KEY_VONR_ENABLED_BOOL, false);
         sDefaults.putBoolean(KEY_VONR_ON_BY_DEFAULT_BOOL, true);
@@ -11839,6 +11938,12 @@ public class CarrierConfigManager {
             sDefaults.putBoolean(KEY_SHOW_AVOID_BAD_WIFI_TOGGLE_BOOL, false);
         }
         sDefaults.putInt(KEY_OPP_AUTO_DATA_SWITCH_POLICY_INT, 0);
+
+        // Default value for low battery alert.
+        sDefaults.putInt(KEY_LOW_BATTERY_ALERT_THRESHOLD_INT,
+                PhoneAccount.LOW_BATTERY_ALERT_DISABLED);
+        sDefaults.putInt(KEY_LOW_BATTERY_ALERT_INTERVAL_INT,
+                PhoneAccount.LOW_BATTERY_ALERT_DISABLED);
     }
 
     /**

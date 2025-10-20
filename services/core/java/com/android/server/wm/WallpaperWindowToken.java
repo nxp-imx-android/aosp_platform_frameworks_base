@@ -57,16 +57,10 @@ class WallpaperWindowToken extends WindowToken {
      */
     private SparseArray<Rect> mCropHints = new SparseArray<>();
 
-    WallpaperWindowToken(WindowManagerService service, IBinder token, boolean explicit,
-            DisplayContent dc, boolean ownerCanManageAppTokens) {
-        this(service, token, explicit, dc, ownerCanManageAppTokens, null /* options */);
-    }
-
-    WallpaperWindowToken(WindowManagerService service, IBinder token, boolean explicit,
-            DisplayContent dc, boolean ownerCanManageAppTokens, @Nullable Bundle options) {
-        super(service, token, TYPE_WALLPAPER, explicit, dc, ownerCanManageAppTokens,
-                false /* roundedCornerOverlay */, false /* fromClientToken */, options);
-        dc.mWallpaperController.addWallpaperToken(this);
+    WallpaperWindowToken(WindowManagerService service, IBinder token, @Nullable Bundle options) {
+        super(service, token, TYPE_WALLPAPER, true /* persistOnEmpty */,
+                true /* ownerCanManageAppTokens */, false /* roundedCornerOverlay */,
+                false /* fromClientToken */, options);
         setWindowingMode(WINDOWING_MODE_FULLSCREEN);
     }
 

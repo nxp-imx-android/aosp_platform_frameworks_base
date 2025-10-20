@@ -58,8 +58,6 @@ import static android.service.notification.Adjustment.TYPE_NEWS;
 import static android.service.notification.Adjustment.TYPE_OTHER;
 import static android.service.notification.Adjustment.TYPE_PROMOTION;
 import static android.service.notification.Adjustment.TYPE_SOCIAL_MEDIA;
-import static android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION;
-import static android.service.notification.Flags.notificationClassification;
 
 import static com.android.internal.config.sysui.SystemUiSystemPropertiesFlags.NotificationFlags.PROPAGATE_CHANNEL_UPDATES_TO_CONVERSATIONS;
 import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_PREFERENCES__FSI_STATE__DENIED;
@@ -253,8 +251,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
         return FlagsParameterization.allCombinationsOf(
-                android.app.Flags.FLAG_UI_RICH_ONGOING,
-                FLAG_NOTIFICATION_CLASSIFICATION_UI,
                 android.app.Flags.FLAG_NM_BINDER_PERF_CACHE_CHANNELS);
     }
 
@@ -642,15 +638,13 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 UID_N_MR1, false));
 
         NotificationChannel updateNews = null;
-        if (notificationClassification()) {
-            mHelper.createReservedChannel(PKG_N_MR1, UID_N_MR1, TYPE_NEWS);
-            // change one of the reserved bundle channels to ensure changes are not persisted
-            // across boot
-            updateNews = mHelper.getNotificationChannel(
-                    PKG_N_MR1, UID_N_MR1, NEWS_ID, false).copy();
-            updateNews.setImportance(IMPORTANCE_NONE);
-            mHelper.updateNotificationChannel(PKG_N_MR1, UID_N_MR1, updateNews, true, 1000, true);
-        }
+        mHelper.createReservedChannel(PKG_N_MR1, UID_N_MR1, TYPE_NEWS);
+        // change one of the reserved bundle channels to ensure changes are not persisted
+        // across boot
+        updateNews = mHelper.getNotificationChannel(
+                PKG_N_MR1, UID_N_MR1, NEWS_ID, false).copy();
+        updateNews.setImportance(IMPORTANCE_NONE);
+        mHelper.updateNotificationChannel(PKG_N_MR1, UID_N_MR1, updateNews, true, 1000, true);
 
         mHelper.setShowBadge(PKG_N_MR1, UID_N_MR1, true);
         if (android.app.Flags.uiRichOngoing()) {
@@ -671,15 +665,13 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, channel1.getId(), false));
         compareChannels(channel2,
                 mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, channel2.getId(), false));
-        if (notificationClassification()) {
-            updateNews.setImportance(IMPORTANCE_LOW);
-            assertThat(mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, updateNews.getId(),
-                    false)).isNotNull();
-            assertThat(mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, updateNews.getId(),
-                    false)).isEqualTo(updateNews);
-            assertThat(mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, updateNews.getId(),
-                    false).getImportance()).isEqualTo(IMPORTANCE_LOW);
-        }
+        updateNews.setImportance(IMPORTANCE_LOW);
+        assertThat(mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, updateNews.getId(),
+                false)).isNotNull();
+        assertThat(mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, updateNews.getId(),
+                false)).isEqualTo(updateNews);
+        assertThat(mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, updateNews.getId(),
+                false).getImportance()).isEqualTo(IMPORTANCE_LOW);
 
         List<NotificationChannelGroup> actualGroups = mXmlHelper.getNotificationChannelGroups(
                 PKG_N_MR1, UID_N_MR1,
@@ -3077,7 +3069,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testOnlyHasDefaultChannel_bundleExists() throws Exception {
         mHelper.createReservedChannel(PKG_N_MR1, UID_N_MR1, TYPE_NEWS);
         assertTrue(mHelper.onlyHasDefaultChannel(PKG_N_MR1, UID_N_MR1));
@@ -5495,6 +5486,11 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
         assertEquals(1, convos.size());
         assertTrue(conversationWrapperContainsChannel(convos, channel));
+
+        // Also test the getConversations(pkg, uid) API
+        List<ConversationChannelWrapper> convosByPkgUid = mHelper.getConversations(PKG_O, UID_O);
+        assertEquals(1, convos.size());
+        assertTrue(conversationWrapperContainsChannel(convos, channel));
     }
 
     private boolean conversationWrapperContainsChannel(List<ConversationChannelWrapper> list,
@@ -6152,54 +6148,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags({FLAG_NOTIFICATION_CLASSIFICATION_UI})
-    public void testPullPackagePreferencesStats_postPermissionMigration()
-            throws InvalidProtocolBufferException {
-        // make sure there's at least one channel for each package we want to test
-        NotificationChannel channelA = new NotificationChannel("a", "a", IMPORTANCE_DEFAULT);
-        mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channelA, true, false,
-                UID_N_MR1, false);
-        NotificationChannel channelB = new NotificationChannel("b", "b", IMPORTANCE_DEFAULT);
-        mHelper.createNotificationChannel(PKG_O, UID_O, channelB, true, false, UID_O, false);
-        NotificationChannel channelC = new NotificationChannel("c", "c", IMPORTANCE_DEFAULT);
-        mHelper.createNotificationChannel(PKG_P, UID_P, channelC, true, false, UID_P, false);
-
-        // build a collection of app permissions that should be passed in and used
-        ArrayMap<Pair<Integer, String>, Pair<Boolean, Boolean>> appPermissions = new ArrayMap<>();
-        appPermissions.put(new Pair<>(UID_N_MR1, PKG_N_MR1), new Pair<>(true, false));
-        appPermissions.put(new Pair<>(UID_O, PKG_O), new Pair<>(false, true)); // in local prefs
-
-        // local preferences
-        mHelper.setShowBadge(PKG_O, UID_O, true);
-        mHelper.setShowBadge(PKG_P, UID_P, true);
-
-        ArrayList<StatsEvent> events = new ArrayList<>();
-
-        mHelper.pullPackagePreferencesStats(events, appPermissions, new ArrayMap<>());
-
-        // expected output. format: uid -> importance, as only uid (and not package name)
-        // is in PackageNotificationPreferences
-        ArrayMap<Integer, Pair<Integer, Boolean>> expected = new ArrayMap<>();
-        expected.put(UID_N_MR1, new Pair<>(IMPORTANCE_DEFAULT, false));
-        expected.put(UID_O, new Pair<>(IMPORTANCE_NONE, true));         // banned by permissions
-        expected.put(UID_P, new Pair<>(IMPORTANCE_UNSPECIFIED, false)); // default: unspecified
-
-        assertEquals("total number of packages", 3, events.size());
-        for (StatsEvent ev : events) {
-            AtomsProto.Atom atom = StatsEventTestUtils.convertToAtom(ev);
-            assertTrue(atom.hasPackageNotificationPreferences());
-            PackageNotificationPreferences p = atom.getPackageNotificationPreferences();
-            int uid = p.getUid();
-
-            // if it's one of the expected ids, then make sure the importance matches
-            assertTrue(expected.containsKey(uid));
-            assertThat(expected.get(uid).first).isEqualTo(p.getImportance());
-            assertThat(expected.get(uid).second).isEqualTo(p.getUserSetImportance());
-        }
-    }
-
-    @Test
-    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION, FLAG_NOTIFICATION_CLASSIFICATION_UI})
+    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testPullPackagePreferencesStats_createsExpectedStatsEvents()
             throws InvalidProtocolBufferException {
         // make sure there's at least one channel for each package we want to test
@@ -6522,7 +6471,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testGetNotificationChannels_omitBundleChannels() {
         mHelper.createReservedChannel(PKG_O, UID_O, TYPE_NEWS);
 
@@ -6530,7 +6478,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testNotificationBundles() {
         mHelper.createReservedChannel(PKG_O, UID_O, TYPE_NEWS);
         assertThat(mHelper.getNotificationChannel(PKG_O, UID_O, NEWS_ID, false).getImportance())
@@ -6563,31 +6510,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
-    public void testNotificationBundles_off_deletesData() throws Exception {
-        String xml = "<ranking version=\"1\">\n"
-                + "<package name=\"" + PKG_P + "\" uid=\"" + UID_P + "\">\n"
-                + "<channel id=\"android.app.social\" name=\"Social\" importance=\"2\"/>\n"
-                + "<channel id=\"android.app.news\" name=\"News\" importance=\"2\"/>\n"
-                + "<channel id=\"android.app.recs\" name=\"Recs\" importance=\"2\"/>\n"
-                + "<channel id=\"android.app.promotions\" name=\"Promos\" importance=\"2\"/>\n"
-                + "<channel id=\"keep.me\" name=\"name\" importance=\"2\" "
-                + "show_badge=\"true\" />\n"
-                + "</package></ranking>\n";
-
-        loadByteArrayXml(xml.getBytes(), false, mUserId);
-
-        // verify 4 reserved channels are created
-        assertThat(mXmlHelper.getNotificationChannel(PKG_P, UID_P, NEWS_ID, true)).isNull();
-        assertThat(mXmlHelper.getNotificationChannel(PKG_P, UID_P, PROMOTIONS_ID, true)).isNull();
-        assertThat(mXmlHelper.getNotificationChannel(PKG_P, UID_P, SOCIAL_MEDIA_ID, true)).isNull();
-        assertThat(mXmlHelper.getNotificationChannel(PKG_P, UID_P, RECS_ID, true)).isNull();
-        assertThat(mXmlHelper.getNotificationChannel(PKG_P, UID_P, "keep.me", false)
-                .getImportance()).isEqualTo(IMPORTANCE_LOW);
-    }
-
-    @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testNotificationBundles_appsCannotUpdate() {
         mHelper.createReservedChannel(PKG_O, UID_O, TYPE_NEWS);
 
@@ -6600,7 +6522,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testNotificationBundles_osCanAllowToBypassDnd() {
         mHelper.createReservedChannel(PKG_O, UID_O, TYPE_NEWS);
 
@@ -6610,7 +6531,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testUpdateReservedChannels_disableAndEnable() {
         mHelper.createReservedChannel(PKG_O, UID_O, TYPE_NEWS);
         mHelper.createReservedChannel(PKG_O, UID_O, TYPE_SOCIAL_MEDIA);
@@ -6691,7 +6611,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_API_RICH_ONGOING)
     @DisableFlags(android.app.Flags.FLAG_UI_RICH_ONGOING)
     public void testNoAppHasPermissionToPromoteByDefault() {
         mHelper.setShowBadge(PKG_P, UID_P, true);
@@ -6699,7 +6618,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_API_RICH_ONGOING)
     // ui_rich_ongoing uses permissions, not preferences
     @DisableFlags(android.app.Flags.FLAG_UI_RICH_ONGOING)
     public void testSetCanBePromoted() {
@@ -6712,7 +6630,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_API_RICH_ONGOING)
     // ui_rich_ongoing uses permissions, not preferences
     @DisableFlags(android.app.Flags.FLAG_UI_RICH_ONGOING)
     public void testSetCanBePromoted_allowlistNotOverrideUser() {

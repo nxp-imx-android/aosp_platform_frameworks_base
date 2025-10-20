@@ -39,7 +39,6 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.NotifS
 import com.android.systemui.statusbar.notification.collection.provider.SectionStyleProvider
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation
-import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation
 import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionController
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.eq
@@ -161,10 +160,8 @@ class NotifUiAdjustmentProviderTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(AsyncHybridViewInflation.FLAG_NAME)
     fun becomeChildInGroup_asyncHybirdFlagEnabled_needReInflation() {
         // Given: an Entry that is not child in group
-        // AsyncHybridViewInflation flag is enabled
         val oldAdjustment = adjustmentProvider.calculateAdjustment(entry)
         assertThat(oldAdjustment.isChildInGroup).isFalse()
 
@@ -176,24 +173,6 @@ class NotifUiAdjustmentProviderTest : SysuiTestCase() {
 
         // Then: need re-inflation
         assertTrue(NotifUiAdjustment.needReinflate(oldAdjustment, newAdjustment))
-    }
-
-    @Test
-    @DisableFlags(AsyncHybridViewInflation.FLAG_NAME)
-    fun becomeChildInGroup_asyncHybirdFlagDisabled_noNeedForReInflation() {
-        // Given: an Entry that is not child in group
-        // AsyncHybridViewInflation flag is disabled
-        val oldAdjustment = adjustmentProvider.calculateAdjustment(entry)
-        assertThat(oldAdjustment.isChildInGroup).isFalse()
-
-        // When: the Entry becomes a group child
-        entry.markAsGroupChild()
-        val newAdjustment = adjustmentProvider.calculateAdjustment(entry)
-        assertThat(newAdjustment.isChildInGroup).isTrue()
-        assertThat(newAdjustment).isNotEqualTo(oldAdjustment)
-
-        // Then: need no re-inflation
-        assertFalse(NotifUiAdjustment.needReinflate(oldAdjustment, newAdjustment))
     }
 
     @Test

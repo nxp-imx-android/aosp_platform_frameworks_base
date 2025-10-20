@@ -80,7 +80,7 @@ filegroup {
         ":framework-opengl-sources",
         ":framework-rs-sources",
         ":framework-sax-sources",
-        ":framework-telecomm-sources",
+        ":framework-telecom-annotation-sources",
         ":framework-telephony-common-sources",
         ":framework-telephony-sources",
         ":framework-wifi-annotations",
@@ -190,7 +190,6 @@ java_defaults {
             "opengl/java",
             "rs/java",
             "sax/java",
-            "telecomm/framework/java",
 
             // TODO(b/147699819): remove this
             "telephony/java",
@@ -249,6 +248,7 @@ java_library {
         "android.system.suspend.control.internal-java",
         "devicepolicyprotosnano",
         "ImmutabilityAnnotation",
+        "DevicePolicyAnnotation",
 
         "com.android.sysprop.localization",
         "PlatformProperties",
@@ -299,7 +299,6 @@ java_defaults {
             ":framework-opengl-sources",
             ":framework-rs-sources",
             ":framework-sax-sources",
-            ":framework-telecomm-sources",
             ":framework-telephony-common-sources",
             ":framework-telephony-sources",
             ":framework-wifi-annotations",
@@ -334,8 +333,9 @@ java_defaults {
             "media/aidl",
         ],
         include_dirs: [
-            "frameworks/av/aidl",
+            "frameworks/av/media/aidl",
             "frameworks/native/libs/permission/aidl",
+            "frameworks/base/telecomm/framework/aidl-export",
             "packages/modules/Bluetooth/framework/aidl-export",
             "packages/modules/Connectivity/framework/aidl-export",
             "packages/modules/Media/apex/aidl/stable",
@@ -362,6 +362,7 @@ java_defaults {
         "staledataclass-annotation-processor",
         "error_prone_android_framework",
         "systemfeatures-metadata-processor",
+        "DevicePolicyAnnotationProcessor",
     ],
     // Exports needed for staledataclass-annotation-processor, see b/139342589.
     javacflags: [
@@ -396,9 +397,7 @@ java_defaults {
         "aconfig_storage_reader_java",
         "android.hardware.common.fmq-V1-java",
         "bouncycastle-repackaged-unbundled",
-        "com.android.sysprop.foldlockbehavior",
         "com.android.sysprop.view",
-        "com.android.sysprop.nativebinderstats",
         "framework-internal-utils",
         "dropboxmanager_aidl-java",
         "dynamic_instrumentation_manager_aidl-java",
@@ -438,7 +437,12 @@ java_library {
     static_libs: [
         "framework-location.impl",
         "framework-virtualization.impl",
-    ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
+    ] + select(release_flag("RELEASE_TELECOM_MAINLINE_MODULE"), {
+        true: [],
+        default: [
+            "framework-telecom.impl",
+        ],
+    }) + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
         "true": [],
         default: [
             "framework-platformcrashrecovery.impl",
@@ -449,6 +453,9 @@ java_library {
     }) + select(release_flag("RELEASE_TELEPHONY_MODULE"), {
         true: [],
         default: ["framework-platformtelephony.impl"],
+    }) + select(release_flag("RELEASE_CONSCRYPT_NSC"), {
+        true: [],
+        default: ["framework-network-security-config.impl"],
     }),
     sdk_version: "core_platform",
     installable: false,
@@ -493,9 +500,15 @@ java_library {
         "//frameworks/base:__subpackages__",
         "//packages/modules/NeuralNetworks:__subpackages__",
         // TODO(b/429127828): Clean this up along with RELEASE_TELEPHONY_MODULE
-        "//packages/modules/Telephony/framework:__subpackages__",
+        "//packages/modules/Telephony:__subpackages__",
         "//packages/modules/Virtualization:__subpackages__",
     ],
+    libs: select(release_flag("RELEASE_TELECOM_MAINLINE_MODULE"), {
+        true: [],
+        default: [
+            "framework-telecom.stubs.module_lib",
+        ],
+    }),
     compile_dex: false,
     headers_only: true,
 }
@@ -534,6 +547,9 @@ java_library {
     header_jar_override: "framework-minus-apex-headers",
     jarjar_prefix: "com.android.internal.hidden_from_bootclasspath",
     jarjar_shards: "10",
+    optimize: {
+        force_disabled_with_source_stubs: true,
+    },
 }
 
 java_library {
@@ -600,6 +616,12 @@ java_library {
     }) + select(release_flag("RELEASE_TELEPHONY_MODULE"), {
         true: [],
         default: ["framework-platformtelephony-compat-config"],
+    }) + select(release_flag("RELEASE_CONSCRYPT_NSC"), {
+        true: [],
+        default: ["framework-network-security-config-compat-config"],
+    }) + select(release_flag("RELEASE_TELECOM_MAINLINE_MODULE"), {
+        true: [],
+        default: ["framework-telecom-compat-config"],
     }),
 }
 
@@ -619,9 +641,23 @@ filegroup {
 }
 
 filegroup {
+    name: "framework-telecom-ext-annotation-srcs",
+    srcs: [
+        "telephony/java/android/telephony/Annotation.java",
+    ],
+}
+
+filegroup {
     name: "framework-android-os-unit-testable-src",
     srcs: [
         "core/java/android/os/DdmSyncState.java",
+    ],
+}
+
+filegroup {
+    name: "framework-telecom-shared-srcs",
+    srcs: [
+        "core/java/android/util/IndentingPrintWriter.java",
     ],
 }
 

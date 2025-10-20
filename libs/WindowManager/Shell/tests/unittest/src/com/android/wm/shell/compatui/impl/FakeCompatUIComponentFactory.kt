@@ -21,18 +21,18 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.compatui.api.CompatUIComponent
 import com.android.wm.shell.compatui.api.CompatUIComponentFactory
+import com.android.wm.shell.compatui.api.CompatUIComponentRepository
 import com.android.wm.shell.compatui.api.CompatUIInfo
 import com.android.wm.shell.compatui.api.CompatUISpec
 import com.android.wm.shell.compatui.api.CompatUIState
 import junit.framework.Assert.assertEquals
 
-/**
- * Fake {@link CompatUIComponentFactory} implementation.
- */
+/** Fake {@link CompatUIComponentFactory} implementation. */
 class FakeCompatUIComponentFactory(
     private val context: Context,
     private val syncQueue: SyncTransactionQueue,
-    private val displayController: DisplayController
+    private val displayController: DisplayController,
+    private val compatUIComponentRepository: CompatUIComponentRepository,
 ) : CompatUIComponentFactory {
 
     var lastSpec: CompatUISpec? = null
@@ -46,7 +46,7 @@ class FakeCompatUIComponentFactory(
         spec: CompatUISpec,
         compId: String,
         state: CompatUIState,
-        compatUIInfo: CompatUIInfo
+        compatUIInfo: CompatUIInfo,
     ): CompatUIComponent {
         lastSpec = spec
         lastCompId = compId
@@ -58,12 +58,12 @@ class FakeCompatUIComponentFactory(
             compId,
             context,
             state,
+            compatUIComponentRepository,
             compatUIInfo,
             syncQueue,
-            displayController.getDisplayLayout(compatUIInfo.taskInfo.displayId)
+            displayController.getDisplayLayout(compatUIInfo.taskInfo.displayId),
         )
     }
 
-    fun assertInvocations(expected: Int) =
-        assertEquals(expected, numberInvocations)
+    fun assertInvocations(expected: Int) = assertEquals(expected, numberInvocations)
 }

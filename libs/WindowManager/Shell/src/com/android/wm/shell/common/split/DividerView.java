@@ -423,6 +423,15 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
         // moving divider bar and calculating dragging velocity.
         event.setLocation(event.getRawX(), event.getRawY());
         final int action = event.getAction() & MotionEvent.ACTION_MASK;
+        if (action != MotionEvent.ACTION_DOWN && mVelocityTracker == null) {
+            // This case should ideally not happen in a normal gesture,
+            // but if it does, it means we lost the start of the gesture.
+            // Ignoring is safest to prevent a crash.
+            ProtoLog.e(ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN,
+                    "The MotionEvent.ACTION_DOWN is missed: action=%d", action);
+            return false;
+        }
+
         final boolean isLeftRightSplit = mSplitLayout.isLeftRightSplit();
         final int touchPos = (int) (isLeftRightSplit ? event.getX() : event.getY());
         switch (action) {
@@ -459,24 +468,27 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                 releaseTouching();
                 if (!mMoving) {
                     mSplitLayout.onDraggingCancelled();
-                    if (Flags.enableFlexibleTwoAppSplit()) {
-                        cleanUpMagneticSnapFramework();
-                    }
-                    break;
+                } else {
+                    mVelocityTracker.addMovement(event);
+                    mVelocityTracker.computeCurrentVelocity(1000 /* units */);
+                    final float velocity = isLeftRightSplit
+                            ? mVelocityTracker.getXVelocity()
+                            : mVelocityTracker.getYVelocity();
+                    final int position = mSplitLayout.getDividerPosition() + touchPos - mStartPos;
+                    final SnapTarget snapTarget =
+                            mSplitLayout.findSnapTarget(position, velocity,
+                                    false /* hardDismiss */);
+                    mSplitLayout.snapToTarget(position, snapTarget);
+                    mMoving = false;
                 }
 
-                mVelocityTracker.addMovement(event);
-                mVelocityTracker.computeCurrentVelocity(1000 /* units */);
-                final float velocity = isLeftRightSplit
-                        ? mVelocityTracker.getXVelocity()
-                        : mVelocityTracker.getYVelocity();
-                final int position = mSplitLayout.getDividerPosition() + touchPos - mStartPos;
-                final SnapTarget snapTarget =
-                        mSplitLayout.findSnapTarget(position, velocity, false /* hardDismiss */);
-                mSplitLayout.snapToTarget(position, snapTarget);
-                mMoving = false;
                 if (Flags.enableFlexibleTwoAppSplit()) {
                     cleanUpMagneticSnapFramework();
+                }
+
+                if (mVelocityTracker != null) {
+                    mVelocityTracker.recycle();
+                    mVelocityTracker = null;
                 }
                 break;
         }

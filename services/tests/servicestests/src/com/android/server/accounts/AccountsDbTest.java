@@ -135,82 +135,77 @@ public class AccountsDbTest {
     }
 
     @Test
-    public void testAuthTokenInsertFindDelete() {
+    public void testInsertOrReplaceAuthToken() {
         mAccountsDb.attachCeDatabase(ceDb);
         Account account = new Account("name", "example.com");
         long accId = mAccountsDb.insertCeAccount(account, "password");
         mAccountsDb.insertDeAccount(account, accId);
-        long authTokenId = mAccountsDb.insertAuthToken(accId, "type", "token");
-        Map<String, String> authTokensByAccount = mAccountsDb.findAuthTokensByAccount(account);
-        assertEquals(1, authTokensByAccount.size());
-        try (Cursor cursor = mAccountsDb.findAuthtokenForAllAccounts(account.type, "token")) {
-            assertTrue(cursor.moveToNext());
-        }
-        try (Cursor cursor = mAccountsDb.findAuthtokenForAllAccounts(account.type, "nosuchtoken")) {
-            assertFalse(cursor.moveToNext());
-        }
-        mAccountsDb.deleteAuthToken(String.valueOf(authTokenId));
-        // Verify that token no longer exists
-        authTokensByAccount = mAccountsDb.findAuthTokensByAccount(account);
-        assertEquals(0, authTokensByAccount.size());
+
+        mAccountsDb.insertOrReplaceAuthToken(accId, "type", "token1");
+        Map<String, String> tokens = mAccountsDb.findAuthTokensByAccount(account);
+        assertEquals("token1", tokens.get("type"));
+
+        mAccountsDb.insertOrReplaceAuthToken(accId, "type", "token2");
+        tokens = mAccountsDb.findAuthTokensByAccount(account);
+        assertEquals("token2", tokens.get("type"));
+        assertEquals(1, tokens.size());
     }
 
     @Test
-    public void testAuthTokenDeletes() {
+    public void testInvalidateAuthToken() {
         mAccountsDb.attachCeDatabase(ceDb);
-        // 1st account
-        Account account = new Account("name", "example.com");
-        long accId = mAccountsDb.insertCeAccount(account, "password");
-        mAccountsDb.insertDeAccount(account, accId);
-        mAccountsDb.insertAuthToken(accId, "type", "token");
-        mAccountsDb.insertAuthToken(accId, "type2", "token2");
-        // 2nd account
-        Account account2 = new Account("name", "example2.com");
+        Account account1 = new Account("name1", "example.com");
+        long accId1 = mAccountsDb.insertCeAccount(account1, "password");
+        mAccountsDb.insertDeAccount(account1, accId1);
+        mAccountsDb.insertAuthToken(accId1, "type1", "token_to_invalidate");
+        mAccountsDb.insertAuthToken(accId1, "type2", "token_to_keep");
+
+        Account account2 = new Account("name2", "example.com");
         long accId2 = mAccountsDb.insertCeAccount(account2, "password");
         mAccountsDb.insertDeAccount(account2, accId2);
-        mAccountsDb.insertAuthToken(accId2, "type", "token");
+        mAccountsDb.insertAuthToken(accId2, "type1", "token_to_invalidate");
 
-        mAccountsDb.deleteAuthTokensByAccountId(accId2);
-        Map<String, String> authTokensByAccount = mAccountsDb.findAuthTokensByAccount(account2);
-        assertEquals(0, authTokensByAccount.size());
-        // Authtokens from account 1 are still there
-        authTokensByAccount = mAccountsDb.findAuthTokensByAccount(account);
-        assertEquals(2, authTokensByAccount.size());
+        Account account3 = new Account("name3", "another.com");
+        long accId3 = mAccountsDb.insertCeAccount(account3, "password");
+        mAccountsDb.insertDeAccount(account3, accId3);
+        mAccountsDb.insertAuthToken(accId3, "type1", "token_to_invalidate");
 
-        // Delete authtokens from account 1 and verify
-        mAccountsDb.deleteAuthtokensByAccountIdAndType(accId, "type");
-        authTokensByAccount = mAccountsDb.findAuthTokensByAccount(account);
-        assertEquals(1, authTokensByAccount.size());
-        mAccountsDb.deleteAuthtokensByAccountIdAndType(accId, "type2");
-        authTokensByAccount = mAccountsDb.findAuthTokensByAccount(account);
-        assertEquals(0, authTokensByAccount.size());
+        List<Pair<Account, String>> invalidated = mAccountsDb.invalidateAuthToken(
+                "example.com", "token_to_invalidate");
+
+        assertEquals(2, invalidated.size());
+        assertTrue(invalidated.contains(Pair.create(account1, "type1")));
+        assertTrue(invalidated.contains(Pair.create(account2, "type1")));
+
+        // Verify tokens were deleted
+        Map<String, String> tokens1 = mAccountsDb.findAuthTokensByAccount(account1);
+        assertEquals(1, tokens1.size());
+        assertEquals("token_to_keep", tokens1.get("type2"));
+
+        Map<String, String> tokens2 = mAccountsDb.findAuthTokensByAccount(account2);
+        assertTrue(tokens2.isEmpty());
+
+        Map<String, String> tokens3 = mAccountsDb.findAuthTokensByAccount(account3);
+        assertEquals(1, tokens3.size());
+        assertEquals("token_to_invalidate", tokens3.get("type1"));
     }
 
     @Test
-    public void testExtrasInsertFindDelete() {
+    public void testInsertOrReplaceExtra() {
         mAccountsDb.attachCeDatabase(ceDb);
         Account account = new Account("name", "example.com");
         long accId = mAccountsDb.insertCeAccount(account, "password");
         mAccountsDb.insertDeAccount(account, accId);
         String extraKey = "extra_key";
-        String extraValue = "extra_value";
-        long extraId = mAccountsDb.insertExtra(accId, extraKey, extraValue);
-        // Test find methods
-        long actualExtraId = mAccountsDb.findExtrasIdByAccountId(accId, extraKey);
-        assertEquals(extraId, actualExtraId);
-        Map<String, String> extras = mAccountsDb.findUserExtrasForAccount(account);
-        assertEquals(1, extras.size());
-        assertEquals(extraValue, extras.get(extraKey));
-        // Test update
-        String newExtraValue = "extra_value2";
-        mAccountsDb.updateExtra(extraId, newExtraValue);
-        String newValue = mAccountsDb.findUserExtrasForAccount(account).get(extraKey);
-        assertEquals(newExtraValue, newValue);
 
-        // Delete account and verify that extras cascade removed
-        mAccountsDb.deleteCeAccount(accId);
-        actualExtraId = mAccountsDb.findExtrasIdByAccountId(accId, extraKey);
-        assertEquals(-1, actualExtraId);
+        mAccountsDb.insertOrReplaceExtra(accId, extraKey, "value1");
+        Map<String, String> extras = mAccountsDb.findUserExtrasForAccount(account);
+        assertEquals("value1", extras.get(extraKey));
+
+        mAccountsDb.insertOrReplaceExtra(accId, extraKey, "value2");
+        extras = mAccountsDb.findUserExtrasForAccount(account);
+        assertEquals("value2", extras.get(extraKey));
+        assertEquals(1, extras.size());
     }
 
     @Test
@@ -340,7 +335,8 @@ public class AccountsDbTest {
     @Test
     public void testCrossDbTransactions() {
         mAccountsDb.attachCeDatabase(ceDb);
-        mAccountsDb.beginTransaction();
+        mAccountsDb.beginTransactionDe();
+        mAccountsDb.beginTransactionCe();
         Account account = new Account("name", "example.com");
         long accId;
         accId = mAccountsDb.insertCeAccount(account, "password");
@@ -349,7 +345,8 @@ public class AccountsDbTest {
         assertEquals(accId, actualId);
         actualId = mAccountsDb.findDeAccountId(account);
         assertEquals(accId, actualId);
-        mAccountsDb.endTransaction();
+        mAccountsDb.endTransactionCe();
+        mAccountsDb.endTransactionDe();
         // Verify that records were removed
         actualId = mAccountsDb.findCeAccountId(account);
         assertEquals(-1, actualId);

@@ -454,17 +454,19 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
             runTransitionAndSetWakefulness(KeyguardState.LOCKSCREEN, KeyguardState.DREAMING)
             advanceTimeBy(60L)
 
+            reset(transitionRepository)
+
             // WHEN the device wakes up without a keyguard
             keyguardRepository.setKeyguardShowing(false)
             keyguardRepository.setKeyguardDismissible(true)
             keyguardRepository.setDreamingWithOverlay(false)
-            advanceTimeBy(60L)
+            advanceTimeBy(160L)
 
             assertThat(transitionRepository)
                 .startedTransition(
-                    to = KeyguardState.GONE,
                     from = KeyguardState.DREAMING,
-                    ownerName = "FromDreamingTransitionInteractor",
+                    to = KeyguardState.GONE,
+                    ownerName = "FromDreamingTransitionInteractor(No longer dreaming; dismissable)",
                     animatorAssertion = { it.isNotNull() },
                 )
 
@@ -1473,12 +1475,8 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
                     to = KeyguardState.DOZING,
                     animatorAssertion = { it.isNull() },
                 )
-            if (Flags.communalPowerTransitionFix()) {
-                verify(communalSceneRepository)
-                    .instantlyTransitionTo(eq(CommunalScenes.Blank), anyOrNull())
-            } else {
-                verify(communalSceneRepository).changeScene(eq(CommunalScenes.Blank), anyOrNull())
-            }
+            verify(communalSceneRepository)
+                .instantlyTransitionTo(eq(CommunalScenes.Blank), anyOrNull())
 
             testScope.coroutineContext.cancelChildren()
         }
@@ -1693,7 +1691,7 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
         runCurrent()
         reset(transitionRepository)
 
-        if (KeyguardState.deviceIsAwakeInState(to)) {
+        if (KeyguardState.deviceIsAwakeInState(to, to.mapToSceneContainerContent())) {
             powerInteractor.setAwakeForTest()
         } else {
             powerInteractor.setAsleepForTest()

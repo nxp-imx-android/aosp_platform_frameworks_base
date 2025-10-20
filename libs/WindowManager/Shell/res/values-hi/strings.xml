@@ -59,8 +59,8 @@
     <string name="accessibility_split_right" msgid="8441001008181296837">"स्क्रीन को दाएं हिस्से में स्प्लिट करें"</string>
     <string name="accessibility_split_top" msgid="2789329702027147146">"स्क्रीन को ऊपर के हिस्से में स्प्लिट करें"</string>
     <string name="accessibility_split_bottom" msgid="8694551025220868191">"स्क्रीन को सबसे नीचे वाले हिस्से में स्प्लिट करें"</string>
-    <string name="one_handed_tutorial_title" msgid="4583241688067426350">"वन-हैंडेड मोड का इस्तेमाल करना"</string>
-    <string name="one_handed_tutorial_description" msgid="3486582858591353067">"इस मोड से बाहर निकलने के लिए, स्क्रीन के सबसे निचले हिस्से से ऊपर की ओर स्वाइप करें या ऐप्लिकेशन के बाहर कहीं भी टैप करें"</string>
+    <string name="one_handed_tutorial_title" msgid="4583241688067426350">"एक हाथ से इस्तेमाल करने की सुविधा"</string>
+    <string name="one_handed_tutorial_description" msgid="3486582858591353067">"इस मोड से बाहर निकलने के लिए, स्क्रीन के सबसे निचले हिस्से से ऊपर की ओर स्वाइप करें या ऐप्लिकेशन के ऊपर कहीं भी टैप करें"</string>
     <string name="accessibility_action_start_one_handed" msgid="5070337354072861426">"वन-हैंडेड मोड चालू करें"</string>
     <string name="accessibility_action_stop_one_handed" msgid="1369940261782179442">"वन-हैंडेड मोड से बाहर निकलें"</string>
     <string name="bubbles_settings_button_description" msgid="1301286017420516912">"<xliff:g id="APP_NAME">%1$s</xliff:g> बबल्स की सेटिंग"</string>
@@ -96,8 +96,6 @@
     <string name="notification_bubble_title" msgid="6082910224488253378">"बबल"</string>
     <string name="manage_bubbles_text" msgid="7730624269650594419">"मैनेज करें"</string>
     <string name="accessibility_bubble_dismissed" msgid="8367471990421247357">"बबल खारिज किया गया."</string>
-    <string name="bubble_shortcut_label" msgid="666269077944378311">"बबल्स"</string>
-    <string name="bubble_shortcut_long_label" msgid="6088437544312894043">"बबल्स दिखाएं"</string>
     <string name="restart_button_description" msgid="4564728020654658478">"बेहतर व्यू पाने के लिए, टैप करके ऐप्लिकेशन को रीस्टार्ट करें"</string>
     <string name="user_aspect_ratio_settings_button_hint" msgid="734835849600713016">"सेटिंग में जाकर इस ऐप्लिकेशन का आसपेक्ट रेशियो (लंबाई-चौड़ाई का अनुपात) बदलें"</string>
     <string name="user_aspect_ratio_settings_button_description" msgid="4315566801697411684">"आसपेक्ट रेशियो (लंबाई-चौड़ाई का अनुपात) बदलें"</string>

@@ -47,7 +47,7 @@ public final class InCallAdapter {
     private final IInCallAdapter mAdapter;
 
     /**
-     * {@hide}
+     * @hide
      */
     public InCallAdapter(IInCallAdapter adapter) {
         mAdapter = adapter;

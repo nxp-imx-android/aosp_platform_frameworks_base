@@ -23,6 +23,7 @@ import static android.media.codec.Flags.FLAG_IN_PROCESS_SW_AUDIO_CODEC;
 import static android.media.codec.Flags.FLAG_NULL_OUTPUT_SURFACE;
 import static android.media.codec.Flags.FLAG_REGION_OF_INTEREST;
 import static android.media.codec.Flags.FLAG_APV_SUPPORT;
+import static android.media.codec.Flags.FLAG_VVC_SUPPORT;
 import static android.media.Utils.intersectSortedDistinctRanges;
 import static android.media.Utils.sortDistinctRanges;
 import static android.media.MediaCodec.GetFlag;
@@ -4283,8 +4284,7 @@ public final class MediaCodecInfo {
                             maxBlocks, maxBlocksPerSecond,
                             blockSize, blockSize,
                             1 /* widthAlignment */, 1 /* heightAlignment */);
-                } else if (GetFlag(() -> android.media.codec.Flags.apvSupport())
-                            && mime.equalsIgnoreCase(MediaFormat.MIMETYPE_VIDEO_APV)) {
+                } else if (mime.equalsIgnoreCase(MediaFormat.MIMETYPE_VIDEO_APV)) {
                     maxBlocksPerSecond = 11880;
                     maxBps = 7000000;
 
@@ -5807,6 +5807,149 @@ public final class MediaCodecInfo {
         @SuppressLint("AllUpper")
         @FlaggedApi(FLAG_APV_SUPPORT)
         public static final int APVLevel71Band3 = 0x200008;
+
+
+        // Profiles and levels/tiers for VVC Codec, corresponding to the definitions in
+        // "ITU-T Rec. H.266 v.3 Versatile Video Coding", A.3 Profiles, A.4 Tiers and levels
+        // found at https://www.itu.int/rec/T-REC-H.266-202309-I/en
+
+        /**
+         *  VVC codec Main 10 profile as per ITU-T H.266, A.3.1
+         *  with 8 bit content
+         */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCProfileMain8      = 0x01;
+
+        /**
+         *  VVC codec Main 10 profile as per ITU-T H.266, A.3.1
+         *  with 10 bit content
+         */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCProfileMain10      = 0x02;
+
+        /**
+         *  VVC codec Main 10 Still Picture profile as per ITU-T H.266, A.3.1
+         */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCProfileMain10Still   = 0x04;
+
+        /**
+         *  VVC codec Main 10 profile as per ITU-T H.266, A.3.1
+         *  with HDR10
+         */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCProfileMain10HDR10 = 0x1000;
+
+        /**
+         *  VVC codec Main 10 profile as per ITU-T H.266, A.3.1
+         *  with HDR10 Plus
+         */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCProfileMain10HDR10Plus = 0x2000;
+
+        /** VVC Codec Main Tier, Level 1.0 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCMainTierLevel10 = 0x1;
+        /** VVC Codec Main Tier, Level 2.0 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCMainTierLevel20 = 0x2;
+        /** VVC Codec Main Tier, Level 2.1 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCMainTierLevel21 = 0x4;
+        /** VVC Codec Main Tier, Level 3.0 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCMainTierLevel30 = 0x8;
+        /** VVC Codec Main Tier, Level 3.1 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCMainTierLevel31 = 0x10;
+        /** VVC Codec Main Tier, Level 4.0 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCMainTierLevel40 = 0x20;
+        /** VVC Codec High Tier, Level 4.0 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCHighTierLevel40 = 0x40;
+        /** VVC Codec Main Tier, Level 4.1 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCMainTierLevel41 = 0x80;
+        /** VVC Codec High Tier, Level 4.1 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCHighTierLevel41 = 0x100;
+        /** VVC Codec Main Tier, Level 5.0 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCMainTierLevel50 = 0x200;
+        /** VVC Codec High Tier, Level 5.0 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCHighTierLevel50 = 0x400;
+        /** VVC Codec Main Tier, Level 5.1 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCMainTierLevel51 = 0x800;
+        /** VVC Codec High Tier, Level 5.1 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCHighTierLevel51 = 0x1000;
+        /** VVC Codec Main Tier, Level 5.2 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCMainTierLevel52 = 0x2000;
+        /** VVC Codec High Tier, Level 5.2 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCHighTierLevel52 = 0x4000;
+        /** VVC Codec Main Tier, Level 6.0 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCMainTierLevel60 = 0x8000;
+        /** VVC Codec High Tier, Level 6.0 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCHighTierLevel60 = 0x10000;
+        /** VVC Codec Main Tier, Level 6.1 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCMainTierLevel61 = 0x20000;
+        /** VVC Codec High Tier, Level 6.1 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCHighTierLevel61 = 0x40000;
+        /** VVC Codec Main Tier, Level 6.2 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCMainTierLevel62 = 0x80000;
+        /** VVC Codec High Tier, Level 6.2 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCHighTierLevel62 = 0x100000;
+        /** VVC Codec Main Tier, Level 6.3 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCMainTierLevel63 = 0x200000;
+        /** VVC Codec High Tier, Level 6.3 as per ITU-T H.266, A.4.1 */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_VVC_SUPPORT)
+        public static final int VVCHighTierLevel63 = 0x400000;
+
+        private static final int VVCHighTierLevels =
+                VVCHighTierLevel40 | VVCHighTierLevel41 | VVCHighTierLevel50 | VVCHighTierLevel51
+                | VVCHighTierLevel52 | VVCHighTierLevel60 | VVCHighTierLevel61 | VVCHighTierLevel62
+                | VVCHighTierLevel63;
+
 
         // IAMF profiles are defined as the combination of the (listed from LSB to MSB):
         //  - audio codec (2 bytes)

@@ -20,6 +20,7 @@ import android.annotation.SuppressLint
 import android.graphics.RectF
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dump.DumpManager
+import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
@@ -42,6 +43,7 @@ import com.android.systemui.util.kotlin.sample
 import com.android.systemui.util.ui.AnimatableEvent
 import com.android.systemui.util.ui.AnimatedValue
 import com.android.systemui.util.ui.toAnimatedValueFlow
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -52,7 +54,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
-import javax.inject.Inject
 
 /**
  * ViewModel for the list of notifications, including child elements like the Clear all/Manage
@@ -74,6 +75,7 @@ constructor(
     activeNotificationsInteractor: ActiveNotificationsInteractor,
     notificationStackInteractor: NotificationStackInteractor,
     private val headsUpNotificationInteractor: HeadsUpNotificationInteractor,
+    private val mediaCarouselInteractor: MediaCarouselInteractor,
     remoteInputInteractor: RemoteInputInteractor,
     shadeInteractor: ShadeInteractor,
     shadeModeInteractor: ShadeModeInteractor,
@@ -111,23 +113,25 @@ constructor(
     val shouldShowEmptyShadeView: Flow<AnimatedValue<Boolean>> by lazy {
         combine(
                 activeNotificationsInteractor.areAnyNotificationsPresent,
+                mediaCarouselInteractor.hasActiveMedia,
                 shadeInteractor.qsExpansion
                     .map { it >= QS_EXPANSION_THRESHOLD }
                     .distinctUntilChanged(),
-                shadeModeInteractor.shadeMode.map {
-                    @Suppress("DEPRECATION") // to handle split shade
-                    it == ShadeMode.Split
-                },
+                shadeModeInteractor.shadeMode,
                 notificationStackInteractor.isShowingOnLockscreen,
-            ) { hasNotifications, qsExpandedEnough, splitShade, isShowingOnLockscreen ->
+            ) { hasNotifications, hasMedia, qsExpandedEnough, shadeMode, isShowingOnLockscreen ->
+                val dualShade = shadeMode is ShadeMode.Dual
+                val singleShade = shadeMode is ShadeMode.Single
                 when {
                     hasNotifications -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
-                    // Hide the empty shade when QS is close to being full screen. We use this
-                    // instead of isQsFullscreen to avoid some flickering.
-                    qsExpandedEnough && !splitShade -> VisibilityChange.DISAPPEAR_WITHOUT_ANIMATION
+                    // In Dual Shade, media is treated as a notification. Only show the empty shade
+                    // view when both notifications and media are absent.
+                    hasMedia && dualShade -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
+                    // Hide the empty shade when QS is close to being full screen (in single shade).
+                    // We use this instead of isQsFullscreen to avoid some flickering.
+                    qsExpandedEnough && singleShade -> VisibilityChange.DISAPPEAR_WITHOUT_ANIMATION
                     // Do not show the empty shade if the lockscreen is visible (including AOD
-                    // b/228790482 and bouncer b/267060171), except if the shade is opened on
-                    // top.
+                    // b/228790482 and bouncer b/267060171), except if the shade is opened on top.
                     isShowingOnLockscreen -> VisibilityChange.DISAPPEAR_WITHOUT_ANIMATION
                     else -> VisibilityChange.APPEAR_WITH_ANIMATION
                 }
@@ -265,10 +269,11 @@ constructor(
                     isShowingOnLockscreen,
                     qsFullScreen,
                     isRemoteInputActive ->
+                    val dualShade = shadeMode is ShadeMode.Dual
+                    val singleShade = shadeMode is ShadeMode.Single
                     when {
                         // Hide the footer when there are no notifications, unless it's Dual Shade.
-                        shadeMode != ShadeMode.Dual && !hasNotifications ->
-                            VisibilityChange.DISAPPEAR_WITH_ANIMATION
+                        !dualShade && !hasNotifications -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
                         // Hide the footer until the user setup is complete, to prevent access
                         // to settings (b/193149550).
                         !isUserSetUp -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
@@ -277,9 +282,9 @@ constructor(
                         // Do not animate, as that makes the footer appear briefly when
                         // transitioning between the shade and lockscreen.
                         isShowingOnLockscreen -> VisibilityChange.DISAPPEAR_WITHOUT_ANIMATION
-                        // Do not show the footer if quick settings are fully expanded (except
-                        // for the foldable split shade view). See b/201427195 && b/222699879.
-                        qsFullScreen -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
+                        // Do not show the footer if quick settings are fully expanded (in single
+                        // shade). See b/201427195 && b/222699879.
+                        qsFullScreen && singleShade -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
                         // Hide the footer if remote input is active (i.e. user is replying to a
                         // notification). See b/75984847.
                         isRemoteInputActive -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
@@ -379,13 +384,16 @@ constructor(
     /**
      * A list of keys and on-screen bounds for the visible status bar chips.
      *
-     * Note that this list can contain both notification keys, as well as keys for other types of
-     * chips like screen recording.
+     * If [Flags.statusBarHunAnimationCall()] is enabled, then this map contains only notification
+     * keys.
+     *
+     * If that flag is disabled, this map can contain both notification keys, as well as keys for
+     * other types of chips like screen recording.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    val visibleStatusBarChips: Flow<Map<String, RectF>> =
+    val visibleStatusBarNotificationChips: Flow<Map<String, RectF>> =
         shadeStatusBarComponentsInteractor.ongoingActivityChipsViewModel.flatMapLatest {
-            it.visibleChipsWithBounds
+            it.visibleNotificationChipsWithBounds
         }
 
     // TODO(b/325936094) use it for the text displayed in the StatusBar

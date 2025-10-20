@@ -16,7 +16,9 @@
 
 package android.companion.virtual.computercontrol;
 
+import android.app.PendingIntent;
 import android.companion.virtual.computercontrol.IComputerControlSession;
+import android.hardware.display.IVirtualDisplayCallback;
 
 /**
  * Callback for computer control session events.
@@ -25,12 +27,12 @@ import android.companion.virtual.computercontrol.IComputerControlSession;
  */
 oneway interface IComputerControlSessionCallback {
 
+    /** Called when the session request needs to approved by the user. */
+    void onSessionPending(in PendingIntent pendingIntent);
+
     /** Called when the session has been successfully created. */
-    void onSessionCreated(in IComputerControlSession session);
+    void onSessionCreated(int displayId, in IComputerControlSession session);
 
     /** Called when the session failed to be created. */
     void onSessionCreationFailed(int errorCode);
-
-    /** Called when the session has been closed. */
-    void onSessionClosed();
 }

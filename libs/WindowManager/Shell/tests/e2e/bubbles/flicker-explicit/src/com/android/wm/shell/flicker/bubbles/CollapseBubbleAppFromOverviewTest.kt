@@ -21,20 +21,20 @@ import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
-import com.android.wm.shell.Utils
+import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.CollapseBubbleAppTestCases
-import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
+import com.android.wm.shell.flicker.bubbles.utils.AssumptionRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.BubbleLaunchSource.FROM_TASK_BAR
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaTouchOutside
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
-import org.junit.Assume
-import org.junit.Before
+import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameters
 
 /**
  * Test collapsing bubble app from overview.
@@ -82,24 +82,23 @@ class CollapseBubbleAppFromOverviewTest(navBar: NavBar) : BubbleFlickerTestBase(
             }
         )
 
-        @Parameterized.Parameters(name = "{0}")
+        @Parameters(name = "{0}")
         @JvmStatic
-        fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL, NavBar.MODE_3BUTTON)
+        fun data(): List<NavBar> = NavBar.entries
     }
 
-    @get:Rule
-    val setUpRule = ApplyPerParameterRule(
-        Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
+    @get:Rule(order = 1)
+    val assumptionRule = AssumptionRule(
+        condition = { tapl.isTablet },
+        message = "Bubble bar is enabled on large screen devices",
+    )
+
+    @get:Rule(order = 2)
+    val setUpRule = RunOncePerParameterRule(
+        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
         params = arrayOf(navBar),
     )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
-
-    @Before
-    override fun setUp() {
-        // Bubble bar is enabled on large screen devices.
-        Assume.assumeTrue(tapl.isTablet)
-        super.setUp()
-    }
 }

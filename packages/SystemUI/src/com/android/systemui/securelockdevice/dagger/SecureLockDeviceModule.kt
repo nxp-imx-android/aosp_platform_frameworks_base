@@ -16,19 +16,30 @@
 package com.android.systemui.securelockdevice.dagger
 
 import android.security.authenticationpolicy.AuthenticationPolicyManager
+import com.android.internal.widget.LockPatternUtils
+import com.android.systemui.biometrics.domain.interactor.FacePropertyInteractor
+import com.android.systemui.biometrics.domain.interactor.FingerprintPropertyInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBiometricSettingsInteractor
 import com.android.systemui.deviceentry.domain.interactor.SystemUIDeviceEntryFaceAuthInteractor
 import com.android.systemui.keyguard.data.repository.BiometricSettingsRepository
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.LogBufferFactory
+import com.android.systemui.log.dagger.SecureLockDeviceLog
 import com.android.systemui.securelockdevice.data.repository.SecureLockDeviceRepository
 import com.android.systemui.securelockdevice.data.repository.SecureLockDeviceRepositoryImpl
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
+import com.android.systemui.user.domain.interactor.SelectedUserInteractor
+import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import java.util.concurrent.Executor
 import kotlinx.coroutines.CoroutineScope
 
+/** Dagger module for secure lock device feature. */
 @Module
 interface SecureLockDeviceModule {
 
@@ -51,14 +62,37 @@ interface SecureLockDeviceModule {
         @SysUISingleton
         fun providesSecureLockDeviceInteractor(
             @Application applicationScope: CoroutineScope,
+            @SecureLockDeviceLog logBuffer: LogBuffer,
             secureLockDeviceRepository: SecureLockDeviceRepository,
+            biometricSettingsInteractor: DeviceEntryBiometricSettingsInteractor,
             deviceEntryFaceAuthInteractor: SystemUIDeviceEntryFaceAuthInteractor,
+            fingerprintPropertyInteractor: Lazy<FingerprintPropertyInteractor>,
+            facePropertyInteractor: FacePropertyInteractor,
+            lockPatternUtils: LockPatternUtils,
+            authenticationPolicyManager: AuthenticationPolicyManager?,
+            selectedUserInteractor: SelectedUserInteractor,
+            keyguardTransitionInteractor: Lazy<KeyguardTransitionInteractor>,
         ): SecureLockDeviceInteractor {
             return SecureLockDeviceInteractor(
                 applicationScope = applicationScope,
+                logBuffer = logBuffer,
                 secureLockDeviceRepository = secureLockDeviceRepository,
+                biometricSettingsInteractor = biometricSettingsInteractor,
                 deviceEntryFaceAuthInteractor = deviceEntryFaceAuthInteractor,
+                fingerprintPropertyInteractor = fingerprintPropertyInteractor,
+                facePropertyInteractor = facePropertyInteractor,
+                lockPatternUtils = lockPatternUtils,
+                authenticationPolicyManager = authenticationPolicyManager,
+                selectedUserInteractor = selectedUserInteractor,
+                keyguardTransitionInteractor = keyguardTransitionInteractor,
             )
+        }
+
+        @Provides
+        @SysUISingleton
+        @SecureLockDeviceLog
+        fun provideSecureLockDeviceLogBuffer(factory: LogBufferFactory): LogBuffer {
+            return factory.create("SecureLockDeviceLog", 100)
         }
     }
 }

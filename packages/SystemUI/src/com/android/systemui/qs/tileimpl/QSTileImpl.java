@@ -22,7 +22,6 @@ import static androidx.lifecycle.Lifecycle.State.STARTED;
 import static com.android.internal.logging.nano.MetricsProto.MetricsEvent.ACTION_QS_CLICK;
 import static com.android.internal.logging.nano.MetricsProto.MetricsEvent.ACTION_QS_LONG_PRESS;
 import static com.android.internal.logging.nano.MetricsProto.MetricsEvent.ACTION_QS_SECONDARY_CLICK;
-import static com.android.internal.logging.nano.MetricsProto.MetricsEvent.FIELD_IS_FULL_QS;
 import static com.android.internal.logging.nano.MetricsProto.MetricsEvent.FIELD_QS_POSITION;
 import static com.android.internal.logging.nano.MetricsProto.MetricsEvent.FIELD_QS_VALUE;
 import static com.android.internal.logging.nano.MetricsProto.MetricsEvent.FIELD_STATUS_BAR_STATE;
@@ -68,8 +67,6 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.qs.QSEvent;
 import com.android.systemui.qs.QSHost;
 import com.android.systemui.qs.QsEventLogger;
-import com.android.systemui.qs.SideLabelTileLayout;
-import com.android.systemui.qs.flags.QsInCompose;
 import com.android.systemui.qs.logging.QSLogger;
 
 import java.io.PrintWriter;
@@ -127,7 +124,6 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
     @VisibleForTesting
     protected EnforcedAdmin mEnforcedAdmin;
     private boolean mShowingDetail;
-    private int mIsFullQs;
 
     private final LifecycleRegistry mLifecycle = new LifecycleRegistry(this);
     private final AtomicBoolean mIsDestroyed = new AtomicBoolean(false);
@@ -342,7 +338,6 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
             logMaker.addTaggedData(FIELD_QS_VALUE, ((BooleanState) mState).value ? 1 : 0);
         }
         return logMaker.setSubtype(getMetricsCategory())
-                .addTaggedData(FIELD_IS_FULL_QS, mIsFullQs)
                 .addTaggedData(FIELD_QS_POSITION, mHost.indexOf(mTileSpec));
     }
 
@@ -507,17 +502,6 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
                 });
             }
         }
-        updateIsFullQs();
-    }
-
-    private void updateIsFullQs() {
-        for (Object listener : mListeners) {
-            if (SideLabelTileLayout.class.equals(listener.getClass())) {
-                mIsFullQs = 1;
-                return;
-            }
-        }
-        mIsFullQs = 0;
     }
 
     @CallSuper
@@ -564,16 +548,11 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
     }
 
     /**
-     * Returns the {@link QSTile.Icon} for the resource ID, optionally loading the drawable if
-     * {@link QsInCompose#isEnabled()} is true.
+     * Returns the {@link QSTile.Icon} for the resource ID, loading the drawable.
      */
     @SuppressLint("UseCompatLoadingForDrawables")
     public static Icon maybeLoadResourceIcon(int id, Context context) {
-        if (QsInCompose.isEnabled()) {
-            return new DrawableIconWithRes(context.getDrawable(id), id);
-        } else {
-            return ResourceIcon.get(id);
-        }
+        return new DrawableIconWithRes(context.getDrawable(id), id);
     }
 
     @Override
@@ -608,11 +587,11 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
         private static final int REMOVE_CALLBACK = 9;
         private static final int SET_LISTENING = 10;
         @VisibleForTesting
-        protected static final int STALE = 11;
+        static final int STALE = 11;
         private static final int INITIALIZE = 12;
 
         @VisibleForTesting
-        protected H(Looper looper) {
+        private H(Looper looper) {
             super(looper);
         }
 
@@ -736,6 +715,19 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
             return mId;
         }
 
+        /**
+         * Returns a deep copy of this icon that can be modified separately.
+         *
+         * @return a new instance of this icon or {@code null} if it cannot be copied.
+         */
+        @Nullable
+        public DrawableIconWithRes copy() {
+            Drawable.ConstantState constantState = mDrawable.getConstantState();
+            return (constantState != null)
+                    ? new DrawableIconWithRes(constantState.newDrawable(), mId)
+                    : null;
+        }
+
         @Override
         public boolean equals(Object o) {
             return o instanceof DrawableIconWithRes && ((DrawableIconWithRes) o).mId == mId;
@@ -821,6 +813,6 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
     @Override
     public void dump(PrintWriter pw, String[] args) {
         pw.print(this.getClass().getSimpleName() + ":");
-        pw.print("    "); pw.println(getState().toString());
+        pw.print("    "); pw.println(getState());
     }
 }

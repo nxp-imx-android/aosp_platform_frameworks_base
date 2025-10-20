@@ -25,16 +25,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Deserialized version of the HandoffRequestResultMessage proto.
- * Contains a status code and a list of activities for handoff.
+ * Deserialized version of the HandoffRequestResultMessage proto. Contains a status code and a list
+ * of activities for handoff.
  */
 public record HandoffRequestResultMessage(
-    int taskId,
-    int statusCode,
-    List<HandoffActivityData> activities) implements TaskContinuityMessage {
+        int taskId, int statusCode, List<HandoffActivityData> activities)
+        implements TaskContinuityMessage {
 
-    public static HandoffRequestResultMessage readFromProto(
-        ProtoInputStream pis) throws IOException {
+    public static HandoffRequestResultMessage readFromProto(ProtoInputStream pis)
+            throws IOException {
 
         int statusCode = 0;
         int taskId = 0;
@@ -43,16 +42,16 @@ public record HandoffRequestResultMessage(
         while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
             switch (pis.getFieldNumber()) {
                 case (int) android.companion.HandoffRequestResultMessage.STATUS_CODE:
-                    statusCode = pis.readInt(
-                        android.companion.HandoffRequestResultMessage.STATUS_CODE);
+                    statusCode =
+                            pis.readInt(android.companion.HandoffRequestResultMessage.STATUS_CODE);
 
                     break;
                 case (int) android.companion.HandoffRequestResultMessage.TASK_ID:
                     taskId = pis.readInt(android.companion.HandoffRequestResultMessage.TASK_ID);
                     break;
                 case (int) android.companion.HandoffRequestResultMessage.ACTIVITIES:
-                    long token = pis.start(
-                            android.companion.HandoffRequestResultMessage.ACTIVITIES);
+                    long token =
+                            pis.start(android.companion.HandoffRequestResultMessage.ACTIVITIES);
                     HandoffActivityData activityData =
                             HandoffActivityDataSerializer.readFromProto(pis);
                     activities.add(activityData);

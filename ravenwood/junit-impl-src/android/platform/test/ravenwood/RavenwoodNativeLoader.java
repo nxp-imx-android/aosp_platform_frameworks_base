@@ -16,6 +16,9 @@
 
 package android.platform.test.ravenwood;
 
+import static com.android.ravenwood.common.RavenwoodInternalUtils.getRavenwoodRuntimePath;
+
+import com.android.ravenwood.RavenwoodRuntimeNative;
 import com.android.ravenwood.common.RavenwoodInternalUtils;
 
 import java.util.Arrays;
@@ -32,7 +35,7 @@ public final class RavenwoodNativeLoader {
     public static final String KEYBOARD_PATHS = "keyboard_paths";
     public static final String GRAPHICS_NATIVE_CLASSES = "graphics_native_classes";
 
-    public static final String LIBANDROID_RUNTIME_NAME = "android_runtime";
+    public static final String LIBANDROID_RUNTIME_NAME = "android_runtime_ravenwood";
 
     /**
      * Classes with native methods that are backed by libandroid_runtime.
@@ -43,6 +46,7 @@ public final class RavenwoodNativeLoader {
 //            android.util.Log.class, // Not using native log: b/377377826
             android.os.Parcel.class,
             android.os.Binder.class,
+            android.os.MessageQueue.class,
             android.os.SystemProperties.class,
             android.content.res.ApkAssets.class,
             android.content.res.AssetManager.class,
@@ -59,7 +63,9 @@ public final class RavenwoodNativeLoader {
     private static final Class<?>[] sLibandroidExperimentalClasses = {
             android.view.KeyCharacterMap.class,
             android.view.KeyEvent.class,
+            android.view.InputChannel.class,
             android.view.InputDevice.class,
+            android.view.InputEventReceiver.class,
             android.view.MotionEvent.class,
             android.animation.PropertyValuesHolder.class,
     };
@@ -164,6 +170,17 @@ public final class RavenwoodNativeLoader {
         ensurePropertyNotSet(ICU_DATA_PATH);
         ensurePropertyNotSet(KEYBOARD_PATHS);
         ensurePropertyNotSet(GRAPHICS_NATIVE_CLASSES);
+
+        // Set ICU data file
+        String icuData = getRavenwoodRuntimePath()
+                + "ravenwood-data/"
+                + RavenwoodRuntimeNative.getIcuDataName()
+                + ".dat";
+        setProperty(ICU_DATA_PATH, icuData);
+
+        RavenwoodIntegrityChecker.checkForNativeAllocationRegistry(sLibandroidClasses);
+        RavenwoodIntegrityChecker.checkForNativeAllocationRegistry(sLibandroidExperimentalClasses);
+        RavenwoodIntegrityChecker.checkForNativeAllocationRegistry(sLibhwuiClasses);
 
         // Build the property values
         final var joiner = Collectors.joining(",");

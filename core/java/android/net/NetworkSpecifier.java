@@ -65,6 +65,9 @@ public abstract class NetworkSpecifier {
      * with apps - those should not be redacted.
      * <p>
      * The default implementation redacts no information.
+     * <p>
+     * New NetworkSpecifier subclasses should not override this method, and should instead override
+     * {@link #getApplicableRedactions()} and {@link #redact(long)}.
      *
      * @return A NetworkSpecifier object to be passed along to the requesting app.
      *
@@ -102,7 +105,9 @@ public abstract class NetworkSpecifier {
      * The default implementation will do nothing and return {@code this}.
      * <p>
      * Instead of overriding {@link #redact()}, a new subclass should override this method and
-     * {@link #getApplicableRedactions()}.
+     * {@link #getApplicableRedactions()}. And this method may be called with redactions that were
+     * not returned by {@link #getApplicableRedactions()}. Such redactions should be silently
+     * ignored.
      *
      * @param redactions see {@link NetworkCapabilities#REDACT_} for available redactions. For
      * example, if the bit {@link NetworkCapabilities#REDACT_FOR_ACCESS_FINE_LOCATION} is set in

@@ -40,6 +40,7 @@ import com.android.internal.util.ArrayUtils;
 import com.android.server.AppSchedulingModuleThread;
 import com.android.server.DeviceIdleInternal;
 import com.android.server.LocalServices;
+import com.android.server.deviceidle.Flags;
 import com.android.server.job.JobSchedulerService;
 import com.android.server.job.StateControllerProto;
 import com.android.server.job.StateControllerProto.DeviceIdleJobsController.TrackedJob;
@@ -103,7 +104,7 @@ public final class DeviceIdleJobsController extends StateController {
                         }
                     }
                     break;
-                case PowerManager.ACTION_POWER_SAVE_TEMP_WHITELIST_CHANGED:
+                case "android.os.action.POWER_SAVE_TEMP_WHITELIST_CHANGED":
                     synchronized (mLock) {
                         mPowerSaveTempWhitelistAppIds =
                                 mLocalDeviceIdleController.getPowerSaveTempWhitelistAppIds();
@@ -151,7 +152,9 @@ public final class DeviceIdleJobsController extends StateController {
         filter.addAction(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED);
         filter.addAction(PowerManager.ACTION_LIGHT_DEVICE_IDLE_MODE_CHANGED);
         filter.addAction(PowerManager.ACTION_POWER_SAVE_WHITELIST_CHANGED);
-        filter.addAction(PowerManager.ACTION_POWER_SAVE_TEMP_WHITELIST_CHANGED);
+        if (!Flags.stopPowerSaveTempWhitelistBroadcast()) {
+            filter.addAction("android.os.action.POWER_SAVE_TEMP_WHITELIST_CHANGED");
+        }
         mContext.registerReceiverAsUser(mBroadcastReceiver, UserHandle.ALL, filter, null, mHandler);
     }
 

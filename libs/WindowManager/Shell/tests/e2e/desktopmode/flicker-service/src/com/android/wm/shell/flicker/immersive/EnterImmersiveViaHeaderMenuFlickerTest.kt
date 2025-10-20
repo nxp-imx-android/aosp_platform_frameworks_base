@@ -33,7 +33,6 @@ import com.android.wm.shell.flicker.utils.appWindowKeepVisible
 import com.android.wm.shell.flicker.utils.layerBecomesInvisible
 import com.android.wm.shell.flicker.utils.resizeVeilKeepsIncreasingInSize
 import com.android.wm.shell.scenarios.EnterImmersiveViaHeaderMenu
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -67,7 +66,7 @@ class EnterImmersiveViaHeaderMenuFlickerTest(flicker: FlickerTest) : DesktopMode
     val testSetupRule =
         Utils.testSetupRule(NavBar.MODE_GESTURAL, flicker.scenario.startRotation)
     val scenario = EnterImmersiveViaHeaderMenuScenario()
-    private val gameApp = scenario.gameApp
+    private val immersiveApp = scenario.immersiveApp
     private val navBarMatcher: IComponentNameMatcher = ComponentNameMatcher.NAV_BAR
     private val statusBarMatcher: IComponentNameMatcher = ComponentNameMatcher.STATUS_BAR
 
@@ -79,19 +78,18 @@ class EnterImmersiveViaHeaderMenuFlickerTest(flicker: FlickerTest) : DesktopMode
         }
 
     @Test
-    fun appWindowOnTopAtEnd() = flicker.appWindowOnTopAtEnd(gameApp)
+    fun appWindowOnTopAtEnd() = flicker.appWindowOnTopAtEnd(immersiveApp)
 
     @Test
-    fun appWindowKeepVisible() = flicker.appWindowKeepVisible(gameApp)
+    fun appWindowKeepVisible() = flicker.appWindowKeepVisible(immersiveApp)
 
     @Test
-    fun resizeVeilKeepsIncreasingInSize() = flicker.resizeVeilKeepsIncreasingInSize(gameApp)
+    fun resizeVeilKeepsIncreasingInSize() = flicker.resizeVeilKeepsIncreasingInSize(immersiveApp)
 
     @Test
     fun statusBarLayerBecomesInvisible() = flicker.layerBecomesInvisible(statusBarMatcher)
 
     @Test
-    @Ignore("TODO: Reinstate this test once b/435359906 is fixed")
     fun taskBarLayerBecomesInvisible() = flicker.layerBecomesInvisible(navBarMatcher)
 
     companion object {

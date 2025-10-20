@@ -14,9 +14,6 @@
 
 package com.android.systemui.statusbar.notification.row;
 
-import static android.provider.Settings.Global.SHOW_NEW_NOTIF_DISMISS;
-import static android.view.HapticFeedbackConstants.CLOCK_TICK;
-
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
@@ -33,7 +30,6 @@ import static org.mockito.Mockito.when;
 import android.app.NotificationChannel;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
-import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.testing.TestableLooper.RunWithLooper;
 import android.testing.ViewUtils;
@@ -120,7 +116,6 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
     @Test
     public void testSlowSwipe_newDismiss() {
         when(mRow.getShowSnooze()).thenReturn(true);
-        Settings.Global.putInt(mContext.getContentResolver(), SHOW_NEW_NOTIF_DISMISS, 1);
 
         NotificationMenuRowPlugin row = new NotificationMenuRow(
                 mContext, mPeopleNotificationIdentifier, mNotificationActivityStarter);
@@ -394,64 +389,6 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
 
         row.setMenuAlpha(0.5f);
         assertTrue("when alpha is .5, menu is visible", row.isMenuVisible());
-    }
-
-    @DisableFlags(Flags.FLAG_MAGNETIC_NOTIFICATION_SWIPES)
-    @Test
-    public void testOnTouchMove() {
-        NotificationMenuRow row = Mockito.spy(new NotificationMenuRow(
-                mContext, mPeopleNotificationIdentifier, mNotificationActivityStarter));
-        row.createMenu(mRow);
-        doReturn(50f).when(row).getDismissThreshold();
-        doReturn(true).when(row).canBeDismissed();
-        doReturn(mView).when(row).getMenuView();
-        row.onTouchMove(30f);
-
-        assertFalse("When moving not farther than threshold, menu is not snapping to dismiss",
-                row.isSnappingToDismiss());
-        verify(mView, times(0)).performHapticFeedback(CLOCK_TICK);
-
-        row.onTouchMove(60f);
-
-        assertTrue("When moving farther than threshold, menu is snapping to dismiss",
-                row.isSnappingToDismiss());
-        verify(mView, times(1)).performHapticFeedback(CLOCK_TICK);
-
-        row.onTouchMove(70f);
-
-        assertTrue("When moving farther than threshold, menu is snapping to dismiss",
-                row.isSnappingToDismiss());
-        verify(mView, times(1)).performHapticFeedback(CLOCK_TICK);
-
-        row.onTouchMove(30f);
-
-        assertFalse("When moving not farther than threshold, menu is not snapping to dismiss",
-                row.isSnappingToDismiss());
-        verify(mView, times(2)).performHapticFeedback(CLOCK_TICK);
-
-        row.onTouchMove(-30f);
-
-        assertFalse("When moving not farther than threshold, menu is not snapping to dismiss",
-                row.isSnappingToDismiss());
-        verify(mView, times(2)).performHapticFeedback(CLOCK_TICK);
-
-        row.onTouchMove(-60f);
-
-        assertTrue("When moving farther than threshold, menu is snapping to dismiss",
-                row.isSnappingToDismiss());
-        verify(mView, times(3)).performHapticFeedback(CLOCK_TICK);
-
-        row.onTouchMove(-70f);
-
-        assertTrue("When moving farther than threshold, menu is snapping to dismiss",
-                row.isSnappingToDismiss());
-        verify(mView, times(3)).performHapticFeedback(CLOCK_TICK);
-
-        row.onTouchMove(-30f);
-
-        assertFalse("When moving not farther than threshold, menu is not snapping to dismiss",
-                row.isSnappingToDismiss());
-        verify(mView, times(4)).performHapticFeedback(CLOCK_TICK);
     }
 
     @Test

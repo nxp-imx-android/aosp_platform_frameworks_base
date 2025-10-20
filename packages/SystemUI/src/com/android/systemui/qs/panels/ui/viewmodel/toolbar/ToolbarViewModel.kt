@@ -21,11 +21,11 @@ import android.view.ContextThemeWrapper
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.android.systemui.Flags.hsuQsChanges
 import com.android.systemui.animation.Expandable
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.classifier.domain.interactor.runIfNotFalseTap
 import com.android.systemui.dagger.qualifiers.Main
-import com.android.systemui.development.ui.viewmodel.BuildNumberViewModel
 import com.android.systemui.globalactions.GlobalActionsDialogLite
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
@@ -39,6 +39,8 @@ import com.android.systemui.qs.footer.ui.viewmodel.userSwitcherViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackContentViewModel
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
+import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import javax.inject.Provider
@@ -56,11 +58,12 @@ class ToolbarViewModel
 @AssistedInject
 constructor(
     val editModeButtonViewModelFactory: EditModeButtonViewModel.Factory,
-    val buildNumberViewModelFactory: BuildNumberViewModel.Factory,
     val textFeedbackContentViewModelFactory: TextFeedbackContentViewModel.Factory,
     private val footerActionsInteractor: FooterActionsInteractor,
     private val globalActionsDialogLiteProvider: Provider<GlobalActionsDialogLite>,
     private val falsingInteractor: FalsingInteractor,
+    private val selectedUserInteractor: SelectedUserInteractor,
+    private val hsum: HeadlessSystemUserMode,
     @ShadeDisplayAware appContext: Context,
     @Main private val mainDispatcher: CoroutineDispatcher,
 ) : ExclusiveActivatable() {
@@ -70,9 +73,6 @@ constructor(
 
     val powerButtonViewModel: FooterActionsButtonViewModel =
         PowerActionViewModel(context = qsThemedContext, onClick = ::onPowerButtonClicked)
-
-    val settingsButtonViewModel =
-        SettingsActionViewModel(qsThemedContext, ::onSettingsButtonClicked)
 
     val userSwitcherViewModel: FooterActionsButtonViewModel? by
         hydrator.hydratedStateOf(
@@ -84,6 +84,18 @@ constructor(
                     footerActionsInteractor,
                     ::onUserSwitcherClicked,
                 ),
+        )
+
+    val settingsButtonViewModel: FooterActionsButtonViewModel? by
+        hydrator.hydratedStateOf(
+            traceName = "settingsButtonViewModel",
+            initialValue = null,
+            source =
+                selectedUserInteractor.selectedUser.map { selectedUserId ->
+                    SettingsActionViewModel(qsThemedContext, ::onSettingsButtonClicked).takeUnless {
+                        hsuQsChanges() && hsum.isHeadlessSystemUser(selectedUserId)
+                    }
+                },
         )
 
     var securityInfoViewModel: FooterActionsSecurityButtonViewModel? by mutableStateOf(null)

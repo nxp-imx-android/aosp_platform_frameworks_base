@@ -43,12 +43,24 @@ public class BubbleAnythingFlagHelper {
 
     /** Whether creating a root task to manage the bubble tasks in the Core. */
     public static boolean enableRootTaskForBubble() {
+        if (!Flags.enableCreateAnyBubble()) {
+            return false;
+        }
+
         // This is needed to allow the activity behind the root task remains in RESUMED state.
         if (!com.android.window.flags.Flags.enableSeeThroughTaskFragments()) {
             return false;
         }
 
         return com.android.window.flags.Flags.rootTaskForBubble();
+    }
+
+    /** Whether non-resizable activities are allowed in multi-window mode. */
+    public static boolean allowMultiWindowNonResizableActivities() {
+        if (!Flags.enableCreateAnyBubble()) {
+            return false;
+        }
+        return com.android.window.flags.Flags.allowMultiWindowNonResizableActivities();
     }
 
     /** Whether the overall bubble anything feature is enabled. */

@@ -118,8 +118,12 @@ constructor(
         }
 
     /** Whether interactions should be improved for large-screen (non-handheld) form factor. */
-    val isImproveLargeScreenInteractionEnabled: Boolean =
-        repository.isImproveLargeScreenInteractionEnabledInConfig
+    val isImproveLargeScreenInteractionEnabled: Boolean
+        get() = repository.isImproveLargeScreenInteractionEnabledInConfig
+
+    /** Whether showing the accessibility button on the bouncer is enabled. */
+    val isShowAccessibilityButtonOnBouncerEnabled: Boolean =
+        repository.isShowAccessibilityButtonOnBouncerEnabledInConfig
 
     /**
      * Preferred side of the screen where the input area on the bouncer should be. This is
@@ -149,7 +153,7 @@ constructor(
     val onLockoutStarted: Flow<Unit> =
         authenticationInteractor.onAuthenticationResult
             .filter { successfullyAuthenticated ->
-                !successfullyAuthenticated && authenticationInteractor.lockoutEndTimestamp != null
+                !successfullyAuthenticated && authenticationInteractor.lockoutEndTime != null
             }
             .map {}
 

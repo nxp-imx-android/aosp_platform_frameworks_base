@@ -16,28 +16,33 @@
 
 package com.android.systemui.shared.clocks
 
-import android.graphics.Rect
 import android.icu.util.TimeZone
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import com.android.app.animation.Interpolators
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.ClockLogger
 import com.android.systemui.customization.clocks.DefaultClockFaceLayout
 import com.android.systemui.customization.clocks.DigitalTimeFormatter
 import com.android.systemui.customization.clocks.DigitalTimespec
-import com.android.systemui.customization.clocks.FontTextStyle
+import com.android.systemui.customization.clocks.FontTextStyleImpl
 import com.android.systemui.customization.clocks.R
 import com.android.systemui.customization.clocks.utils.FontUtils.get
 import com.android.systemui.customization.clocks.utils.FontUtils.set
 import com.android.systemui.customization.clocks.utils.ViewUtils.computeLayoutDiff
+import com.android.systemui.customization.clocks.utils.ViewUtils.translation
 import com.android.systemui.customization.clocks.view.DigitalAlignment
 import com.android.systemui.customization.clocks.view.HorizontalAlignment
 import com.android.systemui.customization.clocks.view.VerticalAlignment
 import com.android.systemui.plugins.keyguard.VPointF
+import com.android.systemui.plugins.keyguard.VRect
 import com.android.systemui.plugins.keyguard.VRectF
 import com.android.systemui.plugins.keyguard.data.model.AlarmData
 import com.android.systemui.plugins.keyguard.data.model.WeatherData
@@ -89,38 +94,52 @@ class FlexClockFaceController(
         clockCtx.resources.getDimensionPixelSize(R.dimen.keyguard_large_clock_top_margin)
     private val timeFormatter =
         DigitalTimeFormatter("h:mm", clockCtx.timeKeeper, enableContentDescription = true)
-    val layerController: FlexClockViewController
+    val layerController: FlexClockViewController =
+        if (isLargeClock) {
+            FlexClockViewGroupController(clockCtx)
+        } else {
+            val cfg = SMALL_LAYER_CONFIG.copy(timeFormatter = timeFormatter)
+            FlexClockTextViewController(clockCtx, cfg, isLargeClock)
+        }
 
     init {
-        layerController =
-            if (isLargeClock) {
-                FlexClockViewGroupController(clockCtx)
-            } else {
-                val cfg = SMALL_LAYER_CONFIG.copy(timeFormatter = timeFormatter)
-                FlexClockTextViewController(clockCtx, cfg, isLargeClock)
-            }
         layerController.view.layoutParams =
             FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT).apply { gravity = Gravity.CENTER }
     }
 
     override val layout: ClockFaceLayout =
         DefaultClockFaceLayout(view).apply {
-            views[0].id =
+            (view as? FlexClockViewGroup)?.let { view ->
+                var startX = 0f
+                largeClockModifier = {
+                    Modifier.onGloballyPositioned {
+                        val currentX = it.positionInWindow().x
+                        when (val state = layoutState.transitionState) {
+                            is TransitionState.Transition -> {
+                                view.offsetGlyphsForStepClockAnimation(
+                                    startX = startX,
+                                    currentX = currentX,
+                                    // TODO(b/441506692): Acquire endX from the state
+                                    endX = (currentX - startX) / state.progress + startX,
+                                    progress = state.progress,
+                                )
+                            }
+                            else -> {
+                                startX = currentX
+                                view.resetGlyphsOffsets()
+                            }
+                        }
+                    }
+                }
+            }
+            view.id =
                 if (isLargeClock) ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE
                 else ClockViewIds.LOCKSCREEN_CLOCK_VIEW_SMALL
         }
 
     override val events = FlexClockFaceEvents()
 
-    // TODO(b/364680879): Remove ClockEvents
     inner class FlexClockFaceEvents : ClockEvents, ClockFaceEvents {
-        override var isReactiveTouchInteractionEnabled = false
-            get() = field
-            set(value) {
-                field = value
-                layerController.events.isReactiveTouchInteractionEnabled = value
-            }
-
         override fun onTimeTick() {
             clockCtx.timeKeeper.updateTime()
             view.contentDescription = timeFormatter.getContentDescription()
@@ -159,7 +178,7 @@ class FlexClockFaceController(
          * targetRegion passed to all customized clock applies counter translationY of Keyguard and
          * keyguard_large_clock_top_margin from default clock
          */
-        override fun onTargetRegionChanged(targetRegion: Rect?) {
+        override fun onTargetRegionChanged(targetRegion: VRect) {
             var maxWidth = 0f
             var maxHeight = 0f
 
@@ -168,16 +187,16 @@ class FlexClockFaceController(
             maxHeight = max(maxHeight, view.layoutParams.height.toFloat())
 
             val lp =
-                if (maxHeight <= 0 || maxWidth <= 0 || targetRegion == null) {
+                if (maxHeight <= 0 || maxWidth <= 0) {
                     // No specified width/height. Just match parent size.
                     FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
                 } else {
                     // Scale to fit in targetRegion based on largest child elements.
                     val ratio = maxWidth / maxHeight
-                    val targetRatio = targetRegion.width() / targetRegion.height().toFloat()
+                    val targetRatio = targetRegion.width / targetRegion.height
                     val scale =
-                        if (ratio > targetRatio) targetRegion.width() / maxWidth
-                        else targetRegion.height() / maxHeight
+                        if (ratio > targetRatio) targetRegion.width / maxWidth
+                        else targetRegion.height / maxHeight
 
                     FrameLayout.LayoutParams(
                         (maxWidth * scale).roundToInt(),
@@ -187,11 +206,7 @@ class FlexClockFaceController(
 
             lp.gravity = Gravity.CENTER
             view.layoutParams = lp
-            targetRegion?.let {
-                val diff = view.computeLayoutDiff(it, isLargeClock)
-                view.translationX = diff.x
-                view.translationY = diff.y
-            }
+            view.translation = view.computeLayoutDiff(targetRegion, isLargeClock)
         }
 
         override fun onSecondaryDisplayChanged(onSecondaryDisplay: Boolean) {}
@@ -235,10 +250,10 @@ class FlexClockFaceController(
                 view.invalidate()
             }
 
-            override fun onPositionAnimated(args: ClockPositionAnimationArgs) {
-                layerController.animations.onPositionAnimated(args)
+            override fun onPositionAnimated(anim: ClockPositionAnimationArgs) {
+                layerController.animations.onPositionAnimated(anim)
                 if (isLargeClock) {
-                    (view as? FlexClockViewGroup)?.offsetGlyphsForStepClockAnimation(args)
+                    (view as? FlexClockViewGroup)?.offsetGlyphsForStepClockAnimation(anim)
                 }
             }
 
@@ -247,7 +262,7 @@ class FlexClockFaceController(
             }
 
             override fun onFontAxesChanged(style: ClockAxisStyle) {
-                var axes = ClockAxisStyle(getDefaultAxes(clockCtx.settings).merge(style))
+                val axes = ClockAxisStyle(getDefaultAxes(clockCtx.settings).merge(style))
                 if (!isLargeClock && axes[GSFAxes.WIDTH] > SMALL_CLOCK_MAX_WDTH) {
                     axes[GSFAxes.WIDTH] = SMALL_CLOCK_MAX_WDTH
                 }
@@ -257,15 +272,16 @@ class FlexClockFaceController(
         }
 
     companion object {
-        val SMALL_CLOCK_MAX_WDTH = 120f
+        const val SMALL_CLOCK_MAX_WDTH = 120f
 
         val SMALL_LAYER_CONFIG =
             LayerConfig(
-                style = FontTextStyle(fontSizeScale = 0.98f),
+                style = FontTextStyleImpl(fontSizeScale = 0.98f, fontFeatureSettings = "pnum"),
                 aodStyle =
-                    FontTextStyle(
+                    FontTextStyleImpl(
                         transitionInterpolator = Interpolators.EMPHASIZED,
                         transitionDuration = FlexClockViewGroup.AOD_TRANSITION_DURATION,
+                        fontFeatureSettings = "pnum",
                     ),
                 alignment = DigitalAlignment(HorizontalAlignment.START, VerticalAlignment.CENTER),
                 timespec = DigitalTimespec.TIME_FULL_FORMAT,

@@ -36,10 +36,15 @@ public final class InputChannel implements Parcelable {
     private static final String TAG = "InputChannel";
 
     private static final boolean DEBUG = false;
-    private static final NativeAllocationRegistry sRegistry =
-            NativeAllocationRegistry.createMalloced(
-                    InputChannel.class.getClassLoader(),
-                    nativeGetFinalizer());
+
+    // To allow the JNI code to find this class on a hostside JVM,
+    // we need a nested class here.
+    private static class RegistryHolder {
+        private static final NativeAllocationRegistry sRegistry =
+                NativeAllocationRegistry.createMalloced(
+                        InputChannel.class.getClassLoader(),
+                        nativeGetFinalizer());
+    }
 
     @UnsupportedAppUsage
     public static final @android.annotation.NonNull Parcelable.Creator<InputChannel> CREATOR
@@ -94,7 +99,7 @@ public final class InputChannel implements Parcelable {
         if (DEBUG) {
             Slog.d(TAG, "setNativeInputChannel : " +  String.format("%x", nativeChannel));
         }
-        sRegistry.registerNativeAllocation(this, nativeChannel);
+        RegistryHolder.sRegistry.registerNativeAllocation(this, nativeChannel);
         mPtr = nativeChannel;
     }
 

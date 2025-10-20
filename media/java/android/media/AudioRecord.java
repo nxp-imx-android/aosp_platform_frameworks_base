@@ -1219,6 +1219,7 @@ public class AudioRecord implements AudioRouting, MicrophoneDirection,
             AudioManager.unregisterAudioPolicyAsyncStatic(mAudioCapturePolicy);
             mAudioCapturePolicy = null;
         }
+        mRecordingInfoImpl.endRecordingCallbackHandling();
         native_release();
         mState = STATE_UNINITIALIZED;
     }
@@ -1985,7 +1986,7 @@ public class AudioRecord implements AudioRouting, MicrophoneDirection,
      * the intended start time for this app's capture relative to this AudioRecord's start time.
      * 4) Communicate the {@link MediaSyncEvent} returned by this method to the other app.
      * 5) The other app will use the MediaSyncEvent when creating its AudioRecord with
-     * {@link Builder#setSharedAudioEvent(MediaSyncEvent).
+     * {@link Builder#setSharedAudioEvent(MediaSyncEvent)}.
      * 6) Only after the other app has started capturing can this app stop capturing and
      * release its AudioRecord.
      * This method is intended to be called only once: if called multiple times, only the last

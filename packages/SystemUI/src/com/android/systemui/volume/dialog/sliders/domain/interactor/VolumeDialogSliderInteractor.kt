@@ -53,7 +53,7 @@ constructor(
     val isDisabledByZenMode: Flow<Boolean> =
         if (zenModeInteractor.canBeBlockedByZenMode(sliderType)) {
             zenModeInteractor.activeModesBlockingStream(AudioStream(sliderType.audioStream)).map {
-                it.mainMode != null
+                it.main != null
             }
         } else {
             flowOf(false)

@@ -16,6 +16,9 @@
 
 package com.android.keyguard;
 
+import static android.security.Flags.lockscreenIndicateDuplicateGuesses;
+import static android.security.Flags.manageLockoutEndTimeInService;
+
 import static com.android.internal.util.LatencyTracker.ACTION_CHECK_CREDENTIAL;
 import static com.android.internal.util.LatencyTracker.ACTION_CHECK_CREDENTIAL_UNLOCKED;
 import static com.android.keyguard.KeyguardAbsKeyInputView.MINIMUM_PASSWORD_LENGTH_BEFORE_REPORT;
@@ -32,19 +35,21 @@ import com.android.internal.util.LatencyTracker;
 import com.android.internal.widget.LockPatternChecker;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.internal.widget.LockscreenCredential;
+import com.android.internal.widget.VerifyCredentialResponse;
 import com.android.keyguard.EmergencyButtonController.EmergencyButtonCallback;
 import com.android.keyguard.KeyguardAbsKeyInputView.KeyDownListener;
 import com.android.keyguard.KeyguardSecurityModel.SecurityMode;
+import com.android.systemui.authentication.shared.model.AuthenticationMethodModel;
+import com.android.systemui.bouncer.shared.model.BouncerMessageStrings;
+import com.android.systemui.bouncer.shared.model.LockoutMessageModel;
 import com.android.systemui.bouncer.ui.helper.BouncerHapticPlayer;
 import com.android.systemui.classifier.FalsingClassifier;
 import com.android.systemui.classifier.FalsingCollector;
 import com.android.systemui.flags.FeatureFlags;
-import com.android.systemui.res.R;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.util.wrapper.LockPatternCheckerWrapper;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.time.Duration;
 
 public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKeyInputView>
         extends KeyguardInputViewController<T> {
@@ -117,10 +122,18 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
         mView.setKeyDownListener(mKeyDownListener);
         mEmergencyButtonController.setEmergencyButtonCallback(mEmergencyButtonCallback);
         // if the user is currently locked out, enforce it.
-        long deadline = mLockPatternUtils.getLockoutAttemptDeadline(
-                mSelectedUserInteractor.getSelectedUserId());
-        if (shouldLockout(deadline)) {
-            handleAttemptLockout(deadline);
+        Duration lockoutEndTime;
+        if (manageLockoutEndTimeInService()) {
+            lockoutEndTime =
+                    mLockPatternUtils.getLockoutEndTime(
+                            mSelectedUserInteractor.getSelectedUserId());
+        } else {
+            lockoutEndTime =
+                    Duration.ofMillis(mLockPatternUtils.getLockoutAttemptDeadline(
+                            mSelectedUserInteractor.getSelectedUserId()));
+        }
+        if (shouldLockout(lockoutEndTime)) {
+            handleAttemptLockout(lockoutEndTime);
         }
     }
 
@@ -151,31 +164,32 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
     }
 
     // Allow subclasses to override this behavior
-    protected boolean shouldLockout(long deadline) {
-        return deadline != 0;
+    protected boolean shouldLockout(Duration lockoutEndTime) {
+        return !lockoutEndTime.isZero();
     }
 
     // Prevent user from using the PIN/Password entry until scheduled deadline.
-    protected void handleAttemptLockout(long elapsedRealtimeDeadline) {
+    protected void handleAttemptLockout(Duration lockoutEndTime) {
         mView.setPasswordEntryEnabled(false);
         mView.setPasswordEntryInputEnabled(false);
         mLockedOut = true;
-        long elapsedRealtime = SystemClock.elapsedRealtime();
+        long now = SystemClock.elapsedRealtime();
         long secondsInFuture = (long) Math.ceil(
-                (elapsedRealtimeDeadline - elapsedRealtime) / 1000.0);
+                (lockoutEndTime.toMillis() - now) / 1000.0);
         getKeyguardSecurityCallback().onAttemptLockoutStart(secondsInFuture);
         mCountdownTimer = new CountDownTimer(secondsInFuture * 1000, 1000) {
 
             @Override
             public void onTick(long millisUntilFinished) {
-                int secondsRemaining = (int) Math.round(millisUntilFinished / 1000.0);
-                Map<String, Object> arguments = new HashMap<>();
-                arguments.put("count", secondsRemaining);
+                long secondsRemaining = Math.round(millisUntilFinished / 1000.0);
+                LockoutMessageModel lockoutMessageModel =
+                        BouncerMessageStrings.INSTANCE.primaryAuthLockedOut(
+                                AuthenticationMethodModel.Password.INSTANCE, secondsRemaining);
                 mMessageAreaController.setMessage(
                         PluralsMessageFormatter.format(
                             mView.getResources(),
-                            arguments,
-                            R.string.kg_too_many_failed_attempts_countdown),
+                            lockoutMessageModel.primaryFormatterArgs(),
+                            lockoutMessageModel.getPrimaryMessage()),
                         /* animate= */ false);
             }
 
@@ -188,13 +202,14 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
         }.start();
     }
 
-    void onPasswordChecked(int userId, boolean matched, int timeoutMs, boolean isValidPassword) {
+    void onPasswordChecked(int userId, boolean matched, int timeoutMs, boolean isValidPassword,
+            boolean isDuplicate) {
         boolean dismissKeyguard = mSelectedUserInteractor.getSelectedUserId() == userId;
         if (matched) {
             mBouncerHapticPlayer.playAuthenticationFeedback(
                     /* authenticationSucceeded = */true
             );
-            getKeyguardSecurityCallback().reportUnlockAttempt(userId, true, 0);
+            getKeyguardSecurityCallback().reportUnlockAttempt(userId, true, 0, isDuplicate);
             if (dismissKeyguard) {
                 mDismissing = true;
                 mLatencyTracker.onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK);
@@ -211,15 +226,21 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
             );
             mView.resetPasswordText(true /* animate */, false /* announce deletion if no match */);
             if (isValidPassword) {
-                getKeyguardSecurityCallback().reportUnlockAttempt(userId, false, timeoutMs);
+                getKeyguardSecurityCallback()
+                        .reportUnlockAttempt(userId, false, timeoutMs, isDuplicate);
                 if (timeoutMs > 0) {
-                    long deadline = mLockPatternUtils.setLockoutAttemptDeadline(
-                            userId, timeoutMs);
-                    handleAttemptLockout(deadline);
+                    Duration lockoutEndTime;
+                    if (manageLockoutEndTimeInService()) {
+                        lockoutEndTime = mLockPatternUtils.getLockoutEndTime(userId);
+                    } else {
+                        lockoutEndTime = Duration.ofMillis(
+                                mLockPatternUtils.setLockoutAttemptDeadline(userId, timeoutMs));
+                    }
+                    handleAttemptLockout(lockoutEndTime);
                 }
             }
             if (timeoutMs == 0) {
-                mMessageAreaController.setMessage(mView.getWrongPasswordStringId());
+                mMessageAreaController.setMessage(mView.getWrongPasswordStringId(isDuplicate));
             }
             startErrorAnimation();
         }
@@ -242,7 +263,8 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
             // to avoid accidental lockout, only count attempts that are long enough to be a
             // real password. This may require some tweaking.
             mView.setPasswordEntryInputEnabled(true);
-            onPasswordChecked(userId, false /* matched */, 0, false /* not valid - too short */);
+            onPasswordChecked(userId, false /* matched */, 0, false /* not valid - too short */,
+                    false /* isDuplicate */);
             password.zeroize();
             return;
         }
@@ -262,18 +284,27 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
                         mLatencyTracker.onActionEnd(ACTION_CHECK_CREDENTIAL);
 
                         onPasswordChecked(userId, true /* matched */, 0 /* timeoutMs */,
-                                true /* isValidPassword */);
+                                true /* isValidPassword */, false /* isDuplicate */);
                         password.zeroize();
                     }
 
                     @Override
-                    public void onChecked(boolean matched, int timeoutMs) {
+                    public void onChecked(VerifyCredentialResponse response) {
+                        handleChecked(
+                                response.isMatched(),
+                                response.getTimeout(),
+                                lockscreenIndicateDuplicateGuesses()
+                                        && response.isCredAlreadyTried());
+                    }
+
+                    private void handleChecked(
+                            boolean matched, int timeoutMs, boolean isDuplicate) {
                         mLatencyTracker.onActionEnd(ACTION_CHECK_CREDENTIAL_UNLOCKED);
                         mView.setPasswordEntryInputEnabled(true);
                         mPendingLockCheck = null;
                         if (!matched) {
                             onPasswordChecked(userId, false /* matched */, timeoutMs,
-                                    true /* isValidPassword */);
+                                    true /* isValidPassword */, isDuplicate);
                         }
                         password.zeroize();
                     }

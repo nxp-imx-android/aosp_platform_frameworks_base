@@ -30,7 +30,7 @@ import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 import static android.window.TransitionInfo.FLAG_SHOW_WALLPAPER;
 
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_PREDICTIVE_BACK_HOME;
-import static com.android.window.flags.Flags.predictiveBackDelayWmTransition;
+import static com.android.window.flags.Flags.predictiveBackStopKeycodeBackForwarding;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BACK_PREVIEW;
 
 import android.animation.ValueAnimator;
@@ -128,6 +128,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
     private boolean mOnBackStartDispatched = false;
     private boolean mThresholdCrossed = false;
     private boolean mPointersPilfered = false;
+    private boolean mBackAnimationTriggered = false;
     private final boolean mRequirePointerPilfer;
 
     /** Registry for the back animations */
@@ -475,17 +476,23 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
     }
 
     private void startPredictiveBackAnimationIfNeeded() {
-        if (!predictiveBackDelayWmTransition() || !mThresholdCrossed) {
+        if (!mThresholdCrossed) {
             return;
         }
         mShellExecutor.execute(() -> {
-            if (!shouldDispatchToAnimator()) {
+            if (mBackAnimationTriggered || !shouldDispatchToAnimator()) {
                 return;
             }
+            mBackAnimationTriggered = true;
+            boolean started;
             try {
-                mActivityTaskManager.startPredictiveBackAnimation();
+                started = mActivityTaskManager.startPredictiveBackAnimation();
             } catch (RemoteException r) {
                 Log.e(TAG, "Failed to start predictive animation", r);
+                started = false;
+            }
+            if (!started) {
+                ProtoLog.d(WM_SHELL_BACK_PREVIEW, "Failed to start predictive back animation.");
                 finishBackNavigation(mCurrentTracker.getTriggerBack());
                 return;
             }
@@ -539,21 +546,12 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                 if (swipeEdge == EDGE_NONE) {
                     // start animation immediately for non-gestural sources (without ACTION_MOVE
                     // events)
-                    if (!predictiveBackDelayWmTransition()) {
-                        mThresholdCrossed = true;
-                    }
                     mPointersPilfered = true;
                     onGestureStarted(touchX, touchY, swipeEdge);
-                    if (predictiveBackDelayWmTransition()) {
-                        onThresholdCrossed();
-                    }
+                    onThresholdCrossed();
                     mShouldStartOnNextMoveEvent = false;
                 } else {
-                    if (predictiveBackDelayWmTransition()) {
-                        onGestureStarted(touchX, touchY, swipeEdge);
-                    } else {
-                        mShouldStartOnNextMoveEvent = true;
-                    }
+                    mShouldStartOnNextMoveEvent = true;
                 }
             }
         } else if (keyAction == MotionEvent.ACTION_MOVE) {
@@ -606,6 +604,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             startSystemAnimation();
         } else {
             startBackNavigation(touchTracker);
+            startPredictiveBackAnimationIfNeeded();
         }
     }
 
@@ -673,12 +672,6 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         }
         final boolean shouldDispatchToAnimator = shouldDispatchToAnimator();
         if (shouldDispatchToAnimator) {
-            if (!predictiveBackDelayWmTransition()) {
-                if (!mShellBackAnimationRegistry.startGesture(backType)) {
-                    mActiveCallback = null;
-                }
-                requestTopUi(true, backType);
-            }
             tryPilferPointers();
         } else {
             mActiveCallback = mBackNavigationInfo.getOnBackInvokedCallback();
@@ -692,7 +685,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
     }
 
     private void onMove(@BackEvent.SwipeEdge int swipeEdge) {
-        if (predictiveBackDelayWmTransition() && mCurrentTracker.isActive()) {
+        if (mCurrentTracker.isActive()) {
             mCurrentTracker.updateSwipeEdge(swipeEdge);
         }
         if (!mBackGestureStarted
@@ -893,6 +886,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         // Reset gesture states.
         mThresholdCrossed = false;
         mPointersPilfered = false;
+        mBackAnimationTriggered = false;
         mBackGestureStarted = false;
         activeTouchTracker.setState(BackTouchTracker.TouchTrackerState.FINISHED);
         mTransitionIdleRunner.mRequestCount = 0;
@@ -919,8 +913,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
 
         final int backType = mBackNavigationInfo.getType();
         // Simply trigger and finish back navigation when no animator defined.
-        if (!shouldDispatchToAnimator()
-                || (!hasRequestAnimation && predictiveBackDelayWmTransition())
+        if (!shouldDispatchToAnimator() || !hasRequestAnimation
                 || mShellBackAnimationRegistry.isAnimationCancelledOrNull(backType)) {
             ProtoLog.d(WM_SHELL_BACK_PREVIEW, "Trigger back without dispatching to animator.");
             invokeOrCancelBack(mCurrentTracker);
@@ -1131,11 +1124,12 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         if (mApps.length >= 1) {
             BackMotionEvent startEvent = mCurrentTracker.createStartEvent();
             dispatchOnBackStarted(mActiveCallback, startEvent);
-            if (startEvent.getSwipeEdge() == EDGE_NONE) {
-                // TODO(b/373544911): onBackStarted is dispatched here so that
-                //  WindowOnBackInvokedDispatcher knows about the back navigation and intercepts
-                //  touch events while it's active. It would be cleaner and safer to disable
-                //  multitouch altogether (same as in gesture-nav).
+            if (predictiveBackStopKeycodeBackForwarding()
+                    || startEvent.getSwipeEdge() == EDGE_NONE) {
+                // onBackStarted is dispatched here so that WindowOnBackInvokedDispatcher knows
+                // about the back navigation and can intercept touch events while it's active. This
+                // is used for 3-button-nav predictive back cases. This is also needed, so that any
+                // observer callbacks can be invoked
                 dispatchOnBackStarted(mBackNavigationInfo.getOnBackInvokedCallback(), startEvent);
             }
         }

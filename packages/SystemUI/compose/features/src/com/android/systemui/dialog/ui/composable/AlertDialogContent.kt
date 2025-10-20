@@ -37,6 +37,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
@@ -56,6 +57,8 @@ fun AlertDialogContent(
     positiveButton: (@Composable () -> Unit)? = null,
     negativeButton: (@Composable () -> Unit)? = null,
     neutralButton: (@Composable () -> Unit)? = null,
+    contentTopPadding: Dp = 16.dp,
+    contentBottomPadding: Dp = 32.dp,
 ) {
     Column(
         modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(DialogPaddings),
@@ -84,7 +87,7 @@ fun AlertDialogContent(
                 title()
             }
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(contentTopPadding))
 
         // Content.
         val contentColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -97,7 +100,7 @@ fun AlertDialogContent(
                 }
             }
         }
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(contentBottomPadding))
 
         // Buttons.
         if (positiveButton != null || negativeButton != null || neutralButton != null) {

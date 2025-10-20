@@ -24,11 +24,8 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_DREAM;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_RECENTS;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED;
-import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
-import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
-import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS;
 import static android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
@@ -1346,16 +1343,19 @@ class RecentTasks {
             return;
         }
 
-        int recentsCount = mTasks.size();
-
         // Remove from the end of the list until we reach the max number of recents
-        while (recentsCount > mGlobalMaxNumTasks) {
-            final Task task = mTasks.remove(recentsCount - 1);
-            notifyTaskRemoved(task, true /* wasTrimmed */, false /* killProcess */);
-            recentsCount--;
-            if (DEBUG_RECENTS_TRIM_TASKS) {
-                Slog.d(TAG, "Trimming over max-recents task=" + task
-                        + " max=" + mGlobalMaxNumTasks);
+        for (int i = mTasks.size() - 1; i >= 0; i--) {
+            if (mTasks.size() <= mGlobalMaxNumTasks) {
+                break;
+            }
+            Task task = mTasks.get(i);
+            if (isTrimmable(task)) {
+                mTasks.remove(i);
+                notifyTaskRemoved(task, true /* wasTrimmed */, false /* killProcess */);
+                if (DEBUG_RECENTS_TRIM_TASKS) {
+                    Slog.d(TAG, "Trimming over max-recents task=" + task
+                            + " max=" + mGlobalMaxNumTasks);
+                }
             }
         }
 
@@ -2072,18 +2072,8 @@ class RecentTasks {
         final int windowingMode1 = t1.getWindowingMode();
         final int windowingMode2 = t2.getWindowingMode();
 
-        if (com.android.window.flags.Flags.fixTaskCompatibleModes()) {
-            // Unless one of them is pinned and the other is not, all modes are compatible.
-            return (windowingMode1 == windowingMode2) || (windowingMode1 != WINDOWING_MODE_PINNED
-                    && windowingMode2 != WINDOWING_MODE_PINNED);
-        } else {
-            return windowingMode1 == windowingMode2
-                    || windowingMode1 == WINDOWING_MODE_UNDEFINED
-                    || windowingMode2 == WINDOWING_MODE_UNDEFINED
-                    || (windowingMode1 == WINDOWING_MODE_FREEFORM
-                    && windowingMode2 == WINDOWING_MODE_FULLSCREEN)
-                    || (windowingMode1 == WINDOWING_MODE_FULLSCREEN
-                    && windowingMode2 == WINDOWING_MODE_FREEFORM);
-        }
+        // Unless one of them is pinned and the other is not, all modes are compatible.
+        return (windowingMode1 == windowingMode2) || (windowingMode1 != WINDOWING_MODE_PINNED
+                && windowingMode2 != WINDOWING_MODE_PINNED);
     }
 }

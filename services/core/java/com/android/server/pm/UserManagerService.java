@@ -35,8 +35,6 @@ import static android.os.UserManager.USER_OPERATION_ERROR_USER_RESTRICTED;
 import static android.os.UserManager.USER_TYPE_PROFILE_PRIVATE;
 import static android.provider.Settings.Secure.HIDE_PRIVATESPACE_ENTRY_POINT;
 
-import static com.android.internal.app.SetScreenLockDialogActivity.EXTRA_ORIGIN_USER_ID;
-import static com.android.internal.app.SetScreenLockDialogActivity.LAUNCH_REASON_DISABLE_QUIET_MODE;
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_ABORTED;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_INVALID_USER_TYPE;
@@ -51,6 +49,8 @@ import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_REVOKE_ADMIN;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_USER_CREATE;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_USER_LIFECYCLE;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_USER_REMOVE;
+import static com.android.server.pm.UserManagerInternal.USER_FILTER_WITH_ALL_COMPLETE_USERS;
+import static com.android.server.pm.UserManagerInternal.USER_FILTER_WITH_DYING_USERS;
 
 import android.Manifest;
 import android.accounts.Account;
@@ -82,6 +82,7 @@ import android.app.StatsManager;
 import android.app.admin.DevicePolicyEventLogger;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.IIntentReceiver;
 import android.content.Intent;
@@ -137,6 +138,7 @@ import android.os.UserManager.QuietModeFlag;
 import android.os.UserManager.UserLogoutability;
 import android.os.storage.StorageManager;
 import android.provider.Settings;
+import android.service.notification.StatusBarNotification;
 import android.service.voice.VoiceInteractionManagerInternal;
 import android.stats.devicepolicy.DevicePolicyEnums;
 import android.telecom.TelecomManager;
@@ -161,7 +163,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.annotations.VisibleForTesting.Visibility;
 import com.android.internal.app.IAppOpsService;
-import com.android.internal.app.SetScreenLockDialogActivity;
 import com.android.internal.app.SetScreenLockDialogContract;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
@@ -183,6 +184,7 @@ import com.android.server.StorageManagerInternal;
 import com.android.server.SystemService;
 import com.android.server.am.UserState;
 import com.android.server.locksettings.LockSettingsInternal;
+import com.android.server.pm.UserFilter.DeathPredictor;
 import com.android.server.pm.UserManagerInternal.UserLifecycleListener;
 import com.android.server.pm.UserManagerInternal.UserRestrictionsListener;
 import com.android.server.storage.DeviceStorageMonitorInternal;
@@ -213,6 +215,7 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -227,6 +230,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 /**
  * Service for {@link UserManager}.
@@ -368,16 +372,20 @@ public class UserManagerService extends IUserManager.Stub {
 
     // The boot user strategy for HSUM.
     @VisibleForTesting
-    static final int BOOT_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER = 0;
+    static final int BOOT_STRATEGY_DO_NOT_OVERRIDE = -1;
     @VisibleForTesting
-    static final int BOOT_TO_HSU_FOR_PROVISIONED_DEVICE = 1;
+    static final int BOOT_STRATEGY_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER = 0;
+    @VisibleForTesting
+    static final int BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE = 1;
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef(flag = false, prefix = { "BOOT_TO_" }, value = {
-            BOOT_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER,
-            BOOT_TO_HSU_FOR_PROVISIONED_DEVICE})
+    @IntDef(flag = false, prefix = { "BOOT_STRATEGY_" }, value = {
+            BOOT_STRATEGY_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER,
+            BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE})
     @VisibleForTesting
     @interface BootStrategy {}
+
+    private static final String BOOT_STRATEGY_PROPERTY = "persist.user.hsum_boot_strategy";
 
     private final Context mContext;
     private final PackageManagerService mPm;
@@ -399,7 +407,7 @@ public class UserManagerService extends IUserManager.Stub {
     private final Object mAppRestrictionsLock = NamedLock.create("mAppRestrictionsLock");
 
     private final Handler mHandler;
-    private final MultiuserDeprecationReporter mDeprecationReporter;
+    private final MultiuserNonComplianceLogger mNonComplianceLogger;
 
     private final ThreadPoolExecutor mInternalExecutor;
 
@@ -578,6 +586,10 @@ public class UserManagerService extends IUserManager.Stub {
     @GuardedBy("mUsersLock")
     private final SparseBooleanArray mRemovingUserIds = new SparseBooleanArray();
 
+    /** Used on methods that take a UserFilter (like {@link #getUsers(UserFilter)}) */
+    @GuardedBy("mUsersLock")
+    private final DeathPredictor mDeathPredictor = user -> mRemovingUserIds.get(user.id);
+
     /**
      * Queue of recently removed userIds. Used for recycling of userIds
      */
@@ -589,6 +601,17 @@ public class UserManagerService extends IUserManager.Stub {
 
     @GuardedBy("mUsersLock")
     private int[] mUserIdsIncludingPreCreated;
+
+    /**
+     * Caches the id of the {@link android.app.admin.DevicePolicyManager#getDeviceOwner() device
+     * owner} (or {@code UserHandle.USER_NULL} when there isn't one).
+     *
+     * <p>It must be cached because the device owner cannot be removed, and calling
+     * {@link #mDevicePolicyManagerInternal} to retrieve it when removing a user would break the
+     * lock guard order.
+     */
+    @GuardedBy("mUsersLock")
+    private @CanBeNULL @UserIdInt int mDeviceOwnerUserId = UserHandle.USER_NULL;
 
     @GuardedBy("mPackagesLock")
     private int mNextSerialNumber;
@@ -985,8 +1008,14 @@ public class UserManagerService extends IUserManager.Stub {
 
     private final UserVisibilityMediator mUserVisibilityMediator;
 
+    @Nullable // only set on HSUM devices
+    private final HsuAllowlistsMediator mHam;
+
     @GuardedBy("mUsersLock")
     private @CanBeNULL @UserIdInt int mBootUser = UserHandle.USER_NULL;
+
+    /** Converter used on calls to {@link #getUsersInternal(UserFilter, Function)}. */
+    private final Function<UserInfo, UserInfo> mNameConverter = user -> userWithName(user);
 
     private static UserManagerService sInstance;
 
@@ -1114,7 +1143,7 @@ public class UserManagerService extends IUserManager.Stub {
         mPackagesLock = packagesLock;
         mUsers = users != null ? users : new SparseArray<>();
         mHandler = new MainHandler();
-        mDeprecationReporter = new MultiuserDeprecationReporter(mHandler);
+        mNonComplianceLogger = new MultiuserNonComplianceLogger(mContext, mHandler);
         mInternalExecutor = new ThreadPoolExecutor(/* corePoolSize */ 0, /* maximumPoolSize */ 1,
                 /* keepAliveTime */ 24, TimeUnit.HOURS, new LinkedBlockingQueue<>());
         mUserVisibilityMediator = new UserVisibilityMediator(mHandler);
@@ -1143,6 +1172,13 @@ public class UserManagerService extends IUserManager.Stub {
         mUser0Allocations = DBG_ALLOCATION ? new AtomicInteger() : null;
         mPrivateSpaceAutoLockSettingsObserver = new SettingsObserver(mHandler);
         emulateSystemUserModeIfNeeded();
+        // TODO(b/412177078): change emulateSystemUserModeIfNeeded() to return isHsum and remove
+        // comment below
+        // Must be set after emulateSystemUserModeIfNeeded()
+        // TODO(b/412176703): flag-check for (hsuAllowlistActivities()||hsuAllowlistNotifications())
+        mHam = Flags.hsuAllowlistActivities() && isDefaultHeadlessSystemUserMode()
+                ? new HsuAllowlistsMediator(context)
+                : null;
         initPropertyInvalidatedCaches();
     }
 
@@ -1372,7 +1408,7 @@ public class UserManagerService extends IUserManager.Stub {
     @Override
     public @CanBeNULL @UserIdInt int getMainUserId() {
         checkQueryOrCreateUsersPermission("get main user id");
-        mDeprecationReporter.logGetMainUserCall();
+        mNonComplianceLogger.logGetMainUserCall(Binder.getCallingUid());
         return getMainUserIdUnchecked();
     }
 
@@ -1397,7 +1433,7 @@ public class UserManagerService extends IUserManager.Stub {
 
     @Override
     public boolean isMainUser(int userId) {
-        mDeprecationReporter.logIsMainUserCall();
+        mNonComplianceLogger.logIsMainUserCall(Binder.getCallingUid());
         UserInfo user = getUserInfo(userId);
         return user != null && user.isMainUnlogged();
     }
@@ -1439,6 +1475,19 @@ public class UserManagerService extends IUserManager.Stub {
         }
     }
 
+    private @BootStrategy int getHsumBootStrategy() {
+        int bootStrategyOverride = SystemProperties.getInt(BOOT_STRATEGY_PROPERTY,
+                BOOT_STRATEGY_DO_NOT_OVERRIDE);
+        int bootStrategy = getContextResources()
+                .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
+        if (bootStrategyOverride != BOOT_STRATEGY_DO_NOT_OVERRIDE) {
+            Slogf.d(LOG_TAG, "%s overriding HSUM boot strategy to %d", BOOT_STRATEGY_PROPERTY,
+                    bootStrategyOverride);
+            bootStrategy = bootStrategyOverride;
+        }
+        return bootStrategy;
+    }
+
     private @UserIdInt int getBootUserUnchecked() throws UserManager.CheckedUserOperationException {
         synchronized (mUsersLock) {
             if (mBootUser != UserHandle.USER_NULL) {
@@ -1454,12 +1503,11 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         if (isHeadlessSystemUserMode()) {
-            final int bootStrategy = getContextResources()
-                    .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
+            int bootStrategy = getHsumBootStrategy();
             switch (bootStrategy) {
-                case BOOT_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER:
+                case BOOT_STRATEGY_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER:
                     return getPreviousOrFirstSwitchableUser();
-                case BOOT_TO_HSU_FOR_PROVISIONED_DEVICE:
+                case BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE:
                     return getBootUserBasedOnProvisioning();
                 default:
                     Slogf.w(LOG_TAG, "Unknown HSUM boot strategy: %d", bootStrategy);
@@ -1619,17 +1667,30 @@ public class UserManagerService extends IUserManager.Stub {
     @Override
     public @NonNull List<UserInfo> getUsers(boolean excludeDying) {
         checkCreateUsersPermission("query users");
-        return getUsersInternal(/* excludePartial= */ true, excludeDying,
-                /* resolveNullNames= */ true);
+        if (!android.multiuser.Flags.userFilterRefactoring()) {
+            return getUsersInternal(/* excludePartial= */ true, excludeDying,
+                    /* resolveNullNames= */ true);
+        }
+        var filter = getFilter(excludeDying);
+        return getUsers(filter, mNameConverter);
     }
 
     // Used by cmd users
-    @NonNull List<UserInfo> getUsersWithUnresolvedNames(boolean excludePartial,
+    // TODO(b/419086491): remove once user_filter_refactoring flag is ramped  up
+    /**
+     * @deprecated should use {@link #getUsers(UserFilter)} instead.
+     */
+    @Deprecated
+    List<UserInfo> getUsersWithUnresolvedNames(boolean excludePartial,
             boolean excludeDying) {
         checkCreateUsersPermission("get users with unresolved names");
-        return getUsersInternal(excludePartial, excludeDying, /* resolveNullNames= */ false);
+        if (!android.multiuser.Flags.userFilterRefactoring()) {
+            return getUsersInternal(excludePartial, excludeDying, /* resolveNullNames= */ false);
+        }
+        return getUsers(getFilter(excludePartial, excludeDying));
     }
 
+    // TODO(b/419086491): remove once user_filter_refactoring flag is ramped  up
     /**
      * @deprecated should use {@link #getUsers(UserFilter)} instead.
      */
@@ -1637,6 +1698,8 @@ public class UserManagerService extends IUserManager.Stub {
     @VisibleForTesting
     List<UserInfo> getUsersInternal(boolean excludePartial, boolean excludeDying,
             boolean resolveNullNames) {
+        if (!android.multiuser.Flags.userFilterRefactoring()) {
+            // NOTE: not indented on purpose (to minimize git changes)
         synchronized (mUsersLock) {
             ArrayList<UserInfo> users = new ArrayList<>(mUsers.size());
             final int userSize = mUsers.size();
@@ -1653,6 +1716,91 @@ public class UserManagerService extends IUserManager.Stub {
             }
             return users;
         }
+        }
+        UserFilter filter = getFilter(excludePartial, excludeDying);
+        Function<UserInfo, UserInfo> converter = resolveNullNames ? mNameConverter : null;
+        return getUsersInternal(filter, converter);
+    }
+
+    private static UserFilter getFilter(boolean excludeDying) {
+        return excludeDying ? USER_FILTER_WITH_ALL_COMPLETE_USERS : USER_FILTER_WITH_DYING_USERS;
+    }
+
+    // TODO(b/419086491): remove once (deprecated) caller methods are removed
+    private static UserFilter getFilter(boolean excludePartial, boolean excludeDying) {
+        var builder = UserFilter.builder();
+        if (!excludePartial) {
+            builder.withPartialUsers();
+        }
+        if (!excludeDying) {
+            builder.withDyingUsers();
+        }
+        return builder.build();
+    }
+
+    /**
+     * Gets the users that match the given {@code filter}.
+     *
+     * <p><b>Note: </b>for performance reasons, prefer using pre-existing filters from
+     * {@link UserManagerInternal}, like
+     * {@link UserManagerInternal#USER_FILTER_WITH_ALL_COMPLETE_USERS} or
+     * {@link UserManagerInternal#USER_FILTER_WITH_DYING_USERS}.
+     */
+    List<UserInfo> getUsers(UserFilter filter) {
+        return getUsersInternal(filter, /* converter= */ null);
+    }
+
+    /**
+     * Gets the converted users that match the given {@code filter}.
+     *
+     * <p>Typically used with methods like {@link #userWithName(UserInfo)}, which need to resolve
+     * {@code null} names.
+     *
+     * <p><b>Note: </b>for performance reasons, prefer using pre-existing filters from
+     * {@link UserManagerInternal}, like
+     * {@link UserManagerInternal#USER_FILTER_WITH_ALL_COMPLETE_USERS} or
+     * {@link UserManagerInternal#USER_FILTER_WITH_DYING_USERS}.
+     */
+    @VisibleForTesting
+    List<UserInfo> getUsers(UserFilter filter, Function<UserInfo, UserInfo> converter) {
+        Objects.requireNonNull(converter, "converter cannot be null");
+        return getUsersInternal(filter, converter);
+    }
+
+    private List<UserInfo> getUsersInternal(UserFilter filter,
+            @Nullable Function<UserInfo, UserInfo> converter) {
+        Objects.requireNonNull(filter, "filter cannot be null");
+        synchronized (mUsersLock) {
+            ArrayList<UserInfo> users = new ArrayList<>(mUsers.size());
+            int userSize = mUsers.size();
+            for (int i = 0; i < userSize; i++) {
+                UserInfo user = mUsers.valueAt(i).info;
+                if (filter.matches(mDeathPredictor, user)) {
+                    if (converter == null) {
+                        users.add(user);
+                    } else {
+                        users.add(converter.apply(user));
+                    }
+                }
+            }
+            return users;
+        }
+    }
+
+    /** Gets the number of users that matches the given {@code filter}. */
+    int getNumberOfUsers(UserFilter filter) {
+        Objects.requireNonNull(filter, "filter cannot be null");
+        int number = 0;
+        synchronized (mUsersLock) {
+            int userSize = mUsers.size();
+            for (int i = 0; i < userSize; i++) {
+                UserInfo user = mUsers.valueAt(i).info;
+                if (filter.matches(mDeathPredictor, user)) {
+                    number++;
+                }
+            }
+        }
+        return number;
     }
 
     @Override
@@ -1674,14 +1822,11 @@ public class UserManagerService extends IUserManager.Stub {
         }
     }
 
-    // TODO(b/142482943): Will probably need a getProfiles(userType). But permissions may vary.
-
     @Override
     public int[] getProfileIds(@UserIdInt int userId, boolean enabledOnly) {
         return getProfileIds(userId, null, enabledOnly, /* excludeHidden */ false);
     }
 
-    // TODO(b/142482943): Probably @Override and make this accessible in UserManager.
     /**
      * Returns all the users of type userType that are in the same profile group as userId
      * (including userId itself, if it is of the appropriate user type).
@@ -2033,19 +2178,11 @@ public class UserManagerService extends IUserManager.Stub {
                     } else if (km != null && !km.isDeviceSecure(parentUserId)
                             && Settings.Secure.getIntForUser(mContext.getContentResolver(),
                                 Settings.Secure.USER_SETUP_COMPLETE, 0, userId) == 1) {
-                        final Intent setScreenLockPromptIntent;
-                        if (android.multiuser.Flags.moveSetScreenLockDialogToSettingsApp()) {
-                            setScreenLockPromptIntent =
+                        final Intent setScreenLockPromptIntent =
                                     SetScreenLockDialogContract.createUserSpecificDialogIntent(
                                             SetScreenLockDialogContract
                                                     .LAUNCH_REASON_DISABLE_QUIET_MODE,
                                             userId);
-                        } else {
-                            setScreenLockPromptIntent =
-                                    SetScreenLockDialogActivity.createBaseIntent(
-                                            LAUNCH_REASON_DISABLE_QUIET_MODE);
-                            setScreenLockPromptIntent.putExtra(EXTRA_ORIGIN_USER_ID, userId);
-                        }
                         mContext.startActivityAsUser(
                                 setScreenLockPromptIntent, UserHandle.of(parentUserId));
                         return false;
@@ -2359,6 +2496,11 @@ public class UserManagerService extends IUserManager.Stub {
 
     @Override
     public void setUserAdmin(@UserIdInt int userId) {
+        setUserAdminInternal(userId);
+    }
+
+    // NOTE: split in 2 methods because cmd user needs a boolean but the AIDL one doesn't
+    boolean setUserAdminInternal(@UserIdInt int userId) {
         checkManageUserAndAcrossUsersFullPermission("set user admin");
         if (Flags.unicornModeRefactoringForHsumReadOnly()) {
             checkAdminStatusChangeAllowed(userId);
@@ -2374,30 +2516,41 @@ public class UserManagerService extends IUserManager.Stub {
                     // Exit if no user found with that id,
                     mUserJourneyLogger.logNullUserJourneyError(USER_JOURNEY_GRANT_ADMIN,
                             currentUserId, userId, /* userType */ "", /* userFlags */ -1);
-                    return;
+                    Slogf.w(LOG_TAG, "setUserAdmin(%d) failed: user not found", userId);
+                    return false;
                 } else if (user.info.isAdmin()) {
                     // Exit if the user is already an admin.
                     mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId,
                         user.info, USER_JOURNEY_GRANT_ADMIN,
                         ERROR_CODE_USER_ALREADY_AN_ADMIN);
-                    return;
+                    Slogf.w(LOG_TAG, "setUserAdmin(%d): not changed, already admin", userId);
+                    return true;
                 } else if (user.info.isProfile() || user.info.isGuest()
                         || user.info.isRestricted()) {
                     // Profiles, guest users or restricted profiles cannot become an admin.
                     mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId,
                             user.info, USER_JOURNEY_GRANT_ADMIN, ERROR_CODE_INVALID_USER_TYPE);
-                    return;
+                    Slogf.w(LOG_TAG, "setUserAdmin(%d) failed: profile, guest, and restricted users"
+                            + " cannot be admins (user: %s) ", userId, user.info.toFullString());
+                    return false;
                 }
                 user.info.flags ^= UserInfo.FLAG_ADMIN;
                 writeUserLP(user);
             }
         }
+        Slogf.i(LOG_TAG, "setUserAdmin(%d): succeeded", userId);
         mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId, user.info,
                 USER_JOURNEY_GRANT_ADMIN, ERROR_CODE_UNSPECIFIED);
+        return true;
     }
 
     @Override
     public void revokeUserAdmin(@UserIdInt int userId) {
+        revokeUserAdminInternal(userId);
+    }
+
+    // NOTE: split in 2 methods because cmd user needs a boolean but the AIDL one doesn't
+    boolean revokeUserAdminInternal(@UserIdInt int userId) {
         checkManageUserAndAcrossUsersFullPermission("revoke admin privileges");
         if (Flags.unicornModeRefactoringForHsumReadOnly()) {
             checkAdminStatusChangeAllowed(userId);
@@ -2413,23 +2566,27 @@ public class UserManagerService extends IUserManager.Stub {
                     // Exit if no user found with that id
                     mUserJourneyLogger.logNullUserJourneyError(
                             USER_JOURNEY_REVOKE_ADMIN, currentUserId, userId, "", -1);
-                    return;
+                    Slogf.w(LOG_TAG, "revokeUserAdmin(%d) failed: user not found", userId);
+                    return false;
                 } else if (!user.info.isAdmin()) {
                     // Exit if user is not an admin.
                     mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId, user.info,
                             USER_JOURNEY_REVOKE_ADMIN, ERROR_CODE_USER_IS_NOT_AN_ADMIN);
-                    return;
+                    Slogf.w(LOG_TAG, "revokeUserAdmin(%d): not changed, already not admin", userId);
+                    return true;
                 } else if ((user.info.flags & UserInfo.FLAG_SYSTEM) != 0) {
-                    // System user cannot lose its admin status.
+                      // System user cannot lose its admin status.
+                    Slogf.w(LOG_TAG, "revokeUserAdmin(%d) failed: system user", userId);
                     mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId, user.info,
                             USER_JOURNEY_REVOKE_ADMIN, ERROR_CODE_INVALID_USER_TYPE);
-                    return;
+                    return false;
                 } else if (isNonRemovableLastAdminUserLU(user.info)) {
                     // This is the last admin user and this device requires that it not lose its
                     // admin status.
+                    Slogf.w(LOG_TAG, "revokeUserAdmin(%d) failed: user is last admin", userId);
                     mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId, user.info,
                             USER_JOURNEY_REVOKE_ADMIN, ERROR_CODE_USER_IS_LAST_ADMIN);
-                    return;
+                    return false;
                 }
                 user.info.flags ^= UserInfo.FLAG_ADMIN;
                 writeUserLP(user);
@@ -2437,6 +2594,8 @@ public class UserManagerService extends IUserManager.Stub {
         }
         mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId, user.info,
                 USER_JOURNEY_REVOKE_ADMIN, ERROR_CODE_UNSPECIFIED);
+        Slogf.i(LOG_TAG, "revokeUserAdmin(%d): succeeded", userId);
+        return true;
     }
 
     /**
@@ -3505,8 +3664,8 @@ public class UserManagerService extends IUserManager.Stub {
         synchronized (mPackagesLock) {
             final UserData userData;
             synchronized (mUsersLock) {
-                final int userRemovability =
-                        getUserRemovabilityLockedLU(userId, "set as ephemeral");
+                final int userRemovability = getUserRemovabilityLockedLU(userId);
+                logRemoveResultError(userRemovability, userId, "set as ephemeral");
                 if (userRemovability != UserManager.REMOVE_RESULT_USER_IS_REMOVABLE) {
                     return userRemovability;
                 }
@@ -4188,14 +4347,11 @@ public class UserManagerService extends IUserManager.Stub {
         if (!android.multiuser.Flags.consistentMaxUsers()) {
             throw new UnsupportedOperationException("This method requires flag consistentMaxUsers");
         }
-        if (!isUserTypeEnabled(userTypeDetails)) {
-            return 0;
-        }
-        if (!doSystemFeaturesSupportUserType(userTypeDetails.getName())) {
-            return 0;
-        }
         if (userTypeDetails.isSystem()) {
             // You can never create another system user.
+            return 0;
+        }
+        if (!isUserTypeSupported(userTypeDetails)) {
             return 0;
         }
         synchronized (mUsersLock) {
@@ -4293,10 +4449,54 @@ public class UserManagerService extends IUserManager.Stub {
         return userTypeDetails != null && canAddMoreUsersOfType(userTypeDetails);
     }
 
-    /** Returns whether the creation of users of the given user type is enabled on this device. */
+    /**
+     * Returns whether the given user type is supported on this device.
+     * Also works for SYSTEM user types.
+     */
     @Override
-    public boolean isUserTypeEnabled(String userType) {
-        checkCreateUsersPermission("check if user type is enabled.");
+    public boolean isUserTypeSupportedIncludingSystem(String userType) {
+        checkCreateUsersPermission("check if user type is supported.");
+        final UserTypeDetails userTypeDetails = mUserTypes.get(userType);
+        if (!android.multiuser.Flags.queryUserTypeSupported()) {
+            return userTypeDetails != null && isUserTypeEnabled(userTypeDetails);
+        }
+        if (userTypeDetails == null) {
+            return false;
+        }
+        if (userTypeDetails.isSystem()) {
+            // Regardless of the theoretical configuration, the only supported system user type is
+            // that of the device's actual system user.
+            synchronized (mUsersLock) {
+                final UserData systemUserData = mUsers.get(UserHandle.USER_SYSTEM);
+                return userType.equals(systemUserData.info.userType);
+            }
+        }
+        return isUserTypeSupported(userTypeDetails);
+    }
+
+    /**
+     * Returns whether the creation of users of the given user type is supported on this device.
+     *
+     * Does not apply to SYSTEM user types, which can never be "created" and are only supported if
+     * the existing system user is of that type. So don't call this for SYSTEM user types.
+     */
+    private boolean isUserTypeSupported(@NonNull UserTypeDetails userTypeDetails) {
+        if (isCreationOverrideEnabled()) {
+            return true;
+        }
+        return isUserTypeEnabled(userTypeDetails)
+                && userTypeDetails.getMaxAllowed() > 0
+                && (!isUserTypeSubjectToSwitchableUserMaximum(userTypeDetails)
+                        || UserManager.getMaxSwitchableUsers() > 0)
+                && doSystemFeaturesSupportUserType(userTypeDetails.getName());
+    }
+
+    /** Returns whether the creation of users of the given user type is enabled on this device. */
+    private boolean isUserTypeEnabled(String userType) {
+        if (android.multiuser.Flags.consistentMaxUsers()) {
+            // TODO(b/394178333): When the flag is permanent, delete this method entirely.
+            throw new UnsupportedOperationException("This method is no longer supported");
+        }
         final UserTypeDetails userTypeDetails = mUserTypes.get(userType);
         return userTypeDetails != null && isUserTypeEnabled(userTypeDetails);
     }
@@ -4607,6 +4807,24 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     /**
+     * Checks that the caller has the proper permissions to manage the allowlists associated with
+     * the Headless System User.
+     *
+     * @param message used as message if SecurityException is thrown
+     * @throws SecurityException if the caller lacks the required permissions.
+     */
+    private static void checkManageHsuAllowlistsPermission(String message) {
+        // TODO(b/412177078): for now it's only checking for MANAGE_USERS, but it should call
+        // hasManageUsersOrPermission() with a new permission (like
+        // MANAGE_HEADLESS_SYSTEM_USER_ALLOWLISTS) instead.
+        // TODO(b/412177078): replace TBD with the new name of the new permission :-)
+        if (!hasManageUsersPermission()) {
+            throw new SecurityException("You need MANAGE_USERS or TBD permission to: "
+                    + message);
+        }
+    }
+
+    /**
      * @return whether the calling UID is system UID or root's UID or the calling app has the
      * {@link android.Manifest.permission#MANAGE_USERS MANAGE_USERS}.
      */
@@ -4840,10 +5058,12 @@ public class UserManagerService extends IUserManager.Stub {
                 final String newUserType;
                 if (newHeadlessSystemUserMode) {
                     newUserType = UserManager.USER_TYPE_SYSTEM_HEADLESS;
-                    newSysFlags = oldSysFlags & ~UserInfo.FLAG_FULL & ~UserInfo.FLAG_MAIN;
+                    newSysFlags = oldSysFlags & ~UserInfo.FLAG_FULL & ~UserInfo.FLAG_MAIN
+                            & (android.multiuser.Flags.hsuNotAdmin() ? ~UserInfo.FLAG_ADMIN : ~0);
                 } else {
                     newUserType = UserManager.USER_TYPE_FULL_SYSTEM;
-                    newSysFlags = oldSysFlags | UserInfo.FLAG_FULL | UserInfo.FLAG_MAIN;
+                    newSysFlags = oldSysFlags | UserInfo.FLAG_FULL | UserInfo.FLAG_MAIN
+                            | (android.multiuser.Flags.hsuNotAdmin() ? UserInfo.FLAG_ADMIN : 0);
                 }
 
                 if (systemUserData.info.userType.equals(newUserType)) {
@@ -4936,6 +5156,28 @@ public class UserManagerService extends IUserManager.Stub {
                 mContext.getSystemService(NotificationManager.class);
         notificationManager.notifyAsUser(
                 null, SystemMessage.NOTE_WRONG_HSUM_STATUS, notification, UserHandle.ALL);
+    }
+
+    // NOTE: currently only called by shell cmd
+    void setTemporaryHsuActivitiesAllowlist(@Nullable Collection<ComponentName> componentNames) {
+        checkManageHsuAllowlistsPermission("set temporary HSU activities allowlist");
+        checkHasHam();
+        mHam.setTemporaryActivitiesAllowlist(componentNames);
+    }
+
+    boolean hasHam() {
+        return mHam != null;
+    }
+
+    // Used by shell cmd
+    Set<ComponentName> getEffectiveHsuActivitiesAllowlist() {
+        checkManageHsuAllowlistsPermission("get effective HSU activities allowlist");
+        checkHasHam();
+        return mHam.getEffectiveActivitiesAllowlist();
+    }
+
+    private void checkHasHam() {
+        Preconditions.checkState(hasHam(), "not supported - HsuActivitiesMediator is disabled");
     }
 
     private ResilientAtomicFile getUserListFile() {
@@ -5194,7 +5436,6 @@ public class UserManagerService extends IUserManager.Stub {
                         try {
                             userData.info.userType = UserInfo.getDefaultUserType(flags);
                         } catch (IllegalArgumentException e) {
-                            // TODO(b/142482943): What should we do here? Delete user? Crashloop?
                             throw new IllegalStateException("Cannot upgrade user with flags "
                                     + Integer.toHexString(flags) + " because it doesn't correspond "
                                     + "to a valid user type.", e);
@@ -5258,18 +5499,19 @@ public class UserManagerService extends IUserManager.Stub {
         // 2025Q4 userVersion pathway.
         // TODO(b/419105275): Because trunk stable flags need to be reversible, and because the
         //  upgrades here actually are reversible, we temporarily "cheat" by triggering the upgrade
-        //  path on every reboot.
-        //  Once the flags have fully progressed, we can do this properly:
+        //  path even if we don't increment the version (by temporarily introducing forceWrite).
+        //  Once the flags have fully progressed, we can do this properly instead:
         //  check for userVersion < 11, set userVersion = 12, and set USER_VERSION = 12.
         // if (userVersion < 12) {
         Slog.i(LOG_TAG, "Forcing an upgrade due to flagged changes");
-        final boolean forceWrite = true; // treat as an upgrade no matter what to handle flagging
+        boolean forceWrite = false; // treat as an upgrade no matter what to handle flagging?
         if (android.multiuser.Flags.userRestrictionConfigWifiSharedPrivate()) {
             // DISALLOW_CONFIG_WIFI_SHARED replaced DISALLOW_CONFIG_WIFI as the guest restriction.
             if (mGuestRestrictions.getBoolean(UserManager.DISALLOW_CONFIG_WIFI) &&
                     !mGuestRestrictions.getBoolean(UserManager.DISALLOW_CONFIG_WIFI_SHARED)) {
                 mGuestRestrictions.remove(UserManager.DISALLOW_CONFIG_WIFI);
                 mGuestRestrictions.putBoolean(UserManager.DISALLOW_CONFIG_WIFI_SHARED, true);
+                forceWrite = true;
             }
             final List<UserInfo> guestUsers = getGuestUsers();
             for (int i = 0; i < guestUsers.size(); i++) {
@@ -5279,6 +5521,7 @@ public class UserManagerService extends IUserManager.Stub {
                         && !hasUserRestriction(UserManager.DISALLOW_CONFIG_WIFI_SHARED, guest.id)) {
                     setUserRestriction(UserManager.DISALLOW_CONFIG_WIFI, false, guest.id);
                     setUserRestriction(UserManager.DISALLOW_CONFIG_WIFI_SHARED, true, guest.id);
+                    forceWrite = true;
                 }
             }
         } else {
@@ -5287,6 +5530,7 @@ public class UserManagerService extends IUserManager.Stub {
                     mGuestRestrictions.getBoolean(UserManager.DISALLOW_CONFIG_WIFI_SHARED)) {
                 mGuestRestrictions.putBoolean(UserManager.DISALLOW_CONFIG_WIFI, true);
                 mGuestRestrictions.remove(UserManager.DISALLOW_CONFIG_WIFI_SHARED);
+                forceWrite = true;
             }
             final List<UserInfo> guestUsers = getGuestUsers();
             for (int i = 0; i < guestUsers.size(); i++) {
@@ -5296,6 +5540,7 @@ public class UserManagerService extends IUserManager.Stub {
                         && hasUserRestriction(UserManager.DISALLOW_CONFIG_WIFI_SHARED, guest.id)) {
                     setUserRestriction(UserManager.DISALLOW_CONFIG_WIFI, true, guest.id);
                     setUserRestriction(UserManager.DISALLOW_CONFIG_WIFI_SHARED, false, guest.id);
+                    forceWrite = true;
                 }
             }
         }
@@ -5307,6 +5552,7 @@ public class UserManagerService extends IUserManager.Stub {
                         && (sysData.info.flags & UserInfo.FLAG_ADMIN) != 0) {
                     sysData.info.flags &= ~UserInfo.FLAG_ADMIN;
                     userIdsToWrite.add(sysData.info.id);
+                    forceWrite = true;
                 }
             }
         } else {
@@ -5317,6 +5563,7 @@ public class UserManagerService extends IUserManager.Stub {
                         && (sysData.info.flags & UserInfo.FLAG_ADMIN) == 0) {
                     sysData.info.flags ^= UserInfo.FLAG_ADMIN;
                     userIdsToWrite.add(sysData.info.id);
+                    forceWrite = true;
                 }
             }
         }
@@ -5455,8 +5702,13 @@ public class UserManagerService extends IUserManager.Stub {
 
     /** Returns the oldest Full Admin user, or null is if there none. */
     private @Nullable UserInfo getEarliestCreatedFullUser() {
-        List<UserInfo> users = getUsersInternal(/* excludePartial= */ true,
-                /* excludeDying= */ true, /* resolveNullNames= */ false);
+        List<UserInfo> users;
+        if (!android.multiuser.Flags.userFilterRefactoring()) {
+            users = getUsersInternal(/* excludePartial= */ true,
+                    /* excludeDying= */ true, /* resolveNullNames= */ false);
+        } else {
+            users = getUsers(USER_FILTER_WITH_ALL_COMPLETE_USERS);
+        }
         UserInfo earliestUser = null;
         long earliestCreationTime = Long.MAX_VALUE;
         for (int i = 0; i < users.size(); i++) {
@@ -6245,6 +6497,7 @@ public class UserManagerService extends IUserManager.Stub {
                             + ") and userTypeDetails (" + userType +  ") are inconsistent.",
                     USER_OPERATION_ERROR_UNKNOWN);
         }
+
         // Preliminary checks for sake of error messaging. Creation would've failed later anyway.
         if ((flags & UserInfo.FLAG_SYSTEM) != 0) {
             throwCheckedUserOperationException(
@@ -6753,8 +7006,14 @@ public class UserManagerService extends IUserManager.Stub {
     /** Writes a UserInfo pulled atom for each user on the device. */
     private int onPullAtom(int atomTag, List<StatsEvent> data) {
         if (atomTag == FrameworkStatsLog.USER_INFO) {
-            final List<UserInfo> users = getUsersInternal(/* excludePartial= */ true,
-                    /* excludeDying= */ true, /* resolveNullNames= */ false);
+            List<UserInfo> users;
+            if (!android.multiuser.Flags.userFilterRefactoring()) {
+                users = getUsersInternal(/* excludePartial= */ true, /* excludeDying= */ true,
+                        /* resolveNullNames= */ false);
+            } else {
+                users = getUsers(USER_FILTER_WITH_ALL_COMPLETE_USERS);
+            }
+
             final int size = users.size();
             if (size > 1) {
                 for (int idx = 0; idx < size; idx++) {
@@ -6942,7 +7201,8 @@ public class UserManagerService extends IUserManager.Stub {
         final boolean isProfile;
         final IntArray profileIds;
         synchronized (mUsersLock) {
-            final int userRemovability = getUserRemovabilityLockedLU(userId, "removed");
+            final int userRemovability = getUserRemovabilityLockedLU(userId);
+            logRemoveResultError(userRemovability, userId, "removed");
             if (userRemovability != UserManager.REMOVE_RESULT_USER_IS_REMOVABLE) {
                 return UserManager.isRemoveResultSuccessful(userRemovability);
             }
@@ -7028,7 +7288,8 @@ public class UserManagerService extends IUserManager.Stub {
             final UserData userData;
             synchronized (mPackagesLock) {
                 synchronized (mUsersLock) {
-                    final int userRemovability = getUserRemovabilityLockedLU(userId, "removed");
+                    final int userRemovability = getUserRemovabilityLockedLU(userId);
+                    logRemoveResultError(userRemovability, userId, "removed");
                     if (userRemovability != UserManager.REMOVE_RESULT_USER_IS_REMOVABLE) {
                         return UserManager.isRemoveResultSuccessful(userRemovability);
                     }
@@ -7156,32 +7417,52 @@ public class UserManagerService extends IUserManager.Stub {
      */
     @GuardedBy("mUsersLock")
     @VisibleForTesting
-    @UserManager.RemoveResult int getUserRemovabilityLockedLU(@UserIdInt int userId, String msg) {
+    @UserManager.RemoveResult int getUserRemovabilityLockedLU(@UserIdInt int userId) {
         if (userId == UserHandle.USER_SYSTEM) {
-            Slogf.e(LOG_TAG, "User %d can not be %s, system user cannot be removed.", userId, msg);
             return UserManager.REMOVE_RESULT_ERROR_SYSTEM_USER;
         }
         final UserData userData = mUsers.get(userId);
         if (userData == null) {
-            Slogf.e(LOG_TAG, "User %d can not be %s, invalid user id provided.", userId, msg);
             return UserManager.REMOVE_RESULT_ERROR_USER_NOT_FOUND;
         }
         if (isNonRemovableMainUser(userData.info)) {
-            Slogf.e(LOG_TAG, "User %d can not be %s, main user cannot be removed when it's a"
-                    + " permanent admin user.", userId, msg);
             return UserManager.REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN;
         }
         if (mRemovingUserIds.get(userId)) {
-            Slogf.w(LOG_TAG, "User %d can not be %s, it is already scheduled for removal.", userId,
-                    msg);
             return UserManager.REMOVE_RESULT_ALREADY_BEING_REMOVED;
         }
+        if (userId == mDeviceOwnerUserId) {
+            return UserManager.REMOVE_RESULT_ERROR_DEVICE_OWNER;
+        }
         if (isNonRemovableLastAdminUserLU(userData.info)) {
-            Slogf.e(LOG_TAG, "User %d can not be %s, last admin user cannot be removed.", userId,
-                    msg);
             return UserManager.REMOVE_RESULT_ERROR_LAST_ADMIN_USER;
         }
         return UserManager.REMOVE_RESULT_USER_IS_REMOVABLE;
+    }
+
+    private void logRemoveResultError(@UserManager.RemoveResult int result, @UserIdInt int userId,
+            String action) {
+        switch (result) {
+            case UserManager.REMOVE_RESULT_ERROR_SYSTEM_USER ->
+                Slogf.e(LOG_TAG, "User %d can not be %s, system user cannot be removed.", userId,
+                        action);
+            case UserManager.REMOVE_RESULT_ERROR_USER_NOT_FOUND ->
+                Slogf.e(LOG_TAG, "User %d can not be %s, invalid user id provided.", userId,
+                        action);
+            case UserManager.REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN ->
+                Slogf.e(LOG_TAG, "User %d can not be %s, main user cannot be removed when it's a"
+                        + " permanent admin user.", userId, action);
+            case UserManager.REMOVE_RESULT_ALREADY_BEING_REMOVED ->
+                Slogf.w(LOG_TAG, "User %d can not be %s, it is already scheduled for removal.",
+                        userId, action);
+            case UserManager.REMOVE_RESULT_ERROR_LAST_ADMIN_USER ->
+                Slogf.e(LOG_TAG, "User %d can not be %s, last admin user cannot be removed.",
+                        userId, action);
+            case UserManager.REMOVE_RESULT_ERROR_DEVICE_OWNER ->
+                    Slogf.w(LOG_TAG, "User %d can not be %s because it's the device owner", userId,
+                            action);
+            default -> {}
+        }
     }
 
     private void finishRemoveUser(final @UserIdInt int userId) {
@@ -8052,23 +8333,28 @@ public class UserManagerService extends IUserManager.Stub {
                 case "--visibility-mediator":
                     mUserVisibilityMediator.dump(pw, args);
                     return;
-                case "--deprecated-calls":
-                    if (args.length > 1 && args[1].equals("reset")) {
-                        mDeprecationReporter.reset(pw);
+                case "--ham": // Hmmmm, ham!
+                    if (hasHam()) {
+                        mHam.dump(pw, args);
                     } else {
-                        mDeprecationReporter.dump(pw);
+                        pw.println("Sorry, no ham on this device!");
+                    }
+                    return;
+                case "--non-compliance":
+                    if (args.length > 1 && args[1].equals("reset")) {
+                        mNonComplianceLogger.reset();
+                        pw.println("Reset");
+                    } else {
+                        try (IndentingPrintWriter ipw = new IndentingPrintWriter(pw)) {
+                            mNonComplianceLogger.dump(ipw);
+                        }
                     }
                     return;
             }
         }
 
         final int currentUserId = getCurrentUserId();
-        pw.print("Current user: ");
-        if (currentUserId != UserHandle.USER_NULL) {
-            pw.println(currentUserId);
-        } else {
-            pw.println("N/A");
-        }
+        printNullableUser(pw, "Current user", currentUserId);
 
         pw.println();
         synchronized (mPackagesLock) {
@@ -8122,10 +8408,6 @@ public class UserManagerService extends IUserManager.Stub {
             }
         } // synchronized (mPackagesLock)
 
-        pw.println();
-        mUserVisibilityMediator.dump(pw, args);
-        pw.println();
-
         // Dump some capabilities
         pw.println();
         if (isCreationOverrideEnabled()) {
@@ -8162,6 +8444,7 @@ public class UserManagerService extends IUserManager.Stub {
         if (isHeadlessSystemUserMode) {
             pw.println("  Can switch to headless system user: " + getContextResources()
                     .getBoolean(com.android.internal.R.bool.config_canSwitchToHeadlessSystemUser));
+            pw.println("  HSUM Boot Strategy: " + getHsumBootStrategy());
         }
 
         pw.println("  Is main user permanent admin: " + isMainUserPermanentAdmin());
@@ -8174,8 +8457,19 @@ public class UserManagerService extends IUserManager.Stub {
             pw.println("  System user allocations: " + mUser0Allocations.get());
         }
         synchronized (mUsersLock) {
-            pw.println("  Boot user: " + mBootUser);
+            printNullableUser(pw, "  Boot user", mBootUser);
+            printNullableUser(pw, "  Device owner user", mDeviceOwnerUserId);
         }
+
+        pw.println();
+        mUserVisibilityMediator.dump(pw, args);
+        pw.println();
+
+        if (hasHam()) {
+            mHam.dump(pw, args);
+            pw.println();
+        }
+
         // TODO(b/413464199): This confusing line is, regrettably, currently required by Tradefed.
         pw.println("Can add private profile: "+ canAddPrivateProfile(currentUserId));
 
@@ -8197,9 +8491,6 @@ public class UserManagerService extends IUserManager.Stub {
             mUserTypes.valueAt(i).dump(pw, "        ");
         }
 
-        pw.println();
-        mDeprecationReporter.dump(pw);
-
         // NOTE: add new stuff here, as pw is closed after the try-with-resources block below
 
         // TODO(b/163423525): create IndentingPrintWriter at the beginning of dump() and use the
@@ -8209,11 +8500,27 @@ public class UserManagerService extends IUserManager.Stub {
             // Dump SystemPackageInstaller info
             ipw.println();
             mSystemPackageInstaller.dump(ipw);
+
+            ipw.println();
+            ipw.println("Non-compliant events:");
+            ipw.increaseIndent();
+            mNonComplianceLogger.dump(ipw);
+            ipw.decreaseIndent();
         }
 
         // NOTE: pw's not available after this point as it's auto-closed by ipw, so new dump
         // statements should use ipw below
 
+    }
+
+    private static void printNullableUser(PrintWriter pw, String what,
+            @CanBeNULL @UserIdInt int userId) {
+        pw.print(what); pw.print(": ");
+        if (userId == UserHandle.USER_NULL) {
+            pw.println("N/A");
+        } else {
+            pw.println(userId);
+        }
     }
 
     private void dumpUser(PrintWriter pw, @CanBeCURRENT @UserIdInt int userId, StringBuilder sb,
@@ -8526,8 +8833,17 @@ public class UserManagerService extends IUserManager.Stub {
 
         @Override
         public @NonNull List<UserInfo> getUsers(boolean excludeDying) {
-            return UserManagerService.this.getUsersInternal(/*excludePartial= */ true, excludeDying,
-                    /* resolveNullNames= */ true);
+            if (!android.multiuser.Flags.userFilterRefactoring()) {
+                return UserManagerService.this.getUsersInternal(/* excludePartial= */ true,
+                        excludeDying, /* resolveNullNames= */ true);
+            }
+            var filter = getFilter(excludeDying);
+            return getUsers(filter);
+        }
+
+        @Override
+        public List<UserInfo> getUsers(UserFilter userFilter) {
+            return UserManagerService.this.getUsers(userFilter, mNameConverter);
         }
 
         @Override
@@ -8880,6 +9196,42 @@ public class UserManagerService extends IUserManager.Stub {
                 }
             }
         }
+
+        @Override
+        public boolean isHeadlessSystemUserMode() {
+            return UserManagerService.this.isHeadlessSystemUserMode();
+        }
+
+        @Override
+        public boolean isActivityAllowlistedForHsu(ComponentName activity) {
+            Preconditions.checkState(mHam != null, "Called when flag is disabled or device is not "
+                    + "HSUM");
+            return mHam.isActivityAllowed(activity);
+        }
+
+        @Override
+        public void logLaunchedHsuActivity(ComponentName activity) {
+            mNonComplianceLogger.logLaunchedHsuActivity(activity);
+        }
+
+        @Override
+        public void logBlockedHsuActivity(ComponentName activity) {
+            mNonComplianceLogger.logBlockedHsuActivity(activity);
+        }
+
+        @Override
+        public void logShownHsuNotification(StatusBarNotification sbn) {
+            mNonComplianceLogger.logShownHsuNotification(sbn);
+        }
+
+        @Override
+        public void setDeviceOwnerUserId(int userId) {
+            Slogf.i(LOG_TAG, "Setting device owner user as %d", userId);
+            synchronized (mUsersLock) {
+                mDeviceOwnerUserId = userId;
+            }
+        }
+
     } // class LocalService
 
     /**
@@ -8887,7 +9239,7 @@ public class UserManagerService extends IUserManager.Stub {
      * @param restriction restrictions to check
      * @param userId id of the user
      *
-     * @throws {@link android.os.UserManager.CheckedUserOperationException} if user has any of the
+     * @throws android.os.UserManager.CheckedUserOperationException if user has any of the
      *      specified restrictions
      */
     private void enforceUserRestriction(String restriction, @UserIdInt int userId, String message)
@@ -8975,17 +9327,6 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     /**
-     * Formerly: Checks if the given user has a profile associated with it.
-     * Now: Just throws. Do not use it.
-     * @param userId The parent user (passing in a profile user is not supported)
-     * @deprecated
-     */
-    boolean hasProfile(@UserIdInt int userId) {
-        // TODO(b/332664521): Remove this method entirely. It is no longer used.
-        throw new UnsupportedOperationException();
-    }
-
-    /**
      * Checks if the calling package name matches with the calling UID, throw
      * {@link SecurityException} if not.
      */
@@ -9053,12 +9394,31 @@ public class UserManagerService extends IUserManager.Stub {
         return userInfo.isMain() && isMainUserPermanentAdmin();
     }
 
+    @Override
+    public @UserManager.RemoveResult int getUserRemovability(@UserIdInt int userId) {
+        if (!Flags.disallowRemovingLastAdminUser()) {
+            throw new UnsupportedOperationException(
+                    "aconfig flag android.multiuser.disallow_removing_last_admin_user not enabled");
+        }
+        checkQueryOrCreateUsersPermission("get user removability");
+        synchronized (mUsersLock) {
+            return getUserRemovabilityLockedLU(userId);
+        }
+    }
+
     /**
      * Returns true if we must not delete this user or revoke its admin status because it is the
      * last admin user on a device that requires there to always be at least one admin.
      */
     @GuardedBy("mUsersLock")
-    private boolean isNonRemovableLastAdminUserLU(UserInfo userInfo) {
+    @VisibleForTesting
+    boolean isNonRemovableLastAdminUserLU(UserInfo userInfo) {
+        var dpmi = getDevicePolicyManagerInternal();
+        if (dpmi != null && dpmi.isDeviceOrganizationManaged()) {
+            // If device is organization managed, then the user is not a non-removable last admin,
+            // because the device can still be managed remotely without the last admin.
+            return false;
+        }
         return android.multiuser.Flags.disallowRemovingLastAdminUser()
                 && getContextResources().getBoolean(R.bool.config_disallowRemovingLastAdminUser)
                 // For HSUM, the headless system user is currently flagged as an admin user now.
@@ -9075,20 +9435,11 @@ public class UserManagerService extends IUserManager.Stub {
         if (!userInfo.isAdmin() || !userInfo.isFull()) {
             return false;
         }
-        final int userSize = mUsers.size();
-        for (int i = 0; i < userSize; i++) {
-            final UserInfo otherUserInfo = mUsers.valueAt(i).info;
-            if (otherUserInfo.partial || mRemovingUserIds.get(otherUserInfo.id)
-                    || otherUserInfo.preCreated) {
-                continue;
-            }
-            if (userInfo.id != otherUserInfo.id && otherUserInfo.isAdmin()
-                    && otherUserInfo.isFull()) {
-                return false;
-            }
-        }
-
-        return true;
+        var filter = UserFilter.builder()
+                .setRequiredFlags(UserInfo.FLAG_FULL | UserInfo.FLAG_ADMIN)
+                .excludeUserId(userInfo.id)
+                .build();
+        return getNumberOfUsers(filter) == 0;
     }
 
     /** Must be public otherwise can't be mocked. */
@@ -9140,7 +9491,10 @@ public class UserManagerService extends IUserManager.Stub {
      * @return whether it succeeded.
      */
     boolean setMainUser(@UserIdInt int userId) {
-        if (!android.multiuser.Flags.demoteMainUser()) {
+        // NOTE: ideally it should check just for demoteMainUser(), but then it wouldn't allow the
+        // main user to be promoted when it's needed while rolling back this flag
+        if (!android.multiuser.Flags.demoteMainUser()
+                && !android.multiuser.Flags.createInitialUser()) {
             Slogf.d(LOG_TAG, "setMainUser(%d): ignoring because flag is disabled", userId);
             return false;
         }

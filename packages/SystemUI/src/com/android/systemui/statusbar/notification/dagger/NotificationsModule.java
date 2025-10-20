@@ -27,7 +27,6 @@ import com.android.settingslib.notification.data.repository.ZenModeRepositoryImp
 import com.android.settingslib.notification.domain.interactor.NotificationsSoundPolicyInteractor;
 import com.android.settingslib.notification.modes.ZenModesBackend;
 import com.android.systemui.CoreStartable;
-import com.android.systemui.Flags;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.Background;
@@ -343,19 +342,12 @@ public interface NotificationsModule {
     ShowPromotedNotificationsOnAOD provideShowPromotedNotificationsOnAOD(
             ShowPromotedNotificationsOnAODImpl impl);
     /**
-     * Provide an implementation of {@link MagneticNotificationRowManager} based on its flag.
+     * Provides the implementation of {@link MagneticNotificationRowManager}.
      */
-    @Provides
+    @Binds
     @SysUISingleton
-    static MagneticNotificationRowManager provideMagneticNotificationRowManager(
-            Provider<MagneticNotificationRowManagerImpl> implProvider
-    ) {
-        if (Flags.magneticNotificationSwipes()) {
-            return implProvider.get();
-        } else {
-            return MagneticNotificationRowManager.getEmpty();
-        }
-    }
+    MagneticNotificationRowManager provideMagneticNotificationRowManager(
+            MagneticNotificationRowManagerImpl impl);
 
     /** Provides an instance of {@link EntryAdapterFactory} */
     @Binds

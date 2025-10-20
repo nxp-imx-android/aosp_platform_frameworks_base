@@ -41,19 +41,19 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Désinstaller les mises à jour de l\'appli?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Désinstaller les mises à jour de l\'appli pour tous les utilisateurs?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Désinstaller cette appli pour tous les utilisateurs?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"Désinstaller cette appli pour l\'utilisateur « <xliff:g id="USER_NAME">%1$s</xliff:g> »?"</string>
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Désinstaller cette appli pour l\'utilisateur « <xliff:g id="USER_NAME">%1$s</xliff:g> »?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Appli non trouvée"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Impossible de désinstaller cette appli"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Appli non désinstallée"</string>
     <string name="title_archive" msgid="2876455228073419830">"Archiver cette appli?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Archiver cette appli pour tous les utilisateurs?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"Archiver cette appli pour l\'utilisateur « <xliff:g id="USER_NAME">%1$s</xliff:g> »?"</string>
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Archiver cette appli pour l\'utilisateur « <xliff:g id="USER_NAME">%1$s</xliff:g> »?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Restaurer cette appli?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Action requise"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Espace de stockage insuffisant"</string>
     <string name="title_restore_error_offline" msgid="4611160277876184886">"Vous êtes hors ligne"</string>
-    <string name="title_restore_error_installer_disabled" msgid="6955341343521073762">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> est désactivé"</string>
-    <string name="title_restore_error_installer_absent" msgid="4650702260526161948">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> n\'est pas installée"</string>
+    <string name="title_restore_error_installer_disabled" msgid="6955341343521073762">"L\'appli <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> est désactivée"</string>
+    <string name="title_restore_error_installer_absent" msgid="4650702260526161948">"L\'appli <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> n\'est pas installée"</string>
     <string name="title_restore_error_generic" msgid="3675732737839176301">"Un problème est survenu"</string>
     <string name="message_update_owner_change" product="tablet" msgid="721928859405955082">"Cette appli reçoit normalement des mises à jour de &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. En effectuant une mise à jour à partir d\'une source différente, vous pourriez recevoir des mises à jour futures à partir de n\'importe quelle source sur votre tablette. Le fonctionnement de l\'appli peut en être modifié."</string>
     <string name="message_update_owner_change" product="tv" msgid="7398850682198100493">"Cette appli reçoit normalement des mises à jour de &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. En effectuant une mise à jour à partir d\'une source différente, vous pourriez recevoir des mises à jour futures à partir de n\'importe quelle source sur votre téléviseur. Le fonctionnement de l\'appli peut en être modifié."</string>
@@ -62,7 +62,7 @@
     <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"À des fins de sécurité, l\'installation d\'applis inconnues provenant de cette source n\'est pas autorisée sur ce téléviseur. Vous pouvez modifier cette option dans les paramètres."</string>
     <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"À des fins de sécurité, l\'installation d\'applis inconnues provenant de cette source n\'est pas autorisée sur cette montre. Vous pouvez modifier cette option dans les paramètres."</string>
     <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"À des fins de sécurité, l\'installation d\'applis inconnues provenant de cette source n\'est pas autorisée sur ce téléphone. Vous pouvez modifier cette option dans les paramètres."</string>
-    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"Votre téléphone et vos données personnelles sont plus vulnérables aux attaques provenant d\'applis inconnues. En installant cette appli, vous acceptez d\'être l\'unique responsable de tout dommage causé à votre téléphone ou de toute perte de données pouvant découler de l\'utilisation de telles applis."</string>
+    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"Votre téléphone et vos données personnelles sont plus vulnérables aux attaques provenant d\'applis inconnues. En installant cette appli, vous acceptez d\'être responsable de tout dommage causé à votre téléphone ou de toute perte de données pouvant découler de l\'utilisation de cette appli."</string>
     <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"Votre tablette et vos données personnelles sont plus vulnérables aux attaques provenant d\'applis inconnues. En installant cette appli, vous acceptez d\'être l\'unique responsable de tout dommage causé à votre tablette ou de toute perte de données pouvant découler de l\'utilisation de telles applis."</string>
     <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"Votre téléviseur et vos données personnelles sont plus vulnérables aux attaques d\'applis inconnues. En installant cette appli, vous acceptez d\'être l\'unique responsable de tout dommage causé à votre téléviseur ou de toute perte de données pouvant découler de son utilisation."</string>
     <string name="message_install_failed_blocked" msgid="8289588872577100349">"L\'installation de cette appli a été bloquée"</string>
@@ -76,7 +76,7 @@
     <string name="message_uninstall_with_clone_instance" msgid="12594156305221478">"Un clone de cette appli existe également et sera supprimé"</string>
     <string name="message_delete_clone_app" msgid="6632017049227330363">"Cette appli est un clone de <xliff:g id="APP_LABEL">%1$s</xliff:g>"</string>
     <string name="message_uninstall_updates_system_app" msgid="1246198093614610171">"Cette appli sera remplacée par la version d\'usine. Toutes les données de l\'appli seront retirées."</string>
-    <string name="message_uninstall_updates_system_app_all_users" msgid="1659615085602508659">"Cette appli sera remplacée par la version d\'usine pour tous les utilisateurs de l\'appareil. Toutes les données de l\'appli seront retirées."</string>
+    <string name="message_uninstall_updates_system_app_all_users" msgid="1659615085602508659">"Cette appli sera remplacée par la version par défaut pour tous les utilisateurs de l\'appareil. Toutes les données de l\'appli seront retirées."</string>
     <string name="message_uninstall_work_profile" msgid="224587253086750763">"Cette appli sera désinstallée de votre profil professionnel"</string>
     <string name="message_uninstall_private_space" msgid="2815872500665141251">"Cette appli sera désinstallée de votre espace privé"</string>
     <string name="message_uninstall_app_not_found" msgid="1228396155188846293">"Cette appli ne figure pas dans la liste des applis installées, ou elle a déjà été désinstallée"</string>
@@ -96,29 +96,21 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Pour restaurer cette appli, vous devrez installer <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Un problème est survenu lors de la restauration de cette appli"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> fait partie de l\'appli suivante : <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Cette appli a été bloquée. Afin d\'assurer la sécurité de votre appareil et de vos données, seules les applis de développeurs vérifiés peuvent être installées.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Cette appli n\'a pas été mise à jour. Afin d\'assurer la sécurité de votre appareil et de vos données, seules les mises à jour de développeurs vérifiés peuvent être installées.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Cette appli n\'a pas été installée. Les applis provenant de développeurs non vérifiés peuvent être dangereuses.&lt;/p&gt; &lt;p&gt;Une connexion Internet est requise pour vérifier le développeur d\'applis. Vérifiez votre connexion, puis réessayez l\'installation. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Cette appli n\'a pas été mise à jour. Les mises à jour provenant de développeurs non vérifiés peuvent être dangereuses.&lt;/p&gt; &lt;p&gt;Une connexion Internet est requise pour vérifier le développeur d\'applis. Vérifiez votre connexion, puis réessayez la mise à jour. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Un problème est survenu lors de la vérification du développeur de cette appli. Les applis provenant de développeurs non vérifiés peuvent être dangereuses; l\'appli n\'a donc pas été installée.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Un problème est survenu lors de la vérification du développeur de cette appli. Les mises à jour provenant de développeurs non vérifiés peuvent être dangereuses; l\'appli n\'a donc pas été mise à jour.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Cette appli a été bloquée, car un problème est survenu lors de la vérification du développeur. Afin d\'assurer la sécurité de votre appareil et de vos données, seules les applis de développeurs vérifiés peuvent être installées.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;Cette appli n\'a pas été mise à jour, car un problème est survenu lors de la vérification du développeur. Afin d\'assurer la sécurité de votre appareil et de vos données, seules les mises à jour de développeurs vérifiés peuvent être installées.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Si vous installez l\'appli sans effectuer la vérification, gardez à l\'esprit que les applis provenant de développeurs non vérifiés peuvent poser un risque pour votre appareil et vos données."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Si vous effectuez une mise à jour sans procéder à la vérification, gardez à l\'esprit que les mises à jour provenant de développeurs non vérifiés peuvent poser un risque pour votre appareil et vos données."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Développeur d\'applis non vérifié"</string>
     <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Aucune connexion Internet, impossible de vérifier le développeur d\'applis"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Impossible de vérifier le développeur d\'applis"</string>
-    <string name="install_without_verifying" msgid="5359680595440741626">"Inst. sans vér."</string>
-    <string name="update_without_verifying" msgid="2841466981431484179">"Màj sans vérif."</string>
+    <string name="install_without_verifying" msgid="5359680595440741626">"Installer sans vérifier"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"Mettre à jour sans vérifier"</string>
     <string name="button_install" msgid="7434013176505680162">"Installer"</string>
     <string name="button_update" msgid="3046719350226327526">"Mettre à jour"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Mettre à jour malgré tout"</string>
@@ -135,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Restaurer"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Désinstaller les mises à jour"</string>
     <string name="button_settings" msgid="3837571366246132287">"Paramètres"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Réessayer"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Clone <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

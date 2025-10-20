@@ -16,10 +16,13 @@
 
 package com.android.systemui.communal.ui.viewmodel
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserActionResult
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
@@ -74,8 +77,7 @@ class CommunalUserActionsViewModelTest : SysuiTestCase() {
             setUpState(isShadeTouchable = true, isDeviceUnlocked = false)
             assertThat(actions).isNotEmpty()
             assertThat(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
-            assertThat(actions?.get(Swipe.Up))
-                .isEqualTo(UserActionResult.ShowOverlay(Overlays.Bouncer))
+            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Lockscreen))
             assertThat(actions?.get(Swipe.Down)).isEqualTo(UserActionResult(Scenes.Shade))
 
             setUpState(isShadeTouchable = false, isDeviceUnlocked = false)
@@ -89,6 +91,7 @@ class CommunalUserActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun actions_splitShade() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
@@ -97,8 +100,7 @@ class CommunalUserActionsViewModelTest : SysuiTestCase() {
             setUpState(isShadeTouchable = true, isDeviceUnlocked = false)
             assertThat(actions).isNotEmpty()
             assertThat(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
-            assertThat(actions?.get(Swipe.Up))
-                .isEqualTo(UserActionResult.ShowOverlay(Overlays.Bouncer))
+            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Lockscreen))
             assertThat(actions?.get(Swipe.Down))
                 .isEqualTo(UserActionResult(Scenes.Shade, ToSplitShade))
 
@@ -114,6 +116,7 @@ class CommunalUserActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun actions_dualShade() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
@@ -122,8 +125,7 @@ class CommunalUserActionsViewModelTest : SysuiTestCase() {
             setUpState(isShadeTouchable = true, isDeviceUnlocked = false)
             assertThat(actions).isNotEmpty()
             assertThat(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
-            assertThat(actions?.get(Swipe.Up))
-                .isEqualTo(UserActionResult.ShowOverlay(Overlays.Bouncer))
+            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Lockscreen))
             assertThat(actions?.get(Swipe.Down))
                 .isEqualTo(UserActionResult.ShowOverlay(Overlays.NotificationsShade))
 

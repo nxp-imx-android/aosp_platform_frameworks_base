@@ -30,6 +30,7 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_BOTTOM
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_LEFT
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_RIGHT
@@ -68,6 +69,8 @@ class DragPositioningCallbackUtilityTest {
 
     @Mock private lateinit var mockResources: Resources
 
+    @Mock private lateinit var mockPinnedController: PinnedLayerController
+
     @Before
     fun setup() {
         MockitoAnnotations.initMocks(this)
@@ -82,6 +85,7 @@ class DragPositioningCallbackUtilityTest {
         initializeTaskInfo()
         whenever(mockWindowDecoration.display).thenReturn(mockDisplay)
         whenever(mockWindowDecoration.decorWindowContext).thenReturn(mockContext)
+        whenever(mockWindowDecoration.pinnedLayerController).thenReturn(mockPinnedController)
 
         mockWindowDecoration.taskInfo.isResizeable = true
         whenever(mockContext.resources).thenReturn(mockResources)
@@ -867,6 +871,72 @@ class DragPositioningCallbackUtilityTest {
         assertThat(repositionTaskBounds.top).isEqualTo(EXCEEDS_MAX_WIDTH_BOUNDS.top)
         assertThat(repositionTaskBounds.right).isEqualTo(EXCEEDS_MAX_WIDTH_BOUNDS.right)
         assertThat(repositionTaskBounds.bottom).isEqualTo(EXCEEDS_MAX_WIDTH_BOUNDS.bottom)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE)
+    fun testPinnedLayerConstraints_allowedUpToLimit() {
+        whenever(mockPinnedController.isPinned(TASK_ID)).thenReturn(true)
+
+        val startingPoint =
+            PointF(STARTING_BOUNDS.right.toFloat(), STARTING_BOUNDS.bottom.toFloat())
+        val repositionTaskBounds = Rect(STARTING_BOUNDS)
+
+        val limitRight = STABLE_BOUNDS.width() * 0.7f
+        val limitBottom = STABLE_BOUNDS.height() * 0.7f
+
+        val delta =
+            DragPositioningCallbackUtility.calculateDelta(limitRight, limitBottom, startingPoint)
+        assertTrue(
+            DragPositioningCallbackUtility.changeBounds(
+                CTRL_TYPE_RIGHT or CTRL_TYPE_BOTTOM,
+                repositionTaskBounds,
+                STARTING_BOUNDS,
+                STABLE_BOUNDS,
+                delta,
+                mockDisplayController,
+                mockWindowDecoration,
+                /* canEnterDesktopMode= */ false,
+            )
+        )
+        assertThat(repositionTaskBounds.left).isEqualTo(STARTING_BOUNDS.left)
+        assertThat(repositionTaskBounds.top).isEqualTo(STARTING_BOUNDS.top)
+        assertThat(repositionTaskBounds.right).isEqualTo(limitRight.toInt())
+        assertThat(repositionTaskBounds.bottom).isEqualTo(limitBottom.toInt())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE)
+    fun testPinnedLayerConstraints_stopsAtLimit() {
+        whenever(mockPinnedController.isPinned(TASK_ID)).thenReturn(true)
+
+        val limitRight = STABLE_BOUNDS.width() * 0.8f
+        val limitBottom = STABLE_BOUNDS.height() * 0.8f
+
+        val repositionTaskBounds = Rect(0, 0, limitRight.toInt(), limitBottom.toInt())
+        val startingPoint = PointF(limitRight, limitBottom)
+
+        val delta =
+            DragPositioningCallbackUtility.calculateDelta(
+                limitRight + 10,
+                limitBottom + 10,
+                startingPoint,
+            )
+
+        DragPositioningCallbackUtility.changeBounds(
+            CTRL_TYPE_RIGHT or CTRL_TYPE_BOTTOM,
+            repositionTaskBounds,
+            repositionTaskBounds,
+            STABLE_BOUNDS,
+            delta,
+            mockDisplayController,
+            mockWindowDecoration,
+            /* canEnterDesktopMode= */ false,
+        )
+        assertThat(repositionTaskBounds.left).isEqualTo(0)
+        assertThat(repositionTaskBounds.top).isEqualTo(0)
+        assertThat(repositionTaskBounds.right).isEqualTo(limitRight.toInt())
+        assertThat(repositionTaskBounds.bottom).isEqualTo(limitBottom.toInt())
     }
 
     private fun initializeTaskInfo(taskMinWidth: Int = MIN_WIDTH, taskMinHeight: Int = MIN_HEIGHT) {

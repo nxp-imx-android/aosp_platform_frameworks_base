@@ -26,8 +26,15 @@ import static android.media.RoutingSessionInfo.TRANSFER_REASON_APP;
 import static android.media.RoutingSessionInfo.TRANSFER_REASON_FALLBACK;
 import static android.media.RoutingSessionInfo.TRANSFER_REASON_SYSTEM_REQUEST;
 
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SYSTEM_ROUTING_SESSION;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_DESELECT_ROUTE;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_RELEASE_SESSION;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STARTED;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STOPPED;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SELECT_ROUTE;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_TRANSFER_TO_ROUTE;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_UNSPECIFIED;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_FAILED_TO_REROUTE_SYSTEM_MEDIA;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_INVALID_COMMAND;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_NETWORK_ERROR;
@@ -41,14 +48,17 @@ import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORT
 import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__ENTRY_POINT__ENTRY_POINT_SYSTEM_MEDIA_CONTROLS;
 import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__ENTRY_POINT__ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER;
 import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__ENTRY_POINT__ENTRY_POINT_TV_OUTPUT_SWITCHER;
+import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__ENTRY_POINT__ENTRY_POINT_UNSPECIFIED;
 import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_APP;
 import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_FALLBACK;
 import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_SYSTEM_REQUEST;
 import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_UNSPECIFIED;
 
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.media.MediaRoute2ProviderService;
+import android.media.MediaRouter2;
 import android.media.RouteListingPreference;
 import android.media.RoutingChangeInfo;
 import android.media.RoutingChangeInfo.EntryPoint;
@@ -63,6 +73,10 @@ import android.util.Slog;
 import com.android.internal.annotations.VisibleForTesting;
 
 import java.io.PrintWriter;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Logs metrics for MediaRouter2.
@@ -70,10 +84,48 @@ import java.io.PrintWriter;
  * @hide
  */
 final class MediaRouterMetricLogger {
+    public static final int EVENT_TYPE_UNSPECIFIED = 0;
+    public static final int EVENT_TYPE_CREATE_SESSION = 1;
+    public static final int EVENT_TYPE_CREATE_SYSTEM_ROUTING_SESSION = 2;
+    public static final int EVENT_TYPE_RELEASE_SESSION = 3;
+    public static final int EVENT_TYPE_SELECT_ROUTE = 4;
+    public static final int EVENT_TYPE_DESELECT_ROUTE = 5;
+    public static final int EVENT_TYPE_TRANSFER_TO_ROUTE = 6;
+    public static final int EVENT_TYPE_SCANNING_STARTED = 7;
+    public static final int EVENT_TYPE_SCANNING_STOPPED = 8;
+
+    @IntDef(
+            prefix = "EVENT_TYPE",
+            value = {
+                    EVENT_TYPE_UNSPECIFIED,
+                    EVENT_TYPE_CREATE_SESSION,
+                    EVENT_TYPE_CREATE_SYSTEM_ROUTING_SESSION,
+                    EVENT_TYPE_RELEASE_SESSION,
+                    EVENT_TYPE_SELECT_ROUTE,
+                    EVENT_TYPE_DESELECT_ROUTE,
+                    EVENT_TYPE_TRANSFER_TO_ROUTE,
+                    EVENT_TYPE_SCANNING_STARTED,
+                    EVENT_TYPE_SCANNING_STOPPED
+            })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface EventType {}
+
     private static final String TAG = "MediaRouterMetricLogger";
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
     private static final int REQUEST_INFO_CACHE_CAPACITY = 100;
     private static final int API_COUNT_CACHE_CAPACITY = 20;
+
+    /** Corresponds to {@link MediaRouter2#setDeviceSuggestions calls } */
+    private static final int SUGGESTION_INTERACTION_TYPE_UPDATE = 0;
+
+    /** Corresponds to {@link MediaRouter2#notifyDeviceSuggestionRequested calls } */
+    private static final int SUGGESTION_INTERACTION_TYPE_REQUEST = 1;
+
+    @IntDef(
+            prefix = "SUGGESTION_INTERACTION_TYPE",
+            value = {SUGGESTION_INTERACTION_TYPE_UPDATE, SUGGESTION_INTERACTION_TYPE_REQUEST})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface SuggestionInteractionType {}
 
     /** LRU cache to store request info. */
     private final EvictionCallbackLruCache<Long, RequestInfo> mRequestInfoCache;
@@ -90,6 +142,13 @@ final class MediaRouterMetricLogger {
      */
     private final EvictionCallbackLruCache<Integer, RlpCount> mRlpCountCache;
 
+    /**
+     * LRU cache to store counts of device suggestion calls for a target and suggesting package
+     * pair.
+     */
+    private final EvictionCallbackLruCache<PackagePair, DeviceSuggestionsCount>
+            mDeviceSuggestionsCountCache;
+
     /** Constructor for {@link MediaRouterMetricLogger}. */
     public MediaRouterMetricLogger() {
         mRequestInfoCache =
@@ -104,6 +163,9 @@ final class MediaRouterMetricLogger {
         mRlpCountCache =
                 new EvictionCallbackLruCache<>(
                         API_COUNT_CACHE_CAPACITY, new OnRlpSuggestionCountEvictedListener());
+        mDeviceSuggestionsCountCache =
+                new EvictionCallbackLruCache<>(
+                        API_COUNT_CACHE_CAPACITY, new OnDeviceSuggestionsCountEvictedListener());
     }
 
     /**
@@ -137,10 +199,12 @@ final class MediaRouterMetricLogger {
      * Adds a new request info to the cache.
      *
      * @param uniqueRequestId The unique request id.
-     * @param eventType The event type.
+     * @param eventType The routing event type.
+     * @param routingChangeInfo The routing change request information.
      */
-    public void addRequestInfo(long uniqueRequestId, int eventType) {
-        RequestInfo requestInfo = new RequestInfo(uniqueRequestId, eventType);
+    public void addRequestInfo(
+            long uniqueRequestId, @EventType int eventType, RoutingChangeInfo routingChangeInfo) {
+        RequestInfo requestInfo = new RequestInfo(uniqueRequestId, eventType, routingChangeInfo);
         mRequestInfoCache.put(requestInfo.mUniqueRequestId, requestInfo);
     }
 
@@ -149,27 +213,33 @@ final class MediaRouterMetricLogger {
      *
      * @param uniqueRequestId The unique request id.
      */
-    public void removeRequestInfo(long uniqueRequestId) {
+    @VisibleForTesting
+    /* package */ void removeRequestInfo(long uniqueRequestId) {
         mRequestInfoCache.remove(uniqueRequestId);
     }
 
     /**
      * Logs an operation failure.
      *
-     * @param eventType The event type.
+     * @param eventType The routing event type.
      * @param result The result of the operation.
+     * @param routingChangeInfo The routing change request information.
      */
-    public void logOperationFailure(int eventType, int result) {
-        logMediaRouterEvent(eventType, result);
+    public void logOperationFailure(
+            @EventType int eventType, int result, RoutingChangeInfo routingChangeInfo) {
+        logMediaRouterEvent(eventType, result, routingChangeInfo);
     }
 
     /**
      * Logs an operation triggered.
      *
-     * @param eventType The event type.
+     * @param eventType The routing event type.
+     * @param result The result of the operation.
+     * @param routingChangeInfo The routing change request information.
      */
-    public void logOperationTriggered(int eventType, int result) {
-        logMediaRouterEvent(eventType, result);
+    public void logOperationTriggered(
+            @EventType int eventType, int result, RoutingChangeInfo routingChangeInfo) {
+        logMediaRouterEvent(eventType, result, routingChangeInfo);
     }
 
     /**
@@ -188,8 +258,8 @@ final class MediaRouterMetricLogger {
             return;
         }
 
-        int eventType = requestInfo.mEventType;
-        logMediaRouterEvent(eventType, result);
+        @EventType int eventType = requestInfo.mEventType;
+        logMediaRouterEvent(eventType, result, requestInfo.mRoutingChangeInfo);
 
         removeRequestInfo(uniqueRequestId);
     }
@@ -245,6 +315,9 @@ final class MediaRouterMetricLogger {
                         routingSessionInfo.isSystemSession(),
                         routingSessionInfo.getTransferReason(),
                         routingChangeInfo.isSuggested(),
+                        routingChangeInfo.isSuggestedByRlp(),
+                        routingChangeInfo.isSuggestedByMediaApp(),
+                        routingChangeInfo.isSuggestedByAnotherApp(),
                         getElapsedRealTime());
         mOngoingRoutingChangeCache.put(routingSessionInfo.getOriginalId(), ongoingRoutingChange);
         mRoutingChangeInfoCache.remove(uniqueRequestId);
@@ -269,12 +342,13 @@ final class MediaRouterMetricLogger {
                     TextUtils.formatSimple(
                             "notifySessionEnd | EntryPoint: %d, ClientPackageUid: %d,"
                                     + " IsSystemSession: %b, TransferReason: %d, IsSuggested: %b,"
-                                    + " SessionLengthInMillis: %d",
+                                    + " SuggestionProviders: %s, SessionLengthInMillis: %d",
                             ongoingRoutingChange.entryPoint,
                             ongoingRoutingChange.clientPackageUid,
                             ongoingRoutingChange.isSystemSession,
                             ongoingRoutingChange.transferReason,
                             ongoingRoutingChange.isSuggested,
+                            ongoingRoutingChange.getSuggestionProvidersDebugString(),
                             sessionLengthInMillis));
         }
 
@@ -285,7 +359,10 @@ final class MediaRouterMetricLogger {
                 ongoingRoutingChange.isSystemSession,
                 convertTransferReasonForLogging(ongoingRoutingChange.transferReason),
                 ongoingRoutingChange.isSuggested,
-                sessionLengthInMillis);
+                sessionLengthInMillis,
+                ongoingRoutingChange.isSuggestedByRlp,
+                ongoingRoutingChange.isSuggestedByMediaApp,
+                ongoingRoutingChange.isSuggestedByAnotherApp);
 
         mOngoingRoutingChangeCache.remove(sessionId);
     }
@@ -317,6 +394,57 @@ final class MediaRouterMetricLogger {
     }
 
     /**
+     * Increments the count of device suggestion update calls for the target and suggesting package
+     * pair.
+     *
+     * @param targetPackageUid Uid of the package for which devices are suggested.
+     * @param suggestingPackageUid Uid of the package suggesting the devices.
+     */
+    public void notifyDeviceSuggestionsUpdated(int targetPackageUid, int suggestingPackageUid) {
+        notifyDeviceSuggestionInteracted(
+                targetPackageUid, suggestingPackageUid, SUGGESTION_INTERACTION_TYPE_UPDATE);
+    }
+
+    /**
+     * Increments the count of device suggestion request calls for the target and suggesting package
+     * pair.
+     *
+     * @param targetPackageUid Uid of the package for which devices are suggested.
+     * @param suggestingPackageUid Uid of the package suggesting the devices.
+     */
+    public void notifyDeviceSuggestionsRequested(int targetPackageUid, int suggestingPackageUid) {
+        notifyDeviceSuggestionInteracted(
+                targetPackageUid, suggestingPackageUid, SUGGESTION_INTERACTION_TYPE_REQUEST);
+    }
+
+    private void notifyDeviceSuggestionInteracted(
+            int targetPackageUid,
+            int suggestingPackageUid,
+            @SuggestionInteractionType int suggestionInteractionType) {
+        PackagePair packagePair = new PackagePair(targetPackageUid, suggestingPackageUid);
+        DeviceSuggestionsCount deviceSuggestionsCount =
+                mDeviceSuggestionsCountCache.get(packagePair);
+        long updateSuggestionsCount = 0;
+        long requestSuggestionsCount = 0;
+        if (deviceSuggestionsCount != null) {
+            updateSuggestionsCount = deviceSuggestionsCount.updateSuggestionsCount;
+            requestSuggestionsCount = deviceSuggestionsCount.requestSuggestionsCount;
+        }
+
+        switch (suggestionInteractionType) {
+            case SUGGESTION_INTERACTION_TYPE_UPDATE:
+                updateSuggestionsCount++;
+                break;
+            case SUGGESTION_INTERACTION_TYPE_REQUEST:
+                requestSuggestionsCount++;
+                break;
+        }
+        mDeviceSuggestionsCountCache.put(
+                packagePair,
+                new DeviceSuggestionsCount(updateSuggestionsCount, requestSuggestionsCount));
+    }
+
+    /**
      * This is called when a {@link android.media.MediaRouter2} instance is unregistered. It takes
      * care of logging metrics aggregated over the lifecycle of the {@link
      * android.media.MediaRouter2} instance.
@@ -325,12 +453,8 @@ final class MediaRouterMetricLogger {
      *     android.media.MediaRouter2} instance.
      */
     public void notifyRouterUnregistered(int routerPackageUid) {
-        RlpCount rlpCount = mRlpCountCache.remove(routerPackageUid);
-        if (rlpCount == null) {
-            // This helps track scenarios where MediaRouter2 is used but not RLP.
-            rlpCount = new RlpCount(0, 0);
-        }
-        logRlpCountForRouter(routerPackageUid, rlpCount);
+        logRlpCountForRouter(routerPackageUid);
+        logDeviceSuggestionsCountForRouter(routerPackageUid);
     }
 
     /**
@@ -379,6 +503,39 @@ final class MediaRouterMetricLogger {
         };
     }
 
+    /**
+     * Converts {@link EventType} to the enum defined for logging.
+     *
+     * @param eventType the routing event type.
+     * @return the event type as per the enum defined for logging.
+     */
+    @VisibleForTesting
+    /* package */ static int convertEventTypeForLogging(@EventType int eventType) {
+        return switch (eventType) {
+            case EVENT_TYPE_UNSPECIFIED ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_UNSPECIFIED;
+            case EVENT_TYPE_CREATE_SESSION ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION;
+            case EVENT_TYPE_CREATE_SYSTEM_ROUTING_SESSION ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SYSTEM_ROUTING_SESSION;
+            case EVENT_TYPE_RELEASE_SESSION ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_RELEASE_SESSION;
+            case EVENT_TYPE_SELECT_ROUTE ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SELECT_ROUTE;
+            case EVENT_TYPE_DESELECT_ROUTE ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_DESELECT_ROUTE;
+            case EVENT_TYPE_TRANSFER_TO_ROUTE ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_TRANSFER_TO_ROUTE;
+            case EVENT_TYPE_SCANNING_STARTED ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STARTED;
+            case EVENT_TYPE_SCANNING_STOPPED ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STOPPED;
+            default ->
+                    throw new IllegalArgumentException(
+                            "No mapping found for the given event type: " + eventType);
+        };
+    }
+
     @VisibleForTesting
     /* package */ int getRequestInfoCacheCapacity() {
         return mRequestInfoCache.maxSize();
@@ -409,9 +566,19 @@ final class MediaRouterMetricLogger {
         return SystemClock.elapsedRealtime();
     }
 
-    private void logMediaRouterEvent(int eventType, int result) {
+    private void logMediaRouterEvent(
+            @EventType int eventType, int result, RoutingChangeInfo routingChangeInfo) {
+        int entryPoint =
+                routingChangeInfo != null
+                        ? convertEntryPointForLogging(routingChangeInfo.getEntryPoint())
+                        : ROUTING_CHANGE_REPORTED__ENTRY_POINT__ENTRY_POINT_UNSPECIFIED;
+        boolean isSuggested = routingChangeInfo != null && routingChangeInfo.isSuggested();
         MediaRouterStatsLog.write(
-                MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED, eventType, result);
+                MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED,
+                convertEventTypeForLogging(eventType),
+                result,
+                entryPoint,
+                isSuggested);
 
         if (DEBUG) {
             Slog.d(TAG, "logMediaRouterEvent: " + eventType + " " + result);
@@ -421,15 +588,26 @@ final class MediaRouterMetricLogger {
     /** Logs the scanning started event. */
     private void logScanningStarted() {
         logMediaRouterEvent(
-                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STARTED,
-                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED);
+                EVENT_TYPE_SCANNING_STARTED,
+                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED,
+                /* routingChangeInfo= */ null);
     }
 
     /** Logs the scanning stopped event. */
     private void logScanningStopped() {
         logMediaRouterEvent(
-                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STOPPED,
-                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED);
+                EVENT_TYPE_SCANNING_STOPPED,
+                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED,
+                /* routingChangeInfo= */ null);
+    }
+
+    private void logRlpCountForRouter(int routerPackageUid) {
+        RlpCount rlpCount = mRlpCountCache.remove(routerPackageUid);
+        if (rlpCount == null) {
+            // This helps track scenarios where MediaRouter2 is used but not RLP.
+            rlpCount = new RlpCount(0, 0);
+        }
+        logRlpCountForRouter(routerPackageUid, rlpCount);
     }
 
     private void logRlpCountForRouter(int routerPackageId, RlpCount rlpCount) {
@@ -440,20 +618,45 @@ final class MediaRouterMetricLogger {
                 rlpCount.rlpWithSuggestionCount);
     }
 
+    private void logDeviceSuggestionsCountForRouter(int routerPackageUid) {
+        for (Map.Entry<PackagePair, DeviceSuggestionsCount> entry :
+                mDeviceSuggestionsCountCache.snapshot().entrySet()) {
+            if (entry.getKey().targetPackageUid == routerPackageUid) {
+                logDeviceSuggestionsAccessed(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
+    private void logDeviceSuggestionsAccessed(
+            PackagePair packagePair, DeviceSuggestionsCount deviceSuggestionsCount) {
+        MediaRouterStatsLog.write(
+                MediaRouterStatsLog.DEVICE_SUGGESTIONS_INTERACTION_REPORTED,
+                packagePair.targetPackageUid,
+                packagePair.operatingPackageUid,
+                deviceSuggestionsCount.updateSuggestionsCount,
+                deviceSuggestionsCount.requestSuggestionsCount);
+    }
+
     /** Class to store request info. */
     static class RequestInfo {
         public final long mUniqueRequestId;
-        public final int mEventType;
+        public final @EventType int mEventType;
+        public final RoutingChangeInfo mRoutingChangeInfo;
 
         /**
          * Constructor for {@link RequestInfo}.
          *
          * @param uniqueRequestId The unique request id.
-         * @param eventType The event type.
+         * @param eventType The routing event type.
+         * @param routingChangeInfo The routing change request information.
          */
-        RequestInfo(long uniqueRequestId, int eventType) {
+        RequestInfo(
+                long uniqueRequestId,
+                @EventType int eventType,
+                RoutingChangeInfo routingChangeInfo) {
             mUniqueRequestId = uniqueRequestId;
             mEventType = eventType;
+            mRoutingChangeInfo = routingChangeInfo;
         }
 
         /**
@@ -498,7 +701,9 @@ final class MediaRouterMetricLogger {
         public void onEntryEvicted(Long key, RequestInfo value) {
             Slog.d(TAG, "Evicted request info: " + value.mUniqueRequestId);
             logOperationTriggered(
-                    value.mEventType, MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED);
+                    value.mEventType,
+                    MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED,
+                    value.mRoutingChangeInfo);
         }
     }
 
@@ -528,6 +733,15 @@ final class MediaRouterMetricLogger {
         }
     }
 
+    private class OnDeviceSuggestionsCountEvictedListener
+            implements OnEntryEvictedListener<PackagePair, DeviceSuggestionsCount> {
+        @Override
+        public void onEntryEvicted(PackagePair key, DeviceSuggestionsCount value) {
+            Slog.w(TAG, "Device suggestions count evicted from cache");
+            logDeviceSuggestionsAccessed(key, value);
+        }
+    }
+
     private interface OnEntryEvictedListener<K, V> {
         void onEntryEvicted(K key, V value);
     }
@@ -539,8 +753,51 @@ final class MediaRouterMetricLogger {
             boolean isSystemSession,
             @TransferReason int transferReason,
             boolean isSuggested,
-            long startTimeInMillis) {}
+            boolean isSuggestedByRlp,
+            boolean isSuggestedByMediaApp,
+            boolean isSuggestedByAnotherApp,
+            long startTimeInMillis) {
+
+        /**
+         * Returns a human-readable representation of the suggestion provider for logging purposes.
+         */
+        public String getSuggestionProvidersDebugString() {
+            var providerStrings = new ArrayList<String>();
+            if (isSuggestedByRlp) {
+                providerStrings.add("RLP");
+            }
+            if (isSuggestedByMediaApp) {
+                providerStrings.add("MEDIA_APP");
+            }
+            if (isSuggestedByAnotherApp) {
+                providerStrings.add("ANOTHER_APP");
+            }
+            if (providerStrings.isEmpty()) {
+                return "NONE";
+            } else {
+                return String.join("|", providerStrings);
+            }
+        }
+    }
 
     /** Tracks the count of changes in route listing preference */
     private record RlpCount(long rlpTotalCount, long rlpWithSuggestionCount) {}
+
+    /** Tracks the count of device suggestion interaction. */
+    private record DeviceSuggestionsCount(
+            // Count of the number of calls made to update device suggestions.
+            long updateSuggestionsCount,
+            // Count of the number of calls made to request device suggestions.
+            long requestSuggestionsCount) {}
+
+    /**
+     * Holds a pair of uids of the target package and the operating package. For example, for device
+     * suggestions the target package would be the package for which suggestions are being made and
+     * the operating package would be the package making the suggestions.
+     */
+    private record PackagePair(
+            // The uid of the package on which the operations are being performed.
+            int targetPackageUid,
+            // The uid of the operating package.
+            int operatingPackageUid) {}
 }

@@ -33,6 +33,7 @@ import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.WindowInsetsController;
@@ -50,6 +51,7 @@ import java.util.function.Consumer;
  * @hide
  */
 public class TaskSnapshot implements Parcelable {
+    private static final String TAG = "TaskSnapshot";
     // Identifier of this snapshot
     private final long mId;
     // The elapsed real time (in nanoseconds) when this snapshot was captured or loaded from disk
@@ -103,6 +105,8 @@ public class TaskSnapshot implements Parcelable {
     public static final int REFERENCE_WRITE_TO_PARCEL = 1 << 4;
     /** This snapshot object is being used to convert resolution . */
     public static final int REFERENCE_CONVERT_RESOLUTION = 1 << 5;
+    /** This snapshot object should be update to cache at some point. */
+    public static final int REFERENCE_WILL_UPDATE_TO_CACHE = 1 << 6;
 
     @IntDef(flag = true, prefix = { "REFERENCE_" }, value = {
             REFERENCE_NONE,
@@ -111,7 +115,8 @@ public class TaskSnapshot implements Parcelable {
             REFERENCE_PERSIST,
             REFERENCE_CONTENT_SUGGESTION,
             REFERENCE_WRITE_TO_PARCEL,
-            REFERENCE_CONVERT_RESOLUTION
+            REFERENCE_CONVERT_RESOLUTION,
+            REFERENCE_WILL_UPDATE_TO_CACHE
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ReferenceFlags {}
@@ -202,6 +207,10 @@ public class TaskSnapshot implements Parcelable {
     @UnsupportedAppUsage
     @Deprecated
     public GraphicBuffer getSnapshot() {
+        if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+            Log.e(TAG, "getSnapshot is deprecated!");
+            return null;
+        }
         return GraphicBuffer.createFromHardwareBuffer(mSnapshot);
     }
 
@@ -211,6 +220,10 @@ public class TaskSnapshot implements Parcelable {
      */
     @Deprecated
     public HardwareBuffer getHardwareBuffer() {
+        if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+            Log.e(TAG, "getHardwareBuffer is deprecated!");
+            return null;
+        }
         return mSnapshot;
     }
 
@@ -514,6 +527,9 @@ public class TaskSnapshot implements Parcelable {
             mWriteToParcelCount++;
         }
         mInternalReferences |= usage;
+        if (usage == REFERENCE_CACHE) {
+            mInternalReferences &= ~REFERENCE_WILL_UPDATE_TO_CACHE;
+        }
     }
 
     /**

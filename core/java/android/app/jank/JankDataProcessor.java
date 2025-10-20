@@ -195,6 +195,11 @@ public class JankDataProcessor {
             jankStats.clearStats();
             jankStats.mActivityName = activityName;
             jankStats.mUid = appUid;
+            if (Flags.retainWidgetParameters()) {
+                jankStats.mWidgetCategory = stateData.mWidgetCategory;
+                jankStats.mWidgetId = stateData.mWidgetId;
+                jankStats.mWidgetState = stateData.mWidgetState;
+            }
             mPendingJankStats.put(stateData.mStateDataKey, jankStats);
         }
         // This state has already been accounted for

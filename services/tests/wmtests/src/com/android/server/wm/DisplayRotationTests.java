@@ -35,6 +35,7 @@ import static android.view.IWindowManager.FIXED_TO_USER_ROTATION_IF_NO_AUTO_ROTA
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.any;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.anyBoolean;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.anyInt;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.anyString;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.atLeast;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.atMost;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -53,7 +54,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.clearInvocations;
-import static org.mockito.Mockito.never;
 
 import android.app.WindowConfiguration;
 import android.content.ContentResolver;
@@ -73,7 +73,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManagerInternal;
 import android.os.SystemClock;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -81,6 +80,7 @@ import android.provider.Settings;
 import android.view.Display;
 import android.view.DisplayAddress;
 import android.view.IRotationWatcher;
+import android.view.IWindowManager;
 import android.view.Surface;
 import android.view.WindowManager;
 
@@ -249,9 +249,11 @@ public class DisplayRotationTests {
 
         freezeRotation(Surface.ROTATION_180);
 
-        verify(mockDeviceStateAutoRotateSettingController,
-                times(1)).requestAccelerometerRotationSettingChange(eq(false),
-                eq(Surface.ROTATION_180));
+        verify(mockDeviceStateAutoRotateSettingController, times(1))
+                .requestAccelerometerRotationSettingChange(
+                        /* autoRotate= */ eq(false),
+                        /* userRotation= */ eq(Surface.ROTATION_180),
+                        /* caller= */ anyString());
     }
 
     @Test
@@ -265,9 +267,11 @@ public class DisplayRotationTests {
 
         thawRotation();
 
-        verify(mockDeviceStateAutoRotateSettingController,
-                times(1)).requestAccelerometerRotationSettingChange(eq(true),
-                anyInt());
+        verify(mockDeviceStateAutoRotateSettingController, times(1))
+                .requestAccelerometerRotationSettingChange(
+                        /* autoRotate= */ eq(true),
+                        /* userRotation= */ anyInt(),
+                        /* caller= */ anyString());
     }
 
     @Test
@@ -282,9 +286,11 @@ public class DisplayRotationTests {
 
         freezeRotation(DisplayRotation.USE_CURRENT_ROTATION);
 
-        verify(mockDeviceStateAutoRotateSettingController,
-                times(1)).requestAccelerometerRotationSettingChange(eq(false),
-                eq(Surface.ROTATION_90));
+        verify(mockDeviceStateAutoRotateSettingController, times(1))
+                .requestAccelerometerRotationSettingChange(
+                        /* autoRotate= */ eq(false),
+                        /* userRotation= */ eq(Surface.ROTATION_90),
+                        /* caller= */ anyString());
     }
 
     @Test
@@ -319,8 +325,7 @@ public class DisplayRotationTests {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_REFACTOR)
-    public void createDeviceStateAutoRotateDependencies_flagEnabled_settingControllerNotNull() {
+    public void createDeviceStateAutoRotateDependencies_autoRotateAvailable_controllerNotNull() {
         final DeviceStateAutoRotateSettingController settingController =
                 createDeviceStateAutoRotateDependencies(/* isFoldable= */ true,
                         /* autoRotateEnabled= */ true, /* isDeviceStateConfigNonEmpty= */ true);
@@ -329,17 +334,6 @@ public class DisplayRotationTests {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_REFACTOR)
-    public void createDeviceStateAutoRotateDependencies_flagDisabled_settingControllerNull() {
-        final DeviceStateAutoRotateSettingController settingController =
-                createDeviceStateAutoRotateDependencies(/* isFoldable= */ true,
-                        /* autoRotateEnabled= */ true, /* isDeviceStateConfigNonEmpty= */ true);
-
-        assertNull(settingController);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_REFACTOR)
     public void createDeviceStateAutoRotateDependencies_notFoldable_settingControllerNull() {
         final DeviceStateAutoRotateSettingController settingController =
                 createDeviceStateAutoRotateDependencies(/* isFoldable= */ false,
@@ -349,7 +343,6 @@ public class DisplayRotationTests {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_REFACTOR)
     public void createDeviceStateAutoRotateDependencies_autoRotateDisabled_settingControllerNull() {
         final DeviceStateAutoRotateSettingController settingController =
                 createDeviceStateAutoRotateDependencies(/* isFoldable= */ true,
@@ -359,7 +352,6 @@ public class DisplayRotationTests {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_REFACTOR)
     public void createDeviceStateAutoRotateDependencies_dSAutoRotateConfigNull_settingControllerNull() {
         final DeviceStateAutoRotateSettingController settingController =
                 createDeviceStateAutoRotateDependencies(/* isFoldable= */ true,
@@ -1162,20 +1154,6 @@ public class DisplayRotationTests {
     }
 
     @Test
-    public void testHalfFoldOverrideDisabled_halfFolded_rotationOverrideIsNotApplied() throws Exception {
-        mBuilder.setSupportHalfFoldAutoRotateOverride(false);
-        mBuilder.build();
-        configureDisplayRotation(SCREEN_ORIENTATION_LANDSCAPE, false, false);
-        enableOrientationSensor();
-        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.OPEN);
-        freezeRotation(Surface.ROTATION_270);
-
-        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.HALF_FOLDED);
-
-        verify(mMockDisplayRotationReversionController, never()).beforeOverrideApplied(anyInt());
-    }
-
-    @Test
     public void sensorRotation_locked_halfFolded_configOff_rotationUnchanged() throws Exception {
         mBuilder.setIsFoldable(true);
         mBuilder.setSupportHalfFoldAutoRotateOverride(false);
@@ -1197,7 +1175,7 @@ public class DisplayRotationTests {
         // ... half-fold -> still no rotation
         mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.HALF_FOLDED);
         assertTrue(waitForUiHandler());
-        verify(sMockWm, never()).updateRotation(false, false);
+        verify(sMockWm).updateRotation(false, false);
         assertTrue(waitForUiHandler());
         assertEquals(Surface.ROTATION_270, mTarget.rotationForOrientation(
                 SCREEN_ORIENTATION_UNSPECIFIED, Surface.ROTATION_0));
@@ -1505,6 +1483,71 @@ public class DisplayRotationTests {
         assertFalse("Display rotation should respect app requested orientation if"
                 + " fixed to user rotation if no auto rotation.", mTarget.isFixedToUserRotation());
     }
+
+    // ====================================================
+    // Tests for laptop state auto-rotate override
+    // ====================================================
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_AUTO_ROTATE_ON_SLATE_STATE)
+    public void testUpdatesRotationWhenSensorUpdatesInLaptopStates() throws Exception {
+        mBuilder.setIsLaptop(true);
+        mBuilder.build();
+        configureDisplayRotation(SCREEN_ORIENTATION_LANDSCAPE, false, false);
+
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.LID_OPEN);
+        assertEquals(IWindowManager.FIXED_TO_USER_ROTATION_DEFAULT,
+                mTarget.getFixedToUserRotationMode());
+
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.LID_CLOSED);
+        assertEquals(IWindowManager.FIXED_TO_USER_ROTATION_DEFAULT,
+                mTarget.getFixedToUserRotationMode());
+
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.SLATE);
+        assertEquals(IWindowManager.FIXED_TO_USER_ROTATION_DISABLED,
+                mTarget.getFixedToUserRotationMode());
+
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.DOCKED);
+        assertEquals(IWindowManager.FIXED_TO_USER_ROTATION_DEFAULT,
+                mTarget.getFixedToUserRotationMode());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_AUTO_ROTATE_ON_SLATE_STATE)
+    public void testUpdateRotationOnlyInSlateState() throws Exception {
+        WindowTestsBase.setFieldValue(sMockWm, "mIsPc", true);
+
+        mBuilder.setIsLaptop(true);
+        mBuilder.build();
+        configureDisplayRotation(SCREEN_ORIENTATION_LANDSCAPE, false, false);
+
+        when(mMockDisplayPolicy.isScreenOnEarly()).thenReturn(true);
+        when(mMockDisplayPolicy.isAwake()).thenReturn(true);
+        when(mMockDisplayPolicy.isKeyguardDrawComplete()).thenReturn(true);
+        when(mMockDisplayPolicy.isWindowManagerDrawComplete()).thenReturn(true);
+
+        thawRotation();
+
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.SLATE);
+        verifyOrientationListenerRegistration(1);
+
+        // Display rotation based on sensor input is enabled in SLATE state
+        mOrientationSensorListener.onSensorChanged(createSensorEvent(Surface.ROTATION_90));
+        assertEquals(Surface.ROTATION_90, mTarget.rotationForOrientation(
+                SCREEN_ORIENTATION_UNSPECIFIED, Surface.ROTATION_0));
+
+        mOrientationSensorListener.onSensorChanged(createSensorEvent(Surface.ROTATION_0));
+        assertEquals(Surface.ROTATION_0, mTarget.rotationForOrientation(
+                SCREEN_ORIENTATION_UNSPECIFIED, Surface.ROTATION_0));
+
+        // Display rotation based on sensor input is disabled in DOCKED state
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.DOCKED);
+        mOrientationSensorListener.onSensorChanged(createSensorEvent(Surface.ROTATION_90));
+        assertEquals(Surface.ROTATION_0, mTarget.rotationForOrientation(
+                SCREEN_ORIENTATION_UNSPECIFIED, Surface.ROTATION_0));
+
+        WindowTestsBase.setFieldValue(sMockWm, "mIsPc", false);
+    }
+
     private DeviceStateAutoRotateSettingController createDeviceStateAutoRotateDependencies(
             boolean isFoldable, boolean autoRotateEnabled, boolean isDeviceStateConfigNonEmpty) {
         // init
@@ -1671,6 +1714,7 @@ public class DisplayRotationTests {
         private int mDeskDockRotation;
         private int mUndockedHdmiRotation;
         private boolean mIsFoldable;
+        private boolean mIsLaptop;
 
         private DisplayRotationBuilder setIsDefaultDisplay(boolean isDefaultDisplay) {
             mIsDefaultDisplay = isDefaultDisplay;
@@ -1727,6 +1771,11 @@ public class DisplayRotationTests {
 
         private DisplayRotationBuilder setIsFoldable(boolean value) {
             mIsFoldable = value;
+            return this;
+        }
+
+        private DisplayRotationBuilder setIsLaptop(boolean value) {
+            mIsLaptop = value;
             return this;
         }
 
@@ -1908,6 +1957,7 @@ public class DisplayRotationTests {
 
             mDeviceStateController = mock(DeviceStateController.class);
             when(mDeviceStateController.isFoldable()).thenReturn(mIsFoldable);
+            when(mDeviceStateController.isLaptop()).thenReturn(mIsLaptop);
             mMockDisplayContent.mAppCompatCameraPolicy = mock(AppCompatCameraPolicy.class);
             mTarget = new TestDisplayRotation(mMockDisplayContent, mMockDisplayAddress,
                     mMockDisplayPolicy, mMockDisplayWindowSettings, mMockContext,

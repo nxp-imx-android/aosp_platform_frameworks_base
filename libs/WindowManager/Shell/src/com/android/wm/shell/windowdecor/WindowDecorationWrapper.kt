@@ -32,6 +32,7 @@ import android.view.View.OnLongClickListener
 import android.view.View.OnTouchListener
 import android.window.DesktopExperienceFlags
 import android.window.WindowContainerTransaction
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.DragEventListener
 import com.android.wm.shell.windowdecor.DragResizeWindowGeometry.DisabledEdge
 import com.android.wm.shell.windowdecor.common.ExclusionRegionListener
@@ -130,16 +131,6 @@ private constructor(
                 else -> error("Expected Non-null window decoration")
             }
 
-    /** Returns the system's [Context]. */
-    val context: Context
-        get() =
-            when {
-                defaultWindowDecor != null -> requireDefaultWindowDecor().context
-                desktopWindowDecor != null -> requireDesktopWindowDecor().mContext
-                captionWindowDecoration != null -> requireCaptionWindowDecor().mContext
-                else -> error("Expected Non-null default or desktop window decoration")
-            }
-
     /** Returns if the task associated with the window decor is focused. */
     val isFocused: Boolean
         get() =
@@ -175,14 +166,23 @@ private constructor(
                 else -> error("Expected Non-null default or desktop window decoration")
             }
 
+    val pinnedLayerController: PinnedLayerController?
+        get() =
+            when {
+                defaultWindowDecor != null -> requireDefaultWindowDecor().pinnedLayerController
+                desktopWindowDecor != null -> null // Unsupported in this context
+                captionWindowDecoration != null -> null // Unsupported in this context
+                else -> error("Expected Non-null default or desktop window decoration")
+            }
+
     /**
      * Returns the valid drag area for this task associated with the window decor if the task can be
      * dragged. Otherwise, returns null.
      */
-    fun calculateValidDragArea() =
+    fun getValidDragArea() =
         when {
-            defaultWindowDecor != null -> requireDefaultWindowDecor().calculateValidDragArea()
-            desktopWindowDecor != null -> requireDesktopWindowDecor().calculateValidDragArea()
+            defaultWindowDecor != null -> requireDefaultWindowDecor().lastValidDragArea
+            desktopWindowDecor != null -> requireDesktopWindowDecor().lastValidDragArea
             captionWindowDecoration != null -> requireCaptionWindowDecor().calculateValidDragArea()
             else -> error("Expected Non-null window decoration")
         }
@@ -202,25 +202,6 @@ private constructor(
                 requireCaptionWindowDecor().relayout(taskInfo, isFocused, exclusionRegion)
             }
 
-            else -> error("Expected Non-null window decoration")
-        }
-
-    /**
-     * To be called when theme is changed to allow the window decor to be updated accordingly.
-     *
-     * TODO(b/437224867): Remove this workaround for "Wallpaper & Style" bug in Settings
-     */
-    fun onThemeChanged() =
-        when {
-            defaultWindowDecor != null -> {
-                requireDefaultWindowDecor().onThemeChanged()
-            }
-            desktopWindowDecor != null -> {
-                requireDesktopWindowDecor().onThemeChanged()
-            }
-            captionWindowDecoration != null -> {
-                requireCaptionWindowDecor().onThemeChanged()
-            }
             else -> error("Expected Non-null window decoration")
         }
 
@@ -263,7 +244,6 @@ private constructor(
                         hasGlobalFocus,
                         displayExclusionRegion,
                         inSyncWithTransition,
-                        /* forceReinflation= */ false,
                         taskSurface,
                     )
             }
@@ -279,7 +259,6 @@ private constructor(
                         hasGlobalFocus,
                         displayExclusionRegion,
                         inSyncWithTransition,
-                        /* forceReinflation= */ false,
                     )
             }
 
@@ -721,6 +700,35 @@ private constructor(
             defaultWindowDecor != null -> requireDefaultWindowDecor().a11yAnnounceNewFocusedWindow()
             desktopWindowDecor != null -> requireDesktopWindowDecor().a11yAnnounceNewFocusedWindow()
             else -> error("Expected Non-null default or desktop window decoration")
+        }
+
+    /**
+     * Updates last App-to-Web education request timestamp. Returns true if new request to show
+     * education has been received.
+     */
+    fun updateAppToWebEducationRequestTimestamp(
+        latestOpenInBrowserEducationTimestamp: Long
+    ): Boolean =
+        when {
+            desktopWindowDecor != null -> {
+                requireDesktopWindowDecor()
+                    .updateAppToWebEducationRequestTimestamp(latestOpenInBrowserEducationTimestamp)
+            }
+            else -> false
+        }
+
+    /** Returns [true] if browser session is available to switch from App-to-Web. */
+    fun isBrowserSessionAvailable() =
+        when {
+            desktopWindowDecor != null -> requireDesktopWindowDecor().isBrowserSessionAvailable()
+            else -> false
+        }
+
+    /** Returns [true] if captured link is available. */
+    fun isCapturedLinkAvailable() =
+        when {
+            desktopWindowDecor != null -> requireDesktopWindowDecor().isCapturedLinkAvailable
+            else -> false
         }
 
     /** Factory for [WindowDecorationWrapper]. */

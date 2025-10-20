@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,16 +85,16 @@ public class AndroidPaintContext extends PaintContext {
     RenderNode mNode = null;
     Canvas mPreviousCanvas = null;
 
-    public AndroidPaintContext(RemoteContext context, Canvas canvas) {
+    public AndroidPaintContext(@NonNull RemoteContext context, @NonNull Canvas canvas) {
         super(context);
         this.mCanvas = canvas;
     }
 
-    public Canvas getCanvas() {
+    public @NonNull Canvas getCanvas() {
         return mCanvas;
     }
 
-    public void setCanvas(Canvas canvas) {
+    public void setCanvas(@NonNull Canvas canvas) {
         this.mCanvas = mMainCanvas = canvas;
     }
 
@@ -639,14 +639,6 @@ public class AndroidPaintContext extends PaintContext {
 
                 @Override
                 public void setTypeFace(int fontType, int weight, boolean italic) {
-                    int[] type =
-                            new int[] {
-                                Typeface.NORMAL,
-                                Typeface.BOLD,
-                                Typeface.ITALIC,
-                                Typeface.BOLD_ITALIC
-                            };
-
                     switch (fontType) {
                         case PaintBundle.FONT_TYPE_DEFAULT:
                             if (weight == 400 && !italic) { // for normal case
@@ -719,7 +711,7 @@ public class AndroidPaintContext extends PaintContext {
                     mFontBuilder = new Font.Builder(new File(path));
                     mFontBuilder.setWeight(weight);
                     mFontBuilder.setSlant(
-                            (italic) ? FontStyle.FONT_SLANT_ITALIC : FontStyle.FONT_SLANT_UPRIGHT);
+                            italic ? FontStyle.FONT_SLANT_ITALIC : FontStyle.FONT_SLANT_UPRIGHT);
                     setAxis(null);
                 }
 
@@ -732,7 +724,7 @@ public class AndroidPaintContext extends PaintContext {
                     mFontBuilder = new Font.Builder(buffer);
                     mFontBuilder.setWeight(weight);
                     mFontBuilder.setSlant(
-                            (italic) ? FontStyle.FONT_SLANT_ITALIC : FontStyle.FONT_SLANT_UPRIGHT);
+                            italic ? FontStyle.FONT_SLANT_ITALIC : FontStyle.FONT_SLANT_UPRIGHT);
                     setAxis(null);
                     return mFontBuilder;
                 }
@@ -1155,6 +1147,7 @@ public class AndroidPaintContext extends PaintContext {
     private Path getPath(int id, float start, float end) {
         AndroidRemoteContext androidContext = (AndroidRemoteContext) mContext;
         Path p = (Path) androidContext.mRemoteComposeState.getPath(id);
+        int w = androidContext.mRemoteComposeState.getPathWinding(id);
         if (p != null) {
             return p;
         }
@@ -1162,6 +1155,17 @@ public class AndroidPaintContext extends PaintContext {
         float[] pathData = androidContext.mRemoteComposeState.getPathData(id);
         if (pathData != null) {
             FloatsToPath.genPath(path, pathData, start, end);
+            switch (w) {
+                case 1:
+                    path.setFillType(Path.FillType.EVEN_ODD);
+                    break;
+                case 2:
+                    path.setFillType(Path.FillType.INVERSE_EVEN_ODD);
+                    break;
+                case 3:
+                    path.setFillType(Path.FillType.INVERSE_WINDING);
+                    break;
+            }
             androidContext.mRemoteComposeState.putPath(id, path);
         }
 

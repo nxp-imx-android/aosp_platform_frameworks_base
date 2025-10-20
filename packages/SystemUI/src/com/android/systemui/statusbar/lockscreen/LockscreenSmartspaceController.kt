@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.lockscreen
 
 import android.app.ActivityOptions
 import android.app.PendingIntent
+import android.app.WallpaperManager
 import android.app.smartspace.SmartspaceConfig
 import android.app.smartspace.SmartspaceManager
 import android.app.smartspace.SmartspaceSession
@@ -38,10 +39,12 @@ import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.View
 import androidx.annotation.VisibleForTesting
+import com.android.internal.colorextraction.ColorExtractor
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.settingslib.Utils
 import com.android.systemui.Dumpable
+import com.android.systemui.colorextraction.SysuiColorExtractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -95,6 +98,7 @@ constructor(
     private val secureSettings: SecureSettings,
     private val userTracker: UserTracker,
     private val contentResolver: ContentResolver,
+    private val sysuiColorExtractor: SysuiColorExtractor,
     @ShadeDisplayAware private val configurationController: ConfigurationController,
     private val statusBarStateController: StatusBarStateController,
     private val deviceProvisionedController: DeviceProvisionedController,
@@ -159,6 +163,7 @@ constructor(
 
                 connectSession()
 
+                updateBackgroundColorFromWallpaper()
                 updateTextColorFromWallpaper()
                 statusBarStateListener.onDozeAmountChanged(0f, statusBarStateController.dozeAmount)
 
@@ -291,6 +296,13 @@ constructor(
         object : KeyguardBypassController.OnBypassStateChangedListener {
             override fun onBypassStateChanged(isEnabled: Boolean) {
                 updateBypassEnabled()
+            }
+        }
+
+    private val onColorsChangedListener =
+        ColorExtractor.OnColorsChangedListener { _, which ->
+            if (which == WallpaperManager.FLAG_LOCK) {
+                updateBackgroundColorFromWallpaper()
             }
         }
 
@@ -503,6 +515,7 @@ constructor(
             settingsObserver,
             UserHandle.USER_ALL,
         )
+        sysuiColorExtractor.addOnColorsChangedListener(onColorsChangedListener)
         configurationController.addCallback(configChangeListener)
         statusBarStateController.addCallback(statusBarStateListener)
         bypassController.registerOnBypassStateChangedListener(bypassStateChangedListener)
@@ -543,6 +556,7 @@ constructor(
         }
         userTracker.removeCallback(userTrackerCallback)
         contentResolver.unregisterContentObserver(settingsObserver)
+        sysuiColorExtractor.removeOnColorsChangedListener(onColorsChangedListener)
         configurationController.removeCallback(configChangeListener)
         statusBarStateController.removeCallback(statusBarStateListener)
         bypassController.unregisterOnBypassStateChangedListener(bypassStateChangedListener)
@@ -627,6 +641,12 @@ constructor(
                 view.setPrimaryTextColor(textColor)
             }
         }
+    }
+
+    private fun updateBackgroundColorFromWallpaper() {
+        val wallpaperColors =
+            sysuiColorExtractor.getWallpaperColors(WallpaperManager.FLAG_LOCK) ?: return
+        smartspaceViews.forEach { it.setHighContrastBackgroundColor(wallpaperColors.colorHints) }
     }
 
     private fun updateTextColorFromWallpaper() {

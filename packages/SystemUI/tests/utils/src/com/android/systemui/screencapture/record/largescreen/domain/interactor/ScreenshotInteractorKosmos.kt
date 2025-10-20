@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture.record.largescreen.domain.interactor
 
 import android.os.fakeHandler
+import com.android.internal.logging.uiEventLogger
 import com.android.internal.util.mockScreenshotHelper
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundCoroutineContext
@@ -26,10 +27,11 @@ import com.android.systemui.user.data.repository.userRepository
 val Kosmos.screenshotInteractor by
     Kosmos.Fixture {
         ScreenshotInteractor(
-            imageCapture = mockImageCapture,
-            screenshotHelper = mockScreenshotHelper,
             backgroundContext = backgroundCoroutineContext,
             backgroundHandler = fakeHandler,
+            uiEventLogger = uiEventLogger,
+            imageCapture = mockImageCapture,
+            screenshotHelper = mockScreenshotHelper,
             userRepository = userRepository,
         )
     }

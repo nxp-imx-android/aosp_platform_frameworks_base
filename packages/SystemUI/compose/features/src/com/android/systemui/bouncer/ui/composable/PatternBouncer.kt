@@ -42,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -238,48 +237,7 @@ fun PatternBouncer(
             )
         }
 
-    Box(
-        modifier =
-            modifier.fillMaxWidth().thenIf(isInputEnabled) {
-                Modifier.pointerInput(Unit) {
-                        awaitEachGesture {
-                            awaitFirstDown()
-                            viewModel.onDown()
-                        }
-                    }
-                    .pointerInput(Unit) {
-                        detectDragGestures(
-                            onDragStart = { start ->
-                                inputPosition = start
-                                viewModel.onDragStart()
-                            },
-                            onDragEnd = {
-                                inputPosition = null
-                                if (isAnimationEnabled) {
-                                    lineFadeOutAnimatables.values.forEach { animatable ->
-                                        // Launch using the longer-lived scope because we want these
-                                        // animations to proceed to completion even if the
-                                        // surrounding scope is canceled.
-                                        scope.launch { animatable.animateTo(1f) }
-                                    }
-                                }
-                                viewModel.onDragEnd()
-                            },
-                        ) { change, _ ->
-                            inputPosition = change.position
-                            change.position.minus(offset).div(scale).let {
-                                viewModel.onDrag(
-                                    xPx =
-                                        it.x -
-                                            ((size.width - dotDrawingArea.width.roundToPx()) / 2),
-                                    yPx = it.y,
-                                    containerSizePx = dotDrawingArea.width.roundToPx(),
-                                )
-                            }
-                        }
-                    }
-            }
-    ) {
+    Box(modifier = modifier.fillMaxWidth()) {
         Canvas(
             Modifier.sysuiResTag("bouncer_pattern_root")
                 .width(dotDrawingArea.width)
@@ -289,6 +247,45 @@ fun PatternBouncer(
                 .clipToBounds()
                 .align(Alignment.Center)
                 .onGloballyPositioned { coordinates -> gridCoordinates = coordinates }
+                .thenIf(isInputEnabled) {
+                    Modifier.pointerInput(Unit) {
+                            awaitEachGesture {
+                                awaitFirstDown()
+                                viewModel.onDown()
+                            }
+                        }
+                        .pointerInput(Unit) {
+                            detectDragGestures(
+                                onDragStart = { start ->
+                                    inputPosition = start
+                                    viewModel.onDragStart()
+                                },
+                                onDragEnd = {
+                                    inputPosition = null
+                                    if (isAnimationEnabled) {
+                                        lineFadeOutAnimatables.values.forEach { animatable ->
+                                            // Launch using the longer-lived scope because we want
+                                            // these animations to proceed to completion even if the
+                                            // surrounding scope is canceled.
+                                            scope.launch { animatable.animateTo(1f) }
+                                        }
+                                    }
+                                    viewModel.onDragEnd()
+                                },
+                            ) { change, _ ->
+                                inputPosition = change.position
+                                gridCoordinates?.let { coordinates ->
+                                    val positionInGrid = change.position.minus(offset)
+                                    val gridSize = scale * coordinates.size.width
+                                    viewModel.onDrag(
+                                        xPx = positionInGrid.x,
+                                        yPx = positionInGrid.y,
+                                        containerSizePx = gridSize.toInt(),
+                                    )
+                                }
+                            }
+                        }
+                }
                 .motionTestValues {
                     entryAnimationCompleted exportAs entryCompleted
                     dotAppearFadeInAnimatables.map { it.value.value } exportAs dotAppearFadeIn
@@ -385,10 +382,11 @@ fun PatternBouncer(
                             ),
                         color =
                             if (isAnimationEnabled && dot == currentDot) {
-                                activeDotColor
-                            } else {
-                                idleDotColor
-                            }.copy(alpha = checkNotNull(dotAppearFadeInAnimatables[dot]).value),
+                                    activeDotColor
+                                } else {
+                                    idleDotColor
+                                }
+                                .copy(alpha = checkNotNull(dotAppearFadeInAnimatables[dot]).value),
                         radius = dotRadius * checkNotNull(dotScalingAnimatables[dot]).value,
                     )
                 }

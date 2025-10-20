@@ -2373,6 +2373,32 @@ class ContextImpl extends Context {
     }
 
     @Override
+    public void rebindService(ServiceConnection conn, @NonNull BindServiceFlags flags) {
+        if (conn == null) {
+            throw new IllegalArgumentException("ServiceConnection is null");
+        }
+        if (mPackageInfo == null) {
+            throw new RuntimeException("Not supported in system context");
+        }
+        final IServiceConnection sd = mPackageInfo.lookupServiceDispatcher(
+                        conn, getOuterContext());
+        if (sd == null) {
+            throw new IllegalArgumentException("ServiceConnection not currently bound: " + conn);
+        }
+        final BindUpdateInfo update = new BindUpdateInfo();
+        update.connection = sd.asBinder();
+        update.unbind = false;
+        update.flags = flags.getValue();
+        final ArrayList<BindUpdateInfo> updates = new ArrayList<>(1);
+        updates.add(update);
+        try {
+            ActivityManager.getService().updateServiceBindings(updates);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @Override
     public boolean startInstrumentation(ComponentName className,
             String profileFile, Bundle arguments) {
         try {
@@ -2442,7 +2468,7 @@ class ContextImpl extends Context {
      * TODO(b/147647877): Fix usages and remove.
      */
     @SuppressWarnings("AndroidFrameworkClientSidePermissionCheck")
-    @RavenwoodIgnore // Always false on Ravenwood.
+    @RavenwoodRedirect
     private static boolean isSystemOrSystemUI(Context context) {
         return ActivityThread.isSystem() || context.checkPermission(
                 "android.permission.STATUS_BAR_SERVICE",
@@ -3476,14 +3502,14 @@ class ContextImpl extends Context {
         return file;
     }
 
-    /** {@hide} */
+    /** @hide */
     @Override
     @RavenwoodKeep
     public UserHandle getUser() {
         return mUser;
     }
 
-    /** {@hide} */
+    /** @hide */
     @Override
     @RavenwoodKeep
     public int getUserId() {
@@ -3722,7 +3748,7 @@ class ContextImpl extends Context {
         mParams = Objects.requireNonNull(params);
         mAttributionSource = createAttributionSource(attributionTag, nextAttributionSource,
                 params.getRenouncedPermissions(), params.shouldRegisterAttributionSource(), mDeviceId);
-        mContentResolver = newApplicationContentResolver(this, mainThread);
+        mContentResolver = new ApplicationContentResolver(this, mainThread);
     }
 
     @RavenwoodKeep
@@ -3945,16 +3971,12 @@ class ContextImpl extends Context {
     // ----------------------------------------------------------------------
     // ----------------------------------------------------------------------
 
-    @RavenwoodIgnore
-    private static ApplicationContentResolver newApplicationContentResolver(
-            Context context, ActivityThread mainThread) {
-        return new ApplicationContentResolver(context, mainThread);
-    }
-
-    private static final class ApplicationContentResolver extends ContentResolver {
+    @RavenwoodKeepPartialClass
+    static final class ApplicationContentResolver extends ContentResolver {
         @UnsupportedAppUsage
         private final ActivityThread mMainThread;
 
+        @RavenwoodKeep
         public ApplicationContentResolver(Context context, ActivityThread mainThread) {
             super(context);
             mMainThread = Objects.requireNonNull(mainThread);

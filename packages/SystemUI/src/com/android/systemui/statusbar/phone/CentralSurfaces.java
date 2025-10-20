@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar.phone;
 
-import static com.android.wm.shell.transition.Transitions.ENABLE_SHELL_TRANSITIONS;
-
 import android.annotation.Nullable;
 import android.app.ActivityOptions;
 import android.content.Context;
@@ -43,7 +41,6 @@ import com.android.systemui.animation.RemoteAnimationRunnerCompat;
 import com.android.systemui.display.data.repository.DisplayMetricsRepository;
 import com.android.systemui.navigationbar.views.NavigationBarView;
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction;
-import com.android.systemui.qs.QSPanelController;
 import com.android.systemui.shared.statusbar.phone.BarTransitions;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.util.Compile;
@@ -146,14 +143,10 @@ public interface CentralSurfaces extends Dumpable, LifecycleOwner, CoreStartable
             @Nullable RemoteAnimationAdapter animationAdapter) {
         ActivityOptions options;
         if (animationAdapter != null) {
-            if (ENABLE_SHELL_TRANSITIONS) {
-                options = ActivityOptions.makeRemoteTransition(
-                        new RemoteTransition(
-                                RemoteAnimationRunnerCompat.wrap(animationAdapter.getRunner()),
-                                animationAdapter.getCallingApplication(), "SysUILaunch"));
-            } else {
-                options = ActivityOptions.makeRemoteAnimation(animationAdapter);
-            }
+            options = ActivityOptions.makeRemoteTransition(
+                    new RemoteTransition(
+                            RemoteAnimationRunnerCompat.wrap(animationAdapter.getRunner()),
+                            animationAdapter.getCallingApplication(), "SysUILaunch"));
         } else {
             options = ActivityOptions.makeBasic();
         }
@@ -325,8 +318,6 @@ public interface CentralSurfaces extends Dumpable, LifecycleOwner, CoreStartable
     void setLaunchEmergencyActionOnFinishedGoingToSleep(boolean launch);
 
     void setLaunchEmergencyActionOnFinishedWaking(boolean launch);
-
-    QSPanelController getQSPanelController();
 
     /** @deprecated Use {@link DisplayMetricsRepository} instead. */
     @Deprecated

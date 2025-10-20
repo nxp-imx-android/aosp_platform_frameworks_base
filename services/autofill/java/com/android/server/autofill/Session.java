@@ -55,6 +55,7 @@ import static android.view.autofill.AutofillManager.FLAG_SMART_SUGGESTION_SYSTEM
 import static android.view.autofill.AutofillManager.getSmartSuggestionModeToString;
 
 import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
+import static com.android.server.autofill.AutofillManagerService.sSupportMultiUserMultiDisplay;
 import static com.android.server.autofill.FillRequestEventLogger.TRIGGER_REASON_EXPLICITLY_REQUESTED;
 import static com.android.server.autofill.FillRequestEventLogger.TRIGGER_REASON_NORMAL_TRIGGER;
 import static com.android.server.autofill.FillRequestEventLogger.TRIGGER_REASON_PRE_TRIGGER;
@@ -249,9 +250,10 @@ final class Session
                 RemoteFieldClassificationService.FieldClassificationServiceCallbacks {
     private static final String TAG = "AutofillSession";
 
-    // This should never be true in production. This is only for local debugging.
+    // These should never be true in production. This is only for local debugging.
     // Otherwise it will spam logcat.
     private static final boolean DBG = false;
+    private static final boolean DEBUG_DUMP_STRUCTURE = false;
 
     private static final String ACTION_DELAYED_FILL =
             "android.service.autofill.action.DELAYED_FILL";
@@ -974,6 +976,11 @@ final class Session
                     }
                     flags |= FillRequest.FLAG_COMPATIBILITY_MODE_REQUEST;
                 }
+
+                if (DEBUG_DUMP_STRUCTURE) {
+                    structure.dump(/* showSensitive= */ true);
+                }
+
                 structure.sanitizeForParceling(true);
 
                 if (mContexts == null) {
@@ -1750,7 +1757,9 @@ final class Session
         int displayId =
                 LocalServices.getService(ActivityTaskManagerInternal.class)
                         .getDisplayId(activityToken);
-        mContext = Helper.getDisplayContext(context, displayId);
+        mContext = sSupportMultiUserMultiDisplay
+                ? Helper.getDisplayContext(context, displayId)
+                : context;
         mComponentName = componentName;
         mCompatMode = compatMode;
         mSessionState = STATE_ACTIVE;
@@ -6717,7 +6726,7 @@ final class Session
         synchronized (mLock) {
             final RemoteAugmentedAutofillService remoteService =
                     mService.getRemoteAugmentedAutofillServiceLocked();
-            if (Flags.addNullCheckForAugmentedInlineRequest() && remoteService == null) {
+            if (remoteService == null) {
                 Slog.i(
                         TAG,
                         "onAugmentedAutofillInlineSuggestionAccept(): no service for user, skipping"

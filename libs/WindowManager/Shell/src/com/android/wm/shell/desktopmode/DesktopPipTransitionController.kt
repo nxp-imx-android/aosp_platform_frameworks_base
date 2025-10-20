@@ -35,7 +35,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 /** Controller to perform extra handling to PiP transitions while in Desktop mode. */
 class DesktopPipTransitionController(
     private val shellTaskOrganizer: ShellTaskOrganizer,
-    private val desktopTasksController: DesktopTasksController,
+    val desktopTasksController: DesktopTasksController,
     private val desktopUserRepositories: DesktopUserRepositories,
     private val pipDesktopState: PipDesktopState,
 ) {
@@ -276,9 +276,29 @@ class DesktopPipTransitionController(
             return
         }
 
+        // When entering PiP via non-minimized triggers such as gestures or the app itself
+        // explicitly requesting PiP, only the top activity enters PiP, and the Task (if there are
+        // still remaining activities) should remain unchanged/unminimized. This matches existing
+        // Fullscreen behavior. When entering PiP via the minimize button, however, the whole Task
+        // will be minimized - this is handled by @{link DesktopTasksController#minimizeTask}.
+        val multiActivityPipTaskWillRemain =
+            taskInfo.numActivities > 1 &&
+                DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN
+                    .isTrue
+        if (multiActivityPipTaskWillRemain) {
+            logD(
+                "handlePipTransition: There will be activities left in the task (taskId=%d) " +
+                    "after moving out the PiP activity. Keeping the task in the same state.",
+                taskInfo.taskId,
+            )
+            return
+        }
+
         val deskId = getDeskId(desktopRepository, displayId)
         if (deskId == INVALID_DESK_ID) return
 
+        // TODO: Remove code below once ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN
+        // is in Nextfood
         // For multi-activity PiP, minimize the parent/original task
         if (taskInfo.numActivities > 1) {
             logD(

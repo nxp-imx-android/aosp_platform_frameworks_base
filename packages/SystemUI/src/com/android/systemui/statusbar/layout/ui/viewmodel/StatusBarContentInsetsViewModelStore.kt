@@ -16,14 +16,15 @@
 
 package com.android.systemui.statusbar.layout.ui.viewmodel
 
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
 import com.android.systemui.display.data.repository.SingleDisplayStore
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
-import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.data.repository.StatusBarPerDisplayStoreImpl
 import dagger.Lazy
 import dagger.Module
@@ -42,7 +43,7 @@ class MultiDisplayStatusBarContentInsetsViewModelStore
 constructor(
     @Background backgroundApplicationScope: CoroutineScope,
     displayRepository: DisplayRepository,
-    private val statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore,
+    private val perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
 ) :
     StatusBarContentInsetsViewModelStore,
     StatusBarPerDisplayStoreImpl<StatusBarContentInsetsViewModel>(
@@ -52,7 +53,7 @@ constructor(
 
     override fun createInstanceForDisplay(displayId: Int): StatusBarContentInsetsViewModel? {
         val insetsProvider =
-            statusBarContentInsetsProviderStore.forDisplay(displayId) ?: return null
+            perDisplaySubcomponentRepo[displayId]?.statusBarContentInsetsProvider ?: return null
         return StatusBarContentInsetsViewModel(insetsProvider)
     }
 

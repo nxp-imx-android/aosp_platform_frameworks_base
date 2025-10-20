@@ -68,21 +68,12 @@
 
     <dimen name="global_actions_grid_item_layout_height">80dp</dimen>
 
-    <dimen name="qs_brightness_margin_bottom">16dp</dimen>
-
     <dimen name="qs_panel_padding_top">8dp</dimen>
 
     <!-- The width of large/content heavy dialogs (e.g. Internet, Media output, etc) -->
     <dimen name="large_dialog_width">472dp</dimen>
 
     <dimen name="large_screen_shade_header_height">42dp</dimen>
-
-    <!--
-    The horizontal distance between the shade overlay panel (both notifications and quick settings)
-    and the edge of the screen. On Compact screens in portrait orientation (< w600dp) this is
-    ignored in the shade layout, which takes up the full screen width without margins.
-    -->
-    <dimen name="shade_panel_margin_horizontal">24dp</dimen>
 
     <!-- start padding is smaller to account for status icon margins coming from drawable itself -->
     <dimen name="hover_system_icons_container_padding_start">3dp</dimen>

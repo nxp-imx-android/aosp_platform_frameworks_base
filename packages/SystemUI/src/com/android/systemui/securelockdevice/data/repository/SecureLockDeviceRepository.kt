@@ -27,12 +27,18 @@ import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOf
 
 /** A repository for the state of secure lock device. */
 interface SecureLockDeviceRepository {
-    /** @see AuthenticationPolicyManager.isSecureLockDeviceEnabled */
+    /**
+     * Whether bouncer messages should be suppressed. This is true after the user has successfully
+     * authenticated a strong biometric in the secure lock device UI, in order to prevent animation
+     * jank if the keyguard mode resets back to the LSKF security mode before the UI is dismissed.
+     */
+    val suppressBouncerMessageUpdates: MutableStateFlow<Boolean>
     val isSecureLockDeviceEnabled: Flow<Boolean>
 
     /** @see BiometricSettingsRepository.requiresPrimaryAuthForSecureLockDevice */
@@ -92,6 +98,8 @@ constructor(
 
     override val requiresStrongBiometricAuthForSecureLockDevice: Flow<Boolean> =
         biometricSettingsRepository.requiresStrongBiometricAuthForSecureLockDevice
+
+    override val suppressBouncerMessageUpdates = MutableStateFlow(false)
 
     companion object {
         private const val TAG = "SecureLockDeviceRepositoryImpl"

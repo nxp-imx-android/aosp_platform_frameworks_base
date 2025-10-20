@@ -95,7 +95,7 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
     // A parcel cannot be obtained during compile-time initialization. Put the
     // empty parcel into an inner class that can be initialized separately. This
     // allows to initialize BaseBundle, and classes depending on it.
-    /** {@hide} */
+    /** @hide */
     static final class NoImagePreloadHolder {
         public static final Parcel EMPTY_PARCEL = Parcel.obtain();
     }
@@ -141,7 +141,7 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
      */
     private ClassLoader mClassLoader;
 
-    /** {@hide} */
+    /** @hide */
     @VisibleForTesting
     public int mFlags;
     private boolean mHasIntent = false;
@@ -827,7 +827,7 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
         return mMap.keySet();
     }
 
-    /** {@hide} */
+    /** @hide */
     public void putObject(@Nullable String key, @Nullable Object value) {
         if (value == null) {
             putString(key, null);
@@ -1959,7 +1959,7 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
         mHasIntent = parcel.readBoolean();
     }
 
-    /** {@hide} */
+    /** @hide */
     public static void dumpStats(IndentingPrintWriter pw, String key, Object value) {
         final Parcel tmp = Parcel.obtain();
         tmp.writeValue(value);
@@ -1977,7 +1977,7 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public static void dumpStats(IndentingPrintWriter pw, SparseArray array) {
         pw.increaseIndent();
         if (array == null) {
@@ -1990,7 +1990,7 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
         pw.decreaseIndent();
     }
 
-    /** {@hide} */
+    /** @hide */
     public static void dumpStats(IndentingPrintWriter pw, BaseBundle bundle) {
         pw.increaseIndent();
         if (bundle == null) {

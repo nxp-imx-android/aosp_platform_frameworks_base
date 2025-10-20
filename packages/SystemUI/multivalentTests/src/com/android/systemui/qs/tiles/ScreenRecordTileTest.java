@@ -56,9 +56,7 @@ import com.android.systemui.plugins.qs.QSTile;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.qs.QSHost;
 import com.android.systemui.qs.QsEventLogger;
-import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.qs.flags.QsDetailedView;
-import com.android.systemui.qs.flags.QsInCompose;
 import com.android.systemui.qs.logging.QSLogger;
 import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor;
 import com.android.systemui.qs.tileimpl.QSTileImpl;
@@ -89,7 +87,7 @@ public class ScreenRecordTileTest extends SysuiTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return allCombinationsOf(QSComposeFragment.FLAG_NAME, QsDetailedView.FLAG_NAME);
+        return allCombinationsOf(QsDetailedView.FLAG_NAME);
     }
 
     private final Kosmos mKosmos = SysuiTestCaseExtKt.testKosmos(this);
@@ -378,10 +376,6 @@ public class ScreenRecordTileTest extends SysuiTestCase {
     }
 
     private QSTile.Icon createExpectedIcon(int resId) {
-        if (QsInCompose.isEnabled()) {
-            return new QSTileImpl.DrawableIconWithRes(mContext.getDrawable(resId), resId);
-        } else {
-            return QSTileImpl.ResourceIcon.get(resId);
-        }
+        return new QSTileImpl.DrawableIconWithRes(mContext.getDrawable(resId), resId);
     }
 }

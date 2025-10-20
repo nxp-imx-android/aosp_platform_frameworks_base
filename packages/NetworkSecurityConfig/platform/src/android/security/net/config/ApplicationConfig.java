@@ -16,9 +16,14 @@
 
 package android.security.net.config;
 
-import static android.security.Flags.certificateTransparencyConfiguration;
+import static libcore.net.NetworkSecurityPolicy.CERTIFICATE_TRANSPARENCY_REASON_APP_OPT_IN;
+import static libcore.net.NetworkSecurityPolicy.CERTIFICATE_TRANSPARENCY_REASON_DOMAIN_OPT_IN;
+import static libcore.net.NetworkSecurityPolicy.CERTIFICATE_TRANSPARENCY_REASON_SDK_TARGET_DEFAULT_ENABLED;
+import static libcore.net.NetworkSecurityPolicy.CERTIFICATE_TRANSPARENCY_REASON_UNKNOWN;
 
 import android.annotation.NonNull;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.util.Pair;
 
 import java.util.HashSet;
@@ -59,6 +64,32 @@ public final class ApplicationConfig {
     public boolean hasPerDomainConfigs() {
         ensureInitialized();
         return mConfigs != null && !mConfigs.isEmpty();
+    }
+
+    /**
+     * Returns an {@link ApplicationConfig} based on the configuration for {@code packageName}.
+     */
+    public static ApplicationConfig createApplicationConfigForPackage(Context context,
+            String packageName) throws PackageManager.NameNotFoundException {
+        Context appContext = context.createPackageContext(packageName, 0);
+        ManifestConfigSource source = new ManifestConfigSource(appContext);
+        return new ApplicationConfig(source);
+    }
+
+    /**
+     * Overwrite the NetworkSecurityPolicy associated with this ApplicationConfig.
+     *
+     * The policy should only be updated for custom TrustManager instances that
+     * have been created via KeyStoreConfigSource.
+     */
+    void setNetworkSecurityPolicy(libcore.net.NetworkSecurityPolicy policy) {
+        ensureInitialized();
+        if (hasPerDomainConfigs()) {
+            throw new IllegalStateException(
+                    "setNetworkSecurityPolicy cannot be called when per-domain "
+                    + "configs are present");
+        }
+        mDefaultConfig.setNetworkSecurityPolicy(policy);
     }
 
     /**
@@ -172,9 +203,27 @@ public final class ApplicationConfig {
      *     otherwise
      */
     public boolean isCertificateTransparencyVerificationRequired(@NonNull String hostname) {
-        return certificateTransparencyConfiguration()
-                ? getConfigForHostname(hostname).isCertificateTransparencyVerificationRequired()
-                : NetworkSecurityConfig.certificateTransparencyVerificationRequiredDefault();
+        return getConfigForHostname(hostname).isCertificateTransparencyVerificationRequired();
+    }
+
+    /**
+     * @hide
+     */
+    public int getCertificateTransparencyVerificationReason(@NonNull String hostname) {
+        if (NetworkSecurityConfig.certificateTransparencyVerificationRequiredDefault()) {
+            return CERTIFICATE_TRANSPARENCY_REASON_SDK_TARGET_DEFAULT_ENABLED;
+        }
+        if (getConfigForHostname(null).isCertificateTransparencyVerificationRequired()) {
+            return CERTIFICATE_TRANSPARENCY_REASON_APP_OPT_IN;
+        }
+        if (getConfigForHostname(hostname).isCertificateTransparencyVerificationRequired()) {
+            return CERTIFICATE_TRANSPARENCY_REASON_DOMAIN_OPT_IN;
+        }
+        return CERTIFICATE_TRANSPARENCY_REASON_UNKNOWN;
+    }
+
+    int getDomainEncryptionMode(@NonNull String hostname) {
+        return getConfigForHostname(hostname).getDomainEncryptionMode();
     }
 
     public void handleTrustStorageUpdate() {

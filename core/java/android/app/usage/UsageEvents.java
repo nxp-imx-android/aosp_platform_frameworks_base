@@ -15,6 +15,8 @@
  */
 package android.app.usage;
 
+import static android.appwidget.flags.Flags.FLAG_ENGAGEMENT_METRICS;
+
 import android.annotation.CurrentTimeMillisLong;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
@@ -140,14 +142,14 @@ public final class UsageEvents implements Parcelable {
          * An event type denoting that a component was in the foreground when the stats
          * rolled-over. This is effectively treated as a {@link #ACTIVITY_PAUSED}.
          * This event has a non-null packageName, and a null className.
-         * {@hide}
+         * @hide
          */
         public static final int END_OF_DAY = 3;
 
         /**
          * An event type denoting that a component was in the foreground the previous day.
          * This is effectively treated as a {@link #ACTIVITY_RESUMED}.
-         * {@hide}
+         * @hide
          */
         public static final int CONTINUE_PREVIOUS_DAY = 4;
 
@@ -265,14 +267,14 @@ public final class UsageEvents implements Parcelable {
          * An event type denoting that a foreground service is at started state at beginning of a
          * time interval.
          * This is effectively treated as a {@link #FOREGROUND_SERVICE_START}.
-         * {@hide}
+         * @hide
          */
         public static final int CONTINUING_FOREGROUND_SERVICE = 21;
 
         /**
          * An event type denoting that a foreground service is at started state when the stats
          * rolled-over at the end of a time interval.
-         * {@hide}
+         * @hide
          */
         public static final int ROLLOVER_FOREGROUND_SERVICE = 22;
 
@@ -285,7 +287,7 @@ public final class UsageEvents implements Parcelable {
         /**
          * An activity object is destroyed, corresponding to
          * {@link android.app.Activity#onDestroy()} of the activity's lifecycle.
-         * {@hide}
+         * @hide
          */
         public static final int ACTIVITY_DESTROYED = 24;
 
@@ -417,24 +419,24 @@ public final class UsageEvents implements Parcelable {
         private static final int UNASSIGNED_TOKEN = -1;
 
         /**
-         * {@hide}
+         * @hide
          */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public String mPackage;
 
         /**
-         * {@hide}
+         * @hide
          */
         public int mPackageToken = UNASSIGNED_TOKEN;
 
         /**
-         * {@hide}
+         * @hide
          */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public String mClass;
 
         /**
-         * {@hide}
+         * @hide
          */
         public int mClassToken = UNASSIGNED_TOKEN;
 
@@ -443,45 +445,45 @@ public final class UsageEvents implements Parcelable {
          * pkg/class name to be in lifecycle at the same time. The mInstanceId is guaranteed to be
          * unique per activity across all apps (not just within a single app).
          *
-         * {@hide}
+         * @hide
          */
         public int mInstanceId;
 
         /**
-         * {@hide}
+         * @hide
          */
         public String mTaskRootPackage;
 
         /**
-         * {@hide}
+         * @hide
          */
         public int mTaskRootPackageToken = UNASSIGNED_TOKEN;
 
         /**
-         * {@hide}
+         * @hide
          */
         public String mTaskRootClass;
 
         /**
-         * {@hide}
+         * @hide
          */
         public int mTaskRootClassToken = UNASSIGNED_TOKEN;
 
         /**
-         * {@hide}
+         * @hide
          */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public long mTimeStamp;
 
         /**
-         * {@hide}
+         * @hide
          */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public int mEventType;
 
         /**
          * Only present for {@link #CONFIGURATION_CHANGE} event types.
-         * {@hide}
+         * @hide
          */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public Configuration mConfiguration;
@@ -489,33 +491,33 @@ public final class UsageEvents implements Parcelable {
         /**
          * ID of the shortcut.
          * Only present for {@link #SHORTCUT_INVOCATION} event types.
-         * {@hide}
+         * @hide
          */
         public String mShortcutId;
 
         /**
-         * {@hide}
+         * @hide
          */
         public int mShortcutIdToken = UNASSIGNED_TOKEN;
 
         /**
          * Action type passed to ChooserActivity
          * Only present for {@link #CHOOSER_ACTION} event types.
-         * {@hide}
+         * @hide
          */
         public String mAction;
 
         /**
          * Content type passed to ChooserActivity.
          * Only present for {@link #CHOOSER_ACTION} event types.
-         * {@hide}
+         * @hide
          */
         public String mContentType;
 
         /**
          * Content annotations passed to ChooserActivity.
          * Only present for {@link #CHOOSER_ACTION} event types.
-         * {@hide}
+         * @hide
          */
         public String[] mContentAnnotations;
 
@@ -523,7 +525,7 @@ public final class UsageEvents implements Parcelable {
          * The app standby bucket assigned and reason. Bucket is the high order 16 bits, reason
          * is the low order 16 bits.
          * Only present for {@link #STANDBY_BUCKET_CHANGED} event types
-         * {@hide}
+         * @hide
          */
         public int mBucketAndReason;
 
@@ -531,24 +533,24 @@ public final class UsageEvents implements Parcelable {
          * The id of the {@link android.app.NotificationChannel} to which an interruptive
          * notification was posted.
          * Only present for {@link #NOTIFICATION_INTERRUPTION} event types.
-         * {@hide}
+         * @hide
          */
         public String mNotificationChannelId;
 
         /**
-         * {@hide}
+         * @hide
          */
         public int mNotificationChannelIdToken = UNASSIGNED_TOKEN;
 
         /**
          * LocusId.
          * Currently LocusId only present for {@link #LOCUS_ID_SET} event types.
-         * {@hide}
+         * @hide
          */
         public String mLocusId;
 
         /**
-         * {@hide}
+         * @hide
          */
         public int mLocusIdToken = UNASSIGNED_TOKEN;
 
@@ -559,6 +561,8 @@ public final class UsageEvents implements Parcelable {
         public static class UserInteractionEventExtrasToken {
             public int mCategoryToken = UNASSIGNED_TOKEN;
             public int mActionToken = UNASSIGNED_TOKEN;
+            @FlaggedApi(FLAG_ENGAGEMENT_METRICS)
+            public byte[] mTokenizedExtras = null;
 
             public UserInteractionEventExtrasToken() {
                 // Do nothing.
@@ -806,7 +810,7 @@ public final class UsageEvents implements Parcelable {
 
     /**
      * Construct the iterator from a parcel.
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     public UsageEvents(Parcel in) {
@@ -834,7 +838,7 @@ public final class UsageEvents implements Parcelable {
 
     /**
      * Create an empty iterator.
-     * {@hide}
+     * @hide
      */
     UsageEvents() {
         mEventCount = 0;
@@ -844,7 +848,7 @@ public final class UsageEvents implements Parcelable {
     /**
      * Construct the iterator in preparation for writing it to a parcel.
      * Defaults to excluding task roots from the parcel.
-     * {@hide}
+     * @hide
      */
     public UsageEvents(List<Event> events, String[] stringPool) {
         this(events, stringPool, false);
@@ -852,7 +856,7 @@ public final class UsageEvents implements Parcelable {
 
     /**
      * Construct the iterator in preparation for writing it to a parcel.
-     * {@hide}
+     * @hide
      */
     public UsageEvents(List<Event> events, String[] stringPool, boolean includeTaskRoots) {
         mStringPool = stringPool;

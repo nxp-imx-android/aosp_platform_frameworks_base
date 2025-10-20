@@ -16,8 +16,6 @@
 
 package com.android.wallpaperbackup;
 
-import static android.app.Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING;
-import static android.app.Flags.fixWallpaperCropsOnRestore;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
 import static android.os.ParcelFileDescriptor.MODE_READ_ONLY;
@@ -53,7 +51,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.annotation.Nullable;
-import android.app.Flags;
 import android.app.WallpaperInfo;
 import android.app.WallpaperManager;
 import android.app.backup.BackupAnnotations;
@@ -72,8 +69,6 @@ import android.graphics.Rect;
 import android.os.FileUtils;
 import android.os.ParcelFileDescriptor;
 import android.os.UserHandle;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.wallpaper.WallpaperService;
 import android.util.Pair;
@@ -440,7 +435,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     public void testUpdateWallpaperDescription_immediate_systemAndLock()
             throws IOException {
         mWallpaperBackupAgent.mPackageExists = true;
@@ -460,7 +454,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     public void testUpdateWallpaperDescription_immediate_systemOnly() throws IOException {
         mWallpaperBackupAgent.mPackageExists = true;
 
@@ -478,7 +471,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     public void testUpdateWallpaperDescription_delayed_systemAndLock()
             throws IOException {
         mWallpaperBackupAgent.mIsDeviceInRestore = true;
@@ -500,7 +492,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     public void testUpdateWallpaperDescription_delayed_systemOnly() throws IOException {
         mWallpaperBackupAgent.mIsDeviceInRestore = true;
 
@@ -925,7 +916,6 @@ public class WallpaperBackupAgentTest {
 
 
     @Test
-    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     public void testUpdateWallpaperDescription_delayed_succeeds_logsSuccess() throws Exception {
         mWallpaperBackupAgent.mIsDeviceInRestore = true;
         when(mWallpaperManager.setWallpaperComponentWithDescription(any(),
@@ -973,7 +963,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     public void testUpdateWallpaperDescription_delayed_fails_logsFailure() throws Exception {
         mWallpaperBackupAgent.mIsDeviceInRestore = true;
         BackupRestoreEventLogger logger = new BackupRestoreEventLogger(
@@ -1028,15 +1017,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
-    public void testOnRestore_singleCropHint() throws Exception {
-        SparseArray<Rect> testCropHints = new SparseArray<>();
-        testCropHints.put(WallpaperManager.ORIENTATION_PORTRAIT, new Rect(1, 2, 3, 4));
-        testParseCropHints(new SparseArray<>(), null);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
     public void testOnRestore_singleCropHintPortrait_sameDimensions() throws Exception {
         testRestoredCrops(
                 /* bitmapDimensions */ new Point(2000, 2000),
@@ -1057,7 +1037,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
     public void testOnRestore_singleCropHintPortrait_widerTargetDevice_noParallax()
             throws Exception {
         testRestoredCrops(
@@ -1079,7 +1058,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
     public void testOnRestore_singleCropHintPortrait_widerTargetDevice_ltr() throws Exception {
         testRestoredCrops(
                 /* bitmapDimensions */ new Point(3000, 3000),
@@ -1104,7 +1082,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
     public void testOnRestore_singleCropHintPortrait_widerTargetDevice_rtl() throws Exception {
         testRestoredCrops(
                 /* bitmapDimensions */ new Point(2000, 2000),
@@ -1126,7 +1103,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
     public void testOnRestore_singleCropHintPortrait_narrowerTargetDevice_noParallax()
             throws Exception {
         testRestoredCrops(
@@ -1150,7 +1126,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
     public void testOnRestore_singleCropHintPortrait_narrowerTargetDevice_ltr() throws Exception {
         testRestoredCrops(
                 /* bitmapDimensions */ new Point(1500, 1000),
@@ -1176,7 +1151,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
     public void testOnRestore_singleCropHintPortrait_narrowerTargetDevice_rtl() throws Exception {
         testRestoredCrops(
                 /* bitmapDimensions */ new Point(1000, 1000),
@@ -1202,7 +1176,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
     public void testOnRestore_singleCropHintPortrait_doesNotAddTinyParallax() throws Exception {
         testRestoredCrops(
                 /* bitmapDimensions */ new Point(601, 1000),
@@ -1229,7 +1202,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
     public void testOnRestore_smallDevice_landscapeCropHintNotRestored() throws Exception {
         testRestoredCrops(
                 /* bitmapDimensions */ new Point(1000, 1000),
@@ -1250,7 +1222,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
     public void testOnRestore_largeScreen_landscapeCropHintRestored() throws Exception {
         testRestoredCrops(
                 /* bitmapDimensions */ new Point(2000, 2000),
@@ -1271,7 +1242,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
     public void testOnRestore_portraitAndLandscapeCrops_smallScreen_restoresPortraitOnly()
             throws Exception {
         testRestoredCrops(
@@ -1297,7 +1267,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
     public void testOnRestore_portraitAndLandscapeCrops_largeScreen_restoresBothCrops()
             throws Exception {
         testRestoredCrops(
@@ -1336,7 +1305,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
     public void testOnRestore_foldableToFoldable_portraitAndSquarePortraitCrops_noParallax()
             throws Exception {
         testRestoredCrops(
@@ -1368,7 +1336,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
     public void testOnRestore_foldableToHandheld_portraitAndSquarePortraitCrops_rtl()
             throws Exception {
         testRestoredCrops(
@@ -1397,7 +1364,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
     public void testOnRestore_foldableToFoldable_portraitAndSquareLandscapeCrops_ltr()
             throws Exception {
         testRestoredCrops(
@@ -1436,16 +1402,6 @@ public class WallpaperBackupAgentTest {
                         // 86% of parallax.
                         WallpaperManager.ORIENTATION_SQUARE_LANDSCAPE, new Rect(70, 300, 1000, 700))
         );
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_FIX_WALLPAPER_CROPS_ON_RESTORE)
-    public void testOnRestore_multipleCropHints() throws Exception {
-        SparseArray<Rect> testCropHints = new SparseArray<>();
-        testCropHints.put(WallpaperManager.ORIENTATION_PORTRAIT, new Rect(1, 2, 3, 4));
-        testCropHints.put(WallpaperManager.ORIENTATION_SQUARE_PORTRAIT, new Rect(5, 6, 7, 8));
-        testCropHints.put(WallpaperManager.ORIENTATION_SQUARE_LANDSCAPE, new Rect(9, 10, 11, 12));
-        testParseCropHints(testCropHints, null);
     }
 
     private void testRestoredCrops(
@@ -1491,11 +1447,6 @@ public class WallpaperBackupAgentTest {
         verify(mWallpaperManager).setStreamWithCrops(
                 any(InputStream.class), mCropHintsCaptor.capture(), eq(true), anyInt());
         SparseArray<Rect> capturedCropHints = mCropHintsCaptor.getValue();
-
-        if (!fixWallpaperCropsOnRestore()) {
-            assertThat(testCropHints.contentEquals(capturedCropHints)).isTrue();
-            return;
-        }
 
         assertWithMessage("Received unexpected crop hints. "
                 + "Expected: " + expectedCropHints + ". Actual: " + capturedCropHints)

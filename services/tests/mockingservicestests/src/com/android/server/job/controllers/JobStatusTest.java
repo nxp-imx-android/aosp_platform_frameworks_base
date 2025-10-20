@@ -22,6 +22,7 @@ import static android.app.usage.UsageStatsManager.REASON_MAIN_PREDICTED;
 import static android.app.usage.UsageStatsManager.REASON_MAIN_TIMEOUT;
 import static android.app.usage.UsageStatsManager.REASON_MAIN_USAGE;
 import static android.app.usage.UsageStatsManager.STANDBY_BUCKET_FREQUENT;
+import static android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET;
 import static android.text.format.DateUtils.HOUR_IN_MILLIS;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -66,9 +67,9 @@ import android.app.job.JobInfo;
 import android.app.usage.UsageStatsManagerInternal;
 import android.content.ComponentName;
 import android.content.pm.PackageManagerInternal;
+import android.net.NetworkRequest;
 import android.net.Uri;
 import android.os.SystemClock;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.MediaStore;
@@ -79,7 +80,6 @@ import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.util.IntPair;
 import com.android.server.LocalServices;
-import com.android.server.job.Flags;
 import com.android.server.job.JobSchedulerInternal;
 import com.android.server.job.JobSchedulerService;
 
@@ -95,6 +95,7 @@ import org.mockito.quality.Strictness;
 import java.time.Clock;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.Set;
 
 @RunWith(AndroidJUnit4.class)
 public class JobStatusTest {
@@ -106,6 +107,10 @@ public class JobStatusTest {
 
     private static final Uri IMAGES_MEDIA_URI = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
     private static final Uri VIDEO_MEDIA_URI = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+
+    private static final String TEST_TRACE_TAG = "test_trace_tag";
+    private static final String TEST_DEBUG_TAG1 = "test_debug_tag1";
+    private static final String TEST_DEBUG_TAG2 = "test_debug_tag2";
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -386,7 +391,6 @@ public class JobStatusTest {
         assertEffectiveBucketForMediaExemption(
                 createJobStatus(triggerContentJobBuilder.build()), false);
 
-        mSetFlagsRule.enableFlags(Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY);
         // High priority job from the cloud media package should be exempted.
         triggerContentJobBuilder.setPriority(JobInfo.PRIORITY_HIGH);
         assertEffectiveBucketForMediaExemption(
@@ -402,7 +406,6 @@ public class JobStatusTest {
         assertEffectiveBucketForMediaExemption(
                 createJobStatus(triggerContentJobBuilder.build()), false);
 
-        mSetFlagsRule.enableFlags(Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY);
         triggerContentJobBuilder.setPriority(JobInfo.PRIORITY_HIGH);
         // High priority job from the cloud media package should be exempted.
         assertEffectiveBucketForMediaExemption(
@@ -417,26 +420,12 @@ public class JobStatusTest {
         when(mJobSchedulerInternal.getCloudMediaProviderPackage(eq(0))).thenReturn(TEST_PACKAGE);
 
         assertEffectiveBucketForMediaExemption(createJobStatus(networkJobBuilder.build()), false);
-        mSetFlagsRule.enableFlags(Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY);
         networkJobBuilder.setPriority(JobInfo.PRIORITY_HIGH);
         // High priority job from the cloud media package should be exempted.
         assertEffectiveBucketForMediaExemption(createJobStatus(networkJobBuilder.build()), true);
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY)
-    public void testMediaBackupExemption_wrongSourcePackage_policyUpdateDisabled() {
-        final JobInfo networkContentJob = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
-                .addTriggerContentUri(new JobInfo.TriggerContentUri(IMAGES_MEDIA_URI, 0))
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .build();
-        when(mJobSchedulerInternal.getCloudMediaProviderPackage(eq(0)))
-                .thenReturn("not.test.package");
-        assertEffectiveBucketForMediaExemption(createJobStatus(networkContentJob), false);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY)
     public void testMediaBackupExemption_wrongSourcePackage() {
         final JobInfo networkContentJob = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
                 .setPriority(JobInfo.PRIORITY_HIGH)
@@ -458,52 +447,12 @@ public class JobStatusTest {
 
         assertEffectiveBucketForMediaExemption(
                 createJobStatus(networkContentJobBuilder.build()), false);
-        mSetFlagsRule.enableFlags(Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY);
         networkContentJobBuilder.setPriority(JobInfo.PRIORITY_HIGH);
         assertEffectiveBucketForMediaExemption(
                 createJobStatus(networkContentJobBuilder.build()), true);
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY)
-    public void testMediaBackupExemption_lowPriorityJobs() {
-        when(mJobSchedulerInternal.getCloudMediaProviderPackage(eq(0)))
-                .thenReturn(TEST_PACKAGE);
-        final JobInfo.Builder jobBuilder = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
-                .addTriggerContentUri(new JobInfo.TriggerContentUri(IMAGES_MEDIA_URI, 0))
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
-        assertEffectiveBucketForMediaExemption(
-                createJobStatus(jobBuilder.setPriority(JobInfo.PRIORITY_LOW).build()), false);
-        assertEffectiveBucketForMediaExemption(
-                createJobStatus(jobBuilder.setPriority(JobInfo.PRIORITY_MIN).build()), false);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ALLOW_CMP_EXEMPTION_FOR_RESTRICTED_BUCKET)
-    @EnableFlags(Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY)
-    public void testMediaBackupExemption_priority_restrictedBucketDisabled_policyUpdateEnabled() {
-        when(mJobSchedulerInternal.getCloudMediaProviderPackage(eq(0))).thenReturn(TEST_PACKAGE);
-        final JobInfo.Builder jobBuilder = new JobInfo.Builder(42, TEST_JOB_COMPONENT);
-
-        // DEFAULT job priority.
-        assertEffectiveBucketForMediaExemption(createJobStatus(jobBuilder.build()), false, false);
-        // LOW priority.
-        assertEffectiveBucketForMediaExemption(
-                createJobStatus(jobBuilder.setPriority(JobInfo.PRIORITY_LOW).build()), false,
-                false);
-        // MIN priority.
-        assertEffectiveBucketForMediaExemption(
-                createJobStatus(jobBuilder.setPriority(JobInfo.PRIORITY_MIN).build()), false,
-                false);
-        // HIGH priority.
-        assertEffectiveBucketForMediaExemption(
-                createJobStatus(jobBuilder.setPriority(JobInfo.PRIORITY_HIGH).build()), true,
-                false);
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_ALLOW_CMP_EXEMPTION_FOR_RESTRICTED_BUCKET,
-            Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY})
     public void testMediaBackupExemption_priority() {
         when(mJobSchedulerInternal.getCloudMediaProviderPackage(eq(0)))
                 .thenReturn(TEST_PACKAGE);
@@ -522,70 +471,7 @@ public class JobStatusTest {
                 createJobStatus(jobBuilder.setPriority(JobInfo.PRIORITY_HIGH).build()), true);
     }
 
-    @DisableFlags({Flags.FLAG_ALLOW_CMP_EXEMPTION_FOR_RESTRICTED_BUCKET,
-            Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY})
     @Test
-    public void testMediaBackupExemptionGranted_restrictedBucketDisabled_policyUpdateDisabled() {
-        when(mJobSchedulerInternal.getCloudMediaProviderPackage(eq(0))).thenReturn(TEST_PACKAGE);
-        final JobInfo imageUriJob = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
-                .addTriggerContentUri(new JobInfo.TriggerContentUri(IMAGES_MEDIA_URI, 0))
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .build();
-        assertEffectiveBucketForMediaExemption(createJobStatus(imageUriJob), true, false);
-
-        final JobInfo videoUriJob = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
-                .addTriggerContentUri(new JobInfo.TriggerContentUri(VIDEO_MEDIA_URI, 0))
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .build();
-        assertEffectiveBucketForMediaExemption(createJobStatus(videoUriJob), true, false);
-
-        final JobInfo bothUriJob = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
-                .addTriggerContentUri(new JobInfo.TriggerContentUri(IMAGES_MEDIA_URI, 0))
-                .addTriggerContentUri(new JobInfo.TriggerContentUri(VIDEO_MEDIA_URI, 0))
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .build();
-        assertEffectiveBucketForMediaExemption(createJobStatus(bothUriJob), true, false);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ALLOW_CMP_EXEMPTION_FOR_RESTRICTED_BUCKET)
-    @EnableFlags(Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY)
-    public void testMediaBackupExemptionGranted_restrictedBucketDisabled_policyUpdateEnabled() {
-        when(mJobSchedulerInternal.getCloudMediaProviderPackage(eq(0))).thenReturn(TEST_PACKAGE);
-        final JobInfo job = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
-                .setPriority(JobInfo.PRIORITY_HIGH)
-                .build();
-        assertEffectiveBucketForMediaExemption(createJobStatus(job), true, false);
-    }
-
-    @EnableFlags(Flags.FLAG_ALLOW_CMP_EXEMPTION_FOR_RESTRICTED_BUCKET)
-    @DisableFlags(Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY)
-    @Test
-    public void testMediaBackupExemptionGranted_restrictedBucketEnabled_policyUpdateDisabled() {
-        when(mJobSchedulerInternal.getCloudMediaProviderPackage(eq(0))).thenReturn(TEST_PACKAGE);
-        final JobInfo imageUriJob = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
-                .addTriggerContentUri(new JobInfo.TriggerContentUri(IMAGES_MEDIA_URI, 0))
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .build();
-        assertEffectiveBucketForMediaExemption(createJobStatus(imageUriJob), true);
-
-        final JobInfo videoUriJob = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
-                .addTriggerContentUri(new JobInfo.TriggerContentUri(VIDEO_MEDIA_URI, 0))
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .build();
-        assertEffectiveBucketForMediaExemption(createJobStatus(videoUriJob), true);
-
-        final JobInfo bothUriJob = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
-                .addTriggerContentUri(new JobInfo.TriggerContentUri(IMAGES_MEDIA_URI, 0))
-                .addTriggerContentUri(new JobInfo.TriggerContentUri(VIDEO_MEDIA_URI, 0))
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .build();
-        assertEffectiveBucketForMediaExemption(createJobStatus(bothUriJob), true);
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_ALLOW_CMP_EXEMPTION_FOR_RESTRICTED_BUCKET,
-            Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY})
     public void testMediaBackupExemptionGranted_policyUpdateEnabled() {
         when(mJobSchedulerInternal.getCloudMediaProviderPackage(eq(0))).thenReturn(TEST_PACKAGE);
         final JobInfo job = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
@@ -1637,6 +1523,21 @@ public class JobStatusTest {
         assertEquals(REASON_MAIN_PREDICTED, jobStatus.getStandbyBucketReason());
     }
 
+    @Test
+    public void testCreateJobStatus_validateTags() {
+        final NetworkRequest networkRequest = new NetworkRequest.Builder()
+                .addCapability(NET_CAPABILITY_INTERNET)
+                .build();
+        final JobInfo jobInfo = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
+                .setRequiredNetwork(networkRequest)
+                .setTraceTag(TEST_TRACE_TAG)
+                .addDebugTags(Set.of(TEST_DEBUG_TAG1, TEST_DEBUG_TAG2))
+                .build();
+        final JobStatus jobStatus = createJobStatus(jobInfo);
+        assertEquals(TEST_TRACE_TAG, jobStatus.getJob().getTraceTag());
+        assertEquals(Set.of(TEST_DEBUG_TAG1, TEST_DEBUG_TAG2), jobStatus.getJob().getDebugTags());
+    }
+
     private void markExpeditedQuotaApproved(JobStatus job, boolean isApproved) {
         if (job.isRequestedExpeditedJob()) {
             job.setExpeditedJobQuotaApproved(sElapsedRealtimeClock.millis(), isApproved);
@@ -1695,5 +1596,130 @@ public class JobStatusTest {
                         job, callingUid, packageName, SOURCE_USER_ID, namespace, tag);
         jobStatus.serviceProcessName = "testProcess";
         return jobStatus;
+    }
+
+    @Test
+    public void testPackStatesToBits_NoConstraints() {
+        final JobInfo jobInfo =
+                new JobInfo.Builder(101, new ComponentName("foo", "bar")).build();
+        final JobStatus jobStatus = createJobStatus(jobInfo);
+        final long states = JobStatus.packStatesToBits(jobStatus);
+
+        assertEquals("Default job should have flexibility constraint",
+                JobStatus.JOB_STATE_FLAG_HAS_FLEXIBILITY_CONSTRAINT, states);
+    }
+
+    @Test
+    public void testPackStatesToBits_WithConstraints() {
+        final JobInfo jobInfo =
+                new JobInfo.Builder(101, new ComponentName("foo", "bar"))
+                        .setRequiresCharging(true)
+                        .setRequiresDeviceIdle(true)
+                        .setRequiresBatteryNotLow(true)
+                        .setRequiresStorageNotLow(true)
+                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                        .addTriggerContentUri(
+                                new JobInfo.TriggerContentUri(
+                                        MediaStore.Images.Media.INTERNAL_CONTENT_URI, 0))
+                        .setMinimumLatency(1000)
+                        .setOverrideDeadline(5000)
+                        .build();
+        final JobStatus jobStatus = createJobStatus(jobInfo);
+        final long expected = JobStatus.JOB_STATE_FLAG_HAS_CHARGING_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_IDLE_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_BATTERY_NOT_LOW_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_STORAGE_NOT_LOW_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_CONNECTIVITY_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_CONTENT_TRIGGER_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_TIMING_DELAY_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_DEADLINE_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_CAN_APPLY_TRANSPORT_AFFINITIES
+                | JobStatus.JOB_STATE_FLAG_HAS_FLEXIBILITY_CONSTRAINT;
+
+        // A job with various constraints will also have the flexibility constraint.
+        assertEquals("Job with various constraints should also have flexibility constraint",
+                expected, JobStatus.packStatesToBits(jobStatus));
+    }
+
+    @Test
+    public void testPackStatesToBits_WithUserInitiatedJob() {
+        final JobInfo jobInfo =
+                new JobInfo.Builder(101, new ComponentName("foo", "bar"))
+                        .setUserInitiated(true)
+                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                        .build();
+        final JobStatus jobStatus = createJobStatus(jobInfo);
+        final long expected = JobStatus.JOB_STATE_FLAG_IS_REQUESTED_USER_INITIATED_JOB
+                | JobStatus.JOB_STATE_FLAG_IS_RUNNING_AS_USER_INITIATED_JOB
+                | JobStatus.JOB_STATE_FLAG_HAS_CONNECTIVITY_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_CAN_APPLY_TRANSPORT_AFFINITIES;
+
+        // A user-initiated job will not have the flexibility constraint.
+        assertEquals("User-initiated job should not have flexibility constraint",
+                expected, JobStatus.packStatesToBits(jobStatus));
+    }
+
+    @Test
+    public void testPackStatesToBits_WithUserInitiatedJobDemoted() {
+        final JobInfo jobInfo =
+                new JobInfo.Builder(101, new ComponentName("foo", "bar"))
+                        .setUserInitiated(true)
+                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                        .build();
+        final JobStatus jobStatus = createJobStatus(jobInfo);
+        jobStatus.addInternalFlags(JobStatus.INTERNAL_FLAG_DEMOTED_BY_USER);
+        final long expected = JobStatus.JOB_STATE_FLAG_IS_REQUESTED_USER_INITIATED_JOB
+                | JobStatus.JOB_STATE_FLAG_HAS_CONNECTIVITY_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_CAN_APPLY_TRANSPORT_AFFINITIES;
+
+        // A user-initiated job should not be present
+        assertEquals("Demoted user-initiated job should not have UIJ running flag",
+                expected, JobStatus.packStatesToBits(jobStatus));
+    }
+
+    @Test
+    public void testPackStatesToBits_WithPeriodicJob() {
+        final JobInfo jobInfo =
+                new JobInfo.Builder(101, new ComponentName("foo", "bar"))
+                        .setPeriodic(JobInfo.getMinPeriodMillis())
+                        .build();
+        final JobStatus jobStatus = createJobStatus(jobInfo);
+        final long expected = JobStatus.JOB_STATE_FLAG_IS_PERIODIC
+                | JobStatus.JOB_STATE_FLAG_HAS_TIMING_DELAY_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_DEADLINE_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_FLEXIBILITY_CONSTRAINT;
+
+        assertEquals("Periodic job should have periodic, timing, and deadline flags",
+                expected, JobStatus.packStatesToBits(jobStatus));
+    }
+
+    @Test
+    public void testPackStatesToBits_WithSatisfiedConstraints() {
+        final JobStatus jobStatus =
+                createJobStatus(new JobInfo.Builder(101, new ComponentName("foo", "bar")).build());
+        final long expected = JobStatus.JOB_STATE_FLAG_HAS_FLEXIBILITY_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_CHARGING_SATISFIED
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_IDLE_SATISFIED
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_BATTERY_NOT_LOW_SATISFIED
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_STORAGE_NOT_LOW_SATISFIED
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_CONNECTIVITY_SATISFIED
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_CONTENT_TRIGGER_SATISFIED
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_TIMING_DELAY_SATISFIED
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_DEADLINE_SATISFIED
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_FLEXIBLE_SATISFIED;
+
+        // Now, satisfy all constraints, even if not requested by the job.
+        jobStatus.setChargingConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+        jobStatus.setIdleConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+        jobStatus.setBatteryNotLowConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+        jobStatus.setStorageNotLowConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+        jobStatus.setConnectivityConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+        jobStatus.setContentTriggerConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+        jobStatus.setTimingDelayConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+        jobStatus.setDeadlineConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+        jobStatus.setFlexibilityConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+
+        assertEquals("Job with all constraints satisfied should have all satisfied flags set",
+                expected, JobStatus.packStatesToBits(jobStatus));
     }
 }

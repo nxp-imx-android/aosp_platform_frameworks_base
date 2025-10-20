@@ -95,6 +95,11 @@ public class Task {
          * The type of the top most activity.
          */
         public @WindowConfiguration.ActivityType int topActivityType;
+        /**
+         * Whether the top activity fillsParent() is false. This is used to determine if the
+         * activity is translucent.
+         */
+        public boolean isTopActivityTransparent;
 
         // The source component name which started this task
         public final ComponentName sourceComponent;
@@ -102,6 +107,9 @@ public class Task {
         private int mHashCode;
 
         public TaskKey(TaskInfo t) {
+            this(t, t.displayId);
+        }
+        public TaskKey(TaskInfo t, int displayIdOverride) {
             ComponentName sourceComponent = t.origActivity != null
                     // Activity alias if there is one
                     ? t.origActivity
@@ -113,12 +121,13 @@ public class Task {
             this.sourceComponent = sourceComponent;
             this.userId = t.userId;
             this.lastActiveTime = t.lastActiveTime;
-            this.displayId = t.displayId;
+            this.displayId = displayIdOverride;
             this.baseActivity = t.baseActivity;
             this.numActivities = t.numActivities;
             this.isTopActivityNoDisplay = t.isTopActivityNoDisplay;
             this.isActivityStackTransparent = t.isActivityStackTransparent;
             this.topActivityType = t.topActivityType;
+            this.isTopActivityTransparent = t.isTopActivityTransparent;
             updateHashCode();
         }
 
@@ -138,7 +147,8 @@ public class Task {
                 ComponentName sourceComponent, int userId, long lastActiveTime, int displayId,
                 @Nullable ComponentName baseActivity, int numActivities,
                 boolean isTopActivityNoDisplay, boolean isActivityStackTransparent,
-                @WindowConfiguration.ActivityType int topActivityType) {
+                @WindowConfiguration.ActivityType int topActivityType,
+                boolean isTopActivityTransparent) {
             this.id = id;
             this.windowingMode = windowingMode;
             this.baseIntent = intent;
@@ -151,6 +161,7 @@ public class Task {
             this.isTopActivityNoDisplay = isTopActivityNoDisplay;
             this.isActivityStackTransparent = isActivityStackTransparent;
             this.topActivityType = topActivityType;
+            this.isTopActivityTransparent = isTopActivityTransparent;
             updateHashCode();
         }
 
@@ -227,6 +238,7 @@ public class Task {
             parcel.writeBoolean(isTopActivityNoDisplay);
             parcel.writeBoolean(isActivityStackTransparent);
             parcel.writeInt(topActivityType);
+            parcel.writeBoolean(isTopActivityTransparent);
         }
 
         private static TaskKey readFromParcel(Parcel parcel) {
@@ -242,10 +254,10 @@ public class Task {
             boolean isTopActivityNoDisplay = parcel.readBoolean();
             boolean isActivityStackTransparent = parcel.readBoolean();
             int topActivityType = parcel.readInt();
-
+            boolean isTopActivityTransparent = parcel.readBoolean();
             return new TaskKey(id, windowingMode, baseIntent, sourceComponent, userId,
                     lastActiveTime, displayId, baseActivity, numActivities, isTopActivityNoDisplay,
-                    isActivityStackTransparent, topActivityType);
+                    isActivityStackTransparent, topActivityType, isTopActivityTransparent);
         }
 
         @Override
@@ -313,10 +325,12 @@ public class Task {
                         CONTROLLED_WINDOWING_MODES_WHEN_ACTIVE, taskInfo.getWindowingMode())
                 && (taskInfo.getActivityType() == ACTIVITY_TYPE_UNDEFINED
                 || ArrayUtils.contains(CONTROLLED_ACTIVITY_TYPES, taskInfo.getActivityType()));
-        return new Task(taskKey,
+        Task result = new Task(taskKey,
                 td != null ? td.getPrimaryColor() : 0,
                 td != null ? td.getBackgroundColor() : 0, isDockable , isLocked, td,
                 taskInfo.topActivity);
+        result.appBounds = taskInfo.configuration.windowConfiguration.getAppBounds();
+        return result;
     }
 
     /**

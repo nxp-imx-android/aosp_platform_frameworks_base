@@ -17,6 +17,7 @@
 package android.media;
 
 import android.content.Intent;
+import android.media.AppId;
 import android.media.IMediaRouter2;
 import android.media.IMediaRouter2Manager;
 import android.media.IMediaRouterClient;
@@ -31,7 +32,7 @@ import android.media.session.MediaSession;
 import android.os.Bundle;
 import android.os.UserHandle;
 /**
- * {@hide}
+ * @hide
  */
 interface IMediaRouterService {
     //TODO: Merge or remove methods when media router 2 is done.
@@ -70,8 +71,10 @@ interface IMediaRouterService {
     void requestCreateSessionWithRouter2(IMediaRouter2 router, int requestId, long managerRequestId,
             in RoutingSessionInfo oldSession, in MediaRoute2Info route,
             in RoutingChangeInfo routingChangeInfo, in @nullable Bundle sessionHints);
-    void selectRouteWithRouter2(IMediaRouter2 router, String sessionId, in MediaRoute2Info route);
-    void deselectRouteWithRouter2(IMediaRouter2 router, String sessionId, in MediaRoute2Info route);
+    void selectRouteWithRouter2(IMediaRouter2 router, String sessionId, in MediaRoute2Info route,
+            in RoutingChangeInfo routingChangeInfo);
+    void deselectRouteWithRouter2(IMediaRouter2 router, String sessionId, in MediaRoute2Info route,
+            in RoutingChangeInfo routingChangeInfo);
     void transferToRouteWithRouter2(IMediaRouter2 router, String sessionId,
             in MediaRoute2Info route, in RoutingChangeInfo routingChangeInfo);
     void setSessionVolumeWithRouter2(IMediaRouter2 router, String sessionId, int volume);
@@ -85,6 +88,7 @@ interface IMediaRouterService {
     List<RoutingSessionInfo> getRemoteSessions(IMediaRouter2Manager manager);
     RoutingSessionInfo getSystemSessionInfoForPackage(String callerPackageName,
         String targetPackageName);
+    List<AppId> getSystemSessionOverridesAppIds(IMediaRouter2Manager manager);
     void registerManager(IMediaRouter2Manager manager, String packageName);
     void registerProxyRouter(IMediaRouter2Manager manager, String callingPackageName, String targetPackageName, in UserHandle targetUser);
     void unregisterManager(IMediaRouter2Manager manager);
@@ -96,9 +100,9 @@ interface IMediaRouterService {
             in RoutingSessionInfo oldSession, in RoutingChangeInfo routingChangeInfo,
             in @nullable MediaRoute2Info route);
     void selectRouteWithManager(IMediaRouter2Manager manager, int requestId,
-            String sessionId, in MediaRoute2Info route);
+            String sessionId, in MediaRoute2Info route, in RoutingChangeInfo routingChangeInfo);
     void deselectRouteWithManager(IMediaRouter2Manager manager, int requestId,
-            String sessionId, in MediaRoute2Info route);
+            String sessionId, in MediaRoute2Info route, in RoutingChangeInfo routingChangeInfo);
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MEDIA_CONTENT_CONTROL)")
     void transferToRouteWithManager(IMediaRouter2Manager manager, int requestId,
             String sessionId, in MediaRoute2Info route,

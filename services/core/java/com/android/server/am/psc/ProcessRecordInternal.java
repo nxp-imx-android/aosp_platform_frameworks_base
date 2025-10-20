@@ -23,24 +23,25 @@ import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_NONE;
 import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_NONE;
 import static com.android.server.am.OomAdjusterImpl.ProcessRecordNode.NUM_NODE_TYPE;
-import static com.android.server.am.ProcessList.CACHED_APP_MIN_ADJ;
-import static com.android.server.am.ProcessList.INVALID_ADJ;
-import static com.android.server.am.ProcessList.SCHED_GROUP_BACKGROUND;
-import static com.android.server.am.ProcessList.SERVICE_B_ADJ;
-import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
+import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
+import static com.android.server.am.psc.Constants.INVALID_ADJ;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_BACKGROUND;
+import static com.android.server.am.psc.Constants.SERVICE_B_ADJ;
+import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_VISIBLE;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER;
 
 import android.annotation.ElapsedRealtimeLong;
 import android.app.ActivityManager;
+import android.app.ApplicationExitInfo;
 import android.os.Process;
 import android.os.SystemClock;
 import android.os.Trace;
+import android.os.UserHandle;
 import android.util.TimeUtils;
 
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
-import com.android.server.am.Flags;
 import com.android.server.am.OomAdjuster;
 import com.android.server.am.OomAdjusterImpl;
 import com.android.server.am.ProcessCachedOptimizerRecord.ShouldNotFreezeReason;
@@ -138,49 +139,13 @@ public abstract class ProcessRecordInternal {
          * @param hasStartedServices The new mHasStartedServices value.
          */
         void onHasStartedServicesChanged(boolean hasStartedServices);
-
-        /**
-         * Called when the broadcast-receiving state changes.
-         *
-         * @param isReceivingBroadcast The new isReceivingBroadcast value.
-         */
-        void onIsReceivingBroadcastChanged(boolean isReceivingBroadcast);
-
-        /**
-         * Called when the activity-hosting state changes.
-         *
-         * @param hasActivities The new hasActivities value.
-         */
-        void onHasActivitiesChanged(boolean hasActivities);
     }
 
-    // TODO(b/401350380): Remove these methods after the push model is migrated.
-    /** @return {@code true} if the process has any activities. */
-    public abstract boolean hasActivities();
+    /** Retrieves the last reported PSS (Proportional Set Size) for this process. */
+    public abstract long getLastPss();
 
-    /** @return {@code true} if the process is considered a heavy-weight process. */
-    public abstract boolean isHeavyWeightProcess();
-
-    /** @return {@code true} if the process has any visible activities. */
-    public abstract boolean hasVisibleActivities();
-
-    /** @return {@code true} if the process is the current home process. */
-    public abstract boolean isHomeProcess();
-
-    /** @return {@code true} if the process was the previous top process. */
-    public abstract boolean isPreviousProcess();
-
-    /** @return {@code true} if the process is associated with any recent tasks. */
-    public abstract boolean hasRecentTasks();
-
-    /**
-     * Checks if the process is currently receiving a broadcast.
-     *
-     * @param outSchedGroup An output array of size 1 where the scheduling group associated
-     *                      with the broadcast will be placed if one is active.
-     * @return {@code true} if the process is receiving a broadcast.
-     */
-    public abstract boolean isReceivingBroadcast(int[] outSchedGroup);
+    /** Retrieves the last reported RSS (Resident Set Size) for this process. */
+    public abstract long getLastRss();
 
     /**
      * Checks if a specific compatibility change is enabled for the process.
@@ -192,6 +157,18 @@ public abstract class ProcessRecordInternal {
 
     /** Returns true if there is an active instrumentation running in this process. */
     public abstract boolean hasActiveInstrumentation();
+
+    /** Returns whether this process is frozen. */
+    public abstract boolean isFrozen();
+
+    /** Returns whether this process has been scheduled for freezing. */
+    public abstract boolean isPendingFreeze();
+
+    /**
+     * Returns the OOM adjustment sequence number when this process's
+     * {@link #shouldNotFreeze()} state was last updated.
+     */
+    public abstract int shouldNotFreezeAdjSeq();
 
     /** Returns whether this process should be exempt from freezing. */
     public abstract boolean shouldNotFreeze();
@@ -212,6 +189,12 @@ public abstract class ProcessRecordInternal {
      */
     public abstract int getApplicationUid();
 
+    /** Returns the package name of the application this process belongs to. */
+    public abstract String getPackageName();
+
+    /** Returns whether this process is for an instant app. */
+    public abstract boolean isInstantApp();
+
     /** Returns the {@link UidRecordInternal} associated with this process. */
     public abstract UidRecordInternal getUidRecord();
 
@@ -224,10 +207,120 @@ public abstract class ProcessRecordInternal {
     /** Returns the internal broadcast receiver related record for this process. */
     public abstract ProcessReceiverRecordInternal getReceivers();
 
+    /** Returns the process ID. */
+    public abstract int getPid();
+
+    /** Checks if the process is currently running (i.e. has an active thread). */
+    public abstract boolean isProcessRunning();
+
+    /** Sends the given process state to the application thread. */
+    public abstract void setProcessStateToThread(int state);
+
+    /** Determines if UI scheduling for this process should use FIFO priority. */
+    public abstract boolean useFifoUiScheduling();
+
+    /** Notifies the window process controller about a change in top process status. */
+    public abstract void notifyTopProcChanged();
+
+    /** Returns an array of package names associated with this process. */
+    public abstract String[] getProcessPackageNames();
+
+    /** Checks if this process hosts any packages that should be kept warm. */
+    public abstract boolean shouldKeepWarm();
+
+    /** Returns a short string representation of the process. */
+    public abstract String toShortString();
+
+    /** Returns the next scheduled time for PSS collection for this process. */
+    public abstract long getNextPssTime();
+
+    /** Sets the last recorded CPU time for this process. */
+    public abstract void setLastCpuTime(long time);
+
+    /**
+     * Kills the process with the given reason code, using the provided reason string
+     * as both the reason and a default description. The process group is killed
+     * asynchronously.
+     *
+     * @param reason A string describing the reason for the kill.
+     * @param reasonCode The reason code for the kill.
+     * @param noisy If true, a log message will be reported.
+     */
+    @GuardedBy("mServiceLock")
+    public void killLocked(String reason, @ApplicationExitInfo.Reason int reasonCode,
+            boolean noisy) {
+        killLocked(reason, reasonCode, ApplicationExitInfo.SUBREASON_UNKNOWN, noisy, true);
+    }
+
+    /**
+     * Kills the process with the given reason and subreason codes, using the provided
+     * reason string as both the reason and a default description. The process group
+     * is killed asynchronously.
+     *
+     * @param reason A string describing the reason for the kill.
+     * @param reasonCode The reason code for the kill.
+     * @param subReason The subreason code for the kill.
+     * @param noisy If true, a log message will be reported.
+     */
+    @GuardedBy("mServiceLock")
+    public void killLocked(String reason, @ApplicationExitInfo.Reason int reasonCode,
+            @ApplicationExitInfo.SubReason int subReason, boolean noisy) {
+        killLocked(reason, reason, reasonCode, subReason, noisy, true);
+    }
+
+    /**
+     * Kills the process with detailed reason information. The process group
+     * is killed asynchronously.
+     *
+     * @param reason A string describing the high-level reason for the kill.
+     * @param description A more detailed description of the kill reason.
+     * @param reasonCode The reason code for the kill.
+     * @param subReason The subreason code for the kill.
+     * @param noisy If true, a log message will be reported.
+     */
+    @GuardedBy("mServiceLock")
+    public void killLocked(String reason, String description,
+            @ApplicationExitInfo.Reason int reasonCode,
+            @ApplicationExitInfo.SubReason int subReason, boolean noisy) {
+        killLocked(reason, description, reasonCode, subReason, noisy, true);
+    }
+
+    /**
+     * Kills the process with the given reason and subreason codes, using the provided
+     * reason string as both the reason and a default description. Allows control over
+     * whether the process group is killed asynchronously.
+     *
+     * @param reason A string describing the reason for the kill.
+     * @param reasonCode The reason code for the kill.
+     * @param subReason The subreason code for the kill.
+     * @param noisy If true, a log message will be reported.
+     * @param asyncKPG If true, kills the process group asynchronously.
+     */
+    @GuardedBy("mServiceLock")
+    public void killLocked(String reason, @ApplicationExitInfo.Reason int reasonCode,
+            @ApplicationExitInfo.SubReason int subReason, boolean noisy, boolean asyncKPG) {
+        killLocked(reason, reason, reasonCode, subReason, noisy, asyncKPG);
+    }
+
+    /**
+     * Kills the process with the given reason, description, reason codes, and async KPG.
+     *
+     * @param reason A string describing the reason for the kill.
+     * @param description A more detailed description of the kill reason.
+     * @param reasonCode The reason code for the kill.
+     * @param subReason The subreason code for the kill.
+     * @param noisy If true, a log message will be reported.
+     * @param asyncKPG If true, kills the process group asynchronously.
+     */
+    @GuardedBy("mServiceLock")
+    public abstract void killLocked(String reason, String description,
+            @ApplicationExitInfo.Reason int reasonCode,
+            @ApplicationExitInfo.SubReason int subReason, boolean noisy, boolean asyncKPG);
+
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
 
-    private final String mProcessName;
+    public final String processName;
     private String mTrackName;
 
     /**
@@ -235,6 +328,11 @@ public abstract class ProcessRecordInternal {
      * This may differ from {@link #getApplicationUid()} if it's an isolated process.
      */
     public final int uid;
+    /**
+     * The user ID of the process.
+     * This is derived from {@link #uid} using {@link android.os.UserHandle#getUserId(int)}.
+     */
+    public final int userId;
     public final boolean isolated;     // true if this is a special isolated process
     public final boolean isSdkSandbox; // true if this is an SDK sandbox process
 
@@ -245,6 +343,14 @@ public abstract class ProcessRecordInternal {
     private final Object mServiceLock;
     // The ActivityManagerGlobalLock object, which can only be used as a lock object.
     private final Object mProcLock;
+
+    /** True once we know the process has been killed. */
+    @CompositeRWLock({"mService", "mProcLock"})
+    private boolean mKilled;
+
+    /** True when proc has been killed by activity manager, not for RAM. */
+    @CompositeRWLock({"mService", "mProcLock"})
+    private boolean mKilledByAm;
 
     /**
      * Maximum OOM adjustment for this process.
@@ -419,7 +525,7 @@ public abstract class ProcessRecordInternal {
      * Is this process currently showing a non-activity UI that the user
      * is interacting with? E.g. The status bar when it is expanded, but
      * not when it is minimized. When true the
-     * process will be set to use the ProcessList#SCHED_GROUP_TOP_APP
+     * process will be set to use the {@link Constants#SCHED_GROUP_TOP_APP}
      * scheduling group to boost performance.
      */
     @GuardedBy("mServiceLock")
@@ -430,7 +536,7 @@ public abstract class ProcessRecordInternal {
      * overlays on-top of activity UIs on screen. E.g. display a window
      * of type android.view.WindowManager.LayoutParams#TYPE_APPLICATION_OVERLAY
      * When true the process will oom adj score will be set to
-     * ProcessList#PERCEPTIBLE_APP_ADJ at minimum to reduce the chance
+     * {@link Constants#PERCEPTIBLE_APP_ADJ} at minimum to reduce the chance
      * of the process getting killed.
      */
     @GuardedBy("mServiceLock")
@@ -439,9 +545,9 @@ public abstract class ProcessRecordInternal {
     /**
      * Is the process currently running a remote animation? When true
      * the process will be set to use the
-     * ProcessList#SCHED_GROUP_TOP_APP scheduling group to boost
+     * {@link Constants#SCHED_GROUP_TOP_APP} scheduling group to boost
      * performance, as well as oom adj score will be set to
-     * ProcessList#VISIBLE_APP_ADJ at minimum to reduce the chance
+     * {@link Constants#VISIBLE_APP_ADJ} at minimum to reduce the chance
      * of the process getting killed.
      */
     @GuardedBy("mServiceLock")
@@ -628,21 +734,6 @@ public abstract class ProcessRecordInternal {
     private static final int VALUE_FALSE = 0;
     private static final int VALUE_TRUE = 1;
 
-    @GuardedBy("mServiceLock")
-    private int mCachedHasActivities = VALUE_INVALID;
-    @GuardedBy("mServiceLock")
-    private int mCachedIsHeavyWeight = VALUE_INVALID;
-    @GuardedBy("mServiceLock")
-    private int mCachedHasVisibleActivities = VALUE_INVALID;
-    @GuardedBy("mServiceLock")
-    private int mCachedIsHomeProcess = VALUE_INVALID;
-    @GuardedBy("mServiceLock")
-    private int mCachedIsPreviousProcess = VALUE_INVALID;
-    @GuardedBy("mServiceLock")
-    private int mCachedHasRecentTasks = VALUE_INVALID;
-    @GuardedBy("mServiceLock")
-    private int mCachedIsReceivingBroadcast = VALUE_INVALID;
-
     /**
      * Cache the return value of PlatformCompat.isChangeEnabled().
      */
@@ -670,14 +761,31 @@ public abstract class ProcessRecordInternal {
     @GuardedBy("mServiceLock")
     private long mFollowupUpdateUptimeMs = Long.MAX_VALUE;
 
+    /** TID for RenderThread. */
+    @GuardedBy("mProcLock")
+    private int mRenderThreadTid;
+
+    /** Class to run on start if this is a special isolated process. */
+    @GuardedBy("mServiceLock")
+    private String mIsolatedEntryPoint;
+
+    /** Process is waiting to be killed when in the bg, and reason. */
+    @GuardedBy("mServiceLock")
+    private String mWaitingToKill;
+
+    /** For managing the LRU list. */
+    @CompositeRWLock({"mServiceLock", "mProcLock"})
+    private long mLastActivityTime;
+
     // TODO(b/425766486): Change to package-private after the OomAdjusterImpl class is moved to
     //                    the psc package.
     public final OomAdjusterImpl.ProcessRecordNode[] mLinkedNodes =
             new OomAdjusterImpl.ProcessRecordNode[NUM_NODE_TYPE];
 
     public ProcessRecordInternal(String processName, int uid, Object serviceLock, Object procLock) {
-        mProcessName = processName;
+        this.processName = processName;
         this.uid = uid;
+        userId = UserHandle.getUserId(uid);
         isSdkSandbox = Process.isSdkSandboxUid(this.uid);
         isolated = Process.isIsolatedUid(this.uid);
         mServiceLock = serviceLock;
@@ -690,6 +798,27 @@ public abstract class ProcessRecordInternal {
         mStartedServiceObserver = startedServiceObserver;
         mLastStateTime = now;
     }
+
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    public boolean isKilled() {
+        return mKilled;
+    }
+
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    public void setKilled(boolean killed) {
+        mKilled = killed;
+    }
+
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    public boolean isKilledByAm() {
+        return mKilledByAm;
+    }
+
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    public void setKilledByAm(boolean killedByAm) {
+        mKilledByAm = killedByAm;
+    }
+
 
     @GuardedBy("mServiceLock")
     public void setMaxAdj(int maxAdj) {
@@ -1172,11 +1301,6 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public int getCacheOomRankerUseCount() {
-        return mCacheOomRankerUseCount;
-    }
-
-    @GuardedBy("mServiceLock")
     public void setSystemNoUi(boolean systemNoUi) {
         mSystemNoUi = systemNoUi;
     }
@@ -1288,13 +1412,6 @@ public abstract class ProcessRecordInternal {
     /** Resets all cached information used by the OomAdjuster. */
     @GuardedBy("mServiceLock")
     public void resetCachedInfo() {
-        mCachedHasActivities = VALUE_INVALID;
-        mCachedIsHeavyWeight = VALUE_INVALID;
-        mCachedHasVisibleActivities = VALUE_INVALID;
-        mCachedIsHomeProcess = VALUE_INVALID;
-        mCachedIsPreviousProcess = VALUE_INVALID;
-        mCachedHasRecentTasks = VALUE_INVALID;
-        mCachedIsReceivingBroadcast = VALUE_INVALID;
         mCachedAdj = INVALID_ADJ;
         mCachedForegroundActivities = false;
         mCachedProcState = ActivityManager.PROCESS_STATE_CACHED_EMPTY;
@@ -1302,142 +1419,22 @@ public abstract class ProcessRecordInternal {
         mCachedAdjType = null;
     }
 
-    /** Returns whether the process has any activities, using a cached value or pulling it. */
-    @GuardedBy("mServiceLock")
-    private boolean getCachedHasActivities() {
-        if (mCachedHasActivities == VALUE_INVALID) {
-            final boolean hasActivities = hasActivities();
-            mCachedHasActivities = hasActivities ? VALUE_TRUE : VALUE_FALSE;
-            mStartedServiceObserver.onHasActivitiesChanged(hasActivities);
-        }
-        return mCachedHasActivities == VALUE_TRUE;
-    }
-
-    /**
-     * Returns whether the process has any activities.
-     * Delegates to {@link #mHasActivities} if {@link Flags#pushActivityStateToOomadjuster()}
-     * is enabled, otherwise uses {@link #getCachedHasActivities()}.
-     */
+    /** Returns whether the process has any activities. */
     @GuardedBy("mServiceLock")
     public boolean getHasActivities() {
-        if (Flags.pushActivityStateToOomadjuster()) {
-            return mHasActivities;
-        } else {
-            return getCachedHasActivities();
-        }
+        return mHasActivities;
     }
 
-    /**
-     * Returns whether the process is considered a heavy-weight process, using a cached value or
-     * pulling it.
-     */
-    @GuardedBy("mServiceLock")
-    public boolean getCachedIsHeavyWeight() {
-        if (mCachedIsHeavyWeight == VALUE_INVALID) {
-            mCachedIsHeavyWeight = isHeavyWeightProcess() ? VALUE_TRUE : VALUE_FALSE;
-        }
-        return mCachedIsHeavyWeight == VALUE_TRUE;
-    }
-
-    /**
-     * Returns whether the process has any visible activities, using a cached value or pulling it.
-     */
-    @GuardedBy("mServiceLock")
-    private boolean getCachedHasVisibleActivities() {
-        if (mCachedHasVisibleActivities == VALUE_INVALID) {
-            setCachedHasVisibleActivities(hasVisibleActivities());
-        }
-        return mCachedHasVisibleActivities == VALUE_TRUE;
-    }
-
-    /** Sets the cached state of whether the process has visible activities. */
-    @GuardedBy("mServiceLock")
-    public void setCachedHasVisibleActivities(boolean cachedHasVisibleActivities) {
-        mCachedHasVisibleActivities = cachedHasVisibleActivities ? VALUE_TRUE : VALUE_FALSE;
-    }
-
-    /**
-     * Returns whether the process has any visible activities.
-     * Delegates to {@link #mActivityStateFlags} if {@link Flags#pushActivityStateToOomadjuster()}
-     * is enabled, otherwise uses {@link #getCachedHasVisibleActivities()}.
-     */
+    /** Returns whether the process has any visible activities. */
     @GuardedBy("mServiceLock")
     public boolean getHasVisibleActivities() {
-        if (Flags.pushActivityStateToOomadjuster()) {
-            return (mActivityStateFlags & ACTIVITY_STATE_FLAG_IS_VISIBLE) != 0;
-        } else {
-            return getCachedHasVisibleActivities();
-        }
+        return (mActivityStateFlags & ACTIVITY_STATE_FLAG_IS_VISIBLE) != 0;
     }
 
-    /**
-     * Returns whether the process is the current home process, using a cached value or pulling it.
-     */
-    @GuardedBy("mServiceLock")
-    public boolean getCachedIsHomeProcess() {
-        if (mCachedIsHomeProcess == VALUE_INVALID) {
-            mCachedIsHomeProcess = isHomeProcess() ? VALUE_TRUE : VALUE_FALSE;
-        }
-        return mCachedIsHomeProcess == VALUE_TRUE;
-    }
-
-    /**
-     * Returns whether the process was the previous top process, using a cached value or pulling it.
-     */
-    @GuardedBy("mServiceLock")
-    public boolean getCachedIsPreviousProcess() {
-        if (mCachedIsPreviousProcess == VALUE_INVALID) {
-            mCachedIsPreviousProcess = isPreviousProcess() ? VALUE_TRUE : VALUE_FALSE;
-        }
-        return mCachedIsPreviousProcess == VALUE_TRUE;
-    }
-
-    /**
-     * Returns whether the process is associated with any recent tasks, using a cached value or
-     * pulling it.
-     */
-    @GuardedBy("mServiceLock")
-    public boolean getCachedHasRecentTasks() {
-        if (mCachedHasRecentTasks == VALUE_INVALID) {
-            mCachedHasRecentTasks = hasRecentTasks() ? VALUE_TRUE : VALUE_FALSE;
-        }
-        return mCachedHasRecentTasks == VALUE_TRUE;
-    }
-
-    /**
-     * Returns whether the process is associated with any recent tasks.
-     * Delegates to {@link #mHasRecentTask} if {@link Flags#pushActivityStateToOomadjuster()}
-     * is enabled, otherwise uses {@link #getCachedHasRecentTasks()}.
-     */
+    /** Returns whether the process is associated with any recent tasks. */
     @GuardedBy("mServiceLock")
     public boolean getHasRecentTasks() {
-        if (Flags.pushActivityStateToOomadjuster()) {
-            return mHasRecentTask;
-        } else {
-            return getCachedHasRecentTasks();
-        }
-    }
-
-    /**
-     * Returns whether the process is currently receiving a broadcast, using a cached value or
-     * pulling it. The scheduling group associated with the broadcast will be placed in
-     * {@code outSchedGroup} if active.
-     *
-     * @param outSchedGroup An output array of size 1 where the scheduling group associated
-     *                      with the broadcast will be placed if one is active.
-     * @return True if the process is receiving a broadcast, false otherwise.
-     */
-    @GuardedBy("mServiceLock")
-    public boolean getCachedIsReceivingBroadcast(int[] outSchedGroup) {
-        if (mCachedIsReceivingBroadcast == VALUE_INVALID) {
-            final boolean isReceivingBroadcast = isReceivingBroadcast(outSchedGroup);
-            mCachedIsReceivingBroadcast = isReceivingBroadcast ? VALUE_TRUE : VALUE_FALSE;
-            if (isReceivingBroadcast) {
-                mCachedSchedGroup = outSchedGroup[0];
-            }
-            mStartedServiceObserver.onIsReceivingBroadcastChanged(isReceivingBroadcast);
-        }
-        return mCachedIsReceivingBroadcast == VALUE_TRUE;
+        return mHasRecentTask;
     }
 
     /**
@@ -1632,33 +1629,53 @@ public abstract class ProcessRecordInternal {
         return mLastCachedTime;
     }
 
-    /**
-     * Sets the process memory usage (RSS) and the time it was updated for CacheOomRanker.
-     *
-     * @param rss The RSS memory usage in bytes.
-     * @param rssTimeMs The time in milliseconds since boot when RSS was updated.
-     */
-    public void setCacheOomRankerRss(long rss, long rssTimeMs) {
-        mCacheOomRankerRss = rss;
-        mCacheOomRankerRssTimeMs = rssTimeMs;
+    @GuardedBy("mServiceLock")
+    public String getIsolatedEntryPoint() {
+        return mIsolatedEntryPoint;
     }
 
     @GuardedBy("mServiceLock")
-    public long getCacheOomRankerRss() {
-        return mCacheOomRankerRss;
+    public void setIsolatedEntryPoint(String isolatedEntryPoint) {
+        mIsolatedEntryPoint = isolatedEntryPoint;
     }
 
     @GuardedBy("mServiceLock")
-    public long getCacheOomRankerRssTimeMs() {
-        return mCacheOomRankerRssTimeMs;
+    public String getWaitingToKill() {
+        return mWaitingToKill;
     }
+
+    @GuardedBy("mServiceLock")
+    public void setWaitingToKill(String waitingToKill) {
+        mWaitingToKill = waitingToKill;
+    }
+
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    public long getLastActivityTime() {
+        return mLastActivityTime;
+    }
+
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    public void setLastActivityTime(long lastActivityTime) {
+        mLastActivityTime = lastActivityTime;
+    }
+
+    @GuardedBy("mProcLock")
+    public int getRenderThreadTid() {
+        return mRenderThreadTid;
+    }
+
+    @GuardedBy("mProcLock")
+    public void setRenderThreadTid(int renderThreadTid) {
+        mRenderThreadTid = renderThreadTid;
+    }
+
 
     /**
      * Lazily initiates and returns the track name for tracing.
      */
     private String getTrackName() {
         if (mTrackName == null) {
-            mTrackName = "oom:" + mProcessName + "/u" + uid;
+            mTrackName = "oom:" + processName + "/u" + uid;
         }
         return mTrackName;
     }

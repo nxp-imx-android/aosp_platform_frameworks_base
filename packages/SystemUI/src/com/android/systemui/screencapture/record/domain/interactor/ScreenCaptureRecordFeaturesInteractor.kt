@@ -28,6 +28,11 @@ object ScreenCaptureRecordFeaturesInteractor {
     val isLargeScreenScreencaptureEnabled: Boolean
         get() = Flags.largeScreenScreencapture()
 
+    val isLargeScreenRecordingEnabled: Boolean
+        get() = isLargeScreenScreencaptureEnabled && Flags.largeScreenRecording()
+
     val shouldShowNewToolbar: Boolean
-        get() = isNewScreenRecordToolbarEnabled || isLargeScreenScreencaptureEnabled
+        get() = isNewScreenRecordToolbarEnabled || isLargeScreenRecordingEnabled
+
+    val isMarkupAvailable: Boolean = true
 }

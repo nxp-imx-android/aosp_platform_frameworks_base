@@ -95,3 +95,10 @@ flag {
     description: "Feature flag to ennable ARR debug message"
     bug: "394614443"
 }
+
+flag {
+    name: "toolkit_disable_category_on_mrr"
+    namespace: "toolkit"
+    description: "Feature flag to avoid setFrameRateCategory call on MRR devices"
+    bug: "450582925"
+}

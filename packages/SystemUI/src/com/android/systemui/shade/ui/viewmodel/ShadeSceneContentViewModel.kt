@@ -18,11 +18,14 @@ package com.android.systemui.shade.ui.viewmodel
 
 import androidx.annotation.FloatRange
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.lifecycle.LifecycleOwner
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.ui.transitions.BlurConfig
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
@@ -41,8 +44,8 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.domain.interactor.ShadeStatusBarComponentsInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
-import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.unfold.domain.interactor.UnfoldTransitionInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.assisted.AssistedFactory
@@ -72,15 +75,17 @@ constructor(
     val mediaCarouselInteractor: MediaCarouselInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
     val mediaViewModelFactory: MediaViewModel.Factory,
-    disableFlagsInteractor: DisableFlagsInteractor,
     private val footerActionsViewModelFactory: FooterActionsViewModel.Factory,
     private val footerActionsController: FooterActionsController,
+    keyguardInteractor: KeyguardInteractor,
+    blurConfig: BlurConfig,
     unfoldTransitionInteractor: UnfoldTransitionInteractor,
     deviceEntryInteractor: DeviceEntryInteractor,
     private val sceneInteractor: SceneInteractor,
     private val tileSquishinessInteractor: TileSquishinessInteractor,
     windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
     mediaInRowInLandscapeViewModelFactory: MediaInRowInLandscapeViewModel.Factory,
+    shadeStatusBarComponentsInteractor: ShadeStatusBarComponentsInteractor,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("ShadeSceneContentViewModel.hydrator")
@@ -103,6 +108,14 @@ constructor(
     val shadeMode: ShadeMode by
         hydrator.hydratedStateOf(traceName = "shadeMode", source = shadeModeInteractor.shadeMode)
 
+    val isShadeBlurred: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isShadeBlurred",
+            source = keyguardInteractor.primaryBouncerShowing,
+        )
+
+    val shadeBlurRadius: Float by mutableFloatStateOf(blurConfig.maxBlurRadiusPx)
+
     /** Whether clicking on the empty area of the shade should do something. */
     val isEmptySpaceClickable: Boolean by
         hydrator.hydratedStateOf(
@@ -124,8 +137,10 @@ constructor(
     val isQsEnabled: Boolean by
         hydrator.hydratedStateOf(
             traceName = "isQsEnabled",
-            initialValue = disableFlagsInteractor.disableFlags.value.isQuickSettingsEnabled(),
-            source = disableFlagsInteractor.disableFlags.map { it.isQuickSettingsEnabled() },
+            initialValue =
+                shadeStatusBarComponentsInteractor.disableFlags.value.isQuickSettingsEnabled(),
+            source =
+                shadeStatusBarComponentsInteractor.disableFlags.map { it.isQuickSettingsEnabled() },
         )
 
     /**

@@ -16,6 +16,7 @@
 
 package android.telephony;
 
+import static android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE;
 import static android.content.Context.TELECOM_SERVICE;
 import static android.provider.Telephony.Carriers.DPC_URI;
 import static android.provider.Telephony.Carriers.INVALID_APN_ID;
@@ -96,6 +97,7 @@ import android.telephony.Annotation.NetworkType;
 import android.telephony.Annotation.RadioPowerState;
 import android.telephony.Annotation.SimActivationState;
 import android.telephony.Annotation.ThermalMitigationResult;
+import android.telephony.Annotation.TtyMode;
 import android.telephony.Annotation.UiccAppType;
 import android.telephony.Annotation.UiccAppTypeExt;
 import android.telephony.CallForwardingInfo.CallForwardingReason;
@@ -643,7 +645,7 @@ public class TelephonyManager {
      *   <li>Returns UNKNOWN for others.</li>
      * </ul>
      */
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public MultiSimVariants getMultiSimConfiguration() {
         String mSimConfig =
@@ -737,7 +739,7 @@ public class TelephonyManager {
         return 1;
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public static TelephonyManager from(Context context) {
         return (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
@@ -769,7 +771,7 @@ public class TelephonyManager {
         return new TelephonyManager(mContext, subId);
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public boolean isMultiSimEnabled() {
         return getPhoneCount() > 1;
@@ -2749,7 +2751,7 @@ public class TelephonyManager {
      * @see #PHONE_TYPE_CDMA
      * @see #PHONE_TYPE_SIP
      *
-     * {@hide}
+     * @hide
      */
     @SystemApi
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY)
@@ -3069,7 +3071,10 @@ public class TelephonyManager {
             TelephonyProtoEnums.NETWORK_TYPE_TD_SCDMA; // = 17.
     /** Current network is IWLAN */
     public static final int NETWORK_TYPE_IWLAN = TelephonyProtoEnums.NETWORK_TYPE_IWLAN; // = 18.
-    /** Current network is LTE_CA {@hide} */
+    /**
+     * Current network is LTE_CA
+     * @hide
+     */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int NETWORK_TYPE_LTE_CA = TelephonyProtoEnums.NETWORK_TYPE_LTE_CA; // = 19.
     /**
@@ -3319,7 +3324,7 @@ public class TelephonyManager {
      * @return the name of the radio technology
      *
      */
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public static String getNetworkTypeName(@NetworkType int type) {
         switch (type) {
@@ -3374,7 +3379,7 @@ public class TelephonyManager {
      * Returns the bitmask for a given technology (network type)
      * @param networkType for which bitmask is returned
      * @return the network type bitmask
-     * {@hide}
+     * @hide
      */
     public static @NetworkTypeBitMask long getBitMaskForNetworkType(@NetworkType int networkType) {
         switch(networkType) {
@@ -3631,7 +3636,7 @@ public class TelephonyManager {
      *
      * @param slotIndex for which icc card presence is checked
      */
-    /** {@hide} */
+    /** @hide */
     // FIXME Input argument slotIndex should be of type int
     @UnsupportedAppUsage
     public boolean hasIccCard(int slotIndex) {
@@ -5229,7 +5234,6 @@ public class TelephonyManager {
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_GET_GROUP_ID_LEVEL2)
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     @SystemApi
@@ -8388,7 +8392,7 @@ public class TelephonyManager {
      * with the default subId.
      * If SIM is not inserted, return default SIM slot index.
      *
-     * {@hide}
+     * @hide
      */
     @VisibleForTesting
     @UnsupportedAppUsage
@@ -8865,7 +8869,7 @@ public class TelephonyManager {
      * </ul>
      *
      * The use of {@link Manifest.permission#READ_PRIVILEGED_PHONE_STATE} is deprecated.
-     * Use {@link Manifest.permission#USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER instead.
+     * Use {@link Manifest.permission#USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER} instead.
      *
      * @param appType the icc application type, like {@link #APPTYPE_USIM}
      * @param authType the authentication type, any one of {@link #AUTHTYPE_EAP_AKA} or
@@ -10038,7 +10042,7 @@ public class TelephonyManager {
             if (telephony != null) {
                 return telephony.setAllowedNetworkTypesForReason(subId,
                         TelephonyManager.ALLOWED_NETWORK_TYPES_REASON_USER,
-                        RadioAccessFamily.getRafFromNetworkType(networkType));
+                        RadioAccessFamily.getRafFromNetworkType(networkType), getOpPackageName());
             }
         } catch (RemoteException ex) {
             Rlog.e(TAG, "setPreferredNetworkType RemoteException", ex);
@@ -10080,7 +10084,8 @@ public class TelephonyManager {
             if (telephony != null) {
                 networkTypeBitmask = checkNetworkTypeBitmask(networkTypeBitmask);
                 return telephony.setAllowedNetworkTypesForReason(getSubId(),
-                        TelephonyManager.ALLOWED_NETWORK_TYPES_REASON_USER, networkTypeBitmask);
+                        TelephonyManager.ALLOWED_NETWORK_TYPES_REASON_USER, networkTypeBitmask,
+                        getOpPackageName());
             }
         } catch (RemoteException ex) {
             Rlog.e(TAG, "setPreferredNetworkTypeBitmask RemoteException", ex);
@@ -10134,7 +10139,8 @@ public class TelephonyManager {
             if (telephony != null) {
                 allowedNetworkTypes = checkNetworkTypeBitmask(allowedNetworkTypes);
                 return telephony.setAllowedNetworkTypesForReason(getSubId(),
-                        TelephonyManager.ALLOWED_NETWORK_TYPES_REASON_CARRIER, allowedNetworkTypes);
+                        TelephonyManager.ALLOWED_NETWORK_TYPES_REASON_CARRIER, allowedNetworkTypes,
+                        getOpPackageName());
             }
         } catch (RemoteException ex) {
             Rlog.e(TAG, "setAllowedNetworkTypes RemoteException", ex);
@@ -10240,7 +10246,7 @@ public class TelephonyManager {
             if (telephony != null) {
                 allowedNetworkTypes = checkNetworkTypeBitmask(allowedNetworkTypes);
                 telephony.setAllowedNetworkTypesForReason(getSubId(), reason,
-                        allowedNetworkTypes);
+                        allowedNetworkTypes, getOpPackageName());
             } else {
                 throw new IllegalStateException("telephony service is null.");
             }
@@ -11061,6 +11067,25 @@ public class TelephonyManager {
     }
 
     /**
+     * Returns the current TTY mode of the device. For TTY to be on the user must enable it in
+     * settings and have a wired headset plugged in.
+     */
+    @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
+    @RequiresPermission(READ_PRIVILEGED_PHONE_STATE)
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
+    public @TtyMode int getCurrentTtyMode() {
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null)
+                return telephony.getCurrentTtyMode();
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error calling ITelephony#getCurrentTtyMode", e);
+            e.rethrowAsRuntimeException();
+        }
+        return TTY_MODE_OFF;
+    }
+
+    /**
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
      * @hide
@@ -11747,7 +11772,7 @@ public class TelephonyManager {
      * TODO: The legacy design only supports single sim design. Ideally, this should support
      * multi-sim design in current world.
      *
-     * {@hide}
+     * @hide
      */
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public @Nullable String getMobileProvisioningUrl() {
@@ -12497,6 +12522,35 @@ public class TelephonyManager {
      */
     public static final int CARD_POWER_UP_PASS_THROUGH = 2;
 
+    /**
+     * TTY (teletypewriter) mode is off.
+     */
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
+    public static final int TTY_MODE_OFF = 0;
+
+    /**
+     * TTY (teletypewriter) mode is on. The speaker is off and the microphone is muted. The user
+     * will communicate with the remote party by sending and receiving text messages.
+     */
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
+    public static final int TTY_MODE_FULL = 1;
+
+    /**
+     * TTY (teletypewriter) mode is in hearing carryover mode (HCO). The microphone is muted but the
+     * speaker is on. The user will communicate with the remote party by sending text messages and
+     * hearing an audible reply.
+     */
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
+    public static final int TTY_MODE_HCO = 2;
+
+    /**
+     * TTY (teletypewriter) mode is in voice carryover mode (VCO). The speaker is off but the
+     * microphone is still on. User will communicate with the remote party by speaking and receiving
+     * text message replies.
+     */
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
+    public static final int TTY_MODE_VCO = 3;
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = {"CARD_POWER"},
@@ -12526,7 +12580,7 @@ public class TelephonyManager {
      *
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
-     * {@hide}
+     * @hide
      **/
     @SystemApi
     @Deprecated
@@ -12555,7 +12609,7 @@ public class TelephonyManager {
      *
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
-     * {@hide}
+     * @hide
      **/
     @SystemApi
     @Deprecated
@@ -12595,7 +12649,7 @@ public class TelephonyManager {
      *
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
-     * {@hide}
+     * @hide
      **/
     @SystemApi
     @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE)
@@ -12627,7 +12681,7 @@ public class TelephonyManager {
      *
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
-     * {@hide}
+     * @hide
      **/
     @SystemApi
     @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE)
@@ -13346,14 +13400,13 @@ public class TelephonyManager {
      *
      * @param slotIndex of phone whose service state is returned
      * @return ServiceState on specified SIM slot.
-     *
-     * @hide
      */
     @RequiresPermission(allOf = {
             Manifest.permission.READ_PHONE_STATE,
             Manifest.permission.ACCESS_COARSE_LOCATION
     })
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
+    @FlaggedApi(Flags.FLAG_GET_SERVICE_STATE_FOR_SLOT)
     public @Nullable ServiceState getServiceStateForSlot(int slotIndex) {
         return getServiceStateForSlot(slotIndex, false, false);
     }
@@ -16185,7 +16238,7 @@ public class TelephonyManager {
      *
      * @param context Context to use.
      * @return {@link List} of APNs that have been set as overrides.
-     * @throws {@link SecurityException} if the caller is not the system or phone process.
+     * @throws SecurityException if the caller is not the system or phone process.
      * @hide
      */
     @TestApi
@@ -16215,7 +16268,7 @@ public class TelephonyManager {
      *         modify the APN in the future via {@link #modifyDevicePolicyOverrideApn}, or
      *         {@link android.provider.Telephony.Carriers.INVALID_APN_ID} if the override operation
      *         failed.
-     * @throws {@link SecurityException} if the caller is not the system or phone process.
+     * @throws SecurityException if the caller is not the system or phone process.
      * @hide
      */
     @TestApi
@@ -16245,7 +16298,7 @@ public class TelephonyManager {
      *              {@link #addDevicePolicyOverrideApn}
      * @param apnSetting The {@link ApnSetting} describing the updated APN.
      * @return {@code true} if successful, {@code false} otherwise.
-     * @throws {@link SecurityException} if the caller is not the system or phone process.
+     * @throws SecurityException if the caller is not the system or phone process.
      * @hide
      */
     @TestApi
@@ -16433,7 +16486,7 @@ public class TelephonyManager {
      *
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
-     * {@hide}
+     * @hide
      */
     @SystemApi
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)

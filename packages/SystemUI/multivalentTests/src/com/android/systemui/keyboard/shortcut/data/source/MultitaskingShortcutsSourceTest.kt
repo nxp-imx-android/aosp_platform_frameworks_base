@@ -25,6 +25,7 @@ import android.view.KeyEvent.KEYCODE_LEFT_BRACKET
 import android.view.KeyEvent.KEYCODE_MINUS
 import android.view.KeyEvent.KEYCODE_RIGHT_BRACKET
 import android.view.KeyEvent.KEYCODE_TAB
+import android.view.KeyEvent.KEYCODE_W
 import android.view.KeyEvent.META_ALT_ON
 import android.view.KeyEvent.META_CTRL_ON
 import android.view.KeyEvent.META_META_ON
@@ -94,6 +95,11 @@ class MultitaskingShortcutsSourceTest : SysuiTestCase() {
                 context.getString(R.string.system_desktop_mode_minimize_window),
                 META_META_ON,
                 KEYCODE_MINUS,
+            ),
+            Triple(
+                context.getString(R.string.system_desktop_mode_close_window),
+                META_META_ON or META_CTRL_ON,
+                KEYCODE_W,
             ),
             Triple(
                 context.getString(R.string.system_multiple_desktop_mode_switch_between_desks),

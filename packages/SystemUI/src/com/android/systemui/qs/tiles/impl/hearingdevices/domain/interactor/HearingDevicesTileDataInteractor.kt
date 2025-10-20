@@ -16,7 +16,9 @@
 
 package com.android.systemui.qs.tiles.impl.hearingdevices.domain.interactor
 
+import android.bluetooth.BluetoothProfile
 import android.os.UserHandle
+import com.android.app.tracing.TraceUtils
 import com.android.systemui.accessibility.hearingaid.HearingDevicesChecker
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileDataInteractor
@@ -29,8 +31,9 @@ import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
 
 /** Observes hearing devices state changes providing the [HearingDevicesTileModel]. */
 class HearingDevicesTileDataInteractor
@@ -40,6 +43,9 @@ constructor(
     private val bluetoothController: BluetoothController,
     private val hearingDevicesChecker: HearingDevicesChecker,
 ) : QSTileDataInteractor<HearingDevicesTileModel> {
+
+    private var cachedSupportedProfiles: Set<Int>? = null
+
     override fun tileData(
         user: UserHandle,
         triggers: Flow<DataUpdateTrigger>,
@@ -61,7 +67,34 @@ constructor(
             .flowOn(backgroundContext)
             .distinctUntilChanged()
 
-    override fun availability(user: UserHandle): Flow<Boolean> = flowOf(true)
+    override fun availability(user: UserHandle) =
+        flow {
+                emit(
+                    TraceUtils.traceAsync(
+                        "HearingDevicesTileDataInteractor",
+                        "isHearingDeviceRelatedProfileSupported",
+                    ) {
+                        isHearingDeviceRelatedProfileSupported()
+                    }
+                )
+            }
+            .flowOn(backgroundContext)
+
+    private suspend fun isHearingDeviceRelatedProfileSupported(): Boolean {
+        withContext(backgroundContext) {
+            if (cachedSupportedProfiles == null) {
+                cachedSupportedProfiles = getSupportedProfiles()
+            }
+        }
+
+        return cachedSupportedProfiles?.let { profiles ->
+            setOf(BluetoothProfile.HEARING_AID, BluetoothProfile.HAP_CLIENT).any { it in profiles }
+        } ?: false
+    }
+
+    private fun getSupportedProfiles(): Set<Int> {
+        return bluetoothController.supportedProfiles?.toSet() ?: emptySet()
+    }
 
     private fun getModel() =
         HearingDevicesTileModel(

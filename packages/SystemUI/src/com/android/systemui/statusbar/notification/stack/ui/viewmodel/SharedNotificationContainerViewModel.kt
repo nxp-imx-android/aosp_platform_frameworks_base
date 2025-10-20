@@ -19,15 +19,17 @@ package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.view.View
 import android.view.WindowInsets.Type.defaultVisible
 import androidx.annotation.VisibleForTesting
+import androidx.compose.ui.Alignment
 import com.android.app.tracing.coroutines.flow.flowName
-import com.android.systemui.Flags
 import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.biometrics.Utils.getInsetsOf
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.common.shared.model.NotificationContainerBounds
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
+import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -81,6 +83,7 @@ import com.android.systemui.keyguard.ui.viewmodel.ViewStateAccessor
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.res.R
+import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
@@ -103,8 +106,10 @@ import com.android.systemui.util.kotlin.FlowDumperImpl
 import com.android.systemui.util.kotlin.Utils.Companion.sample as sampleCombine
 import com.android.systemui.util.kotlin.sample
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
+import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.Lazy
 import javax.inject.Inject
+import kotlin.math.round
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -140,9 +145,11 @@ constructor(
     @Application applicationScope: CoroutineScope,
     @ShadeDisplayAware private val context: Context,
     @ShadeDisplayAware configurationInteractor: ConfigurationInteractor,
+    communalInteractor: CommunalInteractor,
     private val keyguardInteractor: KeyguardInteractor,
     private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
     private val shadeInteractor: ShadeInteractor,
+    private val sceneInteractor: SceneInteractor,
     private val bouncerInteractor: BouncerInteractor,
     shadeModeInteractor: ShadeModeInteractor,
     notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
@@ -258,10 +265,10 @@ constructor(
     val configurationBasedDimensions: Flow<ConfigurationBasedDimensions> =
         if (SceneContainerFlag.isEnabled) {
                 combine(
-                    shadeModeInteractor.isFullWidthShade,
+                    shadeModeInteractor.notificationStackHorizontalAlignment,
                     shadeModeInteractor.shadeMode,
                     configurationInteractor.onAnyConfigurationChange,
-                ) { isFullWidthShade, shadeMode, _ ->
+                ) { horizontalAlignment, shadeMode, _ ->
                     with(context.resources) {
                         val marginHorizontal =
                             getDimensionPixelSize(
@@ -273,35 +280,35 @@ constructor(
                             )
 
                         val (marginStart, marginEnd) =
-                            @Suppress("DEPRECATION") // to handle split shade
-                            when (shadeMode) {
-                                Single -> marginHorizontal to marginHorizontal
-                                Split -> 0 to marginHorizontal
-                                Dual ->
-                                    if (isFullWidthShade) {
-                                        0 to 0
-                                    } else {
-                                        // all insets types combined, except the IME
-                                        val insets = getInsetsOf(context, defaultVisible()).toRect()
-                                        marginHorizontal.coerceAtLeast(insets.left) to 0
-                                    }
+                            if (shadeMode is Single) {
+                                marginHorizontal to marginHorizontal
+                            } else {
+                                val isRtl =
+                                    configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+                                // all insets types combined, except the IME
+                                val insets = getInsetsOf(context, defaultVisible()).toRect()
+                                val (insetStart, insetEnd) =
+                                    with(insets) { if (isRtl) right to left else left to right }
+                                when (horizontalAlignment) {
+                                    Alignment.Start ->
+                                        marginHorizontal.coerceAtLeast(insetStart) to 0
+                                    Alignment.End -> 0 to marginHorizontal.coerceAtLeast(insetEnd)
+                                    else -> 0 to 0
+                                }
+                            }
+
+                        val maxWidth =
+                            if (shadeMode is Dual) {
+                                getDimensionPixelSize(R.dimen.shade_panel_width)
+                            } else {
+                                Int.MAX_VALUE
                             }
 
                         val horizontalPosition =
-                            @Suppress("DEPRECATION") // to handle split shade
-                            when (shadeMode) {
-                                Single -> HorizontalPosition.EdgeToEdge
-                                Split -> HorizontalPosition.MiddleToEdge(ratio = 0.5f)
-                                Dual ->
-                                    if (isFullWidthShade) {
-                                        HorizontalPosition.EdgeToEdge
-                                    } else {
-                                        HorizontalPosition.EdgeToMiddle(
-                                            ratio = 0.5f,
-                                            maxWidth =
-                                                getDimensionPixelSize(R.dimen.shade_panel_width),
-                                        )
-                                    }
+                            when (horizontalAlignment) {
+                                Alignment.Start -> HorizontalPosition.EdgeToMiddle(maxWidth)
+                                Alignment.End -> HorizontalPosition.MiddleToEdge(maxWidth)
+                                else -> HorizontalPosition.EdgeToEdge
                             }
 
                         ConfigurationBasedDimensions(
@@ -620,10 +627,7 @@ constructor(
                         ),
                     ) { shadeExpansion, qsExpansion, inLockscreenToDreamTransition ->
                         if (shadeExpansion > 0f || qsExpansion > 0f) {
-                            if (
-                                Flags.lockscreenShadeToDreamTransitionFix() &&
-                                    inLockscreenToDreamTransition
-                            ) {
+                            if (inLockscreenToDreamTransition) {
                                 // Don't show lock screen when transitioning to dream with the shade
                                 // open. The shade is collapsed by ACTION_CLOSE_SYSTEM_DIALOGS that
                                 // the system server sends when starting the dream. Since the shade
@@ -689,7 +693,7 @@ constructor(
             goneToLockscreenTransitionViewModel.lockscreenAlpha,
             lockscreenToDreamingTransitionViewModel.lockscreenAlpha,
             lockscreenToGoneTransitionViewModel.notificationAlpha(viewState),
-            lockscreenToOccludedTransitionViewModel.lockscreenAlpha,
+            lockscreenToOccludedTransitionViewModel.lockscreenAlpha(viewState),
             lockscreenToPrimaryBouncerTransitionViewModel.notificationAlpha,
             alternateBouncerToPrimaryBouncerTransitionViewModel.notificationAlpha,
             occludedToAodTransitionViewModel.lockscreenAlpha,
@@ -704,15 +708,12 @@ constructor(
     }
 
     fun keyguardAlpha(viewState: ViewStateAccessor, scope: CoroutineScope): Flow<Float> {
-        val isKeyguardOccluded =
-            keyguardTransitionInteractor.transitionValue(OCCLUDED).map { it == 1f }
-
         val isKeyguardNotVisibleInState =
             if (SceneContainerFlag.isEnabled) {
-                isKeyguardOccluded
+                sceneInteractor.currentScene.map { it == Scenes.Occluded }
             } else {
                 anyOf(
-                    isKeyguardOccluded,
+                    keyguardTransitionInteractor.transitionValue(OCCLUDED).map { it == 1f },
                     keyguardTransitionInteractor
                         .transitionValue(content = Scenes.Gone, stateWithoutSceneContainer = GONE)
                         .map { it == 1f },
@@ -760,6 +761,32 @@ constructor(
             .map { transition -> transition.notificationBlurRadius }
             .merge()
             .dumpWhileCollecting("blurRadius")
+
+    /**
+     * Flow of view scale values for the zoom animation between the lockscreen and glanceable hub.
+     * 1.0f means no visual change to the view.
+     */
+    val viewScale: Flow<Float> =
+        // Use flatMapLatestConflated so the animation flows aren't collected at all when communal
+        // is not visible.
+        communalInteractor.isCommunalVisible
+            .flatMapLatestConflated { isCommunalVisible ->
+                if (!isCommunalVisible) {
+                    flowOf(1f)
+                } else {
+                    merge(
+                            lockscreenToGlanceableHubTransitionViewModel.zoomOut,
+                            glanceableHubToLockscreenTransitionViewModel.zoomOut,
+                        )
+                        .map {
+                            // Rate limit the zoom out by 5% step to avoid jank.
+                            val limited = (round(it * 20) / 20f).coerceIn(0f, 1f)
+                            1 - limited * PUSHBACK_SCALE
+                        }
+                }
+            }
+            .distinctUntilChanged()
+            .dumpWhileCollecting("viewScale")
 
     /**
      * Returns a flow of the expected alpha while running a LOCKSCREEN<->GLANCEABLE_HUB or
@@ -997,12 +1024,19 @@ constructor(
         data object EdgeToEdge : HorizontalPosition
 
         /**
-         * The container is laid out from the start edge to the given [ratio] of the screen width,
-         * or to [maxWidth], whichever dimension is smaller.
+         * The container is laid out from the start edge to the middle of the screen width, or to
+         * [maxWidth], whichever dimension is smaller.
          */
-        data class EdgeToMiddle(val ratio: Float = 0.5f, val maxWidth: Int) : HorizontalPosition
+        data class EdgeToMiddle(val maxWidth: Int) : HorizontalPosition
 
-        /** The container is laid out from the given [ratio] of the screen width to the end edge. */
-        data class MiddleToEdge(val ratio: Float = 0.5f) : HorizontalPosition
+        /**
+         * The container is laid out from the middle of the screen width to the end edge, or to
+         * [maxWidth], whichever dimension is smaller.
+         */
+        data class MiddleToEdge(val maxWidth: Int = Int.MAX_VALUE) : HorizontalPosition
+    }
+
+    companion object {
+        @VisibleForTesting const val PUSHBACK_SCALE = 0.05f
     }
 }

@@ -133,6 +133,11 @@ public final class KeyGestureEvent {
     public static final int KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK = 78;
     public static final int KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL = 79;
     public static final int KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK = 80;
+    public static final int KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK = 81;
+    public static final int KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN = 82;
+    public static final int KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT = 83;
+    public static final int KEY_GESTURE_TYPE_REJECT_HOME_ON_EXTERNAL_DISPLAY = 84;
+    public static final int KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH = 85;
 
     public static final int FLAG_CANCELLED = 1 << 0;
     public static final int FLAG_LONG_PRESS = 1 << 1;
@@ -228,6 +233,11 @@ public final class KeyGestureEvent {
             KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK,
             KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL,
             KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK,
+            KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK,
+            KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN,
+            KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
+            KEY_GESTURE_TYPE_REJECT_HOME_ON_EXTERNAL_DISPLAY,
+            KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface KeyGestureType {
@@ -596,6 +606,10 @@ public final class KeyGestureEvent {
                 return FrameworkStatsLog.KEYBOARD_SYSTEMS_EVENT_REPORTED__KEYBOARD_SYSTEM_EVENT__DESKTOP_MODE;
             case KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION:
                 return FrameworkStatsLog.KEYBOARD_SYSTEMS_EVENT_REPORTED__KEYBOARD_SYSTEM_EVENT__MULTI_WINDOW_NAVIGATION;
+            case KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK:
+                return FrameworkStatsLog.KEYBOARD_SYSTEMS_EVENT_REPORTED__KEYBOARD_SYSTEM_EVENT__QUIT_FOCUSED_DESKTOP_TASK;
+            case KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN:
+                return FrameworkStatsLog.KEYBOARD_SYSTEMS_EVENT_REPORTED__KEYBOARD_SYSTEM_EVENT__TOGGLE_FULLSCREEN;
             default:
                 return LOG_EVENT_UNSPECIFIED;
         }
@@ -828,6 +842,16 @@ public final class KeyGestureEvent {
                 return "KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL";
             case KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK:
                 return "KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK";
+            case KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK:
+                return "KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK";
+            case KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN:
+                return "KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN";
+            case KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT:
+                return "KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT";
+            case KEY_GESTURE_TYPE_REJECT_HOME_ON_EXTERNAL_DISPLAY:
+                return "KEY_GESTURE_TYPE_REJECT_HOME_ON_EXTERNAL_DISPLAY";
+            case KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH:
+                return "KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH";
             default:
                 return Integer.toHexString(value);
         }

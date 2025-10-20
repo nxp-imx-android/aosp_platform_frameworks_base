@@ -39,6 +39,9 @@ import android.os.RemoteException;
 import android.util.Slog;
 import android.view.Surface;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /** Utilities to convert the client side classes to the virtual camera service ones. */
 public final class VirtualCameraConversionUtil {
 
@@ -57,10 +60,15 @@ public final class VirtualCameraConversionUtil {
     public static VirtualCameraConfiguration
             getServiceCameraConfiguration(@NonNull VirtualCameraConfig cameraConfig) {
         VirtualCameraConfiguration serviceConfiguration = new VirtualCameraConfiguration();
+        List<SupportedStreamConfiguration> list = new ArrayList<>();
+        for (VirtualCameraStreamConfig virtualCameraStreamConfig :
+                cameraConfig.getStreamConfigs()) {
+            SupportedStreamConfiguration supportedStreamConfiguration =
+                    convertSupportedStreamConfiguration(virtualCameraStreamConfig);
+            list.add(supportedStreamConfiguration);
+        }
         serviceConfiguration.supportedStreamConfigs =
-                cameraConfig.getStreamConfigs().stream()
-                        .map(VirtualCameraConversionUtil::convertSupportedStreamConfiguration)
-                        .toArray(SupportedStreamConfiguration[]::new);
+                list.toArray(new SupportedStreamConfiguration[0]);
         serviceConfiguration.sensorOrientation = cameraConfig.getSensorOrientation();
         serviceConfiguration.lensFacing = cameraConfig.getLensFacing();
         serviceConfiguration.virtualCameraCallback = convertCallback(cameraConfig.getCallback());
@@ -131,6 +139,7 @@ public final class VirtualCameraConversionUtil {
         supportedConfig.width = stream.getWidth();
         supportedConfig.pixelFormat = convertToHalFormat(stream.getFormat());
         supportedConfig.maxFps = stream.getMaximumFramesPerSecond();
+        supportedConfig.index = stream.getStreamIndex();
         return supportedConfig;
     }
 

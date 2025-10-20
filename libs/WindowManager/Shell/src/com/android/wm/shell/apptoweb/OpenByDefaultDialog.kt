@@ -43,6 +43,8 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.compatui.DialogAnimationController
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.DESKTOP_WINDOWING_APP_TO_WEB_CHANGE_OPEN_BY_DEFAULT_SETTINGS
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
@@ -69,6 +71,7 @@ internal class OpenByDefaultDialog(
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
     @ShellMainThread private val mainScope: CoroutineScope,
     private val listener: DialogLifecycleListener,
+    private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
 ) {
     private lateinit var dialog: OpenByDefaultDialogView
     private lateinit var viewHost: SurfaceControlViewHost
@@ -83,7 +86,9 @@ internal class OpenByDefaultDialog(
         DialogAnimationController<OpenByDefaultDialogView>(context, "OpenByDefaultDialog")
     private val domainVerificationManager =
         userContext.getSystemService(DomainVerificationManager::class.java)!!
-    private val packageName = taskInfo.baseActivity?.packageName!!
+    private val packageName = checkNotNull(taskInfo.baseActivity)
+    { "Expected non-null base activity" }.packageName
+    private var linkHandlingAllowed: Boolean = false
 
     private var loadAppInfoJob: Job? = null
 
@@ -117,6 +122,13 @@ internal class OpenByDefaultDialog(
         dialog.setDismissOnClickListener { closeMenu() }
         dialog.setConfirmButtonClickListener {
             setDefaultLinkHandlingSetting()
+            // Log if user is confirming settings change
+            if (isConfirmingSettingsChange()) {
+                desktopModeUiEventLogger.log(
+                    taskInfo,
+                    DESKTOP_WINDOWING_APP_TO_WEB_CHANGE_OPEN_BY_DEFAULT_SETTINGS
+                )
+            }
             closeMenu()
         }
 
@@ -166,9 +178,15 @@ internal class OpenByDefaultDialog(
 
         val userState =
             getDomainVerificationUserState(domainVerificationManager, packageName) ?: return
-        val openInApp = userState.isLinkHandlingAllowed
-        openInAppButton.isChecked = openInApp
-        openInBrowserButton.isChecked = !openInApp
+        linkHandlingAllowed = userState.isLinkHandlingAllowed
+        openInAppButton.isChecked = linkHandlingAllowed
+        openInBrowserButton.isChecked = !linkHandlingAllowed
+    }
+
+    private fun isConfirmingSettingsChange() = if (linkHandlingAllowed) {
+        openInBrowserButton.isChecked
+    } else {
+        openInAppButton.isChecked
     }
 
     private fun setDefaultLinkHandlingSetting() {
@@ -209,6 +227,11 @@ internal class OpenByDefaultDialog(
         dialogWindowManager.relayout(taskBounds)
         viewHost.relayout(taskBounds.width(), taskBounds.height())
     }
+
+    /**
+     * Dismiss dialog and set it to null, so it that it will be re-created on the next opening.
+     */
+    fun dismiss() = closeMenu()
 
     /**
      * Handles showing, positioning and tearing down the dialog surface

@@ -22,6 +22,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.appcompat.content.res.AppCompatResources
 import com.android.internal.logging.UiEventLogger
+import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.log.DebugLogger.debugLog
 import com.android.systemui.res.R
@@ -38,12 +39,14 @@ import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+typealias ScrollClickCallback = ((Uri) -> Unit)
+
 /**
  * Provides actions for screenshots. This class can be overridden by a vendor-specific SysUI
  * implementation.
  */
 interface ScreenshotActionsProvider {
-    fun onScrollChipReady(onClick: Runnable)
+    fun onScrollChipReady(onClick: ScrollClickCallback)
 
     fun onScrollChipInvalidated()
 
@@ -78,7 +81,7 @@ constructor(
     @Assisted val actionsCallback: ScreenshotActionsController.ActionsCallback,
 ) : ScreenshotActionsProvider {
     private var addedScrollChip = false
-    private var onScrollClick: Runnable? = null
+    private var onScrollClick: ScrollClickCallback? = null
     private var pendingAction: (suspend (ScreenshotSavedResult) -> Unit)? = null
     private var result: ScreenshotSavedResult? = null
     private var webUri: Uri? = null
@@ -143,7 +146,7 @@ constructor(
         }
     }
 
-    override fun onScrollChipReady(onClick: Runnable) {
+    override fun onScrollChipReady(onClick: ScrollClickCallback) {
         onScrollClick = onClick
         if (!addedScrollChip) {
             actionsCallback.provideActionButton(
@@ -154,7 +157,11 @@ constructor(
                 ),
                 showDuringEntrance = true,
             ) {
-                onScrollClick?.run()
+                if (Flags.deleteAfterScrollCapture()) {
+                    onDeferrableActionTapped { result -> onScrollClick?.invoke(result.uri) }
+                } else {
+                    onScrollClick?.invoke(Uri.EMPTY)
+                }
             }
             addedScrollChip = true
         }

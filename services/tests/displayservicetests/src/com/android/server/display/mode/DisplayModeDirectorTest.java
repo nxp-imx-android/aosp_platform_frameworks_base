@@ -289,7 +289,6 @@ public class DisplayModeDirectorTest {
         mHandler = new Handler(Looper.getMainLooper());
         mInjector.setEnabledDisplays(Map.of(DISPLAY_ID, Display.TYPE_INTERNAL,
                 DISPLAY_ID_2, Display.TYPE_INTERNAL));
-        when(mDisplayManagerFlags.isOnDisplayAddedInObserverEnabled()).thenReturn(true);
     }
 
     private Resources mockResources() {
@@ -1328,8 +1327,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testLockFps_DisplayWithOneMode() throws Exception {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
@@ -1618,7 +1615,7 @@ public class DisplayModeDirectorTest {
         // Get the thermal listener so that we can give it new thermal conditions
         ArgumentCaptor<IThermalEventListener> thermalListenerCaptor =
                 ArgumentCaptor.forClass(IThermalEventListener.class);
-        verify(mInjector, atLeastOnce()).registerThermalServiceListener(
+        verify(mInjector, atLeastOnce()).registerThermalEventListener(
                 thermalListenerCaptor.capture());
         List<IThermalEventListener> thermalListeners = thermalListenerCaptor.getAllValues();
 
@@ -1718,7 +1715,7 @@ public class DisplayModeDirectorTest {
         // Get the thermal listener so that we can give it new thermal conditions
         ArgumentCaptor<IThermalEventListener> thermalListenerCaptor =
                 ArgumentCaptor.forClass(IThermalEventListener.class);
-        verify(mInjector, atLeastOnce()).registerThermalServiceListener(
+        verify(mInjector, atLeastOnce()).registerThermalEventListener(
                 thermalListenerCaptor.capture());
         List<IThermalEventListener> thermalListeners = thermalListenerCaptor.getAllValues();
 
@@ -1762,8 +1759,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testPeakRefreshRate_FlagEnabled() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
@@ -1815,8 +1810,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testPeakRefreshRate_FlagDisabled() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(false);
         float peakRefreshRate = 130;
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[] {60.f, 90.f}, 0);
@@ -1843,8 +1836,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testPeakRefreshRate_notAppliedToExternalDisplays() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         mInjector.setEnabledDisplays(Map.of(DISPLAY_ID, Display.TYPE_EXTERNAL));
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
@@ -1900,8 +1891,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testPeakRefreshRate_DisplayChanged() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
@@ -1938,8 +1927,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testPeakRefreshRate_UserSwitch() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
@@ -2025,8 +2012,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testMinRefreshRate_FlagEnabled() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
@@ -2078,8 +2063,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testMinRefreshRate_FlagDisabled() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(false);
         float minRefreshRate = 130;
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[] {60.f, 90.f}, 0);
@@ -2106,8 +2089,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testMinRefreshRate_DisplayChanged() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
@@ -2145,8 +2126,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testMinRefreshRate_UserSwitch() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
@@ -2201,8 +2180,6 @@ public class DisplayModeDirectorTest {
 
     @Test
     public void testPeakAndMinRefreshRate_FlagEnabled_DisplayWithOneMode() {
-        when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
-                .thenReturn(true);
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
@@ -3246,7 +3223,7 @@ public class DisplayModeDirectorTest {
         ArgumentCaptor<IThermalEventListener> thermalEventListener =
                 ArgumentCaptor.forClass(IThermalEventListener.class);
 
-        verify(mInjector).registerThermalServiceListener(thermalEventListener.capture());
+        verify(mInjector).registerThermalEventListener(thermalEventListener.capture());
         final IThermalEventListener listener = thermalEventListener.getValue();
 
         // Verify that there is no skin temperature vote initially.
@@ -3616,6 +3593,62 @@ public class DisplayModeDirectorTest {
         assertNull(vote);
     }
 
+    @Test
+    public void testUpdateUserPreferredMode_withFlagSizeOverride_returnsNull() {
+        DisplayModeDirector director =
+                createDirectorFromRefreshRateArray(new float[]{60.0f, 90.0f}, 0);
+        director.start(createMockSensorManager());
+
+        ArgumentCaptor<DisplayListener> displayListenerCaptor =
+                ArgumentCaptor.forClass(DisplayListener.class);
+        verify(mInjector, atLeastOnce()).registerDisplayListener(displayListenerCaptor.capture(),
+                any(Handler.class));
+
+        DisplayListener displayListener = displayListenerCaptor.getAllValues().get(0);
+        mInjector.mDisplayInfo.supportedModes = new Display.Mode[] {
+                new Display.Mode(1, -1, Display.Mode.FLAG_SIZE_OVERRIDE,
+                        1000, 1000, 60f, 60f, new float[]{},
+                        new int[]{}),
+                new Display.Mode(2, -1, Display.Mode.FLAG_SIZE_OVERRIDE,
+                        2000, 2000, 60f, 60f, new float[]{},
+                        new int[]{}),
+        };
+        mInjector.mDisplayInfo.userPreferredModeId = 1;
+
+        displayListener.onDisplayChanged(DISPLAY_ID);
+
+        Vote vote = director.getVote(DISPLAY_ID, Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE);
+        assertThat(vote).isNull();
+    }
+
+    @Test
+    public void testUpdateUserPreferredMode_withoutFlagSizeOverride_returnsMode() {
+        DisplayModeDirector director =
+                createDirectorFromRefreshRateArray(new float[]{60.0f, 90.0f}, 0);
+        director.start(createMockSensorManager());
+
+        ArgumentCaptor<DisplayListener> displayListenerCaptor =
+                ArgumentCaptor.forClass(DisplayListener.class);
+        verify(mInjector, atLeastOnce()).registerDisplayListener(displayListenerCaptor.capture(),
+                any(Handler.class));
+
+        DisplayListener displayListener = displayListenerCaptor.getAllValues().get(0);
+        mInjector.mDisplayInfo.supportedModes = new Display.Mode[] {
+                new Display.Mode(1, -1, 0,
+                        1000, 1000, 60f, 60f, new float[]{},
+                        new int[]{}),
+                new Display.Mode(2, -1, 0,
+                        2000, 2000, 60f, 60f, new float[]{},
+                        new int[]{}),
+        };
+        mInjector.mDisplayInfo.userPreferredModeId = 1;
+
+        displayListener.onDisplayChanged(DISPLAY_ID);
+
+        Vote vote = director.getVote(DISPLAY_ID, Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE);
+        assertThat(vote).isNotNull();
+    }
+
     private Temperature getSkinTemp(@Temperature.ThrottlingStatus int status) {
         return new Temperature(30.0f, Temperature.TYPE_SKIN, "test_skin_temp", status);
     }
@@ -3917,12 +3950,12 @@ public class DisplayModeDirectorTest {
         }
 
         @Override
-        public boolean registerThermalServiceListener(IThermalEventListener listener) {
+        public boolean registerThermalEventListener(IThermalEventListener listener) {
             return true;
         }
 
         @Override
-        public void unregisterThermalServiceListener(IThermalEventListener listener) {
+        public void unregisterThermalEventListener(IThermalEventListener listener) {
         }
 
         @Override

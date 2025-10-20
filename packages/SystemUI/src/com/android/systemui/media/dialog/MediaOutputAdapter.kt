@@ -54,12 +54,9 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
     MediaOutputAdapterBase(controller) {
 
     /** Refreshes the RecyclerView dataset and forces re-render. */
-    override fun updateItems() {
-        val newList =
-            mController.getMediaItemList(false /* addConnectNewDeviceButton */).toMutableList()
-
+    fun updateItems() {
         mMediaItemList.clear()
-        mMediaItemList.addAll(newList)
+        mMediaItemList.addAll(mController.getMediaItemList())
 
         notifyDataSetChanged()
     }
@@ -166,6 +163,9 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                 R.dimen.media_output_item_content_vertical_margin_active
             )
 
+        private val mDisabledContentAlpha =
+            mContext.resources.getFloat(R.dimen.media_output_item_disabled_alpha)
+
         private val mButtonRippleBackground =
             AppCompatResources.getDrawable(
                 mContext,
@@ -200,7 +200,6 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
         }
 
         override fun renderDeviceItem(
-            hideGroupItem: Boolean,
             device: MediaDevice,
             connectionState: ConnectionState,
             restrictVolumeAdjustment: Boolean,
@@ -212,8 +211,8 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             deviceStatusIcon: Drawable?,
         ) {
             val fixedVolumeConnected = connectionState == CONNECTED && restrictVolumeAdjustment
-            val colorTheme = ColorTheme(fixedVolumeConnected, deviceDisabled)
-
+            val contentAlpha = if (deviceDisabled) mDisabledContentAlpha else DEVICE_ACTIVE_ALPHA
+            val colorTheme = ColorTheme(fixedVolumeConnected, contentAlpha)
             updateItemBackground()
             updateTitle(device.name, connectionState, colorTheme)
             updateTitleIcon(device, connectionState, restrictVolumeAdjustment, colorTheme)
@@ -663,7 +662,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
 
     private inner class ColorTheme(
         isConnectedWithFixedVolume: Boolean = false,
-        deviceDisabled: Boolean = false,
+        val contentAlpha: Float = DEVICE_ACTIVE_ALPHA,
     ) {
         private val colorScheme: MediaOutputColorScheme = mController.colorScheme
 
@@ -696,12 +695,10 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
         val sliderInactiveColor = colorScheme.getSecondaryContainer()
         val sliderInactiveIconColor = colorScheme.getOnSurface()
         val containerRestrictedVolumeBackground = colorScheme.getPrimary()
-        val contentAlpha = if (deviceDisabled) DEVICE_DISABLED_ALPHA else DEVICE_ACTIVE_ALPHA
     }
 
     companion object {
         private const val TAG = "MediaOutputAdapter"
-        private const val DEVICE_DISABLED_ALPHA = 0.5f
         private const val DEVICE_ACTIVE_ALPHA = 1f
         private const val NO_VOLUME_SET = -1
     }

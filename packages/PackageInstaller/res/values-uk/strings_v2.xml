@@ -41,13 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Видалити оновлення додатка?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Видалити оновлення додатка для всіх користувачів?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Видалити цей додаток для всіх користувачів?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"Видалити цей додаток для користувача <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Видалити цей додаток для користувача <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Додаток не знайдено"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Не вдається видалити цей додаток"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Додаток не видалено"</string>
     <string name="title_archive" msgid="2876455228073419830">"Архівувати цей додаток?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Архівувати цей додаток для всіх користувачів?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"Архівувати цей додаток для користувача <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Архівувати цей додаток для користувача <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Відновити цей додаток?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Потрібна дія"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Недостатньо пам’яті"</string>
@@ -80,38 +80,30 @@
     <string name="message_uninstall_work_profile" msgid="224587253086750763">"Цей додаток буде видалено з вашого робочого профілю"</string>
     <string name="message_uninstall_private_space" msgid="2815872500665141251">"Цей додаток буде видалено з вашого приватного простору"</string>
     <string name="message_uninstall_app_not_found" msgid="1228396155188846293">"Цей додаток не знайдено в списку встановлених, або його вже видалено"</string>
-    <string name="message_uninstall_user_not_allowed" msgid="4812707444447008148">"Поточний користувач не може видалити цей додаток"</string>
+    <string name="message_uninstall_user_not_allowed" msgid="4812707444447008148">"Поточний користувач не може видалити цей додаток."</string>
     <string name="message_uninstall_failed" msgid="4678598986902459187">"Не вдалося видалити цей додаток"</string>
     <string name="message_uninstall_keep_data" msgid="3955153594868206983">"Зберігати дані додатка"</string>
-    <string name="message_archive" msgid="943853731737315850">"Ваші дані додатка буде збережено"</string>
-    <string name="message_archive_all_users" msgid="4664139369764501351">"Усі дані додатка буде збережено"</string>
-    <string name="message_archive_other_user" msgid="6465828676043191175">"Дані додатка буде збережено"</string>
-    <string name="message_archive_work_profile" msgid="7601504268820630858">"Цей додаток буде заархівовано у вашому робочому профілі. Дані додатка буде збережено."</string>
-    <string name="message_archive_private_space" msgid="4873651645762576624">"Цей додаток буде заархівовано у вашому приватному просторі. Дані додатка буде збережено."</string>
-    <string name="message_restore" msgid="8402726798623569969">"Цей додаток завантажуватиметься з магазину <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> у фоновому режимі"</string>
-    <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"Перш ніж відновити цей додаток, <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> потребує більше інформації"</string>
-    <string name="message_restore_error_less_storage" msgid="4945507738776981462">"Щоб відновити цей додаток, звільніть &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; і повторіть спробу"</string>
-    <string name="message_restore_error_offline" msgid="4212551781323276126">"Щоб відновити цей додаток, перевірте інтернет-з’єднання й повторіть спробу"</string>
-    <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"Щоб відновити цей додаток, увімкніть <xliff:g id="INSTALLERNAME">%1$s</xliff:g> у налаштуваннях"</string>
-    <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Щоб відновити цей додаток, установіть <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
-    <string name="message_restore_error_generic" msgid="5903850636679929406">"Під час спроби відновити цей додаток сталася помилка"</string>
+    <string name="message_archive" msgid="943853731737315850">"Ваші дані в додатку буде збережено."</string>
+    <string name="message_archive_all_users" msgid="4664139369764501351">"Усі дані в додатку буде збережено."</string>
+    <string name="message_archive_other_user" msgid="6465828676043191175">"Дані в додатку буде збережено."</string>
+    <string name="message_archive_work_profile" msgid="7601504268820630858">"Цей додаток буде заархівовано у вашому робочому профілі. Ваші дані в додатку буде збережено."</string>
+    <string name="message_archive_private_space" msgid="4873651645762576624">"Цей додаток буде заархівовано у вашому приватному просторі. Ваші дані в додатку буде збережено."</string>
+    <string name="message_restore" msgid="8402726798623569969">"Цей додаток завантажуватиметься з магазину <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> у фоновому режимі."</string>
+    <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"Перш ніж відновити цей додаток, надайте <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> більше інформації."</string>
+    <string name="message_restore_error_less_storage" msgid="4945507738776981462">"Щоб відновити цей додаток, звільніть &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; і повторіть спробу."</string>
+    <string name="message_restore_error_offline" msgid="4212551781323276126">"Щоб відновити цей додаток, перевірте інтернет-з’єднання й повторіть спробу."</string>
+    <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"Щоб відновити цей додаток, увімкніть <xliff:g id="INSTALLERNAME">%1$s</xliff:g> у налаштуваннях."</string>
+    <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Щоб відновити цей додаток, установіть <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>."</string>
+    <string name="message_restore_error_generic" msgid="5903850636679929406">"Під час спроби відновити цей додаток сталася помилка."</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> є частиною такого додатка: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Цей додаток заблоковано. З міркувань безпеки вашого пристрою і даних можна встановлювати додатки лише від перевірених розробників.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Докладніше про підтвердження особи розробника.&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Цей додаток не оновлено. З міркувань безпеки вашого пристрою і даних можна встановлювати оновлення лише від перевірених розробників.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Докладніше про підтвердження особи розробника.&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Цей додаток не встановлено. Додатки від неперевірених розробників можуть бути небезпечні.&lt;/p&gt; &lt;p&gt;Щоб перевірити розробника додатка, потрібне інтернет-з’єднання. Перевірте з’єднання й спробуйте встановити ще раз. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Докладніше про підтвердження особи розробника.&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Цей додаток не оновлено. Оновлення від неперевірених розробників можуть бути небезпечні.&lt;/p&gt; &lt;p&gt;Щоб перевірити розробника додатка, потрібне інтернет-з’єднання. Перевірте з’єднання й спробуйте оновити ще раз. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Докладніше про підтвердження особи розробника.&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Не вдалося перевірити розробника цього додатка. Додатки від неперевірених розробників можуть бути небезпечні, тому додаток не встановлено.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Докладніше про підтвердження особи розробника.&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Не вдалося перевірити розробника цього додатка. Оновлення від неперевірених розробників можуть бути небезпечні, тому додаток не оновлено.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Докладніше про підтвердження особи розробника.&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Цей додаток заблоковано, оскільки не вдалося перевірити розробника. З міркувань безпеки вашого пристрою і даних можна встановлювати додатки лише від перевірених розробників.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Докладніше про підтвердження особи розробника.&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;Цей додаток не оновлено, оскільки не вдалося перевірити розробника. З міркувань безпеки вашого пристрою і даних можна встановлювати оновлення лише від перевірених розробників.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Докладніше про підтвердження особи розробника.&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Пам’ятайте, що додатки від неперевірених розробників можуть загрожувати безпеці вашого пристрою і даних."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Пам’ятайте, що оновлення від неперевірених розробників можуть загрожувати безпеці вашого пристрою і даних."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Розробника додатка не перевірено"</string>
@@ -135,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Відновити"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Видалити оновлення"</string>
     <string name="button_settings" msgid="3837571366246132287">"Налаштування"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Повторити спробу"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Копія додатка <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

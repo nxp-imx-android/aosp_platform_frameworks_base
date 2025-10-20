@@ -18,6 +18,7 @@ package com.android.server.testing.shadows;
 
 import android.annotation.Nullable;
 
+import android.app.backup.IBackupObserver;
 import com.android.server.backup.DataChangedJournal;
 import com.android.server.backup.OperationStorage;
 import com.android.server.backup.UserBackupManagerService;
@@ -67,7 +68,8 @@ public class ShadowKeyValueBackupTask {
             List<String> pendingFullBackups,
             boolean userInitiated,
             boolean nonIncremental,
-            BackupEligibilityRules backupEligibilityRules) {
+            BackupEligibilityRules backupEligibilityRules,
+            IBackupObserver observer) {
         mListener = listener;
         mQueue = queue;
         mPendingFullBackups = pendingFullBackups;

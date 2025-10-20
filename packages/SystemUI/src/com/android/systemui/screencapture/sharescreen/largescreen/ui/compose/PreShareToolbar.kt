@@ -27,31 +27,32 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.RadioButtonGroup
 import com.android.systemui.screencapture.common.ui.compose.RadioButtonGroupItem
 import com.android.systemui.screencapture.common.ui.compose.Toolbar
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
-import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.PreShareViewModel
-import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.ScreenShareTarget
+import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.PreShareToolbarViewModel
 
 @Composable
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun PreShareToolbar(
-    viewModel: PreShareViewModel,
+    preShareToolbarViewModel: PreShareToolbarViewModel,
     expanded: Boolean,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
+    shareButtonEnabled: Boolean,
 ) {
     val tabIcon by
         loadIcon(
-            viewModel = viewModel,
+            viewModel = preShareToolbarViewModel,
             resId = R.drawable.ic_screen_capture_tab,
             contentDescription = null,
         )
     val windowIcon by
         loadIcon(
-            viewModel = viewModel,
+            viewModel = preShareToolbarViewModel,
             resId = R.drawable.ic_screen_capture_window,
             contentDescription = null,
         )
@@ -59,13 +60,22 @@ fun PreShareToolbar(
         listOf(
             RadioButtonGroupItem(
                 icon = tabIcon,
-                isSelected = viewModel.selectedScreenShareTarget == ScreenShareTarget.TAB,
-                onClick = { viewModel.onTargetSelected(ScreenShareTarget.TAB) },
+                isSelected =
+                    preShareToolbarViewModel.selectedScreenCaptureTarget
+                        is ScreenCaptureTarget.AppContent,
+                onClick = {
+                    preShareToolbarViewModel.selectedScreenCaptureTarget =
+                        (ScreenCaptureTarget.AppContent(contentId = 0))
+                },
             ),
             RadioButtonGroupItem(
                 icon = windowIcon,
-                isSelected = viewModel.selectedScreenShareTarget == ScreenShareTarget.APP_WINDOW,
-                onClick = { viewModel.onTargetSelected(ScreenShareTarget.APP_WINDOW) },
+                isSelected =
+                    preShareToolbarViewModel.selectedScreenCaptureTarget is ScreenCaptureTarget.App,
+                onClick = {
+                    preShareToolbarViewModel.selectedScreenCaptureTarget =
+                        (ScreenCaptureTarget.App(displayId = 0, taskId = 0))
+                },
             ),
         )
 
@@ -77,14 +87,15 @@ fun PreShareToolbar(
 
             val shareIcon by
                 loadIcon(
-                    viewModel = viewModel,
+                    viewModel = preShareToolbarViewModel,
                     resId = R.drawable.ic_present_to_all,
                     ContentDescription.Resource(R.string.screen_share_toolbar_share_button),
                 )
             PrimaryButton(
                 icon = shareIcon,
                 text = stringResource(R.string.screen_share_toolbar_share_button),
-                onClick = {},
+                onClick = { preShareToolbarViewModel.onShareClicked() },
+                enabled = shareButtonEnabled,
             )
         }
     }

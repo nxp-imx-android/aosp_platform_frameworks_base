@@ -16,7 +16,6 @@
 
 package com.android.systemui.keyguard.domain.interactor.scenetransition
 
-import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.CoreStartable
@@ -39,6 +38,7 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 /**
  * This class listens to scene framework scene transitions and manages keyguard transition framework
@@ -77,6 +77,7 @@ constructor(
 
     private var currentTransitionId: UUID? = null
     private var progressJob: Job? = null
+    private var transitionCurrentSceneJob: Job? = null
 
     override fun start() {
         sceneInteractor.registerSceneStateProcessor(this)
@@ -108,11 +109,23 @@ constructor(
         prevTransition: ObservableTransitionState,
         idle: ObservableTransitionState.Idle,
     ) {
+        // We're idle, so this collection is no longer relevant.
+        transitionCurrentSceneJob?.cancel()
+
         if (currentTransitionId == null) return
         if (prevTransition !is ObservableTransitionState.Transition) return
 
+        // If the previous transition's fromContent is still in currentOverlays, we canceled a
+        // transition away from that overlay.
+        val canceledOverlayTransition = idle.currentOverlays.contains(prevTransition.fromContent)
+
+        val idleOnToContentAfterCompletedTransition =
+            idle.currentScene == prevTransition.toContent && !canceledOverlayTransition
+
+        // Finish the current transition if we've completed a scene transition to a new scene or a
+        // new overlay.
         if (
-            idle.currentScene == prevTransition.toContent ||
+            idleOnToContentAfterCompletedTransition ||
                 idle.currentOverlays.contains(prevTransition.toContent)
         ) {
             finishCurrentTransition()
@@ -153,25 +166,39 @@ constructor(
         currentTransitionId = null
     }
 
-    private suspend fun handleTransition(transition: ObservableTransitionState.Transition) {
-        if (transition.fromContent == Scenes.Lockscreen) {
-            if (currentTransitionId != null) {
-                val currentToState = internalTransitionInteractor.currentTransitionInfoInternal().to
-                if (currentToState == UNDEFINED) {
-                    transitionKtfTo(transitionInteractor.startedKeyguardTransitionStep.value.from)
+    private fun handleTransition(transition: ObservableTransitionState.Transition) {
+        transitionCurrentSceneJob?.cancel()
+
+        // Collect the currentScene, which is the toScene, unless the transition is reversed, in
+        // which case it's the scene we're headed towards. For example, if Gone -> Lockscreen is
+        // reversed, toScene will remain Lockscreen and fromScene Gone as progress is reversed back
+        // to 0f, but currentScene will emit Gone immediately.
+        transitionCurrentSceneJob =
+            applicationScope.launch {
+                transition.currentScene().collect { currentScene ->
+                    if (transition.fromContent == Scenes.Lockscreen) {
+                        if (currentTransitionId != null) {
+                            val currentToState =
+                                internalTransitionInteractor.currentTransitionInfoInternal().to
+                            if (currentToState == UNDEFINED) {
+                                transitionKtfTo(
+                                    transitionInteractor.startedKeyguardTransitionStep.value.from
+                                )
+                            }
+                        }
+                        startTransitionFromLockscreen()
+                        collectProgress(transition)
+                    } else if (currentScene == Scenes.Lockscreen) {
+                        if (currentTransitionId != null) {
+                            transitionKtfTo(UNDEFINED)
+                        }
+                        startTransitionToLockscreen()
+                        collectProgress(transition)
+                    } else {
+                        transitionKtfTo(UNDEFINED)
+                    }
                 }
             }
-            startTransitionFromLockscreen()
-            collectProgress(transition)
-        } else if (transition.toContent == Scenes.Lockscreen) {
-            if (currentTransitionId != null) {
-                transitionKtfTo(UNDEFINED)
-            }
-            startTransitionToLockscreen()
-            collectProgress(transition)
-        } else {
-            transitionKtfTo(UNDEFINED)
-        }
     }
 
     private suspend fun transitionKtfTo(state: KeyguardState) {

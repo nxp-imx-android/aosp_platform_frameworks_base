@@ -264,6 +264,8 @@
     <string-array name="config_satellite_providers" translatable="false">
         <!-- T-Mobile - USA -->
         <item>"310830"</item>
+        <item>"310210"</item>
+        <item>"312190"</item>
         <!-- Entel Chile - Chile -->
         <item>"73029"</item>
         <!-- KDDI - Japan -->

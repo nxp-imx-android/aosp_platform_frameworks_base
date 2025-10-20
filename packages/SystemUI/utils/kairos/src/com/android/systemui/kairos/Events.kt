@@ -82,7 +82,7 @@ class EventsLoop<A> : Events<A>() {
     private val deferred = CompletableLazy<Events<A>>()
 
     internal val init: Init<EventsImpl<A>> =
-        init(nameData) { deferred.value.init.connect(evalScope = this) }
+        init(nameData) { deferred.value.init.connect(initScope = this) }
 
     /**
      * The [Events] this reference is referring to. Must be set before this [EventsLoop] is
@@ -206,7 +206,7 @@ internal fun <A, B> Events<A>.map(
     transform: TransactionScope.(A) -> B,
 ): Events<B> {
     val mapped: EventsImpl<B> =
-        mapImpl({ init.connect(evalScope = this) }, nameData) { a, _ -> transform(a) }
+        mapImpl({ init.connect(initScope = this) }, nameData) { a, _ -> transform(a) }
     return EventsInit(constInit(nameData, mapped.cached(nameData + "cached")))
 }
 
@@ -228,7 +228,7 @@ internal fun <A, B> Events<A>.mapCheap(
     EventsInit(
         constInit(
             nameData,
-            mapImpl({ init.connect(evalScope = this) }, nameData) { a, _ -> transform(a) },
+            mapImpl({ init.connect(initScope = this) }, nameData) { a, _ -> transform(a) },
         )
     )
 
@@ -381,4 +381,4 @@ internal val <A> Events<A>.init: Init<EventsImpl<A>>
         }
 
 private inline fun <A> deferInline(crossinline block: InitScope.() -> Events<A>): Events<A> =
-    EventsInit(init(NameTaggingDisabled) { block().init.connect(evalScope = this) })
+    EventsInit(init(NameTaggingDisabled) { block().init.connect(initScope = this) })

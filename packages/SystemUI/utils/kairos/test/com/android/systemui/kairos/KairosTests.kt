@@ -4,7 +4,7 @@ import com.android.systemui.kairos.util.Either
 import com.android.systemui.kairos.util.Either.First
 import com.android.systemui.kairos.util.Either.Second
 import com.android.systemui.kairos.util.Maybe
-import com.android.systemui.kairos.util.Maybe.Absent
+import com.android.systemui.kairos.util.isAbsent
 import com.android.systemui.kairos.util.map
 import com.android.systemui.kairos.util.maybe
 import kotlin.time.Duration
@@ -952,12 +952,14 @@ class KairosTests {
         val result =
             activateSpecWithResult(network) {
                 val tres =
-                    merge(e2.map { 1 }, e2.map { 2 }, transformCoincidence = { a, b -> a + b })
+                    mergeReduce(
+                        e2.map { 1 },
+                        e2.map { 2 },
+                        transformCoincidence = { a, b -> a + b },
+                    )
                 tres.observeSync()
                 val switch = emitter.map { tres }.flatten()
-                merge(switch, e2.map { null }, transformCoincidence = { a, _ -> a })
-                    .filterNotNull()
-                    .nextDeferred()
+                mergeLeft(switch, e2.map { null }).filterNotNull().nextDeferred()
             }
         runCurrent()
 
@@ -1140,7 +1142,7 @@ class KairosTests {
                                                     val eRemoved =
                                                         childChangeById
                                                             .eventsForKey(childId)
-                                                            .filter { it === Absent }
+                                                            .filter { it.isAbsent() }
                                                             .onEach {
                                                                 println(
                                                                     "removing? (groupId=$groupId, childId=$childId)"
@@ -1163,7 +1165,7 @@ class KairosTests {
                                                                     "removeChild (groupId=$groupId, childId=$childId)"
                                                                 )
                                                             }
-                                                            .map { Maybe.absent() }
+                                                            .map { Maybe.absent }
 
                                                     addChild.mergeWith(removeChild) { _, _ ->
                                                         error("unexpected coincidence")
@@ -1217,7 +1219,7 @@ class KairosTests {
         // remove
         println()
         println("remove inner 10")
-        emitter2.emit(mapOf(10 to Maybe.absent()))
+        emitter2.emit(mapOf(10 to Maybe.absent))
         runCurrent()
 
         assertEquals(mapOf(0 to emptyMap()), state.value)
@@ -1235,7 +1237,7 @@ class KairosTests {
         // batch update
         emitter2.emit(
             mapOf(
-                10 to Maybe.absent(),
+                10 to Maybe.absent,
                 11 to Maybe.present(MutableStateFlow("(0, 11)")),
                 12 to Maybe.present(MutableStateFlow("(0, 12)")),
             )

@@ -24,9 +24,11 @@ import android.icu.text.DisplayContext
 import android.os.UserHandle
 import android.provider.AlarmClock
 import androidx.annotation.VisibleForTesting
+import com.android.systemui.Flags
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.clock.data.repository.ClockRepository
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
@@ -43,6 +45,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -61,7 +64,8 @@ constructor(
     private val activityStarter: ActivityStarter,
     private val broadcastDispatcher: BroadcastDispatcher,
     private val systemClock: SystemClock,
-    @Background private val coroutineScope: CoroutineScope,
+    @Application private val applicationScope: CoroutineScope,
+    @Background private val backgroundScope: CoroutineScope,
     private val tunerService: TunerService,
 ) {
     /** [Flow] that emits `Unit` whenever the timezone or locale has changed. */
@@ -71,21 +75,25 @@ constructor(
 
     /** [StateFlow] that emits whether the clock should show seconds. */
     val showSeconds: StateFlow<Boolean> =
-        conflatedCallbackFlow {
-                val tunable =
-                    TunerService.Tunable { key, newValue ->
-                        if (key == CLOCK_SECONDS_TUNER_KEY) {
-                            trySend(TunerService.parseIntegerSwitch(newValue, false))
+        if (!Flags.clockModernization()) {
+            MutableStateFlow(false)
+        } else {
+            conflatedCallbackFlow {
+                    val tunable =
+                        TunerService.Tunable { key, newValue ->
+                            if (key == CLOCK_SECONDS_TUNER_KEY) {
+                                trySend(TunerService.parseIntegerSwitch(newValue, false))
+                            }
                         }
-                    }
-                tunerService.addTunable(tunable, CLOCK_SECONDS_TUNER_KEY)
-                awaitClose { tunerService.removeTunable(tunable) }
-            }
-            .stateIn(
-                scope = coroutineScope,
-                started = SharingStarted.WhileSubscribed(),
-                initialValue = false,
-            )
+                    tunerService.addTunable(tunable, CLOCK_SECONDS_TUNER_KEY)
+                    awaitClose { tunerService.removeTunable(tunable) }
+                }
+                .stateIn(
+                    scope = applicationScope,
+                    started = SharingStarted.WhileSubscribed(),
+                    initialValue = false,
+                )
+        }
 
     /**
      * [StateFlow] that emits the current `Date`.
@@ -124,7 +132,7 @@ constructor(
             }
             .map { Date(systemClock.currentTimeMillis()) }
             .stateIn(
-                scope = coroutineScope,
+                scope = backgroundScope,
                 started = SharingStarted.Eagerly,
                 initialValue = Date(systemClock.currentTimeMillis()),
             )

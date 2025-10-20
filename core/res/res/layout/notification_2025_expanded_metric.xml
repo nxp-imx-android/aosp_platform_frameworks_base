@@ -32,8 +32,7 @@
             android:id="@+id/metric_label_0"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxLines="1"
-            style="@style/Widget.DeviceDefault.Notification.Text"
+            style="@style/NotificationExpandedMetricLabel"
             />
         <LinearLayout
             android:layout_width="match_parent"
@@ -52,13 +51,6 @@
                 android:visibility="gone"
                 style="@style/NotificationExpandedMetricValue"
                 />
-            <TextView
-                android:id="@+id/metric_unit_0"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/notification_expanded_metric_unit_margin"
-                style="@style/NotificationMetricUnit"
-                />
         </LinearLayout>
     </LinearLayout>
     <LinearLayout
@@ -73,8 +65,7 @@
             android:id="@+id/metric_label_1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxLines="1"
-            style="@style/Widget.DeviceDefault.Notification.Text"
+            style="@style/NotificationExpandedMetricLabel"
             />
         <LinearLayout
             android:layout_width="match_parent"
@@ -93,13 +84,6 @@
                 android:visibility="gone"
                 style="@style/NotificationExpandedMetricValue"
                 />
-            <TextView
-                android:id="@+id/metric_unit_1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/NotificationMetricUnit"
-                android:layout_marginStart="@dimen/notification_expanded_metric_unit_margin"
-                />
         </LinearLayout>
     </LinearLayout>
     <LinearLayout
@@ -113,8 +97,7 @@
             android:id="@+id/metric_label_2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxLines="1"
-            style="@style/Widget.DeviceDefault.Notification.Text"
+            style="@style/NotificationExpandedMetricLabel"
             />
         <LinearLayout
             android:layout_width="match_parent"
@@ -134,13 +117,6 @@
                 android:layout_height="wrap_content"
                 android:visibility="gone"
                 style="@style/NotificationExpandedMetricValue"
-                />
-            <TextView
-                android:id="@+id/metric_unit_2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/notification_expanded_metric_unit_margin"
-                style="@style/NotificationMetricUnit"
                 />
         </LinearLayout>
     </LinearLayout>

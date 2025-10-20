@@ -15,18 +15,17 @@
 package com.android.systemui.plugins.keyguard.ui.composable.elements
 
 import androidx.compose.ui.Modifier
-import com.android.compose.animation.scene.ContentScope
-import com.android.compose.animation.scene.ElementKey
+import com.android.compose.animation.scene.Key
 import com.android.systemui.plugins.keyguard.VRectF
 
 /** Combined context for lockscreen elements. Contains relevant rendering parameters. */
 data class LockscreenElementContext(
-    /** ContentScope to use when rendering lockscreen elements */
-    val scope: ContentScope,
-
     /** Modifier to apply to elements that should handle burn-in when dozing */
-    val burnInModifier: Modifier,
+    val burnInModifier: Modifier = Modifier,
 
     /** Callback executed when an element is positioned by compose. */
-    val onElementPositioned: (ElementKey, VRectF) -> Unit,
+    val onElementPositioned: (Key, VRectF) -> Unit = { _, _ -> },
+
+    /** Modifier to apply to elements that should be hidden when only showing authUI when dozing */
+    val nonAuthUIModifier: Modifier = Modifier,
 )

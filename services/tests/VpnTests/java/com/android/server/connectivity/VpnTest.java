@@ -44,6 +44,7 @@ import static android.net.ipsec.ike.IkeSessionParams.ESP_IP_VERSION_AUTO;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_IP_VERSION_IPV4;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_IP_VERSION_IPV6;
 import static android.net.platform.flags.Flags.FLAG_COLLECT_VPN_METRICS;
+import static android.net.platform.flags.Flags.FLAG_REENABLE_INNER_IPV6_ON_VPN;
 import static android.os.UserHandle.PER_USER_RANGE;
 import static android.telephony.CarrierConfigManager.KEY_CARRIER_CONFIG_APPLIED_BOOL;
 import static android.telephony.CarrierConfigManager.KEY_MIN_UDP_PORT_4500_NAT_TIMEOUT_SEC_INT;
@@ -91,6 +92,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import android.annotation.NonNull;
@@ -1325,6 +1327,26 @@ public class VpnTest extends VpnTestBase {
     }
 
     @Test
+    public void testDeleteVpnProfileDueToAppRemoval() throws Exception {
+        final Vpn vpn = createVpn(AppOpsManager.OPSTR_ACTIVATE_PLATFORM_VPN);
+
+        when(mVpnProfileStore.get(vpn.getProfileNameForPackage(TEST_VPN_PKG)))
+                .thenReturn(mVpnProfile.encode());
+
+        vpn.startVpnProfile(TEST_VPN_PKG);
+        verifyPlatformVpnIsActivated(TEST_VPN_PKG);
+
+        // This mock is to make sure verifyCallingUidOrSystemUidAndPackage() would pass, the test
+        // will fail since the unit test UID is not the SYSTEM_UID.
+        when(mPackageManager.getPackageUidAsUser(any(), anyInt())).thenReturn(Process.myUid());
+        vpn.deleteVpnProfileDueToAppRemoval(
+                TEST_VPN_PKG, UserHandle.getUid(PRIMARY_USER.id, Process.myUid()));
+
+        verify(mVpnProfileStore)
+                .remove(eq(vpn.getProfileNameForPackage(TEST_VPN_PKG)));
+        verifyPlatformVpnIsDeactivated(TEST_VPN_PKG);
+    }
+    @Test
     public void testDeleteVpnProfileRestrictedUser() throws Exception {
         final Vpn vpn =
                 createVpn(
@@ -1813,6 +1835,31 @@ public class VpnTest extends VpnTestBase {
         return cb;
     }
 
+    private NetworkCallback getVpnNetworkCallback() {
+        final ArgumentCaptor<NetworkCallback> networkCallbackCaptor =
+                ArgumentCaptor.forClass(NetworkCallback.class);
+        verify(mConnectivityManager, timeout(TEST_TIMEOUT_MS))
+                .registerNetworkCallback(any(), networkCallbackCaptor.capture());
+
+        return networkCallbackCaptor.getValue();
+    }
+
+    private LinkProperties getVpnNetworkLinkProperties(
+            boolean mtuSupportsIpv6, boolean hasIpv6Address) {
+        final LinkProperties lp = new LinkProperties();
+        if (mtuSupportsIpv6) {
+            lp.setMtu(IPV6_MIN_MTU);
+        } else {
+            lp.setMtu(IPV6_MIN_MTU - 1);
+        }
+        lp.addLinkAddress(new LinkAddress(TEST_VPN_INTERNAL_IP, IP4_PREFIX_LEN));
+        if (hasIpv6Address) {
+            lp.addLinkAddress(new LinkAddress(TEST_VPN_INTERNAL_IP6, IP6_PREFIX_LEN));
+        }
+        lp.setInterfaceName(TEST_IFACE_NAME);
+        return lp;
+    }
+
     private void verifyInterfaceSetCfgWithFlags(String flag) throws Exception {
         // Add a timeout for waiting for interfaceSetCfg to be called.
         verify(mNetd, timeout(TEST_TIMEOUT_MS)).interfaceSetCfg(argThat(
@@ -2130,13 +2177,19 @@ public class VpnTest extends VpnTestBase {
         public final NetworkCallback nwCb;
         public final IkeSessionCallback ikeCb;
         public final ChildSessionCallback childCb;
+        private final NetworkCallback mVpnNwCb;
 
-        PlatformVpnSnapshot(Vpn vpn, NetworkCallback nwCb,
-                IkeSessionCallback ikeCb, ChildSessionCallback childCb) {
+        PlatformVpnSnapshot(
+                Vpn vpn,
+                NetworkCallback nwCb,
+                IkeSessionCallback ikeCb,
+                ChildSessionCallback childCb,
+                NetworkCallback vpnNwCb) {
             this.vpn = vpn;
             this.nwCb = nwCb;
             this.ikeCb = ikeCb;
             this.childCb = childCb;
+            this.mVpnNwCb = vpnNwCb;
         }
     }
 
@@ -2197,6 +2250,9 @@ public class VpnTest extends VpnTestBase {
                 verifyCreateIkeAndCaptureCbs();
         final IkeSessionCallback ikeCb = cbPair.first;
         final ChildSessionCallback childCb = cbPair.second;
+
+        // Specific NetworkCallback for Vpn network
+        final NetworkCallback vpnNwCb = getVpnNetworkCallback();
 
         ikeCb.onOpened(ikeConfig);
         childCb.onIpSecTransformCreated(createIpSecTransform(), IpSecManager.DIRECTION_IN);
@@ -2282,7 +2338,7 @@ public class VpnTest extends VpnTestBase {
         assertTrue(info.isBypassable());
         assertEquals(areLongLivedTcpConnectionsExpensive,
                 info.areLongLivedTcpConnectionsExpensive());
-        return new PlatformVpnSnapshot(vpn, nwCb, ikeCb, childCb);
+        return new PlatformVpnSnapshot(vpn, nwCb, ikeCb, childCb, vpnNwCb);
     }
 
     @Test
@@ -2480,6 +2536,189 @@ public class VpnTest extends VpnTestBase {
                 expectedIpVersion, expectedEncapType, expectedKeepalive);
 
         vpnSnapShot.vpn.mVpnRunner.exitVpnRunner();
+    }
+
+    private void doTestOnChildMigrated(boolean supportsV6Before, int newMtu) throws Exception {
+        // Create a VPN
+        final PlatformVpnSnapshot vpnSnapShot =
+                verifySetupPlatformVpn(
+                        createIkeConfig(createIkeConnectInfo(), true /* isMobikeEnabled */),
+                        supportsV6Before /* mtuSupportsIpv6 */);
+
+        // Reset interaction to only focus on flow inside onChildMigrated
+        reset(mVpnConnectivityMetrics);
+        reset(mIpSecService);
+
+        doReturn(newMtu).when(mTestDeps).calculateVpnMtu(any(), anyInt(), anyInt(), anyBoolean());
+
+        vpnSnapShot.childCb.onIpSecTransformsMigrated(
+                createIpSecTransform(), createIpSecTransform());
+
+        verify(mVpnConnectivityMetrics)
+                .updateUnderlyingNetworkTypes(
+                        argThat(networks -> Arrays.asList(networks).contains(TEST_NETWORK)));
+        verify(mVpnConnectivityMetrics).setMtu(newMtu);
+        verify(mIpSecService)
+                .setNetworkForTunnelInterface(
+                        eq(TEST_TUNNEL_RESOURCE_ID), eq(TEST_NETWORK), anyString());
+        verifyApplyTunnelModeTransforms(1);
+        vpnSnapShot.vpn.mVpnRunner.exitVpnRunner();
+    }
+
+    @Test
+    @EnableFlags(FLAG_REENABLE_INNER_IPV6_ON_VPN)
+    public void testOnChildMigrated_remove_v6() throws Exception {
+        final int newMtu = IPV6_MIN_MTU - 1;
+        doTestOnChildMigrated(true /* supportsV6Before */, newMtu);
+
+        // Verify removal of IPv6 addresses and routes triggers a network agent restart
+        final ArgumentCaptor<LinkProperties> lpCaptor =
+                ArgumentCaptor.forClass(LinkProperties.class);
+        verify(mTestDeps, times(2))
+                .newNetworkAgent(
+                        any(),
+                        any(),
+                        anyString(),
+                        any(),
+                        lpCaptor.capture(),
+                        any(),
+                        any(),
+                        any(),
+                        any());
+        verify(mMockNetworkAgent).unregister();
+        // mMockNetworkAgent is an old NetworkAgent, so it won't update LinkProperties after
+        // unregistering.
+        verify(mMockNetworkAgent, never()).doSendLinkProperties(any());
+
+        final LinkProperties lp = lpCaptor.getValue();
+        // verify LP: mtu is changed to NOT support v6, LP should not contain any v6 related info
+        for (LinkAddress addr : lp.getLinkAddresses()) {
+            if (addr.isIpv6()) {
+                fail("IPv6 address found on VPN with MTU < IPv6 minimum MTU");
+            }
+        }
+
+        for (InetAddress dnsAddr : lp.getDnsServers()) {
+            if (dnsAddr instanceof Inet6Address) {
+                fail("IPv6 DNS server found on VPN with MTU < IPv6 minimum MTU");
+            }
+        }
+
+        for (RouteInfo routeInfo : lp.getRoutes()) {
+            if (routeInfo.getDestinationLinkAddress().isIpv6()
+                    && !routeInfo.isIPv6UnreachableDefault()) {
+                fail("IPv6 route found on VPN with MTU < IPv6 minimum MTU");
+            }
+        }
+
+        assertEquals(newMtu, lp.getMtu());
+    }
+
+    @Test
+    @EnableFlags(FLAG_REENABLE_INNER_IPV6_ON_VPN)
+    public void testOnChildMigrated_v6_support_unchanged() throws Exception {
+        final int newMtu = IPV6_MIN_MTU + 1;
+        doTestOnChildMigrated(true /* supportsV6Before */, newMtu);
+
+        final ArgumentCaptor<LinkProperties> lpCaptor =
+                ArgumentCaptor.forClass(LinkProperties.class);
+        LinkAddress ipv6Addr = new LinkAddress(TEST_VPN_INTERNAL_IP6, IP6_PREFIX_LEN);
+
+        // verify LP: mtu is changed(still support v6) and LP still contain v6 address
+        verify(mMockNetworkAgent).doSendLinkProperties(lpCaptor.capture());
+        final LinkProperties lp = lpCaptor.getValue();
+
+        assertTrue(lp.getAllLinkAddresses().contains(ipv6Addr));
+        assertEquals(newMtu, lp.getMtu());
+    }
+
+    @Test
+    @EnableFlags(FLAG_REENABLE_INNER_IPV6_ON_VPN)
+    public void testOnChildMigrated_reenable_IPv6() throws Exception {
+        final int newMtu = IPV6_MIN_MTU + 1;
+        doTestOnChildMigrated(false /* supportsV6Before */, newMtu);
+
+        final ArgumentCaptor<LinkProperties> lpCaptor =
+                ArgumentCaptor.forClass(LinkProperties.class);
+
+        // Verify LP: mtu is changed to support v6 but not yet add IPv6 address back to LP
+        verify(mMockNetworkAgent).doSendLinkProperties(lpCaptor.capture());
+        final LinkProperties lp = lpCaptor.getValue();
+        for (LinkAddress addr : lp.getLinkAddresses()) {
+            if (addr.isIpv6()) {
+                fail("IPv6 address found when reenable IPv6 during onChildMigrated");
+            }
+        }
+        assertEquals(newMtu, lp.getMtu());
+    }
+
+    private void doTestOnVpnNetworkLpChanged(
+            boolean mtuSupportsV6Before,
+            boolean mtuSupportsV6After,
+            boolean lpHasIpv6Address,
+            boolean localCacheMtuSupportsIPv6)
+            throws Exception {
+        final PlatformVpnSnapshot vpnSnapShot =
+                verifySetupPlatformVpn(
+                        createIkeConfig(createIkeConnectInfo(), true /* isMobikeEnabled */),
+                        mtuSupportsV6Before /* mtuSupportsIpv6 */);
+
+        // Reset interaction for verifying Vpn network logic
+        reset(mIpSecService);
+
+        // Simulate mtu got update via onChildMigrated
+        vpnSnapShot.vpn.mConfig.mtu = localCacheMtuSupportsIPv6 ? IPV6_MIN_MTU : (IPV6_MIN_MTU - 1);
+
+        // Simulate getting LinkProperties from NetworkCallback
+        final LinkProperties lp =
+                getVpnNetworkLinkProperties(
+                        mtuSupportsV6After /* mtuSupportsIpv6 */,
+                        lpHasIpv6Address /* hasIpv6Address */);
+
+        // Trigger LinkProperties changes
+        vpnSnapShot.mVpnNwCb.onLinkPropertiesChanged(TEST_NETWORK_2, lp);
+    }
+
+    @Test
+    @EnableFlags(FLAG_REENABLE_INNER_IPV6_ON_VPN)
+    public void testOnVpnNetworkLpChanged_v6_support_unchanged() throws Exception {
+        // Create a VPN support IPv4+IPv6, and simulate network still have v6 capability
+        doTestOnVpnNetworkLpChanged(
+                true /* mtuSupportsV6Before */,
+                true /* mtuSupportsV6After */,
+                true /* lpHasIpv6Address */,
+                true /* localCacheMtuSupportsIPv6 */);
+
+        // Verify getting the same v6 capability LP will not trigger any interaction with
+        // mMockNetworkAgent and mIpSecService
+        verify(mMockNetworkAgent, never()).doSendLinkProperties(any());
+        verifyNoInteractions(mIpSecService);
+    }
+
+    @Test
+    @EnableFlags(FLAG_REENABLE_INNER_IPV6_ON_VPN)
+    public void testOnVpnNetworkLpChanged_reenable_IPv6() throws Exception {
+        // Create a VPN support IPv4 only, and simulate receiving callback that LinkProperties's mtu
+        // got updated to support v6
+        doTestOnVpnNetworkLpChanged(
+                false /* mtuSupportsV6Before */,
+                true /* mtuSupportsV6After */,
+                false /* lpHasIpv6Address */,
+                true /* localCacheMtuSupportsIPv6 */);
+
+        // Verify network gains IPv6 capability will add LinkAddress into tunnel/kernel if
+        // exists, also verify LinkProperties does update via doSendLinkProperties
+        final ArgumentCaptor<LinkProperties> lpCaptor =
+                ArgumentCaptor.forClass(LinkProperties.class);
+        LinkAddress ipv6Addr = new LinkAddress(TEST_VPN_INTERNAL_IP6, IP6_PREFIX_LEN);
+
+        verify(mIpSecService, timeout(TEST_TIMEOUT_MS))
+                .addAddressToTunnelInterface(anyInt(), eq(ipv6Addr), any());
+        verify(mMockNetworkAgent).doSendLinkProperties(lpCaptor.capture());
+
+        LinkProperties lp = lpCaptor.getValue();
+        assertTrue(lp.getAllLinkAddresses().contains(ipv6Addr));
+        assertEquals(IPV6_MIN_MTU, lp.getMtu());
     }
 
     @Test

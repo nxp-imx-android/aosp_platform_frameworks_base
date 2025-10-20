@@ -33,8 +33,7 @@ import org.mockito.kotlin.mock
 /**
  * Tests for [DefaultLetterboxDependenciesHelper].
  *
- * Build/Install/Run:
- *  atest WMShellUnitTests:DefaultLetterboxDependenciesHelperTest
+ * Build/Install/Run: atest WMShellUnitTests:DefaultLetterboxDependenciesHelperTest
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
@@ -44,7 +43,7 @@ class DefaultLetterboxDependenciesHelperTest : ShellTestCase() {
     fun `When in Desktop Windowing the input surface should not be created`() {
         runTestScenario { r ->
             testLetterboxDependenciesHelper(r.getLetterboxLifecycleEventFactory()) {
-                inputChange { }
+                inputChange {}
                 r.configureDesktopRepository(isAnyDeskActive = true)
                 validateShouldSupportInputSurface { shouldSupportInputSurface ->
                     assertFalse(shouldSupportInputSurface)
@@ -57,7 +56,7 @@ class DefaultLetterboxDependenciesHelperTest : ShellTestCase() {
     fun `When NOT in Desktop Windowing the input surface should be created`() {
         runTestScenario { r ->
             testLetterboxDependenciesHelper(r.getLetterboxLifecycleEventFactory()) {
-                inputChange { }
+                inputChange {}
                 r.configureDesktopRepository(isAnyDeskActive = false)
                 validateShouldSupportInputSurface { shouldSupportInputSurface ->
                     assertTrue(shouldSupportInputSurface)
@@ -66,17 +65,13 @@ class DefaultLetterboxDependenciesHelperTest : ShellTestCase() {
         }
     }
 
-    /**
-     * Runs a test scenario providing a Robot.
-     */
+    /** Runs a test scenario providing a Robot. */
     fun runTestScenario(consumer: Consumer<LetterboxDependenciesHelperRobotTest>) {
         val robot = LetterboxDependenciesHelperRobotTest()
         consumer.accept(robot)
     }
 
-    /**
-     * Robot contextual to [LetterboxDependenciesHelper].
-     */
+    /** Robot contextual to [LetterboxDependenciesHelper]. */
     class LetterboxDependenciesHelperRobotTest {
 
         private val desktopRepository = mock<DesktopRepository>()

@@ -29,7 +29,6 @@ import com.android.settingslib.notification.modes.TestModeBuilder
 import com.android.settingslib.notification.modes.TestModeBuilder.MANUAL_DND
 import com.android.settingslib.notification.modes.ZenMode
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
@@ -456,48 +455,6 @@ class ModesDialogViewModelTest : SysuiTestCase() {
 
             // All tiles have the same long click info
             tiles!!.forEach { assertThat(it.onLongClickLabel).isEqualTo("Open settings") }
-        }
-
-    @Test
-    fun tiles_doesNotShareIcons() =
-        testScope.runTest {
-            val tiles by collectLastValue(underTest.tiles)
-            repository.addModes(
-                listOf(
-                    TestModeBuilder()
-                        .setId("bedtime1")
-                        .setName("Bedtime Mode #1")
-                        .setManualInvocationAllowed(true)
-                        .setType(AutomaticZenRule.TYPE_BEDTIME)
-                        .setActive(false)
-                        .build(),
-                    TestModeBuilder()
-                        .setId("bedtime2")
-                        .setName("Bedtime Mode #2")
-                        .setManualInvocationAllowed(true)
-                        .setType(AutomaticZenRule.TYPE_BEDTIME)
-                        .setActive(false)
-                        .build(),
-                )
-            )
-
-            assertThat(tiles).hasSize(3) // DND + Bedtimes
-            assertThat(tiles!![1].text).isEqualTo("Bedtime Mode #1")
-            assertThat(tiles!![2].text).isEqualTo("Bedtime Mode #2")
-            val tileIcon1 = tiles!![1].icon as Icon.Loaded
-            val tileIcon2 = tiles!![2].icon as Icon.Loaded
-
-            // The cache is actually caching...
-            val bedtimeIcon = interactor.getModeIcon(repository.getMode("bedtime1")!!)
-            val bedtimeIcon2 = interactor.getModeIcon(repository.getMode("bedtime2")!!)
-            assertThat(bedtimeIcon2.drawable).isSameInstanceAs(bedtimeIcon.drawable)
-
-            // ... but the tiles get COPIES of the icons
-            assertThat(tileIcon1.res).isEqualTo(bedtimeIcon.key.resId)
-            assertThat(tileIcon2.res).isEqualTo(bedtimeIcon.key.resId)
-            assertThat(tileIcon1.drawable).isNotSameInstanceAs(bedtimeIcon.drawable)
-            assertThat(tileIcon2.drawable).isNotSameInstanceAs(bedtimeIcon.drawable)
-            assertThat(tileIcon2.drawable).isNotSameInstanceAs(tileIcon1.drawable)
         }
 
     @Test

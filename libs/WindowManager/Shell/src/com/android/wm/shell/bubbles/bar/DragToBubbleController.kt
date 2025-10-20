@@ -37,6 +37,8 @@ import com.android.wm.shell.shared.bubbles.DragZoneFactory.BubbleBarPropertiesPr
 import com.android.wm.shell.shared.bubbles.DragZoneFactory.SplitScreenModeChecker.SplitScreenMode
 import com.android.wm.shell.shared.bubbles.DraggedObject.LauncherIcon
 import com.android.wm.shell.shared.bubbles.DropTargetManager
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog
+import com.android.wm.shell.shared.bubbles.logging.EntryPoint
 
 /** Handles scenarios when launcher icon is being dragged to the bubble bar drop zones. */
 class DragToBubbleController(
@@ -103,9 +105,14 @@ class DragToBubbleController(
 
     /** Called when the item with the [ShortcutInfo] is dropped over the bubble bar drop target. */
     fun onItemDropped(shortcutInfo: ShortcutInfo) {
+        BubbleLog.d("DragToBubbleController.onItemDropped() DROP shortcut info=%s", shortcutInfo)
         val dropLocation = lastDragZone?.getBubbleBarLocation() ?: return
         isDropHandled = true
-        bubbleController.expandStackAndSelectBubble(shortcutInfo, dropLocation)
+        bubbleController.expandStackAndSelectBubble(
+            shortcutInfo,
+            EntryPoint.TASKBAR_ICON_DRAG,
+            dropLocation,
+        )
     }
 
     /**
@@ -113,9 +120,15 @@ class DragToBubbleController(
      * bubble bar drop target.
      */
     fun onItemDropped(pendingIntent: PendingIntent, userHandle: UserHandle) {
+        BubbleLog.d("DragToBubbleController.onItemDropped() DROP pendingIntent=%s", pendingIntent)
         val dropLocation = lastDragZone?.getBubbleBarLocation() ?: return
         isDropHandled = true
-        bubbleController.expandStackAndSelectBubble(pendingIntent, userHandle, dropLocation)
+        bubbleController.expandStackAndSelectBubble(
+            pendingIntent,
+            userHandle,
+            EntryPoint.TASKBAR_ICON_DRAG,
+            dropLocation,
+        )
     }
 
     /** Called when the drag is ended. */
@@ -131,7 +144,10 @@ class DragToBubbleController(
             deviceConfig,
             { SplitScreenMode.UNSUPPORTED },
             { false },
-            object : BubbleBarPropertiesProvider {},
+            object : BubbleBarPropertiesProvider {
+                override fun getBubbleBarTopFromScreenBottom() =
+                    bubbleController.positioner.bubbleBarTopFromScreenBottom
+            },
         )
     }
 

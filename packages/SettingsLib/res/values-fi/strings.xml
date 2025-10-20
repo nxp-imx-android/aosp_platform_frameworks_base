@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Yhdistetään…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Yhdistetty <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Laiteparia muodostetaan..."</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Laiteparia ei voi muodostaa"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Ei yhteyttä"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Yhdistetty (ei puhelimen ääntä) <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Yhdistetty (ei median ääntä) <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Yhdistetty (ei puhelinta tai mediaa) <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -116,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Aktiivinen (vain oikea)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Aktiivinen (vasen ja oikea)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Ympäristön päivittäminen epäonnistui"</string>
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"Esiasetusta ei voitu muuttaa"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Valittu"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Aktiivinen (vain media). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> virtaa."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Aktiivinen (vain media). V: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, O: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> virtaa."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Vieraslaite. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> virtaa."</string>
@@ -295,7 +299,7 @@
     <string name="keywords_adb_wireless" msgid="6507505581882171240">"adb, virheenkorjaus, kehittäminen"</string>
     <string name="bugreport_in_power" msgid="8664089072534638709">"Virheraportin pikakuvake"</string>
     <string name="bugreport_in_power_summary" msgid="1885529649381831775">"Näytä virheraporttipainike virtavalikossa"</string>
-    <string name="keep_screen_on" msgid="1187161672348797558">"Pysy käynnissä"</string>
+    <string name="keep_screen_on" msgid="1187161672348797558">"Pidä päällä"</string>
     <string name="keep_screen_on_summary" msgid="1510731514101925829">"Näyttö ei sammu puhelimen latautuessa"</string>
     <string name="bt_hci_snoop_log" msgid="7291287955649081448">"Ota Bluetoothin HCI-tarkkailuloki käyttöön"</string>
     <string name="bt_hci_snoop_log_summary" msgid="6808538971394092284">"Tallenna Bluetoothin HCl-paketit tiedostoon (ota Bluetooth käyttöön asetuksen muuttamisen jälkeen)"</string>
@@ -345,7 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Kun tämä tila on päällä, laitteen MAC-osoite voi muuttua aina, kun laite yhdistää verkkoon, jossa MAC-satunnaistaminen on käytössä"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Maksullinen"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Maksuton"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Lokipuskurien koot"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Lokipuskurin koko"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Valitse puskurikohtaiset lokikoot"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Tyhjennetäänkö lokityökalun pysyvä tallennustila?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Kun lopetamme valvonnan laitteella pysyvästi olevalla lokityökalulla, meidän täytyy poistaa kaikki laitteellesi tallennetut lokityökalun tiedot."</string>
@@ -403,7 +407,7 @@
     <string name="touchpad_visualizer" msgid="3707916068870825115">"Näytä kosketuslevyn syöte"</string>
     <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"Näytön peitto, jossa näkyy kosketuslevyn syötedata ja tunnistetut eleet"</string>
     <string name="show_screen_updates" msgid="2078782895825535494">"Näytä pintapäivitykset"</string>
-    <string name="show_screen_updates_summary" msgid="2126932969682087406">"Väläytä koko ikkunoiden pinnat päivitettäessä"</string>
+    <string name="show_screen_updates_summary" msgid="2126932969682087406">"Näytä kaikki ikkunapinnat päivitettäessä"</string>
     <string name="show_hw_screen_updates" msgid="2021286231267747506">"Näytä näyttöpäivitykset"</string>
     <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"Näytä ikkunoiden sisältö piirtämisen yhteydessä"</string>
     <string name="show_hw_layers_updates" msgid="5268370750002509767">"Näytä laitteistotason päivitykset"</string>
@@ -664,8 +668,8 @@
     <string name="user_grant_admin_title" msgid="5157031020083343984">"Tehdäänkö tästä käyttäjästä järjestelmänvalvoja?"</string>
     <string name="user_grant_admin_message" msgid="1673791931033486709">"Järjestelmänvalvojilla on enemmän oikeuksia kuin muilla. Järjestelmänvalvoja voi hallinnoida kaikkia käyttäjiä, päivittää tai nollata tämän laitteen, muokata asetuksia, nähdä asennetut sovellukset ja antaa tai peruuttaa järjestelmänvalvojan oikeudet muilta."</string>
     <string name="user_grant_admin_button" msgid="5441486731331725756">"Muuta järjestelmänvalvojaksi"</string>
-    <string name="user_setup_dialog_title" msgid="8037342066381939995">"Lisätäänkö käyttäjä nyt?"</string>
-    <string name="user_setup_dialog_message" msgid="269931619868102841">"Varmista, että käyttäjä voi ottaa laitteen nyt ja määrittää oman tilansa."</string>
+    <string name="user_setup_dialog_title" msgid="8037342066381939995">"Otetaanko käyttäjä nyt käyttöön?"</string>
+    <string name="user_setup_dialog_message" msgid="269931619868102841">"Varmista, että käyttäjä voi ottaa laitteen nyt ja ottaa oman tilansa käyttöön."</string>
     <string name="user_setup_profile_dialog_message" msgid="4788197052296962620">"Määritetäänkö profiilin asetukset nyt?"</string>
     <string name="user_setup_button_setup_now" msgid="1708269547187760639">"Ota käyttöön nyt"</string>
     <string name="user_setup_button_setup_later" msgid="8712980133555493516">"Ei nyt"</string>
@@ -693,7 +697,7 @@
     <string name="guest_remove_guest_confirm_button" msgid="7858123434954143879">"Poista"</string>
     <string name="guest_resetting" msgid="7822120170191509566">"Nollataan vierasta…"</string>
     <string name="guest_reset_and_restart_dialog_title" msgid="3396657008451616041">"Nollataanko vierailija-käyttökerta?"</string>
-    <string name="guest_reset_and_restart_dialog_message" msgid="2764425635305200790">"Tämä aloittaa uuden vierailija-käyttökerran ja kaikki nykyisen istunnon sovellukset ja data poistetaan"</string>
+    <string name="guest_reset_and_restart_dialog_message" msgid="2764425635305200790">"Uusi vierailija-käyttökerta aloitetaan ja kaikki nykyisen istunnon sovellukset ja data poistetaan"</string>
     <string name="guest_exit_dialog_title" msgid="1846494656849381804">"Poistutaanko vierastilasta?"</string>
     <string name="guest_exit_dialog_message" msgid="1743218864242719783">"Tämä poistaa nykyisen vierailija-käyttökerran sovellukset ja datan"</string>
     <string name="grant_admin" msgid="4323199171790522574">"Kyllä, tee hänestä järjestelmänvalvoja"</string>
@@ -706,9 +710,9 @@
     <string name="guest_exit_button" msgid="5774985819191803960">"Poistu vierastilasta"</string>
     <string name="guest_reset_button" msgid="2515069346223503479">"Nollaa vierailija-käyttökerta"</string>
     <string name="guest_exit_quick_settings_button" msgid="1912362095913765471">"Kirjaa vieras ulos"</string>
-    <string name="guest_notification_ephemeral" msgid="7263252466950923871">"Kaikki toiminta poistetaan uloskirjaamisen aikana"</string>
+    <string name="guest_notification_ephemeral" msgid="7263252466950923871">"Kaikki toiminta poistetaan poistuessasi"</string>
     <string name="guest_notification_non_ephemeral" msgid="6843799963012259330">"Voit tallentaa tai poistaa toiminnan poistuessasi"</string>
-    <string name="guest_notification_non_ephemeral_non_first_login" msgid="8009307983766934876">"Nollaa poistaaksesi istunnon toiminnan nyt, tai voit tallentaa tai poistaa toimintaa poistuessasi"</string>
+    <string name="guest_notification_non_ephemeral_non_first_login" msgid="8009307983766934876">"Poista istunnon toiminta nollaamalla nyt, tai voit tallentaa tai poistaa toimintaa poistuessasi"</string>
     <string name="user_image_photo_selector" msgid="433658323306627093">"Valitse kuva"</string>
     <string name="failed_attempts_now_wiping_device" msgid="4016329172216428897">"Liian monta virheellistä yritystä. Laitteen data poistetaan."</string>
     <string name="failed_attempts_now_wiping_user" msgid="469060411789668050">"Liian monta virheellistä yritystä. Tämä käyttäjä poistetaan."</string>

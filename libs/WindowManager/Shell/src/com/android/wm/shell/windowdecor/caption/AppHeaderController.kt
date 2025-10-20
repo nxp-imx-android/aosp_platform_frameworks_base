@@ -19,6 +19,9 @@ package com.android.wm.shell.windowdecor.caption
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo.CONFIG_FONT_SCALE
+import android.content.pm.ActivityInfo.CONFIG_LOCALE
+import android.content.pm.ActivityInfo.CONFIG_UI_MODE
 import android.graphics.Point
 import android.graphics.Rect
 import android.os.Handler
@@ -29,14 +32,15 @@ import android.view.SurfaceControl
 import android.view.View
 import android.view.View.OnLongClickListener
 import android.view.WindowInsets
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import android.window.TaskSnapshot
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
-import com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightId
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.apptoweb.AppToWebRepository
 import com.android.wm.shell.apptoweb.OpenByDefaultDialog
 import com.android.wm.shell.apptoweb.OpenByDefaultDialog.DialogLifecycleListener
@@ -82,6 +86,8 @@ import com.android.wm.shell.windowdecor.extension.requestingImmersive
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.HeaderData
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
+import com.android.wm.shell.windowdecor.viewholder.util.DefaultAppHeaderDimensions
+import com.android.wm.shell.windowdecor.viewholder.util.LargeAppHeaderDimensions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainCoroutineDispatcher
@@ -94,7 +100,6 @@ import kotlinx.coroutines.launch
 class AppHeaderController(
     taskInfo: RunningTaskInfo,
     windowDecorViewHostSupplier: WindowDecorViewHostSupplier<WindowDecorViewHost>,
-    private val context: Context,
     private val userContext: Context,
     private val displayController: DisplayController,
     private val taskResourceLoader: WindowDecorTaskResourceLoader,
@@ -103,11 +108,12 @@ class AppHeaderController(
     private val transitions: Transitions,
     private val taskSurface: SurfaceControl,
     private val decorationSurface: SurfaceControl,
+    taskOrganizer: ShellTaskOrganizer,
     @ShellMainThread private val mainHandler: Handler,
     @ShellMainThread private val mainExecutor: ShellExecutor,
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
     @ShellMainThread private val mainScope: CoroutineScope,
-    @ShellBackgroundThread private val bgExecutor: ShellExecutor,
+    @ShellBackgroundThread bgScope: CoroutineScope,
     private val syncQueue: SyncTransactionQueue,
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     private val windowManagerWrapper: WindowManagerWrapper,
@@ -125,7 +131,7 @@ class AppHeaderController(
     private val maximizeMenuFactory: MaximizeMenuFactory = DefaultMaximizeMenuFactory,
     private val handleMenuFactory: HandleMenuFactory = HandleMenuFactory,
     private val appHeaderViewHolderFactory: AppHeaderViewHolder.Factory =
-        AppHeaderViewHolder.Factory(),
+        AppHeaderViewHolder.DefaultFactory(),
     private val surfaceControlBuilderSupplier: () -> SurfaceControl.Builder = {
         SurfaceControl.Builder()
     },
@@ -138,6 +144,8 @@ class AppHeaderController(
     CaptionController<WindowDecorLinearLayout>(
         taskInfo,
         windowDecorViewHostSupplier,
+        taskOrganizer,
+        bgScope,
         surfaceControlBuilderSupplier,
         surfaceControlViewHostFactory,
     ),
@@ -180,9 +188,13 @@ class AppHeaderController(
         get() = displayController.getDisplay(taskInfo.displayId)
 
     private val closeMaximizeWindowRunnable = Runnable { closeMaximizeMenu() }
-    private val isEducationEnabled =
+    private val isEducationOrHandleReportingEnabled =
         Flags.enableDesktopWindowingAppHandleEducation() ||
-            Flags.enableDesktopWindowingAppToWebEducationIntegration()
+            DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
+                .isTrue ||
+            DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
+    private val dimensions =
+        LargeAppHeaderDimensions(decorWindowContext.resources)
 
     private var isMaximizeMenuHovered = false
     private var isAppHeaderMaximizeButtonHovered = false
@@ -209,6 +221,14 @@ class AppHeaderController(
                 onMaximizeButtonHoverExit()
             }
 
+            // Check for relevant configuration changes
+            val oldConfig = this.taskInfo.configuration
+            val newConfig = params.runningTaskInfo.configuration
+            val diff = newConfig.diff(oldConfig)
+            // Check for UI mode (dark/light), locale, or font scale changes
+            val configChanged =
+                (diff and (CONFIG_UI_MODE or CONFIG_LOCALE or CONFIG_FONT_SCALE)) != 0
+
             val captionLayout =
                 super.relayout(
                     params,
@@ -221,13 +241,24 @@ class AppHeaderController(
                 )
             handleMenu?.relayout(
                 startT,
+                taskInfo.configuration,
                 captionLayout.captionX,
                 // Add top padding to the caption Y so that the menu is shown over what is the
                 // actual contents of the caption, ignoring padding. This is currently relevant
                 // to the Header in desktop immersive.
                 captionLayout.captionY + captionLayout.captionTopPadding,
             )
-            openByDefaultDialog?.relayout(taskInfo)
+
+            if (configChanged && isOpenByDefaultDialogActive) {
+                // Config changed, so destroy the old dialog and create a new one.
+                // The new one will inflate with the correct resources.
+                openByDefaultDialog?.dismiss() // Triggers onDialogDismissed, setting it to null
+                createOpenByDefaultDialog()
+            } else {
+                // No config change, just relayout the existing dialog for size/position changes.
+                openByDefaultDialog?.relayout(taskInfo)
+            }
+
             updateMaximizeMenu(startT)
 
             updateViewHolder(params.hasGlobalFocus)
@@ -260,7 +291,7 @@ class AppHeaderController(
     }
 
     private fun notifyCaptionStateChanged() {
-        if (!desktopState.canEnterDesktopMode || !isEducationEnabled) {
+        if (!desktopState.canEnterDesktopMode || !isEducationOrHandleReportingEnabled) {
             return
         }
         if (!isCaptionVisible || !hasGlobalFocus) {
@@ -271,8 +302,8 @@ class AppHeaderController(
     }
 
     private fun notifyNoCaption() {
-        if (!desktopState.canEnterDesktopMode || !isEducationEnabled) return
-        windowDecorCaptionRepository.notifyCaptionChanged(CaptionState.NoCaption())
+        if (!desktopState.canEnterDesktopMode || !isEducationOrHandleReportingEnabled) return
+        windowDecorCaptionRepository.notifyCaptionChanged(CaptionState.NoCaption(taskInfo.taskId))
     }
 
     private fun notifyAppHeaderStateChanged() {
@@ -287,11 +318,10 @@ class AppHeaderController(
             )
         val captionState =
             AppHeader(
-                taskInfo,
-                isHandleMenuActive,
-                appChipGlobalPosition,
-                appToWebRepository.isCapturedLinkAvailable(),
-                hasGlobalFocus,
+                runningTaskInfo = taskInfo,
+                isHeaderMenuExpanded = isHandleMenuActive,
+                globalAppChipBounds = appChipGlobalPosition,
+                isFocused = hasGlobalFocus,
             )
 
         windowDecorCaptionRepository.notifyCaptionChanged(captionState)
@@ -415,7 +445,7 @@ class AppHeaderController(
         if (isOpenByDefaultDialogActive) return
         openByDefaultDialog =
             OpenByDefaultDialog(
-                context,
+                decorWindowContext,
                 userContext,
                 transitions,
                 taskInfo,
@@ -430,6 +460,7 @@ class AppHeaderController(
                         openByDefaultDialog = null
                     }
                 },
+                desktopModeUiEventLogger,
             )
     }
 
@@ -520,6 +551,7 @@ class AppHeaderController(
                     isBrowserApp = isBrowserApp,
                     openInAppOrBrowserIntent = openInAppOrBrowserIntent,
                     desktopModeUiEventLogger = desktopModeUiEventLogger,
+                    captionView = viewHolder.rootView,
                     captionWidth = captionLayoutResult.captionWidth,
                     captionHeight = captionLayoutResult.captionHeight,
                     captionX = captionLayoutResult.captionX,
@@ -532,8 +564,12 @@ class AppHeaderController(
                     show(
                         openInAppOrBrowserClickListener = { intent ->
                             windowDecorationActions.onOpenInBrowser(taskInfo.taskId, intent)
-                            appToWebRepository.onCapturedLinkUsed()
-                            if (Flags.enableDesktopWindowingAppToWebEducationIntegration()) {
+                            appToWebRepository.onCapturedLinkUsed(taskInfo.taskId)
+                            if (
+                                DesktopExperienceFlags
+                                    .ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
+                                    .isTrue
+                            ) {
                                 windowDecorCaptionRepository.onAppToWebUsage()
                             }
                         },
@@ -553,7 +589,7 @@ class AppHeaderController(
         viewHolder.onHandleMenuClosed()
         handleMenu?.close()
         handleMenu = null
-        if (desktopState.canEnterDesktopMode && isEducationEnabled) {
+        if (desktopState.canEnterDesktopMode && isEducationOrHandleReportingEnabled) {
             notifyCaptionStateChanged()
         }
     }
@@ -577,7 +613,7 @@ class AppHeaderController(
                         captionLayoutResult.captionTopPadding,
                 displayController = displayController,
                 rootTdaOrganizer = rootTaskDisplayAreaOrganizer,
-                context = context,
+                context = decorWindowContext,
                 desktopUserRepositories = desktopUserRepositories,
                 surfaceControlBuilderSupplier = surfaceControlBuilderSupplier,
                 surfaceControlTransactionSupplier = surfaceControlTransactionSupplier,
@@ -601,10 +637,12 @@ class AppHeaderController(
         animatingTaskResizeOrReposition: Boolean = false,
     ) =
         traceSection("AppHeaderController#updateViewHolder") {
+            val displayId = taskInfo.displayId
+            val displayLayout = displayController.getDisplayLayout(displayId) ?: return@traceSection
             viewHolder.bindData(
                 HeaderData(
                     taskInfo,
-                    isTaskMaximized(taskInfo, displayController),
+                    isTaskMaximized(taskInfo, displayLayout),
                     inFullImmersive,
                     hasGlobalFocus,
                     canOpenMaximizeMenu(animatingTaskResizeOrReposition),
@@ -630,6 +668,7 @@ class AppHeaderController(
                 onCaptionGenericMotionListener = onCaptionGenericMotionListener,
                 onMaximizeHoverAnimationFinishedListener = { createMaximizeMenu() },
                 desktopModeUiEventLogger = desktopModeUiEventLogger,
+                dimensions = dimensions,
             )
 
         loadAppInfoJob =
@@ -637,7 +676,7 @@ class AppHeaderController(
                 val (name, icon) = taskResourceLoader.getNameAndHeaderIcon(taskInfo)
                 viewHolder.setAppName(name)
                 viewHolder.setAppIcon(icon)
-                if (desktopState.canEnterDesktopMode && isEducationEnabled) {
+                if (desktopState.canEnterDesktopMode && isEducationOrHandleReportingEnabled) {
                     notifyCaptionStateChanged()
                 }
             }
@@ -647,7 +686,7 @@ class AppHeaderController(
 
     /** Returns the valid drag area for a task based on elements in the app chip. */
     override fun calculateValidDragArea(): Rect {
-        val resources = context.resources
+        val resources = decorWindowContext.resources
         val leftButtonsWidth =
             resources.getDimensionPixelSize(R.dimen.desktop_mode_app_details_width_minus_text) +
                 viewHolder.appNameTextWidth
@@ -707,9 +746,7 @@ class AppHeaderController(
     private fun determineMaxY(requiredEmptySpace: Int, stableBounds: Rect): Int =
         stableBounds.bottom - requiredEmptySpace
 
-    override fun getCaptionHeight(): Int =
-        context.resources.getDimensionPixelSize(getDesktopViewAppHeaderHeightId()) +
-            getCaptionTopPadding()
+    override fun getCaptionHeight(): Int = dimensions.height + getCaptionTopPadding()
 
     override fun getCaptionWidth(): Int =
         taskInfo.getConfiguration().windowConfiguration.bounds.width()
@@ -725,28 +762,20 @@ class AppHeaderController(
         viewHolder.a11yAnnounceFocused()
     }
 
-    override fun releaseViews(
-        wct: WindowContainerTransaction,
-        t: SurfaceControl.Transaction,
-    ): Boolean {
-        closeHandleMenu()
-        closeManageWindowsMenu()
-        closeMaximizeMenu()
-        return super.releaseViews(wct, t)
-    }
-
-    override fun close() {
+    override fun close(wct: WindowContainerTransaction, t: SurfaceControl.Transaction): Boolean {
         loadAppInfoJob?.cancel()
         closeHandleMenu()
         closeManageWindowsMenu()
         closeMaximizeMenu()
         viewHolder.close()
-        if (desktopState.canEnterDesktopMode && isEducationEnabled) {
+        if (desktopState.canEnterDesktopMode && isEducationOrHandleReportingEnabled) {
             notifyNoCaption()
         }
+        return super.close(wct, t)
     }
 
     private companion object {
+        private const val TAG = "AppHeaderController"
         const val CLOSE_MAXIMIZE_MENU_DELAY_MS = 150L
     }
 }

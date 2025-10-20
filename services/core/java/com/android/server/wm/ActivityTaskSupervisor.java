@@ -358,10 +358,10 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     private ActivityRecord mLastReportedTopResumedActivity;
 
     /**
-     * Flag indicating whether we're currently waiting for the previous top activity to handle the
+     * The previous top activity that we're currently waiting for. Allowing it to handle the
      * loss of the state and report back before making new activity top resumed.
      */
-    private boolean mTopResumedActivityWaitingForPrev;
+    private ActivityRecord mWaitingTopResumedLostActivity;
 
     /** Whether a process state update of top resumed activity is deferred. */
     private boolean mHasPendingTopResumedProcessState;
@@ -1059,7 +1059,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 results, newIntents, r.takeSceneTransitionInfo(), isTransitionForward,
                 proc.createProfilerInfoIfNeeded(), r.assistToken, activityClientController,
                 r.shareableActivityToken, r.getLaunchedFromBubble(), fragmentToken,
-                r.initialCallerInfoAccessToken, activityWindowInfo);
+                r.initialCallerInfoAccessToken, activityWindowInfo, r.getDisplayId());
 
         // Set desired final state.
         final ActivityLifecycleItem lifecycleItem;
@@ -1150,7 +1150,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         }
     }
 
-    private void scheduleStartHome(String reason) {
+    void scheduleStartHome(String reason) {
         if (!mHandler.hasMessages(START_HOME_MSG)) {
             mHandler.obtainMessage(START_HOME_MSG, reason).sendToTarget();
         }
@@ -1387,16 +1387,11 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         if (displayId == DEFAULT_DISPLAY || displayId == INVALID_DISPLAY)  {
             return Context.DEVICE_ID_DEFAULT;
         }
-        if (mVirtualDeviceManagerInternal == null) {
-            if (mService.mHasCompanionDeviceSetupFeature) {
-                mVirtualDeviceManagerInternal =
-                        LocalServices.getService(VirtualDeviceManagerInternal.class);
-            }
-            if (mVirtualDeviceManagerInternal == null) {
-                return Context.DEVICE_ID_DEFAULT;
-            }
+        var virtualDeviceManagerInternal = getVirtualDeviceManagerInternal();
+        if (virtualDeviceManagerInternal == null) {
+            return Context.DEVICE_ID_DEFAULT;
         }
-        return mVirtualDeviceManagerInternal.getDeviceIdForDisplayId(displayId);
+        return virtualDeviceManagerInternal.getDeviceIdForDisplayId(displayId);
     }
 
     boolean isDeviceOwnerUid(int displayId, int callingUid) {
@@ -1405,6 +1400,17 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             return false;
         }
         return mVirtualDeviceManagerInternal.getDeviceOwnerUid(deviceId) == callingUid;
+    }
+
+    @Nullable
+    Intent createAutomatedAppLaunchWarningIntent(String packageName, int userId,
+            String callingPackageName, int displayId) {
+        var virtualDeviceManagerInternal = getVirtualDeviceManagerInternal();
+        if (virtualDeviceManagerInternal == null) {
+            return null;
+        }
+        return virtualDeviceManagerInternal.createAutomatedAppLaunchWarningIntent(
+                packageName, userId, callingPackageName, displayId);
     }
 
     private AppOpsManager getAppOpsManager() {
@@ -1419,6 +1425,14 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             mPermissionManager = mService.mContext.getSystemService(PermissionManager.class);
         }
         return mPermissionManager;
+    }
+
+    private VirtualDeviceManagerInternal getVirtualDeviceManagerInternal() {
+        if (mVirtualDeviceManagerInternal == null && mService.mHasCompanionDeviceSetupFeature) {
+            mVirtualDeviceManagerInternal =
+                    LocalServices.getService(VirtualDeviceManagerInternal.class);
+        }
+        return mVirtualDeviceManagerInternal;
     }
 
     BackgroundActivityStartController getBackgroundActivityLaunchController() {
@@ -2136,20 +2150,17 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 mHandler.removeMessages(LAUNCH_TIMEOUT_MSG);
             }
         }
-
-        mRootWindowContainer.applySleepTokens(false /* applyToRootTasks */);
-
-        checkReadyForSleepLocked(true /* allowDelay */);
+        mRootWindowContainer.sleepAllDisplays();
     }
 
     boolean shutdownLocked(int timeout) {
+        mRootWindowContainer.prepareForShutdown();
         goingToSleepLocked();
 
         boolean timedout = false;
         final long endTime = System.currentTimeMillis() + timeout;
         while (true) {
-            if (!mRootWindowContainer.putTasksToSleep(
-                    true /* allowDelay */, true /* shuttingDown */)) {
+            if (!mRootWindowContainer.putTasksToSleep(true /* shuttingDown */)) {
                 long timeRemaining = endTime - System.currentTimeMillis();
                 if (timeRemaining > 0) {
                     try {
@@ -2168,8 +2179,11 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         long timeRemaining = endTime - System.currentTimeMillis();
         mWindowManager.mSnapshotController.mTaskSnapshotController.waitFlush(timeRemaining);
 
-        // Force checkReadyForSleep to complete.
-        checkReadyForSleepLocked(false /* allowDelay */);
+        if (timedout) {
+            // Force enter sleep to complete.
+            mRootWindowContainer.putTasksToSleepNow();
+        }
+        finishEnteringSleep();
 
         return timedout;
     }
@@ -2181,17 +2195,21 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         }
     }
 
-    void checkReadyForSleepLocked(boolean allowDelay) {
+    void checkReadyForSleepLocked() {
         if (!mService.isSleepingOrShuttingDownLocked()) {
             // Do not care.
             return;
         }
 
-        if (!mRootWindowContainer.putTasksToSleep(
-                allowDelay, false /* shuttingDown */)) {
+        if (!mRootWindowContainer.putTasksToSleep(false /* shuttingDown */)) {
             return;
         }
 
+        finishEnteringSleep();
+    }
+
+    @VisibleForTesting
+    void finishEnteringSleep() {
         // End power mode launch before going sleep
         mService.endPowerMode(ActivityTaskManagerService.POWER_MODE_REASON_ALL);
 
@@ -2471,21 +2489,22 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             return;
         }
 
-        // mTopResumedActivityWaitingForPrev == true at this point would mean that an activity
+        // mWaitingTopResumedLostActivity != null at this point would mean that an activity
         // before the prevTopActivity one hasn't reported back yet. So server never sent the top
         // resumed state change message to prevTopActivity.
-        if (!mTopResumedActivityWaitingForPrev && readyToResume()
+        if (mWaitingTopResumedLostActivity == null && readyToResume()
                 && mLastReportedTopResumedActivity.scheduleTopResumedActivityChanged(
-                        false /* onTop */)) {
+                false /* onTop */)) {
             scheduleTopResumedStateLossTimeout(mLastReportedTopResumedActivity);
-            mTopResumedActivityWaitingForPrev = true;
+            mWaitingTopResumedLostActivity = mLastReportedTopResumedActivity;
             mLastReportedTopResumedActivity = null;
         }
     }
 
     /** Schedule top resumed state change if previous top activity already reported back. */
     private void scheduleTopResumedActivityStateIfNeeded() {
-        if (mTopResumedActivity != null && !mTopResumedActivityWaitingForPrev && readyToResume()) {
+        if (mTopResumedActivity != null && mWaitingTopResumedLostActivity == null
+                && readyToResume()) {
             mTopResumedActivity.scheduleTopResumedActivityChanged(true /* onTop */);
             mLastReportedTopResumedActivity = mTopResumedActivity;
         }
@@ -2506,17 +2525,28 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
      * Handle a loss of top resumed state by an activity - update internal state and inform next top
      * activity if needed.
      */
-    void handleTopResumedStateReleased(boolean timeout) {
+    void handleTopResumedStateReleasedIfNeeded(ActivityRecord r, boolean timeout) {
+        if (mWaitingTopResumedLostActivity == null || mWaitingTopResumedLostActivity != r) {
+            return;
+        }
+
+        if (!timeout && r.isState(PAUSING)) {
+            // Do not handle the top-resumed-state-lost if the activity is currently pausing to
+            // prevent rapid top-resumed activity switch.
+            return;
+        }
+
         ProtoLog.v(WM_DEBUG_STATES, "Top resumed state released %s",
                     (timeout ? "(due to timeout)" : "(transition complete)"));
 
         mHandler.removeMessages(TOP_RESUMED_STATE_LOSS_TIMEOUT_MSG);
-        if (!mTopResumedActivityWaitingForPrev) {
-            // Top resumed activity state loss already handled.
-            return;
-        }
-        mTopResumedActivityWaitingForPrev = false;
+        mWaitingTopResumedLostActivity = null;
         scheduleTopResumedActivityStateIfNeeded();
+    }
+
+    /** Returns {@code true} if there will be a RESUMED state change of top app. */
+    boolean hasPendingTopResumedSwitch() {
+        return mTopResumedActivity == null && mWaitingTopResumedLostActivity != null;
     }
 
     void removeIdleTimeoutForActivity(ActivityRecord r) {
@@ -2836,7 +2866,8 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 case SLEEP_TIMEOUT_MSG: {
                     if (mService.isSleepingOrShuttingDownLocked()) {
                         Slog.w(TAG, "Sleep timeout!  Sleeping now.");
-                        checkReadyForSleepLocked(false /* allowDelay */);
+                        mRootWindowContainer.putTasksToSleepNow();
+                        finishEnteringSleep();
                     }
                 } break;
                 case LAUNCH_TIMEOUT_MSG: {
@@ -2868,13 +2899,18 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 case START_HOME_MSG: {
                     mHandler.removeMessages(START_HOME_MSG);
 
-                    // Start home activities on displays with no activities.
-                    mRootWindowContainer.startHomeOnEmptyDisplays((String) msg.obj);
+                    if (com.android.window.flags.Flags.homeActivityAlwaysPresent()) {
+                        // Start home activities on displays with no home.
+                        mRootWindowContainer.startHomeOnDisplaysWithNoHome((String) msg.obj);
+                    } else {
+                        // Start home activities on displays with no activities.
+                        mRootWindowContainer.startHomeOnEmptyDisplays((String) msg.obj);
+                    }
                 } break;
                 case TOP_RESUMED_STATE_LOSS_TIMEOUT_MSG: {
                     final ActivityRecord r = (ActivityRecord) msg.obj;
                     Slog.w(TAG, "Activity top resumed state loss timeout for " + r);
-                    handleTopResumedStateReleased(true /* timeout */);
+                    handleTopResumedStateReleasedIfNeeded(r, true /* timeout */);
                 } break;
                 default:
                     return false;
@@ -3100,21 +3136,43 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             // container, unless the children are adjacent fragments, in which case as long as they
             // are all opaque then |container| is also considered opaque, even if the adjacent
             // task fragment aren't filling.
-            for (int i = 0; i < container.getChildCount(); i++) {
+            TaskFragment.AdjacentVisibilityHelper adjacentVisibilityHelper = null;
+            for (int i = container.getChildCount() - 1; i >= 0; --i) {
                 final WindowContainer<?> child = container.getChildAt(i);
                 if (child.fillsParent() && isOpaque(child)) {
                     return true;
                 }
 
-                if (child.asTaskFragment() != null
-                        && child.asTaskFragment().hasAdjacentTaskFragment()) {
-                    final boolean isAnyTranslucent = !isOpaque(child)
-                            || child.asTaskFragment().forOtherAdjacentTaskFragments(
+                if (com.android.window.flags.Flags.fixTfAdjacentVisibility()) {
+                    final TaskFragment tf = child.asTaskFragment();
+                    if (tf != null) {
+                        if (tf.hasAdjacentTaskFragment() && adjacentVisibilityHelper == null) {
+                            adjacentVisibilityHelper = tf.getAdjacentTaskFragments()
+                                    .getVisibilityHelper(this::isOpaque);
+                        }
+                        if (adjacentVisibilityHelper != null) {
+                            adjacentVisibilityHelper.process(tf);
+                            if (adjacentVisibilityHelper.isAllAdjacentTaskFragmentProcessed()) {
+                                if (adjacentVisibilityHelper.occludesParent()) {
+                                    // return early if the adjacent TFs are opaque.
+                                    return true;
+                                } else {
+                                    adjacentVisibilityHelper = null;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    if (child.asTaskFragment() != null
+                            && child.asTaskFragment().hasAdjacentTaskFragment()) {
+                        final boolean isAnyTranslucent = !isOpaque(child)
+                                || child.asTaskFragment().forOtherAdjacentTaskFragments(
                                     tf -> !isOpaque(tf));
-                    if (!isAnyTranslucent) {
-                        // This task fragment and all its adjacent task fragments are opaque,
-                        // consider it opaque even if it doesn't fill its parent.
-                        return true;
+                        if (!isAnyTranslucent) {
+                            // This task fragment and all its adjacent task fragments are opaque,
+                            // consider it opaque even if it doesn't fill its parent.
+                            return true;
+                        }
                     }
                 }
             }
@@ -3141,6 +3199,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     static class TaskInfoHelper implements Consumer<ActivityRecord> {
         private TaskInfo mInfo;
         private ActivityRecord mTopRunning;
+        private boolean mCreatedByOrganizer;
 
         ActivityRecord fillAndReturnTop(Task task, TaskInfo info) {
             info.numActivities = 0;
@@ -3148,6 +3207,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             info.capturedLink = null;
             info.capturedLinkTimestamp = 0;
             mInfo = info;
+            mCreatedByOrganizer = task.mCreatedByOrganizer;
             task.forAllActivities(this);
             final ActivityRecord top = mTopRunning;
             mTopRunning = null;
@@ -3161,7 +3221,8 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                     && mInfo.capturedLink == null) {
                 setCapturedLink(r);
             }
-            if (r.mLaunchCookie != null) {
+            if (r.mLaunchCookie != null && (!com.android.window.flags.Flags.rootTaskForBubble()
+                    || !mCreatedByOrganizer)) {
                 mInfo.addLaunchCookie(r.mLaunchCookie);
             }
             if (r.finishing) {

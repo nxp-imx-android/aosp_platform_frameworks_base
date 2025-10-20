@@ -70,7 +70,6 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.text
@@ -90,15 +89,12 @@ import com.android.systemui.biometrics.Utils.toBitmap
 import com.android.systemui.brightness.shared.model.GammaBrightness
 import com.android.systemui.brightness.ui.compose.AnimationSpecs.IconAppearSpec
 import com.android.systemui.brightness.ui.compose.AnimationSpecs.IconDisappearSpec
-import com.android.systemui.brightness.ui.compose.Dimensions.IconPadding
-import com.android.systemui.brightness.ui.compose.Dimensions.IconSize
-import com.android.systemui.brightness.ui.compose.Dimensions.SliderBackgroundFrameSize
-import com.android.systemui.brightness.ui.compose.Dimensions.SliderBackgroundRoundedCorner
-import com.android.systemui.brightness.ui.compose.Dimensions.ThumbHeight
-import com.android.systemui.brightness.ui.compose.Dimensions.SliderTrackRoundedCorner
-import com.android.systemui.brightness.ui.compose.Dimensions.ThumbTrackGapSize
-import com.android.systemui.brightness.ui.compose.Dimensions.ThumbWidth
-import com.android.systemui.brightness.ui.compose.Dimensions.TrackHeight
+import com.android.systemui.brightness.ui.compose.InternalDimensions.IconPadding
+import com.android.systemui.brightness.ui.compose.InternalDimensions.IconSize
+import com.android.systemui.brightness.ui.compose.InternalDimensions.SliderBackgroundFrameWidth
+import com.android.systemui.brightness.ui.compose.InternalDimensions.SliderBackgroundRoundedCorner
+import com.android.systemui.brightness.ui.compose.InternalDimensions.SliderTrackRoundedCorner
+import com.android.systemui.brightness.ui.compose.InternalDimensions.ThumbTrackGapSize
 import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel
 import com.android.systemui.brightness.ui.viewmodel.Drag
 import com.android.systemui.common.shared.model.Icon
@@ -129,6 +125,7 @@ fun BrightnessSlider(
     modifier: Modifier = Modifier,
     showToast: () -> Unit = {},
     hapticsViewModelFactory: SliderHapticsViewModel.Factory,
+    dimensions: BrightnessSliderDimensions = BrightnessSliderDimensions.Default,
 ) {
     var value by remember(gammaValue) { mutableIntStateOf(gammaValue) }
     val animatedValue by
@@ -241,7 +238,7 @@ fun BrightnessSlider(
             SliderDefaults.Thumb(
                 interactionSource = interactionSource,
                 enabled = enabled,
-                thumbSize = DpSize(ThumbWidth, ThumbHeight),
+                thumbSize = DpSize(dimensions.thumbWidth, dimensions.thumbHeight),
                 colors = colors,
             )
         },
@@ -286,7 +283,7 @@ fun BrightnessSlider(
                             iconInactiveAlphaAnimatable.value exportAs
                                 BrightnessSliderMotionTestKeys.InactiveIconAlpha
                         }
-                        .height(TrackHeight)
+                        .height(dimensions.trackHeight)
                         .drawWithContent {
                             drawContent()
 
@@ -343,8 +340,8 @@ fun BrightnessSlider(
     }
 }
 
-private fun Modifier.sliderBackground(color: Color) = drawWithCache {
-    val offsetAround = SliderBackgroundFrameSize.toSize()
+private fun Modifier.sliderBackground(backgroundFrameSize: DpSize, color: Color) = drawWithCache {
+    val offsetAround = backgroundFrameSize.toSize()
     val newSize = Size(size.width + 2 * offsetAround.width, size.height + 2 * offsetAround.height)
     val offset = Offset(-offsetAround.width, -offsetAround.height)
     val cornerRadius = CornerRadius(SliderBackgroundRoundedCorner.toPx())
@@ -358,6 +355,7 @@ fun BrightnessSliderContainer(
     viewModel: BrightnessSliderViewModel,
     modifier: Modifier = Modifier,
     containerColors: ContainerColors,
+    dimensions: BrightnessSliderDimensions = BrightnessSliderDimensions.Default,
 ) {
     val gamma = viewModel.currentBrightness.value
     if (gamma == BrightnessSliderViewModel.initialValue.value) { // Ignore initial negative value.
@@ -383,10 +381,11 @@ fun BrightnessSliderContainer(
             if (dragging) containerColors.mirrorColor else containerColors.idleColor
         )
 
+    val backgroundFrameHeight = dimensions.verticalPadding
     Box(
         modifier =
             modifier
-                .padding(vertical = { SliderBackgroundFrameSize.height.roundToPx() })
+                .padding(vertical = { backgroundFrameHeight.roundToPx() })
                 .fillMaxWidth()
                 .sysuiResTag("brightness_slider")
     ) {
@@ -413,7 +412,13 @@ fun BrightnessSliderContainer(
                         cornerSize = CornerSize(SliderTrackRoundedCorner),
                     )
                     .then(if (viewModel.showMirror) Modifier.drawInOverlay() else Modifier)
-                    .sliderBackground(containerColor)
+                    .sliderBackground(
+                        DpSize(
+                            InternalDimensions.SliderBackgroundFrameWidth,
+                            backgroundFrameHeight
+                        ),
+                        containerColor,
+                    )
                     .fillMaxWidth()
                     .pointerInteropFilter {
                         if (
@@ -429,6 +434,7 @@ fun BrightnessSliderContainer(
             showToast = {
                 viewModel.showToast(context, R.string.quick_settings_brightness_unable_adjust_msg)
             },
+            dimensions = dimensions,
         )
     }
 }
@@ -442,31 +448,29 @@ data class ContainerColors(val idleColor: Color, val mirrorColor: Color) {
     }
 }
 
-private object Dimensions {
-    val SliderBackgroundFrameSize = DpSize(10.dp, 6.dp)
+data class BrightnessSliderDimensions(
+    val thumbHeight: Dp,
+    val thumbWidth: Dp,
+    val trackHeight: Dp,
+    val verticalPadding: Dp
+) {
+    companion object {
+        val Default = BrightnessSliderDimensions(
+            thumbHeight = 52.dp,
+            thumbWidth = 4.dp,
+            trackHeight = 40.dp,
+            verticalPadding = 6.dp
+        )
+    }
+}
+
+private object InternalDimensions {
+    val SliderBackgroundFrameWidth = 10.dp
     val SliderBackgroundRoundedCorner = 24.dp
     val SliderTrackRoundedCorner = 12.dp
     val IconSize = DpSize(28.dp, 28.dp)
     val IconPadding = 6.dp
     val ThumbTrackGapSize = 6.dp
-
-    val ThumbHeight : Dp
-        @Composable
-        @ReadOnlyComposable
-        get() =
-            dimensionResource(id = R.dimen.overlay_qs_layout_brightness_thumb_height)
-
-    val ThumbWidth : Dp
-        @Composable
-        @ReadOnlyComposable
-        get() =
-            dimensionResource(id = R.dimen.overlay_qs_layout_brightness_thumb_width)
-
-    val TrackHeight: Dp
-        @Composable
-        @ReadOnlyComposable
-        get() =
-            dimensionResource(id = R.dimen.overlay_qs_layout_brightness_track_height)
 }
 
 private object AnimationSpecs {

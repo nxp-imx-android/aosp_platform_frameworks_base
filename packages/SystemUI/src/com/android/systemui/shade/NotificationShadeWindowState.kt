@@ -42,6 +42,7 @@ class NotificationShadeWindowState(
     @JvmField var qsExpanded: Boolean = false,
     @JvmField var headsUpNotificationShowing: Boolean = false,
     @JvmField var lightRevealScrimOpaque: Boolean = false,
+    @JvmField var pendingDisplayChange: Boolean = false,
     @JvmField var isSwitchingUsers: Boolean = false,
     @JvmField var forceWindowCollapsed: Boolean = false,
     @JvmField var forceDozeBrightness: Boolean = false,
@@ -62,6 +63,8 @@ class NotificationShadeWindowState(
     @JvmField var backgroundBlurRadius: Int = 0,
     @JvmField var communalVisible: Boolean = false,
     @JvmField var isOnOrGoingToDream: Boolean = false,
+    @JvmField var isAnimatingSurfaceBehind: Boolean = false,
+    @JvmField var isAnimatingGoneToAod: Boolean = false,
 ) {
 
     fun isKeyguardShowingAndNotOccluded(): Boolean {
@@ -89,6 +92,7 @@ class NotificationShadeWindowState(
             qsExpanded.toString(),
             headsUpNotificationShowing.toString(),
             lightRevealScrimOpaque.toString(),
+            pendingDisplayChange.toString(),
             isSwitchingUsers.toString(),
             forceWindowCollapsed.toString(),
             forceDozeBrightness.toString(),
@@ -105,6 +109,8 @@ class NotificationShadeWindowState(
             backgroundBlurRadius.toString(),
             communalVisible.toString(),
             isOnOrGoingToDream.toString(),
+            isAnimatingSurfaceBehind.toString(),
+            isAnimatingGoneToAod.toString(),
         )
     }
 
@@ -132,6 +138,7 @@ class NotificationShadeWindowState(
             qsExpanded: Boolean,
             headsUpShowing: Boolean,
             lightRevealScrimOpaque: Boolean,
+            pendingDisplayChange: Boolean,
             isSwitchingUsers: Boolean,
             forceCollapsed: Boolean,
             forceDozeBrightness: Boolean,
@@ -148,6 +155,8 @@ class NotificationShadeWindowState(
             backgroundBlurRadius: Int,
             communalVisible: Boolean,
             isOnOrGoingToDream: Boolean,
+            isAnimatingSurfaceBehind: Boolean,
+            isAnimatingGoneToAod: Boolean,
         ) {
             buffer.advance().apply {
                 this.keyguardShowing = keyguardShowing
@@ -164,6 +173,7 @@ class NotificationShadeWindowState(
                 this.qsExpanded = qsExpanded
                 this.headsUpNotificationShowing = headsUpShowing
                 this.lightRevealScrimOpaque = lightRevealScrimOpaque
+                this.pendingDisplayChange = pendingDisplayChange
                 this.isSwitchingUsers = isSwitchingUsers
                 this.forceWindowCollapsed = forceCollapsed
                 this.forceDozeBrightness = forceDozeBrightness
@@ -181,6 +191,8 @@ class NotificationShadeWindowState(
                 this.backgroundBlurRadius = backgroundBlurRadius
                 this.communalVisible = communalVisible
                 this.isOnOrGoingToDream = isOnOrGoingToDream
+                this.isAnimatingSurfaceBehind = isAnimatingSurfaceBehind
+                this.isAnimatingGoneToAod = isAnimatingGoneToAod
             }
         }
 
@@ -213,6 +225,7 @@ class NotificationShadeWindowState(
                 "qsExpanded",
                 "headsUpShowing",
                 "lightRevealScrimOpaque",
+                "pendingDisplayChange",
                 "isSwitchingUsers",
                 "forceCollapsed",
                 "forceDozeBrightness",
@@ -229,6 +242,7 @@ class NotificationShadeWindowState(
                 "backgroundBlurRadius",
                 "communalVisible",
                 "isOnOrGoingToDream",
+                "isAnimatingSurfaceBehind",
             )
     }
 }

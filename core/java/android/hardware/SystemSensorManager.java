@@ -145,7 +145,7 @@ public class SystemSensorManager extends SensorManager {
 
     private Optional<Boolean> mHasHighSamplingRateSensorsPermission = Optional.empty();
 
-    /** {@hide} */
+    /** @hide */
     public SystemSensorManager(Context context, Looper mainLooper) {
         synchronized (sLock) {
             if (!sNativeClassInited) {

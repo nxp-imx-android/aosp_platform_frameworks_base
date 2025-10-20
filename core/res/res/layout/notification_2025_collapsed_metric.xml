@@ -21,14 +21,13 @@ android:layout_marginBottom="@dimen/notification_2025_additional_margin"
 android:layout_marginEnd="@dimen/notification_2025_margin"
 android:minHeight="@dimen/notification_headerless_line_height"
 android:orientation="horizontal"
+android:gravity="center_vertical"
 >
     <LinearLayout
         android:id="@+id/metric_view_0"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginEnd="@dimen/notification_collapsed_metric_margin"
-        >
+        android:orientation="horizontal">
         <TextView
             android:id="@+id/metric_label_0"
             android:layout_width="wrap_content"
@@ -54,9 +53,15 @@ android:orientation="horizontal"
         android:id="@+id/metric_view_1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginEnd="@dimen/notification_collapsed_metric_margin"
-        >
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.DeviceDefault.Notification.Info"
+            android:layout_marginStart="@dimen/notification_header_separating_margin"
+            android:layout_marginEnd="@dimen/notification_header_separating_margin"
+            android:text="@string/notification_header_divider_symbol"
+            />
         <TextView
             android:id="@+id/metric_label_1"
             android:layout_width="wrap_content"
@@ -78,13 +83,21 @@ android:orientation="horizontal"
             style="@style/NotificationMetricValue"
             />
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/metric_view_2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginEnd="@dimen/notification_collapsed_metric_margin"
         >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.DeviceDefault.Notification.Info"
+            android:layout_marginStart="@dimen/notification_header_separating_margin"
+            android:layout_marginEnd="@dimen/notification_header_separating_margin"
+            android:text="@string/notification_header_divider_symbol"
+            />
         <TextView
             android:id="@+id/metric_label_2"
             android:layout_width="wrap_content"

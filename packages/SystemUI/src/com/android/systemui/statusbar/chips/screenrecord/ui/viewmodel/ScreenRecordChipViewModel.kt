@@ -78,6 +78,7 @@ constructor(
                     is ScreenRecordChipModel.Starting -> {
                         OngoingActivityChipModel.Active(
                             key = KEY,
+                            notificationKey = null, // Not tied to a notification
                             isImportantForPrivacy = true,
                             content =
                                 OngoingActivityChipModel.Content.Countdown(
@@ -94,6 +95,7 @@ constructor(
                     is ScreenRecordChipModel.Recording -> {
                         OngoingActivityChipModel.Active(
                             key = KEY,
+                            notificationKey = null, // Not tied to a notification
                             isImportantForPrivacy = true,
                             icon =
                                 OngoingActivityChipModel.ChipIcon.SingleColorIcon(

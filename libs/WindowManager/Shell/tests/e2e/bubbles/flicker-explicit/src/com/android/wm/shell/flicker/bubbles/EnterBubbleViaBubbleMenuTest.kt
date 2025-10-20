@@ -21,16 +21,17 @@ import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
-import com.android.wm.shell.Utils
+import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.EnterBubbleTestCases
-import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
+import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameters
 
 /**
  * Test entering bubble via clicking bubble menu.
@@ -39,8 +40,8 @@ import org.junit.runners.Parameterized
  *
  * Actions:
  * ```
- *     Long press [simpleApp] icon to show [AppIconMenu].
- *     Click the bubble menu to launch [simpleApp] into bubble.
+ *     Long press [testApp] icon to show app icon menu.
+ *     Click the bubble menu to launch [testApp] into bubble.
  * ```
  * Verified tests:
  * - [BubbleFlickerTestBase]
@@ -60,14 +61,14 @@ class EnterBubbleViaBubbleMenuTest(navBar: NavBar) : BubbleFlickerTestBase(),
             tearDownAfterTransition = { testApp.exit(wmHelper) }
         )
 
-        @Parameterized.Parameters(name = "{0}")
+        @Parameters(name = "{0}")
         @JvmStatic
-        fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL, NavBar.MODE_3BUTTON)
+        fun data(): List<NavBar> = NavBar.entries
     }
 
-    @get:Rule
-    val setUpRule = ApplyPerParameterRule(
-        Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
+    @get:Rule(order = 1)
+    val setUpRule = RunOncePerParameterRule(
+        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
         params = arrayOf(navBar),
     )
 

@@ -46,9 +46,11 @@ import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.app.animation.Interpolators
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.compose.theme.PlatformTheme
 import com.android.keyguard.AlphaOptimizedLinearLayout
 import com.android.systemui.Dumpable
+import com.android.systemui.Flags
 import com.android.systemui.Flags.notificationShadeBlur
 import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.battery.BatteryMeterView
@@ -57,6 +59,7 @@ import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.demomode.DemoMode
 import com.android.systemui.demomode.DemoModeController
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.qs.ChipVisibilityListener
@@ -74,7 +77,6 @@ import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.core.RudimentaryBattery
-import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
 import com.android.systemui.statusbar.phone.StatusOverlayHoverListenerFactory
@@ -116,7 +118,7 @@ constructor(
     private val statusBarIconController: StatusBarIconController,
     private val tintedIconManagerFactory: TintedIconManager.Factory,
     private val privacyIconsController: HeaderPrivacyIconsController,
-    private val statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore,
+    private val perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
     @ShadeDisplayAware private val configurationController: ConfigurationController,
     @ShadeDisplayAware private val context: Context,
     private val shadeDisplaysRepositoryLazy: Lazy<ShadeDisplaysRepository>,
@@ -136,17 +138,19 @@ constructor(
 
     private val statusBarContentInsetsProvider
         get() =
-            statusBarContentInsetsProviderStore.forDisplay(
-                if (ShadeWindowGoesAround.isEnabled) {
-                    // ShadeDisplaysRepository is the source of truth for display id when
-                    // ShadeWindowGoesAround.isEnabled
-                    shadeDisplaysRepositoryLazy.get().pendingDisplayId.value
-                } else {
-                    context.displayId
-                }
-            )
+            perDisplaySubcomponentRepo[
+                    if (ShadeWindowGoesAround.isEnabled) {
+                        // ShadeDisplaysRepository is the source of truth for display id when
+                        // ShadeWindowGoesAround.isEnabled
+                        shadeDisplaysRepositoryLazy.get().pendingDisplayId.value
+                    } else {
+                        context.displayId
+                    }]
+                ?.statusBarContentInsetsProvider
 
     companion object {
+        const val TRACK_NAME = "ShadeHeaderController"
+
         /** IDs for transitions and constraints for the [MotionLayout]. */
         @VisibleForTesting internal val HEADER_TRANSITION_ID = R.id.header_transition
 
@@ -347,6 +351,9 @@ constructor(
                 if (!ShadeWindowGoesAround.isEnabled) {
                     // the clock handles the config change itself.
                     clock.onDensityOrFontScaleChanged()
+                }
+                if (Flags.fixShadeHeaderWrongDndIconSize()) {
+                    statusBarIconController.reloadIconGroupLayoutParams(iconManager)
                 }
             }
 

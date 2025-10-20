@@ -118,8 +118,9 @@ val sceneTransitionsV2 = transitions {
         translate(Communal.Elements.Grid, Edge.End)
         if (Flags.gestureBetweenHubAndLockscreenMotion()) {
             distance = UserActionDistance { fromContent, _, _ ->
-                val fromContentSize = checkNotNull(fromContent.targetSize())
-                fromContentSize.width * 0.5f
+                // fromContent size can be null if it hasn't been compose yet, in which case we
+                // fall back to 0.
+                fromContent.targetSize()?.width?.times(0.5f) ?: 0f
             }
             timestampRange(startMillis = 167, endMillis = 334) { fade(Communal.Elements.StatusBar) }
         } else {
@@ -240,7 +241,6 @@ fun CommunalContainer(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val currentSceneKey: SceneKey by viewModel.currentScene.collectAsStateWithLifecycle()
-    val touchesAllowed by viewModel.touchesAllowed.collectAsStateWithLifecycle()
     val backgroundType by
         viewModel.communalBackground.collectAsStateWithLifecycle(
             initialValue = CommunalBackgroundType.ANIMATED
@@ -252,9 +252,6 @@ fun CommunalContainer(
             canChangeScene = { toScene -> viewModel.canChangeScene(toScene) },
             transitions = if (viewModel.v2FlagEnabled()) sceneTransitionsV2 else sceneTransitions,
         )
-
-    val isUiBlurred by viewModel.isUiBlurred.collectAsStateWithLifecycle()
-
     val detector = remember { CommunalSwipeDetector() }
 
     DisposableEffect(state) {
@@ -270,14 +267,12 @@ fun CommunalContainer(
         onDispose { viewModel.setTransitionState(null) }
     }
 
-    val blurRadius = with(LocalDensity.current) { viewModel.blurRadiusPx.toDp() }
-
     val swipeFromHubInLandscape by
         viewModel.swipeFromHubInLandscape.collectAsStateWithLifecycle(false)
 
     SceneTransitionLayout(
         state = state,
-        modifier = modifier.fillMaxSize().thenIf(isUiBlurred) { Modifier.blur(blurRadius) },
+        modifier = modifier.fillMaxSize(),
         swipeSourceDetector = detector,
         swipeDetector = detector,
     ) {
@@ -314,6 +309,8 @@ fun CommunalContainer(
                         UserActionResult(CommunalScenes.Blank, CommunalTransitionKeys.SwipeUp),
                 ),
         ) {
+            val touchesAllowed by viewModel.touchesAllowed.collectAsStateWithLifecycle()
+
             CommunalScene(
                 backgroundType = backgroundType,
                 colors = colors,
@@ -321,12 +318,13 @@ fun CommunalContainer(
                 ambientStatusBarSection = ambientStatusBarSection,
                 viewModel = viewModel,
             )
+
+            // Touches on the notification shade in blank areas fall through to the glanceable hub.
+            // When the shade is showing, we block all touches in order to prevent this unwanted
+            // behavior.
+            Box(modifier = Modifier.fillMaxSize().allowGestures(touchesAllowed))
         }
     }
-
-    // Touches on the notification shade in blank areas fall through to the glanceable hub. When the
-    // shade is showing, we block all touches in order to prevent this unwanted behavior.
-    Box(modifier = Modifier.fillMaxSize().allowGestures(touchesAllowed))
 }
 
 /** Scene containing the glanceable hub UI. */
@@ -340,11 +338,14 @@ fun ContentScope.CommunalScene(
     modifier: Modifier = Modifier,
 ) {
     val isFocusable by viewModel.isFocusable.collectAsStateWithLifecycle(initialValue = false)
+    val isBlurred by viewModel.isUiBlurred.collectAsStateWithLifecycle()
+    val blurRadius = with(LocalDensity.current) { viewModel.blurRadiusPx.toDp() }
 
     Box(
         modifier =
             Modifier.element(Communal.Elements.Scrim)
                 .fillMaxSize()
+                .thenIf(isBlurred) { Modifier.blur(blurRadius) }
                 .then(
                     if (isFocusable) {
                         Modifier.focusable()

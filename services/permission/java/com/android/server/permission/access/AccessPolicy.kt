@@ -17,6 +17,7 @@
 package com.android.server.permission.access
 
 import android.content.pm.SignedPackage
+import android.permission.flags.Flags.appFunctionAccessServiceEnabled
 import android.util.Slog
 import com.android.modules.utils.BinaryXmlPullParser
 import com.android.modules.utils.BinaryXmlSerializer
@@ -345,6 +346,7 @@ private constructor(
                             TAG_PACKAGE_VERSIONS -> parsePackageVersions(state, userId)
                             TAG_DEFAULT_PERMISSION_GRANT ->
                                 parseDefaultPermissionGrant(state, userId)
+                            TAG_APP_FUNCTION_PREGRANT -> parseAppFunctionPregrant(state, userId)
                             else -> {
                                 forEachSchemePolicy { with(it) { parseUserState(state, userId) } }
                             }
@@ -396,11 +398,23 @@ private constructor(
         userState.setDefaultPermissionGrantFingerprint(fingerprint)
     }
 
+    private fun BinaryXmlPullParser.parseAppFunctionPregrant(
+        state: MutableAccessState,
+        userId: Int,
+    ) {
+        val userState = state.mutateUserState(userId, WriteMode.NONE)!!
+        val fingerprint = getAttributeValueOrThrow(ATTR_FINGERPRINT).intern()
+        userState.appFunctionAccessPregrantFingerprint = fingerprint
+    }
+
     fun BinaryXmlSerializer.serializeUserState(state: AccessState, userId: Int) {
         tag(TAG_ACCESS) {
             serializePackageVersions(state.userStates[userId]!!.packageVersions)
             serializeDefaultPermissionGrantFingerprint(
                 state.userStates[userId]!!.defaultPermissionGrantFingerprint
+            )
+            serializeAppFunctionAccessPregrantFingerprint(
+                state.userStates[userId]!!.appFunctionAccessPregrantFingerprint
             )
             forEachSchemePolicy { with(it) { serializeUserState(state, userId) } }
         }
@@ -427,6 +441,14 @@ private constructor(
         }
     }
 
+    private fun BinaryXmlSerializer.serializeAppFunctionAccessPregrantFingerprint(
+        fingerprint: String?
+    ) {
+        if (fingerprint != null) {
+            tag(TAG_APP_FUNCTION_PREGRANT) { attributeInterned(ATTR_FINGERPRINT, fingerprint) }
+        }
+    }
+
     private fun getSchemePolicy(subject: AccessUri, `object`: AccessUri): SchemePolicy =
         getSchemePolicy(subject.scheme, `object`.scheme)
 
@@ -439,10 +461,16 @@ private constructor(
     companion object {
         private val LOG_TAG = AccessPolicy::class.java.simpleName
 
-        internal const val VERSION_LATEST = 17
+        internal val VERSION_LATEST =
+            if (appFunctionAccessServiceEnabled()) {
+                18
+            } else {
+                17
+            }
 
         private const val TAG_ACCESS = "access"
         private const val TAG_DEFAULT_PERMISSION_GRANT = "default-permission-grant"
+        private const val TAG_APP_FUNCTION_PREGRANT = "app-function-pregrant"
         private const val TAG_PACKAGE_VERSIONS = "package-versions"
         private const val TAG_PACKAGE = "package"
 

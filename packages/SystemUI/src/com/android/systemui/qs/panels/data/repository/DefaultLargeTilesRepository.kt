@@ -17,6 +17,7 @@
 package com.android.systemui.qs.panels.data.repository
 
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.qs.flags.QsSplitInternetTile
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import javax.inject.Inject
 
@@ -29,7 +30,7 @@ interface DefaultLargeTilesRepository {
 class DefaultLargeTilesRepositoryImpl @Inject constructor() : DefaultLargeTilesRepository {
     override val defaultLargeTiles =
         setOf(
-            TileSpec.create("internet"),
+            TileSpec.create(if (QsSplitInternetTile.isEnabled) "wifi" else "internet"),
             TileSpec.create("bt"),
             TileSpec.create("dnd"),
             TileSpec.create("cast"),

@@ -16,20 +16,28 @@
 
 package com.android.systemui.screencapture.domain.interactor
 
+import android.content.pm.UserInfo
 import android.content.testableContext
+import android.os.UserHandle
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.mediaprojection.devicepolicy.mockDevicePolicyResolver
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.testKosmos
+import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.`when` as whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -40,6 +48,23 @@ class ScreenCaptureUiInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
     private val underTest by lazy { kosmos.screenCaptureUiInteractor }
+
+    @Test
+    fun screenCaptureDisabledByPolicyDoesNotUpdateRepository() =
+        kosmos.runTest {
+            val uiState by collectLastValue(underTest.uiState(ScreenCaptureType.RECORD))
+
+            val devicePolicyResolver = kosmos.mockDevicePolicyResolver
+            whenever(devicePolicyResolver.isScreenCaptureCompletelyDisabled(UserHandle.of(USER_ID)))
+                .thenReturn(true)
+
+            val userInfo = UserInfo(USER_ID, "test user", 0)
+            kosmos.fakeUserRepository.setUserInfos(listOf(userInfo))
+            kosmos.fakeUserRepository.setSelectedUserInfo(userInfo)
+
+            underTest.show(ScreenCaptureUiParameters.Record())
+            assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
+        }
 
     @Test
     fun isLargeScreenReturnsConfigValue() =
@@ -60,4 +85,8 @@ class ScreenCaptureUiInteractorTest : SysuiTestCase() {
             configurationController.onConfigurationChanged(testableContext.resources.configuration)
             assertThat(isLargeScreen).isFalse()
         }
+
+    companion object {
+        private const val USER_ID = 1
+    }
 }

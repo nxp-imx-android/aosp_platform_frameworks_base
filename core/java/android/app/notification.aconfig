@@ -5,12 +5,6 @@ container: "system"
 # when appropriate, as it's not currently part of the namespace so it may not be obvious what the
 # flag relates to.
 
-flag {
-  name: "notifications_redesign_app_icons"
-  namespace: "systemui"
-  description: "Notifications Redesign: Use app icons in notification rows"
-  bug: "371174789"
-}
 
 flag {
   name: "notifications_redesign_themed_app_icons"
@@ -35,13 +29,10 @@ flag {
 }
 
 flag {
-    name: "notification_top_line_margin_fix"
-    namespace: "systemui"
-    description: "Fixes a small bug where the timestamp had an unnecessary margin in grouped notifications."
-    bug: "417196998"
-    metadata {
-       purpose: PURPOSE_BUGFIX
-    }
+  name: "headline_prototypes"
+  namespace: "notifications"
+  description: "This flag adds static control for enabling prototypes for the headline project"
+  bug: "449676256"
 }
 
 flag {
@@ -53,13 +44,19 @@ flag {
 }
 
 flag {
-  name: "metric_style_unit_in_label"
+  name: "api_notification_action_custom"
+  is_exported: true
   namespace: "notifications"
-  description: "In MetricStyle, concatenate the unit of the MetricValue to the label, instead of displaying it next to the value. This flag is only for prototyping; either the flag-on or flag-off path will be inlined once the behavior is decided."
-  bug: "434910979"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
+  description: "Adds APIs to control Notification Action emphasis and style (for RONs)"
+  bug: "440125908"
+}
+
+flag {
+  name: "api_notification_semantic_style"
+  is_exported: true
+  namespace: "notifications"
+  description: "Adds APIs to apply semantic style (color) to notification components"
+  bug: "440125908"
 }
 
 flag {
@@ -73,57 +70,10 @@ flag {
 }
 
 flag {
-  name: "modes_ui_tile_reactivates_last"
-  namespace: "systemui"
-  description: "The secondary target on the Modes tile activates the last-manually-activated mode, instead of DND"
-  bug: "405988332"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "modes_ui_dnd_slice"
-  namespace: "systemui"
-  description: "Restores a (tweaked) DND slice in Settings; dependent on modes_ui"
-  bug: "406238205"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "notification_expansion_optional"
   namespace: "systemui"
   description: "Experiment to restore the pre-S behavior where standard notifications are not expandable unless they have actions."
   bug: "339523906"
-}
-
-flag {
-  name: "notification_no_custom_view_conversations"
-  namespace: "systemui"
-  description: "Ensures that conversations are not allowed to use Custom Views."
-  bug: "368817201"
-}
-
-flag {
-  name: "notif_channel_crop_vibration_effects"
-  namespace: "systemui"
-  description: "Limits the size of vibration effects that can be stored in a NotificationChannel"
-  bug: "345881518"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "notif_channel_estimate_effect_size"
-  namespace: "systemui"
-  description: "When reading vibration effects from parcel, estimate size instead of unnecessarily serializing to XML"
-  bug: "391908451"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {
@@ -155,13 +105,6 @@ flag {
   namespace: "systemui"
   description: "Removes all custom views"
   bug: "342602960"
-}
-
-flag {
-  name: "redact_sensitive_content_notifications_on_lockscreen"
-  namespace: "systemui"
-  description: "redacts notifications on the lockscreen if they have the 'sensitiveContent' flag"
-  bug: "343631648"
 }
 
 flag {
@@ -253,6 +196,26 @@ flag {
   }
 }
 
+flag {
+  name: "notification_transparent_badge_ring"
+  namespace: "systemui"
+  description: "Makes notification badge ring transparent and skips no longer necessary method."
+  bug: "409346132"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
+  name: "notification_animated_action_content_description"
+  namespace: "systemui"
+  description: "This flag enables the customized content description for animated actions and replies."
+  bug: "412288906"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
 # Start: exported flags that cannot be removed
 
 flag {
@@ -338,6 +301,13 @@ flag {
 }
 
 flag {
+  name: "rich_ongoing_improvements"
+  namespace: "systemui"
+  description: "[RONs] Visual Improvements for Live Updates, for glanceability"
+  bug: "440125908"
+}
+
+flag {
   name: "hide_status_bar_notification"
   namespace: "systemui"
   description: "Allows an application running a foreground service to hide the notification icon from the status bar"
@@ -360,6 +330,27 @@ flag {
   namespace: "notifications"
   description: "Allows the NAS to summarize notifications of any type"
   bug: "430487852"
+}
+
+flag {
+  name: "nm_highlights"
+  namespace: "notifications"
+  description: "Allows the NAS to highlight notifications"
+  bug: "438704838"
+}
+
+flag {
+  name: "nm_insights"
+  namespace: "notifications"
+  description: "Shows insights derived from notifications"
+  bug: "438705144"
+}
+
+flag {
+  name: "nm_contextual_display"
+  namespace: "notifications"
+  description: "Changes notification appearance based on user created rules"
+  bug: "438704204"
 }
 
 # End: exported flags that cannot be removed

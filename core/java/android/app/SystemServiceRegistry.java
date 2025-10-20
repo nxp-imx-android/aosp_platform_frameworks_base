@@ -17,7 +17,7 @@
 package android.app;
 
 import static android.app.appfunctions.flags.Flags.enableAppFunctionManager;
-import static android.app.userrecovery.flags.Flags.enableUserRecoveryManager;
+import static android.app.lskfreset.flags.Flags.enableLskfResetManager;
 import static android.hardware.serial.flags.Flags.enableWiredSerialApi;
 import static android.provider.flags.Flags.newStoragePublicApi;
 import static android.server.Flags.removeGameManagerServiceFromWear;
@@ -45,6 +45,8 @@ import android.app.contentsuggestions.IContentSuggestionsManager;
 import android.app.contextualsearch.ContextualSearchManager;
 import android.app.ecm.EnhancedConfirmationFrameworkInitializer;
 import android.app.job.JobSchedulerFrameworkInitializer;
+import android.app.lskfreset.ILskfResetManager;
+import android.app.lskfreset.LskfResetManager;
 import android.app.ondeviceintelligence.OnDeviceIntelligenceFrameworkInitializer;
 import android.app.people.PeopleManager;
 import android.app.prediction.AppPredictionManager;
@@ -65,8 +67,6 @@ import android.app.usage.IStorageStatsManager;
 import android.app.usage.IUsageStatsManager;
 import android.app.usage.StorageStatsManager;
 import android.app.usage.UsageStatsManager;
-import android.app.userrecovery.IUserRecoveryManager;
-import android.app.userrecovery.UserRecoveryManager;
 import android.app.wallpapereffectsgeneration.IWallpaperEffectsGenerationManager;
 import android.app.wallpapereffectsgeneration.WallpaperEffectsGenerationManager;
 import android.app.wearable.IWearableSensingManager;
@@ -77,7 +77,9 @@ import android.bluetooth.BluetoothFrameworkInitializer;
 import android.companion.CompanionDeviceManager;
 import android.companion.ICompanionDeviceManager;
 import android.companion.datatransfer.continuity.ITaskContinuityManager;
+import android.companion.datatransfer.continuity.IUniversalClipboardManager;
 import android.companion.datatransfer.continuity.TaskContinuityManager;
+import android.companion.datatransfer.continuity.UniversalClipboardManager;
 import android.companion.virtual.IVirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager;
 import android.compat.Compatibility;
@@ -260,6 +262,8 @@ import android.service.oemlock.IOemLockService;
 import android.service.oemlock.OemLockManager;
 import android.service.persistentdata.IPersistentDataBlockService;
 import android.service.persistentdata.PersistentDataBlockManager;
+import android.service.personalcontext.IPersonalContextManager;
+import android.service.personalcontext.PersonalContextManager;
 import android.service.vr.IVrManager;
 import android.system.virtualmachine.VirtualizationFrameworkInitializer;
 import android.telecom.TelecomManager;
@@ -1018,17 +1022,17 @@ public final class SystemServiceRegistry {
                     });
         }
 
-      if (enableUserRecoveryManager()) {
-            registerService(Context.USER_RECOVERY_SERVICE, UserRecoveryManager.class,
+      if (enableLskfResetManager()) {
+            registerService(Context.LSKF_RESET_SERVICE, LskfResetManager.class,
                     new CachedServiceFetcher<>() {
                         @Override
-                        public UserRecoveryManager createService(ContextImpl ctx)
+                        public LskfResetManager createService(ContextImpl ctx)
                                 throws ServiceNotFoundException {
-                                    IUserRecoveryManager service;
-                            service = IUserRecoveryManager.Stub.asInterface(
+                                    ILskfResetManager service;
+                            service = ILskfResetManager.Stub.asInterface(
                                     ServiceManager.getServiceOrThrow(
-                                        Context.USER_RECOVERY_SERVICE));
-                            return new UserRecoveryManager(service, ctx.getOuterContext());
+                                        Context.LSKF_RESET_SERVICE));
+                            return new LskfResetManager(service, ctx.getOuterContext());
                         }
                     });
         }
@@ -1517,6 +1521,21 @@ public final class SystemServiceRegistry {
                     });
         }
 
+        if (android.companion.Flags.enableUniversalClipboard()) {
+            registerService(Context.UNIVERSAL_CLIPBOARD_SERVICE, UniversalClipboardManager.class,
+                    new CachedServiceFetcher<UniversalClipboardManager>() {
+                        @Override
+                        public UniversalClipboardManager createService(ContextImpl ctx)
+                                throws ServiceNotFoundException {
+                            IBinder iBinder = ServiceManager.getServiceOrThrow(
+                                    Context.UNIVERSAL_CLIPBOARD_SERVICE);
+                            IUniversalClipboardManager service =
+                                    IUniversalClipboardManager.Stub.asInterface(iBinder);
+                            return new UniversalClipboardManager(ctx, service);
+                        }
+                    });
+        }
+
         registerService(Context.CROSS_PROFILE_APPS_SERVICE, CrossProfileApps.class,
                 new CachedServiceFetcher<CrossProfileApps>() {
                     @Override
@@ -1696,6 +1715,22 @@ public final class SystemServiceRegistry {
                             throws ServiceNotFoundException {
                         return new DreamManager(ctx);
                     }});
+
+        if (android.service.personalcontext.Flags.enablePersonalContextService()) {
+            registerService(Context.PERSONAL_CONTEXT_SERVICE, PersonalContextManager.class,
+                    new CachedServiceFetcher<>() {
+                        @Override
+                        public PersonalContextManager createService(ContextImpl ctx)
+                                throws ServiceNotFoundException {
+                            IBinder iBinder = ServiceManager.getServiceOrThrow(
+                                    Context.PERSONAL_CONTEXT_SERVICE);
+                            IPersonalContextManager service =
+                                    IPersonalContextManager.Stub.asInterface(iBinder);
+                            return new PersonalContextManager(service);
+                        }
+                    });
+        }
+
         registerService(Context.DEVICE_STATE_SERVICE, DeviceStateManager.class,
                 new CachedServiceFetcher<DeviceStateManager>() {
                     @Override
@@ -1842,10 +1877,6 @@ public final class SystemServiceRegistry {
                     @Override
                     public SupervisionManager createService(ContextImpl ctx)
                             throws ServiceNotFoundException {
-                        if (!android.app.supervision.flags.Flags.supervisionApi()) {
-                            throw new ServiceNotFoundException(
-                                    "SupervisionManager is not supported");
-                        }
                         IBinder iBinder = ServiceManager.getServiceOrThrow(
                                 Context.SUPERVISION_SERVICE);
                         ISupervisionManager service = ISupervisionManager.Stub.asInterface(iBinder);
@@ -2010,6 +2041,13 @@ public final class SystemServiceRegistry {
         return new Object[sServiceCacheSize];
     }
 
+    @RavenwoodRedirect
+    private static void onUnknownSystemServiceError(String name) {
+        if (sEnableServiceNotFoundWtf) {
+            Slog.wtf(TAG, "Unknown manager requested: " + name);
+        }
+    }
+
     @RavenwoodKeep
     private static ServiceFetcher<?> getSystemServiceFetcher(String name) {
         if (name == null) {
@@ -2017,9 +2055,7 @@ public final class SystemServiceRegistry {
         }
         final ServiceFetcher<?> fetcher = SYSTEM_SERVICE_FETCHERS.get(name);
         if (fetcher == null) {
-            if (sEnableServiceNotFoundWtf) {
-                Slog.wtf(TAG, "Unknown manager requested: " + name);
-            }
+            onUnknownSystemServiceError(name);
             return null;
         }
         return fetcher;
@@ -2137,9 +2173,9 @@ public final class SystemServiceRegistry {
             return null;
         }
         final String serviceName = SYSTEM_SERVICE_NAMES.get(serviceClass);
-        if (sEnableServiceNotFoundWtf && serviceName == null) {
+        if (serviceName == null) {
             // This should be a caller bug.
-            Slog.wtf(TAG, "Unknown manager requested: " + serviceClass.getCanonicalName());
+            onUnknownSystemServiceError(serviceClass.getCanonicalName());
         }
         return serviceName;
     }

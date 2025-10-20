@@ -36,6 +36,7 @@ class CompatUIComponent(
     private val id: String,
     private var context: Context,
     private val state: CompatUIState,
+    private val componentUIComponentRepository: CompatUIComponentRepository,
     private var compatUIInfo: CompatUIInfo,
     private val syncQueue: SyncTransactionQueue,
     private var displayLayout: DisplayLayout?,
@@ -69,7 +70,7 @@ class CompatUIComponent(
      * @param newInfo The new CompatUIInfo object
      */
     fun update(newInfo: CompatUIInfo) {
-        updateComponentState(newInfo, state.stateForComponent(id))
+        updateComponentState(newInfo, componentUIComponentRepository.stateForComponent(id))
         updateUI(state)
     }
 
@@ -117,7 +118,8 @@ class CompatUIComponent(
         compatUIInfo = newCompatUIInfo
         spec.log("$tag updating...")
         check(viewHost == null) { "A UI has already been created with this window manager." }
-        val componentState: CompatUIComponentState? = state.stateForComponent(id)
+        val componentState: CompatUIComponentState? =
+            componentUIComponentRepository.stateForComponent(id)
         spec.log("$tag state: $componentState")
         // We inflate the layout
         layout = spec.layout.viewBuilder(context, compatUIInfo, componentState)
@@ -150,7 +152,7 @@ class CompatUIComponent(
                     it,
                     compatUIInfo,
                     state.sharedState,
-                    state.stateForComponent(id),
+                    componentUIComponentRepository.stateForComponent(id),
                 )
             )
         }
@@ -209,7 +211,8 @@ class CompatUIComponent(
     private fun updateUI(state: CompatUIState) {
         spec.log("$tag updating ui")
         setConfiguration(compatUIInfo.taskInfo.configuration)
-        val componentState: CompatUIComponentState? = state.stateForComponent(id)
+        val componentState: CompatUIComponentState? =
+            componentUIComponentRepository.stateForComponent(id)
         layout?.run {
             spec.log("$tag viewBinder execution...")
             spec.layout.viewBinder(this, compatUIInfo, state.sharedState, componentState)

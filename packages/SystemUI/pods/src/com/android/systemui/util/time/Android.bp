@@ -24,6 +24,9 @@ java_library {
         "*.java",
         "*.kt",
     ],
+    libs: [
+        "androidx.annotation_annotation",
+    ],
     defaults: [
         "SystemUI_pod_defaults_api",
     ],
@@ -36,7 +39,7 @@ java_library {
         "impl/*.kt",
     ],
     libs: [
-        "com.android.systemui.dagger-api",
+        "SystemUISharedLib",
         "dagger2",
     ],
     static_libs: [

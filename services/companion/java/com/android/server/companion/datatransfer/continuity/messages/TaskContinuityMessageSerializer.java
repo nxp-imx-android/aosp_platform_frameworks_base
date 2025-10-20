@@ -16,24 +16,26 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
+import android.annotation.NonNull;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
- * Serialized version of the {@link TaskContinuityMessage} proto, allowing for
- * serialization and deserialization from bytes.
+ * Serialized version of the {@link TaskContinuityMessage} proto, allowing for serialization and
+ * deserialization from bytes.
  */
 public final class TaskContinuityMessageSerializer {
 
-    public static TaskContinuityMessage deserialize(byte[] data) throws IOException {
-
-        ProtoInputStream pis = new ProtoInputStream(data);
+    @NonNull
+    public static TaskContinuityMessage deserialize(@NonNull byte[] data) throws IOException {
+        ProtoInputStream pis = new ProtoInputStream(Objects.requireNonNull(data));
         if (pis.nextField() == ProtoInputStream.NO_MORE_FIELDS) {
-            return null;
+            throw new IOException("No fields found in TaskContinuityMessage");
         }
 
         TaskContinuityMessage message = null;
@@ -61,6 +63,10 @@ public final class TaskContinuityMessageSerializer {
         }
 
         pis.end(dataToken);
+        if (message == null) {
+            throw new IOException("Serialization did not find a field for message");
+        }
+
         return message;
     }
 

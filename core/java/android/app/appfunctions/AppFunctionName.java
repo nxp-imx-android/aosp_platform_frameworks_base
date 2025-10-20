@@ -1,0 +1,82 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package android.app.appfunctions;
+
+import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS;
+
+import static java.util.Objects.requireNonNull;
+
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+
+import java.util.Objects;
+
+/**
+ * Identifier for a specific app function. Both the package name and function ID are required to
+ * identify a unique app function.
+ */
+@FlaggedApi(FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS)
+public class AppFunctionName {
+    @NonNull private final String mPackageName;
+    @NonNull private final String mFunctionId;
+
+    /**
+     * Constructs an {@link AppFunctionName} object which identifies a specific app function.
+     *
+     * @param packageName The package name of the Android app which contains the app function.
+     * @param functionId The ID used in an {@link ExecuteAppFunctionRequest} to refer to this app
+     *     function.
+     */
+    public AppFunctionName(@NonNull String packageName, @NonNull String functionId) {
+        mPackageName = requireNonNull(packageName);
+        mFunctionId = requireNonNull(functionId);
+    }
+
+    /** The package name of the Android app which contains the app function. */
+    @NonNull
+    public String getPackageName() {
+        return mPackageName;
+    }
+
+    /** The ID used in an {@link ExecuteAppFunctionRequest} to refer to this app function. */
+    @NonNull
+    public String getFunctionId() {
+        return mFunctionId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AppFunctionName that)) return false;
+        return mPackageName.equals(that.mPackageName) && mFunctionId.equals(that.mFunctionId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mPackageName, mFunctionId);
+    }
+
+    @Override
+    public String toString() {
+        return "AppFunctionName("
+                + "packageName="
+                + mPackageName
+                + ", "
+                + "functionId="
+                + mFunctionId
+                + ")";
+    }
+}

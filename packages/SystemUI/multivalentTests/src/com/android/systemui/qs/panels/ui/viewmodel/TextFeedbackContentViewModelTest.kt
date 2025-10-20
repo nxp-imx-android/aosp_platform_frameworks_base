@@ -68,7 +68,7 @@ class TextFeedbackContentViewModelTest : SysuiTestCase() {
                                         qsAirplaneModeTileConfig.uiConfig.iconRes
                                     )!!,
                                     contentDescription = null,
-                                    res = qsAirplaneModeTileConfig.uiConfig.iconRes,
+                                    resId = qsAirplaneModeTileConfig.uiConfig.iconRes,
                                 ),
                         )
                     )

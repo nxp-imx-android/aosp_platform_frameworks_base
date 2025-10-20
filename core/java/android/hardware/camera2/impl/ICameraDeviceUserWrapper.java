@@ -25,7 +25,10 @@ import android.hardware.camera2.ICameraOfflineSession;
 import android.hardware.camera2.params.OutputConfiguration;
 import android.hardware.camera2.params.SessionConfiguration;
 import android.hardware.camera2.utils.ExceptionUtils;
+import android.hardware.camera2.utils.OutputAndInputStreamIds;
+import android.hardware.camera2.utils.SessionConfigurationAndStreamIds;
 import android.hardware.camera2.utils.SubmitInfo;
+
 import android.hardware.common.fmq.MQDescriptor;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -144,6 +147,18 @@ public class ICameraDeviceUserWrapper {
             throws CameraAccessException {
         try {
             return mRemoteDevice.createStream(outputConfiguration);
+        } catch (ServiceSpecificException e) {
+            throw ExceptionUtils.throwAsPublicException(e);
+        } catch (RemoteException e) {
+            throw ExceptionUtils.throwAsPublicException(e);
+        }
+    }
+
+    public OutputAndInputStreamIds configureStreams(
+            SessionConfigurationAndStreamIds sessionConfigurationAndStreamIds)
+                    throws CameraAccessException {
+        try {
+            return mRemoteDevice.configureStreams(sessionConfigurationAndStreamIds);
         } catch (ServiceSpecificException e) {
             throw ExceptionUtils.throwAsPublicException(e);
         } catch (RemoteException e) {

@@ -44,7 +44,7 @@ import android.app.AutomaticZenRule;
 import android.service.notification.ZenModeConfig;
 import android.service.notification.ZenDeviceEffects;
 
-/** {@hide} */
+/** @hide */
 interface INotificationManager
 {
     @UnsupportedAppUsage
@@ -273,4 +273,5 @@ interface INotificationManager
     String[] getAdjustmentDeniedPackages(int userId, String key);
     boolean isAdjustmentSupportedForPackage(int userId, String key, String pkg);
     void setAdjustmentSupportedForPackage(int userId, String key, String pkg, boolean enabled);
+    oneway void requestSystemAdjustments(in List<Adjustment> adjustments);
 }

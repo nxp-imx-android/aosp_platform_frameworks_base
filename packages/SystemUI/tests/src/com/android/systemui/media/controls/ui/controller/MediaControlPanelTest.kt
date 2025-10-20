@@ -22,6 +22,7 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.content.theming.ThemeStyle
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -82,7 +83,6 @@ import com.android.systemui.media.controls.ui.viewmodel.SeekBarViewModel
 import com.android.systemui.media.controls.util.MediaUiEventLogger
 import com.android.systemui.media.dialog.MediaOutputDialogManager
 import com.android.systemui.monet.ColorScheme
-import com.android.systemui.monet.Style
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.res.R
@@ -118,6 +118,7 @@ import org.mockito.Mockito.`when` as whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.eq
 
 private const val KEY = "TEST_KEY"
@@ -652,12 +653,12 @@ public class MediaControlPanelTest : SysuiTestCase() {
         // Setup redArtwork and its color scheme.
         val redArt = getColorIcon(Color.RED)
         val redWallpaperColor = player.getWallpaperColor(redArt)
-        val redColorScheme = ColorScheme(redWallpaperColor, true, Style.CONTENT)
+        val redColorScheme = ColorScheme(redWallpaperColor, true, ThemeStyle.CONTENT)
 
         // Setup greenArt and its color scheme.
         val greenArt = getColorIcon(Color.GREEN)
         val greenWallpaperColor = player.getWallpaperColor(greenArt)
-        val greenColorScheme = ColorScheme(greenWallpaperColor, true, Style.CONTENT)
+        val greenColorScheme = ColorScheme(greenWallpaperColor, true, ThemeStyle.CONTENT)
 
         // Add gradient to both icons.
         val redArtwork = player.addGradientToPlayerAlbum(redArt, redColorScheme, 10, 10)
@@ -1014,8 +1015,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
         whenever(mockAvd1.mutate()).thenReturn(mockAvd1)
         whenever(mockAvd2.mutate()).thenReturn(mockAvd2)
 
-        val icon = context.getDrawable(R.drawable.ic_media_play)
-        val bg = context.getDrawable(R.drawable.ic_media_play_container)
         val semanticActions0 =
             MediaButton(playOrPause = MediaAction(mockAvd0, Runnable {}, "play", null))
         val semanticActions1 =
@@ -1217,6 +1216,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         assertThat(seamlessText.visibility).isEqualTo(View.GONE)
         assertThat(deviceSuggestionButton.visibility).isEqualTo(View.VISIBLE)
+        assertThat(deviceSuggestionContainer.importantForAccessibility)
+            .isEqualTo(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO)
         assertThat(deviceSuggestionText.text)
             .isEqualTo(mContext.getString(R.string.media_suggestion_disconnected_text, DEVICE_NAME))
         assertThat(deviceSuggestionIcon.visibility).isEqualTo(View.VISIBLE)
@@ -1239,6 +1240,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         assertThat(seamlessText.visibility).isEqualTo(View.GONE)
         assertThat(deviceSuggestionButton.visibility).isEqualTo(View.VISIBLE)
+        assertThat(deviceSuggestionContainer.importantForAccessibility)
+            .isEqualTo(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO)
         assertThat(deviceSuggestionText.text)
             .isEqualTo(mContext.getString(R.string.media_suggestion_disconnected_text, DEVICE_NAME))
         assertThat(deviceSuggestionIcon.visibility).isEqualTo(View.GONE)
@@ -1261,6 +1264,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         assertThat(seamlessText.visibility).isEqualTo(View.GONE)
         assertThat(deviceSuggestionButton.visibility).isEqualTo(View.VISIBLE)
+        assertThat(deviceSuggestionContainer.importantForAccessibility)
+            .isEqualTo(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO)
         assertThat(deviceSuggestionText.text)
             .isEqualTo(mContext.getString(R.string.media_suggestion_failure_text))
         assertThat(deviceSuggestionIcon.visibility).isEqualTo(View.VISIBLE)
@@ -1282,6 +1287,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         assertThat(seamlessText.visibility).isEqualTo(View.VISIBLE)
         assertThat(deviceSuggestionButton.visibility).isEqualTo(View.GONE)
+        assertThat(deviceSuggestionContainer.importantForAccessibility)
+            .isEqualTo(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS)
     }
 
     @Test
@@ -1293,6 +1300,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         assertThat(seamlessText.visibility).isEqualTo(View.VISIBLE)
         assertThat(deviceSuggestionButton.visibility).isEqualTo(View.GONE)
+        assertThat(deviceSuggestionContainer.importantForAccessibility)
+            .isEqualTo(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS)
     }
 
     @Test
@@ -1311,6 +1320,46 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         assertThat(seamlessText.visibility).isEqualTo(View.VISIBLE)
         assertThat(deviceSuggestionButton.visibility).isEqualTo(View.GONE)
+        assertThat(deviceSuggestionContainer.importantForAccessibility)
+            .isEqualTo(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS)
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    fun onPanelFullyVisible_activeState_requestsSuggestion() {
+        player.attachPlayer(viewHolder)
+
+        val suggestionData =
+            SuggestionData(
+                suggestedMediaDeviceData = null,
+                onSuggestionSpaceVisible = mock(Runnable::class.java),
+            )
+        player.bindPlayer(
+            mediaData.copy(suggestionData = suggestionData, resumption = false),
+            PACKAGE,
+        )
+        player.onPanelFullyVisible()
+
+        verify(suggestionData.onSuggestionSpaceVisible).run()
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    fun onPanelFullyVisible_resumptionState_doesNothing() {
+        player.attachPlayer(viewHolder)
+
+        val suggestionData =
+            SuggestionData(
+                suggestedMediaDeviceData = null,
+                onSuggestionSpaceVisible = mock(Runnable::class.java),
+            )
+        player.bindPlayer(
+            mediaData.copy(suggestionData = suggestionData, resumption = true),
+            PACKAGE,
+        )
+        player.onPanelFullyVisible()
+
+        verify(suggestionData.onSuggestionSpaceVisible, never()).run()
     }
 
     /* ***** Guts tests for the player ***** */
@@ -1889,7 +1938,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
         verify(activityStarter).postStartActivityDismissingKeyguard(eq(pendingIntent))
     }
 
-    @RequiresFlagsEnabled(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
     @Test
     fun bindPageArrows() {
         player.attachPlayer(viewHolder)
@@ -1902,7 +1950,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
         verify(mediaCarouselScrollHandler).scrollByStep(eq(1))
     }
 
-    @RequiresFlagsEnabled(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
     @Test
     fun setArrowsVisible() {
         val guidePx =
@@ -1923,7 +1970,19 @@ public class MediaControlPanelTest : SysuiTestCase() {
         verify(collapsedSet).setGuidelineEnd(eq(R.id.action_button_guideline), eq(guidePx))
     }
 
-    @RequiresFlagsEnabled(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
+    @Test
+    fun setArrowsVisible_alreadyVisible_noOp() {
+        setArrowsVisible()
+
+        // If same visibility is set again, does not update the constraints again
+        player.setPageArrowsVisible(true)
+        verify(expandedSet).setVisibility(R.id.page_left, ConstraintSet.VISIBLE)
+        verify(expandedSet).setVisibility(R.id.page_right, ConstraintSet.VISIBLE)
+
+        verify(collapsedSet).setVisibility(R.id.page_left, ConstraintSet.VISIBLE)
+        verify(collapsedSet).setVisibility(R.id.page_right, ConstraintSet.VISIBLE)
+    }
+
     @Test
     fun setArrowsNotVisible() {
         val guidePx =
@@ -1931,6 +1990,9 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         player.attachPlayer(viewHolder)
         player.bindPlayer(mediaData, PACKAGE)
+        player.setPageArrowsVisible(true)
+        clearInvocations(expandedSet)
+        clearInvocations(collapsedSet)
 
         player.setPageArrowsVisible(false)
 
@@ -1942,7 +2004,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
         verify(collapsedSet).setGuidelineEnd(eq(R.id.action_button_guideline), eq(guidePx))
     }
 
-    @RequiresFlagsEnabled(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
     @Test
     fun enablePageArrows() {
         player.attachPlayer(viewHolder)

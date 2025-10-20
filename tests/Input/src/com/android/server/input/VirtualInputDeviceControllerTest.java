@@ -16,6 +16,10 @@
 
 package com.android.server.input;
 
+import static android.content.PermissionChecker.PERMISSION_GRANTED;
+
+import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
@@ -25,6 +29,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -43,7 +48,10 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
+import android.testing.TestableContext;
 import android.testing.TestableLooper;
+import android.util.SparseArray;
+import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -52,6 +60,7 @@ import com.android.server.LocalServices;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -87,11 +96,17 @@ public class VirtualInputDeviceControllerTest {
     private InputManagerGlobal.TestSession mInputSession;
     private final List<InputDevice> mDevices = new ArrayList<>();
     private IInputDevicesChangedListener mDevicesChangedListener;
+    // deviceId -> phys
+    private final SparseArray<String> mPhysByDeviceId = new SparseArray<>();
     // uniqueId -> displayId
     private final Map<String, Integer> mDisplayIdMapping = new HashMap<>();
     // phys -> uniqueId
     private final Map<String, String> mUniqueIdAssociationByPort = new HashMap<>();
     private final Set<String> mVirtualDevices = new HashSet<>();
+
+    @Rule
+    public final TestableContext mContext = spy(
+            new TestableContext(getInstrumentation().getContext()));
 
     @Mock
     private DisplayManagerInternal mDisplayManagerInternalMock;
@@ -116,6 +131,11 @@ public class VirtualInputDeviceControllerTest {
         doAnswer(this::handleNativeOpenInputDevice).when(mNativeWrapperMock)
                 .openUinputTouchscreen(anyString(), anyInt(), anyInt(), anyString(), anyInt(),
                         anyInt());
+        doAnswer(this::handleNativeOpenInputDevice).when(mNativeWrapperMock)
+                .openUinputStylus(anyString(), anyInt(), anyInt(), anyString(), anyInt(),
+                        anyInt());
+        doAnswer(this::handleNativeOpenInputDevice).when(mNativeWrapperMock)
+                .openUinputRotaryEncoder(anyString(), anyInt(), anyInt(), anyString());
 
         doAnswer(inv -> mDevicesChangedListener = inv.getArgument(0))
                 .when(mInputManagerService).registerInputDevicesChangedListener(notNull());
@@ -131,6 +151,8 @@ public class VirtualInputDeviceControllerTest {
                 .when(mInputManagerService).addVirtualDevice(anyString());
         doAnswer(inv -> mVirtualDevices.remove(inv.getArgument(0)))
                 .when(mInputManagerService).removeVirtualDevice(anyString());
+        doAnswer(inv -> mPhysByDeviceId.get(inv.getArgument(0)))
+                .when(mInputManagerService).getPhysicalLocationPath(anyInt());
 
 
         // Set a new instance of InputManager for testing that uses the IInputManager mock as the
@@ -144,7 +166,7 @@ public class VirtualInputDeviceControllerTest {
 
         // Allow virtual devices to be created on the looper thread for testing.
         final VirtualInputDeviceController.DeviceCreationThreadVerifier threadVerifier = () -> true;
-        mInputController = new VirtualInputDeviceController(mNativeWrapperMock,
+        mInputController = new VirtualInputDeviceController(mContext, mNativeWrapperMock,
                 new Handler(TestableLooper.get(this).getLooper()), mInputManagerService,
                 threadVerifier);
     }
@@ -166,6 +188,9 @@ public class VirtualInputDeviceControllerTest {
 
     private long handleNativeOpenInputDevice(InvocationOnMock inv) {
         final String phys = inv.getArgument(3);
+        final int displayId = mUniqueIdAssociationByPort.containsKey(phys)
+                ? mDisplayIdMapping.get(mUniqueIdAssociationByPort.get(phys)) :
+                Display.INVALID_DISPLAY;
         final InputDevice device = new InputDevice.Builder()
                 .setId(mDevices.size())
                 .setName(inv.getArgument(0))
@@ -174,9 +199,10 @@ public class VirtualInputDeviceControllerTest {
                 .setDescriptor(phys)
                 .setExternal(true)
                 .setIsVirtualDevice(mVirtualDevices.contains(phys))
-                .setAssociatedDisplayId(mDisplayIdMapping.get(mUniqueIdAssociationByPort.get(phys)))
+                .setAssociatedDisplayId(displayId)
                 .build();
         mDevices.add(device);
+        mPhysByDeviceId.put(device.getId(), phys);
         try {
             mDevicesChangedListener.onInputDevicesChanged(
                     mDevices.stream().flatMapToInt(
@@ -194,6 +220,24 @@ public class VirtualInputDeviceControllerTest {
         mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
         verify(mNativeWrapperMock)
                 .openUinputMouse(eq(NAME), eq(VENDOR_ID), eq(PRODUCT_ID), anyString());
+    }
+
+    @Test
+    public void createStylus_opensUinput() {
+        final int height = 50;
+        final int width = 60;
+        mInputController.createStylus(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1,
+                height, width);
+        verify(mNativeWrapperMock)
+                .openUinputStylus(eq(NAME), eq(VENDOR_ID), eq(PRODUCT_ID), anyString(), eq(height),
+                        eq(width));
+    }
+
+    @Test
+    public void createRotaryEncoder_opensUinput() {
+        mInputController.createRotaryEncoder(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+        verify(mNativeWrapperMock)
+                .openUinputRotaryEncoder(eq(NAME), eq(VENDOR_ID), eq(PRODUCT_ID), anyString());
     }
 
     @Test
@@ -236,6 +280,20 @@ public class VirtualInputDeviceControllerTest {
                 IllegalArgumentException.class,
                 () -> mInputController.createDpad(
                         NAME_2, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_2));
+    }
+
+    @Test
+    public void createInputDevice_differentDevices_haveUniquePhys() throws RemoteException {
+        final int d1 = mInputController.createDpad(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1,
+                DISPLAY_ID_1).getInputDeviceId();
+        final int d2 = mInputController.createDpad(NAME_2, VENDOR_ID, PRODUCT_ID, TOKEN_2,
+                DISPLAY_ID_1).getInputDeviceId();
+
+        final String phys1 = mPhysByDeviceId.get(d1);
+        final String phys2 = mPhysByDeviceId.get(d2);
+        assertThat(phys1).isNotEmpty();
+        assertThat(phys2).isNotEmpty();
+        assertThat(phys1).isNotEqualTo(phys2);
     }
 
     @Test
@@ -470,5 +528,37 @@ public class VirtualInputDeviceControllerTest {
         verify(mNativeWrapperMock).writeTouchEvent(PTR, pointerId,
                 VirtualTouchEvent.TOOL_TYPE_FINGER, VirtualTouchEvent.ACTION_UP, x, y, Float.NaN,
                 Float.NaN, EVENT_TIMESTAMP);
+    }
+
+    @Test
+    public void createKeyboard_noDisplayAssociation_injectKeyEventsPermission() {
+        mContext.getTestablePermissions().setPermission(
+                android.Manifest.permission.INJECT_KEY_EVENTS,
+                PERMISSION_GRANTED);
+
+        mInputController.createKeyboard(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1,
+                Display.INVALID_DISPLAY, LANGUAGE_TAG, LAYOUT_TYPE);
+
+        verify(mInputManagerService).addKeyboardLayoutAssociation(
+                startsWith("virtualKeyboard:"), eq(LANGUAGE_TAG), eq(LAYOUT_TYPE));
+        mInputController.unregisterInputDevice(TOKEN_1);
+        verify(mInputManagerService).removeKeyboardLayoutAssociation(
+                startsWith("virtualKeyboard:"));
+    }
+
+    @Test
+    public void createKeyboard_noDisplayAssociation_injectEventsPermission() {
+        mContext.getTestablePermissions().setPermission(
+                android.Manifest.permission.INJECT_EVENTS,
+                PERMISSION_GRANTED);
+
+        mInputController.createKeyboard(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1,
+                Display.INVALID_DISPLAY, LANGUAGE_TAG, LAYOUT_TYPE);
+
+        verify(mInputManagerService).addKeyboardLayoutAssociation(
+                startsWith("virtualKeyboard:"), eq(LANGUAGE_TAG), eq(LAYOUT_TYPE));
+        mInputController.unregisterInputDevice(TOKEN_1);
+        verify(mInputManagerService).removeKeyboardLayoutAssociation(
+                startsWith("virtualKeyboard:"));
     }
 }

@@ -29,8 +29,9 @@ import android.content.res.XmlResourceParser;
 import android.os.LocaleList;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodIgnore;
+import android.ravenwood.annotation.RavenwoodKeep;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
-import android.ravenwood.annotation.RavenwoodThrow;
 import android.util.AttributeSet;
 import android.util.Slog;
 import android.util.Xml;
@@ -109,9 +110,14 @@ public class LocaleConfig implements Parcelable {
      *
      * @see Context#createPackageContext(String, int).
      */
-    @RavenwoodThrow(blockedBy = LocaleManager.class)
+    @RavenwoodKeep(comment = "Locale override (LocaleManager) not supported on Ravenwood")
     public LocaleConfig(@NonNull Context context) {
-        this(context, true);
+        this(context, getAllowOverride());
+    }
+
+    @RavenwoodIgnore(blockedBy = LocaleManager.class) // Return false on Ravenwood.
+    private static boolean getAllowOverride() {
+        return true;
     }
 
     /**
@@ -123,12 +129,10 @@ public class LocaleConfig implements Parcelable {
      * @see Context#createPackageContext(String, int).
      */
     @NonNull
-    @RavenwoodThrow(blockedBy = LocaleManager.class)
     public static LocaleConfig fromContextIgnoringOverride(@NonNull Context context) {
         return new LocaleConfig(context, false);
     }
 
-    @RavenwoodThrow(blockedBy = LocaleManager.class)
     private LocaleConfig(@NonNull Context context, boolean allowOverride) {
         if (allowOverride) {
             LocaleManager localeManager = context.getSystemService(LocaleManager.class);
@@ -159,7 +163,6 @@ public class LocaleConfig implements Parcelable {
      * @hide
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    @RavenwoodThrow(blockedBy = LocaleManager.class)
     public LocaleConfig(@NonNull ApplicationInfo appInfo, @NonNull Resources res) {
         parseLocaleConfig(appInfo.getLocaleConfigRes(), res);
     }

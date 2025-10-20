@@ -308,7 +308,7 @@ class StateLoop<A> : State<A>() {
     private val deferred = CompletableLazy<State<A>>()
 
     override val init: Init<StateImpl<A>> =
-        init(nameData) { deferred.value.init.connect(evalScope = this) }
+        init(nameData) { deferred.value.init.connect(initScope = this) }
 
     /**
      * The [State] this reference is referring to. Must be set before this [StateLoop] is
@@ -338,7 +338,7 @@ internal class StateInit<A> internal constructor(override val init: Init<StateIm
 }
 
 private inline fun <A> deferInline(crossinline block: InitScope.() -> State<A>): State<A> =
-    StateInit(init(NameTaggingDisabled) { block().init.connect(evalScope = this) })
+    StateInit(init(NameTaggingDisabled) { block().init.connect(initScope = this) })
 
 /**
  * Like [changes] but also includes the old value of this [State].
@@ -367,4 +367,4 @@ val <A> State<A>.changes: Events<A>
     get() = changes(nameTag("State.changes").toNameData("State.changes"))
 
 internal fun <A> State<A>.changes(nameData: NameData) =
-    EventsInit(init(nameData) { init.connect(evalScope = this).changes })
+    EventsInit(init(nameData) { init.connect(initScope = this).changes })

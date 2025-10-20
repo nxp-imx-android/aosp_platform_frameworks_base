@@ -127,13 +127,6 @@ flag {
 }
 
 flag {
-    name: "cache_sdk_system_features"
-    namespace: "system_performance"
-    description: "Feature flag to enable optimized cache for SDK-defined system feature lookups."
-    bug: "326623529"
-}
-
-flag {
     name: "provide_info_of_apk_in_apex"
     is_exported: true
     namespace: "package_manager_service"
@@ -286,14 +279,6 @@ flag {
 }
 
 flag {
-    name: "optimize_parsing_in_registered_services_cache"
-    namespace: "package_manager_service"
-    description: "Feature flag to optimize RegisteredServicesCache ServiceInfo parsing by using caches."
-    bug: "319137634"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "always_load_past_certs_v4"
     is_exported: true
     namespace: "package_manager_service"
@@ -303,25 +288,10 @@ flag {
 }
 
 flag {
-    name: "parallel_package_parsing_across_system_dirs"
-    namespace: "system_performance"
-    description: "Continue parsing packages in system dirs instead of blocking on install completion for each directory."
-    bug: "401622806"
-}
-
-flag {
     name: "protect_supervision_packages"
     namespace: "supervision"
     description: "Feature flag to enable protecting Supervision packages."
     bug: "404779514"
-}
-
-flag {
-    name: "merge_package_changed_broadcast"
-    namespace: "package_manager_service"
-    description: "Feature flag to add delivery group policy for PACKAGE_CHANGED broadcast to allow merging broadcasts."
-    bug: "381949725"
-    is_fixed_read_only: true
 }
 
 flag {
@@ -341,19 +311,27 @@ flag {
 }
 
 flag {
-    name: "consolidate_package_changed_broadcasts"
-    namespace: "package_manager_service"
-    description: "Flag guarding the changes to consolidate package_changed broadcasts into a single one, instead of sending them individually"
-    bug: "433394697"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "alternative_for_dexopt_cleanup"
     namespace: "art_cloud"
     description: "Flag guarding the alternative code path replacing the legacy dexopt code, to allow legacy dexopt cleanup."
     bug: "258223472"
     is_fixed_read_only: true
+}
+
+flag {
+    name: "verified_dexopt"
+    namespace: "desktop_security"
+    description: "Flag guarding the PackageState verifiedDexOpt API."
+    is_exported: true
+    bug: "439646165"
+}
+
+flag {
+    name: "allow_updated_version_better_than_apk_in_apex"
+    namespace: "package_manager_service"
+    description: "Allow successful install of APEX containing APK, even with a better APK version in /data."
+    bug: "421220425"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

@@ -16,17 +16,17 @@
 
 package com.android.systemui.shared.clocks
 
-import android.graphics.Rect
 import android.icu.util.TimeZone
 import com.android.app.animation.Interpolators
 import com.android.systemui.customization.clocks.ClockContext
-import com.android.systemui.customization.clocks.ClockLogger
 import com.android.systemui.customization.clocks.DigitalTimeFormatter
 import com.android.systemui.customization.clocks.DigitalTimespec
-import com.android.systemui.customization.clocks.FontTextStyle
+import com.android.systemui.customization.clocks.FontTextStyleImpl
 import com.android.systemui.customization.clocks.view.DigitalAlignment
 import com.android.systemui.customization.clocks.view.HorizontalAlignment
 import com.android.systemui.customization.clocks.view.VerticalAlignment
+import com.android.systemui.plugins.keyguard.VPointF
+import com.android.systemui.plugins.keyguard.VRect
 import com.android.systemui.plugins.keyguard.data.model.AlarmData
 import com.android.systemui.plugins.keyguard.data.model.WeatherData
 import com.android.systemui.plugins.keyguard.data.model.ZenData
@@ -42,11 +42,8 @@ import com.android.systemui.shared.clocks.view.FlexClockViewGroup
 import java.util.Locale
 
 class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClockViewController {
-    private val logger =
-        ClockLogger(null, clockCtx.messageBuffer, FlexClockViewGroupController::class.simpleName!!)
-
     val layerControllers = mutableListOf<FlexClockViewController>()
-    val dozeState = DefaultClockController.AnimationState(1F)
+    val dozeState = AnimationState(1F)
 
     override val view = FlexClockViewGroup(clockCtx)
     override var onViewBoundsChanged by view::onViewBoundsChanged
@@ -61,10 +58,10 @@ class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClo
 
         val layerCfg =
             LayerConfig(
-                style = FontTextStyle(lineHeight = 147.25f),
+                style = FontTextStyleImpl(lineHeight = 147.25f),
                 alignment = DigitalAlignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER),
                 aodStyle =
-                    FontTextStyle(
+                    FontTextStyleImpl(
                         transitionInterpolator = Interpolators.EMPHASIZED,
                         transitionDuration = FlexClockViewGroup.AOD_TRANSITION_DURATION,
                     ),
@@ -127,12 +124,6 @@ class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClo
             override fun onAlarmDataChanged(data: AlarmData) {}
 
             override fun onZenDataChanged(data: ZenData) {}
-
-            override var isReactiveTouchInteractionEnabled
-                get() = view.isReactiveTouchInteractionEnabled
-                set(value) {
-                    view.isReactiveTouchInteractionEnabled = value
-                }
         }
 
     override val animations =
@@ -156,12 +147,12 @@ class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClo
                 view.animateCharge()
             }
 
-            override fun onPositionAnimated(args: ClockPositionAnimationArgs) {}
+            override fun onPositionAnimated(anim: ClockPositionAnimationArgs) {}
 
             override fun onPickerCarouselSwiping(swipingFraction: Float) {}
 
             override fun onFidgetTap(x: Float, y: Float) {
-                view.animateFidget(x, y)
+                view.animateFidget(VPointF(x, y), enforceBounds = true)
             }
 
             private var hasFontAxes = false
@@ -189,7 +180,7 @@ class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClo
                 view.onFontSettingChanged(fontSizePx)
             }
 
-            override fun onTargetRegionChanged(targetRegion: Rect?) {}
+            override fun onTargetRegionChanged(targetRegion: VRect) {}
 
             override fun onSecondaryDisplayChanged(onSecondaryDisplay: Boolean) {}
         }

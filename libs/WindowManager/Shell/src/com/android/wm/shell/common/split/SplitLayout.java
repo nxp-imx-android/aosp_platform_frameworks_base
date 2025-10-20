@@ -18,11 +18,13 @@ package com.android.wm.shell.common.split;
 
 import static android.content.res.Configuration.SCREEN_HEIGHT_DP_UNDEFINED;
 import static android.content.res.Configuration.SCREEN_WIDTH_DP_UNDEFINED;
+import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.DOCKED_LEFT;
 import static android.view.WindowManager.DOCKED_TOP;
 
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_SPLIT_SCREEN_DOUBLE_TAP_DIVIDER;
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_SPLIT_SCREEN_RESIZE;
+import static com.android.window.flags.Flags.enableNonDefaultDisplaySplit;
 import static com.android.wm.shell.common.split.DividerSnapAlgorithm.SNAP_FLEXIBLE_HYBRID;
 import static com.android.wm.shell.shared.animation.Interpolators.EMPHASIZED;
 import static com.android.wm.shell.shared.animation.Interpolators.FAST_OUT_SLOW_IN;
@@ -252,7 +254,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         mDimNonImeSide = res.getBoolean(R.bool.config_dimNonImeAttachedSide);
         mAllowLeftRightSplitInPortrait = SplitScreenUtils.allowLeftRightSplitInPortrait(res);
         mIsLeftRightSplit = SplitScreenUtils.isLeftRightSplit(mAllowLeftRightSplitInPortrait,
-                configuration);
+                configuration, DEFAULT_DISPLAY);
         statusBarHider.onLeftRightSplitUpdated(mIsLeftRightSplit);
         updateDividerConfig(mContext);
 
@@ -499,7 +501,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
     }
 
     /** Applies new configuration, returns {@code false} if there's no effect to the layout. */
-    public boolean updateConfiguration(Configuration configuration) {
+    public boolean updateConfiguration(Configuration configuration, int displayId) {
         // Update the split bounds when necessary. Besides root bounds changed, split bounds need to
         // be updated when the rotation changed to cover the case that users rotated the screen 180
         // degrees.
@@ -520,7 +522,13 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             return false;
         }
 
-        mContext = mContext.createConfigurationContext(configuration);
+        final Context displayContext = enableNonDefaultDisplaySplit()
+                && mDisplayController.getDisplayContext(displayId) != null
+                ? mDisplayController.getDisplayContext(displayId) : mContext;
+        mContext = displayContext.createConfigurationContext(configuration);
+        if ((enableNonDefaultDisplaySplit())) {
+            mSplitWindowManager.updateDisplayContext(mContext);
+        }
         mSplitWindowManager.setConfiguration(configuration);
         mOrientation = orientation;
         mTempRect.set(mRootBounds);
@@ -530,7 +538,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         mUiMode = uiMode;
         mIsLargeScreen = configuration.smallestScreenWidthDp >= 600;
         mIsLeftRightSplit = SplitScreenUtils.isLeftRightSplit(mAllowLeftRightSplitInPortrait,
-                configuration);
+                configuration, displayId);
         mStatusBarHider.onLeftRightSplitUpdated(mIsLeftRightSplit);
         updateLayouts();
         updateDividerConfig(mContext);
@@ -555,11 +563,12 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         // We only need new bounds here, other configuration should be update later.
         final boolean wasLeftRightSplit = SplitScreenUtils.isLeftRightSplit(
                 mAllowLeftRightSplitInPortrait, mIsLargeScreen,
-                mRootBounds.width() >= mRootBounds.height());
+                mRootBounds.width() >= mRootBounds.height(), DEFAULT_DISPLAY);
         mTempRect.set(mRootBounds);
         mRootBounds.set(tmpRect);
         mIsLeftRightSplit = SplitScreenUtils.isLeftRightSplit(mAllowLeftRightSplitInPortrait,
-                mIsLargeScreen, mRootBounds.width() >= mRootBounds.height());
+                mIsLargeScreen, mRootBounds.width() >= mRootBounds.height(),
+                DEFAULT_DISPLAY);
         mStatusBarHider.onLeftRightSplitUpdated(mIsLeftRightSplit);
 
         updateLayouts();
@@ -927,7 +936,8 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
                 mIsLeftRightSplit,
                 insets,
                 mPinnedTaskbarInsets.toRect(),
-                mIsLeftRightSplit ? DOCKED_LEFT : DOCKED_TOP /* dockSide */);
+                mIsLeftRightSplit ? DOCKED_LEFT : DOCKED_TOP /* dockSide */,
+                mContext.getDisplay().getDisplayId());
     }
 
     /** Fling divider from current position to end or start position then exit */
@@ -1034,6 +1044,12 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         });
         mDividerFlingAnimator.start();
     }
+
+    /** Returns true if a divider fling animation is currently playing. */
+    public boolean isCurrentlyDividerFlinging() {
+        return mDividerFlingAnimator != null && mDividerFlingAnimator.isRunning();
+    }
+
 
     /** Switch both surface position with animation. */
     public void playSwapAnimation(SurfaceControl.Transaction t, StageTaskListener topLeftStage,

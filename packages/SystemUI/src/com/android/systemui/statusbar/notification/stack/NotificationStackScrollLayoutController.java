@@ -62,7 +62,6 @@ import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.view.OneShotPreDrawListener;
 import com.android.systemui.Dumpable;
 import com.android.systemui.ExpandHelper;
-import com.android.systemui.Flags;
 import com.android.systemui.Gefingerpoken;
 import com.android.systemui.classifier.Classifier;
 import com.android.systemui.classifier.FalsingCollector;
@@ -76,7 +75,6 @@ import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin.OnMenuEv
 import com.android.systemui.plugins.statusbar.NotificationSwipeActionHelper;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
-import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.scene.ui.view.WindowRootView;
@@ -329,10 +327,11 @@ public class NotificationStackScrollLayoutController implements Dumpable {
     /**
      * A list of visible status bar chips with their key and their absolute on-screen bounds.
      *
-     * Note that this list can contain both notification keys, as well as keys for other types of
-     * chips like screen recording.
+     * If [Flags.statusBarHunAnimationCall()] is enabled, then this map contains only notification
+     * keys. If that flag is disabled, this map can contain both notification keys, as well as keys
+     * for other types of chips like screen recording.
      */
-    private Map<String, RectF> mVisibleStatusBarChips = new HashMap<>();
+    private Map<String, RectF> mVisibleStatusBarNotificationChips = new HashMap<>();
 
     private final NotificationListViewBinder mViewBinder;
 
@@ -373,6 +372,11 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             mHistoryEnabled = null;
         }
     };
+
+    // Update sensitivity, because NotificationLockscreenUserManager.isAnyProfilePublicMode()
+    // might have changed.
+    private final NotificationLockscreenUserManager.NotificationStateChangedListener
+            mLockscreenModeChangedListener = () -> updateSensitivenessWithAnimation(false);
 
     /**
      * Recalculate sensitiveness without animation; called when waking up while keyguard occluded,
@@ -734,9 +738,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
 
                 @Override
                 public void onChildSnapBackOvershoots() {
-                    if (Flags.magneticNotificationSwipes()) {
-                        mMagneticNotificationRowManager.resetRoundness();
-                    }
+                    mMagneticNotificationRowManager.resetRoundness();
                 }
 
                 @Override
@@ -983,6 +985,10 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         mLockscreenShadeTransitionController.setStackScroller(this);
 
         mLockscreenUserManager.addUserChangedListener(mLockscreenUserChangeListener);
+        if (SceneContainerFlag.isEnabled()) {
+            mLockscreenUserManager.addNotificationStateChangedListener(
+                    mLockscreenModeChangedListener);
+        }
 
         mVisibilityLocationProviderDelegator.setDelegate(this::isInVisibleLocation);
 
@@ -1625,16 +1631,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         mView.setExpandedHeight(expandedHeight);
     }
 
-    /**
-     * Sets the QS header. Used to check if a touch is within its bounds.
-     */
-    public void setQsHeader(ViewGroup view) {
-        QSComposeFragment.assertInLegacyMode();
-        mView.setQsHeader(view);
-    }
-
     public void setQsHeaderBoundsProvider(QSHeaderBoundsProvider qsHeaderBoundsProvider) {
-        QSComposeFragment.isUnexpectedlyInLegacyMode();
         mView.setQsHeaderBoundsProvider(qsHeaderBoundsProvider);
     }
 
@@ -1712,15 +1709,15 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         return mView.getFirstChildNotGone();
     }
 
-    /** Sets the list of visible status bar chips. */
-    public void updateVisibleStatusBarChips(Map<String, RectF> visibleStatusBarChips) {
-        mVisibleStatusBarChips = visibleStatusBarChips;
+    /** Sets the list of visible status bar notification chips. */
+    public void updateVisibleStatusBarNotificationChips(Map<String, RectF> visibleStatusBarChips) {
+        mVisibleStatusBarNotificationChips = visibleStatusBarChips;
     }
 
     public void generateHeadsUpAnimation(NotificationEntry entry, boolean isHeadsUp) {
         RectF chipBounds;
         if (PromotedNotificationUi.isEnabled()) {
-            chipBounds = mVisibleStatusBarChips.getOrDefault(entry.getKey(), null);
+            chipBounds = mVisibleStatusBarNotificationChips.getOrDefault(entry.getKey(), null);
         } else {
             chipBounds = null;
         }
@@ -2097,8 +2094,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         }
 
         @Override
-        public void onHeightChanged(ExpandableView view, boolean needsAnimation) {
-            mView.onChildHeightChanged(view, needsAnimation);
+        public void onHeightChanged(ExpandableView view, boolean needsAnimation, String caller) {
+            mView.onChildHeightChanged(view, needsAnimation, "NSSLC.onHeightChanged");
         }
 
         @Override

@@ -27,7 +27,7 @@
 #include <bionic/malloc.h>
 #include <ctype.h>
 #include <debuggerd/client.h>
-#include <dmabufinfo/dmabuf_sysfs_stats.h>
+#include <dmabufinfo/dmabuf_per_buffer_stats.h>
 #include <dmabufinfo/dmabufinfo.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -409,6 +409,8 @@ enum {
     MEMINFO_CMA_TOTAL,
     MEMINFO_CMA_FREE,
     MEMINFO_SWAP_CACHED,
+    MEMINFO_SEC_PAGE_TABLES,
+    MEMINFO_PERCPU,
     MEMINFO_COUNT
 };
 
@@ -638,25 +640,12 @@ static jlong android_os_Debug_getFreeZramKb(JNIEnv* env, jobject clazz) {
     return zramFreeKb;
 }
 
-static jlong android_os_Debug_getIonHeapsSizeKb(JNIEnv* env, jobject clazz) {
-    jlong heapsSizeKb = -1;
-    uint64_t size;
-
-    if (meminfo::ReadIonHeapsSizeKb(&size)) {
-        heapsSizeKb = size;
-    }
-
-    return heapsSizeKb;
-}
-
 static jlong android_os_Debug_getDmabufTotalExportedKb(JNIEnv* env, jobject clazz) {
-    jlong dmabufTotalSizeKb = -1;
-    uint64_t size;
-
-    if (dmabufinfo::GetDmabufTotalExportedKb(&size)) {
-        dmabufTotalSizeKb = size;
+    if (dmabufinfo::DmabufPerBufferStats stats; dmabufinfo::GetDmabufPerBufferStats(stats)) {
+        return stats.total_size();
     }
-    return dmabufTotalSizeKb;
+
+    return -1;
 }
 
 static jlong android_os_Debug_getDmabufHeapTotalExportedKb(JNIEnv* env, jobject clazz) {
@@ -667,17 +656,6 @@ static jlong android_os_Debug_getDmabufHeapTotalExportedKb(JNIEnv* env, jobject 
         dmabufHeapTotalSizeKb = size;
     }
     return dmabufHeapTotalSizeKb;
-}
-
-static jlong android_os_Debug_getIonPoolsSizeKb(JNIEnv* env, jobject clazz) {
-    jlong poolsSizeKb = -1;
-    uint64_t size;
-
-    if (meminfo::ReadIonPoolsSizeKb(&size)) {
-        poolsSizeKb = size;
-    }
-
-    return poolsSizeKb;
 }
 
 static jlong android_os_Debug_getDmabufHeapPoolsSizeKb(JNIEnv* env, jobject clazz) {
@@ -753,6 +731,11 @@ static jlong android_os_Debug_getDmabufMappedSizeKb(JNIEnv* env, jobject clazz) 
         return false;
     }
 
+    android::dmabufinfo::DmabufPerBufferStats stats;
+    if (!android::dmabufinfo::GetDmabufPerBufferStats(stats)) {
+        LOG(ERROR) << "Failed to read dmabuf per-buffer stats";
+    }
+
     struct dirent* dent;
     while ((dent = readdir(dir.get()))) {
         if (dent->d_type != DT_DIR) continue;
@@ -762,7 +745,7 @@ static jlong android_os_Debug_getDmabufMappedSizeKb(JNIEnv* env, jobject clazz) 
             continue;
         }
 
-        if (!ReadDmaBufMapRefs(pid, &dmabufs)) {
+        if (!ReadDmaBufMapRefs(pid, dmabufs, stats)) {
             LOG(ERROR) << "Failed to read maps for pid " << pid;
         }
     }
@@ -839,12 +822,10 @@ static const JNINativeMethod gMethods[] = {
         {"getUnreachableMemory", "(IZ)Ljava/lang/String;",
          (void*)android_os_Debug_getUnreachableMemory},
         {"getZramFreeKb", "()J", (void*)android_os_Debug_getFreeZramKb},
-        {"getIonHeapsSizeKb", "()J", (void*)android_os_Debug_getIonHeapsSizeKb},
         {"getDmabufTotalExportedKb", "()J", (void*)android_os_Debug_getDmabufTotalExportedKb},
         {"getGpuPrivateMemoryKb", "()J", (void*)android_os_Debug_getGpuPrivateMemoryKb},
         {"getDmabufHeapTotalExportedKb", "()J",
          (void*)android_os_Debug_getDmabufHeapTotalExportedKb},
-        {"getIonPoolsSizeKb", "()J", (void*)android_os_Debug_getIonPoolsSizeKb},
         {"getDmabufMappedSizeKb", "()J", (void*)android_os_Debug_getDmabufMappedSizeKb},
         {"getDmabufHeapPoolsSizeKb", "()J", (void*)android_os_Debug_getDmabufHeapPoolsSizeKb},
         {"getGpuTotalUsageKb", "()J", (void*)android_os_Debug_getGpuTotalUsageKb},

@@ -578,6 +578,7 @@ public final class UserHandle implements Parcelable {
     @Deprecated
     @SystemApi
     public boolean isOwner() {
+        UserManager.logStaticDeprecation();
         return this.equals(OWNER);
     }
 

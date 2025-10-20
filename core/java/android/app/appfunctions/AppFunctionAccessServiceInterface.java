@@ -57,4 +57,15 @@ public interface AppFunctionAccessServiceInterface {
     /** @see AppFunctionManager#getValidTargets(String) () */
     @NonNull
     List<String> getValidTargets(int userId);
+
+    /** Should be called whenever a user starts */
+    void onUserStarting(int userId);
+
+    /** Add a change listener */
+    void addOnAccessChangedListener(@NonNull IOnAppFunctionAccessChangeListener listener,
+            int userId);
+
+    /** Remove a change listener */
+    void removeOnAccessChangedListener(@NonNull IOnAppFunctionAccessChangeListener listener,
+            int userId);
 }

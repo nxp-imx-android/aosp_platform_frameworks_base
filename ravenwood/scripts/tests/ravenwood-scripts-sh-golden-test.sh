@@ -88,7 +88,13 @@ run_test() {
 
 # Run the target commands.
 run_all_commands() {
+    unset RAVENWOOD_TEST_ENABLEMENT_POLICY
+    unset RAVENWOOD_RUN_DISABLED_TESTS
+    unset RAVENWOOD_FORCE_FILTER_REGEX
+
     run_test "Run with no arguments" run-ravenwood-tests-wrapper
+
+    run_test "Help" run-ravenwood-tests-wrapper -h
 
     run_test "Smoke tests" run-ravenwood-tests-wrapper -s
 
@@ -109,6 +115,10 @@ run_all_commands() {
 
     ALL_TESTS="DeviceTest1 DeviceTest2" run_test "Run device tests (-D) " run-ravenwood-tests-wrapper -D
 
+    run_test "Run with disabled tests" run-ravenwood-tests-wrapper -R
+
+    RAVENWOOD_RUN_DISABLED_TESTS=xxx RAVENWOOD_FORCE_FILTER_REGEX=yyy run_test "Make sure env vars are printed" run-ravenwood-tests-wrapper
+
     echo "== All commands finished =="
 }
 
@@ -124,8 +134,9 @@ command_out=/tmp/$$.tmp
 
 # We ally this filter to the output to remove unstable parts.
 output_filter() {
-    # Remove the PID in the temp file name.
-    sed -e 's/@@@.*@@@/@@@-@@@/g'
+    # RAVENWOOD_TEST_ENABLEMENT_POLICY has full paths filenames,
+    # which is unstable. Let's just remove the value...
+    sed -e "/^RAVENWOOD_TEST_ENABLEMENT_POLICY/{s/=.*/=.../}"
 }
 
 cat <<'EOF'

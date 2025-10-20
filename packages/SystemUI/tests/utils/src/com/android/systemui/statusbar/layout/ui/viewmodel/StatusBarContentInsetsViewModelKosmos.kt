@@ -17,9 +17,9 @@
 package com.android.systemui.statusbar.layout.ui.viewmodel
 
 import com.android.systemui.display.data.repository.displayRepository
+import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
-import com.android.systemui.statusbar.data.repository.multiDisplayStatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.layout.statusBarContentInsetsProvider
 
 val Kosmos.statusBarContentInsetsViewModel by
@@ -30,6 +30,6 @@ val Kosmos.multiDisplayStatusBarContentInsetsViewModelStore by
         MultiDisplayStatusBarContentInsetsViewModelStore(
             applicationCoroutineScope,
             displayRepository,
-            multiDisplayStatusBarContentInsetsProviderStore,
+            displaySubcomponentPerDisplayRepository,
         )
     }

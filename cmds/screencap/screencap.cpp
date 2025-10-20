@@ -97,6 +97,8 @@ static int32_t flinger2bitmapFormat(aidl::android::hardware::graphics::common::P
             return ANDROID_BITMAP_FORMAT_RGBA_1010102;
         case aidl::android::hardware::graphics::common::PixelFormat::BGRA_1010102:
             return ANDROID_BITMAP_FORMAT_BGRA_1010102;
+        case aidl::android::hardware::graphics::common::PixelFormat::BGRX_1010102:
+            return ANDROID_BITMAP_FORMAT_BGRX_1010102;
         default:
             return ANDROID_BITMAP_FORMAT_RGBA_8888;
     }

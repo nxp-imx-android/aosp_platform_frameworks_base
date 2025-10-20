@@ -47,7 +47,6 @@ import static com.android.wm.shell.shared.TransitionUtil.isOpeningType;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityTaskManager;
-import android.app.IApplicationThread;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
@@ -87,6 +86,7 @@ import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.ExternalInterfaceBinder;
 import com.android.wm.shell.common.RemoteCallable;
 import com.android.wm.shell.common.ShellExecutor;
+import com.android.wm.shell.dagger.UsedDownstream;
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes;
 import com.android.wm.shell.desktopmode.DesktopWallpaperActivity;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
@@ -483,6 +483,24 @@ public class Transitions implements RemoteCallable<Transitions>,
         mRemoteTransitionHandler.removeFiltered(remoteTransition);
     }
 
+    /**
+     * Check whether a given TransitionInfo object would be handled by the TransitionFilter(s)
+     * registered with the RemoteTransitionHandler.
+     *
+     * @param info the TransitionInfo to check with the RemoteTransitionHandler.
+     * @return true if the info matches with a registered TransitionFilter, otherwise false.
+     */
+    @UsedDownstream(product="wear")
+    public boolean matchesRemoteFilter(TransitionInfo info) {
+        for (Pair<TransitionFilter, RemoteTransition> filterPair
+                : mRemoteTransitionHandler.mFilters) {
+            if (filterPair.first.matches(info)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     RemoteTransitionHandler getRemoteTransitionHandler() {
         return mRemoteTransitionHandler;
     }
@@ -498,10 +516,10 @@ public class Transitions implements RemoteCallable<Transitions>,
     }
 
     /** Boosts the process priority of remote animation player. */
-    public static void setRunningRemoteTransitionDelegate(IApplicationThread appThread) {
-        if (appThread == null) return;
+    public static void setRunningRemoteTransitionDelegate(IBinder transitionToken) {
+        if (transitionToken == null) return;
         try {
-            ActivityTaskManager.getService().setRunningRemoteTransitionDelegate(appThread);
+            ActivityTaskManager.getService().setRunningRemoteTransitionDelegate(transitionToken);
         } catch (SecurityException e) {
             Log.e(TAG, "Unable to boost animation process. This should only happen"
                     + " during unit tests");
@@ -1230,6 +1248,10 @@ public class Transitions implements RemoteCallable<Transitions>,
             @Nullable TransitionRequestInfo request) {
         ProtoLog.v(WM_SHELL_TRANSITIONS, "Transition requested (#%d): %s %s",
                 request.getDebugId(), transitionToken, request);
+        if (transitionToken == null) {
+            throw new IllegalArgumentException("Null transitionToken specified for request="
+                    + request);
+        }
         if (mKnownTransitions.containsKey(transitionToken)) {
             throw new RuntimeException("Transition already started " + transitionToken);
         }
@@ -1298,6 +1320,12 @@ public class Transitions implements RemoteCallable<Transitions>,
      */
     public IBinder startTransition(@WindowManager.TransitionType int type,
             @NonNull WindowContainerTransaction wct, @Nullable TransitionHandler handler) {
+        mMainExecutor.assertCurrentThread();
+        if (type < 0) {
+            throw new IllegalArgumentException("Invalid transition type provided (" + type
+                    + "), type must be > 0");
+        }
+
         ProtoLog.v(WM_SHELL_TRANSITIONS, "Directly starting a new transition "
                 + "type=%s wct=%s handler=%s", transitTypeToString(type), wct, handler);
         if (DEBUG_START_TRANSITION) {
@@ -1756,11 +1784,11 @@ public class Transitions implements RemoteCallable<Transitions>,
         }
 
         @Override
-        public void setHomeTransitionListener(IHomeTransitionListener listener) {
+        public void setHomeTransitionListener(IHomeTransitionListener listener, int userId) {
             executeRemoteCallWithTaskPermission(mTransitions, "setHomeTransitionListener",
                     (transitions) -> {
                         transitions.mHomeTransitionObserver.setHomeTransitionListener(transitions,
-                                listener);
+                                listener, userId);
                     });
         }
 

@@ -36,6 +36,8 @@ import static com.android.internal.util.FrameworkStatsLog.PROVIDER_ACQUISITION_E
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_MU;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PROCESSES;
 import static com.android.server.am.ActivityManagerService.TAG_MU;
+import static com.android.server.am.psc.Constants.PERCEPTIBLE_LOW_APP_ADJ;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_BACKGROUND;
 
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
@@ -535,7 +537,7 @@ public class ContentProviderHelper {
                             if (mService.mProcessStateController.addPublishedProvider(proc,
                                     cpi.name, cpr)) {
                                 checkTime(startTime, "getContentProviderImpl: scheduling install");
-                                mService.mOomAdjuster.unfreezeTemporarily(proc,
+                                mService.unfreezeTemporarily(proc,
                                         CachedAppOptimizer.UNFREEZE_REASON_GET_PROVIDER);
                                 try {
                                     thread.scheduleInstallProvider(cpi);
@@ -909,8 +911,7 @@ public class ContentProviderHelper {
                 (conn.provider != null && conn.provider.info != null
                 ? conn.provider.info.authority : ""));
         try {
-            if (android.app.Flags.skipRefContentProvider()
-                    && unstable <= 0 && conn.unstableCount() <= 0) {
+            if (unstable <= 0 && conn.unstableCount() <= 0) {
                 return false;
             }
             conn.adjustCounts(stable, unstable);
@@ -1376,11 +1377,12 @@ public class ContentProviderHelper {
         }
 
         mService.mConstants.start(mService.mContext.getContentResolver());
-        mService.mCoreSettingsObserver = new CoreSettingsObserver(mService);
+        mService.mCoreSettingsObserver = CoreSettingsObserver.create(mService);
         mService.mActivityTaskManager.installSystemProviders();
         new DevelopmentSettingsObserver(); // init to observe developer settings enable/disable
         SettingsToPropertiesMapper.start(mService.mContext.getContentResolver());
-        mService.mOomAdjuster.initSettings();
+        mService.getCachedAppOptimizer().init();
+        mService.setupServicePrewarmingOnUserSwitch();
 
         // Now that the settings provider is published we can consider sending in a rescue party.
         CrashRecoveryAdaptor.rescuePartyOnSettingsProviderPublished(mService.mContext);
@@ -1476,7 +1478,7 @@ public class ContentProviderHelper {
         mService.mProcessStateController.addProviderConnection(r, conn);
         mService.startAssociationLocked(r.uid, r.processName, r.getCurProcState(),
                 cpr.uid, cpr.appInfo.longVersionCode, cpr.name, cpr.info.processName);
-        if (updateLru && cpr.proc != null && r.getSetAdj() <= ProcessList.PERCEPTIBLE_LOW_APP_ADJ) {
+        if (updateLru && cpr.proc != null && r.getSetAdj() <= PERCEPTIBLE_LOW_APP_ADJ) {
             // If this is a perceptible app accessing the provider, make
             // sure to count it as being accessed and thus back up on
             // the LRU list.  This is good because content providers are
@@ -1758,7 +1760,7 @@ public class ContentProviderHelper {
         }
 
         final boolean callerForeground = r == null
-                || r.getSetSchedGroup() != ProcessList.SCHED_GROUP_BACKGROUND;
+                || r.getSetSchedGroup() != SCHED_GROUP_BACKGROUND;
 
         // Show a permission review UI only for starting from a foreground app
         if (!callerForeground) {

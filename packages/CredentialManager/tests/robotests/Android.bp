@@ -11,7 +11,6 @@ android_app {
     name: "CredentialManagerRobo",
     srcs: [],
     static_libs: [
-        "SystemUI-application",
         "SystemUI-core",
         "CredentialManager-handheld",
         "ScreenshotComposeUtilsLib",

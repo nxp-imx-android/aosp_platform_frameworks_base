@@ -20,6 +20,7 @@ import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.DelegateTransitionAnimatorController
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 
 /**
  * An [ActivityTransitionAnimator.Controller] that takes care of updating the state of the Communal
@@ -39,12 +40,6 @@ class CommunalTransitionAnimatorController(
 
     override fun onTransitionAnimationStart(isExpandingFullyAbove: Boolean) {
         delegate.onTransitionAnimationStart(isExpandingFullyAbove)
-        // TODO(b/330672236): move this to onTransitionAnimationEnd() without the delay.
-        communalSceneInteractor.snapToScene(
-            CommunalScenes.Blank,
-            "CommunalTransitionAnimatorController",
-            ActivityTransitionAnimator.TIMINGS.totalDuration
-        )
     }
 
     override fun onTransitionAnimationCancelled(newKeyguardOccludedState: Boolean?) {
@@ -55,5 +50,11 @@ class CommunalTransitionAnimatorController(
     override fun onTransitionAnimationEnd(isExpandingFullyAbove: Boolean) {
         communalSceneInteractor.setIsLaunchingWidget(false)
         delegate.onTransitionAnimationEnd(isExpandingFullyAbove)
+        if (!SceneContainerFlag.isEnabled) {
+            communalSceneInteractor.snapToScene(
+                CommunalScenes.Blank,
+                "CommunalTransitionAnimatorController",
+            )
+        }
     }
 }

@@ -21,7 +21,6 @@ import static android.window.OnBackInvokedDispatcher.PRIORITY_OVERLAY;
 import static android.window.OnBackInvokedDispatcher.PRIORITY_SYSTEM_NAVIGATION_OBSERVER;
 
 import static com.android.window.flags.Flags.FLAG_MULTIPLE_SYSTEM_NAVIGATION_OBSERVER_CALLBACKS;
-import static com.android.window.flags.Flags.FLAG_PREDICTIVE_BACK_CALLBACK_CANCELLATION_FIX;
 import static com.android.window.flags.Flags.FLAG_PREDICTIVE_BACK_PRIORITY_SYSTEM_NAVIGATION_OBSERVER;
 import static com.android.window.flags.Flags.FLAG_PREDICTIVE_BACK_TIMESTAMP_API;
 
@@ -103,9 +102,9 @@ public class WindowOnBackInvokedDispatcherTest {
     @Mock
     private OnBackAnimationCallback mCallback2;
     @Mock
-    private ImeOnBackInvokedDispatcher.ImeOnBackInvokedCallback mImeCallback;
+    private ImeBackCallbackProxy.ImeOnBackInvokedCallback mImeCallback;
     @Mock
-    private ImeOnBackInvokedDispatcher.DefaultImeOnBackAnimationCallback mDefaultImeCallback;
+    private ImeBackCallbackProxy.DefaultImeOnBackAnimationCallback mDefaultImeCallback;
     @Mock
     private ImeBackAnimationController mImeBackAnimationController;
     @Mock
@@ -444,7 +443,6 @@ public class WindowOnBackInvokedDispatcherTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_PREDICTIVE_BACK_CALLBACK_CANCELLATION_FIX)
     public void onDetachFromWindow_cancelsInProgressNonTopCallback() throws RemoteException {
         mDispatcher.registerOnBackInvokedCallback(PRIORITY_DEFAULT, mCallback1);
 
@@ -472,7 +470,6 @@ public class WindowOnBackInvokedDispatcherTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_PREDICTIVE_BACK_CALLBACK_CANCELLATION_FIX)
     public void callbackEvents_continueAfterNewRegistration_andUnregistration()
             throws RemoteException {
         mDispatcher.registerOnBackInvokedCallback(PRIORITY_DEFAULT, mCallback1);

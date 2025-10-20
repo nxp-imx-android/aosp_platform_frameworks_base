@@ -24,6 +24,8 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.data.repository.DeviceEntryRepository
 import com.android.systemui.keyguard.DismissCallbackRegistry
+import com.android.systemui.keyguard.domain.interactor.KeyguardDismissActionInteractor
+import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.scene.data.model.asIterable
@@ -69,6 +71,7 @@ constructor(
     private val dismissCallbackRegistry: Lazy<DismissCallbackRegistry>,
     private val sceneBackInteractor: Lazy<SceneBackInteractor>,
     @SceneFrameworkTableLog private val tableLogBuffer: Lazy<TableLogBuffer>,
+    private val keyguardDismissActionInteractor: Lazy<KeyguardDismissActionInteractor>,
 ) {
     /**
      * Whether the device is unlocked.
@@ -257,10 +260,22 @@ constructor(
                     // stack triggers device entry without necessarily dismissing the current scene.
                     sceneBackInteractor.get().replaceLockscreenSceneOnBackStack()
                 } else {
+                    val transitionKey =
+                        if (
+                            keyguardDismissActionInteractor
+                                .get()
+                                .willAnimateDismissActionOnLockscreen
+                                .value
+                        ) {
+                            KeyguardTransitionKeys.WithAnimationOverLockscreen
+                        } else {
+                            null
+                        }
                     sceneInteractor
                         .get()
                         .changeScene(
                             toScene = Scenes.Gone,
+                            transitionKey = transitionKey,
                             loggingReason =
                                 "request to unlock device while authentication isn't " +
                                     "required, original reason for request: $loggingReason",
@@ -302,5 +317,18 @@ constructor(
     /** Locks the device instantly. */
     fun lockNow(debuggingReason: String) {
         deviceUnlockedInteractor.get().lockNow(debuggingReason)
+
+        applicationScope.launch {
+            // The device unlock interactor can't lock the device if the device has SWIPE as screen
+            // lock, so we need to manually transition to lockscreen in this case.
+            if (isLockscreenEnabled() && !isAuthenticationRequired()) {
+                sceneInteractor
+                    .get()
+                    .changeScene(
+                        toScene = Scenes.Lockscreen,
+                        loggingReason = "lock now with SWIPE auth method, reason: $debuggingReason",
+                    )
+            }
+        }
     }
 }

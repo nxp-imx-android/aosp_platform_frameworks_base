@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.domain.interactor
 
+import android.graphics.Rect
 import com.android.app.tracing.FlowTracing.traceAsCounter
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ObservableTransitionState
@@ -31,6 +32,8 @@ import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys.Instant
 import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
+import com.android.systemui.shade.ShadeOverlayBoundsListener
+import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
@@ -52,6 +55,7 @@ class ShadeInteractorSceneContainerImpl
 @Inject
 constructor(
     @Application private val scope: CoroutineScope,
+    private val shadeRepository: ShadeRepository,
     private val sceneInteractor: SceneInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
 ) : BaseShadeInteractor {
@@ -298,6 +302,18 @@ constructor(
                 bypassNotificationsShade = true,
             )
         }
+    }
+
+    override fun setShadeOverlayBounds(bounds: Rect?) {
+        shadeRepository.setShadeOverlayBounds(bounds)
+    }
+
+    override fun addShadeOverlayBoundsListener(listener: ShadeOverlayBoundsListener) {
+        shadeRepository.addShadeBoundsListener(listener)
+    }
+
+    override fun removeShadeOverlayBoundsListener(listener: ShadeOverlayBoundsListener) {
+        shadeRepository.removeShadeBoundsListener(listener)
     }
 
     /**

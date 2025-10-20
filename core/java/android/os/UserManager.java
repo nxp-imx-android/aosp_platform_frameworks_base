@@ -184,8 +184,9 @@ public class UserManager {
 
     /**
      * User type representing a clone profile. Clone profile is a user profile type used to run
-     * second instance of an otherwise single user App (eg, messengers). Currently only the
-     * {@link android.content.pm.UserInfo#isMain()} user can have a clone profile.
+     * a second instance of an otherwise single user App (eg, messengers). Currently only the main
+     * user (which is the first full user set up on the device, usually the system user)
+     * can have a clone profile.
      */
     @FlaggedApi(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE)
     public static final String USER_TYPE_PROFILE_CLONE = "android.os.usertype.profile.CLONE";
@@ -892,7 +893,8 @@ public class UserManager {
      * {@link android.Manifest.permission#MANAGE_DEVICE_POLICY_DEBUGGING_FEATURES}
      * can set this restriction using the DevicePolicyManager APIs mentioned below.
      *
-     * <p>The default value is <code>false</code>.
+     * <p>Default is <code>true</code> for newly created work profile on or after the
+     * 2025-04 security patch level. Otherwise, the default is <code>false</code>.
      *
      * <p>Key for user restrictions.
      * <p>Type: Boolean
@@ -2388,10 +2390,13 @@ public class UserManager {
     public static final int REMOVE_RESULT_ALREADY_BEING_REMOVED = 2;
 
     /**
-     * A response code indicating that the specified user is removable.
+     * A response code from {@link #getUserRemovability(int)} indicating that the specified user is
+     * removable.
      *
      * @hide
      */
+    @TestApi
+    @FlaggedApi(android.multiuser.Flags.FLAG_USER_REMOVAL_MINOR_APIS_2026)
     public static final int REMOVE_RESULT_USER_IS_REMOVABLE = 3;
 
     /**
@@ -2440,22 +2445,39 @@ public class UserManager {
     @SystemApi
     public static final int REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN = -5;
 
-    /**
-     * A response code from {@link #removeUserWhenPossible(UserHandle, boolean)} indicating that
-     * user being removed cannot be removed because it is
-     * the last {@link #isAdminUser() admin} user on the device.
-     *
-     * @hide
-     */
     // TODO(b/419105275): Currently, the headless system user is also an admin user. When we
     // disallow the removal of last admin user, we mean the last admin user that's not the HSU.
     // If/When b/419105275 removes the admin flag from HSU, this comment should be removed.
-    @FlaggedApi(android.multiuser.Flags.FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER)
+    /**
+     * A response code from {@link #removeUserWhenPossible(UserHandle, boolean)} indicating that
+     * user being removed cannot be removed because it is considered the last
+     * {@link #isAdminUser() admin} user on the device.
+     *
+     * @hide
+     */
     @SystemApi
+    @FlaggedApi(android.multiuser.Flags.FLAG_USER_REMOVAL_MINOR_APIS_2026)
     public static final int REMOVE_RESULT_ERROR_LAST_ADMIN_USER = -6;
 
     /**
-     * Possible response codes from {@link #removeUserWhenPossible(UserHandle, boolean)}.
+     * A response code from {@link #removeUserWhenPossible(UserHandle, boolean)} indicating that
+     * user being removed cannot be removed because it is the Device Owner on this device.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(android.multiuser.Flags.FLAG_USER_REMOVAL_MINOR_APIS_2026)
+    public static final int REMOVE_RESULT_ERROR_DEVICE_OWNER = -7;
+
+    /**
+     * Possible response codes from {@link #removeUserWhenPossible(UserHandle, boolean)} and
+     * {@link #getUserRemovability(int)}.
+     *
+     * <p>NOTE: not all codes are used on both methods - for example,
+     * {@code removeUserWhenPossible()} doesn't return {@code REMOVE_RESULT_USER_IS_REMOVABLE} and
+     * {@code getUserRemovability()} doesn't return {@code REMOVE_RESULT_REMOVED}. We could use
+     * 2 distinct {@code IntDefs} (like {@code RemoveResult} and {@code UserRemovability}), but it
+     * would over-complicate these methods.
      *
      * @hide
      */
@@ -2469,6 +2491,7 @@ public class UserManager {
             REMOVE_RESULT_ERROR_SYSTEM_USER,
             REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN,
             REMOVE_RESULT_ERROR_LAST_ADMIN_USER,
+            REMOVE_RESULT_ERROR_DEVICE_OWNER,
             REMOVE_RESULT_ERROR_UNKNOWN,
     })
     @Retention(RetentionPolicy.SOURCE)
@@ -3423,10 +3446,12 @@ public class UserManager {
      * class.)
      *
      * @return whether the context user can add a private profile.
+     * @deprecated evaluate canAddMoreProfilesToUser(USER_TYPE_PROFILE_PRIVATE, userId) > 0 instead
      * @hide
      */
+    @Deprecated
     @TestApi
-    @FlaggedApi(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE)
+    @FlaggedApi(android.multiuser.Flags.FLAG_CONSISTENT_MAX_USERS)
     @RequiresPermission(anyOf = {
             Manifest.permission.MANAGE_USERS,
             Manifest.permission.CREATE_USERS,
@@ -5173,7 +5198,6 @@ public class UserManager {
      */
     @Deprecated
     @TestApi
-    @UnsupportedAppUsage
     @RequiresPermission(anyOf = {
             android.Manifest.permission.MANAGE_USERS,
             android.Manifest.permission.CREATE_USERS
@@ -5444,6 +5468,12 @@ public class UserManager {
      *
      * Takes into account whether the user type is supported and maximum user limits, but does not
      * take into account UserRestrictions.
+     *
+     * Note that this value is dynamic; the creation of users of another type can sometimes affect
+     * how many users of this type are allowed if they are both subject to the same combined cap.
+     * In particular, the creation of one switchable user will decrease the current number of
+     * allowed users for other switchable user types.
+     *
      * It is consistent with {@link #getRemainingCreatableUserCount(String)}, with the following
      * caveat:
      *
@@ -5471,21 +5501,44 @@ public class UserManager {
     /**
      * Checks whether this device supports users of the given user type.
      *
+     * Takes into account whether the user type is supported, including having a non-zero maximum
+     * user limit, but does not take into account UserRestrictions.
+     *
      * @param userType the type of user, such as {@link UserManager#USER_TYPE_FULL_SECONDARY}.
-     * @return true if the creation of users of the given user type is enabled on this device.
+     * @return true if the creation of users of the given user type is supported on this device.
      * @hide
      */
     @TestApi
+    @FlaggedApi(android.multiuser.Flags.FLAG_QUERY_USER_TYPE_SUPPORTED)
+    @RequiresPermission(anyOf = {
+            android.Manifest.permission.MANAGE_USERS,
+            android.Manifest.permission.CREATE_USERS
+    })
+    public boolean isUserTypeSupported(@NonNull String userType) {
+        try {
+            return mService.isUserTypeSupportedIncludingSystem(userType);
+        } catch (RemoteException re) {
+            throw re.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * @deprecated use {@link #isUserTypeSupported(String)} instead.
+     * @hide
+     */
+    @TestApi
+    @Deprecated
+    @FlaggedApi(android.multiuser.Flags.FLAG_QUERY_USER_TYPE_SUPPORTED)
     @RequiresPermission(anyOf = {
             android.Manifest.permission.MANAGE_USERS,
             android.Manifest.permission.CREATE_USERS
     })
     public boolean isUserTypeEnabled(@NonNull String userType) {
-        try {
-            return mService.isUserTypeEnabled(userType);
-        } catch (RemoteException re) {
-            throw re.rethrowFromSystemServer();
+        if (android.multiuser.Flags.queryUserTypeSupported()) {
+            // TODO(b/444731367): Delete this method entirely when cleaning up the flag!
+            Log.w(TAG, "Calling deprecated isUserTypeEnabled; instead use isUserTypeSupported");
         }
+        return isUserTypeSupported(userType);
     }
 
     /**
@@ -6412,8 +6465,9 @@ public class UserManager {
      * {@link #REMOVE_RESULT_DEFERRED}, {@link #REMOVE_RESULT_ALREADY_BEING_REMOVED},
      * {@link #REMOVE_RESULT_ERROR_USER_RESTRICTION}, {@link #REMOVE_RESULT_ERROR_USER_NOT_FOUND},
      * {@link #REMOVE_RESULT_ERROR_SYSTEM_USER},
-     * {@link #REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN}, or
-     * {@link #REMOVE_RESULT_ERROR_UNKNOWN}. All error codes have negative values.
+     * {@link #REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN},
+     * {@link #REMOVE_RESULT_ERROR_LAST_ADMIN_USER}, or {@link #REMOVE_RESULT_ERROR_UNKNOWN}. All
+     * error codes have negative values.
      *
      * @hide
      */
@@ -6440,6 +6494,42 @@ public class UserManager {
     @SystemApi
     public static boolean isRemoveResultSuccessful(@RemoveResult int result) {
         return result >= 0;
+    }
+
+    /**
+     * Returns whether the specified user is removable.
+     *
+     * <p>Removing a user is not allowed in the following cases:
+     * <ol>
+     * <li>the user is system user
+     * <li>the user is not found
+     * <li>the user is permanent admin main user
+     * <li>the user is already being removed
+     * <li>the user is a non-removable last admin user
+     *
+     * </ol>
+     *
+     * @return A {@link RemoveResult} flag indicating if the user can be removed, one of
+     * {@link #REMOVE_RESULT_USER_IS_REMOVABLE},
+     * {@link #REMOVE_RESULT_ERROR_SYSTEM_USER},
+     * {@link #REMOVE_RESULT_ERROR_USER_NOT_FOUND},
+     * {@link #REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN},
+     * {@link #REMOVE_RESULT_ALREADY_BEING_REMOVED},
+     * {@link #REMOVE_RESULT_ERROR_LAST_ADMIN_USER},
+     * {@link #REMOVE_RESULT_ERROR_DEVICE_OWNER}.
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(android.multiuser.Flags.FLAG_USER_REMOVAL_MINOR_APIS_2026)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.CREATE_USERS,
+            Manifest.permission.QUERY_USERS})
+    public @RemoveResult int getUserRemovability(@UserIdInt int userId) {
+        try {
+            return mService.getUserRemovability(userId);
+        } catch (RemoteException re) {
+            throw re.rethrowFromSystemServer();
+        }
     }
 
     /**

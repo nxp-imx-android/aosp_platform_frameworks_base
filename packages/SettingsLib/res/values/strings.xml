@@ -179,6 +179,10 @@
     <string name="bluetooth_connected">Connected<xliff:g id="active_device">%1$s</xliff:g></string>
     <!--Bluetooth settings screen, summary text under individual Bluetooth devices when pairing -->
     <string name="bluetooth_pairing">Pairing\u2026</string>
+    <!-- Bluetooth settings. Message when the device having a pairing failure. [CHAR LIMIT=40] -->
+    <string name="bluetooth_pairing_failure">Can\'t pair</string>
+    <!-- Bluetooth settings. Message when the device having a connection failure. [CHAR LIMIT=40] -->
+    <string name="bluetooth_connection_failure">Can\'t connect</string>
 
     <!-- Bluetooth settings.  Message when connected to a device, except for phone audio. [CHAR LIMIT=40] -->
     <string name="bluetooth_connected_no_headset">Connected (no phone)<xliff:g id="active_device">%1$s</xliff:g></string>
@@ -240,8 +244,13 @@
     <string name="bluetooth_hearing_aid_right_active">Active (right only)</string>
     <!-- Connected device settings. Message when the left-side and right-side hearing aids device are active. [CHAR LIMIT=NONE] -->
     <string name="bluetooth_hearing_aid_left_and_right_active">Active (left and right)</string>
-    <!-- Connected device settings.: Message when changing remote ambient state failed. [CHAR LIMIT=NONE] -->
+    <!-- Connected device settings. Message when changing remote ambient state failed. [CHAR LIMIT=NONE] -->
     <string name="bluetooth_hearing_device_ambient_error">Couldn\u2019t update surroundings</string>
+    <!-- Connected device settings. Message when selecting hearing device preset failed. [CHAR LIMIT=NONE] -->
+    <string name="bluetooth_hearing_aids_presets_error">Couldn\u2019t update preset</string>
+    <!-- Content description for the icon in the spinner dropdown that indicates the item is selected [CHAR LIMIT=NONE] -->
+    <string name="hearing_device_spinner_item_selected">Selected</string>
+
 
     <!-- Connected devices settings. Message when Bluetooth is connected and active for media only, showing remote device status and battery level. [CHAR LIMIT=NONE] -->
     <string name="bluetooth_active_media_only_battery_level">Active (media only). <xliff:g id="battery_level_as_percentage">%1$s</xliff:g> battery.</string>
@@ -796,7 +805,7 @@
     <!-- Label indicating network has been manually marked as unmetered -->
     <string name="wifi_unmetered_label">Unmetered</string>
     <!-- UI debug setting: limit size of Android logger buffers -->
-    <string name="select_logd_size_title">Logger buffer sizes</string>
+    <string name="select_logd_size_title">Logger buffer size</string>
     <!-- UI debug setting: limit size of Android logger buffers [CHAR LIMIT=59] -->
     <string name="select_logd_size_dialog_title">Select Logger sizes per log buffer</string>
     <!-- UI debug setting: store logs persistently -->

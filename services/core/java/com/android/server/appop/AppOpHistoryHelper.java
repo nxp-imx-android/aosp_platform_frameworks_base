@@ -46,6 +46,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.IntArray;
 import android.util.LongSparseArray;
 import android.util.Pair;
@@ -193,10 +194,13 @@ public class AppOpHistoryHelper {
                 }
             }
             if (includeDiscreteEvents) {
-                result.addDiscreteAccess(event.opCode(), event.uid(), event.packageName(),
-                        event.attributionTag(), event.uidState(), event.opFlags(),
-                        discretizeTimestamp(event.accessTimeMillis()),
-                        discretizeDuration(event.durationMillis()), proxy);
+                // Discrete accesses doesn't include rejected events, reject event has 0 duration.
+                if (event.totalAccessCount() > 0 || event.totalDurationMillis() > 0) {
+                    result.addDiscreteAccess(event.opCode(), event.uid(), event.packageName(),
+                            event.attributionTag(), event.uidState(), event.opFlags(),
+                            discretizeTimestamp(event.accessTimeMillis()),
+                            discretizeDuration(event.durationMillis()), proxy);
+                }
             }
             if ((historyFlags & HISTORY_FLAG_AGGREGATE) != 0) {
                 addAppOpAccessEventToHistoricalOps(result, event);
@@ -317,6 +321,14 @@ public class AppOpHistoryHelper {
 
     long getTotalRecordsCount() {
         return mDbHelper.getTotalRecordsCount();
+    }
+
+    @NonNull
+    ArraySet<String> getRecentlyUsedPackageNames(@NonNull String[] opNames,
+            @AppOpsManager.HistoricalOpsRequestFilter int filter, long beginTimeMillis,
+            long endTimeMillis, @AppOpsManager.OpFlags int opFlags) {
+        return mDbHelper.getRecentlyUsedPackageNames(opNames, filter, beginTimeMillis,
+             endTimeMillis, opFlags);
     }
 
     @VisibleForTesting

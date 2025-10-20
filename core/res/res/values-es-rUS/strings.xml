@@ -337,8 +337,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Cambiar al perfil de trabajo"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Cambiar a <xliff:g id="APP_NAME">%1$s</xliff:g> (personal)"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Cambiar a <xliff:g id="APP_NAME">%1$s</xliff:g> (trabajo)"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"Contactos"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"acceder a los contactos"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Contactos y cuentas"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"acceder a tus contactos y ver la lista de tus cuentas que pueden guardar contactos en este dispositivo"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Ubicación"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"acceder a la ubicación de este dispositivo"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Calendario"</string>
@@ -359,7 +359,7 @@
     <string name="permgroupdesc_camera" msgid="7585150538459320326">"tomar fotografías y grabar videos"</string>
     <string name="permgrouplab_nearby_devices" msgid="5529147543651181991">"Dispositivos cercanos"</string>
     <string name="permgroupdesc_nearby_devices" msgid="3213561597116913508">"descubrir y conectarse a dispositivos cercanos"</string>
-    <string name="permgrouplab_calllog" msgid="7926834372073550288">"Registros de llamadas"</string>
+    <string name="permgrouplab_calllog" msgid="7926834372073550288">"Llamadas"</string>
     <string name="permgroupdesc_calllog" msgid="2026996642917801803">"leer y escribir el registro de llamadas telefónicas"</string>
     <string name="permgrouplab_phone" msgid="570318944091926620">"Teléfono"</string>
     <string name="permgroupdesc_phone" msgid="270048070781478204">"hacer y administrar llamadas telefónicas"</string>
@@ -371,8 +371,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"hacer un seguimiento preciso del movimiento de los ojos"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Datos de movimiento y entorno"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"hacer un seguimiento de los ojos, el rostro y el cuerpo, y escanear el entorno"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Datos precisos de movimiento de cabeza y entorno"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"hacer un seguimiento preciso de la cabeza y escanear el entorno"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Datos precisos de movimiento y entorno"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"escanear el área y hacer un seguimiento de la cabeza con precisión"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Recuperar el contenido de las ventanas"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Inspeccionará el contenido de la ventana con la que estés interactuando."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Activar la Exploración táctil"</string>
@@ -640,6 +640,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Permite que la app determine la posición relativa con dispositivos Ultra Wideband cercanos"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"interactuar con dispositivos Wi-Fi cercanos"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Permite que la app muestre anuncios, se conecte y determine la posición relativa de los dispositivos Wi-Fi cercanos"</string>
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"acceder a dispositivos de la red local"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Permite que la app acceda a los dispositivos de la red local"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"determinar posición relativa entre disp. cercanos"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Permite que la app determine la posición relativa con dispositivos cercanos"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Información sobre servicio de pago NFC preferido"</string>
@@ -684,7 +686,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Permite que la app escanee tu entorno."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"escanear con precisión el área circundante"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Permite que la app escanee tu entorno con precisión."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"hacer un seguimiento de los datos de realidad extendida en segundo plano"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"hacer seguimiento de realidad extendida en segundo plano"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Permite que la app acceda a los datos de realidad extendida en segundo plano."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"capturar teclas"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Permite que la app capture las teclas antes de que el sistema pueda procesar sus acciones y combinaciones de teclas."</string>
@@ -1053,6 +1055,8 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Correcto"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Vuelve a intentarlo."</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Volver a intentarlo"</string>
+    <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Haz clic para desbloquear"</string>
+    <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Presiona cualquier tecla para desbloquear"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Desbloquea para acceder a funciones y datos"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Se superó el máximo de intentos permitido para el desbloqueo facial del dispositivo."</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"No hay ninguna tarjeta SIM"</string>
@@ -1622,6 +1626,9 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"Solicitado por <xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>)"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"Sí"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"No"</string>
+    <string name="emergency_location_notification_title" msgid="917557758257778958">"Ubicación compartida por emergencia"</string>
+    <string name="emergency_location_notification_message" msgid="1877038822515882885">"Los servicios de emergencia recibieron tu ubicación del operador"</string>
+    <string name="emergency_location_notification_learn_more" msgid="8718634939217070481">"Más información"</string>
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"Eliminar el límite excedido"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"Hay <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> elementos eliminados para <xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g> en la cuenta <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g>. ¿Qué quieres hacer?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"Eliminar elementos"</string>
@@ -1792,8 +1799,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Si mantienes presionadas ambas teclas de volumen durante unos segundos, se activará la función de accesibilidad <xliff:g id="SERVICE">%1$s</xliff:g>. Esto podría cambiar la forma en que funciona tu dispositivo.\n\nPuedes cambiar este acceso directo a otra función en Configuración &gt; Accesibilidad."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Activar"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"No activar"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"SÍ"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"NO"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"¿Deseas permitir que <xliff:g id="SERVICE">%1$s</xliff:g> tenga el control total del dispositivo?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"El control total es apropiado para las apps que te ayudan con las necesidades de accesibilidad, pero no para la mayoría de las apps."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Ver y controlar la pantalla"</string>
@@ -1807,6 +1816,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Presiona una función para comenzar a usarla:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Selecciona las funciones a utilizar con el botón de accesibilidad"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Selecciona las funciones que usarás con la combinación de teclas de volumen"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Se desactivó <xliff:g id="SERVICE_NAME">%s</xliff:g>"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Editar accesos directos"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Listo"</string>
@@ -1979,14 +1998,14 @@
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Clon de <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"<xliff:g id="LABEL">%1$s</xliff:g> privado"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Solicitar PIN para quitar fijación"</string>
-    <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Solicitar desbloqueo para quitar fijación"</string>
+    <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Solicitar patrón de desbloqueo para quitar fijación"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Solicitar contraseña para quitar fijación"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Tu administrador realizó la instalación.\nVe a la configuración para ver los permisos otorgados"</string>
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Tu administrador realizó la actualización.\nVe a la configuración para ver los permisos otorgados"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Tu administrador borró este paquete"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Aceptar"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"El Ahorro de batería activa el Tema oscuro y desactiva o restringe la actividad en segundo plano, algunos efectos visuales, algunas conexiones de red y otras funciones determinadas."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"El Ahorro de batería activa el Tema oscuro y desactiva o restringe la actividad en segundo plano, algunos efectos visuales, algunas conexiones de red y otras funciones determinadas."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"El Ahorro de batería activa el tema oscuro y desactiva o restringe la actividad en segundo plano, algunos efectos visuales, algunas conexiones de red y otras funciones determinadas."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"El Ahorro de batería activa el tema oscuro y desactiva o restringe la actividad en segundo plano, algunos efectos visuales, algunas conexiones de red y otras funciones determinadas."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Para reducir el uso de datos, el modo Ahorro de datos evita que algunas apps envíen o reciban datos en segundo plano. La app que estés usando podrá acceder a los datos, pero con menor frecuencia. De esta forma, por ejemplo, las imágenes no se mostrarán hasta que las presiones."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"¿Deseas activar Ahorro de datos?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Activar"</string>
@@ -2048,12 +2067,9 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"Maximizar"</string>
     <string name="close_button_text" msgid="10603510034455258">"Cerrar"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
-    <skip />
+    <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
+    <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
+    <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"Responder"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"Video"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"Rechazar"</string>
@@ -2364,8 +2380,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"PIN de desbloqueo del dispositivo para IMPI"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"PIN de desbloqueo del dispositivo para el proveedor de servicios del subconjunto de redes"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"Solicitando desbloqueo para la red de tarjeta SIM…"</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="6742563947637715645">"Solicitando desbloqueo para el subconjunto de redes de tarjeta SIM…"</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="2033399698172403560">"Solicitando desbloqueo para el proveedor de servicios de tarjeta SIM…"</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"Solicitando desbloqueo del subconjunto de redes de tarjeta SIM…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"Solicitando desbloqueo del proveedor de servicios de tarjeta SIM…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"Solicitando desbloqueo corporativo para tarjeta SIM…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"Solicitando desbloqueo con el PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"Solicitando desbloqueo con el PUK…"</string>
@@ -2391,15 +2407,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"Solicitando desbloqueo con el PUK…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"Solicitando desbloqueo con el PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"Se produjo un error al solicitar el desbloqueo del dispositivo para la red de tarjeta SIM."</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="3372797822292089708">"Se produjo un error al solicitar el desbloqueo del dispositivo para el subconjunto de redes de tarjeta SIM."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="1878443146720411381">"Se produjo un error al solicitar el desbloqueo del dispositivo para el proveedor de servicios de tarjeta SIM."</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"Se produjo un error al solicitar el desbloqueo del subconjunto de redes de tarjeta SIM."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"Se produjo un error al solicitar el desbloqueo del proveedor de servicios de tarjeta SIM."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"Se produjo un error al solicitar el desbloqueo corporativo del dispositivo para tarjeta SIM."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"Se produjo un error al solicitar el desbloqueo del dispositivo para tarjeta SIM."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"Se produjo un error al solicitar el desbloqueo del dispositivo para Network1 de RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"Se produjo un error al desbloquear el dispositivo para Network2 de RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"Se produjo un error al solicitar el desbloqueo del dispositivo para la red HRPD."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"Se produjo un error al solicitar el desbloqueo corporativo del dispositivo para RUIM."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="3801002648649640407">"Se produjo un error al solicitar el desbloqueo del dispositivo para el proveedor de servicios de RUIM."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"Se produjo un error al solicitar el desbloqueo del proveedor de servicios de RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"Se produjo un error al solicitar el desbloqueo para RUIM."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"Se produjo un error al desbloquear el dispositivo con el PUK."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"Se produjo un error al desbloquear el dispositivo con el PUK."</string>
@@ -2419,13 +2435,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"Se produjo un error al solicitar el desbloqueo del dispositivo para el proveedor de servicios del subconjunto de redes."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"Se desbloqueó correctamente el dispositivo para la red de tarjeta SIM."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"Se desbloqueó correctamente el dispositivo para el subconjunto de redes de tarjeta SIM."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="8249342930499801740">"Se desbloqueó correctamente el dispositivo para el proveedor de servicios de tarjeta SIM."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"Se desbloqueó correctamente el proveedor de servicios de tarjeta SIM."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"Desbloqueo corporativo exitoso para tarjeta SIM."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"Se desbloqueó correctamente el dispositivo para tarjeta SIM."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"Se desbloqueó correctamente el dispositivo para Network1 de RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"Se desbloqueó correctamente Network2 para RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"Se produjo un error al desbloquear el dispositivo para la red HRPD."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6020936629725666932">"Desbloqueo del proveedor de servicios exitoso para RUIM."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"Se desbloqueó correctamente el proveedor de servicios de RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"Desbloqueo corporativo exitoso para RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"Se desbloqueó correctamente el dispositivo para RUIM."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"Se desbloqueó correctamente el dispositivo con el PUK."</string>
@@ -2581,27 +2597,22 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplicaciones"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Ya no se pueden reconocer tus huellas dactilares. Vuelve a configurar el Desbloqueo con huellas dactilares."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Seguridad y privacidad"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"Desbloquea la pantalla y vuelve a conectar el USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"Desbloquea la pantalla para conectar el USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"La Protección avanzada requiere que desbloquees la pantalla para iniciar la conectividad USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"La Protección avanzada requiere que desbloquees la pantalla para iniciar la conectividad USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"La Protección avanzada requiere que desbloquees la pantalla para una carga más rápida"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"Para una carga más rápida o para iniciar la conectividad USB, la Protección avanzada requiere que desbloquees la pantalla"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Silenciar"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Notificaciones silenciadas"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"No recibirás notificaciones relacionadas con la Protección avanzada para USB hasta que reinicies el dispositivo"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Actividad de USB sospechosa"</string>
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
-    <skip />
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"Se inhabilitó la señal de datos por USB"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"¿Tienes problemas con el Desbloqueo con huellas dactilares?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Presiona para revisar las sugerencias para mejorar la experiencia de desbloqueo"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Sin parpadeo"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Mantén presionado el botón de encendido para apagar la TV"</string>
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Alertas de recursos del sistema"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Uso excesivo de recursos"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"La app “<xliff:g id="APP_NAME">%1$s</xliff:g>” está usando demasiados recursos."</string>
 </resources>

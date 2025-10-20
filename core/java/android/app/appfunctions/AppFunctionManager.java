@@ -16,9 +16,11 @@
 
 package android.app.appfunctions;
 
+import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS;
 import static android.app.appfunctions.AppFunctionException.ERROR_SYSTEM_ERROR;
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER;
+import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS;
 import static android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_UI_ENABLED;
 
 import android.Manifest;
@@ -39,6 +41,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.SignedPackage;
 import android.content.pm.SignedPackageParcel;
+import android.net.Uri;
+import android.os.Binder;
 import android.os.CancellationSignal;
 import android.os.ICancellationSignal;
 import android.os.OutcomeReceiver;
@@ -47,9 +51,11 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.permission.flags.Flags;
 import android.provider.BaseColumns;
+import android.util.ArrayMap;
 import android.util.ArraySet;
 
 import com.android.internal.R;
+import com.android.internal.annotations.GuardedBy;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -106,7 +112,6 @@ import java.util.concurrent.Executor;
 @SystemService(Context.APP_FUNCTION_SERVICE)
 public final class AppFunctionManager {
 
-    // TODO(b/427993624): Expose Uri once ContentProvider is added
     /**
      * The contract between the AppFunction access history provider and applications with read
      * permission. Contains definitions for the supported URIs and columns.
@@ -122,6 +127,10 @@ public final class AppFunctionManager {
     @SystemApi
     public static final class AccessHistory implements BaseColumns {
         private AccessHistory() {}
+
+        @NonNull
+        private static final Uri TARGET_USER_URI =
+                Uri.parse("content://com.android.appfunction.accesshistory/user");
 
         /**
          * The package name of the agent app.
@@ -343,6 +352,34 @@ public final class AppFunctionManager {
     public static final int ACCESS_FLAG_PREGRANTED = 1;
 
     /**
+     * A flag indicating the app function access state has been granted as part of a system upgrade
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @SystemApi
+    public static final int ACCESS_FLAG_UPGRADE_GRANTED = 1 << 1;
+
+    /**
+     * A flag indicating the user granted the app function access state through UI
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @SystemApi
+    public static final int ACCESS_FLAG_USER_GRANTED = 1 << 2;
+
+    /**
+     * A flag indicating the app function access state has been denied by the user. If set,
+     * overrides the {@link #ACCESS_FLAG_PREGRANTED} flag.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @SystemApi
+    public static final int ACCESS_FLAG_USER_DENIED = 1 << 3;
+
+    /**
      * A flag indicating the app function access is granted through a mechanism not tied to any
      * other flag (e.g. ADB)
      *
@@ -350,7 +387,7 @@ public final class AppFunctionManager {
      */
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @SystemApi
-    public static final int ACCESS_FLAG_OTHER_GRANTED = 1 << 1;
+    public static final int ACCESS_FLAG_OTHER_GRANTED = 1 << 4;
 
     /**
      * A flag indicating the app function access state has been denied by some other mechanism not
@@ -360,31 +397,14 @@ public final class AppFunctionManager {
      */
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @SystemApi
-    public static final int ACCESS_FLAG_OTHER_DENIED = 1 << 2;
-
-    /**
-     * A flag indicating the user granted the app function access state through UI
-     *
-     * @hide
-     */
-    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
-    @SystemApi
-    public static final int ACCESS_FLAG_USER_GRANTED = 1 << 3;
-
-    /**
-     * A flag indicating the app function access state has been denied by the user
-     *
-     * @hide
-     */
-    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
-    @SystemApi
-    public static final int ACCESS_FLAG_USER_DENIED = 1 << 4;
+    public static final int ACCESS_FLAG_OTHER_DENIED = 1 << 5;
 
     /**
      * All USER flags
      *
      * @hide
      */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @TestApi
     public static final int ACCESS_FLAG_MASK_USER =
             ACCESS_FLAG_USER_GRANTED | ACCESS_FLAG_USER_DENIED;
@@ -394,6 +414,7 @@ public final class AppFunctionManager {
      *
      * @hide
      */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @TestApi
     public static final int ACCESS_FLAG_MASK_OTHER =
             ACCESS_FLAG_OTHER_GRANTED | ACCESS_FLAG_OTHER_DENIED;
@@ -403,9 +424,11 @@ public final class AppFunctionManager {
      *
      * @hide
      */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @TestApi
     public static final int ACCESS_FLAG_MASK_ALL =
             ACCESS_FLAG_PREGRANTED
+                    | ACCESS_FLAG_UPGRADE_GRANTED
                     | ACCESS_FLAG_OTHER_GRANTED
                     | ACCESS_FLAG_OTHER_DENIED
                     | ACCESS_FLAG_USER_GRANTED
@@ -415,17 +438,21 @@ public final class AppFunctionManager {
             prefix = {"ACCESS_FLAG_"},
             flag = true,
             value = {
-                ACCESS_FLAG_PREGRANTED,
-                ACCESS_FLAG_OTHER_GRANTED,
-                ACCESS_FLAG_OTHER_DENIED,
-                ACCESS_FLAG_USER_GRANTED,
-                ACCESS_FLAG_USER_DENIED
+                    ACCESS_FLAG_PREGRANTED,
+                    ACCESS_FLAG_UPGRADE_GRANTED,
+                    ACCESS_FLAG_OTHER_GRANTED,
+                    ACCESS_FLAG_OTHER_DENIED,
+                    ACCESS_FLAG_USER_GRANTED,
+                    ACCESS_FLAG_USER_DENIED
             })
     @Retention(RetentionPolicy.SOURCE)
     @interface AppFunctionAccessFlags {}
 
     private final IAppFunctionManager mService;
     private final Context mContext;
+
+    private final ArrayMap<OnAppFunctionAccessChangedListener,
+            OnAppFunctionAccessChangeListenerDelegate> mListeners = new ArrayMap<>();
 
     /**
      * The enabled state of the app function.
@@ -441,6 +468,8 @@ public final class AppFunctionManager {
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface EnabledState {}
+
+    private AppFunctionRegistry mRegistry = new AppFunctionRegistry();
 
     /**
      * Creates an instance.
@@ -491,7 +520,8 @@ public final class AppFunctionManager {
                         request,
                         mContext.getUser(),
                         mContext.getPackageName(),
-                        /* requestTime= */ SystemClock.elapsedRealtime());
+                        /* requestTime= */ SystemClock.elapsedRealtime(),
+                        /* requestWallTime= */ System.currentTimeMillis());
 
         try {
             ICancellationSignal cancellationTransport =
@@ -501,7 +531,10 @@ public final class AppFunctionManager {
                                 @Override
                                 public void onSuccess(ExecuteAppFunctionResponse result) {
                                     try {
-                                        executor.execute(() -> callback.onResult(result));
+                                        executor.execute(
+                                                () -> {
+                                                    callback.onResult(result);
+                                                });
                                     } catch (RuntimeException e) {
                                         // Ideally shouldn't happen since errors are wrapped into
                                         // the response, but we catch it here for additional safety.
@@ -556,6 +589,56 @@ public final class AppFunctionManager {
             @NonNull Executor executor,
             @NonNull OutcomeReceiver<Boolean, Exception> callback) {
         isAppFunctionEnabledInternal(functionIdentifier, targetPackage, executor, callback);
+    }
+
+    /**
+     * Registers an {@link AppFunction}.
+     *
+     * <p>Use this method to provide a runtime implementation for an app function. This is intended
+     * for functions that are declared in an XML resource file for system discovery, but that do not
+     * specify a {@code <service>} to handle their execution. This allows for lightweight,
+     * in-process function handling while the app is running.
+     *
+     * <h3>Lifecycle management</h3>
+     *
+     * <p>The function is only enabled and available for execution while it is registered. The
+     * registration is tied to the lifecycle of the process that calls this method. If the app
+     * process is killed, the system automatically unregisters the function.
+     *
+     * <p>The system holds a strong reference to the provided {@link AppFunction} implementation as
+     * long as it is registered. To prevent memory leaks and ensure the system is aware that the
+     * function is no longer available, you must explicitly call {@link
+     * AppFunctionRegistration#unregister()} when the function is no longer needed. This is
+     * typically done within a component's lifecycle, such as in {@link
+     * android.app.Activity#onStop()}.
+     *
+     * <p>Only one {@link AppFunction} can be registered for a given {@code functionId} per app.
+     * Attempting to register a second implementation for the same ID without first unregistering
+     * the original will throw an {@link IllegalStateException}.
+     *
+     * <h3>Function Execution</h3>
+     *
+     * <p>While the function is registered, a call to {@link AppFunctionManager#executeAppFunction}
+     * with the app's package name and the provided {@code functionId} in the request will be routed
+     * to the {@link AppFunction} implementation provided here. The implementation will be invoked
+     * on the provided {@link Executor}.
+     *
+     * @param functionId The unique identifier for the function, which must match an entry in the
+     *     app's XML resource declarations.
+     * @param executor The {@link Executor} on which the function will be invoked.
+     * @param appFunction The {@link AppFunction} implementation to be executed when the function is
+     *     triggered.
+     * @return A {@link AppFunctionRegistration} object that can be used to unregister the function.
+     * @throws IllegalStateException if a function with the same {@code functionId} is already
+     *     registered by this app.
+     */
+    @NonNull
+    @FlaggedApi(FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS)
+    public AppFunctionRegistration registerAppFunction(
+            @NonNull String functionId,
+            @NonNull Executor executor,
+            @NonNull AppFunction appFunction) {
+        return mRegistry.register(functionId, executor, appFunction);
     }
 
     /**
@@ -827,6 +910,24 @@ public final class AppFunctionManager {
     }
 
     /**
+     * Creates an intent which can be used to request App Function access for the given target app.
+     * This intent MUST be used with {@link android.app.Activity#startActivityForResult}.The result
+     * code of the activity will be {@link android.app.Activity#RESULT_OK} if the request was
+     * granted, {@link android.app.Activity#RESULT_CANCELED} if not.
+     *
+     * @param targetPackageName The app access is being requested for.
+     * @return The created intent.
+     */
+    @FlaggedApi(FLAG_APP_FUNCTION_ACCESS_UI_ENABLED)
+    public @NonNull Intent createRequestAccessIntent(@NonNull String targetPackageName) {
+        try {
+            return mService.createRequestAccessIntent(targetPackageName);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Gets the configured list of package names that should be grouped as Device Settings.
      *
      * <p>The list here is a configuration, the returned packages are not necessarily installed. The
@@ -846,6 +947,7 @@ public final class AppFunctionManager {
 
     /**
      * Gets the current agent allowlist
+     *
      * @hide
      */
     @TestApi
@@ -866,34 +968,232 @@ public final class AppFunctionManager {
     }
 
     /**
-     * Gets whether or not the agent allowlist is enabled
-     * TODO b/413093397: Remove once list is ready for permanent enable
+     * Clear the access history data.
+     *
      * @hide
      */
     @TestApi
     @RequiresPermission(MANAGE_APP_FUNCTION_ACCESS)
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
-    public boolean isAgentAllowlistEnabled() {
+    @UserHandleAware
+    public void clearAccessHistory() {
         try {
-            return mService.isAgentAllowlistEnabled();
+            mService.clearAccessHistory(mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
     }
 
     /**
-     * Gets whether or not the agent allowlist is enabled
-     * TODO b/413093397: Remove once list is ready for permanent enable
+     * Register an {@link OnAppFunctionAccessChangedListener} for changes to app function access.
+     * If the listener is already registered, this method is a no-op. If the Context user is
+     * different from the calling user, this method requires the
+     * {@link INTERACT_ACROSS_USERS_FULL} permission.
+     *
+     * @param executor The executor to run the listener callbacks on
+     * @param listener The listener to add
+     *
      * @hide
      */
-    @TestApi
-    @RequiresPermission(MANAGE_APP_FUNCTION_ACCESS)
+    @SystemApi
+    @UserHandleAware
+    @RequiresPermission(allOf = { MANAGE_APP_FUNCTION_ACCESS, INTERACT_ACROSS_USERS_FULL },
+            conditional = true)
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
-    public void setAgentAllowlistEnabled(boolean enabled) {
-        try {
-            mService.setAgentAllowlistEnabled(enabled);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
+    public void addAccessChangedListener(@NonNull Executor executor,
+            @NonNull OnAppFunctionAccessChangedListener listener) {
+        synchronized (mListeners) {
+            if (mListeners.containsKey(listener)) {
+                return;
+            }
+            final OnAppFunctionAccessChangeListenerDelegate delegate =
+                    new OnAppFunctionAccessChangeListenerDelegate(listener, executor,
+                            mContext.getUserId());
+            try {
+                mService.addOnAccessChangedListener(delegate, mContext.getUserId());
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+            mListeners.put(listener, delegate);
+        }
+    }
+
+    /**
+     * Remove an {@link OnAppFunctionAccessChangedListener}. If the Context user is different from
+     * the calling user, this method requires the
+     * {@link INTERACT_ACROSS_USERS_FULL} permission.
+     *
+     * @param listener The listener to remove
+     *
+     * @hide
+     */
+    @SystemApi
+    @UserHandleAware
+    @RequiresPermission(allOf = { MANAGE_APP_FUNCTION_ACCESS, INTERACT_ACROSS_USERS_FULL },
+            conditional = true)
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    public void removeAccessChangedListener(@NonNull OnAppFunctionAccessChangedListener listener) {
+        synchronized (mListeners) {
+            if (!mListeners.containsKey(listener)) {
+                return;
+            }
+            try {
+                final OnAppFunctionAccessChangeListenerDelegate delegate =
+                        mListeners.get(listener);
+                mService.removeOnAccessChangedListener(delegate, delegate.mUserId);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+            mListeners.remove(listener);
+        }
+    }
+
+    /**
+     * Gets the {@code content://} style URI for the AppFunction access history table for the
+     * user from the context used to obtain the instance of this class.
+     *
+     * <p>To query the content provider using the returned URI, the calling application must hold
+     * the {@link android.Manifest.permission#MANAGE_APP_FUNCTION_ACCESS} permission.
+     *
+     * <p>To query for a user other than the current one, the caller must also hold the {@link
+     * android.Manifest.permission#INTERACT_ACROSS_USERS_FULL} permission.
+     *
+     * <p>Attempting to query the content provider with the returned URI without holding the
+     * necessary permissions will result in a {@link java.lang.SecurityException}.
+     *
+     * @return The {@link Uri} for the AppFunction access history table.
+     * @hide
+     */
+    @SuppressLint("RequiresPermission") // Permission enforced in AppFunctionAccessHistoryProvider
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @UserHandleAware
+    @NonNull
+    public Uri getAccessHistoryContentUri() {
+        // The verification of whether the user has access to the target user's URI is enforced
+        // in the provide.
+        final int userId = mContext.getUserId();
+        return AccessHistory.TARGET_USER_URI
+                .buildUpon()
+                .appendPath(Integer.toString(userId))
+                .build();
+    }
+
+    /**
+     * Listener for changes to app function access for an agent.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    public interface OnAppFunctionAccessChangedListener {
+        /**
+         * Called when the app function access for an agent UID changes.
+         *
+         * @param agentUid The agent UID
+         */
+        void onAppFunctionAccessChanged(int agentUid);
+    }
+
+    private final class OnAppFunctionAccessChangeListenerDelegate
+            extends IOnAppFunctionAccessChangeListener.Stub {
+
+        private final OnAppFunctionAccessChangedListener mListener;
+        private final Executor mExecutor;
+        private final int mUserId;
+
+        private OnAppFunctionAccessChangeListenerDelegate(
+                OnAppFunctionAccessChangedListener listener,
+                Executor executor,
+                int userId
+        ) {
+            mListener = listener;
+            mExecutor = executor;
+            mUserId = userId;
+        }
+
+        @Override
+        public void onAppFunctionAccessChanged(int agentUid) {
+            final long token = Binder.clearCallingIdentity();
+            try {
+                mExecutor.execute(() -> mListener.onAppFunctionAccessChanged(agentUid));
+            } finally {
+                Binder.restoreCallingIdentity(token);
+            }
+        }
+    }
+
+    private class AppFunctionRegistry {
+        private final Object mLock = new Object();
+
+        @GuardedBy("mLock")
+        private final ArrayMap<String, AppFunctionRegistrationImpl> mRegistrations =
+                new ArrayMap<>();
+
+        private final IAppFunctionExecutor.Stub mExecutor =
+                new IAppFunctionExecutor.Stub() {
+                    @Override
+                    public void execute(
+                            ExecuteAppFunctionRequest request, IExecuteAppFunctionCallback callback)
+                            throws RemoteException {}
+                    // TODO( b/447140281) : implement execution flow
+                };
+
+        AppFunctionRegistrationImpl register(
+                String functionId, Executor executor, AppFunction function) {
+            // This lock is held during the IPC call to the system server. This is a deliberate
+            // choice to synchronize registration requests from multiple threads within this
+            // process. The server-side implementation is also synchronized, preventing deadlocks
+            // and ensuring that registrations are handled atomically across the entire system.
+            synchronized (mLock) {
+                if (mRegistrations.containsKey(functionId)) {
+                    throw new IllegalStateException(
+                            "Function id " + functionId + " already registered");
+                }
+                try {
+                    mService.registerAppFunction(mContext.getPackageName(), functionId, mExecutor);
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+                final AppFunctionRegistrationImpl registration =
+                        new AppFunctionRegistrationImpl(functionId, executor, function);
+                mRegistrations.put(functionId, registration);
+                return registration;
+            }
+        }
+
+        void unregister(
+                @NonNull String functionId, @NonNull AppFunctionRegistrationImpl registration) {
+            synchronized (mLock) {
+                if (mRegistrations.get(functionId) != registration) {
+                    return;
+                }
+
+                try {
+                    mService.unregisterAppFunction(
+                            mContext.getPackageName(), functionId, mExecutor);
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+                mRegistrations.remove(functionId);
+            }
+        }
+    }
+
+    private class AppFunctionRegistrationImpl implements AppFunctionRegistration {
+        private final String mFunctionId;
+        private final AppFunction mFunction;
+        private final Executor mExecutor;
+
+        AppFunctionRegistrationImpl(String functionId, Executor executor, AppFunction function) {
+            this.mFunctionId = functionId;
+            this.mFunction = function;
+            this.mExecutor = executor;
+        }
+
+        @Override
+        public void unregister() {
+            mRegistry.unregister(mFunctionId, this);
         }
     }
 

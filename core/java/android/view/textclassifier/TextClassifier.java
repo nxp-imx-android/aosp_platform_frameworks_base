@@ -67,11 +67,20 @@ public interface TextClassifier {
     /** @hide */
     String LOG_TAG = "androidtc";
 
-    /** Specifies a TextClassifier that runs locally in the app's process. @hide */
+    /**
+     * Specifies a TextClassifier that runs locally in the app's process.
+     * @hide
+     */
     int LOCAL = 0;
-    /** Specifies a TextClassifier that runs in the system process and serves all apps. @hide */
+    /**
+     * Specifies a TextClassifier that runs in the system process and serves all apps.
+     * @hide
+     */
     int SYSTEM = 1;
-    /** Specifies the default TextClassifier that runs in the system process. @hide */
+    /**
+     * Specifies the default TextClassifier that runs in the system process.
+     * @hide
+     */
     int DEFAULT_SYSTEM = 2;
 
     /** @hide */
@@ -80,7 +89,10 @@ public interface TextClassifier {
             CLASSIFIER_TYPE_ANDROID_DEFAULT})
     @interface TextClassifierType {
     }
-    /** Specifies a TextClassifier that runs locally in the app's process. @hide */
+    /**
+     * Specifies a TextClassifier that runs locally in the app's process.
+     * @hide
+     */
     @FlaggedApi(Flags.FLAG_TEXT_CLASSIFIER_CHOICE_API_ENABLED)
     @SystemApi
     int CLASSIFIER_TYPE_SELF_PROVIDED = LOCAL;
@@ -92,7 +104,10 @@ public interface TextClassifier {
     @FlaggedApi(Flags.FLAG_TEXT_CLASSIFIER_CHOICE_API_ENABLED)
     @SystemApi
     int CLASSIFIER_TYPE_DEVICE_DEFAULT = SYSTEM;
-    /** Specifies the TextClassifier that is provided by Android. @hide */
+    /**
+     * Specifies the TextClassifier that is provided by Android.
+     * @hide
+     */
     @FlaggedApi(Flags.FLAG_TEXT_CLASSIFIER_CHOICE_API_ENABLED)
     @SystemApi
     int CLASSIFIER_TYPE_ANDROID_DEFAULT = DEFAULT_SYSTEM;

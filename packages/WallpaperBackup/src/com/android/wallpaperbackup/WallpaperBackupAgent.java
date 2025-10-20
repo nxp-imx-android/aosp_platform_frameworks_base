@@ -16,8 +16,6 @@
 
 package com.android.wallpaperbackup;
 
-import static android.app.Flags.fixWallpaperCropsOnRestore;
-import static android.app.Flags.liveWallpaperContentHandling;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
 import static android.app.WallpaperManager.ORIENTATION_LANDSCAPE;
@@ -262,7 +260,7 @@ public class WallpaperBackupAgent extends BackupAgent {
             throws IOException {
         final File deviceInfoStage = new File(getFilesDir(), WALLPAPER_BACKUP_DEVICE_INFO_STAGE);
 
-        if (isDeviceConfigChanged || (fixWallpaperCropsOnRestore() && !deviceInfoStage.exists())) {
+        if (isDeviceConfigChanged || !deviceInfoStage.exists()) {
             deviceInfoStage.createNewFile();
 
             // save the dimensions of the device with xml formatting
@@ -614,7 +612,7 @@ public class WallpaperBackupAgent extends BackupAgent {
     void updateWallpaperComponent(Pair<ComponentName, WallpaperDescription> wpService, int which)
             throws IOException {
         WallpaperDescription description = wpService.second;
-        boolean hasDescription = (liveWallpaperContentHandling() && description != null);
+        boolean hasDescription = description != null;
         ComponentName component = hasDescription ? description.getComponent() : wpService.first;
         if (servicePackageExists(component)) {
             if (hasDescription) {
@@ -655,13 +653,10 @@ public class WallpaperBackupAgent extends BackupAgent {
         if (stage.exists()) {
             if (multiCrop()) {
                 SparseArray<Rect> cropHints = parseCropHints(info, hintTag);
-                SparseArray<Rect> newCropHints = null;
-                if (fixWallpaperCropsOnRestore()) {
-                    Point bitmapSize = getBitmapSize(stage);
-                    newCropHints = adjustCropHints(cropHints, bitmapSize, sourceDeviceDimensions);
-                }
-                cropHints = fixWallpaperCropsOnRestore() && newCropHints != null
-                        ? newCropHints : cropHints;
+                Point bitmapSize = getBitmapSize(stage);
+                SparseArray<Rect> newCropHints =
+                        adjustCropHints(cropHints, bitmapSize, sourceDeviceDimensions);
+                cropHints = newCropHints != null ? newCropHints : cropHints;
                 if (cropHints != null) {
                     Slog.i(TAG, "Got restored wallpaper; applying which=" + which
                             + "; cropHints = " + cropHints);
@@ -845,10 +840,7 @@ public class WallpaperBackupAgent extends BackupAgent {
         oldCrop = oldCrop.isEmpty() ? new Rect(0, 0, bitmapSize.x, bitmapSize.y) : oldCrop;
         float oldParallaxAmount = ((float) oldCrop.width() / cropWithoutParallax.width()) - 1;
 
-        Rect newCropWithSameCenterWithoutParallax = sameCenter(newDisplaySize, bitmapSize,
-                cropWithoutParallax);
-
-        Rect newCrop = newCropWithSameCenterWithoutParallax;
+        Rect newCrop = sameCenter(newDisplaySize, bitmapSize, cropWithoutParallax);
 
         // calculate the amount of left-over space there is in the image after adjusting the crop
         // from the above operation i.e. in a rtl configuration, this is the remaining space in the
@@ -868,8 +860,7 @@ public class WallpaperBackupAgent extends BackupAgent {
         if (DEBUG) {
             Slog.d(TAG, "- cropWithoutParallax: " + cropWithoutParallax);
             Slog.d(TAG, "- oldParallaxAmount: " + oldParallaxAmount);
-            Slog.d(TAG, "- newCropWithSameCenterWithoutParallax: "
-                    + newCropWithSameCenterWithoutParallax);
+            Slog.d(TAG, "- newCrop: " + newCrop);
             Slog.d(TAG, "- widthAvailableForParallaxOnTheNewDevice: "
                     + widthAvailableForParallaxOnTheNewDevice);
             Slog.d(TAG, "- availableParallaxAmount: " + availableParallaxAmount);
@@ -983,42 +974,26 @@ public class WallpaperBackupAgent extends BackupAgent {
             // ratio.
             int heightToAdd = (int) (0.5f + crop.width() / screenRatio - crop.height());
 
-            if (fixWallpaperCropsOnRestore()) {
-                int availableHeight = bitmapSize.y - crop.height();
-                if (availableHeight >= heightToAdd) {
-                    // If there is enough height available to match the new aspect ratio, add that
-                    // height to the crop, if possible on both sides of the crop.
-                    int heightToAddTop = heightToAdd / 2;
-                    int heightToAddBottom = heightToAdd / 2 + heightToAdd % 2;
+            int availableHeight = bitmapSize.y - crop.height();
+            if (availableHeight >= heightToAdd) {
+                // If there is enough height available to match the new aspect ratio, add that
+                // height to the crop, if possible on both sides of the crop.
+                int heightToAddTop = heightToAdd / 2;
+                int heightToAddBottom = heightToAdd / 2 + heightToAdd % 2;
 
-                    if (crop.top < heightToAddTop) {
-                        heightToAddBottom += (heightToAddTop - crop.top);
-                        heightToAddTop = crop.top;
-                    } else if (bitmapSize.y - crop.bottom < heightToAddBottom) {
-                        heightToAddTop += (heightToAddBottom - (bitmapSize.y - crop.bottom));
-                        heightToAddBottom = bitmapSize.y - crop.bottom;
-                    }
-                    adjustedCrop.top -= heightToAddTop;
-                    adjustedCrop.bottom += heightToAddBottom;
-                } else {
-                    // Otherwise, make the crop use the whole bitmap height.
-                    adjustedCrop.top = 0;
-                    adjustedCrop.bottom = bitmapSize.y;
+                if (crop.top < heightToAddTop) {
+                    heightToAddBottom += (heightToAddTop - crop.top);
+                    heightToAddTop = crop.top;
+                } else if (bitmapSize.y - crop.bottom < heightToAddBottom) {
+                    heightToAddTop += (heightToAddBottom - (bitmapSize.y - crop.bottom));
+                    heightToAddBottom = bitmapSize.y - crop.bottom;
                 }
+                adjustedCrop.top -= heightToAddTop;
+                adjustedCrop.bottom += heightToAddBottom;
             } else {
-                // Calculate how much extra image space available that can be used to adjust
-                // the crop. If this amount is less than heightToAdd, from above, then that means we
-                // can't use heightToAdd. Instead we will need to use the maximum possible height,
-                // which is the height of the original bitmap. NOTE: the bitmap height may be
-                // different than the crop.
-                // since there is no guarantee to have height available on both sides
-                // (e.g. the available height might be fully at the bottom), grab the minimum
-                int availableHeight = 2 * Math.min(crop.top, bitmapSize.y - crop.bottom);
-                int actualHeightToAdd = Math.min(heightToAdd, availableHeight);
-
-                // half of the additional height is added to the top and bottom of the crop
-                adjustedCrop.top -= actualHeightToAdd / 2 + actualHeightToAdd % 2;
-                adjustedCrop.bottom += actualHeightToAdd / 2;
+                // Otherwise, make the crop use the whole bitmap height.
+                adjustedCrop.top = 0;
+                adjustedCrop.bottom = bitmapSize.y;
             }
 
             // Calculate the width of the adjusted crop. Initially we used the fixed width of the
@@ -1041,7 +1016,7 @@ public class WallpaperBackupAgent extends BackupAgent {
                 Slog.d(TAG, "widthToRemove: " + widthToRemove);
                 Slog.d(TAG, "adjustedCrop: " + adjustedCrop);
             }
-        } else if (fixWallpaperCropsOnRestore()) {
+        } else {
             // Similar to the case above; but we always to add the same amount of width on both
             // sides to make sure we preserve the center horizontally.
             int widthToAdd = (int) (crop.height() * screenRatio - crop.width());
@@ -1139,20 +1114,17 @@ public class WallpaperBackupAgent extends BackupAgent {
                 }
                 if (cropHints.size() == 0) {
 
-                    Rect cropHint = null;
                     // It's possible to have a total crop but no crop hints per screen orientation,
                     // for example with overloads of setBitmap taking a single Rect as parameter.
-                    if (fixWallpaperCropsOnRestore()) {
-                        cropHint = new Rect(
+                    Rect cropHint = new Rect(
                                 getAttributeInt(parser, "totalCropLeft", 0),
                                 getAttributeInt(parser, "totalCropTop", 0),
                                 getAttributeInt(parser, "totalCropRight", 0),
                                 getAttributeInt(parser, "totalCropBottom", 0));
-                    }
 
                     // Migration case: the crops per orientation and total crop are not specified.
                     // Use the old attributes to restore the crop for one screen orientation.
-                    if (cropHint == null) {
+                    if (cropHint.isEmpty()) {
                         cropHint = new Rect(
                                 getAttributeInt(parser, "cropLeft", 0),
                                 getAttributeInt(parser, "cropTop", 0),
@@ -1213,12 +1185,10 @@ public class WallpaperBackupAgent extends BackupAgent {
             // Always read the description if it's there - there may be one from a previous save
             // with content handling enabled even if it's enabled now
             description = WallpaperDescription.restoreFromXml(parser);
-            if (liveWallpaperContentHandling()) {
-                // null component means that wallpaper was last saved without content handling, so
-                // populate description from saved component
-                if (description.getComponent() == null) {
-                    description = description.toBuilder().setComponent(component).build();
-                }
+            // null component means that wallpaper was last saved without content handling, so
+            // populate description from saved component
+            if (description.getComponent() == null) {
+                description = description.toBuilder().setComponent(component).build();
             }
         }
         return description;
@@ -1291,8 +1261,8 @@ public class WallpaperBackupAgent extends BackupAgent {
                     return;
                 }
 
-                boolean useDescription = (liveWallpaperContentHandling() && description != null
-                        && description.getComponent() != null);
+                boolean useDescription =
+                        (description != null && description.getComponent() != null);
                 if (useDescription && description.getComponent().getPackageName().equals(
                         packageName)) {
                     Slog.d(TAG, "Applying description " + description);

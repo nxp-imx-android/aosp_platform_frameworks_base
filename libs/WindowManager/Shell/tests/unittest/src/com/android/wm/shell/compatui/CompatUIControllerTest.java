@@ -17,6 +17,7 @@
 package com.android.wm.shell.compatui;
 
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.view.WindowInsets.Type.navigationBars;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
@@ -25,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
@@ -43,10 +45,13 @@ import android.testing.AndroidTestingRunner;
 import android.view.InsetsSource;
 import android.view.InsetsState;
 import android.view.accessibility.AccessibilityManager;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
 
+import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
@@ -63,6 +68,7 @@ import com.android.wm.shell.compatui.impl.CompatUIRequests;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.data.DesktopRepository;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
+import com.android.wm.shell.startingsurface.StartingWindowController;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
@@ -132,6 +138,9 @@ public class CompatUIControllerTest extends ShellTestCase {
     @Mock
     private DesktopRepository mDesktopRepository;
 
+    @Mock
+    private UserAspectRatioSettingsWindowManager mMockUserAspectRatioSettingsLayout;
+
     @Captor
     ArgumentCaptor<OnInsetsChangedListener> mOnInsetsChangedListenerCaptor;
 
@@ -140,6 +149,15 @@ public class CompatUIControllerTest extends ShellTestCase {
     @NonNull
     private FakeDesktopState mDesktopState;
 
+    @Mock
+    private Lazy<ActivityTransitionAnimator> mActivityTransitionAnimatorLazy;
+    @Mock
+    private ActivityTransitionAnimator mActivityTransitionAnimator;
+
+    @Mock
+    private Lazy<StartingWindowController> mStartingWindowControllerLazy;
+    @Mock
+    private StartingWindowController mStartingWindowController;
 
     @Before
     public void setUp() {
@@ -163,6 +181,8 @@ public class CompatUIControllerTest extends ShellTestCase {
         doReturn(TASK_ID).when(mMockRestartDialogLayout).getTaskId();
         doReturn(true).when(mMockRestartDialogLayout).createLayout(anyBoolean());
         doReturn(true).when(mMockRestartDialogLayout).updateCompatInfo(any(), any(), anyBoolean());
+        doReturn(mActivityTransitionAnimator).when(mActivityTransitionAnimatorLazy).get();
+        doReturn(mStartingWindowController).when(mStartingWindowControllerLazy).get();
 
         mCompatUIStatusManager = new CompatUIStatusManager();
         mShellInit = spy(new ShellInit(mMockExecutor));
@@ -171,7 +191,7 @@ public class CompatUIControllerTest extends ShellTestCase {
                 mMockSyncQueue, mMockExecutor, mMockTransitionsLazy, mDockStateReader,
                 mCompatUIConfiguration, mCompatUIShellCommandHandler, mAccessibilityManager,
                 mCompatUIStatusManager, Optional.of(mDesktopUserRepositories),
-                mDesktopState) {
+                mDesktopState, mActivityTransitionAnimatorLazy, mStartingWindowControllerLazy) {
             @Override
             CompatUIWindowManager createCompatUiWindowManager(Context context, TaskInfo taskInfo,
                     ShellTaskOrganizer.TaskListener taskListener) {
@@ -188,6 +208,14 @@ public class CompatUIControllerTest extends ShellTestCase {
             RestartDialogWindowManager createRestartDialogWindowManager(Context context,
                     TaskInfo taskInfo, ShellTaskOrganizer.TaskListener taskListener) {
                 return mMockRestartDialogLayout;
+            }
+
+            @Override
+            @NonNull
+            UserAspectRatioSettingsWindowManager createUserAspectRatioSettingsWindowManager(
+                    @NonNull Context context, @NonNull TaskInfo taskInfo,
+                    @Nullable ShellTaskOrganizer.TaskListener taskListener) {
+                return mMockUserAspectRatioSettingsLayout;
             }
         };
         mShellInit.init();
@@ -713,8 +741,7 @@ public class CompatUIControllerTest extends ShellTestCase {
 
     @Test
     @RequiresFlagsDisabled(Flags.FLAG_APP_COMPAT_UI_FRAMEWORK)
-    @EnableFlags({Flags.FLAG_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE,
-            Flags.FLAG_ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX})
+    @EnableFlags({Flags.FLAG_ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX})
     public void testUpdateActiveTaskInfo_removeAllComponentWhenInDesktopModeFlagEnabled() {
         TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true);
 
@@ -731,8 +758,7 @@ public class CompatUIControllerTest extends ShellTestCase {
 
     @Test
     @RequiresFlagsDisabled(Flags.FLAG_APP_COMPAT_UI_FRAMEWORK)
-    @EnableFlags({Flags.FLAG_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE,
-            Flags.FLAG_ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX})
+    @EnableFlags({Flags.FLAG_ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX})
     public void testUpdateActiveTaskInfo_alwaysRemoveLetterboxEdu() {
         TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true);
 
@@ -756,24 +782,6 @@ public class CompatUIControllerTest extends ShellTestCase {
         mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
         mController.removeLetterboxEdu(TASK_ID_2);
         verify(mMockLetterboxEduLayout).release();
-    }
-
-    @Test
-    @RequiresFlagsDisabled(Flags.FLAG_APP_COMPAT_UI_FRAMEWORK)
-    @DisableFlags(Flags.FLAG_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE)
-    @EnableFlags(Flags.FLAG_ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX)
-    public void testUpdateActiveTaskInfo_removeAllComponentWhenInDesktopModeFlagDisabled() {
-        TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true);
-
-        mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
-
-        verify(mController, never()).removeLayouts(taskInfo.taskId);
-
-        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
-
-        mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
-
-        verify(mController, never()).removeLayouts(taskInfo.taskId);
     }
 
     @Test
@@ -823,5 +831,47 @@ public class CompatUIControllerTest extends ShellTestCase {
         taskInfo.appCompatTaskInfo.setRestartMenuEnabledForDisplayMove(
                 isRestartMenuEnabledForDisplayMove);
         return taskInfo;
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_COMPATUI_SYSUI_LAUNCHER_FIX)
+    public void testLaunchUserAspectRatioSettings_animationStarted() {
+        final TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
+        doReturn(true).when(mCompatUIConfiguration).getHasSeenLetterboxEducation(anyInt());
+        doReturn(true).when(mMockUserAspectRatioSettingsLayout).createLayout(anyBoolean());
+
+        // Show the settings button.
+        mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
+
+        // Launch the settings.
+        final FrameLayout parent = new FrameLayout(mContext);
+        final UserAspectRatioSettingsLayout launchableView =
+                new UserAspectRatioSettingsLayout(mContext);
+        parent.addView(launchableView);
+        mController.launchUserAspectRatioSettings(mContext, taskInfo, launchableView);
+
+        verify(mMockUserAspectRatioSettingsLayout).setIsAnimatingToHide(true);
+        verify(mActivityTransitionAnimator).startIntentWithAnimation(any(), eq(true), isNull(),
+                eq(false), any());
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_COMPATUI_SYSUI_LAUNCHER_FIX)
+    public void testLaunchUserAspectRatioSettings_noAnimation() {
+        final TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
+        doReturn(true).when(mCompatUIConfiguration).getHasSeenLetterboxEducation(anyInt());
+        doReturn(true).when(mMockUserAspectRatioSettingsLayout).createLayout(anyBoolean());
+
+        // Show the settings button.
+        mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
+
+        // Launch the settings.
+        mController.launchUserAspectRatioSettings(mContext, taskInfo, null /* launchableView */);
+
+        verify(mMockUserAspectRatioSettingsLayout, never()).setIsAnimatingToHide(anyBoolean());
+        verify(mActivityTransitionAnimator, never()).startIntentWithAnimation(any(), anyBoolean(),
+                any(), anyBoolean(), any());
     }
 }

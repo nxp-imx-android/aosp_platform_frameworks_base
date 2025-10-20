@@ -27,6 +27,7 @@ import android.content.om.OverlayIdentifier;
 import android.content.om.OverlayManager;
 import android.content.om.OverlayManagerTransaction;
 import android.os.Binder;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Slog;
 import android.util.TypedValue;
@@ -35,7 +36,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Controls the application of {@link ViewConfigurationParams} for a virtual device.
@@ -58,7 +58,6 @@ public class ViewConfigurationController {
             "dimen/config_viewMaxFlingVelocity";
     private static final String SCROLL_FRICTION_RESOURCE_NAME = "dimen/config_scrollFriction";
 
-    private final Context mContext;
     private final OverlayManager mOverlayManager;
     private final SettingsWriter mSettingsWriter;
     private final Object mLock = new Object();
@@ -67,12 +66,21 @@ public class ViewConfigurationController {
     private OverlayIdentifier mOverlayIdentifier = null;
 
     ViewConfigurationController(@NonNull Context context) {
-        this(context, Settings.Secure::putInt);
+        this(context, (key, value, deviceId) -> {
+            int callingUserId = android.multiuser.Flags.coreSettingsMultiUser()
+                    ? Binder.getCallingUserHandle().getIdentifier() : UserHandle.USER_SYSTEM;
+            Binder.withCleanCallingIdentity(() -> {
+                Context deviceContext = context
+                        .createContextAsUser(UserHandle.of(callingUserId), 0 /* flags */)
+                        .createDeviceContext(deviceId);
+                ContentResolver contentResolver = deviceContext.getContentResolver();
+                Settings.Secure.putInt(contentResolver, key, value);
+            });
+        });
     }
 
     @VisibleForTesting
     ViewConfigurationController(@NonNull Context context, @NonNull SettingsWriter settingsWriter) {
-        mContext = Objects.requireNonNull(context);
         mOverlayManager = context.getSystemService(OverlayManager.class);
         mSettingsWriter = settingsWriter;
     }
@@ -161,18 +169,14 @@ public class ViewConfigurationController {
             return;
         }
 
-        Context deviceContext = mContext.createDeviceContext(deviceId);
-        ContentResolver contentResolver = deviceContext.getContentResolver();
-        Binder.withCleanCallingIdentity(() -> {
-            if (!isLongPressTimeoutInvalid) {
-                mSettingsWriter.writeSettings(contentResolver, Settings.Secure.LONG_PRESS_TIMEOUT,
-                        longPressTimeout);
-            }
-            if (!isMultiPressTimeoutInvalid) {
-                mSettingsWriter.writeSettings(contentResolver, Settings.Secure.MULTI_PRESS_TIMEOUT,
-                        multiPressTimeout);
-            }
-        });
+        if (!isLongPressTimeoutInvalid) {
+            mSettingsWriter.writeSettings(Settings.Secure.LONG_PRESS_TIMEOUT, longPressTimeout,
+                    deviceId);
+        }
+        if (!isMultiPressTimeoutInvalid) {
+            mSettingsWriter.writeSettings(Settings.Secure.MULTI_PRESS_TIMEOUT, multiPressTimeout,
+                    deviceId);
+        }
     }
 
     private static boolean setResourcePixelValue(@NonNull FabricatedOverlay overlay,
@@ -223,7 +227,6 @@ public class ViewConfigurationController {
 
     @VisibleForTesting
     interface SettingsWriter {
-        void writeSettings(@NonNull ContentResolver contentResolver, @NonNull String key,
-                int value);
+        void writeSettings(@NonNull String key, int value, int deviceId);
     }
 }

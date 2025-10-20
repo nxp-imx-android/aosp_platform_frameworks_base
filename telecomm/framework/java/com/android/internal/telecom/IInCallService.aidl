@@ -29,7 +29,7 @@ import com.android.internal.telecom.IInCallAdapter;
  *
  * @see android.telecom.InCallService
  *
- * {@hide}
+ * @hide
  */
 oneway interface IInCallService {
     void setInCallAdapter(in IInCallAdapter inCallAdapter);

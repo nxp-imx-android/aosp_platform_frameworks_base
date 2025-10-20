@@ -174,7 +174,6 @@ public final class NotifBindPipeline {
      */
     private void startPipeline(NotificationEntry entry) {
         mLogger.logStartPipeline(entry);
-
         if (mStage == null) {
             throw new IllegalStateException("No stage was ever set on the pipeline");
         }

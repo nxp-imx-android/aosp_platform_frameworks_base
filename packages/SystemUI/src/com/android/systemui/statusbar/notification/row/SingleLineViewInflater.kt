@@ -34,7 +34,6 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.logKey
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_SINGLE_LINE
-import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.ConversationAvatar
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.ConversationData
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.FacePile
@@ -68,9 +67,6 @@ object SingleLineViewInflater {
         redactText: Boolean,
         summarization: CharSequence?,
     ): SingleLineViewModel {
-        if (AsyncHybridViewInflation.isUnexpectedlyInLegacyMode()) {
-            return SingleLineViewModel(null, null, null)
-        }
         peopleHelper.init(systemUiContext)
 
         var titleText = HybridGroupManager.resolveTitle(notification)
@@ -93,12 +89,14 @@ object SingleLineViewInflater {
                             com.android.systemui.res.R.string.empty_notification_single_line_title
                         ),
                     contentText = null,
+                    summarization = if (redactText) null else summarization,
                     conversationData = null,
                 )
             }
             return SingleLineViewModel(
                 titleText = titleText,
                 contentText = contentText,
+                summarization = if (redactText) null else summarization,
                 conversationData = null,
             )
         }
@@ -133,6 +131,7 @@ object SingleLineViewInflater {
         return SingleLineViewModel(
             titleText = titleText,
             contentText = contentText,
+            summarization = if (redactText) null else summarization,
             conversationData = conversationData,
         )
     }
@@ -162,6 +161,7 @@ object SingleLineViewInflater {
                 com.android.systemui.res.R.string.public_notification_single_line_title
             ),
             null,
+            null,
             conversationData,
         )
     }
@@ -170,9 +170,6 @@ object SingleLineViewInflater {
     private fun MessagingStyle.loadConversationTextData(
         systemUiContext: Context
     ): ConversationTextData? {
-        if (AsyncHybridViewInflation.isUnexpectedlyInLegacyMode()) {
-            return null
-        }
         var conversationText: CharSequence?
 
         if (messages.isEmpty()) {
@@ -212,9 +209,6 @@ object SingleLineViewInflater {
         senderName: CharSequence?,
         systemUiContext: Context,
     ): CharSequence {
-        if (AsyncHybridViewInflation.isUnexpectedlyInLegacyMode()) {
-            return ""
-        }
         return if (isGroupConversation) {
             systemUiContext.resources.getString(R.string.conversation_title_fallback_group_chat)
         } else {
@@ -234,9 +228,6 @@ object SingleLineViewInflater {
         message: MessagingStyle.Message,
         context: Context,
     ): CharSequence? {
-        if (AsyncHybridViewInflation.isUnexpectedlyInLegacyMode()) {
-            return null
-        }
         // If the message is not an image message, just return empty, the back-up text for showing
         // will be SingleLineViewModel.contentText
         if (!message.isImageMessage()) return null
@@ -271,9 +262,6 @@ object SingleLineViewInflater {
         messages: List<MessagingStyle.Message>,
         historicMessages: List<MessagingStyle.Message>,
     ): List<MutableList<MessagingStyle.Message>> {
-        if (AsyncHybridViewInflation.isUnexpectedlyInLegacyMode()) {
-            return listOf()
-        }
         if (messages.isEmpty() && historicMessages.isEmpty()) return listOf()
         var currentGroup: MutableList<MessagingStyle.Message>? = null
         var currentSenderKey: CharSequence? = null
@@ -301,9 +289,6 @@ object SingleLineViewInflater {
         isGroupConversation: Boolean,
         systemUiContext: Context,
     ): ConversationAvatar {
-        if (AsyncHybridViewInflation.isUnexpectedlyInLegacyMode()) {
-            return SingleIcon(null)
-        }
         val userKey = user.getKeyOrName()
         var conversationIcon: Icon? = shortcutIcon
         var conversationText: CharSequence? = conversationTitle
@@ -416,7 +401,6 @@ object SingleLineViewInflater {
         context: Context,
         logger: NotificationRowContentBinderLogger,
     ): HybridNotificationView? {
-        if (AsyncHybridViewInflation.isUnexpectedlyInLegacyMode()) return null
         return if ((reinflateFlags and FLAG_CONTENT_VIEW_SINGLE_LINE) == 0) {
             null
         } else {
@@ -431,7 +415,6 @@ object SingleLineViewInflater {
         context: Context,
         logger: NotificationRowContentBinderLogger,
     ): HybridNotificationView? {
-        if (AsyncHybridViewInflation.isUnexpectedlyInLegacyMode()) return null
 
         logger.logInflateSingleLine(entry.logKey, reinflateFlags, isConversation)
         logger.logAsyncTaskProgress(entry.logKey, "inflating single-line content view")

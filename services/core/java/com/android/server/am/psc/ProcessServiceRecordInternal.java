@@ -16,12 +16,35 @@
 
 package com.android.server.am.psc;
 
+import android.content.Context;
+import android.content.pm.ServiceInfo;
+import android.os.SystemClock;
+
+import com.android.server.am.OomAdjuster;
+
+import java.util.ArrayList;
+
 /**
  * Base class for internal process service record state information.
  * This class provides common fields and methods for managing service-related properties
  * that influence process importance and OOM adjustment.
  */
 public abstract class ProcessServiceRecordInternal {
+    /** Controls whether argument validation checks are performed. */
+    private static final boolean DEBUG_FGS_ARGS = false;
+
+    /** Interface for observing changes in ProcessServiceRecordInternal state. */
+    public interface Observer {
+        /** Called when {@link #mHasClientActivities} changes. */
+        void onHasClientActivitiesChanged(boolean hasClientActivities);
+
+        /** Called when {@link #mHasForegroundServices} changes. */
+        void onHasForegroundServicesChanged(boolean hasForegroundServices);
+    }
+
+    private final OomAdjuster.Constants mOomConstants;
+    private final Observer mObserver;
+
     /** Last group set by a connection. */
     private int mConnectionGroup;
     /** Last importance set by a connection. */
@@ -30,8 +53,42 @@ public abstract class ProcessServiceRecordInternal {
     private boolean mTreatLikeActivity;
     /** Whether this process has bound to a service with the BIND_ABOVE_CLIENT flag. */
     private boolean mHasAboveClient;
+    /** Whether this process has any client services with activities. */
+    private boolean mHasClientActivities;
     /** Do we need to be executing services in the foreground? */
     private boolean mExecServicesFg;
+
+    /** Running any services that are foreground? */
+    private boolean mHasForegroundServices;
+    /**
+     * The OR'ed foreground service types that are running on this process.
+     * Note, because TYPE_NONE (==0) is also a valid type for pre-U apps, this field doesn't tell
+     * if the process has any TYPE_NONE FGS or not, but {@link #mHasTypeNoneFgs} will be set
+     * in that case.
+     */
+    private int mFgServiceTypes;
+    /**
+     * Whether the process has any foreground services of TYPE_NONE running.
+     * @see #mFgServiceTypes
+     */
+    private boolean mHasTypeNoneFgs;
+
+    /**
+     * Running any services that are almost perceptible (started with
+     * {@link Context#BIND_ALMOST_PERCEPTIBLE} while the app was on TOP)?
+     */
+    private boolean mHasTopStartedAlmostPerceptibleServices;
+    /**
+     * The latest value of
+     * {@link ServiceRecordInternal#getLastTopAlmostPerceptibleBindRequestUptimeMs()} among the
+     * currently running services.
+     */
+    private long mLastTopStartedAlmostPerceptibleBindRequestUptimeMs;
+
+    protected ProcessServiceRecordInternal(OomAdjuster.Constants oomConstants, Observer observer) {
+        mOomConstants = oomConstants;
+        mObserver = observer;
+    }
 
     public int getConnectionGroup() {
         return mConnectionGroup;
@@ -65,12 +122,159 @@ public abstract class ProcessServiceRecordInternal {
         mHasAboveClient = hasAboveClient;
     }
 
+    /**
+     * Sets whether this process has any client services with activities.
+     * This method also notifies the registered observer of the change.
+     */
+    public void setHasClientActivities(boolean hasClientActivities) {
+        mHasClientActivities = hasClientActivities;
+        mObserver.onHasClientActivitiesChanged(hasClientActivities);
+    }
+
+    /** Returns whether this process has any client services with activities. */
+    public boolean hasClientActivities() {
+        return mHasClientActivities;
+    }
+
     public boolean isExecServicesFg() {
         return mExecServicesFg;
     }
 
     public void setExecServicesFg(boolean execServicesFg) {
         mExecServicesFg = execServicesFg;
+    }
+
+    /** Checks if this process has any foreground services (even timed-out short-FGS) */
+    public boolean hasForegroundServices() {
+        return mHasForegroundServices;
+    }
+
+    /**
+     * Returns the FGS types, but it doesn't tell if the types include "NONE" or not, use
+     * {@link #hasForegroundServices()}
+     */
+    public int getForegroundServiceTypes() {
+        return mHasForegroundServices ? mFgServiceTypes : 0;
+    }
+
+    public boolean getHasTypeNoneFgs() {
+        return mHasTypeNoneFgs;
+    }
+
+    /** Returns whether the process has any FGS that are NOT a "short" FGS. */
+    public boolean hasNonShortForegroundServices() {
+        if (!mHasForegroundServices) {
+            return false; // Process has no FGS running.
+        }
+        // Does the process has any FGS of TYPE_NONE?
+        if (mHasTypeNoneFgs) {
+            return true;
+        }
+        // If not, we can just check mFgServiceTypes.
+        return mFgServiceTypes != ServiceInfo.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE;
+    }
+
+    /**
+     * Sets the foreground service status and types for this process.
+     * This method also notifies the registered observer of the change.
+     */
+    public void setHasForegroundServices(boolean hasForegroundServices, int fgServiceTypes,
+            boolean hasTypeNoneFgs) {
+        // hasForegroundServices should be the same as "either it has any FGS types, or none types".
+        // We still take this as a parameter because it's used in the call site...
+        if (DEBUG_FGS_ARGS && hasForegroundServices != ((fgServiceTypes != 0) || hasTypeNoneFgs)) {
+            throw new IllegalStateException("Argument mismatch: "
+                    + "hasForegroundServices=" + hasForegroundServices
+                    + ", fgServiceTypes=" + fgServiceTypes
+                    + ", hasTypeNoneFgs=" + hasTypeNoneFgs);
+        }
+
+        mHasForegroundServices = hasForegroundServices;
+        mFgServiceTypes = fgServiceTypes;
+        mHasTypeNoneFgs = hasTypeNoneFgs;
+        mObserver.onHasForegroundServicesChanged(mHasForegroundServices);
+    }
+
+    public boolean getHasTopStartedAlmostPerceptibleServices() {
+        return mHasTopStartedAlmostPerceptibleServices;
+    }
+
+    public void setHasTopStartedAlmostPerceptibleServices(boolean value) {
+        mHasTopStartedAlmostPerceptibleServices = value;
+    }
+
+    public long getLastTopStartedAlmostPerceptibleBindRequestUptimeMs() {
+        return mLastTopStartedAlmostPerceptibleBindRequestUptimeMs;
+    }
+
+    public void setLastTopStartedAlmostPerceptibleBindRequestUptimeMs(long value) {
+        mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = value;
+    }
+
+    /**
+     * Recalculates and updates the {@link #mHasTopStartedAlmostPerceptibleServices} flag
+     * and {@link #mLastTopStartedAlmostPerceptibleBindRequestUptimeMs} based on the
+     * currently running services in this process.
+     *
+     * It iterates through all running services to determine if any are considered
+     * "almost perceptible" and updates the latest bind request uptime.
+     */
+    public void updateHasTopStartedAlmostPerceptibleServices() {
+        mHasTopStartedAlmostPerceptibleServices = false;
+        mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = 0;
+        for (int s = numberOfRunningServices() - 1; s >= 0; --s) {
+            final ServiceRecordInternal sr = getRunningServiceAt(s);
+            mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = Math.max(
+                    mLastTopStartedAlmostPerceptibleBindRequestUptimeMs,
+                    sr.getLastTopAlmostPerceptibleBindRequestUptimeMs());
+            if (!mHasTopStartedAlmostPerceptibleServices && isAlmostPerceptible(sr)) {
+                mHasTopStartedAlmostPerceptibleServices = true;
+            }
+        }
+    }
+
+    /**
+     * Checks if this process currently has or recently had a service that was started as
+     * "almost perceptible" (via {@link Context#BIND_ALMOST_PERCEPTIBLE}) while the app was in
+     * the TOP state.
+     */
+    public boolean hasTopStartedAlmostPerceptibleServices() {
+        return mHasTopStartedAlmostPerceptibleServices
+                || (mLastTopStartedAlmostPerceptibleBindRequestUptimeMs > 0
+                && SystemClock.uptimeMillis() - mLastTopStartedAlmostPerceptibleBindRequestUptimeMs
+                < mOomConstants.mServiceBindAlmostPerceptibleTimeoutMs);
+    }
+
+    /**
+     * @return if this process:
+     * - has at least one short-FGS
+     * - has no other types of FGS
+     * - and all the short-FGSes are procstate-timed out.
+     */
+    public boolean areAllShortForegroundServicesProcstateTimedOut(long nowUptime) {
+        if (!hasForegroundServices()) { // Process has no FGS?
+            return false;
+        }
+        if (hasNonShortForegroundServices()) {  // Any non-short FGS running?
+            return false;
+        }
+        // Now we need to look at all short-FGS within the process and see if all of them are
+        // procstate-timed-out or not.
+        return !hasUndemotedShortForegroundService(nowUptime);
+    }
+
+    private boolean hasUndemotedShortForegroundService(long nowUptime) {
+        for (int i = numberOfRunningServices() - 1; i >= 0; i--) {
+            final ServiceRecordInternal sr = getRunningServiceAt(i);
+            if (!sr.isShortFgs() || !sr.hasShortFgsStartTime()) {
+                continue;
+            }
+            if (sr.getShortFgsDemoteTime() >= nowUptime) {
+                // This short fgs has not timed out yet.
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Returns the number of services currently running in this process. */
@@ -96,4 +300,20 @@ public abstract class ProcessServiceRecordInternal {
 
     /** Checks if there are any services currently executing in this process. */
     public abstract boolean hasExecutingServices();
+
+    protected static boolean isAlmostPerceptible(ServiceRecordInternal record) {
+        if (record.getLastTopAlmostPerceptibleBindRequestUptimeMs() <= 0) {
+            return false;
+        }
+        for (int i = record.getConnectionsSize() - 1; i >= 0; --i) {
+            final ArrayList<? extends ConnectionRecordInternal> clist = record.getConnectionAt(i);
+            for (int j = clist.size() - 1; j >= 0; --j) {
+                final ConnectionRecordInternal cr = clist.get(j);
+                if (cr.hasFlag(Context.BIND_ALMOST_PERCEPTIBLE)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

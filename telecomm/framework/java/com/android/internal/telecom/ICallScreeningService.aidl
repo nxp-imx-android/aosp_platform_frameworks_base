@@ -27,4 +27,5 @@ import com.android.internal.telecom.ICallScreeningAdapter;
  */
 oneway interface ICallScreeningService {
     void screenCall(in ICallScreeningAdapter adapter, in ParcelableCall call);
+    void screenOutgoingCall(ICallScreeningAdapter adapter, in ParcelableCall call);
 }

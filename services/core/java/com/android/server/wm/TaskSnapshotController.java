@@ -82,7 +82,7 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
                 persistQueue,
                 mPersistInfoProvider,
                 shouldDisableSnapshots());
-        initialize(new TaskSnapshotCache(new AppSnapshotLoader(mPersistInfoProvider)));
+        initialize(new TaskSnapshotCache(new AppSnapshotLoader(mPersistInfoProvider), service.mH));
         mOnlyCacheLowResSnapshot = Flags.reduceTaskSnapshotMemoryUsage()
                 && Flags.respectRequestedTaskSnapshotResolution()
                 && mPersistInfoProvider.enableLowResSnapshots();
@@ -289,8 +289,17 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
     @Nullable
     TaskSnapshot getSnapshotFromDisk(int taskId, int userId,
             boolean isLowResolution, @TaskSnapshot.ReferenceFlags int usage) {
-        return mCache.getSnapshotFromDisk(taskId, userId, isLowResolution
+        final boolean traceEnabled = Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER);
+        if (traceEnabled) {
+            Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER,
+                    "getSnapshotFromDisk_Id=" + taskId + "_isLow=" + isLowResolution);
+        }
+        final TaskSnapshot result = mCache.getSnapshotFromDisk(taskId, userId, isLowResolution
                 && mPersistInfoProvider.enableLowResSnapshots(), usage);
+        if (traceEnabled) {
+            Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+        }
+        return result;
     }
 
     /**

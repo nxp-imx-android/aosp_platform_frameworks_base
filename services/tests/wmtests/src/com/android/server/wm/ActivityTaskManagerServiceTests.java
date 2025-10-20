@@ -39,6 +39,7 @@ import static com.android.server.wm.ActivityRecord.State.PAUSING;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityRecord.State.STOPPING;
 import static com.android.window.flags.Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM;
+import static com.android.window.flags.Flags.FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API;
 import static com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API;
 
 import static org.junit.Assert.assertEquals;
@@ -58,6 +59,7 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -68,6 +70,7 @@ import android.app.HandoffActivityData;
 import android.app.HandoffFailureCode;
 import android.app.IApplicationThread;
 import android.app.IHandoffTaskDataReceiver;
+import android.app.ITaskMoveAllowedListener;
 import android.app.PictureInPictureParams;
 import android.app.servertransaction.ClientTransactionItem;
 import android.app.servertransaction.EnterPipRequestedItem;
@@ -82,8 +85,10 @@ import android.os.LocaleList;
 import android.os.PowerManagerInternal;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.permission.PermissionManager;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.util.ArrayMap;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.IDisplayWindowListener;
@@ -100,6 +105,7 @@ import org.mockito.MockitoSession;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -255,6 +261,85 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
+    public void testAddHandoffEnablementListener_doesNotNotifyIfFlagDisabled() {
+        ActivityTaskManagerInternal.HandoffEnablementListener handoffEnablementListener =
+                mock(ActivityTaskManagerInternal.HandoffEnablementListener.class);
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        mAtm.getAtmInternal().registerHandoffEnablementListener(handoffEnablementListener);
+        setHandoffEnabled(activity, true);
+        verify(handoffEnablementListener, never())
+            .onHandoffEnabledChanged(activity.getRootTaskId(), true);
+        setHandoffEnabled(activity, false);
+        verify(handoffEnablementListener, never())
+            .onHandoffEnabledChanged(activity.getRootTaskId(), false);
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    public void testRegisterHandoffEnablementListener_notifiesListenerOnChange() {
+        ActivityTaskManagerInternal.HandoffEnablementListener handoffEnablementListener =
+                mock(ActivityTaskManagerInternal.HandoffEnablementListener.class);
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        mAtm.getAtmInternal().registerHandoffEnablementListener(handoffEnablementListener);
+        setHandoffEnabled(activity, true);
+        verify(handoffEnablementListener)
+            .onHandoffEnabledChanged(anyInt(), anyBoolean());
+        setHandoffEnabled(activity, false);
+        verify(handoffEnablementListener)
+            .onHandoffEnabledChanged(activity.getRootTaskId(), false);
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    public void testUnregisterHandoffEnablementListener_doesNotNotifyListenerOnChange() {
+        ActivityTaskManagerInternal.HandoffEnablementListener handoffEnablementListener =
+                mock(ActivityTaskManagerInternal.HandoffEnablementListener.class);
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        mAtm.getAtmInternal().registerHandoffEnablementListener(handoffEnablementListener);
+        mAtm.getAtmInternal().unregisterHandoffEnablementListener(handoffEnablementListener);
+        setHandoffEnabled(activity, true);
+        verify(handoffEnablementListener, never())
+            .onHandoffEnabledChanged(activity.getRootTaskId(), true);
+        setHandoffEnabled(activity, false);
+        verify(handoffEnablementListener, never())
+            .onHandoffEnabledChanged(activity.getRootTaskId(), false);
+    }
+
+    @Test
+    public void testIsHandoffEnabledForTask_returnsFalseIfFlagDisabled() {
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        doReturn(true).when(activity).isHandoffEnabled();
+        assertFalse(mAtm.getAtmInternal().isHandoffEnabledForTask(task.getRootTaskId()));
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    public void testIsHandoffEnabledForTask_returnsTrueIfHandoffEnabled() {
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        setHandoffEnabled(activity, true);
+        assertTrue(mAtm.getAtmInternal().isHandoffEnabledForTask(task.getRootTaskId()));
+        setHandoffEnabled(activity, false);
+        assertFalse(mAtm.getAtmInternal().isHandoffEnabledForTask(task.getRootTaskId()));
+    }
+
+    private void setHandoffEnabled(ActivityRecord r, boolean enabled) {
+        r.setHandoffEnabled(enabled, true /* allowFullTaskRecreation */);
+        // HandoffEnablementListener#onHandoffEnabledChanged runs on handler.
+        waitHandlerIdle(mAtm.mH);
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    public void testIsHandoffEnabledForTask_returnsFalseIfNoSuchTask() {
+        assertFalse(mAtm.getAtmInternal().isHandoffEnabledForTask(1000));
+    }
+
+    @Test
     public void testRequestHandoffTaskData_failsIfFlagDisabled() {
         // Create a test task.
         final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
@@ -263,7 +348,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
 
         // Request Handoff
-        mAtm.requestHandoffTaskData(task.getRootTaskId(), receiver);
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
 
         // Verify that the result code is failure.
         receiver.verifyFailed(task.getRootTaskId(),
@@ -277,7 +362,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
 
         // Request Handoff
-        mAtm.requestHandoffTaskData(0, receiver);
+        requestHandoffTaskData(0 /* taskId */, receiver);
 
         // Verify that the result code is failure.
         receiver.verifyFailed(0, HandoffFailureCode.HANDOFF_FAILURE_UNKNOWN_TASK);
@@ -293,7 +378,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
 
         // Request Handoff
-        mAtm.requestHandoffTaskData(task.getRootTaskId(), receiver);
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
 
         // Verify that the result code is failure.
         receiver.verifyFailed(
@@ -313,7 +398,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
 
         // Request Handoff
-        mAtm.requestHandoffTaskData(task.getRootTaskId(), receiver);
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
 
         // Verify that the result code is failure.
         receiver.verifyFailed(
@@ -326,7 +411,9 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     public void testRequestHandoffTaskData_succeedsWithActivityInForeground()
         throws Exception{
         // Create a test task.
-        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final Task task = new TaskBuilder(mSupervisor)
+                              .setComponent(new ComponentName("pkg", "cls"))
+                              .setCreateActivity(true).build();
         final ActivityRecord activity = task.getTopNonFinishingActivity();
         doReturn(true).when(activity).attachedToProcess();
         doReturn(true).when(activity).isState(RESUMED);
@@ -341,7 +428,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
 
         // Request Handoff
-        mAtm.requestHandoffTaskData(task.getRootTaskId(), receiver);
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
 
         ArgumentCaptor<IBinder> requestTokenCaptor = ArgumentCaptor.forClass(IBinder.class);
         ArgumentCaptor<List<IBinder>> activityTokenCaptor = ArgumentCaptor.forClass(List.class);
@@ -370,7 +457,9 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         final HandoffActivityData handoffActivityData
             = new HandoffActivityData.Builder(new ComponentName("pkg", "cls"))
                 .build();
-        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final Task task = new TaskBuilder(mSupervisor)
+                         .setComponent(new ComponentName("pkg", "cls"))
+                         .setCreateActivity(true).build();
         final ActivityRecord activity = task.getTopNonFinishingActivity();
         doReturn(false).when(activity).attachedToProcess();
         doReturn(handoffActivityData).when(activity).getHandoffActivityData();
@@ -381,7 +470,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         final TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
 
         // Request Handoff
-        mAtm.requestHandoffTaskData(task.getRootTaskId(), receiver);
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
 
         // Verify that the result code is success.
         receiver.verifySucceeded(task.getRootTaskId(), handoffActivityData);
@@ -407,7 +496,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
 
         // Request Handoff
-        mAtm.requestHandoffTaskData(task.getRootTaskId(), receiver);
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
 
         ArgumentCaptor<IBinder> requestTokenCaptor = ArgumentCaptor.forClass(IBinder.class);
         ArgumentCaptor<List<IBinder>> activityTokenCaptor
@@ -427,6 +516,91 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         receiver.verifyFailed(
             task.getRootTaskId(),
             HandoffFailureCode.HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA);
+    }
+
+    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @Test
+    public void testRequestHandoffTaskData_failsMismatchedComponentNameInBacground()
+            throws Exception {
+        // Create a test task.
+        final ComponentName generatingComponent =
+                new ComponentName("com.example.generating", "TestActivity");
+        final Task task = new TaskBuilder(mSupervisor)
+                            .setComponent(generatingComponent)
+                            .setCreateActivity(true)
+                            .build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+
+        // Create HandoffActivityData with a different package name
+        final HandoffActivityData handoffActivityData = new HandoffActivityData.Builder(
+                new ComponentName("com.example.different", "SomeActivity")).build();
+
+        doReturn(false).when(activity).attachedToProcess();
+        doReturn(handoffActivityData).when(activity).getHandoffActivityData();
+        doReturn(false).when(activity).isProcessRunning();
+        doReturn(true).when(activity).isHandoffEnabled();
+
+        // Setup a fake receiver to receive the result.
+        final TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
+
+        // Request Handoff
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
+
+        // Verify that the result code is failure.
+        receiver.verifyFailed(task.getRootTaskId(),
+                HandoffFailureCode.HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA);
+    }
+
+    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @Test
+    public void testRequestHandoffTaskData_failsMismatchedComponentNameRunningActivity()
+            throws Exception {
+        // Create a test task.
+        final ComponentName generatingComponent =
+                new ComponentName("com.example.generating", "TestActivity");
+        final Task task = new TaskBuilder(mSupervisor)
+                            .setComponent(generatingComponent)
+                            .setCreateActivity(true)
+                            .build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        doReturn(true).when(activity).attachedToProcess();
+        WindowProcessController mockWindowProcessController = mock(WindowProcessController.class);
+        activity.app = mockWindowProcessController;
+        IApplicationThread mockThread = mock(IApplicationThread.class);
+        doReturn(mockThread).when(mockWindowProcessController).getThread();
+        doReturn(true).when(activity).isProcessRunning();
+        doReturn(true).when(activity).isHandoffEnabled();
+
+        // Setup a fake receiver to receive the result.
+        TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
+
+        // Request Handoff
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
+
+        ArgumentCaptor<IBinder> requestTokenCaptor = ArgumentCaptor.forClass(IBinder.class);
+        ArgumentCaptor<List<IBinder>> activityTokenCaptor =
+                ArgumentCaptor.forClass(List.class);
+        verify(mockThread).requestHandoffActivityData(
+                requestTokenCaptor.capture(),
+                activityTokenCaptor.capture());
+
+        // Finish the request with mismatched package name
+        HandoffActivityData handoffActivityData = new HandoffActivityData.Builder(
+                new ComponentName("com.example.different", "SomeActivity")).build();
+        mAtm.reportHandoffActivityData(
+                requestTokenCaptor.getValue(),
+                List.of(handoffActivityData));
+
+        // Verify that the result code is failure.
+        receiver.verifyFailed(
+                task.getRootTaskId(),
+                HandoffFailureCode.HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA);
+    }
+
+    private void requestHandoffTaskData(int taskId, IHandoffTaskDataReceiver receiver) {
+        mAtm.requestHandoffTaskData(taskId, receiver);
+        // IHandoffTaskDataReceiver runs on handler.
+        waitHandlerIdle(mAtm.mH);
     }
 
     @Test
@@ -576,19 +750,31 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     @Test
     public void testSetLockScreenShownWithAlwaysUnlockedVirtualDisplay() {
         assertEquals(Display.DEFAULT_DISPLAY, mRootWindowContainer.getChildAt(0).getDisplayId());
+        final KeyguardController keyguardController = mSupervisor.getKeyguardController();
 
+        // The default display is locked before creating the virtual display
+        mAtm.setLockScreenShown(true, true);
+
+        // Create the virtual display
         DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.copyFrom(mDisplayInfo);
         displayInfo.type = Display.TYPE_VIRTUAL;
         displayInfo.displayGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
         displayInfo.flags = Display.FLAG_OWN_DISPLAY_GROUP | Display.FLAG_ALWAYS_UNLOCKED;
         DisplayContent newDisplay = createNewDisplay(displayInfo);
-        final KeyguardController keyguardController = mSupervisor.getKeyguardController();
 
-        // Make sure we're starting out with 2 unlocked displays
         assertEquals(2, mRootWindowContainer.getChildCount());
+        assertTrue(mDefaultDisplay.isKeyguardLocked());
+        assertFalse(newDisplay.isKeyguardLocked());
+
+        // Unlock the default display (this should have no effect for FLAG_ALWAYS_UNLOCKED)
+        mAtm.keyguardGoingAway(0x0);
+        mAtm.setLockScreenShown(false, false);
+
+        // Make sure we now have both displays unlocked
         mRootWindowContainer.forAllDisplays(displayContent -> {
             assertFalse(displayContent.isKeyguardLocked());
+            assertFalse(displayContent.isKeyguardGoingAway());
             assertFalse(keyguardController.isAodShowing(displayContent.mDisplayId));
         });
 
@@ -1635,6 +1821,275 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
 
             doReturn(false).when(dc).isTaskMoveAllowedOnDisplay();
             assertFalse(mAtm.isTaskMoveAllowedOnDisplay(displayId));
+        } finally {
+            session.finishMocking();
+        }
+    }
+
+    @EnableFlags({FLAG_ENABLE_WINDOW_REPOSITIONING_API, FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API})
+    @Test
+    public void testTaskMoveAllowedListener_permissionGranted_notifies() throws RemoteException {
+        final DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.copyFrom(mDisplayInfo);
+        final DisplayContent dc = createNewDisplay(displayInfo);
+
+        MockitoSession session =
+                mockitoSession().spyStatic(ActivityTaskManagerService.class).startMocking();
+        try {
+            doReturn(PERMISSION_GRANTED)
+                    .when(
+                            () -> {
+                                return ActivityTaskManagerService.checkPermission(
+                                        eq(REPOSITION_SELF_WINDOWS), anyInt(), anyInt());
+                            });
+            doReturn(false).when(dc).isTaskMoveAllowedOnDisplay();
+
+            final PermissionManager pm = mock(PermissionManager.class);
+            doReturn(pm).when(mContext).getSystemService(PermissionManager.class);
+
+            final ITaskMoveAllowedListener listener = mock(ITaskMoveAllowedListener.class);
+            final IBinder binder = mock(IBinder.class);
+            doReturn(binder).when(listener).asBinder();
+
+            // Verify that the listener got called upon registration.
+            mAtm.registerTaskMoveAllowedListener(listener);
+            verify(listener).onTaskMoveAllowedChanged(any(int[].class), any(boolean[].class));
+
+            // Verify that the listener got called again.
+            doReturn(true).when(dc).isTaskMoveAllowedOnDisplay();
+            mAtm.onTaskMoveAllowedChanged();
+            verify(listener, times(2))
+                    .onTaskMoveAllowedChanged(any(int[].class), any(boolean[].class));
+
+            mAtm.unregisterTaskMoveAllowedListener(listener);
+            mAtm.onTaskMoveAllowedChanged();
+
+            // Verify that the listener hasn't got any further updates.
+            verify(listener, times(2))
+                    .onTaskMoveAllowedChanged(any(int[].class), any(boolean[].class));
+        } finally {
+            session.finishMocking();
+        }
+    }
+
+    @EnableFlags({FLAG_ENABLE_WINDOW_REPOSITIONING_API, FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API})
+    @Test
+    public void testTaskMoveAllowedListener_permissionDenied_isQuiet() throws RemoteException {
+        DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.copyFrom(mDisplayInfo);
+        DisplayContent dc = createNewDisplay(displayInfo);
+
+        MockitoSession session =
+                mockitoSession().spyStatic(ActivityTaskManagerService.class).startMocking();
+        try {
+            doReturn(PERMISSION_DENIED)
+                    .when(
+                            () -> {
+                                return ActivityTaskManagerService.checkPermission(
+                                        eq(REPOSITION_SELF_WINDOWS), anyInt(), anyInt());
+                            });
+            doReturn(false).when(dc).isTaskMoveAllowedOnDisplay();
+
+            final PermissionManager pm = mock(PermissionManager.class);
+            doReturn(pm).when(mContext).getSystemService(PermissionManager.class);
+
+            final ITaskMoveAllowedListener listener = mock(ITaskMoveAllowedListener.class);
+            final IBinder binder = mock(IBinder.class);
+            doReturn(binder).when(listener).asBinder();
+
+            // Verify that the listener got called upon registration.
+            mAtm.registerTaskMoveAllowedListener(listener);
+            verify(listener).onTaskMoveAllowedChanged(any(int[].class), any(boolean[].class));
+
+            // Verify that the listener hasn't got any further updates.
+            doReturn(true).when(dc).isTaskMoveAllowedOnDisplay();
+            mAtm.onTaskMoveAllowedChanged();
+            verify(listener).onTaskMoveAllowedChanged(any(int[].class), any(boolean[].class));
+
+            mAtm.unregisterTaskMoveAllowedListener(listener);
+            mAtm.onTaskMoveAllowedChanged();
+
+            // Verify that the listener hasn't got any further updates.
+            verify(listener).onTaskMoveAllowedChanged(any(int[].class), any(boolean[].class));
+        } finally {
+            session.finishMocking();
+        }
+    }
+
+    @EnableFlags({FLAG_ENABLE_WINDOW_REPOSITIONING_API, FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API})
+    @Test
+    public void testTaskMoveAllowedListener_permissionChanges_tmaFalse_expectNothing()
+            throws RemoteException {
+        DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.copyFrom(mDisplayInfo);
+        DisplayContent dc = createNewDisplay(displayInfo);
+        doReturn(false).when(dc).isTaskMoveAllowedOnDisplay();
+
+        final PermissionManager pm = mock(PermissionManager.class);
+        doReturn(pm).when(mContext).getSystemService(PermissionManager.class);
+
+        final ITaskMoveAllowedListener listener = mock(ITaskMoveAllowedListener.class);
+        final IBinder binder = mock(IBinder.class);
+        doReturn(binder).when(listener).asBinder();
+        // Verify that the listener got called upon registration
+        mAtm.registerTaskMoveAllowedListener(listener);
+        verify(listener).onTaskMoveAllowedChanged(any(int[].class), any(boolean[].class));
+
+        // Verify that the listener hasn't got any further updates.
+        mAtm.sendTmaValuesToListeners(Binder.getCallingUid());
+        verify(listener).onTaskMoveAllowedChanged(any(int[].class), any(boolean[].class));
+    }
+
+    @EnableFlags({FLAG_ENABLE_WINDOW_REPOSITIONING_API, FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API})
+    @Test
+    public void testTaskMoveAllowedListener_permissionChangesToGranted_tmaTrue_expectCallback()
+            throws RemoteException {
+        DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.copyFrom(mDisplayInfo);
+        DisplayContent dc = createNewDisplay(displayInfo);
+
+        MockitoSession session =
+                mockitoSession().spyStatic(ActivityTaskManagerService.class).startMocking();
+        try {
+            doReturn(true).when(dc).isTaskMoveAllowedOnDisplay();
+
+            final PermissionManager pm = mock(PermissionManager.class);
+            doReturn(pm).when(mContext).getSystemService(PermissionManager.class);
+
+            final ITaskMoveAllowedListener listener = mock(ITaskMoveAllowedListener.class);
+            final IBinder binder = mock(IBinder.class);
+            doReturn(binder).when(listener).asBinder();
+
+            doReturn(PERMISSION_DENIED)
+                    .when(
+                            () -> {
+                                return ActivityTaskManagerService.checkPermission(
+                                        eq(REPOSITION_SELF_WINDOWS), anyInt(), anyInt());
+                            });
+
+            // Verify that the listener got called upon registration.
+            mAtm.registerTaskMoveAllowedListener(listener);
+            verify(listener).onTaskMoveAllowedChanged(any(int[].class), any(boolean[].class));
+
+            doReturn(PERMISSION_GRANTED)
+                    .when(
+                            () -> {
+                                return ActivityTaskManagerService.checkPermission(
+                                        eq(REPOSITION_SELF_WINDOWS), anyInt(), anyInt());
+                            });
+
+            // Verify that the listener got called again.
+            mAtm.sendTmaValuesToListeners(Binder.getCallingUid());
+            verify(listener, times(2))
+                    .onTaskMoveAllowedChanged(any(int[].class), any(boolean[].class));
+        } finally {
+            session.finishMocking();
+        }
+    }
+
+    @EnableFlags({FLAG_ENABLE_WINDOW_REPOSITIONING_API, FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API})
+    @Test
+    public void testTaskMoveAllowedListener_permissionChangesToDenied_tmaTrue_expectCallback()
+            throws RemoteException {
+        DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.copyFrom(mDisplayInfo);
+        DisplayContent dc = createNewDisplay(displayInfo);
+
+        MockitoSession session =
+                mockitoSession().spyStatic(ActivityTaskManagerService.class).startMocking();
+        try {
+            doReturn(true).when(dc).isTaskMoveAllowedOnDisplay();
+
+            final PermissionManager pm = mock(PermissionManager.class);
+            doReturn(pm).when(mContext).getSystemService(PermissionManager.class);
+
+            final ITaskMoveAllowedListener listener = mock(ITaskMoveAllowedListener.class);
+            final IBinder binder = mock(IBinder.class);
+            doReturn(binder).when(listener).asBinder();
+
+            doReturn(PERMISSION_GRANTED)
+                    .when(
+                            () -> {
+                                return ActivityTaskManagerService.checkPermission(
+                                        eq(REPOSITION_SELF_WINDOWS), anyInt(), anyInt());
+                            });
+
+            // Verify that the listener got called upon registration.
+            mAtm.registerTaskMoveAllowedListener(listener);
+            verify(listener).onTaskMoveAllowedChanged(any(int[].class), any(boolean[].class));
+
+            doReturn(PERMISSION_DENIED)
+                    .when(
+                            () -> {
+                                return ActivityTaskManagerService.checkPermission(
+                                        eq(REPOSITION_SELF_WINDOWS), anyInt(), anyInt());
+                            });
+
+            // Verify that the listener got called again.
+            mAtm.sendTmaValuesToListeners(Binder.getCallingUid());
+            verify(listener, times(2))
+                    .onTaskMoveAllowedChanged(any(int[].class), any(boolean[].class));
+        } finally {
+            session.finishMocking();
+        }
+    }
+
+    @EnableFlags({FLAG_ENABLE_WINDOW_REPOSITIONING_API, FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API})
+    @Test
+    public void testTaskMoveAllowedListener_verifyDataGoingToClientSide() throws RemoteException {
+        DisplayInfo displayInfo1 = new DisplayInfo();
+        displayInfo1.copyFrom(mDisplayInfo);
+        DisplayContent dc1 = createNewDisplay(displayInfo1);
+
+        DisplayInfo displayInfo2 = new DisplayInfo();
+        displayInfo2.copyFrom(mDisplayInfo);
+        DisplayContent dc2 = createNewDisplay(displayInfo2);
+
+        MockitoSession session =
+                mockitoSession().spyStatic(ActivityTaskManagerService.class).startMocking();
+        try {
+            doReturn(false).when(mDisplayContent).isTaskMoveAllowedOnDisplay();
+            doReturn(true).when(dc1).isTaskMoveAllowedOnDisplay();
+            doReturn(false).when(dc2).isTaskMoveAllowedOnDisplay();
+
+            final PermissionManager pm = mock(PermissionManager.class);
+            doReturn(pm).when(mContext).getSystemService(PermissionManager.class);
+
+            final ITaskMoveAllowedListener listener = mock(ITaskMoveAllowedListener.class);
+            final IBinder binder = mock(IBinder.class);
+            doReturn(binder).when(listener).asBinder();
+
+            doReturn(PERMISSION_GRANTED)
+                    .when(
+                            () -> {
+                                return ActivityTaskManagerService.checkPermission(
+                                        eq(REPOSITION_SELF_WINDOWS), anyInt(), anyInt());
+                            });
+
+            mAtm.registerTaskMoveAllowedListener(listener);
+
+            doReturn(true).when(mDisplayContent).isTaskMoveAllowedOnDisplay();
+            mAtm.onTaskMoveAllowedChanged();
+
+            final ArgumentCaptor<int[]> intArrayCaptor = ArgumentCaptor.forClass(int[].class);
+            final ArgumentCaptor<boolean[]> booleanArrayCaptor =
+                    ArgumentCaptor.forClass(boolean[].class);
+            verify(listener, times(2))
+                    .onTaskMoveAllowedChanged(
+                            intArrayCaptor.capture(), booleanArrayCaptor.capture());
+
+            final int[] intArrayCaptorValue = intArrayCaptor.getValue();
+            final boolean[] booleanArrayCaptorValue = booleanArrayCaptor.getValue();
+
+            final Map<Integer, Boolean> resultMap = new ArrayMap<>();
+            for (int i = 0; i < intArrayCaptorValue.length; i++) {
+                resultMap.put(intArrayCaptorValue[i], booleanArrayCaptorValue[i]);
+            }
+
+            assertEquals(3, resultMap.size());
+            assertEquals(true, resultMap.get(mDisplayContent.mDisplayId));
+            assertEquals(true, resultMap.get(dc1.mDisplayId));
+            assertEquals(false, resultMap.get(dc2.mDisplayId));
         } finally {
             session.finishMocking();
         }

@@ -112,6 +112,16 @@ flag {
 }
 
 flag {
+    name: "location_indicator_get_uid_importance_fallback"
+    namespace: "location"
+    description: "Flag for using getUidImportance when a uid is not found"
+    bug: "444299019"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "update_min_location_request_interval"
     namespace: "location"
     description: "Flag for updating the default logic for the minimal interval for location request"
@@ -130,50 +140,20 @@ flag {
 }
 
 flag {
-    name: "limit_fused_gps"
-    namespace: "location"
-    description: "Limits when GPS can be used for fused location requests"
-    bug: "401885179"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "fix_no_set_position_mode_when_hal_restarts"
-    namespace: "location"
-    description: "Fix setPostionMode() is not called when HAL restarts"
-    bug: "419597768"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "fix_is_in_emergency_anr"
-    namespace: "location"
-    description: "Avoid calling IPC with a lock to avoid deadlock"
-    bug: "355384257"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "update_is_in_emergency_before_on_register"
-    namespace: "location"
-    description: "Update isInEmergency before onRegister() without holding a lock"
-    bug: "355384257"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "gnss_assistance_interface_jni"
     namespace: "location"
     description: "Flag for GNSS assistance interface JNI"
     bug: "209078566"
+}
+
+flag {
+    name: "jni_delete_local_reference_gnss_antenna_info_builder"
+    namespace: "location"
+    description: "Flag for deleting local reference for gnssAntennaInfoBuilder"
+    bug: "451136946"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -185,17 +165,24 @@ flag {
 }
 
 flag {
-    name: "missing_attribution_tags_in_overlay"
-    namespace: "location"
-    description: "Adds missing attribution tags in the Fused and Gnss overlay"
-    bug: "403337028"
-}
-
-flag {
     name: "location_indicators_enabled"
     namespace: "location"
     description: "Enables modified location privacy item behavior"
     bug: "419834493"
+}
+
+flag {
+    name: "location_indicators_animation"
+    namespace: "location"
+    description: "Enables indicator animation for location privacy items"
+    bug: "441820971"
+}
+
+flag {
+    name: "location_indicators_outline"
+    namespace: "location"
+    description: "Enables indicator outline for location-only privacy items"
+    bug: "448768810"
 }
 
 flag {
@@ -207,18 +194,33 @@ flag {
 }
 
 flag {
-    name: "fix_glonass_almanac_frequency_channel_range"
-    namespace: "location"
-    description: "Fix GLONASS almanac frequency channel range"
-    bug: "428050932"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "support_toa_in_gnss_satellite_almanac"
     namespace: "location"
     description: "Support TOA in GnssSatelliteAlmanac"
     bug: "409934786"
+}
+
+flag {
+    name: "disable_hardware_ar"
+    namespace: "location"
+    description: "Disables the legacy hardware AR code path which has been deprecated for a long time"
+    bug: "441145460"
+}
+
+flag {
+    name: "support_ionex_assistance"
+    namespace: "location"
+    description: "Support IONEX assistance"
+    bug: "434875844"
+    is_exported: true
+}
+
+flag {
+    name: "emergency_location_new_notification"
+    namespace: "location"
+    description: "Enables the new emergency location notification with updated text and CTA"
+    bug: "384572637"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

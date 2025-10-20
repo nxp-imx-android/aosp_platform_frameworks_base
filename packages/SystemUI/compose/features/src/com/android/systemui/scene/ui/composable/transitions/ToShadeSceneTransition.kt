@@ -17,9 +17,15 @@
 package com.android.systemui.scene.ui.composable.transitions
 
 import androidx.compose.animation.core.tween
+import androidx.compose.ui.unit.IntSize
+import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.Edge
+import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.TransitionBuilder
-import com.android.systemui.media.remedia.ui.compose.Media
+import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.compose.animation.scene.transformation.InterpolatedPropertyTransformation
+import com.android.compose.animation.scene.transformation.PropertyTransformation
+import com.android.compose.animation.scene.transformation.PropertyTransformationScope
 import com.android.systemui.notifications.ui.composable.Notifications
 import com.android.systemui.qs.shared.ui.QuickSettings
 import com.android.systemui.shade.ui.composable.Shade
@@ -41,9 +47,28 @@ fun TransitionBuilder.toShadeSceneTransition(durationScale: Double = 1.0) {
     fade(Shade.Elements.BackgroundScrim)
 
     val qsTranslation = -ShadeHeader.Dimensions.CollapsedHeightForTransitions * 0.66f
-    translate(QuickSettings.Elements.QuickQuickSettings, y = qsTranslation)
-    translate(Media.Elements.mediaCarousel, y = qsTranslation)
+    translate(QuickSettings.Elements.QuickQuickSettingsAndMedia, y = qsTranslation)
     translate(Notifications.Elements.NotificationScrim, Edge.Top, false)
+
+    // Extend the scrim to content height during transitions to prevent a visual gap at the bottom.
+    // Its target height is shorter, because it is the size at rest, where the QQS+UMO part is fully
+    // visible.
+    transformation(Notifications.Elements.NotificationScrim) {
+        object : InterpolatedPropertyTransformation<IntSize> {
+            override fun PropertyTransformationScope.transform(
+                content: ContentKey,
+                element: ElementKey,
+                transition: TransitionState.Transition,
+                idleValue: IntSize,
+            ): IntSize {
+                return content.targetSize()
+                    ?: error("Content ${content.debugName} does not have a target size")
+            }
+
+            override val property: PropertyTransformation.Property<IntSize>
+                get() = PropertyTransformation.Property.Size
+        }
+    }
 }
 
 private val DefaultDuration = 500.milliseconds

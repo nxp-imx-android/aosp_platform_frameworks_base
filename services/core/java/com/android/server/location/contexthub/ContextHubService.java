@@ -117,7 +117,7 @@ public class ContextHubService extends IContextHubService.Stub {
 
     /**
      * Constants describing an async event from the Context Hub.
-     * {@hide}
+     * @hide
      */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = {"CONTEXT_HUB_EVENT_"}, value = {
@@ -249,6 +249,14 @@ public class ContextHubService extends IContextHubService.Stub {
                     }, message)) {
                 handleClientMessageCallback(mContextHubId, hostEndpointId,
                         message, nanoappPermissions, messagePermissions);
+            }
+        }
+
+        @Override
+        public void handleServiceDied() {
+            Log.i(TAG, "Context Hub HAL service died");
+            if (mEndpointManager != null) {
+                mEndpointManager.onHalDeath();
             }
         }
 

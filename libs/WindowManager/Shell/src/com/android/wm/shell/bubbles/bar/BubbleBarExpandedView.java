@@ -24,6 +24,7 @@ import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_
 
 import static java.lang.Math.max;
 
+import android.annotation.CallbackExecutor;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.content.Context;
@@ -35,9 +36,11 @@ import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.FloatProperty;
 import android.view.LayoutInflater;
+import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
+import android.view.ViewRootImpl;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
 import android.widget.Toast;
@@ -49,17 +52,18 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.Bubble;
 import com.android.wm.shell.bubbles.BubbleExpandedViewManager;
-import com.android.wm.shell.bubbles.BubbleLogger;
 import com.android.wm.shell.bubbles.BubbleOverflowContainerView;
 import com.android.wm.shell.bubbles.BubblePositioner;
 import com.android.wm.shell.bubbles.BubbleTaskView;
 import com.android.wm.shell.bubbles.BubbleTaskViewListener;
 import com.android.wm.shell.bubbles.Bubbles;
+import com.android.wm.shell.bubbles.logging.BubbleLogger;
 import com.android.wm.shell.dagger.HasWMComponent;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.taskview.TaskView;
 
 import java.io.PrintWriter;
+import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 import javax.inject.Inject;
@@ -318,6 +322,10 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         return mCaptionView.getHandleView();
     }
 
+    public BubbleBarCaptionView getCaptionView() {
+        return mCaptionView;
+    }
+
     /** Updates the view based on the current theme. */
     public void applyThemeAttrs() {
         mCaptionHeight = getResources().getDimensionPixelSize(
@@ -385,22 +393,17 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     }
 
     @Override
-    public void onTaskRemovalStarted() {
-        // No-op
-    }
-
-    @Override
     public void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo) {
         if (!isValidToBubble(taskInfo)) {
             Toast.makeText(mContext, R.string.bubble_not_supported_text, Toast.LENGTH_SHORT).show();
         } else if (mCaptionView != null && taskInfo != null && taskInfo.taskDescription != null) {
             final int statusBarColor = taskInfo.taskDescription.getStatusBarColor();
             final int bgColor = taskInfo.taskDescription.getBackgroundColor();
-            if (Color.alpha(statusBarColor) != 0) {
-                // Set the caption's color to the color of the status bar if not transparent.
+            if (Color.alpha(statusBarColor) == 0xff) {
+                // Set the caption's color to the color of the status bar if opaque.
                 mCaptionView.setBackgroundColor(statusBarColor);
-            } else if (Color.alpha(bgColor) != 0) {
-                // Otherwise, use the background color of the task if it's not transparent.
+            } else if (Color.alpha(bgColor) == 0xff) {
+                // Otherwise, use the background color of the task if opaque.
                 mCaptionView.setBackgroundColor(bgColor);
             }
         }
@@ -602,6 +605,28 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     @Nullable
     BubbleTaskView getBubbleTaskView() {
         return mBubbleTaskView;
+    }
+
+    /**
+     * Adds a {@link SurfaceControl.TransactionCommittedListener} to be invoked when the TaskView's
+     * next draw.
+     * This is needed in case there is any following surface change that needs to wait until the
+     * TaskView property applied.
+     *
+     * NOTE: Do NOT use this if you already have a transaction.
+     */
+    void executeOnTaskViewDraw(@NonNull @CallbackExecutor Executor executor,
+            @NonNull SurfaceControl.TransactionCommittedListener listener) {
+        if (mBubbleTaskView == null) {
+            throw new IllegalStateException("BubbleTaskView is null");
+        }
+        final ViewRootImpl viewRoot = mBubbleTaskView.getTaskView().getViewRootImpl();
+        if (viewRoot == null) {
+            throw new IllegalStateException("ViewRootImpl of Bubble TaskView is null");
+        }
+        final SurfaceControl.Transaction transaction = new SurfaceControl.Transaction();
+        transaction.addTransactionCommittedListener(executor, listener);
+        viewRoot.applyTransactionOnDraw(transaction);
     }
 
     /**

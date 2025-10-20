@@ -16,10 +16,10 @@
 
 package android.companion.virtual.computercontrol;
 
-import android.companion.virtual.computercontrol.IInteractiveMirrorDisplay;
-import android.hardware.input.VirtualKeyEvent;
-import android.hardware.input.VirtualTouchEvent;
+import android.companion.virtual.computercontrol.IComputerControlLifecycleCallback;
+import android.companion.virtual.computercontrol.IInteractiveMirror;
 import android.view.Surface;
+import android.view.SurfaceControl;
 
 /**
  * Interface for computer control session management.
@@ -28,18 +28,46 @@ import android.view.Surface;
  */
 interface IComputerControlSession {
 
-    /** Returns the ID of the single trusted virtual display for this session. */
-    int getVirtualDisplayId();
+    /**
+     * Initializes the computer control session by setting the callback to be notified about
+     * computer control lifecycle changes, and configuring the Surface for the session.
+     */
+    void initialize(in IComputerControlLifecycleCallback listener, in Surface surface);
 
-    /** Injects a key event into the trusted virtual display. */
-    void sendKeyEvent(in VirtualKeyEvent event);
+    /** Launches an application on the trusted virtual display. */
+    void launchApplication(in String packageName, in String className);
 
-    /** Injects a touch event into the trusted virtual display. */
-    void sendTouchEvent(in VirtualTouchEvent event);
+    /** Hand over full control of the automation session to the user. */
+    void handOverApplications();
 
-    /** Creates an interactive virtual display, mirroring the trusted one. */
-    IInteractiveMirrorDisplay createInteractiveMirrorDisplay(
-            int width, int height, in Surface surface);
+    /* Injects a tap event into the trusted virtual display. */
+    void tap(int x, int y);
+
+    /* Injects a swipe event into the trusted virtual display. */
+    void swipe(int fromX, int fromY, int toX, int toY);
+
+    /** Injects a long press event into the trusted virtual display. */
+    void longPress(int x, int y);
+
+    /** Creates an interactive mirror of the session's virtual display. */
+    IInteractiveMirror createInteractiveMirror(out SurfaceControl mirrorSurface);
+
+    /**
+     * Inserts text into the current active input connection. If there is no active input
+     * connection, this method is no-op.
+     *
+     * @param text to be inserted
+     * @param replaceExisting whether the existing text in the input field should be replaced. If
+     *                        {@code false}, we will insert the text the current cursor position.
+     * @param commit whether the text should be submitted after insertion
+     */
+    void insertText(in String text, boolean replaceExisting, boolean commit);
+
+    /** Performs computer control action on the computer control display. */
+    void performAction(int actionCode);
+
+    /** Attaches a notification to the session, to make it non-dismissable. */
+    void attachNotificationInfo(int notificationId, in String notificationTag);
 
     /** Closes this session. */
     void close();

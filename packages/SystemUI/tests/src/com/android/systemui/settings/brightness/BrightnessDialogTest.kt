@@ -18,11 +18,11 @@ package com.android.systemui.settings.brightness
 
 import android.content.Intent
 import android.graphics.Rect
-import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManagerPolicyConstants.EXTRA_FROM_BRIGHTNESS_KEY
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.FlakyTest
 import androidx.test.filters.SmallTest
 import androidx.test.rule.ActivityTestRule
@@ -30,15 +30,12 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.activity.SingleActivityFactory
 import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel
 import com.android.systemui.brightness.ui.viewmodel.brightnessSliderViewModelFactory
-import com.android.systemui.qs.flags.QSComposeFragment
-import com.android.systemui.qs.flags.QsInCompose
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper
 import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.DelayableExecutor
 import com.android.systemui.util.concurrency.FakeExecutor
-import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat
@@ -59,30 +56,14 @@ import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.eq
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4
-import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(ParameterizedAndroidJunit4::class)
+@RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
-class BrightnessDialogTest(val flags: FlagsParameterization) : SysuiTestCase() {
+class BrightnessDialogTest : SysuiTestCase() {
 
-    init {
-        mSetFlagsRule.setFlagsParameterization(flags)
-    }
+    private val viewId = R.id.brightness_dialog_slider
 
-    private val viewId by lazy {
-        if (QsInCompose.isEnabled) {
-            R.id.brightness_dialog_slider
-        } else {
-            R.id.brightness_mirror_container
-        }
-    }
-
-    @Mock private lateinit var brightnessSliderControllerFactory: BrightnessSliderController.Factory
-    @Mock private lateinit var brightnessSliderController: BrightnessSliderController
-    @Mock private lateinit var brightnessControllerFactory: BrightnessController.Factory
-    @Mock private lateinit var brightnessController: BrightnessController
     @Mock private lateinit var accessibilityMgr: AccessibilityManagerWrapper
     @Mock private lateinit var shadeInteractor: ShadeInteractor
 
@@ -99,8 +80,6 @@ class BrightnessDialogTest(val flags: FlagsParameterization) : SysuiTestCase() {
         ActivityTestRule(
             /* activityFactory= */ SingleActivityFactory {
                 TestDialog(
-                    brightnessSliderControllerFactory,
-                    brightnessControllerFactory,
                     mainExecutor,
                     accessibilityMgr,
                     shadeInteractor,
@@ -115,10 +94,6 @@ class BrightnessDialogTest(val flags: FlagsParameterization) : SysuiTestCase() {
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
-        `when`(brightnessSliderControllerFactory.create(any(), any()))
-            .thenReturn(brightnessSliderController)
-        `when`(brightnessSliderController.rootView).thenReturn(View(context))
-        `when`(brightnessControllerFactory.create(any())).thenReturn(brightnessController)
         whenever(shadeInteractor.isQsExpanded).thenReturn(MutableStateFlow(false))
     }
 
@@ -225,8 +200,6 @@ class BrightnessDialogTest(val flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     class TestDialog(
-        brightnessSliderControllerFactory: BrightnessSliderController.Factory,
-        brightnessControllerFactory: BrightnessController.Factory,
         mainExecutor: DelayableExecutor,
         accessibilityMgr: AccessibilityManagerWrapper,
         shadeInteractor: ShadeInteractor,
@@ -234,8 +207,6 @@ class BrightnessDialogTest(val flags: FlagsParameterization) : SysuiTestCase() {
         private val countdownLatch: CountDownLatch,
     ) :
         BrightnessDialog(
-            brightnessSliderControllerFactory,
-            brightnessControllerFactory,
             mainExecutor,
             accessibilityMgr,
             shadeInteractor,
@@ -254,14 +225,6 @@ class BrightnessDialogTest(val flags: FlagsParameterization) : SysuiTestCase() {
         override fun onDestroy() {
             super.onDestroy()
             countdownLatch.countDown()
-        }
-    }
-
-    companion object {
-        @JvmStatic
-        @Parameters(name = "{0}")
-        fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(QSComposeFragment.FLAG_NAME)
         }
     }
 }

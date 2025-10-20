@@ -17,43 +17,62 @@
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
 import android.graphics.Rect as IntRect
+import android.view.PointerIcon as AndroidPointerIcon
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.PointerType
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureColors
+import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
 // The different modes of interaction that the user can have with the RegionBox.
-private enum class DragMode {
+enum class DragMode {
     DRAWING,
     MOVING,
     RESIZING,
@@ -93,36 +112,34 @@ private fun isRectInScreen(rect: Rect, screenWidth: Float, screenHeight: Float):
 }
 
 /**
- * Determines which zone (corner or edge) of a box is being touched based on the press offset.
+ * Determines which zone (corner or edge) of the box is being tapped or hovered by the pointer.
  *
  * @param boxWidth The total width of the box.
  * @param boxHeight The total height of the box.
- * @param startOffset The position of the initial press.
- * @param touchAreaPx The size of the touch area in pixels.
- * @return The ResizeZone that was pressed, or `null` if the press was not on a zone.
+ * @param pointerOffset The offset position of the pointer relative to box's top-left corner.
+ * @param tapTargetSizePx The size of an individual tap target in pixels.
+ * @return The `ResizeZone` that is tapped or hovered, or `null` if none.
  */
-private fun getTouchedZone(
+private fun getResizeZone(
     boxWidth: Float,
     boxHeight: Float,
-    startOffset: Offset,
-    touchAreaPx: Float,
+    pointerOffset: Offset,
+    tapTargetSizePx: Float,
 ): ResizeZone? {
-    // Check if the touch is within the touch area of the box.
-    val touchedZone =
-        Rect(
-            left = -touchAreaPx,
-            top = -touchAreaPx,
-            right = boxWidth + touchAreaPx,
-            bottom = boxHeight + touchAreaPx,
-        )
-    if (!touchedZone.contains(startOffset)) {
+    val tapTargetHalfPx = floor(tapTargetSizePx / 2)
+
+    // Check if the press is within the overall zone of the box.
+    val boxZone = Rect(0f, 0f, boxWidth, boxHeight).inflate(tapTargetHalfPx)
+    if (!boxZone.contains(pointerOffset)) {
         return null
     }
 
-    val isTouchingTop = startOffset.y in -touchAreaPx..touchAreaPx
-    val isTouchingBottom = startOffset.y in (boxHeight - touchAreaPx)..(boxHeight + touchAreaPx)
-    val isTouchingLeft = startOffset.x in -touchAreaPx..touchAreaPx
-    val isTouchingRight = startOffset.x in (boxWidth - touchAreaPx)..(boxWidth + touchAreaPx)
+    val isTouchingTop = pointerOffset.y in -tapTargetHalfPx..tapTargetHalfPx
+    val isTouchingBottom =
+        pointerOffset.y in (boxHeight - tapTargetHalfPx)..(boxHeight + tapTargetHalfPx)
+    val isTouchingLeft = pointerOffset.x in -tapTargetHalfPx..tapTargetHalfPx
+    val isTouchingRight =
+        pointerOffset.x in (boxWidth - tapTargetHalfPx)..(boxWidth + tapTargetHalfPx)
 
     return when {
         // Corners have priority over edges, as they occupy overlapping areas.
@@ -145,57 +162,68 @@ private fun getTouchedZone(
  * A class that encapsulates the state and logic for the RegionBox composable.
  *
  * @param minSizePx The minimum size of the box in pixels.
- * @param touchAreaPx The size of the touch area for resizing in pixels.
+ * @param density The density of the screen. Used for the conversions between pixels and Dp.
+ * @param initialRect The initial rectangle of the box.
  */
-private class RegionBoxState(private val minSizePx: Float, private val touchAreaPx: Float) {
-    var rect by mutableStateOf<Rect?>(null)
-        private set
+class RegionBoxState(
+    private val minSizePx: Float,
+    private val density: Density,
+    initialRect: IntRect? = null,
+) {
+    var rect by
+        mutableStateOf<Rect?>(
+            initialRect?.let {
+                Rect(
+                    left = it.left.toFloat(),
+                    top = it.top.toFloat(),
+                    right = it.right.toFloat(),
+                    bottom = it.bottom.toFloat(),
+                )
+            }
+        )
 
-    private var dragMode by mutableStateOf(DragMode.NONE)
-    private var resizeZone by mutableStateOf<ResizeZone?>(null)
+    var dragMode by mutableStateOf(DragMode.NONE)
 
-    // The offset of the initial press when the user starts a drag gesture.
-    private var newBoxStartOffset by mutableStateOf(Offset.Zero)
+    /**
+     * Tracks which edge or corner of the selection box the user is currently dragging to resize the
+     * box.
+     */
+    var resizeZone by mutableStateOf<ResizeZone?>(null)
+
+    /**
+     * Tracks which edge or corner that the user is currently hovering over, without any buttons
+     * being clicked. It's used to dynamically show the correct resize cursor.
+     */
+    var hoveredZone by mutableStateOf<ResizeZone?>(null)
+
+    /** The bounds of the capture button, relative to the selection box. */
+    var captureButtonBounds by mutableStateOf<Rect?>(null)
+
+    /** True if the user is currently hovering over the selection box. */
+    var isHoveringBox by mutableStateOf(false)
+
+    /** True if the user is currently hovering over the capture button. */
+    var isHoveringButton by mutableStateOf(false)
+
+    /**
+     * The offset of the initial press when the user starts a drag gesture. The offset is relative
+     * to the overall screen bounds.
+     */
+    var newBoxStartOffset by mutableStateOf(Offset.Zero)
 
     // Must remember the screen size for the drag logic. Initial values are set to 0.
-    var screenWidth by mutableStateOf(0f)
-    var screenHeight by mutableStateOf(0f)
+    var screenWidth by mutableFloatStateOf(0f)
+    var screenHeight by mutableFloatStateOf(0f)
 
-    fun startDrag(startOffset: Offset) {
-        val currentRect = rect
-
-        if (currentRect == null) {
-            // If the box is not yet created, it is a drawing drag.
-            dragMode = DragMode.DRAWING
-            newBoxStartOffset = startOffset
-        } else {
-            // The offset of the existing box.
-            val currentRectOffset = startOffset - currentRect.topLeft
-            val touchedZone =
-                getTouchedZone(
-                    currentRect.width,
-                    currentRect.height,
-                    currentRectOffset,
-                    touchAreaPx,
-                )
-            when {
-                touchedZone != null -> {
-                    // If the drag was initiated within the current rectangle's drag-to-resize touch
-                    // zone, it is a resizing drag.
-                    dragMode = DragMode.RESIZING
-                    resizeZone = touchedZone
-                }
-                currentRect.contains(startOffset) -> {
-                    // If the drag was initiated inside the rectangle and not within the touch
-                    // zones, it is a moving drag.
-                    dragMode = DragMode.MOVING
-                }
-                else -> {
-                    // The touch was initiated outside of the rectangle and its touch zone.
-                    dragMode = DragMode.DRAWING
-                    newBoxStartOffset = startOffset
-                }
-            }
+    /**
+     * Determines which drag mode is being initiated based on the given pointer type and position.
+     */
+    fun startDrag(pointerType: PointerType, pointerPosition: Offset) {
+        val (newDragMode, newResizeZone) = getDragModeForPointer(pointerType, pointerPosition)
+        dragMode = newDragMode
+        resizeZone = newResizeZone
+        if (newDragMode == DragMode.DRAWING) {
+            newBoxStartOffset = pointerPosition
         }
     }
 
@@ -273,6 +301,71 @@ private class RegionBoxState(private val minSizePx: Float, private val touchArea
         dragMode = DragMode.NONE
         resizeZone = null
     }
+
+    /**
+     * Determines which part of the region box is being hovered based on the given `pointerType` and
+     * the `pointerPosition` relative to the box bounds and tap targets.
+     */
+    fun updateHoverState(pointerType: PointerType, pointerPosition: Offset) {
+        // If there is no box, then there is nothing to hover.
+        val currentRect = rect ?: return
+
+        hoveredZone = getResizeZone(pointerType, pointerPosition)
+        isHoveringBox = currentRect.contains(pointerPosition)
+        captureButtonBounds?.let { buttonBounds ->
+            val globalButtonBounds = buttonBounds.translate(currentRect.topLeft)
+            isHoveringButton = globalButtonBounds.contains(pointerPosition)
+        }
+    }
+
+    private fun getDragModeForPointer(
+        pointerType: PointerType,
+        pointerPosition: Offset,
+    ): Pair<DragMode, ResizeZone?> {
+        // If the box is not yet created, it is a drawing drag.
+        val currentRect = rect ?: return Pair(DragMode.DRAWING, null)
+
+        val currentResizeZone = getResizeZone(pointerType, pointerPosition)
+        return when {
+            // If the drag is initiated within the box's resize zones, it is a resizing drag.
+            currentResizeZone != null -> Pair(DragMode.RESIZING, currentResizeZone)
+            // If the drag was initiated outside the touch zones but inside the box, it is a moving
+            // drag.
+            currentRect.contains(pointerPosition) -> Pair(DragMode.MOVING, null)
+            // The drag is initiated outside the box and resize zones so it is a drawing drag.
+            else -> Pair(DragMode.DRAWING, null)
+        }
+    }
+
+    private fun getResizeZone(pointerType: PointerType, pointerPosition: Offset): ResizeZone? {
+        val currentRect = rect ?: return null
+
+        val pointerOffset = pointerPosition - currentRect.topLeft
+        val tapTargetSizePx = getTapTargetSize(pointerType)
+
+        return getResizeZone(
+            boxWidth = currentRect.width,
+            boxHeight = currentRect.height,
+            pointerOffset = pointerOffset,
+            tapTargetSizePx = tapTargetSizePx,
+        )
+    }
+
+    private fun getTapTargetSize(pointerType: PointerType): Float {
+        return with(density) { if (isPreciseTool(pointerType)) 36.dp.toPx() else 48.dp.toPx() }
+    }
+
+    private fun isPreciseTool(pointerType: PointerType): Boolean {
+        return when (pointerType) {
+            // Mouse, stylus, and touchpad are more accurate tools
+            PointerType.Mouse,
+            PointerType.Stylus -> true
+            // Touchscreen and other types are not
+            PointerType.Touch,
+            PointerType.Unknown -> false
+            else -> false
+        }
+    }
 }
 
 /**
@@ -284,14 +377,18 @@ private class RegionBoxState(private val minSizePx: Float, private val touchArea
  *   user finishes a drag gesture. This rectangle is used for taking a screenshot. The rectangle is
  *   of type [android.graphics.Rect] because the screenshot API requires int values.
  * @param onCaptureClick A callback function that is invoked when the capture button is clicked.
+ * @param onInteractionStateChanged A callback function that is invoked when the user starts or
+ *   stops interacting with the region box.
  * @param modifier The modifier to be applied to the composable.
  */
 @Composable
 fun RegionBox(
+    initialRect: IntRect?,
     buttonText: String,
     buttonIcon: Icon?,
     onRegionSelected: (rect: IntRect) -> Unit,
     onCaptureClick: () -> Unit,
+    onInteractionStateChanged: (isInteracting: Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
@@ -300,29 +397,50 @@ fun RegionBox(
     val minSize = 48.dp
     val minSizePx = remember(density) { with(density) { minSize.toPx() } }
 
-    // The touch area for detecting an edge or corner resize drag.
-    val touchArea = 48.dp
-    val touchAreaPx = remember(density) { with(density) { touchArea.toPx() } }
-
-    val state = remember { RegionBoxState(minSizePx, touchAreaPx) }
+    val state = remember { RegionBoxState(minSizePx, density, initialRect) }
     val scrimColor = ScreenCaptureColors.scrimColor
+    val pointerIcon = rememberPointerIcon(state)
+
+    LaunchedEffect(state.dragMode) { onInteractionStateChanged(state.dragMode != DragMode.NONE) }
 
     Box(
         modifier =
             modifier
                 .fillMaxSize()
-                // .onSizeChanged gives us the final size of this box, which is the screen size,
-                // after it has been drawn.
                 .onSizeChanged { sizeInPixels: IntSize ->
                     state.screenWidth = sizeInPixels.width.toFloat()
                     state.screenHeight = sizeInPixels.height.toFloat()
                 }
+                .pointerHoverIcon(pointerIcon)
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val pointerEvent = awaitPointerEvent(PointerEventPass.Main)
+                            // Do not update hover state if the pointer was not moved.
+                            if (pointerEvent.type != PointerEventType.Move) {
+                                continue
+                            }
+
+                            val pointerChange = pointerEvent.changes.first()
+                            // Don't update hover state if the pointer is pressed to prevent flicker
+                            // during drags.
+                            if (pointerChange.pressed) {
+                                continue
+                            }
+
+                            state.updateHoverState(pointerChange.type, pointerChange.position)
+                        }
+                    }
+                }
                 .pointerInput(Unit) {
                     detectDragGestures(
-                        onDragStart = { startOffset: Offset -> state.startDrag(startOffset) },
-                        onDrag = { change: PointerInputChange, dragAmount: Offset ->
-                            change.consume()
-                            state.drag(change.position, dragAmount)
+                        orientationLock = null,
+                        onDragStart = { pointerChange: PointerInputChange, _, _ ->
+                            state.startDrag(pointerChange.type, pointerChange.position)
+                        },
+                        onDrag = { pointerChange: PointerInputChange, dragAmount: Offset ->
+                            pointerChange.consume()
+                            state.drag(pointerChange.position, dragAmount)
                         },
                         onDragEnd = {
                             state.dragEnd()
@@ -361,7 +479,7 @@ fun RegionBox(
         }
 
         // The width of the border stroke around the region box.
-        val borderStrokeWidth = 4.dp
+        val borderStrokeWidth = 2.dp
 
         state.rect?.let { currentRect ->
             // A parent container for the region box and its associated UI. By applying the
@@ -383,50 +501,57 @@ fun RegionBox(
                 // button [RegionDimensionsPill]'s size, which is only known after measurement.
                 SubcomposeLayout { constraints ->
                     // First, measure the pill [RegionDimensionsPill] to get its actual height.
-                    val dimensionPillPlaceable =
+                    val dimensionPillMeasurables =
                         subcompose("dimensionPill") {
-                                val pillVerticalSpacingDp = 16.dp
-                                RegionDimensionsPill(
-                                    widthPx = currentRect.width.roundToInt(),
-                                    heightPx = currentRect.height.roundToInt(),
-                                    modifier =
-                                        Modifier.layout { measurable, _ ->
-                                            val pillInnerPlaceable =
-                                                measurable.measure(Constraints())
-                                            val pillVerticalSpacingPx =
-                                                with(density) { pillVerticalSpacingDp.toPx() }
-                                            // Center the pill horizontally relative to the region
-                                            // box's width.
-                                            val pillX =
-                                                (currentRect.width - pillInnerPlaceable.width) / 2
+                            val pillVerticalSpacingDp = 16.dp
+                            RegionDimensionsPill(
+                                widthPx = currentRect.width.roundToInt(),
+                                heightPx = currentRect.height.roundToInt(),
+                                modifier =
+                                    Modifier.layout { measurable, _ ->
+                                        val pillInnerPlaceable = measurable.measure(Constraints())
+                                        val pillVerticalSpacingPx =
+                                            with(density) { pillVerticalSpacingDp.toPx() }
+                                        // Center the pill horizontally relative to the region
+                                        // box's width.
+                                        val pillX =
+                                            (currentRect.width - pillInnerPlaceable.width) / 2
 
-                                            // Calculate the Y position of the pill, and restrict it
-                                            // to stay within the screen bounds.
-                                            val pillY =
-                                                (currentRect.height + pillVerticalSpacingPx)
-                                                    .coerceAtMost(
-                                                        state.screenHeight -
-                                                            currentRect.top -
-                                                            pillInnerPlaceable.height -
-                                                            pillVerticalSpacingPx
-                                                    )
-                                            layout(
-                                                pillInnerPlaceable.width,
-                                                pillInnerPlaceable.height,
-                                            ) {
-                                                pillInnerPlaceable.placeRelative(
-                                                    pillX.roundToInt(),
-                                                    pillY.roundToInt(),
+                                        // Calculate the Y position of the pill, and restrict it
+                                        // to stay within the screen bounds.
+                                        val pillY =
+                                            (currentRect.height + pillVerticalSpacingPx)
+                                                .coerceAtMost(
+                                                    state.screenHeight -
+                                                        currentRect.top -
+                                                        pillInnerPlaceable.height -
+                                                        pillVerticalSpacingPx
                                                 )
-                                            }
-                                        },
-                                )
-                            }
-                            .first()
-                            .measure(constraints)
+                                        layout(
+                                            pillInnerPlaceable.width,
+                                            pillInnerPlaceable.height,
+                                        ) {
+                                            pillInnerPlaceable.placeRelative(
+                                                pillX.roundToInt(),
+                                                pillY.roundToInt(),
+                                            )
+                                        }
+                                    },
+                            )
+                        }
+
+                    val dimensionPillPlaceable =
+                        if (
+                            state.dragMode == DragMode.RESIZING ||
+                                state.dragMode == DragMode.DRAWING
+                        ) {
+                            dimensionPillMeasurables.first().measure(constraints)
+                        } else {
+                            null
+                        }
 
                     val dimensionPillHeightDp =
-                        with(density) { dimensionPillPlaceable.height.toDp() }
+                        dimensionPillPlaceable?.let { with(density) { it.height.toDp() } } ?: 0.dp
 
                     // To determine the button's placement, we first need to know its size. We
                     // subcompose the button once just to measure it.
@@ -549,6 +674,16 @@ fun RegionBox(
                                                     (currentRect.height - buttonSize.height) / 2f
                                             }
                                     )
+
+                                state.captureButtonBounds =
+                                    Rect(
+                                        offset = Offset(targetTranslationX, targetTranslationY),
+                                        size =
+                                            Size(
+                                                width = buttonSize.width.toFloat(),
+                                                height = buttonSize.height.toFloat(),
+                                            ),
+                                    )
                                 PrimaryButton(
                                     modifier =
                                         Modifier.graphicsLayer {
@@ -571,7 +706,7 @@ fun RegionBox(
                                         Modifier.size(boxWidthDp, boxHeightDp)
                                             .border(
                                                 borderStrokeWidth,
-                                                MaterialTheme.colorScheme.onSurfaceVariant,
+                                                MaterialTheme.colorScheme.primary,
                                             )
                                 )
                             }
@@ -588,11 +723,136 @@ fun RegionBox(
                         // SubcomposeLayout to the correct on-screen position, ensuring all
                         // elements move as a single, synchronized unit.
                         selectionBoxPlaceable.placeRelative(0, 0)
-                        dimensionPillPlaceable.placeRelative(0, 0)
+                        dimensionPillPlaceable?.placeRelative(0, 0)
                         captureButtonPlaceable.placeRelative(0, 0)
+                    }
+                }
+
+                // Draw the 4 resize knobs at the 4 corners of the region box.
+                val handleSize = 20.dp
+                val handleSizePx = with(density) { handleSize.toPx() }.roundToInt()
+                if (state.dragMode != DragMode.MOVING && state.dragMode != DragMode.RESIZING) {
+                    Box {
+                        ResizeHandle(
+                            modifier = Modifier.offset { IntOffset(x = 0, y = 0) },
+                            rotation = 0f,
+                            size = handleSize,
+                        )
+                        ResizeHandle(
+                            modifier =
+                                Modifier.offset {
+                                    IntOffset(
+                                        x = currentRect.width.roundToInt() - handleSizePx,
+                                        y = 0,
+                                    )
+                                },
+                            rotation = 90f,
+                            size = handleSize,
+                        )
+                        ResizeHandle(
+                            modifier =
+                                Modifier.offset {
+                                    IntOffset(
+                                        x = 0,
+                                        y = currentRect.height.roundToInt() - handleSizePx,
+                                    )
+                                },
+                            rotation = 270f,
+                            size = handleSize,
+                        )
+                        ResizeHandle(
+                            modifier =
+                                Modifier.offset {
+                                    IntOffset(
+                                        x = currentRect.width.roundToInt() - handleSizePx,
+                                        y = currentRect.height.roundToInt() - handleSizePx,
+                                    )
+                                },
+                            rotation = 180f,
+                            size = handleSize,
+                        )
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun ResizeHandle(rotation: Float, size: Dp, modifier: Modifier = Modifier) {
+    val handleColor = MaterialTheme.colorScheme.primary
+    Canvas(modifier = modifier.size(size).graphicsLayer { rotationZ = rotation }) {
+        val strokeWidth = 6.dp.toPx()
+        val canvasSize = this.size.width
+        val path =
+            Path().apply {
+                moveTo(canvasSize - strokeWidth / 2, strokeWidth / 2)
+                lineTo(strokeWidth / 2, strokeWidth / 2)
+                lineTo(strokeWidth / 2, canvasSize - strokeWidth / 2)
+            }
+
+        drawPath(
+            path = path,
+            color = handleColor,
+            style = Stroke(width = strokeWidth, join = StrokeJoin.Round, cap = StrokeCap.Round),
+        )
+    }
+}
+
+/**
+ * Remembers the appropriate [PointerIcon] based on the current interaction state.
+ *
+ * @param state The current [RegionBoxState].
+ * @return The [PointerIcon] to be displayed.
+ */
+@Composable
+private fun rememberPointerIcon(state: RegionBoxState): PointerIcon {
+    val topLeftBottomRightResizeIcon =
+        rememberSystemPointerIcon(AndroidPointerIcon.TYPE_TOP_LEFT_DIAGONAL_DOUBLE_ARROW)
+    val topRightButtonLeftResizeIcon =
+        rememberSystemPointerIcon(AndroidPointerIcon.TYPE_TOP_RIGHT_DIAGONAL_DOUBLE_ARROW)
+    val verticalResizeIcon =
+        rememberSystemPointerIcon(AndroidPointerIcon.TYPE_VERTICAL_DOUBLE_ARROW)
+    val horizontalResizeIcon =
+        rememberSystemPointerIcon(AndroidPointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW)
+    val fourArrowMoveIcon = rememberSystemPointerIcon(AndroidPointerIcon.TYPE_ALL_SCROLL)
+
+    return remember(
+        state.resizeZone,
+        state.hoveredZone,
+        state.dragMode,
+        state.isHoveringBox,
+        state.isHoveringButton,
+    ) {
+        val activeZone = state.resizeZone ?: state.hoveredZone
+        when {
+            state.isHoveringButton -> PointerIcon.Hand
+            state.dragMode == DragMode.MOVING -> fourArrowMoveIcon
+            activeZone != null ->
+                when (activeZone) {
+                    ResizeZone.Corner.TopLeft,
+                    ResizeZone.Corner.BottomRight -> topLeftBottomRightResizeIcon
+                    ResizeZone.Corner.TopRight,
+                    ResizeZone.Corner.BottomLeft -> topRightButtonLeftResizeIcon
+                    ResizeZone.Edge.Top,
+                    ResizeZone.Edge.Bottom -> verticalResizeIcon
+                    ResizeZone.Edge.Left,
+                    ResizeZone.Edge.Right -> horizontalResizeIcon
+                }
+            state.isHoveringBox -> fourArrowMoveIcon
+            else -> PointerIcon.Crosshair
+        }
+    }
+}
+
+/**
+ * Remembers a system [PointerIcon] for the given Android pointer icon type.
+ *
+ * @param type The system pointer icon type from [android.view.PointerIcon].
+ * @return A Compose [PointerIcon] to be used with pointerInput modifiers.
+ */
+@Composable
+private fun rememberSystemPointerIcon(type: Int): PointerIcon {
+    val context = LocalContext.current
+    return remember(context, type) { PointerIcon(AndroidPointerIcon.getSystemIcon(context, type)) }
 }

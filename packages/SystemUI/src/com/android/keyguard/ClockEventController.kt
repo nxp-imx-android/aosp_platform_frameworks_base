@@ -26,7 +26,6 @@ import android.icu.util.TimeZone as IcuTimeZone
 import android.os.Trace
 import android.provider.Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS
 import android.provider.Settings.Global.ZEN_MODE_OFF
-import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.view.View.OnAttachStateChangeListener
@@ -114,13 +113,8 @@ constructor(
     private val userTracker: UserTracker,
     private val dozingToLockscreenViewModel: Lazy<DozingToLockscreenTransitionViewModel>,
 ) {
-    var loggers =
-        listOf(
-                clockBuffers.infraMessageBuffer,
-                clockBuffers.smallClockMessageBuffer,
-                clockBuffers.largeClockMessageBuffer,
-            )
-            .map { Logger(it, TAG) }
+    val logger = Logger(clockBuffers.infraMessageBuffer, TAG)
+    var isPreview: Boolean = false
 
     var clock: ClockController? = null
         get() = field
@@ -152,7 +146,7 @@ constructor(
             return
         }
         val clockStr = clock.toString()
-        loggers.forEach { it.d({ "New Clock: $str1" }) { str1 = clockStr } }
+        logger.i({ "New Clock: $str1" }) { str1 = clockStr }
 
         clock.eventListeners.attach(clockListener)
         clock.initialize(isDarkTheme(), dozeAmount.value, 0f)
@@ -188,9 +182,7 @@ constructor(
         updateTimeListeners()
 
         weatherData?.let {
-            if (WeatherData.DEBUG) {
-                Log.i(TAG, "Pushing cached weather data to new clock: $it")
-            }
+            logger.i({ "Pushing cached weather data to new clock: $str1" }) { str1 = "$it" }
             clock.events.onWeatherDataChanged(it)
         }
         zenData?.let { clock.events.onZenDataChanged(it) }
@@ -255,7 +247,8 @@ constructor(
     private var largeClockOnSecondaryDisplay = false
 
     val dozeAmount = MutableStateFlow(0f)
-    val onClockBoundsChanged = MutableStateFlow<VRectF>(VRectF.ZERO)
+    val smallClockBounds = MutableStateFlow<VRectF>(VRectF.ZERO)
+    val largeClockBounds = MutableStateFlow<VRectF>(VRectF.ZERO)
     val smallClockMaxSize = MutableStateFlow<VPointF>(VPointF.ZERO)
     val largeClockMaxSize = MutableStateFlow<VPointF>(VPointF.ZERO)
 
@@ -280,7 +273,7 @@ constructor(
         }
 
         clock?.run {
-            Log.i(TAG, "isThemeDark: $isDarkTheme")
+            logger.i({ "updateColors(isThemeDark = $bool1)" }) { bool1 = isDarkTheme }
             smallClock.updateTheme { it.copy(isDarkTheme = isDarkTheme) }
             largeClock.updateTheme { it.copy(isDarkTheme = isDarkTheme) }
         }
@@ -314,7 +307,7 @@ constructor(
     var smallTimeListener: TimeListener? = null
     var largeTimeListener: TimeListener? = null
     val shouldTimeListenerRun: Boolean
-        get() = isKeyguardVisible && dozeAmount.value < DOZE_TICKRATE_THRESHOLD
+        get() = !isPreview && isKeyguardVisible && dozeAmount.value < DOZE_TICKRATE_THRESHOLD
 
     private var weatherData: WeatherData? = null
     private var zenData: ZenData? = null
@@ -324,8 +317,8 @@ constructor(
         object : ClockEventListener {
             override fun onChangeComplete() {}
 
-            override fun onBoundsChanged(currentBounds: VRectF) {
-                onClockBoundsChanged.value = currentBounds
+            override fun onBoundsChanged(currentBounds: VRectF, isLargeClock: Boolean) {
+                (if (isLargeClock) largeClockBounds else smallClockBounds).value = currentBounds
             }
 
             override fun onMaxSizeChanged(maxSize: VPointF, isLargeClock: Boolean) {
@@ -336,10 +329,12 @@ constructor(
     private val configListener =
         object : ConfigurationController.ConfigurationListener {
             override fun onThemeChanged() {
+                logger.i("onThemeChanged")
                 updateColors()
             }
 
             override fun onDensityOrFontScaleChanged() {
+                logger.i("onDensityOrFontScaleChanged")
                 updateFontSizes()
             }
         }
@@ -347,7 +342,7 @@ constructor(
     private val batteryCallback =
         object : BatteryStateChangeCallback {
             override fun onBatteryLevelChanged(level: Int, pluggedIn: Boolean, charging: Boolean) {
-                if (isKeyguardVisible && !isCharging && charging) {
+                if (!isPreview && isKeyguardVisible && !isCharging && charging) {
                     clock?.run {
                         smallClock.animations.charge()
                         largeClock.animations.charge()
@@ -444,7 +439,10 @@ constructor(
     private fun handleZenMode(zen: Int) {
         val mode = ZenMode.fromInt(zen)
         if (mode == null) {
-            Log.e(TAG, "Failed to get zen mode from int: $zen")
+            logger.e({ "Failed to get zen mode from int: $str1 ($int1)" }) {
+                str1 = "$mode"
+                int1 = zen
+            }
             return
         }
 
@@ -460,6 +458,15 @@ constructor(
     }
 
     fun bind(parent: View): DisposableHandle {
+        logger.i({ "bind($str1)" }) { str1 = "$parent" }
+        if (SceneContainerFlag.isEnabled) {
+            val keyguardState = keyguardTransitionInteractor.getStartedState()
+            if (keyguardState == AOD || keyguardState == DOZING) {
+                handleDoze(1f)
+            } else {
+                handleDoze(0f)
+            }
+        }
         return parent.repeatWhenAttached {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 listenForDnd(this)
@@ -467,9 +474,7 @@ constructor(
                 listenForAnyStateToAodTransition(this)
                 listenForAnyStateToLockscreenTransition(this)
                 listenForAnyStateToDozingTransition(this)
-                if (com.android.systemui.Flags.newDozingKeyguardStates()) {
-                    listenForDozingToLockscreen(this)
-                }
+                listenForDozingToLockscreen(this)
             }
         }
     }
@@ -477,6 +482,7 @@ constructor(
     fun registerListeners() {
         if (isRegistered) return
         isRegistered = true
+        logger.i("registerListeners(isPreview = $isPreview)")
 
         broadcastDispatcher.registerReceiver(
             localeBroadcastReceiver,
@@ -507,6 +513,7 @@ constructor(
     fun unregisterListeners() {
         if (!isRegistered) return
         isRegistered = false
+        logger.i("unregisterListeners(isPreview = $isPreview)")
 
         broadcastDispatcher.unregisterReceiver(localeBroadcastReceiver)
         configurationController.removeCallback(configListener)
@@ -578,6 +585,7 @@ constructor(
     }
 
     fun handleFidgetTap(x: Float, y: Float) {
+        if (isPreview) return
         clock?.run {
             smallClock.animations.onFidgetTap(x, y)
             largeClock.animations.onFidgetTap(x, y)
@@ -585,6 +593,11 @@ constructor(
     }
 
     private fun handleDoze(doze: Float) {
+        if (isPreview) {
+            dozeAmount.value = doze
+            return
+        }
+
         clock?.run {
             Trace.beginSection("$TAG#smallClock.animations.doze")
             smallClock.animations.doze(doze)
@@ -636,9 +649,7 @@ constructor(
                 .transition(Edge.create(to = LOCKSCREEN))
                 .filter { it.transitionState == TransitionState.STARTED }
                 .filter { it.from != AOD }
-                .filter {
-                    !com.android.systemui.Flags.newDozingKeyguardStates() || it.from != DOZING
-                }
+                .filter { it.from != DOZING }
                 .collect { handleDoze(0f) }
         }
     }

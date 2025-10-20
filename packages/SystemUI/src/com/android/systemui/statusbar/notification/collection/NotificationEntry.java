@@ -34,8 +34,6 @@ import static com.android.systemui.statusbar.notification.collection.NotifCollec
 
 import static java.util.Objects.requireNonNull;
 
-import android.annotation.FlaggedApi;
-import android.app.Flags;
 import android.app.Notification;
 import android.app.Notification.MessagingStyle.Message;
 import android.app.NotificationChannel;
@@ -51,8 +49,10 @@ import android.os.SystemClock;
 import android.service.notification.NotificationListenerService.Ranking;
 import android.service.notification.SnoozeCriterion;
 import android.service.notification.StatusBarNotification;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
+import android.util.Slog;
 import android.view.ContentInfo;
 
 import androidx.annotation.NonNull;
@@ -62,6 +62,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.ContrastColorUtil;
 import com.android.systemui.statusbar.InflationTask;
+import com.android.systemui.statusbar.notification.NmSummarizationAllFlag;
 import com.android.systemui.statusbar.notification.collection.NotifCollection.CancellationReason;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifFilter;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifPromoter;
@@ -437,6 +438,10 @@ public final class NotificationEntry extends ListEntry {
     }
 
     public boolean isBundled() {
+        if (getRanking() == null || getRanking().getChannel() == null) {
+            Slog.wtfQuiet(TAG, "getRanking() or getRanking().getChannel() is null " + getKey());
+            return false;
+        }
         return SYSTEM_RESERVED_IDS.contains(getRanking().getChannel().getId());
     }
 
@@ -672,15 +677,6 @@ public final class NotificationEntry extends ListEntry {
         }
     }
 
-    public void sendAccessibilityEvent(int eventType) {
-        if (com.android.systemui.Flags.notificationsHunAccessibilityRefactor()) {
-            return;
-        }
-        if (row != null) {
-            row.sendAccessibilityEvent(eventType);
-        }
-    }
-
     /**
      * Used by NotificationMediaManager to determine... things
      * @return {@code true} if we are a media notification
@@ -769,7 +765,7 @@ public final class NotificationEntry extends ListEntry {
     }
 
     public void notifyHeightChanged(boolean needsAnimation) {
-        if (row != null) row.notifyHeightChanged(needsAnimation);
+        if (row != null) row.notifyHeightChanged(needsAnimation, "NotifEntry.notifyHeightChanged");
     }
 
     public void closeRemoteInput() {
@@ -1089,7 +1085,6 @@ public final class NotificationEntry extends ListEntry {
     /**
      * Returns whether the NotificationEntry is promoted ongoing.
      */
-    @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public boolean isPromotedOngoing() {
         return mSbn.getNotification().isPromotedOngoing();
     }
@@ -1105,6 +1100,17 @@ public final class NotificationEntry extends ListEntry {
         } else {
             Log.wtf(TAG, "setting promoted content without feature flag enabled", new Throwable());
         }
+    }
+
+    public @Nullable String getSummarization() {
+        CharSequence summarization = null;
+        if (NmSummarizationAllFlag.isEnabled()) {
+            summarization = mSbn.getNotification().getSummarizedContent();
+        }
+        if (TextUtils.isEmpty(summarization)) {
+            summarization = getRanking() != null ? getRanking().getSummarization() : null;
+        }
+        return summarization != null ? summarization.toString() : null;
     }
 
     /** Information about a suggestion that is being edited. */

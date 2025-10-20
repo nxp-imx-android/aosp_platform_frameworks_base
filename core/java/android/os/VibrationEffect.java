@@ -145,17 +145,17 @@ public abstract class VibrationEffect implements Parcelable {
     @TestApi
     public static final int EFFECT_TEXTURE_TICK = 21;
 
-    /** {@hide} */
+    /** @hide */
     // Internally this maps to the HAL constant EffectStrength::LIGHT
     @TestApi
     public static final int EFFECT_STRENGTH_LIGHT = 0;
 
-    /** {@hide} */
+    /** @hide */
     // Internally this maps to the HAL constant EffectStrength::MEDIUM
     @TestApi
     public static final int EFFECT_STRENGTH_MEDIUM = 1;
 
-    /** {@hide} */
+    /** @hide */
     // Internally this maps to the HAL constant EffectStrength::STRONG
     @TestApi
     public static final int EFFECT_STRENGTH_STRONG = 2;
@@ -1440,9 +1440,12 @@ public abstract class VibrationEffect implements Parcelable {
     @FlaggedApi(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     @NonNull
     public static VibrationEffect createRepeatingEffect(@NonNull VibrationEffect effect) {
-        return VibrationEffect.startComposition()
-                .repeatEffectIndefinitely(effect)
-                .compose();
+        Preconditions.checkArgument(effect instanceof Composed, "Can't repeat a vendor effect.");
+        Preconditions.checkArgument(effect.getDuration() < Long.MAX_VALUE,
+                "Can't repeat an indefinitely repeating effect.");
+        VibrationEffect repeating = new Composed(((Composed) effect).getSegments(), 0);
+        repeating.validate();
+        return repeating;
     }
 
     /**
@@ -1462,12 +1465,20 @@ public abstract class VibrationEffect implements Parcelable {
     @NonNull
     public static VibrationEffect createRepeatingEffect(@NonNull VibrationEffect preamble,
             @NonNull VibrationEffect repeatingEffect) {
+        Preconditions.checkArgument(preamble instanceof Composed, "Can't repeat a vendor effect.");
         Preconditions.checkArgument(preamble.getDuration() < Long.MAX_VALUE,
                 "Can't repeat an indefinitely repeating effect.");
-        return VibrationEffect.startComposition()
-                .addEffect(preamble)
-                .repeatEffectIndefinitely(repeatingEffect)
-                .compose();
+        Preconditions.checkArgument(repeatingEffect instanceof Composed,
+                "Can't repeat a vendor effect.");
+        Preconditions.checkArgument(repeatingEffect.getDuration() < Long.MAX_VALUE,
+                "Can't repeat an indefinitely repeating effect.");
+        List<VibrationEffectSegment> segments =
+                new ArrayList<>(((Composed) preamble).getSegments());
+        int repeatIndex = segments.size();
+        segments.addAll(((Composed) repeatingEffect).getSegments());
+        VibrationEffect repeating = new Composed(segments, repeatIndex);
+        repeating.validate();
+        return repeating;
     }
 
     /**
@@ -1514,19 +1525,6 @@ public abstract class VibrationEffect implements Parcelable {
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface DelayType {
-        }
-
-        /**
-         * Exception thrown when adding an element to a {@link Composition} that already ends in an
-         * indefinitely repeating effect.
-         * @hide
-         */
-        @TestApi
-        public static final class UnreachableAfterRepeatingIndefinitelyException
-                extends IllegalStateException {
-            UnreachableAfterRepeatingIndefinitelyException() {
-                super("Compositions ending in an indefinitely repeating effect can't be extended");
-            }
         }
 
         /**
@@ -1635,31 +1633,6 @@ public abstract class VibrationEffect implements Parcelable {
         Composition() {}
 
         /**
-         * Adds a time duration to the current composition, during which the vibrator will be
-         * turned off.
-         *
-         * @param duration The length of time the vibrator should be off. Value must be non-negative
-         *                 and will be truncated to milliseconds.
-         * @return This {@link Composition} object to enable adding multiple elements in one chain.
-         *
-         * @throws UnreachableAfterRepeatingIndefinitelyException if the composition is currently
-         * ending with a repeating effect.
-         * @hide
-         */
-        @TestApi
-        @NonNull
-        public Composition addOffDuration(@NonNull Duration duration) {
-            int durationMs = (int) duration.toMillis();
-            Preconditions.checkArgumentNonnegative(durationMs, "Off period must be non-negative");
-            if (durationMs > 0) {
-                // Created a segment sustaining the zero amplitude to represent the delay.
-                addSegment(new StepSegment(/* amplitude= */ 0, /* frequencyHz= */ 0,
-                        (int) duration.toMillis()));
-            }
-            return this;
-        }
-
-        /**
          * Add a haptic effect to the end of the current composition.
          *
          * <p>If this effect is repeating (e.g. created by {@link VibrationEffect#createWaveform}
@@ -1671,44 +1644,11 @@ public abstract class VibrationEffect implements Parcelable {
          * @param effect The effect to add to the end of this composition.
          * @return This {@link Composition} object to enable adding multiple elements in one chain.
          *
-         * @throws UnreachableAfterRepeatingIndefinitelyException if the composition is currently
-         * ending with a repeating effect.
          * @hide
          */
-        @TestApi
         @NonNull
         public Composition addEffect(@NonNull VibrationEffect effect) {
             return addSegments(effect);
-        }
-
-        /**
-         * Add a haptic effect to the end of the current composition and play it on repeat,
-         * indefinitely.
-         *
-         * <p>The entire effect will be played on repeat, indefinitely, after all other elements
-         * already added to this composition are played. No more effects or primitives will be
-         * accepted by this composition after this method. Such effects should be cancelled via
-         * {@link Vibrator#cancel()}.
-         *
-         * @param effect The effect to add to the end of this composition, must be finite.
-         * @return This {@link Composition} object to enable adding multiple elements in one chain,
-         * although only {@link #compose()} can follow this call.
-         *
-         * @throws IllegalArgumentException if the given effect is already repeating indefinitely.
-         * @throws UnreachableAfterRepeatingIndefinitelyException if the composition is currently
-         * ending with a repeating effect.
-         * @hide
-         */
-        @TestApi
-        @NonNull
-        public Composition repeatEffectIndefinitely(@NonNull VibrationEffect effect) {
-            Preconditions.checkArgument(effect.getDuration() < Long.MAX_VALUE,
-                    "Can't repeat an indefinitely repeating effect. Consider addEffect instead.");
-            int previousSegmentCount = mSegments.size();
-            addSegments(effect);
-            // Set repeat after segments were added, since addSegments checks this index.
-            mRepeatIndex = previousSegmentCount;
-            return this;
         }
 
         /**
@@ -1781,7 +1721,7 @@ public abstract class VibrationEffect implements Parcelable {
 
         private Composition addSegment(VibrationEffectSegment segment) {
             if (mRepeatIndex >= 0) {
-                throw new UnreachableAfterRepeatingIndefinitelyException();
+                throw new IllegalStateException("Can't add effects after a repeating effect.");
             }
             mSegments.add(segment);
             return this;
@@ -1789,7 +1729,7 @@ public abstract class VibrationEffect implements Parcelable {
 
         private Composition addSegments(VibrationEffect effect) {
             if (mRepeatIndex >= 0) {
-                throw new UnreachableAfterRepeatingIndefinitelyException();
+                throw new IllegalStateException("Can't add effects after a repeating effect.");
             }
             if (!(effect instanceof Composed composed)) {
                 throw new IllegalArgumentException("Can't add vendor effects to composition.");
@@ -2202,10 +2142,6 @@ public abstract class VibrationEffect implements Parcelable {
      * parameters are not set then the {@link WaveformBuilder} will start with the vibrator off,
      * represented by zero amplitude, at the vibrator's resonant frequency.
      *
-     * <p>Repeating waveforms can be created by building the repeating block separately and adding
-     * it to the end of a composition with
-     * {@link Composition#repeatEffectIndefinitely(VibrationEffect)}:
-     *
      * <p>Note that physical vibration actuators have different reaction times for changing
      * amplitude and frequency. Durations specified here represent a timeline for the target
      * parameters, and quality of effects may be improved if the durations allow time for a
@@ -2224,12 +2160,6 @@ public abstract class VibrationEffect implements Parcelable {
      *     .addSustain(Duration.ofMillis(50))
      *     .addTransition(Duration.ofMillis(60), targetAmplitude(0.2f))
      *     .build();
-     *
-     * VibrationEffect effect = VibrationEffect.startComposition()
-     *     .addPrimitive(VibrationEffect.Composition.PRIMITIVE_TICK)
-     *     .addOffDuration(Duration.ofMillis(20))
-     *     .repeatEffectIndefinitely(patternToRepeat)
-     *     .compose();}</pre>
      *
      * <p>The amplitude step waveforms that can be created via
      * {@link VibrationEffect#createWaveform(long[], int[], int)} can also be created with

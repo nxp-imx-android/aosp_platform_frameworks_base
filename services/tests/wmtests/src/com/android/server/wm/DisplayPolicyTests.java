@@ -378,8 +378,9 @@ public class DisplayPolicyTests extends WindowTestsBase {
         provider.setServerVisible(true);
         provider.updateSourceFrame(bar.getFrame());
 
-        final InsetsState prevInsetsState = new InsetsState();
-        prevInsetsState.addSource(new InsetsSource(provider.getSource()));
+        final InsetsSource prevInsetsSource = new InsetsSource(provider.getSource());
+        // Assume that the insets provider is temporarily invisible during switching.
+        provider.getSource().setVisible(false);
 
         final DisplayPolicy displayPolicy = mDisplayContent.getDisplayPolicy();
         final DisplayInfo info = mDisplayContent.getDisplayInfo();
@@ -387,7 +388,7 @@ public class DisplayPolicyTests extends WindowTestsBase {
         final int h = info.logicalHeight;
         displayPolicy.updateDecorInsetsInfo();
         final Rect prevConfigFrame = new Rect(displayPolicy.getDecorInsetsInfo(info.rotation,
-                info.logicalWidth, info.logicalHeight).mConfigFrame);
+                info.logicalWidth, info.logicalHeight).mOverrideConfigFrame);
 
         displayPolicy.updateCachedDecorInsets();
         mDisplayContent.updateBaseDisplayMetrics(w / 2, h / 2,
@@ -402,16 +403,21 @@ public class DisplayPolicyTests extends WindowTestsBase {
         assertTrue(displayPolicy.shouldKeepCurrentDecorInsets());
         // The current insets are restored from cache directly.
         assertEquals(prevConfigFrame, displayPolicy.getDecorInsetsInfo(info.rotation,
-                info.logicalWidth, info.logicalHeight).mConfigFrame);
+                info.logicalWidth, info.logicalHeight).mOverrideConfigFrame);
         // Assume that the InsetsSource in current InsetsState is not updated yet. And it will be
         // replaced by the one in cache.
         InsetsState currentInsetsState = new InsetsState();
-        final InsetsSource prevSource = new InsetsSource(provider.getSource());
-        prevSource.getFrame().scale(0.5f);
-        currentInsetsState.addSource(prevSource);
+        final InsetsSource currentSource = new InsetsSource(provider.getSource());
+        currentSource.setVisible(true);
+        currentSource.getFrame().scale(0.5f);
+        currentInsetsState.addSource(currentSource);
         currentInsetsState = mDisplayContent.getInsetsPolicy().adjustInsetsForWindow(
                 win, currentInsetsState);
-        assertEquals(prevInsetsState.peekSource(insetsId), currentInsetsState.peekSource(insetsId));
+        final InsetsSource adjustedSource = currentInsetsState.peekSource(insetsId);
+        assertNotNull(adjustedSource);
+        // The frame is restored from previous state, but the visibility still uses current state.
+        assertEquals(prevInsetsSource.getFrame(), adjustedSource.getFrame());
+        assertTrue(adjustedSource.isVisible());
 
         // If screen is not fully turned on, then the cache should be preserved.
         displayPolicy.screenTurnedOff(false /* acquireSleepToken */);
@@ -423,13 +429,13 @@ public class DisplayPolicyTests extends WindowTestsBase {
         displayPolicy.physicalDisplayUpdated();
         assertFalse(displayPolicy.shouldKeepCurrentDecorInsets());
         displayPolicy.getDecorInsetsInfo(info.rotation, info.logicalWidth, info.logicalHeight)
-                .mConfigFrame.offset(1, 1);
+                .mOverrideConfigFrame.offset(1, 1);
         // Even if CachedDecorInsets.canPreserve returns false, the cache won't be cleared.
         displayPolicy.updateDecorInsetsInfo();
         // Successful to restore from cache.
         displayPolicy.updateCachedDecorInsets();
         assertEquals(prevConfigFrame, displayPolicy.getDecorInsetsInfo(info.rotation,
-                info.logicalWidth, info.logicalHeight).mConfigFrame);
+                info.logicalWidth, info.logicalHeight).mOverrideConfigFrame);
     }
 
     @Test

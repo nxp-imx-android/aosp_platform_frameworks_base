@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
+import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
@@ -47,8 +48,9 @@ import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.observableTransitionState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
-import com.android.systemui.keyguard.ui.composable.blueprint.rememberBurnIn
+import com.android.compose.rememberSystemUiController
 import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
+import com.android.systemui.keyguard.ui.composable.rememberBurnIn
 import com.android.systemui.lifecycle.rememberActivated
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.ribbon.ui.composable.BottomRightCornerRibbon
@@ -104,7 +106,7 @@ fun SceneContainer(
             viewModel.animateQsTilesViewModelFactory.create()
         }
     val sceneTransitions =
-        remember(hapticFeedback, shadeExpansionMotion) {
+        remember(hapticFeedback, shadeExpansionMotion, animateQsTilesViewModel) {
             transitionsBuilder.build(
                 shadeExpansionMotion,
                 viewModel.hapticsViewModel.getRevealHaptics(hapticFeedback),
@@ -161,6 +163,7 @@ fun SceneContainer(
         remember {
             mutableStateMapOf()
         }
+    val systemUiController = rememberSystemUiController()
     LaunchedEffect(actionableContentKey) {
         try {
             val actionableContent: ActionableContent =
@@ -172,6 +175,11 @@ fun SceneContainer(
             viewModel.filteredUserActions(actionableContent.userActions).collect { userActions ->
                 userActionsByContentKey[actionableContentKey] =
                     viewModel.resolveSceneFamilies(userActions)
+
+                val isNavigationBarVisible = userActions.containsKey(Back)
+                if (systemUiController.isNavigationBarVisible != isNavigationBarVisible) {
+                    systemUiController.isNavigationBarVisible = isNavigationBarVisible
+                }
             }
         } finally {
             userActionsByContentKey[actionableContentKey] = emptyMap()

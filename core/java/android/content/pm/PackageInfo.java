@@ -20,10 +20,17 @@ import android.annotation.CurrentTimeMillisLong;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.android.internal.util.CollectionUtils;
+
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Overall information about the contents of a package.  This corresponds
@@ -236,6 +243,19 @@ public class PackageInfo implements Parcelable {
      */
     @Nullable
     public int[] requestedPermissionsFlags;
+
+    /**
+     * Map of object containing info related to purposes for all {@link
+     * android.R.styleable#AndroidManifestUsesPermission &lt;uses-permission&gt;} that have purpose
+     * related info. This is only filled in if the flag {@link PackageManager#GET_PERMISSIONS}
+     * was set.
+     *
+     * @hide
+     */
+    @NonNull
+    @SystemApi
+    @FlaggedApi(android.permission.flags.Flags.FLAG_PPD_MANIFEST_ENABLED)
+    public Map<String, UsesPermissionPurposeInfo> requestedPermissionsPurposes = Collections.emptyMap();
 
     /**
      * Array of all {@link android.R.styleable#AndroidManifestAttribution
@@ -625,6 +645,7 @@ public class PackageInfo implements Parcelable {
         dest.writeTypedArray(permissions, parcelableFlags);
         dest.writeString8Array(requestedPermissions);
         dest.writeIntArray(requestedPermissionsFlags);
+        writeRequestedPermissionsPurposes(dest);
         dest.writeTypedArray(signatures, parcelableFlags);
         dest.writeTypedArray(configPreferences, parcelableFlags);
         dest.writeTypedArray(reqFeatures, parcelableFlags);
@@ -659,6 +680,16 @@ public class PackageInfo implements Parcelable {
         }
         dest.writeBoolean(mIsAppMetadataVerified);
         dest.restoreAllowSquashing(prevAllowSquashing);
+    }
+
+    private void writeRequestedPermissionsPurposes(@NonNull Parcel dest) {
+        if (requestedPermissionsPurposes.isEmpty()) {
+            dest.writeBundle(null);
+            return;
+        }
+        final Bundle bundle = new Bundle();
+        requestedPermissionsPurposes.forEach(bundle::putParcelable);
+        dest.writeBundle(bundle);
     }
 
     public static final @android.annotation.NonNull Parcelable.Creator<PackageInfo> CREATOR
@@ -700,6 +731,7 @@ public class PackageInfo implements Parcelable {
         permissions = source.createTypedArray(PermissionInfo.CREATOR);
         requestedPermissions = source.createString8Array();
         requestedPermissionsFlags = source.createIntArray();
+        readRequestedPermissionsPurposes(source);
         signatures = source.createTypedArray(Signature.CREATOR);
         configPreferences = source.createTypedArray(ConfigurationInfo.CREATOR);
         reqFeatures = source.createTypedArray(FeatureInfo.CREATOR);
@@ -729,5 +761,19 @@ public class PackageInfo implements Parcelable {
             mApexPackageName = source.readString8();
         }
         mIsAppMetadataVerified = source.readBoolean();
+    }
+
+    private void readRequestedPermissionsPurposes(@NonNull Parcel in) {
+        final Bundle bundle = in.readBundle(UsesPermissionPurposeInfo.class.getClassLoader());
+        Map<String, UsesPermissionPurposeInfo> purposeInfos = Collections.emptyMap();
+        if (bundle == null) {
+            requestedPermissionsPurposes = purposeInfos;
+            return;
+        }
+        for (String key : bundle.keySet()) {
+            purposeInfos = CollectionUtils.add(purposeInfos, key, bundle.getParcelable(
+                    key, UsesPermissionPurposeInfo.class));
+        }
+        requestedPermissionsPurposes = purposeInfos;
     }
 }

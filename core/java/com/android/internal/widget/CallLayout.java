@@ -16,18 +16,22 @@
 
 package com.android.internal.widget;
 
+import static android.app.Flags.notificationTransparentBadgeRing;
+
 import android.annotation.AttrRes;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.StyleRes;
 import android.app.Notification;
 import android.app.Person;
+import android.app.SetNotificationBackgroundColorRefactor;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.RemotableViewMethod;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
 
@@ -87,7 +91,21 @@ public class CallLayout extends FrameLayout {
         // When the small icon is gone, hide the rest of the badge
         mIcon.setOnForceHiddenChangedListener((forceHidden) -> {
             mPeopleHelper.animateViewForceHidden(mConversationIconBadgeBg, forceHidden);
+            if (notificationTransparentBadgeRing()) {
+                mConversationIconView.setClipToOutline(true);
+            }
         });
+
+        if (notificationTransparentBadgeRing()) {
+            View conversationIconBadge = findViewById(R.id.conversation_icon_badge);
+            mConversationIconView.setOutlineProvider(
+                    PeopleHelper.getBadgeCutoutOutlineProvider(mConversationIconView,
+                            conversationIconBadge));
+            if (SetNotificationBackgroundColorRefactor.isEnabled()) {
+                mConversationIconBadgeBg.setImageTintList(ColorStateList.valueOf(
+                        android.R.color.transparent));
+            }
+        }
     }
 
     @NonNull
@@ -127,7 +145,9 @@ public class CallLayout extends FrameLayout {
      */
     @RemotableViewMethod
     public void setNotificationBackgroundColor(int color) {
-        mConversationIconBadgeBg.setImageTintList(ColorStateList.valueOf(color));
+        SetNotificationBackgroundColorRefactor.assertInLegacyMode();
+        mConversationIconBadgeBg.setImageTintList(ColorStateList.valueOf(
+                notificationTransparentBadgeRing() ? android.R.color.transparent : color));
     }
 
     /**

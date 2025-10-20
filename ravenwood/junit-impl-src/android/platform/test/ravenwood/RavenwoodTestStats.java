@@ -39,6 +39,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 /**
  * Collect test result stats and write them into a CSV file containing the test results.
@@ -53,7 +54,8 @@ import java.util.TreeMap;
 public class RavenwoodTestStats {
     private static final String TAG = RavenwoodInternalUtils.TAG;
     private static final String HEADER =
-            "ClassOrMethod,Class,Method,Reason,Passed,Failed,Skipped,DurationMillis";
+            "Type,Module,Class,Method,RawMethodName,Reason,Passed,Failed,Skipped,DurationMillis";
+    private static final String FORMAT = "%s,%s,%s,%s,%s,%s,%d,%d,%d,%f\n";
 
     private static RavenwoodTestStats sInstance;
 
@@ -107,12 +109,15 @@ public class RavenwoodTestStats {
                 // Keep unwrapping the exception until we found
                 // unsupported API exception or the deepest cause.
                 for (;;) {
-                    if (ex instanceof RavenwoodUnsupportedApiException) {
+                    if (ex instanceof RavenwoodUnsupportedApiException re) {
                         // The test hit a Ravenwood unsupported API
-                        return getCaller(ex);
+                        return re.getReason();
                     }
                     var cause = ex.getCause();
                     if (cause == null) {
+                        if (ex instanceof UnsatisfiedLinkError) {
+                            return getCaller(ex);
+                        }
                         if (ex instanceof ExceptionInInitializerError
                                 && ex.getMessage().contains("RavenwoodUnsupportedApiException")) {
                             // A static initializer hit a Ravenwood unsupported API
@@ -133,15 +138,16 @@ public class RavenwoodTestStats {
         }
     }
 
+    private final String mTestModuleName;
     private final File mOutputSymlinkFile;
     private final PrintWriter mOutputWriter;
     private final Map<String, Map<String, Outcome>> mStats = new LinkedHashMap<>();
 
     /** Ctor */
     public RavenwoodTestStats() {
-        String testModuleName = RavenwoodEnvironment.getInstance().getTestModuleName();
+        mTestModuleName = RavenwoodEnvironment.getInstance().getTestModuleName();
 
-        var basename = "Ravenwood-stats_" + testModuleName + "_";
+        var basename = "Ravenwood-stats_" + mTestModuleName + "_";
 
         // Get the current time
         LocalDateTime now = LocalDateTime.now();
@@ -199,25 +205,42 @@ public class RavenwoodTestStats {
                 var method = entry.getKey();
                 var outcome = entry.getValue();
 
-                // Per-method status, with "m".
-                mOutputWriter.printf("m,%s,%s,%s,%d,%d,%d,%d\n",
-                        className, normalize(method), normalize(outcome.reason()),
-                        outcome.passedCount(), outcome.failedCount(), outcome.skippedCount(),
-                        outcome.duration.toMillis());
-
                 passed += outcome.passedCount();
                 skipped += outcome.skippedCount();
                 failed += outcome.failedCount();
                 totalDuration = totalDuration.plus(outcome.duration);
+
+                var rawMethodName = extractMethodName(method);
+
+                mOutputWriter.printf(FORMAT,
+                        "m", // Type: method
+                        mTestModuleName, className,
+                        normalize(method), normalize(rawMethodName),
+                        normalize(outcome.reason()),
+                        outcome.passedCount(), outcome.failedCount(), outcome.skippedCount(),
+                        outcome.duration.toMillis() / 1000f);
             }
 
-            // Per-class status, with "c".
-            mOutputWriter.printf("c,%s,-,-,%d,%d,%d,%d\n", className,
-                    passed, failed, skipped, totalDuration.toMillis());
+            mOutputWriter.printf(FORMAT,
+                    "c", // Type: class
+                    mTestModuleName, className,
+                    "-", "-", // method name / row method name.
+                    "-", // reason.
+                    passed, failed, skipped,
+                    totalDuration.toMillis() / 1000f);
         });
         mOutputWriter.flush();
         mStats.clear();
         Log.i(TAG, "Added result to stats file: file://" + mOutputSymlinkFile);
+    }
+
+    private static final Pattern sParamsPattern = Pattern.compile("\\[.*$");
+
+    /**
+     * Remove "[parameters..]" from a method full name.
+     */
+    private static String extractMethodName(String methodNameWithParams) {
+        return sParamsPattern.matcher(methodNameWithParams).replaceFirst("");
     }
 
     private static void createCalledMethodPolicyFile() {
@@ -275,7 +298,14 @@ public class RavenwoodTestStats {
 
         private Outcome createOutcome(Result result, Failure failure) {
             var endTime = Instant.now();
-            return new Outcome(result, Duration.between(mStartTime, endTime), failure);
+
+            // When a class is skipped, force set duration to 0.
+            // This is necessary because when we skip a test class, RavenwoodAwareTestRunner
+            // calls testIgnored() without calling testStarted() (and changing this would break
+            // things.)
+            var duration = result == Result.Skipped ? Duration.ZERO
+                    : Duration.between(mStartTime, endTime);
+            return new Outcome(result, duration, failure);
         }
 
         private Outcome createOutcome(Result result) {

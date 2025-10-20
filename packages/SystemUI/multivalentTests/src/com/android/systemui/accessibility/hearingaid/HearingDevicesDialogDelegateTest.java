@@ -19,8 +19,10 @@ package com.android.systemui.accessibility.hearingaid;
 import static android.bluetooth.BluetoothDevice.BOND_BONDED;
 import static android.bluetooth.BluetoothHapClient.PRESET_INDEX_UNAVAILABLE;
 import static android.bluetooth.BluetoothProfile.STATE_CONNECTED;
+import static android.bluetooth.BluetoothProfile.STATE_DISCONNECTED;
 
 import static com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_LEFT;
+import static com.android.settingslib.bluetooth.hearingdevices.ui.ExpandableControlUi.SIDE_UNIFIED;
 import static com.android.systemui.accessibility.hearingaid.HearingDevicesDialogDelegate.LIVE_CAPTION_INTENT;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -45,6 +47,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.testing.TestableLooper;
@@ -65,6 +68,7 @@ import com.android.settingslib.bluetooth.LocalBluetoothAdapter;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
 import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
 import com.android.settingslib.bluetooth.VolumeControlProfile;
+import com.android.settingslib.flags.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.bluetooth.qsdialog.DeviceItem;
@@ -78,6 +82,7 @@ import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.statusbar.phone.SystemUIDialogManager;
 import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.time.FakeSystemClock;
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
 
 import org.junit.After;
 import org.junit.Before;
@@ -119,6 +124,8 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     private SystemUIDialogManager mSystemUIDialogManager;
     @Mock
     private DialogTransitionAnimator mDialogTransitionAnimator;
+    @Mock
+    private WindowRootViewBlurInteractor mBlurInteractor;
     @Mock
     private ActivityStarter mActivityStarter;
     @Mock
@@ -290,6 +297,7 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_HEARING_DEVICES_SEPARATED_PRESET_CONTROL)
     public void showDialog_noPreset_presetLayoutGone() {
         when(mHapClientProfile.getAllPresetInfo(mDevice)).thenReturn(new ArrayList<>());
         when(mHapClientProfile.getActivePresetIndex(mDevice)).thenReturn(PRESET_INDEX_UNAVAILABLE);
@@ -302,18 +310,45 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     }
 
     @Test
-    public void showDialog_presetExist_presetSelected() {
+    @EnableFlags(Flags.FLAG_HEARING_DEVICES_SEPARATED_PRESET_CONTROL)
+    public void showDialog_hapNotConnected_newPresetLayoutGone() {
+        when(mHapClientProfile.getConnectionStatus(mDevice)).thenReturn(STATE_DISCONNECTED);
+
+        setUpDeviceDialogWithoutPairNewDeviceButton();
+        showDialogAndProcessAllTasks();
+
+        PresetLayout presetLayout = getNewPresetLayout(mDialog);
+        assertThat(presetLayout.getVisibility()).isEqualTo(View.GONE);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_DEVICES_SEPARATED_PRESET_CONTROL)
+    public void showDialog_presetExist_newPresetLayoutVisible() {
         BluetoothHapPresetInfo info = getTestPresetInfo();
+        when(mHapClientProfile.getConnectionStatus(mDevice)).thenReturn(STATE_CONNECTED);
         when(mHapClientProfile.getAllPresetInfo(mDevice)).thenReturn(List.of(info));
         when(mHapClientProfile.getActivePresetIndex(mDevice)).thenReturn(TEST_PRESET_INDEX);
 
         setUpDeviceDialogWithoutPairNewDeviceButton();
         showDialogAndProcessAllTasks();
 
-        ViewGroup presetLayout = getPresetLayout(mDialog);
+        PresetLayout presetLayout = getNewPresetLayout(mDialog);
         assertThat(presetLayout.getVisibility()).isEqualTo(View.VISIBLE);
-        Spinner spinner = getPresetSpinner(mDialog);
-        assertThat(spinner.getSelectedItemPosition()).isEqualTo(0);
+        assertThat(presetLayout.getControlValue(SIDE_UNIFIED)).isEqualTo(TEST_PRESET_INDEX);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_DEVICES_SEPARATED_PRESET_CONTROL)
+    public void showDialog_noPreset_newPresetLayoutGone() {
+        when(mHapClientProfile.getConnectionStatus(mDevice)).thenReturn(STATE_CONNECTED);
+        when(mHapClientProfile.getAllPresetInfo(mDevice)).thenReturn(new ArrayList<>());
+        when(mHapClientProfile.getActivePresetIndex(mDevice)).thenReturn(PRESET_INDEX_UNAVAILABLE);
+
+        setUpDeviceDialogWithoutPairNewDeviceButton();
+        showDialogAndProcessAllTasks();
+
+        PresetLayout presetLayout = getNewPresetLayout(mDialog);
+        assertThat(presetLayout.getVisibility()).isEqualTo(View.GONE);
     }
 
     @Test
@@ -357,22 +392,39 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_HEARING_DEVICES_SEPARATED_PRESET_CONTROL)
     public void onActiveDeviceChanged_presetExist_presetSelected() {
-        setUpDeviceDialogWithoutPairNewDeviceButton();
-        showDialogAndProcessAllTasks();
         BluetoothHapPresetInfo info = getTestPresetInfo();
         when(mHapClientProfile.getAllPresetInfo(mDevice)).thenReturn(List.of(info));
         when(mHapClientProfile.getActivePresetIndex(mDevice)).thenReturn(TEST_PRESET_INDEX);
-
-        Spinner spinner = getPresetSpinner(mDialog);
-        assertThat(spinner.getSelectedItemPosition()).isEqualTo(-1);
+        setUpDeviceDialogWithoutPairNewDeviceButton();
+        showDialogAndProcessAllTasks();
 
         mDialogDelegate.onActiveDeviceChanged(mCachedDevice, BluetoothProfile.LE_AUDIO);
         mExecutor.runAllReady();
 
         ViewGroup presetLayout = getPresetLayout(mDialog);
         assertThat(presetLayout.getVisibility()).isEqualTo(View.VISIBLE);
+        Spinner spinner = getPresetSpinner(mDialog);
         assertThat(spinner.getSelectedItemPosition()).isEqualTo(0);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_DEVICES_SEPARATED_PRESET_CONTROL)
+    public void onActiveDeviceChanged_presetExist_newPresetLayoutVisible() {
+        BluetoothHapPresetInfo info = getTestPresetInfo();
+        when(mHapClientProfile.getConnectionStatus(mDevice)).thenReturn(STATE_CONNECTED);
+        when(mHapClientProfile.getAllPresetInfo(mDevice)).thenReturn(List.of(info));
+        when(mHapClientProfile.getActivePresetIndex(mDevice)).thenReturn(TEST_PRESET_INDEX);
+        setUpDeviceDialogWithoutPairNewDeviceButton();
+        showDialogAndProcessAllTasks();
+
+        mDialogDelegate.onActiveDeviceChanged(mCachedDevice, BluetoothProfile.LE_AUDIO);
+        mExecutor.runAllReady();
+
+        PresetLayout presetLayout = getNewPresetLayout(mDialog);
+        assertThat(presetLayout.getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(presetLayout.getControlValue(SIDE_UNIFIED)).isEqualTo(TEST_PRESET_INDEX);
     }
 
     private void setUpDeviceDialogWithPairNewDeviceButton() {
@@ -388,7 +440,8 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
                 mContext,
                 mSystemUIDialogManager,
                 getFakeBroadcastDispatcher(),
-                mDialogTransitionAnimator
+                mDialogTransitionAnimator,
+                mBlurInteractor
         );
         mDialogDelegate = new HearingDevicesDialogDelegate(
                 showPairNewDevice,
@@ -436,6 +489,10 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
         return dialog.requireViewById(R.id.preset_layout);
     }
 
+    private PresetLayout getNewPresetLayout(SystemUIDialog dialog) {
+        return dialog.requireViewById(R.id.preset_layout_new);
+    }
+
     private ViewGroup getAmbientLayout(SystemUIDialog dialog) {
         return dialog.requireViewById(R.id.ambient_layout);
     }
@@ -477,6 +534,11 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
 
     @After
     public void reset() {
+        // Clears all pending messages and callbacks from the main thread's Handler to prevent
+        // unintended side effects or crashes in subsequent tests.
+        mContext.getMainThreadHandler().removeCallbacksAndMessages(null);
+        mTestableLooper.processAllMessages();
+
         if (mDialogDelegate != null) {
             mDialogDelegate = null;
         }

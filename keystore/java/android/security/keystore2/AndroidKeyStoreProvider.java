@@ -68,8 +68,9 @@ public class AndroidKeyStoreProvider extends Provider {
     private static final String DESEDE_SYSTEM_PROPERTY =
             "ro.hardware.keystore_desede";
 
-    // Conscrypt returns the Ed25519 OID as the JCA key algorithm.
-    private static final String ED25519_OID = "1.3.101.112";
+    // Conscrypt returns "EdDSA" as the Ed25519 JCA key algorithm name.
+    private static final String EDDSA_ALGORITHM_NAME = "EdDSA";
+
     // Conscrypt returns "XDH" as the X25519 JCA key algorithm.
     private static final String X25519_ALIAS = "XDH";
 
@@ -245,9 +246,9 @@ public class AndroidKeyStoreProvider extends Provider {
         } else if (KeyProperties.KEY_ALGORITHM_RSA.equalsIgnoreCase(jcaKeyAlgorithm)) {
             return new AndroidKeyStoreRSAPublicKey(descriptor, metadata,
                     iSecurityLevel, (RSAPublicKey) publicKey);
-        } else if (ED25519_OID.equalsIgnoreCase(jcaKeyAlgorithm)) {
+        } else if (EDDSA_ALGORITHM_NAME.equalsIgnoreCase(jcaKeyAlgorithm)) {
             final byte[] publicKeyEncoded = publicKey.getEncoded();
-            return new AndroidKeyStoreEdECPublicKey(descriptor, metadata, ED25519_OID,
+            return new AndroidKeyStoreEdECPublicKey(descriptor, metadata, EDDSA_ALGORITHM_NAME,
                     iSecurityLevel, publicKeyEncoded);
         } else if (X25519_ALIAS.equalsIgnoreCase(jcaKeyAlgorithm)) {
             return new AndroidKeyStoreXDHPublicKey(descriptor, metadata, X25519_ALIAS,

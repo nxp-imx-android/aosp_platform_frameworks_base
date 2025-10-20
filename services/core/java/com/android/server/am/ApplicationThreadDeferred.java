@@ -36,7 +36,7 @@ import java.util.Arrays;
  * multiple instances of deferred calls are collapsed into a single call when the process is
  * unpaused.
  *
- * {@hide}
+ * @hide
  */
 final class ApplicationThreadDeferred extends IApplicationThread.Delegator {
 

@@ -105,9 +105,6 @@ final class VibrationScaler {
      * @return The scale factor.
      */
     public float getScaleFactor(int usageHint, boolean isExternalVibration) {
-        if (!Flags.vibrationScaleDeviceConfigEnabled()) {
-            return scaleLevelToScaleFactor(getScaleLevel(usageHint));
-        }
         int currentIntensity = mVibrationSettings.getCurrentIntensity(usageHint);
         if (currentIntensity == Vibrator.VIBRATION_INTENSITY_OFF) {
             // Bypassing user settings, or it has changed between checking and scaling. Use default.
@@ -129,9 +126,7 @@ final class VibrationScaler {
      * @return The adaptive haptics scale.
      */
     public float getAdaptiveHapticsScale(int usageHint) {
-        return Flags.adaptiveHapticsEnabled()
-                ? mAdaptiveHapticsScales.get(usageHint, ADAPTIVE_SCALE_NONE)
-                : ADAPTIVE_SCALE_NONE;
+        return mAdaptiveHapticsScales.get(usageHint, ADAPTIVE_SCALE_NONE);
     }
 
     /**
@@ -149,8 +144,7 @@ final class VibrationScaler {
         float adaptiveScale = getAdaptiveHapticsScale(usageHint);
 
         // TODO(b/345186129): remove this once finish migrating to scale factor and clean up flags.
-        if (!Flags.hapticsScaleV2Enabled() && Flags.vibrationScaleDeviceConfigEnabled()
-                && mVibrationConfig.hasVibrationScaleFactors()) {
+        if (!Flags.hapticsScaleV2Enabled() && mVibrationConfig.hasVibrationScaleFactors()) {
             // If scale V2 is not enabled then make sure we apply config linearly.
             return effect.resolve(mVibrationConfig.getDefaultVibrationAmplitude())
                     .applyEffectStrength(newEffectStrength)

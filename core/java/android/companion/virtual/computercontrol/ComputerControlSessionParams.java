@@ -16,13 +16,12 @@
 
 package android.companion.virtual.computercontrol;
 
-import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.view.Surface;
 
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Parameters for creating a {@link ComputerControlSession}.
@@ -32,34 +31,18 @@ import java.util.Objects;
 public final class ComputerControlSessionParams implements Parcelable {
 
     private final String mName;
-    private final int mDisplayWidthPx;
-    private final int mDisplayHeightPx;
-    private final int mDisplayDpi;
-    private final Surface mDisplaySurface;
-    private final boolean mIsDisplayAlwaysUnlocked;
+    private final List<String> mTargetPackageNames;
 
     private ComputerControlSessionParams(
-            @NonNull String name,
-            int displayWidthPx,
-            int displayHeightPx,
-            int displayDpi,
-            @NonNull Surface displaySurface,
-            boolean isDisplayAlwaysUnlocked) {
+            @NonNull String name, @NonNull List<String> targetPackageNames) {
         mName = name;
-        mDisplayWidthPx = displayWidthPx;
-        mDisplayHeightPx = displayHeightPx;
-        mDisplayDpi = displayDpi;
-        mDisplaySurface = displaySurface;
-        mIsDisplayAlwaysUnlocked = isDisplayAlwaysUnlocked;
+        mTargetPackageNames = targetPackageNames;
     }
 
     private ComputerControlSessionParams(Parcel parcel) {
         mName = parcel.readString8();
-        mDisplayWidthPx = parcel.readInt();
-        mDisplayHeightPx = parcel.readInt();
-        mDisplayDpi = parcel.readInt();
-        mDisplaySurface = parcel.readTypedObject(Surface.CREATOR);
-        mIsDisplayAlwaysUnlocked = parcel.readBoolean();
+        mTargetPackageNames = new ArrayList<>();
+        parcel.readStringList(mTargetPackageNames);
     }
 
     /** Returns the name of this computer control session. */
@@ -68,30 +51,10 @@ public final class ComputerControlSessionParams implements Parcelable {
         return mName;
     }
 
-    /** Returns the width of the display, in pixels. */
-    public int getDisplayWidthPx() {
-        return mDisplayWidthPx;
-    }
-
-    /** Returns the height of the display, in pixels. */
-    public int getDisplayHeightPx() {
-        return mDisplayHeightPx;
-    }
-
-    /** Returns the density of the display, in dpi. */
-    public int getDisplayDpi() {
-        return mDisplayDpi;
-    }
-
-    /** Returns the surface to which the display content should be rendered. */
+    /** Returns the package names of the applications that can be automated during this session. */
     @NonNull
-    public Surface getDisplaySurface() {
-        return mDisplaySurface;
-    }
-
-    /** Returns true if the display should be always unlocked. */
-    public boolean isDisplayAlwaysUnlocked() {
-        return mIsDisplayAlwaysUnlocked;
+    public List<String> getTargetPackageNames() {
+        return mTargetPackageNames;
     }
 
     @Override
@@ -102,11 +65,7 @@ public final class ComputerControlSessionParams implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeString8(mName);
-        dest.writeInt(mDisplayWidthPx);
-        dest.writeInt(mDisplayHeightPx);
-        dest.writeInt(mDisplayDpi);
-        dest.writeTypedObject(mDisplaySurface, flags);
-        dest.writeBoolean(mIsDisplayAlwaysUnlocked);
+        dest.writeStringList(mTargetPackageNames);
     }
 
     @NonNull
@@ -127,11 +86,7 @@ public final class ComputerControlSessionParams implements Parcelable {
     /** Builder for {@link ComputerControlSessionParams}. */
     public static final class Builder {
         private String mName;
-        private int mDisplayWidthPx;
-        private int mDisplayHeightPx;
-        private int mDisplayDpi;
-        private Surface mDisplaySurface;
-        private boolean mIsDisplayAlwaysUnlocked;
+        private List<String> mTargetPackageNames;
 
         /**
          * Sets the name of this computer control session.
@@ -149,71 +104,20 @@ public final class ComputerControlSessionParams implements Parcelable {
         }
 
         /**
-         * Sets the width of the display, in pixels.
+         * Set the package names of all applications that may be automated during this session.
          *
-         * @param displayWidthPx The width of the display.
-         * @return This builder.
+         * <p>All package names specified in the list must meet the following requirements:
+         * <ol>
+         *     <li>The package name has a valid launcher Intent.</li>
+         *     <li>The package name is not the device permission controller.</li>
+         * </ol>
          */
         @NonNull
-        public Builder setDisplayWidthPx(@IntRange(from = 1) int displayWidthPx) {
-            if (displayWidthPx <= 0) {
-                throw new IllegalArgumentException("Display width must be positive");
+        public Builder setTargetPackageNames(@NonNull List<String> targetPackageNames) {
+            if (targetPackageNames == null || targetPackageNames.isEmpty()) {
+                throw new IllegalArgumentException("targetPackageNames must not be empty");
             }
-            mDisplayWidthPx = displayWidthPx;
-            return this;
-        }
-
-        /**
-         * Sets the height of the display, in pixels.
-         *
-         * @param displayHeightPx The height of the display.
-         * @return This builder.
-         */
-        @NonNull
-        public Builder setDisplayHeightPx(@IntRange(from = 1) int displayHeightPx) {
-            if (displayHeightPx <= 0) {
-                throw new IllegalArgumentException("Display height must be positive");
-            }
-            mDisplayHeightPx = displayHeightPx;
-            return this;
-        }
-
-        /**
-         * Sets the density of the display, in dpi.
-         *
-         * @param displayDpi The density of the display.
-         * @return This builder.
-         */
-        @NonNull
-        public Builder setDisplayDpi(@IntRange(from = 1) int displayDpi) {
-            if (displayDpi <= 0) {
-                throw new IllegalArgumentException("Display DPI must be positive");
-            }
-            mDisplayDpi = displayDpi;
-            return this;
-        }
-
-        /**
-         * Sets the surface to which the display content should be rendered.
-         *
-         * @param displaySurface The surface for the display.
-         * @return This builder.
-         */
-        @NonNull
-        public Builder setDisplaySurface(@NonNull Surface displaySurface) {
-            mDisplaySurface = Objects.requireNonNull(displaySurface);
-            return this;
-        }
-
-        /**
-         * Sets whether the display should be always unlocked.
-         *
-         * @param isDisplayAlwaysUnlocked true if the display should be always unlocked.
-         * @return This builder.
-         */
-        @NonNull
-        public Builder setDisplayAlwaysUnlocked(boolean isDisplayAlwaysUnlocked) {
-            mIsDisplayAlwaysUnlocked = isDisplayAlwaysUnlocked;
+            mTargetPackageNames = targetPackageNames;
             return this;
         }
 
@@ -221,33 +125,17 @@ public final class ComputerControlSessionParams implements Parcelable {
          * Builds the {@link ComputerControlSessionParams} instance.
          *
          * @return The built {@link ComputerControlSessionParams}.
-         * @throws IllegalArgumentException if the name or surface are not set, or if the display
-         *     width, height, or dpi are not positive.
+         * @throws IllegalArgumentException if any of the required arguments are not set.
          */
         @NonNull
         public ComputerControlSessionParams build() {
             if (mName == null || mName.isEmpty()) {
                 throw new IllegalArgumentException("Name must be set");
             }
-            if (mDisplaySurface == null) {
-                throw new IllegalArgumentException("Surface must be set");
+            if (mTargetPackageNames == null || mTargetPackageNames.isEmpty()) {
+                throw new IllegalArgumentException("TargetPackageNames must be set");
             }
-            if (mDisplayWidthPx <= 0) {
-                throw new IllegalArgumentException("Display width must be positive");
-            }
-            if (mDisplayHeightPx <= 0) {
-                throw new IllegalArgumentException("Display height must be positive");
-            }
-            if (mDisplayDpi <= 0) {
-                throw new IllegalArgumentException("Display DPI must be positive");
-            }
-            return new ComputerControlSessionParams(
-                    mName,
-                    mDisplayWidthPx,
-                    mDisplayHeightPx,
-                    mDisplayDpi,
-                    mDisplaySurface,
-                    mIsDisplayAlwaysUnlocked);
+            return new ComputerControlSessionParams(mName, mTargetPackageNames);
         }
     }
 }

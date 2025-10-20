@@ -18,10 +18,7 @@ package com.android.systemui.statusbar.connectivity
 
 import android.os.UserManager
 import com.android.systemui.bluetooth.qsdialog.dagger.AudioSharingModule
-import com.android.systemui.flags.FeatureFlags
-import com.android.systemui.flags.Flags.SIGNAL_CALLBACK_DEPRECATION
 import com.android.systemui.qs.QsEventLogger
-import com.android.systemui.qs.flags.QsInCompose
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.shared.model.TileCategory
 import com.android.systemui.qs.tileimpl.QSTileImpl
@@ -30,7 +27,6 @@ import com.android.systemui.qs.tiles.BluetoothTile
 import com.android.systemui.qs.tiles.CastTile
 import com.android.systemui.qs.tiles.DataSaverTile
 import com.android.systemui.qs.tiles.HotspotTile
-import com.android.systemui.qs.tiles.InternetTile
 import com.android.systemui.qs.tiles.InternetTileNewImpl
 import com.android.systemui.qs.tiles.MobileDataTile
 import com.android.systemui.qs.tiles.NfcTile
@@ -114,6 +110,12 @@ interface ConnectivityModule {
     /** Inject NfcTile into tileMap in QSModule */
     @Binds @IntoMap @StringKey(NfcTile.TILE_SPEC) fun bindNfcTile(nfcTile: NfcTile): QSTileImpl<*>
 
+    /** Inject InternetTileNewImpl into tileMap in QSModule */
+    @Binds
+    @IntoMap
+    @StringKey(InternetTileNewImpl.TILE_SPEC)
+    fun bindInternetTile(newInternetTile: InternetTileNewImpl): QSTileImpl<*>
+
     @Binds
     @IntoMap
     @StringKey(AIRPLANE_MODE_TILE_SPEC)
@@ -159,21 +161,6 @@ interface ConnectivityModule {
         const val HOTSPOT_TILE_SPEC = "hotspot"
         const val CAST_TILE_SPEC = "cast"
         const val BLUETOOTH_TILE_SPEC = "bt"
-
-        /** Inject InternetTile or InternetTileNewImpl into tileMap in QSModule */
-        @Provides
-        @IntoMap
-        @StringKey(InternetTile.TILE_SPEC)
-        fun bindInternetTile(
-            internetTile: InternetTile,
-            newInternetTile: InternetTileNewImpl,
-            featureFlags: FeatureFlags,
-        ): QSTileImpl<*> =
-            if (featureFlags.isEnabled(SIGNAL_CALLBACK_DEPRECATION)) {
-                newInternetTile
-            } else {
-                internetTile
-            }
 
         @Provides
         @IntoMap
@@ -248,12 +235,7 @@ interface ConnectivityModule {
                 tileSpec = TileSpec.create(INTERNET_TILE_SPEC),
                 uiConfig =
                     QSTileUIConfig.Resource(
-                        iconRes =
-                            if (QsInCompose.isEnabled) {
-                                com.android.settingslib.R.drawable.ic_wifi_3
-                            } else {
-                                R.drawable.ic_qs_no_internet_available
-                            },
+                        iconRes = com.android.settingslib.R.drawable.ic_wifi_3,
                         labelRes = R.string.quick_settings_internet_label,
                     ),
                 instanceId = uiEventLogger.getNewInstanceId(),

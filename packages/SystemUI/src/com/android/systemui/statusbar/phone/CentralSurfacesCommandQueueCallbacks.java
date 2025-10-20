@@ -55,8 +55,6 @@ import com.android.systemui.keyguard.WakefulnessLifecycle;
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.qs.QSHost;
-import com.android.systemui.qs.QSPanelController;
-import com.android.systemui.qs.flags.QsInCompose;
 import com.android.systemui.recents.ScreenPinningRequest;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
@@ -221,16 +219,8 @@ public class CentralSurfacesCommandQueueCallbacks implements CommandQueue.Callba
 
     @Override
     public void clickTile(ComponentName tile) {
-        if (QsInCompose.isEnabled()) {
-            if (tile != null) {
-                mQSHost.clickTile(tile);
-            }
-        } else {
-            // Can't inject this because it changes with the QS fragment
-            QSPanelController qsPanelController = mCentralSurfaces.getQSPanelController();
-            if (qsPanelController != null) {
-                qsPanelController.clickTile(tile);
-            }
+        if (tile != null) {
+            mQSHost.clickTile(tile);
         }
     }
 
@@ -344,7 +334,7 @@ public class CentralSurfacesCommandQueueCallbacks implements CommandQueue.Callba
                 }
                 mShadeController.animateExpandShade();
                 mNotificationStackScrollLayoutController.setWillExpand(true);
-                mHeadsUpManager.unpinAll(true /* userUnpinned */);
+                mHeadsUpManager.unpinAll(true /* userUnpinned */, "CentralSurfaces");
                 mMetricsLogger.count("panel_open", 1);
             } else if (!mQsController.getExpanded()
                     && !mShadeController.isExpandingOrCollapsing()) {

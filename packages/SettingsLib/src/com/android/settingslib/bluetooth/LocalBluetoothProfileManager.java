@@ -47,6 +47,7 @@ import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.CollectionUtils;
+import com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils;
 import com.android.settingslib.flags.Flags;
 
 import java.util.ArrayList;
@@ -374,7 +375,7 @@ public class LocalBluetoothProfileManager {
                     }
                 }
 
-                HearingAidStatsLogUtils.logHearingAidInfo(cachedDevice);
+                HearingDeviceStatsLogUtils.logHearingAidInfo(cachedDevice);
             }
 
             if (isHapClientOrLeAudioProfile && newState == BluetoothProfile.STATE_CONNECTED) {
@@ -389,7 +390,7 @@ public class LocalBluetoothProfileManager {
                             .setLeAudioLocation(getLeAudioProfile().getAudioLocation(device))
                             .setHapDeviceType(getHapClientProfile().getHearingAidType(device));
                     cachedDevice.setHearingAidInfo(infoBuilder.build());
-                    HearingAidStatsLogUtils.logHearingAidInfo(cachedDevice);
+                    HearingDeviceStatsLogUtils.logHearingAidInfo(cachedDevice);
                 }
             }
 

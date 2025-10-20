@@ -18,6 +18,7 @@ package com.android.wm.shell.functional.fundamentals.focus
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
+import android.platform.test.rule.ScreenRecordRule
 import com.android.wm.shell.scenarios.OpenAndFocus
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
@@ -26,4 +27,5 @@ import org.junit.runners.BlockJUnit4ClassRunner
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Presubmit
+@ScreenRecordRule.ScreenRecord
 class OpenAndFocusTest : OpenAndFocus()

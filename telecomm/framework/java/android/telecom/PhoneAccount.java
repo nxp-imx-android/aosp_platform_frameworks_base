@@ -18,6 +18,7 @@ package android.telecom;
 
 import static android.Manifest.permission.MODIFY_PHONE_STATE;
 
+import android.Manifest;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
@@ -35,6 +36,7 @@ import android.util.ArraySet;
 
 import com.android.internal.telephony.flags.Flags;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -213,6 +215,76 @@ public final class PhoneAccount implements Parcelable {
      */
     public static final String EXTRA_ADD_SELF_MANAGED_CALLS_TO_INCALLSERVICE =
             "android.telecom.extra.ADD_SELF_MANAGED_CALLS_TO_INCALLSERVICE";
+
+    /**
+     * Default value indicating that the low battery alert feature is disabled.
+     */
+    @FlaggedApi(Flags.FLAG_SUPPORT_LOW_BATTERY_ALERT)
+    public static final int LOW_BATTERY_ALERT_DISABLED = -1;
+
+    /**
+     * {@link PhoneAccount} extras key (see {@link #getExtras()}) which determines the battery level
+     * threshold at which a low battery alert should be played.
+     * If this extra is not set, low battery alerting will not be enabled for calls on this
+     * {@link PhoneAccount}
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SUPPORT_LOW_BATTERY_ALERT)
+    public static final String EXTRA_LOW_BATTERY_ALERT_LEVEL_THRESHOLD =
+            "android.telecom.extra.LOW_BATTERY_ALERT_LEVEL_THRESHOLD";
+
+    /**
+     * {@link PhoneAccount} extras key (see {@link #getExtras()}) which determines the interval in
+     * seconds at which a low battery alert should be played during a voice call.
+     * If this extra is not set, low battery alerting will not be enabled for calls on this
+     * {@link PhoneAccount}
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SUPPORT_LOW_BATTERY_ALERT)
+    public static final String EXTRA_LOW_BATTERY_ALERT_INTERVAL_SECONDS =
+            "android.telecom.extra.LOW_BATTERY_ALERT_INTERVAL_SECONDS";
+
+    /**
+     * Integer {@link PhoneAccount} extra key (see {@link PhoneAccount#getExtras()}) which
+     * indicates the minimum allowed
+     * {@link TelecomManager#setLocalVoicemailTimeout(PhoneAccountHandle, Duration)} for a
+     * {@link PhoneAccount}.
+     * <p>
+     * Note {@link #EXTRA_LOCAL_VOICEMAIL_MINIMUM_TIMEOUT_MILLIS} must be less than or equal to
+     * {@link #EXTRA_LOCAL_VOICEMAIL_MAXIMUM_TIMEOUT_MILLIS}.
+     * <p>
+     * The allowed range of local voicemail timeout is dictated by constraints placed by a mobile
+     * operator.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
+    @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
+    public static final String EXTRA_LOCAL_VOICEMAIL_MINIMUM_TIMEOUT_MILLIS =
+            "android.telecom.extra.LOCAL_VOICEMAIL_MINIMUM_TIMEOUT_MILLIS";
+
+    /**
+     * Integer {@link PhoneAccount} extra key (see {@link PhoneAccount#getExtras()}) which
+     * indicates the maximum allowed
+     * {@link TelecomManager#setLocalVoicemailTimeout(PhoneAccountHandle, Duration)} for a
+     * {@link PhoneAccount}.
+     * <p>
+     * Note {@link #EXTRA_LOCAL_VOICEMAIL_MINIMUM_TIMEOUT_MILLIS} must be less than or equal to
+     * {@link #EXTRA_LOCAL_VOICEMAIL_MAXIMUM_TIMEOUT_MILLIS}.
+     * <p>
+     * The allowed range of local voicemail timeout is dictated by constraints placed by a mobile
+     * operator.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
+    @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
+    public static final String EXTRA_LOCAL_VOICEMAIL_MAXIMUM_TIMEOUT_MILLIS =
+            "android.telecom.extra.LOCAL_VOICEMAIL_MAXIMUM_TIMEOUT_MILLIS";
 
     /**
      * Flag indicating that this {@code PhoneAccount} can act as a connection manager for

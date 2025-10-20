@@ -26,6 +26,8 @@ import static android.internal.perfetto.protos.Windowmanagerservice.ActivityReco
 import static android.window.DesktopExperienceFlags.ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS;
 import static android.window.DesktopExperienceFlags.ENABLE_UPSCALING_SIZE_COMPAT_ON_EXITING_DESKTOP_BUGFIX;
 
+import static com.android.server.wm.AppCompatSandboxingPolicy.ConfigOverrideHint;
+import static com.android.server.wm.AppCompatUtils.isDesktopFirst;
 import static com.android.server.wm.AppCompatUtils.isInDesktopMode;
 
 import android.annotation.NonNull;
@@ -229,18 +231,20 @@ class AppCompatSizeCompatModePolicy {
         // saved here before resolved bounds are overridden below.
         final AppCompatAspectRatioPolicy aspectRatioPolicy = mActivityRecord.mAppCompatController
                 .getAspectRatioPolicy();
+        final ConfigOverrideHint overrideHint = mActivityRecord.mAppCompatController
+                .getSandboxingPolicy().getResolveConfigHint();
         final boolean useResolvedBounds = aspectRatioPolicy.isAspectRatioApplied();
         final Rect containerBounds = useResolvedBounds
                 ? new Rect(resolvedBounds)
-                : mActivityRecord.mResolveConfigHint.mParentBoundsOverride;
+                : overrideHint.getParentBoundsOverride();
         final Rect containerAppBounds = useResolvedBounds
                 ? new Rect(resolvedConfig.windowConfiguration.getAppBounds())
-                : mActivityRecord.mResolveConfigHint.mParentAppBoundsOverride;
+                : overrideHint.getParentAppBoundsOverride();
 
         final int requestedOrientation = mActivityRecord.getRequestedConfigurationOrientation();
         final boolean orientationRequested = requestedOrientation != ORIENTATION_UNDEFINED;
-        final int parentOrientation = mActivityRecord.mResolveConfigHint.mUseOverrideInsetsForConfig
-                ? mActivityRecord.mResolveConfigHint.mTmpOverrideConfigOrientation
+        final int parentOrientation = overrideHint.shouldUseOverrideInsetsForConfig()
+                ? overrideHint.getOverrideOrientation()
                 : newParentConfiguration.orientation;
         final int orientation = orientationRequested
                 ? requestedOrientation
@@ -284,7 +288,6 @@ class AppCompatSizeCompatModePolicy {
         // Use resolvedBounds to compute other override configurations such as appBounds. The bounds
         // are calculated in compat container space. The actual position on screen will be applied
         // later, so the calculation is simpler that doesn't need to involve offset from parent.
-        mActivityRecord.mResolveConfigHint.mTmpCompatInsets = appCompatDisplayInsets;
         mActivityRecord.computeConfigByResolveHint(resolvedConfig, newParentConfiguration);
         // Use current screen layout as source because the size of app is independent to parent.
         resolvedConfig.screenLayout = ActivityRecord.computeScreenLayout(
@@ -406,8 +409,9 @@ class AppCompatSizeCompatModePolicy {
         // The role of AppCompatDisplayInsets is like the override bounds.
         mAppCompatDisplayInsets =
                 new AppCompatDisplayInsets(mActivityRecord.mDisplayContent, mActivityRecord,
-                        letterboxedContainerBounds, mActivityRecord.mResolveConfigHint
-                            .mUseOverrideInsetsForConfig);
+                        letterboxedContainerBounds,
+                        mActivityRecord.mAppCompatController.getSandboxingPolicy()
+                                .getResolveConfigHint().shouldUseOverrideInsetsForConfig());
     }
 
     /**
@@ -593,8 +597,8 @@ class AppCompatSizeCompatModePolicy {
      * such as when:
      * - Moving from an external display to a smaller phone screen.
      * - Transitioning from desktop mode to fullscreen.
-     * This treatment is not applied to internal displays that ignore orientation requests to
-     * maintain consistent scaling behavior with orientation changes on those displays.
+     * This treatment is not applied to fullscreen-first, internal displays that ignore orientation
+     * requests to maintain consistent scaling behavior with orientation changes on those displays.
      */
     private boolean shouldAllowUpscalingForDisplayOrWindowingModeChange(boolean isInDesktopMode) {
         final boolean launchedInAndExitedFromDesktop  = getAppCompatDisplayInsets() != null
@@ -604,10 +608,10 @@ class AppCompatSizeCompatModePolicy {
         final boolean isOnIgnoreOrientationRequestInternalDisplay = isOnInternalDisplay()
                 && mActivityRecord.getDisplayContent().getIgnoreOrientationRequest();
 
-        // TODO(b/432329483): Polish the policy for desktop-first devices.
         return ENABLE_UPSCALING_SIZE_COMPAT_ON_EXITING_DESKTOP_BUGFIX.isTrue()
                 && (launchedInAndExitedFromDesktop || hasMovedBetweenDisplays)
-                && !isOnIgnoreOrientationRequestInternalDisplay;
+                && (!isOnIgnoreOrientationRequestInternalDisplay
+                        || isDesktopFirst(mActivityRecord.getDisplayArea()));
     }
 
     /** Returns whether the activity is on an internal display. */

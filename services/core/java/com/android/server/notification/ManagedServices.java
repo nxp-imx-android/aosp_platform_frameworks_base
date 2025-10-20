@@ -16,7 +16,6 @@
 
 package com.android.server.notification;
 
-import static android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR;
 import static android.content.Context.BIND_ALLOW_WHITELIST_MANAGEMENT;
 import static android.content.Context.BIND_AUTO_CREATE;
 import static android.content.Context.BIND_FOREGROUND_SERVICE;
@@ -32,6 +31,7 @@ import static com.android.server.notification.NotificationManagerService.private
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.IBinderSession;
@@ -75,8 +75,9 @@ import android.util.SparseArray;
 import android.util.SparseSetArray;
 import android.util.proto.ProtoOutputStream;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.android.internal.annotations.GuardedBy;
-import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.XmlUtils;
 import com.android.internal.util.function.TriPredicate;
 import com.android.modules.utils.TypedXmlPullParser;
@@ -136,6 +137,13 @@ abstract public class ManagedServices {
 
     static final int APPROVAL_BY_PACKAGE = 0;
     static final int APPROVAL_BY_COMPONENT = 1;
+
+    /**
+     * Maximum number of entries allowed in the lists of packages/components contained in
+     * {@link #mApproved} or {@link #mUserSetServices}. For the first, this effectively limits
+     * the number of services (e.g. NLSes) that will be bound per user.
+     */
+    private static final int MAX_SERVICE_ENTRIES = 100;
 
     protected final Context mContext;
     protected final Object mMutex;
@@ -933,16 +941,22 @@ abstract public class ManagedServices {
         }
     }
 
-    protected void setPackageOrComponentEnabled(String pkgOrComponent, int userId,
+    protected boolean setPackageOrComponentEnabled(String pkgOrComponent, int userId,
             boolean isPrimary, boolean enabled) {
-        setPackageOrComponentEnabled(pkgOrComponent, userId, isPrimary, enabled, true);
+        return setPackageOrComponentEnabled(pkgOrComponent, userId, isPrimary, enabled, true);
     }
 
-    protected void setPackageOrComponentEnabled(String pkgOrComponent, int userId,
+    /**
+     * Changes the enabled state of a managed service.
+     *
+     * @return true if the change (enabling or disabling) was applied; false otherwise
+     */
+    protected boolean setPackageOrComponentEnabled(String pkgOrComponent, int userId,
             boolean isPrimary, boolean enabled, boolean userSet) {
         Slog.i(TAG,
                 (enabled ? " Allowing " : "Disallowing ") + mConfig.caption + " "
                         + pkgOrComponent + " (userSet: " + userSet + ")");
+        boolean changed = false;
         synchronized (mApproved) {
             ArrayMap<Boolean, ArraySet<String>> allowedByType = mApproved.get(userId);
             if (allowedByType == null) {
@@ -964,31 +978,49 @@ abstract public class ManagedServices {
             if (approvedItem != null) {
                 int uid = getUidForPackageOrComponent(pkgOrComponent, userId);
                 if (enabled) {
-                    approved.add(approvedItem);
-                    if (uid != Process.INVALID_UID) {
-                        approvedUids.add(uid);
+                    if (!Flags.limitManagedServicesCount()
+                            || approved.size() < MAX_SERVICE_ENTRIES) {
+                        approved.add(approvedItem);
+                        if (uid != Process.INVALID_UID) {
+                            approvedUids.add(uid);
+                        }
+                        changed = true;
+                    } else {
+                        Slog.w(TAG, TextUtils.formatSimple(
+                                "Failed to allow %s %s because there are too many already",
+                                mConfig.caption, pkgOrComponent));
                     }
                 } else {
                     approved.remove(approvedItem);
                     if (uid != Process.INVALID_UID) {
                         approvedUids.remove(uid);
                     }
+                    changed = true;
                 }
             }
-            ArraySet<String> userSetServices = mUserSetServices.get(userId);
-            if (userSetServices == null) {
-                userSetServices = new ArraySet<>();
-                mUserSetServices.put(userId, userSetServices);
-            }
-            if (userSet) {
-                userSetServices.add(pkgOrComponent);
-            } else {
-                userSetServices.remove(pkgOrComponent);
-            }
 
+            if (changed) {
+                ArraySet<String> userSetServices = mUserSetServices.get(userId);
+                if (userSetServices == null) {
+                    userSetServices = new ArraySet<>();
+                    mUserSetServices.put(userId, userSetServices);
+                }
+                if (userSet) {
+                    if (!Flags.limitManagedServicesCount()
+                            || userSetServices.size() < MAX_SERVICE_ENTRIES) {
+                        userSetServices.add(pkgOrComponent);
+                    }
+                } else {
+                    userSetServices.remove(pkgOrComponent);
+                }
+            }
         }
 
-        rebindServices(false, userId);
+        if (!Flags.limitManagedServicesCount() || changed) {
+            rebindServices(false, userId);
+        }
+
+        return changed;
     }
 
     private int getUidForPackageOrComponent(String pkgOrComponent, int userId) {
@@ -1154,22 +1186,40 @@ abstract public class ManagedServices {
                     anyServicesInvolved = removeUninstalledItemsFromApprovedLists(userId, pkg);
                 }
             }
-            for (String pkgName : pkgList) {
+            for (int i = 0; i < pkgList.length; i++) {
+                String pkgName = pkgList[i];
                 if (!managedServicesConcurrentMultiuser()) {
                     if (isComponentEnabledForPackage(pkgName)) {
                         anyServicesInvolved = true;
                     }
                 }
-                if (uidList != null && uidList.length > 0) {
-                    for (int uid : uidList) {
+
+                if (Flags.fixManagedServicesDoubleBinding()) {
+                    if (uidList != null && uidList.length == pkgList.length) {
+                        @UserIdInt int userId = UserHandle.getUserId(uidList[i]);
                         if (managedServicesConcurrentMultiuser()) {
-                            if (isComponentEnabledForPackage(pkgName, UserHandle.getUserId(uid))) {
+                            if (isComponentEnabledForPackage(pkgName, userId)) {
                                 anyServicesInvolved = true;
                             }
                         }
-                        if (isPackageAllowed(pkgName, UserHandle.getUserId(uid))) {
+                        if (isPackageAllowed(pkgName, userId)) {
                             anyServicesInvolved = true;
-                            trimApprovedListsForInvalidServices(pkgName, UserHandle.getUserId(uid));
+                            trimApprovedListsForInvalidServices(pkgName, userId);
+                        }
+                    }
+                } else {
+                    if (uidList != null && uidList.length > 0) {
+                        for (int uid : uidList) {
+                            @UserIdInt int userId = UserHandle.getUserId(uid);
+                            if (managedServicesConcurrentMultiuser()) {
+                                if (isComponentEnabledForPackage(pkgName, userId)) {
+                                    anyServicesInvolved = true;
+                                }
+                            }
+                            if (isPackageAllowed(pkgName, userId)) {
+                                anyServicesInvolved = true;
+                                trimApprovedListsForInvalidServices(pkgName, userId);
+                            }
                         }
                     }
                 }
@@ -1766,8 +1816,7 @@ abstract public class ManagedServices {
     /**
      * Version of registerService that takes the name of a service component to bind to.
      */
-    @VisibleForTesting
-    void registerService(final ServiceInfo si, final int userId) {
+    private void registerService(final ServiceInfo si, final int userId) {
         ensureFilters(si, userId);
         registerService(si.getComponentName(), userId);
     }
@@ -1794,10 +1843,21 @@ abstract public class ManagedServices {
     /**
      * Inject a system service into the management list.
      */
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     public void registerSystemService(final ComponentName name, final int userid) {
         synchronized (mMutex) {
             registerServiceLocked(name, userid, true /* isSystem */);
         }
+    }
+
+    @GuardedBy("mMutex")
+    private boolean isServiceBoundLocked(ManagedServiceInfo info) {
+        for (ManagedServiceInfo info2 : mServices) {
+            if (Objects.equals(info.component, info2.component) && info.userid == info2.userid) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @GuardedBy("mMutex")
@@ -1879,6 +1939,11 @@ abstract public class ManagedServices {
                                         this, targetSdkVersion, uid);
                             }
                             binder.linkToDeath(info, 0);
+
+                            if (Flags.fixManagedServicesDoubleBinding()
+                                    && isServiceBoundLocked(info)) {
+                                Slog.wtfStack(TAG, "Duplicate binding " + info);
+                            }
                             added = mServices.add(info);
                         } catch (RemoteException e) {
                             Slog.e(TAG, "Failed to linkToDeath, already dead", e);
@@ -1925,14 +1990,21 @@ abstract public class ManagedServices {
                     mContext.unbindService(this);
                 }
             };
+
             if (!mContext.bindServiceAsUser(intent,
                     serviceConnection,
                     BindServiceFlags.of(getBindFlags()),
                     new UserHandle(userid))) {
-                mServicesBound.remove(servicesBindingTag);
+                if (!Flags.fixManagedServicesDoubleBinding()) {
+                    mServicesBound.remove(servicesBindingTag);
+                }
                 Slog.w(TAG, "Unable to bind " + getCaption() + " service: " + intent
                         + " in user " + userid);
-                return;
+                // Need to call Context.unbindService() to dispose of the ServiceConnection even
+                // when bindService returns false.
+                if (Flags.fixManagedServicesDoubleBinding()) {
+                    unbindService(serviceConnection, name, userid);
+                }
             }
         } catch (SecurityException ex) {
             mServicesBound.remove(servicesBindingTag);
@@ -2021,7 +2093,15 @@ abstract public class ManagedServices {
     private ManagedServiceInfo registerServiceImpl(ManagedServiceInfo info) {
         synchronized (mMutex) {
             try {
-                info.service.asBinder().linkToDeath(info, 0);
+                if (Flags.fixManagedServicesDoubleBinding()) {
+                    if (!info.isGuest(this)) {
+                        // Guest services are already linkedToDeath in their hosts, and the host
+                        // will call unregisterService() to remove them from this.mServices.
+                        info.service.asBinder().linkToDeath(info, 0);
+                    }
+                } else {
+                    info.service.asBinder().linkToDeath(info, 0);
+                }
                 mServices.add(info);
                 return info;
             } catch (RemoteException e) {
@@ -2108,7 +2188,6 @@ abstract public class ManagedServices {
         public ComponentName component;
         public int userid;
         public boolean isSystem;
-        @FlaggedApi(FLAG_LIFETIME_EXTENSION_REFACTOR)
         public boolean isSystemUi;
         public ServiceConnection connection;
         public int targetSdkVersion;
@@ -2158,7 +2237,6 @@ abstract public class ManagedServices {
             return isSystem;
         }
 
-        @FlaggedApi(FLAG_LIFETIME_EXTENSION_REFACTOR)
         public boolean isSystemUi() {
             return isSystemUi;
         }

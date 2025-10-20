@@ -23,7 +23,6 @@ import static android.app.AutomaticZenRule.TYPE_SCHEDULE_TIME;
 import static android.app.AutomaticZenRule.TYPE_THEATER;
 import static android.app.AutomaticZenRule.TYPE_UNKNOWN;
 import static android.app.Flags.FLAG_BACKUP_RESTORE_LOGGING;
-import static android.app.Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST;
 import static android.app.NotificationManager.AUTOMATIC_RULE_STATUS_ACTIVATED;
 import static android.app.NotificationManager.AUTOMATIC_RULE_STATUS_DEACTIVATED;
 import static android.app.NotificationManager.AUTOMATIC_RULE_STATUS_DISABLED;
@@ -179,9 +178,7 @@ import android.service.notification.ZenPolicy;
 import android.testing.TestWithLooperRule;
 import android.testing.TestableLooper;
 import android.util.ArrayMap;
-import android.util.Log;
 import android.util.IntArray;
-import android.util.Log;
 import android.util.StatsEvent;
 import android.util.StatsEventTestUtils;
 import android.util.Xml;
@@ -307,8 +304,7 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
         return FlagsParameterization.allCombinationsOf(
-                FLAG_BACKUP_RESTORE_LOGGING,
-                FLAG_MODES_UI_TILE_REACTIVATES_LAST);
+                FLAG_BACKUP_RESTORE_LOGGING);
     }
 
     public ZenModeHelperTest(FlagsParameterization flags) {
@@ -782,6 +778,45 @@ public class ZenModeHelperTest extends UiServiceTestCase {
         assertThat(policy.allowReminders()).isFalse();
         assertThat(policy.allowRepeatCallers()).isFalse();
         assertThat(policy.allowPriorityChannels()).isFalse();
+    }
+
+    @Test
+    public void testSuppressedCallEffects_matchesCallFilter() {
+        // With suppressed effects, regardless of Zen state, all calls should be filtered out
+        mZenModeHelper.setSuppressedEffects(ZenModeHelper.SUPPRESSED_EFFECT_CALLS);
+
+        mZenModeHelper.mZenMode = ZEN_MODE_OFF;
+        assertFalse(mZenModeHelper.matchesCallFilter(UserHandle.CURRENT, null, null, 0, 0, 0));
+
+        mZenModeHelper.mZenMode = ZEN_MODE_IMPORTANT_INTERRUPTIONS;
+        mZenModeHelper.mConsolidatedPolicy = new Policy(PRIORITY_CATEGORY_CALLS,
+                PRIORITY_SENDERS_ANY, PRIORITY_SENDERS_ANY, 0, CONVERSATION_SENDERS_ANYONE);
+
+        assertFalse(mZenModeHelper.matchesCallFilter(UserHandle.CURRENT, null, null, 0, 0, 0));
+
+        mZenModeHelper.mConsolidatedPolicy = new Policy(0,
+                PRIORITY_SENDERS_ANY, PRIORITY_SENDERS_ANY, 0, CONVERSATION_SENDERS_ANYONE);
+        assertFalse(mZenModeHelper.matchesCallFilter(UserHandle.CURRENT, null, null, 0, 0, 0));
+    }
+
+    @Test
+    public void testNoSuppressedCallEffects_matchesCallFilter() {
+        // Without suppressed effects, zen-based call filtering should apply correctly
+        mZenModeHelper.setSuppressedEffects(0);
+
+        mZenModeHelper.mZenMode = ZEN_MODE_OFF;
+        assertTrue(mZenModeHelper.matchesCallFilter(UserHandle.CURRENT, null, null, 0, 0, 0));
+
+        // Without suppressed effects, calls should be allowed by a permissive policy.
+        mZenModeHelper.mZenMode = ZEN_MODE_IMPORTANT_INTERRUPTIONS;
+        mZenModeHelper.mConsolidatedPolicy = new Policy(PRIORITY_CATEGORY_CALLS,
+                PRIORITY_SENDERS_ANY, PRIORITY_SENDERS_ANY, 0, CONVERSATION_SENDERS_ANYONE);
+        assertTrue(mZenModeHelper.matchesCallFilter(UserHandle.CURRENT, null, null, 0, 0, 0));
+
+        // Without suppressed effects, calls should be blocked by a non-permissive policy.
+        mZenModeHelper.mConsolidatedPolicy = new Policy(0,
+                PRIORITY_SENDERS_ANY, PRIORITY_SENDERS_ANY, 0, CONVERSATION_SENDERS_ANYONE);
+        assertFalse(mZenModeHelper.matchesCallFilter(UserHandle.CURRENT, null, null, 0, 0, 0));
     }
 
     @Test
@@ -7190,7 +7225,6 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_MODES_UI_TILE_REACTIVATES_LAST)
     public void setAutomaticZenRuleState_updatesLastActivation() {
         String ruleOne = mZenModeHelper.addAutomaticZenRule(UserHandle.CURRENT, mPkg,
                 new AutomaticZenRule.Builder("rule", CONDITION_ID)
@@ -7281,7 +7315,6 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_MODES_UI_TILE_REACTIVATES_LAST)
     public void setManualZenMode_updatesLastActivation() {
         assertThat(mZenModeHelper.mConfig.manualRule.lastActivation).isNull();
         assertThat(mZenModeHelper.mConfig.manualRule.lastDeactivation).isNull();
@@ -7320,7 +7353,6 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_MODES_UI_TILE_REACTIVATES_LAST)
     public void setAutomaticZenRuleState_notChangingActiveState_doesNotUpdateLastActivation() {
         String ruleId = mZenModeHelper.addAutomaticZenRule(UserHandle.CURRENT, mPkg,
                 new AutomaticZenRule.Builder("rule", CONDITION_ID)
@@ -7352,7 +7384,6 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_MODES_UI_TILE_REACTIVATES_LAST)
     public void addOrUpdateRule_doesNotUpdateLastActivation() {
         AutomaticZenRule azr = new AutomaticZenRule.Builder("rule", CONDITION_ID)
                 .setConfigurationActivity(new ComponentName(mPkg, "cls"))

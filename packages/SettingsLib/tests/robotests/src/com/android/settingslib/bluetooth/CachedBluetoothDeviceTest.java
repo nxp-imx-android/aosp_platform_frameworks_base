@@ -249,6 +249,53 @@ public class CachedBluetoothDeviceTest {
     }
 
     @Test
+    @EnableFlags(FLAG_ENABLE_BLUETOOTH_DIAGNOSIS)
+    public void onProfileStateChanged_specialProfileFailure_setConnectionFailureTime() {
+        when(mProfileManager.getA2dpProfile()).thenReturn(mA2dpProfile);
+        when(mA2dpProfile.getConnectionPolicy(mDevice))
+                .thenReturn(BluetoothProfile.CONNECTION_POLICY_ALLOWED);
+        when(mA2dpProfile.isEnabled(mDevice)).thenReturn(true);
+
+        updateProfileStatus(mA2dpProfile, BluetoothProfile.STATE_CONNECTING);
+        updateProfileStatus(mA2dpProfile, BluetoothProfile.STATE_DISCONNECTED);
+
+        assertThat(mCachedDevice.getConnectionFailureTimeMillis()).isGreaterThan(-1);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_BLUETOOTH_DIAGNOSIS)
+    public void
+            onProfileStateChanged_normalProfileConnectionFailure_doNotSetConnectionFailureTime() {
+        when(mPanProfile.getConnectionPolicy(mDevice))
+                .thenReturn(BluetoothProfile.CONNECTION_POLICY_ALLOWED);
+        when(mPanProfile.isEnabled(mDevice)).thenReturn(true);
+
+        updateProfileStatus(mPanProfile, BluetoothProfile.STATE_CONNECTING);
+        updateProfileStatus(mPanProfile, BluetoothProfile.STATE_DISCONNECTED);
+
+        assertThat(mCachedDevice.getConnectionFailureTimeMillis()).isEqualTo(-1);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_BLUETOOTH_DIAGNOSIS)
+    public void onProfileStateChanged_profileConnectionSuccess_resetConnectionFailureTime() {
+        when(mProfileManager.getA2dpProfile()).thenReturn(mA2dpProfile);
+        when(mA2dpProfile.getConnectionPolicy(mDevice))
+                .thenReturn(BluetoothProfile.CONNECTION_POLICY_ALLOWED);
+        when(mA2dpProfile.isEnabled(mDevice)).thenReturn(true);
+
+        updateProfileStatus(mA2dpProfile, BluetoothProfile.STATE_CONNECTING);
+        updateProfileStatus(mA2dpProfile, BluetoothProfile.STATE_DISCONNECTED);
+
+        assertThat(mCachedDevice.getConnectionFailureTimeMillis()).isGreaterThan(-1);
+
+        updateProfileStatus(mA2dpProfile, BluetoothProfile.STATE_CONNECTING);
+        updateProfileStatus(mA2dpProfile, BluetoothProfile.STATE_CONNECTED);
+
+        assertThat(mCachedDevice.getConnectionFailureTimeMillis()).isEqualTo(-1);
+    }
+
+    @Test
     public void getConnectionSummary_testProfilesInactive_returnPairing() {
         // Arrange:
         //   Bond State: Bonding

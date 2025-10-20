@@ -7,6 +7,7 @@ import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
 import android.app.WindowConfiguration.WindowingMode
+import android.content.Intent
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.IBinder
@@ -96,6 +97,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
     private lateinit var dragToDesktopStateListener:
         DragToDesktopTransitionHandler.DragToDesktopStateListener
     private lateinit var desktopState: FakeDesktopState
+    private val wctCaptor = argumentCaptor<WindowContainerTransaction>()
 
     private val transactionSupplier = Supplier {
         val transaction = mock<SurfaceControl.Transaction>()
@@ -148,7 +150,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         whenever(
                 transitions.startTransition(
                     eq(TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP),
-                    /* wct= */ any(),
+                    wctCaptor.capture(),
                     eq(defaultHandler),
                 )
             )
@@ -301,6 +303,30 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
+    fun startDragToDesktop_onDefaultDisplay_usesHomeCategory() {
+        val task = createTask().apply { displayId = Display.DEFAULT_DISPLAY }
+        startDragToDesktopTransition(defaultHandler, task, dragAnimator)
+
+        val wct: WindowContainerTransaction = wctCaptor.firstValue
+        val capturedIntent = wct.hierarchyOps.mapNotNull { it.activityIntent }.first()
+
+        assertThat(capturedIntent.hasCategory(Intent.CATEGORY_HOME)).isTrue()
+        assertThat(capturedIntent.hasCategory(Intent.CATEGORY_SECONDARY_HOME)).isFalse()
+    }
+
+    @Test
+    fun startDragToDesktop_onSecondaryDisplay_usesSecondaryHomeCategory() {
+        val task = createTask().apply { displayId = SECONDARY_DISPLAY }
+        startDragToDesktopTransition(defaultHandler, task, dragAnimator)
+
+        val wct: WindowContainerTransaction = wctCaptor.firstValue
+        val capturedIntent = wct.hierarchyOps.mapNotNull { it.activityIntent }.first()
+
+        assertThat(capturedIntent.hasCategory(Intent.CATEGORY_HOME)).isFalse()
+        assertThat(capturedIntent.hasCategory(Intent.CATEGORY_SECONDARY_HOME)).isTrue()
+    }
+
+    @Test
     fun isHomeChange_withoutTaskInfo_returnsFalse() {
         val change =
             TransitionInfo.Change(mock(), homeTaskLeash).apply {
@@ -376,6 +402,40 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         // Cancel animation should run since it had already started.
         verify(dragAnimator).cancelAnimator()
         assertFalse("Drag should not be in progress after cancelling", defaultHandler.inProgress)
+    }
+
+    @Test
+    fun cancelSplitDragToDesktop_startWasReady_cancel_merged_and_starts_splitscreen_transition() {
+        val draggedTask = createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
+        val otherTask = createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
+        whenever(splitScreenController.getTaskInfo(anyInt())).thenReturn(otherTask)
+        val startToken = startDrag(defaultHandler, task = draggedTask)
+
+        // Then user cancelled after it had already started.
+        val cancelToken =
+            cancelDragToDesktopTransition(
+                defaultHandler,
+                DragToDesktopTransitionHandler.CancelState.STANDARD_CANCEL,
+            )
+        defaultHandler.mergeAnimation(
+            cancelToken,
+            TransitionInfo(TRANSIT_DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP, 0),
+            mock<SurfaceControl.Transaction>(),
+            mock<SurfaceControl.Transaction>(),
+            startToken,
+            mock<Transitions.TransitionFinishCallback>(),
+        )
+
+        // Cancel animation should run since it had already started.
+        verify(dragAnimator).cancelAnimator()
+        assertFalse("Drag should not be in progress after cancelling", defaultHandler.inProgress)
+
+        // Splitscreen should expand to fullscreen after the regular cancel transition finishes.
+        verify(splitScreenController)
+            .moveTaskToFullscreen(
+                draggedTask.taskId,
+                SplitScreenController.EXIT_REASON_DRAG_TO_FULLSCREEN,
+            )
     }
 
     @Test
@@ -1149,6 +1209,15 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         finishCallback: Transitions.TransitionFinishCallback = mock(),
     ): IBinder {
         whenever(dragAnimator.position).thenReturn(PointF())
+        val splitStageChange: TransitionInfo.Change? =
+            if (task.windowingMode == WINDOWING_MODE_MULTI_WINDOW) {
+                createSplitStageChange().let { change ->
+                    task.parentTaskId = checkNotNull(change.taskInfo).taskId
+                    change
+                }
+            } else {
+                null
+            }
         // Simulate transition is started and is ready to animate.
         val transition = startDragToDesktopTransition(handler, task, dragAnimator)
         handler.startAnimation(
@@ -1158,6 +1227,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                     type = TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP,
                     draggedTask = task,
                     homeChange = homeChange,
+                    splitStageChange = splitStageChange,
                     rootLeash = transitionRootLeash,
                 ),
             startTransaction = startTransaction,
@@ -1176,7 +1246,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         whenever(
                 transitions.startTransition(
                     eq(TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP),
-                    any(),
+                    wctCaptor.capture(),
                     eq(handler),
                 )
             )
@@ -1255,16 +1325,18 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         homeChange: TransitionInfo.Change? = createHomeChange(),
         rootLeash: SurfaceControl = mock(),
         deskChange: TransitionInfo.Change? = null,
+        splitStageChange: TransitionInfo.Change? = null,
     ) =
         TransitionInfo(type, /* flags= */ 0).apply {
             homeChange?.let { addChange(it) }
             addChange( // Dragged Task.
                 TransitionInfo.Change(mock(), draggedTaskLeash).apply {
-                    parent = null
+                    parent = splitStageChange?.taskInfo?.token
                     taskInfo = draggedTask
                 }
             )
             deskChange?.let { addChange(it) }
+            splitStageChange?.let { addChange(it) }
             addChange( // Wallpaper.
                 TransitionInfo.Change(mock(), wallpaperLeash).apply {
                     parent = null
@@ -1288,10 +1360,18 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
             taskInfo = TestRunningTaskInfoBuilder().build()
         }
 
+    private fun createSplitStageChange() =
+        TransitionInfo.Change(mock(), mock()).apply {
+            parent = null
+            taskInfo = TestRunningTaskInfoBuilder().build()
+        }
+
     private fun systemPropertiesKey(name: String) =
         "${SpringDragToDesktopTransitionHandler.SYSTEM_PROPERTIES_GROUP}.$name"
 
     private companion object {
         private const val TOLERANCE = 1e-5f
+        const val SECONDARY_DISPLAY = 2
     }
 }
+

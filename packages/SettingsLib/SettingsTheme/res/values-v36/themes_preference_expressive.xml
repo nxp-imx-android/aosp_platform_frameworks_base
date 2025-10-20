@@ -39,5 +39,6 @@
         <item name="expressiveTwoTargetDividerStyle">@style/ExpressiveTwoTargetDividerStyle</item>
         <item name="expressiveTwoTargetDividerImageViewStyle">@style/ExpressiveTwoTargetDividerImageViewStyle</item>
         <item name="expressiveTwoTargetDividerViewStyle">@style/ExpressiveTwoTargetDividerViewStyle</item>
+        <item name="expressivePreferenceCategoryTheme">@style/ExpressivePreferenceCategoryTheme</item>
     </style>
 </resources>

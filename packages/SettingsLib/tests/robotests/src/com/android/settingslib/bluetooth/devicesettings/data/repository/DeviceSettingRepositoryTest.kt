@@ -25,8 +25,11 @@ import android.graphics.Bitmap
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
 import com.android.settingslib.bluetooth.devicesettings.ActionSwitchPreference
 import com.android.settingslib.bluetooth.devicesettings.ActionSwitchPreferenceState
+import com.android.settingslib.bluetooth.devicesettings.BannerPreference
+import com.android.settingslib.bluetooth.devicesettings.ButtonInfo
 import com.android.settingslib.bluetooth.devicesettings.DeviceInfo
 import com.android.settingslib.bluetooth.devicesettings.DeviceSetting
+import com.android.settingslib.bluetooth.devicesettings.DeviceSettingGroup
 import com.android.settingslib.bluetooth.devicesettings.DeviceSettingHelpPreference
 import com.android.settingslib.bluetooth.devicesettings.DeviceSettingId
 import com.android.settingslib.bluetooth.devicesettings.DeviceSettingItem
@@ -41,9 +44,10 @@ import com.android.settingslib.bluetooth.devicesettings.IGetDeviceSettingsConfig
 import com.android.settingslib.bluetooth.devicesettings.MultiTogglePreference
 import com.android.settingslib.bluetooth.devicesettings.MultiTogglePreferenceState
 import com.android.settingslib.bluetooth.devicesettings.ToggleInfo
-import com.android.settingslib.bluetooth.devicesettings.shared.model.DeviceSettingConfigItemModel
 import com.android.settingslib.bluetooth.devicesettings.shared.model.DeviceSettingConfigModel
+import com.android.settingslib.bluetooth.devicesettings.shared.model.DeviceSettingConfigNodeModel
 import com.android.settingslib.bluetooth.devicesettings.shared.model.DeviceSettingIcon
+import com.android.settingslib.bluetooth.devicesettings.shared.model.DeviceSettingLayout
 import com.android.settingslib.bluetooth.devicesettings.shared.model.DeviceSettingModel
 import com.android.settingslib.bluetooth.devicesettings.shared.model.DeviceSettingStateModel
 import com.android.settingslib.bluetooth.devicesettings.shared.model.ToggleModel
@@ -148,15 +152,41 @@ class DeviceSettingRepositoryTest {
             val config = underTest.getDeviceSettingsConfig(cachedDevice)
 
             assertConfig(config!!, DEVICE_SETTING_CONFIG)
-            assertThat(config.mainItems[0])
-                .isInstanceOf(DeviceSettingConfigItemModel.AppProvidedItem::class.java)
-            assertThat(config.mainItems[1])
+            assertThat(config.mainItems.nodes[0])
+                .isInstanceOf(DeviceSettingConfigNodeModel.Item.AppProvidedItem::class.java)
+            assertThat(config.mainItems.nodes[1])
                 .isInstanceOf(
-                    DeviceSettingConfigItemModel.BuiltinItem.CommonBuiltinItem::class.java
+                    DeviceSettingConfigNodeModel.Item.BuiltinItem.CommonBuiltinItem::class.java
                 )
-            assertThat(config.mainItems[2])
+            assertThat(config.mainItems.nodes[2])
                 .isInstanceOf(
-                    DeviceSettingConfigItemModel.BuiltinItem.BluetoothProfilesItem::class.java
+                    DeviceSettingConfigNodeModel.Item.BuiltinItem.BluetoothProfilesItem::class.java
+                )
+        }
+    }
+
+    @Test
+    fun getDeviceSettingsConfigWithGroup_success() {
+        testScope.runTest {
+            setUpConfigService(true, DEVICE_SETTING_CONFIG_WITH_GROUP)
+            setUpProviderService(settingProviderService1, true, listOf())
+            setUpProviderService(settingProviderService2, true, listOf())
+
+            val config = underTest.getDeviceSettingsConfig(cachedDevice)
+
+            assertConfig(config!!, DEVICE_SETTING_CONFIG)
+            assertThat(config.mainItems.nodes).hasSize(2)
+            val group1 = config.mainItems.nodes[0] as DeviceSettingConfigNodeModel.Group
+            val group2 = config.mainItems.nodes[1] as DeviceSettingConfigNodeModel.Group
+            assertThat(group1.children[0])
+                .isInstanceOf(DeviceSettingConfigNodeModel.Item.AppProvidedItem::class.java)
+            assertThat(group2.children[0])
+                .isInstanceOf(
+                    DeviceSettingConfigNodeModel.Item.BuiltinItem.CommonBuiltinItem::class.java
+                )
+            assertThat(group2.children[1])
+                .isInstanceOf(
+                    DeviceSettingConfigNodeModel.Item.BuiltinItem.BluetoothProfilesItem::class.java
                 )
         }
     }
@@ -170,7 +200,7 @@ class DeviceSettingRepositoryTest {
 
             val config = underTest.getDeviceSettingsConfig(cachedDevice)!!
 
-            assertThat(config.mainItems.map { it.settingId }).isEqualTo(
+            assertThat(getItems(config.mainItems).map { it.settingId }).isEqualTo(
                 IntRange(
                     DeviceSettingId.DEVICE_SETTING_ID_EXPANDABLE_1,
                     DeviceSettingId.DEVICE_SETTING_ID_EXPANDABLE_1 + 14
@@ -359,6 +389,24 @@ class DeviceSettingRepositoryTest {
         }
     }
 
+    @Test
+    fun getDeviceSetting_bannerPreference_success() {
+        testScope.runTest {
+            setUpConfigService(true, DEVICE_SETTING_CONFIG)
+            setUpProviderService(settingProviderService1, true, listOf(DEVICE_SETTING_BANNER))
+            setUpProviderService(settingProviderService2, true, listOf())
+            var setting: DeviceSettingModel? = null
+
+            underTest
+                .getDeviceSetting(cachedDevice, DEVICE_SETTING_ID_BANNER)
+                .onEach { setting = it }
+                .launchIn(backgroundScope)
+            runCurrent()
+
+            assertDeviceSetting(setting!!, DEVICE_SETTING_BANNER)
+        }
+    }
+
     private fun assertDeviceSetting(actual: DeviceSettingModel, serviceResponse: DeviceSetting) {
         assertThat(actual.id).isEqualTo(serviceResponse.settingId)
         when (actual) {
@@ -394,6 +442,15 @@ class DeviceSettingRepositoryTest {
                 val pref = serviceResponse.preference as DeviceSettingHelpPreference
                 assertThat(actual.intent).isSameInstanceAs(pref.intent)
             }
+            is DeviceSettingModel.BannerPreference -> {
+                assertThat(serviceResponse.preference)
+                    .isInstanceOf(BannerPreference::class.java)
+                val pref = serviceResponse.preference as BannerPreference
+                assertThat(actual.title).isEqualTo(pref.title)
+                assertThat(actual.message).isEqualTo(pref.message)
+                assertThat(actual.positiveButton?.label).isEqualTo(pref.positiveButtonInfo?.label)
+                assertThat(actual.negativeButton?.label).isEqualTo(pref.negativeButtonInfo?.label)
+            }
             else -> {}
         }
     }
@@ -408,25 +465,45 @@ class DeviceSettingRepositoryTest {
         actual: DeviceSettingConfigModel,
         serviceResponse: DeviceSettingsConfig,
     ) {
-        assertThat(actual.mainItems.size).isEqualTo(serviceResponse.mainContentItems.size)
-        for (i in 0..<actual.mainItems.size) {
-            assertConfigItem(actual.mainItems[i], serviceResponse.mainContentItems[i])
+        val actualMainItems = getItems(actual.mainItems)
+        assertThat(actualMainItems.size).isEqualTo(serviceResponse.mainContentItems.size)
+        for (i in 0..<actualMainItems.size) {
+            assertConfigItem(actualMainItems[i], serviceResponse.mainContentItems[i])
         }
-        assertThat(actual.moreSettingsItems.size).isEqualTo(serviceResponse.moreSettingsItems.size)
-        for (i in 0..<actual.moreSettingsItems.size) {
-            assertConfigItem(actual.moreSettingsItems[i], serviceResponse.moreSettingsItems[i])
+        val actualMoreSettingsItems = getItems(actual.moreSettingsItems)
+        assertThat(actualMoreSettingsItems.size).isEqualTo(serviceResponse.moreSettingsItems.size)
+        for (i in 0..<actualMoreSettingsItems.size) {
+            assertConfigItem(actualMoreSettingsItems[i], serviceResponse.moreSettingsItems[i])
         }
     }
 
+    private fun getItems(layout: DeviceSettingLayout): List<DeviceSettingConfigNodeModel.Item> =
+        layout.nodes.flatMap {
+            when (it) {
+                is DeviceSettingConfigNodeModel.Group -> {
+                    it.children
+                }
+                is DeviceSettingConfigNodeModel.Item -> {
+                    listOf(it)
+                }
+            }
+        }
+
     private fun assertConfigItem(
-        actual: DeviceSettingConfigItemModel,
+        actual: DeviceSettingConfigNodeModel.Item,
         serviceResponse: DeviceSettingItem,
     ) {
         assertThat(actual.settingId).isEqualTo(serviceResponse.settingId)
     }
 
     private fun setUpConfigService(success: Boolean, config: DeviceSettingsConfig?) {
-        `when`(configService.getDeviceSettingsConfig(any(), any())).then { input ->
+        `when`(
+            configService.getDeviceSettingsConfigWithOptions(
+                any(),
+                any(),
+                any()
+            )
+        ).then { input ->
             input
                 .getArgument<IGetDeviceSettingsConfigCallback>(1)
                 .onResult(
@@ -464,6 +541,12 @@ class DeviceSettingRepositoryTest {
             "com.android.fake.settingproviderservice2.Service"
         const val SETTING_PROVIDER_SERVICE_INTENT_ACTION_2 =
             "com.android.fake.settingproviderservice2.BIND"
+        const val SETTING_PROVIDER_SERVICE_PACKAGE_NAME_3 =
+            "com.android.fake.settingproviderservice3"
+        const val SETTING_PROVIDER_SERVICE_CLASS_NAME_3 =
+            "com.android.fake.settingproviderservice3.Service"
+        const val SETTING_PROVIDER_SERVICE_INTENT_ACTION_3 =
+            "com.android.fake.settingproviderservice3.BIND"
         const val BLUETOOTH_DEVICE_METADATA =
             "<DEVICE_SETTINGS_CONFIG_PACKAGE_NAME>" +
                 CONFIG_SERVICE_PACKAGE_NAME +
@@ -476,6 +559,7 @@ class DeviceSettingRepositoryTest {
                 "</DEVICE_SETTINGS_CONFIG_ACTION>"
         val DEVICE_INFO = DeviceInfo.Builder().setBluetoothAddress(BLUETOOTH_ADDRESS).build()
         const val DEVICE_SETTING_ID_HELP = 12345
+        const val DEVICE_SETTING_ID_BANNER = 54321
         val DEVICE_SETTING_APP_PROVIDED_ITEM_1 =
             DeviceSettingItem(
                 DeviceSettingId.DEVICE_SETTING_ID_HEADER,
@@ -520,6 +604,13 @@ class DeviceSettingRepositoryTest {
                 SETTING_PROVIDER_SERVICE_CLASS_NAME_2,
                 SETTING_PROVIDER_SERVICE_INTENT_ACTION_2,
             )
+        val DEVICE_SETTING_BANNER_ITEM =
+            DeviceSettingItem(
+                DEVICE_SETTING_ID_BANNER,
+                SETTING_PROVIDER_SERVICE_PACKAGE_NAME_3,
+                SETTING_PROVIDER_SERVICE_CLASS_NAME_3,
+                SETTING_PROVIDER_SERVICE_INTENT_ACTION_3,
+            )
         val DEVICE_SETTING_1 =
             DeviceSetting.Builder()
                 .setSettingId(DeviceSettingId.DEVICE_SETTING_ID_HEADER)
@@ -558,16 +649,45 @@ class DeviceSettingRepositoryTest {
                 .setSettingId(DEVICE_SETTING_ID_HELP)
                 .setPreference(DeviceSettingHelpPreference.Builder().setIntent(Intent()).build())
                 .build()
+        val DEVICE_SETTING_BANNER =
+            DeviceSetting.Builder()
+                .setSettingId(DEVICE_SETTING_ID_BANNER)
+                .setPreference(
+                    BannerPreference.Builder()
+                        .setTitle("title")
+                        .setMessage("message")
+                        .setPositiveButtonInfo(
+                            ButtonInfo.Builder()
+                                .setLabel("positive")
+                                .build()
+                        )
+                        .setNegativeButtonInfo(
+                            ButtonInfo.Builder()
+                                .setLabel("negative")
+                                .build()
+                        )
+                        .build()
+                ).build()
         val DEVICE_SETTING_CONFIG =
             DeviceSettingsConfig(
-                listOf(
+                mainContentItems = listOf(
                     DEVICE_SETTING_APP_PROVIDED_ITEM_1,
                     DEVICE_SETTING_BUILT_IN_ITEM,
                     DEVICE_SETTING_BUILT_IN_BT_PROFILES_ITEM,
                 ),
-                listOf(DEVICE_SETTING_APP_PROVIDED_ITEM_2),
-                DEVICE_SETTING_HELP_ITEM,
+                moreSettingsItems = listOf(DEVICE_SETTING_APP_PROVIDED_ITEM_2),
+                moreSettingsHelpItem = DEVICE_SETTING_HELP_ITEM,
             )
+        val DEVICE_SETTING_CONFIG_WITH_GROUP = DeviceSettingsConfig(
+            mainContentItems = listOf(
+                DEVICE_SETTING_APP_PROVIDED_ITEM_1.copy(groupIndex = 0),
+                DEVICE_SETTING_BUILT_IN_ITEM.copy(groupIndex = 1),
+                DEVICE_SETTING_BUILT_IN_BT_PROFILES_ITEM.copy(groupIndex = 1),
+            ),
+            moreSettingsItems = listOf(DEVICE_SETTING_APP_PROVIDED_ITEM_2),
+            moreSettingsHelpItem = DEVICE_SETTING_HELP_ITEM,
+            settingGroups = listOf(DeviceSettingGroup("group 1"), DeviceSettingGroup("group 2"))
+        )
         val DEVICE_SETTING_CONFIG_EXPANDABLE =
             DeviceSettingsConfig(
                 listOf(

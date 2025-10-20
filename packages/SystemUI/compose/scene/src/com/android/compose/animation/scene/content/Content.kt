@@ -67,6 +67,7 @@ import com.android.compose.animation.scene.MovableElement
 import com.android.compose.animation.scene.MovableElementContentScope
 import com.android.compose.animation.scene.MovableElementKey
 import com.android.compose.animation.scene.NestedSceneTransitionLayoutState
+import com.android.compose.animation.scene.Scale
 import com.android.compose.animation.scene.SceneTransitionLayoutForTesting
 import com.android.compose.animation.scene.SceneTransitionLayoutImpl
 import com.android.compose.animation.scene.SceneTransitionLayoutScope
@@ -76,8 +77,13 @@ import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.ValueKey
 import com.android.compose.animation.scene.animateSharedValueAsState
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.effect.GestureEffect
 import com.android.compose.animation.scene.element
+import com.android.compose.animation.scene.elementAlpha
+import com.android.compose.animation.scene.elementState
+import com.android.compose.animation.scene.getAllNestedTransitionStates
+import com.android.compose.animation.scene.getScale
 import com.android.compose.animation.scene.modifiers.noResizeDuringTransitions
 import com.android.compose.gesture.NestedScrollControlState
 import com.android.compose.gesture.NestedScrollableBound
@@ -421,6 +427,26 @@ internal class ContentScopeImpl(
             layoutState.currentTransitions.fastAny {
                 it.fromContent == content || it.toContent == content
             }
+    }
+
+    override fun ElementKey.currentAlpha(): Float? {
+        val element = layoutImpl.elements[this] ?: return null
+        val stateInContent = element.stateByContent[contentKey] ?: return null
+        val elementState =
+            elementState(layoutImpl, element, getAllNestedTransitionStates(layoutImpl))
+                ?: return null
+        val transition = elementState as? TransitionState.Transition
+        return elementAlpha(layoutImpl, element, transition, stateInContent)
+    }
+
+    override fun ElementKey.currentScale(): Scale? {
+        val element = layoutImpl.elements[this] ?: return null
+        val stateInContent = element.stateByContent[contentKey] ?: return null
+        val elementState =
+            elementState(layoutImpl, element, getAllNestedTransitionStates(layoutImpl))
+                ?: return null
+        val transition = elementState as? TransitionState.Transition
+        return getScale(layoutImpl, element, transition, stateInContent)
     }
 }
 

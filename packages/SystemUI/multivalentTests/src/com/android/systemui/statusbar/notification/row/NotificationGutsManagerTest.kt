@@ -62,6 +62,7 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.settings.UserContextProvider
 import com.android.systemui.shade.ShadeController
+import com.android.systemui.shared.system.activityManagerWrapper
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.NotificationPresenter
 import com.android.systemui.statusbar.notification.AssistantFeedbackController
@@ -86,9 +87,12 @@ import com.android.systemui.statusbar.policy.DeviceProvisionedController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.wmshell.BubblesManager
+import java.util.Optional
+import kotlin.test.assertNotNull
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -113,8 +117,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
-import java.util.Optional
-import kotlin.test.assertNotNull
 
 /** Tests for [NotificationGutsManager]. */
 @SmallTest
@@ -232,6 +234,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 metricsLogger,
                 headsUpManager,
                 activityStarter,
+                kosmos.activityManagerWrapper,
             )
         gutsManager.setUpWithPresenter(
             presenter,
@@ -315,6 +318,31 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
         } else {
             verify(headsUpManager).setGutsShown(realRow.entryLegacy, false)
         }
+    }
+
+    @Test
+    fun testOpenGutsInKioskMode_doesNotOpen() {
+        whenever(kosmos.activityManagerWrapper.isLockTaskKioskModeActive).thenReturn(true)
+
+        val guts = spy(NotificationGuts(mContext))
+        whenever(guts.post(any())).thenAnswer { invocation: InvocationOnMock ->
+            handler.post(((invocation.arguments[0] as Runnable)))
+            null
+        }
+
+        // Test doesn't support animation since the guts view is not attached.
+        doNothing().whenever(guts).openControls(anyInt(), anyInt(), anyBoolean(), any())
+
+        val realRow = createTestNotificationRow()
+        val menuItem = createTestMenuItem(realRow)
+
+        val row = spy(realRow)
+        whenever(row.windowToken).thenReturn(Binder())
+        whenever(row.guts).thenReturn(guts)
+
+        assertFalse(gutsManager.openGutsInternal(row, 0, 0, menuItem))
+        executor.runAllReady()
+        verify(guts, never()).openControls(anyInt(), anyInt(), anyBoolean(), any<Runnable>())
     }
 
     @Test
@@ -527,12 +555,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
 
         whenever(highPriorityProvider.isHighPriority(any())).thenReturn(true)
         whenever(kosmos.mockHighPriorityProvider.isHighPriority(any())).thenReturn(true)
-        gutsManager.initializeNotificationInfo(
-            row,
-            sbn,
-            ranking,
-            notificationInfoView,
-        )
+        gutsManager.initializeNotificationInfo(row, sbn, ranking, notificationInfoView)
 
         verify(notificationInfoView)
             .bindNotification(

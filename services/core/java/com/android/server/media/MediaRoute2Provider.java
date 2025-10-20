@@ -28,11 +28,15 @@ import android.media.RouteDiscoveryPreference;
 import android.media.RoutingSessionInfo;
 import android.os.Bundle;
 import android.os.UserHandle;
+import android.util.ArrayMap;
+import android.util.ArraySet;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.media.flags.Flags;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -43,9 +47,9 @@ abstract class MediaRoute2Provider {
     final String mUniqueId;
     final Object mLock = new Object();
 
-    Callback mCallback;
     public final boolean mIsSystemRouteProvider;
     private volatile MediaRoute2ProviderInfo mProviderInfo;
+    private Callback mCallback;
 
     @GuardedBy("mLock")
     final List<RoutingSessionInfo> mSessionInfos = new ArrayList<>();
@@ -112,6 +116,17 @@ abstract class MediaRoute2Provider {
     void setProviderState(MediaRoute2ProviderInfo providerInfo) {
         if (providerInfo == null) {
             mProviderInfo = null;
+            return;
+        }
+
+        List<MediaRoute2Info> possiblyUpdatedRoutes = null;
+        if (Flags.enableRouteVisibilityControlCompatFixes()) {
+            possiblyUpdatedRoutes =
+                    getVisibilityUpdatedRoutesIfNeeded(providerInfo.getRoutes(), getSessionInfos());
+        }
+
+        if (possiblyUpdatedRoutes != null) {
+            setProviderStateWithUpdatedRoutes(providerInfo, possiblyUpdatedRoutes);
         } else {
             mProviderInfo = new MediaRoute2ProviderInfo.Builder(providerInfo)
                     .setUniqueId(mComponentName.getPackageName(), mUniqueId)
@@ -120,9 +135,48 @@ abstract class MediaRoute2Provider {
         }
     }
 
-    void notifyProviderState() {
+    private void setProviderStateWithUpdatedRoutes(@NonNull MediaRoute2ProviderInfo providerInfo,
+            @NonNull List<MediaRoute2Info> updatedRoutes) {
+        mProviderInfo = new MediaRoute2ProviderInfo.Builder(providerInfo, new ArrayMap<>())
+                .addRoutes(updatedRoutes)
+                .setUniqueId(mComponentName.getPackageName(), mUniqueId)
+                .setSystemRouteProvider(mIsSystemRouteProvider)
+                .build();
+    }
+
+    protected boolean haveCallback() {
+        return mCallback != null;
+    }
+
+    protected void notifyProviderStateChanged() {
         if (mCallback != null) {
             mCallback.onProviderStateChanged(this);
+        }
+    }
+
+    protected void notifySessionCreated(long requestId, @Nullable RoutingSessionInfo sessionInfo) {
+        if (mCallback != null) {
+            maybeUpdateProviderStateForRouteVisibility();
+            mCallback.onSessionCreated(this, requestId, sessionInfo);
+        }
+    }
+
+    protected void notifySessionUpdated(
+            @NonNull MediaRoute2Provider provider,
+            @NonNull RoutingSessionInfo sessionInfo,
+            Set<String> packageNamesWithRoutingSessionOverrides,
+            boolean shouldShowVolumeSystemUi) {
+        if (mCallback != null) {
+            maybeUpdateProviderStateForRouteVisibility();
+            mCallback.onSessionUpdated(this, sessionInfo,
+                    packageNamesWithRoutingSessionOverrides, shouldShowVolumeSystemUi);
+        }
+    }
+
+    protected void notifySessionReleased(@NonNull RoutingSessionInfo sessionInfo) {
+        if (mCallback != null) {
+            mCallback.onSessionReleased(this, sessionInfo);
+            maybeUpdateProviderStateForRouteVisibility();
         }
     }
 
@@ -135,7 +189,7 @@ abstract class MediaRoute2Provider {
 
     void setAndNotifyProviderState(MediaRoute2ProviderInfo providerInfo) {
         setProviderState(providerInfo);
-        notifyProviderState();
+        notifyProviderStateChanged();
     }
 
     public boolean hasComponentName(String packageName, String className) {
@@ -147,12 +201,13 @@ abstract class MediaRoute2Provider {
         pw.println(prefix + getDebugString());
         prefix += "  ";
 
-        if (mProviderInfo == null) {
+        var providerInfo = mProviderInfo;
+        if (providerInfo == null) {
             pw.println(prefix + "<provider info not received, yet>");
-        } else if (mProviderInfo.getRoutes().isEmpty()) {
+        } else if (providerInfo.getRoutes().isEmpty()) {
             pw.println(prefix + "<provider info has no routes>");
         } else {
-            for (MediaRoute2Info route : mProviderInfo.getRoutes()) {
+            for (MediaRoute2Info route : providerInfo.getRoutes()) {
                 pw.printf("%s%s | %s\n", prefix, route.getId(), route.getName());
             }
         }
@@ -198,11 +253,16 @@ abstract class MediaRoute2Provider {
          *     affected by global session changes. This set may only be non-empty when the {@code
          *     sessionInfo} is for the global session, and therefore has no {@link
          *     RoutingSessionInfo#getClientPackageName()}.
+         * @param shouldShowVolumeSystemUi Whether a volume UI affordance should be presented as a
+         *     result of this session update. For example, this session update may be the result of
+         *     a volume change in response to a volume hardware key press, in which case a volume
+         *     slider should be presented.
          */
         void onSessionUpdated(
                 @NonNull MediaRoute2Provider provider,
                 @NonNull RoutingSessionInfo sessionInfo,
-                Set<String> packageNamesWithRoutingSessionOverrides);
+                Set<String> packageNamesWithRoutingSessionOverrides,
+                boolean shouldShowVolumeSystemUi);
 
         void onSessionReleased(@NonNull MediaRoute2Provider provider,
                 @NonNull RoutingSessionInfo sessionInfo);
@@ -279,5 +339,64 @@ abstract class MediaRoute2Provider {
                     .map(MediaRouter2Utils::getOriginalId)
                     .anyMatch(mTargetOriginalRouteId::equals);
         }
+    }
+
+    private void maybeUpdateProviderStateForRouteVisibility() {
+        if (!Flags.enableRouteVisibilityControlCompatFixes()) {
+            return;
+        }
+        var providerInfo = mProviderInfo;
+        if (providerInfo == null) {
+            return;  // no need to update provider state if we don't have any
+        }
+        List<MediaRoute2Info> possiblyUpdatedRoutes =
+                getVisibilityUpdatedRoutesIfNeeded(providerInfo.getRoutes(), mSessionInfos);
+        if (possiblyUpdatedRoutes != null) {
+            setProviderStateWithUpdatedRoutes(providerInfo, possiblyUpdatedRoutes);
+            notifyProviderStateChanged();
+        }
+    }
+
+    /**
+     * Returns a copy of routes with any missing visibility added, or null if the existing
+     * visibility is sufficient.
+     *
+     * <p>We consider visibility to be missing when a route is not visible to a given app, but a
+     * routing session exists where that app is the {@link #getClientPackageName client} and that
+     * route is selected.
+     *
+     * <p>In summary, this method ensures that all routes which are selected by an app are visible
+     * to that app.
+     */
+    @Nullable
+    private List<MediaRoute2Info> getVisibilityUpdatedRoutesIfNeeded(
+            Collection<MediaRoute2Info> routes, List<RoutingSessionInfo> sessions) {
+        ArrayMap<String, Set<String>> selectedRouteToClient = new ArrayMap<>();
+        for (RoutingSessionInfo session : sessions) {
+            session.getSelectedRoutes().forEach(routeId -> {
+                Set<String> clients =
+                        selectedRouteToClient.computeIfAbsent(routeId, k -> new ArraySet<>());
+                clients.add(session.getClientPackageName());
+            });
+        }
+
+        boolean updatedSomeRoute = false;
+        ArrayList<MediaRoute2Info> updatedRoutes = new ArrayList<>();
+        for (MediaRoute2Info route : routes) {
+            String fullId = MediaRouter2Utils.toUniqueId(mUniqueId, route.getOriginalId());
+            MediaRoute2Info routeToAdd = route;
+            if (!route.isPublic()) {
+                Set<String> clients = selectedRouteToClient.getOrDefault(fullId, Set.of());
+                if (!clients.equals(route.getTemporaryVisibilityPackages())) {
+                    routeToAdd = new MediaRoute2Info.Builder(route)
+                            .setTemporaryAllowedPackages(clients)
+                            .build();
+                    updatedSomeRoute = true;
+                }
+            }
+            updatedRoutes.add(routeToAdd);
+        }
+
+        return updatedSomeRoute ? updatedRoutes : null;
     }
 }

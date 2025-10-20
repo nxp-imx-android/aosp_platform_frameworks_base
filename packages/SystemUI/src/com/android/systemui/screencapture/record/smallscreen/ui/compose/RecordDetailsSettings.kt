@@ -16,14 +16,19 @@
 
 package com.android.systemui.screencapture.record.smallscreen.ui.compose
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -39,12 +44,16 @@ import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
+import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.RecordDetailsTargetItemViewModel
+import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.RecordDetailsTargetViewModel
 import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordParametersViewModel
 
 @Composable
 fun RecordDetailsSettings(
-    viewModel: ScreenCaptureRecordParametersViewModel,
+    parametersViewModel: ScreenCaptureRecordParametersViewModel,
+    targetViewModel: RecordDetailsTargetViewModel,
     drawableLoaderViewModel: DrawableLoaderViewModel,
+    onAppSelectorClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -52,7 +61,32 @@ fun RecordDetailsSettings(
         color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(28.dp),
     ) {
-        Column(modifier = Modifier.padding(vertical = 16.dp).fillMaxWidth()) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier =
+                Modifier.padding(vertical = 12.dp)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+        ) {
+            AnimatedVisibility(visible = targetViewModel.canChangeTarget) {
+                CaptureTargetSelector(
+                    items = targetViewModel.items,
+                    selectedItemIndex = targetViewModel.selectedIndex,
+                    onItemSelected = { targetViewModel.select(it) },
+                    itemToString = { stringResource(it.labelRes) },
+                    isItemEnabled = { it.isSelectable },
+                    viewModel = drawableLoaderViewModel,
+                    modifier = Modifier.padding(vertical = 12.dp),
+                )
+            }
+            AnimatedVisibility(visible = targetViewModel.shouldShowAppSelector) {
+                AppSelectorButton(
+                    appLabel = targetViewModel.selectedAppName?.getOrNull()?.toString(),
+                    viewModel = drawableLoaderViewModel,
+                    onClick = onAppSelectorClicked,
+                )
+            }
+
             RichSwitch(
                 icon =
                     loadIcon(
@@ -61,8 +95,8 @@ fun RecordDetailsSettings(
                         contentDescription = null,
                     ),
                 label = stringResource(R.string.screen_record_record_device_audio_label),
-                checked = viewModel.shouldRecordDevice,
-                onCheckedChange = { viewModel.shouldRecordDevice = it },
+                checked = parametersViewModel.shouldRecordDevice,
+                onCheckedChange = { parametersViewModel.shouldRecordDevice = it },
                 modifier = Modifier,
             )
             RichSwitch(
@@ -73,23 +107,38 @@ fun RecordDetailsSettings(
                         contentDescription = null,
                     ),
                 label = stringResource(R.string.screen_record_record_microphone_label),
-                checked = viewModel.shouldRecordMicrophone,
-                onCheckedChange = { viewModel.shouldRecordMicrophone = it },
+                checked = parametersViewModel.shouldRecordMicrophone,
+                onCheckedChange = { parametersViewModel.shouldRecordMicrophone = it },
                 modifier = Modifier,
             )
-
             RichSwitch(
                 icon =
                     loadIcon(
                         viewModel = drawableLoaderViewModel,
-                        resId = R.drawable.ic_touch_expressive,
+                        resId = R.drawable.ic_selfie_expressive,
                         contentDescription = null,
                     ),
-                label = stringResource(R.string.screen_record_should_show_touches_label),
-                checked = viewModel.shouldShowTaps == true,
-                onCheckedChange = { viewModel.setShouldShowTaps(it) },
+                label = stringResource(R.string.screen_record_should_show_camera_label),
+                checked = parametersViewModel.shouldShowFrontCamera == true,
+                onCheckedChange = { parametersViewModel.setShouldShowFrontCamera(it) },
                 modifier = Modifier,
             )
+            AnimatedVisibility(
+                targetViewModel.currentTarget is RecordDetailsTargetItemViewModel.EntireScreen
+            ) {
+                RichSwitch(
+                    icon =
+                        loadIcon(
+                            viewModel = drawableLoaderViewModel,
+                            resId = R.drawable.ic_touch_expressive,
+                            contentDescription = null,
+                        ),
+                    label = stringResource(R.string.screen_record_should_show_touches_label),
+                    checked = parametersViewModel.shouldShowTaps == true,
+                    onCheckedChange = { parametersViewModel.setShouldShowTaps(it) },
+                    modifier = Modifier,
+                )
+            }
         }
     }
 }
@@ -102,11 +151,7 @@ private fun RichSwitch(
     onCheckedChange: (isChecked: Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier =
-            modifier.height(64.dp).padding(horizontal = 20.dp, vertical = 12.dp).fillMaxWidth(),
-    ) {
+    SettingsRow(modifier.clickable(onClick = { onCheckedChange(!checked) })) {
         LoadingIcon(icon = icon.value, modifier = Modifier.size(40.dp).padding(8.dp))
         Text(
             text = label,
@@ -116,4 +161,64 @@ private fun RichSwitch(
         )
         Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
+}
+
+@Composable
+private fun AppSelectorButton(
+    appLabel: String?,
+    viewModel: DrawableLoaderViewModel,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    SettingsRow(modifier.clickable(onClick = onClick)) {
+        LoadingIcon(
+            icon =
+                loadIcon(
+                        viewModel = viewModel,
+                        resId = R.drawable.ic_apps_expressive,
+                        contentDescription = null,
+                    )
+                    .value,
+            modifier = Modifier.size(40.dp).padding(8.dp),
+        )
+        Column(modifier = Modifier.padding(horizontal = 8.dp).weight(1f)) {
+            Text(
+                text = stringResource(R.string.screen_record_single_app_hint),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                modifier = Modifier.basicMarquee(),
+            )
+            AnimatedVisibility(visible = !appLabel.isNullOrEmpty()) {
+                Text(
+                    text = appLabel ?: "",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    modifier = Modifier.basicMarquee(),
+                )
+            }
+        }
+
+        LoadingIcon(
+            icon =
+                loadIcon(
+                        viewModel = viewModel,
+                        resId = R.drawable.ic_chevron_forward_expressive,
+                        contentDescription = null,
+                    )
+                    .value,
+            modifier = Modifier.padding(12.dp).size(16.dp),
+        )
+    }
+}
+
+@Composable
+private fun SettingsRow(modifier: Modifier = Modifier, content: @Composable RowScope.() -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier =
+            modifier.height(64.dp).padding(horizontal = 20.dp, vertical = 12.dp).fillMaxWidth(),
+        content = content,
+    )
 }

@@ -58,12 +58,3 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
-
-flag {
-    name: "job_category_apis"
-    namespace: "backstage_power"
-    description: "Introduce new APIs to allow apps to specify job category"
-    bug: "415081367"
-    is_exported: true
-    is_fixed_read_only: true
-}

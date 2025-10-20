@@ -32,11 +32,13 @@ import com.android.internal.widget.remotecompose.core.documentation.Documentatio
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.Container;
 import com.android.internal.widget.remotecompose.core.operations.utilities.AnimatedFloatExpression;
+import com.android.internal.widget.remotecompose.core.operations.utilities.CollectionsAccess;
 import com.android.internal.widget.remotecompose.core.operations.utilities.NanMap;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This provides the mechanism to evolve the particles It consist of a restart equation and a list
@@ -221,7 +223,7 @@ public class ParticlesLoop extends PaintOperation implements VariableSupport, Co
             int equLen = buffer.readInt();
             if (equLen > MAX_EQU_LENGTH) {
                 throw new RuntimeException(
-                        equLen + " map entries more than max = " + MAX_FLOAT_ARRAY);
+                        equLen + " map entries more than max = " + MAX_EQU_LENGTH);
             }
             equations[i] = new float[equLen];
             for (int j = 0; j < equations[i].length; j++) {
@@ -260,6 +262,8 @@ public class ParticlesLoop extends PaintOperation implements VariableSupport, Co
     @Override
     public void paint(@NonNull PaintContext context) {
         RemoteContext remoteContext = context.getContext();
+        CollectionsAccess ca = Objects.requireNonNull(remoteContext.getCollectionsAccess());
+
         for (int i = 0; i < mParticles.length; i++) {
             // Save the values to context TODO hand code the update
             for (int j = 0; j < mParticles[i].length; j++) {
@@ -268,7 +272,7 @@ public class ParticlesLoop extends PaintOperation implements VariableSupport, Co
             }
             // Evaluate the update function
             for (int j = 0; j < mParticles[i].length; j++) {
-                mParticles[i][j] = mExp.eval(mOutEquations[j], mOutEquations[j].length);
+                mParticles[i][j] = mExp.eval(ca, mOutEquations[j], mOutEquations[j].length);
                 remoteContext.loadFloat(mVarId[j], mParticles[i][j]);
             }
             // test for reset
@@ -282,7 +286,7 @@ public class ParticlesLoop extends PaintOperation implements VariableSupport, Co
                                     ? remoteContext.getFloat(Utils.idFromNan(v))
                                     : v;
                 }
-                if (mExp.eval(mOutRestart, mOutRestart.length) > 0) {
+                if (mExp.eval(ca, mOutRestart, mOutRestart.length) > 0) {
                     mParticlesSource.initializeParticle(i);
                 }
             }

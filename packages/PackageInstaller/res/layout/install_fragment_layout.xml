@@ -19,6 +19,7 @@
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
     android:orientation="vertical"
+    android:scrollbarDefaultDelayBeforeFade="2000"
     android:paddingHorizontal="?android:attr/dialogPreferredPadding"
     android:paddingBottom="@dimen/alert_dialog_inner_padding">
 

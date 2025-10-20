@@ -699,6 +699,9 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
                                                              : UiFrameInfoBuilder::INVALID_VSYNC_ID,
                     .skippedFrameStartTimeNanos =
                             mSkippedFrameInfo ? mSkippedFrameInfo->startTime : 0,
+                    .vsyncResyncedJitterNanos =
+                            mCurrentFrameInfo->get(FrameInfoIndex::Vsync) -
+                            mCurrentFrameInfo->get(FrameInfoIndex::IntendedVsync),
             };
             native_window_set_frame_timeline_info(mNativeSurface->getNativeWindow(), ftl);
         }
@@ -986,8 +989,8 @@ void CanvasContext::prepareAndDraw(RenderNode* node) {
     int64_t frameInterval = mRenderThread.timeLord().frameIntervalNanos();
     int64_t frameInfo[UI_THREAD_FRAME_INFO_SIZE];
     UiFrameInfoBuilder(frameInfo)
-        .addFlag(FrameInfoFlags::RTAnimation)
-        .setVsync(vsync, vsync, vsyncId, frameDeadline, frameInterval);
+            .addFlag(FrameInfoFlags::RTAnimation)
+            .setVsync(vsync, vsyncId, frameDeadline, frameInterval);
 
     TreeInfo info(TreeInfo::MODE_RT_ONLY, *this);
     prepareTree(info, frameInfo, systemTime(SYSTEM_TIME_MONOTONIC), node);

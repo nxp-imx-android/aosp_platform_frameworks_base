@@ -26,14 +26,12 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import androidx.core.graphics.drawable.toBitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.ConversationAvatar
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.FacePile
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleIcon
@@ -51,7 +49,6 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
-@EnableFlags(AsyncHybridViewInflation.FLAG_NAME)
 class SingleLineViewInflaterTest : SysuiTestCase() {
     // Non-group MessagingStyles only have firstSender
     private lateinit var firstSender: Person
@@ -98,7 +95,10 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
 
         // Then: the inflated SingleLineViewModel should be as expected
         // conversationData: null, because it's not a conversation notification
-        assertEquals(SingleLineViewModel(CONTENT_TITLE, CONTENT_TEXT, null), singleLineViewModel)
+        assertEquals(
+            SingleLineViewModel(CONTENT_TITLE, CONTENT_TEXT, null, null),
+            singleLineViewModel,
+        )
     }
 
     @Test
@@ -290,7 +290,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         val notification = getNotification(notificationType)
 
         // When: inflate the SingleLineViewModel
-        val singleLineViewModel = notification.makeSingleLineViewModel(notificationType)
+        val singleLineViewModel = notification.makeSingleLineViewModel(notificationType, true)
 
         // Then: the inflated SingleLineViewModel should be as expected
         // titleText: Notification.ConversationTitle
@@ -411,7 +411,10 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         }
     }
 
-    private fun Notification.makeSingleLineViewModel(type: NotificationType): SingleLineViewModel {
+    private fun Notification.makeSingleLineViewModel(
+        type: NotificationType,
+        includeSummarization: Boolean = false,
+    ): SingleLineViewModel {
         val builder = Notification.Builder.recoverBuilder(context, this)
 
         // Validate the recovered builder has the right type of style
@@ -445,7 +448,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
             builder,
             context,
             false,
-            "summary",
+            if (includeSummarization) "summary" else null,
         )
     }
 

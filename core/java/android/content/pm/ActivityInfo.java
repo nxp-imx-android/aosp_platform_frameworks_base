@@ -642,6 +642,14 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     public static final int FLAG_ALWAYS_FOCUSABLE = 0x40000;
 
     /**
+     * Bit in {@link #flags} indicating if the activity or the receiver should run in
+     * the Private Compute Core sandbox.
+     * @see android.R.styleable#AndroidManifestPrivateCompute
+     * @hide
+     */
+    public static final int FLAG_RUN_IN_PCC_SANDBOX = 0x80000;
+
+    /**
      * Bit in {@link #flags} indicating if the activity is visible to instant
      * applications. The activity is visible if it's either implicitly or
      * explicitly exposed.
@@ -1374,7 +1382,6 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     @Overridable
     @Disabled
     @TestApi
-    @FlaggedApi(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT_API)
     public static final long OVERRIDE_CAMERA_COMPAT_DISABLE_SIMULATE_REQUESTED_ORIENTATION =
             398195815L;  // buganizer id
 

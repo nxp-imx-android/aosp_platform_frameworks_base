@@ -112,7 +112,8 @@ class BubbleTaskViewListenerTest {
         bgExecutor = TestShellExecutor()
 
         taskView = TaskView(context, taskViewController, taskViewTaskController)
-        bubbleTaskView = BubbleTaskView(taskView, mainExecutor)
+        val bubbleController = mock<BubbleController>()
+        bubbleTaskView = BubbleTaskView(taskView, mainExecutor, bubbleController)
 
         bubbleTaskViewListener =
             BubbleTaskViewListener(
@@ -345,19 +346,19 @@ class BubbleTaskViewListenerTest {
     }
 
     @Test
-    fun onInitialized_preparingTransition() {
+    fun onInitialized_hasCurrentTransition_callsSurfaceCreated() {
         val b = createAppBubble()
         bubbleTaskViewListener.setBubble(b)
         taskView = Mockito.spy(taskView)
-        val preparingTransition = mock<BubbleTransitions.BubbleTransition>()
-        b.preparingTransition = preparingTransition
+        val currentTransition = mock<BubbleTransitions.BubbleTransition>()
+        b.currentTransition = currentTransition
 
         getInstrumentation().runOnMainSync {
             bubbleTaskViewListener.onInitialized()
         }
         getInstrumentation().waitForIdleSync()
 
-        verify(preparingTransition).surfaceCreated()
+        verify(currentTransition).surfaceCreated()
     }
 
     @Test
@@ -485,10 +486,11 @@ class BubbleTaskViewListenerTest {
 
     @Test
     fun onTaskRemovalStarted() {
-        val mockTaskView = mock<TaskView>() {
-            on { getController() } doReturn taskViewTaskController
+        val mockTaskView = mock<TaskView> {
+            on { controller } doReturn taskViewTaskController
         }
-        bubbleTaskView = BubbleTaskView(mockTaskView, mainExecutor)
+        val bubbleController = mock<BubbleController>()
+        bubbleTaskView = BubbleTaskView(mockTaskView, mainExecutor, bubbleController)
 
         bubbleTaskViewListener =
             BubbleTaskViewListener(
@@ -527,7 +529,6 @@ class BubbleTaskViewListenerTest {
         assertThat(change.interceptBackPressed).isFalse()
         assertThat(parentView.lastRemovedView).isEqualTo(mockTaskView)
         assertThat(bubbleTaskViewListener.taskView).isNull()
-        verify(listenerCallback).onTaskRemovalStarted()
     }
 
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)

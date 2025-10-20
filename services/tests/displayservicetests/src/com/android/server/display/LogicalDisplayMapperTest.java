@@ -18,6 +18,11 @@ package com.android.server.display;
 
 import static android.hardware.devicestate.DeviceStateManager.INVALID_DEVICE_STATE;
 import static android.hardware.devicestate.feature.flags.Flags.FLAG_DEVICE_STATE_PROPERTY_MIGRATION;
+import static android.os.PowerManager.GO_TO_SLEEP_REASON_DEVICE_FOLD;
+import static android.os.PowerManager.GO_TO_SLEEP_REASON_DISPLAY_GROUP_REMOVED;
+import static android.os.PowerManager.GO_TO_SLEEP_REASON_LID_SWITCH;
+import static android.os.PowerManager.WAKE_REASON_LID;
+import static android.os.PowerManager.WAKE_REASON_UNFOLD_DEVICE;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.DEFAULT_DISPLAY_GROUP;
 import static android.view.Display.FLAG_REAR;
@@ -34,6 +39,7 @@ import static com.android.server.display.DisplayAdapter.DISPLAY_DEVICE_EVENT_REM
 import static com.android.server.display.DisplayDeviceInfo.DIFF_EVERYTHING;
 import static com.android.server.display.DisplayDeviceInfo.FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_ADDED;
+import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_BASIC_CHANGED;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_CONNECTED;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_DISCONNECTED;
@@ -41,6 +47,7 @@ import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EV
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_REMOVED;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_STATE_CHANGED;
 import static com.android.server.display.TestUtilsKt.createTestDisplayAddress;
+import static com.android.server.display.feature.flags.Flags.FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED;
 import static com.android.server.display.layout.Layout.Display.POSITION_REAR;
 import static com.android.server.display.layout.Layout.Display.POSITION_UNKNOWN;
 import static com.android.server.utils.FoldSettingProvider.SETTING_VALUE_SELECTIVE_STAY_AWAKE;
@@ -61,7 +68,6 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
@@ -77,15 +83,15 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.hardware.devicestate.DeviceState;
 import android.os.Handler;
-import android.os.IPowerManager;
-import android.os.IThermalService;
 import android.os.PowerManager;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.test.TestLooper;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Display;
 import android.view.DisplayAddress;
 import android.view.DisplayInfo;
@@ -121,23 +127,42 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class LogicalDisplayMapperTest {
     private static int sUniqueTestDisplayId = 0;
     private static final int TIMEOUT_STATE_TRANSITION_MILLIS = 500;
-    private static final int FOLD_SETTLE_DELAY = 1000;
-    private static final DeviceState DEVICE_STATE_CLOSED = createDeviceState(0, "Zero",
-            Set.of(DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_SLEEP), Collections.emptySet());
-    private static final DeviceState DEVICE_STATE_HALF_OPEN = createDeviceState(1, "One",
-            Set.of(DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_WAKE), Collections.emptySet());
-    private static final DeviceState DEVICE_STATE_OPEN = createDeviceState(2, "Two",
-            Set.of(DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_WAKE), Collections.emptySet());
-    private static final DeviceState DEVICE_STATE_EMULATED = createDeviceState(3, "Three",
+    private static final int STATE_TRANSITION_DELAY = 1000;
+
+    private static final DeviceState DEVICE_STATE_FOLDABLE_CLOSED = createDeviceState(0,
+            "Foldable closed", Set.of(DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_SLEEP,
+                    DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_CLOSED),
+            Collections.emptySet());
+    private static final DeviceState DEVICE_STATE_FOLDABLE_HALF_OPEN = createDeviceState(1,
+            "Foldable half-open", Set.of(DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_WAKE,
+                    DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_HALF_OPEN),
+            Collections.emptySet());
+    private static final DeviceState DEVICE_STATE_FOLDABLE_OPEN = createDeviceState(2,
+            "Foldable open", Set.of(DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_WAKE,
+                    DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_OPEN),
+            Collections.emptySet());
+    private static final DeviceState DEVICE_STATE_EMULATED = createDeviceState(3, "Emulated",
             Set.of(DeviceState.PROPERTY_EMULATED_ONLY), Collections.emptySet());
-    private static final int FLAG_GO_TO_SLEEP_ON_FOLD = 0;
-    private static final int FLAG_GO_TO_SLEEP_FLAG_SOFT_SLEEP = 2;
+    private static final DeviceState DEVICE_STATE_DOCKED = createDeviceState(4, "Docked",
+            Set.of(DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED),
+            Collections.emptySet());
+
+    private static final DeviceState DEVICE_STATE_LID_OPEN = createDeviceState(5, "Lid open",
+            Set.of(DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_WAKE,
+                    DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_OPEN),
+            Collections.emptySet());
+    private static final DeviceState DEVICE_STATE_LID_CLOSED = createDeviceState(6, "Lid closed",
+            Set.of(DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_SLEEP,
+                    DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_CLOSED),
+            Collections.emptySet());
+
     private static int sNextNonDefaultDisplayId = DEFAULT_DISPLAY + 1;
     private static final File NON_EXISTING_FILE = new File("/non_existing_folder/should_not_exist");
 
@@ -145,7 +170,6 @@ public class LogicalDisplayMapperTest {
     private LogicalDisplayMapper mLogicalDisplayMapper;
     private TestLooper mLooper;
     private Handler mHandler;
-    private PowerManager mPowerManager;
 
     private final DisplayIdProducer mIdProducer = (isDefault) ->
             isDefault ? DEFAULT_DISPLAY : sNextNonDefaultDisplayId++;
@@ -158,18 +182,21 @@ public class LogicalDisplayMapperTest {
     @Rule
     public final CheckFlagsRule mCheckFlagsRule =
             DeviceFlagsValueProvider.createCheckFlagsRule();
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Mock LogicalDisplayMapper.Listener mListenerMock;
     @Mock Context mContextMock;
     @Mock FoldSettingProvider mFoldSettingProviderMock;
     @Mock Resources mResourcesMock;
-    @Mock IPowerManager mIPowerManagerMock;
-    @Mock IThermalService mIThermalServiceMock;
+    @Mock PowerManager mPowerManagerMock;
     @Mock DisplayManagerFlags mFlagsMock;
     @Mock DisplayAdapter mDisplayAdapterMock;
     @Mock WindowManagerPolicy mWindowManagerPolicy;
     @Mock
     SyntheticModeManager mSyntheticModeManagerMock;
+    @Mock
+    Predicate<DisplayInfo> mIsDisplayAllowedInTopologyMock;
 
     @Captor ArgumentCaptor<LogicalDisplay> mDisplayCaptor;
     @Captor ArgumentCaptor<Integer> mDisplayEventCaptor;
@@ -184,7 +211,7 @@ public class LogicalDisplayMapperTest {
                 mWindowManagerPolicy);
 
         mDeviceStateToLayoutMapSpy =
-                spy(new DeviceStateToLayoutMap(mIdProducer, mFlagsMock, NON_EXISTING_FILE));
+                spy(new DeviceStateToLayoutMap(mIdProducer, NON_EXISTING_FILE, true));
 
         mDisplayDeviceRepo = new DisplayDeviceRepository(
                 new DisplayManagerService.SyncRoot(),
@@ -201,21 +228,16 @@ public class LogicalDisplayMapperTest {
 
                     @Override
                     public void finishWrite(OutputStream os, boolean success) {}
-                }));
+                }), /* stableEdidsFlag= */ true);
 
         // Disable binder caches in this process.
         PropertyInvalidatedCache.disableForTestMode();
 
-        mPowerManager = new PowerManager(mContextMock, mIPowerManagerMock, mIThermalServiceMock,
-                null);
-
         when(mContextMock.getSystemServiceName(PowerManager.class))
                 .thenReturn(Context.POWER_SERVICE);
-        when(mFoldSettingProviderMock.shouldStayAwakeOnFold()).thenReturn(false);
-        when(mFoldSettingProviderMock.shouldSleepOnFold()).thenReturn(false);
-        when(mFoldSettingProviderMock.shouldSelectiveStayAwakeOnFold()).thenReturn(true);
-        when(mIPowerManagerMock.isInteractive()).thenReturn(true);
-        when(mContextMock.getSystemService(PowerManager.class)).thenReturn(mPowerManager);
+        setFoldLockBehaviorSettingValue(SETTING_VALUE_SELECTIVE_STAY_AWAKE);
+        when(mPowerManagerMock.isInteractive()).thenReturn(true);
+        when(mContextMock.getSystemService(PowerManager.class)).thenReturn(mPowerManagerMock);
         when(mContextMock.getResources()).thenReturn(mResourcesMock);
         when(mResourcesMock.getBoolean(
                 com.android.internal.R.bool.config_supportsConcurrentInternalDisplays))
@@ -374,6 +396,102 @@ public class LogicalDisplayMapperTest {
         // The logical displays had their devices swapped and Display 2 was removed
         assertEquals(display2, displayRemoved);
         assertEquals(info(display1).address, info(device2).address);
+    }
+
+    @Test
+    @EnableFlags(FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED)
+    public void testRemoveDefaultSecondaryDisplay_SwitchDefaultToOtherSecondaryDisplay() {
+        initLogicalDisplayMapper();
+        when(mIsDisplayAllowedInTopologyMock.test(any(DisplayInfo.class))).thenReturn(true);
+        DisplayDevice device1 = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        DisplayDevice device2 = createDisplayDevice(TYPE_EXTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        DisplayDevice device3 = createDisplayDevice(TYPE_EXTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+
+        LogicalDisplay display1 = add(device1);
+        display1.setCanHostTasksLocked(true);
+        assertEquals(info(display1).address, info(device1).address);
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        LogicalDisplay display2 = add(device2);
+        display2.setCanHostTasksLocked(true);
+        assertEquals(info(display2).address, info(device2).address);
+        // We can only have one default display
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        LogicalDisplay display3 = add(device3);
+        display3.setCanHostTasksLocked(true);
+        assertEquals(info(display3).address, info(device3).address);
+        // We can only have one default display
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        mLogicalDisplayMapper.onBootCompleted();
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_DOCKED);
+        advanceTime(1000);
+        assertEquals(device2, display1.getPrimaryDisplayDeviceLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device2).isEnabledLocked());
+
+        // remove
+        mDisplayDeviceRepo.onDisplayDeviceEvent(device2, DISPLAY_DEVICE_EVENT_REMOVED);
+
+        // Display 1 is still the default logical display
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+        // Device 3 is now associated with the default display
+        assertEquals(device3, display1.getPrimaryDisplayDeviceLocked());
+        assertNull(mLogicalDisplayMapper.getDisplayLocked(device2));
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device3).isEnabledLocked());
+
+        verify(mPowerManagerMock, never()).wakeUp(anyLong(), anyInt(), any());
+        verify(mPowerManagerMock, never()).goToSleep(anyLong(), anyInt(), anyInt());
+    }
+
+    @Test
+    @EnableFlags(FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED)
+    public void testRemoveDefaultSecondaryDisplay_SwitchDefaultToInternalDisplay() {
+        initLogicalDisplayMapper();
+        when(mIsDisplayAllowedInTopologyMock.test(any(DisplayInfo.class))).thenReturn(true);
+        DisplayDevice device1 = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        DisplayDevice device2 = createDisplayDevice(TYPE_EXTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+
+        LogicalDisplay display1 = add(device1);
+        display1.setCanHostTasksLocked(true);
+        assertEquals(info(display1).address, info(device1).address);
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        LogicalDisplay display2 = add(device2);
+        display2.setCanHostTasksLocked(true);
+        assertEquals(info(display2).address, info(device2).address);
+        // We can only have one default display
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        mLogicalDisplayMapper.onBootCompleted();
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_DOCKED);
+        advanceTime(1000);
+        assertEquals(device2, display1.getPrimaryDisplayDeviceLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device2).isEnabledLocked());
+
+        // remove
+        mDisplayDeviceRepo.onDisplayDeviceEvent(device2, DISPLAY_DEVICE_EVENT_REMOVED);
+        advanceTime(1000);
+
+        // Display 1 is still the default logical display
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+        // Device 1 is now associated with the default display
+        assertEquals(device1, display1.getPrimaryDisplayDeviceLocked());
+        assertNull(mLogicalDisplayMapper.getDisplayLocked(device2));
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
+
+        // The device should go to sleep
+        verify(mPowerManagerMock, never()).wakeUp(anyLong(), anyInt(), any());
+        verify(mPowerManagerMock).goToSleep(anyLong(), eq(GO_TO_SLEEP_REASON_DISPLAY_GROUP_REMOVED),
+                /* flags= */ eq(0));
     }
 
     @Test
@@ -750,113 +868,176 @@ public class LogicalDisplayMapperTest {
     }
 
     @Test
-    public void testDeviceShouldBeWoken() {
+    @EnableFlags({FLAG_DEVICE_STATE_PROPERTY_MIGRATION, FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED})
+    public void testUnfoldDevice_ShouldWake() {
+        when(mPowerManagerMock.isInteractive()).thenReturn(false);
         initLogicalDisplayMapper();
-        assertTrue(mLogicalDisplayMapper.shouldDeviceBeWoken(DEVICE_STATE_OPEN,
-                DEVICE_STATE_CLOSED,
-                /* isInteractive= */false,
-                /* isBootCompleted= */true));
+
+        finishBootAndTransitionBetweenStates(DEVICE_STATE_FOLDABLE_CLOSED,
+                DEVICE_STATE_FOLDABLE_OPEN);
+
+        verify(mPowerManagerMock).wakeUp(anyLong(), eq(WAKE_REASON_UNFOLD_DEVICE),
+                eq("server.display:unfold"));
+        verify(mPowerManagerMock, never()).goToSleep(anyLong(), anyInt(), anyInt());
     }
 
     @Test
-    public void testDeviceShouldNotBeWoken() {
+    @EnableFlags({FLAG_DEVICE_STATE_PROPERTY_MIGRATION, FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED})
+    public void testFoldDevice_ShouldNotSleepWhenStayAwakeSettingTrue() {
+        when(mPowerManagerMock.isInteractive()).thenReturn(true);
         initLogicalDisplayMapper();
-        assertFalse(mLogicalDisplayMapper.shouldDeviceBeWoken(DEVICE_STATE_CLOSED,
-                DEVICE_STATE_OPEN,
-                /* isInteractive= */false,
-                /* isBootCompleted= */true));
+        setFoldLockBehaviorSettingValue(SETTING_VALUE_STAY_AWAKE_ON_FOLD);
+
+        finishBootAndTransitionBetweenStates(DEVICE_STATE_FOLDABLE_OPEN,
+                DEVICE_STATE_FOLDABLE_CLOSED);
+
+        verify(mPowerManagerMock, never()).goToSleep(anyLong(), anyInt(), anyInt());
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_DEVICE_STATE_PROPERTY_MIGRATION)
+    @EnableFlags({FLAG_DEVICE_STATE_PROPERTY_MIGRATION, FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED})
+    public void testFoldDevice_SleepSettingTrue() {
+        when(mPowerManagerMock.isInteractive()).thenReturn(true);
+        initLogicalDisplayMapper();
+        setFoldLockBehaviorSettingValue(SETTING_VALUE_SLEEP_ON_FOLD);
+
+        finishBootAndTransitionBetweenStates(DEVICE_STATE_FOLDABLE_OPEN,
+                DEVICE_STATE_FOLDABLE_CLOSED);
+
+        verify(mPowerManagerMock, never()).wakeUp(anyLong(), anyInt(), any());
+        verify(mPowerManagerMock).goToSleep(anyLong(), eq(GO_TO_SLEEP_REASON_DEVICE_FOLD),
+                /* flags= */ eq(0));
+    }
+
+    @Test
+    @EnableFlags({FLAG_DEVICE_STATE_PROPERTY_MIGRATION, FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED})
+    public void testFoldDevice_ShouldSleepWhenFoldSettingSelective() {
+        when(mPowerManagerMock.isInteractive()).thenReturn(true);
+        initLogicalDisplayMapper();
+        setFoldLockBehaviorSettingValue(SETTING_VALUE_SELECTIVE_STAY_AWAKE);
+
+        finishBootAndTransitionBetweenStates(DEVICE_STATE_FOLDABLE_OPEN,
+                DEVICE_STATE_FOLDABLE_CLOSED);
+
+        verify(mPowerManagerMock, never()).wakeUp(anyLong(), anyInt(), any());
+        verify(mPowerManagerMock).goToSleep(anyLong(), eq(GO_TO_SLEEP_REASON_DEVICE_FOLD),
+                eq(PowerManager.GO_TO_SLEEP_FLAG_SOFT_SLEEP));
+    }
+
+    @Test
+    @EnableFlags(FLAG_DEVICE_STATE_PROPERTY_MIGRATION)
     public void testDeviceShouldNotBeWokenWhenExitingEmulatedState() {
         initLogicalDisplayMapper();
-        assertFalse(mLogicalDisplayMapper.shouldDeviceBeWoken(DEVICE_STATE_OPEN,
-                DEVICE_STATE_EMULATED,
-                /* isInteractive= */false,
-                /* isBootCompleted= */true));
+        finishBootAndTransitionBetweenStates(DEVICE_STATE_EMULATED, DEVICE_STATE_FOLDABLE_OPEN);
+        verify(mPowerManagerMock, never()).wakeUp(anyLong(), anyInt(), any());
     }
 
     @Test
-    public void testDeviceShouldBePutToSleep() {
+    @EnableFlags({FLAG_DEVICE_STATE_PROPERTY_MIGRATION})
+    public void testInitialStateInvalid_ShouldNotWake() {
         initLogicalDisplayMapper();
-        assertTrue(mLogicalDisplayMapper.shouldDeviceBePutToSleep(DEVICE_STATE_CLOSED,
-                DEVICE_STATE_OPEN,
-                /* isInteractive= */true,
-                /* isBootCompleted= */true));
+        finishBootAndTransitionBetweenStates(INVALID_DEVICE_STATE, DEVICE_STATE_FOLDABLE_HALF_OPEN);
+        verify(mPowerManagerMock, never()).wakeUp(anyLong(), anyInt(), any());
     }
 
     @Test
-    public void testDeviceShouldNotSleepWhenStayAwakeSettingTrue() {
+    @EnableFlags({FLAG_DEVICE_STATE_PROPERTY_MIGRATION})
+    public void testInitialStateInvalid_ShouldNotSleep() {
         initLogicalDisplayMapper();
-        when(mFoldSettingProviderMock.shouldStayAwakeOnFold()).thenReturn(true);
-
-        assertFalse(mLogicalDisplayMapper.shouldDeviceBePutToSleep(DEVICE_STATE_CLOSED,
-                DEVICE_STATE_OPEN,
-                /* isInteractive= */true,
-                /* isBootCompleted= */true));
+        finishBootAndTransitionBetweenStates(INVALID_DEVICE_STATE, DEVICE_STATE_FOLDABLE_CLOSED);
+        verify(mPowerManagerMock, never()).goToSleep(anyLong(), anyInt(), anyInt());
     }
 
     @Test
-    public void testDeviceShouldNotBePutToSleep() {
+    @EnableFlags({FLAG_DEVICE_STATE_PROPERTY_MIGRATION, FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED})
+    public void testOpenLid_ShouldWake() {
+        when(mPowerManagerMock.isInteractive()).thenReturn(false);
         initLogicalDisplayMapper();
-        assertFalse(mLogicalDisplayMapper.shouldDeviceBePutToSleep(DEVICE_STATE_OPEN,
-                DEVICE_STATE_CLOSED,
-                /* isInteractive= */true,
-                /* isBootCompleted= */true));
-        assertFalse(mLogicalDisplayMapper.shouldDeviceBePutToSleep(DEVICE_STATE_CLOSED,
-                INVALID_DEVICE_STATE /* currentState */, /* isInteractive= */true,
-                /* isBootCompleted= */true));
+
+        finishBootAndTransitionBetweenStates(DEVICE_STATE_LID_CLOSED, DEVICE_STATE_LID_OPEN);
+
+        verify(mPowerManagerMock).wakeUp(anyLong(), eq(WAKE_REASON_LID),
+                eq("server.display:lid_open"));
+        verify(mPowerManagerMock, never()).goToSleep(anyLong(), anyInt(), anyInt());
     }
 
     @Test
-    public void testDeviceShouldPutToSleepWhenSleepSettingTrue() throws RemoteException {
+    @EnableFlags({FLAG_DEVICE_STATE_PROPERTY_MIGRATION, FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED})
+    public void testCloseLid_ShouldSleep() {
         initLogicalDisplayMapper();
-        when(mFoldSettingProviderMock.shouldSleepOnFold()).thenReturn(true);
 
-        finishBootAndFoldDevice();
-        advanceTime(FOLD_SETTLE_DELAY);
+        finishBootAndTransitionBetweenStates(DEVICE_STATE_LID_OPEN, DEVICE_STATE_LID_CLOSED);
 
-        verify(mIPowerManagerMock, atLeastOnce()).goToSleep(anyLong(), anyInt(),
-                eq(FLAG_GO_TO_SLEEP_ON_FOLD));
+        verify(mPowerManagerMock, never()).wakeUp(anyLong(), anyInt(), any());
+        verify(mPowerManagerMock).goToSleep(anyLong(), eq(GO_TO_SLEEP_REASON_LID_SWITCH),
+                /* flags= */ eq(0));
     }
 
     @Test
-    public void testDeviceShouldPutToSleepWhenFoldSettingSelective() throws RemoteException {
+    @EnableFlags({FLAG_DEVICE_STATE_PROPERTY_MIGRATION, FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED})
+    public void testOpenLid_ShouldNotWakeIfInteractive() {
+        when(mPowerManagerMock.isInteractive()).thenReturn(true);
         initLogicalDisplayMapper();
-        when(mFoldSettingProviderMock.shouldSelectiveStayAwakeOnFold()).thenReturn(true);
 
-        finishBootAndFoldDevice();
-        advanceTime(FOLD_SETTLE_DELAY);
+        finishBootAndTransitionBetweenStates(DEVICE_STATE_LID_CLOSED, DEVICE_STATE_LID_OPEN);
 
-        verify(mIPowerManagerMock, atLeastOnce()).goToSleep(anyLong(), anyInt(),
-                eq(FLAG_GO_TO_SLEEP_FLAG_SOFT_SLEEP));
+        verify(mPowerManagerMock, never()).wakeUp(anyLong(), anyInt(), any());
+        verify(mPowerManagerMock, never()).goToSleep(anyLong(), anyInt(), anyInt());
     }
 
     @Test
-    public void testDeviceShouldNotBePutToSleepWhenSleepSettingFalse() throws RemoteException {
+    @EnableFlags({FLAG_DEVICE_STATE_PROPERTY_MIGRATION, FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED})
+    public void testCloseLid_ShouldNotSleepIfNotInteractive() {
+        when(mPowerManagerMock.isInteractive()).thenReturn(false);
         initLogicalDisplayMapper();
-        when(mFoldSettingProviderMock.shouldSleepOnFold()).thenReturn(false);
 
-        finishBootAndFoldDevice();
-        advanceTime(FOLD_SETTLE_DELAY);
+        finishBootAndTransitionBetweenStates(DEVICE_STATE_LID_OPEN, DEVICE_STATE_LID_CLOSED);
 
-        verify(mIPowerManagerMock, never()).goToSleep(anyLong(), anyInt(),
-                eq(FLAG_GO_TO_SLEEP_ON_FOLD));
+        verify(mPowerManagerMock, never()).wakeUp(anyLong(), anyInt(), any());
+        verify(mPowerManagerMock, never()).goToSleep(anyLong(), anyInt(), anyInt());
+    }
+
+    @Test
+    @EnableFlags({FLAG_DEVICE_STATE_PROPERTY_MIGRATION, FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED})
+    public void testOpenLid_ShouldNotWakeIfBootNotCompleted() {
+        when(mPowerManagerMock.isInteractive()).thenReturn(false);
+        initLogicalDisplayMapper();
+
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_LID_CLOSED);
+        advanceTime(STATE_TRANSITION_DELAY);
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_LID_OPEN);
+        advanceTime(STATE_TRANSITION_DELAY);
+
+        verify(mPowerManagerMock, never()).wakeUp(anyLong(), anyInt(), any());
+        verify(mPowerManagerMock, never()).goToSleep(anyLong(), anyInt(), anyInt());
+    }
+
+    @Test
+    @EnableFlags({FLAG_DEVICE_STATE_PROPERTY_MIGRATION, FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED})
+    public void testCloseLid_ShouldNotSleepIfBootNotCompleted() {
+        initLogicalDisplayMapper();
+
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_LID_OPEN);
+        advanceTime(STATE_TRANSITION_DELAY);
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_LID_CLOSED);
+        advanceTime(STATE_TRANSITION_DELAY);
+
+        verify(mPowerManagerMock, never()).wakeUp(anyLong(), anyInt(), any());
+        verify(mPowerManagerMock, never()).goToSleep(anyLong(), anyInt(), anyInt());
     }
 
     @Test
     public void testDisplaySwappedAfterDeviceStateChange_windowManagerIsNotified() {
         initLogicalDisplayMapper();
         FoldableDisplayDevices foldableDisplayDevices = createFoldableDeviceStateToLayoutMap();
-        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_OPEN);
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_FOLDABLE_OPEN);
         mLogicalDisplayMapper.onEarlyInteractivityChange(true);
         mLogicalDisplayMapper.onBootCompleted();
         advanceTime(1000);
         clearInvocations(mWindowManagerPolicy);
 
         // Switch from 'inner' to 'outer' display (fold a foldable device)
-        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_CLOSED);
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_FOLDABLE_CLOSED);
         // Continue folding device state transition by turning off the inner display
         foldableDisplayDevices.mInner.setState(STATE_OFF);
         notifyDisplayChanges(foldableDisplayDevices.mOuter);
@@ -893,7 +1074,8 @@ public class LogicalDisplayMapperTest {
         setFoldLockBehaviorSettingValue(SETTING_VALUE_SELECTIVE_STAY_AWAKE);
         FoldableDisplayDevices foldableDisplayDevices = createFoldableDeviceStateToLayoutMap();
 
-        finishBootAndFoldDevice();
+        finishBootAndTransitionBetweenStates(DEVICE_STATE_FOLDABLE_OPEN,
+                DEVICE_STATE_FOLDABLE_CLOSED);
         foldableDisplayDevices.mInner.setState(STATE_OFF);
         notifyDisplayChanges(foldableDisplayDevices.mOuter);
 
@@ -943,7 +1125,7 @@ public class LogicalDisplayMapperTest {
         // We can only have one default display
         assertEquals(DEFAULT_DISPLAY, id(display1));
 
-        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_CLOSED);
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_FOLDABLE_CLOSED);
         advanceTime(1000);
         // The new state is not applied until the boot is completed
         assertTrue(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
@@ -964,7 +1146,7 @@ public class LogicalDisplayMapperTest {
         assertEquals("concurrent", mLogicalDisplayMapper.getDisplayLocked(device2)
                 .getDisplayInfoLocked().thermalBrightnessThrottlingDataId);
 
-        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_HALF_OPEN);
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_FOLDABLE_HALF_OPEN);
         advanceTime(1000);
         assertFalse(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
         assertTrue(mLogicalDisplayMapper.getDisplayLocked(device2).isEnabledLocked());
@@ -977,7 +1159,7 @@ public class LogicalDisplayMapperTest {
                 mLogicalDisplayMapper.getDisplayLocked(device2)
                         .getDisplayInfoLocked().thermalBrightnessThrottlingDataId);
 
-        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_OPEN);
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_FOLDABLE_OPEN);
         advanceTime(1000);
         assertFalse(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
         assertTrue(mLogicalDisplayMapper.getDisplayLocked(device2).isEnabledLocked());
@@ -989,6 +1171,278 @@ public class LogicalDisplayMapperTest {
         assertEquals(DisplayDeviceConfig.DEFAULT_ID,
                 mLogicalDisplayMapper.getDisplayLocked(device2)
                         .getDisplayInfoLocked().thermalBrightnessThrottlingDataId);
+    }
+
+    @Test
+    @EnableFlags(FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED)
+    public void testDeviceState_LaptopLidClosed() {
+        initLogicalDisplayMapper();
+        when(mIsDisplayAllowedInTopologyMock.test(any(DisplayInfo.class))).thenReturn(true);
+        DisplayDevice device1 = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        DisplayDevice device2 = createDisplayDevice(TYPE_EXTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+
+        LogicalDisplay display1 = add(device1);
+        display1.setCanHostTasksLocked(true);
+        assertEquals(info(display1).address, info(device1).address);
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        LogicalDisplay display2 = add(device2);
+        display2.setCanHostTasksLocked(true);
+        assertEquals(info(display2).address, info(device2).address);
+        // We can only have one default display
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        finishBootAndTransitionBetweenStates(DEVICE_STATE_LID_OPEN, DEVICE_STATE_DOCKED);
+
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+        // Device 2 is now associated with the default display
+        assertEquals(device2, display1.getPrimaryDisplayDeviceLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device2).isEnabledLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device1).isInTransitionLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device2).isInTransitionLocked());
+
+        verify(mPowerManagerMock, never()).wakeUp(anyLong(), anyInt(), any());
+        verify(mPowerManagerMock, never()).goToSleep(anyLong(), anyInt(), anyInt());
+    }
+
+    @Test
+    @EnableFlags(FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED)
+    public void testDeviceState_LaptopLidClosed_InternalDisplaysOnly() {
+        initLogicalDisplayMapper();
+        when(mIsDisplayAllowedInTopologyMock.test(any(DisplayInfo.class))).thenReturn(true);
+        DisplayDevice device1 = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        DisplayDevice device2 = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+
+        LogicalDisplay display1 = add(device1);
+        display1.setCanHostTasksLocked(true);
+        assertEquals(info(display1).address, info(device1).address);
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        LogicalDisplay display2 = add(device2);
+        display2.setCanHostTasksLocked(true);
+        assertEquals(info(display2).address, info(device2).address);
+        // We can only have one default display
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        finishBootAndTransitionBetweenStates(DEVICE_STATE_LID_OPEN, DEVICE_STATE_DOCKED);
+
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+        // The device of the default display should not have changed
+        assertEquals(device1, display1.getPrimaryDisplayDeviceLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device2).isEnabledLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device1).isInTransitionLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device2).isInTransitionLocked());
+        verify(mWindowManagerPolicy, never()).onDisplaySwitchStart(DEFAULT_DISPLAY);
+
+        // The device should go to sleep
+        verify(mPowerManagerMock, never()).wakeUp(anyLong(), anyInt(), any());
+        verify(mPowerManagerMock).goToSleep(anyLong(), eq(GO_TO_SLEEP_REASON_LID_SWITCH),
+                /* flags= */ eq(0));
+    }
+
+    @Test
+    @EnableFlags(FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED)
+    public void testDeviceState_LaptopLidClosed_SecondaryDisplayDisabled() {
+        initLogicalDisplayMapper();
+        when(mIsDisplayAllowedInTopologyMock.test(any(DisplayInfo.class))).thenReturn(true);
+        DisplayDevice device1 = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        DisplayDevice device2 = createDisplayDevice(TYPE_EXTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+
+        LogicalDisplay display1 = add(device1);
+        display1.setCanHostTasksLocked(true);
+        assertEquals(info(display1).address, info(device1).address);
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        LogicalDisplay display2 = add(device2);
+        display2.setCanHostTasksLocked(true);
+        display2.setEnabledLocked(false);
+        assertEquals(info(display2).address, info(device2).address);
+        // We can only have one default display
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        mLogicalDisplayMapper.onBootCompleted();
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_DOCKED);
+        advanceTime(1000);
+
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+        // The device of the default display should not have changed
+        assertEquals(device1, display1.getPrimaryDisplayDeviceLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device2).isEnabledLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device1).isInTransitionLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device2).isInTransitionLocked());
+        verify(mWindowManagerPolicy, never()).onDisplaySwitchStart(DEFAULT_DISPLAY);
+    }
+
+    @Test
+    @EnableFlags(FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED)
+    public void testDeviceState_LaptopLidClosed_SecondaryDisplayCannotHostTasks() {
+        initLogicalDisplayMapper();
+        when(mIsDisplayAllowedInTopologyMock.test(any(DisplayInfo.class))).thenReturn(true);
+        DisplayDevice device1 = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        DisplayDevice device2 = createDisplayDevice(TYPE_EXTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+
+        LogicalDisplay display1 = add(device1);
+        display1.setCanHostTasksLocked(true);
+        assertEquals(info(display1).address, info(device1).address);
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        LogicalDisplay display2 = add(device2);
+        display2.setCanHostTasksLocked(false);
+        assertEquals(info(display2).address, info(device2).address);
+        // We can only have one default display
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        mLogicalDisplayMapper.onBootCompleted();
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_DOCKED);
+        advanceTime(1000);
+
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+        // The device of the default display should not have changed
+        assertEquals(device1, display1.getPrimaryDisplayDeviceLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device2).isEnabledLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device1).isInTransitionLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device2).isInTransitionLocked());
+        verify(mWindowManagerPolicy, never()).onDisplaySwitchStart(DEFAULT_DISPLAY);
+    }
+
+    @Test
+    @EnableFlags(FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED)
+    public void testDeviceState_LaptopLidClosed_SecondaryDisplayNotAllowedInTopology() {
+        initLogicalDisplayMapper();
+        DisplayDevice device1 = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        DisplayDevice device2 = createDisplayDevice(TYPE_EXTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+
+        LogicalDisplay display1 = add(device1);
+        display1.setCanHostTasksLocked(true);
+        when(mIsDisplayAllowedInTopologyMock.test(display1.getDisplayInfoLocked())).thenReturn(
+                true);
+        assertEquals(info(display1).address, info(device1).address);
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        LogicalDisplay display2 = add(device2);
+        display2.setCanHostTasksLocked(true);
+        when(mIsDisplayAllowedInTopologyMock.test(display2.getDisplayInfoLocked())).thenReturn(
+                false);
+        assertEquals(info(display2).address, info(device2).address);
+        // We can only have one default display
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        mLogicalDisplayMapper.onBootCompleted();
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_DOCKED);
+        advanceTime(1000);
+
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+        // The device of the default display should not have changed
+        assertEquals(device1, display1.getPrimaryDisplayDeviceLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device2).isEnabledLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device1).isInTransitionLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device2).isInTransitionLocked());
+        verify(mWindowManagerPolicy, never()).onDisplaySwitchStart(DEFAULT_DISPLAY);
+    }
+
+    @Test
+    @EnableFlags(FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED)
+    public void testDeviceState_LaptopLidClosed_SecondaryDisplayNoFlag() {
+        initLogicalDisplayMapper();
+        when(mIsDisplayAllowedInTopologyMock.test(any(DisplayInfo.class))).thenReturn(true);
+        DisplayDevice device1 = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        DisplayDevice device2 = createDisplayDevice(TYPE_EXTERNAL, 600, 800,
+                /* flags= */ 0);
+
+        LogicalDisplay display1 = add(device1);
+        display1.setCanHostTasksLocked(true);
+        assertEquals(info(display1).address, info(device1).address);
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        LogicalDisplay display2 = add(device2);
+        display2.setCanHostTasksLocked(true);
+        assertEquals(info(display2).address, info(device2).address);
+        // We can only have one default display
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        mLogicalDisplayMapper.onBootCompleted();
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_DOCKED);
+        advanceTime(1000);
+
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+        // The device of the default display should not have changed
+        assertEquals(device1, display1.getPrimaryDisplayDeviceLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device2).isEnabledLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device1).isInTransitionLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device2).isInTransitionLocked());
+        verify(mWindowManagerPolicy, never()).onDisplaySwitchStart(DEFAULT_DISPLAY);
+    }
+
+    @Test
+    @EnableFlags(FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED)
+    public void testDisplayDeviceAddAndRemove_GoBackToDockedState() {
+        initLogicalDisplayMapper();
+        when(mIsDisplayAllowedInTopologyMock.test(any(DisplayInfo.class))).thenReturn(true);
+        DisplayDevice device1 = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        DisplayDevice device2 = createDisplayDevice(TYPE_EXTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        Layout layout = new Layout();
+        createDefaultDisplay(layout, device1);
+        when(mDeviceStateToLayoutMapSpy.get(DEVICE_STATE_LID_OPEN.getIdentifier())).thenReturn(
+                layout);
+
+        LogicalDisplay display1 = add(device1);
+        display1.setCanHostTasksLocked(true);
+        assertEquals(info(display1).address, info(device1).address);
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        LogicalDisplay display2 = add(device2);
+        display2.setCanHostTasksLocked(true);
+        assertEquals(info(display2).address, info(device2).address);
+        // We can only have one default display
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+
+        mLogicalDisplayMapper.onBootCompleted();
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_DOCKED);
+        advanceTime(1000);
+        assertEquals(device2, display1.getPrimaryDisplayDeviceLocked());
+        assertFalse(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device2).isEnabledLocked());
+
+        // Device 1 becomes the default display again
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_LID_OPEN);
+        advanceTime(1000);
+        assertEquals(device1, display1.getPrimaryDisplayDeviceLocked());
+        // Both displays should be enabled
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device2).isEnabledLocked());
+
+        // remove
+        mDisplayDeviceRepo.onDisplayDeviceEvent(device2, DISPLAY_DEVICE_EVENT_REMOVED);
+        advanceTime(1000);
+        assertNull(mLogicalDisplayMapper.getDisplayLocked(device2));
+
+        // Go back to the docked state
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_DOCKED);
+        advanceTime(1000);
+
+        // Display 1 is still the default logical display
+        assertEquals(DEFAULT_DISPLAY, id(display1));
+        assertEquals(device1, display1.getPrimaryDisplayDeviceLocked());
+        assertTrue(mLogicalDisplayMapper.getDisplayLocked(device1).isEnabledLocked());
     }
 
     @Test
@@ -1055,7 +1509,7 @@ public class LogicalDisplayMapperTest {
         // 3) Send DISPLAY_DEVICE_EVENT_CHANGE to inform the mapper of the new display state
         // 4) Dispatch handler events.
         mLogicalDisplayMapper.onBootCompleted();
-        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_CLOSED);
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_FOLDABLE_CLOSED);
         mDisplayDeviceRepo.onDisplayDeviceEvent(device3, DISPLAY_DEVICE_EVENT_CHANGED);
         advanceTime(1000);
         final int[] allDisplayIds = mLogicalDisplayMapper.getDisplayIdsLocked(
@@ -1085,7 +1539,7 @@ public class LogicalDisplayMapperTest {
                 /* includeDisabled= */ false));
 
         // Now do it again to go back to state 1
-        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_HALF_OPEN);
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_FOLDABLE_HALF_OPEN);
         mDisplayDeviceRepo.onDisplayDeviceEvent(device3, DISPLAY_DEVICE_EVENT_CHANGED);
         advanceTime(1000);
         final int[] threeDisplaysEnabled = mLogicalDisplayMapper.getDisplayIdsLocked(
@@ -1141,7 +1595,7 @@ public class LogicalDisplayMapperTest {
         // We can only have one default display
         assertEquals(DEFAULT_DISPLAY, id(display1));
 
-        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_CLOSED);
+        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_FOLDABLE_CLOSED);
         advanceTime(1000);
         mLogicalDisplayMapper.onBootCompleted();
         advanceTime(1000);
@@ -1161,6 +1615,21 @@ public class LogicalDisplayMapperTest {
         // Change the refresh rate override
         DisplayInfo newDisplayInfo = new DisplayInfo();
         newDisplayInfo.refreshRateOverride = 30;
+        assertEquals(LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED,
+                mLogicalDisplayMapper.updateAndGetMaskForDisplayPropertyChanges(newDisplayInfo));
+
+        newDisplayInfo = new DisplayInfo();
+        newDisplayInfo.appVsyncOffsetNanos = 123;
+        assertEquals(LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED,
+                mLogicalDisplayMapper.updateAndGetMaskForDisplayPropertyChanges(newDisplayInfo));
+
+        newDisplayInfo = new DisplayInfo();
+        newDisplayInfo.presentationDeadlineNanos = 456;
+        assertEquals(LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED,
+                mLogicalDisplayMapper.updateAndGetMaskForDisplayPropertyChanges(newDisplayInfo));
+
+        newDisplayInfo = new DisplayInfo();
+        newDisplayInfo.supportedRefreshRates = new float[60];
         assertEquals(LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED,
                 mLogicalDisplayMapper.updateAndGetMaskForDisplayPropertyChanges(newDisplayInfo));
 
@@ -1187,6 +1656,116 @@ public class LogicalDisplayMapperTest {
                         | LOGICAL_DISPLAY_EVENT_STATE_CHANGED
                         | LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED,
                 mLogicalDisplayMapper.updateAndGetMaskForDisplayPropertyChanges(newDisplayInfo));
+    }
+
+    @Test
+    @RequiresFlagsEnabled({Flags.FLAG_ENABLE_DISPLAY_EVENT_MERGING,
+            Flags.FLAG_COMMITTED_STATE_SEPARATE_EVENT,
+            Flags.FLAG_DISPLAY_LISTENER_PERFORMANCE_IMPROVEMENTS})
+    public void testUpdateLogicalDisplays_multiplePropertyChangesAreBatched() {
+        // This test verifies that when multiple properties of a single display change in one
+        // update cycle, they are batched into a single event notification with a combined mask.
+        when(mFlagsMock.isDisplayListenerPerformanceImprovementsEnabled()).thenReturn(true);
+        when(mFlagsMock.isCommittedStateSeparateEventEnabled()).thenReturn(true);
+        initLogicalDisplayMapper();
+
+        // 1. Add an initial display device and let it settle.
+        TestDisplayDevice device = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        LogicalDisplay display = add(device);
+        assertEquals(DEFAULT_DISPLAY, id(display));
+        clearInvocations(mListenerMock);
+
+        // 2. Modify multiple properties of the display device info to trigger different events.
+        DisplayDeviceInfo info = device.getSourceInfo();
+        info.width = 601; // Triggers BASIC_CHANGED
+        info.state = STATE_OFF; // Triggers STATE_CHANGED
+        info.committedState = STATE_OFF; // Triggers COMMITTED_STATE_CHANGED
+        // Create a new mode with a different refresh rate.
+        info.supportedModes = new Display.Mode[]{
+                new Display.Mode(/* modeId= */ 1, /* width= */ 601, /* height= */ 800,
+                        /* refreshRate= */ 90f)
+        };
+        info.modeId = 1; // Triggers REFRESH_RATE_CHANGED
+
+        // 3. Trigger an update by signaling that the display device has changed.
+        mDisplayDeviceRepo.onDisplayDeviceEvent(device, DISPLAY_DEVICE_EVENT_CHANGED);
+
+        // 4. Verify that a single event is sent with a combined mask.
+        verify(mListenerMock).onLogicalDisplayEventLocked(
+                mDisplayCaptor.capture(), mDisplayEventCaptor.capture());
+
+        // Check that the correct display was updated.
+        assertThat(mDisplayCaptor.getValue()).isEqualTo(display);
+
+        // Check that the event mask contains all the expected change flags, confirming they were
+        // batched.
+        int capturedMask = mDisplayEventCaptor.getValue();
+        int expectedMask = LOGICAL_DISPLAY_EVENT_BASIC_CHANGED
+                | LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED
+                | LOGICAL_DISPLAY_EVENT_STATE_CHANGED
+                | LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED;
+        assertThat(capturedMask).isEqualTo(expectedMask);
+    }
+
+    @Test
+    @RequiresFlagsEnabled({Flags.FLAG_ENABLE_DISPLAY_EVENT_MERGING,
+            Flags.FLAG_DISPLAY_LISTENER_PERFORMANCE_IMPROVEMENTS})
+    public void testUpdateLogicalDisplays_multipleDisplaysChange_sendsDisplayCentricEvents() {
+        // This test verifies that when two different displays change, the system sends two
+        // separate, display-specific notifications.
+        when(mFlagsMock.isDisplayListenerPerformanceImprovementsEnabled()).thenReturn(true);
+        initLogicalDisplayMapper();
+
+        // 1. Add two display devices and let them settle.
+        TestDisplayDevice device1 = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        TestDisplayDevice device2 = createDisplayDevice(TYPE_INTERNAL, 1024, 768, 0);
+        LogicalDisplay display1 = add(device1);
+        LogicalDisplay display2 = add(device2);
+        clearInvocations(mListenerMock);
+
+        // 2. Modify properties on both devices.
+        DisplayDeviceInfo info1 = device1.getSourceInfo();
+        info1.width = 601; // Triggers BASIC_CHANGED for display1
+        info1.supportedModes = new Display.Mode[]{
+                new Display.Mode(/* modeId= */ 1, /* width= */ 601, /* height= */ 800,
+                        /* refreshRate= */ 60f)
+        };
+        info1.modeId = 1;
+        // Triggers STATE_CHANGED for display2, this also includes BASIC_CHANGED since STATE is part
+        // of BASIC_CHANGED events.
+        device2.getSourceInfo().state = STATE_OFF;
+
+        // 3. Notify the repository of each change individually.
+        mDisplayDeviceRepo.onDisplayDeviceEvent(device1, DISPLAY_DEVICE_EVENT_CHANGED);
+        mDisplayDeviceRepo.onDisplayDeviceEvent(device2, DISPLAY_DEVICE_EVENT_CHANGED);
+
+        // 4. Verify that two separate, display-centric events are sent with their appropriate masks
+        verify(mListenerMock, times(2)).onLogicalDisplayEventLocked(
+                mDisplayCaptor.capture(), mDisplayEventCaptor.capture());
+
+        List<LogicalDisplay> capturedDisplays = mDisplayCaptor.getAllValues();
+        List<Integer> capturedMasks = mDisplayEventCaptor.getAllValues();
+
+        boolean display1Found = false;
+        boolean display2Found = false;
+
+        for (int i = 0; i < capturedDisplays.size(); i++) {
+            LogicalDisplay capturedDisplay = capturedDisplays.get(i);
+            int capturedMask = capturedMasks.get(i);
+            if (capturedDisplay.getDisplayIdLocked() == display1.getDisplayIdLocked()) {
+                assertThat(capturedMask).isEqualTo(LOGICAL_DISPLAY_EVENT_BASIC_CHANGED);
+                display1Found = true;
+            } else if (capturedDisplay.getDisplayIdLocked() == display2.getDisplayIdLocked()) {
+                assertThat(capturedMask).isEqualTo(LOGICAL_DISPLAY_EVENT_STATE_CHANGED
+                        | LOGICAL_DISPLAY_EVENT_BASIC_CHANGED);
+                display2Found = true;
+            }
+        }
+
+        assertThat(display1Found).isTrue();
+        assertThat(display2Found).isTrue();
     }
 
     /////////////////
@@ -1219,7 +1798,7 @@ public class LogicalDisplayMapperTest {
                 mDisplayDeviceRepo,
                 mListenerMock, new DisplayManagerService.SyncRoot(), mHandler,
                 mDeviceStateToLayoutMapSpy, mFlagsMock, mSyntheticModeManagerMock,
-                mDisplayGroupAllocatorSpy);
+                mDisplayGroupAllocatorSpy, mIsDisplayAllowedInTopologyMock);
         mLogicalDisplayMapper.onWindowManagerReady();
     }
 
@@ -1274,15 +1853,16 @@ public class LogicalDisplayMapperTest {
         Layout layout = new Layout();
         createDefaultDisplay(layout, outer);
         createNonDefaultDisplay(layout, inner, /* enabled= */ false, /* group= */ null);
-        when(mDeviceStateToLayoutMapSpy.get(DEVICE_STATE_CLOSED.getIdentifier())).thenReturn(
-                layout);
+        when(mDeviceStateToLayoutMapSpy.get(
+                DEVICE_STATE_FOLDABLE_CLOSED.getIdentifier())).thenReturn(layout);
 
         layout = new Layout();
         createNonDefaultDisplay(layout, outer, /* enabled= */ false, /* group= */ null);
         createDefaultDisplay(layout, inner);
-        when(mDeviceStateToLayoutMapSpy.get(DEVICE_STATE_HALF_OPEN.getIdentifier())).thenReturn(
+        when(mDeviceStateToLayoutMapSpy.get(
+                DEVICE_STATE_FOLDABLE_HALF_OPEN.getIdentifier())).thenReturn(layout);
+        when(mDeviceStateToLayoutMapSpy.get(DEVICE_STATE_FOLDABLE_OPEN.getIdentifier())).thenReturn(
                 layout);
-        when(mDeviceStateToLayoutMapSpy.get(DEVICE_STATE_OPEN.getIdentifier())).thenReturn(layout);
         when(mDeviceStateToLayoutMapSpy.size()).thenReturn(4);
 
         add(outer);
@@ -1291,13 +1871,13 @@ public class LogicalDisplayMapperTest {
         return new FoldableDisplayDevices(outer, inner);
     }
 
-    private void finishBootAndFoldDevice() {
-        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_OPEN);
-        mLogicalDisplayMapper.onEarlyInteractivityChange(true);
-        advanceTime(1000);
+    private void finishBootAndTransitionBetweenStates(DeviceState fromState, DeviceState toState) {
+        mLogicalDisplayMapper.setDeviceStateLocked(fromState);
+        advanceTime(STATE_TRANSITION_DELAY);
         mLogicalDisplayMapper.onBootCompleted();
         advanceTime(1000);
-        mLogicalDisplayMapper.setDeviceStateLocked(DEVICE_STATE_CLOSED);
+        mLogicalDisplayMapper.setDeviceStateLocked(toState);
+        advanceTime(STATE_TRANSITION_DELAY);
     }
 
     private void notifyDisplayChanges(TestDisplayDevice displayDevice) {

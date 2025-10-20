@@ -16,13 +16,10 @@
 
 package android.window;
 
-import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
-
-import com.android.window.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -91,7 +88,6 @@ public interface OnBackInvokedDispatcher {
      * {@link #PRIORITY_SYSTEM_NAVIGATION_OBSERVER} can be registered at a time. On API level 37 and
      * higher, the number of registered observer callbacks is unrestricted.
      */
-    @FlaggedApi(Flags.FLAG_PREDICTIVE_BACK_PRIORITY_SYSTEM_NAVIGATION_OBSERVER)
     int PRIORITY_SYSTEM_NAVIGATION_OBSERVER = -2;
 
     /**
@@ -126,16 +122,12 @@ public interface OnBackInvokedDispatcher {
 
 
     /**
-     * Sets an {@link ImeOnBackInvokedDispatcher} to forward {@link OnBackInvokedCallback}s
+     * Sets an {@link ImeBackCallbackSender} to forward {@link OnBackInvokedCallback}s
      * from IME to the app process to be registered on the app window.
      *
-     * Only call this on the IME window. Create the {@link ImeOnBackInvokedDispatcher} from
-     * the application process and override
-     * {@link ImeOnBackInvokedDispatcher#getReceivingDispatcher()} to point to the app
-     * window's {@link WindowOnBackInvokedDispatcher}.
+     * This should only be called on the IME window.
      *
      * @hide
      */
-    default void setImeOnBackInvokedDispatcher(
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher) { }
+    default void setImeBackCallbackSender(@NonNull ImeBackCallbackSender imeBackCallbackSender) { }
 }

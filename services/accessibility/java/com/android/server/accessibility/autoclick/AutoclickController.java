@@ -44,11 +44,13 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
+import android.hardware.display.DisplayManager;
 import android.hardware.input.InputManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.view.Display;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -118,8 +120,12 @@ public class AutoclickController extends BaseEventStreamTransformation implement
 
     private final AccessibilityTraceManager mTrace;
     private final Context mContext;
+    private Context mWindowContext;
     private int mCursorAreaSize;
     private final int mUserId;
+    @VisibleForTesting
+    int mCurrentDisplayId = Display.DEFAULT_DISPLAY;
+    private Handler mHandler;
 
     // The position where scroll actually happens.
     @VisibleForTesting
@@ -335,19 +341,35 @@ public class AutoclickController extends BaseEventStreamTransformation implement
                     "event=" + event + ";rawEvent=" + rawEvent + ";policyFlags=" + policyFlags);
         }
         if (event.isFromSource(InputDevice.SOURCE_MOUSE)) {
+            if (mHandler == null) {
+                mHandler = new Handler(mContext.getMainLooper());
+            }
+            final int displayId = event.getDisplayId();
             if (mClickScheduler == null) {
-                Handler handler = new Handler(mContext.getMainLooper());
                 if (Flags.enableAutoclickIndicator()) {
-                    initiateAutoclickIndicator(handler);
+                    mCurrentDisplayId = displayId;
+                    initiateAutoclickUi(mHandler);
+                    registerInputDeviceListener(mHandler);
                 }
 
                 mClickScheduler = new ClickScheduler(
-                        handler, DEFAULT_AUTOCLICK_DELAY_TIME);
-                mAutoclickSettingsObserver = new AutoclickSettingsObserver(mUserId, handler);
+                        mHandler, DEFAULT_AUTOCLICK_DELAY_TIME);
+                mAutoclickSettingsObserver = new AutoclickSettingsObserver(mUserId, mHandler);
                 mAutoclickSettingsObserver.start(
                         mContext.getContentResolver(),
                         mClickScheduler,
                         mAutoclickIndicatorScheduler);
+            } else if (Flags.enableAutoclickForConnectedDisplays()
+                    && mCurrentDisplayId != displayId) {
+                mWindowManager.removeView(mAutoclickIndicatorView);
+                mAutoclickTypePanel.hide();
+                mAutoclickScrollPanel.hide();
+                if (mWindowContext != null) {
+                    mWindowContext.unregisterComponentCallbacks(this);
+                }
+
+                mCurrentDisplayId = displayId;
+                initiateAutoclickUi(mHandler);
             }
 
             if (mAutoclickTypePanel != null && mAutoclickTypePanel.getIsDragging()
@@ -374,28 +396,66 @@ public class AutoclickController extends BaseEventStreamTransformation implement
         super.onMotionEvent(event, rawEvent, policyFlags);
     }
 
-    /**
-     * Autoclick indicator is a ring shape animation on the cursor location indicating when the
-     * click will happen. See {@code AutoclickIndicatorView} class.
-     */
-    private void initiateAutoclickIndicator(Handler handler) {
+    private void registerInputDeviceListener(Handler handler) {
+        if (mInputManagerWrapper == null) {
+            mInputManagerWrapper =
+                    new InputManagerWrapper(mContext.getSystemService(InputManager.class));
+        }
+        mInputManagerWrapper.registerInputDeviceListener(mInputDeviceListener, handler);
+        // Trigger listener to register currently connected input device.
+        mInputDeviceListener.onInputDeviceChanged(/* deviceId= */ 0);
+    }
+
+    /** Creates and returns a display-specific {@link Context} from the current display. */
+    private Context getDisplayContext() {
         // Try to get the SystemUI context which has dynamic colors properly themed.
         // Fall back to the regular context if it's not available (in tests).
-        Context uiContext;
+        Context baseContext;
         if (!mContext.getClass().getSimpleName().contains("Testable")) {
             // Use SystemUI context in production.
-            uiContext = ActivityThread.currentActivityThread().getSystemUiContext();
+            baseContext = ActivityThread.currentActivityThread().getSystemUiContext();
         } else {
             // Use the original context in test environments.
-            uiContext = mContext;
+            baseContext = mContext;
         }
+        if (!Flags.enableAutoclickForConnectedDisplays()) {
+            return baseContext;
+        }
+        DisplayManager displayManager = mContext.getSystemService(DisplayManager.class);
+        Display display = displayManager.getDisplay(mCurrentDisplayId);
+        if (display == null) {
+            display = displayManager.getDisplay(Display.DEFAULT_DISPLAY);
+            mCurrentDisplayId = display.getDisplayId();
+        }
+        return baseContext.createDisplayContext(display);
+    }
+
+    private void initiateAutoclickUi(Handler handler) {
+        final Context displayContext = getDisplayContext();
+
         mAutoclickIndicatorScheduler = new AutoclickIndicatorScheduler(handler);
-        mAutoclickIndicatorView = new AutoclickIndicatorView(uiContext);
-        mWindowManager = mContext.getSystemService(WindowManager.class);
+        if (!mContext.getClass().getSimpleName().contains("Testable")) {
+            // Production: Get WindowManager for the specific display.
+            mWindowManager = displayContext.getSystemService(WindowManager.class);
+        } else {
+            // Test: Get the mock WindowManager from the TestableContext.
+            mWindowManager = mContext.getSystemService(WindowManager.class);
+        }
+
+        if (Flags.enableAutoclickForConnectedDisplays()) {
+            mAutoclickIndicatorView = new AutoclickIndicatorView(
+                    displayContext.createWindowContext(
+                            WindowManager.LayoutParams.TYPE_SECURE_SYSTEM_OVERLAY, null));
+            mWindowContext = displayContext.createWindowContext(
+                    WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL, null);
+        } else {
+            mAutoclickIndicatorView = new AutoclickIndicatorView(displayContext);
+            mWindowContext = displayContext;
+        }
         mAutoclickTypePanel = new AutoclickTypePanel(
-                uiContext, mWindowManager, mUserId, clickPanelController);
+                mWindowContext, mWindowManager, mUserId, clickPanelController);
         mAutoclickScrollPanel = new AutoclickScrollPanel(
-                uiContext, mWindowManager, mScrollPanelController);
+                mWindowContext, mWindowManager, mScrollPanelController);
 
         // Initialize continuous scroll handler and runnable.
         mContinuousScrollHandler = new Handler(handler.getLooper());
@@ -408,14 +468,8 @@ public class AutoclickController extends BaseEventStreamTransformation implement
         };
 
         mAutoclickTypePanel.show();
-        mContext.registerComponentCallbacks(this);
+        mWindowContext.registerComponentCallbacks(this);
         mWindowManager.addView(mAutoclickIndicatorView, mAutoclickIndicatorView.getLayoutParams());
-
-        if (mInputManagerWrapper == null) {
-            mInputManagerWrapper =
-                    new InputManagerWrapper(mContext.getSystemService(InputManager.class));
-        }
-        mInputManagerWrapper.registerInputDeviceListener(mInputDeviceListener, handler);
     }
 
     @Override
@@ -450,7 +504,9 @@ public class AutoclickController extends BaseEventStreamTransformation implement
 
     @Override
     public void onDestroy() {
-        mContext.unregisterComponentCallbacks(this);
+        if (mWindowContext != null) {
+            mWindowContext.unregisterComponentCallbacks(this);
+        }
         if (mInputManagerWrapper != null) {
             mInputManagerWrapper.unregisterInputDeviceListener(mInputDeviceListener);
         }
@@ -485,6 +541,11 @@ public class AutoclickController extends BaseEventStreamTransformation implement
         if (mContinuousScrollHandler != null) {
             mContinuousScrollHandler.removeCallbacks(mContinuousScrollRunnable);
             mContinuousScrollHandler = null;
+        }
+
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
+            mHandler = null;
         }
 
         // Calculate session duration and log when autoclick is disabled.
@@ -605,6 +666,7 @@ public class AutoclickController extends BaseEventStreamTransformation implement
                 pointerCoords, /* metaState= */ 0, /* actionButton= */ 0, /* xPrecision= */
                 1.0f, /* yPrecision= */ 1.0f, deviceId, /* edgeFlags= */ 0,
                 InputDevice.SOURCE_MOUSE, /* flags= */ 0);
+        scrollEvent.setDisplayId(mCurrentDisplayId);
 
         // Send the scroll event.
         super.onMotionEvent(scrollEvent, scrollEvent, mClickScheduler.mEventPolicyFlags);
@@ -668,7 +730,7 @@ public class AutoclickController extends BaseEventStreamTransformation implement
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         // When system configuration is changed, update the indicator view
         // and type panel configuration.
-        if (mAutoclickIndicatorView != null) {
+        if (mAutoclickIndicatorView != null && !Flags.enableAutoclickForConnectedDisplays()) {
             mAutoclickIndicatorView.onConfigurationChanged(newConfig);
         }
         if (mAutoclickTypePanel != null) {
@@ -1562,21 +1624,23 @@ public class AutoclickController extends BaseEventStreamTransformation implement
         private @NonNull MotionEvent buildMotionEvent(
                 long downTime, long eventTime, int actionButton,
                 @NonNull MotionEvent lastMotionEvent) {
-            return MotionEvent.obtain(
-                            /* downTime= */ downTime,
-                            /* eventTime= */ eventTime,
-                            MotionEvent.ACTION_DOWN,
-                            /* pointerCount= */ 1,
-                            mTempPointerProperties,
-                            mTempPointerCoords,
-                            mMetaState,
-                            actionButton,
-                            /* xPrecision= */ 1.0f,
-                            /* yPrecision= */ 1.0f,
-                            lastMotionEvent.getDeviceId(),
-                            /* edgeFlags= */ 0,
-                            lastMotionEvent.getSource(),
-                            lastMotionEvent.getFlags());
+            final MotionEvent event = MotionEvent.obtain(
+                    /* downTime= */ downTime,
+                    /* eventTime= */ eventTime,
+                    MotionEvent.ACTION_DOWN,
+                    /* pointerCount= */ 1,
+                    mTempPointerProperties,
+                    mTempPointerCoords,
+                    mMetaState,
+                    actionButton,
+                    /* xPrecision= */ 1.0f,
+                    /* yPrecision= */ 1.0f,
+                    lastMotionEvent.getDeviceId(),
+                    /* edgeFlags= */ 0,
+                    lastMotionEvent.getSource(),
+                    lastMotionEvent.getFlags());
+            event.setDisplayId(lastMotionEvent.getDisplayId());
+            return event;
         }
 
         /**
@@ -1602,6 +1666,7 @@ public class AutoclickController extends BaseEventStreamTransformation implement
                             /* edgeFlags= */ 0,
                             mLastMotionEvent.getSource(),
                             mLastMotionEvent.getFlags());
+            downEvent.setDisplayId(mLastMotionEvent.getDisplayId());
             MotionEvent pressEvent = MotionEvent.obtain(downEvent);
             pressEvent.setAction(MotionEvent.ACTION_BUTTON_PRESS);
             pressEvent.setActionButton(BUTTON_PRIMARY);
@@ -1629,15 +1694,16 @@ public class AutoclickController extends BaseEventStreamTransformation implement
                             mTempPointerProperties,
                             mTempPointerCoords,
                             mMetaState,
-                            BUTTON_PRIMARY,
+                            /* buttonState= */ 0,
                             /* xPrecision= */ 1.0f,
                             /* yPrecision= */ 1.0f,
                             mLastMotionEvent.getDeviceId(),
                             /* edgeFlags= */ 0,
                             mLastMotionEvent.getSource(),
                             mLastMotionEvent.getFlags());
-            releaseEvent.setActionButton(BUTTON_PRIMARY);
+            releaseEvent.setDisplayId(mLastMotionEvent.getDisplayId());
             MotionEvent upEvent = MotionEvent.obtain(releaseEvent);
+            releaseEvent.setActionButton(BUTTON_PRIMARY);
             upEvent.setAction(MotionEvent.ACTION_UP);
             AutoclickController.super.onMotionEvent(releaseEvent, releaseEvent,
                     mEventPolicyFlags);

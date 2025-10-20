@@ -27,21 +27,16 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.util.fastMap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.animation.scene.ElementKey
-import com.android.mechanics.compose.modifier.verticalTactileSurfaceReveal
-import com.android.mechanics.spec.builder.rememberMotionBuilderContext
-import com.android.systemui.common.ui.icons.Reset
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.grid.ui.compose.VerticalSpannedGrid
 import com.android.systemui.haptics.msdl.qs.TileHapticsViewModelFactoryProvider
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.qs.flags.QSMaterialExpressiveTiles
-import com.android.systemui.qs.flags.QsEditModeTabs
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
 import com.android.systemui.qs.panels.ui.compose.ButtonGroupGrid
 import com.android.systemui.qs.panels.ui.compose.EditTileListState
@@ -51,14 +46,12 @@ import com.android.systemui.qs.panels.ui.compose.bounceableInfo
 import com.android.systemui.qs.panels.ui.viewmodel.BounceableTileViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModel
-import com.android.systemui.qs.panels.ui.viewmodel.EditTopBarActionViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.IconTilesViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.InfiniteGridViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackContentViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TileViewModel
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.shared.ui.QuickSettings.Elements.toElementKey
-import com.android.systemui.qs.ui.composable.QuickSettingsShade
 import com.android.systemui.res.R
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -79,7 +72,7 @@ constructor(
         tiles: List<TileViewModel>,
         modifier: Modifier,
         listening: () -> Boolean,
-        revealEffectContainer: ElementKey?,
+        enableRevealEffect: Boolean,
     ) {
         val viewModel =
             rememberViewModel(traceName = "InfiniteGridLayout.TileGrid") {
@@ -105,10 +98,6 @@ constructor(
         val squishiness by viewModel.squishinessViewModel.squishiness.collectAsStateWithLifecycle()
         val scope = rememberCoroutineScope()
 
-        val motionBuilderContext = rememberMotionBuilderContext()
-        val marginBottom =
-            with(LocalDensity.current) { QuickSettingsShade.Dimensions.Padding.toPx() }
-
         if (QSMaterialExpressiveTiles.isEnabled) {
             ButtonGroupGrid(
                 sizedTiles = sizedTiles,
@@ -127,20 +116,9 @@ constructor(
                     detailsViewModel = detailsViewModel,
                     isVisible = listening,
                     requestToggleTextFeedback = textFeedbackViewModel::requestShowFeedback,
-                    modifier =
-                        if (revealEffectContainer != null) {
-                            Modifier.verticalTactileSurfaceReveal(
-                                contentScope = this@TileGrid,
-                                motionBuilderContext = motionBuilderContext,
-                                container = revealEffectContainer,
-                                deltaY = -marginBottom,
-                            )
-                        } else {
-                            Modifier
-                        },
-                    revealEffectContainer = revealEffectContainer,
+                    enableRevealEffect = enableRevealEffect,
                     bounceableInfo = null,
-                    interactionSource = interactionSource,
+                    interactionSourceFromParent = interactionSource,
                 )
             }
         } else {
@@ -176,19 +154,7 @@ constructor(
                         detailsViewModel = detailsViewModel,
                         isVisible = listening,
                         requestToggleTextFeedback = textFeedbackViewModel::requestShowFeedback,
-                        modifier =
-                            if (revealEffectContainer != null) {
-                                Modifier.verticalTactileSurfaceReveal(
-                                    contentScope = this@TileGrid,
-                                    motionBuilderContext = motionBuilderContext,
-                                    container = revealEffectContainer,
-                                    deltaY = -marginBottom,
-                                )
-                            } else {
-                                Modifier
-                            },
-                        revealEffectContainer = revealEffectContainer,
-                        interactionSource = null,
+                        enableRevealEffect = enableRevealEffect,
                     )
                 }
             }
@@ -234,20 +200,14 @@ constructor(
                     coroutineScope.launch { scrollState.animateScrollTo(0) }
                 }
             }
+        val showDualShadeSetting =
+            LocalResources.current.getBoolean(
+                com.android.settingslib.R.bool.config_useDualShadeSetting
+            )
         val actions =
-            remember(topBarActionsViewModel) { topBarActionsViewModel.actions.toMutableStateList() }
-        if (QsEditModeTabs.isEnabled) {
-            val resetClick by rememberUpdatedState(dialogDelegate::showDialog)
-            val resetAction = remember {
-                EditTopBarActionViewModel(
-                    Reset,
-                    com.android.internal.R.string.reset,
-                    { resetClick() },
-                )
+            remember(topBarActionsViewModel, showDualShadeSetting) {
+                topBarActionsViewModel.actions(showDualShadeSetting).toMutableStateList()
             }
-
-            LaunchedEffect(actions) { actions.add(resetAction) }
-        }
         val columns = columnsViewModel.columns
         val largeTilesSpan = columnsViewModel.largeSpan
         val largeTiles by viewModel.iconTilesViewModel.largeTilesState

@@ -17,6 +17,7 @@
 package com.android.wm.shell.compatui.letterbox.lifecycle
 
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
+import android.content.res.Configuration
 import android.testing.AndroidTestingRunner
 import android.view.SurfaceControl
 import android.window.WindowContainerToken
@@ -34,8 +35,7 @@ import org.mockito.kotlin.mock
 /**
  * Tests for [TaskIdResolver].
  *
- * Build/Install/Run:
- *  atest WMShellUnitTests:TaskIdResolverTest
+ * Build/Install/Run: atest WMShellUnitTests:TaskIdResolverTest
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
@@ -45,20 +45,9 @@ class TaskIdResolverTest : ShellTestCase() {
     fun `Returns the same id when the task is present in the repository`() {
         runTestScenario { r ->
             testTaskIdResolver(r::factory) {
-                r.prepareRepository { repo ->
-                    repo.insert(
-                        key = 10,
-                        r.createItem(
-                            taskId = 10,
-                        )
-                    )
-                }
-                runningTaskInfo { ti ->
-                    ti.taskId = 10
-                }
-                verifyLetterboxTaskId { letterboxTaskId ->
-                    assertEquals(10, letterboxTaskId)
-                }
+                r.prepareRepository { repo -> repo.insert(key = 10, r.createItem(taskId = 10)) }
+                runningTaskInfo { ti -> ti.taskId = 10 }
+                verifyLetterboxTaskId { letterboxTaskId -> assertEquals(10, letterboxTaskId) }
             }
         }
     }
@@ -68,21 +57,13 @@ class TaskIdResolverTest : ShellTestCase() {
         runTestScenario { r ->
             testTaskIdResolver(r::factory) {
                 r.prepareRepository { repo ->
-                    repo.insert(
-                        key = 20,
-                        r.createItem(
-                            taskId = 20,
-                            parentTaskId = 10
-                        )
-                    )
+                    repo.insert(key = 20, r.createItem(taskId = 20, parentTaskId = 10))
                 }
                 runningTaskInfo { ti ->
                     ti.taskId = 10
                     ti.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_MULTI_WINDOW
                 }
-                verifyLetterboxTaskId { letterboxTaskId ->
-                    assertEquals(20, letterboxTaskId)
-                }
+                verifyLetterboxTaskId { letterboxTaskId -> assertEquals(20, letterboxTaskId) }
             }
         }
     }
@@ -92,28 +73,18 @@ class TaskIdResolverTest : ShellTestCase() {
         runTestScenario { r ->
             testTaskIdResolver(r::factory) {
                 r.prepareRepository { repo ->
-                    repo.insert(
-                        key = 20,
-                        r.createItem(
-                            taskId = 20,
-                            parentTaskId = 30
-                        )
-                    )
+                    repo.insert(key = 20, r.createItem(taskId = 20, parentTaskId = 30))
                 }
                 runningTaskInfo { ti ->
                     ti.taskId = 10
                     ti.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_MULTI_WINDOW
                 }
-                verifyLetterboxTaskId { letterboxTaskId ->
-                    assertEquals(10, letterboxTaskId)
-                }
+                verifyLetterboxTaskId { letterboxTaskId -> assertEquals(10, letterboxTaskId) }
             }
         }
     }
 
-    /**
-     * Runs a test scenario providing a Robot.
-     */
+    /** Runs a test scenario providing a Robot. */
     fun runTestScenario(consumer: Consumer<TaskIdResolverRobotTest>) {
         consumer.accept(TaskIdResolverRobotTest())
     }
@@ -121,11 +92,11 @@ class TaskIdResolverTest : ShellTestCase() {
     class TaskIdResolverRobotTest {
 
         companion object {
-            @JvmStatic
-            val TEST_TOKEN = mock<WindowContainerToken>()
+            @JvmStatic val TEST_TOKEN = mock<WindowContainerToken>()
 
-            @JvmStatic
-            val TEST_LEASH = mock<SurfaceControl>()
+            @JvmStatic val TEST_LEASH = mock<SurfaceControl>()
+
+            @JvmStatic val TEST_CONFIGURATION = Configuration()
         }
 
         private val letterboxTaskInfoRepository: LetterboxTaskInfoRepository =
@@ -137,15 +108,13 @@ class TaskIdResolverTest : ShellTestCase() {
             consumer(letterboxTaskInfoRepository)
         }
 
-        fun createItem(
-            taskId: Int = -1,
-            parentTaskId: Int = -1
-        ) =
+        fun createItem(taskId: Int = -1, parentTaskId: Int = -1) =
             LetterboxTaskInfoState(
                 containerToken = TEST_TOKEN,
                 containerLeash = TEST_LEASH,
                 taskId = taskId,
-                parentTaskId = parentTaskId
+                parentTaskId = parentTaskId,
+                configuration = TEST_CONFIGURATION,
             )
     }
 }

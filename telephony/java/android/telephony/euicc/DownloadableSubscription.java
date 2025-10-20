@@ -33,7 +33,7 @@ import java.util.List;
 
 /**
  * Information about a subscription which is downloadable to an eUICC using
- * {@link EuiccManager#downloadSubscription(DownloadableSubscription, boolean, PendingIntent).
+ * {@link EuiccManager#downloadSubscription(DownloadableSubscription, boolean, PendingIntent)}.
  *
  * <p>For example, a DownloadableSubscription can be created through an activation code parsed from
  * a QR code. A server address can be parsed from the activation code to download more information

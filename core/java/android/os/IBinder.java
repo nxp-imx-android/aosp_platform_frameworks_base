@@ -322,15 +322,15 @@ public interface IBinder {
          * The function called when the process hosting an IBinder
          * has gone away.
          *
-         * This callback will be called from any binder thread like any other binder
+         * <p>This callback will be called from any binder thread like any other binder
          * transaction. If the process receiving this notification is multithreaded
          * then synchronization may be required because other threads may be executing
          * at the same time.
          *
-         * No locks are held in libbinder when {@link binderDied} is called.
+         * <p>No locks are held in libbinder when {@link #binderDied} is called.
          *
-         * There is no need to call {@link unlinkToDeath} in the binderDied callback.
-         * The binder is already dead so {@link unlinkToDeath} is a no-op.
+         * <p>There is no need to call {@link #unlinkToDeath} in the binderDied callback.
+         * The binder is already dead so {@link #unlinkToDeath} is a no-op.
          * It will be unlinked when the last local reference of that binder proxy is
          * dropped.
          *
@@ -451,7 +451,7 @@ public interface IBinder {
      * @param executor The executor on which to run the callback.
      * @param callback The callback used to deliver state change notifications.
      *
-     * @throws {@link UnsupportedOperationException} if the kernel binder driver does not support
+     * @throws UnsupportedOperationException if the kernel binder driver does not support
      * this feature.
      */
     @FlaggedApi(Flags.FLAG_BINDER_FROZEN_STATE_CHANGE_CALLBACK)

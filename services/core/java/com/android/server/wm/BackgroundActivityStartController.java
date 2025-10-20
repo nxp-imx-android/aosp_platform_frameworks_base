@@ -977,8 +977,10 @@ public class BackgroundActivityStartController {
     private BalVerdict abortLaunch(BalState state) {
         Slog.wtf(TAG, "Background activity launch blocked! goo.gle/android-bal "
                 + state);
-        if (Build.IS_DEBUGGABLE
-                && (state.mResultForCaller.allows() || state.mResultForRealCaller.allows())) {
+        if (Build.IS_DEBUGGABLE && (
+                (state.mResultForCaller != null && state.mResultForCaller.allows())
+                        || (state.mResultForRealCaller != null
+                        && state.mResultForRealCaller.allows()))) {
             // only show a toast if either caller or real caller could launch if they opted in
             showToast("BAL blocked. goo.gle/android-bal");
         }

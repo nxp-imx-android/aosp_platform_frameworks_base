@@ -439,6 +439,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                         t.getSyncTransaction().show(t.getSurfaceControl());
                     }
                 }
+                t.clearExcludeLayersFromTaskSnapshot();
             }
 
             // Pending events queue for this organizer need to be cleared because this organizer
@@ -1159,6 +1160,59 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 if (activity != null) {
                     activity.restartProcessIfVisible();
                 }
+            }
+        } finally {
+            Binder.restoreCallingIdentity(origId);
+        }
+    }
+
+    @Override
+    public void setExcludeLayersFromTaskSnapshot(WindowContainerToken token,
+            SurfaceControl[] layers) throws RemoteException {
+        enforceTaskPermission("setExcludeLayersFromTaskSnapshot()");
+        if (!Flags.excludingLayerFromTaskSnapshot()) {
+            return;
+        }
+        final long origId = Binder.clearCallingIdentity();
+        try {
+            synchronized (mGlobalLock) {
+                final WindowContainer wc = WindowContainer.fromBinder(token.asBinder());
+                if (wc == null) {
+                    Slog.w(TAG, "Could not resolve window from token");
+                    return;
+                }
+                final Task task = wc.asTask();
+                if (task == null) {
+                    Slog.w(TAG, "Could not resolve task from token");
+                    return;
+                }
+                task.setExcludeLayersFromTaskSnapshot(layers);
+            }
+        } finally {
+            Binder.restoreCallingIdentity(origId);
+        }
+    }
+
+    @Override
+    public void clearExcludeLayersFromTaskSnapshot(WindowContainerToken token) {
+        enforceTaskPermission("clearExcludeLayersFromTaskSnapshot()");
+        if (!Flags.excludingLayerFromTaskSnapshot()) {
+            return;
+        }
+        final long origId = Binder.clearCallingIdentity();
+        try {
+            synchronized (mGlobalLock) {
+                final WindowContainer wc = WindowContainer.fromBinder(token.asBinder());
+                if (wc == null) {
+                    Slog.w(TAG, "Could not resolve window from token");
+                    return;
+                }
+                final Task task = wc.asTask();
+                if (task == null) {
+                    Slog.w(TAG, "Could not resolve task from token");
+                    return;
+                }
+                task.clearExcludeLayersFromTaskSnapshot();
             }
         } finally {
             Binder.restoreCallingIdentity(origId);

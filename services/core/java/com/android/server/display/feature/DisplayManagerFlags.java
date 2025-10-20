@@ -33,7 +33,9 @@ import java.util.function.Supplier;
 
 /**
  * Utility class to read the flags used in the display manager server.
+ * @deprecated use {@link Flags} directly, see b/440342129
  */
+@Deprecated
 public class DisplayManagerFlags {
     private static final String TAG = "DisplayManagerFlags";
 
@@ -52,14 +54,6 @@ public class DisplayManagerFlags {
     private final FlagState mDisplayTopologyApi = new FlagState(
             Flags.FLAG_DISPLAY_TOPOLOGY_API,
             Flags::displayTopologyApi);
-
-    private final FlagState mConnectedDisplayErrorHandlingFlagState = new FlagState(
-            Flags.FLAG_ENABLE_CONNECTED_DISPLAY_ERROR_HANDLING,
-            Flags::enableConnectedDisplayErrorHandling);
-
-    private final FlagState mBackUpSmoothDisplayAndForcePeakRefreshRateFlagState = new FlagState(
-            Flags.FLAG_BACK_UP_SMOOTH_DISPLAY_AND_FORCE_PEAK_REFRESH_RATE,
-            Flags::backUpSmoothDisplayAndForcePeakRefreshRate);
 
     private final FlagState mPowerThrottlingClamperFlagState = new FlagState(
             Flags.FLAG_ENABLE_POWER_THROTTLING_CLAMPER,
@@ -81,14 +75,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_RESOLUTION_BACKUP_RESTORE,
             Flags::resolutionBackupRestore);
 
-    private final FlagState mBrightnessWearBedtimeModeClamperFlagState = new FlagState(
-            Flags.FLAG_BRIGHTNESS_WEAR_BEDTIME_MODE_CLAMPER,
-            Flags::brightnessWearBedtimeModeClamper);
-
-    private final FlagState mAutoBrightnessModesFlagState = new FlagState(
-            Flags.FLAG_AUTO_BRIGHTNESS_MODES,
-            Flags::autoBrightnessModes);
-
     private final FlagState mFastHdrTransitions = new FlagState(
             Flags.FLAG_FAST_HDR_TRANSITIONS,
             Flags::fastHdrTransitions);
@@ -96,11 +82,6 @@ public class DisplayManagerFlags {
     private final FlagState mSensorBasedBrightnessThrottling = new FlagState(
             Flags.FLAG_SENSOR_BASED_BRIGHTNESS_THROTTLING,
             Flags::sensorBasedBrightnessThrottling
-    );
-
-    private final FlagState mRefactorDisplayPowerController = new FlagState(
-            Flags.FLAG_REFACTOR_DISPLAY_POWER_CONTROLLER,
-            Flags::refactorDisplayPowerController
     );
 
     private final FlagState mDozeBrightnessStrategy = new FlagState(
@@ -112,26 +93,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_USE_FUSION_PROX_SENSOR,
             Flags::useFusionProxSensor
     );
-
-    private final FlagState mPeakRefreshRatePhysicalLimit = new FlagState(
-            Flags.FLAG_ENABLE_PEAK_REFRESH_RATE_PHYSICAL_LIMIT,
-            Flags::enablePeakRefreshRatePhysicalLimit
-    );
-
-    private final FlagState mIgnoreAppPreferredRefreshRate = new FlagState(
-            Flags.FLAG_IGNORE_APP_PREFERRED_REFRESH_RATE_REQUEST,
-            Flags::ignoreAppPreferredRefreshRateRequest
-    );
-
-    private final FlagState mSynthetic60hzModes = new FlagState(
-            Flags.FLAG_ENABLE_SYNTHETIC_60HZ_MODES,
-            Flags::enableSynthetic60hzModes
-    );
-
-    private final FlagState mOffloadSessionCancelBlockScreenOn = new FlagState(
-            Flags.FLAG_OFFLOAD_SESSION_CANCEL_BLOCK_SCREEN_ON,
-            Flags::offloadSessionCancelBlockScreenOn);
-
     private final FlagState mNormalBrightnessForDozeParameter = new FlagState(
             Flags.FLAG_NORMAL_BRIGHTNESS_FOR_DOZE_PARAMETER,
             Flags::normalBrightnessForDozeParameter
@@ -225,11 +186,6 @@ public class DisplayManagerFlags {
             Flags::hdrBrightnessSetting
     );
 
-    private final FlagState mDispatchDisplayModeWithVsyncOffsets = new FlagState(
-            Flags.FLAG_ENABLE_ON_MODE_CHANGED_VSYNC_PHASE_OFFSET,
-            Flags::enableOnModeChangedVsyncPhaseOffset
-    );
-
     private final FlagState mEnableDefaultDisplayInTopologySwitch = new FlagState(
             Flags.FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH,
             DesktopExperienceFlags.ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH::isTrue
@@ -244,11 +200,6 @@ public class DisplayManagerFlags {
             Flags::ensureColorFadeWhenTurningOn
     );
 
-    private final FlagState mIsOnDisplayAddedInObserverEnabled = new FlagState(
-            Flags.FLAG_ENABLE_ON_DISPLAY_ADDED_IN_OBSERVER,
-            Flags::enableOnDisplayAddedInObserver
-    );
-
     private final FlagState mIsLoggingForDisplayEventsEnabled = new FlagState(
             Flags.FLAG_ENABLE_LOGGING_FOR_DISPLAY_EVENTS,
             Flags::enableLoggingForDisplayEvents
@@ -259,6 +210,11 @@ public class DisplayManagerFlags {
             Flags::minmodeCapBrightnessEnabled
     );
 
+    private final FlagState mSyntheticModesV2 = new FlagState(
+            Flags.FLAG_ENABLE_SYNTHETIC_MODES_V2,
+            Flags::enableSyntheticModesV2
+    );
+
     private final FlagState mIsSingleAppEventForModeAndFrameRateOverrideEnabled = new FlagState(
             Flags.FLAG_ENABLE_SINGLE_APP_EVENT_FOR_MODE_AND_FRAME_RATE_OVERRIDE,
             Flags::enableSingleAppEventForModeAndFrameRateOverride
@@ -267,6 +223,11 @@ public class DisplayManagerFlags {
     private final FlagState mIsDisplayMirrorInLockTaskModeEnabled = new FlagState(
             Flags.FLAG_ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE,
             DesktopExperienceFlags.ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE::isTrue
+    );
+
+    private final FlagState mIsSizeOverrideForExternalDisplaysEnabled = new FlagState(
+        Flags.FLAG_ENABLE_SIZE_OVERRIDE_FOR_EXTERNAL_DISPLAYS,
+        Flags::enableSizeOverrideForExternalDisplays
     );
 
     /** Returns whether power throttling clamper is enabled on not. */
@@ -282,15 +243,6 @@ public class DisplayManagerFlags {
     /** Returns whether displayoffload is enabled on not */
     public boolean isDisplayOffloadEnabled() {
         return mDisplayOffloadFlagState.isEnabled();
-    }
-
-    /** Returns whether error notifications for connected displays are enabled on not */
-    public boolean isConnectedDisplayErrorHandlingEnabled() {
-        return mConnectedDisplayErrorHandlingFlagState.isEnabled();
-    }
-
-    public boolean isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled() {
-        return mBackUpSmoothDisplayAndForcePeakRefreshRateFlagState.isEnabled();
     }
 
     /** Returns whether brightness range is allowed to extend below traditional range. */
@@ -310,27 +262,12 @@ public class DisplayManagerFlags {
         return mResolutionBackupRestore.isEnabled();
     }
 
-    public boolean isBrightnessWearBedtimeModeClamperEnabled() {
-        return mBrightnessWearBedtimeModeClamperFlagState.isEnabled();
-    }
-
-    /**
-     * @return Whether generic auto-brightness modes are enabled
-     */
-    public boolean areAutoBrightnessModesEnabled() {
-        return mAutoBrightnessModesFlagState.isEnabled();
-    }
-
     public boolean isFastHdrTransitionsEnabled() {
         return mFastHdrTransitions.isEnabled();
     }
 
     public boolean isSensorBasedBrightnessThrottlingEnabled() {
         return mSensorBasedBrightnessThrottling.isEnabled();
-    }
-
-    public boolean isRefactorDisplayPowerControllerEnabled() {
-        return mRefactorDisplayPowerController.isEnabled();
     }
 
     public boolean isDozeBrightnessStrategyEnabled() {
@@ -343,25 +280,6 @@ public class DisplayManagerFlags {
 
     public String getUseFusionProxSensorFlagName() {
         return mUseFusionProxSensor.getName();
-    }
-
-    public boolean isPeakRefreshRatePhysicalLimitEnabled() {
-        return mPeakRefreshRatePhysicalLimit.isEnabled();
-    }
-
-    public boolean isOffloadSessionCancelBlockScreenOnEnabled() {
-        return mOffloadSessionCancelBlockScreenOn.isEnabled();
-    }
-
-    /**
-     * @return Whether to ignore preferredRefreshRate app request conversion to display mode or not
-     */
-    public boolean ignoreAppPreferredRefreshRateRequest() {
-        return mIgnoreAppPreferredRefreshRate.isEnabled();
-    }
-
-    public boolean isSynthetic60HzModesEnabled() {
-        return mSynthetic60hzModes.isEnabled();
     }
 
     /**
@@ -485,10 +403,6 @@ public class DisplayManagerFlags {
         return mHdrBrightnessSetting.isEnabled();
     }
 
-    public boolean isDispatchDisplayModeWithVsyncOffsetsEnabled() {
-        return mDispatchDisplayModeWithVsyncOffsets.isEnabled();
-    }
-
     public boolean isDefaultDisplayInTopologySwitchEnabled() {
         return mEnableDefaultDisplayInTopologySwitch.isEnabled();
     }
@@ -504,16 +418,16 @@ public class DisplayManagerFlags {
         return mEnsureColorFadeWhenTurningOn.isEnabled();
     }
 
-    public boolean isOnDisplayAddedInObserverEnabled() {
-        return mIsOnDisplayAddedInObserverEnabled.isEnabled();
-    }
-
     public boolean isDisplayEventsLoggingEnabled() {
         return mIsLoggingForDisplayEventsEnabled.isEnabled();
     }
 
     public boolean isMinmodeCapBrightnessEnabled() {
         return mIsMinmodeCapBrightnessEnabled.isEnabled();
+    }
+
+    public boolean isSyntheticModesV2Enabled() {
+        return mSyntheticModesV2.isEnabled();
     }
 
     public boolean isSingleAppEventForModeAndFrameRateOverrideEnabled() {
@@ -524,6 +438,10 @@ public class DisplayManagerFlags {
         return mIsDisplayMirrorInLockTaskModeEnabled.isEnabled();
     }
 
+    public boolean isSizeOverrideForExternalDisplaysEnabled() {
+        return mIsSizeOverrideForExternalDisplaysEnabled.isEnabled();
+    }
+
     /**
      * dumps all flagstates
      * @param pw printWriter
@@ -531,8 +449,6 @@ public class DisplayManagerFlags {
     public void dump(PrintWriter pw) {
         pw.println("DisplayManagerFlags:");
         pw.println("--------------------");
-        pw.println(" " + mBackUpSmoothDisplayAndForcePeakRefreshRateFlagState);
-        pw.println(" " + mConnectedDisplayErrorHandlingFlagState);
         pw.println(" " + mDisplayOffloadFlagState);
         pw.println(" " + mDisplayTopology);
         pw.println(" " + mDisplayTopologyApi);
@@ -540,18 +456,11 @@ public class DisplayManagerFlags {
         pw.println(" " + mEvenDimmerFlagState);
         pw.println(" " + mSmallAreaDetectionFlagState);
         pw.println(" " + mSyncedResolutionSwitch);
-        pw.println(" " + mBrightnessWearBedtimeModeClamperFlagState);
-        pw.println(" " + mAutoBrightnessModesFlagState);
         pw.println(" " + mFastHdrTransitions);
         pw.println(" " + mSensorBasedBrightnessThrottling);
-        pw.println(" " + mRefactorDisplayPowerController);
         pw.println(" " + mDozeBrightnessStrategy);
         pw.println(" " + mResolutionBackupRestore);
         pw.println(" " + mUseFusionProxSensor);
-        pw.println(" " + mPeakRefreshRatePhysicalLimit);
-        pw.println(" " + mIgnoreAppPreferredRefreshRate);
-        pw.println(" " + mSynthetic60hzModes);
-        pw.println(" " + mOffloadSessionCancelBlockScreenOn);
         pw.println(" " + mNormalBrightnessForDozeParameter);
         pw.println(" " + mEnableBatteryStatsForAllDisplays);
         pw.println(" " + mBlockAutobrightnessChangesOnStylusUsage);
@@ -569,16 +478,16 @@ public class DisplayManagerFlags {
         pw.println(" " + mSetBrightnessByUnit);
         pw.println(" " + mDelayImplicitRrRegistrationUntilRrAccessed);
         pw.println(" " + mHdrBrightnessSetting);
-        pw.println(" " + mDispatchDisplayModeWithVsyncOffsets);
         pw.println(" " + mEnableDefaultDisplayInTopologySwitch);
         pw.println(" " + mModeSwitchWithoutSaving);
         pw.println(" " + mEnsureColorFadeWhenTurningOn);
-        pw.println(" " + mIsOnDisplayAddedInObserverEnabled);
         pw.println(" " + mEnableUpdatedDisplayConnectionDialogFlagState);
         pw.println(" " + mIsLoggingForDisplayEventsEnabled);
         pw.println(" " + mIsMinmodeCapBrightnessEnabled);
+        pw.println(" " + mSyntheticModesV2);
         pw.println(" " + mIsSingleAppEventForModeAndFrameRateOverrideEnabled);
         pw.println(" " + mIsDisplayMirrorInLockTaskModeEnabled);
+        pw.println(" " + mIsSizeOverrideForExternalDisplaysEnabled);
     }
 
     private static class FlagState {
@@ -625,13 +534,15 @@ public class DisplayManagerFlags {
 
         @Override
         public String toString() {
-            // remove com.android.server.display.feature.flags. from the beginning of the name.
+            // remove the flag package from the beginning of the name.
+            String shortName = TextUtils.substring(mName, mName.lastIndexOf('.') + 1,
+                    mName.length());
+
             // align all isEnabled() values.
-            // Adjust lengths if we end up with longer names
-            final int nameLength = mName.length();
-            return TextUtils.substring(mName,  41, nameLength) + ": "
-                    + TextUtils.formatSimple("%" + (93 - nameLength) + "s%s", " " , isEnabled())
-                    + " (def:" + mFlagFunction.get() + ")";
+            return String.format("%-53s %b (def:%b)",
+                    shortName + ":",
+                    isEnabled(),
+                    mFlagFunction.get());
         }
     }
 }

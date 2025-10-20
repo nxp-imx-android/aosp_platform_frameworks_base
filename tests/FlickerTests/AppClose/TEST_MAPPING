@@ -1,13 +1,22 @@
 {
   "wm": [
     {
-      "name": "FlickerTestsAppClose-CatchAll"
+      "name": "FlickerTestsAppClose-CatchAll",
+      "keywords": [
+        "device"
+      ]
     },
     {
-      "name": "FlickerTestsAppClose-CloseAppBackButtonTest"
+      "name": "FlickerTestsAppClose-CloseAppBackButtonTest",
+      "keywords": [
+        "device"
+      ]
     },
     {
-      "name": "FlickerTestsAppClose-CloseAppHomeButtonTest"
+      "name": "FlickerTestsAppClose-CloseAppHomeButtonTest",
+      "keywords": [
+        "device"
+      ]
     }
   ]
 }

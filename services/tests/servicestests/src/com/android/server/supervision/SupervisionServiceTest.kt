@@ -24,6 +24,8 @@ import android.app.admin.DevicePolicyManagerInternal
 import android.app.role.OnRoleHoldersChangedListener
 import android.app.role.RoleManager
 import android.app.supervision.ISupervisionListener
+import android.app.supervision.PackagePolicy
+import android.app.supervision.Policy
 import android.app.supervision.SupervisionManager
 import android.app.supervision.SupervisionRecoveryInfo
 import android.app.supervision.SupervisionRecoveryInfo.STATE_PENDING
@@ -64,12 +66,16 @@ import com.android.internal.R
 import com.android.server.LocalServices
 import com.android.server.ServiceThread
 import com.android.server.SystemService.TargetUser
+import com.android.server.appbinding.AppBindingService
+import com.android.server.appbinding.AppServiceConnection
+import com.android.server.appbinding.finders.SupervisionAppServiceFinder
 import com.android.server.pm.UserManagerInternal
 import com.android.server.supervision.SupervisionService.ACTION_CONFIRM_SUPERVISION_CREDENTIALS
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import java.nio.file.Files
 import java.util.concurrent.Executor
+import java.util.function.Consumer
 import kotlin.test.assertFailsWith
 import kotlin.time.Duration.Companion.seconds
 import org.junit.Before
@@ -108,6 +114,7 @@ class SupervisionServiceTest {
     @Mock private lateinit var mockPackageManager: PackageManager
     @Mock private lateinit var mockPackageManagerInternal: PackageManagerInternal
     @Mock private lateinit var mockUserManagerInternal: UserManagerInternal
+    @Mock private lateinit var mockAppBindingService: AppBindingService
 
     private lateinit var context: SupervisionContextWrapper
     private lateinit var injector: TestInjector
@@ -131,6 +138,9 @@ class SupervisionServiceTest {
 
         LocalServices.removeServiceForTest(PackageManagerInternal::class.java)
         LocalServices.addService(PackageManagerInternal::class.java, mockPackageManagerInternal)
+
+        LocalServices.removeServiceForTest(AppBindingService::class.java)
+        LocalServices.addService(AppBindingService::class.java, mockAppBindingService)
 
         // Creating a temporary folder to enable access to SupervisionSettings.
         SupervisionSettings.getInstance()
@@ -158,6 +168,7 @@ class SupervisionServiceTest {
             .thenReturn(ComponentName(systemSupervisionPackage, "MainActivity"))
 
         simulateUserStarting(USER_ID)
+        injector.awaitServiceThreadIdle()
 
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
         assertThat(service.getActiveSupervisionAppPackage(USER_ID))
@@ -213,6 +224,7 @@ class SupervisionServiceTest {
 
         // Starts the user.
         simulateUserStarting(USER_ID)
+        injector.awaitServiceThreadIdle()
 
         // Verifies restriction not enabled.
         verify(mockDpmInternal)
@@ -234,6 +246,7 @@ class SupervisionServiceTest {
 
         // Starts the user.
         simulateUserStarting(USER_ID)
+        injector.awaitServiceThreadIdle()
 
         // Verifies restriction not enabled.
         verify(mockDpmInternal)
@@ -260,6 +273,7 @@ class SupervisionServiceTest {
 
         // Starts the user.
         simulateUserStarting(USER_ID)
+        injector.awaitServiceThreadIdle()
 
         // Verifies restriction not enabled.
         verify(mockDpmInternal)
@@ -280,6 +294,7 @@ class SupervisionServiceTest {
 
         // Starts the user.
         simulateUserStarting(USER_ID)
+        injector.awaitServiceThreadIdle()
 
         // Verifies restriction is enabled.
         verify(mockDpmInternal)
@@ -469,9 +484,11 @@ class SupervisionServiceTest {
             UserHandle.of(USER_ID),
             listOf("com.example.supervisionapp1"),
         )
+        injector.awaitServiceThreadIdle()
         clearInvocations(mockDpmInternal)
         setSupervisionEnabledForUser(USER_ID, true)
         setSupervisionRecoveryInfo(state = STATE_VERIFIED)
+        injector.awaitServiceThreadIdle()
 
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
         verify(mockDpmInternal)
@@ -654,12 +671,14 @@ class SupervisionServiceTest {
             UserHandle.of(USER_ID),
             listOf("com.example.supervisionapp1"),
         )
+        injector.awaitServiceThreadIdle()
         clearInvocations(mockDpmInternal)
         setSupervisionEnabledForUser(USER_ID, true)
         setSupervisionRecoveryInfo(state = STATE_VERIFIED)
+        injector.awaitServiceThreadIdle()
 
-        // Once for the initial setSupervisionEnabledForUser, and again for the
-        // setSupervisionRecoveryInfo.
+        // Once for the initial setSupervisionEnabledForUser, again for the
+        // setSupervisionRecoveryInfo, and a third time for onRoleHoldersChanged
         verify(mockDpmInternal, times(2))
             .setUserRestrictionForUser(
                 SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
@@ -729,8 +748,12 @@ class SupervisionServiceTest {
     fun onRoleHoldersChanged_removesPackageSuspensionForRemovedRoleHolder() {
         val packageName = "com.example.supervisionapp"
         val roleName = RoleManager.ROLE_SUPERVISION
-        injector.setRoleHoldersAsUser(roleName, UserHandle.of(USER_ID), listOf(packageName,
-            "com.example.supervisionapp2", "com.example.supervisionapp3"))
+        injector.setRoleHoldersAsUser(
+            roleName,
+            UserHandle.of(USER_ID),
+            listOf(packageName, "com.example.supervisionapp2", "com.example.supervisionapp3"),
+        )
+        injector.awaitServiceThreadIdle()
 
         injector.setRoleHoldersAsUser(roleName, UserHandle.of(USER_ID), emptyList())
         injector.awaitServiceThreadIdle()
@@ -774,6 +797,9 @@ class SupervisionServiceTest {
 
         injector.awaitServiceThreadIdle()
 
+        if (!enabled) {
+            assertThat(service.getUserDataLocked(userId).policies).isEmpty()
+        }
         verifySupervisionListeners(userId, enabled, listeners)
     }
 
@@ -791,6 +817,9 @@ class SupervisionServiceTest {
 
         injector.awaitServiceThreadIdle()
 
+        if (!enabled) {
+            assertThat(service.getUserDataLocked(userId).policies).isEmpty()
+        }
         verifySupervisionListeners(userId, enabled, listeners)
     }
 
@@ -847,6 +876,50 @@ class SupervisionServiceTest {
             .unsuspendForSuspendingPackage(any(), any(), any())
     }
 
+    @Test
+    fun setPolicy_packagePolicyTypeBlockedEnabled_callsSetApplicationHiddenForUserTrue() {
+        verifySetPackagePolicy(true)
+    }
+
+    @Test
+    fun setPolicy_packagePolicyTypeBlockedDisabled_callsSetApplicationHiddenForUserFalse() {
+        verifySetPackagePolicy(false)
+    }
+
+    private fun verifySetPackagePolicy(enabled: Boolean) {
+        val policy = PackagePolicy(
+            /*version=*/ 1,
+            /*packageName=*/ PACKAGE_NAME,
+            /*restrictionType=*/ PackagePolicy.RESTRICTION_TYPE_BLOCKED,
+            enabled
+        )
+
+        service.setPolicy(USER_ID, policy)
+        injector.awaitServiceThreadIdle()
+
+        verify(mockDpmInternal).setApplicationHiddenBySystem(
+            eq(SupervisionManager.SUPERVISION_SYSTEM_ENTITY),
+            eq(PACKAGE_NAME),
+            eq(USER_ID),
+            eq(enabled)
+        )
+        verify(mockAppBindingService, times(1)).dispatchAppServiceEvent(
+            eq(SupervisionAppServiceFinder::class.java),
+            eq(USER_ID),
+            any()
+        )
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    fun onDisableSupervision_clearsPolicies() {
+        verifySetPackagePolicy(enabled = true)
+
+        assertThat(service.getUserDataLocked(USER_ID).policies).isNotEmpty()
+
+        setSupervisionEnabledForUser(USER_ID, false)
+    }
+
     private val systemSupervisionPackage: String
         get() = context.getResources().getString(R.string.config_systemSupervision)
 
@@ -873,7 +946,7 @@ class SupervisionServiceTest {
             userData.map { (userId, flags) ->
                 UserInfo(userId, "user$userId", USER_ICON, flags, USER_TYPE)
             }
-        whenever(mockUserManagerInternal.getUsers(any())).thenReturn(userInfos)
+        whenever(mockUserManagerInternal.getUsers(any<Boolean>())).thenReturn(userInfos)
     }
 
     private fun addDefaultAndFullUsers() {
@@ -881,7 +954,7 @@ class SupervisionServiceTest {
             userData.map { (userId, flags) ->
                 UserInfo(userId, "user$userId", USER_ICON, flags, USER_TYPE)
             } + UserInfo(USER_ID, "user$USER_ID", USER_ICON, FLAG_FULL, USER_TYPE)
-        whenever(mockUserManagerInternal.getUsers(any())).thenReturn(userInfos)
+        whenever(mockUserManagerInternal.getUsers(any<Boolean>())).thenReturn(userInfos)
     }
 
     private fun putSecureSetting(name: String, value: Int) {
@@ -898,6 +971,7 @@ class SupervisionServiceTest {
         const val SUPERVISING_USER_ID = 10
         const val USER_ICON = "user_icon"
         const val USER_TYPE = "fake_user_type"
+        const val PACKAGE_NAME = "com.example.supervisionapp"
         val supervisionRoleHolders =
             mapOf(
                 RoleManager.ROLE_SYSTEM_SUPERVISION to "com.example.supervisionapp1",

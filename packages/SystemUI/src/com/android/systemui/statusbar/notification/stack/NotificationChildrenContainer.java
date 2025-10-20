@@ -25,9 +25,11 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Path;
 import android.graphics.Path.Direction;
+import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Trace;
 import android.service.notification.StatusBarNotification;
+import android.util.ArrayMap;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -59,8 +61,8 @@ import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.notification.row.HybridGroupManager;
 import com.android.systemui.statusbar.notification.row.HybridNotificationView;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
-import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation;
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel;
+import com.android.systemui.statusbar.notification.row.wrapper.BundleHeaderViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationHeaderViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
@@ -131,6 +133,7 @@ public class NotificationChildrenContainer extends ViewGroup
      */
     private ComposeView mBundleHeaderView;
     @Nullable private BundleHeaderViewModel mBundleHeaderViewModel;
+    private BundleHeaderViewWrapper mBundleHeaderWrapper;
 
     private NotificationHeaderView mGroupHeader;
     private NotificationHeaderViewWrapper mGroupHeaderWrapper;
@@ -144,7 +147,6 @@ public class NotificationChildrenContainer extends ViewGroup
     private boolean mIsMinimized;
     private OnClickListener mHeaderClickListener;
     private ViewGroup mCurrentHeader;
-    private boolean mIsConversation;
     private Path mChildClipPath = null;
     private final Path mHeaderPath = new Path();
     private boolean mShowGroupCountInExpander;
@@ -159,6 +161,7 @@ public class NotificationChildrenContainer extends ViewGroup
     private int mMinSingleLineHeight;
 
     private NotificationChildrenContainerLogger mLogger;
+    private ArrayMap<String, RectF> mExpandedClipRect = new ArrayMap<>();
 
     public NotificationChildrenContainer(Context context) {
         this(context, null);
@@ -435,18 +438,15 @@ public class NotificationChildrenContainer extends ViewGroup
     /**
      * Re-create the Notification header view
      * @param listener OnClickListener of the header view
-     * @param isConversation if the notification group is a conversation group
      */
     public void recreateNotificationHeader(
-            OnClickListener listener,
-            boolean isConversation
+            OnClickListener listener
     ) {
         // We don't want to inflate headers from the main thread when async inflation enabled
         AsyncGroupHeaderViewInflation.assertInLegacyMode();
         // TODO(b/217799515): remove traces from this function in a follow-up change
         Trace.beginSection("NotifChildCont#recreateHeader");
         mHeaderClickListener = listener;
-        mIsConversation = isConversation;
         StatusBarNotification notification = NotificationBundleUi.isEnabled()
                 ? mContainingNotification.getEntryAdapter().getSbn()
                 : mContainingNotification.getEntryLegacy().getSbn();
@@ -517,6 +517,9 @@ public class NotificationChildrenContainer extends ViewGroup
         initBundleDimens();
         mBundleHeaderView = view;
         addView(mBundleHeaderView);
+        mBundleHeaderWrapper = (BundleHeaderViewWrapper) NotificationViewWrapper.wrap(getContext(),
+                mBundleHeaderView, mContainingNotification);
+        mBundleHeaderWrapper.setOnRoundnessChangedListener(this::invalidate);
         invalidate();
     }
 
@@ -708,10 +711,17 @@ public class NotificationChildrenContainer extends ViewGroup
         }
     }
 
+    private void updateBundleHeaderRounding() {
+        if (mBundleHeaderWrapper != null) {
+            mBundleHeaderWrapper.recalculateRadius();
+        }
+    }
+
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         updateGroupOverflow();
+        updateBundleHeaderRounding();
     }
 
     private View inflateDivider() {
@@ -853,6 +863,7 @@ public class NotificationChildrenContainer extends ViewGroup
         boolean childrenExpandedAndNotAnimating = mChildrenExpanded
                 && !mContainingNotification.isGroupExpansionChanging();
         int launchTransitionCompensation = 0;
+        mExpandedClipRect.clear();
         for (int i = 0; i < childCount; i++) {
             ExpandableNotificationRow child = mAttachedChildren.get(i);
             if (NotificationBundleUi.isEnabled()) {
@@ -913,6 +924,13 @@ public class NotificationChildrenContainer extends ViewGroup
             childState.location = parentState.location;
             childState.inShelf = parentState.inShelf;
             yPosition += intrinsicHeight;
+
+            // If this is a group summary and a child of a bundle, then the clip path needs to
+            // be expanded otherwise the summary children will be clipped when translated
+            if (childNeedsExpandedClipPath(child)) {
+                RectF expandClipRect = getExpandedClipRect(child);
+                mExpandedClipRect.put(child.getKey(), expandClipRect);
+            }
         }
         if (mOverflowNumber != null) {
             ExpandableNotificationRow overflowView = mAttachedChildren.get(Math.min(
@@ -1007,7 +1025,8 @@ public class NotificationChildrenContainer extends ViewGroup
     @VisibleForTesting
     int getMaxAllowedVisibleChildren(boolean likeCollapsed) {
         if (isBundle()) {
-            if (mContainingNotification.isGroupExpanded()) {
+            if (mContainingNotification.isGroupExpanded()
+                    || mContainingNotification.isUserLocked()) {
                 return getNumberOfChildrenWhenExpanded();
             } else {
                 return getNumberOfChildrenWhenCollapsed();
@@ -1139,6 +1158,23 @@ public class NotificationChildrenContainer extends ViewGroup
         }
     }
 
+    @VisibleForTesting
+    protected boolean childNeedsExpandedClipPath(ExpandableNotificationRow child) {
+        return isBundle() && mChildrenExpanded && child.isSummaryWithChildren();
+    }
+
+    @VisibleForTesting
+    protected RectF getExpandedClipRect(ExpandableNotificationRow summaryRow) {
+        RectF expandedRect;
+        float maxAbsChildTranslation = getWidth() / 2.0f;
+        expandedRect = new RectF();
+        expandedRect.left = -maxAbsChildTranslation;
+        expandedRect.top = 0;
+        expandedRect.bottom = mContainingNotification.getActualHeight();
+        expandedRect.right = summaryRow.getWidth() + maxAbsChildTranslation;
+        return expandedRect;
+    }
+
     @Override
     protected boolean drawChild(@NonNull Canvas canvas, View child, long drawingTime) {
         boolean isCanvasChanged = false;
@@ -1146,8 +1182,10 @@ public class NotificationChildrenContainer extends ViewGroup
         Path clipPath = mChildClipPath;
         if (clipPath != null) {
             final float translation;
+            RectF expandClipRect = null;
             if (child instanceof ExpandableNotificationRow notificationRow) {
                 translation = notificationRow.getTranslation();
+                expandClipRect = mExpandedClipRect.get(notificationRow.getKey());
             } else {
                 translation = child.getTranslationX();
             }
@@ -1159,13 +1197,21 @@ public class NotificationChildrenContainer extends ViewGroup
                 canvas.clipPath(clipPath);
                 clipPath.offset(-translation, 0f);
             } else {
+                if (expandClipRect != null) {
+                    // Expand clip path with a rect that has the same height as the parent
+                    // but is wider by width/2 so that grand-child translations are not clipped
+                    // Only applies to bundle headers
+                    clipPath = new Path(clipPath);
+                    clipPath.addRect(expandClipRect, Direction.CW);
+                }
                 canvas.clipPath(clipPath);
             }
         }
 
-        if (child instanceof NotificationHeaderView
-                && mGroupHeaderWrapper.hasRoundedCorner()) {
-            float[] radii = mGroupHeaderWrapper.getUpdatedRadii();
+        boolean isHeader = child instanceof NotificationHeaderView || (isBundle()
+                && child instanceof ComposeView);
+        if (isHeader && getRoundableHeaderWrapper().hasRoundedCorner()) {
+            float[] radii = getRoundableHeaderWrapper().getUpdatedRadii();
             mHeaderPath.reset();
             mHeaderPath.addRoundRect(
                     child.getLeft(),
@@ -1625,12 +1671,7 @@ public class NotificationChildrenContainer extends ViewGroup
             } else if (child.getSingleLineView() != null) {
                 minExpandHeight += child.getSingleLineView().getHeight();
             } else {
-                if (AsyncHybridViewInflation.isEnabled()) {
-                    minExpandHeight += mMinSingleLineHeight;
-                } else {
-                    Log.e(TAG, "getMinHeight: child " + child.getKey()
-                            + " single line view is null", new Exception());
-                }
+                minExpandHeight += mMinSingleLineHeight;
             }
             visibleChildren++;
         }
@@ -1660,7 +1701,7 @@ public class NotificationChildrenContainer extends ViewGroup
                 removeView(mMinimizedGroupHeader);
                 mMinimizedGroupHeader = null;
             }
-            recreateNotificationHeader(listener, mIsConversation);
+            recreateNotificationHeader(listener);
 
             removeView(mOverflowNumber);
             mOverflowNumber = null;
@@ -1774,8 +1815,8 @@ public class NotificationChildrenContainer extends ViewGroup
     @Override
     public void applyRoundnessAndInvalidate() {
         boolean last = true;
-        if (mGroupHeaderWrapper != null) {
-            mGroupHeaderWrapper.requestTopRoundness(
+        if (getRoundableHeaderWrapper() != null) {
+            getRoundableHeaderWrapper().requestTopRoundness(
                     /* value = */ getTopRoundness(),
                     /* sourceType = */ FROM_PARENT,
                     /* animate = */ false
@@ -1851,6 +1892,12 @@ public class NotificationChildrenContainer extends ViewGroup
     public void setChildClipPath(@Nullable Path childClipPath) {
         mChildClipPath = childClipPath;
         invalidate();
+    }
+
+    // Returns the Roundable notification header wrapper, generalized to handle either bundle
+    // headers or group headers.
+    public Roundable getRoundableHeaderWrapper() {
+        return isBundle() ? mBundleHeaderWrapper : mGroupHeaderWrapper;
     }
 
     public NotificationHeaderViewWrapper getNotificationHeaderWrapper() {

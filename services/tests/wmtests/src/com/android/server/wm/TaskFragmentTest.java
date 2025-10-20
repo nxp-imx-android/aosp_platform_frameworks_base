@@ -500,6 +500,131 @@ public class TaskFragmentTest extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_FIX_TF_ADJACENT_VISIBILITY)
+    public void testVisibility_sandwichInAdjacentTaskFragments() {
+        // A fullscreen task with an opaque activity.
+        final Task bottomTask = createTask(mDisplayContent.getDefaultTaskDisplayArea(),
+                WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD);
+        createActivityRecord(bottomTask);
+        // Above it, two adjacent task fragments that sandwiched another task fragment.
+        final Task topTask = createTask(mDisplayContent.getDefaultTaskDisplayArea(),
+                WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD);
+        final Rect top = new Rect();
+        final Rect bottom = new Rect();
+        topTask.getBounds().splitVertically(top, bottom);
+        final TaskFragment topAdjacentTaskFragment1 = createTaskFragmentWithActivity(topTask);
+        topAdjacentTaskFragment1.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        topAdjacentTaskFragment1.setBounds(top);
+        topAdjacentTaskFragment1.getTopMostActivity().setVisible(true);
+        topAdjacentTaskFragment1.getTopMostActivity().visibleIgnoringKeyguard = true;
+        final TaskFragment sandwichTaskFragment = createTaskFragmentWithActivity(topTask);
+        sandwichTaskFragment.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        sandwichTaskFragment.setBounds(bottom);
+        sandwichTaskFragment.getTopMostActivity().setVisible(false);
+        sandwichTaskFragment.getTopMostActivity().visibleIgnoringKeyguard = false;
+        final TaskFragment topAdjacentTaskFragment2 = createTaskFragmentWithActivity(topTask);
+        topAdjacentTaskFragment2.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        topAdjacentTaskFragment2.setBounds(bottom);
+        topAdjacentTaskFragment2.getTopMostActivity().setVisible(true);
+        topAdjacentTaskFragment2.getTopMostActivity().visibleIgnoringKeyguard = true;
+        topAdjacentTaskFragment2.setAdjacentTaskFragments(
+                new TaskFragment.AdjacentSet(topAdjacentTaskFragment2, topAdjacentTaskFragment1));
+
+        // The task behind and the sandwiched task fragment should both be invisible.
+        assertEquals(TASK_FRAGMENT_VISIBILITY_INVISIBLE,
+                bottomTask.getVisibility(null /* starting */));
+        assertEquals(TASK_FRAGMENT_VISIBILITY_INVISIBLE,
+                sandwichTaskFragment.getVisibility(null /* starting */));
+
+        // Makes top adjacent TF translucent.
+        topAdjacentTaskFragment2.getTopMostActivity().setOccludesParent(false);
+        sandwichTaskFragment.getTopMostActivity().setVisible(true);
+        sandwichTaskFragment.getTopMostActivity().visibleIgnoringKeyguard = true;
+
+        // The task behind remains invisible.
+        assertEquals(TASK_FRAGMENT_VISIBILITY_INVISIBLE,
+                bottomTask.getVisibility(null /* starting */));
+        // The sandwiched task fragment should be visible behind the translucent task fragment.
+        assertEquals(TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT,
+                sandwichTaskFragment.getVisibility(null /* starting */));
+
+        // Makes the other adjacent TF translucent.
+        topAdjacentTaskFragment2.getTopMostActivity().setOccludesParent(true);
+        topAdjacentTaskFragment1.getTopMostActivity().setOccludesParent(false);
+        sandwichTaskFragment.getTopMostActivity().setVisible(false);
+        sandwichTaskFragment.getTopMostActivity().visibleIgnoringKeyguard = false;
+
+        // The task behind should be invisible.
+        assertEquals(TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT,
+                bottomTask.getVisibility(null /* starting */));
+        // The sandwiched task fragment should be invisible
+        assertEquals(TASK_FRAGMENT_VISIBILITY_INVISIBLE,
+                sandwichTaskFragment.getVisibility(null /* starting */));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_TF_ADJACENT_VISIBILITY)
+    public void testVisibility_twoAdjacentTaskFragments() {
+        // A fullscreen task with an opaque activity.
+        final Task bottomTask = createTask(mDisplayContent.getDefaultTaskDisplayArea(),
+                WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD);
+        createActivityRecord(bottomTask);
+        // Above it, another fullscreen task with two pair of adjacent task fragments
+        final Task topTask = createTask(mDisplayContent.getDefaultTaskDisplayArea(),
+                WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD);
+        final Rect leftBounds = new Rect();
+        final Rect rightBounds = new Rect();
+        topTask.getBounds().splitVertically(leftBounds, rightBounds);
+        final TaskFragment adjacentTaskFragment1 = createTaskFragmentWithActivity(topTask);
+        adjacentTaskFragment1.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        adjacentTaskFragment1.setBounds(leftBounds);
+        adjacentTaskFragment1.getTopMostActivity().setVisible(false);
+        adjacentTaskFragment1.getTopMostActivity().visibleIgnoringKeyguard = false;
+        final TaskFragment adjacentTaskFragment2 = createTaskFragmentWithActivity(topTask);
+        adjacentTaskFragment2.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        adjacentTaskFragment2.setBounds(rightBounds);
+        adjacentTaskFragment2.getTopMostActivity().setVisible(false);
+        adjacentTaskFragment2.getTopMostActivity().visibleIgnoringKeyguard = false;
+        adjacentTaskFragment2.setAdjacentTaskFragments(
+                new TaskFragment.AdjacentSet(adjacentTaskFragment2, adjacentTaskFragment1));
+        final TaskFragment adjacentTaskFragment3 = createTaskFragmentWithActivity(topTask);
+        adjacentTaskFragment3.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        adjacentTaskFragment3.getTopMostActivity().setVisible(true);
+        adjacentTaskFragment3.getTopMostActivity().visibleIgnoringKeyguard = true;
+        final TaskFragment adjacentTaskFragment4 = createTaskFragmentWithActivity(topTask);
+        adjacentTaskFragment4.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        adjacentTaskFragment4.getTopMostActivity().setVisible(true);
+        adjacentTaskFragment4.getTopMostActivity().visibleIgnoringKeyguard = true;
+        adjacentTaskFragment4.setAdjacentTaskFragments(
+                new TaskFragment.AdjacentSet(adjacentTaskFragment4, adjacentTaskFragment3));
+
+        // Makes the top most adjacent TF have different bounds
+        leftBounds.right -= 10;
+        rightBounds.left -= 10;
+        adjacentTaskFragment3.setBounds(leftBounds);
+        adjacentTaskFragment4.setBounds(rightBounds);
+
+        // The task behind should both be invisible.
+        assertEquals(TASK_FRAGMENT_VISIBILITY_INVISIBLE,
+                bottomTask.getVisibility(null /* starting */));
+
+        // Makes top adjacent TF translucent.
+        adjacentTaskFragment4.getTopMostActivity().setOccludesParent(false);
+        adjacentTaskFragment2.getTopMostActivity().setVisible(true);
+        adjacentTaskFragment2.getTopMostActivity().visibleIgnoringKeyguard = true;
+
+        // The task behind remains invisible.
+        assertEquals(TASK_FRAGMENT_VISIBILITY_INVISIBLE,
+                bottomTask.getVisibility(null /* starting */));
+        // The TF behinds the translucent TF should be visible.
+        assertEquals(TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT,
+                adjacentTaskFragment2.getVisibility(null /* starting */));
+        // The adjacent TF should also be visible
+        assertEquals(TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT,
+                adjacentTaskFragment1.getVisibility(null /* starting */));
+    }
+
+    @Test
     public void testFindTopNonFinishingActivity_ignoresLaunchedFromBubbleActivities() {
         final ActivityOptions opts = ActivityOptions.makeBasic();
         opts.setTaskAlwaysOnTop(true);
@@ -1036,6 +1161,7 @@ public class TaskFragmentTest extends WindowTestsBase {
         final TaskFragment tf = createTaskFragmentWithActivity(task);
         final ActivityRecord activity = tf.getTopMostActivity();
         tf.setVisibleRequested(true);
+        activity.visibleIgnoringKeyguard = true;
         tf.setOverrideOrientation(SCREEN_ORIENTATION_BEHIND);
 
         // Should report the override orientation
@@ -1128,14 +1254,8 @@ public class TaskFragmentTest extends WindowTestsBase {
         // Return Task bounds if dimming on parent Task.
         final Rect dimBounds = new Rect();
         mTaskFragment.setEmbeddedDimArea(EMBEDDED_DIM_AREA_PARENT_TASK);
-        if (com.android.window.flags.Flags.removeGetDimmer()) {
-            task.setVisibleRequested(true);
-            task.mDimmer.adjustAppearance(mock(WindowState.class), 1, 0);
-        } else {
-            final Dimmer dimmer = mTaskFragment.getDimmer();
-            spyOn(dimmer);
-            doReturn(taskBounds).when(dimmer).getDimBounds();
-        }
+        task.setVisibleRequested(true);
+        task.mDimmer.adjustAppearance(mock(WindowState.class), 1, 0);
         mTaskFragment.getDimBounds(dimBounds);
         assertEquals(taskBounds, dimBounds);
 
@@ -1172,7 +1292,9 @@ public class TaskFragmentTest extends WindowTestsBase {
         final ActivityRecord appLeftBottom = taskFragmentLeft.getBottomMostActivity();
         final ActivityRecord appRightTop = taskFragmentRight.getTopMostActivity();
         appLeftTop.setVisibleRequested(true);
+        appLeftTop.setVisible(true);
         appRightTop.setVisibleRequested(true);
+        appRightTop.setVisible(true);
         final WindowState winLeftTop = createAppWindow(appLeftTop, "winLeftTop");
         final WindowState winLeftBottom = createAppWindow(appLeftBottom, "winLeftBottom");
         final WindowState winRightTop = createAppWindow(appRightTop, "winRightTop");

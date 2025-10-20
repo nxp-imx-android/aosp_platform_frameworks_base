@@ -17,6 +17,8 @@ package com.android.app.concurrent.benchmark.util
 
 const val DEBUG = false
 
+const val VERBOSE_DEBUG = false
+
 const val PERFETTO_CONFIG =
     """
 # RSS events
@@ -48,6 +50,7 @@ data_sources {
 
       # Enables symbol name resolution against /proc/kallsyms
       symbolize_ksyms: true
+      # Parse kallsyms before acknowledging that the ftrace data source has been started. In
       # combination with "perfetto --background-wait" as the consumer, it lets us defer the
       # test we're tracing until after the cpu has quieted down from the cpu-bound kallsyms parsing.
       initialize_ksyms_synchronously_for_testing: true

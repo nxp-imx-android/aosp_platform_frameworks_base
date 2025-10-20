@@ -33,6 +33,7 @@ import com.android.systemui.coroutines.collectValues
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fake
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepository
 import com.android.systemui.testKosmos
@@ -41,7 +42,10 @@ import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat
 import java.util.function.Function
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -91,6 +95,7 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
                 devicePolicyManager = devicePolicyManager,
                 broadcastDispatcher = fakeBroadcastDispatcher,
                 mobileConnectionsRepository = mobileConnectionsRepository,
+                tableLogBuffer = logcatTableLogBuffer(kosmos, "sceneFrameworkTableLogBuffer"),
             )
     }
 
@@ -117,6 +122,13 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
             mobileConnectionsRepository.fake.isAnySimSecure.value = true
             assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Sim)
             assertThat(underTest.getAuthenticationMethod()).isEqualTo(AuthenticationMethodModel.Sim)
+
+            setSecurityModeAndDispatchBroadcast(
+                KeyguardSecurityModel.SecurityMode.SecureLockDeviceBiometricAuth
+            )
+            assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Biometric)
+            assertThat(underTest.getAuthenticationMethod())
+                .isEqualTo(AuthenticationMethodModel.Biometric)
         }
 
     @Test
@@ -164,25 +176,33 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
         }
 
     @Test
-    fun lockoutEndTimestamp() =
+    fun lockoutEndTime() =
         testScope.runTest {
-            val lockoutEndMs = clock.elapsedRealtime() + 30.seconds.inWholeMilliseconds
+            val lockoutEnd = clock.elapsedRealtime().milliseconds + 30.seconds
             whenever(lockPatternUtils.getLockoutAttemptDeadline(USER_INFOS[0].id))
-                .thenReturn(lockoutEndMs)
+                .thenReturn(lockoutEnd.inWholeMilliseconds)
+            whenever(lockPatternUtils.getLockoutEndTime(USER_INFOS[0].id))
+                .thenReturn(lockoutEnd.toJavaDuration())
             whenever(lockPatternUtils.getLockoutAttemptDeadline(USER_INFOS[1].id)).thenReturn(0)
+            whenever(lockPatternUtils.getLockoutEndTime(USER_INFOS[1].id))
+                .thenReturn(0.seconds.toJavaDuration())
 
             // Switch to a user who is not locked-out.
             userRepository.setSelectedUserInfo(USER_INFOS[1])
-            assertThat(underTest.lockoutEndTimestamp).isNull()
+            assertThat(underTest.lockoutEndTime).isNull()
 
-            // Switch back to the locked-out user, verify the timestamp is up-to-date.
+            // Switch back to the locked-out user, verify the time is up-to-date.
             userRepository.setSelectedUserInfo(USER_INFOS[0])
-            assertThat(underTest.lockoutEndTimestamp).isEqualTo(lockoutEndMs)
+            assertThat(underTest.lockoutEndTime).isEqualTo(lockoutEnd)
 
             // After the lockout expires, null is returned.
-            clock.setElapsedRealtime(lockoutEndMs)
-            assertThat(underTest.lockoutEndTimestamp).isNull()
+            clock.setElapsedRealtime(lockoutEnd)
+            assertThat(underTest.lockoutEndTime).isNull()
         }
+
+    private fun FakeSystemClock.setElapsedRealtime(duration: Duration) {
+        setElapsedRealtime(duration.inWholeMilliseconds)
+    }
 
     @Test
     fun hasLockoutOccurred() =

@@ -63,7 +63,7 @@ open class MovePipUpOnShelfHeightChangeTest(flicker: FlickerTest) :
     MovePipShelfHeightTransition(flicker) {
     override val thisTransition: FlickerBuilder.() -> Unit = {
         setup { testApp.launchViaIntent(wmHelper) }
-        transitions { tapl.pressHome() }
+        transitions { device.pressHome() }
         teardown { testApp.exit(wmHelper) }
     }
 

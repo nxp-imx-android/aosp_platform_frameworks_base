@@ -36,8 +36,8 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.floatThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.floatThat;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
@@ -2054,16 +2054,12 @@ public class MagnificationControllerTest {
     public void onTouchInteractionStart_fullScreenAndCapabilitiesAll_showMagnificationButton()
             throws RemoteException {
         setMagnificationEnabled(MODE_FULLSCREEN);
+        clearInvocations(mMagnificationConnectionManager);
 
         mMagnificationController.onTouchInteractionStart(TEST_DISPLAY, MODE_FULLSCREEN);
 
-        // The first time is triggered when fullscreen mode is activated.
-        // The second time is triggered when magnification spec is changed.
-        // The third time is triggered when user interaction changed.
-        verify(mMagnificationConnectionManager, times(3)).showMagnificationButton(eq(TEST_DISPLAY),
+        verify(mMagnificationConnectionManager).showMagnificationButton(eq(TEST_DISPLAY),
                 eq(MODE_FULLSCREEN));
-        // Never call removeMagnificationSettingsPanel if it is allowed to show the settings panel
-        // in current capability and mode, and the magnification is activated.
         verify(mMagnificationConnectionManager, never()).removeMagnificationSettingsPanel(
                 eq(TEST_DISPLAY));
     }
@@ -2072,16 +2068,12 @@ public class MagnificationControllerTest {
     public void onTouchInteractionEnd_fullScreenAndCapabilitiesAll_showMagnificationButton()
             throws RemoteException {
         setMagnificationEnabled(MODE_FULLSCREEN);
+        clearInvocations(mMagnificationConnectionManager);
 
         mMagnificationController.onTouchInteractionEnd(TEST_DISPLAY, MODE_FULLSCREEN);
 
-        // The first time is triggered when fullscreen mode is activated.
-        // The second time is triggered when magnification spec is changed.
-        // The third time is triggered when user interaction changed.
-        verify(mMagnificationConnectionManager, times(3)).showMagnificationButton(eq(TEST_DISPLAY),
+        verify(mMagnificationConnectionManager).showMagnificationButton(eq(TEST_DISPLAY),
                 eq(MODE_FULLSCREEN));
-        // Never call removeMagnificationSettingsPanel if it is allowed to show the settings panel
-        // in current capability and mode, and the magnification is activated.
         verify(mMagnificationConnectionManager, never()).removeMagnificationSettingsPanel(
                 eq(TEST_DISPLAY));
     }
@@ -2090,15 +2082,12 @@ public class MagnificationControllerTest {
     public void onTouchInteractionStart_windowModeAndCapabilitiesAll_showMagnificationButton()
             throws RemoteException {
         setMagnificationEnabled(MODE_WINDOW);
+        clearInvocations(mMagnificationConnectionManager);
 
         mMagnificationController.onTouchInteractionStart(TEST_DISPLAY, MODE_WINDOW);
 
-        // The first time is triggered when the window mode is activated.
-        // The second time is triggered when user interaction changed.
-        verify(mMagnificationConnectionManager, times(2)).showMagnificationButton(eq(TEST_DISPLAY),
+        verify(mMagnificationConnectionManager).showMagnificationButton(eq(TEST_DISPLAY),
                 eq(MODE_WINDOW));
-        // Never call removeMagnificationSettingsPanel if it is allowed to show the settings panel
-        // in current capability and mode, and the magnification is activated.
         verify(mMagnificationConnectionManager, never()).removeMagnificationSettingsPanel(
                 eq(TEST_DISPLAY));
     }
@@ -2107,15 +2096,12 @@ public class MagnificationControllerTest {
     public void onTouchInteractionEnd_windowModeAndCapabilitiesAll_showMagnificationButton()
             throws RemoteException {
         setMagnificationEnabled(MODE_WINDOW);
+        clearInvocations(mMagnificationConnectionManager);
 
         mMagnificationController.onTouchInteractionEnd(TEST_DISPLAY, MODE_WINDOW);
 
-        // The first time is triggered when the window mode is activated.
-        // The second time is triggered when user interaction changed.
-        verify(mMagnificationConnectionManager, times(2)).showMagnificationButton(eq(TEST_DISPLAY),
+        verify(mMagnificationConnectionManager).showMagnificationButton(eq(TEST_DISPLAY),
                 eq(MODE_WINDOW));
-        // Never call removeMagnificationSettingsPanel if it is allowed to show the settings panel
-        // in current capability and mode, and the magnification is activated.
         verify(mMagnificationConnectionManager, never()).removeMagnificationSettingsPanel(
                 eq(TEST_DISPLAY));
     }
@@ -2124,24 +2110,82 @@ public class MagnificationControllerTest {
     public void onTouchInteractionChanged_notCapabilitiesAll_notShowMagnificationButton()
             throws RemoteException {
         mMagnificationController.setMagnificationCapabilities(
-                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
-        setMagnificationEnabled(MODE_FULLSCREEN);
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
+        setMagnificationEnabled(MODE_WINDOW);
+        clearInvocations(mMagnificationConnectionManager);
 
         mMagnificationController.onTouchInteractionStart(TEST_DISPLAY, MODE_FULLSCREEN);
         mMagnificationController.onTouchInteractionEnd(TEST_DISPLAY, MODE_FULLSCREEN);
 
         verify(mMagnificationConnectionManager, never()).showMagnificationButton(eq(TEST_DISPLAY),
                 eq(MODE_FULLSCREEN));
-        // The first time is triggered when fullscreen mode is activated.
-        // The second time is triggered when magnification spec is changed.
-        verify(mMagnificationConnectionManager, times(2)).removeMagnificationSettingsPanel(
+    }
+
+    @Test
+    @DisableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_MAGNIFICATION_UI_FOR_FULLSCREEN_ONLY_CAPABILITY)
+    public void onTouchInteractionStart_fullScreenMode_flagOff_notShowMagnificationButton() {
+        mMagnificationController.setMagnificationCapabilities(
+                ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
+        mScreenMagnificationController.setScaleAndCenter(
+                TEST_DISPLAY, 2.0f, 0, 0, false, MAGNIFICATION_GESTURE_HANDLER_ID);
+        clearInvocations(mMagnificationConnectionManager);
+
+        mMagnificationController.onTouchInteractionStart(TEST_DISPLAY, MODE_FULLSCREEN);
+
+        verify(mMagnificationConnectionManager).removeMagnificationButton(eq(TEST_DISPLAY));
+        verify(mMagnificationConnectionManager).removeMagnificationSettingsPanel(eq(TEST_DISPLAY));
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_MAGNIFICATION_UI_FOR_FULLSCREEN_ONLY_CAPABILITY)
+    public void onTouchInteractionStart_fullScreenMode_flagOn_notShowMagnificationButton() {
+        mMagnificationController.setMagnificationCapabilities(
+                ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
+        mScreenMagnificationController.setScaleAndCenter(
+                TEST_DISPLAY, 2.0f, 0, 0, false, MAGNIFICATION_GESTURE_HANDLER_ID);
+        clearInvocations(mMagnificationConnectionManager);
+
+        mMagnificationController.onTouchInteractionStart(TEST_DISPLAY, MODE_FULLSCREEN);
+
+        verify(mMagnificationConnectionManager).removeMagnificationButton(eq(TEST_DISPLAY));
+        verify(mMagnificationConnectionManager).removeMagnificationSettingsPanel(eq(TEST_DISPLAY));
+    }
+
+    @Test
+    @DisableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_MAGNIFICATION_UI_FOR_FULLSCREEN_ONLY_CAPABILITY)
+    public void onMouseMove_fullScreenMode_flagOff_notShowMagnificationButton() {
+        mMagnificationController.setMagnificationCapabilities(
+                ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
+        mScreenMagnificationController.setScaleAndCenter(
+                TEST_DISPLAY, 2.0f, 0, 0, false, MAGNIFICATION_GESTURE_HANDLER_ID);
+        clearInvocations(mMagnificationConnectionManager);
+
+        mMagnificationController.onMouseMove(TEST_DISPLAY, MODE_FULLSCREEN);
+
+        verify(mMagnificationConnectionManager).removeMagnificationButton(eq(TEST_DISPLAY));
+        verify(mMagnificationConnectionManager).removeMagnificationSettingsPanel(eq(TEST_DISPLAY));
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_MAGNIFICATION_UI_FOR_FULLSCREEN_ONLY_CAPABILITY)
+    public void onMouseMove_fullScreenMode_flagOn_showMagnificationButton() {
+        mMagnificationController.setMagnificationCapabilities(
+                ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
+        mScreenMagnificationController.setScaleAndCenter(
+                TEST_DISPLAY, 2.0f, 0, 0, false, MAGNIFICATION_GESTURE_HANDLER_ID);
+        clearInvocations(mMagnificationConnectionManager);
+
+        mMagnificationController.onMouseMove(TEST_DISPLAY, MODE_FULLSCREEN);
+
+        verify(mMagnificationConnectionManager).showMagnificationButton(eq(TEST_DISPLAY),
+                eq(MODE_FULLSCREEN));
+        verify(mMagnificationConnectionManager, never()).removeMagnificationSettingsPanel(
                 eq(TEST_DISPLAY));
     }
 
-
     @Test
-    public void
-            onTouchInteractionChanged_fullscreenNotActivated_notShowMagnificationButton()
+    @DisableFlags(com.android.server.accessibility.Flags.FLAG_THROTTLE_MOTION_EVENTS_FOR_UI_UPDATE)
+    public void onTouchInteractionChanged_fullscreenNotActivated_notShowMagnificationButton()
             throws RemoteException {
         setMagnificationModeSettings(MODE_FULLSCREEN);
 
@@ -2151,6 +2195,22 @@ public class MagnificationControllerTest {
         verify(mMagnificationConnectionManager, never()).showMagnificationButton(eq(TEST_DISPLAY),
                 eq(MODE_FULLSCREEN));
         verify(mMagnificationConnectionManager, times(2)).removeMagnificationSettingsPanel(
+                eq(TEST_DISPLAY));
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_THROTTLE_MOTION_EVENTS_FOR_UI_UPDATE)
+    public void
+            onTouchInteractionChanged_fullscreenNotActivated_notShowMagnificationButton_throttled()
+            throws RemoteException {
+        setMagnificationModeSettings(MODE_FULLSCREEN);
+
+        mMagnificationController.onTouchInteractionStart(TEST_DISPLAY, MODE_FULLSCREEN);
+        mMagnificationController.onTouchInteractionEnd(TEST_DISPLAY, MODE_FULLSCREEN);
+
+        verify(mMagnificationConnectionManager, never()).showMagnificationButton(eq(TEST_DISPLAY),
+                eq(MODE_FULLSCREEN));
+        verify(mMagnificationConnectionManager, times(1)).removeMagnificationSettingsPanel(
                 eq(TEST_DISPLAY));
     }
 
@@ -2470,6 +2530,37 @@ public class MagnificationControllerTest {
 
         verify(mMagnificationConnectionManager)
                 .onFullscreenMagnificationActivationChanged(TEST_DISPLAY, /* activated= */ true);
+    }
+
+    @Test
+    public void zoomInMagnification_setsPersistedScale() {
+        final float persistedScale = mScreenMagnificationController.getPersistedScale(TEST_DISPLAY);
+
+        // Perform the zoom-in action with full screen mode.
+        mMagnificationController.zoomInMagnification(
+                TEST_DISPLAY, Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
+
+        // Verify that the scale is set to the persisted value
+        verify(mScreenMagnificationController)
+                .setScaleAndCenter(
+                        eq(TEST_DISPLAY),
+                        eq(persistedScale),
+                        eq(Float.NaN),
+                        eq(Float.NaN),
+                        /* animate= */ eq(true),
+                        eq(AccessibilityManagerService.MAGNIFICATION_GESTURE_HANDLER_ID));
+    }
+
+    @Test
+    public void zoomInMagnification_windowMode_doNothing() {
+        // Perform the zoom-in action with window mode.
+        mMagnificationController.zoomInMagnification(
+                TEST_DISPLAY, ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
+
+        verify(mScreenMagnificationController, never())
+                .setScaleAndCenter(
+                        anyInt(), anyFloat(), anyFloat(), anyFloat(), anyBoolean(), anyInt());
+        verify(mMagnificationConnectionManager, never()).setScale(anyInt(), anyFloat());
     }
 
     private void setMagnificationEnabled(int mode) throws RemoteException {

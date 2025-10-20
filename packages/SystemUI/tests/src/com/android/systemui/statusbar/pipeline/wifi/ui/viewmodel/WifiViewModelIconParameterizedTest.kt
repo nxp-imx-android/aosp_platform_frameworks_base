@@ -27,14 +27,15 @@ import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.statusbar.connectivity.WifiIcons.WIFI_FULL_ICONS
 import com.android.systemui.statusbar.connectivity.WifiIcons.WIFI_NO_INTERNET_ICONS
 import com.android.systemui.statusbar.connectivity.WifiIcons.WIFI_NO_NETWORK
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.FakeAirplaneModeRepository
-import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.AirplaneModeRepository
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
 import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.AirplaneModeViewModel
-import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.AirplaneModeViewModelImpl
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
+import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.airplaneModeViewModel
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
 import com.android.systemui.statusbar.pipeline.shared.data.model.ConnectivitySlot
 import com.android.systemui.statusbar.pipeline.shared.data.repository.FakeConnectivityRepository
+import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
+import com.android.systemui.statusbar.pipeline.shared.data.repository.fake
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.FakeWifiRepository
 import com.android.systemui.statusbar.pipeline.wifi.domain.interactor.WifiInteractor
 import com.android.systemui.statusbar.pipeline.wifi.domain.interactor.WifiInteractorImpl
@@ -72,7 +73,7 @@ internal class WifiViewModelIconParameterizedTest(private val testCase: TestCase
     @Mock private lateinit var tableLogBuffer: TableLogBuffer
     @Mock private lateinit var connectivityConstants: ConnectivityConstants
     @Mock private lateinit var wifiConstants: WifiConstants
-    private lateinit var airplaneModeRepository: FakeAirplaneModeRepository
+    private lateinit var airplaneModeRepository: AirplaneModeRepository
     private lateinit var connectivityRepository: FakeConnectivityRepository
     private lateinit var wifiRepository: FakeWifiRepository
     private lateinit var interactor: WifiInteractor
@@ -82,22 +83,13 @@ internal class WifiViewModelIconParameterizedTest(private val testCase: TestCase
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
-        airplaneModeRepository = FakeAirplaneModeRepository()
-        connectivityRepository = FakeConnectivityRepository()
+        airplaneModeRepository = kosmos.airplaneModeRepository
+        connectivityRepository = kosmos.connectivityRepository.fake
         wifiRepository = FakeWifiRepository()
         wifiRepository.setIsWifiEnabled(true)
         scope = CoroutineScope(IMMEDIATE)
         interactor = WifiInteractorImpl(connectivityRepository, wifiRepository, scope)
-        airplaneModeViewModel =
-            AirplaneModeViewModelImpl(
-                AirplaneModeInteractor(
-                    airplaneModeRepository,
-                    connectivityRepository,
-                    kosmos.fakeMobileConnectionsRepository,
-                ),
-                tableLogBuffer,
-                scope,
-            )
+        airplaneModeViewModel = kosmos.airplaneModeViewModel
     }
 
     @After
@@ -149,7 +141,8 @@ internal class WifiViewModelIconParameterizedTest(private val testCase: TestCase
                 else -> {
                     assertThat(actualIcon).isInstanceOf(WifiIcon.Visible::class.java)
                     val actualIconVisible = actualIcon as WifiIcon.Visible
-                    assertThat(actualIconVisible.icon.res).isEqualTo(testCase.expected.iconResource)
+                    assertThat(actualIconVisible.icon.resId)
+                        .isEqualTo(testCase.expected.iconResource)
                     val expectedContentDescription =
                         testCase.expected.contentDescription.invoke(context)
                     assertThat(actualIconVisible.contentDescription.loadContentDescription(context))
@@ -185,7 +178,7 @@ internal class WifiViewModelIconParameterizedTest(private val testCase: TestCase
         val network: WifiNetworkModel,
 
         /** The expected output. Null if we expect the output to be hidden. */
-        val expected: Expected?
+        val expected: Expected?,
     ) {
         override fun toString(): String {
             return "when INPUT(enabled=$enabled, " +
@@ -209,11 +202,7 @@ internal class WifiViewModelIconParameterizedTest(private val testCase: TestCase
                     network = WifiNetworkModel.CarrierMerged.of(subscriptionId = 1, level = 1),
                     expected = null,
                 ),
-                TestCase(
-                    enabled = false,
-                    network = WifiNetworkModel.Inactive(),
-                    expected = null,
-                ),
+                TestCase(enabled = false, network = WifiNetworkModel.Inactive(), expected = null),
                 TestCase(
                     enabled = false,
                     network = WifiNetworkModel.Active.of(isValidated = false, level = 1),
@@ -377,11 +366,7 @@ internal class WifiViewModelIconParameterizedTest(private val testCase: TestCase
                 ),
 
                 // isDefault = false => no networks shown
-                TestCase(
-                    isDefault = false,
-                    network = WifiNetworkModel.Inactive(),
-                    expected = null,
-                ),
+                TestCase(isDefault = false, network = WifiNetworkModel.Inactive(), expected = null),
                 TestCase(
                     isDefault = false,
                     network = WifiNetworkModel.Unavailable,

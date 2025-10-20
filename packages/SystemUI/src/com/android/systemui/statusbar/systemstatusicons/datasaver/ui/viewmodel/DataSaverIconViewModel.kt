@@ -63,7 +63,7 @@ constructor(@Assisted context: Context, interactor: DataSaverStatusInteractor) :
     private fun Boolean.toUiState(): Icon? =
         if (this) {
             Icon.Resource(
-                res = R.drawable.ic_data_saver,
+                resId = R.drawable.ic_data_saver,
                 contentDescription =
                     ContentDescription.Resource(R.string.accessibility_data_saver_on),
             )

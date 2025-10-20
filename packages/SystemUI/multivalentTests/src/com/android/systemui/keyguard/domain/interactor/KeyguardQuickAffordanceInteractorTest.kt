@@ -187,7 +187,11 @@ class KeyguardQuickAffordanceInteractorTest : SysuiTestCase() {
         featureFlags = FakeFeatureFlags()
 
         val withDeps =
-            KeyguardInteractorFactory.create(featureFlags = featureFlags, repository = repository)
+            KeyguardInteractorFactory.create(
+                context = context,
+                featureFlags = featureFlags,
+                repository = repository,
+            )
 
         underTest =
             KeyguardQuickAffordanceInteractor(
@@ -840,7 +844,7 @@ class KeyguardQuickAffordanceInteractorTest : SysuiTestCase() {
         private const val CONTENT_DESCRIPTION_RESOURCE_ID = 1337
         private val ICON: Icon =
             Icon.Resource(
-                res = CONTENT_DESCRIPTION_RESOURCE_ID,
+                resId = CONTENT_DESCRIPTION_RESOURCE_ID,
                 contentDescription =
                     ContentDescription.Resource(res = CONTENT_DESCRIPTION_RESOURCE_ID),
             )

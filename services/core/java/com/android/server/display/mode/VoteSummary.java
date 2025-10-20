@@ -16,6 +16,8 @@
 
 package com.android.server.display.mode;
 
+import static android.view.Display.Mode.INVALID_MODE_ID;
+
 import android.annotation.Nullable;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -128,6 +130,9 @@ final class VoteSummary {
         boolean missingBaseModeRefreshRate = appRequestBaseModeRefreshRate > 0f;
 
         for (Display.Mode mode : modes) {
+            if (mode.getParentModeId() != INVALID_MODE_ID) {
+                continue;
+            }
             if (!validateRefreshRatesSupported(mode)) {
                 continue;
             }
@@ -194,10 +199,11 @@ final class VoteSummary {
         }
     }
 
-    void disableRenderRateSwitching(float fps) {
+    void disableRenderRateSwitching(float vsyncRate, float fps) {
         minRenderFrameRate = maxRenderFrameRate;
 
-        if (!isRenderRateAchievable(fps)) {
+        if (!isRenderRateAchievable(vsyncRate)) {
+            // in case vsync > peakRefreshRate, lock render rate to peakRefreshRate
             minRenderFrameRate = maxRenderFrameRate = fps;
         }
 
@@ -260,14 +266,14 @@ final class VoteSummary {
     }
 
     private boolean validateModeRenderRateAchievable(Display.Mode mode) {
-        float refreshRate = mode.getRefreshRate();
-        if (!isRenderRateAchievable(refreshRate)) {
+        float vsyncRate = mode.getVsyncRate();
+        if (!isRenderRateAchievable(vsyncRate)) {
             if (mLoggingEnabled) {
                 Slog.w(TAG, "Discarding mode " + mode.getModeId()
                         + ", outside frame rate bounds"
                         + ": minRenderFrameRate=" + minRenderFrameRate
                         + ", maxRenderFrameRate=" + maxRenderFrameRate
-                        + ", modePhysicalRefreshRate=" + refreshRate);
+                        + ", modeVsyncRate=" + vsyncRate);
             }
             return false;
         }
@@ -326,7 +332,7 @@ final class VoteSummary {
         return false;
     }
 
-    private boolean isRenderRateAchievable(float physicalRefreshRate) {
+    private boolean isRenderRateAchievable(float vsyncRate) {
         // Check whether the render frame rate range is achievable by the mode's physical
         // refresh rate, meaning that if a divisor of the physical refresh rate is in range
         // of the render frame rate.
@@ -336,9 +342,9 @@ final class VoteSummary {
         //   - 90hz is not in range as none of the even divisors (i.e. 90, 45, 30)
         //     fall within the acceptable render range.
         final int divisor =
-                (int) Math.ceil((physicalRefreshRate / maxRenderFrameRate)
+                (int) Math.ceil((vsyncRate / maxRenderFrameRate)
                         - FLOAT_TOLERANCE);
-        float adjustedPhysicalRefreshRate = physicalRefreshRate / divisor;
+        float adjustedPhysicalRefreshRate = vsyncRate / divisor;
         return adjustedPhysicalRefreshRate >= (minRenderFrameRate - FLOAT_TOLERANCE);
     }
 

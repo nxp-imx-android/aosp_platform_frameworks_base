@@ -69,6 +69,7 @@ import org.w3c.dom.Node
  * </pre>
  */
 object SystemFeaturesGenerator {
+    private const val OUTPUT_ARG = "--output="
     private const val FEATURE_ARG = "--feature="
     private const val FEATURE_XML_FILES_ARG = "--feature-xml-files="
     private const val UNAVAILABLE_FEATURE_XML_FILES_ARG = "--unavailable-feature-xml-files="
@@ -87,6 +88,7 @@ object SystemFeaturesGenerator {
     private fun usage() {
         println("Usage: SystemFeaturesGenerator <outputClassName> [options]")
         println(" Options:")
+        println("  --output=\$OUTPUT_FILE   The output file. If not specified, stdout will be used.")
         println("  --readonly=true|false    Whether to encode features as build-time constants")
         println("  --feature=\$NAME:\$VER     A feature+version pair, where \$VER can be:")
         println("                             * blank/empty == undefined (variable API)")
@@ -118,7 +120,7 @@ object SystemFeaturesGenerator {
     /** Main entrypoint for build-time system feature codegen. */
     @JvmStatic
     fun main(args: Array<String>) {
-        generate(args, System.out)
+        generate(args)
     }
 
     /**
@@ -128,7 +130,7 @@ object SystemFeaturesGenerator {
      * but it's primarily used for testing as opposed to direct production usage.
      */
     @JvmStatic
-    fun generate(args: Array<String>, output: Appendable) {
+    fun generate(args: Array<String>, output: Appendable? = null) {
         if (args.size < 1) {
             usage()
             return
@@ -141,8 +143,11 @@ object SystemFeaturesGenerator {
         // We could just as easily hardcode this list, as the static API surface should change
         // somewhat infrequently, but this decouples the codegen from the framework completely.
         val featureApiArgs = mutableSetOf<String>()
+        var outputFile: String? = null
         for (arg in args) {
             when {
+                arg.startsWith(OUTPUT_ARG) ->
+                    outputFile = arg.substring(OUTPUT_ARG.length)
                 arg.startsWith(READONLY_ARG) ->
                     readonly = arg.substring(READONLY_ARG.length).toBoolean()
                 arg.startsWith(METADATA_ONLY_ARG) ->
@@ -222,13 +227,24 @@ object SystemFeaturesGenerator {
         }
 
         // TODO(b/203143243): Add validation of build vs runtime values to ensure consistency.
-        JavaFile.builder(outputClassName.packageName(), classBuilder.build())
+        val javaFile = JavaFile.builder(outputClassName.packageName(), classBuilder.build())
             .indent("    ")
             .skipJavaLangImports(true)
             .addFileComment("This file is auto-generated. DO NOT MODIFY.\n")
             .addFileComment("Args: ${args.joinToString(" \\\n           ")}")
             .build()
-            .writeTo(output)
+
+        if (output != null) {
+            javaFile.writeTo(output)
+        } else if (outputFile != null) {
+            // Be careful to use .bufferedWriter(), otherwise javaPoet will create a directory
+            // and write to a file under directories for the class's package.
+            File(outputFile).bufferedWriter().use {
+                writer -> javaFile.writeTo(writer)
+            }
+        } else {
+            javaFile.writeTo(System.out)
+        }
     }
 
     /*

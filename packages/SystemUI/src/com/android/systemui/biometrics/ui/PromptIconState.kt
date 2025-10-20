@@ -17,7 +17,7 @@
 package com.android.systemui.biometrics.ui
 
 import android.annotation.RawRes
-import com.android.systemui.biometrics.ui.viewmodel.PromptIconViewModel
+import com.android.systemui.biometrics.ui.viewmodel.BiometricAuthIconViewModel
 
 /* Class for handling the state of the icon in Biometric prompt */
 data class PromptIconState(
@@ -26,6 +26,6 @@ data class PromptIconState(
     val shouldLoop: Boolean,
     val contentDescriptionId: Int,
     val rotation: Float,
-    val authType: PromptIconViewModel.AuthType,
+    val activeBiometricAuthType: BiometricAuthIconViewModel.BiometricAuthModalities,
     val showingError: Boolean,
 )

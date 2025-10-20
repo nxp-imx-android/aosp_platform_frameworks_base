@@ -979,13 +979,16 @@ public class BtHelper {
             Log.w(TAG, "onSetBtScoActiveDevice() failed to remove previous device "
                     + getAnonymizedAddress(previousActiveDevice));
         }
+        // mBluetoothHeadsetDevice must correspond to previous device until now and new device from
+        // now on for SCO activation/deactivation requests made by
+        // AudioDeviceBroker.onUpdateCommunicationRouteClient() to succeed.
+        mBluetoothHeadsetDevice = btDevice;
         if (!handleBtScoActiveDeviceChange(btDevice, true, false /*deviceSwitch*/)) {
             Log.e(TAG, "onSetBtScoActiveDevice() failed to add new device "
                     + getAnonymizedAddress(btDevice));
             // set mBluetoothHeadsetDevice to null when failing to add new device
-            btDevice = null;
+            mBluetoothHeadsetDevice = null;
         }
-        mBluetoothHeadsetDevice = btDevice;
         if (mBluetoothHeadsetDevice == null) {
             resetBluetoothSco();
         }
@@ -1358,25 +1361,24 @@ public class BtHelper {
         }
 
         byte[] deviceType = device.getMetadata(BluetoothDevice.METADATA_DEVICE_TYPE);
-        if (deviceType == null) {
-            return AUDIO_DEVICE_CATEGORY_UNKNOWN;
-        }
-        String deviceCategory = new String(deviceType);
-        switch (deviceCategory) {
-            case DEVICE_TYPE_HEARING_AID:
-                return AUDIO_DEVICE_CATEGORY_HEARING_AID;
-            case DEVICE_TYPE_CARKIT:
-                return AUDIO_DEVICE_CATEGORY_CARKIT;
-            case DEVICE_TYPE_HEADSET:
-            case DEVICE_TYPE_UNTETHERED_HEADSET:
-                return AUDIO_DEVICE_CATEGORY_HEADPHONES;
-            case DEVICE_TYPE_SPEAKER:
-                return AUDIO_DEVICE_CATEGORY_SPEAKER;
-            case DEVICE_TYPE_WATCH:
-                return AUDIO_DEVICE_CATEGORY_WATCH;
-            case DEVICE_TYPE_DEFAULT:
-            default:
-                // fall through
+        if (deviceType != null) {
+            String deviceCategory = new String(deviceType);
+            switch (deviceCategory) {
+                case DEVICE_TYPE_HEARING_AID:
+                    return AUDIO_DEVICE_CATEGORY_HEARING_AID;
+                case DEVICE_TYPE_CARKIT:
+                    return AUDIO_DEVICE_CATEGORY_CARKIT;
+                case DEVICE_TYPE_HEADSET:
+                case DEVICE_TYPE_UNTETHERED_HEADSET:
+                    return AUDIO_DEVICE_CATEGORY_HEADPHONES;
+                case DEVICE_TYPE_SPEAKER:
+                    return AUDIO_DEVICE_CATEGORY_SPEAKER;
+                case DEVICE_TYPE_WATCH:
+                    return AUDIO_DEVICE_CATEGORY_WATCH;
+                case DEVICE_TYPE_DEFAULT:
+                default:
+                    // fall through
+            }
         }
 
         BluetoothClass deviceClass = device.getBluetoothClass();

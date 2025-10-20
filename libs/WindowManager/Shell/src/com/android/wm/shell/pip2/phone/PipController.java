@@ -48,7 +48,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.Preconditions;
 import com.android.wm.shell.Flags;
-import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayChangeController;
 import com.android.wm.shell.common.DisplayController;
@@ -65,6 +64,7 @@ import com.android.wm.shell.common.TaskStackListenerCallback;
 import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.common.pip.IPip;
 import com.android.wm.shell.common.pip.IPipAnimationListener;
+import com.android.wm.shell.common.pip.IPipAnimationListener.PipResources;
 import com.android.wm.shell.common.pip.PipAppOpsListener;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
@@ -147,7 +147,7 @@ public class PipController implements ConfigurationChangeListener,
          * @param cornerRadius the pixel value of the corner radius, zero means it's disabled.
          * @param shadowRadius the pixel value of the shadow radius, zero means it's disabled.
          */
-        void onPipResourceDimensionsChanged(int cornerRadius, int shadowRadius);
+        void onPipResourceDimensionsChanged(PipResources res);
 
         /**
          * Notifies the listener that user leaves PiP by tapping on the expand button.
@@ -288,12 +288,19 @@ public class PipController implements ConfigurationChangeListener,
             public void onActivityRestartAttempt(ActivityManager.RunningTaskInfo task,
                     boolean homeTaskVisible, boolean clearedTask, boolean wasVisible) {
                 ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                        "onActivityRestartAttempt: topActivity=%s, wasVisible=%b",
-                        task.topActivity, wasVisible);
-                if (task.getWindowingMode() != WINDOWING_MODE_PINNED || !wasVisible) {
+                        "onActivityRestartAttempt: topActivity=%s, wasVisible=%b, displayId=%s, "
+                                + "pipDisplayLayoutState#displayId=%s",
+                        task.topActivity, wasVisible, task.displayId,
+                        mPipDisplayLayoutState.getDisplayId());
+                boolean keepPipFromLockscreen = !wasVisible && !Flags.dismissPipFromLockscreen();
+                boolean isPipLaunchingOnDifferentDisplay =
+                        DesktopExperienceFlags.ENABLE_CROSS_DISPLAYS_PIP_TASK_LAUNCH.isTrue()
+                                && task.displayId != mPipDisplayLayoutState.getDisplayId();
+                if (task.getWindowingMode() != WINDOWING_MODE_PINNED || keepPipFromLockscreen
+                        || isPipLaunchingOnDifferentDisplay) {
                     return;
                 }
-                mPipScheduler.scheduleExitPipViaExpand();
+                mPipScheduler.scheduleExitPipViaExpand(wasVisible);
             }
         });
 
@@ -513,10 +520,10 @@ public class PipController implements ConfigurationChangeListener,
                     mPipBoundsState.getDisplayLayout().getDisplayCutout();
             boolean requireUnstash = false;
             if (mPipBoundsState.getStashedState() == PipBoundsState.STASH_TYPE_LEFT
-                    && !displayCutout.getBoundingRectLeft().isEmpty()) {
+                    && displayCutout != null && !displayCutout.getBoundingRectLeft().isEmpty()) {
                 requireUnstash = true;
             } else if (mPipBoundsState.getStashedState() == PipBoundsState.STASH_TYPE_RIGHT
-                    && !displayCutout.getBoundingRectRight().isEmpty()) {
+                    && displayCutout != null && !displayCutout.getBoundingRectRight().isEmpty()) {
                 requireUnstash = true;
             }
             if (requireUnstash) {
@@ -735,8 +742,7 @@ public class PipController implements ConfigurationChangeListener,
     private void onPipResourceDimensionsChanged() {
         if (mPipRecentsAnimationListener != null) {
             mPipRecentsAnimationListener.onPipResourceDimensionsChanged(
-                    mContext.getResources().getDimensionPixelSize(R.dimen.pip_corner_radius),
-                    mContext.getResources().getDimensionPixelSize(R.dimen.pip_shadow_radius));
+                    mPipSurfaceTransactionHelper.getPipResources());
         }
     }
 
@@ -833,8 +839,8 @@ public class PipController implements ConfigurationChangeListener,
             }
 
             @Override
-            public void onPipResourceDimensionsChanged(int cornerRadius, int shadowRadius) {
-                mListener.call(l -> l.onPipResourceDimensionsChanged(cornerRadius, shadowRadius));
+            public void onPipResourceDimensionsChanged(PipResources res) {
+                mListener.call(l -> l.onPipResourceDimensionsChanged(res));
             }
 
             @Override

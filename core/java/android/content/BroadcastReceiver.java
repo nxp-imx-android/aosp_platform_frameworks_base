@@ -681,7 +681,8 @@ public abstract class BroadcastReceiver {
     }
 
     /**
-     * For internal use to set the result data that is active. @hide
+     * For internal use to set the result data that is active.
+     * @hide
      */
     @UnsupportedAppUsage
     public final void setPendingResult(PendingResult result) {
@@ -689,7 +690,8 @@ public abstract class BroadcastReceiver {
     }
 
     /**
-     * For internal use to set the result data that is active. @hide
+     * For internal use to set the result data that is active.
+     * @hide
      */
     @UnsupportedAppUsage
     public final PendingResult getPendingResult() {
@@ -773,4 +775,3 @@ public abstract class BroadcastReceiver {
         Log.e("BroadcastReceiver", e.getMessage(), e);
     }
 }
-

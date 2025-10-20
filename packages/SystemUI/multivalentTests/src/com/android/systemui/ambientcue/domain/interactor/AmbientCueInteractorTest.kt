@@ -17,20 +17,22 @@
 package com.android.systemui.ambientcue.domain.interactor
 
 import android.content.applicationContext
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.ambientcue.data.repository.ambientCueRepository
 import com.android.systemui.ambientcue.data.repository.fake
-import com.android.systemui.ambientcue.shared.model.ActionModel
-import com.android.systemui.ambientcue.shared.model.IconModel
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.shared.model.StatusBarState
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.plugins.cuebar.ActionModel
+import com.android.systemui.plugins.cuebar.IconModel
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -175,6 +177,7 @@ class AmbientCueInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun isOccludedBySystemUi_whenExpandedShade_true() =
         kosmos.runTest {
             val isOccludedBySystemUi by collectLastValue(ambientCueInteractor.isOccludedBySystemUi)

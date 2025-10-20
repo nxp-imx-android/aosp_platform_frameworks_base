@@ -124,6 +124,9 @@ public class AutoclickIndicatorView extends View {
      */
     public final WindowManager.LayoutParams getLayoutParams() {
         final WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+        // The AutoclickIndicator must be drawn on top of all other UI, including other autoclick
+        // panels. TYPE_SECURE_SYSTEM_OVERLAY is used because it ensures this highest Z-order
+        // while preventing the view from stealing input focus from the other running apps.
         layoutParams.type = WindowManager.LayoutParams.TYPE_SECURE_SYSTEM_OVERLAY;
         layoutParams.flags =
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE

@@ -17,6 +17,7 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
+import android.annotation.SuppressLint
 import android.graphics.Point
 import android.util.MathUtils
 import android.view.View.VISIBLE
@@ -42,6 +43,7 @@ import com.android.systemui.keyguard.shared.model.TransitionState.RUNNING
 import com.android.systemui.keyguard.shared.model.TransitionState.STARTED
 import com.android.systemui.keyguard.ui.StateToValue
 import com.android.systemui.minmode.MinModeManager
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -59,9 +61,11 @@ import com.android.systemui.util.ui.AnimatableEvent
 import com.android.systemui.util.ui.AnimatedValue
 import com.android.systemui.util.ui.toAnimatedValueFlow
 import com.android.systemui.util.ui.zip
+import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import java.util.Optional
 import javax.inject.Inject
 import kotlin.math.max
+import kotlin.math.round
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -78,6 +82,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 
+@SuppressLint("FlowExposedFromViewModel")
 @SysUISingleton
 class KeyguardRootViewModel
 @Inject
@@ -234,44 +239,42 @@ constructor(
 
     private val zoomOutFromGlanceableHub: Flow<Float> =
         if (!Flags.gestureBetweenHubAndLockscreenMotion()) {
-            emptyFlow()
-        } else {
-            combine(
-                    communalInteractor.isCommunalVisible,
-                    merge(
-                        lockscreenToGlanceableHubTransitionViewModel.zoomOut,
-                        glanceableHubToLockscreenTransitionViewModel.zoomOut,
-                        aodToGlanceableHubTransitionViewModel.zoomOut,
-                        glanceableHubToAodTransitionViewModel.zoomOut,
-                    ),
-                ) { isCommunalVisible, zoomOut ->
+                emptyFlow()
+            } else {
+                // Use flatMapLatestConflated so the animation flows aren't collected at all when
+                // communal is not visible.
+                communalInteractor.isCommunalVisible.flatMapLatestConflated { isCommunalVisible ->
                     if (!isCommunalVisible) {
                         // reset zoom out once we've exited the communal scene
-                        0f
+                        flowOf(0f)
                     } else {
-                        // rate limit the zoom out by 5% step to avoid jank
-                        ((zoomOut * 20).toInt() / 20f).coerceIn(0f, 1f)
+                        merge(
+                                lockscreenToGlanceableHubTransitionViewModel.zoomOut,
+                                glanceableHubToLockscreenTransitionViewModel.zoomOut,
+                                aodToGlanceableHubTransitionViewModel.zoomOut,
+                                glanceableHubToAodTransitionViewModel.zoomOut,
+                            )
+                            .map {
+                                // rate limit the zoom out by 5% step to avoid jank
+                                (round(it * 20) / 20f).coerceIn(0f, 1f)
+                            }
                     }
                 }
-                .distinctUntilChanged()
-                .dumpWhileCollecting("zoomOutFromGlanceableHub")
-        }
+            }
+            .distinctUntilChanged()
+            .dumpWhileCollecting("zoomOutFromGlanceableHub")
 
     private fun dozingToLockscreenAlpha(viewState: ViewStateAccessor) =
         alphaOnShadeExpansion
             .map { it < 1f }
             .distinctUntilChanged()
-            .onStart { emit(false) }.flatMapLatest { isExpanding ->
+            .onStart { emit(false) }
+            .flatMapLatest { isExpanding ->
                 if (Flags.deferDozeTransitionOnShadeDrag() && isExpanding) {
                     // If shade is expanding, switch to a flow that never emits.
                     emptyFlow()
                 } else {
-                    // Otherwise, use the original flow.
-                    if (Flags.newDozingKeyguardStates()) {
-                        dozingToLockscreenTransitionViewModel.lockscreenAlpha(viewState)
-                    } else {
-                        dozingToLockscreenTransitionViewModel.lockscreenAlpha
-                    }
+                    dozingToLockscreenTransitionViewModel.lockscreenAlpha(viewState)
                 }
             }
 
@@ -352,8 +355,8 @@ constructor(
                         lockscreenToDreamingTransitionViewModel.lockscreenAlpha,
                         lockscreenToGlanceableHubTransitionViewModel.keyguardAlpha,
                         lockscreenToGoneTransitionViewModel.lockscreenAlpha(viewState),
-                        lockscreenToOccludedTransitionViewModel.lockscreenAlpha,
-                        lockscreenToPrimaryBouncerTransitionViewModel.lockscreenAlpha,
+                        lockscreenToOccludedTransitionViewModel.lockscreenAlpha(viewState),
+                        lockscreenToPrimaryBouncerTransitionViewModel.lockscreenAlpha(viewState),
                         occludedToAlternateBouncerTransitionViewModel.lockscreenAlpha,
                         occludedToAodTransitionViewModel.lockscreenAlpha,
                         occludedToDozingTransitionViewModel.lockscreenAlpha,
@@ -434,19 +437,26 @@ constructor(
     val isNotifIconContainerVisible: StateFlow<AnimatedValue<Boolean>> =
         combine(
                 goneToAodTransitionRunning,
+                keyguardTransitionInteractor
+                    .transitionValue(LOCKSCREEN)
+                    .map { it > 0f }
+                    .onStart { emit(true) },
                 keyguardTransitionInteractor.isFinishedIn(
                     content = Scenes.Gone,
                     stateWithoutSceneContainer = GONE,
                 ),
+                deviceEntryBypassInteractor.isBypassEnabled,
                 areNotifsFullyHiddenAnimated(),
                 isPulseExpandingAnimated(),
                 aodNotificationIconViewModel.icons.map { it.visibleIcons.isNotEmpty() },
             ) { flows ->
                 val goneToAodTransitionRunning = flows[0] as Boolean
-                val isOnGone = flows[1] as Boolean
-                val notifsFullyHidden = flows[2] as AnimatedValue<Boolean>
-                val pulseExpanding = flows[3] as AnimatedValue<Boolean>
-                val hasAodIcons = flows[4] as Boolean
+                val isOnLockscreen = flows[1] as Boolean
+                val isOnGone = flows[2] as Boolean
+                val isBypassEnabled = flows[3] as Boolean
+                val notifsFullyHidden = flows[4] as AnimatedValue<Boolean>
+                val pulseExpanding = flows[5] as AnimatedValue<Boolean>
+                val hasAodIcons = flows[6] as Boolean
 
                 when {
                     // Hide the AOD icons if we're not in the KEYGUARD state unless the screen off
@@ -462,8 +472,12 @@ constructor(
                             when {
                                 // If there are no notification icons to show, then it can be hidden
                                 !hasAodIcons -> false
+                                // If we're bypassing, then we're visible
+                                SceneContainerFlag.isEnabled && isBypassEnabled -> true
                                 // If we are pulsing (and not bypassing), then we are hidden
                                 isPulseExpanding -> false
+                                // Besides bypass above, they should not be visible on lockscreen
+                                SceneContainerFlag.isEnabled && isOnLockscreen -> false
                                 // If notifs are fully gone, then we're visible
                                 areNotifsFullyHidden -> true
                                 // Otherwise, we're hidden
@@ -492,6 +506,7 @@ constructor(
             // If pulsing changes, start animating, unless it's the first emission
             .map { (prev, expanding) -> AnimatableEvent(expanding, startAnimating = prev != null) }
             .toAnimatedValueFlow()
+            .onStart { emit(AnimatedValue.NotAnimating(value = false)) }
     }
 
     /** Are notifications completely hidden from view, are we animating in response? */
@@ -517,6 +532,7 @@ constructor(
                 AnimatableEvent(fullyHidden, animate)
             }
             .toAnimatedValueFlow()
+            .onStart { emit(AnimatedValue.NotAnimating(value = false)) }
     }
 
     fun setRootViewLastTapPosition(point: Point) {

@@ -38,7 +38,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 
-/** An interactor which controls the appearance of the NSSL */
+/** An interactor which controls the appearance of the NSSL. */
 @SysUISingleton
 class NotificationStackAppearanceInteractor
 @Inject

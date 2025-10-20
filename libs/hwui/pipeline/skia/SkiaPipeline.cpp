@@ -493,9 +493,10 @@ void SkiaPipeline::setSurfaceColorProperties(ColorMode colorMode) {
                 mSurfaceColorType = SkColorType::kRGBA_10x6_SkColorType;
                 mSurfaceColorSpace = SkColorSpace::MakeRGB(
                         GetExtendedTransferFunction(mTargetSdrHdrRatio), SkNamedGamut::kDisplayP3);
-            } else if (DeviceInfo::get()->isSupportFp16ForHdr()) {
-                mSurfaceColorType = SkColorType::kRGBA_F16_SkColorType;
-                mSurfaceColorSpace = SkColorSpace::MakeSRGB();
+            // TODO: Disabled until we figure out how this is supposed to work & have validated it
+            // } else if (DeviceInfo::get()->isSupportFp16ForHdr()) {
+            //     mSurfaceColorType = SkColorType::kRGBA_F16_SkColorType;
+            //     mSurfaceColorSpace = SkColorSpace::MakeSRGB();
             } else {
                 mSurfaceColorType = SkColorType::kN32_SkColorType;
                 mSurfaceColorSpace = SkColorSpace::MakeRGB(

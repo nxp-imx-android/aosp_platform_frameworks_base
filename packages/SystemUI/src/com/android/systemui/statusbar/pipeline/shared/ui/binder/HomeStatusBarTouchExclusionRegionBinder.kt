@@ -42,9 +42,7 @@ object HomeStatusBarTouchExclusionRegionBinder {
         // Update touchable regions when touchableExclusionRegion changes
         view.repeatWhenAttached {
             view.setSnapshotBinding {
-                view.updateTouchableRegion(
-                    calculateTouchableRegion(view, appHandlesViewModel.touchableExclusionRegion)
-                )
+                updateTouchableRegion(view, appHandlesViewModel.touchableExclusionRegion)
             }
             awaitCancellation()
         }
@@ -63,10 +61,14 @@ object HomeStatusBarTouchExclusionRegionBinder {
             if (top == oldTop && left == oldLeft && right == oldRight && bottom == oldBottom) {
                 return@onLayoutChanged
             }
-            view.updateTouchableRegion(
-                calculateTouchableRegion(view, appHandlesViewModel.touchableExclusionRegion)
-            )
+            updateTouchableRegion(view, appHandlesViewModel.touchableExclusionRegion)
         }
+    }
+
+    private fun updateTouchableRegion(view: PhoneStatusBarView, touchableExclusionRegion: Region) {
+        val touchableRegion = calculateTouchableRegion(view, touchableExclusionRegion)
+        view.updateTouchableRegion(touchableRegion)
+        touchableRegion.recycle()
     }
 
     private fun calculateTouchableRegion(

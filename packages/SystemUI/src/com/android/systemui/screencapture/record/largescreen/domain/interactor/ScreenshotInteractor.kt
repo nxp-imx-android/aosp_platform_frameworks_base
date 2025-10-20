@@ -19,10 +19,12 @@ package com.android.systemui.screencapture.record.largescreen.domain.interactor
 import android.graphics.Rect
 import android.os.Handler
 import android.view.WindowManager
+import com.android.internal.logging.UiEventLogger
 import com.android.internal.util.ScreenshotHelper
 import com.android.internal.util.ScreenshotRequest
-import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.screencapture.ScreenCaptureEvent
+import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screenshot.ImageCapture
 import com.android.systemui.user.data.repository.UserRepository
 import javax.inject.Inject
@@ -30,17 +32,18 @@ import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.withContext
 
 /** Interactor responsible for employing ScreenshotHelper to take various types of screenshots. */
-@SysUISingleton
+@ScreenCaptureScope
 class ScreenshotInteractor
 @Inject
 constructor(
-    private val imageCapture: ImageCapture,
-    private val screenshotHelper: ScreenshotHelper,
     @Background private val backgroundContext: CoroutineContext,
     @Background private val backgroundHandler: Handler,
+    private val uiEventLogger: UiEventLogger,
+    private val imageCapture: ImageCapture,
+    private val screenshotHelper: ScreenshotHelper,
     private val userRepository: UserRepository,
 ) {
-    suspend fun takeFullscreenScreenshot(displayId: Int) {
+    suspend fun requestFullscreenScreenshot(displayId: Int) {
         val request =
             ScreenshotRequest.Builder(
                     WindowManager.TAKE_SCREENSHOT_FULLSCREEN,
@@ -50,9 +53,13 @@ constructor(
                 .build()
 
         takeScreenshot(request)
+
+        uiEventLogger.log(
+            ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_FULLSCREEN_SCREENSHOT_REQUESTED
+        )
     }
 
-    suspend fun takePartialScreenshot(regionBounds: Rect, displayId: Int) {
+    suspend fun requestPartialScreenshot(regionBounds: Rect, displayId: Int) {
         val bitmap =
             withContext(backgroundContext) {
                 requireNotNull(imageCapture.captureDisplay(displayId, regionBounds))
@@ -69,6 +76,10 @@ constructor(
                 .build()
 
         takeScreenshot(request)
+
+        uiEventLogger.log(
+            ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_REQUESTED
+        )
     }
 
     // TODO(b/422833825): Implement takeAppWindowScreenshot

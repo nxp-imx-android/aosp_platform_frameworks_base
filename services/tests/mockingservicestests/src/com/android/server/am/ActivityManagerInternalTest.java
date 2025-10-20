@@ -130,7 +130,7 @@ public class ActivityManagerInternalTest {
             long lastNetworkUpdatedProcStateSeq) {
         final UidRecord record = new UidRecord(uid, mAms);
         record.lastNetworkUpdatedProcStateSeq = lastNetworkUpdatedProcStateSeq;
-        record.curProcStateSeq = curProcStateSeq;
+        record.setCurProcStateSeq(curProcStateSeq);
         record.procStateSeqWaitingForNetwork = 1;
         addActiveUidRecord(uid, record);
         return record;

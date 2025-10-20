@@ -43,6 +43,7 @@ import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotif
 import com.android.systemui.statusbar.notification.stack.NotificationStackRebindingHider
 import com.android.systemui.statusbar.phone.ConfigurationForwarder
 import com.android.window.flags.Flags
+import dagger.Lazy
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
@@ -72,14 +73,18 @@ constructor(
     @ShadeDisplayAware private val shadeContext: WindowContext,
     @Background private val bgScope: CoroutineScope,
     @Main private val mainThreadContext: CoroutineContext,
-    private val shadeDisplayChangePerformanceTracker: ShadeDisplayChangePerformanceTracker,
-    private val shadeExpandedInteractor: ShadeExpandedStateInteractor,
+    // Lazy to prevent Dagger dependency cycle
+    private val shadeDisplayChangePerformanceTrackerLazy:
+        Lazy<ShadeDisplayChangePerformanceTracker>,
+    // Lazy to prevent Dagger dependency cycle
+    private val shadeExpandedInteractorLazy: Lazy<ShadeExpandedStateInteractor>,
     private val shadeExpansionIntent: ShadeExpansionIntent,
     private val activeNotificationsInteractor: ActiveNotificationsInteractor,
     private val notificationStackRebindingHider: NotificationStackRebindingHider,
     @ShadeDisplayAware private val configForwarder: ConfigurationForwarder,
     @ShadeDisplayLog private val logBuffer: LogBuffer,
-    private val waitInteractor: ShadeDisplaysWaitInteractor,
+    // Lazy to prevent Dagger dependency cycle
+    private val waitInteractorLazy: Lazy<ShadeDisplaysWaitInteractor>,
 ) : ShadeDisplaysInteractor, CoreStartable {
 
     private val hasActiveNotifications: Boolean
@@ -142,11 +147,22 @@ constructor(
             withContext(mainThreadContext) {
                 traceReparenting {
                     collapseAndExpandShadeIfNeeded(destinationId) {
-                        shadeDisplayChangePerformanceTracker.onShadeDisplayChanging(destinationId)
+                        shadeDisplayChangePerformanceTrackerLazy
+                            .get()
+                            .onShadeDisplayChanging(destinationId)
                         reparentToDisplayId(id = destinationId)
                     }
                     checkContextDisplayMatchesExpected(destinationId)
                     shadePositionRepository.onDisplayChangedSucceeded(destinationId)
+                    logBuffer.log(
+                        TAG,
+                        LogLevel.DEBUG,
+                        {
+                            int1 = currentId
+                            int2 = destinationId
+                        },
+                        { "Shade window successfully moved from display $int1 to $int2" },
+                    )
                 }
             }
         } catch (e: IllegalStateException) {
@@ -165,7 +181,7 @@ constructor(
 
     private suspend fun collapseAndExpandShadeIfNeeded(newDisplayId: Int, reparent: () -> Unit) {
         val previouslyExpandedElement: ShadeElement? =
-            shadeExpandedInteractor.currentlyExpandedElement.value
+            shadeExpandedInteractorLazy.get().currentlyExpandedElement.value
 
         // The next expanded element depends on the reason why the shade is changing window. e.g. if
         // the trigger was a status bar swipe, based on the swipe location we might want to open
@@ -224,7 +240,7 @@ constructor(
     private suspend fun waitForOnMovedToDisplayDispatchedToView(newDisplayId: Int) {
         withContext(bgScope.coroutineContext) {
             withTimeoutOrNull(WAIT_TIMEOUT) {
-                waitInteractor.waitForOnMovedToDisplayDispatchedToView(newDisplayId, TAG)
+                waitInteractorLazy.get().waitForOnMovedToDisplayDispatchedToView(newDisplayId, TAG)
             }
                 ?: errorLog(
                     "Timed out while waiting for onMovedToDisplay to be dispatched to " +
@@ -236,15 +252,16 @@ constructor(
     private suspend fun waitForNextFrameDrawn(newDisplayId: Int) {
         withContext(bgScope.coroutineContext) {
             withTimeoutOrNull(WAIT_TIMEOUT) {
-                waitInteractor.waitForNextDoFrameDone(newDisplayId, TAG)
+                waitInteractorLazy.get().waitForNextDoFrameDone(newDisplayId, TAG)
             } ?: errorLog("Timed out while waiting for the next frame to be drawn.")
         }
     }
 
     private suspend fun waitForNotificationsRebinding() {
         withContext(bgScope.coroutineContext) {
-            withTimeoutOrNull(WAIT_TIMEOUT) { waitInteractor.waitForNotificationsRebinding(TAG) }
-                ?: errorLog("Timed out while waiting for inflations to finish")
+            withTimeoutOrNull(WAIT_TIMEOUT) {
+                waitInteractorLazy.get().waitForNotificationsRebinding(TAG)
+            } ?: errorLog("Timed out while waiting for inflations to finish")
         }
     }
 
@@ -268,6 +285,15 @@ constructor(
     private fun reparentToDisplayId(id: Int) {
         t.traceSyncAndAsync({ "reparentToDisplayId(id=$id)" }) {
             shadeContext.reparentToDisplay(id)
+            logBuffer.log(
+                TAG,
+                LogLevel.DEBUG,
+                { int1 = id },
+                {
+                    "Shade window reparent to display $int1 succeeded. " +
+                        "Resources are accurate from now on."
+                },
+            )
         }
     }
 

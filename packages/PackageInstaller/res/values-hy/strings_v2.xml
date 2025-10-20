@@ -41,13 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Ապատեղադրե՞լ հավելվածի թարմացումները"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Ապատեղադրե՞լ հավելվածի թարմացումները բոլոր օգտատերերի համար"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Ապատեղադրե՞լ այս հավելվածը բոլոր օգտատերերի համար"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"Ապատեղադրե՞լ այս հավելվածը «<xliff:g id="USER_NAME">%1$s</xliff:g>» օգտատիրոջ համար"</string>
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Ապատեղադրե՞լ այս հավելվածը «<xliff:g id="USER_NAME">%1$s</xliff:g>» օգտատիրոջ համար"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Հավելվածը չի գտնվել"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Չհաջողվեց ապատեղադրել այս հավելվածը"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Հավելվածը չի տեղադրվել"</string>
     <string name="title_archive" msgid="2876455228073419830">"Արխիվացնե՞լ այս հավելվածը"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Արխիվացնե՞լ այս հավելվածը բոլոր օգտատերերի համար"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"Արխիվացնե՞լ այս հավելվածը «<xliff:g id="USER_NAME">%1$s</xliff:g>» օգտատիրոջ համար"</string>
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Արխիվացնե՞լ այս հավելվածը «<xliff:g id="USER_NAME">%1$s</xliff:g>» օգտատիրոջ համար"</string>
     <string name="title_restore" msgid="8934911753892124574">"Վերականգնե՞լ այս հավելվածը"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Պահանջվում է գործողություն"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Բավարար տարածք չկա"</string>
@@ -73,7 +73,7 @@
     <string name="message_parse_failed" msgid="205300138438352785">"Հավելվածի ֆայլում խնդիր կա"</string>
     <string name="message_no_install_apps_restriction" msgid="6772323689748831650">"Հավելվածների տեղադրումը սահմանափակվել է"</string>
     <string name="message_no_install_unknown_apps_restriction" msgid="6111967131011920924">"Անհայտ հավելվածների տեղադրումը սահմանափակվել է"</string>
-    <string name="message_uninstall_with_clone_instance" msgid="12594156305221478">"Այս հավելվածի կրկնօրինակը նույնպես գոյություն ունի, որը կջնջվի"</string>
+    <string name="message_uninstall_with_clone_instance" msgid="12594156305221478">"Այս հավելվածի կրկնօրինակը նույնպես գոյություն ունի և կջնջվի"</string>
     <string name="message_delete_clone_app" msgid="6632017049227330363">"Այս հավելվածը <xliff:g id="APP_LABEL">%1$s</xliff:g> հավելվածի կրկնօրինակն է"</string>
     <string name="message_uninstall_updates_system_app" msgid="1246198093614610171">"Այս հավելվածի գործարանային կարգավորումները կվերականգնվեն։ Հավելվածի բոլոր տվյալները կջնջվեն։"</string>
     <string name="message_uninstall_updates_system_app_all_users" msgid="1659615085602508659">"Այս հավելվածի գործարանային կարգավորումները կվերականգնվեն սարքում բոլոր օգտատերերի համար։ Հավելվածի բոլոր տվյալները կջնջվեն։"</string>
@@ -89,29 +89,21 @@
     <string name="message_archive_work_profile" msgid="7601504268820630858">"Այս հավելվածը կարխիվացվի ձեր աշխատանքային պրոֆիլից։ Հավելվածի ձեր տվյալները կպահվեն։"</string>
     <string name="message_archive_private_space" msgid="4873651645762576624">"Այս հավելվածը կարխիվացվի ձեր մասնավոր տարածքից։ Հավելվածի ձեր տվյալները կպահվեն։"</string>
     <string name="message_restore" msgid="8402726798623569969">"Այս հավելվածը ֆոնային ռեժիմում կտեղադրվի <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>-ից"</string>
-    <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"Մինչ այս հավելվածի տեղադրումը <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>-ին անհրաժեշտ են լրացուցիչ տեղեկություններ"</string>
+    <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"Այս հավելվածի վերականգնման համար պետք է ավելի շատ տեղեկություններ տրամադրեք <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>ին"</string>
     <string name="message_restore_error_less_storage" msgid="4945507738776981462">"Այս հավելվածը վերականգնելու համար ազատեք &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; տարածք և նորից փորձեք"</string>
     <string name="message_restore_error_offline" msgid="4212551781323276126">"Այս հավելվածը վերականգնելու համար ստուգեք ձեր ինտերնետ կապը և նորից փորձեք"</string>
     <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"Այս հավելվածը վերականգնելու համար միացրեք <xliff:g id="INSTALLERNAME">%1$s</xliff:g> հավելվածը կարգավորումներում"</string>
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Այս հավելվածը վերականգնելու համար տեղադրեք <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> հավելվածը"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Չհաջողվեց վերականգնել այս հավելվածը"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"Բովանդակությունը (<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>) <xliff:g id="APP_NAME">%2$s</xliff:g> հավելվածի մի մասն է"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Այս հավելվածն արգելափակված է։ Ձեր տվյալների ու սարքի պաշտպանության նկատառումներով՝ արգելված է հավելվածներ տեղադրել չստուգված մշակողներից։&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Իմանալ ավելին մշակողների ստուգման մասին&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Այս հավելվածը չի թարմացվել։ Ձեր տվյալների ու սարքի պաշտպանության նկատառումներով՝ արգելված է թարմացումներ տեղադրել չստուգված մշակողներից։&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Իմանալ ավելին մշակողների ստուգման մասին&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Այս հավելվածը չի տեղադրվել։ Չստուգված մշակողների հավելվածները կարող են վտանգավոր լինել։&lt;/p&gt; &lt;p&gt;Մշակողին ստուգելու համար ինտերնետ կապ է անհրաժեշտ։ Ստուգեք կապը և նորից փորձեք տեղադրել։ &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Իմանալ ավելին մշակողների ստուգման մասին&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Այս հավելվածը չի թարմացվել։ Չստուգված մշակողների թարմացումները կարող են վտանգավոր լինել։&lt;/p&gt; &lt;p&gt;Մշակողին ստուգելու համար ինտերնետ կապ է անհրաժեշտ։ Ստուգեք կապը և նորից փորձեք թարմացնել։ &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Իմանալ ավելին մշակողների ստուգման մասին&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Այս հավելվածի մշակողին ստուգելիս խնդիր առաջացավ։ Հավելվածը չի տեղադրվել, քանի որ չստուգված մշակողների հավելվածները կարող են վտանգավոր լինել։&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Իմանալ ավելին մշակողների ստուգման մասին&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Այս հավելվածի մշակողին ստուգելիս խնդիր առաջացավ։ Հավելվածը չի թարմացվել, քանի որ չստուգված մշակողների թարմացումները կարող են վտանգավոր լինել։&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Իմանալ ավելին մշակողների ստուգման մասին&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Այս հավելվածը արգելափակվել է, քանի որ մշակողին ստուգելու հետ կապված խնդիր է առաջացել։ Ձեր տվյալների ու սարքի պաշտպանության նկատառումներով՝ արգելված է հավելվածներ տեղադրել չստուգված մշակողներից։&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Իմանալ ավելին մշակողների ստուգման մասին&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;Այս հավելվածը չի թարմացվել, քանի որ մշակողին ստուգելու հետ կապված խնդիր է առաջացել։ Ձեր տվյալների ու սարքի պաշտպանության նկատառումներով՝ արգելված է թարմացումներ տեղադրել չստուգված մշակողներից։&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Իմանալ ավելին մշակողների ստուգման մասին&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Տեղադրելով չստուգված մշակողի հավելված՝ հիշեք, որ այն կարող է վտանգել ձեր տվյալներն ու սարքը։"</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Տեղադրելով չստուգված մշակողի թարմացում՝ հիշեք, որ այն կարող է վտանգել ձեր տվյալներն ու սարքը։"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Հավելվածի մշակողը ստուգված չէ"</string>
@@ -135,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Վերականգնել"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Ապատեղադրել թարմացումները"</string>
     <string name="button_settings" msgid="3837571366246132287">"Կարգավորումներ"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Նորից փորձել"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>-ի կրկնօրինակ"</string>
 </resources>

@@ -55,7 +55,8 @@ abstract class MaximizeAppWindowWithDragToTopDragZoneInDesktopFirst(
     @Before
     fun setup() {
         testApp.enterDesktopMode(wmHelper, device)
-        connectedDisplayRule.setupTestDisplay()
+        val displayId = connectedDisplayRule.setupTestDisplay()
+        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(displayId).waitForAndVerify()
     }
 
     @Test

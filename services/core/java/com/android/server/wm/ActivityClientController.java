@@ -26,6 +26,7 @@ import static android.app.FullscreenRequestHandler.REMOTE_CALLBACK_RESULT_KEY;
 import static android.app.FullscreenRequestHandler.RESULT_APPROVED;
 import static android.app.FullscreenRequestHandler.RESULT_FAILED_ALREADY_FULLY_EXPANDED;
 import static android.app.FullscreenRequestHandler.RESULT_FAILED_NOT_IN_FULLSCREEN_WITH_HISTORY;
+import static android.app.FullscreenRequestHandler.RESULT_FAILED_NOT_SUPPORTED;
 import static android.app.FullscreenRequestHandler.RESULT_FAILED_NOT_TOP_FOCUSED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
@@ -118,7 +119,6 @@ import com.android.server.utils.quota.Categorizer;
 import com.android.server.utils.quota.Category;
 import com.android.server.utils.quota.CountQuotaTracker;
 import com.android.server.vr.VrManagerInternal;
-import com.android.window.flags.Flags;
 
 /**
  * Server side implementation for the client activity to interact with system.
@@ -220,10 +220,13 @@ class ActivityClientController extends IActivityClientController.Stub {
     }
 
     @Override
-    public void activityTopResumedStateLost() {
+    public void activityTopResumedStateLost(IBinder token) {
         final long origId = Binder.clearCallingIdentity();
         synchronized (mGlobalLock) {
-            mTaskSupervisor.handleTopResumedStateReleased(false /* timeout */);
+            final ActivityRecord r = ActivityRecord.forTokenLocked(token);
+            if (r != null) {
+                mTaskSupervisor.handleTopResumedStateReleasedIfNeeded(r, false /* timeout */);
+            }
         }
         Binder.restoreCallingIdentity(origId);
     }
@@ -878,31 +881,6 @@ class ActivityClientController extends IActivityClientController.Stub {
 
     @Override
     public void setRequestedOrientation(IBinder token, int requestedOrientation) {
-        if (Flags.enableTransitionOnActivitySetRequestedOrientation()) {
-            setRequestedOrientationWithTransition(token, requestedOrientation);
-        } else {
-            setRequestedOrientationLegacy(token, requestedOrientation);
-        }
-    }
-
-    // TODO(b/375339716): Clean up and remove legacy code.
-    private void setRequestedOrientationLegacy(IBinder token, int requestedOrientation) {
-        final long origId = Binder.clearCallingIdentity();
-        try {
-            synchronized (mGlobalLock) {
-                final ActivityRecord r = ActivityRecord.isInRootTaskLocked(token);
-                if (r != null) {
-                    EventLogTags.writeWmSetRequestedOrientation(requestedOrientation,
-                            r.shortComponentName);
-                    r.setRequestedOrientation(requestedOrientation);
-                }
-            }
-        } finally {
-            Binder.restoreCallingIdentity(origId);
-        }
-    }
-
-    private void setRequestedOrientationWithTransition(IBinder token, int requestedOrientation) {
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
@@ -1285,8 +1263,7 @@ class ActivityClientController extends IActivityClientController.Stub {
 
     private Task getMultiwindowFullscreenTargetTask() {
         Task task = mService.getTopDisplayFocusedRootTask();
-        if (DesktopExperienceFlags.ENABLE_REQUEST_FULLSCREEN_RESTORE_FREEFORM_BUGFIX.isTrue()
-                && task.mCreatedByOrganizer) {
+        if (task.mCreatedByOrganizer) {
             final Task topMostChild = task.getTopLeafTask();
             if (topMostChild != null) {
                 task = topMostChild;
@@ -1297,6 +1274,10 @@ class ActivityClientController extends IActivityClientController.Stub {
 
     private @FullscreenRequestHandler.RequestResult int validateMultiwindowFullscreenRequestLocked(
             Task targetTask, int fullscreenRequest, ActivityRecord requesterActivity) {
+        if (!mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_fullscreenRequestSupported)) {
+            return RESULT_FAILED_NOT_SUPPORTED;
+        }
         if (requesterActivity.getWindowingMode() == WINDOWING_MODE_PINNED) {
             return RESULT_APPROVED;
         }
@@ -1315,10 +1296,13 @@ class ActivityClientController extends IActivityClientController.Stub {
             return RESULT_APPROVED;
         }
 
-        if (DesktopModeFlags.ENABLE_REQUEST_FULLSCREEN_BUGFIX.isTrue()
-                && (taskWindowingMode == WINDOWING_MODE_FULLSCREEN
-                || taskWindowingMode == WINDOWING_MODE_MULTI_WINDOW)) {
-            return RESULT_FAILED_ALREADY_FULLY_EXPANDED;
+        if (DesktopModeFlags.ENABLE_REQUEST_FULLSCREEN_BUGFIX.isTrue()) {
+            if (taskWindowingMode == WINDOWING_MODE_FULLSCREEN) {
+                return RESULT_FAILED_ALREADY_FULLY_EXPANDED;
+            }
+            if (taskWindowingMode == WINDOWING_MODE_MULTI_WINDOW) {
+                return RESULT_FAILED_NOT_SUPPORTED;
+            }
         }
         return RESULT_APPROVED;
     }
@@ -1436,22 +1420,28 @@ class ActivityClientController extends IActivityClientController.Stub {
             if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()
                     && mService.getTransitionController().isShellTransitionsEnabled()) {
                 final Task task = r.getTask();
-                final Transition transition = new Transition(TRANSIT_START_LOCK_TASK_MODE,
+
+                if (!mService.canEnterLockTaskMode(task) || !mService.isTopMostTask(task)) {
+                    Slog.w(TAG, "startLockTaskMode: Can't lock due to auth, task: " + task);
+                    throw new IllegalArgumentException(
+                            "startLockTaskMode: Can't lock due to auth, task: " + task);
+                }
+                ActionChain chain = mService.mChainTracker.startTransit("startLockTaskModeByToken");
+                Transition newTransition = chain.isCollecting() ? null : new Transition(
+                        TRANSIT_START_LOCK_TASK_MODE,
                         0 /* flags */,
                         mService.getTransitionController(), mService.mWindowManager.mSyncEngine);
-                mService.getTransitionController().startCollectOrQueue(transition,
-                        (deferred) -> {
-                            final ActionChain chain = mService.mChainTracker.start(
-                                    "startLockTaskModeByToken",
-                                    transition);
-                            mService.getTransitionController().requestStartTransition(transition,
-                                    task,
-                                    null /* remoteTransition */, null /* displayChange */);
-                            chain.collect(task);
-                            mService.startLockTaskMode(task, false /* isSystemCaller */);
-                            transition.setReady(task, true);
-                            mService.mChainTracker.end();
-                        });
+                if (newTransition != null) {
+                    mService.getTransitionController().requestStartTransition(newTransition,
+                            task,
+                            null /* remoteTransition */, null /* displayChange */);
+                }
+                chain.collect(task);
+                mService.startLockTaskMode(task, false /* isSystemCaller */);
+                if (newTransition != null) {
+                    newTransition.setReady(task, true);
+                }
+                mService.mChainTracker.end();
             } else {
                 mService.startLockTaskMode(r.getTask(), false /* isSystemCaller */);
             }

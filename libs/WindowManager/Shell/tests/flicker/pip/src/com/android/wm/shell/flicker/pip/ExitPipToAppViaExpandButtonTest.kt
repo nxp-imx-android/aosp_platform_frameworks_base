@@ -70,7 +70,7 @@ class ExitPipToAppViaExpandButtonTest(flicker: FlickerTest) :
         }
         transitions {
             // This will bring PipApp to fullscreen
-            pipApp.expandPipWindowToApp(wmHelper)
+            pipApp.expandPipWindowToFullscreenApp(wmHelper)
             // Wait until the other app is no longer visible
             wmHelper.StateSyncBuilder().withWindowSurfaceDisappeared(testApp).waitForAndVerify()
         }

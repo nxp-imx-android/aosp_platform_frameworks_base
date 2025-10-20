@@ -45,6 +45,7 @@ import android.webkit.WebViewZygote;
 import com.android.sdksandbox.flags.Flags;
 
 import dalvik.annotation.optimization.CriticalNative;
+import dalvik.annotation.optimization.FastNative;
 import dalvik.system.VMDebug;
 import dalvik.system.VMRuntime;
 
@@ -281,7 +282,7 @@ public class Process {
      */
     public static final int INET_GID = 3003;
 
-    /** {@hide} */
+    /** @hide */
     public static final int NOBODY_UID = 9999;
 
     /**
@@ -316,6 +317,23 @@ public class Process {
      * @hide
      */
     public static final int LAST_SDK_SANDBOX_UID = 29999;
+
+    /**
+     * Defines the start of a range of UIDs going from this number to
+     * {@link #LAST_PCC_UID} that are reserved for assigning to
+     * processes that need to run in a PCC sandbox.
+     *
+     * Note that there are no GIDs associated with these processes; storage
+     * attribution for them will be done using project IDs.
+     * @hide
+     */
+    public static final int FIRST_PCC_UID = 30000;
+
+    /**
+     * Last UID that is used for PCC processes.
+     * @hide
+     */
+    public static final int LAST_PCC_UID = 39999;
 
     /**
      * First uid used for fully isolated sandboxed processes spawned from an app zygote
@@ -374,9 +392,9 @@ public class Process {
      */
     public static final int LAST_SHARED_APPLICATION_GID = 59999;
 
-    /** {@hide} */
+    /** @hide */
     public static final int FIRST_APPLICATION_CACHE_GID = 20000;
-    /** {@hide} */
+    /** @hide */
     public static final int LAST_APPLICATION_CACHE_GID = 29999;
 
     /**
@@ -671,10 +689,23 @@ public class Process {
     public static final int ZYGOTE_POLICY_FLAG_SYSTEM_PROCESS = 1 << 2;
 
     /**
+     * Flag used to indicate that the current launch event is for a native process.
+     *
+     * @hide
+     */
+    public static final int ZYGOTE_POLICY_FLAG_NATIVE_PROCESS = 1 << 3;
+
+    /**
      * State associated with the zygote process.
      * @hide
      */
     public static final ZygoteProcess ZYGOTE_PROCESS = new ZygoteProcess();
+
+    /**
+     * State associated with the native zygote process.
+     * @hide
+     */
+    public static final NativeZygoteProcess NATIVE_ZYGOTE_PROCESS = new NativeZygoteProcess();
 
     /**
      * The process name set via {@link #setArgV0(String)}.
@@ -728,7 +759,7 @@ public class Process {
      * @return An object that describes the result of the attempt to start the process.
      * @throws RuntimeException on fatal start failure
      *
-     * {@hide}
+     * @hide
      */
     public static ProcessStartResult start(@NonNull final String processClass,
                                            @Nullable final String niceName,
@@ -752,13 +783,17 @@ public class Process {
                                            boolean bindMountAppsData,
                                            boolean bindMountAppStorageDirs,
                                            boolean bindMountSystemOverrides,
+                                           long startSeq,
                                            @Nullable String[] zygoteArgs) {
-        return ZYGOTE_PROCESS.start(processClass, niceName, uid, gid, gids,
+        boolean isNative = android.os.Flags.nativeFrameworkPrototype()
+                && (zygotePolicyFlags & ZYGOTE_POLICY_FLAG_NATIVE_PROCESS) != 0;
+        IZygoteProcess process = isNative ? NATIVE_ZYGOTE_PROCESS : ZYGOTE_PROCESS;
+        return process.start(processClass, niceName, uid, gid, gids,
                     runtimeFlags, mountExternal, targetSdkVersion, seInfo,
                     abi, instructionSet, appDataDir, invokeWith, packageName,
                     zygotePolicyFlags, isTopApp, disabledCompatChanges,
                     pkgDataInfoMap, whitelistedDataInfoMap, bindMountAppsData,
-                    bindMountAppStorageDirs, bindMountSystemOverrides, zygoteArgs);
+                    bindMountAppStorageDirs, bindMountSystemOverrides, startSeq, zygoteArgs);
     }
 
     /** @hide */
@@ -775,6 +810,7 @@ public class Process {
                                                   @Nullable String invokeWith,
                                                   @Nullable String packageName,
                                                   @Nullable long[] disabledCompatChanges,
+                                                  long startSeq,
                                                   @Nullable String[] zygoteArgs) {
         // Webview zygote can't access app private data files, so doesn't need to know its data
         // info.
@@ -784,7 +820,8 @@ public class Process {
                     /*zygotePolicyFlags=*/ ZYGOTE_POLICY_FLAG_EMPTY, /*isTopApp=*/ false,
                 disabledCompatChanges, /* pkgDataInfoMap */ null,
                 /* whitelistedDataInfoMap */ null, /* bindMountAppsData */ false,
-                /* bindMountAppStorageDirs */ false, /* bindMountSyspropOverrides */ false, zygoteArgs);
+                /* bindMountAppStorageDirs */ false, /* bindMountSyspropOverrides */ false,
+                startSeq, zygoteArgs);
     }
 
     /**
@@ -934,7 +971,7 @@ public class Process {
 
     /**
      * @deprecated Use {@link #isIsolatedUid(int)} instead.
-     * {@hide}
+     * @hide
      */
     @Deprecated
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.TIRAMISU,
@@ -1024,6 +1061,18 @@ public class Process {
     }
 
     /**
+     * Returns whether the provided UID belongs to components running in a PCC
+     * sandbox process.
+     *
+     */
+    @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    @RavenwoodKeep
+    public static final boolean isPccUid(int uid) {
+        uid = UserHandle.getAppId(uid);
+        return uid >= FIRST_PCC_UID && uid <= LAST_PCC_UID;
+    }
+
+    /**
      * Returns the UID assigned to a particular user name, or -1 if there is
      * none.  If the given string consists of only numbers, it is converted
      * directly to a uid.
@@ -1083,32 +1132,61 @@ public class Process {
     }
 
     /**
-     * Set the priority of a thread, based on Linux priorities.
+     * Set the OS priority of a thread, using Linux niceness priorities. Does not affect the value
+     * cached for use by {@code java.lang.Thread.getPriority()}. If this is used with a
+     * non-negative priority (Linux niceness), the priority may, on rare occasion, be reset
+     * by the runtime to its cached value, especially when setting the priority of another thread.
+     *
+     * The new priority is not inherited by Java-created child threads. It may or may not
+     * be inherited by threads created from native code. Use {@code
+     * java/lang/Thread.setPriority()} to allow child threads to inherit the new priority.
      *
      * @param tid The identifier of the thread/process to change.
-     * @param priority A Linux priority level, from -20 for highest scheduling
+     * @param priority A Linux priority a.k.a. "niceness" level, from -20 for highest scheduling
      * priority to 19 for lowest scheduling priority.
      *
      * @throws IllegalArgumentException Throws IllegalArgumentException if
-     * <var>tid</var> does not exist.
+     * <var>tid</var> does not exist, or <var>priority</var> is out of range.
      * @throws SecurityException Throws SecurityException if your process does
      * not have permission to modify the given thread, or to use the given
      * priority.
      */
     @RavenwoodRedirect
-    public static final native void setThreadPriority(int tid,
+    public static final void setThreadPriority(int tid,
+            @IntRange(from = -20, to = THREAD_PRIORITY_LOWEST) int priority)
+            throws IllegalArgumentException, SecurityException {
+        if (com.android.libcore.Flags.nicenessApis() && Process.myTid() == tid) {
+            // Prefer the same thread version that informs ART of the priority change.
+            setThreadPriority(priority);
+        } else {
+            if (priority < -20 || priority > THREAD_PRIORITY_LOWEST) {
+                throw new IllegalArgumentException("Priority/niceness " + priority + " is invalid");
+            }
+            setThreadPriorityNative(tid, priority);
+        }
+    }
+
+    @FastNative
+    private static native void setThreadPriorityNative(int tid,
             @IntRange(from = -20, to = THREAD_PRIORITY_LOWEST) int priority)
             throws IllegalArgumentException, SecurityException;
 
     /**
+     * No-op stub, kept only for app compat purposes.
+     *
+     * Historical description:
      * Call with 'false' to cause future calls to {@link #setThreadPriority(int)} to
      * throw an exception if passed a background-level thread priority.  This is only
      * effective if the JNI layer is built with GUARD_THREAD_PRIORITY defined to 1.
+     * This does not prevent a thread from backgrounding itself via other means, such
+     * as a call to Thread.setPriority() or a native setpriority() call.
+     *
+     * @deprecated This method does nothing.  Do not use.
      *
      * @hide
      */
-    @RavenwoodRedirect
-    public static final native void setCanSelfBackground(boolean backgroundOk);
+    @Deprecated
+    public static final void setCanSelfBackground(boolean backgroundOk) {}
 
     /**
      * Sets the scheduling group for a thread.
@@ -1249,31 +1327,43 @@ public class Process {
     public static final native long[] getSchedAffinity(int tid);
 
     /**
-     * Set the priority of the calling thread, based on Linux priorities.  See
-     * {@link #setThreadPriority(int, int)} for more information.
+     * Set the priority of the calling thread, based on Linux niceness priorities.  See
+     * {@link #setThreadPriority(int, int)} for more information. This is preferred over
+     * the two argument version when possible. The new priority is not inherited by Java
+     * child threads.
      *
      * @param priority A Linux priority level, from -20 for highest scheduling
      * priority to 19 for lowest scheduling priority.
      *
      * @throws IllegalArgumentException Throws IllegalArgumentException if
-     * <var>tid</var> does not exist.
+     * <var>priority</var> is out of range.
      * @throws SecurityException Throws SecurityException if your process does
      * not have permission to modify the given thread, or to use the given
      * priority.
-     *
-     * @see #setThreadPriority(int, int)
      */
-    @RavenwoodReplace
-    public static final native void setThreadPriority(
+    @RavenwoodRedirect
+    public static final void setThreadPriority(
             @IntRange(from = -20, to = THREAD_PRIORITY_LOWEST) int priority)
-            throws IllegalArgumentException, SecurityException;
-
-    private static void setThreadPriority$ravenwood(int priority) {
-        setThreadPriority(myTid(), priority);
+            throws IllegalArgumentException, SecurityException {
+        if (!com.android.libcore.Flags.nicenessApis()) {
+            // Fall back to not updating the cached priority if we don't have libcore support.
+            setThreadPriority(myTid(), priority);
+            return;
+        }
+        boolean succ = VMRuntime.getRuntime().setThreadNiceness(Thread.currentThread(), priority);
+        // VMRuntime.setThreadNiceness() just returns false for out-of-range priority.
+        if (!succ) {
+            if (priority < -20 || priority > THREAD_PRIORITY_LOWEST) {
+                throw new IllegalArgumentException("Priority/niceness " + priority + " is invalid");
+            }
+            throw new SecurityException("Cannot set priority to " + priority);
+        }
     }
 
     /**
      * Return the current priority of a thread, based on Linux priorities.
+     * Ignores the {@code java.lang.Thread.getPriority()} cached priority, which is used
+     * to set the priority of newly created child Java threads.
      *
      * @param tid The identifier of the thread/process. If tid equals zero, the priority of the
      * calling process/thread will be returned.
@@ -1287,6 +1377,7 @@ public class Process {
      */
     @RavenwoodRedirect
     @IntRange(from = -20, to = THREAD_PRIORITY_LOWEST)
+    @FastNative
     public static final native int getThreadPriority(int tid)
             throws IllegalArgumentException;
 
@@ -1301,7 +1392,7 @@ public class Process {
      * not have permission to modify the given thread, or to use the given
      * scheduling policy or priority.
      *
-     * {@hide}
+     * @hide
      */
 
     @TestApi
@@ -1321,7 +1412,7 @@ public class Process {
      * not have permission to modify the given thread, or to use the given
      * scheduling policy or priority.
      *
-     * {@hide}
+     * @hide
      */
 
     public static final native void setThreadScheduler(int tid, int policy, int priority)
@@ -1346,7 +1437,7 @@ public class Process {
      *
      * @param text The new name of this process.
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage(maxTargetSdk = VERSION_CODES.S, publicAlternatives = "Do not try to "
             + "change the process name. (If you must, you could use {@code pthread_setname_np(3)}, "

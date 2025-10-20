@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Connessione…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Connessione a <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Accoppiamento in corso…"</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Impossibile eseguire l\'accoppiamento"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Impossibile connettersi"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> connesso (telefono escluso)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> connesso (contenuti multimediali esclusi)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> connesso (telefono o media esclusi)"</string>
@@ -116,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Attivo (solo destro)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Attivi (destro e sinistro)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Impossibile aggiornare audio ambientale"</string>
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"Impossibile aggiornare preset"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Selezionato"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Attivo (solo contenuti multimediali). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> di batteria."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Attivo (solo contenuti multimediali). S: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g> di batteria. D: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> di batteria."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Dispositivo ospite. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> di batteria."</string>
@@ -345,7 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Quando questa modalità è attiva, l\'indirizzo MAC del dispositivo potrebbe cambiare ogni volta che il dispositivo si connette a una rete con randomizzazione degli indirizzi MAC attiva"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"A consumo"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Non a consumo"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Dimensioni buffer logger"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Dimensione buffer logger"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Seleziona dimensioni logger per buffer log"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Cancellare i dati nello spazio di archiviazione permanente del logger?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Quando il monitoraggio tramite logger permanente viene interrotto, siamo obbligati a eliminare i dati del logger memorizzati sul dispositivo."</string>
@@ -688,7 +692,7 @@
     <string name="guest_exit_guest" msgid="5908239569510734136">"Rimuovi ospite"</string>
     <string name="guest_reset_guest" msgid="6110013010356013758">"Reimposta sessione Ospite"</string>
     <string name="guest_reset_guest_dialog_title" msgid="8047270010895437534">"Reimpostare sessione Ospite?"</string>
-    <string name="guest_remove_guest_dialog_title" msgid="4548511006624088072">"Vuoi rimuovere l\'ospite?"</string>
+    <string name="guest_remove_guest_dialog_title" msgid="4548511006624088072">"Rimuovere l\'ospite?"</string>
     <string name="guest_reset_guest_confirm_button" msgid="2989915693215617237">"Reimposta"</string>
     <string name="guest_remove_guest_confirm_button" msgid="7858123434954143879">"Rimuovi"</string>
     <string name="guest_resetting" msgid="7822120170191509566">"Reimpostazione sessione Ospite in corso…"</string>

@@ -1,6 +1,5 @@
 package: "android.service.notification"
 container: "system"
-container: "system"
 
 flag {
   name: "redact_sensitive_notifications_from_untrusted_listeners"
@@ -36,13 +35,6 @@ flag {
     namespace: "systemui"
     description: "Allows the NAS to classify notifications"
     bug: "343988084"
-}
-
-flag {
-  name: "notification_force_grouping"
-  namespace: "systemui"
-  description: "This flag controls the forced auto-grouping feature"
-  bug: "336488844"
 }
 
 flag {

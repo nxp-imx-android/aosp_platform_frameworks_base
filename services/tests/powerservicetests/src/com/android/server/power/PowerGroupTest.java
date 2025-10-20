@@ -315,11 +315,59 @@ public class PowerGroupTest {
                 /* bootCompleted= */ true,
                 /* screenBrightnessBoostInProgress= */ false,
                 /* waitForNegativeProximity= */ false,
-                /* brightWhenDozing= */ false);
+                /* brightWhenDozing= */ false,
+                /* allAdjacentGroupsAreNonInteractive= */ false);
         DisplayManagerInternal.DisplayPowerRequest displayPowerRequest =
                 mPowerGroup.mDisplayPowerRequest;
         assertThat(displayPowerRequest.policy).isEqualTo(POLICY_DIM);
         assertThat(displayPowerRequest.policyReason).isEqualTo(STATE_REASON_MOTION);
+        assertThat(displayPowerRequest.screenBrightnessOverride).isWithin(PRECISION).of(BRIGHTNESS);
+        assertThat(displayPowerRequest.screenBrightnessOverrideTag.toString()).isEqualTo(tag);
+        assertThat(displayPowerRequest.useProximitySensor).isEqualTo(false);
+        assertThat(displayPowerRequest.boostScreenBrightness).isEqualTo(false);
+        assertThat(displayPowerRequest.dozeScreenState).isEqualTo(Display.STATE_UNKNOWN);
+        assertThat(displayPowerRequest.dozeScreenBrightness).isEqualTo(
+                PowerManager.BRIGHTNESS_INVALID_FLOAT);
+        assertThat(displayPowerRequest.useNormalBrightnessForDoze).isFalse();
+        assertThat(displayPowerRequest.lowPowerMode).isEqualTo(batterySaverEnabled);
+        assertThat(displayPowerRequest.screenLowPowerBrightnessFactor).isWithin(PRECISION).of(
+                brightnessFactor);
+    }
+
+    @Test
+    public void testUpdateWhileAwake_UpdatesDisplayPowerRequest_policyOff() {
+        when(mFeatureFlags.isSeparateTimeoutsFlickerEnabled()).thenReturn(true);
+        mPowerGroup.dozeLocked(TIMESTAMP1, UID, GO_TO_SLEEP_REASON_APPLICATION);
+
+        final boolean batterySaverEnabled = true;
+        float brightnessFactor = 0.7f;
+        PowerSaveState powerSaveState = new PowerSaveState.Builder()
+                .setBatterySaverEnabled(batterySaverEnabled)
+                .setBrightnessFactor(brightnessFactor)
+                .build();
+
+        CharSequence tag = "my/tag";
+        mPowerGroup.updateLocked(/* screenBrightnessOverride= */ BRIGHTNESS,
+                /* overrideTag= */ tag,
+                /* useProximitySensor= */ false,
+                /* boostScreenBrightness= */ false,
+                /* dozeScreenStateOverride= */ Display.STATE_ON,
+                /* dozeScreenStateReason= */ Display.STATE_REASON_DEFAULT_POLICY,
+                /* dozeScreenBrightness= */ BRIGHTNESS_DOZE,
+                /* useNormalBrightnessForDoze= */ false,
+                /* overrideDrawWakeLock= */ false,
+                powerSaveState,
+                /* quiescent= */ false,
+                /* dozeAfterScreenOff= */ false,
+                /* bootCompleted= */ true,
+                /* screenBrightnessBoostInProgress= */ false,
+                /* waitForNegativeProximity= */ false,
+                /* brightWhenDozing= */ false,
+                /* allAdjacentGroupsAreNonInteractive= */ true);
+        DisplayManagerInternal.DisplayPowerRequest displayPowerRequest =
+                mPowerGroup.mDisplayPowerRequest;
+        assertThat(displayPowerRequest.policy).isEqualTo(POLICY_OFF);
+        assertThat(displayPowerRequest.policyReason).isEqualTo(STATE_REASON_DEFAULT_POLICY);
         assertThat(displayPowerRequest.screenBrightnessOverride).isWithin(PRECISION).of(BRIGHTNESS);
         assertThat(displayPowerRequest.screenBrightnessOverrideTag.toString()).isEqualTo(tag);
         assertThat(displayPowerRequest.useProximitySensor).isEqualTo(false);
@@ -355,7 +403,8 @@ public class PowerGroupTest {
                 /* bootCompleted= */ true,
                 /* screenBrightnessBoostInProgress= */ false,
                 /* waitForNegativeProximity= */ false,
-                /* brightWhenDozing= */ false);
+                /* brightWhenDozing= */ false,
+                /* allAdjacentGroupsAreNonInteractive= */ false);
         DisplayManagerInternal.DisplayPowerRequest displayPowerRequest =
                 mPowerGroup.mDisplayPowerRequest;
         assertThat(displayPowerRequest.policyReason).isEqualTo(STATE_REASON_DEFAULT_POLICY);
@@ -377,7 +426,8 @@ public class PowerGroupTest {
                 /* bootCompleted= */ true,
                 /* screenBrightnessBoostInProgress= */ false,
                 /* waitForNegativeProximity= */ false,
-                /* brightWhenDozing= */ false);
+                /* brightWhenDozing= */ false,
+                /* allAdjacentGroupsAreNonInteractive= */ false);
         displayPowerRequest = mPowerGroup.mDisplayPowerRequest;
         assertThat(displayPowerRequest.policyReason).isEqualTo(STATE_REASON_DEFAULT_POLICY);
     }
@@ -410,7 +460,8 @@ public class PowerGroupTest {
                 /* bootCompleted= */ true,
                 /* screenBrightnessBoostInProgress= */ false,
                 /* waitForNegativeProximity= */ false,
-                /* brightWhenDozing= */ false);
+                /* brightWhenDozing= */ false,
+                /* allAdjacentGroupsAreNonInteractive= */ false);
         DisplayManagerInternal.DisplayPowerRequest displayPowerRequest =
                 mPowerGroup.mDisplayPowerRequest;
         assertThat(displayPowerRequest.policy).isEqualTo(POLICY_DOZE);
@@ -455,7 +506,8 @@ public class PowerGroupTest {
                 /* bootCompleted= */ true,
                 /* screenBrightnessBoostInProgress= */ false,
                 /* waitForNegativeProximity= */ false,
-                /* brightWhenDozing= */ false);
+                /* brightWhenDozing= */ false,
+                /* allAdjacentGroupsAreNonInteractive= */ false);
         DisplayManagerInternal.DisplayPowerRequest displayPowerRequest =
                 mPowerGroup.mDisplayPowerRequest;
         assertThat(displayPowerRequest.policy).isEqualTo(POLICY_DOZE);
@@ -498,7 +550,8 @@ public class PowerGroupTest {
                 /* bootCompleted= */ true,
                 /* screenBrightnessBoostInProgress= */ false,
                 /* waitForNegativeProximity= */ false,
-                /* brightWhenDozing= */ false);
+                /* brightWhenDozing= */ false,
+                /* allAdjacentGroupsAreNonInteractive= */ false);
         DisplayManagerInternal.DisplayPowerRequest displayPowerRequest =
                 mPowerGroup.mDisplayPowerRequest;
         assertThat(displayPowerRequest.policy).isEqualTo(POLICY_OFF);
@@ -544,7 +597,8 @@ public class PowerGroupTest {
                 /* bootCompleted= */ true,
                 /* screenBrightnessBoostInProgress= */ false,
                 /* waitForNegativeProximity= */ false,
-                /* brightWhenDozing= */ false);
+                /* brightWhenDozing= */ false,
+                /* allAdjacentGroupsAreNonInteractive= */ false);
         DisplayManagerInternal.DisplayPowerRequest displayPowerRequest =
                 mPowerGroup.mDisplayPowerRequest;
         assertThat(displayPowerRequest.policy).isEqualTo(POLICY_OFF);
@@ -660,7 +714,8 @@ public class PowerGroupTest {
                 /* bootCompleted= */ true,
                 /* screenBrightnessBoostInProgress= */ false,
                 /* waitForNegativeProximity= */ false,
-                /* brightWhenDozing= */ false);
+                /* brightWhenDozing= */ false,
+                /* allAdjacentGroupsAreNonInteractive= */ false);
         DisplayManagerInternal.DisplayPowerRequest displayPowerRequest =
                 mPowerGroup.mDisplayPowerRequest;
         assertThat(displayPowerRequest.policy).isEqualTo(POLICY_OFF);
@@ -703,7 +758,8 @@ public class PowerGroupTest {
                 /* bootCompleted= */ true,
                 /* screenBrightnessBoostInProgress= */ false,
                 /* waitForNegativeProximity= */ false,
-                /* brightWhenDozing= */ false);
+                /* brightWhenDozing= */ false,
+                /* allAdjacentGroupsAreNonInteractive= */ false);
         DisplayManagerInternal.DisplayPowerRequest displayPowerRequest =
                 mPowerGroup.mDisplayPowerRequest;
         assertThat(displayPowerRequest.policy).isEqualTo(POLICY_BRIGHT);
@@ -744,7 +800,8 @@ public class PowerGroupTest {
                 /* bootCompleted= */ false,
                 /* screenBrightnessBoostInProgress= */ false,
                 /* waitForNegativeProximity= */ false,
-                /* brightWhenDozing= */ false);
+                /* brightWhenDozing= */ false,
+                /* allAdjacentGroupsAreNonInteractive= */ false);
         DisplayManagerInternal.DisplayPowerRequest displayPowerRequest =
                 mPowerGroup.mDisplayPowerRequest;
         assertThat(displayPowerRequest.policy).isEqualTo(POLICY_BRIGHT);
@@ -786,7 +843,8 @@ public class PowerGroupTest {
                 /* bootCompleted= */ true,
                 /* screenBrightnessBoostInProgress= */ false,
                 /* waitForNegativeProximity= */ false,
-                /* brightWhenDozing= */ false);
+                /* brightWhenDozing= */ false,
+                /* allAdjacentGroupsAreNonInteractive= */ false);
         DisplayManagerInternal.DisplayPowerRequest displayPowerRequest =
                 mPowerGroup.mDisplayPowerRequest;
         assertThat(displayPowerRequest.policy).isEqualTo(POLICY_BRIGHT);
@@ -827,7 +885,8 @@ public class PowerGroupTest {
                 /* bootCompleted= */ true,
                 /* screenBrightnessBoostInProgress= */ true,
                 /* waitForNegativeProximity= */ false,
-                /* brightWhenDozing= */ false);
+                /* brightWhenDozing= */ false,
+                /* allAdjacentGroupsAreNonInteractive= */ false);
         DisplayManagerInternal.DisplayPowerRequest displayPowerRequest =
                 mPowerGroup.mDisplayPowerRequest;
         assertThat(displayPowerRequest.policy).isEqualTo(POLICY_BRIGHT);

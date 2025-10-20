@@ -20,6 +20,8 @@ import android.annotation.UserIdInt
 import android.app.admin.DevicePolicyManager
 import android.content.IntentFilter
 import android.os.UserHandle
+import android.security.Flags.lockscreenIndicateDuplicateGuesses
+import android.security.Flags.manageLockoutEndTimeInService
 import android.security.Flags.secureLockDevice
 import android.util.Log
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -28,6 +30,7 @@ import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_BIO
 import com.android.internal.widget.LockscreenCredential
 import com.android.keyguard.KeyguardSecurityModel
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
+import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Biometric
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.None
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Password
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pattern
@@ -37,6 +40,9 @@ import com.android.systemui.authentication.shared.model.AuthenticationResultMode
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.log.table.TableLogBuffer
+import com.android.systemui.log.table.logDiffsForTable
+import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionsRepository
 import com.android.systemui.user.data.repository.UserRepository
@@ -46,10 +52,14 @@ import dagger.Binds
 import dagger.Module
 import java.util.function.Function
 import javax.inject.Inject
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -57,6 +67,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 
 /** Defines interface for classes that can access authentication-related application state. */
@@ -93,17 +104,23 @@ interface AuthenticationRepository {
      * Timestamp for when the current lockout (aka "throttling") will end, allowing the user to
      * attempt authentication again. Returns `null` if no lockout is active.
      *
-     * Note that the value is in milliseconds and matches [SystemClock.elapsedRealtime].
+     * Note that the value should be compared to [SystemClock.elapsedRealtime].milliseconds.
      *
      * Also note that the value may change when the selected user is changed.
      */
-    val lockoutEndTimestamp: Long?
+    val lockoutEndTime: Duration?
 
     /**
      * Whether lockout has occurred at least once since the last successful authentication of any
      * user.
      */
     val hasLockoutOccurred: StateFlow<Boolean>
+
+    /**
+     * Whether the primary authentication attempt was the same as a previous attempt since the last
+     * successful authentication.
+     */
+    val isDuplicateAttempt: StateFlow<Boolean>
 
     /**
      * The currently-configured authentication method. This determines how the authentication
@@ -116,7 +133,7 @@ interface AuthenticationRepository {
      * snapshot of the current authentication method without establishing a collector of the flow
      * can do so by invoking [getAuthenticationMethod].
      */
-    val authenticationMethod: Flow<AuthenticationMethodModel>
+    val authenticationMethod: StateFlow<AuthenticationMethodModel>
 
     /** The minimal length of a pattern. */
     val minPatternLength: Int
@@ -151,7 +168,7 @@ interface AuthenticationRepository {
     suspend fun getPinLength(): Int
 
     /** Reports an authentication attempt. */
-    suspend fun reportAuthenticationAttempt(isSuccessful: Boolean)
+    suspend fun reportAuthenticationAttempt(isSuccessful: Boolean, isDuplicate: Boolean = false)
 
     /** Reports that the user has entered a temporary device lockout (throttling). */
     suspend fun reportLockoutStarted(durationMs: Int)
@@ -185,8 +202,17 @@ interface AuthenticationRepository {
      */
     suspend fun getMaximumTimeToLock(): Long
 
-    /** Returns `true` if the power button should instantly lock the device, `false` otherwise. */
-    suspend fun getPowerButtonInstantlyLocks(): Boolean
+    /**
+     * Returns true if the power button should instantly lock the device, false otherwise.
+     *
+     * If the device is not secure, return true - this is a quirk of the settings app. If you have
+     * swipe security set, you can no longer access the "power button locks instantly" setting in
+     * the UI and it defaults to true, so the swipe lockscreen will always show up after pressing
+     * the power button.
+     *
+     * WARNING: This causes a blocking IPC to LockPatternUtils (b/446735679).
+     */
+    fun getPowerButtonInstantlyLocks(): Boolean
 }
 
 @SysUISingleton
@@ -202,6 +228,7 @@ constructor(
     private val devicePolicyManager: DevicePolicyManager,
     broadcastDispatcher: BroadcastDispatcher,
     mobileConnectionsRepository: MobileConnectionsRepository,
+    @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
 ) : AuthenticationRepository {
 
     override val hintedPinLength: Int = 6
@@ -219,7 +246,7 @@ constructor(
             getFreshValue = lockPatternUtils::isAutoPinConfirmEnabled,
         )
 
-    override val authenticationMethod: Flow<AuthenticationMethodModel> =
+    override val authenticationMethod: StateFlow<AuthenticationMethodModel> =
         combine(userRepository.selectedUserInfo, mobileConnectionsRepository.isAnySimSecure) {
                 selectedUserInfo,
                 _ ->
@@ -237,8 +264,13 @@ constructor(
                     .onStart { emit(Unit) }
                     .map { selectedUserId }
             }
-            .map(::getAuthenticationMethod)
-            .distinctUntilChanged()
+            .map { getAuthenticationMethod() }
+            .logDiffsForTable(tableLogBuffer = tableLogBuffer, initialValue = None)
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.Eagerly,
+                initialValue = getAuthenticationMethodBlocking(selectedUserId),
+            )
 
     override val minPatternLength: Int = LockPatternUtils.MIN_LOCK_PATTERN_SIZE
 
@@ -254,14 +286,20 @@ constructor(
     override val failedAuthenticationAttempts: StateFlow<Int> =
         _failedAuthenticationAttempts.asStateFlow()
 
-    override val lockoutEndTimestamp: Long?
+    override val lockoutEndTime: Duration?
         get() =
-            lockPatternUtils.getLockoutAttemptDeadline(selectedUserId).takeIf {
-                clock.elapsedRealtime() < it
-            }
+            if (manageLockoutEndTimeInService()) {
+                    lockPatternUtils.getLockoutEndTime(selectedUserId).toKotlinDuration()
+                } else {
+                    lockPatternUtils.getLockoutAttemptDeadline(selectedUserId).milliseconds
+                }
+                .takeIf { clock.elapsedRealtime().milliseconds < it }
 
     private val _hasLockoutOccurred = MutableStateFlow(false)
     override val hasLockoutOccurred: StateFlow<Boolean> = _hasLockoutOccurred.asStateFlow()
+
+    private val _isDuplicateAttempt = MutableStateFlow(false)
+    override val isDuplicateAttempt: StateFlow<Boolean> = _isDuplicateAttempt.asStateFlow()
 
     init {
         if (SceneContainerFlag.isEnabled) {
@@ -279,6 +317,15 @@ constructor(
         credential: LockscreenCredential
     ): AuthenticationResultModel {
         return withContext(backgroundDispatcher) {
+            if (lockscreenIndicateDuplicateGuesses()) {
+                val response =
+                    lockPatternUtils.checkCredentialWithResponse(credential, selectedUserId) {}
+                return@withContext AuthenticationResultModel(
+                    isSuccessful = response.isMatched,
+                    lockoutDurationMs = response.timeout,
+                    isDuplicate = response.isCredAlreadyTried,
+                )
+            }
             try {
                 val matched = lockPatternUtils.checkCredential(credential, selectedUserId) {}
                 AuthenticationResultModel(isSuccessful = matched, lockoutDurationMs = 0)
@@ -288,14 +335,15 @@ constructor(
         }
     }
 
-    override suspend fun getAuthenticationMethod(): AuthenticationMethodModel =
-        getAuthenticationMethod(selectedUserId)
+    override suspend fun getAuthenticationMethod(): AuthenticationMethodModel {
+        return withContext(backgroundDispatcher) { getAuthenticationMethodBlocking(selectedUserId) }
+    }
 
     override suspend fun getPinLength(): Int {
         return withContext(backgroundDispatcher) { lockPatternUtils.getPinLength(selectedUserId) }
     }
 
-    override suspend fun reportAuthenticationAttempt(isSuccessful: Boolean) {
+    override suspend fun reportAuthenticationAttempt(isSuccessful: Boolean, isDuplicate: Boolean) {
         withContext(backgroundDispatcher) {
             if (isSuccessful) {
                 if (
@@ -318,6 +366,7 @@ constructor(
             } else {
                 lockPatternUtils.reportFailedPasswordAttempt(selectedUserId)
             }
+            _isDuplicateAttempt.value = isDuplicate
             _failedAuthenticationAttempts.value = getFailedAuthenticationAttemptCount()
         }
     }
@@ -354,11 +403,9 @@ constructor(
         }
     }
 
-    /** Returns `true` if the power button should instantly lock the device, `false` otherwise. */
-    override suspend fun getPowerButtonInstantlyLocks(): Boolean {
-        return withContext(backgroundDispatcher) {
+    override fun getPowerButtonInstantlyLocks(): Boolean {
+        return !lockPatternUtils.isSecure(selectedUserId) ||
             lockPatternUtils.getPowerButtonInstantlyLocks(selectedUserId)
-        }
     }
 
     private val selectedUserId: Int
@@ -403,18 +450,20 @@ constructor(
         return flow.asStateFlow()
     }
 
-    /** Returns the authentication method for the given user ID. */
-    private suspend fun getAuthenticationMethod(@UserIdInt userId: Int): AuthenticationMethodModel {
-        return withContext(backgroundDispatcher) {
-            when (getSecurityMode.apply(userId)) {
-                KeyguardSecurityModel.SecurityMode.PIN -> Pin
-                KeyguardSecurityModel.SecurityMode.SimPin,
-                KeyguardSecurityModel.SecurityMode.SimPuk -> Sim
-                KeyguardSecurityModel.SecurityMode.Password -> Password
-                KeyguardSecurityModel.SecurityMode.Pattern -> Pattern
-                KeyguardSecurityModel.SecurityMode.None -> None
-                KeyguardSecurityModel.SecurityMode.Invalid -> error("Invalid security mode!")
-            }
+    /**
+     * Returns the authentication method for the given user ID. This is a blocking call that
+     * normally should only be made off the main thread.
+     */
+    private fun getAuthenticationMethodBlocking(@UserIdInt userId: Int): AuthenticationMethodModel {
+        return when (getSecurityMode.apply(userId)) {
+            KeyguardSecurityModel.SecurityMode.PIN -> Pin
+            KeyguardSecurityModel.SecurityMode.SimPin,
+            KeyguardSecurityModel.SecurityMode.SimPuk -> Sim
+            KeyguardSecurityModel.SecurityMode.Password -> Password
+            KeyguardSecurityModel.SecurityMode.Pattern -> Pattern
+            KeyguardSecurityModel.SecurityMode.None -> None
+            KeyguardSecurityModel.SecurityMode.SecureLockDeviceBiometricAuth -> Biometric
+            KeyguardSecurityModel.SecurityMode.Invalid -> error("Invalid security mode!")
         }
     }
 

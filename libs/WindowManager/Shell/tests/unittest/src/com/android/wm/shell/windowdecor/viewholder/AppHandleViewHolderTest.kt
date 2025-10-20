@@ -21,6 +21,7 @@ import android.animation.ValueAnimator
 import android.app.ActivityManager.RunningTaskInfo
 import android.graphics.Point
 import android.os.Handler
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper
@@ -92,6 +93,10 @@ class AppHandleViewHolderTest : ShellTestCase() {
     }
 
     @Test
+    @DisableFlags(
+        Flags.FLAG_ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER,
+        Flags.FLAG_ENABLE_DRAWING_APP_HANDLE,
+    )
     fun statusBarInputLayer_disposedWhenCaptionBelowStatusBar() {
         val appHandleViewHolder: AppHandleViewHolder = spy(createAppHandleViewHolder(mockView))
         val captionPosition = Point(0, SystemBarUtils.getStatusBarHeight(mContext) + 10)

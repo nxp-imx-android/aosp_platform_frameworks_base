@@ -65,6 +65,14 @@ flag {
 }
 
 flag {
+    name: "a11y_text_change_types_api"
+    namespace: "accessibility"
+    description: "Enables sending specific text change types (e.g., in composition, committed by IME) in AccessibilityEvent"
+    bug: "436338406"
+    is_exported: true
+}
+
+flag {
     name: "braille_display_hid"
     namespace: "accessibility"
     is_exported: true
@@ -88,16 +96,6 @@ flag {
 }
 
 flag {
-    name: "copy_surface_control_for_window_screenshots"
-    namespace: "accessibility"
-    description: "Copies and sends the copied SurfaceControl when an A11yService requests a single-window app screenshot"
-    bug: "431752508"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "deprecate_accessibility_announcement_apis"
     namespace: "accessibility"
     description: "Controls the deprecation of platform APIs related to disruptive accessibility announcements"
@@ -111,6 +109,13 @@ flag {
     description: "Controls the deprecation of AccessibilityNodeInfo labelFor apis"
     bug: "333783827"
     is_exported: true
+}
+
+flag {
+    name: "enable_a11y_top_row_shortcut"
+    namespace: "accessibility"
+    description: "Support physical keyboard top row accessibility key shortcut"
+    bug: "440411783"
 }
 
 flag {
@@ -202,16 +207,6 @@ flag {
 }
 
 flag {
-    name: "light_bar_update_button_tint_on_nav_mode_change"
-    namespace: "accessibility"
-    description: "adds logic to update navbar button tint when navigation mode changes"
-    bug: "387395420"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "motion_event_observing"
     is_exported: true
     namespace: "accessibility"
@@ -237,6 +232,16 @@ flag {
 }
 
 flag {
+    name: "prevent_volume_shortcut_ringtone_exhaustion"
+    namespace: "accessibility"
+    description: "Prevents audio resource exhaustion by stopping the previous ringtone before a new one is played when the accessibility shortcut is repeatedly triggered."
+    bug: "429376017"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "reduce_window_content_changed_event_throttle"
     namespace: "accessibility"
     description: "Reduces the throttle of AccessibilityEvent of TYPE_WINDOW_CONTENT_CHANGED"
@@ -256,13 +261,6 @@ flag {
     description: "Request rectangle on screen with source parameter"
     bug: "391877896"
     is_exported: true
-}
-
-flag {
-    name: "skip_accessibility_warning_dialog_for_trusted_services"
-    namespace: "accessibility"
-    description: "Skips showing the accessibility warning dialog for trusted services."
-    bug: "303511250"
 }
 
 flag {

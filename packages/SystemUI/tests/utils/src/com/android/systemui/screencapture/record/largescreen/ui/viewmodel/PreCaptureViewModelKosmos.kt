@@ -16,29 +16,34 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
-import android.content.applicationContext
+import android.view.windowManager
+import com.android.internal.logging.uiEventLogger
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.backgroundScope
-import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModelImpl
+import com.android.systemui.screencapture.common.shared.model.screenCaptureUiParameters
+import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
-import com.android.systemui.screencapture.record.largescreen.domain.interactor.screenCaptureRecordLargeScreenFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.screenshotInteractor
+import com.android.systemui.screenrecord.data.repository.screenRecordingServiceRepository
 
 val Kosmos.preCaptureViewModelFactory by Fixture {
     object : PreCaptureViewModel.Factory {
         override fun create(displayId: Int): PreCaptureViewModel {
             return PreCaptureViewModel(
                 displayId = displayId,
-                applicationContext = applicationContext,
                 backgroundScope = backgroundScope,
-                iconProvider = screenCaptureIconProviderKosmos,
+                windowManager = windowManager,
                 screenshotInteractor = screenshotInteractor,
-                featuresInteractor = screenCaptureRecordLargeScreenFeaturesInteractor,
-                drawableLoaderViewModelImpl = drawableLoaderViewModelImpl,
+                drawableLoaderViewModel = drawableLoaderViewModel,
                 screenCaptureUiInteractor = screenCaptureUiInteractor,
+                screenRecordingServiceRepository = screenRecordingServiceRepository,
+                screenCaptureUiParams = screenCaptureUiParameters,
+                uiEventLogger = uiEventLogger,
+                toolbarViewModelFactory = preCaptureToolbarViewModelFactory,
             )
         }
     }
 }
+
 val Kosmos.preCaptureViewModel by Fixture { preCaptureViewModelFactory.create(123) }

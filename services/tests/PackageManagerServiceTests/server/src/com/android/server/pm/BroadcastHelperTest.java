@@ -43,7 +43,6 @@ import android.os.Message;
 import android.os.UserHandle;
 import android.platform.test.annotations.AppModeFull;
 import android.platform.test.annotations.AppModeNonSdkSandbox;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 
@@ -63,7 +62,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
-import java.util.List;
 
 @AppModeFull
 @AppModeNonSdkSandbox
@@ -122,7 +120,6 @@ public class BroadcastHelperTest {
         mBroadcastHelper = new BroadcastHelper(mMockPackageManagerServiceInjector);
     }
 
-    @EnableFlags(Flags.FLAG_CONSOLIDATE_PACKAGE_CHANGED_BROADCASTS)
     @Test
     public void changeNonExportedComponent_sendPackageChangedBroadcastToSystemAndApplicationItself()
             throws Exception {
@@ -141,30 +138,9 @@ public class BroadcastHelperTest {
         Bundle actualOptions = captorOptions.getValue();
         assertThat(actualOptions).isNotNull();
         verifyIncludedPackages(actualOptions, "android", PACKAGE_CHANGED_TEST_PACKAGE_NAME);
+        verifyBroadcastDebugReason(actualOptions, PackageMetrics.STRING_TEST);
     }
 
-    @DisableFlags(Flags.FLAG_CONSOLIDATE_PACKAGE_CHANGED_BROADCASTS)
-    @Test
-    public void changeNonExportedComponent_sendPackageChangedBroadcastToSystemAndApplicationItself_flagDisabled()
-            throws Exception {
-        changeComponentAndSendPackageChangedBroadcast(false /* changeExportedComponent */,
-                new String[0] /* sharedPackages */);
-
-        ArgumentCaptor<Intent> captorIntent = ArgumentCaptor.forClass(Intent.class);
-        verify(mMockActivityManagerInternal, times(2)).broadcastIntentWithCallback(
-                captorIntent.capture(), eq(null), eq(null), anyInt(), eq(null), eq(null), eq(null));
-        List<Intent> intents = captorIntent.getAllValues();
-        assertNotNull(intents);
-        assertThat(intents.size()).isEqualTo(2);
-
-        final Intent intent1 = intents.get(0);
-        assertThat(intent1.getPackage()).isEqualTo("android");
-
-        final Intent intent2 = intents.get(1);
-        assertThat(intent2.getPackage()).isEqualTo(PACKAGE_CHANGED_TEST_PACKAGE_NAME);
-    }
-
-    @EnableFlags(Flags.FLAG_CONSOLIDATE_PACKAGE_CHANGED_BROADCASTS)
     @Test
     public void changeNonExportedComponent_sendPackageChangedBroadcastToSharedUserIdApplications()
             throws Exception {
@@ -184,30 +160,7 @@ public class BroadcastHelperTest {
         assertThat(actualOptions).isNotNull();
         verifyIncludedPackages(actualOptions, "android", PACKAGE_CHANGED_TEST_PACKAGE_NAME,
                 "shared.package");
-    }
-
-    @DisableFlags(Flags.FLAG_CONSOLIDATE_PACKAGE_CHANGED_BROADCASTS)
-    @Test
-    public void changeNonExportedComponent_sendPackageChangedBroadcastToSharedUserIdApplications_flagDisabled()
-            throws Exception {
-        changeComponentAndSendPackageChangedBroadcast(false /* changeExportedComponent */,
-                new String[]{"shared.package"} /* sharedPackages */);
-
-        ArgumentCaptor<Intent> captorIntent = ArgumentCaptor.forClass(Intent.class);
-        verify(mMockActivityManagerInternal, times(3)).broadcastIntentWithCallback(
-                captorIntent.capture(), eq(null), eq(null), anyInt(), eq(null), eq(null), eq(null));
-        List<Intent> intents = captorIntent.getAllValues();
-        assertNotNull(intents);
-        assertThat(intents.size()).isEqualTo(3);
-
-        final Intent intent1 = intents.get(0);
-        assertThat(intent1.getPackage()).isEqualTo("android");
-
-        final Intent intent2 = intents.get(1);
-        assertThat(intent2.getPackage()).isEqualTo(PACKAGE_CHANGED_TEST_PACKAGE_NAME);
-
-        final Intent intent3 = intents.get(2);
-        assertThat(intent3.getPackage()).isEqualTo("shared.package");
+        verifyBroadcastDebugReason(actualOptions, PackageMetrics.STRING_TEST);
     }
 
     @Test
@@ -217,7 +170,7 @@ public class BroadcastHelperTest {
 
         ArgumentCaptor<Intent> captor = ArgumentCaptor.forClass(Intent.class);
         verify(mMockActivityManagerInternal).broadcastIntentWithCallback(captor.capture(), eq(null),
-                eq(null), anyInt(), eq(null), eq(null), eq(null));
+                eq(null), anyInt(), eq(null), eq(null), any(Bundle.class));
         Intent intent = captor.getValue();
         assertNotNull(intent);
         assertNull(intent.getPackage());
@@ -263,5 +216,11 @@ public class BroadcastHelperTest {
         BroadcastOptions actualBroadcastOptions = new BroadcastOptions(actualOptions);
         assertThat(actualBroadcastOptions.getIncludedPackages())
                 .isEqualTo(expectedIncludedPackages);
+    }
+
+    private void verifyBroadcastDebugReason(Bundle actualOptions, String expectedReason) {
+        BroadcastOptions actualBroadcastOptions = new BroadcastOptions(actualOptions);
+        assertThat(actualBroadcastOptions.getDebugReason())
+                .isEqualTo(expectedReason);
     }
 }

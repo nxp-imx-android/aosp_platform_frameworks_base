@@ -34,6 +34,7 @@ import static android.app.admin.DevicePolicyResources.Strings.Core.RESOLVER_WORK
 import static android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.PermissionChecker.PID_UNKNOWN;
+import static android.service.chooser.Flags.resolverEscExit;
 import static android.stats.devicepolicy.nano.DevicePolicyEnums.RESOLVER_EMPTY_STATE_NO_SHARING_TO_PERSONAL;
 import static android.stats.devicepolicy.nano.DevicePolicyEnums.RESOLVER_EMPTY_STATE_NO_SHARING_TO_WORK;
 import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
@@ -88,6 +89,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.Slog;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -159,6 +161,7 @@ public class ResolverActivity extends Activity implements
     private Button mOnceButton;
     protected View mProfileView;
     private int mLastSelected = AbsListView.INVALID_POSITION;
+    @Nullable private View mLastSelectedItemView;
     private boolean mResolvingHome = false;
     private String mProfileSwitchMessage;
     private int mLayoutId;
@@ -1230,12 +1233,10 @@ public class ResolverActivity extends Activity implements
             if (activeAdapter != null) {
                 activeAdapter.onDestroy();
             }
-            if (android.service.chooser.Flags.fixResolverMemoryLeak()) {
-                ResolverListAdapter inactiveAdapter =
-                        mMultiProfilePagerAdapter.getInactiveListAdapter();
-                if (inactiveAdapter != null) {
-                    inactiveAdapter.onDestroy();
-                }
+            ResolverListAdapter inactiveAdapter =
+                    mMultiProfilePagerAdapter.getInactiveListAdapter();
+            if (inactiveAdapter != null) {
+                inactiveAdapter.onDestroy();
             }
         }
     }
@@ -1258,6 +1259,16 @@ public class ResolverActivity extends Activity implements
             viewPager.setCurrentItem(savedInstanceState.getInt(LAST_SHOWN_TAB_KEY));
         }
         mMultiProfilePagerAdapter.clearInactiveProfileCache();
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (resolverEscExit() && keyCode == KeyEvent.KEYCODE_ESCAPE) {
+            finish();
+            return true;
+        }
+
+        return super.onKeyUp(keyCode, event);
     }
 
     private boolean hasManagedProfile() {
@@ -2159,9 +2170,17 @@ public class ResolverActivity extends Activity implements
                 });
         mOnSwitchOnWorkSelectedListener = () -> {
             final View workTab = tabHost.getTabWidget().getChildAt(1);
+            boolean wasFocusable = workTab.isFocusable();
+            boolean wasFocusableInTouchMode = workTab.isFocusableInTouchMode();
             workTab.setFocusable(true);
             workTab.setFocusableInTouchMode(true);
             workTab.requestFocus();
+            // Reset the focusable-in-touch-mode flag, as taps are processed differently in this
+            // mode. When an unfocused view is tapped, it requests focus first. If the request
+            // succeeds, the rest of the touch event processing logic is ignored (e.g., the
+            // onClickListener is not invoked).
+            workTab.setFocusableInTouchMode(wasFocusableInTouchMode);
+            workTab.setFocusable(wasFocusable);
         };
     }
 
@@ -2199,6 +2218,7 @@ public class ResolverActivity extends Activity implements
             return;
         }
         mLastSelected = ListView.INVALID_POSITION;
+        mLastSelectedItemView = null;
         ListView inactiveListView = (ListView) mMultiProfilePagerAdapter.getInactiveAdapterView();
         if (inactiveListView.getCheckedItemCount() > 0) {
             inactiveListView.setItemChecked(inactiveListView.getCheckedItemPosition(), false);
@@ -2582,6 +2602,12 @@ public class ResolverActivity extends Activity implements
                     mOnceButton.requestFocus();
                 }
                 mLastSelected = checkedPos;
+                if (mLastSelectedItemView != null) {
+                    mLastSelectedItemView.setStateDescription(null);
+                }
+                mLastSelectedItemView = view;
+                mLastSelectedItemView.setStateDescription(
+                        getString(com.android.internal.R.string.selected));
             } else {
                 startSelected(position, false, true);
             }

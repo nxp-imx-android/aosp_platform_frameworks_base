@@ -336,11 +336,11 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"직장 프로필로 전환"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"개인 <xliff:g id="APP_NAME">%1$s</xliff:g> 앱으로 전환"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"직장 <xliff:g id="APP_NAME">%1$s</xliff:g> 앱으로 전환"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"연락처"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"연락처에 액세스"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"연락처 및 계정"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"연락처에 액세스하고, 이 기기에 연락처를 저장할 수 있는 계정 목록을 확인합니다."</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"위치"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"이 기기의 위치정보에 액세스"</string>
-    <string name="permgrouplab_calendar" msgid="6426860926123033230">"캘린더"</string>
+    <string name="permgrouplab_calendar" msgid="6426860926123033230">"Calendar"</string>
     <string name="permgroupdesc_calendar" msgid="6762751063361489379">"캘린더에 액세스"</string>
     <string name="permgrouplab_sms" msgid="795737735126084874">"SMS"</string>
     <string name="permgroupdesc_sms" msgid="5726462398070064542">"SMS 메시지 전송 및 보기"</string>
@@ -369,9 +369,9 @@
     <string name="permgrouplab_xr_eye_sensitive" msgid="1709596126334620353">"눈 추적 데이터"</string>
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"눈 움직임을 정확하게 추적"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"움직임 및 영역 데이터"</string>
-    <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"눈, 얼굴, 신체 추적 및 영역 스캔"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"정확한 머리 움직임 및 영역 데이터"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"머리 움직임을 정확하게 추적 및 영역 스캔"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"눈, 얼굴, 신체 추적 및 영역을 스캔"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"정확한 움직임 및 영역 데이터"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"영역을 정확하게 스캔하고 머리 움직임을 추적"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"창 콘텐츠 가져오기"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"상호작용 중인 창의 콘텐츠를 검사합니다."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"터치하여 탐색 사용"</string>
@@ -639,6 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"앱이 근처의 초광대역 기기 간 상대적 위치를 파악하도록 허용"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"근처 Wi‑Fi 기기와 상호작용"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"앱이 광역 신호를 보내 근처에 있는 Wi‑Fi 기기의 상대적인 위치를 확인하고 연결할 수 있도록 허용합니다."</string>
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"로컬 네트워크 기기에 액세스"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"앱이 로컬 네트워크 기기에 액세스하도록 허용합니다."</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"근처 기기 간 상대 위치 파악"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"앱이 근처 기기 간 상대 위치를 파악하도록 허용"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"기본 NFC 결제 서비스 정보"</string>
@@ -683,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"앱이 주변 환경을 스캔하도록 허용합니다."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"주변 영역을 정확하게 스캔"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"앱이 주변 환경을 정확하게 스캔하도록 허용합니다."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"백그라운드에서 XR 데이터 추적"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"백그라운드에서 XR 추적에 액세스"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"앱이 백그라운드에서 XR 데이터에 액세스하도록 허용합니다."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"키 캡처"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"시스템이 시스템 단축키 및 작업을 처리하기 전에 앱이 키를 캡처할 수 있도록 허용합니다."</string>
@@ -1052,6 +1054,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"맞습니다."</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"다시 시도"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"다시 시도"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"모든 기능 및 데이터 잠금 해제"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"얼굴 인식 잠금 해제 최대 시도 횟수를 초과했습니다."</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"SIM 없음"</string>
@@ -1621,6 +1627,9 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"요청한 사람: <xliff:g id="NAME">%1$s</xliff:g>(<xliff:g id="SERVICE">%2$s</xliff:g>)"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"예"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"아니요"</string>
+    <string name="emergency_location_notification_title" msgid="917557758257778958">"응급 상황을 위해 위치가 공유됨"</string>
+    <string name="emergency_location_notification_message" msgid="1877038822515882885">"응급 서비스에서 이동통신사를 통해 내 위치를 수신했습니다."</string>
+    <string name="emergency_location_notification_learn_more" msgid="8718634939217070481">"자세히 알아보기"</string>
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"삭제 한도를 초과했습니다."</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"<xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g>, <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g> 계정에 대해 <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g>개의 삭제된 항목이 있습니다. 어떻게 하시겠습니까?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"항목 삭제"</string>
@@ -1791,8 +1800,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"볼륨 키 2개를 몇 초 동안 길게 누르면 <xliff:g id="SERVICE">%1$s</xliff:g> 접근성 기능이 사용 설정됩니다. 이렇게 되면 기기 작동 방식이 달라질 수 있습니다.\n\n설정 &gt; 접근성에서 이 단축키를 다른 기능으로 변경할 수 있습니다."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"사용"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"사용 안 함"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"사용"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"사용 안함"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"<xliff:g id="SERVICE">%1$s</xliff:g>에서 기기를 완전히 제어하도록 허용하시겠습니까?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"접근성 관련 지원을 제공하는 앱에는 완벽한 제어권을 부여하는 것이 좋으나, 대부분의 앱에는 적합하지 않습니다."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"화면 확인 및 제어"</string>
@@ -1806,6 +1817,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"기능을 사용하려면 탭하세요"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"접근성 버튼으로 사용할 기능 선택"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"볼륨 키 바로가기로 사용할 기능 선택"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g>이(가) 사용 중지됨"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"단축키 수정"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"완료"</string>
@@ -1984,8 +2005,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"관리자에 의해 업데이트되었습니다.\n부여된 권한을 확인하려면 설정으로 이동하세요."</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"관리자에 의해 삭제되었습니다."</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"확인"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"절전 모드는 어두운 테마를 사용하고 백그라운드 활동, 일부 시각 효과, 특정 기능 및 일부 네트워크 연결을 제한하거나 사용 중지합니다."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"절전 모드는 어두운 테마를 사용하고 백그라운드 활동, 일부 시각 효과, 특정 기능 및 일부 네트워크 연결을 제한하거나 사용 중지합니다."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"절전 모드는 어두운 테마를 사용 설정하고 백그라운드 활동, 일부 시각 효과, 특정 기능 및 일부 네트워크 연결을 제한하거나 사용 중지합니다."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"절전 모드는 어두운 테마를 사용 설정하고 백그라운드 활동, 일부 시각 효과, 특정 기능 및 일부 네트워크 연결을 제한하거나 사용 중지합니다."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"데이터 사용량을 줄이기 위해 데이터 절약 모드는 일부 앱이 백그라운드에서 데이터를 전송하거나 수신하지 못하도록 합니다. 현재 사용 중인 앱에서 데이터에 액세스할 수 있지만 빈도가 줄어듭니다. 예를 들면, 이미지를 탭하기 전에는 이미지가 표시되지 않습니다."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"데이터 절약 모드를 사용 설정하시겠습니까?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"사용 설정"</string>
@@ -2047,12 +2068,9 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"최대화"</string>
     <string name="close_button_text" msgid="10603510034455258">"닫기"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
-    <skip />
+    <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>(<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
+    <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>(<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
+    <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"통화"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"동영상"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"거절"</string>
@@ -2363,8 +2381,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"IMPI 잠금 해제 PIN"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"네트워크 하위 집합 서비스 제공업체 잠금 해제 PIN"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"SIM 네트워크 잠금 해제 요청 중…"</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="6742563947637715645">"SIM 네트워크 하위 집합 잠금 해제 요청 중…"</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="2033399698172403560">"SIM 서비스 제공업체 잠금 해제 요청 중…"</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"SIM 네트워크 하위 집합 잠금 해제 요청 중…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"SIM 서비스 제공업체 잠금 해제 요청 중…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"SIM 회사 잠금 해제 요청 중…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"PUK 잠금 해제 요청 중…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"PUK 잠금 해제 요청 중…"</string>
@@ -2390,15 +2408,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"PUK 잠금 해제 요청 중…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"PUK 잠금 해제 요청 중…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"SIM 네트워크 잠금 해제 요청이 실패했습니다."</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="3372797822292089708">"SIM 네트워크 하위 집합 잠금 해제 요청이 실패했습니다."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="1878443146720411381">"SIM 서비스 제공업체 잠금 해제 요청이 실패했습니다."</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"SIM 네트워크 하위 집합 잠금 해제 요청이 실패했습니다."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"SIM 서비스 제공업체 잠금 해제 요청이 실패했습니다."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"SIM 회사 잠금 해제 요청이 실패했습니다."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"SIM 잠금 해제 요청이 실패했습니다."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"RUIM Network1 잠금 해제 요청이 실패했습니다."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"RUIM Network2 잠금 해제 요청이 실패했습니다."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"RUIM HRPD 잠금 해제 요청이 실패했습니다."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"RUIM 회사 잠금 해제 요청이 실패했습니다."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="3801002648649640407">"RUIM 서비스 제공업체 잠금 해제 요청이 실패했습니다."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"RUIM 서비스 제공업체 잠금 해제 요청이 실패했습니다."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"RUIM 잠금 해제 요청이 실패했습니다."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"PUK 잠금 해제가 실패했습니다."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"PUK 잠금 해제가 실패했습니다."</string>
@@ -2418,13 +2436,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"네트워크 하위 집합 서비스 제공업체 잠금 해제 요청이 실패했습니다."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"SIM 네트워크 잠금 해제가 완료되었습니다."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"SIM 네트워크 하위 집합 잠금 해제가 완료되었습니다."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="8249342930499801740">"SIM 서비스 제공업체 잠금 해제가 완료되었습니다."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"SIM 서비스 제공업체 잠금 해제가 완료되었습니다."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"SIM 회사 잠금 해제가 완료되었습니다."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"SIM 잠금 해제가 완료되었습니다."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"RUIM Network1 잠금 해제가 완료되었습니다."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"RUIM Network2 잠금 해제가 완료되었습니다."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"RUIM HRPD 잠금 해제가 완료되었습니다."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6020936629725666932">"RUIM 서비스 제공업체 잠금 해제가 완료되었습니다."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"RUIM 서비스 제공업체 잠금 해제가 완료되었습니다."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"RUIM 회사 잠금 해제가 완료되었습니다."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"RUIM 잠금 해제가 완료되었습니다."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"PUK 잠금 해제가 완료되었습니다."</string>
@@ -2580,27 +2598,22 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"애플리케이션"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"지문을 더 이상 인식할 수 없습니다. 지문 잠금 해제를 다시 설정하세요."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"보안 및 개인 정보 보호"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"화면을 잠금 해제하고 USB를 다시 연결하세요"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"USB를 연결하려면 화면을 잠금 해제하세요"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"고급 보호를 사용 설정한 경우 USB 연결을 시작하려면 화면을 잠금 해제해야 합니다."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"고급 보호를 사용 설정한 경우 USB 연결을 시작하려면 화면을 잠금 해제해야 합니다."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"고급 보호를 사용 설정한 경우 더 빠르게 충전하려면 화면을 잠금 해제해야 합니다."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"고급 보호를 사용 설정한 경우 더 빠르게 충전하거나 USB 연결을 시작하려면 화면을 잠금 해제해야 합니다."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"음소거"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"알림 음소거됨"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"기기를 다시 시작할 때까지 고급 보호 USB 알림이 수신되지 않습니다."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"의심스러운 USB 활동"</string>
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
-    <skip />
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"USB 데이터 신호가 사용 중지되었습니다."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"지문 잠금 해제에 문제가 있나요?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"잠금 해제 환경을 개선하기 위한 도움말을 검토하려면 탭하세요."</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"깜박이지 않음"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"TV를 끄려면 전원 버튼을 길게 누르세요."</string>
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"시스템 리소스 알림"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"리소스 초과 사용"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"\'<xliff:g id="APP_NAME">%1$s</xliff:g> 앱이 너무 많은 리소스를 사용합니다.\'"</string>
 </resources>

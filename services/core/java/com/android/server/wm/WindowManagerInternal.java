@@ -55,6 +55,7 @@ import android.window.ScreenCaptureInternal.ScreenshotHardwareBuffer;
 import com.android.internal.policy.KeyInterceptionInfo;
 import com.android.server.input.InputManagerService;
 import com.android.server.policy.WindowManagerPolicy;
+import com.android.server.wm.DisplayPolicy;
 import com.android.server.wm.SensitiveContentPackages.PackageInfo;
 
 import java.lang.annotation.Retention;
@@ -873,6 +874,15 @@ public abstract class WindowManagerInternal {
     public abstract Context getDisplayUiContext(int displayId);
 
     /**
+     * Returns the display policy for a given display.
+     *
+     * @param displayId The display id.
+     * @return The display policy, or null if display not found.
+     */
+    @Nullable
+    public abstract DisplayPolicy getDisplayPolicy(int displayId);
+
+    /**
      * Sets the rotation of a non-default display.
      *
      * @param displayId The id of the display
@@ -1023,19 +1033,19 @@ public abstract class WindowManagerInternal {
         @NonNull
         public final String mImeControlTargetName;
 
-        /** The surface parent of the IME container. */
+        /** The name of the {@link DisplayContent#mImeParent}. */
         @NonNull
-        public final String mImeSurfaceParentName;
+        public final String mImeParentName;
 
         public ImeTargetInfo(@NonNull String focusedWindowName, @NonNull String requestWindowName,
                 @NonNull String imeLayeringTargetName, @NonNull String imeInputTargetName,
-                @NonNull String imeControlTargetName, @NonNull String imeSurfaceParentName) {
+                @NonNull String imeControlTargetName, @NonNull String imeParentName) {
             mFocusedWindowName = focusedWindowName;
             mRequestWindowName = requestWindowName;
             mImeLayeringTargetName = imeLayeringTargetName;
             mImeInputTargetName = imeInputTargetName;
             mImeControlTargetName = imeControlTargetName;
-            mImeSurfaceParentName = imeSurfaceParentName;
+            mImeParentName = imeParentName;
         }
     }
 
@@ -1239,4 +1249,13 @@ public abstract class WindowManagerInternal {
      * @throws RuntimeException if the payload cannot be written to the settings file.
      */
     public abstract void restoreDisplayWindowSettings(int userId, byte[] payload);
+
+    /**
+     * Creates a mirror of the given display's root SurfaceControl.
+     *
+     * @param displayId The display which should be mirrored.
+     * @return The mirror surface, or null if the display was not found.
+     */
+    @Nullable
+    public abstract SurfaceControl createMirrorForDisplayContent(int displayId);
 }

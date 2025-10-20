@@ -85,6 +85,7 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.OnUserInteractionCallback;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.wmshell.BubblesManager;
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 
 import dagger.Lazy;
 
@@ -238,6 +239,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
      */
     @Override
     public void onNotificationBubbleIconClicked(@NonNull NotificationEntry entry) {
+        BubbleLog.d("StatusBarNotificationActivityStarter.onNotificationBubbleIconClicked() CLICK");
         Runnable action = () -> {
             mBubblesManagerOptional.ifPresent(bubblesManager ->
                     bubblesManager.onUserChangedBubble(entry, !entry.isBubble()));
@@ -416,8 +418,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
 
         final NotificationVisibility nv = mVisibilityProvider.obtain(entry, true);
 
-        if (!canBubble && (shouldAutoCancel(entry.getSbn())
-                || mRemoteInputManager.isNotificationKeptForRemoteInputHistory(notificationKey))) {
+        if (!canBubble && (shouldAutoCancel(entry.getSbn()))) {
             final Runnable removeNotification =
                     mOnUserInteractionCallback.registerFutureDismissal(entry, REASON_CLICK);
             // Immediately remove notification from visually showing.
@@ -452,8 +453,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
         final NotificationVisibility nv = mVisibilityProvider.obtain(entry, true);
 
         String notificationKey = entry.getKey();
-        if (shouldAutoCancel(entry.getSbn())
-                || mRemoteInputManager.isNotificationKeptForRemoteInputHistory(notificationKey)) {
+        if (shouldAutoCancel(entry.getSbn())) {
             final Runnable removeNotification =
                     mOnUserInteractionCallback.registerFutureDismissal(entry, REASON_CLICK);
             // Immediately remove notification from visually showing.

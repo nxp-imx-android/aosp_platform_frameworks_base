@@ -38,6 +38,7 @@ android.content.ClipboardManager
 android.content.ComponentCallbacksController
 android.content.ComponentName
 android.content.ContentProvider
+android.content.ContentResolver
 android.content.ContentUris
 android.content.ContentValues
 android.content.Context
@@ -269,6 +270,7 @@ android.os.Bundle
 android.os.BundleMerger
 android.os.CancellationSignal
 android.os.ConditionVariable
+android.os.CountDownTimer
 android.os.DeadObjectException
 android.os.DeadSystemException
 android.os.Environment
@@ -573,7 +575,6 @@ android.util.proto.ProtoStream
 android.util.proto.ProtoUtils
 android.util.proto.WireTypeMismatchException
 
-android.view.animation.AnimationUtils
 android.view.Choreographer
 android.view.ContextThemeWrapper
 android.view.Display
@@ -582,6 +583,8 @@ android.view.DisplayEventReceiver
 android.view.DisplayInfo
 android.view.Gravity
 android.view.InflateException
+
+android.view.animation.AnimationUtils
 
 android.view.inputmethod.InputBinding
 
@@ -685,9 +688,15 @@ com.android.server.ServiceThread
 com.android.server.SystemService
 com.android.server.SystemServiceManager
 
-com.android.server.am.BoundServiceSession
+com.android.server.am.BinderSession
 com.android.server.am.ConnectionRecord
+com.android.server.am.OomAdjuster
+
+com.android.server.am.psc.AsyncBatchSession
+com.android.server.am.psc.BatchSession
 com.android.server.am.psc.ConnectionRecordInternal
+com.android.server.am.psc.SyncBatchSession
+
 com.android.server.utils.TimingsTraceAndSlog
 
 com.google.android.collect.Lists

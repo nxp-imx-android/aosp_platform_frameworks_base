@@ -17,11 +17,14 @@
 package com.android.systemui.shade.ui.viewmodel
 
 import android.app.StatusBarManager.DISABLE2_QUICK_SETTINGS
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pin
@@ -71,11 +74,12 @@ class ShadeSceneContentViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
-    private val underTest: ShadeSceneContentViewModel by lazy { kosmos.shadeSceneContentViewModel }
+    private val Kosmos.underTest: ShadeSceneContentViewModel by
+        Kosmos.Fixture { shadeSceneContentViewModel }
 
     @Before
     fun setUp() {
-        underTest.activateIn(kosmos.testScope)
+        with(kosmos) { underTest.activateIn(testScope) }
     }
 
     @Test
@@ -127,19 +131,29 @@ class ShadeSceneContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun shadeMode() =
+    @DisableFlags(FLAG_DUAL_SHADE)
+    fun shadeMode_dualShadeFlagOff() =
         kosmos.runTest {
             enableSplitShade()
             assertThat(underTest.shadeMode).isEqualTo(ShadeMode.Split)
 
             enableSingleShade()
             assertThat(underTest.shadeMode).isEqualTo(ShadeMode.Single)
-
-            enableDualShade()
-            assertThat(underTest.shadeMode).isEqualTo(ShadeMode.Dual)
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
+    fun shadeMode_dualShadeFlagOn() =
+        kosmos.runTest {
+            enableDualShade()
+            assertThat(underTest.shadeMode).isEqualTo(ShadeMode.Dual)
+
+            enableSingleShade()
+            assertThat(underTest.shadeMode).isEqualTo(ShadeMode.Single)
+        }
+
+    @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun shadeModeChange_dualOnLockscreen_switchToOverlay() =
         kosmos.runTest {
             setDeviceEntered(false)
@@ -159,6 +173,7 @@ class ShadeSceneContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun shadeModeChange_dualOnGone_switchToOverlay() =
         kosmos.runTest {
             setDeviceEntered(true)

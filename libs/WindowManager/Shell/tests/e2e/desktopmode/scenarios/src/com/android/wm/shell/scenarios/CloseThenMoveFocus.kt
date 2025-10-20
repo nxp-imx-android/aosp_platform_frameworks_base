@@ -56,15 +56,10 @@ abstract class CloseThenMoveFocus() : TestScenarioBase() {
 
     @Before
     fun setup() {
-        connectedDisplayRule.setupTestDisplay()
+        val displayId = connectedDisplayRule.setupTestDisplay()
+        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(displayId).waitForAndVerify()
         testAppInMainDisplay.enterDesktopMode(wmHelper, device)
-        // TODO(b/426420246): Use launchViaIntentOnDisplay
-        testAppInExternalDisplay.launchViaIntent(wmHelper)
-        testAppInExternalDisplay.moveToNextDisplayViaKeyboard(
-            wmHelper,
-            connectedDisplayRule.addedDisplays.first()
-        )
-        testAppInExternalDisplay.enterDesktopMode(wmHelper, device)
+        testAppInExternalDisplay.launchViaIntentOnDisplay(wmHelper, displayId)
     }
 
     @Test

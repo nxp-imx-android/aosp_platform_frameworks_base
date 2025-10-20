@@ -116,6 +116,8 @@
     <public name="alternateLauncherIcons"/>
     <!-- @FlaggedApi(android.content.pm.Flags.FLAG_CHANGE_LAUNCHER_BADGING) -->
     <public name="alternateLauncherLabels"/>
+    <!-- @hide No longer needed. -->
+    <public name="removed_runInPccSandbox"/>
   </staging-public-group>
 
   <staging-public-group type="id" first-id="0x01a10000">
@@ -187,6 +189,9 @@
   </staging-public-group>
 
   <staging-public-group type="array" first-id="0x019c0000">
+    <!-- @FlaggedApi(android.permission.flags.Flags.FLAG_WATCH_FACE_ROLE_ENABLED)
+    @hide @SystemApi -->
+    <public name="config_watchFacePermissions" />
   </staging-public-group>
 
   <staging-public-group type="drawable" first-id="0x019b0000">

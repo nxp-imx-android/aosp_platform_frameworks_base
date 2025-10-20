@@ -18,12 +18,14 @@ package com.android.settingslib;
 
 import static com.android.settingslib.RestrictedLockUtils.EnforcedAdmin;
 
+import android.app.admin.EnforcingAdmin;
 import android.content.Context;
 import android.os.Process;
 import android.os.UserHandle;
 import android.util.AttributeSet;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.res.TypedArrayUtils;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceViewHolder;
@@ -143,8 +145,21 @@ public class RestrictedPreference extends TwoTargetPreference implements
         super.setEnabled(enabled);
     }
 
+    /**
+     * @deprecated Use {@link #setDisabledByAdmin(EnforcingAdmin)} instead.
+     */
+    @Deprecated
     public void setDisabledByAdmin(EnforcedAdmin admin) {
         if (mHelper.setDisabledByAdmin(admin)) {
+            notifyChanged();
+        }
+    }
+
+    /**
+     * Sets the admin that disabled this preference.
+     */
+    public void setDisabledByAdmin(@Nullable EnforcingAdmin admin) {
+        if (mHelper.setDisabledByEnforcingAdmin(admin)) {
             notifyChanged();
         }
     }

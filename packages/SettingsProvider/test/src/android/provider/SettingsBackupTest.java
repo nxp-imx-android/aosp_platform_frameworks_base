@@ -33,8 +33,6 @@ import android.provider.settings.backup.SystemSettings;
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
-import com.android.server.display.feature.flags.Flags;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -114,8 +112,6 @@ public class SettingsBackupTest {
                     Settings.Global.BLE_SCAN_LOW_LATENCY_INTERVAL_MS,
                     Settings.Global.BLE_SCAN_BACKGROUND_MODE,
                     Settings.Global.BLOCKED_SLICES,
-                    Settings.Global.BLOCKING_HELPER_DISMISS_TO_VIEW_RATIO_LIMIT,
-                    Settings.Global.BLOCKING_HELPER_STREAK_LIMIT,
                     Settings.Global.BLUETOOTH_BTSNOOP_DEFAULT_MODE,
                     Settings.Global.BLUETOOTH_A2DP_SINK_PRIORITY_PREFIX,
                     Settings.Global.BLUETOOTH_A2DP_SRC_PRIORITY_PREFIX,
@@ -228,8 +224,6 @@ public class SettingsBackupTest {
                     Settings.Global.ENABLE_EPHEMERAL_FEATURE,
                     Settings.Global.DYNAMIC_POWER_SAVINGS_ENABLED,
                     Settings.Global.DYNAMIC_POWER_SAVINGS_DISABLE_THRESHOLD,
-                    Settings.Global.SMART_REPLIES_IN_NOTIFICATIONS_FLAGS,
-                    Settings.Global.SMART_SUGGESTIONS_IN_NOTIFICATIONS_FLAGS,
                     Settings.Global.STYLUS_EVER_USED,
                     Settings.Global.ENABLE_ADB_INCREMENTAL_INSTALL_DEFAULT,
                     Settings.Global.ENABLE_MULTI_SLOT_TIMEOUT_MILLIS,
@@ -353,7 +347,6 @@ public class SettingsBackupTest {
                     Settings.Global.NITZ_UPDATE_DIFF,
                     Settings.Global.NITZ_UPDATE_SPACING,
                     Settings.Global.NOTIFICATION_SNOOZE_OPTIONS,
-                    Settings.Global.NOTIFICATION_FEEDBACK_ENABLED,
                     Settings.Global.NR_NSA_TRACKING_SCREEN_OFF_MODE,
                     Settings.Global.NTP_SERVER,
                     Settings.Global.NTP_TIMEOUT,
@@ -409,7 +402,6 @@ public class SettingsBackupTest {
                     Settings.Global.SHOW_NEW_APP_INSTALLED_NOTIFICATION_ENABLED,
                     Settings.Global.SHOW_NOTIFICATION_CHANNEL_WARNINGS,
                     Settings.Global.SHOW_PEOPLE_SPACE,
-                    Settings.Global.SHOW_NEW_NOTIF_DISMISS,
                     Settings.Global.SHOW_RESTART_IN_CRASH_DIALOG,
                     Settings.Global.SHOW_TEMPERATURE_WARNING,
                     Settings.Global.SHOW_USB_TEMPERATURE_ALARM,
@@ -470,6 +462,7 @@ public class SettingsBackupTest {
                     Settings.Global.GPU_DEBUG_LAYERS,
                     Settings.Global.GPU_DEBUG_LAYERS_GLES,
                     Settings.Global.ANGLE_DEBUG_PACKAGE,
+                    Settings.Global.ANGLE_DYNAMIC_DENYLIST,
                     Settings.Global.ANGLE_GL_DRIVER_ALL_ANGLE,
                     Settings.Global.ANGLE_GL_DRIVER_SELECTION_PKGS,
                     Settings.Global.ANGLE_GL_DRIVER_SELECTION_VALUES,
@@ -548,8 +541,6 @@ public class SettingsBackupTest {
                     Settings.Global.REPAIR_MODE_ACTIVE,
                     Settings.Global.RADIO_BUG_WAKELOCK_TIMEOUT_COUNT_THRESHOLD,
                     Settings.Global.RADIO_BUG_SYSTEM_ERROR_COUNT_THRESHOLD,
-                    Settings.Global.ENABLED_SUBSCRIPTION_FOR_SLOT,
-                    Settings.Global.MODEM_STACK_ENABLED_FOR_SLOT,
                     Settings.Global.POWER_BUTTON_SHORT_PRESS,
                     Settings.Global.POWER_BUTTON_DOUBLE_PRESS,
                     Settings.Global.POWER_BUTTON_TRIPLE_PRESS,
@@ -619,7 +610,6 @@ public class SettingsBackupTest {
                     Settings.Global.Wearable.MASTER_GESTURES_ENABLED,
                     Settings.Global.Wearable.UNGAZE_ENABLED,
                     Settings.Global.Wearable.BURN_IN_PROTECTION_ENABLED,
-                    Settings.Global.Wearable.WRIST_ORIENTATION_MODE,
                     Settings.Global.Wearable.CLOCKWORK_SYSUI_PACKAGE,
                     Settings.Global.Wearable.CLOCKWORK_SYSUI_MAIN_ACTIVITY,
                     Settings.Global.Wearable.CLOCKWORK_LONG_PRESS_TO_ASSISTANT_ENABLED,
@@ -875,7 +865,6 @@ public class SettingsBackupTest {
                         Settings.Secure.NAS_SETTINGS_UPDATED,
                         Settings.Secure.NAV_BAR_FORCE_VISIBLE,
                         Settings.Secure.NAV_BAR_KIDS_MODE,
-                        Settings.Secure.NAVIGATIONBAR_KEY_ORDER,
                         Settings.Secure.NEARBY_FAST_PAIR_SETTINGS_DEVICES_COMPONENT,
                         Settings.Secure.NEARBY_SHARING_SLICE_URI,
                         Settings.Secure.NOTIFIED_NON_ACCESSIBILITY_CATEGORY_SERVICES,
@@ -914,6 +903,10 @@ public class SettingsBackupTest {
                         Settings.System.APPEND_FOR_LAST_AUDIBLE, // suffix deprecated since API 2
                         Settings.System.EGG_MODE, // I am the lolrus
                         Settings.System.END_BUTTON_BEHAVIOR, // bug?
+                        Settings.System
+                                .ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_ENABLE,
+                        Settings.System
+                                .ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_DISABLE,
                         Settings.System.DEFAULT_DEVICE_FONT_SCALE, // Non configurable
                         Settings.System.HIDE_ROTATION_LOCK_TOGGLE_FOR_ACCESSIBILITY,
                         Settings.System.INPUT_GAIN_INDEX_SETTINGS,
@@ -962,10 +955,6 @@ public class SettingsBackupTest {
                         // Potentially disruptive to on-boarding flow on new devices
                         Settings.System.TOUCHPAD_ENABLED
                 );
-        if (!Flags.backUpSmoothDisplayAndForcePeakRefreshRate()) {
-            settings.add(Settings.System.MIN_REFRESH_RATE);
-            settings.add(Settings.System.PEAK_REFRESH_RATE);
-        }
         return settings;
     }
 

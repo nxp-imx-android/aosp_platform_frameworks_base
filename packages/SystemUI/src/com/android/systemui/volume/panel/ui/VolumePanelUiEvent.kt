@@ -24,6 +24,7 @@ enum class VolumePanelUiEvent(val metricId: Int) : UiEventLogger.UiEventEnum {
     @UiEvent(doc = "The volume panel is shown") VOLUME_PANEL_SHOWN(1634),
     @UiEvent(doc = "The volume panel is gone") VOLUME_PANEL_GONE(1635),
     @UiEvent(doc = "Media output is clicked") VOLUME_PANEL_MEDIA_OUTPUT_CLICKED(1636),
+    @UiEvent(doc = "Media input is clicked") VOLUME_PANEL_MEDIA_INPUT_CLICKED(2507),
     @UiEvent(doc = "Audio mode changed to normal") VOLUME_PANEL_AUDIO_MODE_CHANGE_TO_NORMAL(1680),
     @UiEvent(doc = "Audio mode changed to calling") VOLUME_PANEL_AUDIO_MODE_CHANGE_TO_CALLING(1681),
     @UiEvent(doc = "Sound settings is clicked") VOLUME_PANEL_SOUND_SETTINGS_CLICKED(1638),

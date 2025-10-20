@@ -443,6 +443,15 @@
     <!-- Height of button (32dp)  + 2 * margin (5dp each). -->
     <dimen name="freeform_decor_caption_height">42dp</dimen>
 
+    <!-- The height of the app handle shown for Foldables / Tablets. -->
+    <dimen name="app_handle_height">4dp</dimen>
+
+    <!-- The width of the app handle shown for Foldables / Tablets. -->
+    <dimen name="app_handle_width">80dp</dimen>
+
+    <!-- The elevation for the individual app handle menu. -->
+    <dimen name="app_menu_elevation">4dp</dimen>
+
     <!-- Height of desktop mode caption for fullscreen tasks. -->
     <dimen name="desktop_mode_fullscreen_decor_caption_height">36dp</dimen>
 
@@ -488,6 +497,21 @@
     <!-- The width of the drag-only area of the app header, where apps are not allow to
          customize. -->
     <dimen name="desktop_mode_customizable_caption_drag_only_width">48dp</dimen>
+
+    <!-- The width or the right-aligned region that is taken by caption elements + safe margin. -->
+    <dimen name="desktop_mode_pinned_header_margin_start">76dp</dimen>
+
+    <!-- The width or the right-aligned region that is taken by window controls buttons + safe margin. -->
+    <dimen name="desktop_mode_pinned_header_margin_end">76dp</dimen>
+
+    <!-- The height of the caption bar -->
+    <dimen name="desktop_mode_pinned_header_height">48dp</dimen>
+
+    <!-- Radius for rounding button corners -->
+    <dimen name="desktop_mode_pinned_header_button_corner_radius">16dp</dimen>
+
+    <!-- Inset for button ripples -->
+    <dimen name="desktop_mode_pinned_header_button_inset">4dp</dimen>
 
     <!-- The default minimum allowed window width when resizing a window in desktop mode. -->
     <dimen name="desktop_mode_minimum_window_width">386dp</dimen>
@@ -570,8 +594,8 @@
     <!-- The top margin of the handle menu in desktop mode. -->
     <dimen name="desktop_mode_handle_menu_margin_top">4dp</dimen>
 
-    <!-- The start margin of the handle menu in desktop mode. -->
-    <dimen name="desktop_mode_handle_menu_margin_start">6dp</dimen>
+    <!-- The left, bottom, and right padding of the handle menu in desktop mode. -->
+    <dimen name="desktop_mode_handle_menu_padding_left_bottom_right">6dp</dimen>
 
     <!-- The radius of the caption menu corners. -->
     <dimen name="desktop_mode_handle_menu_corner_radius">26dp</dimen>

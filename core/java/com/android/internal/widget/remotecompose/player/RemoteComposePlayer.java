@@ -32,6 +32,7 @@ import android.widget.ScrollView;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.widget.remotecompose.core.CoreDocument;
+import com.android.internal.widget.remotecompose.core.CoreDocument.ShaderControl;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.RemoteContextActions;
 import com.android.internal.widget.remotecompose.core.operations.NamedVariable;
@@ -41,16 +42,17 @@ import com.android.internal.widget.remotecompose.core.operations.layout.Componen
 import com.android.internal.widget.remotecompose.core.semantics.ScrollableComponent;
 import com.android.internal.widget.remotecompose.player.accessibility.platform.RemoteComposeTouchHelper;
 import com.android.internal.widget.remotecompose.player.platform.AndroidRemoteContext;
+import com.android.internal.widget.remotecompose.player.platform.BitmapLoader;
 import com.android.internal.widget.remotecompose.player.platform.HapticSupport;
 import com.android.internal.widget.remotecompose.player.platform.RemoteComposeView;
+import com.android.internal.widget.remotecompose.player.platform.RemotePreparedDocument;
 import com.android.internal.widget.remotecompose.player.platform.SensorSupport;
+import com.android.internal.widget.remotecompose.player.platform.SettingsRetriever;
 import com.android.internal.widget.remotecompose.player.platform.ThemeSupport;
-import com.android.internal.widget.remotecompose.player.player.platform.SettingsRetriever;
 import com.android.internal.widget.remotecompose.player.state.StateUpdater;
 import com.android.internal.widget.remotecompose.player.state.StateUpdaterImpl;
 
 import java.io.InputStream;
-import java.time.Clock;
 
 /**
  * This is a player for a RemoteComposeDocument.
@@ -72,35 +74,33 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
     private RemoteComposeView mInner;
     private StateUpdater mStateUpdater;
 
-    private final ThemeSupport mThemeSupport = new ThemeSupport();
-    private final SensorSupport mSensorsSupport = new SensorSupport();
-    private final HapticSupport mHapticSupport = new HapticSupport();
+    private final @NonNull ThemeSupport mThemeSupport = new ThemeSupport();
+    private final @NonNull SensorSupport mSensorsSupport = new SensorSupport();
+    private final @NonNull HapticSupport mHapticSupport = new HapticSupport();
 
-    private CoreDocument.ShaderControl mShaderControl =
-            (shader) -> {
-                return false;
-            };
+    private @NonNull ShaderControl mShaderControl = (shader) -> false;
 
-    public RemoteComposePlayer(Context context) {
+    public RemoteComposePlayer(@NonNull Context context) {
         super(context);
         init(context, null, 0);
     }
 
-    public RemoteComposePlayer(Context context, AttributeSet attrs) {
+    public RemoteComposePlayer(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(context, attrs, 0);
     }
 
-    public RemoteComposePlayer(Context context, AttributeSet attrs, int defStyleAttr) {
+    public RemoteComposePlayer(
+            @NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context, attrs, defStyleAttr);
     }
 
-    private RemoteContext getRemoteContext() {
+    private @NonNull RemoteContext getRemoteContext() {
         return mInner.getRemoteContext();
     }
 
-    public StateUpdater getStateUpdater() {
+    public @NonNull StateUpdater getStateUpdater() {
         return mStateUpdater;
     }
 
@@ -167,6 +167,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
     /**
      * @inheritDoc
      */
+    @Override
     public void requestLayout() {
         super.requestLayout();
 
@@ -178,6 +179,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
     /**
      * @inheritDoc
      */
+    @Override
     public void invalidate() {
         super.invalidate();
 
@@ -190,7 +192,6 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * Returns true if the document supports drag touch events. This is used in platform.
      *
      * @return true if draggable content, false otherwise
-     * @hide
      */
     public boolean isDraggable() {
         return mInner.isDraggable();
@@ -205,12 +206,8 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
         mInner.setDebug(debugFlags);
     }
 
-    /**
-     * Returns the document
-     *
-     * @hide
-     */
-    public RemoteComposeDocument getDocument() {
+    /** Returns the document */
+    public @NonNull RemoteComposeDocument getDocument() {
         return mInner.getDocument();
     }
 
@@ -218,7 +215,6 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * This will update values in the already loaded document.
      *
      * @param value the document to update variables in the current document width
-     * @hide
      */
     public void updateDocument(RemoteComposeDocument value) {
         AndroidRemoteContext tmpContext = new AndroidRemoteContext(value.getClock());
@@ -243,39 +239,20 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
         updateDocument(document);
     }
 
-    /**
-     * Set a document on the player
-     *
-     * @param buffer
-     */
+    /** Set a document on the player */
     public void setDocument(byte[] buffer) {
         RemoteComposeDocument document = new RemoteComposeDocument(buffer);
         setDocument(document);
     }
 
-    /**
-     * Set a document on the player
-     *
-     * @param inputStream
-     */
+    /** Set a document on the player */
     public void setDocument(InputStream inputStream) {
         RemoteComposeDocument document = new RemoteComposeDocument(inputStream);
         setDocument(document);
     }
 
-    @VisibleForTesting
-    private void setDocument(InputStream inputStream, Clock clock) {
-        RemoteComposeDocument document = new RemoteComposeDocument(inputStream, clock);
-        setDocument(document);
-    }
-
-    /**
-     * Set a document on the player
-     *
-     * @param value
-     * @hide
-     */
-    public void setDocument(RemoteComposeDocument value) {
+    /** Set a document on the player */
+    public void setDocument(@NonNull RemoteComposeDocument value) {
         if (value != null) {
             if (value.canBeDisplayed(
                     MAX_SUPPORTED_MAJOR_VERSION, MAX_SUPPORTED_MINOR_VERSION, 0L)) {
@@ -366,6 +343,15 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
         mInner.setBackgroundColor(Color.TRANSPARENT);
         addView(mInner, layoutParams);
         mStateUpdater = new StateUpdaterImpl(getRemoteContext());
+    }
+
+    /**
+     * Sets a BitmapLoader on the RemoteContext.
+     *
+     * @param bitmapLoader new bitmap loader.
+     */
+    public void setBitmapLoader(@NonNull BitmapLoader bitmapLoader) {
+        ((AndroidRemoteContext) mInner.getRemoteContext()).setBitmapLoader(bitmapLoader);
     }
 
     /**
@@ -507,17 +493,12 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * This is the number of ops used to calculate the last frame.
      *
      * @return number of ops
-     * @hide
      */
     public int getOpsPerFrame() {
         return mInner.getDocument().getDocument().getOpsPerFrame();
     }
 
-    /**
-     * Set to use the choreographer
-     *
-     * @param value
-     */
+    /** Set to use the choreographer */
     @VisibleForTesting
     public void setUseChoreographer(boolean value) {
         mInner.setUseChoreographer(value);
@@ -531,7 +512,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
          * @param id the id of the action
          * @param metadata the metadata of the action
          */
-        void onAction(int id, String metadata);
+        void onAction(int id, @Nullable String metadata);
     }
 
     /**
@@ -545,7 +526,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      *       <li>metadata: a client provided unstructured string associated with that id action
      *     </ul>
      */
-    public void addIdActionListener(IdActionCallbacks callback) {
+    public void addIdActionListener(@NonNull IdActionCallbacks callback) {
         mInner.addIdActionListener((id, metadata) -> callback.onAction(id, metadata));
     }
 
@@ -596,7 +577,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
     /**
      * This returns a list of images that have names in the Document.
      *
-     * @return
+     * @return the name of named images in the document
      */
     public String[] getNamedImages() {
         return mInner.getNamedVariables(NamedVariable.IMAGE_TYPE);
@@ -629,11 +610,10 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
     }
 
     /**
-     * This returns the amount of time in ms the player used to evalueate a pass it is averaged over
+     * This returns the amount of time in ms the player used to evaluate a pass it is averaged over
      * a number of evaluations.
      *
      * @return time in ms
-     * @hide
      */
     public float getEvalTime() {
         return mInner.getEvalTime();
@@ -644,9 +624,65 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * accept shaders.
      *
      * @param ctl the controller
-     * @hide
      */
-    public void setShaderControl(CoreDocument.ShaderControl ctl) {
+    public void setShaderControl(@NonNull ShaderControl ctl) {
         mShaderControl = ctl;
+    }
+
+    /** This is a prepared document. */
+    public interface PreparedDocument {
+        /**
+         * Get the original document
+         *
+         * @return the original document
+         */
+        @NonNull
+        RemoteComposeDocument getOriginalDoc();
+    }
+
+    /**
+     * determine whether it is worth it to prepare the document or not.
+     *
+     * @param doc the document to prepare
+     * @return true if the document needs to be prepared
+     */
+    public boolean shouldPrepare(@NonNull RemoteComposeDocument doc) {
+        int size_small_enough_to_inline = 1_000;
+        return doc.getDocument().getDocInfo().getSizeOfImages() > size_small_enough_to_inline;
+    }
+
+    private boolean isCompatible(@NonNull RemoteComposeDocument doc) {
+        if (doc.canBeDisplayed(MAX_SUPPORTED_MAJOR_VERSION, MAX_SUPPORTED_MINOR_VERSION, 0L)) {
+            return true;
+        } else {
+            Log.e("RemoteComposePlayer", "Unsupported document ");
+        }
+        return false;
+    }
+
+    /**
+     * Prepare the document.
+     *
+     * @param doc the document to prepare
+     * @return the prepared document
+     */
+    public @Nullable PreparedDocument prepareDocument(@NonNull RemoteComposeDocument doc) {
+        if (isCompatible(doc)) {
+            return new RemotePreparedDocument(doc);
+        }
+        return null;
+    }
+
+    /**
+     * Set the document that was prepared.
+     *
+     * @param doc the document to prepare
+     */
+    public void setPreparedDocument(@NonNull PreparedDocument doc) {
+        if (doc instanceof RemotePreparedDocument) {
+            RemotePreparedDocument remoteDoc = (RemotePreparedDocument) doc;
+            mInner.setResolvedData(remoteDoc.getResolvedData());
+        }
+        setDocument(doc.getOriginalDoc());
     }
 }

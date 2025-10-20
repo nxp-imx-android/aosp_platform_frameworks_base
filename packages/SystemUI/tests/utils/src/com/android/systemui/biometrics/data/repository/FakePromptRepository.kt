@@ -82,17 +82,23 @@ class FakePromptRepository : PromptRepository {
     }
 
     override fun unsetPrompt(requestId: Long) {
-        _promptInfo.value = null
-        _userId.value = null
-        _modalities.value = BiometricModalities()
-        _requestId.value = null
-        _challenge.value = null
-        _promptKind.value = PromptKind.None
-        _opPackageName.value = null
-        _isConfirmationRequired.value = false
+        if (requestId == _requestId.value) {
+            _promptInfo.value = null
+            _userId.value = null
+            _modalities.value = BiometricModalities()
+            _requestId.value = null
+            _challenge.value = null
+            _promptKind.value = PromptKind.None
+            _opPackageName.value = null
+            _isConfirmationRequired.value = false
+        }
     }
 
     fun setIsShowing(showing: Boolean) {
         _isShowing.value = showing
+    }
+
+    fun setFallbackOptions(options: List<FallbackOptionModel>) {
+        _fallbackOptions.value = options
     }
 }

@@ -16,10 +16,12 @@
 
 package com.android.systemui.shade.data.repository
 
+import android.graphics.Rect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.dump.DumpManager
+import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -34,7 +36,22 @@ class ShadeRepositoryImplTest : SysuiTestCase() {
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
 
-    private val underTest by lazy { ShadeRepositoryImpl(testScope) }
+    private val underTest by lazy { ShadeRepositoryImpl(testScope, mock<DumpManager>()) }
+
+    @Test
+    fun setShadeOverlayBounds_notifiesListener() =
+        testScope.runTest {
+            var shadeBounds: Rect? = null
+            underTest.addShadeBoundsListener { shadeBounds = it }
+            assertThat(shadeBounds).isNull()
+
+            val bounds = Rect(0, 0, 100, 100)
+            underTest.setShadeOverlayBounds(bounds)
+            assertThat(shadeBounds).isEqualTo(bounds)
+
+            underTest.setShadeOverlayBounds(null)
+            assertThat(shadeBounds).isNull()
+        }
 
     @Test
     fun updateQsExpansion() =
@@ -166,25 +183,5 @@ class ShadeRepositoryImplTest : SysuiTestCase() {
 
             underTest.setLegacyIsClosing(true)
             assertThat(underTest.legacyIsClosing.value).isTrue()
-        }
-
-    @Test
-    fun updateLegacyUseSplitShade() =
-        testScope.runTest {
-            val legacyUseSplitShade by collectLastValue(underTest.legacyUseSplitShade)
-            assertThat(legacyUseSplitShade).isFalse()
-
-            underTest.setShadeLayoutWide(true)
-            assertThat(legacyUseSplitShade).isTrue()
-        }
-
-    @Test
-    fun updateIsWideScreen() =
-        testScope.runTest {
-            val isWideScreen by collectLastValue(underTest.isWideScreen)
-            assertThat(isWideScreen).isFalse()
-
-            underTest.setShadeLayoutWide(true)
-            assertThat(isWideScreen).isTrue()
         }
 }

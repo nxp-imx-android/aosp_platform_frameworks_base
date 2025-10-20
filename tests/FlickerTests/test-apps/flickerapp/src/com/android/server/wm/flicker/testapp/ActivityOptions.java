@@ -52,6 +52,10 @@ public class ActivityOptions {
             /** Intent action used to toggle activity orientation. */
             public static final String ACTION_TOGGLE_ORIENTATION =
                     FLICKER_APP_PACKAGE + ".ImeActivity.TOGGLE_ORIENTATION";
+
+            /** Intent action used to start an adjacent activity to start split screen. */
+            public static final String ACTION_START_ADJACENT_ACTIVITY =
+                    FLICKER_APP_PACKAGE + ".ImeActivity.START_ADJACENT_ACTIVITY";
         }
 
         public static class AutoFocusActivity {
@@ -318,4 +322,10 @@ public class ActivityOptions {
     public static final ComponentName ASSISTANT_SERVICE_COMPONENT_NAME =
             new ComponentName(
                     FLICKER_APP_PACKAGE, FLICKER_APP_PACKAGE + ".AssistantInteractionService");
+
+    public static class ImmersiveActivity {
+        public static final String LABEL = "ImmersiveActivity";
+        public static final ComponentName COMPONENT = new ComponentName(FLICKER_APP_PACKAGE,
+                FLICKER_APP_PACKAGE + ".ImmersiveActivity");
+    }
 }

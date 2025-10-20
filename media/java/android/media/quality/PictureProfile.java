@@ -252,7 +252,8 @@ public final class PictureProfile implements Parcelable {
         mInputId = in.readString();
         mPackageName = in.readString();
         mParams = in.readPersistableBundle();
-        mHandle = in.readParcelable(PictureProfileHandle.class.getClassLoader());
+        mHandle = in.readParcelable(PictureProfileHandle.class.getClassLoader(),
+                PictureProfileHandle.class);
     }
 
     @Override

@@ -337,9 +337,11 @@ public class RavenwoodRunnerCallbackTest extends RavenwoodRunnerTestBase {
     @Expected("""
     testRunStarted: classes
     testSuiteStarted: classes
-    testStarted: initializationError(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ExceptionFromInnerRunnerConstructorTest)
+    testSuiteStarted: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ExceptionFromInnerRunnerConstructorTest)
+    testStarted: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ExceptionFromInnerRunnerConstructorTest)
     testFailure: Failed to instantiate class androidx.test.ext.junit.runners.AndroidJUnit4
-    testFinished: initializationError(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ExceptionFromInnerRunnerConstructorTest)
+    testFinished: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ExceptionFromInnerRunnerConstructorTest)
+    testSuiteFinished: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ExceptionFromInnerRunnerConstructorTest)
     testSuiteFinished: classes
     testRunFinished: 1,1,0,0
     """)
@@ -366,9 +368,9 @@ public class RavenwoodRunnerCallbackTest extends RavenwoodRunnerTestBase {
     @Expected("""
     testRunStarted: classes
     testSuiteStarted: classes
-    testSuiteStarted: ClassUnloadbleAndDisabledTest(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndDisabledTest)
-    testIgnored: ClassUnloadbleAndDisabledTest(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndDisabledTest)
-    testSuiteFinished: ClassUnloadbleAndDisabledTest(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndDisabledTest)
+    testSuiteStarted: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndDisabledTest)
+    testIgnored: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndDisabledTest)
+    testSuiteFinished: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndDisabledTest)
     testSuiteFinished: classes
     testRunFinished: 0,0,0,1
     """)
@@ -388,7 +390,7 @@ public class RavenwoodRunnerCallbackTest extends RavenwoodRunnerTestBase {
     }
 
     /**
-     * The test class is unloadable, but has a @DisabledOnRavenwood.
+     * The test class is unloadable, but does _not_ have a @DisabledOnRavenwood.
      */
     @RunWith(AndroidJUnit4.class)
     // CHECKSTYLE:OFF
@@ -396,13 +398,13 @@ public class RavenwoodRunnerCallbackTest extends RavenwoodRunnerTestBase {
     testRunStarted: classes
     testSuiteStarted: classes
     testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndEnabledTest
-    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndEnabledTest
     testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndEnabledTest)
     testFailure: Class unloadable!
     testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndEnabledTest)
     testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndEnabledTest)
-    testFailure: Class unloadable!
+    testFailure: Could not initialize class com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndEnabledTest
     testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndEnabledTest)
+    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$ClassUnloadbleAndEnabledTest
     testSuiteFinished: classes
     testRunFinished: 2,2,0,0
     """)
@@ -439,9 +441,11 @@ public class RavenwoodRunnerCallbackTest extends RavenwoodRunnerTestBase {
     @Expected("""
     testRunStarted: classes
     testSuiteStarted: classes
-    testStarted: initializationError(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$BrokenRunnerTest)
+    testSuiteStarted: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$BrokenRunnerTest)
+    testStarted: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$BrokenRunnerTest)
     testFailure: Failed to instantiate class com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$BrokenTestRunner
-    testFinished: initializationError(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$BrokenRunnerTest)
+    testFinished: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$BrokenRunnerTest)
+    testSuiteFinished: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$BrokenRunnerTest)
     testSuiteFinished: classes
     testRunFinished: 1,1,0,0
     """)

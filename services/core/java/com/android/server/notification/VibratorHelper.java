@@ -92,7 +92,7 @@ public final class VibratorHelper {
             }
         } catch (IllegalArgumentException e) {
             Slog.e(TAG, "Error creating vibration waveform with pattern: "
-                    + Arrays.toString(pattern));
+                    + Arrays.toString(pattern), e);
         }
         return null;
     }
@@ -131,9 +131,7 @@ public final class VibratorHelper {
 
             VibrationEffect effect = waveformBuilder.build();
             if (insistent) {
-                return VibrationEffect.startComposition()
-                        .repeatEffectIndefinitely(effect)
-                        .compose();
+                return VibrationEffect.createRepeatingEffect(effect);
             }
             return effect;
         } catch (IllegalArgumentException e) {

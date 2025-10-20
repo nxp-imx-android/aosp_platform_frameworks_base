@@ -81,7 +81,7 @@ public abstract class LayoutInflater {
 
     /**
      * This field should be made private, so it is hidden from the SDK.
-     * {@hide}
+     * @hide
      */
     // TODO(b/182007470): Use @ConfigurationContext instead
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)

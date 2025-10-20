@@ -550,6 +550,9 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
     @Watched(manual = true)
     private final AppIdSettingMap mAppIds;
 
+    @Watched(manual = true)
+    private final PccIdSettingMap mPccIds;
+
     // Packages that have been renamed since they were first installed.
     // Keys are the new names of the packages, values are the original
     // names.  The packages appear everywhere else under their original
@@ -633,6 +636,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         mCrossProfileIntentResolvers.registerObserver(mObserver);
         mSharedUsers.registerObserver(mObserver);
         mAppIds.registerObserver(mObserver);
+        mPccIds.registerObserver(mObserver);
         mRenamedPackages.registerObserver(mObserver);
         mNextAppLinkGeneration.registerObserver(mObserver);
         mPendingDefaultBrowser.registerObserver(mObserver);
@@ -673,6 +677,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         mLock = new PackageManagerTracedLock();
         mPackages.putAll(pkgSettings);
         mAppIds = new AppIdSettingMap();
+        mPccIds = new PccIdSettingMap();
         mSystemDir = null;
         mPermissions = null;
         mRuntimePermissionsPersistence = null;
@@ -726,6 +731,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         mHandler = handler;
         mLock = lock;
         mAppIds = new AppIdSettingMap();
+        mPccIds = new PccIdSettingMap();
         mPermissions = new LegacyPermissionSettings();
         mRuntimePermissionsPersistence = new RuntimePermissionPersistence(
                 runtimePermissionsPersistence, new Consumer<Integer>() {
@@ -808,6 +814,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
 
         mSharedUsers.snapshot(r.mSharedUsers);
         mAppIds = r.mAppIds.snapshot();
+        mPccIds = r.mPccIds.snapshot();
 
         mRenamedPackages.snapshot(r.mRenamedPackages);
         mNextAppLinkGeneration.snapshot(r.mNextAppLinkGeneration);
@@ -1384,6 +1391,40 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         return createdNew;
     }
 
+
+    /**
+     * Registers a PCC app ID with the system. Potentially allocates a new PCC app ID.
+     * @return {@code true} if a new PCC app ID was created in the process. {@code false} can be
+     *         returned in the case that the explicit app ID is already registered.
+     * @throws PackageManagerException If a PCC app ID could not be allocated.
+     */
+    boolean registerPccIdLPw(PackageSetting p) throws PackageManagerException {
+        final boolean createdNew;
+        final AndroidPackage pkg = p.getPkg();
+        if (pkg == null || !pkg.hasPccComponents()) {
+            return false;
+        }
+        if (p.hasSharedUser()) {
+            Slog.w(TAG, "Not assigning a PCC UID to a package with a shared userId.");
+            return false;
+        }
+        if (p.getPccId() == Process.INVALID_UID) {
+            // Assign new PCC UID
+            p.setPccId(mPccIds.acquireAndRegisterNewPccId(p));
+            createdNew = true;
+        } else {
+            // Add new setting to list of PCC UIDs
+            createdNew = mPccIds.registerExistingPccId(p.getPccId(), p, p.getPackageName());
+        }
+        if (p.getPccId() < 0) {
+            PackageManagerService.reportSettingsProblem(Log.WARN,
+                    "Package " + p.getPackageName() + " could not be assigned a valid PCC UID");
+            throw new PackageManagerException(INSTALL_FAILED_INSUFFICIENT_STORAGE,
+                    "Package " + p.getPackageName() + " could not be assigned a valid PCC UID");
+        }
+        return createdNew;
+    }
+
     /**
      * Writes per-user package restrictions if the user state has changed. If the user
      * state has not changed, this does nothing.
@@ -1485,7 +1526,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
 
 
     /**
-     * Remove package from mPackages and its corresponding AppId.
+     * Remove package from mPackages and its corresponding AppId and PCC AppId.
      *
      * @return True if the AppId has been removed.
      * False if the app doesn't exist, or if the app has a shared UID and there are other apps that
@@ -1495,6 +1536,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         final PackageSetting p = mPackages.remove(name);
         if (p != null) {
             removeInstallerPackageStatus(name);
+            removePccIdLPw(p.getPccId());
             SharedUserSetting sharedUserSetting = getSharedUserSettingLPr(p);
             if (sharedUserSetting != null) {
                 sharedUserSetting.removePackage(p);
@@ -1527,9 +1569,20 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         return mAppIds.getSetting(appId);
     }
 
+    /** Gets the setting associated with the provided PCC App ID */
+    public SettingBase getPccSettingLPr(int pccId) {
+        return mPccIds.getSetting(pccId);
+    }
+
     /** Unregisters the provided app ID. */
     void removeAppIdLPw(int appId) {
         mAppIds.removeSetting(appId);
+    }
+
+    void removePccIdLPw(int pccId) {
+        if (pccId > 0) {
+            mPccIds.removeSetting(pccId);
+        }
     }
     /**
      * Transparently convert a SharedUserSetting into PackageSettings without changing appId.
@@ -3292,6 +3345,9 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
             pkg.isScannedAsStoppedSystemApp());
         if (!pkg.hasSharedUser()) {
             serializer.attributeInt(null, "userId", pkg.getAppId());
+            if (pkg.getPccId() > 0) {
+                serializer.attributeInt(null, "pccId", pkg.getPccId());
+            }
 
             serializer.attributeBoolean(null, "isSdkLibrary",
                     pkg.getAndroidPackage() != null && pkg.getAndroidPackage().isSdkLibrary());
@@ -4146,6 +4202,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         String realName = null;
         int appId = 0;
         int sharedUserAppId = 0;
+        int pccId = INVALID_UID;
         String codePathStr = null;
         String legacyCpuAbiString = null;
         String legacyNativeLibraryPathStr = null;
@@ -4194,6 +4251,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
             appId = parseAppId(parser);
             isSdkLibrary = parser.getAttributeBoolean(null, "isSdkLibrary", false);
             sharedUserAppId = parseSharedUserAppId(parser);
+            pccId = parser.getAttributeInt(null, "pccId", INVALID_UID);
             codePathStr = parser.getAttributeValue(null, "codePath");
 
             legacyCpuAbiString = parser.getAttributeValue(null, "requiredCpuAbi");
@@ -4389,6 +4447,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                     installerAttributionTag, packageSource, isOrphaned,
                     installInitiatorUninstalled);
             packageSetting.setInstallSource(installSource)
+                    .setPccId(pccId)
                     .setVolumeUuid(volumeUuid)
                     .setCategoryOverride(categoryHint)
                     .setLegacyNativeLibraryPath(legacyNativeLibraryPathStr)
@@ -5207,6 +5266,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         }
 
         pw.print(prefix); pw.print("  appId="); pw.println(ps.getAppId());
+        pw.print(prefix); pw.print("  pccId="); pw.println(ps.getPccId());
 
         SharedUserSetting sharedUserSetting = getSharedUserSettingLPr(ps);
         if (sharedUserSetting != null) {
@@ -5254,6 +5314,12 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
             pw.print("]");
         }
         pw.println();
+        if(android.content.pm.Flags.verifiedDexopt()){
+            if (pkg != null ) {
+                pw.print(prefix); pw.print("  shouldVerifyCompilationArtifacts=");
+                pw.println(ps.shouldVerifyCompilationArtifacts());
+            }
+        }
         if (pkg != null) {
             pw.print(prefix); pw.print("  versionName="); pw.println(pkg.getVersionName());
             pw.print(prefix); pw.print("  hiddenApiEnforcementPolicy="); pw.println(

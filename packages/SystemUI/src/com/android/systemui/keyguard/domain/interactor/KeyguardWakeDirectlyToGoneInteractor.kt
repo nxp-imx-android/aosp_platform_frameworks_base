@@ -40,6 +40,8 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.Companion.device
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.shared.model.WakeSleepReason
+import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
@@ -47,6 +49,7 @@ import com.android.systemui.util.kotlin.sample
 import com.android.systemui.util.settings.SecureSettings
 import com.android.systemui.util.settings.SystemSettings
 import com.android.systemui.util.time.SystemClock
+import dagger.Lazy
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
@@ -94,6 +97,7 @@ constructor(
     keyguardEnabledInteractor: KeyguardEnabledInteractor,
     keyguardServiceShowLockscreenInteractor: KeyguardServiceShowLockscreenInteractor,
     keyguardInteractor: KeyguardInteractor,
+    private val sceneInteractor: Lazy<SceneInteractor>,
 ) {
 
     /**
@@ -258,8 +262,22 @@ constructor(
         scope.launch {
             transitionInteractor
                 .isInTransitionWhere(
-                    fromStatePredicate = { deviceIsAsleepInState(it) },
-                    toStatePredicate = { deviceIsAwakeInState(it) },
+                    fromStatePredicate = {
+                        deviceIsAsleepInState(
+                            it,
+                            if (SceneContainerFlag.isEnabled)
+                                sceneInteractor.get().currentScene.value
+                            else null,
+                        )
+                    },
+                    toStatePredicate = {
+                        deviceIsAwakeInState(
+                            it,
+                            if (SceneContainerFlag.isEnabled)
+                                sceneInteractor.get().currentScene.value
+                            else null,
+                        )
+                    },
                 )
                 .collect {
                     // This value is reset when the timeout alarm fires, but if the device is woken
@@ -279,6 +297,10 @@ constructor(
      */
     @SuppressLint("WrongConstant", "RegisterReceiverViaContext")
     private fun registerBroadcastReceiver() {
+        if (!KeyguardWmStateRefactor.isEnabled) {
+            return
+        }
+
         val delayedActionFilter = IntentFilter()
         delayedActionFilter.addAction(KeyguardViewMediator.DELAYED_KEYGUARD_ACTION)
         // TODO(b/346803756): Listen for DELAYED_LOCK_PROFILE_ACTION.

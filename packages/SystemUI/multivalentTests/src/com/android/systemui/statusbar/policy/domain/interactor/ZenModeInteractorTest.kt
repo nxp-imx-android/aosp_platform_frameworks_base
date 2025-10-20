@@ -20,11 +20,8 @@ import android.app.AutomaticZenRule
 import android.app.AutomaticZenRule.TYPE_BEDTIME
 import android.app.AutomaticZenRule.TYPE_DRIVING
 import android.app.AutomaticZenRule.TYPE_OTHER
-import android.app.Flags
 import android.app.NotificationManager.Policy
 import android.media.AudioManager
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import android.provider.Settings.Secure.ZEN_DURATION
 import android.provider.Settings.Secure.ZEN_DURATION_FOREVER
@@ -235,7 +232,6 @@ class ZenModeInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST)
     fun deactivateAllModes_deactivatesInOrder() =
         kosmos.runTest {
             zenModeRepository.activateMode(MANUAL_DND) // Priority 1
@@ -286,60 +282,24 @@ class ZenModeInteractorTest : SysuiTestCase() {
 
             zenModeRepository.addMode(id = "Bedtime", type = AutomaticZenRule.TYPE_BEDTIME)
             zenModeRepository.addMode(id = "Other", type = AutomaticZenRule.TYPE_OTHER)
-            assertThat(activeModes?.modeNames).hasSize(0)
-            assertThat(activeModes?.mainMode).isNull()
+            assertThat(activeModes?.names).hasSize(0)
+            assertThat(activeModes?.main).isNull()
 
             zenModeRepository.activateMode("Other")
-            assertThat(activeModes?.modeNames).containsExactly("Mode Other")
-            assertThat(activeModes?.mainMode?.name).isEqualTo("Mode Other")
+            assertThat(activeModes?.names).containsExactly("Mode Other")
+            assertThat(activeModes?.main?.name).isEqualTo("Mode Other")
 
             zenModeRepository.activateMode("Bedtime")
-            assertThat(activeModes?.modeNames)
-                .containsExactly("Mode Bedtime", "Mode Other")
-                .inOrder()
-            assertThat(activeModes?.mainMode?.name).isEqualTo("Mode Bedtime")
+            assertThat(activeModes?.names).containsExactly("Mode Bedtime", "Mode Other").inOrder()
+            assertThat(activeModes?.main?.name).isEqualTo("Mode Bedtime")
 
             zenModeRepository.deactivateMode("Other")
-            assertThat(activeModes?.modeNames).containsExactly("Mode Bedtime")
-            assertThat(activeModes?.mainMode?.name).isEqualTo("Mode Bedtime")
+            assertThat(activeModes?.names).containsExactly("Mode Bedtime")
+            assertThat(activeModes?.main?.name).isEqualTo("Mode Bedtime")
 
             zenModeRepository.deactivateMode("Bedtime")
-            assertThat(activeModes?.modeNames).hasSize(0)
-            assertThat(activeModes?.mainMode).isNull()
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST) // getActiveModes will be deleted
-    fun getActiveModes_computesMainActiveMode() =
-        kosmos.runTest {
-            zenModeRepository.addMode(id = "Bedtime", type = AutomaticZenRule.TYPE_BEDTIME)
-            zenModeRepository.addMode(id = "Other", type = AutomaticZenRule.TYPE_OTHER)
-
-            var activeModes = underTest.getActiveModes()
-            assertThat(activeModes.modeNames).hasSize(0)
-            assertThat(activeModes.mainMode).isNull()
-
-            zenModeRepository.activateMode("Other")
-            activeModes = underTest.getActiveModes()
-            assertThat(activeModes.modeNames).containsExactly("Mode Other")
-            assertThat(activeModes.mainMode?.name).isEqualTo("Mode Other")
-
-            zenModeRepository.activateMode("Bedtime")
-            activeModes = underTest.getActiveModes()
-            assertThat(activeModes.modeNames)
-                .containsExactly("Mode Bedtime", "Mode Other")
-                .inOrder()
-            assertThat(activeModes.mainMode?.name).isEqualTo("Mode Bedtime")
-
-            zenModeRepository.deactivateMode("Other")
-            activeModes = underTest.getActiveModes()
-            assertThat(activeModes.modeNames).containsExactly("Mode Bedtime")
-            assertThat(activeModes.mainMode?.name).isEqualTo("Mode Bedtime")
-
-            zenModeRepository.deactivateMode("Bedtime")
-            activeModes = underTest.getActiveModes()
-            assertThat(activeModes.modeNames).hasSize(0)
-            assertThat(activeModes.mainMode).isNull()
+            assertThat(activeModes?.names).hasSize(0)
+            assertThat(activeModes?.main).isNull()
         }
 
     @Test
@@ -371,18 +331,15 @@ class ZenModeInteractorTest : SysuiTestCase() {
 
             zenModeRepository.activateMode("Other")
             assertThat(mainActiveMode?.name).isEqualTo("Mode Other")
-            assertThat(mainActiveMode?.icon?.key?.resId)
-                .isEqualTo(R.drawable.ic_zen_mode_type_other)
+            assertThat(mainActiveMode?.icon?.resId).isEqualTo(R.drawable.ic_zen_mode_type_other)
 
             zenModeRepository.activateMode("Bedtime")
             assertThat(mainActiveMode?.name).isEqualTo("Mode Bedtime")
-            assertThat(mainActiveMode?.icon?.key?.resId)
-                .isEqualTo(R.drawable.ic_zen_mode_type_bedtime)
+            assertThat(mainActiveMode?.icon?.resId).isEqualTo(R.drawable.ic_zen_mode_type_bedtime)
 
             zenModeRepository.deactivateMode("Other")
             assertThat(mainActiveMode?.name).isEqualTo("Mode Bedtime")
-            assertThat(mainActiveMode?.icon?.key?.resId)
-                .isEqualTo(R.drawable.ic_zen_mode_type_bedtime)
+            assertThat(mainActiveMode?.icon?.resId).isEqualTo(R.drawable.ic_zen_mode_type_bedtime)
 
             zenModeRepository.deactivateMode("Bedtime")
             assertThat(mainActiveMode).isNull()
@@ -431,8 +388,8 @@ class ZenModeInteractorTest : SysuiTestCase() {
                 )
             )
 
-            assertThat(blockingMedia!!.mainMode!!.name).isEqualTo("Blocks media, Active")
-            assertThat(blockingMedia!!.modeNames)
+            assertThat(blockingMedia!!.main!!.name).isEqualTo("Blocks media, Active")
+            assertThat(blockingMedia!!.names)
                 .containsExactly("Blocks media, Active", "Blocks media, Active Too")
                 .inOrder()
         }
@@ -470,8 +427,8 @@ class ZenModeInteractorTest : SysuiTestCase() {
                 )
             )
 
-            assertThat(blockingAlarms!!.mainMode!!.name).isEqualTo("Blocks alarms, Active")
-            assertThat(blockingAlarms!!.modeNames)
+            assertThat(blockingAlarms!!.main!!.name).isEqualTo("Blocks alarms, Active")
+            assertThat(blockingAlarms!!.names)
                 .containsExactly("Blocks alarms, Active", "Blocks alarms, Active Too")
                 .inOrder()
         }
@@ -509,8 +466,8 @@ class ZenModeInteractorTest : SysuiTestCase() {
                 )
             )
 
-            assertThat(blockingSystem!!.mainMode!!.name).isEqualTo("Blocks system, Active")
-            assertThat(blockingSystem!!.modeNames)
+            assertThat(blockingSystem!!.main!!.name).isEqualTo("Blocks system, Active")
+            assertThat(blockingSystem!!.names)
                 .containsExactly("Blocks system, Active", "Blocks system, Active Too")
                 .inOrder()
         }
@@ -550,7 +507,7 @@ class ZenModeInteractorTest : SysuiTestCase() {
                 )
             )
 
-            assertThat(modesHidingNotifications?.map { it.name })
+            assertThat(modesHidingNotifications?.names)
                 .containsExactly("Has list suppression 1", "Has list suppression 2")
                 .inOrder()
         }

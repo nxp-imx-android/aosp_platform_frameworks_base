@@ -620,12 +620,15 @@ bool ManifestFixer::BuildRules(xml::XmlActionExecutor* executor, IAaptContext* c
   manifest_action["adopt-permissions"];
   manifest_action["uses-permission"];
   manifest_action["uses-permission"]["purpose"];
+  manifest_action["uses-permission"]["general-purpose"];
   manifest_action["uses-permission"]["required-feature"].Action(RequiredNameIsNotEmpty);
   manifest_action["uses-permission"]["required-not-feature"].Action(RequiredNameIsNotEmpty);
   manifest_action["uses-permission-sdk-23"];
   manifest_action["uses-permission-sdk-23"]["purpose"];
+  manifest_action["uses-permission-sdk-23"]["general-purpose"];
   manifest_action["permission"];
   manifest_action["permission"]["valid-purpose"].Action(RequiredNameIsNotEmpty);
+  manifest_action["permission"]["valid-general-purpose"].Action(RequiredNameIsNotEmpty);
   manifest_action["permission"]["meta-data"] = meta_data_action;
   manifest_action["permission-tree"];
   manifest_action["permission-group"];
@@ -712,6 +715,15 @@ bool ManifestFixer::BuildRules(xml::XmlActionExecutor* executor, IAaptContext* c
   application_action["provider"]["grant-uri-permission"];
   application_action["provider"]["path-permission"];
 
+  application_action["private-compute"]["activity"] = component_action;
+  application_action["private-compute"]["activity"]["layout"] = component_action;
+  application_action["private-compute"]["activity-alias"] = component_action;
+  application_action["private-compute"]["service"] = component_action;
+  application_action["private-compute"]["receiver"] = component_action;
+  application_action["private-compute"]["provider"] = component_action;
+  application_action["private-compute"]["provider"]["grant-uri-permission"];
+  application_action["private-compute"]["provider"]["path-permission"];
+
   manifest_action["package"] = manifest_action;
 
   return true;
@@ -749,11 +761,10 @@ static bool RenameManifestPackage(StringPiece package_override, xml::Element* ma
             child_el->name == "provider" || child_el->name == "receiver" ||
             child_el->name == "service") {
           FullyQualifyClassName(original_package, xml::kSchemaAndroid, "name", child_el);
-          continue;
-        }
-
-        if (child_el->name == "activity-alias") {
-          FullyQualifyClassName(original_package, xml::kSchemaAndroid, "targetActivity", child_el);
+          if (child_el->name == "activity-alias") {
+            FullyQualifyClassName(original_package, xml::kSchemaAndroid, "targetActivity",
+                                  child_el);
+          }
           continue;
         }
 
@@ -761,6 +772,22 @@ static bool RenameManifestPackage(StringPiece package_override, xml::Element* ma
           for (xml::Element* grand_child_el : child_el->GetChildElements()) {
             if (grand_child_el->name == "process") {
               FullyQualifyClassName(original_package, xml::kSchemaAndroid, "name", grand_child_el);
+            }
+          }
+          continue;
+        }
+
+        if (child_el->name == "private-compute") {
+          for (xml::Element* grand_child_el : child_el->GetChildElements()) {
+            if (grand_child_el->name == "activity" || grand_child_el->name == "activity-alias" ||
+                grand_child_el->name == "provider" || grand_child_el->name == "receiver" ||
+                grand_child_el->name == "service") {
+              FullyQualifyClassName(original_package, xml::kSchemaAndroid, "name", grand_child_el);
+              if (grand_child_el->name == "activity-alias") {
+                FullyQualifyClassName(original_package, xml::kSchemaAndroid, "targetActivity",
+                                      grand_child_el);
+              }
+              continue;
             }
           }
           continue;

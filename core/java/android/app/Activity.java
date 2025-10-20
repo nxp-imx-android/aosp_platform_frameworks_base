@@ -26,6 +26,8 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.inMultiWindowMode;
 import static android.os.Process.myUid;
 
+import static com.android.window.flags.Flags.predictiveBackStopKeycodeBackForwarding;
+
 import static java.lang.Character.MIN_VALUE;
 
 import android.Manifest;
@@ -166,6 +168,8 @@ import android.view.translation.UiTranslationSpec;
 import android.widget.AdapterView;
 import android.widget.Toast;
 import android.widget.Toolbar;
+import android.window.BackEvent;
+import android.window.ObserverOnBackAnimationCallback;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 import android.window.SplashScreen;
@@ -822,6 +826,7 @@ public class Activity extends ContextThemeWrapper
     private static final int LOG_AM_ON_TOP_RESUMED_GAINED_CALLED = 30064;
     private static final int LOG_AM_ON_TOP_RESUMED_LOST_CALLED = 30065;
     private OnBackInvokedCallback mDefaultBackCallback;
+    private ObserverOnBackAnimationCallback mObserverBackCallback;
 
     /**
      * After {@link Build.VERSION_CODES#TIRAMISU},
@@ -1923,6 +1928,27 @@ public class Activity extends ContextThemeWrapper
             mDefaultBackCallback = this::onBackInvoked;
             getOnBackInvokedDispatcher().registerSystemOnBackInvokedCallback(mDefaultBackCallback);
         }
+        if (predictiveBackStopKeycodeBackForwarding()) {
+            mObserverBackCallback = new ObserverOnBackAnimationCallback() {
+                    @Override
+                    public void onBackStarted(@NonNull BackEvent backEvent) {
+                        onUserInteraction();
+                    }
+
+                    @Override
+                    public void onBackInvoked() {
+                        onUserInteraction();
+                    }
+
+                    @Override
+                    public void onBackCancelled() {}
+                };
+            // Register a ObserverOnBackAnimationCallback with PRIORITY_SYSTEM_NAVIGATION_OBSERVER
+            // to get notified on every back navigation so that onUserInteraction can be called.
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_SYSTEM_NAVIGATION_OBSERVER,
+                    mObserverBackCallback);
+        }
     }
 
     /**
@@ -2357,7 +2383,7 @@ public class Activity extends ContextThemeWrapper
      * <p>All IDs will be bigger than {@link View#LAST_APP_AUTOFILL_ID}. All IDs returned
      * will be unique.
      *
-     * {@hide}
+     * @hide
      */
     @Override
     public int getNextAutofillId() {
@@ -3009,6 +3035,10 @@ public class Activity extends ContextThemeWrapper
         if (mDefaultBackCallback != null) {
             getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(mDefaultBackCallback);
             mDefaultBackCallback = null;
+        }
+        if (mObserverBackCallback != null) {
+            getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(mObserverBackCallback);
+            mObserverBackCallback = null;
         }
 
         if (mCallbacksController != null) {
@@ -7710,41 +7740,20 @@ public class Activity extends ContextThemeWrapper
     }
 
     /**
-     * Returns {@code true} if handing off this activity should also hand off
-     * all activities in the task of this activity. If this is {@code false} for
-     * any activity in the task, only the topmost activity in the task will be
-     * handed off.
-     *
-     * This method will return {@code false} if {@link #isHandoffEnabled}
-     * is {@code false}.
-     *
-     * @return if full task recreation is allowed
-     */
-    @FlaggedApi(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
-    public final boolean isHandoffFullTaskRecreationAllowed() {
-        return ActivityClient
-            .getInstance()
-            .isHandoffFullTaskRecreationAllowed(mToken);
-    }
-
-    /**
      * Sets if Handoff is enabled for this Activity. See
      * {@link #isHandoffEnabled} to get if Handoff is currently enabled on this
      * Activity.
      *
-     * Note: if Handoff is disabled for the topmost Activity in a task, it will
-     * be disabled for all Activities in the task.
+     * If Handoff is enabled, this Activity will only be eligible to be handed off to other devices
+     * if it is the topmost Activity in its Task.
      *
      * @param handoffEnabled Whether Handoff should be enabled for this Activity.
-     * @param allowFullTaskRecreation Whether activities below this one in the
-     *                                task should be handed off as well.
      */
     @FlaggedApi(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
-    public final void setHandoffEnabled(
-            boolean handoffEnabled,
-            boolean allowFullTaskRecreation) {
+    public final void setHandoffEnabled(boolean handoffEnabled) {
+        // TODO (b/400970610): Implement Full Task Recreation for Handoff.
         ActivityClient.getInstance().setHandoffEnabled(
-                mToken, handoffEnabled, allowFullTaskRecreation);
+                mToken, handoffEnabled, /* allowFullTaskRecreation= */ false);
     }
 
     /**
@@ -10217,17 +10226,11 @@ public class Activity extends ContextThemeWrapper
         }
     }
 
-    /**
-     * Enabling jank tracking for this activity but only if certain conditions are met. The
-     * application must have an app category other than undefined and a visible view.
-     */
     private void startAppJankTracking() {
-        if (!android.app.jank.Flags.detailedAppJankMetricsLoggingEnabled()) {
+        if (!shouldStartAppJankTracking()) {
             return;
         }
-        if (mApplication.getApplicationInfo().category == ApplicationInfo.CATEGORY_UNDEFINED) {
-            return;
-        }
+
         if (getWindow() != null && getWindow().peekDecorView() != null) {
             DecorView decorView = (DecorView) getWindow().peekDecorView();
             if (decorView.getVisibility() == View.VISIBLE) {
@@ -10250,6 +10253,22 @@ public class Activity extends ContextThemeWrapper
                 mJankTracker.enableAppJankTracking();
             }
         }
+    }
+
+    /**
+     * Enabling jank tracking for this activity but only if certain conditions are met. The
+     * application must have an app category other than undefined and be a non user build.
+     */
+    private boolean shouldStartAppJankTracking() {
+        // TODO remove this check once b/449201648 is closed.
+        if (android.app.jank.Flags.disableUserBuildJankMetrics()
+                && Build.IS_USER) {
+            return false;
+        }
+        if (!android.app.jank.Flags.detailedAppJankMetricsLoggingEnabled()) {
+            return false;
+        }
+        return mApplication.getApplicationInfo().category != ApplicationInfo.CATEGORY_UNDEFINED;
     }
 
     /**

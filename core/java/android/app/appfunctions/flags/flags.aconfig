@@ -9,3 +9,11 @@ flag {
     description: "This flag the new App Function manager system service."
     bug: "357551503"
 }
+
+flag {
+    name: "enable_contextual_app_functions"
+    is_exported: true
+    namespace: "machine_learning"
+    description: "This flags the Contextual App Functions Feature."
+    bug: "445901741"
+}

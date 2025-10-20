@@ -237,6 +237,7 @@ public class ApplicationExitInfoTest {
                 app1Rss1,                    // rss
                 app1ProcessName,             // processName
                 app1PackageName);            // packageName
+        app.setHasShownUi(true);
 
         // Case 1: basic System.exit() test
         int exitCode = 5;
@@ -376,6 +377,13 @@ public class ApplicationExitInfoTest {
         assertTrue(ArrayUtils.equals(info.getProcessStateSummary(), app1Cookie1,
                 app1Cookie1.length));
 
+        // Only the first exit info has HasShownUi flag, so it should be returned
+        // even though it's not the latest exit info.
+        info = mAppExitInfoTracker.getLastExitInfoForUiProcess(
+                app1PackageName, app1Uid, app1ProcessName);
+        assertNotNull(info);
+        assertEquals(app1Pid1, info.getPid());
+
         // Case 3: Create an instance of app1 with different user, and died because of SIGKILL
         sleep(1);
         final long now3 = System.currentTimeMillis();
@@ -442,6 +450,11 @@ public class ApplicationExitInfoTest {
                 app1Rss3,                            // rss
                 IMPORTANCE_FOREGROUND_SERVICE,       // importance
                 null);                               // description
+
+        // Since the exit info doesn't have HasShownUi flag set, we should get null.
+        info = mAppExitInfoTracker.getLastExitInfoForUiProcess(
+            app1PackageName, app1UidUser2, app1ProcessName);
+        assertNull(info);
 
         /*
          * Case 4: Create a process from another package with kill from lmkd
@@ -813,8 +826,8 @@ public class ApplicationExitInfoTest {
         final int traceEnd = 8192;
         createRandomFile(traceFile, traceSize);
         assertEquals(traceSize, traceFile.length());
-        mAppExitInfoTracker.handleLogAnrTrace(app.getPid(), app.uid, app.getPackageList(),
-                traceFile, traceStart, traceEnd);
+        mAppExitInfoTracker.handleLogAnrTrace(app.getPid(), app.uid,
+                app.getProcessPackageNames(), traceFile, traceStart, traceEnd);
 
         noteAppKill(app, ApplicationExitInfo.REASON_OTHER,
                 ApplicationExitInfo.SUBREASON_TOO_MANY_EMPTY, app1Description2, now9);
@@ -1077,6 +1090,44 @@ public class ApplicationExitInfoTest {
         assertEquals(10, getExitInfosHelper(container, 10, 0).get(0).getPid());
 
         assertEquals(0, getExitInfosHelper(container, 1337, 0).size());
+    }
+
+    @Test
+    @SuppressWarnings("GuardedBy")
+    public void testContainerGetMostRecentExitInfo() throws Exception {
+        AppExitInfoTracker.AppExitInfoContainer container =
+                mAppExitInfoTracker.new AppExitInfoContainer(3);
+
+        ApplicationExitInfo exitInfo = createExitInfo(/* pid */ 10);
+        exitInfo.setProcessName("process1");
+        exitInfo.setHasShownUi(true);
+        container.addExitInfoLocked(exitInfo);
+
+        exitInfo = createExitInfo(/* pid */ 30);
+        exitInfo.setProcessName("process1");
+        container.addExitInfoLocked(exitInfo);
+
+        exitInfo = createExitInfo(/* pid */ 20);
+        exitInfo.setProcessName("process2");
+        container.addExitInfoLocked(exitInfo);
+
+        exitInfo = container.getMostRecentExitInfoLocked(
+            /* processNameFilter */ "process1", /* hasShownUiFilter */ null);
+        assertNotNull(exitInfo);
+        assertEquals(30, exitInfo.getPid());
+
+        exitInfo = container.getMostRecentExitInfoLocked(
+            /* processNameFilter */ "process1", /* hasShownUiFilter */ true);
+        assertNotNull(exitInfo);
+        assertEquals(10, exitInfo.getPid());
+
+        exitInfo = container.getMostRecentExitInfoLocked(
+            /* processNameFilter */ "process2", /* hasShownUiFilter */ true);
+        assertNull(exitInfo);
+
+        exitInfo = container.getMostRecentExitInfoLocked(
+            /* processNameFilter */ "non existent", /* hasShownUiFilter */ null);
+        assertNull(exitInfo);
     }
 
     @Test

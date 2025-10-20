@@ -71,6 +71,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * atest FrameworksServicesTests:SyntheticPasswordTests
@@ -88,8 +89,13 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
     @Test
     public void testNoneLskfBasedProtector() throws RemoteException {
         final int USER_ID = 10;
-        MockSyntheticPasswordManager manager = new MockSyntheticPasswordManager(mContext, mStorage,
-                mGateKeeperService, mUserManager, mPasswordSlotManager);
+        MockSyntheticPasswordManager manager =
+                new MockSyntheticPasswordManager(
+                        mContext,
+                        mStorage,
+                        mUserManager,
+                        mPasswordSlotManager,
+                        mKeyStoreRule.getKeyStore());
         SyntheticPassword sp = manager.newSyntheticPassword(USER_ID);
         assertFalse(lskfGatekeeperHandleExists(USER_ID));
         long protectorId = manager.createLskfBasedProtector(mGateKeeperService,
@@ -109,8 +115,13 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
         final int USER_ID = 10;
         final LockscreenCredential password = newPassword("user-password");
         final LockscreenCredential badPassword = newPassword("bad-password");
-        MockSyntheticPasswordManager manager = new MockSyntheticPasswordManager(mContext, mStorage,
-                mGateKeeperService, mUserManager, mPasswordSlotManager);
+        MockSyntheticPasswordManager manager =
+                new MockSyntheticPasswordManager(
+                        mContext,
+                        mStorage,
+                        mUserManager,
+                        mPasswordSlotManager,
+                        mKeyStoreRule.getKeyStore());
         SyntheticPassword sp = manager.newSyntheticPassword(USER_ID);
         assertFalse(lskfGatekeeperHandleExists(USER_ID));
         long protectorId = manager.createLskfBasedProtector(mGateKeeperService, password, sp,
@@ -136,6 +147,13 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
     private void initSpAndSetCredential(int userId, LockscreenCredential credential)
             throws RemoteException {
         mService.initializeSyntheticPassword(userId);
+        List<UserInfo> profiles = mUserManager.getProfiles(userId);
+        if (profiles != null) {
+            // Ensure that any managed profiles have initialized SPs.
+            profiles.stream()
+                    .filter(userInfo -> userInfo.isManagedProfile())
+                    .forEach(userInfo -> mService.initializeSyntheticPassword(userInfo.id));
+        }
         assertTrue(mService.setLockCredential(credential, nonePassword(), userId));
         assertEquals(credential.getType(), mService.getCredentialType(userId));
     }
@@ -673,8 +691,13 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
     public void testStorePinLengthOnDisk() {
         int userId = 1;
         LockscreenCredential lockscreenCredentialPin = LockscreenCredential.createPin("123456");
-        MockSyntheticPasswordManager manager = new MockSyntheticPasswordManager(mContext, mStorage,
-                mGateKeeperService, mUserManager, mPasswordSlotManager);
+        MockSyntheticPasswordManager manager =
+                new MockSyntheticPasswordManager(
+                        mContext,
+                        mStorage,
+                        mUserManager,
+                        mPasswordSlotManager,
+                        mKeyStoreRule.getKeyStore());
         SyntheticPassword sp = manager.newSyntheticPassword(userId);
         long protectorId = manager.createLskfBasedProtector(mGateKeeperService,
                 lockscreenCredentialPin, sp,
@@ -828,8 +851,7 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
         verify(mAuthSecretService, never()).setPrimaryUserCredential(any(byte[].class));
     }
 
-    @Test
-    public void testUnlockUserWithToken() throws Exception {
+    private void testUnlockUserWithToken_helper() throws Exception {
         LockscreenCredential password = newPassword("password");
         byte[] token = "some-high-entropy-secure-token".getBytes();
         initSpAndSetCredential(PRIMARY_USER_ID, password);
@@ -841,12 +863,28 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
         assertTrue(mService.verifyCredential(password, PRIMARY_USER_ID, 0 /* flags */).isMatched());
         assertTrue(mLocalService.isEscrowTokenActive(handle, PRIMARY_USER_ID));
 
-        mService.onUserStopped(PRIMARY_USER_ID);
+        if (android.security.Flags.resetAuthFlagsAndMetricsInLockUser()) {
+            mLocalService.lockUser(PRIMARY_USER_ID);
+        } else {
+            mService.onUserStopped(PRIMARY_USER_ID);
+        }
         assertNull(mLocalService.getUserPasswordMetrics(PRIMARY_USER_ID));
 
         assertTrue(mLocalService.unlockUserWithToken(handle, token, PRIMARY_USER_ID));
         assertEquals(PasswordMetrics.computeForCredential(password),
                 mLocalService.getUserPasswordMetrics(PRIMARY_USER_ID));
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_RESET_AUTH_FLAGS_AND_METRICS_IN_LOCK_USER)
+    public void testUnlockUserWithToken_orig() throws Exception {
+        testUnlockUserWithToken_helper();
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_RESET_AUTH_FLAGS_AND_METRICS_IN_LOCK_USER)
+    public void testUnlockUserWithToken() throws Exception {
+        testUnlockUserWithToken_helper();
     }
 
     @Test

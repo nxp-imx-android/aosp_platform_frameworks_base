@@ -109,6 +109,7 @@ android_test {
         ":PackageParserTestApp8",
         ":PackageParserTestApp9",
         ":PackageParserTestApp10",
+        ":PackageParserTestPcc",
     ],
     resource_zips: [":PackageManagerServiceServerTests_apks_as_resources"],
 
@@ -156,6 +157,8 @@ java_genrule {
         ":FrameworksServicesTests_keyset_sb_ub",
         ":FrameworksServicesTests_keyset_splat_api",
         ":FrameworksServicesTests_keyset_splata_api",
+        ":FrameworksServicesTests_PccTestApp",
+        ":FrameworksServicesTests_PccTestAppUpgradeToNoPccComponents",
     ],
     out: ["PackageManagerServiceServerTests_apks_as_resources.res.zip"],
     tools: ["soong_zip"],

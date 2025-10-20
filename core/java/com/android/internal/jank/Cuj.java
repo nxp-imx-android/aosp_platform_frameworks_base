@@ -476,8 +476,61 @@ public class Cuj {
      */
     public static final int CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN = 144;
 
+    /**
+     * Tracks show animation for Cue bar. Cue bar is a floating bar that appears on the screen to
+     * provide personalized contextual actions based on the current app. Please follow
+     * go/cuebar-e2e-playbook to trigger Cue bar.
+     *
+     * <p>Tracking begins when the cue bar UI starts to show and ends when cue bar UI show
+     * completely.
+     */
+    public static final int CUJ_AMBIENT_CUE_SHOW = 145;
+
+    /**
+     * Tracks hide animation for Cue bar. Cue bar is a floating bar that appears on the screen to
+     * provide personalized contextual actions based on the current app. Please follow
+     * go/cuebar-e2e-playbook to trigger Cue bar.
+     *
+     * <p>Tracking begins when the cue bar UI starts to hide (a user click the close button, switch
+     * to another task, etc) and ends when cue bar UI disappears completely.
+     */
+    public static final int CUJ_AMBIENT_CUE_HIDE = 146;
+
+    /**
+     * Tracks expand animation for Cue bar. Cue bar is a floating bar that appears on the screen to
+     * provide personalized contextual actions based on the current app. Please follow
+     * go/cuebar-e2e-playbook to trigger Cue bar.
+     *
+     * <p>Tracking begins when a user click the cue bar to expand the action list and ends then all
+     * actions show.
+     */
+    public static final int CUJ_AMBIENT_CUE_EXPAND = 147;
+
+    /**
+     * Tracks collapse animation for Cue bar. Cue bar is a floating bar that appears on the screen
+     * to provide personalized contextual actions based on the current app. Please follow
+     * go/cuebar-e2e-playbook to trigger Cue bar.
+     *
+     * <p>Tracking begins when the cue bar UI tap other region to collapse the action list and ends
+     * when action list disappear completely.
+     */
+    public static final int CUJ_AMBIENT_CUE_COLLAPSE = 148;
+
+    /**
+     * Tracking transition from primary auth (PIN/pattern/password bouncer) to the biometric auth
+     * bouncer during secure lock device two-factor authentication.
+     */
+    public static final int CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR = 149;
+
+    /**
+     * Tracking bouncer dismissal following two-factor authentication completion in secure
+     * lock device.
+     */
+    public static final int CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR = 150;
+
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
-    @VisibleForTesting static final int LAST_CUJ = CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN;
+    @VisibleForTesting static final int LAST_CUJ =
+            CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR;
 
     /** @hide */
     @IntDef({
@@ -614,6 +667,12 @@ public class Cuj {
             CUJ_LAUNCHER_WIDGET_PICKER_APP_EXPAND,
             CUJ_DESKTOP_MODE_MOVE_TO_SPLIT_SCREEN,
             CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN,
+            CUJ_AMBIENT_CUE_SHOW,
+            CUJ_AMBIENT_CUE_HIDE,
+            CUJ_AMBIENT_CUE_EXPAND,
+            CUJ_AMBIENT_CUE_COLLAPSE,
+            CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR,
+            CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -760,6 +819,12 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_LAUNCHER_WIDGET_PICKER_APP_EXPAND] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__LAUNCHER_WIDGET_PICKER_APP_EXPAND;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_MOVE_TO_SPLIT_SCREEN] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_MOVE_TO_SPLIT_SCREEN;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_AMBIENT_CUE_SHOW] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__AMBIENT_CUE_SHOW;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_AMBIENT_CUE_HIDE] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__AMBIENT_CUE_HIDE;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_AMBIENT_CUE_EXPAND] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__AMBIENT_CUE_EXPAND;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_AMBIENT_CUE_COLLAPSE] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__AMBIENT_CUE_COLLAPSE;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR;
     }
 
     private Cuj() {
@@ -1044,6 +1109,18 @@ public class Cuj {
                 return "DESKTOP_MODE_MOVE_TO_SPLIT_SCREEN";
             case CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN:
                 return "DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN";
+            case CUJ_AMBIENT_CUE_SHOW:
+                return "AMBIENT_CUE_SHOW";
+            case CUJ_AMBIENT_CUE_HIDE:
+                return "AMBIENT_CUE_HIDE";
+            case CUJ_AMBIENT_CUE_EXPAND:
+                return "AMBIENT_CUE_EXPAND";
+            case CUJ_AMBIENT_CUE_COLLAPSE:
+                return "AMBIENT_CUE_COLLAPSE";
+            case CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR:
+                return "BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR";
+            case CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR:
+                return "BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR";
         }
         return "UNKNOWN";
     }

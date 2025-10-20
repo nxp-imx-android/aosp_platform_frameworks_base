@@ -22,7 +22,7 @@ import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
-import com.android.server.wm.flicker.helpers.GameAppHelper
+import com.android.server.wm.flicker.helpers.ImmersiveAppHelper
 import org.junit.Before
 import org.junit.After
 import org.junit.Ignore
@@ -40,23 +40,23 @@ abstract class ExitImmersiveToDesktopWithKeyboardShortcut(
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
-    private val gameAppHelper = GameAppHelper(instrumentation)
-    val gameApp = DesktopModeAppHelper(gameAppHelper)
+    private val immersiveAppHelper = ImmersiveAppHelper(instrumentation)
+    val immersiveApp = DesktopModeAppHelper(immersiveAppHelper)
 
     @Before
     fun setup(){
-        gameAppHelper.launchViaIntent(wmHelper)
-        gameApp.enterDesktopModeFromAppHandleMenu(wmHelper, device, true)
-        gameApp.enterImmersiveMode(wmHelper, device)
+        immersiveAppHelper.launchViaIntent(wmHelper)
+        immersiveApp.enterDesktopModeFromAppHandleMenu(wmHelper, device, true)
+        immersiveApp.enterImmersiveMode(wmHelper, device)
     }
 
     @Test
     open fun exitImmersive() {
-        gameApp.exitImmersiveToDesktopWithKeyboard(wmHelper)
+        immersiveApp.exitImmersiveToDesktopWithKeyboard(wmHelper)
     }
 
     @After
     fun teardown() {
-        gameApp.exit(wmHelper)
+        immersiveApp.exit(wmHelper)
     }
 }

@@ -60,6 +60,6 @@ open class SwitchPreference
 @JvmOverloads
 constructor(
     override val key: String,
-    @StringRes override val title: Int = 0,
-    @StringRes override val summary: Int = 0,
+    @param:StringRes override val title: Int = 0,
+    @param:StringRes override val summary: Int = 0,
 ) : BooleanValuePreference

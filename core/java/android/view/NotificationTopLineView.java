@@ -46,6 +46,8 @@ public class NotificationTopLineView extends ViewGroup {
     private final int mChildHideWidth;
     @Nullable private View mAppName;
     @Nullable private View mTitle;
+    @Nullable private View mAltTitle;
+    @Nullable private View mAppNameDivider;
     private View mHeaderText;
     private View mHeaderTextDivider;
     private View mSecondaryHeaderText;
@@ -53,6 +55,8 @@ public class NotificationTopLineView extends ViewGroup {
     private OnClickListener mFeedbackListener;
     private HeaderTouchListener mTouchListener = new HeaderTouchListener();
     private View mFeedbackIcon;
+    private View mVerificationText;
+    private View mExtraToplineContent;
     private int mHeaderTextMarginEnd;
 
     private Set<View> mViewsToDisappear = new HashSet<>();
@@ -100,11 +104,15 @@ public class NotificationTopLineView extends ViewGroup {
         super.onFinishInflate();
         mAppName = findViewById(R.id.app_name_text);
         mTitle = findViewById(R.id.title);
+        mAltTitle = findViewById(R.id.alt_title);
+        mAppNameDivider = findViewById(R.id.app_name_text_divider);
         mHeaderText = findViewById(R.id.header_text);
         mHeaderTextDivider = findViewById(R.id.header_text_divider);
         mSecondaryHeaderText = findViewById(R.id.header_text_secondary);
         mSecondaryHeaderTextDivider = findViewById(R.id.header_text_secondary_divider);
         mFeedbackIcon = findViewById(R.id.feedback);
+        mVerificationText = findViewById(R.id.verification_text);
+        mExtraToplineContent = findViewById(R.id.extra_topline_content);
     }
 
     @Override
@@ -151,16 +159,26 @@ public class NotificationTopLineView extends ViewGroup {
 
             mOverflowAdjuster.resetForOverflow(overFlow, heightSpec)
                     // First shrink the app name, down to a minimum size
-                    .adjust(mAppName, null, mChildMinWidth)
+                    .adjust(mAppName, mAppNameDivider, mChildMinWidth)
                     // Next, shrink the header text (this usually has subText)
                     //   This shrinks the subtext first, but not all the way (yet!)
                     .adjust(mHeaderText, mHeaderTextDivider, mChildMinWidth)
                     // Next, shrink the secondary header text  (this rarely has conversationTitle)
                     .adjust(mSecondaryHeaderText, mSecondaryHeaderTextDivider, 0)
+                    // Next, shrink the verification text for CallStyle
+                    .adjust(mVerificationText, null, mChildMinWidth)
+                    // Next, shrink the extra content for MetricStyle
+                    .adjust(mExtraToplineContent, null, mChildMinWidth)
                     // Next, shrink the title text (this has contentTitle; only in headerless views)
                     .adjust(mTitle, null, mChildMinWidth)
+                    .adjust(mAltTitle, null, mChildMinWidth)
                     // Next, shrink the header down to 0 if still necessary.
                     .adjust(mHeaderText, mHeaderTextDivider, 0)
+                    // Next, shrink the verification text down to 0 if still necessary. The
+                    // verification icon will always remain present though.
+                    .adjust(mVerificationText, null, 0)
+                    // Next, shrink the extra topline contentdown to 0 if still necessary.
+                    .adjust(mExtraToplineContent, null, 0)
                     // Finally, shrink the title to 0 if necessary (media is super cramped)
                     .adjust(mTitle, null, 0)
                     // Clean up
@@ -233,7 +251,7 @@ public class NotificationTopLineView extends ViewGroup {
                 // If this is the first child, don't include the start margin. The children will
                 // generally have a 2dp start margin by default to space them out, but if the child
                 // is first we don't need that.
-                if (!android.app.Flags.notificationTopLineMarginFix() || !isFirstVisibleChild) {
+                if (!isFirstVisibleChild) {
                     start += params.getMarginStart();
                 }
                 int end = start + child.getMeasuredWidth();

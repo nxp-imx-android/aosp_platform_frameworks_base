@@ -510,7 +510,7 @@ public final class OnDeviceIntelligenceManager {
         try {
             IStreamingResponseCallback callback = new IStreamingResponseCallback.Stub() {
                 @Override
-                public void onNewContent(@InferenceParams Bundle result) {
+                public void onPartialResult(@InferenceParams Bundle result) {
                     Binder.withCleanCallingIdentity(() -> {
                         callbackExecutor.execute(
                                 () -> streamingProcessingCallback.onPartialResult(result));

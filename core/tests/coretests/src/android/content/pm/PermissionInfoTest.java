@@ -16,6 +16,7 @@
 
 package android.content.pm;
 
+import static android.content.pm.PermissionInfo.NO_TARGET_SDK_VERSION;
 import static android.os.Build.VERSION.SDK_INT;
 
 import static org.junit.Assert.assertEquals;
@@ -43,6 +44,7 @@ public final class PermissionInfoTest {
             "9369370ffcfdc1e92dae777252c05c483b8cbb55fa9d5fd9f6317f623ae6d8c6";
     private static final String PURPOSE_1 = "purpose1";
     private static final String PURPOSE_2 = "purpose2";
+    private static final int TEST_TARGET_SDK_VERSION = 37;
 
     @Test
     public void createFromParcel_returnsKnownCerts() {
@@ -78,8 +80,13 @@ public final class PermissionInfoTest {
         PermissionInfo unparceledPermissionInfo = PermissionInfo.CREATOR.createFromParcel(parcel);
 
         assertFalse(unparceledPermissionInfo.requiresPurpose);
+        assertEquals(
+                NO_TARGET_SDK_VERSION,
+                unparceledPermissionInfo.requiresGeneralPurposeTargetSdkVersion);
         assertNotNull(unparceledPermissionInfo.validPurposes);
+        assertNotNull(unparceledPermissionInfo.validGeneralPurposes);
         assertTrue(unparceledPermissionInfo.validPurposes.isEmpty());
+        assertTrue(unparceledPermissionInfo.validGeneralPurposes.isEmpty());
     }
 
     @Test
@@ -87,6 +94,7 @@ public final class PermissionInfoTest {
         PermissionInfo permissionInfo = new PermissionInfo();
         permissionInfo.requiresPurpose = true;
         permissionInfo.requiresPurposeTargetSdkVersion = SDK_INT;
+        permissionInfo.requiresGeneralPurposeTargetSdkVersion = SDK_INT;
         permissionInfo.validPurposes =
                 CollectionUtils.add(
                         permissionInfo.validPurposes,
@@ -97,6 +105,16 @@ public final class PermissionInfoTest {
                         permissionInfo.validPurposes,
                         PURPOSE_2,
                         new ValidPurposeInfo(PURPOSE_2, 10));
+        permissionInfo.validGeneralPurposes =
+                CollectionUtils.add(
+                        permissionInfo.validGeneralPurposes,
+                        PURPOSE_1,
+                        new ValidGeneralPurposeInfo(PURPOSE_1, Integer.MAX_VALUE));
+        permissionInfo.validGeneralPurposes =
+                CollectionUtils.add(
+                        permissionInfo.validGeneralPurposes,
+                        PURPOSE_2,
+                        new ValidGeneralPurposeInfo(PURPOSE_2, 10));
 
         Parcel parcel = Parcel.obtain();
         permissionInfo.writeToParcel(parcel, 0);
@@ -106,8 +124,11 @@ public final class PermissionInfoTest {
 
         assertTrue(unparceledPermissionInfo.requiresPurpose);
         assertEquals(SDK_INT, unparceledPermissionInfo.requiresPurposeTargetSdkVersion);
+        assertEquals(SDK_INT, unparceledPermissionInfo.requiresGeneralPurposeTargetSdkVersion);
         assertNotNull(unparceledPermissionInfo.validPurposes);
         assertEquals(2, unparceledPermissionInfo.validPurposes.size());
+        assertNotNull(unparceledPermissionInfo.validGeneralPurposes);
+        assertEquals(2, unparceledPermissionInfo.validGeneralPurposes.size());
 
         assertTrue(unparceledPermissionInfo.validPurposes.containsKey(PURPOSE_1));
         assertEquals(PURPOSE_1, unparceledPermissionInfo.validPurposes.get(PURPOSE_1).getName());
@@ -119,5 +140,54 @@ public final class PermissionInfoTest {
         assertEquals(PURPOSE_2, unparceledPermissionInfo.validPurposes.get(PURPOSE_2).getName());
         assertEquals(
                 10, unparceledPermissionInfo.validPurposes.get(PURPOSE_2).getMaxTargetSdkVersion());
+
+        assertTrue(unparceledPermissionInfo.validGeneralPurposes.containsKey(PURPOSE_1));
+        assertEquals(
+                PURPOSE_1, unparceledPermissionInfo.validGeneralPurposes.get(PURPOSE_1).getName());
+        assertEquals(
+                Integer.MAX_VALUE,
+                unparceledPermissionInfo
+                        .validGeneralPurposes
+                        .get(PURPOSE_1)
+                        .getMaxTargetSdkVersion());
+
+        assertTrue(unparceledPermissionInfo.validGeneralPurposes.containsKey(PURPOSE_2));
+        assertEquals(
+                PURPOSE_2, unparceledPermissionInfo.validGeneralPurposes.get(PURPOSE_2).getName());
+        assertEquals(
+                10,
+                unparceledPermissionInfo
+                        .validGeneralPurposes
+                        .get(PURPOSE_2)
+                        .getMaxTargetSdkVersion());
+    }
+
+    @Test
+    public void createFromParcel_withDefaultPurposeTargetSdkVersions_returnsNoTargetSdkVersion() {
+        PermissionInfo permissionInfo = new PermissionInfo();
+        Parcel parcel = Parcel.obtain();
+        permissionInfo.writeToParcel(parcel, 0);
+
+        parcel.setDataPosition(0);
+        PermissionInfo unparceledPermissionInfo = PermissionInfo.CREATOR.createFromParcel(parcel);
+
+        assertEquals(
+                NO_TARGET_SDK_VERSION,
+                unparceledPermissionInfo.requiresGeneralPurposeTargetSdkVersion);
+    }
+
+    @Test
+    public void createFromParcel_returnsPurposeRelatedFields() {
+        PermissionInfo permissionInfo = new PermissionInfo();
+        permissionInfo.requiresGeneralPurposeTargetSdkVersion = TEST_TARGET_SDK_VERSION;
+        Parcel parcel = Parcel.obtain();
+        permissionInfo.writeToParcel(parcel, 0);
+
+        parcel.setDataPosition(0);
+        PermissionInfo unparceledPermissionInfo = PermissionInfo.CREATOR.createFromParcel(parcel);
+
+        assertEquals(
+                TEST_TARGET_SDK_VERSION,
+                unparceledPermissionInfo.requiresGeneralPurposeTargetSdkVersion);
     }
 }

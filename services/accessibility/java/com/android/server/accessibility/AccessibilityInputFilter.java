@@ -33,7 +33,6 @@ import android.os.PowerManager;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.provider.Settings.Secure.AccessibilityMagnificationCursorFollowingMode;
-import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
@@ -78,7 +77,7 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
 
     private static final String TAG = "A11yInputFilter";
 
-    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+    private static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(TAG);
 
     /**
      * Flag for disabling all InputFilter features.
@@ -303,13 +302,15 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
     }
 
     AccessibilityInputFilter(Context context, AccessibilityManagerService service) {
-        this(context, service, new SparseArray<>(0), new SparseArray<>(0));
+        this(context, service, new SparseArray<>(0), new SparseArray<>(0),
+                context.getMainLooper());
     }
 
     AccessibilityInputFilter(Context context, AccessibilityManagerService service,
             SparseArray<EventStreamTransformation> eventHandler,
-            SparseArray<MagnificationGestureHandler> magnificationGestureHandler) {
-        super(context.getMainLooper());
+            SparseArray<MagnificationGestureHandler> magnificationGestureHandler,
+            Looper looper) {
+        super(looper);
         mContext = context;
         mAms = service;
         mPm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -399,7 +400,9 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
     }
 
     private void onInputEventInternal(InputEvent event, int policyFlags) {
-        if (mEventHandler.size() == 0) {
+        final int displayId = event.getDisplayId();
+        if (mEventHandler.size() == 0 || (Flags.ignoreInputEventsFromDisplayWithoutHandler()
+                && displayId != Display.INVALID_DISPLAY && mEventHandler.get(displayId) == null)) {
             if (DEBUG) Slog.d(TAG, "No mEventHandler for event " + event);
             super.onInputEvent(event, policyFlags);
             return;
@@ -412,7 +415,6 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
         }
 
         final int eventSource = event.getSource();
-        final int displayId = event.getDisplayId();
         if ((policyFlags & WindowManagerPolicy.FLAG_PASS_TO_USER) == 0) {
             if (DEBUG) {
                 Slog.d(TAG, "Not processing event " + event);

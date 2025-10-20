@@ -18,8 +18,8 @@ package com.android.systemui.media.controls.domain.pipeline
 
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.shared.mediaLogger
+import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.settings.userTracker
 import com.android.systemui.statusbar.notificationLockscreenUserManager
 
@@ -29,7 +29,7 @@ val Kosmos.mediaDataFilter by
             userTracker = userTracker,
             lockscreenUserManager = notificationLockscreenUserManager,
             executor = fakeExecutor,
-            mediaPipelineRepository = mediaFilterRepository,
+            mediaPipelineRepository = mediaPipelineRepository,
             mediaLogger = mediaLogger,
         )
     }

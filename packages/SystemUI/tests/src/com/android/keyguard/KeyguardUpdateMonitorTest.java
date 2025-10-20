@@ -34,10 +34,12 @@ import static android.telephony.SubscriptionManager.PROFILE_CLASS_PROVISIONING;
 
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_USER_REQUEST;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN;
+import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
 import static com.android.keyguard.KeyguardUpdateMonitor.BIOMETRIC_STATE_CANCELLING_RESTARTING;
 import static com.android.keyguard.KeyguardUpdateMonitor.BIOMETRIC_STATE_STOPPED;
 import static com.android.keyguard.KeyguardUpdateMonitor.HAL_POWER_PRESS_TIMEOUT;
 import static com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2;
+import static com.android.systemui.Flags.FLAG_SIM_NEXT_SUB_ID;
 import static com.android.systemui.statusbar.policy.DevicePostureController.DEVICE_POSTURE_OPENED;
 import static com.android.systemui.statusbar.policy.DevicePostureController.DEVICE_POSTURE_UNKNOWN;
 
@@ -543,7 +545,6 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
 
     @Test
     public void testTelephonyCapable_SimState_Absent() {
-
         Intent intent = defaultSimStateChangedIntent();
         intent.putExtra(Intent.EXTRA_SIM_STATE,
                 Intent.SIM_STATE_ABSENT);
@@ -1227,6 +1228,30 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
         when(mFaceAuthInteractor.isAuthenticated()).thenReturn(MutableStateFlow(true));
 
         assertThat(mKeyguardUpdateMonitor.getUserCanSkipBouncer(user)).isFalse();
+    }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    public void testDoesNotReportFingerprintUnlock_duringSecureLockDevice() {
+        when(mStrongAuthTracker.getStrongAuthForUser(mSelectedUserInteractor.getSelectedUserId()))
+                .thenReturn(STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE);
+
+        int user = mSelectedUserInteractor.getSelectedUserId();
+        mKeyguardUpdateMonitor.onFingerprintAuthenticated(user, true /* isClass3Biometric */);
+        verify(mLockPatternUtils, never()).reportSuccessfulBiometricUnlock(
+                eq(true), eq(user));
+    }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    public void testDoesNotReportFaceUnlock_duringSecureLockDevice() {
+        when(mStrongAuthTracker.getStrongAuthForUser(mSelectedUserInteractor.getSelectedUserId()))
+                .thenReturn(STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE);
+
+        int user = mSelectedUserInteractor.getSelectedUserId();
+        mKeyguardUpdateMonitor.onFaceAuthenticated(user, true /* isClass3Biometric */);
+        verify(mLockPatternUtils, never()).reportSuccessfulBiometricUnlock(
+                eq(true), eq(user));
     }
 
     @Test
@@ -2449,6 +2474,58 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
                 TelephonyManager.SIM_STATE_PIN_REQUIRED);
         verify(keyguardUpdateMonitorCallback).onSimStateChanged(validSubId, slotId,
                 TelephonyManager.SIM_STATE_PIN_REQUIRED);
+    }
+
+    @Test
+    @EnableFlags(FLAG_SIM_NEXT_SUB_ID)
+    public void getNextSubIdForState_noSimData() {
+        var subId = mKeyguardUpdateMonitor.getNextSubIdForState(
+                TelephonyManager.SIM_STATE_PIN_REQUIRED);
+        assertThat(subId).isEqualTo(SubscriptionManager.INVALID_SUBSCRIPTION_ID);
+    }
+
+    @Test
+    @EnableFlags(FLAG_SIM_NEXT_SUB_ID)
+    public void getNextSubIdForState_noSimDataThatMatchesState() {
+        int subId = 1;
+        int slotId = 0;
+        mKeyguardUpdateMonitor.handleSimStateChange(subId, slotId,
+                TelephonyManager.SIM_STATE_PIN_REQUIRED);
+
+        var nextSubId = mKeyguardUpdateMonitor.getNextSubIdForState(
+                TelephonyManager.SIM_STATE_PUK_REQUIRED);
+        assertThat(nextSubId).isEqualTo(SubscriptionManager.INVALID_SUBSCRIPTION_ID);
+    }
+
+    @Test
+    @EnableFlags(FLAG_SIM_NEXT_SUB_ID)
+    public void getNextSubIdForState_oneSimDataThatMatchesState() {
+        int subId = 1;
+        int slotId = 0;
+        mKeyguardUpdateMonitor.handleSimStateChange(subId, slotId,
+                TelephonyManager.SIM_STATE_PIN_REQUIRED);
+
+        var nextSubId = mKeyguardUpdateMonitor.getNextSubIdForState(
+                TelephonyManager.SIM_STATE_PIN_REQUIRED);
+        assertThat(nextSubId).isEqualTo(subId);
+    }
+
+    @Test
+    @EnableFlags(FLAG_SIM_NEXT_SUB_ID)
+    public void getNextSubIdForState_twoSimDataThatMatchesState_returnsLowestSlotId() {
+        int subId1 = 10;
+        int slotId1 = 0;
+        mKeyguardUpdateMonitor.handleSimStateChange(subId1, slotId1,
+                TelephonyManager.SIM_STATE_PIN_REQUIRED);
+
+        int subId2 = 2;
+        int slotId2 = 1;
+        mKeyguardUpdateMonitor.handleSimStateChange(subId2, slotId2,
+                TelephonyManager.SIM_STATE_PIN_REQUIRED);
+
+        var nextSubId = mKeyguardUpdateMonitor.getNextSubIdForState(
+                TelephonyManager.SIM_STATE_PIN_REQUIRED);
+        assertThat(nextSubId).isEqualTo(subId1);
     }
 
     @Test

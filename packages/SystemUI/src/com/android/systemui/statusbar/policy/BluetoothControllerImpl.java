@@ -181,6 +181,14 @@ public class BluetoothControllerImpl implements BluetoothController, BluetoothCa
     }
 
     @Override
+    public List<Integer> getSupportedProfiles() {
+        if (mAdapter == null) {
+            return Collections.emptyList();
+        }
+        return mAdapter.getSupportedProfiles();
+    }
+
+    @Override
     public void addCallback(@NonNull Callback cb) {
         mHandler.obtainMessage(H.MSG_ADD_CALLBACK, cb).sendToTarget();
         mHandler.sendEmptyMessage(H.MSG_STATE_CHANGED);
@@ -264,12 +272,17 @@ public class BluetoothControllerImpl implements BluetoothController, BluetoothCa
     }
 
     private void updateConnected() {
+        mLogger.logUpdatingConnected();
         mBluetoothRepository.fetchConnectionStatusInBackground(
                 getDevices(), this::onConnectionStatusFetched);
     }
 
     // Careful! This may be invoked in the main thread.
     private void onConnectionStatusFetched(ConnectionStatusModel status) {
+        mLogger.logConnectionStatus(
+                status.getConnectedDevices(),
+                status.getMaxConnectionState()
+        );
         List<CachedBluetoothDevice> newList = status.getConnectedDevices();
         int state = status.getMaxConnectionState();
         synchronized (mConnectedDevices) {
@@ -284,6 +297,7 @@ public class BluetoothControllerImpl implements BluetoothController, BluetoothCa
     }
 
     private void updateActive() {
+        mLogger.logUpdatingActive();
         boolean isActive = false;
 
         for (CachedBluetoothDevice device : getDevices()) {

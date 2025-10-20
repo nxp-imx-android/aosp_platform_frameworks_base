@@ -16,7 +16,6 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
-
 import static com.google.common.truth.Truth.assertThat;
 import static org.testng.Assert.expectThrows;
 
@@ -39,59 +38,49 @@ public class RemoteTaskRemovedMessageTest {
     @Test
     public void testConstructor_fromTaskId() {
         final int taskId = 1234;
-        final RemoteTaskRemovedMessage remoteTaskRemovedMessage
-            = new RemoteTaskRemovedMessage(taskId);
-        assertThat(remoteTaskRemovedMessage.taskId())
-            .isEqualTo(taskId);
+        final RemoteTaskRemovedMessage remoteTaskRemovedMessage =
+                new RemoteTaskRemovedMessage(taskId);
+        assertThat(remoteTaskRemovedMessage.taskId()).isEqualTo(taskId);
     }
 
     @Test
-    public void readFromProto_readsValidProto()
-        throws IOException, ProtoParseException {
+    public void readFromProto_readsValidProto() throws IOException, ProtoParseException {
 
         final int taskId = 1234;
         final ProtoOutputStream pos = new ProtoOutputStream();
-        pos.writeInt32(
-            android.companion.RemoteTaskRemovedMessage.TASK_ID,
-            taskId);
+        pos.writeInt32(android.companion.RemoteTaskRemovedMessage.TASK_ID, taskId);
         pos.flush();
 
         final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        final RemoteTaskRemovedMessage remoteTaskRemovedMessage
-            = RemoteTaskRemovedMessage.readFromProto(pis);
+        final RemoteTaskRemovedMessage remoteTaskRemovedMessage =
+                RemoteTaskRemovedMessage.readFromProto(pis);
 
-        assertThat(remoteTaskRemovedMessage.taskId())
-            .isEqualTo(taskId);
+        assertThat(remoteTaskRemovedMessage.taskId()).isEqualTo(taskId);
     }
 
     @Test
     public void testConstructor_fromProto_setsToDefaultTaskId()
-        throws IOException, ProtoParseException {
+            throws IOException, ProtoParseException {
 
-        RemoteTaskRemovedMessage remoteTaskRemovedMessage
-            = RemoteTaskRemovedMessage.readFromProto(new ProtoInputStream(new byte[0]));
+        RemoteTaskRemovedMessage remoteTaskRemovedMessage =
+                RemoteTaskRemovedMessage.readFromProto(new ProtoInputStream(new byte[0]));
 
-        assertThat(remoteTaskRemovedMessage.taskId())
-            .isEqualTo(0);
+        assertThat(remoteTaskRemovedMessage.taskId()).isEqualTo(0);
     }
 
     @Test
     public void testWriteToProto_writesValidProto() throws IOException {
         int taskId = 1234;
-        RemoteTaskRemovedMessage remoteTaskRemovedMessage
-            = new RemoteTaskRemovedMessage(taskId);
+        RemoteTaskRemovedMessage remoteTaskRemovedMessage = new RemoteTaskRemovedMessage(taskId);
         final ProtoOutputStream pos = new ProtoOutputStream();
         remoteTaskRemovedMessage.writeToProto(pos);
         pos.flush();
 
         final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
         pis.nextField();
-        long taskIdFieldNumber =
-            android.companion.RemoteTaskRemovedMessage.TASK_ID;
-        assertThat(pis.getFieldNumber())
-            .isEqualTo((int) taskIdFieldNumber);
-        assertThat(pis.readInt(taskIdFieldNumber))
-            .isEqualTo(taskId);
+        long taskIdFieldNumber = android.companion.RemoteTaskRemovedMessage.TASK_ID;
+        assertThat(pis.getFieldNumber()).isEqualTo((int) taskIdFieldNumber);
+        assertThat(pis.readInt(taskIdFieldNumber)).isEqualTo(taskId);
         pis.nextField();
         assertThat(pis.nextField()).isEqualTo(ProtoInputStream.NO_MORE_FIELDS);
     }
@@ -99,27 +88,22 @@ public class RemoteTaskRemovedMessageTest {
     @Test
     public void testWriteAndRead_roundTrip_works() throws IOException {
         int taskId = 1234;
-        RemoteTaskRemovedMessage expected
-            = new RemoteTaskRemovedMessage(taskId);
+        RemoteTaskRemovedMessage expected = new RemoteTaskRemovedMessage(taskId);
         final ProtoOutputStream pos = new ProtoOutputStream();
         expected.writeToProto(pos);
         pos.flush();
 
         final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        final RemoteTaskRemovedMessage actual
-            = RemoteTaskRemovedMessage.readFromProto(pis);
+        final RemoteTaskRemovedMessage actual = RemoteTaskRemovedMessage.readFromProto(pis);
 
-        assertThat(actual.taskId())
-            .isEqualTo(expected.taskId());
+        assertThat(actual.taskId()).isEqualTo(expected.taskId());
     }
 
     @Test
     public void testEquals_works() {
         int taskId = 1234;
-        RemoteTaskRemovedMessage expected
-            = new RemoteTaskRemovedMessage(taskId);
-        RemoteTaskRemovedMessage actual
-            = new RemoteTaskRemovedMessage(taskId);
+        RemoteTaskRemovedMessage expected = new RemoteTaskRemovedMessage(taskId);
+        RemoteTaskRemovedMessage actual = new RemoteTaskRemovedMessage(taskId);
         assertThat(actual).isEqualTo(expected);
     }
 }

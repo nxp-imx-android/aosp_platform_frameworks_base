@@ -214,6 +214,7 @@ constructor(
 
         return OngoingActivityChipModel.Active(
             key = key,
+            notificationKey = key,
             managingPackageName = packageName,
             isImportantForPrivacy = false,
             icon = icon,

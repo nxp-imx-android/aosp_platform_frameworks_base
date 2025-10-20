@@ -97,6 +97,7 @@ fun CastChooserView(
             // Inflate with the existing dialog xml layout
             val view =
                 LayoutInflater.from(context).inflate(R.layout.media_route_chooser_dialog, null)
+            (view as? LinearLayout)?.showDividers = LinearLayout.SHOW_DIVIDER_NONE
             contentManager.bindViews(view)
             contentManager.onAttachedToWindow()
 

@@ -51,7 +51,7 @@ import org.junit.runners.Parameterized
 @RequiresFlagsDisabled(Flags.FLAG_ENABLE_PIP2)
 class EnterPipOnUserLeaveHintTest(flicker: FlickerTest) : EnterPipTransition(flicker) {
     override val pipApp: PipAppHelper = PipAppHelper(instrumentation)
-    override val thisTransition: FlickerBuilder.() -> Unit = { transitions { tapl.goHome() } }
+    override val thisTransition: FlickerBuilder.() -> Unit = { transitions { device.pressHome() } }
 
     override val defaultEnterPip: FlickerBuilder.() -> Unit = {
         setup {

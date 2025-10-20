@@ -32,6 +32,7 @@ import static android.service.notification.NotificationListenerService.HINT_HOST
 import android.Manifest.permission;
 import android.annotation.IntDef;
 import android.app.ActivityManager;
+import android.app.ActivityTaskManager;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -49,6 +50,7 @@ import android.database.ContentObserver;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.IRingtonePlayer;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.RemoteException;
@@ -67,12 +69,14 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 
 import com.android.internal.R;
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.config.sysui.SystemUiSystemPropertiesFlags;
 import com.android.internal.config.sysui.SystemUiSystemPropertiesFlags.NotificationFlags;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
+import com.android.internal.util.VibrationStatsWriter;
 import com.android.server.EventLogTags;
 import com.android.server.lights.LightsManager;
 import com.android.server.lights.LogicalLight;
@@ -80,7 +84,6 @@ import com.android.server.lights.LogicalLight;
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import com.android.internal.annotations.GuardedBy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -164,8 +167,10 @@ public final class NotificationAttentionHelper {
     private AudioManager mAudioManager;
     private final NotificationUsageStats mUsageStats;
     private final ZenModeHelper mZenModeHelper;
+    private final ActivityTaskManager mActivityTaskManager;
 
     private VibratorHelper mVibratorHelper;
+    private VibrationStatsWriter mVibrationStatsWriter;
     // The last key in this list owns the hardware.
     @GuardedBy("mLock")
     ArrayList<String> mLights = new ArrayList<>();
@@ -209,7 +214,8 @@ public final class NotificationAttentionHelper {
             AccessibilityManager accessibilityManager, PackageManager packageManager,
             UserManager userManager, NotificationUsageStats usageStats,
             NotificationManagerPrivate notificationManagerPrivate,
-            ZenModeHelper zenModeHelper, SystemUiSystemPropertiesFlags.FlagResolver flagResolver) {
+            ZenModeHelper zenModeHelper, SystemUiSystemPropertiesFlags.FlagResolver flagResolver,
+            VibrationStatsWriter vibrationStatsWriter) {
         mContext = context;
         mLock = lock;
         mPackageManager = packageManager;
@@ -220,8 +226,10 @@ public final class NotificationAttentionHelper {
         mUsageStats = usageStats;
         mZenModeHelper = zenModeHelper;
         mFlagResolver = flagResolver;
+        mActivityTaskManager = context.getSystemService(ActivityTaskManager.class);
 
         mVibratorHelper = new VibratorHelper(context);
+        mVibrationStatsWriter = vibrationStatsWriter;
 
         mNotificationLight = lightsManager.getLight(LightsManager.LIGHT_ID_NOTIFICATIONS);
         mAttentionLight = lightsManager.getLight(LightsManager.LIGHT_ID_ATTENTION);
@@ -457,8 +465,7 @@ public final class NotificationAttentionHelper {
                 && record.getImportance() > IMPORTANCE_MIN
                 && !suppressedByDnd
                 && isNotificationForCurrentUser(record, signals)) {
-            sendAccessibilityEvent(record);
-            sentAccessibilityEvent = true;
+            sentAccessibilityEvent = sendAccessibilityEvent(record);
         }
 
         if (aboveThreshold && isNotificationForCurrentUser(record, signals)) {
@@ -484,8 +491,7 @@ public final class NotificationAttentionHelper {
                 shouldMuteReason = shouldMuteNotificationLocked(record, signals, hasAudibleAlert);
                 if (shouldMuteReason == MUTE_REASON_NOT_MUTED) {
                     if (!sentAccessibilityEvent) {
-                        sendAccessibilityEvent(record);
-                        sentAccessibilityEvent = true;
+                        sentAccessibilityEvent = sendAccessibilityEvent(record);
                     }
                     if (DEBUG) Slog.v(TAG, "Interrupting!");
                     boolean isInsistentUpdate = isInsistentUpdate(record);
@@ -866,6 +872,11 @@ public final class NotificationAttentionHelper {
         String reason = "Notification (" + record.getSbn().getOpPkg() + " "
                 + record.getSbn().getUid() + ") " + (delayed ? "(Delayed)" : "");
         mVibratorHelper.vibrate(effect, record.getAudioAttributes(), reason);
+        if (com.android.server.notification.Flags.notificationVibrationInSoundUri()) {
+            mVibrationStatsWriter.logCustomVibrationPatternEventIfNeeded(
+                    VibrationStatsWriter.VIBRATION_PATTERN_PLAYED,
+                    RingtoneManager.TYPE_NOTIFICATION, record.getSound());
+        }
     }
 
     void playInCallNotification() {
@@ -1113,9 +1124,11 @@ public final class NotificationAttentionHelper {
         return UserHandle.USER_NULL;
     }
 
-    void sendAccessibilityEvent(NotificationRecord record) {
-        if (!mAccessibilityManager.isEnabled() || !mEnableNotificationAccessibilityEvents) {
-            return;
+    boolean sendAccessibilityEvent(NotificationRecord record) {
+        if (!mAccessibilityManager.isEnabled() || !mEnableNotificationAccessibilityEvents
+                || (mActivityTaskManager != null && mActivityTaskManager.isInLockTaskMode())
+                || mDisableNotificationEffects) {
+            return false;
         }
 
         final Notification notification = record.getNotification();
@@ -1142,6 +1155,7 @@ public final class NotificationAttentionHelper {
         }
 
         mAccessibilityManager.sendAccessibilityEvent(event);
+        return true;
     }
 
     /**

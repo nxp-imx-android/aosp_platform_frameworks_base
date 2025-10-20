@@ -40,6 +40,7 @@ import com.android.systemui.util.kotlin.pairwiseBy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -327,6 +328,19 @@ constructor(
                 started = SharingStarted.Eagerly,
                 initialValue = false,
             )
+
+    /**
+     * A flow that emits `true` when the current scene is communal. This includes cases where the
+     * scene is idle on communal, transitioning to or from communal, or when an overlay is shown on
+     * top of communal.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val isCommunalCurrentScene: Flow<Boolean> =
+        transitionState
+            .flatMapLatest { it.currentScene() }
+            .map {
+                it == if (SceneContainerFlag.isEnabled) Scenes.Communal else CommunalScenes.Communal
+            }
 
     /** This flow will be true when idle on the hub and not transitioning to edit mode. */
     val isIdleOnCommunalNotEditMode: Flow<Boolean> =

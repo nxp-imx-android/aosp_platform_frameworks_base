@@ -35,7 +35,6 @@ import com.android.app.animation.Interpolators;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.dynamicanimation.animation.DynamicAnimation;
 import com.android.systemui.res.R;
-import com.android.systemui.shared.clocks.AnimatableClockView;
 import com.android.systemui.statusbar.NotificationShelf;
 import com.android.systemui.statusbar.notification.PhysicsPropertyAnimator;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator;
@@ -65,8 +64,7 @@ public class StackStateAnimator {
     public static final int ANIMATION_DURATION_HEADS_UP_APPEAR = 400;
     public static final int ANIMATION_DURATION_HEADS_UP_DISAPPEAR = 400;
     public static final int ANIMATION_DURATION_HEADS_UP_CYCLING = 400;
-    public static final int ANIMATION_DURATION_FOLD_TO_AOD =
-            AnimatableClockView.ANIMATION_DURATION_FOLD_TO_AOD;
+    public static final int ANIMATION_DURATION_FOLD_TO_AOD = 600;
     public static final int ANIMATION_DURATION_PRIORITY_CHANGE = 500;
     public static final int ANIMATION_DELAY_PER_ELEMENT_INTERRUPTING = 80;
     public static final int ANIMATION_DELAY_PER_ELEMENT_MANUAL = 32;

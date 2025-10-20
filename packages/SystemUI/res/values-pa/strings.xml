@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"ਸਿਸਟਮ UI"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"ਕੀ ਬੈਟਰੀ ਸੇਵਰ ਚਾਲੂ ਕਰਨਾ ਹੈ?"</string>
-    <string name="battery_low_description" msgid="3282977755476423966">"ਤੁਹਾਡੇ ਕੋਲ <xliff:g id="PERCENTAGE">%s</xliff:g> ਬੈਟਰੀ ਬਾਕੀ ਬਚੀ ਹੈ। ਬੈਟਰੀ ਸੇਵਰ ਗੂੜ੍ਹੇ ਥੀਮ ਨੂੰ ਚਾਲੂ ਕਰਦਾ ਹੈ, ਬੈਕਗ੍ਰਾਊਂਡ ਸਰਗਰਮੀ \'ਤੇ ਪਾਬੰਦੀ ਲਗਾਉਂਦਾ ਹੈ ਅਤੇ ਸੂਚਨਾਵਾਂ ਵਿੱਚ ਦੇਰੀ ਕਰਦਾ ਹੈ।"</string>
-    <string name="battery_low_intro" msgid="5148725009653088790">"ਬੈਟਰੀ ਸੇਵਰ ਗੂੜ੍ਹੇ ਥੀਮ ਨੂੰ ਚਾਲੂ ਕਰਦਾ ਹੈ, ਬੈਕਗ੍ਰਾਊਂਡ ਸਰਗਰਮੀ \'ਤੇ ਪਾਬੰਦੀ ਲਗਾਉਂਦਾ ਹੈ ਅਤੇ ਸੂਚਨਾਵਾਂ ਵਿੱਚ ਦੇਰੀ ਕਰਦਾ ਹੈ।"</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"ਤੁਹਾਡੇ ਕੋਲ <xliff:g id="PERCENTAGE">%s</xliff:g> ਬੈਟਰੀ ਬਾਕੀ ਬਚੀ ਹੈ। ਬੈਟਰੀ ਸੇਵਰ ਗੂੜ੍ਹੇ ਥੀਮ ਨੂੰ ਚਾਲੂ ਕਰਦਾ ਹੈ, ਬੈਕਗ੍ਰਾਊਂਡ ਸਰਗਰਮੀ \'ਤੇ ਪਾਬੰਦੀ ਲਗਾਉਂਦਾ ਹੈ ਅਤੇ ਸੂਚਨਾਵਾਂ ਵਿੱਚ ਦੇਰੀ ਕਰਦਾ ਹੈ।"</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"ਬੈਟਰੀ ਸੇਵਰ ਗੂੜ੍ਹੇ ਥੀਮ ਨੂੰ ਚਾਲੂ ਕਰਦਾ ਹੈ, ਬੈਕਗ੍ਰਾਊਂਡ ਸਰਗਰਮੀ \'ਤੇ ਪਾਬੰਦੀ ਲਗਾਉਂਦਾ ਹੈ ਅਤੇ ਸੂਚਨਾਵਾਂ ਵਿੱਚ ਦੇਰੀ ਕਰਦਾ ਹੈ।"</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"<xliff:g id="PERCENTAGE">%s</xliff:g> ਬਾਕੀ"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"USB ਰਾਹੀਂ ਚਾਰਜ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"ਆਪਣੇ ਡੀਵਾਈਸ ਨਾਲ ਮਿਲੇ ਚਾਰਜਰ ਦੀ ਵਰਤੋਂ ਕਰੋ"</string>
@@ -88,9 +88,11 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"ਐਪ ਜਾਂ ਤੁਹਾਡੀ ਸੰਸਥਾ ਵੱਲੋਂ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲੈਣ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਦਿੱਤੀ ਗਈ ਹੈ"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"ਤੁਹਾਡੇ ਆਈ.ਟੀ. ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲੈਣ ਦੀ ਸੁਵਿਧਾ ਨੂੰ ਬਲਾਕ ਕੀਤਾ ਗਿਆ ਹੈ"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"ਸੰਪਾਦਨ ਕਰੋ"</string>
-    <string name="screenshot_edit_description" msgid="3333092254706788906">"ਸਕ੍ਰੀਨਸ਼ਾਟ ਦਾ ਸੰਪਾਦਨ ਕਰੋ"</string>
+    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
+    <skip />
     <string name="screenshot_share_label" msgid="1653061117238861559">"ਸਾਂਝਾ ਕਰੋ"</string>
-    <string name="screenshot_share_description" msgid="2861628935812656612">"ਸਕ੍ਰੀਨਸ਼ਾਟ ਸਾਂਝਾ ਕਰੋ"</string>
+    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
+    <skip />
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"ਹੋਰ ਕੈਪਚਰ ਕਰੋ"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"ਸਕ੍ਰੀਨਸ਼ਾਟ ਖਾਰਜ ਕਰੋ"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"ਕਾਰਜ ਪ੍ਰੋਫਾਈਲ ਦੇ ਸੁਨੇਹੇ ਨੂੰ ਖਾਰਜ ਕਰੋ"</string>
@@ -138,20 +140,53 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"ਤੁਸੀਂ ਫ਼ਿਲਹਾਲ ਆਪਣੀ ਪੂਰੀ ਸਕ੍ਰੀਨ ਨੂੰ ਰਿਕਾਰਡ ਕਰ ਰਹੇ ਹੋ"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"ਤੁਸੀਂ ਫ਼ਿਲਹਾਲ <xliff:g id="APP_NAME">%1$s</xliff:g> ਨੂੰ ਰਿਕਾਰਡ ਕਰ ਰਹੇ ਹੋ"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ਰਿਕਾਰਡਿੰਗ ਬੰਦ ਕਰੋ"</string>
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"ਪੂਰੀ ਸਕ੍ਰੀਨ"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"ਇੱਕ ਐਪ"</string>
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"ਰਿਕਾਰਡ ਕਰਨ ਲਈ ਐਪ"</string>
+    <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"ਇੱਕ ਐਪ (ਚੁਣਨ ਲਈ ਕੋਈ ਐਪ ਖੋਲ੍ਹੋ)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ਡੀਵਾਈਸ ਆਡੀਓ ਨੂੰ ਰਿਕਾਰਡ ਕਰੋ"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਨਾਲ ਰਿਕਾਰਡ ਕਰੋ"</string>
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"ਸੈਲਫ਼ੀ ਕੈਮਰਾ ਦਿਖਾਓ"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ਸਪਰਸ਼ ਦਿਖਾਓ"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ਰਿਕਾਰਡ ਕਰਨ ਲਈ ਕੋਈ ਐਪ ਚੁਣੋ"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ਵੀਡੀਓ ਨੂੰ ਰੱਖਿਅਤ ਕੀਤਾ ਗਿਆ"</string>
+    <string name="screen_record_video_deleted" msgid="30786214839944540">"ਵੀਡੀਓ ਮਿਟਾਇਆ ਗਿਆ"</string>
+    <string name="screen_record_undo" msgid="7942716736019800870">"ਅਣਕੀਤਾ ਕਰੋ"</string>
     <string name="screen_record_retake" msgid="3846643688365398450">"ਦੁਬਾਰਾ ਕੈਪਚਰ ਕਰੋ"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ਸੰਪਾਦਨ ਕਰੋ"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ਮਿਟਾਓ"</string>
+    <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"ਕੀ ਇਸ ਰਿਕਾਰਡਿੰਗ ਨੂੰ ਮਿਟਾਉਣਾ ਹੈ?"</string>
+    <string name="screen_record_delete_dialog_content" msgid="2610040845214024496">"ਇਹ ਰਿਕਾਰਡਿੰਗ ਮਿਟਾਉਣ ਨਾਲ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਤੋਂ ਵੀਡੀਓ ਫ਼ਾਈਲ ਪੱਕੇ ਤੌਰ \'ਤੇ ਮਿਟ ਜਾਵੇਗੀ।"</string>
+    <string name="screen_record_play" msgid="4732544724679889445">"ਚਲਾਓ"</string>
+    <string name="screen_record_pause" msgid="1715012292444967776">"ਰੋਕੋ"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"ਮਿਊਟ ਕਰੋ"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"ਅਣਮਿਊਟ ਕਰੋ"</string>
+    <!-- no translation found for screen_capture_blocked_by_admin (1751756953683506644) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ਪੂਰੀ ਸਕ੍ਰੀਨ ਦਾ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ"</string>
+    <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"ਪੂਰੀ ਸਕ੍ਰੀਨ ਨੂੰ ਰਿਕਾਰਡ ਕਰੋ"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"ਚੁਣੇ ਹੋਏ ਖੇਤਰ ਦਾ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ"</string>
+    <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"ਚੁਣਿਆ ਹੋਇਆ ਖੇਤਰ ਰਿਕਾਰਡ ਕਰੋ"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"ਸਕ੍ਰੀਨਸ਼ਾਟ"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ਰਿਕਾਰਡ ਕਰੋ"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"ਸਾਂਝਾ ਕਰੋ"</string>
+    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"ਸਾਂਝੀ ਕਰਨ ਲਈ ਕੋਈ ਐਪ ਚੁਣੋ"</string>
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ਆਡੀਓ ਨੂੰ ਸਾਂਝਾ ਕਰੋ"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ਐਪ ਵਿੰਡੋ ਨੂੰ ਸਾਂਝਾ ਕਰੋ"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"ਸਾਂਝਾ ਕਰਨ ਵੇਲੇ, ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਦੀ ਸਮੱਗਰੀ ਦਿਖਾਈ ਦਿੰਦੀ ਹੈ"</string>
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ਵਿੰਡੋ ਦਾ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ"</string>
+    <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ਵਿੰਡੋ ਰਿਕਾਰਡ ਕਰੋ"</string>
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ਚੁਣੇ ਹੋਏ ਖੇਤਰ ਦਾ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ"</string>
+    <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"ਚੁਣਿਆ ਹੋਇਆ ਖੇਤਰ ਰਿਕਾਰਡ ਕਰੋ"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"ਪੂਰੀ ਸਕ੍ਰੀਨ ਦਾ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"ਪੂਰੀ ਸਕ੍ਰੀਨ ਨੂੰ ਰਿਕਾਰਡ ਕਰੋ"</string>
+    <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"ਸਕ੍ਰੀਨ ਕੈਪਚਰ ਸੈਟਿੰਗਾਂ"</string>
+    <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"ਕਲਿੱਕ ਅਤੇ ਕੁੰਜੀਆਂ ਦਿਖਾਓ"</string>
+    <string name="screen_capture_device_audio" msgid="1537290197773737349">"ਡੀਵਾਈਸ ਆਡੀਓ"</string>
+    <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"ਮਾਈਕ੍ਰੋਫ਼ੋਨ"</string>
+    <string name="screen_capture_front_camera" msgid="1214647538302639358">"ਅਗਲਾ ਕੈਮਰਾ"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"ਸਾਂਝਾਕਰਨ ਬੰਦ ਕਰੋ"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ਸਮੱਗਰੀ ਸਾਂਝੀ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"ਕੀ ਸਕ੍ਰੀਨ ਨੂੰ ਸਾਂਝਾ ਕਰਨਾ ਬੰਦ ਕਰਨਾ ਹੈ?"</string>
@@ -287,8 +322,6 @@
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ।"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ਗਰੁੱਪ ਦਾ ਵਿਸਤਾਰ ਕਰੋ।"</string>
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"ਗਰੁੱਪ ਨੂੰ ਸਮੇਟੋ।"</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"ਗਰੁੱਪ ਵਿੱਚ ਡੀਵਾਈਸ ਸ਼ਾਮਲ ਕਰੋ।"</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"ਗਰੁੱਪ ਤੋਂ ਡੀਵਾਈਸ ਹਟਾਓ।"</string>
     <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"<xliff:g id="DEVICE_NAME">%s</xliff:g> ਨੂੰ ਗਰੁੱਪ ਵਿੱਚ ਸ਼ਾਮਲ ਕਰੋ।"</string>
     <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"<xliff:g id="DEVICE_NAME">%s</xliff:g> ਨੂੰ ਗਰੁੱਪ ਵਿੱਚੋਂ ਹਟਾਓ।"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"ਐਪਲੀਕੇਸ਼ਨ ਖੋਲ੍ਹੋ।"</string>
@@ -336,6 +369,7 @@
     <string name="accessibility_location_active" msgid="2845747916764660369">"ਨਿਰਧਾਰਿਤ ਸਥਾਨ ਸੇਵਾ ਬੇਨਤੀਆਂ ਸਕਿਰਿਆ"</string>
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"\'ਸੈਂਸਰ ਬੰਦ ਕਰੋ\' ਨੂੰ ਕਿਰਿਆਸ਼ੀਲ ਕਰੋ"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"ਸਾਰੀਆਂ ਸੂਚਨਾਵਾਂ ਹਟਾਓ।"</string>
+    <string name="accessibility_notification_bell" msgid="7149451526721220526">"ਸੂਚਨਾਵਾਂ"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ਗਰੁੱਪ ਵਿੱਚ # ਹੋਰ ਸੂਚਨਾ ਹੈ।}one{ਗਰੁੱਪ ਵਿੱਚ # ਹੋਰ ਸੂਚਨਾ ਹੈ।}other{ਗਰੁੱਪ ਵਿੱਚ # ਹੋਰ ਸੂਚਨਾਵਾਂ ਹਨ।}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ਸਕ੍ਰੀਨ ਲੈਂਡਸਕੇਪ ਅਨੁਕੂਲਨ ਵਿੱਚ  ਲਾਕ  ਕੀਤੀ ਹੈ।"</string>
@@ -394,9 +428,17 @@
     <string name="quick_settings_casting" msgid="1435880708719268055">"ਕਾਸਟਿੰਗ"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"ਬਿਨਾਂ ਨਾਮ ਦਾ ਡੀਵਾਈਸ"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"ਕੋਈ ਡਿਵਾਈਸਾਂ ਉਪਲਬਧ ਨਹੀਂ"</string>
-    <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"ਕੋਈ Wi‑Fi ਜਾਂ ਈਥਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਨਹੀਂ ਹੈ"</string>
-    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
+    <!-- no translation found for quick_settings_cast_detail_title (8212426967651562547) -->
     <skip />
+    <!-- no translation found for quick_settings_cast_detail_subtitle (6406833630052788623) -->
+    <skip />
+    <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"ਕੋਈ Wi‑Fi ਜਾਂ ਈਥਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਨਹੀਂ ਹੈ"</string>
+    <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"ਡਿਸਕਨੈਕਟ ਕਰੋ"</string>
+    <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"ਮੌਜੂਦਾ ਮਾਈਕ ਇਹ ਹੈ"</string>
+    <string name="quick_settings_audio_output_section_title" msgid="3448300919285193209">"ਆਊਟਪੁੱਟ"</string>
+    <string name="quick_settings_audio_input_section_title" msgid="9203723659866975215">"ਇਨਪੁੱਟ"</string>
+    <string name="quick_settings_audio_input_disclaimer_text" msgid="442891508001590727">"ਮਾਈਕ ਦੀ ਅਵਾਜ਼ ਆਪਣੇ ਆਪ ਵਿਵਸਥਿਤ ਹੋ ਜਾਵੇਗੀ"</string>
+    <string name="quick_settings_audio_effects_section_title" msgid="6770520531879816578">"ਪ੍ਰਭਾਵ"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"ਚਮਕ"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"ਰੰਗ ਪਲਟਨਾ"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"ਰੰਗ ਸੁਧਾਈ"</string>
@@ -406,8 +448,7 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"ਬੰਦ ਕਰੋ"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"ਕਨੈਕਟ ਕੀਤਾ"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"ਕਨੈਕਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ..."</string>
-    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
-    <skip />
+    <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"ਵਾਈ-ਫਾਈ ਲਈ ਸਕੈਨ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"ਹੌਟਸਪੌਟ"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"ਚਾਲੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…"</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"ਡਾਟਾ ਸੇਵਰ ਚਾਲੂ ਹੈ"</string>
@@ -467,12 +508,13 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"\'ਨਵਾਂ ਡੀਵਾਈਸ ਜੋੜਾਬੱਧ ਕਰੋ\' \'ਤੇ ਕਲਿੱਕ ਕਰੋ"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"ਪ੍ਰੀਸੈੱਟ ਨੂੰ ਅੱਪਡੇਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"ਪ੍ਰੀਸੈੱਟ"</string>
+    <string name="hearing_devices_preset_label_left" msgid="7427947566560179945">"ਖੱਬਾ ਪ੍ਰੀਸੈੱਟ"</string>
+    <string name="hearing_devices_preset_label_right" msgid="1847206329436268522">"ਸੱਜਾ ਪ੍ਰੀਸੈੱਟ"</string>
     <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"ਕਾਲਾਂ ਲਈ ਪੂਰਵ-ਨਿਰਧਾਰਿਤ ਮਾਈਕ੍ਰੋਫ਼ੋਨ"</string>
   <string-array name="hearing_device_input_routing_options">
     <item msgid="4582190415045337003">"ਸੁਣਨ ਦੇ ਸਾਧਨ ਦਾ ਮਾਈਕ੍ਰੋਫ਼ੋਨ"</item>
     <item msgid="8501466270452446450">"ਇਸ ਫ਼ੋਨ ਦਾ ਮਾਈਕ੍ਰੋਫ਼ੋਨ"</item>
   </string-array>
-    <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"ਚੁਣਿਆ ਗਿਆ"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"ਆਲੇ-ਦੁਆਲੇ"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ਖੱਬੇ"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"ਸੱਜੇ"</string>
@@ -526,7 +568,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"ਸੈੱਟ ਨਹੀਂ ਹੈ"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਪ੍ਰਬੰਧਨ ਕਰੋ"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{ਕੋਈ ਕਿਰਿਆਸ਼ੀਲ ਮੋਡ ਨਹੀਂ ਹੈ}=1{{mode} ਕਿਰਿਆਸ਼ੀਲ ਹੈ}other{# ਮੋਡ ਕਿਰਿਆਸ਼ੀਲ ਹਨ}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> ਮੋਡ"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g> ਮੋਡ"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"ਚਾਲੂ"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"ਧੁਨੀਆਂ ਅਤੇ ਥਰਥਰਾਹਟਾਂ ਤੁਹਾਨੂੰ ਪਰੇਸ਼ਾਨ ਨਹੀਂ ਕਰਨਗੀਆਂ, ਸਿਵਾਏ ਅਲਾਰਮਾਂ, ਯਾਦ-ਦਹਾਨੀਆਂ, ਵਰਤਾਰਿਆਂ, ਅਤੇ ਤੁਹਾਡੇ ਵੱਲੋਂ ਨਿਰਧਾਰਤ ਕੀਤੇ ਕਾਲਰਾਂ ਦੀ ਸੂਰਤ ਵਿੱਚ। ਤੁਸੀਂ ਅਜੇ ਵੀ ਸੰਗੀਤ, ਵੀਡੀਓ ਅਤੇ ਗੇਮਾਂ ਸਮੇਤ ਆਪਣੀ ਚੋਣ ਅਨੁਸਾਰ ਕੁਝ ਵੀ ਸੁਣ ਸਕਦੇ ਹੋ।"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"ਧੁਨੀਆਂ ਅਤੇ ਥਰਥਰਾਹਟਾਂ ਤੁਹਾਨੂੰ ਪਰੇਸ਼ਾਨ ਨਹੀਂ ਕਰਨਗੀਆਂ, ਸਿਵਾਏ ਅਲਾਰਮਾਂ ਦੀ ਸੂਰਤ ਵਿੱਚ। ਤੁਸੀਂ ਅਜੇ ਵੀ ਸੰਗੀਤ, ਵੀਡੀਓ ਅਤੇ ਗੇਮਾਂ ਸਮੇਤ ਆਪਣੀ ਚੋਣ ਅਨੁਸਾਰ ਕੁਝ ਵੀ ਸੁਣ ਸਕਦੇ ਹੋ।"</string>
@@ -673,8 +715,8 @@
     <string name="notification_section_header_conversations" msgid="821834744538345661">"ਗੱਲਾਂਬਾਤਾਂ"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"ਸਾਰੀਆਂ ਸ਼ਾਂਤ ਸੂਚਨਾਵਾਂ ਕਲੀਅਰ ਕਰੋ"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"ਸੂਚਨਾ ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ"</string>
-    <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"\'ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ\' ਵੱਲੋਂ ਸੂਚਨਾਵਾਂ ਨੂੰ ਰੋਕਿਆ ਗਿਆ"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{ਕੋਈ ਸੂਚਨਾ ਨਹੀਂ ਹੈ}=1{{mode} ਵੱਲੋਂ ਸੂਚਨਾਵਾਂ ਨੂੰ ਬੰਦ ਕੀਤਾ ਗਿਆ}=2{{mode} ਅਤੇ ਇੱਕ ਹੋਰ ਮੋਡ ਵੱਲੋਂ ਸੂਚਨਾਵਾਂ ਨੂੰ ਬੰਦ ਕੀਤਾ ਗਿਆ}other{{mode} ਅਤੇ # ਹੋਰ ਮੋਡਾਂ ਵੱਲੋਂ ਸੂਚਨਾਵਾਂ ਨੂੰ ਬੰਦ ਕੀਤਾ ਗਿਆ}}"</string>
+    <string name="caught_up_shade_text" msgid="8166221989384139659">"ਤੁਸੀਂ ਸਭ ਦੇਖ ਲਿਆ ਹੈ"</string>
     <string name="media_projection_action_text" msgid="3634906766918186440">"ਹੁਣੇ ਸ਼ੁਰੂ ਕਰੋ"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"ਕੋਈ ਸੂਚਨਾ ਨਹੀਂ"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"ਕੋਈ ਨਵੀਂ ਸੂਚਨਾ ਨਹੀਂ ਹੈ"</string>
@@ -723,8 +765,9 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"ਤੁਹਾਡੀਆਂ ਨਿੱਜੀ ਐਪਾਂ <xliff:g id="VPN_APP">%1$s</xliff:g> ਰਾਹੀਂ ਇੰਟਰਨੈੱਟ ਨਾਲ ਕਨੈਕਟ ਹਨ। ਈਮੇਲਾਂ ਅਤੇ ਬ੍ਰਾਊਜ਼ਿੰਗ ਡਾਟੇ ਸਮੇਤ ਤੁਹਾਡੀ ਨੈੱਟਵਰਕ ਸਰਗਰਮੀ ਤੁਹਾਡੇ VPN ਪ੍ਰਦਾਨਕ ਨੂੰ ਦਿਸਦੀ ਹੈ।"</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"ਇਸ ਡੀਵਾਈਸ ਦਾ ਪ੍ਰਬੰਧਨ ਤੁਹਾਡੇ ਮਾਂ-ਪਿਓ ਵੱਲੋਂ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਤੁਹਾਡੇ ਮਾਂ-ਪਿਓ ਤੁਹਾਡੀਆਂ ਐਪਾਂ ਦੀ ਵਰਤੋਂ, ਤੁਹਾਡੇ ਟਿਕਾਣੇ ਅਤੇ ਤੁਹਾਡੇ ਸਕ੍ਰੀਨ ਸਮੇਂ ਵਰਗੀ ਜਾਣਕਾਰੀ ਨੂੰ ਦੇਖ ਅਤੇ ਉਸਦਾ ਪ੍ਰਬੰਧਨ ਕਰ ਸਕਦੇ ਹਨ।"</string>
+    <string name="monitoring_description_parental_controls_legacy" msgid="3331029441820725897">"ਇਸ ਡੀਵਾਈਸ ਦਾ ਪ੍ਰਬੰਧਨ ਤੁਹਾਡੇ ਮਾਂ-ਪਿਓ ਵੱਲੋਂ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਤੁਹਾਡੇ ਮਾਂ-ਪਿਓ ਤੁਹਾਡੀਆਂ ਐਪਾਂ ਦੀ ਵਰਤੋਂ, ਤੁਹਾਡੇ ਟਿਕਾਣੇ ਅਤੇ ਤੁਹਾਡੇ ਸਕ੍ਰੀਨ ਸਮੇਂ ਵਰਗੀ ਜਾਣਕਾਰੀ ਨੂੰ ਦੇਖ ਅਤੇ ਉਸਦਾ ਪ੍ਰਬੰਧਨ ਕਰ ਸਕਦੇ ਹਨ।"</string>
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"ਤੁਹਾਡੇ ਡੀਵਾਈਸ \'ਤੇ ਮੌਜੂਦ ਰੋਜ਼ ਦੀਆਂ ਸਮਾਂ-ਸੀਮਾਵਾਂ ਅਤੇ ਡਾਊਨਟਾਈਮ ਵਰਗੇ ਕੁਝ ਕੰਟਰੋਲ ਸਿਰਫ਼ ਪਿੰਨ ਨਾਲ ਹੀ ਬਦਲੇ ਜਾ ਸਕਦੇ ਹਨ।"</string>
+    <string name="monitoring_description_parental_controls" msgid="4255592993669461543">"ਕੁਝ ਕੰਟਰੋਲ ਸਿਰਫ਼ ਤੁਹਾਡੇ ਮਾਂ-ਪਿਓ ਬਦਲ ਸਕਦੇ ਹਨ"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"ਟਰੱਸਟ-ਏਜੰਟ ਵੱਲੋਂ ਅਣਲਾਕ ਰੱਖਿਆ ਗਿਆ"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"ਸਕ੍ਰੀਨ ਲਾਕ ਕੀਤੀ ਗਈ। ਪ੍ਰਮਾਣੀਕਰਨ ਦੀਆਂ ਬਹੁਤ ਸਾਰੀਆਂ ਕੋਸ਼ਿਸ਼ਾਂ ਕੀਤੀਆਂ ਗਈਆਂ।"</string>
@@ -868,7 +911,7 @@
     <string name="notification_guts_news_summary" msgid="638697931043407835">"ਪ੍ਰਮੁੱਖ ਕਹਾਣੀਆਂ, ਸੰਪਾਦਕੀਆਂ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"ਪਸੰਦਾਂ, ਪੋਸਟਾਂ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ਸੂਚਨਾ-ਪੱਤਰ, ਸਿਫ਼ਾਰਸ਼ੀ ਮੀਡੀਆ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ"</string>
-    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"ਚਾਲੂ ਕਰੋ"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਚਾਲੂ ਕਰੋ"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ਹੁਣ ਤੁਹਾਡੀਆਂ ਲੰਬੀਆਂ ਗੱਲਾਂਬਾਤਾਂ ਦਾ ਸਾਰਾਂਸ਼ ਤਿਆਰ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ, ਤਾਂ ਜੋ ਤੁਹਾਨੂੰ ਤੁਰੰਤ ਰੀਕੈਪ ਮਿਲ ਸਕੇ"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"ਸੂਚਨਾ ਪ੍ਰਬੰਧਕ ਘੱਟ ਤਰਜੀਹ ਵਾਲੀਆਂ ਸੂਚਨਾਵਾਂ ਨੂੰ ਬੰਡਲ ਅਤੇ ਸ਼ਾਂਤ ਕਰਦਾ ਹੈ। ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਜਾ ਕੇ ਹੋਰ ਸ਼੍ਰੇਣੀਆਂ ਸ਼ਾਮਲ ਕਰੋ।"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# ਸੂਚਨਾ}one{# ਸੂਚਨਾ}other{# ਸੂਚਨਾਵਾਂ}}"</string>
@@ -880,7 +923,7 @@
     <string name="notification_alert_title" msgid="3656229781017543655">"ਪੂਰਵ-ਨਿਰਧਾਰਿਤ"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"ਸਵੈਚਲਿਤ"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"ਕੋਈ ਧੁਨੀ ਜਾਂ ਥਰਥਰਾਹਟ ਨਹੀਂ"</string>
-    <string name="notification_conversation_summary_low" msgid="3855696451919728790">"ਕੋਈ ਅਵਾਜ਼ ਜਾਂ ਥਰਥਰਾਹਟ ਨਹੀਂ, ਪਰ ਫਿਰ ਵੀ ਗੱਲਬਾਤ ਸੈਕਸ਼ਨ ਵਿੱਚ ਦਿਖਾਈ ਦਿੰਦਾ ਹੈ"</string>
+    <string name="notification_conversation_summary_low" msgid="3855696451919728790">"ਕੋਈ ਅਵਾਜ਼ ਜਾਂ ਥਰਥਰਾਹਟ ਨਹੀਂ, ਪਰ ਫਿਰ ਵੀ ਸੂਚਨਾ ਗੱਲਬਾਤ ਸੈਕਸ਼ਨ ਵਿੱਚ ਦਿਖਾਈ ਦਿੰਦੀ ਹੈ"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"ਡੀਵਾਈਸ ਸੈਟਿੰਗਾਂ ਦੇ ਆਧਾਰ \'ਤੇ ਘੰਟੀ ਵੱਜ ਸਕਦੀ ਹੈ ਜਾਂ ਥਰਥਰਾਹਟ ਹੋ ਸਕਦੀ ਹੈ"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"ਡੀਵਾਈਸ ਸੈਟਿੰਗਾਂ ਦੇ ਆਧਾਰ \'ਤੇ ਘੰਟੀ ਵੱਜ ਸਕਦੀ ਹੈ ਜਾਂ ਥਰਥਰਾਹਟ ਹੋ ਸਕਦੀ ਹੈ। ਪੂਰਵ-ਨਿਰਧਾਰਿਤ ਤੌਰ \'ਤੇ <xliff:g id="APP_NAME">%1$s</xliff:g> ਬਬਲ ਤੋਂ ਗੱਲਾਂਬਾਤਾਂ।"</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"ਸਿਸਟਮ ਨੂੰ ਨਿਰਧਾਰਤ ਕਰਨ ਦਿਓ ਕਿ ਇਸ ਸੂਚਨਾ ਲਈ ਕੋਈ ਧੁਨੀ ਵਜਾਉਣੀ ਚਾਹੀਦੀ ਹੈ ਜਾਂ ਥਰਥਰਾਹਟ ਕਰਨੀ ਚਾਹੀਦੀ ਹੈ"</string>
@@ -890,7 +933,7 @@
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;ਸਥਿਤੀ:&lt;/b&gt; ਦਰਜਾ ਘਟਾਇਆ ਗਿਆ"</string>
     <string name="notification_channel_summary_priority_baseline" msgid="46674690072551234">"ਗੱਲਬਾਤ ਸੂਚਨਾਵਾਂ ਦੇ ਸਿਖਰ \'ਤੇ ਅਤੇ ਲਾਕ ਸਕ੍ਰੀਨ \'ਤੇ ਪ੍ਰੋਫਾਈਲ ਤਸਵੀਰ ਵਜੋਂ ਦਿਖਾਉਂਦਾ ਹੈ"</string>
     <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"ਗੱਲਬਾਤ ਸੂਚਨਾਵਾਂ ਦੇ ਸਿਖਰ \'ਤੇ ਅਤੇ ਲਾਕ ਸਕ੍ਰੀਨ \'ਤੇ ਪ੍ਰੋਫਾਈਲ ਤਸਵੀਰ ਵਜੋਂ ਦਿਖਾਈਆਂ ਜਾਂਦੀਆਂ ਹਨ, ਜੋ ਕਿ ਬਬਲ ਵਜੋਂ ਦਿਸਦੀਆਂ ਹਨ"</string>
-    <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"ਗੱਲਬਾਤ ਸੂਚਨਾਵਾਂ ਦੇ ਸਿਖਰ \'ਤੇ ਅਤੇ ਲਾਕ ਸਕ੍ਰੀਨ \'ਤੇ ਪ੍ਰੋਫਾਈਲ ਤਸਵੀਰ ਵਜੋਂ ਦਿਖਾਉਂਦਾ ਹੈ, \'ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ\' ਸੁਵਿਧਾ ਵਿੱਚ ਵੀ ਵਿਘਨ ਪੈ ਸਕਦਾ ਹੈ"</string>
+    <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"ਇਸ ਨਾਲ ਇਹ ਸੂਚਨਾਵਾਂ ਗੱਲਬਾਤ ਸੰਬੰਧੀ ਸੂਚਨਾਵਾਂ ਦੇ ਸਿਖਰ \'ਤੇ ਅਤੇ ਲਾਕ ਸਕ੍ਰੀਨ \'ਤੇ ਪ੍ਰੋਫਾਈਲ ਤਸਵੀਰ ਵਜੋਂ ਦਿਸਣਗੀਆਂ, ਇਹ \'ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ\' ਵਿਸ਼ੇਸ਼ਤਾ ਵਿੱਚ ਰੁਕਾਵਟ ਪਾ ਸਕਦੀਆਂ ਹਨ"</string>
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"ਗੱਲਬਾਤ ਸੂਚਨਾਵਾਂ ਦੇ ਸਿਖਰ \'ਤੇ ਅਤੇ ਲਾਕ ਸਕ੍ਰੀਨ \'ਤੇ ਪ੍ਰੋਫਾਈਲ ਤਸਵੀਰ ਵਜੋਂ ਦਿਖਾਈਆਂ ਜਾਂਦੀਆਂ ਹਨ, ਜੋ ਕਿ ਬਬਲ ਵਜੋਂ ਦਿਸਦੀਆਂ ਹਨ ਅਤੇ \'ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ\' ਸੁਵਿਧਾ ਵਿੱਚ ਵਿਘਨ ਵੀ ਪਾ ਸਕਦੀਆਂ ਹਨ"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"ਤਰਜੀਹ"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਐਪ ਗੱਲਬਾਤ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਦਾ ਸਮਰਥਨ ਨਹੀਂ ਕਰਦੀ"</string>
@@ -900,7 +943,7 @@
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"ਇਸ ਐਪ ਤੋਂ ਲਾਈਵ ਅੱਪਡੇਟਾਂ ਬਲਾਕ ਕਰੋ"</string>
     <string name="live_notifications_title" msgid="5926318111951903878">"ਲਾਈਵ ਅੱਪਡੇਟ"</string>
     <string name="live_notifications_desc" msgid="2639662830862800119">"ਬੰਦ ਹੋਣ \'ਤੇ, ਇਸ ਐਪ ਤੋਂ ਪ੍ਰਾਪਤ ਨਿਰੰਤਰ ਸੂਚਨਾਵਾਂ ਦਾ ਪ੍ਰਚਾਰ ਤੁਹਾਡੀ ਲਾਕ ਸਕ੍ਰੀਨ ਅਤੇ ਸਥਿਤੀ ਪੱਟੀ \'ਤੇ ਨਹੀਂ ਕੀਤਾ ਜਾਵੇਗਾ"</string>
-    <string name="notification_unblockable_desc" msgid="2073030886006190804">"ਇਹਨਾਂ ਸੂਚਨਾਵਾਂ ਨੂੰ ਸੋਧਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ।"</string>
+    <string name="notification_unblockable_desc" msgid="2073030886006190804">"ਇਨ੍ਹਾਂ ਸੂਚਨਾਵਾਂ ਨੂੰ ਸੋਧਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ।"</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"ਕਾਲ ਸੰਬੰਧੀ ਸੂਚਨਾਵਾਂ ਨੂੰ ਸੋਧਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ।"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ਇਹ ਸੂਚਨਾਵਾਂ ਦਾ ਗਰੁੱਪ ਇੱਥੇ ਸੰਰੂਪਿਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"ਇੱਕ ਐਪ ਦੀ ਥਾਂ \'ਤੇ ਦੂਜੀ ਐਪ ਰਾਹੀਂ ਦਿੱਤੀ ਗਈ ਸੂਚਨਾ"</string>
@@ -974,6 +1017,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"ਸੂਚਨਾਵਾਂ ਦੇਖੋ"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"ਤਤਕਾਲ ਸੈਟਿੰਗਾਂ ਦੇਖੋ"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ"</string>
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"ਅੰਸ਼ਕ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"ਸ਼ਾਰਟਕੱਟ ਦਿਖਾਓ"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"ਵਾਪਸ ਜਾਓ"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"ਹੋਮ ਸਕ੍ਰੀਨ \'ਤੇ ਜਾਓ"</string>
@@ -983,9 +1027,10 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"ਐਪਾਂ ਦੀ ਸੂਚੀ ਖੋਲ੍ਹੋ"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ਡਿਜੀਟਲ ਸਹਾਇਕ ਖੋਲ੍ਹੋ"</string>
+    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
+    <skip />
     <string name="group_system_lock_screen" msgid="7391191300363416543">"ਲਾਕ ਸਕ੍ਰੀਨ"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"ਨੋਟ ਲਿਖੋ"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"ਮੌਜੂਦਾ ਵਿੰਡੋ ਨੂੰ ਬੰਦ ਕਰੋ"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"ਮਲਟੀਟਾਸਕਿੰਗ"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ਸੱਜੇ ਪਾਸੇ ਵਾਲੀ ਐਪ ਨਾਲ ਸਪਲਿਟ ਸਕ੍ਰੀਨ ਦੀ ਵਰਤੋਂ ਕਰੋ"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ਖੱਬੇ ਪਾਸੇ ਵਾਲੀ ਐਪ ਨਾਲ ਸਪਲਿਟ ਸਕ੍ਰੀਨ ਦੀ ਵਰਤੋਂ ਕਰੋ"</string>
@@ -999,6 +1044,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"ਵਿੰਡੋ ਨੂੰ ਸੱਜੇ ਪਾਸੇ ਲਿਜਾਓ"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"ਵਿੰਡੋ ਨੂੰ ਵੱਡਾ ਕਰੋ"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"ਵਿੰਡੋ ਨੂੰ ਛੋਟਾ ਕਰੋ"</string>
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"ਮੌਜੂਦਾ ਵਿੰਡੋ ਨੂੰ ਬੰਦ ਕਰੋ"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"ਵੱਖ-ਵੱਖ ਡੈਸਕਟਾਪਾਂ ਵਿਚਕਾਰ ਸਵਿੱਚ ਕਰੋ"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ਇਨਪੁੱਟ"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"ਅਗਲੀ ਭਾਸ਼ਾ \'ਤੇ ਸਵਿੱਚ ਕਰੋ"</string>
@@ -1061,17 +1107,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"ਸੱਜਾ ਕੀ-ਕੋਡ"</string>
     <string name="left_icon" msgid="5036278531966897006">"ਖੱਬਾ ਪ੍ਰਤੀਕ"</string>
     <string name="right_icon" msgid="1103955040645237425">"ਸੱਜਾ ਪ੍ਰਤੀਕ"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"ਟਾਇਲਾਂ ਸ਼ਾਮਲ ਕਰਨ ਲਈ ਫੜ੍ਹ ਕੇ ਘਸੀਟੋ"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"ਟਾਇਲਾਂ ਨੂੰ ਮੁੜ-ਵਿਵਸਥਿਤ ਕਰਨ ਲਈ ਫੜ੍ਹ ਕੇ ਘਸੀਟੋ"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"ਮੁੜ-ਵਿਵਸਥਿਤ ਕਰਨ ਅਤੇ ਆਕਾਰ ਬਦਲਣ ਲਈ ਟਾਇਲਾਂ ਨੂੰ ਚੁਣੋ"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"ਟਾਈਲਾਂ ਨੂੰ ਹਟਾਉਣ ਲਈ ਟੈਪ ਕਰੋ"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"ਖਾਕੇ ਦਾ ਆਕਾਰ ਬਦਲੋ ਅਤੇ ਮੁੜ-ਕ੍ਰਮਬੱਧ ਕਰੋ"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"ਸੰਪਾਦਨ ਕਰੋ"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"ਖਾਕਾ"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"ਟਾਇਲ ਨੂੰ ਸਥਿਤੀ \'ਤੇ ਰੱਖਣ ਲਈ ਟੈਪ ਕਰੋ"</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"ਹਟਾਉਣ ਲਈ ਇੱਥੇ ਘਸੀਟੋ"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"ਤੁਹਾਨੂੰ ਘੱਟੋ-ਘੱਟ <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ਟਾਇਲਾਂ ਦੀ ਲੋੜ ਪਵੇਗੀ"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"ਸੰਪਾਦਨ ਕਰੋ"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"ਟਾਇਲਾਂ ਦਾ ਸੰਪਾਦਨ ਕਰੋ"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"ਤਤਕਾਲ ਸੈਟਿੰਗਾਂ ਟਾਇਲਾਂ ਦਾ ਆਕਾਰ ਬਦਲੋ"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"ਸੈਟਿੰਗਾਂ"</string>
@@ -1094,13 +1135,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"ਥਾਂ ਟਾਇਲ"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"ਪਲੇਸਮੈਂਟ ਮੋਡ ਨੂੰ ਟੌਗਲ ਕਰੋ"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"ਚੋਣ ਨੂੰ ਟੌਗਲ ਕਰੋ"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"ਪਿਛਲੀ ਸਥਿਤੀ \'ਤੇ ਟਾਇਲ ਸ਼ਾਮਲ ਕਰੋ"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"<xliff:g id="NAME">%1$s</xliff:g> ਨੂੰ ਆਖਰੀ ਪੋਜੀਸ਼ਨ \'ਤੇ ਸ਼ਾਮਲ ਕਰੋ"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ਟਾਇਲ ਨੂੰ ਲਿਜਾਓ"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"ਮਨਪਸੰਦ ਸਥਿਤੀ \'ਤੇ ਟਾਇਲ ਸ਼ਾਮਲ ਕਰੋ"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> \'ਤੇ ਲਿਜਾਓ"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"<xliff:g id="POSITION">%1$d</xliff:g> ਸਥਾਨ \'ਤੇ ਸ਼ਾਮਲ ਕਰੋ"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"ਮੌਜੂਦਾ ਥਾਂ ਅਵੈਧ ਹੈ।"</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"ਸਥਾਨ <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"ਟਾਇਲ ਨੂੰ ਪਹਿਲਾਂ ਹੀ ਸ਼ਾਮਲ ਕੀਤਾ ਗਿਆ"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"ਟਾਇਲ ਨੂੰ ਸ਼ਾਮਲ ਕੀਤਾ ਗਿਆ"</string>
@@ -1119,10 +1154,16 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g> ਦਾ <xliff:g id="ID_1">%1$d</xliff:g> ਪੰਨਾ"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"ਕੀ <xliff:g id="ID_1">%1$s</xliff:g> ਨੂੰ ਚਾਲੂ ਕਰਨਾ ਹੈ?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"ਕਾਰਵਾਈ "<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> <xliff:g id="ID_3">^3</xliff:g> ਨੂੰ ਵਰਤਣ ਦਾ ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਹੈ। <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"ਇਹ ਤੁਹਾਨੂੰ ਸਮੱਗਰੀ ਨੂੰ ਵੱਡਾ ਕਰਨ ਲਈ ਸਕ੍ਰੀਨ \'ਤੇ ਤੇਜ਼ੀ ਨਾਲ ਜ਼ੂਮ ਵਧਾਉਣ ਦੀ ਆਗਿਆ ਦਿੰਦਾ ਹੈ।"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> ਇੱਕ ਸਕ੍ਰੀਨ ਰੀਡਰ ਹੈ, ਜੋ ਤੁਹਾਨੂੰ ਉੱਚੀ ਅਵਾਜ਼ ਵਿੱਚ ਬੋਲੀਆਂ ਜਾਣ ਵਾਲੀਆਂ ਆਈਟਮਾਂ ਨੂੰ ਸੁਣਨ ਦਿੰਦੀ ਹੈ। ਇਹ ਉਨ੍ਹਾਂ ਲੋਕਾਂ ਲਈ ਮਦਦਗਾਰ ਹੋ ਸਕਦੀ ਹੈ, ਜਿਨ੍ਹਾਂ ਨੂੰ ਸਕ੍ਰੀਨ ਦੇਖਣ ਵਿੱਚ ਮੁਸ਼ਕਲ ਆਉਂਦੀ ਹੈ।"</string>
-    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> ਨਾਲ ਤੁਸੀਂ ਆਪਣੇ ਡੀਵਾਈਸ ਨੂੰ ਹੱਥ-ਰਹਿਤ ਕੰਟਰੋਲ ਕਰ ਸਕਦੇ ਹੋ।"</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ਚਾਲੂ ਕਰੋ"</string>
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"<xliff:g id="ID_3">%3$s</xliff:g> ਨੂੰ ਚਾਲੂ ਕਰਨ ਲਈ ਕਾਰਵਾਈ + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> ਨੂੰ ਦੁਬਾਰਾ ਦਬਾਓ"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"ਕੀ <xliff:g id="ID_1">%1$s</xliff:g> ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਨੂੰ ਚਾਲੂ ਕਰਨਾ ਹੈ?"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ਚਾਲੂ ਨਾ ਕਰੋ"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"ਸ਼ਾਰਟਕੱਟ ਚਾਲੂ ਕਰੋ"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਚਾਲੂ ਕੀਤਾ ਗਿਆ"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"ਕਾਰਵਾਈ "<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> <xliff:g id="ID_3">^3</xliff:g> ਨੂੰ ਵਰਤਣ ਦਾ ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਹੈ, ਜੋ ਇੱਕ ਪਹੁੰਚਯੋਗਤਾ ਵਿਸ਼ੇਸ਼ਤਾ ਹੈ। ਇਹ ਤੁਹਾਨੂੰ ਸਮੱਗਰੀ ਨੂੰ ਵੱਡਾ ਕਰਨ ਲਈ ਸਕ੍ਰੀਨ \'ਤੇ ਤੇਜ਼ੀ ਨਾਲ ਜ਼ੂਮ ਵਧਾਉਣ ਦੀ ਆਗਿਆ ਦਿੰਦਾ ਹੈ। ਵੱਡਦਰਸ਼ੀਕਰਨ ਚਾਲੂ ਹੋਣ ਤੋਂ ਬਾਅਦ, ਜ਼ੂਮ ਨੂੰ ਵਿਵਸਥਿਤ ਕਰਨ ਲਈ ਕਾਰਵਾਈ "<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> ਅਤੇ \"+\" ਜਾਂ \"-\" ਦਬਾਓ।"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ਸ਼ਾਰਟਕੱਟ ਬੰਦ ਕਰੋ"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ਚਾਲੂ ਰੱਖੋ"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"ਕਾਰਵਾਈ "<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> <xliff:g id="ID_3">^3</xliff:g> ਨੂੰ ਵਰਤਣ ਦਾ ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਹੈ। <xliff:g id="ID_4">^3</xliff:g> ਇੱਕ ਸਕ੍ਰੀਨ ਰੀਡਰ ਹੈ, ਜੋ ਤੁਹਾਨੂੰ ਉੱਚੀ ਅਵਾਜ਼ ਵਿੱਚ ਬੋਲੀਆਂ ਜਾਣ ਵਾਲੀਆਂ ਆਈਟਮਾਂ ਨੂੰ ਸੁਣਨ ਦਿੰਦੀ ਹੈ। ਇਹ ਉਨ੍ਹਾਂ ਲੋਕਾਂ ਲਈ ਲਾਹੇਵੰਦ ਹੋ ਸਕਦੀ ਹੈ, ਜਿਨ੍ਹਾਂ ਨੂੰ ਸਕ੍ਰੀਨ ਦੇਖਣ ਵਿੱਚ ਮੁਸ਼ਕਲ ਆਉਂਦੀ ਹੈ। ਇਸ ਨਾਲ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਦੇ ਕੰਮ ਕਰਨ ਦਾ ਤਰੀਕਾ ਬਦਲ ਸਕਦਾ ਹੈ।"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"ਕਾਰਵਾਈ "<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ਦਬਾਉਣ \'ਤੇ <xliff:g id="ID_3">^3</xliff:g> ਪਹੁੰਚਯੋਗਤਾ ਵਿਸ਼ੇਸ਼ਤਾ ਚਾਲੂ ਹੋ ਜਾਂਦੀ ਹੈ। ਇਸ ਨਾਲ ਤੁਸੀਂ ਆਪਣੇ ਡੀਵਾਈਸ ਨੂੰ ਹੱਥ-ਰਹਿਤ ਕੰਟਰੋਲ ਕਰ ਸਕਦੇ ਹੋ।"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">" ਲਾਕ  ਸਕ੍ਰੀਨ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ਬੰਦ ਹੋ ਰਿਹਾ ਹੈ…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"ਦੇਖਭਾਲ ਦੇ ਪੜਾਅ ਦੇਖੋ"</string>
@@ -1171,12 +1212,9 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"ਬੈਕਗ੍ਰਾਊਂਡ ਵਿੱਚ ਚੱਲ ਰਹੀਆਂ ਐਪਾਂ"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"ਬੈਟਰੀ ਅਤੇ ਡਾਟਾ ਵਰਤੋਂ ਸਬੰਧੀ ਵੇਰਵਿਆਂ ਲਈ ਟੈਪ ਕਰੋ"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"ਕੀ ਮੋਬਾਈਲ ਡਾਟਾ ਬੰਦ ਕਰਨਾ ਹੈ?"</string>
-    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
-    <skip />
+    <string name="mobile_data_enable_title" msgid="8259903353761259200">"ਕੀ ਮੋਬਾਈਲ ਡਾਟਾ ਚਾਲੂ ਕਰਨਾ ਹੈ?"</string>
+    <string name="mobile_data_enable_message" msgid="2013861580086078913">"ਤੁਹਾਡੇ ਮੋਬਾਈਲ ਸੇਵਾ ਪਲਾਨ ਦੇ ਆਧਾਰ \'ਤੇ, ਮੋਬਾਈਲ ਡਾਟਾ ਵਰਤਣ ਲਈ ਖਰਚੇ ਲਏ ਜਾ ਸਕਦੇ ਹਨ।"</string>
+    <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"ਚਾਲੂ ਕਰੋ"</string>
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"ਤੁਸੀਂ <xliff:g id="CARRIER">%s</xliff:g> ਰਾਹੀਂ ਡਾਟੇ ਜਾਂ ਇੰਟਰਨੈੱਟ ਤੱਕ ਪਹੁੰਚ ਨਹੀਂ ਕਰ ਸਕੋਗੇ। ਇੰਟਰਨੈੱਟ ਸਿਰਫ਼ ਵਾਈ-ਫਾਈ ਰਾਹੀਂ ਉਪਲਬਧ ਹੋਵੇਗਾ।"</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"ਤੁਹਾਡਾ ਕੈਰੀਅਰ"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"ਕੀ ਵਾਪਸ <xliff:g id="CARRIER">%s</xliff:g> \'ਤੇ ਸਵਿੱਚ ਕਰਨਾ ਹੈ?"</string>
@@ -1346,13 +1384,9 @@
     <string name="controls_menu_edit" msgid="890623986951347062">"ਕੰਟਰੋਲਾਂ ਦਾ ਸੰਪਾਦਨ ਕਰੋ"</string>
     <string name="controls_menu_add_another_app" msgid="8661172304650786705">"ਐਪ ਸ਼ਾਮਲ ਕਰੋ"</string>
     <string name="controls_menu_remove" msgid="3006525275966023468">"ਐਪ ਹਟਾਓ"</string>
-    <string name="media_output_dialog_add_output" msgid="5642703238877329518">"ਆਊਟਪੁੱਟ ਸ਼ਾਮਲ ਕਰੋ"</string>
     <string name="media_output_dialog_group" msgid="5571251347877452212">"ਗਰੁੱਪ"</string>
-    <string name="media_output_dialog_single_device" msgid="3102758980643351058">"1 ਡੀਵਾਈਸ ਨੂੰ ਚੁਣਿਆ ਗਿਆ"</string>
-    <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> ਡੀਵਾਈਸਾਂ ਨੂੰ ਚੁਣਿਆ ਗਿਆ"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"ਕਨੈਕਟ ਹੈ"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"ਬਦਲਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ।"</string>
-    <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"ਡੀਵਾਈਸ ਕਨੈਕਟ ਕਰੋ"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ਡੀਵਾਈਸ ਕਨੈਕਟ ਕਰੋ"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"ਅਗਿਆਤ ਐਪ"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"ਕਾਸਟ ਕਰਨਾ ਬੰਦ ਕਰੋ"</string>
@@ -1362,7 +1396,6 @@
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"ਕਨੈਕਟ ਕੀਤੇ ਸਪੀਕਰ"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ਸਪੀਕਰ ਅਤੇ ਡਿਸਪਲੇਆਂ"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"ਸੁਝਾਏ ਗਏ"</string>
-    <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"ਸੁਝਾਏ ਗਏ ਡੀਵਾਈਸ"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ਇਨਪੁੱਟ"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ਆਊਟਪੁੱਟ"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"ਮੀਡੀਆ ਨੂੰ ਕਿਸੇ ਹੋਰ ਡੀਵਾਈਸ \'ਤੇ ਲਿਜਾਉਣ ਲਈ ਆਪਣੇ ਸਾਂਝੇ ਕੀਤੇ ਸੈਸ਼ਨ ਨੂੰ ਬੰਦ ਕਰੋ"</string>
@@ -1371,7 +1404,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"ਆਡੀਓ ਨੂੰ ਸਾਂਝਾ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"ਆਡੀਓ ਨੂੰ ਸਾਂਝਾ ਕਰੋ"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"ਬਿਲਡ ਨੰਬਰ"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"ਬਿਲਡ ਨੰਬਰ ਨੂੰ ਕਲਿੱਪਬੋਰਡ \'ਤੇ ਕਾਪੀ ਕੀਤਾ ਗਿਆ।"</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"ਕਲਿੱਪਬੋਰਡ \'ਤੇ ਕਾਪੀ ਕਰੋ।"</string>
     <string name="basic_status" msgid="2315371112182658176">"ਗੱਲਬਾਤ ਖੋਲ੍ਹੋ"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"ਗੱਲਬਾਤ ਵਿਜੇਟ"</string>
@@ -1456,7 +1488,6 @@
     <string name="clipboard_edit_text_done" msgid="4551887727694022409">"ਹੋ ਗਿਆ"</string>
     <string name="clipboard_overlay_text_copied" msgid="1872624400464891363">"ਕਾਪੀ ਕੀਤੀ ਗਈ"</string>
     <string name="clipboard_edit_source" msgid="9156488177277788029">"<xliff:g id="APPNAME">%1$s</xliff:g> ਤੋਂ"</string>
-    <string name="clipboard_dismiss_description" msgid="3335990369850165486">"ਕਾਪੀ ਕੀਤੀ ਲਿਖਤ ਨੂੰ ਖਾਰਜ ਕਰੋ"</string>
     <string name="clipboard_edit_text_description" msgid="805254383912962103">"ਕਾਪੀ ਕੀਤੀ ਲਿਖਤ ਦਾ ਸੰਪਾਦਨ ਕਰੋ"</string>
     <string name="clipboard_edit_image_description" msgid="8904857948976041306">"ਕਾਪੀ ਕੀਤੇ ਗਏ ਚਿੱਤਰ ਦਾ ਸੰਪਾਦਨ ਕਰੋ"</string>
     <string name="clipboard_send_nearby_description" msgid="4629769637846717650">"ਨਜ਼ਦੀਕੀ ਡੀਵਾਈਸ \'ਤੇ ਭੇਜੋ"</string>
@@ -1596,6 +1627,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"ਹਾਂ, ਰੀਸੈੱਟ ਕਰੋ"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"ਰੱਦ ਕਰੋ"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"ਕੁੰਜੀ ਦਬਾਓ"</string>
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"ਕਾਰਵਾਈ"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"ਕੁੰਜੀ ਸੁਮੇਲ ਪਹਿਲਾਂ ਹੀ ਵਰਤੋਂ ਵਿੱਚ ਹੈ। ਕੋਈ ਹੋਰ ਸੁਮੇਲ ਵਰਤ ਕੇ ਦੇਖੋ।"</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"ਸ਼ਾਰਟਕੱਟ ਨੂੰ ਸੈੱਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।"</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
@@ -1688,8 +1720,11 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"ਸੂਚਨਾਵਾਂ ਖੋਲ੍ਹਣ ਲਈ ਸਿਖਰਲੇ ਖੱਬੇ ਪਾਸੇ ਤੋਂ ਸਵਾਈਪ ਕਰੋ"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"ਤਤਕਾਲ ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹਣ ਲਈ ਸਿਖਰਲੇ ਸੱਜੇ ਪਾਸੇ ਤੋਂ ਸਵਾਈਪ ਕਰੋ"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"ਪਿੱਛੇ ਜਾਓ"</string>
+    <!-- no translation found for accessibility_button_on_bouncer_description (9186344135931507168) -->
+    <skip />
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"ਪਿੱਛੇ"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"ਅੱਗੇ"</string>
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"ਅਗਲੇ ਪੰਨੇ \'ਤੇ ਜਾਓ"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ਆਟੋਫਿਲ ਕਰੋ"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ਵਿਸਤਾਰ ਕਰੋ"</string>
 </resources>

@@ -56,3 +56,13 @@ flag {
     description: "This flag allows PCI tunnels for testing and dogfooding"
     bug: "369430205"
 }
+
+flag {
+    name: "consider_uvc_as_data_transfer_active"
+    namespace: "camera_platform"
+    description: "This flag considers UVC a valid function for the data transfer active check"
+    bug: "433613577"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

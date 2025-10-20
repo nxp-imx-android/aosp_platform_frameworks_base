@@ -60,7 +60,7 @@
     <string name="accessibility_split_top" msgid="2789329702027147146">"Rozdělit nahoře"</string>
     <string name="accessibility_split_bottom" msgid="8694551025220868191">"Rozdělit dole"</string>
     <string name="one_handed_tutorial_title" msgid="4583241688067426350">"Používání režimu jedné ruky"</string>
-    <string name="one_handed_tutorial_description" msgid="3486582858591353067">"Režim ukončíte, když přejedete prstem z dolní části obrazovky nahoru nebo klepnete kamkoli nad aplikaci"</string>
+    <string name="one_handed_tutorial_description" msgid="3486582858591353067">"Režim ukončíte, když přejedete prstem z dolní části obrazovky nahoru nebo klepnete kamkoli nad aplikaci."</string>
     <string name="accessibility_action_start_one_handed" msgid="5070337354072861426">"Spustit režim jedné ruky"</string>
     <string name="accessibility_action_stop_one_handed" msgid="1369940261782179442">"Ukončit režim jedné ruky"</string>
     <string name="bubbles_settings_button_description" msgid="1301286017420516912">"Nastavení bublin aplikace <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
@@ -96,8 +96,6 @@
     <string name="notification_bubble_title" msgid="6082910224488253378">"Bublina"</string>
     <string name="manage_bubbles_text" msgid="7730624269650594419">"Spravovat"</string>
     <string name="accessibility_bubble_dismissed" msgid="8367471990421247357">"Bublina byla zavřena."</string>
-    <string name="bubble_shortcut_label" msgid="666269077944378311">"Bubliny"</string>
-    <string name="bubble_shortcut_long_label" msgid="6088437544312894043">"Zobrazovat bubliny"</string>
     <string name="restart_button_description" msgid="4564728020654658478">"Klepnutím tuto aplikaci restartujete kvůli lepšímu zobrazení"</string>
     <string name="user_aspect_ratio_settings_button_hint" msgid="734835849600713016">"Změnit v Nastavení poměr stran této aplikace"</string>
     <string name="user_aspect_ratio_settings_button_description" msgid="4315566801697411684">"Změnit poměr stran"</string>

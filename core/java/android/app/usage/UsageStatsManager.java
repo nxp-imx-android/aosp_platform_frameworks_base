@@ -111,14 +111,14 @@ public final class UsageStatsManager {
     /**
      * The number of available intervals. Does not include {@link #INTERVAL_BEST}, since it
      * is a pseudo interval (it actually selects a real interval).
-     * {@hide}
+     * @hide
      */
     public static final int INTERVAL_COUNT = 4;
 
 
     /**
      * The app is exempted for some reason and the bucket cannot be changed.
-     * {@hide}
+     * @hide
      */
     @SystemApi
     public static final int STANDBY_BUCKET_EXEMPTED = 5;
@@ -169,7 +169,7 @@ public final class UsageStatsManager {
 
     /**
      * The app has never been used.
-     * {@hide}
+     * @hide
      */
     @SystemApi
     public static final int STANDBY_BUCKET_NEVER = 50;
@@ -443,7 +443,7 @@ public final class UsageStatsManager {
     private final IUsageStatsManager mService;
 
     /**
-     * {@hide}
+     * @hide
      */
     public UsageStatsManager(Context context, IUsageStatsManager service) {
         mContext = context;
@@ -587,7 +587,13 @@ public final class UsageStatsManager {
      * @param endTime The exclusive end of the range of events to include in the results. Defined
      *                in terms of "Unix time", see {@link java.lang.System#currentTimeMillis}.
      * @return A {@link UsageEvents}.
+     * @deprecated Use {@link #queryEvents(UsageEventsQuery)} instead because it allows a caller to
+     * filter the results by event types and packages they're interested in.
+     * Future Android versions may no longer support this API due to performance and memory
+     * concerns.
      */
+    @FlaggedApi(Flags.FLAG_DEPRECATE_OLD_QUERY_EVENTS_API)
+    @Deprecated
     @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS)
     public UsageEvents queryEvents(long beginTime, long endTime) {
         try {
@@ -723,7 +729,7 @@ public final class UsageStatsManager {
     }
 
     /**
-     * {@hide}
+     * @hide
      */
     public void setAppInactive(String packageName, boolean inactive) {
         try {
@@ -763,7 +769,7 @@ public final class UsageStatsManager {
     }
 
     /**
-     * {@hide}
+     * @hide
      * Returns the current standby bucket of the specified app.
      *
      * @param packageName the package for which to fetch the current standby bucket.
@@ -780,7 +786,7 @@ public final class UsageStatsManager {
     }
 
     /**
-     * {@hide}
+     * @hide
      * Changes an app's standby bucket to the provided value. The caller can only set the standby
      * bucket for a different app than itself. The caller will not be able to change an app's
      * standby bucket if that app is in the {@link #STANDBY_BUCKET_RESTRICTED} bucket.
@@ -801,7 +807,7 @@ public final class UsageStatsManager {
     }
 
     /**
-     * {@hide}
+     * @hide
      * Returns the current standby bucket of every app that has a bucket assigned to it. The key
      * of the returned Map is the package name and the value is the bucket assigned to the package.
      * @see #getAppStandbyBucket()
@@ -826,7 +832,7 @@ public final class UsageStatsManager {
     }
 
     /**
-     * {@hide}
+     * @hide
      * Changes the app standby bucket for multiple apps at once. The Map is keyed by the package
      * name and the value is one of STANDBY_BUCKET_*. The caller will not be able to change an
      * app's standby bucket if that app is in the {@link #STANDBY_BUCKET_RESTRICTED} bucket.
@@ -854,7 +860,7 @@ public final class UsageStatsManager {
      * Return the lowest bucket this app can ever enter.
      *
      * @param packageName the package for which to fetch the minimum allowed standby bucket.
-     * {@hide}
+     * @hide
      */
     @StandbyBuckets
     @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS)
@@ -1319,13 +1325,13 @@ public final class UsageStatsManager {
             case REASON_MAIN_FORCED_BY_SYSTEM:
                 sb.append("s");
                 if (subReason > 0) {
-                    sb.append("-").append(Integer.toBinaryString(subReason));
+                    sb.append("-").append(forcedSystemSubReasonToString(subReason));
                 }
                 break;
             case REASON_MAIN_FORCED_BY_USER:
                 sb.append("f");
                 if (subReason > 0) {
-                    sb.append("-").append(Integer.toBinaryString(subReason));
+                    sb.append("-").append(forcedUserSubReasonToString(subReason));
                 }
                 break;
             case REASON_MAIN_PREDICTED:
@@ -1393,6 +1399,24 @@ public final class UsageStatsManager {
         return sb.toString();
     }
 
+    private static String forcedSystemSubReasonToString(int subReason) {
+        return switch (subReason) {
+            case REASON_SUB_FORCED_SYSTEM_FLAG_UNDEFINED -> "ud";
+            case REASON_SUB_FORCED_SYSTEM_FLAG_BACKGROUND_RESOURCE_USAGE -> "br";
+            case REASON_SUB_FORCED_SYSTEM_FLAG_ABUSE -> "ab";
+            case REASON_SUB_FORCED_SYSTEM_FLAG_BUGGY -> "bu";
+            default -> Integer.toBinaryString(subReason);
+        };
+    }
+
+    private static String forcedUserSubReasonToString(int subReason) {
+        return switch (subReason) {
+            case REASON_SUB_FORCED_SYSTEM_FLAG_UNDEFINED -> "ud";
+            case REASON_SUB_FORCED_USER_FLAG_INTERACTION -> "i";
+            default -> Integer.toBinaryString(subReason);
+        };
+    }
+
     /** @hide */
     public static String usageSourceToString(int usageSource) {
         switch (usageSource) {
@@ -1432,7 +1456,7 @@ public final class UsageStatsManager {
     }
 
     /**
-     * {@hide}
+     * @hide
      * Temporarily allowlist the specified app for a short duration. This is to allow an app
      * receiving a high priority message to be able to access the network and acquire wakelocks
      * even if the device is in power-save mode or the app is currently considered inactive.

@@ -283,7 +283,7 @@ object MobileIconBinderKairos {
             viewModel.networkTypeBackground.observe(
                 name = nameTag { "MobileIconBinderKairos.networkTypeBackground" }
             ) { background ->
-                networkTypeContainer.setBackgroundResource(background?.res ?: 0)
+                networkTypeContainer.setBackgroundResource(background?.resId ?: 0)
             }
 
             combine(viewModel.networkTypeBackground, binding.iconTint) { background, colors ->

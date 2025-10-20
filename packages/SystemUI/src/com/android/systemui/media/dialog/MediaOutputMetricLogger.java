@@ -22,6 +22,11 @@ import static android.media.MediaRoute2ProviderService.REASON_REJECTED;
 import static android.media.MediaRoute2ProviderService.REASON_ROUTE_NOT_AVAILABLE;
 import static android.media.MediaRoute2ProviderService.REASON_UNKNOWN_ERROR;
 
+import static com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_DEVICE_SUGGESTION_APP;
+import static com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER;
+import static com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_RLP;
+import static com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_UNSPECIFIED;
+
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.util.Log;
@@ -100,7 +105,8 @@ public class MediaOutputMetricLogger {
                 mRemoteDeviceCount,
                 mAppliedDeviceCountWithinRemoteGroup,
                 mTargetDevice.isSuggestedDevice(),
-                mTargetDevice.hasOngoingSession());
+                mTargetDevice.hasOngoingSession(),
+                getLoggingSuggestionProvider(mTargetDevice.getSuggestionProvider()));
     }
 
     /**
@@ -118,7 +124,8 @@ public class MediaOutputMetricLogger {
                 SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__ADJUST_VOLUME,
                 getInteractionDeviceType(source),
                 getLoggingPackageName(),
-                source.isSuggestedDevice());
+                source.isSuggestedDevice(),
+                getLoggingSuggestionProvider(source.getSuggestionProvider()));
     }
 
     /**
@@ -134,7 +141,9 @@ public class MediaOutputMetricLogger {
                 SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__STOP_SHARING,
                 SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__UNKNOWN_TYPE,
                 getLoggingPackageName(),
-                /*isSuggestedDevice = */false);
+                /* isSuggestedDevice= */ false,
+                SysUiStatsLog
+                        .MEDIA_OUTPUT_OP_INTERACTION_REPORTED__SUGGESTION_PROVIDER__UNSPECIFIED);
     }
 
     /**
@@ -150,7 +159,9 @@ public class MediaOutputMetricLogger {
                 SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__STOP_CASTING,
                 SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__UNKNOWN_TYPE,
                 getLoggingPackageName(),
-                /*isSuggestedDevice = */false);
+                /* isSuggestedDevice= */ false,
+                SysUiStatsLog
+                        .MEDIA_OUTPUT_OP_INTERACTION_REPORTED__SUGGESTION_PROVIDER__UNSPECIFIED);
     }
 
     /**
@@ -166,7 +177,8 @@ public class MediaOutputMetricLogger {
                 SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__EXPANSION,
                 getInteractionDeviceType(source),
                 getLoggingPackageName(),
-                source.isSuggestedDevice());
+                source.isSuggestedDevice(),
+                getLoggingSuggestionProvider(source.getSuggestionProvider()));
     }
 
     /**
@@ -182,7 +194,8 @@ public class MediaOutputMetricLogger {
                 SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__CONTRACTION,
                 getInteractionDeviceType(source),
                 getLoggingPackageName(),
-                source.isSuggestedDevice());
+                source.isSuggestedDevice(),
+                getLoggingSuggestionProvider(source.getSuggestionProvider()));
     }
 
     /**
@@ -198,7 +211,8 @@ public class MediaOutputMetricLogger {
                 SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__MUTE,
                 getInteractionDeviceType(source),
                 getLoggingPackageName(),
-                source.isSuggestedDevice());
+                source.isSuggestedDevice(),
+                getLoggingSuggestionProvider(source.getSuggestionProvider()));
     }
 
     /**
@@ -214,7 +228,8 @@ public class MediaOutputMetricLogger {
                 SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__UNMUTE,
                 getInteractionDeviceType(source),
                 getLoggingPackageName(),
-                source.isSuggestedDevice());
+                source.isSuggestedDevice(),
+                getLoggingSuggestionProvider(source.getSuggestionProvider()));
     }
 
     /**
@@ -246,7 +261,8 @@ public class MediaOutputMetricLogger {
                 mRemoteDeviceCount,
                 mAppliedDeviceCountWithinRemoteGroup,
                 mTargetDevice.isSuggestedDevice(),
-                mTargetDevice.hasOngoingSession());
+                mTargetDevice.hasOngoingSession(),
+                getLoggingSuggestionProvider(mTargetDevice.getSuggestionProvider()));
     }
 
     private void updateLoggingDeviceCount(List<MediaDevice> deviceList) {
@@ -410,5 +426,26 @@ public class MediaOutputMetricLogger {
         }
 
         return "";
+    }
+
+    private static int getLoggingSuggestionProvider(
+            @MediaDevice.SuggestionProvider int suggestionProvider) {
+
+        return switch (suggestionProvider) {
+            case SUGGESTION_PROVIDER_UNSPECIFIED ->
+                    SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUGGESTION_PROVIDER__UNSPECIFIED;
+            case SUGGESTION_PROVIDER_RLP ->
+                    SysUiStatsLog
+                            .MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUGGESTION_PROVIDER__ROUTE_LISTING_PREFERENCE;
+            case SUGGESTION_PROVIDER_DEVICE_SUGGESTION_APP ->
+                    SysUiStatsLog
+                            .MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUGGESTION_PROVIDER__DEVICE_SUGGESTION_APP;
+            case SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER ->
+                    SysUiStatsLog
+                            .MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUGGESTION_PROVIDER__DEVICE_SUGGESTION_OTHER;
+            default ->
+                    throw new IllegalArgumentException(
+                            "Unknown suggestion provider: " + suggestionProvider);
+        };
     }
 }

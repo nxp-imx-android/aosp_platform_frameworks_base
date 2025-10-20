@@ -28,6 +28,8 @@ import com.android.systemui.dagger.SysUISingleton
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,7 +38,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.currentTime
 
-class FakeAuthenticationRepository(private val currentTime: () -> Long) : AuthenticationRepository {
+class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
+    AuthenticationRepository {
 
     override val hintedPinLength: Int = HINTING_PIN_LENGTH
 
@@ -69,8 +72,11 @@ class FakeAuthenticationRepository(private val currentTime: () -> Long) : Authen
 
     private val credentialCheckingMutex = Mutex(locked = false)
 
+    private val currentTime: Duration
+        get() = currentTimeMs().milliseconds
+
     var maximumTimeToLock: Long = 0
-    var powerButtonInstantlyLocks: Boolean = true
+    var fakePowerButtonInstantlyLocks: Boolean = true
 
     override suspend fun getAuthenticationMethod(): AuthenticationMethodModel {
         return authenticationMethod.value
@@ -85,27 +91,35 @@ class FakeAuthenticationRepository(private val currentTime: () -> Long) : Authen
         credentialOverride = pin
     }
 
-    override suspend fun reportAuthenticationAttempt(isSuccessful: Boolean) {
+    override suspend fun reportAuthenticationAttempt(isSuccessful: Boolean, isDuplicate: Boolean) {
         if (isSuccessful) {
             _failedAuthenticationAttempts.value = 0
-            _lockoutEndTimestamp = null
+            _lockoutEndTime = null
             hasLockoutOccurred.value = false
             lockoutStartedReportCount = 0
         } else {
             _failedAuthenticationAttempts.value++
         }
+        _isDuplicateAttempt.value = isDuplicate
     }
 
     private var _failedAuthenticationAttempts = MutableStateFlow(0)
     override val failedAuthenticationAttempts: StateFlow<Int> =
         _failedAuthenticationAttempts.asStateFlow()
 
-    private var _lockoutEndTimestamp: Long? = null
-    override val lockoutEndTimestamp: Long?
-        get() = if (currentTime() < (_lockoutEndTimestamp ?: 0)) _lockoutEndTimestamp else null
+    private var _lockoutEndTime: Duration? = null
+    override val lockoutEndTime: Duration?
+        get() = if (currentTime < (_lockoutEndTime ?: 0.milliseconds)) _lockoutEndTime else null
+
+    private var _isDuplicateAttempt = MutableStateFlow(false)
+    override val isDuplicateAttempt: StateFlow<Boolean> = _isDuplicateAttempt.asStateFlow()
 
     override suspend fun reportLockoutStarted(durationMs: Int) {
-        _lockoutEndTimestamp = (currentTime() + durationMs).takeIf { durationMs > 0 }
+        reportLockoutStarted(durationMs.milliseconds)
+    }
+
+    fun reportLockoutStarted(duration: Duration) {
+        _lockoutEndTime = (currentTime + duration).takeIf { duration.isPositive() }
         hasLockoutOccurred.value = true
         lockoutStartedReportCount++
     }
@@ -180,8 +194,8 @@ class FakeAuthenticationRepository(private val currentTime: () -> Long) : Authen
         return maximumTimeToLock
     }
 
-    override suspend fun getPowerButtonInstantlyLocks(): Boolean {
-        return powerButtonInstantlyLocks
+    override fun getPowerButtonInstantlyLocks(): Boolean {
+        return fakePowerButtonInstantlyLocks
     }
 
     private fun getExpectedCredential(securityMode: SecurityMode): List<Any> {
@@ -222,6 +236,7 @@ class FakeAuthenticationRepository(private val currentTime: () -> Long) : Authen
                 is AuthenticationMethodModel.Pattern -> SecurityMode.Pattern
                 is AuthenticationMethodModel.None -> SecurityMode.None
                 is AuthenticationMethodModel.Sim -> SecurityMode.SimPin
+                is AuthenticationMethodModel.Biometric -> SecurityMode.SecureLockDeviceBiometricAuth
             }
         }
 
@@ -265,7 +280,7 @@ object FakeAuthenticationRepositoryModule {
     @Provides
     @SysUISingleton
     fun provideFake(scope: TestScope) =
-        FakeAuthenticationRepository(currentTime = { scope.currentTime })
+        FakeAuthenticationRepository(currentTimeMs = { scope.currentTime })
 
     @Module
     interface Bindings {

@@ -653,7 +653,11 @@ public class CompanionAssociationActivity extends FragmentActivity implements
 
         if (deviceProfile == null && mRequest.isSingleDevice()) {
             summary = getHtmlFromResources(this, summaryResourceId, remoteDeviceName);
-            mConstraintList.setVisibility(View.GONE);
+            if (mRequest.getRequestedPerms() == null)  {
+                mConstraintList.setVisibility(View.GONE);
+            } else {
+                setupPermissionList(mRequest.getRequestedPerms());
+            }
         } else {
             summary = getHtmlFromResources(
                     this, summaryResourceId, getString(R.string.device_type), mAppLabel,

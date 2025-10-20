@@ -16,6 +16,7 @@
 
 package android.view;
 
+import static com.android.input.flags.Flags.FLAG_INPUT_DEVICE_PRIMARY_DIRECTIONAL_MOTION_AXIS_API;
 import static com.android.input.flags.Flags.FLAG_INPUT_DEVICE_VIEW_BEHAVIOR_API;
 
 import android.Manifest;
@@ -233,9 +234,23 @@ public final class InputDevice implements Parcelable {
 
     /**
      * The input source is a mouse pointing device.
-     * This value is also used for other mouse-like pointing devices such as touchpads and pointing
-     * sticks. When used in combination with {@link #SOURCE_STYLUS}, it denotes an external drawing
-     * tablet.
+     * <p>
+     * This value is also used for other indirect pointing devices (that is, where the device or
+     * finger is not in the same physical location as the pointer on the screen), specifically:
+     * <ul>
+     *     <li>
+     *         touchpads, which will return {@code SOURCE_MOUSE | SOURCE_TOUCHPAD} from
+     *         {@link #getSources()}, but only {@code SOURCE_MOUSE} from
+     *         {@link MotionEvent#getSource()} (see {@link MotionEvent#getSource()} for details);
+     *     </li>
+     *     <li>
+     *         external drawing tablets, which use it in combination with {@link #SOURCE_STYLUS};
+     *         and
+     *     </li>
+     *     <li>
+     *         other mouse-like pointing devices such as pointing sticks.
+     *     </li>
+     * </ul>
      *
      * @see #SOURCE_CLASS_POINTER
      */
@@ -306,8 +321,13 @@ public final class InputDevice implements Parcelable {
     public static final int SOURCE_MOUSE_RELATIVE = 0x00020000 | SOURCE_CLASS_TRACKBALL;
 
     /**
-     * The input source is a touchpad (also known as a trackpad). Touchpads that are used to move
-     * the mouse cursor will also have {@link #SOURCE_MOUSE}.
+     * The input source is a touchpad (also known as a trackpad).
+     * <p>
+     * Touchpads will return {@code SOURCE_MOUSE | SOURCE_TOUCHPAD} from {@link #getSources()}
+     * <p>
+     * <b>Note:</b> instead of {@code SOURCE_TOUCHPAD}, <b>{@link MotionEvent#getSource()} will
+     * normally return only {@link #SOURCE_MOUSE}</b> for events from touchpads. See
+     * {@link MotionEvent#getSource()} for more details.
      *
      * @see #SOURCE_CLASS_POSITION
      */
@@ -485,6 +505,8 @@ public final class InputDevice implements Parcelable {
 
     private static final int VIBRATOR_ID_ALL = -1;
 
+    private static final int UNSPECIFIED_PRIMARY_DIRECTIONAL_MOTION_AXIS = -1;
+
     public static final @android.annotation.NonNull Parcelable.Creator<InputDevice> CREATOR =
             new Parcelable.Creator<InputDevice>() {
         public InputDevice createFromParcel(Parcel in) {
@@ -573,6 +595,7 @@ public final class InputDevice implements Parcelable {
         }
 
         mViewBehavior.mShouldSmoothScroll = in.readBoolean();
+        mViewBehavior.mPrimaryDirectionalMotionAxis = in.readInt();
     }
 
     /**
@@ -608,6 +631,7 @@ public final class InputDevice implements Parcelable {
         private boolean mEnabled = true;
         private List<MotionRange> mMotionRanges = new ArrayList<>();
         private boolean mShouldSmoothScroll;
+        private int mPrimaryDirectionalMotionAxis = UNSPECIFIED_PRIMARY_DIRECTIONAL_MOTION_AXIS;
 
         /** @see InputDevice#getId() */
         public Builder setId(int id) {
@@ -759,6 +783,17 @@ public final class InputDevice implements Parcelable {
             return this;
         }
 
+        /**
+         * Sets the primary directional motion axis.
+         *
+         * @see ViewBehavior#getPrimaryDirectionalMotionAxis()
+         */
+        public Builder setPrimaryDirectionalMotionAxis(
+                @MotionEvent.Axis int primaryDirectionalMotionAxis) {
+            mPrimaryDirectionalMotionAxis = primaryDirectionalMotionAxis;
+            return this;
+        }
+
         /** Build {@link InputDevice}. */
         public InputDevice build() {
             InputDevice device = new InputDevice(
@@ -800,6 +835,7 @@ public final class InputDevice implements Parcelable {
             }
 
             device.setShouldSmoothScroll(mShouldSmoothScroll);
+            device.setPrimaryDirectionalMotionAxis(mPrimaryDirectionalMotionAxis);
 
             return device;
         }
@@ -1224,6 +1260,12 @@ public final class InputDevice implements Parcelable {
         mViewBehavior.mShouldSmoothScroll = shouldSmoothScroll;
     }
 
+    // Called from native code.
+    private void setPrimaryDirectionalMotionAxis(
+        @MotionEvent.Axis int primaryDirectionalMotionAxis) {
+        mViewBehavior.mPrimaryDirectionalMotionAxis = primaryDirectionalMotionAxis;
+    }
+
     /**
      * Returns the Bluetooth address of this input device, if known.
      *
@@ -1568,6 +1610,8 @@ public final class InputDevice implements Parcelable {
         /** A global smooth scroll configuration applying to all motion axis and input source. */
         private boolean mShouldSmoothScroll = DEFAULT_SHOULD_SMOOTH_SCROLL;
 
+        private int mPrimaryDirectionalMotionAxis = UNSPECIFIED_PRIMARY_DIRECTIONAL_MOTION_AXIS;
+
         /** @hide */
         public ViewBehavior(@NonNull InputDevice inputDevice) {
             mInputDevice = inputDevice;
@@ -1605,6 +1649,46 @@ public final class InputDevice implements Parcelable {
                 return false;
             }
             return mShouldSmoothScroll;
+        }
+
+        /**
+         * Whether the input device has a primary directional motion axis.
+         *
+         * @return {@code true} if the input device has a primary directional motion axis, or
+         *      {@code false} otherwise.
+         */
+        @FlaggedApi(FLAG_INPUT_DEVICE_PRIMARY_DIRECTIONAL_MOTION_AXIS_API)
+        public boolean hasPrimaryDirectionalMotionAxis() {
+            return mPrimaryDirectionalMotionAxis != UNSPECIFIED_PRIMARY_DIRECTIONAL_MOTION_AXIS;
+        }
+
+        /**
+         * Returns the primary directional motion axis for the input device, described as one of the
+         * {@link MotionEvent} axes.
+         *
+         * <p>When specified, the primary directional motion axis is the axis that should be
+         * preferred for gesture handling in one dimension, like flings or swipes, even if there are
+         * other axes available. For example, a touchpad with a Y axis that is physically much
+         * larger from the X axis can specify that the Y axis is the primary directional motion
+         * axis, and therefore gestures should be interpreted along the Y axis, even though an X
+         * axis also exists.
+         *
+         * <p>If the input device does not have a primary directional motion axis, this method will
+         * throw an {@link IllegalStateException}, so this method should only be called if {@link
+         * #hasPrimaryDirectionalMotionAxis()} returns {@code true}.
+         *
+         * @throws IllegalStateException if the input device does not have a primary directional
+         *     motion axis (i.e., {@link #hasPrimaryDirectionalMotionAxis()} returns {@code false}).
+         * @return the primary directional motion axis given as one of the {@link MotionEvent.Axis}
+         *     constants.
+         */
+        @FlaggedApi(FLAG_INPUT_DEVICE_PRIMARY_DIRECTIONAL_MOTION_AXIS_API)
+        public @MotionEvent.Axis int getPrimaryDirectionalMotionAxis() {
+            if (!hasPrimaryDirectionalMotionAxis()) {
+                throw new IllegalStateException("Input device does not have a primary directional"
+                        + " motion axis.");
+            }
+            return mPrimaryDirectionalMotionAxis;
         }
     }
 
@@ -1648,6 +1732,7 @@ public final class InputDevice implements Parcelable {
         }
 
         out.writeBoolean(mViewBehavior.mShouldSmoothScroll);
+        out.writeInt(mViewBehavior.mPrimaryDirectionalMotionAxis);
     }
 
     @Override
@@ -1691,12 +1776,12 @@ public final class InputDevice implements Parcelable {
         description.append("  USI Version: ").append(getHostUsiVersion()).append("\n");
 
         if (mKeyboardLanguageTag != null) {
-            description.append(" Keyboard language tag: ").append(mKeyboardLanguageTag).append(
+            description.append("  Keyboard language tag: ").append(mKeyboardLanguageTag).append(
                     "\n");
         }
 
         if (mKeyboardLayoutType != null) {
-            description.append(" Keyboard layout type: ").append(mKeyboardLayoutType).append("\n");
+            description.append("  Keyboard layout type: ").append(mKeyboardLayoutType).append("\n");
         }
 
         description.append("  Sources: 0x").append(Integer.toHexString(mSources)).append(" (");

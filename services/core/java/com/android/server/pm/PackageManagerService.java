@@ -2466,8 +2466,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             mDeveloperVerificationServiceProvider =
                     getVerificationServiceProvider(computer, mContext.getString(
                             R.string.config_developerVerificationServiceProviderPackageName));
-            mProtectedPackages.setDeveloperVerificationServiceProviderPackage(
-                    mDeveloperVerificationServiceProvider);
             // Remember the developer verification policy delegate which is allowed to change the
             // developer verification policy on behalf of the developer verification service
             // provider defined above.
@@ -3734,7 +3732,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         final List<ResolveInfo> matches = computer.queryIntentServicesInternal(
                 intent,
                 /* resolvedType= */ null,
-                MATCH_SYSTEM_ONLY | MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE,
+                MATCH_SYSTEM_ONLY | MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE
+                        | MATCH_DISABLED_COMPONENTS,
                 UserHandle.USER_SYSTEM,
                 /* callingUid= */ Process.myUid(),
                 Process.INVALID_PID,
@@ -4367,8 +4366,13 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         mPermissionManager.onSystemReady();
 
         int[] grantPermissionsUserIds = EMPTY_INT_ARRAY;
-        final List<UserInfo> livingUsers = mInjector.getUserManagerInternal().getUsers(
-                /* excludeDying= */ true);
+        final List<UserInfo> livingUsers;
+        if (!android.multiuser.Flags.userFilterRefactoring()) {
+            livingUsers = mInjector.getUserManagerInternal().getUsers(/* excludeDying= */ true);
+        } else {
+            livingUsers = mInjector.getUserManagerInternal()
+                    .getUsers(UserManagerInternal.USER_FILTER_WITH_ALL_COMPLETE_USERS);
+        }
         final int livingUserCount = livingUsers.size();
         for (int i = 0; i < livingUserCount; i++) {
             final int userId = livingUsers.get(i).id;

@@ -62,11 +62,14 @@ import com.android.app.animation.Interpolators
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.policy.ScreenDecorationsUtils
 import com.android.systemui.Flags.animationLibraryShellMigration
-import com.android.systemui.Flags.moveTransitionAnimationLayer
+import com.android.systemui.animation.ActivityTransitionAnimator.Companion.LONG_TRANSITION_TIMEOUT
+import com.android.systemui.animation.ActivityTransitionAnimator.Companion.TRANSITION_TIMEOUT
 import com.android.systemui.animation.TransitionAnimator.Companion.toTransitionState
+import com.android.window.flags.Flags.enableCompatuiSysuiLauncherFix
 import com.android.wm.shell.shared.IShellTransitions
 import com.android.wm.shell.shared.ShellTransitions
 import com.android.wm.shell.shared.TransitionUtil
+import com.android.wm.shell.shared.compat.AnimatedSurface
 import java.util.concurrent.Executor
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
@@ -369,21 +372,18 @@ constructor(
         intentStarter: ((RemoteTransition?) -> Int)? = null,
         intentStarterLegacy: ((RemoteAnimationAdapter?) -> Int)? = null,
     ) {
+        val callback = validateCallback()
+        val hideKeyguardWithAnimation = callback.isOnKeyguard() && !showOverLockscreen
+
         if (intentStarter != null) {
             val cookie = controller?.transitionCookie
             if (cookie == null || scope == null || !animate) {
                 Log.i(TAG, "Starting intent with no animation")
                 intentStarter(null)
                 controller?.callOnIntentStartedOnMainThread(willAnimate = false)
+                if (hideKeyguardWithAnimation) callback.hideKeyguardWithAnimation(transition = null)
                 return
             }
-
-            val callback =
-                this.callback
-                    ?: throw IllegalStateException(
-                        "ActivityTransitionAnimator.callback must be set before using this animator"
-                    )
-            val hideKeyguardWithAnimation = callback.isOnKeyguard() && !showOverLockscreen
 
             val (launchTransition, returnTransition) =
                 registerEphemeralTransitions(
@@ -393,7 +393,16 @@ constructor(
                     includeReturn = animateReturn,
                 )
 
-            val launchResult = intentStarter(launchTransition)
+            // Only pass the transition to the intent starter if not animating alongside Keyguard.
+            // Otherwise, the transition is passed to [hideKeyguardWithAnimation()] later.
+            val launchResult =
+                intentStarter(
+                    if (!hideKeyguardWithAnimation) {
+                        launchTransition
+                    } else {
+                        null
+                    }
+                )
 
             // Only animate if the app is not already on top and will be opened, unless we are on
             // the keyguard.
@@ -430,11 +439,9 @@ constructor(
                 Log.i(TAG, "Starting intent with no animation")
                 intentStarterLegacy(null)
                 controller?.callOnIntentStartedOnMainThread(willAnimate = false)
+                if (hideKeyguardWithAnimation) callback.hideKeyguardWithAnimation(runner = null)
                 return
             }
-
-            val callback = validateCallback()
-            val hideKeyguardWithAnimation = callback.isOnKeyguard() && !showOverLockscreen
 
             val runner = createEphemeralRunner(controller)
             val runnerDelegate = runner.delegate
@@ -511,18 +518,27 @@ constructor(
     }
 
     private fun Controller.callOnIntentStartedOnMainThread(willAnimate: Boolean) {
+        if (enableCompatuiSysuiLauncherFix()) {
+            mainExecutor.execute { onIntentStarted(this, willAnimate) }
+            return
+        }
+
         if (Looper.myLooper() != Looper.getMainLooper()) {
             mainExecutor.execute { callOnIntentStartedOnMainThread(willAnimate) }
         } else {
-            if (DEBUG_TRANSITION_ANIMATION) {
-                Log.d(
-                    TAG,
-                    "Calling controller.onIntentStarted(willAnimate=$willAnimate) " +
-                        "[controller=$this]",
-                )
-            }
-            this.onIntentStarted(willAnimate)
+            onIntentStarted(this, willAnimate)
         }
+    }
+
+    private fun onIntentStarted(controller: Controller, willAnimate: Boolean) {
+        if (DEBUG_TRANSITION_ANIMATION) {
+            Log.d(
+                TAG,
+                "Calling controller.onIntentStarted(willAnimate=$willAnimate) " +
+                    "[controller=$controller]",
+            )
+        }
+        controller.onIntentStarted(willAnimate)
     }
 
     /**
@@ -979,8 +995,7 @@ constructor(
         fun isOnKeyguard(): Boolean = false
 
         /** Hide the keyguard and animate using [transition]. */
-        // TODO(b/397180418): implement this wherever the old version is implemented.
-        fun hideKeyguardWithAnimation(transition: IRemoteTransition) {
+        fun hideKeyguardWithAnimation(transition: IRemoteTransition?) {
             throw UnsupportedOperationException()
         }
 
@@ -989,7 +1004,7 @@ constructor(
             "New usages should call the overload above",
             ReplaceWith("hideKeyguardWithAnimation(transition)"),
         )
-        fun hideKeyguardWithAnimation(runner: IRemoteAnimationRunner) {
+        fun hideKeyguardWithAnimation(runner: IRemoteAnimationRunner?) {
             throw UnsupportedOperationException()
         }
 
@@ -1814,7 +1829,7 @@ constructor(
             onAnimationFinished: () -> Unit,
         ) {
             impl.onAnimationStart(
-                resolveAnimatedWindow = { resolveAnimatedWindow(info) },
+                resolveAnimatedSurface = { resolveAnimatedSurface(info) },
                 startTransaction,
                 onAnimationFinished,
             )
@@ -1828,7 +1843,7 @@ constructor(
             states: Array<out WindowAnimationState>,
         ) {
             impl.takeOverAnimation(
-                resolveAnimatedWindow = { resolveAnimatedWindow(info, states) },
+                resolveAnimatedSurface = { resolveAnimatedSurface(info, states) },
                 startTransaction,
                 onAnimationFinished,
             )
@@ -1838,12 +1853,12 @@ constructor(
 
         /**
          * Extracts the [TransitionInfo.Change] representing the window to animate and its state
-         * from [info] and [startWindowStates], and wraps them in an [AnimatedWindow] object.
+         * from [info] and [startWindowStates], and wraps them in an [AnimatedSurface] object.
          */
-        private fun resolveAnimatedWindow(
+        private fun resolveAnimatedSurface(
             info: TransitionInfo?,
             startWindowStates: Array<out WindowAnimationState>? = null,
-        ): AnimatedWindow? {
+        ): AnimatedSurface? {
             if (info == null) {
                 return null
             }
@@ -1891,7 +1906,7 @@ constructor(
                 }
             }
 
-            return candidate?.let { AnimatedWindow.fromTransitionInfo(candidate, state) }
+            return candidate?.let { AnimatedSurface.from(candidate, state) }
         }
 
         private fun Rect.hasGreaterAreaThan(other: Rect): Boolean {
@@ -1949,7 +1964,7 @@ constructor(
             callback: IRemoteAnimationFinishedCallback?,
         ) {
             impl.onAnimationStart(
-                resolveAnimatedWindow = { resolveAnimatedWindow(apps) },
+                resolveAnimatedSurface = { resolveAnimatedSurface(apps) },
                 onAnimationFinished = { callback?.invoke() },
             )
         }
@@ -1962,7 +1977,7 @@ constructor(
             callback: IRemoteAnimationFinishedCallback?,
         ) {
             impl.takeOverAnimation(
-                resolveAnimatedWindow = { resolveAnimatedWindow(apps, startWindowStates) },
+                resolveAnimatedSurface = { resolveAnimatedSurface(apps, startWindowStates) },
                 startTransaction,
                 onAnimationFinished = { callback?.invoke() },
             )
@@ -1973,12 +1988,12 @@ constructor(
         /**
          * Extracts the [RemoteAnimationTarget] representing the window to animate and its state
          * from the list of [apps] participating in the transition and their [startWindowStates],
-         * and wraps them in an [AnimatedWindow] object.
+         * and wraps them in an [AnimatedSurface] object.
          */
-        private fun resolveAnimatedWindow(
+        private fun resolveAnimatedSurface(
             apps: Array<out RemoteAnimationTarget>?,
             startWindowStates: Array<out WindowAnimationState>? = null,
-        ): AnimatedWindow? {
+        ): AnimatedSurface? {
             if (apps == null) {
                 return null
             }
@@ -2031,7 +2046,7 @@ constructor(
                 }
             }
 
-            return candidate?.let { AnimatedWindow.fromRemoteAnimationTarget(it, state) }
+            return candidate?.let { AnimatedSurface.from(it, state) }
         }
 
         private fun IRemoteAnimationFinishedCallback.invoke() {
@@ -2044,60 +2059,6 @@ constructor(
 
         private fun Rect.hasGreaterAreaThan(other: Rect): Boolean {
             return (this.width() * this.height()) > (other.width() * other.height())
-        }
-    }
-
-    /**
-     * Abstraction layer for a window, used to hide the implementation details (i.e. the
-     * WindowManager API used) from the animation.
-     */
-    internal class AnimatedWindow
-    private constructor(
-        /** The [SurfaceControl] used to animate this window. */
-        val leash: SurfaceControl,
-
-        /** The state of this window at the beginning of the animation, if any. */
-        val startState: WindowAnimationState?,
-
-        /** The state of this window at the end of the animation. */
-        val endState: WindowAnimationState,
-
-        /** The background color of the task populating this window. */
-        val backgroundColor: Int,
-
-        /** Whether this window's background should be ignored and considered transparent. */
-        val isTranslucent: Boolean,
-
-        /** The [TaskInfo] representing the content of this window. */
-        val taskInfo: TaskInfo?,
-    ) {
-        companion object {
-            fun fromRemoteAnimationTarget(
-                window: RemoteAnimationTarget,
-                startState: WindowAnimationState?,
-            ): AnimatedWindow =
-                AnimatedWindow(
-                    leash = window.leash,
-                    startState = startState,
-                    endState =
-                        WindowAnimationState().apply { bounds = RectF(window.screenSpaceBounds) },
-                    backgroundColor = window.backgroundColor,
-                    isTranslucent = window.isTranslucent,
-                    taskInfo = window.taskInfo,
-                )
-
-            fun fromTransitionInfo(
-                window: TransitionInfo.Change,
-                startState: WindowAnimationState?,
-            ): AnimatedWindow =
-                AnimatedWindow(
-                    leash = window.leash,
-                    startState = startState,
-                    endState = WindowAnimationState().apply { bounds = RectF(window.endAbsBounds) },
-                    backgroundColor = window.backgroundColor,
-                    isTranslucent = (window.flags and TransitionInfo.FLAG_TRANSLUCENT) != 0,
-                    taskInfo = window.taskInfo,
-                )
         }
     }
 
@@ -2184,11 +2145,11 @@ constructor(
 
         @UiThread
         fun onAnimationStart(
-            resolveAnimatedWindow: () -> AnimatedWindow?,
+            resolveAnimatedSurface: () -> AnimatedSurface?,
             startTransaction: SurfaceControl.Transaction? = null,
             onAnimationFinished: () -> Unit,
         ) {
-            val window = setUpAnimation(resolveAnimatedWindow, onAnimationFinished) ?: return
+            val window = setUpAnimation(resolveAnimatedSurface, onAnimationFinished) ?: return
 
             if (controller.windowAnimatorState == null) {
                 startAnimation(
@@ -2204,16 +2165,16 @@ constructor(
 
         @UiThread
         fun takeOverAnimation(
-            resolveAnimatedWindow: () -> AnimatedWindow?,
+            resolveAnimatedSurface: () -> AnimatedSurface?,
             startTransaction: SurfaceControl.Transaction,
             onAnimationFinished: () -> Unit,
         ) {
-            val window = setUpAnimation(resolveAnimatedWindow, onAnimationFinished) ?: return
+            val window = setUpAnimation(resolveAnimatedSurface, onAnimationFinished) ?: return
             takeOverAnimationInternal(window, startTransaction, onAnimationFinished)
         }
 
         private fun takeOverAnimationInternal(
-            window: AnimatedWindow,
+            window: AnimatedSurface,
             startTransaction: SurfaceControl.Transaction?,
             onAnimationFinished: () -> Unit,
         ) {
@@ -2224,9 +2185,9 @@ constructor(
 
         @UiThread
         private fun setUpAnimation(
-            resolveAnimatedWindow: () -> AnimatedWindow?,
+            resolveAnimatedSurface: () -> AnimatedSurface?,
             onAnimationFinished: () -> Unit,
-        ): AnimatedWindow? {
+        ): AnimatedSurface? {
             removeTimeouts()
 
             // The animation was started too late and we already notified the controller that it
@@ -2242,7 +2203,7 @@ constructor(
                 return null
             }
 
-            val window = resolveAnimatedWindow()
+            val window = resolveAnimatedSurface()
             if (window == null) {
                 Log.i(TAG, "Aborting the animation as no window is opening")
                 onAnimationFinished()
@@ -2262,7 +2223,7 @@ constructor(
         }
 
         private fun startAnimation(
-            window: AnimatedWindow,
+            window: AnimatedSurface,
             useSpring: Boolean = false,
             startTransaction: SurfaceControl.Transaction? = null,
             onAnimationFinished: () -> Unit,
@@ -2372,11 +2333,7 @@ constructor(
                         val viewRoot = controller.transitionContainer.viewRootImpl
                         val skipReparenting =
                             skipReparentTransaction || !window.leash.isValid || viewRoot == null
-                        if (
-                            moveTransitionAnimationLayer() &&
-                                isEligibleForReparenting &&
-                                !skipReparenting
-                        ) {
+                        if (isEligibleForReparenting && !skipReparenting) {
                             // Ensure that the launching window is rendered above the view's window,
                             // so it is not obstructed.
                             // Note that it is possible that the leash gets released between the
@@ -2517,7 +2474,7 @@ constructor(
         }
 
         private fun applyStateToWindow(
-            window: AnimatedWindow,
+            window: AnimatedSurface,
             state: TransitionAnimator.State,
             linearProgress: Float,
             useSpring: Boolean,

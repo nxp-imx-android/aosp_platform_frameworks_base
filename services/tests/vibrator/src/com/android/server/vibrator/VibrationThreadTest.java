@@ -189,9 +189,9 @@ public class VibrationThreadTest {
 
     @Test
     public void vibrate_missingVibrators_ignoresVibration() {
-        CombinedVibration effect = CombinedVibration.startSequential()
-                .addNext(2, VibrationEffect.get(EFFECT_CLICK))
-                .addNext(3, VibrationEffect.get(EFFECT_TICK))
+        CombinedVibration effect = CombinedVibration.startParallel()
+                .addVibrator(2, VibrationEffect.get(EFFECT_CLICK))
+                .addVibrator(3, VibrationEffect.get(EFFECT_TICK))
                 .combine();
         HalVibration vibration = startThreadAndDispatcher(effect);
         waitForCompletion();
@@ -222,7 +222,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VIBRATION_THREAD_HANDLING_HAL_FAILURE)
     public void vibrate_singleVibratorOneShotFailed_doesNotSetAmplitudeAndReturnsFailure() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
         vibratorHelper.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
@@ -280,7 +279,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VIBRATION_THREAD_HANDLING_HAL_FAILURE)
     public void vibrate_singleVibratorWaveformFailed_stopsVibrationAfterFailure() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
         vibratorHelper.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
@@ -301,7 +299,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED)
     public void vibrate_singleWaveformWithAdaptiveHapticsScaling_scalesAmplitudesProperly() {
         // No user settings scale.
         setUserSetting(Settings.System.RING_VIBRATION_INTENSITY,
@@ -328,7 +325,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED)
     public void vibrate_withVibrationParamsRequestStalling_timeoutRequestAndApplyNoScaling() {
         // No user settings scale.
         setUserSetting(Settings.System.RING_VIBRATION_INTENSITY,
@@ -522,9 +518,7 @@ public class VibrationThreadTest {
                 // Very long segment so thread will be cancelled after first PWLE is triggered.
                 .addTransition(Duration.ofMillis(100), targetFrequency(100))
                 .build();
-        VibrationEffect repeatingEffect = VibrationEffect.startComposition()
-                .repeatEffectIndefinitely(effect)
-                .compose();
+        VibrationEffect repeatingEffect = VibrationEffect.createRepeatingEffect(effect);
         HalVibration vibration = startThreadAndDispatcher(repeatingEffect);
 
         assertThat(waitUntil(() -> !vibratorHelper.getEffectSegments().isEmpty(),
@@ -551,9 +545,7 @@ public class VibrationThreadTest {
                 // Very long delay so thread will be cancelled after first PWLE is triggered.
                 .addPrimitive(PRIMITIVE_CLICK, 1f, 100)
                 .compose();
-        VibrationEffect repeatingEffect = VibrationEffect.startComposition()
-                .repeatEffectIndefinitely(effect)
-                .compose();
+        VibrationEffect repeatingEffect = VibrationEffect.createRepeatingEffect(effect);
         HalVibration vibration = startThreadAndDispatcher(repeatingEffect);
 
         assertThat(waitUntil(() -> !vibratorHelper.getEffectSegments().isEmpty(),
@@ -832,10 +824,7 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags({
-            Flags.FLAG_VENDOR_VIBRATION_EFFECTS,
-            Flags.FLAG_VIBRATION_THREAD_HANDLING_HAL_FAILURE,
-    })
+    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrate_singleVibratorVendorEffectFailed_returnsFailure() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
         vibratorHelper.setCapabilities(IVibrator.CAP_PERFORM_VENDOR_EFFECTS);
@@ -914,7 +903,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VIBRATION_THREAD_HANDLING_HAL_FAILURE)
     public void vibrate_singleVibratorComposedFailed_returnsFailureAndStopsVibration() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
         vibratorHelper.setCapabilities(IVibrator.CAP_COMPOSE_EFFECTS);
@@ -1248,10 +1236,7 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags({
-            Flags.FLAG_NORMALIZED_PWLE_EFFECTS,
-            Flags.FLAG_VIBRATION_THREAD_HANDLING_HAL_FAILURE,
-    })
+    @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void vibrate_singleVibratorPwleFailed_returnsFailureAndStopsVibration() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
         vibratorHelper.setCapabilities(IVibrator.CAP_GET_RESONANT_FREQUENCY,
@@ -1489,6 +1474,7 @@ public class VibrationThreadTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REMOVE_SEQUENTIAL_COMBINATION)
     public void vibrate_multipleSequential_runsVibrationInOrderWithDelays() {
         mockVibrators(1, 2, 3);
         mVibratorHelpers.get(1).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
@@ -1673,7 +1659,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VIBRATION_THREAD_HANDLING_HAL_FAILURE)
     public void vibrate_multipleSyncedOneVibratorFails_returnsFailureAndStopsVibration() {
         int[] vibratorIds = new int[]{1, 2};
         mockVibrators(vibratorIds);
@@ -2215,9 +2200,8 @@ public class VibrationThreadTest {
         // A simple effect, followed by a repeating effect that gets cancelled, followed by another
         // simple effect.
         VibrationEffect effect1 = VibrationEffect.get(EFFECT_CLICK);
-        VibrationEffect effect2 = VibrationEffect.startComposition()
-                .repeatEffectIndefinitely(VibrationEffect.get(EFFECT_TICK))
-                .compose();
+        VibrationEffect effect2 =
+                VibrationEffect.createRepeatingEffect(VibrationEffect.get(EFFECT_TICK));
         VibrationEffect effect3 = VibrationEffect.startComposition()
                 .addPrimitive(PRIMITIVE_CLICK)
                 .compose();
@@ -2299,6 +2283,7 @@ public class VibrationThreadTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REMOVE_SEQUENTIAL_COMBINATION)
     public void vibrate_multipleVibratorsSequentialInSession_runsInOrderWithoutDelaysAndNoOffs() {
         mockVibrators(1, 2, 3);
         mVibratorHelpers.get(1).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);

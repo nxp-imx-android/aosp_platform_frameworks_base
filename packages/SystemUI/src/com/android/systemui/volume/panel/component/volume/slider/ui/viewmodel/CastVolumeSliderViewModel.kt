@@ -56,7 +56,7 @@ constructor(
         Icon.Loaded(
             drawable = context.getDrawable(R.drawable.ic_cast)!!,
             contentDescription = null,
-            res = R.drawable.ic_cast,
+            resId = R.drawable.ic_cast,
         )
     override val slider: StateFlow<SliderState> =
         mediaDeviceSessionInteractor

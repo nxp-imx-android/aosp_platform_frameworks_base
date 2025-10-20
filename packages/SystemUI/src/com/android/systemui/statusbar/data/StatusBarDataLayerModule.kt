@@ -19,8 +19,6 @@ import com.android.systemui.statusbar.data.repository.HomeStatusBarComponentsRep
 import com.android.systemui.statusbar.data.repository.KeyguardStatusBarRepositoryModule
 import com.android.systemui.statusbar.data.repository.LightBarControllerStoreModule
 import com.android.systemui.statusbar.data.repository.RemoteInputRepositoryModule
-import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerModule
-import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStoreModule
 import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryModule
 import com.android.systemui.statusbar.data.repository.SystemEventChipAnimationControllerStoreModule
 import com.android.systemui.statusbar.phone.data.StatusBarPhoneDataLayerModule
@@ -33,8 +31,6 @@ import dagger.Module
             KeyguardStatusBarRepositoryModule::class,
             LightBarControllerStoreModule::class,
             RemoteInputRepositoryModule::class,
-            StatusBarConfigurationControllerModule::class,
-            StatusBarContentInsetsProviderStoreModule::class,
             StatusBarModeRepositoryModule::class,
             StatusBarPhoneDataLayerModule::class,
             SystemEventChipAnimationControllerStoreModule::class,

@@ -22,14 +22,20 @@ import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.annotation.UserIdInt;
+import android.companion.CompanionDeviceManager.FeatureName;
 import android.graphics.drawable.Icon;
 import android.net.MacAddress;
+import android.os.BaseBundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.PersistableBundle;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Details for a specific "association" that has been established between an app and companion
@@ -44,6 +50,13 @@ public final class AssociationInfo implements Parcelable {
      * A String indicates the selfManaged device is not connected.
      */
     private static final String LAST_TIME_CONNECTED_NONE = "None";
+
+    /**
+     * Key for the reception timestamp of the metadata.
+     * @hide
+     */
+    public static final String METADATA_TIMESTAMP = "_timestamp_";
+
     /**
      * A unique ID of this Association record.
      * Disclosed to the clients (i.e. companion applications) for referring to this record (e.g. in
@@ -89,6 +102,11 @@ public final class AssociationInfo implements Parcelable {
     private final DeviceId mDeviceId;
     @Nullable
     private final List<String> mPackagesToNotify;
+    /**
+     * A map of metadata describing the device's data sync policies for each feature client.
+     */
+    @NonNull
+    private final PersistableBundle mMetadata;
 
     /**
      * A device icon displayed on a selfManaged association dialog.
@@ -96,43 +114,46 @@ public final class AssociationInfo implements Parcelable {
     private final Icon mDeviceIcon;
 
     /**
+     * The set of extra permissions requested by the application during the
+     * association request.
+     */
+    @NonNull
+    private final Set<String> mExtraPermissions;
+
+    /**
      * Creates a new Association.
      *
      * @hide
      */
-    private AssociationInfo(int id, @UserIdInt int userId, @NonNull String packageName,
-            @Nullable MacAddress macAddress, @Nullable CharSequence displayName,
-            @Nullable String deviceProfile, @Nullable AssociatedDevice associatedDevice,
-            boolean selfManaged, boolean notifyOnDeviceNearby, boolean revoked, boolean pending,
-            long timeApprovedMs, long lastTimeConnectedMs, int systemDataSyncFlags,
-            int transportFlags, @Nullable Icon deviceIcon, @Nullable DeviceId deviceId,
-            @Nullable List<String> packagesToNotify) {
-        if (id <= 0) {
+    private AssociationInfo(Builder builder) {
+        if (builder.mId <= 0) {
             throw new IllegalArgumentException("Association ID should be greater than 0");
         }
-        if (macAddress == null && displayName == null) {
+        if (builder.mDeviceMacAddress == null && builder.mDisplayName == null) {
             throw new IllegalArgumentException("MAC address and the Display Name must NOT be null "
                     + "at the same time");
         }
 
-        mId = id;
-        mUserId = userId;
-        mPackageName = packageName;
-        mDeviceMacAddress = macAddress;
-        mDisplayName = displayName;
-        mDeviceProfile = deviceProfile;
-        mAssociatedDevice = associatedDevice;
-        mSelfManaged = selfManaged;
-        mNotifyOnDeviceNearby = notifyOnDeviceNearby;
-        mRevoked = revoked;
-        mPending = pending;
-        mTimeApprovedMs = timeApprovedMs;
-        mLastTimeConnectedMs = lastTimeConnectedMs;
-        mSystemDataSyncFlags = systemDataSyncFlags;
-        mTransportFlags = transportFlags;
-        mDeviceIcon = deviceIcon;
-        mDeviceId = deviceId;
-        mPackagesToNotify = packagesToNotify;
+        mId = builder.mId;
+        mUserId = builder.mUserId;
+        mPackageName = builder.mPackageName;
+        mDeviceMacAddress = builder.mDeviceMacAddress;
+        mDisplayName = builder.mDisplayName;
+        mDeviceProfile = builder.mDeviceProfile;
+        mAssociatedDevice = builder.mAssociatedDevice;
+        mSelfManaged = builder.mSelfManaged;
+        mNotifyOnDeviceNearby = builder.mNotifyOnDeviceNearby;
+        mRevoked = builder.mRevoked;
+        mPending = builder.mPending;
+        mTimeApprovedMs = builder.mTimeApprovedMs;
+        mLastTimeConnectedMs = builder.mLastTimeConnectedMs;
+        mSystemDataSyncFlags = builder.mSystemDataSyncFlags;
+        mTransportFlags = builder.mTransportFlags;
+        mDeviceIcon = builder.mDeviceIcon;
+        mDeviceId = builder.mDeviceId;
+        mPackagesToNotify = builder.mPackagesToNotify;
+        mMetadata = builder.mMetadata;
+        mExtraPermissions = builder.mExtraPermissions;
     }
 
     /**
@@ -187,7 +208,6 @@ public final class AssociationInfo implements Parcelable {
     /**
      * @return the display name of the companion device (optionally) provided by the companion
      * application.
-     *
      * @see AssociationRequest.Builder#setDisplayName(CharSequence)
      */
     @Nullable
@@ -197,7 +217,7 @@ public final class AssociationInfo implements Parcelable {
 
     /**
      * @return the companion device profile used when establishing this
-     *         association, or {@code null} if no specific profile was used.
+     * association, or {@code null} if no specific profile was used.
      * @see AssociationRequest.Builder#setDeviceProfile(String)
      */
     @Nullable
@@ -216,7 +236,7 @@ public final class AssociationInfo implements Parcelable {
      * </ul>
      *
      * @return the companion device that was associated, or {@code null} if the device is
-     *         self-managed or this association info was retrieved from persistent storage.
+     * self-managed or this association info was retrieved from persistent storage.
      */
     @Nullable
     public AssociatedDevice getAssociatedDevice() {
@@ -299,11 +319,19 @@ public final class AssociationInfo implements Parcelable {
     }
 
     /**
+     * @return A non-null, possibly empty, set of extra permissions.
+     */
+    @FlaggedApi(Flags.FLAG_ASSOCIATION_EXTRA_PERMISSION)
+    @NonNull
+    public Set<String> getExtraPermissions() {
+        return mExtraPermissions;
+    }
+
+    /**
      * Get the device icon of the associated device. The device icon represents the device type.
      *
      * @return the device icon with size 24dp x 24dp.
      * If the associated device has no icon set, it returns {@code null}.
-     *
      * @see AssociationRequest.Builder#setDeviceIcon(Icon)
      */
     @FlaggedApi(Flags.FLAG_ASSOCIATION_DEVICE_ICON)
@@ -323,13 +351,53 @@ public final class AssociationInfo implements Parcelable {
     }
 
     /**
+     * @return the metadata of the association.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @NonNull
+    public PersistableBundle getMetadata() {
+        return mMetadata;
+    }
+
+    /**
+     * @return the metadata of the association for a given feature name.
+     * If the metadata is not available, it returns a new empty bundle.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @NonNull
+    public PersistableBundle getMetadata(@NonNull @FeatureName String feature) {
+        if (METADATA_TIMESTAMP.equals(feature)) {
+            throw new IllegalArgumentException("Cannot get metadata for timestamp. "
+                    + "Use getMetadataTimestamp() instead to get the timestamp.");
+        }
+
+        PersistableBundle bundle = mMetadata.getPersistableBundle(feature);
+        if (bundle == null) {
+            return new PersistableBundle();
+        }
+        return bundle;
+    }
+
+    /**
+     * @return the timestamp at which the metadata was last received from the remote device.
+     * If the metadata was never set, then it returns 0.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    public long getMetadataTimestamp() {
+        return mMetadata.getLong(METADATA_TIMESTAMP, 0L);
+    }
+
+    /**
      * Utility method for checking if the association represents a device with the given MAC
      * address.
      *
      * @return {@code false} if the association is "self-managed".
-     *         {@code false} if the {@code addr} is {@code null} or is not a valid MAC address.
-     *         Otherwise - the result of {@link MacAddress#equals(Object)}
-     *
+     * {@code false} if the {@code addr} is {@code null} or is not a valid MAC address.
+     * Otherwise - the result of {@link MacAddress#equals(Object)}
      * @hide
      */
     public boolean isLinkedTo(@Nullable String addr) {
@@ -350,8 +418,7 @@ public final class AssociationInfo implements Parcelable {
      * Utility method to be used by CdmService only.
      *
      * @return whether CdmService should bind the companion application that "owns" this association
-     *         when the device is present.
-     *
+     * when the device is present.
      * @hide
      */
     public boolean shouldBindWhenPresent() {
@@ -389,12 +456,14 @@ public final class AssociationInfo implements Parcelable {
                 + ", mPending=" + mPending
                 + ", mTimeApprovedMs=" + new Date(mTimeApprovedMs)
                 + ", mLastTimeConnectedMs=" + (
-                    mLastTimeConnectedMs == Long.MAX_VALUE
+                mLastTimeConnectedMs == Long.MAX_VALUE
                         ? LAST_TIME_CONNECTED_NONE : new Date(mLastTimeConnectedMs))
                 + ", mSystemDataSyncFlags=" + mSystemDataSyncFlags
                 + ", mTransportFlags=" + mTransportFlags
                 + ", mDeviceId=" + mDeviceId
                 + ", mPackagesToNotify=" + mPackagesToNotify
+                + ", mMetadata=" + mMetadata
+                + ", mExtraPermissions=" + mExtraPermissions
                 + '}';
     }
 
@@ -421,7 +490,9 @@ public final class AssociationInfo implements Parcelable {
                 && mTransportFlags == that.mTransportFlags
                 && isSameIcon(mDeviceIcon, that.mDeviceIcon)
                 && Objects.equals(mDeviceId, that.mDeviceId)
-                && Objects.equals(mPackagesToNotify, that.mPackagesToNotify);
+                && Objects.equals(mPackagesToNotify, that.mPackagesToNotify)
+                && BaseBundle.kindofEquals(mMetadata, that.mMetadata)
+                && Objects.equals(mExtraPermissions, that.mExtraPermissions);
     }
 
     private boolean isSameIcon(Icon iconA, Icon iconB) {
@@ -436,7 +507,8 @@ public final class AssociationInfo implements Parcelable {
         return Objects.hash(mId, mUserId, mPackageName, mDeviceMacAddress, mDisplayName,
                 mDeviceProfile, mAssociatedDevice, mSelfManaged, mNotifyOnDeviceNearby, mRevoked,
                 mPending, mTimeApprovedMs, mLastTimeConnectedMs, mSystemDataSyncFlags,
-                mTransportFlags, mDeviceIcon, mDeviceId, mPackagesToNotify);
+                mTransportFlags, mDeviceIcon, mDeviceId, mPackagesToNotify, mMetadata,
+                mExtraPermissions);
     }
 
     @Override
@@ -476,6 +548,8 @@ public final class AssociationInfo implements Parcelable {
         }
 
         dest.writeStringList(mPackagesToNotify);
+        dest.writePersistableBundle(mMetadata);
+        dest.writeStringList(new ArrayList<>(mExtraPermissions));
     }
 
     private AssociationInfo(@NonNull Parcel in) {
@@ -507,21 +581,23 @@ public final class AssociationInfo implements Parcelable {
             mDeviceId = null;
         }
         mPackagesToNotify = in.createStringArrayList();
+        mMetadata = in.readPersistableBundle();
+        mExtraPermissions = new HashSet<>(in.createStringArrayList());
     }
 
     @NonNull
     public static final Parcelable.Creator<AssociationInfo> CREATOR =
             new Parcelable.Creator<AssociationInfo>() {
-        @Override
-        public AssociationInfo[] newArray(int size) {
-            return new AssociationInfo[size];
-        }
+                @Override
+                public AssociationInfo[] newArray(int size) {
+                    return new AssociationInfo[size];
+                }
 
-        @Override
-        public AssociationInfo createFromParcel(@NonNull Parcel in) {
-            return new AssociationInfo(in);
-        }
-    };
+                @Override
+                public AssociationInfo createFromParcel(@NonNull Parcel in) {
+                    return new AssociationInfo(in);
+                }
+            };
 
     /**
      * Builder for {@link AssociationInfo}
@@ -548,6 +624,8 @@ public final class AssociationInfo implements Parcelable {
         private Icon mDeviceIcon;
         private DeviceId mDeviceId;
         private List<String> mPackagesToNotify;
+        private PersistableBundle mMetadata = new PersistableBundle(); // Empty bundle by default.
+        private Set<String> mExtraPermissions = new HashSet<>();
 
         /** @hide */
         @TestApi
@@ -578,6 +656,8 @@ public final class AssociationInfo implements Parcelable {
             mDeviceIcon = info.mDeviceIcon;
             mDeviceId = info.mDeviceId;
             mPackagesToNotify = info.mPackagesToNotify;
+            mMetadata = info.mMetadata;
+            mExtraPermissions = info.mExtraPermissions;
         }
 
         /**
@@ -605,6 +685,8 @@ public final class AssociationInfo implements Parcelable {
             mDeviceIcon = info.mDeviceIcon;
             mDeviceId = info.mDeviceId;
             mPackagesToNotify = info.mPackagesToNotify;
+            mMetadata = info.mMetadata;
+            mExtraPermissions = info.mExtraPermissions;
         }
 
         /** @hide */
@@ -749,6 +831,31 @@ public final class AssociationInfo implements Parcelable {
         /** @hide */
         @TestApi
         @NonNull
+        @SuppressLint("MissingGetterMatchingBuilder")
+        @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+        public Builder setMetadata(@NonNull PersistableBundle metadata) {
+            mMetadata = metadata;
+            return this;
+        }
+
+        /**
+         * Sets the set of extra permissions to be requested during the association.
+         * @hide
+         * @param extraPermissions A set of Android permission strings to request.
+         * @return This {@code Builder} instance for method chaining.
+         */
+        @TestApi
+        @NonNull
+        @SuppressLint("MissingGetterMatchingBuilder")
+        @FlaggedApi(Flags.FLAG_ASSOCIATION_EXTRA_PERMISSION)
+        public Builder setExtraPermissions(@NonNull Set<String> extraPermissions) {
+            mExtraPermissions = extraPermissions;
+            return this;
+        }
+
+        /** @hide */
+        @TestApi
+        @NonNull
         public AssociationInfo build() {
             if (mId <= 0) {
                 throw new IllegalArgumentException("Association ID should be greater than 0");
@@ -757,26 +864,10 @@ public final class AssociationInfo implements Parcelable {
                 throw new IllegalArgumentException("MAC address and the display name must NOT be "
                         + "null at the same time");
             }
-            return new AssociationInfo(
-                    mId,
-                    mUserId,
-                    mPackageName,
-                    mDeviceMacAddress,
-                    mDisplayName,
-                    mDeviceProfile,
-                    mAssociatedDevice,
-                    mSelfManaged,
-                    mNotifyOnDeviceNearby,
-                    mRevoked,
-                    mPending,
-                    mTimeApprovedMs,
-                    mLastTimeConnectedMs,
-                    mSystemDataSyncFlags,
-                    mTransportFlags,
-                    mDeviceIcon,
-                    mDeviceId,
-                    mPackagesToNotify
-            );
+            if (mMetadata == null) {
+                throw new IllegalArgumentException("Association metadata cannot be null");
+            }
+            return new AssociationInfo(this);
         }
     }
 }

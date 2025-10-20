@@ -96,7 +96,9 @@ extern int register_android_util_Log(JNIEnv* env);
 extern int register_android_util_jar_StrictJarFile(JNIEnv* env);
 extern int register_android_view_KeyCharacterMap(JNIEnv* env);
 extern int register_android_view_KeyEvent(JNIEnv* env);
+extern int register_android_view_InputChannel(JNIEnv* env);
 extern int register_android_view_InputDevice(JNIEnv* env);
+extern int register_android_view_InputEventReceiver(JNIEnv* env);
 extern int register_android_view_MotionEvent(JNIEnv* env);
 extern int register_android_view_Surface(JNIEnv* env);
 extern int register_android_view_ThreadedRenderer(JNIEnv* env);
@@ -144,7 +146,13 @@ static const std::unordered_map<std::string, RegJNIRec> gRegJNIMap = {
         {"android.util.jar.StrictJarFile", REG_JNI(register_android_util_jar_StrictJarFile)},
         {"android.view.KeyCharacterMap", REG_JNI(register_android_view_KeyCharacterMap)},
         {"android.view.KeyEvent", REG_JNI(register_android_view_KeyEvent)},
+#ifdef __linux__
+        {"android.view.InputChannel", REG_JNI(register_android_view_InputChannel)},
+#endif
         {"android.view.InputDevice", REG_JNI(register_android_view_InputDevice)},
+#ifdef __linux__
+        {"android.view.InputEventReceiver", REG_JNI(register_android_view_InputEventReceiver)},
+#endif
         {"android.view.MotionEvent", REG_JNI(register_android_view_MotionEvent)},
         {"android.view.Surface", REG_JNI(register_android_view_Surface)},
         {"android.view.VelocityTracker", REG_JNI(register_android_view_VelocityTracker)},

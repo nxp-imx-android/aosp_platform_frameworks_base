@@ -33,6 +33,7 @@ import androidx.annotation.NonNull;
 import com.android.systemui.animation.LaunchableView;
 import com.android.systemui.animation.LaunchableViewDelegate;
 import com.android.systemui.res.R;
+import com.android.systemui.statusbar.notification.emptyshade.ui.shared.flag.ShowIconInEmptyShade;
 import com.android.systemui.statusbar.notification.row.StackScrollerDecorView;
 import com.android.systemui.statusbar.notification.stack.ExpandableViewState;
 
@@ -160,6 +161,9 @@ public class EmptyShadeView extends StackScrollerDecorView implements Launchable
 
     @Override
     protected void onFinishInflate() {
+        // This view is replaced by EmptyShadeIconView when the new empty shade design is enabled.
+        ShowIconInEmptyShade.assertInLegacyMode();
+
         super.onFinishInflate();
         mEmptyText = (TextView) findContentView();
         mEmptyFooterText = (TextView) findSecondaryView();

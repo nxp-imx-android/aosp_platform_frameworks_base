@@ -20,6 +20,8 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import com.android.settingslib.datastore.KeyValueStore
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 /** Registry of all available preference screens in the app. */
 object PreferenceScreenRegistry {
@@ -57,6 +59,24 @@ object PreferenceScreenRegistry {
      */
     fun getKeyValueStore(context: Context, preference: PreferenceMetadata): KeyValueStore? =
         keyValueStoreProvider.getKeyValueStore(context, preference)
+
+    /**
+     * True if the screen requires parameters to be constructed.
+     */
+    fun isParameterized(context: Context, screenKey: String): Boolean {
+        val factory = preferenceScreenMetadataFactories[screenKey] ?: return false
+        return factory is PreferenceScreenMetadataParameterizedFactory
+    }
+
+    /**
+     * Returns a flow of parameters for the screen.
+     *
+     * If the screen is unparameterized, or there are no valid parameters, an empty flow is
+     * returned.
+     */
+    fun getParameters(context: Context, screenKey: String): Flow<Bundle> {
+        return (preferenceScreenMetadataFactories[screenKey] as? PreferenceScreenMetadataParameterizedFactory)?.parameters(context) ?: emptyFlow()
+    }
 
     /** Creates [PreferenceScreenMetadata] of particular screen. */
     fun create(context: Context, screenCoordinate: PreferenceScreenCoordinate) =

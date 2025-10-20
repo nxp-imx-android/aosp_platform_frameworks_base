@@ -131,6 +131,7 @@ import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.operations.Theme;
 import com.android.internal.widget.remotecompose.player.RemoteComposeDocument;
 import com.android.internal.widget.remotecompose.player.RemoteComposePlayer;
+import com.android.internal.widget.remotecompose.player.RemoteComposePlayer.PreparedDocument;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -147,6 +148,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -161,6 +163,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -2172,6 +2175,8 @@ public class RemoteViews implements Parcelable, Filter {
                 return BlendMode.class;
             case BaseReflectionAction.INSTANT:
                 return Instant.class;
+            case BaseReflectionAction.DURATION:
+                return Duration.class;
             default:
                 return null;
         }
@@ -2737,6 +2742,7 @@ public class RemoteViews implements Parcelable, Filter {
         static final int ICON = 16;
         static final int BLEND_MODE = 17;
         static final int INSTANT = 18;
+        static final int DURATION = 19;
 
         @UnsupportedAppUsage
         String mMethodName;
@@ -2971,6 +2977,13 @@ public class RemoteViews implements Parcelable, Filter {
                         mValue = null;
                     }
                     break;
+                case DURATION:
+                    if (in.readInt() == 1) {
+                        mValue = Duration.ofSeconds(in.readLong(), in.readInt());
+                    } else {
+                        mValue = null;
+                    }
+                    break;
                 default:
                     break;
             }
@@ -3029,6 +3042,15 @@ public class RemoteViews implements Parcelable, Filter {
                         out.writeInt(1);
                         out.writeLong(((Instant) this.mValue).getEpochSecond());
                         out.writeInt(((Instant) this.mValue).getNano());
+                    } else {
+                        out.writeInt(0);
+                    }
+                    break;
+                case DURATION:
+                    if (mValue != null) {
+                        out.writeInt(1);
+                        out.writeLong(((Duration) this.mValue).getSeconds());
+                        out.writeInt(((Duration) this.mValue).getNano());
                     } else {
                         out.writeInt(0);
                     }
@@ -3131,6 +3153,11 @@ public class RemoteViews implements Parcelable, Filter {
                     case INSTANT:
                         writeInstantToProto(out, (Instant) this.mValue,
                                 RemoteViewsProto.ReflectionAction.INSTANT_VALUE);
+                        break;
+                    case DURATION:
+                        writeDurationToProto(out, (Duration) this.mValue,
+                                RemoteViewsProto.ReflectionAction.DURATION_VALUE);
+                        break;
                     case BUNDLE:
                     case INTENT:
                     default:
@@ -3229,6 +3256,12 @@ public class RemoteViews implements Parcelable, Filter {
                         values.put(RemoteViewsProto.ReflectionAction.INSTANT_VALUE,
                                 createInstantFromProto(in,
                                         RemoteViewsProto.ReflectionAction.INSTANT_VALUE));
+                        break;
+                    case (int) RemoteViewsProto.ReflectionAction.DURATION_VALUE:
+                        values.put(RemoteViewsProto.ReflectionAction.DURATION_VALUE,
+                                createDurationFromProto(in,
+                                        RemoteViewsProto.ReflectionAction.DURATION_VALUE));
+                        break;
                     default:
                         Log.w(LOG_TAG, "Unhandled field while reading RemoteViews proto!\n"
                                 + ProtoUtils.currentFieldToString(in));
@@ -3309,6 +3342,11 @@ public class RemoteViews implements Parcelable, Filter {
                     case INSTANT:
                         value = (Instant) values.get(
                                 RemoteViewsProto.ReflectionAction.INSTANT_VALUE);
+                        break;
+                    case DURATION:
+                        value = (Duration) values.get(
+                                RemoteViewsProto.ReflectionAction.DURATION_VALUE);
+                        break;
                     case BUNDLE:
                     case INTENT:
                     default:
@@ -5992,35 +6030,66 @@ public class RemoteViews implements Parcelable, Filter {
             }
         }
 
-        @Override
-        public void apply(View root, ViewGroup rootParent, ActionApplyParams params)
-                throws ActionException {
+        private void applyActionListener(RemoteComposePlayer player, ActionApplyParams params) {
+            player.addIdActionListener((viewId, metadata) -> {
+                mActions.forEach(action -> {
+                    if (viewId == action.mViewId
+                            && action instanceof SetOnClickResponse setOnClickResponse) {
+                        final RemoteResponse response = setOnClickResponse.mResponse;
+                        if (response.mFillIntent == null) {
+                            response.mFillIntent = new Intent();
+                        }
+                        response.mFillIntent.putExtra(
+                                "remotecompose_metadata", metadata);
+                        response.handleViewInteraction(player, params.handler);
+                    }
+                });
+            });
+        }
+
+        private Action applyAction(
+                View root, BiFunction<RemoteComposePlayer, RemoteComposeDocument, Action> block) {
             if (drawDataParcel() && mInstructions != null
                     && root instanceof RemoteComposePlayer player) {
                 final List<byte[]> bytes = mInstructions.mInstructions;
                 if (bytes.isEmpty()) {
-                    return;
+                    return ACTION_NOOP;
                 }
                 try (ByteArrayInputStream is = new ByteArrayInputStream(bytes.get(0))) {
-                    player.setDocument(new RemoteComposeDocument(is));
-                    player.addIdActionListener((viewId, metadata) -> {
-                        mActions.forEach(action -> {
-                            if (viewId == action.mViewId
-                                    && action instanceof SetOnClickResponse setOnClickResponse) {
-                                final RemoteResponse response = setOnClickResponse.mResponse;
-                                if (response.mFillIntent == null) {
-                                    response.mFillIntent = new Intent();
-                                }
-                                response.mFillIntent.putExtra(
-                                        "remotecompose_metadata", metadata);
-                                response.handleViewInteraction(player, params.handler);
-                            }
-                        });
-                    });
+                    return block.apply(player, new RemoteComposeDocument(is));
                 } catch (IOException e) {
-                    Log.e(LOG_TAG, "Failed to render draw instructions", e);
+                    Log.e(LOG_TAG, "Failed to parse draw instructions", e);
                 }
             }
+            return ACTION_NOOP;
+        }
+
+        @Override
+        public void apply(View root, ViewGroup rootParent, ActionApplyParams params)
+                throws ActionException {
+            applyAction(root, (player, doc) -> {
+                player.setDocument(doc);
+                applyActionListener(player, params);
+                return ACTION_NOOP;
+            });
+        }
+
+        @Override
+        public final Action initActionAsync(ViewTree root, ViewGroup rootParent,
+                ActionApplyParams params) {
+            return applyAction(root.mRoot, (player, doc) -> {
+                PreparedDocument preparedDoc = player.prepareDocument(doc);
+                return preparedDoc == null ? ACTION_NOOP
+                        :  new RunnableAction(() -> {
+                            player.setPreparedDocument(preparedDoc);
+                            applyActionListener(player, params);
+                        });
+            });
+        }
+
+        @Override
+        public boolean prefersAsyncApply() {
+            return true;
         }
 
         @Override
@@ -6952,6 +7021,22 @@ public class RemoteViews implements Parcelable, Filter {
         setInstant(viewId, "setBase", base);
         setString(viewId, "setFormat", format);
         setBoolean(viewId, "setStarted", started);
+    }
+
+    /**
+     * Equivalent to calling {@link Chronometer#setPausedDuration(Duration)} (which will set the
+     * chronometer to paused and the base so that the displayed time is {@code pausedDuration}).
+     *
+     * <p>{@link #setChronometerCountDown(int, boolean)} should be called <em>before</em> this
+     * method, so that the base time can be computed correctly.
+     *
+     * @param viewId The id of the {@link Chronometer} to change
+     * @param pausedDuration the time that the {@link Chronometer} should display
+     *
+     * @hide
+     */
+    public void setChronometerPaused(@IdRes int viewId, Duration pausedDuration) {
+        setDuration(viewId, "setPausedDuration", pausedDuration);
     }
 
     /**
@@ -7955,6 +8040,19 @@ public class RemoteViews implements Parcelable, Filter {
      */
     public void setInstant(@IdRes int viewId, String methodName, Instant value) {
         addAction(new ReflectionAction(viewId, methodName, BaseReflectionAction.INSTANT, value));
+    }
+
+    /**
+     * Call a method taking one {@link Duration} on a view in the layout for this RemoteViews.
+     *
+     * @param viewId The id of the view on which to call the method.
+     * @param methodName The name of the method to call.
+     * @param value The value to pass to the method.
+     *
+     * @hide
+     */
+    public void setDuration(@IdRes int viewId, String methodName, Duration value) {
+        addAction(new ReflectionAction(viewId, methodName, BaseReflectionAction.DURATION, value));
     }
 
     /**
@@ -9163,7 +9261,7 @@ public class RemoteViews implements Parcelable, Filter {
      */
     private static class ViewTree {
         private static final int INSERT_AT_END_INDEX = -1;
-        private View mRoot;
+        View mRoot;
         private ArrayList<ViewTree> mChildren;
 
         private ViewTree(View root) {
@@ -10757,4 +10855,20 @@ public class RemoteViews implements Parcelable, Filter {
         in.end(token);
         return instant;
     }
+
+    private static void writeDurationToProto(ProtoOutputStream out, Duration duration,
+            long fieldId) {
+        long token = out.start(fieldId);
+        RemoteViewsSerializers.writeDurationToProto(out, duration);
+        out.end(token);
+    }
+
+    private static Duration createDurationFromProto(ProtoInputStream in, long fieldId)
+            throws Exception {
+        long token = in.start(fieldId);
+        Duration duration = RemoteViewsSerializers.createDurationFromProto(in);
+        in.end(token);
+        return duration;
+    }
+
 }

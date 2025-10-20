@@ -16,11 +16,9 @@
 
 package com.android.systemui.media.dialog;
 
+import android.annotation.NonNull;
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.ColorFilter;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -29,6 +27,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
@@ -43,21 +42,17 @@ public class MediaSessionReleaseDialog extends SystemUIDialog {
 
     private final Context mContext;
     private final View.OnClickListener mPositiveButtonListener;
-    private final ColorFilter mButtonColorFilter;
-    private final int mIconColor;
+    @NonNull private final MediaOutputColorScheme mColorScheme;
 
-    public MediaSessionReleaseDialog(Context context, Runnable runnable, int buttonColor,
-            int iconColor) {
+    public MediaSessionReleaseDialog(Context context, Runnable runnable,
+            @NonNull MediaOutputColorScheme colorScheme) {
         super(context, R.style.Theme_SystemUI_Dialog_Media);
         mContext = getContext();
         mPositiveButtonListener = (v) -> {
             runnable.run();
             dismiss();
         };
-        mButtonColorFilter = new PorterDuffColorFilter(
-                buttonColor,
-                PorterDuff.Mode.SRC_IN);
-        mIconColor = iconColor;
+        mColorScheme = colorScheme;
     }
 
     @Override
@@ -73,17 +68,21 @@ public class MediaSessionReleaseDialog extends SystemUIDialog {
         lp.gravity = Gravity.CENTER;
         lp.width = (int) (mContext.getResources().getDisplayMetrics().widthPixels * 0.90);
 
+        TextView endSessionDialogTitle = mDialogView.requireViewById(R.id.end_session_dialog_title);
+        endSessionDialogTitle.setTextColor(mColorScheme.getOnSurface());
+
         ImageView headerIcon = mDialogView.requireViewById(R.id.end_icon);
         headerIcon.setImageDrawable(mContext.getDrawable(R.drawable.media_output_status_failed));
-        headerIcon.setImageTintList(
-                ColorStateList.valueOf(mIconColor));
+        headerIcon.setImageTintList(ColorStateList.valueOf(mColorScheme.getSecondary()));
 
         Button stopButton = mDialogView.requireViewById(R.id.stop_button);
         stopButton.setOnClickListener(mPositiveButtonListener);
-        stopButton.getBackground().setColorFilter(mButtonColorFilter);
+        stopButton.setTextColor(mColorScheme.getOnPrimary());
+        stopButton.getBackground().setTint(mColorScheme.getPrimary());
 
         Button cancelButton = mDialogView.requireViewById(R.id.cancel_button);
         cancelButton.setOnClickListener((v) -> dismiss());
-        cancelButton.getBackground().setColorFilter(mButtonColorFilter);
+        cancelButton.setTextColor(mColorScheme.getPrimary());
+        cancelButton.getBackground().setTint(mColorScheme.getOutlineVariant());
     }
 }

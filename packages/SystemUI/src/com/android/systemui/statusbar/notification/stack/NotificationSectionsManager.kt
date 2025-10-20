@@ -20,12 +20,13 @@ import android.util.Log
 import android.view.View
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.media.controls.ui.controller.KeyguardMediaController
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.SourceType
-import com.android.systemui.statusbar.notification.collection.NotificationClassificationFlag
 import com.android.systemui.statusbar.notification.collection.render.MediaContainerController
 import com.android.systemui.statusbar.notification.collection.render.SectionHeaderController
 import com.android.systemui.statusbar.notification.dagger.AlertingHeader
+import com.android.systemui.statusbar.notification.dagger.HighlightsHeader
 import com.android.systemui.statusbar.notification.dagger.IncomingHeader
 import com.android.systemui.statusbar.notification.dagger.NewsHeader
 import com.android.systemui.statusbar.notification.dagger.PeopleHeader
@@ -35,7 +36,9 @@ import com.android.systemui.statusbar.notification.dagger.SilentHeader
 import com.android.systemui.statusbar.notification.dagger.SocialHeader
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
+import com.android.systemui.statusbar.notification.shared.NmHighlights
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
+import com.android.systemui.statusbar.notification.shared.NotificationSummarizationOnboardingUi
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.SectionProvider
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.util.foldToSparseArray
@@ -61,6 +64,7 @@ internal constructor(
     @SocialHeader private val socialHeaderController: SectionHeaderController,
     @RecsHeader private val recsHeaderController: SectionHeaderController,
     @PromoHeader private val promoHeaderController: SectionHeaderController,
+    @HighlightsHeader private val highlightsHeaderController: SectionHeaderController,
 ) : SectionProvider {
 
     private val configurationListener =
@@ -109,6 +113,10 @@ internal constructor(
     val promoHeaderView: SectionHeaderView?
         get() = promoHeaderController.headerView
 
+    @VisibleForTesting
+    val highlightsHeaderView: SectionHeaderView?
+        get() = highlightsHeaderController.headerView
+
     /** Must be called before use. */
     fun initialize(parent: NotificationStackScrollLayout) {
         check(!initialized) { "NotificationSectionsManager already initialized" }
@@ -128,27 +136,37 @@ internal constructor(
         peopleHeaderController.reinflateView(parent)
         incomingHeaderController.reinflateView(parent)
         mediaContainerController.reinflateView(parent)
-        keyguardMediaController.attachSinglePaneContainer(mediaControlsView)
-        if (NotificationClassificationFlag.isEnabled) {
+        if (!SceneContainerFlag.isEnabled) {
+            keyguardMediaController.attachSinglePaneContainer(mediaControlsView)
+        }
+        if (!NotificationBundleUi.isEnabled) {
             newsHeaderController.reinflateView(parent)
             socialHeaderController.reinflateView(parent)
             recsHeaderController.reinflateView(parent)
             promoHeaderController.reinflateView(parent)
         }
+        if (NmHighlights.isEnabled) {
+            highlightsHeaderController.reinflateView(parent)
+        }
     }
 
     override fun beginsSection(view: View, previous: View?): Boolean =
-        view === silentHeaderView ||
+        (view === silentHeaderView ||
             view === mediaControlsView ||
             view === peopleHeaderView ||
             view === alertingHeaderView ||
             view === incomingHeaderView ||
-            (NotificationClassificationFlag.isEnabled &&
+            (NmHighlights.isEnabled && view === highlightsHeaderView) ||
+            (!NotificationBundleUi.isEnabled &&
                 (view === newsHeaderView ||
                     view === socialHeaderView ||
                     view === recsHeaderView ||
                     view === promoHeaderView)) ||
-            getBucket(view) != getBucket(previous)
+            getBucket(view) != getBucket(previous)) &&
+            // don't consider the first notification after onboarding to be a new section, so that
+            // the onboarding affordance remains close to the notification
+            !(NotificationSummarizationOnboardingUi.isEnabled &&
+                previous is OnboardingAffordanceView)
 
     private fun getBucket(view: View?): Int? =
         when {
@@ -161,6 +179,7 @@ internal constructor(
             view === socialHeaderView -> BUCKET_SOCIAL
             view === recsHeaderView -> BUCKET_RECS
             view === promoHeaderView -> BUCKET_PROMO
+            view === highlightsHeaderView -> BUCKET_HIGHLIGHTS
             view is ExpandableNotificationRow ->
                 if (NotificationBundleUi.isEnabled) view.entryAdapter?.sectionBucket
                 else view.entryLegacy.bucket
@@ -295,11 +314,14 @@ internal constructor(
         peopleHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
         silentHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
         alertingHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
-        if (NotificationClassificationFlag.isEnabled) {
+        if (!NotificationBundleUi.isEnabled) {
             newsHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
             socialHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
             recsHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
             promoHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
+        }
+        if (NmHighlights.isEnabled) {
+            highlightsHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
         }
     }
 

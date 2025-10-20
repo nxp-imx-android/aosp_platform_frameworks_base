@@ -139,8 +139,14 @@ class RecentsAnimation {
             // traversal in non-stopped state (ViewRootImpl.mStopped) that would initialize more
             // things (e.g. the measure can be done earlier). The actual stop will be performed when
             // it reports idle.
-            targetActivity.addToStopping(true /* scheduleIdle */, true /* idleDelayed */,
-                    "preloadRecents");
+            if (com.android.window.flags.Flags.reduceUnnecessaryScheduleIdleMsg()) {
+                targetActivity.addToStopping(false /* scheduleIdle */, true /* idleDelayed */,
+                        "preloadRecents");
+                mTaskSupervisor.scheduleIdleTimeout(targetActivity);
+            } else {
+                targetActivity.addToStopping(true /* scheduleIdle */, true /* idleDelayed */,
+                        "preloadRecents");
+            }
         }
     }
 

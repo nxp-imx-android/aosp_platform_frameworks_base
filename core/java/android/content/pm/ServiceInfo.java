@@ -88,12 +88,20 @@ public class ServiceInfo extends ComponentInfo
      * apps from different vendors.
      *
      * Shared isolated processes are created when using the
-     * {@link android.content.Context#BIND_SHARED_ISOLATED_PROCESS) during service binding.
+     * {@link android.content.Context#BIND_SHARED_ISOLATED_PROCESS} during service binding.
      *
      * Note that when this flag is used, the {@link android.R.attr#process} attribute is
      * ignored when the process is bound into a shared isolated process by a client.
      */
     public static final int FLAG_ALLOW_SHARED_ISOLATED_PROCESS = 0x0010;
+
+    /**
+     * Bit in {@link #flags} indicating if the service should run in the Private Compute Core
+     * sandbox.
+     * @see android.R.styleable#AndroidManifestPrivateCompute
+     * @hide
+     */
+    public static final int FLAG_RUN_IN_PCC_SANDBOX = 0x80000;
 
     /**
      * Bit in {@link #flags} indicating if the service is visible to ephemeral applications.
@@ -366,6 +374,10 @@ public class ServiceInfo extends ComponentInfo
      * {@link android.health.connect.HealthPermissions#READ_HEART_RATE},
      * {@link android.health.connect.HealthPermissions#READ_SKIN_TEMPERATURE},
      * {@link android.health.connect.HealthPermissions#READ_OXYGEN_SATURATION},
+     * {@link android.health.connect.HealthPermissions#READ_BLOOD_PRESSURE},
+     * {@link android.health.connect.HealthPermissions#READ_HEART_RATE_VARIABILITY},
+     * {@link android.health.connect.HealthPermissions#READ_RESPIRATORY_RATE},
+     * {@link android.health.connect.HealthPermissions#READ_VO2_MAX},
      */
     @RequiresPermission(
             allOf = {
@@ -377,9 +389,12 @@ public class ServiceInfo extends ComponentInfo
                 HealthPermissions.READ_HEART_RATE,
                 HealthPermissions.READ_SKIN_TEMPERATURE,
                 HealthPermissions.READ_OXYGEN_SATURATION,
+                HealthPermissions.READ_BLOOD_PRESSURE,
+                HealthPermissions.READ_HEART_RATE_VARIABILITY,
+                HealthPermissions.READ_RESPIRATORY_RATE,
+                HealthPermissions.READ_VO2_MAX,
             }
     )
-    @FlaggedApi(android.permission.flags.Flags.FLAG_REPLACE_BODY_SENSOR_PERMISSION_ENABLED)
     public static final int FOREGROUND_SERVICE_TYPE_HEALTH = 1 << 8;
 
     /**

@@ -68,8 +68,8 @@ filegroup {
 }
 
 filegroup {
-    name: "ravenwood-services-jarjar-rules",
-    srcs: ["texts/ravenwood-services-jarjar-rules.txt"],
+    name: "ravenwood-services-rename-policies",
+    srcs: ["texts/ravenwood-services-rename-policies.txt"],
     visibility: ["//visibility:private"],
 }
 
@@ -102,7 +102,8 @@ java_library {
     sdk_version: "core_current",
     srcs: ["common-src/**/*.java"],
     static_libs: [
-        "framework-annotations-lib", // should it be "libs" instead?
+        "junit",
+        "framework-annotations-lib",
         "modules-utils-ravenwood",
     ],
     visibility: ["//visibility:private"],
@@ -126,12 +127,14 @@ java_host_for_device {
     visibility: ["//visibility:private"],
 }
 
-// We use java_import to strip out the sdk_version of AndroidX libraries.
+// We use java_import to ignore sdk_version of libraries, e.g. AndroidX.
+// This allows us to build ravenwood-junit-impl with core_current.
 java_import {
-    name: "ravenwood-androidx",
-    // Put the list of all AndroidX libraries Ravenwood needs here.
+    name: "ravenwood-deps",
     jars: [
         ":androidx.test.monitor",
+        // Adds android.os.ext.SdkExtensions
+        ":framework-sdkextensions.impl{.jar}",
     ],
     visibility: ["//visibility:private"],
 }
@@ -141,11 +144,12 @@ java_library {
     srcs: [
         ":framework-configinfrastructure-ravenwood-sources",
         ":framework-ravenwood-sources",
+        ":services.fakes-sources",
         "junit-impl-src/**/*.java",
         "junit-src/**/*.java",
     ],
     static_libs: [
-        "ravenwood-androidx",
+        "ravenwood-deps",
         "ravenwood-common-utils",
         "ravenwood-libcore",
         "ow2-asm",
@@ -155,17 +159,18 @@ java_library {
         "ow2-asm-util",
     ],
     libs: [
-        "framework-configinfrastructure.ravenwood",
         "framework-minus-apex.ravenwood",
+        "framework-updatable.ravenwood",
         "hoststubgen-helper-runtime",
         "junit",
         "ravenwood-framework",
         "services.core.ravenwood",
         "objenesis",
+        "mockito-ravenwood-prebuilt",
     ],
     sdk_version: "core_current",
     visibility: [":__subpackages__"],
-    jarjar_rules: ":ravenwood-services-jarjar-rules",
+    jarjar_rules: "texts/ravenwood-runtime-jarjar-rules.txt",
 }
 
 java_device_for_host {
@@ -263,48 +268,20 @@ sh_test_host {
         ":services.core.ravenwood-stats{hoststubgen_services.core_dump.txt}",
         ":services.core.ravenwood-stats{hoststubgen_services.core_keep_all.txt}",
 
-        ":framework-configinfrastructure.ravenwood-stats{framework-configinfrastructure_apis.csv}",
-        ":framework-configinfrastructure.ravenwood-stats{framework-configinfrastructure_dump.txt}",
-        ":framework-configinfrastructure.ravenwood-stats{framework-configinfrastructure_keep_all.txt}",
-
-        ":framework-statsd.ravenwood-stats{framework-statsd_apis.csv}",
-        ":framework-statsd.ravenwood-stats{framework-statsd_dump.txt}",
-        ":framework-statsd.ravenwood-stats{framework-statsd_keep_all.txt}",
-
-        ":framework-graphics.ravenwood-stats{framework-graphics_apis.csv}",
-        ":framework-graphics.ravenwood-stats{framework-graphics_dump.txt}",
-        ":framework-graphics.ravenwood-stats{framework-graphics_keep_all.txt}",
+        ":framework-updatable.ravenwood-stats{hoststubgen_framework-updatable_apis.csv}",
+        ":framework-updatable.ravenwood-stats{hoststubgen_framework-updatable_dump.txt}",
+        ":framework-updatable.ravenwood-stats{hoststubgen_framework-updatable_keep_all.txt}",
     ],
-}
-
-java_library {
-    name: "services.fakes.ravenwood-jarjar",
-    installable: false,
-    srcs: [":services.fakes-sources"],
-    libs: [
-        "ravenwood-framework",
-        "services.core.ravenwood",
-    ],
-    jarjar_rules: ":ravenwood-services-jarjar-rules",
-    visibility: ["//visibility:private"],
 }
 
 // On Ravenwood, we now use Mockito 5 throughout.
 // Mockito 5 doesn't have an "inline-*" module, which only contained a "marker" file
 // which would signal Mockito 4 used inline-mockito.
-// Mockito 5 uses the "inline" storategy by default, so we no longer need an "inline"
+// Mockito 5 uses the "inline" strategy by default, so we no longer need an "inline"
 // module.
-// However, because we can't delete an existing jar in the runtime directory
-// for b/418236847, we still keep "inline-mockito-ravenwood-prebuilt" as an empty jar.
 java_import {
     name: "mockito-ravenwood-prebuilt",
     jars: [":mockito5-hostside-prebuilt"],
-    sdk_version: "core_current",
-}
-
-java_library {
-    name: "inline-mockito-ravenwood-prebuilt",
-    installable: false,
     sdk_version: "core_current",
 }
 
@@ -577,42 +554,50 @@ filegroup {
     visibility: ["//visibility:private"],
 }
 
+// The libraries listed in ravenwood-runtime.* should be in sync with
+// texts/ravenwood-classpath.txt.
+// ravenwood-classpath.txt determines the order of the jar files in the classpath.
+
+android_ravenwood_libgroup {
+    name: "ravenwood-runtime.framework-minus-apex",
+    libs: [
+        "framework-minus-apex.ravenwood",
+    ],
+    // Install it along with "ravenwood-runtime".
+    install_name: "ravenwood-runtime",
+}
+
 android_ravenwood_libgroup {
     name: "ravenwood-runtime",
     data: [":ravenwood-data"],
     fonts: [":ravenwood-fonts"],
+    subruntimes: [
+        "ravenwood-runtime.framework-minus-apex",
+    ],
     libs: [
-        // The libraries listed here should be in sync with texts/ravenwood-classpath.txt.
-        // ravenwood-classpath.txt determines the order of the jar files in the classpath.
-        "framework-minus-apex.ravenwood",
         "kxml2-android",
         "json-prebuilt",
         "ext-ravenwood",
         "android.test.mock.ravenwood",
         "hoststubgen-helper-runtime",
         "services.core.ravenwood-jarjar",
-        "services.fakes.ravenwood-jarjar",
-        "core-icu4j-for-host.ravenwood",
+        "framework-updatable.ravenwood",
         "icu4j-icudata-jarjar",
         "icu4j-icutzdata-jarjar",
-        "framework-configinfrastructure.ravenwood",
-        "framework-statsd.ravenwood",
-        "framework-graphics.ravenwood",
         "junit",
         "truth",
         "flag-junit",
         "ravenwood-framework",
         "ravenwood-junit-impl",
         "mockito-ravenwood-prebuilt",
-        "inline-mockito-ravenwood-prebuilt",
         "framework-updatable-stubs-module_libs_api-for-host",
-        "all-updatable-modules-system-stubs-for-host",
+        "all-modules-system-stubs-for-host",
     ],
     jni_libs: [
         // Libraries has to be loaded in the following order
         "libravenwood_initializer",
         "libravenwood_runtime",
-        "libandroid_runtime",
+        "libandroid_runtime_ravenwood",
     ],
 }
 
@@ -620,7 +605,6 @@ android_ravenwood_libgroup {
     name: "ravenwood-utils",
     libs: [
         "flag-junit",
-        "inline-mockito-ravenwood-prebuilt",
         "junit",
         "mockito-ravenwood-prebuilt",
         "ravenwood-framework",

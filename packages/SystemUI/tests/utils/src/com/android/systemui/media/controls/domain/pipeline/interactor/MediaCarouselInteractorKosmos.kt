@@ -16,6 +16,8 @@
 
 package com.android.systemui.media.controls.domain.pipeline.interactor
 
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.media.controls.domain.pipeline.mediaDataCombineLatest
@@ -39,5 +41,7 @@ val Kosmos.mediaCarouselInteractor by
             mediaDataCombineLatest = mediaDataCombineLatest,
             mediaDataFilter = mediaDataFilter,
             mediaPipelineRepository = mediaPipelineRepository,
+            keyguardTransitionInteractor = keyguardTransitionInteractor,
+            deviceEntryInteractor = deviceEntryInteractor,
         )
     }

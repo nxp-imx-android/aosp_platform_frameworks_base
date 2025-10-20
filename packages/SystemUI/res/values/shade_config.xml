@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2025 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<resources>
+    <!--
+    Whether the shade layout should be full width (true) or floating (false).
+
+    In a floating layout, notifications and quick settings each take up only up to half the screen
+    width (whether they are shown at the same time or not). In a full width layout, they can each be
+    as wide as the entire screen.
+    -->
+    <bool name="config_isFullWidthShade">true</bool>
+
+    <!--
+    Whether notifications shade should be in the top end position (e.g. the right side of the screen
+    in an LTR locale) on wide screens.
+    Only used in Dual Shade mode, when `config_isFullWidthShade` is `false`. Ignored in all other
+    cases.
+    -->
+    <bool name="config_notificationShadeOnTopEnd">false</bool>
+
+    <!--
+    Whether Dual Shade should be enabled in the absence of an explicit preference set by the user.
+    -->
+    <bool name="config_dualShadeEnabledByDefault">true</bool>
+
+    <!--
+    Sets the boundary for the swipe-down gesture from the top of the screen that opens the
+    Notifications and Quick Settings shades in Dual Shade mode.
+
+    This value is a ratio (from 0.0 to 1.0) that represents the fraction of the screen width
+    dedicated to notifications, measured from the "start" edge (left in LTR layouts, right in RTL).
+
+     - Swiping from the start edge to this boundary opens Notifications.
+     - Swiping from this boundary to the end edge opens Quick Settings.
+    -->
+    <item name="config_invocationGestureSplitRatio" format="float" type="dimen">0.75</item>
+</resources>

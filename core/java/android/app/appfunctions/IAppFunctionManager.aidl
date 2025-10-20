@@ -19,8 +19,11 @@ package android.app.appfunctions;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.IAppFunctionEnabledCallback;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
+import android.app.appfunctions.IOnAppFunctionAccessChangeListener;
+import android.app.appfunctions.IAppFunctionExecutor;
 import android.os.ICancellationSignal;
 import android.os.UserHandle;
+import android.content.Intent;
 import android.content.pm.SignedPackageParcel;
 
 import java.util.List;
@@ -38,8 +41,7 @@ interface IAppFunctionManager {
     */
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional = true)")
     ICancellationSignal executeAppFunction(
-        in ExecuteAppFunctionAidlRequest request,
-        in IExecuteAppFunctionCallback callback
+        in ExecuteAppFunctionAidlRequest request, in IExecuteAppFunctionCallback callback
     );
 
     /**
@@ -76,6 +78,10 @@ interface IAppFunctionManager {
         int flags
     );
 
+    void registerAppFunction(in String packageName, in String functionId, in IAppFunctionExecutor executor);
+
+    void unregisterAppFunction(in String packageName, in String functionId, in IAppFunctionExecutor executor);
+
     void revokeSelfAccess(in String targetPackageName);
 
     List<String> getValidAgents(
@@ -90,8 +96,11 @@ interface IAppFunctionManager {
     List<SignedPackageParcel> getAgentAllowlist();
 
     @EnforcePermission("MANAGE_APP_FUNCTION_ACCESS")
-    void setAgentAllowlistEnabled(boolean enabled);
+    void clearAccessHistory(int userId);
 
-    @EnforcePermission("MANAGE_APP_FUNCTION_ACCESS")
-    boolean isAgentAllowlistEnabled();
+    Intent createRequestAccessIntent(in String targetPackageName);
+
+    void addOnAccessChangedListener(IOnAppFunctionAccessChangeListener listener, int userId);
+
+    void removeOnAccessChangedListener(IOnAppFunctionAccessChangeListener listener, int userId);
 }

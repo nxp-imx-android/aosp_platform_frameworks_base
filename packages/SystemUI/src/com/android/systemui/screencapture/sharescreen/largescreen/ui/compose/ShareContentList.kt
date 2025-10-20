@@ -16,119 +16,121 @@
 
 package com.android.systemui.screencapture.sharescreen.largescreen.ui.compose
 
-import android.graphics.Bitmap
-import android.graphics.Color
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.createBitmap
-
-/**
- * A temporary data class representing a single item in the list. This will be replaced by a
- * ViewModel in the next step.
- */
-private data class ContentItem(val icon: Bitmap?, val label: CharSequence?)
+import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.screencapture.common.domain.model.TargetModel
+import com.android.systemui.screencapture.common.ui.viewmodel.TargetViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.TargetsViewModel
 
 /**
  * A composable that displays a scrollable list of shareable content (e.g., recent apps).
  *
  * @param modifier The modifier to be applied to the composable.
+ * @param viewModel The ViewModel that provides the list of tasks and manages selection state.
  */
 @Composable
-fun ShareContentList(modifier: Modifier = Modifier) {
-    // TODO(b/436886242): Remove dummy data and inject view model.
-    val contentList =
-        listOf(
-            ContentItem(icon = null, label = "App 1"),
-            ContentItem(icon = null, label = "App 2"),
-            ContentItem(icon = null, label = "App 3"),
-            ContentItem(icon = null, label = "App 4"),
-        )
-
-    LazyColumn(modifier = modifier.height(120.dp).width(148.dp)) {
-        itemsIndexed(contentList) { index, contentItem ->
-            SelectorItem(
-                icon = contentItem.icon,
-                label = contentItem.label,
-                isSelected = index == 0,
-                onItemSelected = {},
-            )
+fun <T : TargetModel> ShareContentList(
+    modifier: Modifier = Modifier,
+    viewModel: TargetsViewModel<T>,
+) {
+    val targets by viewModel.targets
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceBright,
+        modifier = modifier.heightIn(min = 24.dp, max = 224.dp).width(286.dp),
+    ) {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            targets?.let { targets ->
+                items(items = targets) { target ->
+                    val targetViewModel =
+                        rememberViewModel(
+                            traceName = "ShareContentListItemViewModel#${target.traceTag}",
+                            key = target,
+                        ) {
+                            viewModel.createViewModelFor(target)
+                        }
+                    val selectedModel by viewModel.selectedTarget
+                    SelectorItem(
+                        targetViewModel = targetViewModel,
+                        isSelected = targetViewModel.model == selectedModel,
+                        onItemSelected = { viewModel.setSelectedTarget(targetViewModel) },
+                    )
+                }
+            }
         }
     }
 }
 
 /**
- * A composable that displays a single item in the share content list. It shows an icon and a label,
- * and its appearance changes based on whether it is selected.
+ * A composable that displays a single item in the share content list.
  *
- * @param icon The icon to display for the item. A placeholder is used if null.
- * @param label The text label for the item. A placeholder is used if null.
- * @param isSelected Whether this item is currently selected.
+ * @param targetViewModel The view model for this item.
+ * @param isSelected Whether this item is selected.
  * @param onItemSelected The callback to be invoked when this item is clicked.
  */
 @Composable
-private fun SelectorItem(
-    icon: Bitmap?,
-    label: CharSequence?,
+private fun <T : TargetModel> SelectorItem(
+    targetViewModel: TargetViewModel<T>,
     isSelected: Boolean,
     onItemSelected: () -> Unit,
 ) {
+    // Get the icon and label from the item's ViewModel.
+    val icon = targetViewModel.icon?.getOrNull()
+    val label = targetViewModel.label?.getOrNull()
+
     Surface(
-        shape = RoundedCornerShape(20.dp),
+        shape = if (isSelected) RoundedCornerShape(20.dp) else RoundedCornerShape(4.dp),
         color =
             if (isSelected) MaterialTheme.colorScheme.primary
             else MaterialTheme.colorScheme.surfaceContainer,
-        modifier = Modifier.width(148.dp),
     ) {
         Row(
-            modifier = Modifier.padding(12.dp).clickable(onClick = onItemSelected),
+            modifier =
+                Modifier.padding(start = 8.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
+                    .clickable(onClick = onItemSelected),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.Start),
         ) {
-            Image(
-                // TODO: Address the hardcoded placeholder color.
-                bitmap = icon?.asImageBitmap() ?: createDefaultColorImageBitmap(20, 20, Color.BLUE),
-                contentDescription = null,
-                modifier = Modifier.size(16.dp).clip(CircleShape),
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = label?.toString() ?: "Title",
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.weight(1f),
-            )
+            Box(
+                modifier =
+                    Modifier.size(24.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                if (icon != null) {
+                    Image(bitmap = icon.asImageBitmap(), contentDescription = label?.toString())
+                }
+            }
+            if (label != null) {
+                Text(
+                    text = label.toString(),
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.weight(1f),
+                )
+            }
         }
     }
-}
-
-/**
- * Creates an [ImageBitmap] of a given size, filled with a solid color. Used as a placeholder for
- * when an app icon is not available.
- *
- * @param width The width of the bitmap.
- * @param height The height of the bitmap.
- * @param color The color to fill the bitmap with.
- */
-private fun createDefaultColorImageBitmap(width: Int, height: Int, color: Int): ImageBitmap {
-    val bitmap = createBitmap(width, height)
-    bitmap.eraseColor(color)
-    return bitmap.asImageBitmap()
 }

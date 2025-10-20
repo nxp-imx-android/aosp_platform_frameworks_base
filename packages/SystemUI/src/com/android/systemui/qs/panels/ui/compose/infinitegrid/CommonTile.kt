@@ -46,6 +46,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -74,6 +75,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -99,10 +101,8 @@ import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.SideIconWidth
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TILE_INITIAL_DELAY_MILLIS
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TILE_MARQUEE_ITERATIONS
-import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileDualTargetEndPadding
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileEndPadding
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileLabelBlurWidth
-import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileStartPadding
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.longPressLabelSettings
 import com.android.systemui.qs.panels.ui.viewmodel.AccessibilityUiState
 import com.android.systemui.qs.ui.compose.borderOnFocus
@@ -111,7 +111,10 @@ import kotlin.math.abs
 import platform.test.motion.compose.values.MotionTestValueKey
 import platform.test.motion.compose.values.motionTestValues
 
+private const val TEST_TAG_TILE_ICON = "qs_tile_icon"
 private const val TEST_TAG_TOGGLE = "qs_tile_toggle_target"
+private const val TEST_TAG_SMALL = "qs_tile_small"
+private const val TEST_TAG_LARGE = "qs_tile_large"
 
 @Composable
 fun LargeTileContent(
@@ -238,18 +241,22 @@ fun SmallTileContent(
     iconProvider: Context.() -> Icon,
     color: Color,
     modifier: Modifier = Modifier,
-    size: () -> Dp = { CommonTileDefaults.IconSize },
+    size: @Composable () -> Dp = { CommonTileDefaults.IconSize },
     animateToEnd: Boolean = false,
 ) {
     val context = LocalContext.current
     val icon = iconProvider(context)
     val animatedColor by animateColorAsState(color, label = "QSTileIconColor")
-    val iconModifier = modifier.size({ size().roundToPx() }, { size().roundToPx() })
+    val sizeValue = size()
+    val iconModifier = modifier
+        .size({ sizeValue.roundToPx() }, { sizeValue.roundToPx() })
+        .sysuiResTag(TEST_TAG_TILE_ICON)
+
     val loadedDrawable =
         remember(icon, context) {
             when (icon) {
                 is Icon.Loaded -> icon.drawable
-                is Icon.Resource -> context.getDrawable(icon.res)
+                is Icon.Resource -> context.getDrawable(icon.resId)
             }
         }
     if (loadedDrawable is Animatable) {
@@ -261,10 +268,10 @@ fun SmallTileContent(
         val painter =
             when (icon) {
                 is Icon.Resource -> {
-                    val image = AnimatedImageVector.animatedVectorResource(id = icon.res)
+                    val image = AnimatedImageVector.animatedVectorResource(id = icon.resId)
                     key(icon) {
                         var atEnd by remember(icon) { mutableStateOf(shouldSkipInitialAnimation) }
-                        LaunchedEffect(key1 = icon.res) { atEnd = true }
+                        LaunchedEffect(key1 = icon.resId) { atEnd = true }
 
                         rememberAnimatedVectorPainter(animatedImageVector = image, atEnd = atEnd)
                     }
@@ -363,16 +370,21 @@ private fun TileLabel(
     )
 }
 
+fun Modifier.tileTestTag(iconOnly: Boolean): Modifier {
+    return sysuiResTag(if (iconOnly) TEST_TAG_SMALL else TEST_TAG_LARGE)
+}
+
 /**
  * Apply the correct padding for large tiles
  *
  * Large tiles have a different end padding based on the content, such as if it's a dual target tile
  * or if it has a side drawable.
  */
+@Composable
 fun Modifier.largeTilePadding(isDualTarget: Boolean = false): Modifier {
     return padding(
-        start = TileStartPadding,
-        end = if (isDualTarget) TileDualTargetEndPadding else TileEndPadding,
+        start = CommonTileDefaults.StartPadding,
+        end = if (isDualTarget) CommonTileDefaults.DualTargetEndPadding else TileEndPadding,
     )
 }
 
@@ -405,18 +417,46 @@ object TileBounceMotionTestKeys {
 }
 
 object CommonTileDefaults {
-    val IconSize = 32.dp
-    val LargeTileIconSize = 28.dp
+    val DualTargetEndPadding: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.common_tile_default_dual_target_end_padding)
+
+    val IconSize: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.common_tile_default_icon_size)
+
+    val InactiveCornerRadius: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.common_tile_default_inactive_corner_radius)
+
+    val LargeTileIconSize: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.common_tile_default_large_tile_icon_size)
+
+    val StartPadding: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.common_tile_default_start_padding)
+
+    val TileHeight: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.common_tile_default_tile_height)
+
+    val ToggleTargetSize: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.common_tile_default_toggle_target_size)
+
     val SideIconWidth = 32.dp
     val SideIconHeight = 20.dp
     val ChevronSize = 14.dp
-    val ToggleTargetSize = 56.dp
-    val TileHeight = 72.dp
-    val TileStartPadding = 8.dp
     val TileEndPadding = 12.dp
-    val TileDualTargetEndPadding = 8.dp
     val TileArrangementPadding = 6.dp
-    val InactiveCornerRadius = 50.dp
     val TileLabelBlurWidth = 32.dp
     const val TILE_MARQUEE_ITERATIONS = 1
     const val TILE_INITIAL_DELAY_MILLIS = 2000

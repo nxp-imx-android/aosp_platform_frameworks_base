@@ -24,7 +24,7 @@ import android.telecom.PhoneAccountHandle;
  *
  * @see android.telecom.CallRedirectionService
  *
- * {@hide}
+ * @hide
  */
 oneway interface ICallRedirectionAdapter {
     void cancelCall();
@@ -32,5 +32,9 @@ oneway interface ICallRedirectionAdapter {
     void placeCallUnmodified();
 
     void redirectCall(in Uri handle, in PhoneAccountHandle targetPhoneAccount,
+            boolean confirmFirst);
+
+    void placeCallToAlternateNumber(in Uri alternateUri,
+            in PhoneAccountHandle targetPhoneAccount,
             boolean confirmFirst);
 }

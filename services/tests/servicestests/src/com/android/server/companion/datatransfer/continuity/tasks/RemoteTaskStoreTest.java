@@ -58,7 +58,7 @@ public class RemoteTaskStoreTest {
             assertThat(remoteTasksReportedToListener).hasSize(expectedTasks.size());
             for (int i = 0; i < expectedTasks.size(); i++) {
                 assertThat(remoteTasksReportedToListener.get(i))
-                    .containsExactlyElementsIn(expectedTasks.get(i));
+                        .containsExactlyElementsIn(expectedTasks.get(i));
             }
         }
     }
@@ -90,7 +90,7 @@ public class RemoteTaskStoreTest {
         listener.verifyReportedTasks(List.of(Collections.emptyList()));
 
         // Add tasks to the new association.
-        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0]);
+        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0], true);
         RemoteTask remoteTask = remoteTaskInfo.toRemoteTask(deviceId, deviceName);
 
         taskStore.setTasks(deviceId, Collections.singletonList(remoteTaskInfo));
@@ -105,7 +105,7 @@ public class RemoteTaskStoreTest {
         FakeRemoteTaskListener listener = new FakeRemoteTaskListener();
         taskStore.addListener(listener);
 
-        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0]);
+        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0], true);
 
         // Add the task. Since ConnectedAssociationStore does not have this
         // association, this should be ignored.
@@ -126,24 +126,23 @@ public class RemoteTaskStoreTest {
         taskStore.addDevice(deviceId, deviceName);
 
         // Add two tasks
-        RemoteTaskInfo mostRecentTaskInfo = new RemoteTaskInfo(1, "task1", 200, new byte[0]);
+        RemoteTaskInfo mostRecentTaskInfo = new RemoteTaskInfo(1, "task1", 200, new byte[0], true);
         RemoteTask mostRecentTask = mostRecentTaskInfo.toRemoteTask(deviceId, deviceName);
-        RemoteTaskInfo secondMostRecentTaskInfo = new RemoteTaskInfo(2, "task2", 100,  new byte[0]);
-        RemoteTask secondMostRecentTask
-            = secondMostRecentTaskInfo.toRemoteTask(deviceId, deviceName);
-        taskStore.setTasks(
-            deviceId,
-            Arrays.asList(mostRecentTaskInfo, secondMostRecentTaskInfo));
+        RemoteTaskInfo secondMostRecentTaskInfo =
+                new RemoteTaskInfo(2, "task2", 100, new byte[0], true);
+        RemoteTask secondMostRecentTask =
+                secondMostRecentTaskInfo.toRemoteTask(deviceId, deviceName);
+        taskStore.setTasks(deviceId, Arrays.asList(mostRecentTaskInfo, secondMostRecentTaskInfo));
 
         assertThat(taskStore.getMostRecentTasks()).containsExactly(mostRecentTask);
         listener.verifyReportedTasks(List.of(Collections.emptyList(), List.of(mostRecentTask)));
 
         taskStore.removeTask(deviceId, mostRecentTaskInfo.id());
         listener.verifyReportedTasks(
-            List.of(
-                Collections.emptyList(),
-                List.of(mostRecentTask),
-                List.of(secondMostRecentTask)));
+                List.of(
+                        Collections.emptyList(),
+                        List.of(mostRecentTask),
+                        List.of(secondMostRecentTask)));
         assertThat(taskStore.getMostRecentTasks()).containsExactly(secondMostRecentTask);
     }
 
@@ -159,7 +158,7 @@ public class RemoteTaskStoreTest {
         taskStore.addDevice(deviceId, deviceName);
 
         // Set tasks for the association.
-        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0]);
+        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0], true);
         RemoteTask remoteTask = remoteTaskInfo.toRemoteTask(deviceId, deviceName);
         taskStore.setTasks(deviceId, Collections.singletonList(remoteTaskInfo));
         listener.verifyReportedTasks(List.of(Collections.emptyList(), List.of(remoteTask)));
@@ -170,7 +169,7 @@ public class RemoteTaskStoreTest {
         // Verify the most recent task is added to the task store.
         assertThat(taskStore.getMostRecentTasks()).isEmpty();
         listener.verifyReportedTasks(
-            List.of(Collections.emptyList(), List.of(remoteTask), Collections.emptyList()));
+                List.of(Collections.emptyList(), List.of(remoteTask), Collections.emptyList()));
     }
 
     @Test
@@ -183,29 +182,26 @@ public class RemoteTaskStoreTest {
         String deviceName = "name";
         taskStore.addDevice(deviceId, deviceName);
 
-        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0]);
+        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0], true);
         RemoteTask remoteTask = remoteTaskInfo.toRemoteTask(deviceId, deviceName);
         taskStore.setTasks(deviceId, Collections.singletonList(remoteTaskInfo));
         assertThat(taskStore.getMostRecentTasks()).containsExactly(remoteTask);
         listener.verifyReportedTasks(List.of(Collections.emptyList(), List.of(remoteTask)));
 
         // Add a new task to the association.
-        RemoteTaskInfo newRemoteTaskInfo = new RemoteTaskInfo(2, "task2", 200L, new byte[0]);
+        RemoteTaskInfo newRemoteTaskInfo = new RemoteTaskInfo(2, "task2", 200L, new byte[0], true);
         RemoteTask newRemoteTask = newRemoteTaskInfo.toRemoteTask(deviceId, deviceName);
         taskStore.addTask(deviceId, newRemoteTaskInfo);
 
         // Verify the most recent tasks are added to the task store.
         assertThat(taskStore.getMostRecentTasks()).containsExactly(newRemoteTask);
         listener.verifyReportedTasks(
-            List.of(
-                Collections.emptyList(),
-                List.of(remoteTask),
-                List.of(newRemoteTask)));
+                List.of(Collections.emptyList(), List.of(remoteTask), List.of(newRemoteTask)));
     }
 
     @Test
     public void addTask_doesNotAddTaskIfDeviceNotAdded() {
-        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0]);
+        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0], true);
         taskStore.addTask(1, remoteTaskInfo);
         assertThat(taskStore.getMostRecentTasks()).isEmpty();
     }
@@ -220,22 +216,40 @@ public class RemoteTaskStoreTest {
         String deviceName = "name";
         taskStore.addDevice(deviceId, deviceName);
 
-        RemoteTaskInfo initialTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0]);
+        RemoteTaskInfo initialTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0], true);
         RemoteTask initialTask = initialTaskInfo.toRemoteTask(deviceId, deviceName);
         taskStore.setTasks(deviceId, Collections.singletonList(initialTaskInfo));
         assertThat(taskStore.getMostRecentTasks()).containsExactly(initialTask);
         listener.verifyReportedTasks(List.of(Collections.emptyList(), List.of(initialTask)));
 
-        RemoteTaskInfo updatedTaskInfo = new RemoteTaskInfo(
-            initialTaskInfo.id(),
-            "task1",
-            200L,
-            new byte[0]);
+        RemoteTaskInfo updatedTaskInfo =
+                new RemoteTaskInfo(initialTaskInfo.id(), "task1", 200L, new byte[0], true);
 
         RemoteTask updatedTask = updatedTaskInfo.toRemoteTask(deviceId, deviceName);
         taskStore.updateTask(deviceId, updatedTaskInfo);
         assertThat(taskStore.getMostRecentTasks()).containsExactly(updatedTask);
         listener.verifyReportedTasks(
-            List.of(Collections.emptyList(), List.of(initialTask), List.of(updatedTask)));
+                List.of(Collections.emptyList(), List.of(initialTask), List.of(updatedTask)));
+    }
+
+    @Test
+    public void clear_removesAllTasksAndNotifiesListeners() {
+        FakeRemoteTaskListener listener = new FakeRemoteTaskListener();
+        taskStore.addListener(listener);
+
+        int deviceId = 1;
+        String deviceName = "name";
+        taskStore.addDevice(deviceId, deviceName);
+
+        RemoteTaskInfo initialTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0], true);
+        RemoteTask initialTask = initialTaskInfo.toRemoteTask(deviceId, deviceName);
+        taskStore.setTasks(deviceId, Collections.singletonList(initialTaskInfo));
+        assertThat(taskStore.getMostRecentTasks()).containsExactly(initialTask);
+        listener.verifyReportedTasks(List.of(Collections.emptyList(), List.of(initialTask)));
+
+        taskStore.clear();
+        assertThat(taskStore.getMostRecentTasks()).isEmpty();
+        listener.verifyReportedTasks(
+                List.of(Collections.emptyList(), List.of(initialTask), Collections.emptyList()));
     }
 }

@@ -16,11 +16,15 @@
 
 package com.android.systemui.shade.domain.interactor
 
+import android.graphics.Rect
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState.Idle
 import com.android.compose.animation.scene.ObservableTransitionState.Transition
 import com.android.compose.animation.scene.OverlayKey
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
@@ -33,6 +37,7 @@ import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -48,9 +53,10 @@ import org.junit.runner.RunWith
 class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val underTest by lazy { kosmos.shadeInteractorSceneContainerImpl }
+    private val Kosmos.underTest by Kosmos.Fixture { shadeInteractorSceneContainerImpl }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun qsExpansionWhenInSplitShadeAndQsExpanded() =
         kosmos.runTest {
             val actual by collectLastValue(underTest.qsExpansion)
@@ -76,7 +82,8 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun qsExpansionWhenNotInSplitShadeAndQsExpanded() =
+    @DisableFlags(FLAG_DUAL_SHADE)
+    fun qsExpansionWhenInSingleShadeAndQsExpanded() =
         kosmos.runTest {
             val actual by collectLastValue(underTest.qsExpansion)
 
@@ -126,6 +133,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun qsFullscreen_dualShade_falseWhenTransitioning() =
         kosmos.runTest {
             enableDualShade(wideLayout = false)
@@ -168,6 +176,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun qsFullscreen_splitShade_falseWhenIdleQs() =
         kosmos.runTest {
             val actual by collectLastValue(underTest.isQsFullscreen)
@@ -196,6 +205,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun qsFullscreen_dualShade_trueWhenIdleQs() =
         kosmos.runTest {
             enableDualShade(wideLayout = false)
@@ -217,6 +227,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun qsFullscreen_dualShadeWide_trueWhenIdleQs() =
         kosmos.runTest {
             enableDualShade(wideLayout = true)
@@ -251,6 +262,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun toggleNotificationsShade_splitShade_throwsException() =
         kosmos.runTest {
             // GIVEN split shade is enabled
@@ -277,6 +289,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun toggleQuickSettingsShade_splitShade_throwsException() =
         kosmos.runTest {
             // GIVEN split shade is enabled
@@ -688,6 +701,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun expandNotificationsShade_dualShade_opensOverlay() =
         kosmos.runTest {
             enableDualShade()
@@ -722,6 +736,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun expandNotificationsShade_dualShadeQuickSettingsOpen_replacesOverlay() =
         kosmos.runTest {
             enableDualShade()
@@ -740,6 +755,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun expandQuickSettingsShade_dualShade_opensOverlay() =
         kosmos.runTest {
             enableDualShade()
@@ -774,6 +790,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun expandQuickSettingsShade_splitShade_switchesToShadeScene() =
         kosmos.runTest {
             enableSplitShade()
@@ -791,6 +808,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun expandQuickSettingsShade_dualShadeNotificationsOpen_replacesOverlay() =
         kosmos.runTest {
             enableDualShade()
@@ -809,6 +827,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun collapseNotificationsShade_dualShade_hidesOverlay() =
         kosmos.runTest {
             enableDualShade()
@@ -841,6 +860,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun collapseQuickSettingsShade_dualShade_hidesOverlay() =
         kosmos.runTest {
             enableDualShade()
@@ -899,6 +919,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun collapseEitherShade_dualShade_hidesBothOverlays() =
         kosmos.runTest {
             enableDualShade()
@@ -916,6 +937,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun toggleNotificationsShade_dualShade_showsNotificationsOverlay() =
         kosmos.runTest {
             // GIVEN dual shade is enabled and no overlays are open
@@ -931,6 +953,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun toggleNotificationsShade_dualShadeWithNotificationsOpen_hidesOverlay() =
         kosmos.runTest {
             // GIVEN dual shade is enabled and the notifications overlay is open
@@ -946,6 +969,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun toggleNotificationsShade_dualShadeWithQsOpen_replacesWithNotificationsOverlay() =
         kosmos.runTest {
             // GIVEN dual shade is enabled and the QS overlay is open
@@ -961,6 +985,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun toggleQuickSettingsShade_dualShade_showsQsOverlay() =
         kosmos.runTest {
             // GIVEN dual shade is enabled and no overlays are open
@@ -976,6 +1001,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun toggleQuickSettingsShade_dualShadeWithQsOpen_hidesOverlay() =
         kosmos.runTest {
             // GIVEN dual shade is enabled and the QS overlay is open
@@ -991,6 +1017,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun toggleQuickSettingsShade_dualShadeWithNotificationsOpen_replacesWithQsOverlay() =
         kosmos.runTest {
             // GIVEN dual shade is enabled and the notifications overlay is open
@@ -1003,6 +1030,19 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
 
             // THEN the notifications overlay is replaced by the QS overlay
             assertThat(currentOverlays).containsExactly(Overlays.QuickSettingsShade)
+        }
+
+    @Test
+    fun setShadeBounds_forwardsToShadeRepository() =
+        kosmos.runTest {
+            var shadeBounds: Rect? = null
+            shadeRepository.addShadeBoundsListener { shadeBounds = it }
+            assertThat(shadeBounds).isNull()
+
+            val bounds = Rect(0, 0, 100, 100)
+            underTest.setShadeOverlayBounds(bounds)
+
+            assertThat(shadeBounds).isEqualTo(bounds)
         }
 
     private fun Kosmos.openShade(overlay: OverlayKey) {

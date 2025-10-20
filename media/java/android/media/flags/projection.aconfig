@@ -74,3 +74,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "media_projection"
+    name: "stop_on_display_removal"
+    description: "Stops the current media projection session when the recorded display is removed"
+    bug: "439017127"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

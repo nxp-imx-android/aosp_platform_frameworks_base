@@ -21,12 +21,23 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import androidx.preference.Preference
+import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceViewHolder
 import com.android.settingslib.widget.preference.banner.R
+import kotlin.math.max
 
 /**
- * Custom PreferenceGroup that allows expanding and collapsing child preferences.
+ * Custom PreferenceGroup that allows expanding and collapsing child [BannerMessagePreference]s.
+ *
+ * This group will always display the first BannerMessagePreference added to it. If more than one
+ * banners are added, the remaining preferences will be hidden and a collapse button will show,
+ * displaying the number of collapsed preferences. When expanded, a configurable collapse button
+ * will be shown.
+ *
+ * This group can also have a simple subsection added, which is a titled preference category that
+ * also contains banner preferences. This subsection will be shown and collapsed along with the
+ * remaining banner preferences added directly to the group.
  */
 class BannerMessagePreferenceGroup @JvmOverloads constructor(
     context: Context,
@@ -38,12 +49,18 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
     private var isExpanded = false
     private var expandPreference: NumberButtonPreference? = null
     private var collapsePreference: SectionButtonPreference? = null
+    private var subsectionCategory: PreferenceCategory? = null
     private val childPreferences = mutableListOf<BannerMessagePreference>()
     private var expandKey: String? = null
-    private var expandTitle: String? = null
+    private var expandTitle: CharSequence? = null
     private var collapseKey: String? = null
-    private var collapseTitle: String? = null
+    private var collapseTitle: CharSequence? = null
     private var collapseIcon: Drawable? = null
+    private val collapsiblePreferenceCount
+        get() = max(childPreferences.size - 1, 0) + subsectionPreferenceCount
+    private val subsectionPreferenceCount
+        get() = subsectionCategory?.preferenceCount ?: 0
+
     var expandContentDescription: Int = 0
         set(value) {
             field = value
@@ -62,31 +79,106 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             return false
         }
 
-        if (childPreferences.size >= MAX_CHILDREN) {
-            return false
-        }
+        if (childPreferences.contains(preference)) return true
 
-        childPreferences.add(preference)
-        maybeCreateExpandCollapsePreference()
-        expandPreference?.let {
-            it.count = childPreferences.size - 1
+        val wasAdded = super.addPreference(preference)
+        if (wasAdded) {
+            childPreferences.add(preference)
+            maybeCreateExpandCollapsePreference()
+            updateCollapsedItemCount()
+            updateVisibilities()
         }
-        updateExpandCollapsePreference()
-        updateChildrenVisibility()
-        return super.addPreference(preference)
+        return wasAdded
     }
 
     override fun removePreference(preference: Preference): Boolean {
         if (preference !is BannerMessagePreference) {
             return false
         }
-        childPreferences.remove(preference)
-        expandPreference?.let {
-            it.count = childPreferences.size - 1
+
+        val wasRemoved = super.removePreference(preference)
+        if (wasRemoved) {
+            childPreferences.remove(preference)
+            updateCollapsedItemCount()
+            updateVisibilities()
+            return true
         }
-        updateChildrenVisibility()
-        updateExpandCollapsePreference()
-        return super.removePreference(preference)
+
+        if (subsectionCategory?.removePreference(preference) == true) {
+            updateCollapsedItemCount()
+            updateVisibilities()
+            return true
+        }
+
+        return false
+    }
+
+    override fun removeAll() {
+        subsectionCategory?.removeAll()
+        childPreferences.forEach { child ->
+            super.removePreference(child)
+        }
+        childPreferences.clear()
+        updateCollapsedItemCount()
+        updateVisibilities()
+    }
+
+    /** Sets the title of the expand button shown when this group is collapsed. */
+    override fun setTitle(title: CharSequence?) {
+        expandTitle = title
+    }
+
+    /** Sets the title of the collapse button shown when this group is expanded. */
+    fun setCollapseTitle(title: CharSequence?) {
+        collapseTitle = title
+    }
+
+    /**
+     * Adds a titled subsection to this group.
+     *
+     * The subsection displays beneath any directly added BannerMessagePreferences (via
+     * [addPreference]. It may only contain [BannerMessagePreference]s. When the group is expanded,
+     * the subsection and its contents are shown. They're hidden when the group is collapsed.
+     * Only one subsection can be added. Subsequent calls will be no-ops.
+     */
+    fun addSubsection(subsectionTitle: CharSequence) {
+        if (subsectionCategory == null) {
+            subsectionCategory = PreferenceCategory(context).apply {
+                key = SUBSECTION_KEY
+                title = subsectionTitle
+                order = SUBSECTION_ORDER
+                super.addPreference(this)
+            }
+        }
+    }
+
+    /** Sets the title of the subsection, if one has been added. */
+    fun setSubsectionTitle(subsectionTitle: CharSequence?) {
+        subsectionCategory?.title = subsectionTitle
+    }
+
+    /** Removes the subsection, if one has been added. */
+    fun removeSubsection() {
+      subsectionCategory?.let {
+        super.removePreference(it)
+        subsectionCategory = null
+      }
+      updateCollapsedItemCount()
+      updateVisibilities()
+    }
+
+    /**
+     * Adds a preference to this group's subsection. No-ops if the subsection hasn't been created
+     * previously.
+     *
+     * The preference can be removed by calling [removePreference] or [removePreferenceRecursively].
+     */
+    fun addSubsectionPreference(preference: BannerMessagePreference) {
+        if (subsectionCategory?.addPreference(preference) == true) {
+            maybeCreateExpandCollapsePreference()
+            updateCollapsedItemCount()
+            updateVisibilities()
+        }
     }
 
     override fun removePreferenceRecursively(key: CharSequence): Boolean {
@@ -96,76 +188,71 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             return false
         }
 
-        childPreferences.remove(preference)
-        expandPreference?.let {
-            it.count = childPreferences.size - 1
+        val wasRemoved = super.removePreferenceRecursively(key)
+        if (wasRemoved) {
+            childPreferences.remove(preference)
+            updateCollapsedItemCount()
+            updateVisibilities()
         }
-        updateChildrenVisibility()
-        updateExpandCollapsePreference()
-        return super.removePreferenceRecursively(key)
+        return wasRemoved
     }
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
 
         maybeCreateExpandCollapsePreference()
-        updateExpandCollapsePreference()
-        updateChildrenVisibility()
+        updateVisibilities()
     }
 
     private fun maybeCreateExpandCollapsePreference() {
-        if (childPreferences.size >= 2) {
+        if (collapsiblePreferenceCount > 0) {
             if (expandPreference == null) {
                 expandPreference = NumberButtonPreference(context).apply {
                     key = expandKey
                     title = expandTitle
-                    count = childPreferences.size - 1
+                    count = collapsiblePreferenceCount
                     btnContentDescription = expandContentDescription
                     order = EXPAND_ORDER
                     clickListener = View.OnClickListener {
                         toggleExpansion()
                     }
+                    isVisible = true
+                    super.addPreference(this)
                 }
-                super.addPreference(expandPreference!!)
             }
             if (collapsePreference == null) {
-                collapsePreference = SectionButtonPreference(context)
-                    .apply {
-                        key = collapseKey
-                        title = collapseTitle
-                        icon = collapseIcon
-                        order = COLLAPSE_ORDER
-                        setOnClickListener {
-                            toggleExpansion()
-                        }
-                    }
-                super.addPreference(collapsePreference!!)
+                collapsePreference = SectionButtonPreference(context).apply {
+                    key = collapseKey
+                    title = collapseTitle
+                    icon = collapseIcon
+                    order = COLLAPSE_ORDER
+                    setOnClickListener { toggleExpansion() }
+                    super.addPreference(this)
+                }
             }
         }
     }
 
-    private fun updateExpandCollapsePreference() {
-        expandPreference?.isVisible = !isExpanded && childPreferences.size > 1
-        collapsePreference?.isVisible = isExpanded && childPreferences.size > 1
+    private fun updateVisibilities() {
+        childPreferences.forEachIndexed { i, childBanner ->
+            // The first BannerMessagePref is always visible.
+            childBanner.isVisible = i == 0 || isExpanded
+        }
+
+        expandPreference?.isVisible = !isExpanded && collapsiblePreferenceCount > 0
+        collapsePreference?.isVisible = isExpanded && collapsiblePreferenceCount > 0
+        subsectionCategory?.isVisible = isExpanded && subsectionPreferenceCount > 0
     }
 
-    private fun updateChildrenVisibility() {
-        for (i in 0 until childPreferences.size) {
-            val child = childPreferences[i]
-            if (i == 0) {
-                // Make this explicitly visible when e.g. the first BannerMessagePreference
-                // in the group is dismissed
-                child.isVisible = true
-            } else {
-                child.isVisible = isExpanded
-            }
+    private fun updateCollapsedItemCount() {
+        expandPreference?.let {
+            it.count = collapsiblePreferenceCount
         }
     }
 
     private fun toggleExpansion() {
         isExpanded = !isExpanded
-        updateExpandCollapsePreference()
-        updateChildrenVisibility()
+        updateVisibilities()
     }
 
     private fun initAttributes(context: Context, attrs: AttributeSet?, defStyleAttr: Int) {
@@ -183,9 +270,11 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
     }
 
     companion object {
-        private const val MAX_CHILDREN = 3
-        // Arbitrary large order numbers for the two preferences
+        private const val SUBSECTION_KEY = "banner_message_preference_group_subsection"
+
+        // Arbitrary large order numbers for the three preferences
         // needed to make sure any Banners are added above them
+        private const val SUBSECTION_ORDER = 98
         private const val EXPAND_ORDER = 99
         private const val COLLAPSE_ORDER = 100
     }

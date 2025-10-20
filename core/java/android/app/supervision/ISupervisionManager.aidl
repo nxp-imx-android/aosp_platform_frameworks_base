@@ -19,10 +19,13 @@ package android.app.supervision;
 import android.content.Intent;
 import android.app.supervision.ISupervisionListener;
 import android.app.supervision.SupervisionRecoveryInfo;
+import android.app.supervision.Policy;
+import android.content.pm.ResolveInfo;
+import android.os.Bundle;
 
 /**
  * Internal IPC interface to the supervision service.
- * {@hide}
+ * @hide
  */
 interface ISupervisionManager {
     Intent createConfirmSupervisionCredentialsIntent(int userId);
@@ -36,4 +39,7 @@ interface ISupervisionManager {
     boolean hasSupervisionCredentials();
     oneway void registerSupervisionListener(int userId, in ISupervisionListener listener);
     oneway void unregisterSupervisionListener(in ISupervisionListener listener);
+    List<Policy> getPolicies(int userId);
+    void setPolicy(int userId, in Policy policy);
+    List<ResolveInfo> querySupervisionApprovalActivities(int userId);
 }

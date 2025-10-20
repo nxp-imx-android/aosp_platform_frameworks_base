@@ -67,9 +67,9 @@ import java.util.UUID;
  * for the sockets opened to the zygotes and for starting processes on behalf of the
  * {@link android.os.Process} class.
  *
- * {@hide}
+ * @hide
  */
-public class ZygoteProcess {
+public class ZygoteProcess implements IZygoteProcess {
 
     private static final int ZYGOTE_CONNECT_TIMEOUT_MS = 60000;
 
@@ -291,53 +291,16 @@ public class ZygoteProcess {
     private boolean mUsapPoolEnabled = false;
 
     /**
-     * Start a new process.
+     * {@inheritDoc}
      *
-     * <p>If processes are enabled, a new process is created and the
-     * static main() function of a <var>processClass</var> is executed there.
-     * The process will continue running after this function returns.
+     * <p>If processes are enabled, a new process is created and the static main() function of a
+     * <var>processClass</var> is executed there. The process will continue running after this
+     * function returns.</p>
      *
-     * <p>If processes are not enabled, a new thread in the caller's
-     * process is created and main() of <var>processclass</var> called there.
-     *
-     * <p>The niceName parameter, if not an empty string, is a custom name to
-     * give to the process instead of using processClass.  This allows you to
-     * make easily identifyable processes even if you are using the same base
-     * <var>processClass</var> to start them.
-     *
-     * When invokeWith is not null, the process will be started as a fresh app
-     * and not a zygote fork. Note that this is only allowed for uid 0 or when
-     * runtimeFlags contains DEBUG_ENABLE_DEBUGGER.
-     *
-     * @param processClass The class to use as the process's main entry
-     *                     point.
-     * @param niceName A more readable name to use for the process.
-     * @param uid The user-id under which the process will run.
-     * @param gid The group-id under which the process will run.
-     * @param gids Additional group-ids associated with the process.
-     * @param runtimeFlags Additional flags.
-     * @param targetSdkVersion The target SDK version for the app.
-     * @param seInfo null-ok SELinux information for the new process.
-     * @param abi non-null the ABI this app should be started with.
-     * @param instructionSet null-ok the instruction set to use.
-     * @param appDataDir null-ok the data directory of the app.
-     * @param invokeWith null-ok the command to invoke with.
-     * @param packageName null-ok the name of the package this process belongs to.
-     * @param zygotePolicyFlags Flags used to determine how to launch the application.
-     * @param isTopApp Whether the process starts for high priority application.
-     * @param disabledCompatChanges null-ok list of disabled compat changes for the process being
-     *                             started.
-     * @param pkgDataInfoMap Map from related package names to private data directory
-     *                       volume UUID and inode number.
-     * @param allowlistedDataInfoList Map from allowlisted package names to private data directory
-     *                       volume UUID and inode number.
-     * @param bindMountAppsData whether zygote needs to mount CE and DE data.
-     * @param bindMountAppStorageDirs whether zygote needs to mount Android/obb and Android/data.
-     *
-     * @param zygoteArgs Additional arguments to supply to the Zygote process.
-     * @return An object that describes the result of the attempt to start the process.
-     * @throws RuntimeException on fatal start failure
+     * </p>If processes are not enabled, a new thread in the caller's process is created and main()
+     * of <var>processClass</var> called there.</p>
      */
+    @Override
     public final Process.ProcessStartResult start(@NonNull final String processClass,
                                                   final String niceName,
                                                   int uid, int gid, @Nullable int[] gids,
@@ -359,6 +322,7 @@ public class ZygoteProcess {
                                                   boolean bindMountAppsData,
                                                   boolean bindMountAppStorageDirs,
                                                   boolean bindOverrideSysprops,
+                                                  long startSeq,
                                                   @Nullable String[] zygoteArgs) {
         // TODO (chriswailes): Is there a better place to check this value?
         if (fetchUsapPoolEnabledPropWithMinInterval()) {
@@ -371,7 +335,7 @@ public class ZygoteProcess {
                     abi, instructionSet, appDataDir, invokeWith, /*startChildZygote=*/ false,
                     packageName, zygotePolicyFlags, isTopApp, disabledCompatChanges,
                     pkgDataInfoMap, allowlistedDataInfoList, bindMountAppsData,
-                    bindMountAppStorageDirs, bindOverrideSysprops, zygoteArgs);
+                    bindMountAppStorageDirs, bindOverrideSysprops, startSeq, zygoteArgs);
         } catch (ZygoteStartFailedEx ex) {
             Log.e(LOG_TAG,
                     "Starting VM process through Zygote failed");
@@ -645,6 +609,7 @@ public class ZygoteProcess {
                                                       boolean bindMountAppsData,
                                                       boolean bindMountAppStorageDirs,
                                                       boolean bindMountOverrideSysprops,
+                                                      long startSeq,
                                                       @Nullable String[] extraArgs)
                                                       throws ZygoteStartFailedEx {
         ArrayList<String> argsForZygote = new ArrayList<>();
@@ -655,6 +620,7 @@ public class ZygoteProcess {
         argsForZygote.add("--setuid=" + uid);
         argsForZygote.add("--setgid=" + gid);
         argsForZygote.add("--runtime-flags=" + runtimeFlags);
+
         if (mountExternal == Zygote.MOUNT_EXTERNAL_DEFAULT) {
             argsForZygote.add("--mount-external-default");
         } else if (mountExternal == Zygote.MOUNT_EXTERNAL_INSTALLER) {
@@ -1313,7 +1279,7 @@ public class ZygoteProcess {
                     null /* disabledCompatChanges */, null /* pkgDataInfoMap */,
                     null /* allowlistedDataInfoList */, true /* bindMountAppsData*/,
                     /* bindMountAppStorageDirs */ false, /*bindMountOverrideSysprops */ false,
-                    extraArgs);
+                    /* startSeq */ 0, extraArgs);
 
         } catch (ZygoteStartFailedEx ex) {
             throw new RuntimeException("Starting child-zygote through Zygote failed", ex);

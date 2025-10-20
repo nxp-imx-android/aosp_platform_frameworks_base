@@ -33,7 +33,9 @@ import android.view.animation.Animation;
 
 import com.android.internal.policy.IKeyguardDismissCallback;
 import com.android.internal.policy.IShortcutService;
+import com.android.server.policy.SingleKeyGestureDetector;
 import com.android.server.policy.WindowManagerPolicy;
+import com.android.server.policy.keyguard.KeyguardServiceDelegate;
 
 import java.io.PrintWriter;
 import java.util.Collections;
@@ -163,7 +165,7 @@ class TestWindowManagerPolicy implements WindowManagerPolicy {
     }
 
     @Override
-    public boolean isScreenOn() {
+    public boolean isScreenOn(int displayId) {
         return true;
     }
 
@@ -333,6 +335,11 @@ class TestWindowManagerPolicy implements WindowManagerPolicy {
     }
 
     @Override
+    public KeyguardServiceDelegate getKeyguardServiceDelegate() {
+        return null;
+    }
+
+    @Override
     public void setPipVisibilityLw(boolean visible) {
     }
 
@@ -356,6 +363,10 @@ class TestWindowManagerPolicy implements WindowManagerPolicy {
     @Override
     public boolean isGlobalKey(int keyCode) {
         return false;
+    }
+
+    @Override
+    public void addSingleKeyRule(SingleKeyGestureDetector.SingleKeyRule singleKeyRule) {
     }
 
     @Override

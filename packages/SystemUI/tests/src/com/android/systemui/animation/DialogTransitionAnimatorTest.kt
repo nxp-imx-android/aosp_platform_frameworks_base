@@ -5,8 +5,6 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import android.testing.ViewUtils
 import android.view.View
@@ -19,7 +17,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.jank.Cuj
 import com.android.internal.policy.DecorView
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.testKosmos
@@ -60,7 +57,6 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
         runOnMainThreadAndWaitForIdleSync { attachedViews.forEach { ViewUtils.detachView(it) } }
     }
 
-    @EnableFlags(Flags.FLAG_QS_TILE_TRANSITION_INTERACTION_REFINEMENT)
     @Test
     fun testShowDialogFromView_withInterceptorViewFlagEnabled() {
         // Show the dialog. showFromView() must be called on the main thread with a dialog created
@@ -91,42 +87,6 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
             assertEquals(TestDialog.DIALOG_WIDTH, layoutParams.width)
             assertEquals(TestDialog.DIALOG_HEIGHT, layoutParams.height)
         }
-
-        assertEquals(TestDialog.DIALOG_WIDTH, dialogContentWithBackground.layoutParams.width)
-        assertEquals(TestDialog.DIALOG_HEIGHT, dialogContentWithBackground.layoutParams.height)
-        assertEquals(dialog.windowBackground, dialogContentWithBackground.background)
-
-        // The dialog content is inside this fake window view.
-        assertNotNull(dialogContentWithBackground.findViewByPredicate { it === dialog.contentView })
-
-        // Clicking the transparent background should dismiss the dialog.
-        runOnMainThreadAndWaitForIdleSync { transparentBackground.performClick() }
-        assertFalse(dialog.isShowing)
-    }
-
-    @DisableFlags(Flags.FLAG_QS_TILE_TRANSITION_INTERACTION_REFINEMENT)
-    @Test
-    fun testShowDialogFromView_withInterceptorViewFlagDisabled() {
-        // Show the dialog. showFromView() must be called on the main thread with a dialog created
-        // on the main thread too.
-        val dialog = createAndShowDialog()
-
-        assertTrue(dialog.isShowing)
-
-        // The dialog is now fullscreen.
-        val window = checkNotNull(dialog.window)
-        val decorView = window.decorView as DecorView
-        assertEquals(MATCH_PARENT, window.attributes.width)
-        assertEquals(MATCH_PARENT, window.attributes.height)
-        assertEquals(MATCH_PARENT, decorView.layoutParams.width)
-        assertEquals(MATCH_PARENT, decorView.layoutParams.height)
-
-        // The single transparent background child is a fake window with the same size and
-        // background as the dialog initially
-        val dialogContentWithBackground: ViewGroup
-        val transparentBackground = decorView.getChildAt(0) as ViewGroup
-        assertEquals(1, transparentBackground.childCount)
-        dialogContentWithBackground = transparentBackground.getChildAt(0) as ViewGroup
 
         assertEquals(TestDialog.DIALOG_WIDTH, dialogContentWithBackground.layoutParams.width)
         assertEquals(TestDialog.DIALOG_HEIGHT, dialogContentWithBackground.layoutParams.height)

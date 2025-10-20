@@ -38,7 +38,7 @@ import kotlinx.coroutines.launch
 class DefaultWindowDecorViewHost(
     context: Context,
     @ShellMainThread private val mainScope: CoroutineScope,
-    display: Display,
+    private val display: Display,
     @VisibleForTesting
     val viewHostAdapter: SurfaceControlViewHostAdapter =
         SurfaceControlViewHostAdapter(context, display),
@@ -47,6 +47,9 @@ class DefaultWindowDecorViewHost(
 
     override val surfaceControl: SurfaceControl
         get() = viewHostAdapter.rootSurface
+
+    override val displayId: Int
+        get() = display.displayId
 
     override fun updateView(
         view: View,
@@ -99,6 +102,7 @@ class DefaultWindowDecorViewHost(
         onDrawTransaction: SurfaceControl.Transaction?,
     ) {
         Trace.beginSection("DefaultWindowDecorViewHost#updateViewHost")
+        view.layoutDirection = configuration.layoutDirection
         viewHostAdapter.prepareViewHost(configuration, touchableRegion)
         onDrawTransaction?.let { viewHostAdapter.applyTransactionOnDraw(it) }
         viewHostAdapter.updateView(view, attrs)

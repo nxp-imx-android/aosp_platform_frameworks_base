@@ -19,7 +19,6 @@ package com.android.systemui.settings.brightness;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.content.Intent.EXTRA_BRIGHTNESS_DIALOG_IS_FULL_WIDTH;
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static android.view.WindowManagerPolicyConstants.EXTRA_FROM_BRIGHTNESS_KEY;
 
@@ -38,7 +37,6 @@ import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowMetrics;
 import android.view.accessibility.AccessibilityManager;
-import android.widget.FrameLayout;
 
 import androidx.activity.ComponentActivity;
 import androidx.compose.ui.platform.ComposeView;
@@ -48,7 +46,6 @@ import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel;
 import com.android.systemui.dagger.qualifiers.Main;
-import com.android.systemui.qs.flags.QsInCompose;
 import com.android.systemui.res.R;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper;
@@ -71,9 +68,6 @@ public class BrightnessDialog extends ComponentActivity {
     @VisibleForTesting
     static final int DIALOG_TIMEOUT_MILLIS = 3000;
 
-    private BrightnessController mBrightnessController;
-    private final BrightnessSliderController.Factory mToggleSliderFactory;
-    private final BrightnessController.Factory mBrightnessControllerFactory;
     private final DelayableExecutor mMainExecutor;
     private final AccessibilityManagerWrapper mAccessibilityMgr;
     private Runnable mCancelTimeoutRunnable;
@@ -82,15 +76,11 @@ public class BrightnessDialog extends ComponentActivity {
 
     @Inject
     public BrightnessDialog(
-            BrightnessSliderController.Factory brightnessSliderfactory,
-            BrightnessController.Factory brightnessControllerFactory,
             @Main DelayableExecutor mainExecutor,
             AccessibilityManagerWrapper accessibilityMgr,
             ShadeInteractor shadeInteractor,
             BrightnessSliderViewModel.Factory brightnessSliderViewModelFactory
     ) {
-        mToggleSliderFactory = brightnessSliderfactory;
-        mBrightnessControllerFactory = brightnessControllerFactory;
         mMainExecutor = mainExecutor;
         mAccessibilityMgr = accessibilityMgr;
         mShadeInteractor = shadeInteractor;
@@ -102,31 +92,21 @@ public class BrightnessDialog extends ComponentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setWindowAttributes();
-        View view;
-        if (!QsInCompose.isEnabled()) {
-            setContentView(R.layout.brightness_mirror_container);
-            view = findViewById(R.id.brightness_mirror_container);
-            setDialogContent((FrameLayout) view);
-        } else {
-            ComposeView composeView = new ComposeView(this);
-            ComposeDialogComposableProvider.INSTANCE.setComposableBrightness(
-                    composeView,
-                    new ComposableProvider(mBrightnessSliderViewModelFactory)
-            );
-            composeView.setId(R.id.brightness_dialog_slider);
-            setContentView(composeView);
-            ((ViewGroup) composeView.getParent()).setClipChildren(false);
-            view = composeView;
-        }
-        setBrightnessDialogViewAttributes(view);
+        ComposeView composeView = new ComposeView(this);
+        ComposeDialogComposableProvider.INSTANCE.setComposableBrightness(
+                composeView,
+                new ComposableProvider(mBrightnessSliderViewModelFactory)
+        );
+        composeView.setId(R.id.brightness_dialog_slider);
+        setContentView(composeView);
+        ((ViewGroup) composeView.getParent()).setClipChildren(false);
+        setBrightnessDialogViewAttributes(composeView);
 
         if (mShadeInteractor.isQsExpanded().getValue()) {
             finish();
         }
 
-        if (view != null) {
-            collectFlow(view, mShadeInteractor.isQsExpanded(), this::onShadeStateChange);
-        }
+        collectFlow(composeView, mShadeInteractor.isQsExpanded(), this::onShadeStateChange);
     }
 
     private void onShadeStateChange(boolean isQsExpanded) {
@@ -197,13 +177,6 @@ public class BrightnessDialog extends ComponentActivity {
                 });
     }
 
-    private void setDialogContent(FrameLayout frame) {
-        BrightnessSliderController controller = mToggleSliderFactory.create(this, frame);
-        controller.init();
-        frame.addView(controller.getRootView(), MATCH_PARENT, WRAP_CONTENT);
-        mBrightnessController = mBrightnessControllerFactory.create(controller);
-    }
-
     private int getWindowAvailableWidth() {
         final WindowMetrics metrics = getWindowManager().getCurrentWindowMetrics();
         // Gets all excluding insets
@@ -217,9 +190,6 @@ public class BrightnessDialog extends ComponentActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (!QsInCompose.isEnabled()) {
-            mBrightnessController.registerCallbacks();
-        }
         MetricsLogger.visible(this, MetricsEvent.BRIGHTNESS_DIALOG);
     }
 
@@ -241,9 +211,6 @@ public class BrightnessDialog extends ComponentActivity {
     protected void onStop() {
         super.onStop();
         MetricsLogger.hidden(this, MetricsEvent.BRIGHTNESS_DIALOG);
-        if (!QsInCompose.isEnabled()) {
-            mBrightnessController.unregisterCallbacks();
-        }
     }
 
     @Override

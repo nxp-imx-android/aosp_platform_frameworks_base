@@ -27,7 +27,8 @@ import java.util.List;
  * A class that is responsible for queueing deferred key actions which can be triggered at a later
  * time.
  */
-class DeferredKeyActionExecutor {
+// TODO(b/441835934): Remove this class while cleaning up flag "wear_key_gesture_handling".
+public class DeferredKeyActionExecutor {
     private static final boolean DEBUG = PhoneWindowManager.DEBUG_INPUT;
     private static final String TAG = "DeferredKeyAction";
 

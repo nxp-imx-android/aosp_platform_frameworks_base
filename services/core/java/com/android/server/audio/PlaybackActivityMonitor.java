@@ -16,14 +16,14 @@
 
 package com.android.server.audio;
 
-import static android.media.AudioPlaybackConfiguration.MUTED_BY_OP_PLAY_AUDIO;
 import static android.media.AudioPlaybackConfiguration.MUTED_BY_CLIENT_VOLUME;
 import static android.media.AudioPlaybackConfiguration.MUTED_BY_MASTER;
+import static android.media.AudioPlaybackConfiguration.MUTED_BY_OP_CONTROL_AUDIO;
+import static android.media.AudioPlaybackConfiguration.MUTED_BY_OP_PLAY_AUDIO;
 import static android.media.AudioPlaybackConfiguration.MUTED_BY_PORT_VOLUME;
 import static android.media.AudioPlaybackConfiguration.MUTED_BY_STREAM_MUTED;
 import static android.media.AudioPlaybackConfiguration.MUTED_BY_STREAM_VOLUME;
 import static android.media.AudioPlaybackConfiguration.MUTED_BY_VOLUME_SHAPER;
-import static android.media.AudioPlaybackConfiguration.MUTED_BY_OP_CONTROL_AUDIO;
 import static android.media.AudioPlaybackConfiguration.PLAYER_PIID_INVALID;
 import static android.media.AudioPlaybackConfiguration.PLAYER_UPDATE_MUTED;
 
@@ -637,6 +637,7 @@ public final class PlaybackActivityMonitor
      * @param uid the app uid
      * @return true if a player is active, false otherwise
      */
+    @Override
     public boolean isPlaybackActiveForUid(int uid) {
         synchronized (mPlayerLock) {
             for (AudioPlaybackConfiguration apc : mPlayers.values()) {

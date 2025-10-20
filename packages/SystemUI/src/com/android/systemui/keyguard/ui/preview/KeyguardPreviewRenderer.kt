@@ -23,6 +23,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Resources
+import android.content.theming.ThemeStyle
 import android.graphics.Rect
 import android.hardware.display.DisplayManager
 import android.os.Handler
@@ -42,7 +43,6 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.constraintlayout.widget.ConstraintSet.PARENT_ID
 import androidx.constraintlayout.widget.ConstraintSet.START
 import androidx.constraintlayout.widget.ConstraintSet.TOP
-import androidx.core.view.isInvisible
 import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking
 import com.android.keyguard.ClockEventController
 import com.android.systemui.Flags
@@ -64,7 +64,6 @@ import com.android.systemui.keyguard.ui.viewmodel.KeyguardPreviewSmartspaceViewM
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardPreviewViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordancesCombinedViewModel
 import com.android.systemui.monet.ColorScheme
-import com.android.systemui.monet.Style
 import com.android.systemui.plugins.keyguard.data.model.WeatherData
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
 import com.android.systemui.plugins.keyguard.ui.clocks.ThemeConfig
@@ -136,10 +135,14 @@ constructor(
 
     private val shortcutsBindings = mutableSetOf<KeyguardQuickAffordanceViewBinder.Binding>()
 
-    @Style.Type private var themeStyle: Int? = null
+    @ThemeStyle.Type private var themeStyle: Int? = null
 
     init {
+        clockController.isPreview = true
+        clockController.registerListeners()
+        disposables += DisposableHandle { clockController.unregisterListeners() }
         clockController.setFallbackWeatherData(WeatherData.getPlaceholderWeatherData())
+
         quickAffordancesCombinedViewModel.enablePreviewMode(
             initiallySelectedSlotId =
                 previewViewModel.request.getString(KEY_INITIALLY_SELECTED_SLOT_ID)
@@ -244,31 +247,29 @@ constructor(
     }
 
     fun onClockSizeSelected(clockSize: ClockSizeSetting) {
-        if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
-            when (clockSize) {
-                ClockSizeSetting.DYNAMIC -> {
-                    if (clockViewModel.shouldSmallDateWeatherBeBelowLargeClock()) {
-                        largeDateView?.post {
-                            smallDateView?.visibility = View.GONE
-                            largeDateView?.visibility = View.VISIBLE
-                        }
-                    } else {
-                        largeDateView?.post {
-                            smallDateView?.visibility = View.VISIBLE
-                            largeDateView?.visibility = View.GONE
-                        }
+        when (clockSize) {
+            ClockSizeSetting.DYNAMIC -> {
+                if (clockViewModel.shouldSmallDateWeatherBeBelowLargeClock()) {
+                    largeDateView?.post {
+                        smallDateView?.visibility = View.GONE
+                        largeDateView?.visibility = View.VISIBLE
                     }
-                }
-
-                ClockSizeSetting.SMALL -> {
+                } else {
                     largeDateView?.post {
                         smallDateView?.visibility = View.VISIBLE
                         largeDateView?.visibility = View.GONE
                     }
                 }
             }
-            smartSpaceView?.post { smartSpaceView?.visibility = View.GONE }
+
+            ClockSizeSetting.SMALL -> {
+                largeDateView?.post {
+                    smallDateView?.visibility = View.VISIBLE
+                    largeDateView?.visibility = View.GONE
+                }
+            }
         }
+        smartSpaceView?.post { smartSpaceView?.visibility = View.GONE }
     }
 
     fun destroy() {
@@ -286,9 +287,7 @@ constructor(
     fun hideSmartspace(hide: Boolean) {
         mainHandler.post {
             smartSpaceView?.visibility = if (hide) View.INVISIBLE else View.VISIBLE
-            if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
-                clockViewModel.setShowClock(!hide)
-            }
+            clockViewModel.setShowClock(!hide)
         }
     }
 
@@ -314,48 +313,18 @@ constructor(
             parentView.removeView(smartSpaceView)
         }
 
-        if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
-            val cs = ConstraintSet()
-            cs.clone(parentView)
-            cs.apply {
-                largeDateView =
-                    lockscreenSmartspaceController.buildAndConnectDateView(previewContext, true)
+        val cs = ConstraintSet()
+        cs.clone(parentView)
+        cs.apply {
+            largeDateView =
+                lockscreenSmartspaceController.buildAndConnectDateView(previewContext, true)
 
-                smallDateView =
-                    lockscreenSmartspaceController.buildAndConnectDateView(previewContext, false)
-                parentView.addView(largeDateView)
-                parentView.addView(smallDateView)
-            }
-            cs.applyTo(parentView)
-        } else {
-            smartSpaceView =
-                lockscreenSmartspaceController.buildAndConnectDateView(
-                    previewContext,
-                    isLargeClock = false,
-                )
-
-            val topPadding: Int =
-                smartspaceViewModel.getLargeClockSmartspaceTopPadding(
-                    previewContext,
-                    previewViewModel.buildPreviewConfig(),
-                )
-            val startPadding: Int = smartspaceViewModel.getDateWeatherStartPadding(previewContext)
-            val endPadding: Int = smartspaceViewModel.getDateWeatherEndPadding(previewContext)
-
-            smartSpaceView?.let {
-                it.setPaddingRelative(startPadding, topPadding, endPadding, 0)
-                it.isClickable = false
-                it.isInvisible = true
-                parentView.addView(
-                    it,
-                    FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.WRAP_CONTENT,
-                    ),
-                )
-                it.alpha = smartspaceViewModel.previewAlpha
-            }
+            smallDateView =
+                lockscreenSmartspaceController.buildAndConnectDateView(previewContext, false)
+            parentView.addView(largeDateView)
+            parentView.addView(smallDateView)
         }
+        cs.applyTo(parentView)
     }
 
     private fun setupKeyguardRootView(previewContext: Context, rootView: ConstraintLayout) {
@@ -374,14 +343,12 @@ constructor(
 
         if (!clockViewModel.shouldHideClock) {
             setUpClock(previewContext, rootView)
-            if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
-                setUpSmartspace(previewContext, keyguardRootView)
-                KeyguardPreviewSmartspaceViewBinder.bind(
-                    keyguardRootView,
-                    smartspaceViewModel,
-                    previewViewModel,
-                )
-            }
+            setUpSmartspace(previewContext, keyguardRootView)
+            KeyguardPreviewSmartspaceViewBinder.bind(
+                keyguardRootView,
+                smartspaceViewModel,
+                previewViewModel,
+            )
             KeyguardPreviewClockViewBinder.bind(
                 keyguardRootView,
                 clockViewModel,
@@ -389,17 +356,6 @@ constructor(
                 ::updateClockAppearance,
                 previewViewModel.buildPreviewConfig(),
             )
-        }
-
-        if (!com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
-            setUpSmartspace(previewContext, keyguardRootView)
-            smartSpaceView?.let {
-                KeyguardPreviewSmartspaceViewBinder.bind(
-                    it,
-                    smartspaceViewModel,
-                    previewViewModel.buildPreviewConfig(),
-                )
-            }
         }
     }
 
@@ -488,7 +444,7 @@ constructor(
             // Seed color null means users do not override any color on the clock. The default
             // color will need to use wallpaper's extracted color and consider if the
             // wallpaper's color is dark or light.
-            @Style.Type
+            @ThemeStyle.Type
             val style = themeStyle ?: fetchThemeStyleFromSetting().also { themeStyle = it }
             val wallpaperColorScheme = ColorScheme(colors, false, style)
             val lightClockColor = wallpaperColorScheme.accent1.s100
@@ -516,7 +472,7 @@ constructor(
         )
     }
 
-    @Style.Type
+    @ThemeStyle.Type
     private suspend fun fetchThemeStyleFromSetting(): Int {
         val overlayPackageJson =
             withContext(backgroundDispatcher) {
@@ -525,16 +481,16 @@ constructor(
         return if (!overlayPackageJson.isNullOrEmpty()) {
             try {
                 val jsonObject = JSONObject(overlayPackageJson)
-                Style.valueOf(jsonObject.getString(OVERLAY_CATEGORY_THEME_STYLE))
+                ThemeStyle.valueOf(jsonObject.getString(OVERLAY_CATEGORY_THEME_STYLE))
             } catch (e: (JSONException)) {
                 Log.i(TAG, "Failed to parse THEME_CUSTOMIZATION_OVERLAY_PACKAGES.", e)
-                Style.TONAL_SPOT
+                ThemeStyle.TONAL_SPOT
             } catch (e: IllegalArgumentException) {
                 Log.i(TAG, "Failed to parse THEME_CUSTOMIZATION_OVERLAY_PACKAGES.", e)
-                Style.TONAL_SPOT
+                ThemeStyle.TONAL_SPOT
             }
         } else {
-            Style.TONAL_SPOT
+            ThemeStyle.TONAL_SPOT
         }
     }
 

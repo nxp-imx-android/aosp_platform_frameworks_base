@@ -108,6 +108,10 @@ filegroup {
         "java/**/*.java",
         "java/**/package.html",
     ],
+    exclude_srcs: [
+        "java/com/android/server/binder_observer/enabled/BinderObserverConfig.java",
+        "java/com/android/server/binder_observer/disabled/BinderObserverConfig.java",
+    ],
     path: "java",
     visibility: ["//visibility:private"],
 }
@@ -133,13 +137,13 @@ filegroup {
         ":services.coverage-sources",
         ":services.credentials-sources",
         ":services.devicepolicy-sources",
+        ":services.lskfreset-sources",
         ":services.midi-sources",
         ":services.musicsearch-sources",
         ":services.net-sources",
         ":services.permission-sources",
         ":services.print-sources",
         ":services.profcollect-sources",
-        ":services.userrecovery-sources",
         ":services.restrictions-sources",
         ":services.searchui-sources",
         ":services.selectiontoolbar-sources",
@@ -156,6 +160,7 @@ filegroup {
         ":services.wallpapereffectsgeneration-sources",
         ":services.wifi-sources",
         ":framework-pm-common-shared-srcs",
+        ":framework-minus-apex-aconfig-srcjars",
     ],
     visibility: ["//visibility:private"],
 }
@@ -306,6 +311,17 @@ vintf_fragment {
 
 // merge all required services into one intermediate jar
 // ============================================================
+
+java_library {
+    name: "binder_observer_config_enabled",
+    srcs: ["java/com/android/server/binder_observer/enabled/BinderObserverConfig.java"],
+}
+
+java_library {
+    name: "binder_observer_config_disabled",
+    srcs: ["java/com/android/server/binder_observer/disabled/BinderObserverConfig.java"],
+}
+
 java_library {
     name: "services.impl",
     defaults: [
@@ -338,6 +354,7 @@ java_library {
         "services.credentials",
         "services.devicepolicy",
         "services.flags",
+        "services.lskfreset",
         "services.midi",
         "services.musicsearch",
         "services.net",
@@ -345,7 +362,6 @@ java_library {
         "services.permission",
         "services.print",
         "services.profcollect",
-        "services.userrecovery",
         "services.restrictions",
         "services.searchui",
         "services.selectiontoolbar",
@@ -364,9 +380,12 @@ java_library {
         "service-blobstore",
         "service-jobscheduler",
         "android.hidl.base-V1.0-java",
-    ] + select(release_flag("RELEASE_MOVE_VCN_TO_MAINLINE"), {
-        true: [],
-        default: ["service-connectivity-b-platform"],
+    ] + select(release_flag("RELEASE_ANOMALY_DETECTOR"), {
+        true: ["services.signal-collectors"],
+        default: [],
+    }) + select(release_flag("RELEASE_LIBBINDER_BINDER_OBSERVER"), {
+        true: ["binder_observer_config_enabled"],
+        default: ["binder_observer_config_disabled"],
     }),
 
     libs: [
@@ -437,6 +456,7 @@ system_java_library {
     required: [
         "libukey2_jni_shared",
         "core.protolog.pb",
+        "libusb4_policies_jni",
     ],
     lint: {
         baseline_filename: "lint-baseline.xml",
@@ -483,7 +503,6 @@ stubs_defaults {
     installable: false,
     flags: [
         "--show-annotation android.annotation.SystemApi\\(client=android.annotation.SystemApi.Client.SYSTEM_SERVER\\)",
-        "--hide-annotation android.annotation.Hide",
         "--hide InternalClasses", // com.android.* classes are okay in this interface
         // TODO: remove the --hide options below
         "--hide DeprecationMismatch",

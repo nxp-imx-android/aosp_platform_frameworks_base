@@ -198,6 +198,16 @@ public class BroadcastConstants {
             ActivityManager.isLowRamDeviceStatic() ? 128 : 256;
 
     /**
+     * For {@link BroadcastQueueImpl}: Maximum number of pending
+     * broadcasts to hold for a UID before we start dropping new broadcasts.
+     */
+    public int MAX_PENDING_BROADCASTS_PER_SENDER_UID =
+            DEFAULT_MAX_PENDING_BROADCASTS_PER_SENDER_UID;
+    private static final String KEY_MAX_PENDING_BROADCASTS_PER_SENDER_UID =
+            "bcast_max_pending_broadcasts_per_sender_uid";
+    private static final int DEFAULT_MAX_PENDING_BROADCASTS_PER_SENDER_UID = 10_000;
+
+    /**
      * For {@link BroadcastQueueImpl}: Delay to apply to normal
      * broadcasts, giving a chance for debouncing of rapidly changing events.
      */
@@ -433,6 +443,9 @@ public class BroadcastConstants {
                     DEFAULT_MAX_CORE_RUNNING_NON_BLOCKING_BROADCASTS);
             MAX_PENDING_BROADCASTS = getDeviceConfigInt(KEY_MAX_PENDING_BROADCASTS,
                     DEFAULT_MAX_PENDING_BROADCASTS);
+            MAX_PENDING_BROADCASTS_PER_SENDER_UID = getDeviceConfigInt(
+                    KEY_MAX_PENDING_BROADCASTS_PER_SENDER_UID,
+                    DEFAULT_MAX_PENDING_BROADCASTS_PER_SENDER_UID);
             DELAY_NORMAL_MILLIS = getDeviceConfigLong(KEY_DELAY_NORMAL_MILLIS,
                     DEFAULT_DELAY_NORMAL_MILLIS);
             DELAY_CACHED_MILLIS = getDeviceConfigLong(KEY_DELAY_CACHED_MILLIS,
@@ -496,6 +509,8 @@ public class BroadcastConstants {
             pw.print(KEY_CORE_MAX_RUNNING_NON_BLOCKING_BROADCASTS,
                     MAX_CORE_RUNNING_NON_BLOCKING_BROADCASTS).println();
             pw.print(KEY_MAX_PENDING_BROADCASTS, MAX_PENDING_BROADCASTS).println();
+            pw.print(KEY_MAX_PENDING_BROADCASTS_PER_SENDER_UID,
+                    MAX_PENDING_BROADCASTS_PER_SENDER_UID).println();
             pw.print(KEY_DELAY_NORMAL_MILLIS,
                     TimeUtils.formatDuration(DELAY_NORMAL_MILLIS)).println();
             pw.print(KEY_DELAY_CACHED_MILLIS,

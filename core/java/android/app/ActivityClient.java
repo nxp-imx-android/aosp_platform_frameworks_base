@@ -77,9 +77,9 @@ public class ActivityClient {
      * Reports after {@link Activity#onTopResumedActivityChanged(boolean)} is called for losing the
      * top most position.
      */
-    public void activityTopResumedStateLost() {
+    public void activityTopResumedStateLost(IBinder token) {
         try {
-            getActivityClientController().activityTopResumedStateLost();
+            getActivityClientController().activityTopResumedStateLost(token);
         } catch (RemoteException e) {
             e.rethrowFromSystemServer();
         }

@@ -42,8 +42,8 @@ import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
-import com.android.systemui.util.kotlin.Utils.Companion.sampleFilter
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
+import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -79,7 +79,7 @@ constructor(
     fingerprintAuthInteractor: DeviceEntryFingerprintAuthInteractor,
     private val powerInteractor: PowerInteractor,
     private val biometricSettingsInteractor: DeviceEntryBiometricSettingsInteractor,
-    secureLockDeviceInteractor: SecureLockDeviceInteractor,
+    secureLockDeviceInteractor: Lazy<SecureLockDeviceInteractor>,
     private val systemPropertiesHelper: SystemPropertiesHelper,
     private val secureSettingsRepository: SecureSettingsRepository,
     private val keyguardInteractor: KeyguardInteractor,
@@ -162,44 +162,68 @@ constructor(
      * authentication: primary auth on the bouncer, followed by strong biometric-only auth on the
      * bouncer.
      *
+     * @see SecureLockDeviceInteractor.isSecureLockDeviceEnabled
+     *
      * Returns false when FLAG_SECURE_LOCK_DEVICE is disabled
      */
     val isSecureLockDeviceEnabled: Flow<Boolean> =
         if (secureLockDevice()) {
-            secureLockDeviceInteractor.isSecureLockDeviceEnabled
+            secureLockDeviceInteractor.get().isSecureLockDeviceEnabled
+        } else {
+            flowOf(false)
+        }
+
+    /**
+     * Whether the device is fully unlocked and ready to dismiss in secure lock device.
+     *
+     * @see SecureLockDeviceInteractor.isFullyUnlockedAndReadyToDismiss
+     *
+     * Returns false when FLAG_SECURE_LOCK_DEVICE is disabled
+     */
+    private val isFullyUnlockedAndReadyToDismissInSecureLockDevice: Flow<Boolean> =
+        if (secureLockDevice()) {
+            secureLockDeviceInteractor.get().isFullyUnlockedAndReadyToDismiss
         } else {
             flowOf(false)
         }
 
     /** Indicates when a device has been unlocked from successful authentication on the bouncer. */
-    private val onUnlockFromBouncer =
-        authenticationInteractor.onAuthenticationResult
-            .filter { it }
-            .sampleFilter(isSecureLockDeviceEnabled) {
-                /**
-                 * When secure lock device is active, the device is not considered unlocked after
-                 * successful bouncer auth. Secure Lock Device requires two-factor authentication:
-                 * primary auth on the bouncer, followed by strong biometric authentication on the
-                 * bouncer, in order to unlock and enter the device.
-                 */
-                !it
-            }
+    private val onUnlockFromBouncer = authenticationInteractor.onAuthenticationResult.filter { it }
 
     private val deviceUnlockSource =
-        merge(
-            fingerprintAuthInteractor.fingerprintSuccess.map { DeviceUnlockSource.Fingerprint },
-            faceAuthInteractor.isAuthenticated
-                .filter { it }
-                .map {
-                    if (deviceEntryBypassInteractor.isBypassEnabled.value) {
-                        DeviceUnlockSource.FaceWithBypass
-                    } else {
-                        DeviceUnlockSource.FaceWithoutBypass
-                    }
-                },
-            trustInteractor.isTrusted.filter { it }.map { DeviceUnlockSource.TrustAgent },
-            onUnlockFromBouncer.map { DeviceUnlockSource.BouncerInput },
-        )
+        /**
+         * When secure lock device is active, the device is not considered unlocked after successful
+         * bouncer auth. Secure Lock Device requires two-factor authentication: primary auth on the
+         * bouncer, followed by strong biometric authentication on the bouncer, in order to unlock
+         * and enter the device.
+         */
+        isSecureLockDeviceEnabled.flatMapLatest { isSecureLockDeviceEnabled ->
+            if (isSecureLockDeviceEnabled) {
+                isFullyUnlockedAndReadyToDismissInSecureLockDevice
+                    .filter { it }
+                    .map { DeviceUnlockSource.SecureLockDeviceTwoFactorAuth }
+            } else {
+                merge(
+                    fingerprintAuthInteractor.fingerprintSuccess.map {
+                        DeviceUnlockSource.Fingerprint
+                    },
+                    faceAuthInteractor.isAuthenticated
+                        .filter { it }
+                        .map {
+                            if (deviceEntryBypassInteractor.isBypassEnabled.value) {
+                                DeviceUnlockSource.FaceWithBypass
+                            } else {
+                                DeviceUnlockSource.FaceWithoutBypass
+                            }
+                        },
+                    trustInteractor.isTrusted.filter { it }.map { DeviceUnlockSource.TrustAgent },
+                    onUnlockFromBouncer.map { DeviceUnlockSource.BouncerInput },
+                    unlockForPowerButtonGestureRequests.receiveAsFlow().map {
+                        DeviceUnlockSource.UnlockedPowerButtonGesture
+                    },
+                )
+            }
+        }
 
     /**
      * Whether the device is unlocked or not, along with the information about the authentication
@@ -222,6 +246,12 @@ constructor(
 
     /** A [Channel] of "lock now" requests where the values are the debugging reasons. */
     private val lockNowRequests = Channel<String>()
+
+    /**
+     * A [Channel] of "unlock now" requests where the values are the debugging reasons. Currently
+     * only used by the power button launch gesture.
+     */
+    private val unlockForPowerButtonGestureRequests = Channel<String>()
 
     override suspend fun onActivated(): Nothing {
         coroutineScope {
@@ -262,6 +292,17 @@ constructor(
         lockNowRequests.trySend(debuggingReason)
     }
 
+    /**
+     * Unlocks the device instantly.
+     *
+     * Dangerous, obviously. The only current reason to do this is for the unlocked power button
+     * launch gesture, which has the unilateral authority to cancel a lock and go back to being
+     * unlocked.
+     */
+    fun unlockNowForPowerButtonGesture(debuggingReason: String) {
+        unlockForPowerButtonGestureRequests.trySend(debuggingReason)
+    }
+
     private suspend fun handleLockAndUnlockEvents() {
         try {
             Log.d(TAG, "started watching for lock and unlock events")
@@ -300,12 +341,19 @@ constructor(
                         merge(
                             // Device wakefulness events.
                             powerInteractor.detailedWakefulness
-                                .map { Pair(it.isAsleep(), it.lastSleepReason) }
+                                .map {
+                                    Triple(
+                                        it.isAsleep(),
+                                        it.lastSleepReason,
+                                        it.powerButtonLaunchGestureTriggered,
+                                    )
+                                }
                                 .distinctUntilChangedBy { it.first }
-                                .map { (isAsleep, lastSleepReason) ->
+                                .map { (isAsleep, lastSleepReason, launchGestureTriggered) ->
                                     if (isAsleep) {
                                         if (
                                             (lastSleepReason == WakeSleepReason.POWER_BUTTON) &&
+                                                !launchGestureTriggered &&
                                                 authenticationInteractor
                                                     .getPowerButtonInstantlyLocks()
                                         ) {

@@ -387,6 +387,11 @@ public class SystemConfig {
     // updated to avoid cached/potentially tampered results.
     private final Set<String> mPreinstallPackagesWithStrictSignatureCheck = new ArraySet<>();
 
+
+    // A set of packages that will be dexopted in a PVM. The compilation of these artifacts will
+    // be verified on each boot.
+    private final Set<String> mPreinstalledPackagesWithVerifiedCompilation = new ArraySet<>();
+
     // A set of packages that should be considered "trusted packages" by ECM (Enhanced
     // Confirmation Mode). "Trusted packages" are exempt from ECM (i.e., they will never be
     // considered "restricted").
@@ -627,6 +632,10 @@ public class SystemConfig {
     @NonNull
     public ArrayMap<String, Integer> getOemDefinedUids() {
         return mOemDefinedUids;
+    }
+
+    public Set<String> getPreinstallPackagesWithVerifiedCompilation() {
+        return mPreinstalledPackagesWithVerifiedCompilation;
     }
 
     /**
@@ -1115,38 +1124,51 @@ public class SystemConfig {
     private void readAssignPermission(XmlPullParser parser, File permFile, boolean allowPermissions)
             throws IOException, XmlPullParserException {
         if (allowPermissions) {
-            String perm = parser.getAttributeValue(null, "name");
-            if (perm == null) {
-                Slog.w(TAG, "<assign-permission> without name in " + permFile
-                        + " at " + parser.getPositionDescription());
-                XmlUtils.skipCurrentTag(parser);
-                return;
-            }
-            String uidStr = parser.getAttributeValue(null, "uid");
-            if (uidStr == null) {
-                Slog.w(TAG, "<assign-permission> without uid in " + permFile
-                        + " at " + parser.getPositionDescription());
-                XmlUtils.skipCurrentTag(parser);
-                return;
-            }
-            int uid = Process.getUidForName(uidStr);
-            if (uid < 0) {
-                Slog.w(TAG, "<assign-permission> with unknown uid \""
-                        + uidStr + "  in " + permFile + " at "
-                        + parser.getPositionDescription());
-                XmlUtils.skipCurrentTag(parser);
-                return;
-            }
-            perm = perm.intern();
-            ArraySet<String> perms = mSystemPermissions.get(uid);
-            if (perms == null) {
-                perms = new ArraySet<String>();
-                mSystemPermissions.put(uid, perms);
-            }
-            perms.add(perm);
+            readAssignPermission(parser, permFile);
         } else {
             logNotAllowedInPartition("assign-permission", permFile, parser);
+            XmlUtils.skipCurrentTag(parser);
         }
+    }
+
+    private void readAssignPermission(XmlPullParser parser, File permFile)
+            throws IOException, XmlPullParserException {
+        // If trunkstable feature flag disabled for this permission, skip this tag.
+        if (ParsingPackageUtils.getAconfigFlags()
+                .skipCurrentElement(/* pkg= */ null, parser, /* allowNoNamespace= */ true)) {
+            XmlUtils.skipCurrentTag(parser);
+            return;
+        }
+
+        String perm = parser.getAttributeValue(null, "name");
+        if (perm == null) {
+            Slog.w(TAG, "<assign-permission> without name in " + permFile
+                    + " at " + parser.getPositionDescription());
+            XmlUtils.skipCurrentTag(parser);
+            return;
+        }
+        String uidStr = parser.getAttributeValue(null, "uid");
+        if (uidStr == null) {
+            Slog.w(TAG, "<assign-permission> without uid in " + permFile
+                    + " at " + parser.getPositionDescription());
+            XmlUtils.skipCurrentTag(parser);
+            return;
+        }
+        int uid = Process.getUidForName(uidStr);
+        if (uid < 0) {
+            Slog.w(TAG, "<assign-permission> with unknown uid \""
+                    + uidStr + "  in " + permFile + " at "
+                    + parser.getPositionDescription());
+            XmlUtils.skipCurrentTag(parser);
+            return;
+        }
+        perm = perm.intern();
+        ArraySet<String> perms = mSystemPermissions.get(uid);
+        if (perms == null) {
+            perms = new ArraySet<String>();
+            mSystemPermissions.put(uid, perms);
+        }
+        perms.add(perm);
         XmlUtils.skipCurrentTag(parser);
     }
 
@@ -1958,6 +1980,11 @@ public class SystemConfig {
                     + " at " + parser.getPositionDescription());
         } else {
             mPreinstallPackagesWithStrictSignatureCheck.add(packageName);
+      if(android.content.pm.Flags.verifiedDexopt()){
+            if (parser.getAttributeValue(null, "verified-compilation-enabled") != null){
+              mPreinstalledPackagesWithVerifiedCompilation.add(packageName);
+            }
+      }
         }
         XmlUtils.skipCurrentTag(parser);
     }

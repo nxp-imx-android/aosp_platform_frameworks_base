@@ -16,23 +16,22 @@
 
 package com.android.systemui.qs.external
 
-import com.android.app.iUriGrantsManager
 import com.android.internal.logging.uiEventLoggerFake
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.qs.external.ui.dialog.tileRequestDialogComposeDelegateFactory
+import com.android.systemui.qs.external.ui.dialog.tileRequestDialogDelegateFactory
 import com.android.systemui.qs.instanceIdSequenceFake
+import com.android.systemui.qs.panels.domain.interactor.iconTilesInteractor
 import com.android.systemui.qs.qsHostAdapter
 import com.android.systemui.statusbar.commandQueue
 import com.android.systemui.statusbar.commandline.commandRegistry
-import org.mockito.kotlin.mock
 
 val Kosmos.tileServiceRequestControllerBuilder by
     Kosmos.Fixture {
         TileServiceRequestController.Builder(
+            iconTilesInteractor,
             commandQueue,
             commandRegistry,
-            iUriGrantsManager,
-            tileRequestDialogComposeDelegateFactory,
+            tileRequestDialogDelegateFactory,
         )
     }
 
@@ -40,11 +39,10 @@ val Kosmos.tileServiceRequestController by
     Kosmos.Fixture {
         TileServiceRequestController(
             qsHostAdapter,
+            iconTilesInteractor,
             commandQueue,
             commandRegistry,
             TileRequestDialogEventLogger(uiEventLoggerFake, instanceIdSequenceFake),
-            iUriGrantsManager,
-            tileRequestDialogComposeDelegateFactory,
-            { mock() },
+            tileRequestDialogDelegateFactory,
         )
     }

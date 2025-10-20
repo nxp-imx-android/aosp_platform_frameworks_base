@@ -44,12 +44,16 @@ import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
+import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.fakeMobileIconsInteractor
+import com.android.systemui.statusbar.pipeline.satellite.data.repository.deviceBasedSatelliteRepository
+import com.android.systemui.statusbar.pipeline.satellite.shared.model.SatelliteConnectionState
 import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
 import com.android.systemui.statusbar.pipeline.shared.data.repository.fake
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.fakeWifiRepository
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel
 import com.android.systemui.statusbar.policy.bluetooth.data.repository.bluetoothRepository
 import com.android.systemui.statusbar.policy.data.repository.fakeZenModeRepository
+import com.android.systemui.statusbar.policy.domain.interactor.fakeTtyStatusInteractor
 import com.android.systemui.statusbar.policy.fakeDataSaverController
 import com.android.systemui.statusbar.policy.fakeHotspotController
 import com.android.systemui.statusbar.policy.fakeNextAlarmController
@@ -75,21 +79,24 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
-    private val underTest by lazy {
-        kosmos.systemStatusIconsViewModelFactory.create(kosmos.testableContext).apply {
-            activateIn(kosmos.testScope)
+    private val Kosmos.underTest by
+        Kosmos.Fixture {
+            kosmos.systemStatusIconsViewModelFactory.create(kosmos.testableContext).apply {
+                activateIn(kosmos.testScope)
+            }
         }
-    }
 
     private lateinit var slotAirplane: String
     private lateinit var slotBluetooth: String
     private lateinit var slotConnectedDisplay: String
     private lateinit var slotDataSaver: String
+    private lateinit var slotDeviceBasedSatellite: String
     private lateinit var slotEthernet: String
     private lateinit var slotHotspot: String
     private lateinit var slotManagedProfile: String
     private lateinit var slotMute: String
     private lateinit var slotNextAlarm: String
+    private lateinit var slotTty: String
     private lateinit var slotVibrate: String
     private lateinit var slotVpn: String
     private lateinit var slotWifi: String
@@ -102,12 +109,15 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
         slotConnectedDisplay =
             context.getString(com.android.internal.R.string.status_bar_connected_display)
         slotDataSaver = context.getString(com.android.internal.R.string.status_bar_data_saver)
+        slotDeviceBasedSatellite =
+            context.getString(com.android.internal.R.string.status_bar_oem_satellite)
         slotEthernet = context.getString(com.android.internal.R.string.status_bar_ethernet)
         slotHotspot = context.getString(com.android.internal.R.string.status_bar_hotspot)
         slotManagedProfile =
             context.getString(com.android.internal.R.string.status_bar_managed_profile)
         slotMute = context.getString(com.android.internal.R.string.status_bar_mute)
         slotNextAlarm = context.getString(com.android.internal.R.string.status_bar_alarm_clock)
+        slotTty = context.getString(com.android.internal.R.string.status_bar_tty)
         slotVibrate = context.getString(com.android.internal.R.string.status_bar_volume)
         slotVpn = context.getString(com.android.internal.R.string.status_bar_vpn)
         slotWifi = context.getString(com.android.internal.R.string.status_bar_wifi)
@@ -214,35 +224,37 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
             showZenMode()
             showBluetooth()
             showConnectedDisplay()
+            showTty()
             showDataSaver()
-            showAirplaneMode()
             showNextAlarm()
             showEthernet()
             showVibrate()
             showHotspot()
             showVpn()
             showManagedProfile()
+            showSatelliteIcon()
 
             assertThat(underTest.activeSlotNames)
                 .containsExactly(
-                    slotAirplane,
                     slotBluetooth,
                     slotConnectedDisplay,
                     slotDataSaver,
+                    slotDeviceBasedSatellite,
                     slotEthernet,
                     slotHotspot,
                     slotManagedProfile,
                     slotNextAlarm,
+                    slotTty,
                     slotVibrate,
                     slotVpn,
                     slotZen,
                 )
                 .inOrder()
 
-            // The [mute,vibrate] and [ethernet, wifi] icons can not be shown at the same time so we
-            // have to test it separately.
+            // Some icons need to be tested separately
             showMute() // This will make vibrate inactive
-            showWifi() // This will make ethernet inactive
+            showWifi() // This will make ethernet, satellite inactive
+            showAirplaneMode() // This will make satellite inactive
 
             assertThat(underTest.activeSlotNames)
                 .containsExactly(
@@ -254,6 +266,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
                     slotManagedProfile,
                     slotMute,
                     slotNextAlarm,
+                    slotTty,
                     slotVpn,
                     slotWifi,
                     slotZen,
@@ -341,5 +354,22 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
     private fun Kosmos.showManagedProfile() {
         managedProfileRepository.currentProfileInfo.value =
             ProfileInfo(userId = 10, iconResId = 12345, contentDescription = "Work profile")
+    }
+
+    private fun Kosmos.showTty() {
+        fakeTtyStatusInteractor.isEnabled.value = true
+    }
+
+    private suspend fun Kosmos.showSatelliteIcon() {
+        hideAirplaneMode()
+        fakeWifiRepository.setIsWifiEnabled(false)
+        fakeWifiRepository.setWifiNetwork(WifiNetworkModel.Inactive())
+        val mobileInteractor = fakeMobileIconsInteractor.getMobileConnectionInteractorForSubId(1)
+        mobileInteractor.isInService.value = false
+        mobileInteractor.isEmergencyOnly.value = false
+
+        deviceBasedSatelliteRepository.isSatelliteProvisioned.value = true
+        deviceBasedSatelliteRepository.isSatelliteAllowedForCurrentLocation.value = true
+        deviceBasedSatelliteRepository.connectionState.value = SatelliteConnectionState.Connected
     }
 }

@@ -26,6 +26,7 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.graphics.text.LineBreakConfig;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +39,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 
 import com.android.settingslib.collapsingtoolbar.widget.ScrollableToolbarItemLayout;
 import com.android.settingslib.widget.SettingsThemeHelper;
@@ -87,6 +91,8 @@ public class CollapsingToolbarDelegate {
     @NonNull
     private Toolbar mToolbar;
     @Nullable
+    private View mToolbarButtonsContainer;
+    @Nullable
     private MaterialButton mPrimaryButton;
     @Nullable
     private MaterialButton mSecondaryButton;
@@ -129,9 +135,15 @@ public class CollapsingToolbarDelegate {
         Context context = (activity != null) ? activity : inflater.getContext();
         mIsExpressiveTheme = SettingsThemeHelper.isExpressiveTheme(context);
         if (useCollapsingToolbar) {
-            layoutId = mIsExpressiveTheme
-                    ? R.layout.settingslib_expressive_collapsing_toolbar_base_layout
-                    : R.layout.collapsing_toolbar_base_layout;
+            if (mIsExpressiveTheme) {
+                if (activity instanceof AppCompatActivity) {
+                    layoutId = R.layout.settingslib_expressive_collapsing_toolbar_appcompat_layout;
+                } else {
+                    layoutId = R.layout.settingslib_expressive_collapsing_toolbar_base_layout;
+                }
+            } else {
+                layoutId = R.layout.collapsing_toolbar_base_layout;
+            }
         } else {
             layoutId = R.layout.non_collapsing_toolbar_base_layout;
         }
@@ -172,13 +184,14 @@ public class CollapsingToolbarDelegate {
             if (actionBar != null) {
                 actionBar.setDisplayHomeAsUpEnabled(true);
                 actionBar.setHomeButtonEnabled(true);
-                if (mIsExpressiveTheme) {
+                if (useCollapsingToolbar && mIsExpressiveTheme) {
                     actionBar.setHomeAsUpIndicator(R.drawable.settingslib_expressive_icon_back);
                 }
                 actionBar.setDisplayShowTitleEnabled(true);
             }
         }
 
+        initToolbarButtonsContainer(view.findViewById(R.id.toolbar_buttons_container));
         initToolbarPrimaryButton(view.findViewById(R.id.primary_button));
         initToolbarSecondaryButton(view.findViewById(R.id.secondary_button));
         initToolbarActionButton(view.findViewById(R.id.action_button));
@@ -207,6 +220,11 @@ public class CollapsingToolbarDelegate {
             }
         }
         autoSetCollapsingToolbarLayoutScrolling(appBarLayout);
+    }
+
+    /** Initialize toolbar buttons container. */
+    public void initToolbarButtonsContainer(View toolbarButtonsContainer) {
+        mToolbarButtonsContainer = toolbarButtonsContainer;
     }
 
     /** Initialize toolbar's primary button. */
@@ -342,8 +360,10 @@ public class CollapsingToolbarDelegate {
             return;
         }
 
-        mCollapsingToolbarLayout.removeAllViews();
-        inflater.inflate(R.layout.support_toolbar, mCollapsingToolbarLayout);
+        if (!SettingsThemeHelper.isExpressiveTheme(inflater.getContext())) {
+            mCollapsingToolbarLayout.removeAllViews();
+            inflater.inflate(R.layout.support_toolbar, mCollapsingToolbarLayout);
+        }
 
         final androidx.appcompat.widget.Toolbar supportToolbar =
                 mCollapsingToolbarLayout.findViewById(R.id.support_action_bar);
@@ -386,6 +406,7 @@ public class CollapsingToolbarDelegate {
         }
         int visibility = enabled ? View.VISIBLE : View.GONE;
         mPrimaryButton.setVisibility(visibility);
+        showOrHideToolbarButtonsContainer();
     }
 
     /** Set the icon to the primary button */
@@ -423,6 +444,7 @@ public class CollapsingToolbarDelegate {
         }
         int visibility = enabled ? View.VISIBLE : View.GONE;
         mSecondaryButton.setVisibility(visibility);
+        showOrHideToolbarButtonsContainer();
     }
 
     /** Set the icon to the secondary button */
@@ -460,6 +482,7 @@ public class CollapsingToolbarDelegate {
         }
         int visibility = enabled ? View.VISIBLE : View.GONE;
         mActionButton.setVisibility(visibility);
+        showOrHideToolbarButtonsContainer();
     }
 
     /**
@@ -505,6 +528,37 @@ public class CollapsingToolbarDelegate {
         mActionButton.setContentDescription(contentDescription);
     }
 
+    /**
+     * Set the state of CollapsingToolbar to collapsed when multiple fragments share a single
+     * FragmentManager within an activity.
+     */
+    public void registerToolbarCollapseBehavior(@NonNull Activity activity) {
+        if (!(activity instanceof FragmentActivity)) {
+            return;
+        }
+        FragmentManager fragmentManager = ((FragmentActivity) activity).getSupportFragmentManager();
+        fragmentManager.registerFragmentLifecycleCallbacks(
+            new FragmentManager.FragmentLifecycleCallbacks() {
+                @Override
+                public void onFragmentViewCreated(@NonNull FragmentManager fm, @NonNull Fragment f,
+                        @NonNull View v, @Nullable Bundle savedInstanceState) {
+                    super.onFragmentViewCreated(fm, f, v, savedInstanceState);
+                    if (!SettingsThemeHelper.isExpressiveTheme(activity)) {
+                        return;
+                    }
+                    // Check if multiple fragments use the same activity
+                    if (fm.getBackStackEntryCount() > 0) {
+                        AppBarLayout appBarLayout = getAppBarLayout();
+                        if (appBarLayout != null) {
+                            appBarLayout.post(() -> appBarLayout.setExpanded(false, true));
+                        } else {
+                            Log.e(TAG, "AppBarLayout is null, can't collapse toolbar.");
+                        }
+                    }
+                }
+            }, false);
+    }
+
     private void autoSetCollapsingToolbarLayoutScrolling(AppBarLayout appBarLayout) {
         if (appBarLayout == null) {
             return;
@@ -528,5 +582,30 @@ public class CollapsingToolbarDelegate {
                     }
                 });
         params.setBehavior(behavior);
+    }
+
+    private void showOrHideToolbarButtonsContainer() {
+        if (mToolbarButtonsContainer == null) {
+            return;
+        }
+
+        boolean enabled = false;
+
+        // If at least one button inside toolbar buttons container is visible, make the container
+        // visible, otherwise it should be invisible to remove the custom padding it requires
+        if (mPrimaryButton != null) {
+            enabled |= mPrimaryButton.getVisibility() == View.VISIBLE;
+        }
+
+        if (mSecondaryButton != null) {
+            enabled |= mSecondaryButton.getVisibility() == View.VISIBLE;
+        }
+
+        if (mActionButton != null) {
+            enabled |= mActionButton.getVisibility() == View.VISIBLE;
+        }
+
+        int visibility = enabled ? View.VISIBLE : View.GONE;
+        mToolbarButtonsContainer.setVisibility(visibility);
     }
 }

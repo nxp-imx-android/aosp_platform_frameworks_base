@@ -93,7 +93,6 @@ import androidx.test.filters.FlakyTest;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.android.internal.R;
 import com.android.media.projection.flags.Flags;
 import com.android.server.LocalServices;
 import com.android.server.testutils.OffsettableClock;
@@ -1202,21 +1201,7 @@ public class MediaProjectionManagerServiceTest {
 
     @Test
     @EnableFlags(Flags.FLAG_RECORDING_OVERLAY)
-    public void createProjectionForOverlay_forUnknownCaller_isNotSet() throws Exception {
-        mContext.getOrCreateTestableResources().addOverride(
-                R.string.config_defaultContextualSearchPackageName, "test.something");
-        MediaProjectionManagerService.MediaProjection projection =
-                createProjectionPreconditions(mService);
-        projection.setRecordingOverlay(true);
-
-        assertThat(projection.isRecordingOverlay()).isFalse();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_RECORDING_OVERLAY)
     public void createProjectionForOverlay_forContextualSearch() throws Exception {
-        mContext.getOrCreateTestableResources().addOverride(
-                R.string.config_defaultContextualSearchPackageName, PACKAGE_NAME);
         MediaProjectionManagerService.MediaProjection projection =
                 createProjectionPreconditions(mService);
         projection.setRecordingOverlay(true);
@@ -1227,8 +1212,6 @@ public class MediaProjectionManagerServiceTest {
     @Test
     @DisableFlags(Flags.FLAG_RECORDING_OVERLAY)
     public void createProjectionForOverlay_withoutFlag() throws Exception {
-        mContext.getOrCreateTestableResources().addOverride(
-                R.string.config_defaultContextualSearchPackageName, PACKAGE_NAME);
         MediaProjectionManagerService.MediaProjection projection = createProjectionPreconditions(
                 mService);
         projection.setRecordingOverlay(true);
@@ -1297,12 +1280,10 @@ public class MediaProjectionManagerServiceTest {
                 any(ApplicationInfoFlags.class), any(UserHandle.class));
         doReturn(mPackageInfo).when(mPackageManager).getPackageInfoAsUser(anyString(), anyInt(),
                 anyInt());
-        String packageName = mContext.getResources().getString(
-                R.string.config_defaultContextualSearchPackageName);
         MediaProjectionManagerService.MediaProjection projection =
                 mService.createProjectionInternal(
                         UID,
-                        packageName,
+                        PACKAGE_NAME,
                         TYPE_SCREEN_CAPTURE,
                         /* isPermanentGrant= */ false,
                         DEFAULT_DISPLAY);

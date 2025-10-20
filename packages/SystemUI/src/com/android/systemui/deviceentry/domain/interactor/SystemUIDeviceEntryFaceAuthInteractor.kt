@@ -37,6 +37,7 @@ import com.android.systemui.deviceentry.data.repository.FaceWakeUpTriggersConfig
 import com.android.systemui.deviceentry.shared.FaceAuthUiEvent
 import com.android.systemui.deviceentry.shared.model.ErrorFaceAuthenticationStatus
 import com.android.systemui.deviceentry.shared.model.FaceAuthenticationStatus
+import com.android.systemui.deviceentry.shared.model.SuccessFaceAuthenticationStatus
 import com.android.systemui.keyguard.data.repository.BiometricSettingsRepository
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.DevicePosture
@@ -74,6 +75,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -322,6 +324,7 @@ constructor(
 
     override fun onSecureLockDeviceBiometricAuthHidden() {
         if (!secureLockDevice()) return
+
         repository.cancel()
     }
 
@@ -384,6 +387,23 @@ constructor(
         repository.cancel()
     }
 
+    private val _pendingFaceAuthConfirmationInSecureLockDevice = MutableStateFlow(false)
+    private val _pendingRetryBiometricAuthInSecureLockDevice = MutableStateFlow(false)
+
+    override fun onSecureLockDeviceConfirmButtonShowingChanged(isShowingConfirmButton: Boolean) {
+        if (!secureLockDevice()) return
+
+        _pendingFaceAuthConfirmationInSecureLockDevice.value = isShowingConfirmButton
+        repository.cancel()
+    }
+
+    override fun onSecureLockDeviceTryAgainButtonShowingChanged(isShowingTryAgainButton: Boolean) {
+        if (!secureLockDevice()) return
+
+        _pendingRetryBiometricAuthInSecureLockDevice.value = isShowingTryAgainButton
+        repository.cancel()
+    }
+
     private val faceAuthenticationStatusOverride = MutableStateFlow<FaceAuthenticationStatus?>(null)
 
     /** Provide the status of face authentication */
@@ -413,7 +433,18 @@ constructor(
             )
     override val isBypassEnabled: StateFlow<Boolean> = repository.isBypassEnabled
 
+    val faceSuccess: Flow<SuccessFaceAuthenticationStatus> =
+        authenticationStatus.filterIsInstance<SuccessFaceAuthenticationStatus>()
+
     private fun runFaceAuth(uiEvent: FaceAuthUiEvent, fallbackToDetect: Boolean) {
+        if (
+            secureLockDevice() &&
+                (_pendingFaceAuthConfirmationInSecureLockDevice.value ||
+                    _pendingRetryBiometricAuthInSecureLockDevice.value)
+        ) {
+            return
+        }
+
         if (repository.isLockedOut.value && !isBypassEnabled.value) {
             faceAuthenticationStatusOverride.value =
                 ErrorFaceAuthenticationStatus(

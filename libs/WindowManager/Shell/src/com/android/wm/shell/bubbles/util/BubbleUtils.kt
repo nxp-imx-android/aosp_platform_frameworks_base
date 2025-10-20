@@ -37,38 +37,52 @@ object BubbleUtils {
      */
     private fun getBubbleTransaction(
         token: WindowContainerToken,
+        rootToken: WindowContainerToken?,
+        bounds: Rect,
         toBubble: Boolean,
         isAppBubble: Boolean,
         reparentToTda: Boolean,
         captionInsetsOwner: Binder?,
     ): WindowContainerTransaction {
         val wct = WindowContainerTransaction()
-        if (reparentToTda) {
-            // Reparenting must happen before setAlwaysOnTop() below since WCT operations are
-            // applied in order and always-on-top for nested tasks is not supported
-            wct.reparent(token, null, true)
+        if (BubbleAnythingFlagHelper.enableRootTaskForBubble() && isAppBubble) {
+            if (toBubble && rootToken != null) {
+                wct.reparent(token, rootToken, true /* onTop */)
+                wct.setBounds(rootToken, bounds)
+                wct.setAlwaysOnTop(rootToken, true /* alwaysOnTop */)
+            } else if (reparentToTda) {
+                wct.reparent(token, null, true /* onTop */)
+            }
+        } else {
+            if (reparentToTda) {
+                // Reparenting must happen before setAlwaysOnTop() below since WCT operations are
+                // applied in order and always-on-top for nested tasks is not supported
+                wct.reparent(token, null, true)
+            }
+            wct.setWindowingMode(
+                token,
+                if (toBubble)
+                    WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
+                else
+                    WindowConfiguration.WINDOWING_MODE_UNDEFINED,
+            )
+            wct.setInterceptBackPressedOnTaskRoot(token, toBubble)
+            wct.setTaskForceExcludedFromRecents(token, toBubble /* forceExcluded */)
+            wct.setDisablePip(token, toBubble /* disablePip */)
+            if (!isAppBubble || !BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+                wct.setAlwaysOnTop(token, toBubble /* alwaysOnTop */)
+            }
+            if (!toBubble || isAppBubble) {
+                // We only set launch next to Bubble for App Bubble, since new Task opened from Chat
+                // Bubble should be launched in fullscreen.
+                // Always reset everything when exit bubble.
+                wct.setLaunchNextToBubble(token, toBubble /* launchNextToBubble */)
+            }
+            if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+                wct.setDisableLaunchAdjacent(token, toBubble /* disableLaunchAdjacent */)
+            }
         }
-        wct.setWindowingMode(
-            token,
-            if (toBubble)
-                WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
-            else
-                WindowConfiguration.WINDOWING_MODE_UNDEFINED,
-        )
-        wct.setInterceptBackPressedOnTaskRoot(token, toBubble)
-        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
-            wct.setAlwaysOnTop(token, toBubble /* alwaysOnTop */)
-        }
-        if (!toBubble || isAppBubble) {
-            // We only set launch next to Bubble for App Bubble, since new Task opened from Chat
-            // Bubble should be launched in fullscreen.
-            // Always reset everything when exit bubble.
-            wct.setLaunchNextToBubble(token, toBubble /* launchNextToBubble */)
-        }
-        wct.setTaskForceExcludedFromRecents(token, toBubble /* forceExcluded */)
-        wct.setDisablePip(token, toBubble /* disablePip */)
         if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
-            wct.setDisableLaunchAdjacent(token, toBubble /* disableLaunchAdjacent */)
             if (!toBubble) {
                 // Clear bounds if moving out of Bubble.
                 wct.setBounds(token, Rect())
@@ -96,11 +110,15 @@ object BubbleUtils {
     @JvmStatic
     fun getEnterBubbleTransaction(
         token: WindowContainerToken,
+        rootToken: WindowContainerToken?,
+        bounds: Rect,
         isAppBubble: Boolean,
         reparentToTda: Boolean = false,
     ): WindowContainerTransaction {
         return getBubbleTransaction(
             token,
+            rootToken,
+            bounds,
             toBubble = true,
             isAppBubble,
             reparentToTda,
@@ -112,17 +130,21 @@ object BubbleUtils {
      * Returns a [WindowContainerTransaction] that includes the necessary operations of exiting
      * Bubble.
      */
+    @JvmOverloads
     @JvmStatic
     fun getExitBubbleTransaction(
         token: WindowContainerToken,
         captionInsetsOwner: Binder?,
+        reparentToTda: Boolean = BubbleAnythingFlagHelper.enableRootTaskForBubble(),
     ): WindowContainerTransaction {
         return getBubbleTransaction(
             token,
+            rootToken = null,
+            bounds = Rect(),
             toBubble = false,
             // Everything will be reset, so doesn't matter for exit.
             isAppBubble = true,
-            reparentToTda = false,
+            reparentToTda,
             captionInsetsOwner,
         )
     }

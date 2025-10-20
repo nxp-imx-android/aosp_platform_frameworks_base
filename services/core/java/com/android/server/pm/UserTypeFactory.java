@@ -69,26 +69,21 @@ import java.util.function.Consumer;
  * user types from {@link com.android.internal.R.xml#config_user_types}.
  * Recall that config_user_types values, if defined, will overwrite the AOSP defaults set here.
  *
+ * Note based on how UserTypeFactory and UserTypeDetails are actually used in UserManagerService:
+ * Updates to UserTypeDetails here will generally affect pre-existing users of that type.
+ * Note, however, that DefaultRestrictions refers to the restrictions applied at the time of user
+ * creation; therefore, the active restrictions of any pre-existing users will not be updated.
+ * Similarly, for other getDefault...() UserTypeDetails fields (except getDefaultUserProperties).
+ * Changing the DefaultUserProperties will change the UserProperties for any existing user (unless
+ * that user's property had been explicitly overridden from the default value, which never actually
+ * happen as of the time of this writing).
+ *
  * Tests are located in {@link UserManagerServiceUserTypeTest}.
  * @hide
  */
 public final class UserTypeFactory {
 
     private static final String LOG_TAG = "UserTypeFactory";
-
-    /**
-     * Default max number of secondary users allowed on the device at once. The same value is used
-     * for some other switchable user types too. Can override this by changing the number
-     * here or in {@link com.android.internal.R.xml#config_user_types}.
-     */
-    private static final int DEFAULT_MAX_ALLOWED_SWITCHABLE_USERS =
-            // For convenience, the default is tied to getMaxSwitchableUsers().
-            // Switchable users will be capped by the switchable limit anyway (in fact,
-            // they'll generally be capped at it minus 1), so this ensures that the
-            // switchable limit will serve as the limiting factor unless otherwise dictated.
-            android.multiuser.Flags.decoupleMaxUsersFromProfiles() ? getMaxSwitchableUsers() -1 :
-                    (android.multiuser.Flags.consistentMaxUsers() ?
-                            3 : UserTypeDetails.getLegacyUnlimitedNumberOfUsersValue());
 
     /** This is a utility class, so no instantiable constructor. */
     private UserTypeFactory() {}
@@ -143,7 +138,7 @@ public final class UserTypeFactory {
         return new UserTypeDetails.Builder()
                 .setName(USER_TYPE_PROFILE_CLONE)
                 .setBaseType(FLAG_PROFILE)
-                .setMaxAllowed(DEFAULT_MAX_ALLOWED_SWITCHABLE_USERS)
+                .setMaxAllowed(getDefaultMaxAllowedSwitchableUsers())
                 .setMaxAllowedPerParent(1)
                 .setProfileParentRequired(true)
                 .setLabels(R.string.profile_label_clone)
@@ -395,7 +390,7 @@ public final class UserTypeFactory {
         return new UserTypeDetails.Builder()
                 .setName(USER_TYPE_FULL_SECONDARY)
                 .setBaseType(FLAG_FULL)
-                .setMaxAllowed(DEFAULT_MAX_ALLOWED_SWITCHABLE_USERS)
+                .setMaxAllowed(getDefaultMaxAllowedSwitchableUsers())
                 .setDefaultRestrictions(getDefaultSecondaryUserRestrictions());
     }
 
@@ -441,7 +436,7 @@ public final class UserTypeFactory {
                 .setName(USER_TYPE_FULL_RESTRICTED)
                 .setBaseType(FLAG_FULL)
                 .setDefaultUserInfoPropertyFlags(FLAG_RESTRICTED)
-                .setMaxAllowed(DEFAULT_MAX_ALLOWED_SWITCHABLE_USERS)
+                .setMaxAllowed(getDefaultMaxAllowedSwitchableUsers())
                 .setProfileParentRequired(false) // they have a "parent", but not a profile parent
                 // NB: UserManagerService.createRestrictedProfile() applies hardcoded restrictions.
                 .setDefaultRestrictions(null);
@@ -570,6 +565,25 @@ public final class UserTypeFactory {
     }
 
     /**
+     * Returns the default max number of secondary users allowed on the device at once. The same
+     * value is used for some other switchable user types too. Can override this by changing the
+     * number here or in {@link com.android.internal.R.xml#config_user_types}.
+     */
+    // NB: Although this should naturally be a static final int, doing so causes tricky mock test
+    //  failures (since a static constant may first be evaluated during a test that modifies one of
+    //  the underlying values, and will then be wrong for subsequent tests). So we make it a method.
+    //  Once the flags are cleaned up, we can inline it as getMaxSwitchableUsers() - 1 if desired.
+    private static int getDefaultMaxAllowedSwitchableUsers() {
+        // For convenience, the default is tied to getMaxSwitchableUsers().
+        // Switchable users will be capped by the switchable limit anyway (in fact,
+        // they'll generally be capped at it minus 1), so this ensures that the
+        // switchable limit will serve as the limiting factor unless otherwise dictated.
+        return android.multiuser.Flags.decoupleMaxUsersFromProfiles() ? getMaxSwitchableUsers() - 1
+                : (android.multiuser.Flags.consistentMaxUsers() ?
+                        3 : UserTypeDetails.getLegacyUnlimitedNumberOfUsersValue());
+    }
+
+    /**
      * Max number of switchable users on the device. As a convenience for OEMs who didn't update
      * their config_user_types yet, we use this to dictate default values for various full users.
      */
@@ -611,7 +625,9 @@ public final class UserTypeFactory {
                 final String elementName = parser.getName();
                 if ("profile-type".equals(elementName)) {
                     isProfile = true;
-                } else if ("full-type".equals(elementName)) {
+                } else if ("full-type".equals(elementName)
+                        || "system-type".equals(elementName)
+                        || "full-system-type".equals(elementName)) {
                     isProfile = false;
                 } else if ("change-user-type".equals(elementName)) {
                     // parsed in parseUserUpgrades
@@ -642,10 +658,7 @@ public final class UserTypeFactory {
                         throw new IllegalArgumentException("Illegal custom user type name "
                                 + typeName + ": Non-AOSP user types cannot start with 'android.'");
                     }
-                    final boolean isValid =
-                            (isProfile && builder.getBaseType() == UserInfo.FLAG_PROFILE)
-                            || (!isProfile && builder.getBaseType() == UserInfo.FLAG_FULL);
-                    if (!isValid) {
+                    if (!doesTypeElementHaveCorrectBase(elementName, builder.getBaseType())) {
                         throw new IllegalArgumentException("Wrong base type to customize user type "
                                 + "(" + typeName + "), which is type "
                                 + UserInfo.flagsToString(builder.getBaseType()));
@@ -685,15 +698,15 @@ public final class UserTypeFactory {
                         final Bundle restrictions = UserRestrictionsUtils
                                 .readRestrictions(XmlUtils.makeTyped(parser));
                         builder.setDefaultRestrictions(restrictions);
+                    } else if ("user-properties".equals(childName)) {
+                        builder.getDefaultUserProperties()
+                                .updateFromXml(XmlUtils.makeTyped(parser));
                     } else if (isProfile && "badge-labels".equals(childName)) {
                         setResAttributeArray(parser, builder::setBadgeLabels);
                     } else if (isProfile && "badge-colors".equals(childName)) {
                         setResAttributeArray(parser, builder::setBadgeColors);
                     } else if (isProfile && "badge-colors-dark".equals(childName)) {
                         setResAttributeArray(parser, builder::setDarkThemeBadgeColors);
-                    } else if ("user-properties".equals(childName)) {
-                        builder.getDefaultUserProperties()
-                                .updateFromXml(XmlUtils.makeTyped(parser));
                     } else {
                         Slog.w(LOG_TAG, "Unrecognized tag " + childName + " in "
                                 + parser.getPositionDescription());
@@ -882,6 +895,16 @@ public final class UserTypeFactory {
             throw new IllegalArgumentException("Illegal upgrade of user type " + userType
                     + " : Can only upgrade profiles user types");
         }
+    }
+
+    private static boolean doesTypeElementHaveCorrectBase(String typeName, int baseType) {
+        return switch (typeName) {
+            case "profile-type" -> baseType == FLAG_PROFILE;
+            case "full-type" -> baseType == FLAG_FULL;
+            case "system-type" -> baseType == FLAG_SYSTEM;
+            case "full-system-type" -> baseType == (FLAG_FULL | FLAG_SYSTEM);
+            default -> false;
+        };
     }
 
     /**

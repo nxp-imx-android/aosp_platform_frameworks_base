@@ -112,8 +112,15 @@ flag {
 flag {
     name: "enable_talkback_and_magnifier_key_gestures"
     namespace: "input"
-    description: "Adds key gestures for TalkBack and Magnification"
+    description: "Adds key gestures for Magnification. TalkBack key gesture has been flagged separately under enable_talkback_key_gestures."
     bug: "375277034"
+}
+
+flag {
+    name: "enable_talkback_key_gestures"
+    namespace: "accessibility"
+    description: "Adds key gesture for TalkBack"
+    bug: "441787329"
 }
 
 flag {
@@ -170,14 +177,6 @@ flag {
 }
 
 flag {
-   name: "enable_backup_and_restore_for_input_gestures"
-   namespace: "input"
-   description: "Adds backup and restore support for custom input gestures"
-   bug: "382184249"
-   is_fixed_read_only: true
-}
-
-flag {
     name: "request_key_capture_api"
     namespace: "input"
     description: "Adds support for key capture APIs"
@@ -201,16 +200,6 @@ flag {
     is_exported: true
     description: "Adds support for creating a virtual keyboard API"
     bug: "416054433"
-}
-
-flag {
-    name: "fix_keyboard_interceptor_policy_call"
-    namespace: "input"
-    description: "Fixes keyboard interceptor calls to the policy"
-    bug: "358569822"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -247,4 +236,49 @@ flag {
     description: "Enable pointer capture modes with different touchpad behaviours, and default to relative events from captured touchpads"
     is_exported: true
     bug: "403531245"
+}
+
+flag {
+    name: "relative_capture_mode_by_default"
+    namespace: "input"
+    description: "Use the RELATIVE pointer capture mode by default, in which touchpad gestures are recognized and converted into mouse-like events. Requires pointer_capture_modes to be enabled"
+    bug: "403531245"
+}
+
+flag {
+    name: "enable_partial_screenshot_keyboard_shortcut"
+    namespace: "input"
+    description: "Enables keyboard shortcut for taking partial screenshots via large screen capture UI"
+    bug: "420714826"
+}
+
+flag {
+    name: "keyboard_backlight_shortcuts"
+    namespace: "desktop_input"
+    description: "Enables new keyboard shortcuts to adjust keyboard backlight"
+    bug: "401626732"
+}
+
+flag {
+    name: "enable_contextual_search_desktop_entrypoints"
+    namespace: "input"
+    description: "Enables desktop entrypoints for contextual search"
+    bug: "442915863"
+}
+
+flag {
+    name: "use_event_display_id_for_key_wakeup"
+    namespace: "input"
+    description: "Use the display associated with a waking KeyEvent, instead of DEFAULT_DISPLAY."
+    bug: "444390628"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "controller_remapping"
+    namespace: "input"
+    description: "Enables game controller remapping"
+    bug: "435503326"
 }

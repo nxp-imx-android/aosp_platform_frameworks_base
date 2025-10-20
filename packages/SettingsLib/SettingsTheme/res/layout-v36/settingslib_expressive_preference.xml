@@ -15,7 +15,7 @@
     limitations under the License.
   -->
 
-<LinearLayout
+<com.android.settingslib.widget.DrawableStateLinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -30,4 +30,4 @@
     <LinearLayout
         android:id="@android:id/widget_frame"
         style="?expressivePreferenceWidgetFrameStyle" />
-</LinearLayout>
+</com.android.settingslib.widget.DrawableStateLinearLayout>

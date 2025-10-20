@@ -22,8 +22,9 @@ import android.net.Uri
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
-import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -33,14 +34,15 @@ private const val MIME_TYPE = "video/mp4"
 class PostRecordingViewModel
 @AssistedInject
 constructor(
-    @Assisted private val videoUri: Uri,
+    @Assisted val videoUri: Uri,
     private val context: Context,
     private val activityStarter: ActivityStarter,
-    private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
-) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
+    private val drawableLoaderViewModel: DrawableLoaderViewModel,
+    private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
+) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
     fun retake() {
-        // TODO(b/430553811) Implement
+        screenCaptureUiInteractor.show(ScreenCaptureUiParameters.Record())
     }
 
     fun edit() {
@@ -48,10 +50,6 @@ constructor(
             action = Intent.ACTION_EDIT,
             label = context.getString(R.string.screen_record_edit),
         )
-    }
-
-    fun delete() {
-        // TODO(b/430553811) Implement
     }
 
     fun share() {

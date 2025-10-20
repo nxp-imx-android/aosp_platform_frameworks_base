@@ -32,7 +32,6 @@ import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.data.StatusBarDataLayerModule
 import com.android.systemui.statusbar.data.repository.LightBarControllerStore
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
-import com.android.systemui.statusbar.layout.StatusBarContentInsetsProviderImpl
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsetsViewModel
 import com.android.systemui.statusbar.phone.AutoHideController
 import com.android.systemui.statusbar.phone.AutoHideControllerImpl
@@ -42,7 +41,7 @@ import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallController
 import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallLog
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.domain.interactor.OngoingCallInteractor
-import com.android.systemui.statusbar.policy.ConfigurationController
+import com.android.systemui.statusbar.phone.ongoingcall.shared.PerDisplayOngoingCallStatusBarVisibility
 import com.android.systemui.statusbar.ui.StatusBarUiLayerModule
 import com.android.systemui.statusbar.ui.SystemBarUtilsProxyImpl
 import com.android.systemui.statusbar.window.MultiDisplayStatusBarWindowControllerStore
@@ -111,7 +110,10 @@ interface StatusBarModule {
         @IntoMap
         @ClassKey(OngoingCallInteractor::class)
         fun ongoingCallInteractor(interactor: OngoingCallInteractor): CoreStartable =
-            if (StatusBarChipsModernization.isEnabled) {
+            if (
+                StatusBarChipsModernization.isEnabled &&
+                    !PerDisplayOngoingCallStatusBarVisibility.isEnabled
+            ) {
                 interactor
             } else {
                 CoreStartable.NOP
@@ -181,17 +183,10 @@ interface StatusBarModule {
         @Provides
         @SysUISingleton
         fun contentInsetsProvider(
-            factory: StatusBarContentInsetsProviderImpl.Factory,
-            context: Context,
-            configurationController: ConfigurationController,
-            displaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
+            displaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>
         ): StatusBarContentInsetsProvider {
             val displaySubcomponent = displaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!
-            return factory.create(
-                context,
-                configurationController,
-                displaySubcomponent.sysUICutoutProvider,
-            )
+            return displaySubcomponent.statusBarContentInsetsProvider
         }
 
         @Provides

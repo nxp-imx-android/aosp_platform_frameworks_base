@@ -45,6 +45,7 @@ import androidx.lifecycle.Observer;
 
 import com.android.internal.statusbar.StatusBarIcon;
 import com.android.systemui.broadcast.BroadcastDispatcher;
+import com.android.systemui.common.shared.model.Icon;
 import com.android.systemui.dagger.qualifiers.DisplayId;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dagger.qualifiers.UiBackground;
@@ -374,10 +375,11 @@ public class PhoneStatusBarPolicy
             // Shape=FIXED_SPACE because mode icons can be from 3P packages and may not be square;
             // we don't want to allow apps to set incredibly wide icons and take up too much space
             // in the status bar.
+            Icon.Loaded icon = mainActiveMode.getIcon();
             mIconController.setResourceIcon(mSlotZen,
-                    mainActiveMode.getIcon().key().resPackage(),
-                    mainActiveMode.getIcon().key().resId(),
-                    mainActiveMode.getIcon().drawable(),
+                    icon.getPackageName(),
+                    icon.getResId(),
+                    icon.getDrawable(),
                     mResources.getString(R.string.active_mode_content_description,
                             mainActiveMode.getName()),
                     StatusBarIcon.Shape.FIXED_SPACE);
@@ -528,17 +530,12 @@ public class PhoneStatusBarPolicy
                     if (iconResId != Resources.ID_NULL && (!mKeyguardStateController.isShowing()
                             || mKeyguardStateController.isOccluded())) {
                         String accessibilityString = "";
-                        if (android.os.Flags.allowPrivateProfile()
-                                && android.multiuser.Flags.enablePrivateSpaceFeatures()) {
-                            try {
-                                accessibilityString =
-                                        mUserManager.getProfileAccessibilityString(userId);
-                            } catch (Resources.NotFoundException nfe) {
-                                Log.e(TAG, "Accessibility string not found for userId:"
-                                        + userId);
-                            }
-                        } else {
-                            accessibilityString = getManagedProfileAccessibilityString();
+                        try {
+                            accessibilityString =
+                                    mUserManager.getProfileAccessibilityString(userId);
+                        } catch (Resources.NotFoundException nfe) {
+                            Log.e(TAG, "Accessibility string not found for userId:"
+                                    + userId);
                         }
                         showIcon = true;
                         mIconController.setIcon(mSlotManagedProfile,

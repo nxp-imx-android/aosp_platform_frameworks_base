@@ -17,6 +17,7 @@ package com.android.server.am;
 
 import android.app.StackTrace;
 import android.util.Slog;
+import android.util.SparseBooleanArray;
 
 /**
  * Helper for writing debug log about proc/uid state changes.
@@ -26,6 +27,7 @@ class OomAdjusterDebugLogger {
     private static final String STACK_TRACE_TAG = "am_stack";
 
     private final OomAdjuster mOomAdjuster;
+    private final OomAdjuster.Constants mOomConstants;
     private final ActivityManagerConstants mConstants;
 
     private static final int MISC_SCHEDULE_IDLE_UIDS_MSG_1 = 1;
@@ -35,13 +37,29 @@ class OomAdjusterDebugLogger {
     private static final int MISC_SET_LAST_BG_TIME = 10;
     private static final int MISC_CLEAR_LAST_BG_TIME = 11;
 
-    OomAdjusterDebugLogger(OomAdjuster oomAdjuster, ActivityManagerConstants constants) {
+    OomAdjusterDebugLogger(OomAdjuster oomAdjuster, OomAdjuster.Constants oomConstants,
+            ActivityManagerConstants constants) {
         mOomAdjuster = oomAdjuster;
+        mOomConstants = oomConstants;
         mConstants = constants;
     }
 
     boolean shouldLog(int uid) {
-        return mConstants.shouldDebugUidForProcState(uid);
+        final SparseBooleanArray ar = mOomConstants.mProcStateDebugUids;
+        final int size = ar.size();
+        if (size == 0) { // Most common case.
+            return false;
+        }
+        // If the array is small (also common), avoid the binary search.
+        if (size <= 8) {
+            for (int i = 0; i < size; i++) {
+                if (ar.keyAt(i) == uid) {
+                    return ar.valueAt(i);
+                }
+            }
+            return false;
+        }
+        return ar.get(uid, false);
     }
 
     private void maybeLogStacktrace(String msg) {

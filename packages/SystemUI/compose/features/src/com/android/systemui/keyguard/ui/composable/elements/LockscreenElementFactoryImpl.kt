@@ -17,82 +17,71 @@ package com.android.systemui.keyguard.ui.composable.elements
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import com.android.compose.animation.scene.ElementKey
+import com.android.compose.animation.scene.Key
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.KeyguardBlueprintLog
 import com.android.systemui.plugins.keyguard.VRectF
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
+import com.android.systemui.plugins.keyguard.ui.composable.elements.MovableLockscreenElement
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlin.collections.filterNotNull
-import kotlin.collections.flatMap
-import kotlin.sequences.associateBy
 
 @Immutable
 class LockscreenElementFactoryImpl
 @AssistedInject
 constructor(
-    @Assisted private val elements: Map<ElementKey, LockscreenElement>,
+    @Assisted private val elements: Map<Key, BaseLockscreenElement>,
     @KeyguardBlueprintLog private val blueprintLog: LogBuffer,
 ) : LockscreenElementFactory {
     private val logger = Logger(blueprintLog, LockscreenElementFactoryImpl::class.simpleName!!)
 
     @Composable
-    override fun lockscreenElement(
-        key: ElementKey,
-        context: LockscreenElementContext,
-        modifier: Modifier,
-    ): Boolean {
+    override fun LockscreenElement(scope: LockscreenScope<*>, key: Key, modifier: Modifier) {
         val element = elements[key]
         if (element == null) {
             logger.e({ "No lockscreen element available at key: $str1" }) { str1 = "$key" }
-            return false
+            return
         }
 
-        CompositionLocalProvider(LocalContext provides element.context) {
-            with(context.scope) {
-                Element(
-                    key = key,
-                    modifier =
-                        modifier.onGloballyPositioned { coordinates ->
-                            context.onElementPositioned(key, VRectF(coordinates.boundsInWindow()))
-                        },
-                ) {
-                    with(element) { LockscreenElement(this@LockscreenElementFactoryImpl, context) }
+        with(scope) {
+            CompositionLocalProvider(LocalContext provides element.context) {
+                val elementModifier =
+                    modifier.onGloballyPositioned { coordinates ->
+                        context.onElementPositioned(
+                            element.key,
+                            VRectF(coordinates.boundsInWindow()),
+                        )
+                    }
+                when (element) {
+                    is MovableLockscreenElement -> {
+                        MovableElement(element.key, elementModifier) {
+                            content { with(element) { LockscreenElement() } }
+                        }
+                    }
+                    is LockscreenElement -> {
+                        ElementWithValues(element.key, elementModifier) {
+                            content { with(element) { LockscreenElement() } }
+                        }
+                    }
+                    else -> {
+                        logger.wtf({ "Bad Lockscreen Element Type: $str1" }) { str1 = "$element" }
+                    }
                 }
             }
         }
-        return true
     }
 
     @AssistedFactory
     interface Builder {
-        fun create(elements: Map<ElementKey, LockscreenElement>): LockscreenElementFactoryImpl
-    }
-
-    companion object {
-        @Composable
-        fun Builder.createRemembered(
-            vararg providers: LockscreenElementProvider?
-        ): LockscreenElementFactoryImpl {
-            return remember(providers) {
-                create(
-                    providers
-                        .filterNotNull()
-                        .flatMap { provider -> provider.elements }
-                        .associateBy { element -> element.key }
-                )
-            }
-        }
+        fun create(elements: Map<Key, BaseLockscreenElement>): LockscreenElementFactoryImpl
     }
 }

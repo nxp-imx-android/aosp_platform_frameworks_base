@@ -144,7 +144,7 @@ public abstract class RemoteContext {
      * @param instanceId the id to save this path under
      * @param floatPath the path as a float array
      */
-    public abstract void loadPathData(int instanceId, @NonNull float [] floatPath);
+    public abstract void loadPathData(int instanceId, int winding, @NonNull float [] floatPath);
 
     /**
      * Load a path under an id. Paths can be use in clip drawPath and drawTweenPath
@@ -213,6 +213,23 @@ public abstract class RemoteContext {
      * @param stringName the name of the string to override
      */
     public abstract void clearNamedStringOverride(@NonNull String stringName);
+
+    /**
+     * Set the value of a named Boolean. This overrides the boolean in the document
+     *
+     * @param booleanName the name of the boolean to override
+     * @param value Override the default boolean
+     */
+    public abstract void setNamedBooleanOverride(@NonNull String booleanName, boolean value);
+
+    /**
+     * Allows to clear a named Boolean.
+     *
+     * <p>If an override exists, we revert back to the default value in the document.
+     *
+     * @param booleanName the name of the boolean to override
+     */
+    public abstract void clearNamedBooleanOverride(@NonNull String booleanName);
 
     /**
      * Set the value of a named Integer. This overrides the integer in the document
@@ -543,6 +560,14 @@ public abstract class RemoteContext {
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Mark the variable as dirty
+     * @param id
+     */
+    public void markVariableDirty(int id) {
+        // empty
+    }
+
+    /**
      * Save a bitmap under an imageId
      *
      * @param imageId the id of the image
@@ -684,6 +709,7 @@ public abstract class RemoteContext {
 
     /**
      * Notify commands with variables have changed
+     *
      *
      * @return the number of ms to next update
      */

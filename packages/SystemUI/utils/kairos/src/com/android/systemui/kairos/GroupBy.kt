@@ -18,7 +18,7 @@ package com.android.systemui.kairos
 
 import com.android.systemui.kairos.internal.DemuxImpl
 import com.android.systemui.kairos.internal.constInit
-import com.android.systemui.kairos.internal.demuxMap
+import com.android.systemui.kairos.internal.demuxImpl
 import com.android.systemui.kairos.util.Either
 import com.android.systemui.kairos.util.NameData
 import com.android.systemui.kairos.util.These
@@ -65,7 +65,7 @@ fun <K, A> Events<Map<K, A>>.groupByKey(numKeys: Int? = null): KeyedEvents<K, A>
 internal fun <K, A> Events<Map<K, A>>.groupByKey(
     nameData: NameData,
     numKeys: Int? = null,
-): KeyedEvents<K, A> = KeyedEvents(demuxMap(nameData, { init.connect(this) }, numKeys))
+): KeyedEvents<K, A> = KeyedEvents(demuxImpl(nameData, { init.connect(this) }, numKeys))
 
 /**
  * Returns a [KeyedEvents] that can be used to efficiently split a single [Events] into multiple
@@ -201,9 +201,9 @@ internal fun <A, B> Events<These<A, B>>.partitionThese(
     val grouped =
         mapCheap(nameData + "projectBools") {
                 when (it) {
-                    is These.Both -> mapOf(true to it, false to it)
-                    is These.Second -> mapOf(false to it)
-                    is These.First -> mapOf(true to it)
+                    is These.Both -> hashMapOf(true to it, false to it)
+                    is These.Second -> hashMapOf(false to it)
+                    is These.First -> hashMapOf(true to it)
                 }
             }
             .groupByKey(nameData, numKeys = 2)

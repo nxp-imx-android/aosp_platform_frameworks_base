@@ -20,19 +20,17 @@ import android.content.Context
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementContentScope
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.ui.composable.ConstrainedNotificationStack
-import com.android.systemui.notifications.ui.composable.SnoozeableHeadsUpNotificationSpace
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
@@ -56,21 +54,18 @@ constructor(
     stackScrollLayout: NotificationStackScrollLayout,
     sharedNotificationContainerBinder: SharedNotificationContainerBinder,
 ) : LockscreenElementProvider {
-    override val elements: List<LockscreenElement> by lazy { listOf(notificationElement) }
+    override val elements: List<LockscreenElement> by lazy { listOf(NotificationElement()) }
 
-    private val notificationElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.Notifications.Stack
-            override val context = this@NotificationStackElementProvider.context
+    private inner class NotificationElement : LockscreenElement {
+        override val key = LockscreenElementKeys.Notifications.Stack
+        override val context = this@NotificationStackElementProvider.context
+        override val source = ElementSource.STANDARD
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                NotificationStack(factory, context)
-            }
+        @Composable
+        override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
+            contentScope.NotificationStack()
         }
+    }
 
     init {
         // This scene container section moves the NSSL to the SharedNotificationContainer.
@@ -91,23 +86,11 @@ constructor(
     }
 
     @Composable
-    private fun ContentScope.NotificationStack(
-        factory: LockscreenElementFactory,
-        context: LockscreenElementContext,
-        modifier: Modifier = Modifier,
-    ) {
+    private fun ContentScope.NotificationStack(modifier: Modifier = Modifier) {
         ConstrainedNotificationStack(
             stackScrollView = stackScrollView.get(),
             viewModel = rememberViewModel("Notifications") { viewModelFactory.create() },
             modifier = modifier.fillMaxSize(),
-        )
-    }
-
-    @Composable
-    private fun ContentScope.HeadsUpNotifications() {
-        SnoozeableHeadsUpNotificationSpace(
-            stackScrollView = stackScrollView.get(),
-            viewModel = rememberViewModel("HeadsUpNotifications") { viewModelFactory.create() },
         )
     }
 }

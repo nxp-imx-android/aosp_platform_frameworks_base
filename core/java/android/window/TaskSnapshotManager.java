@@ -16,11 +16,14 @@
 
 package android.window;
 
+import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
+
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.app.ActivityTaskManager;
 import android.os.RemoteException;
+import android.os.Trace;
 import android.system.SystemCleaner;
 import android.util.AndroidRuntimeException;
 import android.util.Log;
@@ -75,17 +78,25 @@ public class TaskSnapshotManager {
     @Retention(RetentionPolicy.SOURCE)
     public @interface Resolution {}
 
-    private static final Object sLock = new Object();
-    @GuardedBy("sLock")
+    private final Object mLock = new Object();
+    @GuardedBy("mLock")
     private final GlobalSnapshotTracker mGlobalSnapshotTracker = new GlobalSnapshotTracker();
-    static final Cleaner sCleaner = SystemCleaner.cleaner();
-    @GuardedBy("sLock")
+    private final Cleaner mCleaner = SystemCleaner.cleaner();
+    @GuardedBy("mLock")
     private TaskSnapshotListenerTracker mInternalListener;
-    private static final TaskSnapshotManager sInstance = new TaskSnapshotManager();
+    private static boolean sIsUsed;
     private TaskSnapshotManager() { }
 
+    private static final class NoPreloadHolder {
+        private static final TaskSnapshotManager sInstance = new TaskSnapshotManager();
+    }
+
+    public static boolean isUsed() {
+        return sIsUsed;
+    }
+
     public static TaskSnapshotManager getInstance() {
-        return sInstance;
+        return NoPreloadHolder.sInstance;
     }
 
     /**
@@ -99,12 +110,13 @@ public class TaskSnapshotManager {
      */
     public TaskSnapshot getTaskSnapshot(int taskId, @Resolution int retrieveResolution)
             throws RemoteException {
+        sIsUsed = true;
         final TaskSnapshot t;
         final long captureTime;
         final TaskSnapshot previousSnapshot;
         validateResolution(retrieveResolution);
         final SnapshotTracker st;
-        synchronized (sLock) {
+        synchronized (mLock) {
             // Gets the latest snapshot from the local cache. This can be used to prevent the system
             // server from returning another snapshot that is the same as the local one.
             st = mGlobalSnapshotTracker.peekLatestSnapshot(taskId, retrieveResolution);
@@ -115,17 +127,26 @@ public class TaskSnapshotManager {
                 st.increaseReference();
             }
         }
+        final boolean traceEnabled = Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER);
+        if (traceEnabled) {
+            Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "getTaskSnapshot#" + taskId
+                    + "_res=" + retrieveResolution);
+        }
         try {
             t = ISnapshotManagerSingleton.get().getTaskSnapshot(taskId,
                     captureTime, retrieveResolution);
         } catch (RemoteException r) {
             Log.e(TAG, "getTaskSnapshot fail: " + r);
             throw r;
+        } finally {
+            if (traceEnabled) {
+                Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+            }
         }
         if (t == null) {
             return previousSnapshot;
         }
-        synchronized (sLock) {
+        synchronized (mLock) {
             if (st != null) {
                 st.decreaseReference();
             }
@@ -165,16 +186,26 @@ public class TaskSnapshotManager {
      */
     public TaskSnapshot takeTaskSnapshot(int taskId, boolean updateCache,
             boolean lowResolution) throws RemoteException {
+        sIsUsed = true;
         final TaskSnapshot t;
+        final boolean traceEnabled = Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER);
+        if (traceEnabled) {
+            Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "takeTaskSnapshot#" + taskId
+                    + "_low=" + lowResolution);
+        }
         try {
             t = ISnapshotManagerSingleton.get().takeTaskSnapshot(taskId, updateCache,
                     lowResolution);
         } catch (RemoteException r) {
             Log.e(TAG, "takeTaskSnapshot fail: " + r);
             throw r;
+        } finally {
+            if (traceEnabled) {
+                Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+            }
         }
         if (t != null) {
-            synchronized (sLock) {
+            synchronized (mLock) {
                 mGlobalSnapshotTracker.createTracker(taskId, t);
             }
         }
@@ -185,7 +216,8 @@ public class TaskSnapshotManager {
      * Register task snapshot listener
      */
     public void registerTaskSnapshotListener(@NonNull TaskSnapshotListener listener) {
-        synchronized (sLock) {
+        sIsUsed = true;
+        synchronized (mLock) {
             if (mInternalListener == null) {
                 mInternalListener = new TaskSnapshotListenerTracker(this);
                 try {
@@ -202,7 +234,8 @@ public class TaskSnapshotManager {
      * Unregister task snapshot listener
      */
     public void unregisterTaskSnapshotListener(@NonNull TaskSnapshotListener listener) {
-        synchronized (sLock) {
+        sIsUsed = true;
+        synchronized (mLock) {
             if (mInternalListener == null) {
                 return;
             }
@@ -259,14 +292,14 @@ public class TaskSnapshotManager {
             };
 
     void removeTracker(SnapshotTracker tracker) {
-        synchronized (sLock) {
+        synchronized (mLock) {
             mGlobalSnapshotTracker.removeTracker(tracker, false /* forceRemove */);
         }
     }
 
-    void createTracker(int taskId, TaskSnapshot snapshot) {
-        synchronized (sLock) {
-            mGlobalSnapshotTracker.createTracker(taskId, snapshot);
+    void createTrackerWithCount(int taskId, TaskSnapshot snapshot, int initialReferenceCount) {
+        synchronized (mLock) {
+            mGlobalSnapshotTracker.createTracker(taskId, snapshot, initialReferenceCount);
         }
     }
 
@@ -274,7 +307,7 @@ public class TaskSnapshotManager {
      * Dump snapshot usage in the process.
      */
     public void dump(PrintWriter pw) {
-        synchronized (sLock) {
+        synchronized (mLock) {
             mGlobalSnapshotTracker.dump(pw);
         }
     }
@@ -293,22 +326,27 @@ public class TaskSnapshotManager {
         }
     }
 
-    private static class GlobalSnapshotTracker {
+    private class GlobalSnapshotTracker {
         final SparseArray<SingleTaskTracker> mSnapshotTrackers = new SparseArray<>();
 
-        void createTracker(int taskId, TaskSnapshot snapshot) {
+        void createTracker(int taskId, TaskSnapshot snapshot, int initialReferenceCount) {
             SingleTaskTracker taskTracker = mSnapshotTrackers.get(taskId);
             if (taskTracker == null) {
                 taskTracker = new SingleTaskTracker();
                 mSnapshotTrackers.put(taskId, taskTracker);
             }
-            final SnapshotTracker tracker = new SnapshotTracker(taskId, snapshot);
+            final SnapshotTracker tracker = new SnapshotTracker(taskId, snapshot,
+                    initialReferenceCount);
             taskTracker.addTracker(tracker);
-            sCleaner.register(snapshot, () -> {
-                synchronized (sLock) {
+            mCleaner.register(snapshot, () -> {
+                synchronized (mLock) {
                     removeTracker(tracker, true /* forceRemove */);
                 }
             });
+        }
+
+        void createTracker(int taskId, TaskSnapshot snapshot) {
+            createTracker(taskId, snapshot, 1 /* initialReferenceCount */);
         }
 
         void removeTracker(SnapshotTracker tracker, boolean forceRemove) {
@@ -443,7 +481,7 @@ public class TaskSnapshotManager {
         final WeakReference<TaskSnapshot> mSnapshot;
         int mReferenceCount;
 
-        SnapshotTracker(int taskId, TaskSnapshot snapshot) {
+        SnapshotTracker(int taskId, TaskSnapshot snapshot, int referenceCount) {
             super();
             mTaskId = taskId;
             mSnapshotId = snapshot.getId();
@@ -451,7 +489,7 @@ public class TaskSnapshotManager {
             mIsLowResolution = snapshot.isLowResolution();
             snapshot.setSnapshotTracker(this);
             mSnapshot = new WeakReference<>(snapshot);
-            mReferenceCount = 1;
+            mReferenceCount = referenceCount;
         }
         void increaseReference() {
             mReferenceCount++;

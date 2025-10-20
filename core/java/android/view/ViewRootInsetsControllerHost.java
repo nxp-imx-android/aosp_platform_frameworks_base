@@ -132,17 +132,34 @@ public class ViewRootInsetsControllerHost implements InsetsController.Host {
         if (mApplier == null) {
             mApplier = new SyncRtSurfaceTransactionApplier(mViewRoot.mView);
         }
-        if (mViewRoot.mView.isHardwareAccelerated() && isVisibleToUser()) {
+        if (mViewRoot.mView.isHardwareAccelerated() && isVisibleToUser()
+                && shouldApplyInNextFrame()) {
             mApplier.scheduleApply(params);
         } else {
             // Synchronization requires hardware acceleration for now.
             // If the window isn't visible, drawing is paused and the applier won't run.
+            // If the views won't be re-drawn with the insets change, apply the transaction now.
             // TODO(b/149342281): use mViewRoot.mSurface.getNextFrameNumber() to sync on every
             //  frame instead.
             final SurfaceControl.Transaction t = new SurfaceControl.Transaction();
             mApplier.applyParams(t, params);
             t.apply();
         }
+    }
+
+    private boolean shouldApplyInNextFrame() {
+        return !com.android.window.flags.Flags.preventSchedulingRedundantFrame()
+                // If this is called from CALLBACK_INSETS_ANIMATION, the animation callbacks (e.g.,
+                // onProgress or onEnd) would be called before this method. If any view is updated
+                // during the callbacks, the traversal would be scheduled. The leash transaction
+                // should be applied when the view is drawn.
+                || mViewRoot.mTraversalScheduled
+                // If the caller updates the views only AFTER calling setInsetsAndAlpha,
+                // mTraversalScheduled here won't be enough to tell if there is a next frame
+                // to be drawn. Here schedules a frame when isInSynchronizedAnimation is
+                // true (e.g., ANIMATION_TYPE_USER) to make sure insets changes are applied
+                // with the view changes.
+                || mViewRoot.getInsetsController().isInSynchronizedAnimation();
     }
 
     @Override
@@ -238,7 +255,8 @@ public class ViewRootInsetsControllerHost implements InsetsController.Host {
          // synchronization issues we also release from the RenderThread so this release
          // happens after any existing items on the work queue.
 
-        if (mViewRoot.mView != null && mViewRoot.mView.isHardwareAccelerated()) {
+        if (mViewRoot.mView != null && mViewRoot.mView.isHardwareAccelerated()
+                && shouldApplyInNextFrame()) {
             mViewRoot.registerRtFrameCallback(frame -> {
                 surfaceControl.release();
             });

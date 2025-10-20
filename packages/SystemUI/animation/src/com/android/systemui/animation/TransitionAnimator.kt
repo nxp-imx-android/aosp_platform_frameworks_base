@@ -40,7 +40,6 @@ import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.dynamicanimation.animation.SpringAnimation
 import com.android.internal.dynamicanimation.animation.SpringForce
 import com.android.systemui.Flags
-import com.android.systemui.Flags.moveTransitionAnimationLayer
 import java.util.concurrent.Executor
 import kotlin.math.abs
 import kotlin.math.max
@@ -262,46 +261,66 @@ class TransitionAnimator(
 
     /** Encapsulated the state of a multi-spring animation. */
     internal class SpringState(
+        // The attribute(s) around which to pivot the springs in this animation.
+        val pivot: AnimationPivot,
+
         // Animated values.
-        var centerX: Float,
-        var centerY: Float,
+        var x: Float,
+        var y: Float,
         var scale: Float = 0f,
 
         // Update flags (used to decide whether it's time to update the transition state).
-        var isCenterXUpdated: Boolean = false,
-        var isCenterYUpdated: Boolean = false,
+        var isXUpdated: Boolean = false,
+        var isYUpdated: Boolean = false,
         var isScaleUpdated: Boolean = false,
 
         // Completion flags.
-        var isCenterXDone: Boolean = false,
-        var isCenterYDone: Boolean = false,
+        var isXDone: Boolean = false,
+        var isYDone: Boolean = false,
         var isScaleDone: Boolean = false,
     ) {
         /** Whether all springs composing the animation have settled in the final position. */
         val isDone
-            get() = isCenterXDone && isCenterYDone && isScaleDone
+            get() = isXDone && isYDone && isScaleDone
+    }
+
+    /**
+     * A pivot is the rect-relative position used to choose the attributes to animate in a
+     * spring-based animation. It should be selected based on the position of the start state
+     * relative to the end state, to prevent any of the bounds from overshooting the target.
+     */
+    internal enum class AnimationPivot {
+        CENTER,
+        LEFT,
+        TOP_LEFT,
+        TOP,
+        TOP_RIGHT,
+        RIGHT,
+        BOTTOM_RIGHT,
+        BOTTOM,
+        BOTTOM_LEFT,
     }
 
     /** Supported [SpringState] properties with getters and setters to update them. */
     private enum class SpringProperty {
-        CENTER_X {
+        X {
             override fun get(state: SpringState): Float {
-                return state.centerX
+                return state.x
             }
 
             override fun setValue(state: SpringState, value: Float) {
-                state.centerX = value
-                state.isCenterXUpdated = true
+                state.x = value
+                state.isXUpdated = true
             }
         },
-        CENTER_Y {
+        Y {
             override fun get(state: SpringState): Float {
-                return state.centerY
+                return state.y
             }
 
             override fun setValue(state: SpringState, value: Float) {
-                state.centerY = value
-                state.isCenterYUpdated = true
+                state.y = value
+                state.isYUpdated = true
             }
         },
         SCALE {
@@ -766,32 +785,80 @@ class TransitionAnimator(
         drawHole: Boolean = false,
         moveBackgroundLayerWhenAppVisibilityChanges: Boolean = false,
     ): Animation {
+        var endState = startState
+        var pivot = AnimationPivot.CENTER
 
-        var endState = calculateEndState()
+        /** Recalculates the end state and the animation pivot. */
+        fun updateEndStateAndPivot() {
+            endState = calculateEndState()
+
+            val useTopPivot = endState.top > startState.top && endState.bottom > startState.bottom
+            val useBottomPivot =
+                endState.top < startState.top && endState.bottom < startState.bottom
+            val useLeftPivot = endState.left > startState.left && endState.right > startState.right
+            val useRightPivot = endState.left < startState.left && endState.right < startState.right
+            pivot =
+                when {
+                    useLeftPivot && useTopPivot -> AnimationPivot.TOP_LEFT
+                    useTopPivot && useRightPivot -> AnimationPivot.TOP_RIGHT
+                    useRightPivot && useBottomPivot -> AnimationPivot.BOTTOM_RIGHT
+                    useBottomPivot && useLeftPivot -> AnimationPivot.BOTTOM_LEFT
+                    useLeftPivot -> AnimationPivot.LEFT
+                    useTopPivot -> AnimationPivot.TOP
+                    useRightPivot -> AnimationPivot.RIGHT
+                    useBottomPivot -> AnimationPivot.BOTTOM
+                    else -> AnimationPivot.CENTER
+                }
+        }
+
+        /** Extracts a set of coordinates from [state] representing the [pivot] point. */
+        fun extractPivotAttributes(state: State, pivot: AnimationPivot): Pair<Float, Float> {
+            return when (pivot) {
+                AnimationPivot.LEFT -> Pair(state.left.toFloat(), state.centerY)
+                AnimationPivot.TOP_LEFT -> Pair(state.left.toFloat(), state.top.toFloat())
+                AnimationPivot.TOP -> Pair(state.centerX, state.top.toFloat())
+                AnimationPivot.TOP_RIGHT -> Pair(state.right.toFloat(), state.top.toFloat())
+                AnimationPivot.RIGHT -> Pair(state.right.toFloat(), state.centerY)
+                AnimationPivot.BOTTOM_RIGHT -> Pair(state.right.toFloat(), state.bottom.toFloat())
+                AnimationPivot.BOTTOM -> Pair(state.centerX, state.bottom.toFloat())
+                AnimationPivot.BOTTOM_LEFT -> Pair(state.left.toFloat(), state.bottom.toFloat())
+                AnimationPivot.CENTER -> Pair(state.centerX, state.centerY)
+            }
+        }
+
         var springX: SpringAnimation? = null
         var springY: SpringAnimation? = null
-        var targetX = endState.centerX
-        var targetY = endState.centerY
-
         var movedBackgroundLayer = false
 
+        updateEndStateAndPivot()
+        var (targetX, targetY) = extractPivotAttributes(endState, pivot)
+
+        /**
+         * Recalculate the end state and pivot, and if the target has changed, recalibrate the
+         * springs.
+         */
         fun maybeUpdateEndState() {
             if (Flags.dialogAnimEndStateUpdate()) {
-                endState = calculateEndState()
+                updateEndStateAndPivot()
             }
-            if (endState.centerX != targetX && endState.centerY != targetY) {
-                targetX = endState.centerX
-                targetY = endState.centerY
 
+            val (newTargetX, newTargetY) = extractPivotAttributes(endState, pivot)
+            if (newTargetX != targetX && newTargetY != targetY) {
+                targetX = newTargetX
+                targetY = newTargetY
                 springX?.animateToFinalPosition(targetX)
                 springY?.animateToFinalPosition(targetY)
             }
         }
 
+        /**
+         * Calculates the new animation attributes based on the given spring [state] and forwards
+         * them to each of the controllers.
+         */
         fun updateProgress(state: SpringState) {
             if (
-                !(state.isCenterXUpdated || state.isCenterXDone) ||
-                    !(state.isCenterYUpdated || state.isCenterYDone) ||
+                !(state.isXUpdated || state.isXDone) ||
+                    !(state.isYUpdated || state.isYDone) ||
                     !(state.isScaleUpdated || state.isScaleDone)
             ) {
                 // Because all three springs use the same update method, we only actually update
@@ -801,8 +868,8 @@ class TransitionAnimator(
             }
 
             // Reset the update flags.
-            state.isCenterXUpdated = false
-            state.isCenterYUpdated = false
+            state.isXUpdated = false
+            state.isYUpdated = false
             state.isScaleUpdated = false
 
             // Current scale-based values, that will be used to find the new animation bounds.
@@ -811,12 +878,82 @@ class TransitionAnimator(
             val height =
                 MathUtils.lerp(startState.height.toFloat(), endState.height.toFloat(), state.scale)
 
+            val left: Float
+            val top: Float
+            val right: Float
+            val bottom: Float
+
+            when (state.pivot) {
+                AnimationPivot.LEFT -> {
+                    left = state.x
+                    top = state.y - height / 2
+                    right = state.x + width
+                    bottom = state.y + height / 2
+                }
+
+                AnimationPivot.TOP_LEFT -> {
+                    left = state.x
+                    top = state.y
+                    right = state.x + width
+                    bottom = state.y + height
+                }
+
+                AnimationPivot.TOP -> {
+                    left = state.x - width / 2
+                    top = state.y
+                    right = state.x + width / 2
+                    bottom = state.y + height
+                }
+
+                AnimationPivot.TOP_RIGHT -> {
+                    left = state.x - width
+                    top = state.y
+                    right = state.x
+                    bottom = state.y + height
+                }
+
+                AnimationPivot.RIGHT -> {
+                    left = state.x - width
+                    top = state.y - height / 2
+                    right = state.x
+                    bottom = state.y + height / 2
+                }
+
+                AnimationPivot.BOTTOM_RIGHT -> {
+                    left = state.x - width
+                    top = state.y - height
+                    right = state.x
+                    bottom = state.y
+                }
+
+                AnimationPivot.BOTTOM -> {
+                    left = state.x - width / 2
+                    top = state.y - height
+                    right = state.x + width / 2
+                    bottom = state.y
+                }
+
+                AnimationPivot.BOTTOM_LEFT -> {
+                    left = state.x
+                    top = state.y - height
+                    right = state.x + width
+                    bottom = state.y
+                }
+
+                AnimationPivot.CENTER -> {
+                    left = state.x - width / 2
+                    top = state.y - height / 2
+                    right = state.x + width / 2
+                    bottom = state.y + height / 2
+                }
+            }
+
             val newState =
                 State(
-                        left = (state.centerX - width / 2).toInt(),
-                        top = (state.centerY - height / 2).toInt(),
-                        right = (state.centerX + width / 2).toInt(),
-                        bottom = (state.centerY + height / 2).toInt(),
+                        left = left.toInt(),
+                        top = top.toInt(),
+                        right = right.toInt(),
+                        bottom = bottom.toInt(),
                         topCornerRadius =
                             MathUtils.lerp(
                                 startState.topCornerRadius,
@@ -870,7 +1007,8 @@ class TransitionAnimator(
             maybeUpdateEndState()
         }
 
-        val springState = SpringState(centerX = startState.centerX, centerY = startState.centerY)
+        val (startX, startY) = extractPivotAttributes(startState, pivot)
+        val springState = SpringState(pivot, startX, startY)
         val isExpandingFullyAbove = isExpandingFullyAbove(transitionContainer, endState)
 
         /** End listener for each spring, which only does the end work if all springs are done. */
@@ -889,44 +1027,44 @@ class TransitionAnimator(
         springX =
             SpringAnimation(
                     springState,
-                    buildProperty(SpringProperty.CENTER_X) { state -> updateProgress(state) },
+                    buildProperty(SpringProperty.X) { state -> updateProgress(state) },
                 )
                 .apply {
                     spring =
-                        SpringForce(endState.centerX).apply {
+                        SpringForce(targetX).apply {
                             stiffness = springParams.centerXStiffness
                             dampingRatio = springParams.centerXDampingRatio
                         }
 
-                    setStartValue(startState.centerX)
+                    setStartValue(startX)
                     setStartVelocity(startVelocity.x)
-                    setMinValue(min(startState.centerX, endState.centerX))
-                    setMaxValue(max(startState.centerX, endState.centerX))
+                    setMinValue(min(startX, targetX))
+                    setMaxValue(max(startX, targetX))
 
                     addEndListener { _, _, _, _ ->
-                        springState.isCenterXDone = true
+                        springState.isXDone = true
                         onAnimationEnd()
                     }
                 }
         springY =
             SpringAnimation(
                     springState,
-                    buildProperty(SpringProperty.CENTER_Y) { state -> updateProgress(state) },
+                    buildProperty(SpringProperty.Y) { state -> updateProgress(state) },
                 )
                 .apply {
                     spring =
-                        SpringForce(endState.centerY).apply {
+                        SpringForce(targetY).apply {
                             stiffness = springParams.centerYStiffness
                             dampingRatio = springParams.centerYDampingRatio
                         }
 
-                    setStartValue(startState.centerY)
+                    setStartValue(startY)
                     setStartVelocity(startVelocity.y)
-                    setMinValue(min(startState.centerY, endState.centerY))
-                    setMaxValue(max(startState.centerY, endState.centerY))
+                    setMinValue(min(startY, targetY))
+                    setMaxValue(max(startY, targetY))
 
                     addEndListener { _, _, _, _ ->
-                        springState.isCenterYDone = true
+                        springState.isYDone = true
                         onAnimationEnd()
                     }
                 }
@@ -1194,7 +1332,7 @@ class TransitionAnimator(
                 if (drawHole) {
                     drawable.setXfermode(SRC_MODE)
                 }
-            } else if (moveTransitionAnimationLayer() && fadeOutProgress >= 1 && drawHole) {
+            } else if (fadeOutProgress >= 1 && drawHole) {
                 // If [drawHole] is true, draw it once the opening content is done fading in.
                 drawable.alpha = 0x00
                 drawable.setXfermode(SRC_MODE)

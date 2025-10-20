@@ -37,6 +37,7 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.window.TaskSnapshot
+import com.android.window.flags.Flags
 import com.android.wm.shell.shared.R
 
 /**
@@ -57,7 +58,18 @@ abstract class ManageWindowsViewContainer(
         val bitmapList = snapshotList
             .filter { it.second != null }
             .map { (index, snapshot) ->
-                index to Bitmap.wrapHardwareBuffer(snapshot!!.hardwareBuffer, snapshot.colorSpace)
+                if (Flags.reduceTaskSnapshotMemoryUsage()) {
+                    snapshot.let {
+                        val b: Bitmap? = it!!.wrapToBitmap()
+                        it.closeBuffer()
+                        index to b
+                    }
+                } else {
+                    index to Bitmap.wrapHardwareBuffer(
+                        snapshot!!.hardwareBuffer,
+                        snapshot.colorSpace
+                    )
+                }
             }
         return createAndShowMenuView(
             bitmapList,
@@ -133,6 +145,7 @@ abstract class ManageWindowsViewContainer(
                 null
             )
             menuBackground.paint.color = menuBackgroundColor
+            scrollableMenuView.alpha = 0f
             scrollableMenuView.background = menuBackground
             scrollableMenuView.elevation = getDimensionPixelSize(MENU_ELEVATION_DP)
             scrollableMenuView.setOnTouchListener { _, event ->
@@ -203,6 +216,7 @@ abstract class ManageWindowsViewContainer(
                     menuWidth += (instanceIconWidth + iconMargin).toInt()
                 }
                 rowLayout?.addView(appSnapshotButton)
+                appSnapshotButton.alpha = 0f
                 iconViews += appSnapshotButton
                 appSnapshotButton.requestLayout()
                 rowLayout?.post {
@@ -254,7 +268,7 @@ abstract class ManageWindowsViewContainer(
             )
             for (view in iconViews) {
                 animateView(view, MENU_BOUNDS_SHRUNK_SCALE, MENU_BOUNDS_FULL_SCALE,
-                    MENU_START_ALPHA, MENU_FULL_ALPHA
+                    MENU_START_ALPHA, MENU_FULL_ALPHA, delay = MENU_ALPHA_ANIM_DELAY
                 )
             }
             createAnimatorSet().start()
@@ -267,7 +281,7 @@ abstract class ManageWindowsViewContainer(
             )
             for (view in iconViews) {
                 animateView(view, MENU_BOUNDS_FULL_SCALE, MENU_BOUNDS_SHRUNK_SCALE,
-                    MENU_FULL_ALPHA, MENU_START_ALPHA
+                    MENU_FULL_ALPHA, MENU_START_ALPHA, delay = MENU_ALPHA_ANIM_DELAY
                 )
             }
             createAnimatorSet().apply {
@@ -287,7 +301,9 @@ abstract class ManageWindowsViewContainer(
             startBoundsScale: Float,
             endBoundsScale: Float,
             startAlpha: Float,
-            endAlpha: Float) {
+            endAlpha: Float,
+            delay: Long = 0
+        ) {
             animators += ObjectAnimator.ofFloat(
                 view,
                 SCALE_X,
@@ -311,7 +327,7 @@ abstract class ManageWindowsViewContainer(
                 endAlpha
             ).apply {
                 duration = MENU_ALPHA_ANIM_DURATION
-                startDelay = MENU_ALPHA_ANIM_DELAY
+                startDelay = delay
             }
         }
 

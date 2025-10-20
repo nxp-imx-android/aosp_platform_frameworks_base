@@ -53,6 +53,9 @@ import android.hardware.camera2.params.SessionConfiguration;
 import android.hardware.camera2.params.SharedSessionConfiguration;
 import android.hardware.camera2.params.SharedSessionConfiguration.SharedOutputConfiguration;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.hardware.camera2.utils.SessionConfigurationAndStreamIds;
+import android.hardware.camera2.utils.ListUtils;
+import android.hardware.camera2.utils.OutputAndInputStreamIds;
 import android.hardware.camera2.utils.SubmitInfo;
 import android.hardware.camera2.utils.SurfaceUtils;
 import android.os.Binder;
@@ -668,47 +671,119 @@ public class CameraDeviceImpl extends CameraDevice
                     waitUntilIdle();
                 }
 
-                mRemoteDevice.beginConfigure();
-
-                // reconfigure the input stream if the input configuration is different.
                 InputConfiguration currentInputConfig = mConfiguredInput.getValue();
-                if (inputConfig != currentInputConfig &&
-                        (inputConfig == null || !inputConfig.equals(currentInputConfig))) {
-                    if (currentInputConfig != null) {
-                        mRemoteDevice.deleteStream(mConfiguredInput.getKey());
-                        mConfiguredInput = new SimpleEntry<Integer, InputConfiguration>(
-                                REQUEST_ID_NONE, null);
-                    }
-                    if (inputConfig != null) {
-                        int streamId = mRemoteDevice.createInputStream(inputConfig.getWidth(),
-                                inputConfig.getHeight(), inputConfig.getFormat(),
-                                inputConfig.isMultiResolution());
-                        mConfiguredInput = new SimpleEntry<Integer, InputConfiguration>(
-                                streamId, inputConfig);
-                    }
-                }
-
-                // Delete all streams first (to free up HW resources)
-                for (Integer streamId : deleteList) {
-                    mRemoteDevice.deleteStream(streamId);
-                    mConfiguredOutputs.delete(streamId);
-                }
-
-                // Add all new streams
-                for (OutputConfiguration outConfig : outputs) {
-                    if (addSet.contains(outConfig)) {
-                        int streamId = mRemoteDevice.createStream(outConfig);
-                        mConfiguredOutputs.put(streamId, outConfig);
-                    }
-                }
-
                 int offlineStreamIds[];
-                if (sessionParams != null) {
-                    offlineStreamIds = mRemoteDevice.endConfigure(operatingMode,
-                            sessionParams.getNativeCopy(), createSessionStartTime);
+                if (!Flags.configureStreamsBatch()) {
+
+                    mRemoteDevice.beginConfigure();
+
+                    // reconfigure the input stream if the input configuration is different.
+                    if (inputConfig != currentInputConfig &&
+                            (inputConfig == null || !inputConfig.equals(currentInputConfig))) {
+                        if (currentInputConfig != null) {
+                            mRemoteDevice.deleteStream(mConfiguredInput.getKey());
+                            mConfiguredInput = new SimpleEntry<Integer, InputConfiguration>(
+                                    REQUEST_ID_NONE, null);
+                        }
+                        if (inputConfig != null) {
+                            int streamId = mRemoteDevice.createInputStream(inputConfig.getWidth(),
+                                    inputConfig.getHeight(), inputConfig.getFormat(),
+                                    inputConfig.isMultiResolution());
+                            mConfiguredInput = new SimpleEntry<Integer, InputConfiguration>(
+                                    streamId, inputConfig);
+                        }
+                    }
+
+                    // Delete all streams first (to free up HW resources)
+                    for (Integer streamId : deleteList) {
+                        mRemoteDevice.deleteStream(streamId);
+                        mConfiguredOutputs.delete(streamId);
+                    }
+
+                    // Add all new streams
+                    for (OutputConfiguration outConfig : outputs) {
+                        if (addSet.contains(outConfig)) {
+                            int streamId = mRemoteDevice.createStream(outConfig);
+                            mConfiguredOutputs.put(streamId, outConfig);
+                        }
+                    }
+
+                    if (sessionParams != null) {
+                        offlineStreamIds = mRemoteDevice.endConfigure(operatingMode,
+                                sessionParams.getNativeCopy(), createSessionStartTime);
+                    } else {
+                        offlineStreamIds = mRemoteDevice.endConfigure(operatingMode, null,
+                                createSessionStartTime);
+                    }
+
                 } else {
-                    offlineStreamIds = mRemoteDevice.endConfigure(operatingMode, null,
-                            createSessionStartTime);
+                    SessionConfigurationAndStreamIds sessionConfigurationAndStreamIds =
+                        new SessionConfigurationAndStreamIds();
+                    sessionConfigurationAndStreamIds.createSessionTime = createSessionStartTime;
+
+                    List<OutputConfiguration> configuredOutputs = new ArrayList<>();
+                    // Delete all streams first (to free up HW resources)
+                    for (Integer streamId : deleteList) {
+                        mConfiguredOutputs.delete(streamId);
+                    }
+                    sessionConfigurationAndStreamIds.deletedStreamIds =
+                            ListUtils.convertIntegerListToIntArray(deleteList);
+                    // Add new output streams
+                    for (OutputConfiguration outConfig : outputs) {
+                        if (addSet.contains(outConfig)) {
+                            configuredOutputs.add(outConfig);
+                        }
+                    }
+
+                    SessionConfiguration sessionConfiguration =
+                            new SessionConfiguration(operatingMode, configuredOutputs);
+                    sessionConfigurationAndStreamIds.sessionConfigurationDelta =
+                            sessionConfiguration;
+                    sessionConfiguration.setSessionParameters(sessionParams);
+
+                    boolean newInputStreamConfigured = (inputConfig != currentInputConfig &&
+                            (inputConfig == null || !inputConfig.equals(currentInputConfig)));
+                    // Collect input stream information
+                    if (newInputStreamConfigured) {
+                        if (currentInputConfig != null) {
+                            sessionConfigurationAndStreamIds.deletedInputStreamId =
+                                    mConfiguredInput.getKey();
+                            mConfiguredInput = new SimpleEntry<Integer, InputConfiguration>(
+                                    REQUEST_ID_NONE, null);
+                        }
+                        if (inputConfig != null) {
+                            sessionConfigurationAndStreamIds.sessionConfigurationDelta.
+                                    setInputConfiguration(inputConfig);
+                        }
+                    }
+
+                    OutputAndInputStreamIds outputAndInputStreamIds =
+                            mRemoteDevice.configureStreams(sessionConfigurationAndStreamIds);
+                    // Collect input stream information
+                    if (newInputStreamConfigured) {
+                        if (inputConfig != null) {
+                            int streamId = outputAndInputStreamIds.inputStreamId;
+                            mConfiguredInput = new SimpleEntry<Integer, InputConfiguration>(
+                                    streamId, inputConfig);
+                        }
+                    }
+
+                    // Delete streams from mConfiguredOutputs
+                    for (Integer streamId : deleteList) {
+                        mConfiguredOutputs.delete(streamId);
+                    }
+
+                    // Add new output streams to mConfiguredOutputs
+                    int i = 0;
+                    for (OutputConfiguration outConfig : outputs) {
+                        if (addSet.contains(outConfig)) {
+                            mConfiguredOutputs.put(
+                                    outputAndInputStreamIds.outputStreamIds[i], outConfig);
+                            i++;
+                        }
+                    }
+                    // Add offline stream ids to mOfflineSupport
+                    offlineStreamIds = outputAndInputStreamIds.offlineStreamIds;
                 }
 
                 mOfflineSupport.clear();

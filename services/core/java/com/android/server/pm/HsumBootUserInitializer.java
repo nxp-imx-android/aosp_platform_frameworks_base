@@ -15,6 +15,9 @@
  */
 package com.android.server.pm;
 
+import static android.content.pm.UserInfo.FLAG_ADMIN;
+import static android.content.pm.UserInfo.FLAG_FULL;
+
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.ContentResolver;
@@ -30,6 +33,7 @@ import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
+import android.util.Dumpable;
 import android.util.Log;
 
 import com.android.internal.R;
@@ -39,7 +43,7 @@ import com.android.server.utils.Slogf;
 import com.android.server.utils.TimingsTraceAndSlog;
 
 import java.io.PrintWriter;
-import java.util.Arrays;
+import java.lang.ref.WeakReference;
 
 /**
  * Class responsible for booting the device in the proper user on headless system user mode.
@@ -61,6 +65,9 @@ public final class HsumBootUserInitializer {
     @VisibleForTesting
     static final String SYSPROP_DESIGNATE_MAIN_USER = "fw.designate_main_user_on_boot";
 
+    // Lazy-instantiated on createInstance()
+    private static @Nullable Dumpable sDumpable;
+
     private final UserManagerService mUms;
     private final ActivityManagerService mAms;
     private final PackageManagerService mPms;
@@ -69,35 +76,42 @@ public final class HsumBootUserInitializer {
     // is completely pushed.
     private final ContentObserver mDeviceProvisionedObserver;
 
-
     /** Whether it should create a main user on first boot. */
     private final boolean mShouldDesignateMainUser;
 
     /** Whether it should create an initial user, but without setting it as the main user. */
     private final boolean mShouldCreateInitialUser;
 
+    /** Whether the device is managed (a managed device doesn't need an admin). */
+    private final boolean mIsManagedDevice;
+
     /** Static factory method for creating a {@link HsumBootUserInitializer} instance. */
     public static @Nullable HsumBootUserInitializer createInstance(UserManagerService ums,
-            ActivityManagerService ams, PackageManagerService pms, ContentResolver contentResolver,
-            Context context) {
+            ActivityManagerService ams, PackageManagerService pms, boolean isManagedDevice,
+            ContentResolver contentResolver, Context context) {
 
         if (!UserManager.isHeadlessSystemUserMode()) {
             return null;
         }
-        return new HsumBootUserInitializer(ums, ams, pms, contentResolver,
-                designateMainUserOnBoot(context), createInitialUserOnBoot(context));
+        var instance = new HsumBootUserInitializer(ums, ams, pms, contentResolver,
+                designateMainUserOnBoot(context), createInitialUserOnBoot(context),
+                isManagedDevice);
+        setDumpable(instance, context);
+        return instance;
     }
 
     @VisibleForTesting
     HsumBootUserInitializer(UserManagerService ums, ActivityManagerService ams,
             PackageManagerService pms, ContentResolver contentResolver,
-            boolean shouldDesignateMainUser, boolean shouldCreateInitialUser) {
+            boolean shouldDesignateMainUser, boolean shouldCreateInitialUser,
+            boolean isManagedDevice) {
         mUms = ums;
         mAms = ams;
         mPms = pms;
         mContentResolver = contentResolver;
         mShouldDesignateMainUser = shouldDesignateMainUser;
         mShouldCreateInitialUser = shouldCreateInitialUser;
+        mIsManagedDevice = isManagedDevice;
         mDeviceProvisionedObserver = (Flags.hsuDeviceProvisioner()
                     ? new HsuDeviceProvisioner(new Handler(Looper.getMainLooper()), contentResolver)
                     : new ContentObserver(new Handler(Looper.getMainLooper())) {
@@ -126,20 +140,20 @@ public final class HsumBootUserInitializer {
     }
 
     // TODO(b/409650316): remove after flag's completely pushed
-    private void preCreateInitialUserFlagInit(TimingsTraceAndSlog t) {
+    private void legacyInit(TimingsTraceAndSlog t) {
         if (DEBUG) {
-            Slogf.d(TAG, "preCreateInitialUserFlagInit())");
+            Slogf.d(TAG, "legacyInit())");
         }
 
         if (mShouldDesignateMainUser) {
             t.traceBegin("createMainUserIfNeeded");
-            preCreateInitialUserCreateMainUserIfNeeded();
+            legacyCreateMainUserIfNeeded();
             t.traceEnd();
         }
     }
 
     // TODO(b/409650316): remove after flag's completely pushed
-    private void preCreateInitialUserCreateMainUserIfNeeded() {
+    private void legacyCreateMainUserIfNeeded() {
         final int mainUser = mUms.getMainUserId();
         if (mainUser != UserHandle.USER_NULL) {
             if (DEBUG) {
@@ -171,7 +185,7 @@ public final class HsumBootUserInitializer {
     }
 
     /**
-     * Initialize this object, and create MainUser if needed.
+     * Initializes this object, and creates an initial user if needed.
      *
      * <p>Should be called before PHASE_SYSTEM_SERVICES_READY as services' setups may require
      * MainUser, but probably after PHASE_LOCK_SETTINGS_READY since that may be needed for user
@@ -180,14 +194,24 @@ public final class HsumBootUserInitializer {
     public void init(TimingsTraceAndSlog t) {
         if (DEBUG) {
             Slogf.d(TAG, "init(): mShouldDesignateMainUser=%b, shouldCreateInitialUser=%b, "
-                    + "Flags.createInitialUser=%b",
-                    mShouldDesignateMainUser, mShouldCreateInitialUser, Flags.createInitialUser());
+                    + "isManagedDevice=%b, Flags.createInitialUser=%b",
+                    mShouldDesignateMainUser, mShouldCreateInitialUser, mIsManagedDevice,
+                    Flags.createInitialUser());
         } else {
             Slogf.i(TAG, "Initializing");
         }
 
         if (!Flags.createInitialUser()) {
-            preCreateInitialUserFlagInit(t);
+            legacyInit(t);
+            return;
+        }
+
+        if (mIsManagedDevice) {
+            // There's no need to proceed: either the device is managed by the HSU (in which case it
+            // doesn't need any extra user) or by a full user (which cannot be removed).
+            if (DEBUG) {
+                Slogf.d(TAG, "Not checking if initial user exists on managed device");
+            }
             return;
         }
 
@@ -237,22 +261,20 @@ public final class HsumBootUserInitializer {
     private boolean promoteAdminUserToMainUserIfNeeded(TimingsTraceAndSlog t) {
         t.traceBegin("promoteAdminUserToMainUserIfNeeded");
         try {
-            // TODO(b/419086491): use getUsers(Filter)
-            var users = mUms.getUsers(/* excludeDying= */ true);
-            int numberUsers = users.size();
-            for (int i = 0; i < numberUsers; i++) {
-                var user = users.get(i);
-                if (user.isFull() && user.isAdmin()) {
-                    Slogf.i(TAG, "Promoting admin user (%d) as main user", user.id);
-                    if (!mUms.setMainUser(user.id)) {
-                        Slogf.e(TAG, "Failed to promote admin user (%d) as main user", user.id);
-                        continue;
-                    }
-                    return true;
+            var filter = getFullAdminFilter();
+            var admins = mUms.getUsers(filter);
+            int numberAdmins = admins.size();
+            for (int i = 0; i < numberAdmins; i++) {
+                var admin = admins.get(i);
+                Slogf.i(TAG, "Promoting admin user (%d) as main user", admin.id);
+                if (!mUms.setMainUser(admin.id)) {
+                    Slogf.e(TAG, "Failed to promote admin user (%d) as main user", admin.id);
+                    continue;
                 }
+                return true;
             }
             if (DEBUG) {
-                Slogf.d(TAG, "No existing admin user was promoted as main user (users=%s)", users);
+                Slogf.d(TAG, "No existing admin was promoted as main user (admins=%s)", admins);
             }
             return false;
         } finally {
@@ -281,12 +303,12 @@ public final class HsumBootUserInitializer {
     private void createAdminUserIfNeeded(TimingsTraceAndSlog t) {
         t.traceBegin("createAdminUserIfNeeded");
         try {
-            // TODO(b/419086491): use getUsers(Filter)
-            int[] userIds = mUms.getUserIds();
-            if (userIds != null && userIds.length > 1) {
+            var filter = getFullAdminFilter();
+            int numberOfExistingAdmins = mUms.getNumberOfUsers(filter);
+            if (numberOfExistingAdmins > 0) {
                 if (DEBUG) {
-                    Slogf.d(TAG, "createAdminUserIfNeeded(): already have more than 1 user (%s)",
-                            Arrays.toString(userIds));
+                    Slogf.d(TAG, "createAdminUserIfNeeded(): already have %d admin(s)",
+                            numberOfExistingAdmins);
                 }
                 return;
             }
@@ -345,8 +367,50 @@ public final class HsumBootUserInitializer {
         }
     }
 
-    /** Called by {@code SystemServer.dump()} */
-    public static void dump(PrintWriter pw, Context context) {
+
+    /**
+     * Creates a static / permanent reference to a {@code Dumpable}.
+     *
+     * <p>That {@code Dumpable} will never be GC'ed and will dump both the static state (which is
+     * inferred from config / system properties) and the effective state of the {@code instance}
+     * (but without keeping a reference to it, so it can be GC'ed after boot).
+     */
+    private static Dumpable setDumpable(HsumBootUserInitializer instance, Context context) {
+        if (sDumpable != null) {
+            Slogf.e(TAG, "setDumpable(%s): already set (as %s)", instance, sDumpable);
+            return sDumpable;
+        }
+        String name = instance.toString();
+        WeakReference<HsumBootUserInitializer> ref = new WeakReference<>(instance);
+        sDumpable = new Dumpable() {
+
+            @Override
+            public String getDumpableName() {
+                return HsumBootUserInitializer.class.getSimpleName();
+            }
+
+            @Override
+            public void dump(PrintWriter pw, String[] args) {
+                HsumBootUserInitializer.dump(pw, context);
+                var self = ref.get();
+                if (self == null) {
+                    pw.printf("Effective state not available (%s has been GC'ed already)\n", name);
+                    return;
+                }
+                self.dump(pw);
+            }
+
+        };
+        return sDumpable;
+    }
+
+    @Nullable
+    public static Dumpable getDumpable() {
+        return sDumpable;
+    }
+
+    // Dumps static static - will always be available
+    private static void dump(PrintWriter pw, Context context) {
         var res = context.getResources();
 
         pw.print("Designate main user on boot: ");
@@ -364,6 +428,15 @@ public final class HsumBootUserInitializer {
         pw.println(createInitialUserOnBoot(context));
         pw.print("  config_createInitialUser: ");
         pw.println(res.getBoolean(R.bool.config_createInitialUser));
+    }
+
+    // Dumps internal static - will only be available until it's garbage collected
+    private void dump(PrintWriter pw) {
+        pw.println("Effective state:");
+        pw.print("  mDeviceProvisionedObserver="); pw.println(mDeviceProvisionedObserver);
+        pw.print("  mShouldDesignateMainUser="); pw.println(mShouldDesignateMainUser);
+        pw.print("  mShouldCreateInitialUser="); pw.println(mShouldCreateInitialUser);
+        pw.print("  mIsManagedDevice="); pw.println(mIsManagedDevice);
     }
 
     @VisibleForTesting
@@ -428,6 +501,11 @@ public final class HsumBootUserInitializer {
             // set the time now.
             mUms.setLastEnteredForegroundTimeToNow(bootUserId);
         }
+        // TODO(b/446947591): Remove the cast once Flags.hsuDeviceProvisioner() is completely
+        // pushed.
+        if (mDeviceProvisionedObserver instanceof HsuDeviceProvisioner) {
+            ((HsuDeviceProvisioner) mDeviceProvisionedObserver).setBootUser(bootUserId);
+        }
         final boolean started = mAms.startUserInForegroundWithListener(bootUserId,
                 /* unlockListener= */ null);
         if (!started) {
@@ -471,4 +549,9 @@ public final class HsumBootUserInitializer {
     static boolean createInitialUserOnBoot(Context context) {
         return context.getResources().getBoolean(R.bool.config_createInitialUser);
     }
+
+    private static UserFilter getFullAdminFilter() {
+        return UserFilter.builder().setRequiredFlags(FLAG_FULL | FLAG_ADMIN).build();
+    }
+
 }

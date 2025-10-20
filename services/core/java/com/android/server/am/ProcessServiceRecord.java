@@ -17,7 +17,6 @@
 package com.android.server.am;
 
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BOUND_SERVICE;
-import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_FOREGROUND_SERVICE;
 
 import android.annotation.Nullable;
 import android.app.ActivityManager;
@@ -40,46 +39,9 @@ import java.util.ArrayList;
  */
 final class ProcessServiceRecord extends ProcessServiceRecordInternal {
     /**
-     * Are there any client services with activities?
-     */
-    private boolean mHasClientActivities;
-
-    /**
-     * Running any services that are foreground?
-     */
-    private boolean mHasForegroundServices;
-
-    /**
      * Last reported state of whether it's running any services that are foreground.
      */
     private boolean mRepHasForegroundServices;
-
-    /**
-     * Running any services that are almost perceptible (started with
-     * {@link Context#BIND_ALMOST_PERCEPTIBLE} while the app was on TOP)?
-     */
-    private boolean mHasTopStartedAlmostPerceptibleServices;
-
-    /**
-     * The latest value of {@link ServiceRecord#lastTopAlmostPerceptibleBindRequestUptimeMs} among
-     * the currently running services.
-     */
-    private long mLastTopStartedAlmostPerceptibleBindRequestUptimeMs;
-
-
-    /**
-     * The OR'ed foreground service types that are running on this process.
-     * Note, because TYPE_NONE (==0) is also a valid type for pre-U apps, this field doesn't tell
-     * if the process has any TYPE_NONE FGS or not, but {@link #mHasTypeNoneFgs} will be set
-     * in that case.
-     */
-    private int mFgServiceTypes;
-
-    /**
-     * Whether the process has any foreground services of TYPE_NONE running.
-     * @see #mFgServiceTypes
-     */
-    private boolean mHasTypeNoneFgs;
 
     /**
      * App is allowed to manage allowlists such as temporary Power Save mode allowlist.
@@ -121,44 +83,10 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
     private final ActivityManagerService mService;
 
     ProcessServiceRecord(ProcessRecord app) {
+        super(app.mService.mProcessStateController.getOomConstants(), app);
+
         mApp = app;
         mService = app.mService;
-    }
-
-    void setHasClientActivities(boolean hasClientActivities) {
-        mHasClientActivities = hasClientActivities;
-        mApp.getWindowProcessController().setHasClientActivities(hasClientActivities);
-    }
-
-    boolean hasClientActivities() {
-        return mHasClientActivities;
-    }
-
-    void setHasForegroundServices(boolean hasForegroundServices, int fgServiceTypes,
-            boolean hasTypeNoneFgs) {
-        // hasForegroundServices should be the same as "either it has any FGS types, or none types".
-        // We still take this as a parameter because it's used in the callsite...
-        if (ActivityManagerDebugConfig.DEBUG_SERVICE
-                && hasForegroundServices != ((fgServiceTypes != 0) || hasTypeNoneFgs)) {
-            throw new IllegalStateException("hasForegroundServices mismatch");
-        }
-
-        mHasForegroundServices = hasForegroundServices;
-        mFgServiceTypes = fgServiceTypes;
-        mHasTypeNoneFgs = hasTypeNoneFgs;
-        mApp.getWindowProcessController().setHasForegroundServices(hasForegroundServices);
-        if (hasForegroundServices) {
-            mApp.mProfile.addHostingComponentType(HOSTING_COMPONENT_TYPE_FOREGROUND_SERVICE);
-        } else {
-            mApp.mProfile.clearHostingComponentType(HOSTING_COMPONENT_TYPE_FOREGROUND_SERVICE);
-        }
-    }
-
-    /**
-     * @return true if this process has any foreground services (even timed-out short-FGS)
-     */
-    boolean hasForegroundServices() {
-        return mHasForegroundServices;
     }
 
     void setHasReportedForegroundServices(boolean hasForegroundServices) {
@@ -169,18 +97,10 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
         return mRepHasForegroundServices;
     }
 
-    /**
-     * Returns the FGS types, but it doesn't tell if the types include "NONE" or not, use
-     * {@link #hasForegroundServices()}
-     */
-    int getForegroundServiceTypes() {
-        return mHasForegroundServices ? mFgServiceTypes : 0;
-    }
-
     boolean areForegroundServiceTypesSame(@ServiceInfo.ForegroundServiceType int types,
             boolean hasTypeNoneFgs) {
         return ((getForegroundServiceTypes() & types) == types)
-                && (mHasTypeNoneFgs == hasTypeNoneFgs);
+                && (getHasTypeNoneFgs() == hasTypeNoneFgs);
     }
 
     /**
@@ -191,53 +111,6 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
         return (getForegroundServiceTypes() & types) != 0;
     }
 
-    /**
-     * @return true if the process has any FGS that are _not_ a "short" FGS.
-     */
-    boolean hasNonShortForegroundServices() {
-        if (!mHasForegroundServices) {
-            return false; // Process has no FGS running.
-        }
-        // Does the process has any FGS of TYPE_NONE?
-        if (mHasTypeNoneFgs) {
-            return true;
-        }
-        // If not, we can just check mFgServiceTypes.
-        return mFgServiceTypes != ServiceInfo.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE;
-    }
-
-    /**
-     * @return if this process:
-     * - has at least one short-FGS
-     * - has no other types of FGS
-     * - and all the short-FGSes are procstate-timed out.
-     */
-    boolean areAllShortForegroundServicesProcstateTimedOut(long nowUptime) {
-        if (!mHasForegroundServices) { // Process has no FGS?
-            return false;
-        }
-        if (hasNonShortForegroundServices()) {  // Any non-short FGS running?
-            return false;
-        }
-        // Now we need to look at all short-FGS within the process and see if all of them are
-        // procstate-timed-out or not.
-        return !hasUndemotedShortForegroundService(nowUptime);
-    }
-
-    boolean hasUndemotedShortForegroundService(long nowUptime) {
-        for (int i = mServices.size() - 1; i >= 0; i--) {
-            final ServiceRecord sr = mServices.valueAt(i);
-            if (!sr.isShortFgs() || !sr.hasShortFgsInfo()) {
-                continue;
-            }
-            if (sr.getShortFgsInfo().getProcStateDemoteTime() >= nowUptime) {
-                // This short fgs has not timed out yet.
-                return true;
-            }
-        }
-        return false;
-    }
-
     int getNumForegroundServices() {
         int count = 0;
         for (int i = 0, serviceCount = mServices.size(); i < serviceCount; i++) {
@@ -246,46 +119,6 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
             }
         }
         return count;
-    }
-
-    void updateHasTopStartedAlmostPerceptibleServices() {
-        mHasTopStartedAlmostPerceptibleServices = false;
-        mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = 0;
-        for (int s = mServices.size() - 1; s >= 0; --s) {
-            final ServiceRecord sr = mServices.valueAt(s);
-            mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = Math.max(
-                    mLastTopStartedAlmostPerceptibleBindRequestUptimeMs,
-                    sr.lastTopAlmostPerceptibleBindRequestUptimeMs);
-            if (!mHasTopStartedAlmostPerceptibleServices && isAlmostPerceptible(sr)) {
-                mHasTopStartedAlmostPerceptibleServices = true;
-            }
-        }
-    }
-
-    private boolean isAlmostPerceptible(ServiceRecord record) {
-        if (record.lastTopAlmostPerceptibleBindRequestUptimeMs <= 0) {
-            return false;
-        }
-        final ArrayMap<IBinder, ArrayList<ConnectionRecord>> serviceConnections =
-                record.getConnections();
-        for (int m = serviceConnections.size() - 1; m >= 0; --m) {
-            final ArrayList<ConnectionRecord> clist = serviceConnections.valueAt(m);
-
-            for (int c = clist.size() - 1; c >= 0; --c) {
-                final ConnectionRecord cr = clist.get(c);
-                if (cr.hasFlag(Context.BIND_ALMOST_PERCEPTIBLE)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    boolean hasTopStartedAlmostPerceptibleServices() {
-        return mHasTopStartedAlmostPerceptibleServices
-                || (mLastTopStartedAlmostPerceptibleBindRequestUptimeMs > 0
-                && SystemClock.uptimeMillis() - mLastTopStartedAlmostPerceptibleBindRequestUptimeMs
-                < mService.mConstants.mServiceBindAlmostPerceptibleTimeoutMs);
     }
 
     void updateHasAboveClientLocked() {
@@ -317,12 +150,12 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
             mApp.getWindowProcessController().onServiceStarted(record.serviceInfo);
             updateHostingComonentTypeForBindingsLocked();
         }
-        if (record.lastTopAlmostPerceptibleBindRequestUptimeMs > 0) {
-            mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = Math.max(
-                    mLastTopStartedAlmostPerceptibleBindRequestUptimeMs,
-                    record.lastTopAlmostPerceptibleBindRequestUptimeMs);
-            if (!mHasTopStartedAlmostPerceptibleServices) {
-                mHasTopStartedAlmostPerceptibleServices = isAlmostPerceptible(record);
+        if (record.getLastTopAlmostPerceptibleBindRequestUptimeMs() > 0) {
+            setLastTopStartedAlmostPerceptibleBindRequestUptimeMs(Math.max(
+                    getLastTopStartedAlmostPerceptibleBindRequestUptimeMs(),
+                    record.getLastTopAlmostPerceptibleBindRequestUptimeMs()));
+            if (!getHasTopStartedAlmostPerceptibleServices()) {
+                setHasTopStartedAlmostPerceptibleServices(isAlmostPerceptible(record));
             }
         }
         return added;
@@ -336,7 +169,7 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
      */
     boolean stopService(ServiceRecord record) {
         final boolean removed = mServices.remove(record);
-        if (record.lastTopAlmostPerceptibleBindRequestUptimeMs > 0) {
+        if (record.getLastTopAlmostPerceptibleBindRequestUptimeMs() > 0) {
             updateHasTopStartedAlmostPerceptibleServices();
         }
         if (removed) {
@@ -600,19 +433,20 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
     }
 
     void dump(PrintWriter pw, String prefix, long nowUptime) {
-        if (mHasForegroundServices || mApp.getForcingToImportant() != null) {
-            pw.print(prefix); pw.print("mHasForegroundServices="); pw.print(mHasForegroundServices);
+        if (hasForegroundServices() || mApp.getForcingToImportant() != null) {
+            pw.print(prefix);
+            pw.print("mHasForegroundServices="); pw.print(hasForegroundServices());
             pw.print(" forcingToImportant="); pw.println(mApp.getForcingToImportant());
         }
-        if (mHasTopStartedAlmostPerceptibleServices
-                || mLastTopStartedAlmostPerceptibleBindRequestUptimeMs > 0) {
+        if (getHasTopStartedAlmostPerceptibleServices()
+                || getLastTopStartedAlmostPerceptibleBindRequestUptimeMs() > 0) {
             pw.print(prefix); pw.print("mHasTopStartedAlmostPerceptibleServices=");
-            pw.print(mHasTopStartedAlmostPerceptibleServices);
+            pw.print(getHasTopStartedAlmostPerceptibleServices());
             pw.print(" mLastTopStartedAlmostPerceptibleBindRequestUptimeMs=");
-            pw.println(mLastTopStartedAlmostPerceptibleBindRequestUptimeMs);
+            pw.println(getLastTopStartedAlmostPerceptibleBindRequestUptimeMs());
         }
-        if (mHasClientActivities || isHasAboveClient() || isTreatLikeActivity()) {
-            pw.print(prefix); pw.print("hasClientActivities="); pw.print(mHasClientActivities);
+        if (hasClientActivities() || isHasAboveClient() || isTreatLikeActivity()) {
+            pw.print(prefix); pw.print("hasClientActivities="); pw.print(hasClientActivities());
             pw.print(" hasAboveClient="); pw.print(isHasAboveClient());
             pw.print(" treatLikeActivity="); pw.println(isTreatLikeActivity());
         }

@@ -184,10 +184,10 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
     int pendingConnectionImportance;   // To be filled in to ProcessRecord once it connects
 
     /**
-     * The last time (in uptime timebase) a bind request was made with BIND_ALMOST_PERCEPTIBLE for
-     * this service while on TOP.
+     * Proof of concept for native-only isolated processes. This should be using a more real
+     * manifest entry to declare services as such.
      */
-    long lastTopAlmostPerceptibleBindRequestUptimeMs;
+    boolean mIsNativeIsolated; // is the service a native-only isolated service?
 
     // any current binding to this service has BIND_ALLOW_BACKGROUND_ACTIVITY_STARTS flag?
     private boolean mIsAllowedBgActivityStartsByBinding;
@@ -585,9 +585,6 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
      * Information specific to "SHORT_SERVICE" FGS.
      */
     class ShortFgsInfo {
-        /** Time FGS started */
-        private final long mStartTime;
-
         /**
          * Copied from {@link #mStartForegroundCount}. If this is different from the parent's,
          * that means this instance is stale.
@@ -597,14 +594,12 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         /** Service's "start ID" when this short-service started. */
         private int mStartId;
 
-        ShortFgsInfo(long startTime) {
-            mStartTime = startTime;
+        ShortFgsInfo() {
             update();
         }
 
         /**
          * Update {@link #mStartForegroundCount} and {@link #mStartId}.
-         * (but not {@link #mStartTime})
          */
         public void update() {
             this.mStartForegroundCount = ServiceRecord.this.mStartForegroundCount;
@@ -612,7 +607,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         }
 
         long getStartTime() {
-            return mStartTime;
+            return ServiceRecord.this.getShortFgsStartTime();
         }
 
         int getStartForegroundCount() {
@@ -637,25 +632,26 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
 
         /** Time when Service.onTimeout() should be called */
         long getTimeoutTime() {
-            return mStartTime + ams.mConstants.mShortFgsTimeoutDuration;
+            return getStartTime() + ams.mConstants.mShortFgsTimeoutDuration;
         }
 
-        /** Time when the procstate should be lowered. */
+        /**
+         * Time when the procstate should be lowered.
+         */
         long getProcStateDemoteTime() {
-            return mStartTime + ams.mConstants.mShortFgsTimeoutDuration
-                    + ams.mConstants.mShortFgsProcStateExtraWaitDuration;
+            return ServiceRecord.this.getShortFgsDemoteTime();
         }
 
         /** Time when the app should be declared ANR. */
         long getAnrTime() {
-            return mStartTime + ams.mConstants.mShortFgsTimeoutDuration
+            return getStartTime() + ams.mConstants.mShortFgsTimeoutDuration
                     + ams.mConstants.mShortFgsAnrExtraWaitDuration;
         }
 
         String getDescription() {
             return "sfc=" + this.mStartForegroundCount
                     + " sid=" + this.mStartId
-                    + " stime=" + this.mStartTime
+                    + " stime=" + this.getStartTime()
                     + " tt=" + this.getTimeoutTime()
                     + " dt=" + this.getProcStateDemoteTime()
                     + " at=" + this.getAnrTime();
@@ -1100,7 +1096,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
 
     /** Used only for tests */
     private ServiceRecord(ActivityManagerService ams) {
-        super(null, 0);
+        super(null, ams == null ? null : ams.mProcessStateController.getOomConstants(), 0);
 
         this.ams = ams;
         name = null;
@@ -1120,6 +1116,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         sdkSandboxClientAppUid = 0;
         sdkSandboxClientAppPackage = null;
         inSharedIsolatedProcess = false;
+        mIsNativeIsolated = false;
     }
 
     public static ServiceRecord newEmptyInstanceForTest(ActivityManagerService ams) {
@@ -1139,7 +1136,8 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
             Intent.FilterComparison intent, ServiceInfo sInfo, boolean callerIsFg,
             Runnable restarter, String processName, int sdkSandboxClientAppUid,
             String sdkSandboxClientAppPackage, boolean inSharedIsolatedProcess) {
-        super(instanceName, SystemClock.uptimeMillis());
+        super(instanceName, ams.mProcessStateController.getOomConstants(),
+                SystemClock.uptimeMillis());
 
         this.ams = ams;
         this.name = name;
@@ -1166,6 +1164,13 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         // to post or update a notification, but that doesn't cover the time before the first
         // notification
         updateFgsHasNotificationPermission();
+
+        if (android.os.Flags.nativeFrameworkPrototype()) {
+            // TODO(b/431902161): Add a stable way to distinguish native services.
+            // TODO(b/431901625): Consider supporting non-isolated native services.
+            mIsNativeIsolated = name.getShortClassName().contains(".NativeService")
+                && ((sInfo.flags & ServiceInfo.FLAG_ISOLATED_PROCESS) != 0);
+        }
     }
 
     public ServiceState getTracker() {
@@ -1806,20 +1811,6 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         return name;
     }
 
-    /**
-     * @return true if it's a foreground service of the "short service" type and don't have
-     * other fgs type bits set.
-     */
-    public boolean isShortFgs() {
-        // Note if the type contains FOREGROUND_SERVICE_TYPE_SHORT_SERVICE but also other bits
-        // set, it's _not_ considered be a short service. (because we shouldn't apply
-        // the short-service restrictions)
-        // (But we should be preventing mixture of FOREGROUND_SERVICE_TYPE_SHORT_SERVICE
-        // and other types in Service.startForeground().)
-        return isStartRequested() && isForeground() && (getForegroundServiceType()
-                == ServiceInfo.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
-    }
-
     public ShortFgsInfo getShortFgsInfo() {
         return isShortFgs() ? mShortFgsInfo : null;
     }
@@ -1828,7 +1819,8 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
      * Call it when a short FGS starts.
      */
     public void setShortFgsInfo(long uptimeNow) {
-        this.mShortFgsInfo = new ShortFgsInfo(uptimeNow);
+        setShortFgsStartTime(uptimeNow);
+        this.mShortFgsInfo = new ShortFgsInfo();
     }
 
     /** @return whether {@link #mShortFgsInfo} is set or not. */
@@ -1840,6 +1832,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
      * Call it when a short FGS stops.
      */
     public void clearShortFgsInfo() {
+        clearShortFgsStartTime();
         this.mShortFgsInfo = null;
     }
 

@@ -98,8 +98,10 @@ public class OomAdjusterTests {
                     return true;
                 }
             };
-            sService.mProcessStateController = new ProcessStateController.Builder(sService,
-                    sService.mProcessList, null)
+            final OomAdjuster.Callback callback = mock(OomAdjuster.Callback.class);
+            sService.mProcessStateController = new ProcessStateController
+                    .Builder(sService, sService.mProcessList, null,
+                    sService.mConstants.createOomConstants(), callback)
                     .setOomAdjusterInjector(injector)
                     .build();
             sService.mOomAdjuster = sService.mProcessStateController.getOomAdjuster();

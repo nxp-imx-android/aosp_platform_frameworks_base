@@ -1325,7 +1325,7 @@ public class AccountManagerService
                                     getRequestingPackages(account, accounts);
                             List<String> accountRemovedReceivers =
                                 getAccountRemovedReceivers(account, accounts);
-                            accountsDb.beginTransaction();
+                            accountsDb.beginTransactionDe();
                             try {
                                 accountsDb.deleteDeAccount(accountId);
                                 // Also delete from CE table if user is unlocked; if user is
@@ -1334,9 +1334,9 @@ public class AccountManagerService
                                 if (userUnlocked) {
                                     accountsDb.deleteCeAccount(accountId);
                                 }
-                                accountsDb.setTransactionSuccessful();
+                                accountsDb.setTransactionSuccessfulDe();
                             } finally {
-                                accountsDb.endTransaction();
+                                accountsDb.endTransactionDe();
                             }
                             accountDeleted = true;
                             Log.i(TAG, "validateAccountsInternal#Deleted UserId="
@@ -1990,14 +1990,14 @@ public class AccountManagerService
         }
         synchronized (accounts.dbLock) {
             synchronized (accounts.cacheLock) {
-                accounts.accountsDb.beginTransaction();
+                accounts.accountsDb.beginTransactionCe();
                 try {
                     if (accounts.accountsDb.findCeAccountId(account) >= 0) {
                         Log.w(TAG, "insertAccountIntoDatabase: " + account.toSafeString()
                                 + ", skipping since the account already exists");
                         return false;
                     }
-                    if (accounts.accountsDb.findAllDeAccounts().size() > 100) {
+                    if (accounts.accountsDb.countAllDeAccounts() > 100) {
                         Log.w(TAG, "insertAccountIntoDatabase: " + account.toSafeString()
                                 + ", skipping since more than 100 accounts on device exist");
                         return false;
@@ -2012,6 +2012,9 @@ public class AccountManagerService
                     if (accounts.accountsDb.insertDeAccount(account, accountId) < 0) {
                         Log.w(TAG, "insertAccountIntoDatabase: " + account.toSafeString()
                                 + ", skipping the DB insert failed");
+                        if (Flags.detachDeCe()) {
+                            accounts.accountsDb.deleteCeAccount(accountId);
+                        }
                         return false;
                     }
                     if (extras != null) {
@@ -2020,7 +2023,11 @@ public class AccountManagerService
                             if (accounts.accountsDb.insertExtra(accountId, key, value) < 0) {
                                 Log.w(TAG, "insertAccountIntoDatabase: "
                                         + account.toSafeString()
-                                        + ", skipping since insertExtra failed for key " + key);
+                                        + ", skipping since insertExtra failed for key "
+                                        + key);
+                                if (Flags.detachDeCe()) {
+                                    accounts.accountsDb.deleteCeAccount(accountId);
+                                }
                                 return false;
                             } else {
                                 AccountManager.invalidateLocalAccountUserDataCaches();
@@ -2035,7 +2042,7 @@ public class AccountManagerService
                                     accounts, callingUid);
                         }
                     }
-                    accounts.accountsDb.setTransactionSuccessful();
+                    accounts.accountsDb.setTransactionSuccessfulCe();
 
                     FrameworkStatsLog.write(
                             FrameworkStatsLog.ACCOUNT_MANAGER_EVENT,
@@ -2048,7 +2055,7 @@ public class AccountManagerService
 
                     insertAccountIntoCacheLocked(accounts, account);
                 } finally {
-                    accounts.accountsDb.endTransaction();
+                    accounts.accountsDb.endTransactionCe();
                 }
             }
         }
@@ -2309,7 +2316,7 @@ public class AccountManagerService
             synchronized (accounts.cacheLock) {
                 List<String> accountRemovedReceivers =
                     getAccountRemovedReceivers(accountToRename, accounts);
-                accounts.accountsDb.beginTransaction();
+                accounts.accountsDb.beginTransactionDe();
                 Account renamedAccount = new Account(newName, accountToRename.type);
                 try {
                     if ((accounts.accountsDb.findCeAccountId(renamedAccount) >= 0)) {
@@ -2321,7 +2328,7 @@ public class AccountManagerService
                         accounts.accountsDb.renameCeAccount(accountId, newName);
                         if (accounts.accountsDb.renameDeAccount(
                                 accountId, newName, accountToRename.name)) {
-                            accounts.accountsDb.setTransactionSuccessful();
+                            accounts.accountsDb.setTransactionSuccessfulDe();
                         } else {
                             Log.e(TAG, "renameAccount failed");
                             return null;
@@ -2331,7 +2338,7 @@ public class AccountManagerService
                         return null;
                     }
                 } finally {
-                    accounts.accountsDb.endTransaction();
+                    accounts.accountsDb.endTransactionDe();
                 }
             /*
              * Database transaction was successful. Clean up cached
@@ -2606,27 +2613,21 @@ public class AccountManagerService
                         accounts);
                 List<String> accountRemovedReceivers =
                     getAccountRemovedReceivers(account, accounts);
-                accounts.accountsDb.beginTransaction();
-                // Set to a placeholder value, this will only be used if the database
-                // transaction succeeds.
                 long accountId = -1;
+                accounts.accountsDb.beginTransactionCe();
                 try {
-                    accountId = accounts.accountsDb.findDeAccountId(account);
-                    if (accountId >= 0) {
-                        isChanged = accounts.accountsDb.deleteDeAccount(accountId);
-                    }
-                    // always delete from CE table if CE storage is available
-                    // DE account could be removed while CE was locked
+                    isChanged = accounts.accountsDb.deleteDeAccount(account);
                     if (userUnlocked) {
                         long ceAccountId = accounts.accountsDb.findCeAccountId(account);
                         if (ceAccountId >= 0) {
                             accounts.accountsDb.deleteCeAccount(ceAccountId);
                         }
                     }
-                    accounts.accountsDb.setTransactionSuccessful();
+                    accounts.accountsDb.setTransactionSuccessfulCe();
                 } finally {
-                    accounts.accountsDb.endTransaction();
+                    accounts.accountsDb.endTransactionCe();
                 }
+
                 if (isChanged) {
                     removeAccountFromCacheLocked(accounts, account);
                     for (Entry<String, Integer> packageToVisibility : packagesToVisibility
@@ -2709,12 +2710,12 @@ public class AccountManagerService
             UserAccounts accounts = getUserAccounts(userId);
             List<Pair<Account, String>> deletedTokens;
             synchronized (accounts.dbLock) {
-                accounts.accountsDb.beginTransaction();
+                accounts.accountsDb.beginTransactionCe();
                 try {
-                    deletedTokens = invalidateAuthTokenLocked(accounts, accountType, authToken);
-                    accounts.accountsDb.setTransactionSuccessful();
+                    deletedTokens = accounts.accountsDb.invalidateAuthToken(accountType, authToken);
+                    accounts.accountsDb.setTransactionSuccessfulCe();
                 } finally {
-                    accounts.accountsDb.endTransaction();
+                    accounts.accountsDb.endTransactionCe();
                 }
                 synchronized (accounts.cacheLock) {
                     for (Pair<Account, String> tokenInfo : deletedTokens) {
@@ -2729,26 +2730,6 @@ public class AccountManagerService
         } finally {
             restoreCallingIdentity(identityToken);
         }
-    }
-
-    private List<Pair<Account, String>> invalidateAuthTokenLocked(UserAccounts accounts, String accountType,
-            String authToken) {
-        // TODO Move to AccountsDB
-        List<Pair<Account, String>> results = new ArrayList<>();
-        Cursor cursor = accounts.accountsDb.findAuthtokenForAllAccounts(accountType, authToken);
-
-        try {
-            while (cursor.moveToNext()) {
-                String authTokenId = cursor.getString(0);
-                String accountName = cursor.getString(1);
-                String authTokenType = cursor.getString(2);
-                accounts.accountsDb.deleteAuthToken(authTokenId);
-                results.add(Pair.create(new Account(accountName, accountType), authTokenType));
-            }
-        } finally {
-            cursor.close();
-        }
-        return results;
     }
 
     private void saveCachedToken(
@@ -2781,32 +2762,27 @@ public class AccountManagerService
             synchronized (accounts.cacheLock) {
                 shouldBlockWrite = shouldBlockDatabaseWrite(accounts, account, type, authToken);
             }
-            accounts.accountsDb.beginTransaction();
-            boolean updateCache = false;
+            if (authToken != null && shouldBlockWrite) {
+                Log.w(TAG, "Too much storage is used - block token update for accountType="
+                        + account.type);
+                return false; // fail silently.
+            }
+            accounts.accountsDb.beginTransactionCe();
             try {
                 long accountId = accounts.accountsDb.findDeAccountId(account);
                 if (accountId < 0) {
                     return false;
                 }
-                accounts.accountsDb.deleteAuthtokensByAccountIdAndType(accountId, type);
-                if (authToken != null && shouldBlockWrite) {
-                    Log.w(TAG, "Too much storage is used - block token update for accountType="
-                            + account.type);
-                    return false; // fail silently.
-                }
-                if (accounts.accountsDb.insertAuthToken(accountId, type, authToken) >= 0) {
-                    accounts.accountsDb.setTransactionSuccessful();
-                    updateCache = true;
+                if (accounts.accountsDb.insertOrReplaceAuthToken(accountId, type, authToken) >= 0) {
+                    accounts.accountsDb.setTransactionSuccessfulCe();
+                    synchronized (accounts.cacheLock) {
+                        writeAuthTokenIntoCacheLocked(accounts, account, type, authToken);
+                    }
                     return true;
                 }
                 return false;
             } finally {
-                accounts.accountsDb.endTransaction();
-                if (updateCache) {
-                    synchronized (accounts.cacheLock) {
-                        writeAuthTokenIntoCacheLocked(accounts, account, type, authToken);
-                    }
-                }
+                accounts.accountsDb.endTransactionCe();
             }
         }
     }
@@ -2910,43 +2886,39 @@ public class AccountManagerService
         boolean isChanged = false;
         synchronized (accounts.dbLock) {
             synchronized (accounts.cacheLock) {
-                accounts.accountsDb.beginTransaction();
+                final long accountId = accounts.accountsDb.findDeAccountId(account);
+                if (accountId < 0) {
+                    return;
+                }
+                accounts.accountsDb.beginTransactionCe();
                 try {
-                    final long accountId = accounts.accountsDb.findDeAccountId(account);
-                    if (accountId >= 0) {
-                        accounts.accountsDb.updateCeAccountPassword(accountId, password);
-                        accounts.accountsDb.deleteAuthTokensByAccountId(accountId);
-                        accounts.authTokenCache.remove(account);
-                        accounts.accountTokenCaches.remove(account);
-                        accounts.accountsDb.setTransactionSuccessful();
-                        // If there is an account whose password will be updated and the database
-                        // transactions succeed, then we say that a change has occured. Even if the
-                        // new password is the same as the old and there were no authtokens to
-                        // delete.
-                        isChanged = true;
-                        String action = (password == null || password.length() == 0) ?
-                                AccountsDb.DEBUG_ACTION_CLEAR_PASSWORD
-                                : AccountsDb.DEBUG_ACTION_SET_PASSWORD;
-                        logRecord(action, AccountsDb.TABLE_ACCOUNTS, accountId, accounts,
-                                callingUid);
+                    accounts.accountsDb.updateCeAccountPassword(accountId, password);
+                    accounts.accountsDb.deleteAuthTokensByAccountId(accountId);
+                    accounts.authTokenCache.remove(account);
+                    accounts.accountTokenCaches.remove(account);
+                    accounts.accountsDb.setTransactionSuccessfulCe();
+                    isChanged = true;
+                } finally {
+                    accounts.accountsDb.endTransactionCe();
+                }
 
-                        FrameworkStatsLog.write(
-                                FrameworkStatsLog.ACCOUNT_MANAGER_EVENT,
-                                account.type,
-                                callingUid,
-                                TextUtils.isEmpty(password)
+                if (isChanged) {
+                    String action = (password == null || password.length() == 0) ?
+                            AccountsDb.DEBUG_ACTION_CLEAR_PASSWORD
+                            : AccountsDb.DEBUG_ACTION_SET_PASSWORD;
+                    logRecord(action, AccountsDb.TABLE_ACCOUNTS, accountId, accounts, callingUid);
+
+                    FrameworkStatsLog.write(
+                            FrameworkStatsLog.ACCOUNT_MANAGER_EVENT,
+                            account.type,
+                            callingUid,
+                            TextUtils.isEmpty(password)
                                 ? FrameworkStatsLog.ACCOUNT_MANAGER_EVENT__EVENT_TYPE__PASSWORD_REMOVED
                                 : FrameworkStatsLog.ACCOUNT_MANAGER_EVENT__EVENT_TYPE__PASSWORD_CHANGED);
-                    }
-                } finally {
-                    accounts.accountsDb.endTransaction();
-                    if (isChanged) {
-                        // Send LOGIN_ACCOUNTS_CHANGED only if the something changed.
-                        sendNotificationAccountUpdated(account, accounts);
-                        Log.i(TAG, "callingUid=" + callingUid + " changed password");
-                        sendAccountsChangedBroadcast(
-                                accounts.userId, account.type, /*useCase=*/"setPassword");
-                    }
+                    sendNotificationAccountUpdated(account, accounts);
+                    Log.i(TAG, "callingUid=" + callingUid + " changed password");
+                    sendAccountsChangedBroadcast(
+                            accounts.userId, account.type, /*useCase=*/"setPassword");
                 }
             }
         }
@@ -3033,24 +3005,19 @@ public class AccountManagerService
                 }
             }
 
-            accounts.accountsDb.beginTransaction();
+            accounts.accountsDb.beginTransactionDe();
             try {
                 long accountId = accounts.accountsDb.findDeAccountId(account);
                 if (accountId < 0) {
                     return;
                 }
-                long extrasId = accounts.accountsDb.findExtrasIdByAccountId(accountId, key);
-                if (extrasId < 0) {
-                    extrasId = accounts.accountsDb.insertExtra(accountId, key, value);
-                    if (extrasId < 0) {
-                        return;
-                    }
-                } else if (!accounts.accountsDb.updateExtra(extrasId, value)) {
+                if (accounts.accountsDb.insertOrReplaceExtra(accountId, key, value) < 0) {
+                    // Failed to insert or replace, likely due to DB error.
                     return;
                 }
-                accounts.accountsDb.setTransactionSuccessful();
+                accounts.accountsDb.setTransactionSuccessfulDe();
             } finally {
-                accounts.accountsDb.endTransaction();
+                accounts.accountsDb.endTransactionDe();
             }
             synchronized (accounts.cacheLock) {
                 writeUserDataIntoCacheLocked(accounts, account, key, value);
@@ -6321,16 +6288,16 @@ public class AccountManagerService
         UserAccounts accounts = getUserAccounts(UserHandle.getUserId(uid));
         synchronized (accounts.dbLock) {
             synchronized (accounts.cacheLock) {
-                accounts.accountsDb.beginTransaction();
+                accounts.accountsDb.beginTransactionDe();
                 try {
                     long accountId = accounts.accountsDb.findDeAccountId(account);
                     if (accountId >= 0) {
                         accounts.accountsDb.deleteGrantsByAccountIdAuthTokenTypeAndUid(
                                 accountId, authTokenType, uid);
-                        accounts.accountsDb.setTransactionSuccessful();
+                        accounts.accountsDb.setTransactionSuccessfulDe();
                     }
                 } finally {
-                    accounts.accountsDb.endTransaction();
+                    accounts.accountsDb.endTransactionDe();
                 }
 
                 cancelNotification(

@@ -105,6 +105,21 @@ public class TransitionUtil {
         return false;
     }
 
+    /**
+     * Returns {@code true} if the transition has a display change that is not just an order-change.
+     */
+    public static boolean hasNonOrderOnlyDisplayChange(@NonNull TransitionInfo info) {
+        for (int i = info.getChanges().size() - 1; i >= 0; --i) {
+            final TransitionInfo.Change change = info.getChanges().get(i);
+            if (change.getMode() == TRANSIT_CHANGE
+                    && change.hasFlags(FLAG_IS_DISPLAY)
+                    && !isOrderOnly(change)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Returns `true` if `change` is a wallpaper. */
     public static boolean isWallpaper(TransitionInfo.Change change) {
         return (change.getTaskInfo() == null)
@@ -135,7 +150,8 @@ public class TransitionUtil {
                 && (change.getFlags() & FLAG_MOVED_TO_TOP) != 0
                 && change.getStartAbsBounds().equals(change.getEndAbsBounds())
                 && (change.getLastParent() == null
-                        || change.getLastParent().equals(change.getParent()));
+                        || change.getLastParent().equals(change.getParent()))
+                && (change.getStartRotation() == change.getEndRotation());
     }
 
     /**

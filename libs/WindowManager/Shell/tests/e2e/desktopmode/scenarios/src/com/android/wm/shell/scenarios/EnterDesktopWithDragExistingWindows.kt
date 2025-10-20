@@ -43,7 +43,7 @@ constructor(
     fun setup() {
         mailAppDesktopHelper.enterDesktopMode(wmHelper, device)
         mailAppDesktopHelper.openTasks(wmHelper, numTasks = maxNum - 1)
-        mailAppDesktopHelper.exitDesktopWithDragToTopDragZone(wmHelper, device)
+        mailAppDesktopHelper.exitDesktopModeToFullScreenViaKeyboard(wmHelper)
     }
 
     @Test

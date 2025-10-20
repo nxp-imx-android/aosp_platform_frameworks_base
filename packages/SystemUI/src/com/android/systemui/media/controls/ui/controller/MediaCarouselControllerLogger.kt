@@ -109,6 +109,18 @@ constructor(@MediaCarouselControllerLog private val buffer: LogBuffer) {
             { "media carousel($str1), width: $int1 height: $int2, location:$long1" },
         )
     }
+
+    fun logCardVisibilityChanged(carouselVisible: Boolean, visibleMediaIndex: Int) {
+        buffer.log(
+            TAG,
+            LogLevel.DEBUG,
+            {
+                bool1 = carouselVisible
+                int1 = visibleMediaIndex
+            },
+            { "card visibility changed, isVisible: $bool1, index: $int1" },
+        )
+    }
 }
 
 private const val TAG = "MediaCarouselCtlrLog"

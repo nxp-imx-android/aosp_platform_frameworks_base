@@ -32,7 +32,9 @@ import static android.os.UserHandle.getCallingUserId;
 import static android.os.UserManager.isVisibleBackgroundUsersEnabled;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.ViewRootImpl.CLIENT_TRANSIENT;
+import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_2BUTTON_OVERLAY;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON_OVERLAY;
+import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY;
 
 import android.Manifest;
 import android.annotation.NonNull;
@@ -133,7 +135,9 @@ import com.android.systemui.shared.Flags;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -1541,6 +1545,20 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
     }
 
     @Override
+    public int getIcon(String slot) {
+        enforceStatusBar();
+        enforceValidCallingUser();
+
+        synchronized (mIcons) {
+            StatusBarIcon icon = mIcons.get(slot);
+            if (icon == null) {
+                throw new IllegalArgumentException("No icon for the slot:" + slot);
+            }
+            return icon.icon.getResId();
+        }
+    }
+
+    @Override
     public void setIconVisibility(String slot, boolean visibility) {
         enforceStatusBar();
         enforceValidCallingUser();
@@ -2601,6 +2619,22 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
             if (overlayManager != null && navBarMode == NAV_BAR_MODE_KIDS
                     && isPackageSupported(NAV_BAR_MODE_3BUTTON_OVERLAY)) {
                 overlayManager.setEnabledExclusiveInCategory(NAV_BAR_MODE_3BUTTON_OVERLAY, userId);
+            } else if (overlayManager != null && navBarMode == NAV_BAR_MODE_DEFAULT) {
+                List<String> defaultOverlayPackages =
+                        Arrays.asList(overlayManager.getDefaultOverlayPackages());
+                if (defaultOverlayPackages.contains(NAV_BAR_MODE_3BUTTON_OVERLAY)
+                        && isPackageSupported(NAV_BAR_MODE_3BUTTON_OVERLAY)) {
+                    overlayManager.setEnabledExclusiveInCategory(
+                            NAV_BAR_MODE_3BUTTON_OVERLAY, userId);
+                } else if (defaultOverlayPackages.contains(NAV_BAR_MODE_2BUTTON_OVERLAY)
+                        && isPackageSupported(NAV_BAR_MODE_2BUTTON_OVERLAY)) {
+                    overlayManager.setEnabledExclusiveInCategory(
+                            NAV_BAR_MODE_2BUTTON_OVERLAY, userId);
+                } else if (defaultOverlayPackages.contains(NAV_BAR_MODE_GESTURAL_OVERLAY)
+                        && isPackageSupported(NAV_BAR_MODE_GESTURAL_OVERLAY)) {
+                    overlayManager.setEnabledExclusiveInCategory(
+                            NAV_BAR_MODE_GESTURAL_OVERLAY, userId);
+                }
             }
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();

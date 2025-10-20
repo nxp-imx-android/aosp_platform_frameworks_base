@@ -16,8 +16,12 @@
 
 package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
+import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
@@ -30,6 +34,9 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
+import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.power.shared.model.WakefulnessState
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -164,9 +171,72 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
         }
 
     @Test
+    @EnableFlags(FLAG_SCENE_CONTAINER, FLAG_DUAL_SHADE)
+    fun shouldShowEmptyShadeView_dualShade_falseWhenNoNotifsWithMedia() =
+        kosmos.runTest {
+            enableDualShade()
+            runCurrent()
+
+            val hasActiveMedia by collectLastValue(mediaCarouselInteractor.hasActiveMedia)
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
+
+            // WHEN has no notifs but has media
+            activeNotificationListRepository.setActiveNotifs(count = 0)
+
+            val userMedia = MediaData(active = true)
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
+            runCurrent()
+
+            // THEN empty shade is not visible
+            assertThat(hasActiveMedia).isTrue()
+            assertThat(shouldShowEmptyShadeView).isFalse()
+
+            // WHEN media is dismissed
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia.copy(active = false))
+            runCurrent()
+
+            // THEN empty shade is visible
+            assertThat(hasActiveMedia).isFalse()
+            assertThat(shouldShowEmptyShadeView).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun shouldShowEmptyShadeView_singleShade_trueWhenNoNotifsWithMedia() =
+        kosmos.runTest {
+            enableSingleShade()
+            runCurrent()
+
+            val hasActiveMedia by collectLastValue(mediaCarouselInteractor.hasActiveMedia)
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
+
+            // WHEN has no notifs but has media
+            activeNotificationListRepository.setActiveNotifs(count = 0)
+
+            val userMedia = MediaData(active = true)
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
+            runCurrent()
+
+            // THEN empty shade is visible
+            assertThat(hasActiveMedia).isTrue()
+            assertThat(shouldShowEmptyShadeView).isTrue()
+
+            // WHEN media is dismissed
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia.copy(active = false))
+            runCurrent()
+
+            // THEN empty shade is still visible
+            assertThat(hasActiveMedia).isFalse()
+            assertThat(shouldShowEmptyShadeView).isTrue()
+        }
+
+    @Test
     fun shouldShowEmptyShadeView_falseWhenQsExpandedDefault() =
         kosmos.runTest {
             val shouldShow by collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
+            enableSingleShade()
 
             // WHEN has no notifs
             activeNotificationListRepository.setActiveNotifs(count = 0)
@@ -179,6 +249,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun shouldShowEmptyShadeView_trueWhenQsExpandedInSplitShade() =
         kosmos.runTest {
             enableSplitShade()
@@ -204,6 +275,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     fun shouldShowEmptyShadeView_notAnimatingWhenQsExpandedOnKeyguard() =
         kosmos.runTest {
             val shouldShow by collectLastValue(underTest.shouldShowEmptyShadeView)
+            enableSingleShade()
 
             // WHEN has no notifs
             activeNotificationListRepository.setActiveNotifs(count = 0)
@@ -358,8 +430,9 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
         }
 
     @Test
-    fun shouldIncludeFooterView_falseWhenQsExpandedDefault() =
+    fun shouldIncludeFooterView_falseWhenQsExpandedSingleShade() =
         kosmos.runTest {
+            enableSingleShade()
             val shouldInclude by collectFooterViewVisibility()
 
             // WHEN has notifs
@@ -377,9 +450,34 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun shouldIncludeFooterView_trueWhenQsExpandedSplitShade() =
         kosmos.runTest {
             enableSplitShade()
+            runCurrent()
+            val shouldIncludeFooterView by collectFooterViewVisibility()
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
+
+            // WHEN has notifs
+            activeNotificationListRepository.setActiveNotifs(count = 2)
+            // AND quick settings are expanded
+            shadeTestUtil.setQsExpansion(1f)
+            // AND shade is open
+            fakeKeyguardRepository.setStatusBarState(StatusBarState.SHADE)
+            shadeTestUtil.setShadeExpansion(1f)
+            runCurrent()
+
+            // THEN footer is visible
+            assertThat(shouldIncludeFooterView?.value).isTrue()
+            assertThat(shouldShowEmptyShadeView).isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_SCENE_CONTAINER, FLAG_DUAL_SHADE)
+    fun shouldIncludeFooterView_trueWhenQsExpandedDualShade() =
+        kosmos.runTest {
+            enableDualShade()
             runCurrent()
             val shouldIncludeFooterView by collectFooterViewVisibility()
             val shouldShowEmptyShadeView by
@@ -456,7 +554,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
         }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(FLAG_SCENE_CONTAINER, FLAG_DUAL_SHADE)
     fun shouldShowFooterView_dualShadeWithNotifs_visibleInShade() =
         kosmos.runTest {
             enableDualShade()
@@ -475,7 +573,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
         }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(FLAG_SCENE_CONTAINER, FLAG_DUAL_SHADE)
     fun shouldShowFooterView_dualShadeWithoutNotifs_visibleInShade() =
         kosmos.runTest {
             enableDualShade()
@@ -525,7 +623,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
         }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(FLAG_SCENE_CONTAINER, FLAG_DUAL_SHADE)
     fun shouldShowFooterView_dualShade_trueWhenShadeIsExpanded() =
         kosmos.runTest {
             enableDualShade()
@@ -562,7 +660,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
         }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(FLAG_SCENE_CONTAINER, FLAG_DUAL_SHADE)
     fun shouldShowFooterView_dualShade_trueWhenNoNotifs() =
         kosmos.runTest {
             enableDualShade()

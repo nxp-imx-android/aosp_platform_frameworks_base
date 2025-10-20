@@ -20,9 +20,13 @@ import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREG
 import static android.companion.AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION;
 
 import static com.android.internal.util.CollectionUtils.any;
+import static com.android.internal.util.CollectionUtils.filter;
+import static com.android.server.companion.utils.PermissionsUtils.PERM_SET_TO_PERMS;
 import static com.android.server.companion.utils.RolesUtils.NLS_PROFILES;
+import static com.android.server.companion.utils.RolesUtils.isRoleInUseByAssociations;
 import static com.android.server.companion.utils.RolesUtils.removeRoleHolderForAssociation;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.DAYS;
 
 import android.annotation.NonNull;
@@ -34,6 +38,7 @@ import android.companion.AssociationInfo;
 import android.companion.Flags;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ResolveInfo;
 import android.os.Binder;
@@ -42,12 +47,19 @@ import android.os.UserHandle;
 import android.service.notification.NotificationListenerService;
 import android.util.Slog;
 
+import com.android.internal.util.CollectionUtils;
 import com.android.server.companion.datatransfer.SystemDataTransferRequestStore;
 import com.android.server.companion.devicepresence.CompanionAppBinder;
 import com.android.server.companion.devicepresence.DevicePresenceProcessor;
 import com.android.server.companion.transport.CompanionTransportManager;
+import com.android.server.companion.utils.PermissionsUtils;
+import com.android.server.companion.utils.RolesUtils;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This class responsible for disassociation.
@@ -74,6 +86,8 @@ public class DisassociationProcessor {
     private final AssociationStore mAssociationStore;
     @NonNull
     private final PackageManagerInternal mPackageManagerInternal;
+    @NonNull
+    private final PackageManager mPackageManager;
     @NonNull
     private final DevicePresenceProcessor mDevicePresenceMonitor;
     @NonNull
@@ -106,6 +120,7 @@ public class DisassociationProcessor {
         mSystemDataTransferRequestStore = systemDataTransferRequestStore;
         mTransportManager = companionTransportManager;
         mNotificationManager = notificationManager;
+        mPackageManager = context.getPackageManager();
     }
 
     /**
@@ -129,13 +144,18 @@ public class DisassociationProcessor {
         final String packageName = association.getPackageName();
         final String deviceProfile = association.getDeviceProfile();
 
-        final boolean isRoleInUseByOtherAssociations = deviceProfile != null
-                && any(mAssociationStore.getActiveAssociationsByPackage(userId, packageName),
-                    it -> deviceProfile.equals(it.getDeviceProfile()) && id != it.getId());
+        final List<AssociationInfo> otherActiveAssociations = filter(
+                mAssociationStore.getActiveAssociationsByPackage(userId, packageName),
+                it -> id != it.getId()
+        );
+        final boolean isRoleInUseByOtherAssociations =
+                isRoleInUseByAssociations(otherActiveAssociations, deviceProfile);
 
         final int packageProcessImportance = getPackageProcessImportance(userId, packageName);
-        if (packageProcessImportance <= IMPORTANCE_FOREGROUND && deviceProfile != null
-                && !isRoleInUseByOtherAssociations) {
+        if (packageProcessImportance <= IMPORTANCE_FOREGROUND
+                && ((deviceProfile != null && !isRoleInUseByOtherAssociations)
+                        || (deviceProfile == null
+                            && !CollectionUtils.isEmpty(association.getExtraPermissions())))) {
             // Need to remove the app from the list of role holders, but the process is visible
             // to the user at the moment, so we'll need to do it later.
             Slog.i(TAG, "Cannot disassociate id=[" + id + "] now - process is visible. "
@@ -176,12 +196,25 @@ public class DisassociationProcessor {
             }
         });
 
+        // If the device profile is null and extraPermission is not empty,
+        // revoke the granted extra permissions.
+        if (deviceProfile == null && !CollectionUtils.isEmpty(association.getExtraPermissions())) {
+            revokeExtraPermissionsForNonProfile(association.getPackageName(),
+                    association.getExtraPermissions(), association.getUserId());
+        }
+
         // If role is not in use by other associations, revoke the role.
         // Do not need to remove the system role since it was pre-granted by the system.
         if (!isRoleInUseByOtherAssociations && deviceProfile != null && !deviceProfile.equals(
                 DEVICE_PROFILE_AUTOMOTIVE_PROJECTION)) {
             removeRoleHolderForAssociation(mContext, association.getUserId(),
-                    association.getPackageName(), association.getDeviceProfile());
+                    association.getPackageName(), association.getDeviceProfile(), (success) -> {
+                        if (success) {
+                            // If the permission is used by other non-profile devices, reconcile it.
+                            reconcileNonProfileDevicesPermissions(association.getPackageName(),
+                                    association.getUserId());
+                        }
+                    });
         }
         // Handle unbind in DevicePresenceProcessor instead.
         if (!Flags.notifyAssociationRemoved()) {
@@ -301,21 +334,101 @@ public class DisassociationProcessor {
                 return;
             }
 
-            final String packageName = mPackageManagerInternal.getNameForUid(uid);
-            if (packageName == null) {
+            // A UID can be shared by multiple packages if android:sharedUserId is used.
+            // We must get all packages for the UID to ensure we find the correct one.
+            final String[] packageNames = mPackageManager.getPackagesForUid(uid);
+            if (packageNames == null || packageNames.length == 0) {
                 // Not interested in this uid.
                 return;
             }
 
             int userId = UserHandle.getUserId(uid);
-            for (AssociationInfo association : mAssociationStore.getRevokedAssociations(userId,
-                    packageName)) {
-                disassociate(association.getId(), REASON_REVOKED);
+            for (String packageName : packageNames) {
+                for (AssociationInfo association : mAssociationStore.getRevokedAssociations(userId,
+                        packageName)) {
+                    disassociate(association.getId(), REASON_REVOKED);
+                }
             }
 
             if (mAssociationStore.getRevokedAssociations().isEmpty()) {
                 stopListening();
             }
         }
+    }
+
+    private void revokeExtraPermissionsForNonProfile(String packageName,
+            Set<String> permissionSetKeys,
+            int userId
+    ) {
+        if (permissionSetKeys == null || permissionSetKeys.isEmpty()) {
+            return;
+        }
+        requireNonNull(packageName);
+
+        Binder.withCleanCallingIdentity(() -> {
+            final PackageManager packageManager = mContext.getPackageManager();
+            final UserHandle user = UserHandle.of(userId);
+
+            PermissionsUtils.getIndividualPermissionsFromKeys(permissionSetKeys).stream()
+                    .filter(permission ->
+                            packageManager.checkPermission(permission, packageName)
+                                == PackageManager.PERMISSION_GRANTED
+                            && !checkIfOtherAssociationsNeedPermission(
+                                    packageName, userId, permission))
+                    .forEach(permission ->
+                            packageManager.revokeRuntimePermission(packageName, permission, user));
+        });
+    }
+
+    private boolean checkIfOtherAssociationsNeedPermission(String packageName, int userId,
+            String permission) {
+        return mAssociationStore.getAssociationsByPackage(userId, packageName)
+                .stream()
+                .anyMatch(
+                        associationInfo -> {
+                            Collection<Integer> permissionIds;
+                            String deviceProfile = associationInfo.getDeviceProfile();
+                            // Get the initial stream of permission IDs
+                            // based on whether a profile exists.
+                            if (deviceProfile == null) {
+                                // No device profile. Use the "extra permissions".
+                                permissionIds = PermissionsUtils.extraPermissionsToIds(
+                                        associationInfo.getExtraPermissions());
+                            } else {
+                                // A device profile exists. Get permission IDs from the profile.
+                                permissionIds = RolesUtils.getPermsForProfile(deviceProfile);
+                            }
+
+                            // Convert the stream of IDs into a stream of actual permission strings.
+                            return permissionIds.stream()
+                                    .map(PERM_SET_TO_PERMS::get)
+                                    .filter(Objects::nonNull)
+                                    .flatMap(Collection::stream)
+                                    .anyMatch(permission::equals);
+                        });
+    }
+
+    private void reconcileNonProfileDevicesPermissions(String packageName, int userId) {
+        Binder.withCleanCallingIdentity(() -> {
+            final PackageManager packageManager = mContext.getPackageManager();
+            final UserHandle user = UserHandle.of(userId);
+
+            PermissionsUtils.getIndividualPermissionsFromKeys(
+                    mAssociationStore.getAssociationsByPackage(userId, packageName).stream()
+                            .filter(associationInfo ->
+                                    associationInfo.getDeviceProfile() == null
+                            )
+                            .flatMap(associationInfo ->
+                                    associationInfo.getExtraPermissions().stream()
+                            )
+                            .collect(Collectors.toSet())
+                    ).stream()
+                    .filter(permission ->
+                            packageManager.checkPermission(permission, packageName)
+                                    != PackageManager.PERMISSION_GRANTED
+                    )
+                    .forEach(permission ->
+                            packageManager.grantRuntimePermission(packageName, permission, user));
+        });
     }
 }

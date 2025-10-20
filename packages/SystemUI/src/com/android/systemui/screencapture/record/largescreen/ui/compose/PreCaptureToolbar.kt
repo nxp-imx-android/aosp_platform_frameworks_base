@@ -20,66 +20,147 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.IconToggleButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toAndroidRect
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.android.systemui.common.ui.compose.Icon
+import androidx.compose.ui.unit.roundToIntRect
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.RadioButtonGroup
 import com.android.systemui.screencapture.common.ui.compose.RadioButtonGroupItem
 import com.android.systemui.screencapture.common.ui.compose.Toolbar
-import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureToolbarViewModel
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun PreCaptureToolbar(
-    viewModel: PreCaptureViewModel,
-    expanded: Boolean,
+    viewModel: PreCaptureToolbarViewModel,
+    selectedCaptureType: ScreenCaptureType,
+    selectedCaptureRegion: ScreenCaptureRegion,
+    onCaptureTypeSelected: (ScreenCaptureType) -> Unit,
+    onCaptureRegionSelected: (ScreenCaptureRegion) -> Unit,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val icons = viewModel.icons
+    val recordButtonLabel = stringResource(R.string.screen_capture_toolbar_record_button)
+    val screenshotButtonLabel = stringResource(R.string.screen_capture_toolbar_screenshot_button)
+
     val captureTypeButtonItems =
-        viewModel.captureTypeButtonViewModels.map {
-            RadioButtonGroupItem(
-                label = it.label,
-                icon = it.icon,
-                isSelected = it.isSelected,
-                onClick = it.onClick,
-                contentDescription = it.contentDescription,
+        remember(selectedCaptureType, icons) {
+            listOf(
+                RadioButtonGroupItem(
+                    icon = icons?.screenRecord,
+                    label = recordButtonLabel,
+                    isSelected = selectedCaptureType == ScreenCaptureType.RECORDING,
+                    onClick = { onCaptureTypeSelected(ScreenCaptureType.RECORDING) },
+                    hasTooltip = false,
+                ),
+                RadioButtonGroupItem(
+                    selectedIcon = icons?.screenshotToolbar,
+                    unselectedIcon = icons?.screenshotToolbarUnselected,
+                    label = screenshotButtonLabel,
+                    isSelected = selectedCaptureType == ScreenCaptureType.SCREENSHOT,
+                    onClick = { onCaptureTypeSelected(ScreenCaptureType.SCREENSHOT) },
+                    hasTooltip = false,
+                ),
             )
         }
+
+    val appWindowButtonContentDescription =
+        stringResource(
+            when (selectedCaptureType) {
+                ScreenCaptureType.SCREENSHOT ->
+                    R.string.screen_capture_toolbar_app_window_button_screenshot_a11y
+                ScreenCaptureType.RECORDING ->
+                    R.string.screen_capture_toolbar_app_window_button_record_a11y
+            }
+        )
+
+    val partialButtonContentDescription =
+        stringResource(
+            when (selectedCaptureType) {
+                ScreenCaptureType.SCREENSHOT ->
+                    R.string.screen_capture_toolbar_region_button_screenshot_a11y
+                ScreenCaptureType.RECORDING ->
+                    R.string.screen_capture_toolbar_region_button_record_a11y
+            }
+        )
+
+    val fullscreenButtonContentDescription =
+        stringResource(
+            when (selectedCaptureType) {
+                ScreenCaptureType.SCREENSHOT ->
+                    R.string.screen_capture_toolbar_fullscreen_button_screenshot_a11y
+                ScreenCaptureType.RECORDING ->
+                    R.string.screen_capture_toolbar_fullscreen_button_record_a11y
+            }
+        )
 
     val captureRegionButtonItems =
-        viewModel.captureRegionButtonViewModels.map {
-            RadioButtonGroupItem(
-                icon = it.icon,
-                isSelected = it.isSelected,
-                onClick = it.onClick,
-                contentDescription = it.contentDescription,
-            )
+        remember(selectedCaptureType, selectedCaptureRegion, icons) {
+            buildList {
+                if (viewModel.appWindowRegionSupported) {
+                    add(
+                        RadioButtonGroupItem(
+                            icon = icons?.appWindow,
+                            isSelected = (selectedCaptureRegion == ScreenCaptureRegion.APP_WINDOW),
+                            onClick = { onCaptureRegionSelected(ScreenCaptureRegion.APP_WINDOW) },
+                            contentDescription = appWindowButtonContentDescription,
+                            hasTooltip = true,
+                        )
+                    )
+                }
+
+                add(
+                    RadioButtonGroupItem(
+                        icon = icons?.region,
+                        isSelected = (selectedCaptureRegion == ScreenCaptureRegion.PARTIAL),
+                        onClick = { onCaptureRegionSelected(ScreenCaptureRegion.PARTIAL) },
+                        contentDescription = partialButtonContentDescription,
+                        hasTooltip = true,
+                    )
+                )
+
+                add(
+                    RadioButtonGroupItem(
+                        icon = icons?.fullscreen,
+                        isSelected = (selectedCaptureRegion == ScreenCaptureRegion.FULLSCREEN),
+                        onClick = { onCaptureRegionSelected(ScreenCaptureRegion.FULLSCREEN) },
+                        contentDescription = fullscreenButtonContentDescription,
+                        hasTooltip = true,
+                    )
+                )
+            }
         }
 
-    val settingsButtonContentDescription =
-        stringResource(R.string.screen_capture_toolbar_settings_button_a11y)
-    Toolbar(expanded = expanded, onCloseClick = onCloseClick, modifier = modifier) {
+    Toolbar(
+        expanded = true,
+        onCloseClick = {
+            viewModel.recordClose()
+            onCloseClick()
+        },
+        modifier =
+            modifier
+                .onGloballyPositioned {
+                    val boundsInWindow = it.boundsInWindow().roundToIntRect().toAndroidRect()
+                    viewModel.setToolbarBounds(boundsInWindow)
+                }
+                .graphicsLayer { alpha = viewModel.toolbarOpacity },
+    ) {
         Row {
             if (viewModel.screenRecordingSupported) {
-                IconToggleButton(
-                    checked = false,
-                    onCheckedChange = {},
-                    shape = IconButtonDefaults.smallSquareShape,
-                    modifier =
-                        Modifier.semantics {
-                            this.contentDescription = settingsButtonContentDescription
-                        },
-                ) {
-                    viewModel.icons?.let { Icon(icon = it.moreOptions) }
-                }
+                CaptureSettingsMenu(
+                    viewModel,
+                    screenRecordingSelected = selectedCaptureType == ScreenCaptureType.RECORDING,
+                )
             }
 
             Spacer(Modifier.size(8.dp))

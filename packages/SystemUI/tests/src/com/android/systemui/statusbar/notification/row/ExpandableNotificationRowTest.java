@@ -29,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
@@ -84,7 +85,6 @@ import com.android.systemui.statusbar.notification.promoted.PromotedNotification
 import com.android.systemui.statusbar.notification.row.ExpandableView.OnHeightChangedListener;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
-import com.android.systemui.statusbar.notification.shared.NotificationContentAlphaOptimization;
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainer;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
 
@@ -273,7 +273,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         // VERIFY that the height change listener is invoked
         assertThat(row.getShowingLayout()).isSameInstanceAs(row.getPrivateLayout());
         assertThat(row.getIntrinsicHeight()).isGreaterThan(0);
-        verify(listener).onHeightChanged(eq(row), eq(true));
+        verify(listener).onHeightChanged(eq(row), eq(true), anyString());
     }
 
     @Test
@@ -296,7 +296,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         // VERIFY that the height change listener is invoked
         assertThat(group.getShowingLayout()).isSameInstanceAs(group.getPrivateLayout());
         assertThat(group.getIntrinsicHeight()).isGreaterThan(0);
-        verify(listener).onHeightChanged(eq(group), eq(true));
+        verify(listener).onHeightChanged(eq(group), eq(true), anyString());
     }
 
     @Test
@@ -457,7 +457,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         assertThat(publicRow.getIntrinsicHeight()).isGreaterThan(0);
         assertThat(publicRow.getPrivateLayout().getMinHeight())
                 .isEqualTo(publicRow.getPublicLayout().getMinHeight());
-        verify(listener, never()).onHeightChanged(eq(publicRow), anyBoolean());
+        verify(listener, never()).onHeightChanged(eq(publicRow), anyBoolean(), anyString());
     }
 
     private void measureAndLayout(ExpandableNotificationRow row) {
@@ -505,7 +505,6 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationContentAlphaOptimization.FLAG_NAME)
     public void setHideSensitive_shouldNotDisturbAnimation() throws Exception {
         //Given: A row that is during alpha animation
         ExpandableNotificationRow row = mKosmos.createRow();
@@ -527,7 +526,6 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationContentAlphaOptimization.FLAG_NAME)
     public void setHideSensitive_changeContent_shouldResetAlpha() throws Exception {
 
         // Given: A sensitive row that has public version but is not hiding sensitive,

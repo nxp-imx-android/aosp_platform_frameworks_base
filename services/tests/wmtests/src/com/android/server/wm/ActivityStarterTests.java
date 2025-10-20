@@ -11,7 +11,7 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License
+ * limitations under the License.
  */
 
 package com.android.server.wm;
@@ -39,12 +39,10 @@ import static android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT;
 import static android.content.Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED;
 import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
 import static android.content.pm.ActivityInfo.FLAG_ALLOW_UNTRUSTED_ACTIVITY_EMBEDDING;
-import static android.content.pm.ActivityInfo.LAUNCH_MULTIPLE;
 import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE;
 import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_TASK;
 import static android.os.Process.SYSTEM_UID;
 
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.clearInvocations;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -76,7 +74,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
@@ -91,17 +88,14 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ActivityInfo.WindowLayout;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.IPackageManager;
-import android.content.pm.PackageManagerInternal;
 import android.content.pm.SigningDetails;
 import android.graphics.Rect;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
-import android.provider.DeviceConfig;
 import android.service.voice.IVoiceInteractionSession;
 import android.util.Pair;
 import android.util.Size;
@@ -112,18 +106,13 @@ import android.window.TaskFragmentOrganizerToken;
 
 import androidx.test.filters.SmallTest;
 
-import com.android.compatibility.common.util.DeviceConfigStateHelper;
-import com.android.server.pm.PackageArchiver;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.wm.BackgroundActivityStartController.BalVerdict;
 import com.android.server.wm.LaunchParamsController.LaunchParamsModifier;
 import com.android.server.wm.utils.MockTracker;
 import com.android.window.flags.Flags;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -139,8 +128,7 @@ import java.util.Set;
  */
 @SmallTest
 @Presubmit
-@RunWith(WindowTestRunner.class)
-public class ActivityStarterTests extends WindowTestsBase {
+public final class ActivityStarterTests extends ActivityStarterTestBase {
 
     private static final int PRECONDITION_NO_CALLER_APP = 1;
     private static final int PRECONDITION_NO_INTENT_COMPONENT = 1 << 1;
@@ -158,33 +146,6 @@ public class ActivityStarterTests extends WindowTestsBase {
     private static final int UNIMPORTANT_UID = 12345;
     private static final int UNIMPORTANT_UID2 = 12346;
     private static final int CURRENT_IME_UID = 12347;
-
-    protected final DeviceConfigStateHelper mDeviceConfig = new DeviceConfigStateHelper(
-            DeviceConfig.NAMESPACE_WINDOW_MANAGER);
-
-    private ActivityStartController mController;
-    private ActivityMetricsLogger mActivityMetricsLogger;
-    private PackageManagerInternal mMockPackageManager;
-    private AppOpsManager mAppOpsManager;
-
-    @Before
-    public void setUp() throws Exception {
-        mController = mock(ActivityStartController.class);
-        BackgroundActivityStartController balController =
-                new BackgroundActivityStartController(mAtm, mSupervisor);
-        doReturn(balController).when(mAtm.mTaskSupervisor).getBackgroundActivityLaunchController();
-        mActivityMetricsLogger = mock(ActivityMetricsLogger.class);
-        clearInvocations(mActivityMetricsLogger);
-        mAppOpsManager = mAtm.getAppOpsManager();
-        doReturn(AppOpsManager.MODE_DEFAULT).when(mAppOpsManager).checkOpNoThrow(
-                eq(AppOpsManager.OP_SYSTEM_EXEMPT_FROM_ACTIVITY_BG_START_RESTRICTION),
-                anyInt(), any());
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        mDeviceConfig.close();
-    }
 
     @Test
     public void testStartActivityPreconditions() {
@@ -329,7 +290,7 @@ public class ActivityStarterTests extends WindowTestsBase {
                 .setActivityInfo(aInfo)
                 .setResultTo(resultTo)
                 .setRequestCode(requestCode)
-                .setReason("testLaunchActivityPermissionDenied")
+                .setReason(name.getMethodName())
                 .execute();
 
         // In some cases the expected result internally is different than the published result. We
@@ -347,93 +308,12 @@ public class ActivityStarterTests extends WindowTestsBase {
                     .setActivityInfo(aInfo)
                     .setResultTo(resultTo)
                     .setRequestCode(requestCode)
-                    .setReason("testLaunchActivityPermissionDenied")
+                    .setReason(name.getMethodName())
                     .setActivityOptions(new SafeActivityOptions(
                             options, Binder.getCallingPid(), Binder.getCallingUid()))
                     .execute();
             verify(options, times(1)).abort();
         }
-    }
-
-    private ActivityStarter prepareStarter(@Intent.Flags int launchFlags) {
-        return prepareStarter(launchFlags, true /* mockGetRootTask */, LAUNCH_MULTIPLE);
-    }
-
-    private ActivityStarter prepareStarter(@Intent.Flags int launchFlags,
-            boolean mockGetRootTask) {
-        return prepareStarter(launchFlags, mockGetRootTask, LAUNCH_MULTIPLE);
-    }
-
-    /**
-     * Creates a {@link ActivityStarter} with default parameters and necessary mocks.
-     *
-     * @param launchFlags The intent flags to launch activity.
-     * @param mockGetRootTask Whether to mock {@link RootWindowContainer#getOrCreateRootTask} for
-     *                           always launching to the testing stack. Set to false when allowing
-     *                           the activity can be launched to any stack that is decided by real
-     *                           implementation.
-     * @return A {@link ActivityStarter} with default setup.
-     */
-    private ActivityStarter prepareStarter(@Intent.Flags int launchFlags,
-            boolean mockGetRootTask, int launchMode) {
-        // always allow test to start activity.
-        doReturn(true).when(mSupervisor).checkStartAnyActivityPermission(
-                any(), any(), any(), anyInt(), anyInt(), anyInt(), any(), any(),
-                anyBoolean(), anyBoolean(), any(), any(), any());
-
-        if (mockGetRootTask) {
-            // Instrument the stack and task used.
-            final Task stack = mRootWindowContainer.getDefaultTaskDisplayArea()
-                    .createRootTask(WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD,
-                            true /* onTop */);
-
-            // Direct starter to use spy stack.
-            doReturn(stack).when(mRootWindowContainer)
-                    .getOrCreateRootTask(any(), any(), any(), anyBoolean());
-            doReturn(stack).when(mRootWindowContainer).getOrCreateRootTask(any(), any(), any(),
-                    any(), anyBoolean(), any(), anyInt());
-        }
-
-        // Set up mock package manager internal and make sure no unmocked methods are called
-        mMockPackageManager = mock(PackageManagerInternal.class,
-                invocation -> {
-                    throw new RuntimeException("Not stubbed");
-                });
-        doReturn(null).when(mMockPackageManager).getDefaultHomeActivity(anyInt());
-        doReturn(mMockPackageManager).when(mAtm).getPackageManagerInternalLocked();
-        doReturn("packageName").when(mMockPackageManager).getNameForUid(anyInt());
-        doReturn(false).when(mMockPackageManager).isInstantAppInstallerComponent(any());
-        doReturn(null).when(mMockPackageManager).resolveIntent(any(), any(), anyLong(), anyLong(),
-                anyInt(), anyBoolean(), anyInt(), anyInt());
-        doReturn(new ComponentName("", "")).when(mMockPackageManager).getSystemUiServiceComponent();
-
-        // Never review permissions
-        doReturn(false).when(mMockPackageManager).isPermissionsReviewRequired(any(), anyInt());
-        doNothing().when(mMockPackageManager).grantImplicitAccess(
-                anyInt(), any(), anyInt(), anyInt(), anyBoolean());
-        doNothing().when(mMockPackageManager).notifyPackageUse(anyString(), anyInt());
-        doReturn(mock(PackageArchiver.class)).when(mMockPackageManager).getPackageArchiver();
-
-        final AndroidPackage mockPackage = mock(AndroidPackage.class);
-        final SigningDetails signingDetails = mock(SigningDetails.class);
-        doReturn(mockPackage).when(mMockPackageManager).getPackage(anyInt());
-        doReturn(signingDetails).when(mockPackage).getSigningDetails();
-        doReturn(false).when(signingDetails).hasAncestorOrSelfWithDigest(any());
-
-        final Intent intent = new Intent();
-        intent.addFlags(launchFlags);
-        intent.setComponent(ActivityBuilder.getDefaultComponent());
-
-        final ActivityInfo info = new ActivityInfo();
-
-        info.applicationInfo = new ApplicationInfo();
-        info.applicationInfo.packageName = ActivityBuilder.getDefaultComponent().getPackageName();
-        info.launchMode = launchMode;
-
-        return new ActivityStarter(mController, mAtm,
-                mAtm.mTaskSupervisor, mock(ActivityStartInterceptor.class))
-                .setIntent(intent)
-                .setActivityInfo(info);
     }
 
     /**
@@ -465,7 +345,6 @@ public class ActivityStarterTests extends WindowTestsBase {
 
         // run starter.
         optionStarter
-                .setReason("testCreateTaskLayout")
                 .setActivityInfo(info)
                 .setActivityOptions(new SafeActivityOptions(
                         options, Binder.getCallingPid(), Binder.getCallingUid()))
@@ -497,7 +376,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         starter.getIntent().setComponent(splitSecondReusableActivity.mActivityComponent);
         doReturn(splitSecondReusableActivity)
                 .when(mRootWindowContainer).findTask(any(), any(), anyBoolean());
-        final int result = starter.setReason("testSplitScreenDeliverToTop").execute();
+        final int result = starter.execute();
 
         // Ensure result is delivering intent to top.
         assertEquals(START_DELIVERED_TO_TOP, result);
@@ -525,7 +404,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         starter.getIntent().setComponent(splitSecondReusableActivity.mActivityComponent);
         doReturn(splitSecondReusableActivity)
                 .when(mRootWindowContainer).findTask(any(), any(), anyBoolean());
-        final int result = starter.setReason("testSplitScreenMoveToFront").execute();
+        final int result = starter.execute();
 
         // Ensure result is moving task to front.
         assertEquals(START_TASK_TO_FRONT, result);
@@ -572,7 +451,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         // Start activity and delivered new intent.
         starter.getIntent().setComponent(activities.get(3).mActivityComponent);
         doReturn(activities.get(3)).when(mRootWindowContainer).findTask(any(), any(), anyBoolean());
-        final int result = starter.setReason("testDesktopModeDeliverToTop").execute();
+        final int result = starter.execute();
 
         // Ensure result is delivering intent to top.
         assertEquals(START_DELIVERED_TO_TOP, result);
@@ -600,7 +479,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         starter.getIntent().setComponent(desktopModeReusableActivity.mActivityComponent);
         doReturn(desktopModeReusableActivity)
                 .when(mRootWindowContainer).findTask(any(), any(), anyBoolean());
-        final int result = starter.setReason("testDesktopModeMoveToFront").execute();
+        final int result = starter.execute();
 
         // Ensure result is moving task to front.
         assertEquals(START_TASK_TO_FRONT, result);
@@ -647,7 +526,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         final ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK,
                 false /* mockGetRootTask */);
         starter.getIntent().setComponent(activity.mActivityComponent);
-        final int result = starter.setReason("testMoveVisibleTaskToFront").execute();
+        final int result = starter.execute();
 
         assertEquals(START_TASK_TO_FRONT, result);
         assertEquals(1, activity.compareTo(translucentActivity));
@@ -661,7 +540,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         task.inRecents = true;
         final ActivityRecord[] outActivity = new ActivityRecord[1];
         final ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK)
-                .setInTask(task).setReason("testReportStartedNoDisplayActivity")
+                .setInTask(task)
                 .setOutActivity(outActivity);
         starter.mRequest.activityInfo.applicationInfo.packageName = mContext.getPackageName();
         starter.mRequest.activityInfo.theme = android.R.style.Theme_NoDisplay;
@@ -697,7 +576,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         final LockTaskController lockTaskController = mAtm.getLockTaskController();
         doReturn(true).when(lockTaskController).isNewTaskLockTaskModeViolation(any());
 
-        final int result = starter.setReason("testTaskModeViolation").execute();
+        final int result = starter.execute();
 
         assertEquals(START_RETURN_LOCK_TASK_MODE_VIOLATION, result);
         assertNoTasks(display);
@@ -718,7 +597,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         doReturn(mActivityMetricsLogger).when(mAtm.mTaskSupervisor).getActivityMetricsLogger();
 
         ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK);
-        starter.setReason("testActivityStartsLogging_noLoggingWhenDisabled").execute();
+        starter.execute();
 
         // verify logging wasn't done
         verify(mActivityMetricsLogger, never()).logAbortedBgActivityStart(any(), any(), anyInt(),
@@ -740,14 +619,13 @@ public class ActivityStarterTests extends WindowTestsBase {
                 .setCallingPackage(FAKE_CALLING_PACKAGE)
                 .setOriginatingPendingIntent(null);
 
-        starter.setReason("testActivityStartsLogging_logsWhenEnabled").execute();
+        starter.execute();
 
         // verify the above activity start was logged
         verify(mActivityMetricsLogger, times(1)).logAbortedBgActivityStart(any(), any(),
                 eq(FAKE_CALLING_UID), eq(FAKE_CALLING_PACKAGE), anyInt(), anyBoolean(),
                 eq(FAKE_REAL_CALLING_UID), anyInt(), anyBoolean(), eq(false));
     }
-
 
     /**
      * This test ensures that unsupported usecases are aborted when background starts are
@@ -808,7 +686,7 @@ public class ActivityStarterTests extends WindowTestsBase {
                         options, Binder.getCallingPid(), Binder.getCallingUid()))
                 .setOutActivity(outActivity);
 
-        final int result = starter.setReason("testPinnedSingleInstanceAborted").execute();
+        final int result = starter.execute();
         assertEquals(ActivityStarter.getExternalResult(START_ABORTED), result);
         verify(options, times(1)).abort();
 
@@ -839,7 +717,6 @@ public class ActivityStarterTests extends WindowTestsBase {
         final ActivityOptions options = ActivityOptions.makeBasic()
                 .setLaunchRootTask(adjacentParent.mRemoteToken.toWindowContainerToken());
         prepareStarter(FLAG_ACTIVITY_NEW_TASK, false /* mockGetRootTask */)
-                .setReason("testAdjustLaunchTargetWithAdjacentTask")
                 .setIntent(activity.intent)
                 .setActivityOptions(options.toBundle(),
                         Binder.getCallingPid(), Binder.getCallingUid())
@@ -874,7 +751,6 @@ public class ActivityStarterTests extends WindowTestsBase {
 
         // Launch the bottom task of the target root task.
         prepareStarter(FLAG_ACTIVITY_NEW_TASK, false /* mockGetRootTask */)
-                .setReason("testBringTaskToFrontWhenFocusedTaskIsFinishing")
                 .setIntent(activity.intent.addFlags(
                         FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_CLEAR_TASK))
                 .execute();
@@ -912,7 +788,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         // on secondary display.
         final ActivityOptions options = ActivityOptions.makeBasic()
                 .setLaunchDisplayId(secondaryDisplay.mDisplayId);
-        final int result = starter.setReason("testDeliverIntentToTopActivityOfNonTopDisplay")
+        final int result = starter
                 .setIntent(topActivityOnSecondaryDisplay.intent)
                 .setActivityOptions(options.toBundle(),
                         Binder.getCallingPid(), Binder.getCallingUid())
@@ -958,7 +834,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         // Start activity with the same intent as {@code singleTaskActivity} on secondary display.
         final ActivityOptions options = ActivityOptions.makeBasic()
                 .setLaunchDisplayId(secondaryDisplay.mDisplayId);
-        final int result = starter.setReason("testBringTaskToFrontOnSecondaryDisplay")
+        final int result = starter
                 .setIntent(singleTaskActivity.intent)
                 .setActivityOptions(options.toBundle(),
                         Binder.getCallingPid(), Binder.getCallingUid())
@@ -1005,7 +881,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         // on secondary display.
         final ActivityOptions options = ActivityOptions.makeBasic()
                 .setLaunchDisplayId(secondaryDisplay.mDisplayId);
-        final int result = starter.setReason("testStartActivityOnVirtualDisplay")
+        final int result = starter
                 .setIntent(topActivityOnSecondaryDisplay.intent)
                 .setActivityOptions(options.toBundle(),
                         Binder.getCallingPid(), Binder.getCallingUid())
@@ -1048,7 +924,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         // on secondary display.
         final ActivityOptions options = ActivityOptions.makeBasic()
                 .setLaunchDisplayId(secondaryDisplay.mDisplayId);
-        final int result = starter.setReason("testStartOptedOutActivityOnInsecureVirtualDisplay")
+        final int result = starter
                 .setIntent(topActivityOnSecondaryDisplay.intent)
                 .setActivityOptions(options.toBundle(),
                         Binder.getCallingPid(), Binder.getCallingUid())
@@ -1091,7 +967,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         // on secondary display.
         final ActivityOptions options = ActivityOptions.makeBasic()
                 .setLaunchDisplayId(secondaryDisplay.mDisplayId);
-        final int result = starter.setReason("testStartOptedOutActivityOnSecureVirtualDisplay")
+        final int result = starter
                 .setIntent(topActivityOnSecondaryDisplay.intent)
                 .setActivityOptions(options.toBundle(),
                         Binder.getCallingPid(), Binder.getCallingUid())
@@ -1127,7 +1003,7 @@ public class ActivityStarterTests extends WindowTestsBase {
                 .setLaunchDisplayId(secondaryDisplay.mDisplayId);
 
         assertThrows(SecurityException.class,
-                () -> starter.setReason("testStartActivityOnDisplayCannotHostTasks")
+                () -> starter
                         .setIntent(activity.intent)
                         .setActivityOptions(options.toBundle(), Binder.getCallingPid(),
                                 Binder.getCallingUid())
@@ -1204,7 +1080,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         // Start activity with the same intent as {@code topActivity} on secondary display.
         final ActivityOptions options = ActivityOptions.makeBasic()
                 .setLaunchDisplayId(secondaryDisplay.mDisplayId);
-        starter.setReason("testReparentTopFocusedActivityToSecondaryDisplay")
+        starter
                 .setIntent(topActivity.intent)
                 .setActivityOptions(options.toBundle(),
                         Binder.getCallingPid(), Binder.getCallingUid())
@@ -1228,7 +1104,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         final ActivityOptions options = ActivityOptions.makeBasic();
         options.setFreezeRecentTasksReordering();
 
-        starter.setReason("testFreezeTaskListActivityOption")
+        starter
                 .setActivityOptions(new SafeActivityOptions(options,
                         Binder.getCallingPid(), Binder.getCallingUid()))
                 .execute();
@@ -1251,7 +1127,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         final ActivityOptions options = ActivityOptions.makeBasic();
         options.setFreezeRecentTasksReordering();
 
-        starter.setReason("testFreezeTaskListActivityOptionFailedStart")
+        starter
                 .setActivityOptions(new SafeActivityOptions(options,
                         Binder.getCallingPid(), Binder.getCallingUid()))
                 .execute();
@@ -1270,8 +1146,7 @@ public class ActivityStarterTests extends WindowTestsBase {
 
         final Intent intent = new Intent();
         intent.setComponent(ActivityBuilder.getDefaultComponent());
-        starter.setReason("testNoActivityInfo").setIntent(intent)
-                .setActivityInfo(null).execute();
+        starter.setActivityInfo(null).execute();
         verify(starter.mRequest).resolveActivity(any());
 
         // Also verifies the value of Request#componentSpecified should be true even the
@@ -1325,7 +1200,6 @@ public class ActivityStarterTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_BAL_REPARENT_EXISTING_TASK)
     public void testRecycleTaskWhenBalBlocks() {
         final ActivityStarter starter = prepareStarter(0 /* flags */);
         starter.mStartActivity = new ActivityBuilder(mAtm).build();
@@ -1378,7 +1252,6 @@ public class ActivityStarterTests extends WindowTestsBase {
         // Activity must not land on split-screen task if currently not in split-screen mode.
         starter.setActivityOptions(options.toBundle(),
                         Binder.getCallingPid(), Binder.getCallingUid())
-                .setReason("testTargetTaskInSplitScreen")
                 .setOutActivity(outActivity).execute();
         assertThat(outActivity[0].inMultiWindowMode()).isFalse();
 
@@ -1404,7 +1277,6 @@ public class ActivityStarterTests extends WindowTestsBase {
         // Activity must not land on split-screen task if currently not in split-screen mode.
         starter.setActivityOptions(options.toBundle(),
                         Binder.getCallingPid(), Binder.getCallingUid())
-                .setReason("testLaunchAdjacentDisabled")
                 .setOutActivity(outActivity).execute();
         assertThat(outActivity[0].inMultiWindowMode()).isFalse();
 
@@ -1430,8 +1302,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         doReturn(true).when(keyguard).isKeyguardLocked(anyInt());
         doReturn(true).when(keyguard).isKeyguardOccluded(anyInt());
         registerTestTransitionPlayer();
-        starter.setReason("testTransientLaunchWithKeyguard")
-                .setActivityOptions(ActivityOptions.makeBasic().setTransientLaunch().toBundle(),
+        starter.setActivityOptions(ActivityOptions.makeBasic().setTransientLaunch().toBundle(),
                         Binder.getCallingPid(), Binder.getCallingUid())
                 .setIntent(target.intent)
                 .execute();
@@ -1458,9 +1329,7 @@ public class ActivityStarterTests extends WindowTestsBase {
 
         final Intent intent = new Intent();
         intent.setComponent(ActivityBuilder.getDefaultComponent());
-        starter.setReason("testActivityStartWithScreenshot")
-                .setIntent(intent)
-                .execute();
+        starter.setIntent(intent).execute();
 
         final TransitionController controller = mRootWindowContainer.mTransitionController;
         final Transition transition = controller.getCollectingTransition();
@@ -1476,8 +1345,7 @@ public class ActivityStarterTests extends WindowTestsBase {
 
         final ActivityStarter starter = prepareStarter(0 /* flags */);
 
-        starter.setReason("testAddToTaskListOnActivityStart")
-                .execute();
+        starter.execute();
 
         verify(recentTasks, times(1)).add(any());
     }
@@ -1607,8 +1475,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         options.setLaunchCookie(cookie);
         final Intent intent = new Intent();
         intent.setComponent(ActivityBuilder.getDefaultComponent());
-        starter.setReason("testLaunchCookie_newTask")
-                .setIntent(intent)
+        starter.setIntent(intent)
                 .setActivityOptions(options.toBundle(),
                         Binder.getCallingPid(), Binder.getCallingUid())
                 .execute();
@@ -1620,8 +1487,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         final Binder newCookie = new Binder();
         final ActivityOptions newOptions = ActivityOptions.makeBasic();
         newOptions.setLaunchCookie(newCookie);
-        starter.setReason("testLaunchCookie_existingTask")
-                .setIntent(intent)
+        starter.setIntent(intent)
                 .setActivityOptions(newOptions.toBundle(),
                         Binder.getCallingPid(), Binder.getCallingUid())
                 .execute();
@@ -1638,17 +1504,14 @@ public class ActivityStarterTests extends WindowTestsBase {
         ActivityRecord r = new ActivityBuilder(mAtm).setCreateTask(true).build();
         final Intent intent = new Intent();
         intent.setComponent(ActivityBuilder.getDefaultComponent());
-        starter.setReason("testRemoteAnimation_newTask")
-                .setIntent(intent)
-                .execute();
+        starter.setIntent(intent).execute();
 
         assertNull(mRootWindowContainer.topRunningActivity().mPendingRemoteAnimation);
 
         // Relaunch the activity with remote animation indicated in options.
         final RemoteAnimationAdapter adaptor = mock(RemoteAnimationAdapter.class);
         final ActivityOptions options = ActivityOptions.makeRemoteAnimation(adaptor);
-        starter.setReason("testRemoteAnimation_existingTask")
-                .setIntent(intent)
+        starter.setIntent(intent)
                 .setActivityOptions(options.toBundle(),
                         Binder.getCallingPid(), Binder.getCallingUid())
                 .execute();
@@ -1771,7 +1634,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         task.inRecents = true;
         starter.setInTask(task).setOutActivity(outActivity);
         starter.getIntent().setComponent(activityBot.mActivityComponent);
-        final int result = starter.setReason("testRecordActivityMovement").execute();
+        final int result = starter.execute();
 
         assertEquals(START_DELIVERED_TO_TOP, result);
         assertNotNull(starter.mMovedToTopActivity);
@@ -1781,7 +1644,7 @@ public class ActivityStarterTests extends WindowTestsBase {
                         | FLAG_ACTIVITY_NEW_TASK, false /* mockGetRootTask */);
         starter2.setInTask(task);
         starter2.getIntent().setComponent(activityBot.mActivityComponent);
-        final int result2 = starter2.setReason("testRecordActivityMovement").execute();
+        final int result2 = starter2.execute();
 
         assertEquals(START_DELIVERED_TO_TOP, result2);
         assertNull(starter2.mMovedToTopActivity);

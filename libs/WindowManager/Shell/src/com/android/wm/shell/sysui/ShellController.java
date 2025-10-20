@@ -44,6 +44,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.protolog.ProtoLog;
+import com.android.wm.shell.common.DisplayChangeController;
 import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.DisplayInsetsController.OnInsetsChangedListener;
 import com.android.wm.shell.common.ExternalInterfaceBinder;
@@ -174,7 +175,13 @@ public class ShellController {
     /**
      * Adds a new configuration listener. The configuration change callbacks are not made in any
      * particular order.
+     *
+     * Note: This callback only propagates the application configuration from SysUI which will be
+     * incomplete for multi-display scenarios. To cover both single and multi-display scenarios,
+     * you should use {@link DisplayController#addDisplayChangingController()} to register for
+     * callbacks for your display.
      */
+    @Deprecated
     public void addConfigurationChangeListener(ConfigurationChangeListener listener) {
         mConfigChangeListeners.remove(listener);
         mConfigChangeListeners.add(listener);
@@ -182,14 +189,17 @@ public class ShellController {
 
     /**
      * Removes an existing configuration listener.
+     *
+     * Note: Callers use {@link DisplayController#add/removeDisplayChangingController()}
      */
+    @Deprecated
     public void removeConfigurationChangeListener(ConfigurationChangeListener listener) {
         mConfigChangeListeners.remove(listener);
     }
 
     /**
      * Adds a new Keyguard listener. The Keyguard change callbacks are not made in any
-     * particular order.
+     * particular order, and are not synchronized with transitions.
      */
     public void addKeyguardChangeListener(KeyguardChangeListener listener) {
         mKeyguardChangeListeners.remove(listener);
@@ -205,7 +215,7 @@ public class ShellController {
 
     /**
      * Adds a new user-change listener. The user change callbacks are not made in any
-     * particular order.
+     * particular order, and are not synchronized with transitions.
      */
     public void addUserChangeListener(UserChangeListener listener) {
         mUserChangeListeners.remove(listener);

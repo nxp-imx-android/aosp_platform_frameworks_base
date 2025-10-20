@@ -48,6 +48,7 @@ android_test {
         "androidx.test.ext.truth",
         "flag-junit",
         "frameworks-base-testutils",
+        "guava-android-testlib", // for EqualsTester
         "hamcrest-library",
         "kotlin-test",
         "mockingservicestests-utils-mockito",
@@ -71,6 +72,7 @@ android_test {
         "servicestests-assert-utils",
         "servicestests-core-utils",
         "servicestests-utils-mockito-extended",
+        "StatsdTestUtils",
         "testables",
         "truth",
         // TODO: remove once Android migrates to JUnit 4.12, which provides assertThrows
@@ -241,6 +243,7 @@ test_module_config {
         "com.android.server.am.BroadcastQueueTest",
         "com.android.server.am.BroadcastRecordTest",
         "com.android.server.am.BroadcastQueueImplTest",
+        "com.android.server.am.BroadcastControllerTest",
     ],
 }
 

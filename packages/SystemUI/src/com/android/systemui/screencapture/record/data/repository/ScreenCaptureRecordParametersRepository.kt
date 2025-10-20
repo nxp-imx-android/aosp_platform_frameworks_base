@@ -16,9 +16,7 @@
 
 package com.android.systemui.screencapture.record.data.repository
 
-import android.view.Display
-import com.android.systemui.screencapture.common.ScreenCapture
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
+import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.record.shared.model.ScreenCaptureRecordParametersModel
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import javax.inject.Inject
@@ -26,15 +24,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-@ScreenCapture
+@ScreenCaptureScope
 class ScreenCaptureRecordParametersRepository @Inject constructor() {
 
     private val _parameters =
         MutableStateFlow(
             ScreenCaptureRecordParametersModel(
-                target = ScreenCaptureTarget.Fullscreen(Display.DEFAULT_DISPLAY),
                 audioSource = ScreenRecordingAudioSource.NONE,
                 shouldShowTaps = false,
+                shouldShowFrontCamera = false,
             )
         )
     val parameters = _parameters.asStateFlow()

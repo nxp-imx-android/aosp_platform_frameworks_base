@@ -817,13 +817,6 @@ public class DisplayArea<T extends WindowContainer> extends WindowContainer<T> {
             super(wms, type, name, featureId);
         }
 
-        // It is replaced by WindowState#getDimController().
-        @Deprecated
-        @Override
-        Dimmer getDimmer() {
-            return mDimmer;
-        }
-
         @Override
         void prepareSurfaces() {
             mDimmer.resetDimStates();

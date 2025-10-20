@@ -333,6 +333,15 @@ public class BackupManagerServiceTest {
     }
 
     @Test
+    public void isBackupServiceActive_guestUser_returnsFalse() {
+        createBackupManagerServiceAndUnlockSystemUser();
+        when(mUserInfoMock.isGuest()).thenReturn(true);
+        setMockMainUserAndCreateBackupManagerService(NON_SYSTEM_USER);
+
+        assertFalse(mService.isBackupServiceActive(NON_SYSTEM_USER));
+    }
+
+    @Test
     public void setBackupServiceActive_forPrivateProfile_throws() {
         createBackupManagerServiceAndUnlockSystemUser();
         simulateUserUnlocked(NON_SYSTEM_USER);

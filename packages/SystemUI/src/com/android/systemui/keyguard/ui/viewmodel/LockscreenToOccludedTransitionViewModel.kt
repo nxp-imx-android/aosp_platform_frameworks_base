@@ -16,6 +16,7 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
+import android.util.MathUtils
 import com.android.app.animation.Interpolators.EMPHASIZED_ACCELERATE
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
@@ -26,6 +27,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.OCCLUDED
 import com.android.systemui.keyguard.ui.KeyguardTransitionAnimationFlow
 import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
 import com.android.systemui.res.R
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -45,18 +47,26 @@ constructor(
 ) : DeviceEntryIconTransition {
 
     private val transitionAnimation =
-        animationFlow.setup(
-            duration = TO_OCCLUDED_DURATION,
-            edge = Edge.create(from = KeyguardState.LOCKSCREEN, to = OCCLUDED),
-        )
+        animationFlow
+            .setup(
+                duration = TO_OCCLUDED_DURATION,
+                edge = Edge.create(from = KeyguardState.LOCKSCREEN, to = Scenes.Occluded),
+            )
+            .setupWithoutSceneContainer(
+                edge = Edge.create(from = KeyguardState.LOCKSCREEN, to = OCCLUDED)
+            )
 
     /** Lockscreen views alpha */
-    val lockscreenAlpha: Flow<Float> =
-        transitionAnimation.sharedFlowWithShade(
+    fun lockscreenAlpha(viewState: ViewStateAccessor): Flow<Float> {
+        var startAlpha = 1f
+        return transitionAnimation.sharedFlowWithShade(
             duration = 250.milliseconds,
-            onStep = { step, isShadeExpanded -> if (isShadeExpanded) 0f else 1f - step },
-            name = "LOCKSCREEN->OCCLUDED: lockscreenAlpha",
+            onStart = { startAlpha = viewState.alpha() },
+            onStep = { step, isShadeExpanded ->
+                if (isShadeExpanded) 0f else MathUtils.lerp(startAlpha, 0f, step)
+            },
         )
+    }
 
     val shortcutsAlpha: Flow<Float> =
         transitionAnimation.sharedFlowWithShade(

@@ -22,29 +22,28 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.KeyguardViewConfigurator
 import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
 import com.android.systemui.keyguard.qualifiers.KeyguardRootView
-import com.android.systemui.keyguard.shared.model.LockscreenSceneBlueprint
 import com.android.systemui.keyguard.ui.composable.LockscreenContent
 import com.android.systemui.keyguard.ui.composable.LockscreenScene
-import com.android.systemui.keyguard.ui.composable.LockscreenSceneBlueprintModule
-import com.android.systemui.keyguard.ui.composable.blueprint.ComposableLockscreenSceneBlueprint
+import com.android.systemui.keyguard.ui.composable.elements.ElementProviderModule
+import com.android.systemui.keyguard.ui.composable.elements.LockscreenElements
+import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
+import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenBehindScrimViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenFrontScrimViewModel
 import com.android.systemui.scene.ui.composable.Scene
-import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationLockscreenScrimViewModel
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
 import javax.inject.Provider
 
-@Module(includes = [LockscreenSceneBlueprintModule::class])
+@Module(includes = [ElementProviderModule::class])
 interface LockscreenSceneModule {
 
     @Binds @IntoSet fun lockscreenScene(scene: LockscreenScene): Scene
 
     companion object {
-
         @Provides
         @SysUISingleton
         @KeyguardRootView
@@ -53,28 +52,23 @@ interface LockscreenSceneModule {
         }
 
         @Provides
-        fun providesLockscreenBlueprints(
-            blueprints: Set<@JvmSuppressWildcards ComposableLockscreenSceneBlueprint>
-        ): Set<LockscreenSceneBlueprint> {
-            return blueprints
-        }
-
-        @Provides
         fun providesLockscreenContent(
             viewModelFactory: LockscreenContentViewModel.Factory,
-            notificationScrimViewModelFactory: NotificationLockscreenScrimViewModel.Factory,
             lockscreenFrontScrimViewModelFactory: LockscreenFrontScrimViewModel.Factory,
             lockscreenBehindScrimViewModelFactory: LockscreenBehindScrimViewModel.Factory,
-            blueprints: Set<@JvmSuppressWildcards ComposableLockscreenSceneBlueprint>,
+            lockscreenElements: LockscreenElements,
+            keyguardClockViewModel: KeyguardClockViewModel,
+            aodBurnInViewModel: AodBurnInViewModel,
             clockInteractor: KeyguardClockInteractor,
             interactionJankMonitor: InteractionJankMonitor,
         ): LockscreenContent {
             return LockscreenContent(
                 viewModelFactory,
-                notificationScrimViewModelFactory,
                 lockscreenFrontScrimViewModelFactory,
                 lockscreenBehindScrimViewModelFactory,
-                blueprints,
+                lockscreenElements,
+                keyguardClockViewModel,
+                aodBurnInViewModel,
                 clockInteractor,
                 interactionJankMonitor,
             )

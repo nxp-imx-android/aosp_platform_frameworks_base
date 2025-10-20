@@ -64,6 +64,8 @@ public class RampSegmentTest {
         original.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
         assertEquals(original, RampSegment.CREATOR.createFromParcel(parcel));
+        parcel.setDataPosition(0);
+        assertEquals(original, VibrationEffectSegment.CREATOR.createFromParcel(parcel));
     }
 
     @Test

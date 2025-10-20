@@ -17,7 +17,10 @@
 package com.android.server.am.psc;
 
 import android.content.ComponentName;
+import android.content.pm.ServiceInfo;
 import android.os.Binder;
+
+import com.android.server.am.OomAdjuster;
 
 import java.util.ArrayList;
 
@@ -30,6 +33,7 @@ import java.util.ArrayList;
 public abstract class ServiceRecordInternal extends Binder {
     /** The service component's per-instance name. */
     public final ComponentName instanceName;
+    private final OomAdjuster.Constants mOomConstants;
 
     /** Whether the service has been explicitly requested to start by an application. */
     private boolean mStartRequested;
@@ -45,8 +49,25 @@ public abstract class ServiceRecordInternal extends Binder {
     /** The bitmask of foreground service types declared for this service. */
     private int mForegroundServiceType;
 
-    public ServiceRecordInternal(ComponentName instanceName, long lastActivity) {
+    /**
+     * The last time (in uptime timebase) a bind request was made with BIND_ALMOST_PERCEPTIBLE for
+     * this service while on TOP.
+     */
+    private long mLastTopAlmostPerceptibleBindRequestUptimeMs;
+
+    /** Constant indicating that there is no short FGS start time recorded. */
+    private static final long NO_SHORT_FGS_START_TIME = Long.MIN_VALUE;
+    /**
+     * The uptime timestamp when this service was started as a short foreground service.
+     * A value of {@link #NO_SHORT_FGS_START_TIME} indicates it is not currently running as a short
+     * FGS.
+     */
+    private long mShortFgsStartTime = NO_SHORT_FGS_START_TIME;
+
+    public ServiceRecordInternal(ComponentName instanceName, OomAdjuster.Constants oomConstants,
+            long lastActivity) {
         this.instanceName = instanceName;
+        mOomConstants = oomConstants;
         mLastActivity = lastActivity;
     }
 
@@ -87,6 +108,53 @@ public abstract class ServiceRecordInternal extends Binder {
 
     public void setForegroundServiceType(int foregroundServiceType) {
         mForegroundServiceType = foregroundServiceType;
+    }
+
+    public long getLastTopAlmostPerceptibleBindRequestUptimeMs() {
+        return mLastTopAlmostPerceptibleBindRequestUptimeMs;
+    }
+
+    public void setLastTopAlmostPerceptibleBindRequestUptimeMs(
+            long lastTopAlmostPerceptibleBindRequestUptimeMs) {
+        mLastTopAlmostPerceptibleBindRequestUptimeMs = lastTopAlmostPerceptibleBindRequestUptimeMs;
+    }
+
+    protected long getShortFgsStartTime() {
+        return mShortFgsStartTime;
+    }
+
+    protected void setShortFgsStartTime(long uptimeNow) {
+        mShortFgsStartTime = uptimeNow;
+    }
+
+    /** Resets the start time for the short foreground service. */
+    protected void clearShortFgsStartTime() {
+        mShortFgsStartTime = NO_SHORT_FGS_START_TIME;
+    }
+
+    /** Checks if the service has a recorded start time as a short foreground service. */
+    public boolean hasShortFgsStartTime() {
+        return mShortFgsStartTime != NO_SHORT_FGS_START_TIME;
+    }
+
+    /** Time when the special procState granted due to the short FGS state should be demoted. */
+    public long getShortFgsDemoteTime() {
+        return mShortFgsStartTime + mOomConstants.mShortFgsTimeoutDuration
+                + mOomConstants.mShortFgsProcStateExtraWaitDuration;
+    }
+
+    /**
+     * @return true if it's a foreground service of the "short service" type and does not have
+     * other FGS type bits set.
+     */
+    public boolean isShortFgs() {
+        // Note if the type contains FOREGROUND_SERVICE_TYPE_SHORT_SERVICE but also other bits
+        // set, it's _not_ considered be a short service. (because we shouldn't apply
+        // the short-service restrictions)
+        // (But we should be preventing mixture of FOREGROUND_SERVICE_TYPE_SHORT_SERVICE
+        // and other types in Service.startForeground().)
+        return isStartRequested() && isForeground() && (getForegroundServiceType()
+                == ServiceInfo.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
     }
 
     /**

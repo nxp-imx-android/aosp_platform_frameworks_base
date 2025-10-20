@@ -16,10 +16,13 @@
 
 package com.android.systemui.dreams.ui.viewmodel
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserActionResult
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
@@ -56,12 +59,12 @@ class DreamUserActionsViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
-    private lateinit var underTest: DreamUserActionsViewModel
+    private val Kosmos.underTest: DreamUserActionsViewModel by
+        Kosmos.Fixture { dreamUserActionsViewModelFactory.create() }
 
     @Before
     fun setUp() {
-        underTest = kosmos.dreamUserActionsViewModelFactory.create()
-        underTest.activateIn(kosmos.testScope)
+        with(kosmos) { underTest.activateIn(testScope) }
     }
 
     @Test
@@ -90,6 +93,7 @@ class DreamUserActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun actions_splitShade() =
         kosmos.runTest {
             enableSplitShade()
@@ -117,6 +121,7 @@ class DreamUserActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun actions_dualShade() =
         kosmos.runTest {
             enableDualShade()
@@ -160,9 +165,9 @@ class DreamUserActionsViewModelTest : SysuiTestCase() {
     private fun Kosmos.lockDevice() {
         val deviceUnlockStatus by collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus)
 
-        kosmos.fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
+        fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
         assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
-        kosmos.sceneInteractor.changeScene(Scenes.Lockscreen, "reason")
+        sceneInteractor.changeScene(Scenes.Lockscreen, "reason")
     }
 
     private fun Kosmos.unlockDevice() {

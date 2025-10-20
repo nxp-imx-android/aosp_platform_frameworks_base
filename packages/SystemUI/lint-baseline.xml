@@ -29574,17 +29574,6 @@
 
     <issue
         id="ClickableViewAccessibility"
-        message="Custom view ``MediaOutputSeekbar`` has `setOnTouchListener` called on it but does not override `performClick`"
-        errorLine1="            mSeekBar.setOnTouchListener((v, event) -> true);"
-        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="frameworks/base/packages/SystemUI/src/com/android/systemui/media/dialog/MediaOutputBaseAdapter.java"
-            line="509"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="ClickableViewAccessibility"
         message="`onTouch` lambda should call `View#performClick` when a click is detected"
         errorLine1="            mSeekBar.setOnTouchListener((v, event) -> true);"
         errorLine2="                                        ~~~~~~~~~~~~~~~~~~">
@@ -29592,17 +29581,6 @@
             file="frameworks/base/packages/SystemUI/src/com/android/systemui/media/dialog/MediaOutputBaseAdapter.java"
             line="509"
             column="41"/>
-    </issue>
-
-    <issue
-        id="ClickableViewAccessibility"
-        message="Custom view ``MediaOutputSeekbar`` has `setOnTouchListener` called on it but does not override `performClick`"
-        errorLine1="            mSeekBar.setOnTouchListener((v, event) -> false);"
-        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="frameworks/base/packages/SystemUI/src/com/android/systemui/media/dialog/MediaOutputBaseAdapter.java"
-            line="515"
-            column="13"/>
     </issue>
 
     <issue

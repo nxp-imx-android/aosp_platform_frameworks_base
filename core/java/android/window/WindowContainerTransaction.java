@@ -680,21 +680,52 @@ public final class WindowContainerTransaction implements Parcelable {
      *              the bottom.
      * @param reparentTopOnly When {@code true}, only reparent the top task which fit windowingModes
      *                        and activityTypes.
+     * @param clearWindowingMode When {@code true}, clear the override windowing mode of newly
+     *                           reparented tasks by this operation. Note that this doesn't mean
+     *                           clearing the windowing mode of {@param currentParent},
+     *                           {@param newParent} or the existing children of {@param newParent}.
      * @hide
      */
     @NonNull
     public WindowContainerTransaction reparentTasks(@Nullable WindowContainerToken currentParent,
             @Nullable WindowContainerToken newParent, @Nullable int[] windowingModes,
-            @Nullable int[] activityTypes, boolean onTop, boolean reparentTopOnly) {
+            @Nullable int[] activityTypes, boolean onTop, boolean reparentTopOnly,
+            boolean clearWindowingMode) {
         mHierarchyOps.add(HierarchyOp.createForChildrenTasksReparent(
                 currentParent != null ? currentParent.asBinder() : null,
                 newParent != null ? newParent.asBinder() : null,
                 windowingModes,
                 activityTypes,
                 onTop,
-                reparentTopOnly));
+                reparentTopOnly,
+                clearWindowingMode));
         return this;
     }
+
+    /**
+     * Reparent's all children tasks or the top task of {@param currentParent} in the specified
+     * overridden {@param windowingMode} and {@param activityType} to {@param newParent} in their
+     * current z-order.
+     *
+     * @param currentParent of the tasks to perform the operation no.
+     *                      {@code null} will perform the operation on the display.
+     * @param newParent for the tasks. {@code null} will perform the operation on the display.
+     * @param windowingModes of the tasks to reparent.
+     * @param activityTypes of the tasks to reparent.
+     * @param onTop When {@code true}, the child goes to the top of parent; otherwise it goes to
+     *              the bottom.
+     * @param reparentTopOnly When {@code true}, only reparent the top task which fit windowingModes
+     *                        and activityTypes.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction reparentTasks(@Nullable WindowContainerToken currentParent,
+            @Nullable WindowContainerToken newParent, @Nullable int[] windowingModes,
+            @Nullable int[] activityTypes, boolean onTop, boolean reparentTopOnly) {
+        return reparentTasks(currentParent, newParent, windowingModes, activityTypes, onTop,
+                onTop, false /* clearWindowingMode */);
+    }
+
 
     /**
      * Reparent's all children tasks of {@param currentParent} in the specified
@@ -853,6 +884,21 @@ public final class WindowContainerTransaction implements Parcelable {
                 container.asBinder(),
                 windowingModes,
                 activityTypes));
+        return this;
+    }
+
+    /**
+     * Informs WM that a non-shell process is expected to animate this transition. This is only
+     * used for recents-launch since it has a special way to delegate remote animation. For normal
+     * launches, RemoteTransition in ActivityOptions provides the delegate.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setAnimationDelegate(@NonNull IBinder delegate) {
+        mHierarchyOps.add(new HierarchyOp.Builder(
+                HierarchyOp.HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE)
+                .setCaller(delegate)
+                .build());
         return this;
     }
 
@@ -1952,6 +1998,7 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int HIERARCHY_OP_TYPE_SET_SAFE_REGION_BOUNDS = 25;
         public static final int HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE = 26;
         public static final int HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN = 27;
+        public static final int HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE = 28;
 
         @IntDef(prefix = {"HIERARCHY_OP_TYPE_"}, value = {
                 HIERARCHY_OP_TYPE_REPARENT,
@@ -1982,6 +2029,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 HIERARCHY_OP_TYPE_SET_SAFE_REGION_BOUNDS,
                 HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE,
                 HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN,
+                HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface HierarchyOpType {
@@ -2073,6 +2121,8 @@ public final class WindowContainerTransaction implements Parcelable {
 
         private boolean mDisallowOverrideBoundsForChildren;
 
+        private boolean mClearWindowingMode;
+
         /** Creates a hierarchy operation for reparenting a container within the hierarchy. */
         @NonNull
         public static HierarchyOp createForReparent(
@@ -2108,7 +2158,8 @@ public final class WindowContainerTransaction implements Parcelable {
         @NonNull
         public static HierarchyOp createForChildrenTasksReparent(@Nullable IBinder currentParent,
                 @Nullable IBinder newParent, @Nullable int[] windowingModes,
-                @Nullable int[] activityTypes, boolean onTop, boolean reparentTopOnly) {
+                @Nullable int[] activityTypes, boolean onTop, boolean reparentTopOnly,
+                boolean clearWindowingMode) {
             return new HierarchyOp.Builder(HIERARCHY_OP_TYPE_CHILDREN_TASKS_REPARENT)
                     .setContainer(currentParent)
                     .setReparentContainer(newParent)
@@ -2116,6 +2167,7 @@ public final class WindowContainerTransaction implements Parcelable {
                     .setActivityTypes(activityTypes)
                     .setToTop(onTop)
                     .setReparentTopOnly(reparentTopOnly)
+                    .setClearWindowingMode(clearWindowingMode)
                     .build();
         }
 
@@ -2270,6 +2322,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mForciblyHidingInsetsTypes = copy.mForciblyHidingInsetsTypes;
             mSafeRegionBounds = copy.mSafeRegionBounds;
             mDisallowOverrideBoundsForChildren = copy.mDisallowOverrideBoundsForChildren;
+            mClearWindowingMode = copy.mClearWindowingMode;
         }
 
         private HierarchyOp(@NonNull Parcel in) {
@@ -2300,6 +2353,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mForciblyHidingInsetsTypes = in.readInt();
             mSafeRegionBounds = in.readTypedObject(Rect.CREATOR);
             mDisallowOverrideBoundsForChildren = in.readBoolean();
+            mClearWindowingMode = in.readBoolean();
         }
 
         @HierarchyOpType
@@ -2434,6 +2488,10 @@ public final class WindowContainerTransaction implements Parcelable {
             return mDisallowOverrideBoundsForChildren;
         }
 
+        public boolean getClearWindowingMode() {
+            return mClearWindowingMode;
+        }
+
         /** Gets a string representation of a hierarchy-op type. */
         public static String hopToString(@HierarchyOpType int type) {
             switch (type) {
@@ -2470,6 +2528,7 @@ public final class WindowContainerTransaction implements Parcelable {
                     return "setSystemBarVisibilityOverride";
                 case HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN:
                     return "disallowOverrideBoundsForChildren";
+                case HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE: return "setAnimationDelegate";
                 default: return "HOP(" + type + ")";
             }
         }
@@ -2484,7 +2543,8 @@ public final class WindowContainerTransaction implements Parcelable {
                             .append(" mToTop=").append(mToTop)
                             .append(" mReparentTopOnly=").append(mReparentTopOnly)
                             .append(" mWindowingMode=").append(Arrays.toString(mWindowingModes))
-                            .append(" mActivityType=").append(Arrays.toString(mActivityTypes));
+                            .append(" mActivityType=").append(Arrays.toString(mActivityTypes))
+                            .append(" mClearWindowingMode=").append(mClearWindowingMode);
                     break;
                 case HIERARCHY_OP_TYPE_SET_LAUNCH_ROOT:
                     sb.append("container=").append(mContainer)
@@ -2585,6 +2645,9 @@ public final class WindowContainerTransaction implements Parcelable {
                             .append(" mDisallowOverrideBoundsForChildren=")
                             .append(mDisallowOverrideBoundsForChildren);
                     break;
+                case HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE:
+                    sb.append(" caller=").append(mCaller);
+                    break;
                 default:
                     sb.append("container=").append(mContainer)
                             .append(" reparent=").append(mReparent)
@@ -2624,6 +2687,7 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeInt(mForciblyHidingInsetsTypes);
             dest.writeTypedObject(mSafeRegionBounds, flags);
             dest.writeBoolean(mDisallowOverrideBoundsForChildren);
+            dest.writeBoolean(mClearWindowingMode);
         }
 
         @Override
@@ -2714,6 +2778,8 @@ public final class WindowContainerTransaction implements Parcelable {
             private Rect mSafeRegionBounds;
 
             private boolean mDisallowOverrideBoundsForChildren;
+
+            private boolean mClearWindowingMode;
 
             Builder(@HierarchyOpType int type) {
                 mType = type;
@@ -2850,6 +2916,11 @@ public final class WindowContainerTransaction implements Parcelable {
                 return this;
             }
 
+            Builder setClearWindowingMode(boolean clearWindowingMode) {
+                mClearWindowingMode = clearWindowingMode;
+                return this;
+            }
+
             @NonNull
             HierarchyOp build() {
                 final HierarchyOp hierarchyOp = new HierarchyOp(mType);
@@ -2883,6 +2954,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 hierarchyOp.mForciblyHidingInsetsTypes = mForciblyHidingInsetsTypes;
                 hierarchyOp.mSafeRegionBounds = mSafeRegionBounds;
                 hierarchyOp.mDisallowOverrideBoundsForChildren = mDisallowOverrideBoundsForChildren;
+                hierarchyOp.mClearWindowingMode = mClearWindowingMode;
                 return hierarchyOp;
             }
         }

@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"प्रोफ़ाइल बदलकर वर्क प्रोफ़ाइल पर जाएं"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"<xliff:g id="APP_NAME">%1$s</xliff:g> की निजी प्रोफ़ाइल पर जाएं"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"<xliff:g id="APP_NAME">%1$s</xliff:g> की वर्क प्रोफ़ाइल पर जाएं"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"संपर्क"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"अपने संपर्कों को ऐक्सेस करें"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"संपर्क और खाते"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"आपके संपर्क ऐक्सेस करना और इस डिवाइस पर मौजूद उन खातों की सूची देखना जिनमें संपर्क सेव किए जा सकते हैं"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"जगह की जानकारी"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"इस डिवाइस की जगह तक पहुंचने दें"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"कैलेंडर"</string>
@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"इससे ऐप्लिकेशन को आंखों के मूवमेंट को सटीक तरीके से ट्रैक करने की अनुमति मिलती है"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"मूवमेंट और आस-पास की चीज़ों जुड़ा डेटा"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"इससे ऐप्लिकेशन को आंखें, चेहरे, और शरीर के मूवमेंट और आस-पास की चीज़ें सटीक तरीके से ट्रैक करने की अनुमति मिलती है"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"सिर के मूवमेंट और आस-पास की चीज़ों से जुड़ा सटीक डेटा"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"इससे ऐप्लिकेशन को सिर के मूवमेंट और आस-पास की चीज़ें सटीक तरीके से ट्रैक करने की अनुमति मिलती है."</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"मूवमेंट और आस-पास की चीज़ों का सटीक डेटा"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"इससे आस-पास की चीज़ों को सटीक तरीके से स्कैन करने और सिर के मूवमेंट को ट्रैक करने की अनुमति मिलती है"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"विंडो का कॉन्टेंट वापस पाएं"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"विंडो पर नज़र आ रहे कॉन्टेंट की जांच करें."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"छूकर, किसी चीज़ से जुड़ी जानकारी सुनने की सुविधा चालू करें"</string>
@@ -639,6 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"ऐप्लिकेशन को आस-पास मौजूद Ultra-Wideband डिवाइसों के बीच की दूरी का पता लगाने की अनुमति दें"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"आस-पास मौजूद वाई-फ़ाई डिवाइसों से इंटरैक्ट करें"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"इससे, ऐप्लिकेशन आस-पास मौजूद वाई-फ़ाई डिवाइसों की जानकारी दिखा पाएगा, उनसे कनेक्ट कर पाएगा, और उनकी दूरी पता लगा पाएगा"</string>
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"लोकल नेटवर्क से कनेक्ट किए गए डिवाइसों को ऐक्सेस करने की अनुमति दें"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"ऐप्लिकेशन को आपके लोकल नेटवर्क से कनेक्ट किए गए डिवाइसों का ऐक्सेस मिलता है"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"आस-पास मौजूद डिवाइसों के बीच की दूरी का पता लगाएं"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"ऐप्लिकेशन को, आस-पास मौजूद डिवाइसों के बीच की दूरी का पता लगाने की अनुमति दें"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"NFC का इस्तेमाल करने वाली पैसे चुकाने की पसंदीदा सेवा की जानकारी"</string>
@@ -683,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"इससे ऐप्लिकेशन को आपके आस-पास की चीज़ें स्कैन करने की अनुमति मिलती है."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"आस-पास की चीज़ों को सटीक तरीके से स्कैन करने की अनुमति दें"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"इससे ऐप्लिकेशन को आपके आस-पास की चीज़ें सटीक तरीके से स्कैन करने की अनुमति मिलती है."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"बैकग्राउंड में एक्सआर डेटा ट्रैक करने की अनुमति दें"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"एक्सआर ट्रैकिंग को बैकग्राउंड में ऐक्सेस करना"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"इससे ऐप्लिकेशन को बैकग्राउंड में एक्सआर डेटा ऐक्सेस करने की अनुमति मिलती है."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"बटन कैप्चर करें"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"इससे ऐप्लिकेशन को सिस्टम के शॉर्टकट और कार्रवाइयों को प्रोसेस करने से पहले बटन कैप्चर करने की अनुमति मिलती है."</string>
@@ -1052,6 +1054,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"सही!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"फिर से कोशिश करें"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"फिर से कोशिश करें"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"सभी सुविधाओं और डेटा के लिए अनलॉक करें"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"मालिक का चेहरा पहचानकर अनलॉक करने की तय सीमा खत्म हो गई"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"कोई सिम नहीं है"</string>
@@ -1460,8 +1466,8 @@
     <string name="usb_power_notification_message" msgid="7284765627437897702">"जोड़ा गया डिवाइस चार्ज हो रहा है. ज़्यादा विकल्पों के लिए टैप करें."</string>
     <string name="usb_unsupported_audio_accessory_title" msgid="2335775548086533065">"एनालॉग ऑडियो एक्सेसरी का पता चला"</string>
     <string name="usb_unsupported_audio_accessory_message" msgid="1300168007129796621">"अटैच किया गया डिवाइस इस फ़ोन से संगत नहीं है. ज़्यादा जानने के लिए टैप करें."</string>
-    <string name="adb_active_notification_title" msgid="408390247354560331">"यूएसबी डीबग करने के लिए adb कनेक्ट किया गया"</string>
-    <string name="adb_active_notification_message" msgid="5617264033476778211">"यूएसबी डीबग करने की सुविधा बंद करने के लिए टैप करें"</string>
+    <string name="adb_active_notification_title" msgid="408390247354560331">"यूएसबी से फ़ोन को डीबग करने के लिए एडीबी कनेक्ट किया गया"</string>
+    <string name="adb_active_notification_message" msgid="5617264033476778211">"यूएसबी से डीबग करने की सुविधा बंद करने के लिए टैप करें"</string>
     <string name="adb_active_notification_message" product="tv" msgid="6624498401272780855">"USB डीबग करना अक्षम करने के लिए चुनें."</string>
     <string name="adbwifi_active_notification_title" msgid="6147343659168302473">"वॉयरलेस डीबगिंग कनेक्ट है"</string>
     <string name="adbwifi_active_notification_message" msgid="930987922852867972">"वॉयरलेस डीबगिंग की सुविधा बंद करने के लिए टैप करें"</string>
@@ -1621,6 +1627,9 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"<xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>) द्वारा अनुरोधित"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"हां"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"नहीं"</string>
+    <string name="emergency_location_notification_title" msgid="917557758257778958">"आपातकालीन स्थिति में जगह की जानकारी शेयर की गई"</string>
+    <string name="emergency_location_notification_message" msgid="1877038822515882885">"आपातकालीन सेवाओं को आपकी जगह की जानकारी, मोबाइल और इंटरनेट सेवा देने वाली कंपनी से मिली"</string>
+    <string name="emergency_location_notification_learn_more" msgid="8718634939217070481">"ज़्यादा जानें"</string>
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"हटाने की सीमा पार हो गई"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"<xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g>, <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g> खाते के <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> आइटम हटा दिए गए हैं. आप क्‍या करना चाहते हैं?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"आइटम मिटाएं"</string>
@@ -1791,8 +1800,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"आवाज़ कम और ज़्यादा करने वाले दोनों बटन को कुछ सेकंड तक दबाकर रखने से <xliff:g id="SERVICE">%1$s</xliff:g> चालू हो जाती है, जो एक सुलभता सुविधा है. ऐसा करने से आपके डिवाइस के काम करने के तरीके में बदलाव हो सकता है.\n\nआप सेटिंग और सुलभता में जाकर इस शॉर्टकट को किसी दूसरी सुविधा के लिए बदल सकते हैं."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"चालू करें"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"चालू न करें"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"चालू है"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"बंद है"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"<xliff:g id="SERVICE">%1$s</xliff:g> को अपना डिवाइस पूरी तरह कंट्रोल करने की अनुमति देनी है?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"पूरी तरह कंट्रोल करने की अनुमति उन ऐप्लिकेशन के लिए ठीक है जो सुलभता से जुड़ी ज़रूरतों के लिए बने हैं, लेकिन ज़्यादातर ऐप्लिकेशन के लिए यह ठीक नहीं है."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"स्क्रीन को देखें और कंट्रोल करें"</string>
@@ -1806,6 +1817,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"किसी सुविधा का इस्तेमाल करने के लिए, उस पर टैप करें:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"सुलभता बटन पर टैप करके, इस्तेमाल करने के लिए सुविधाएं चुनें"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"वे सुविधाएं चुनें जिन्हें आवाज़ बटनों के शॉर्टकट के ज़रिए इस्तेमाल करना है"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> को बंद कर दिया गया है"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"शॉर्टकट में बदलाव करें"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"हो गया"</string>
@@ -1984,8 +2005,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"इसे आपके एडमिन ने अपडेट किया है.\nजिन अनुमतियों को मंज़ूरी मिली है उन्हें देखने के लिए, सेटिंग में जाएं"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"आपके व्यवस्थापक ने हटा दिया है"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ठीक है"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"बैटरी सेवर, गहरे रंग वाली थीम को चालू करता है. साथ ही, इस मोड में बैकग्राउंड की गतिविधि, कुछ विज़ुअल इफ़ेक्ट, और कुछ खास सुविधाएं कम या बंद हो जाती हैं. कुछ इंटरनेट कनेक्शन भी पूरी तरह काम नहीं करते."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"बैटरी सेवर, गहरे रंग वाली थीम को चालू करता है. साथ ही, इस मोड में बैकग्राउंड की गतिविधि, कुछ विज़ुअल इफ़ेक्ट, और कुछ सुविधाएं सीमित या बंद हो जाती हैं. कुछ इंटरनेट कनेक्शन भी पूरी तरह काम नहीं करते."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"बैटरी सेवर मोड, गहरे रंग वाली थीम चालू करता है और बैकग्राउंड में होने वाली गतिविधियों को कम या बंद कर देता है. इसके अलावा, यह कुछ विज़ुअल इफ़ेक्ट, इंटरनेट कनेक्शन, और चुनिंदा सुविधाओं के इस्तेमाल को भी कम या बंद कर देता है."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"बैटरी सेवर मोड, गहरे रंग वाली थीम चालू करता है और बैकग्राउंड में होने वाली गतिविधियों को कम या बंद कर देता है. इसके अलावा, यह कुछ विज़ुअल इफ़ेक्ट, इंटरनेट कनेक्शन, और चुनिंदा सुविधाओं के इस्तेमाल को भी कम या बंद कर देता है."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"डेटा खर्च को कम करने के लिए, डेटा बचाने की सेटिंग बैकग्राउंड में चलने वाले कुछ ऐप्लिकेशन को डेटा भेजने या पाने से रोकती है. हालांकि, फ़िलहाल इस्तेमाल किया जा रहा ऐप्लिकेशन, डेटा को ऐक्सेस कर सकता है, लेकिन वह अक्सर ऐसा नहीं कर पाएगा. उदाहरण के लिए, ऐसा हो सकता है कि इमेज तब तक न दिखें, जब तक आप उन पर टैप न करें."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"डेटा बचाने की सेटिंग चालू करनी है?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"चालू करें"</string>
@@ -2047,12 +2068,9 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"बड़ा करें"</string>
     <string name="close_button_text" msgid="10603510034455258">"बंद करें"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
-    <skip />
+    <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
+    <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
+    <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"जवाब दें"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"वीडियो"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"अस्वीकार करें"</string>
@@ -2363,8 +2381,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"आईएमपीआई को अनलॉक करने का पिन"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"नेटवर्क के सबसेट की सेवा देने वाली कंपनी के लॉक को अनलॉक करने का पिन"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"कारोबार के लिए इस्तेमाल होने वाले सिम को अनलॉक करने का अनुरोध किया जा रहा है…"</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="6742563947637715645">"सिम नेटवर्क के सबसेट को अनलॉक करने का अनुरोध किया जा रहा है …"</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="2033399698172403560">"सिम नेटवर्क को अनलॉक करने का अनुरोध किया जा रहा है…"</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"सिम नेटवर्क के सबसेट पर लगी रोक हटाने का अनुरोध किया जा रहा है…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"सिम कार्ड की सेवा देने वाली कंपनी के मोबाइल नेटवर्क से रोक हटाने का अनुरोध किया जा रहा है…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"कारोबार के लिए इस्तेमाल होने वाले सिम को अनलॉक करने का अनुरोध किया जा रहा है…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"PUK अनलॉक करने का अनुरोध किया जा रहा है…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"PUK अनलॉक करने का अनुरोध किया जा रहा है…"</string>
@@ -2390,15 +2408,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"PUK अनलॉक करने का अनुरोध किया जा रहा है…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"PUK अनलॉक करने का अनुरोध किया जा रहा है…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"सिम नेटवर्क को अनलॉक करने का अनुरोध पूरा नहीं हो सका."</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="3372797822292089708">"सिम नेटवर्क के सबसेट को अनलॉक करने का अनुरोध पूरा नहीं हो सका."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="1878443146720411381">"सिम नेटवर्क को अनलॉक करने का अनुरोध पूरा नहीं हो सका."</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"सिम नेटवर्क के सबसेट पर लगी रोक हटाने का अनुरोध पूरा नहीं हो सका."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"सिम कार्ड की सेवा देने वाली कंपनी के मोबाइल नेटवर्क से रोक हटाने का अनुरोध पूरा नहीं हो सका."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"कारोबार के लिए इस्तेमाल होने वाले सिम को अनलॉक करने का अनुरोध पूरा नहीं हो सका."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"सिम को अनलॉक करने का अनुरोध पूरा नहीं हो सका."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"RUIM कार्ड के Network1 को अनलॉक करने का अनुरोध पूरा नहीं हो सका."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"RUIM कार्ड के network2 को अनलॉक करने का अनुरोध पूरा नहीं हो सका."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"hrpd नेटवर्क वाले RUIM कार्ड को अनलॉक करने का अनुरोध पूरा नहीं हो सका."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"कारोबार के लिए इस्तेमाल होने वाले RUIM कार्ड को अनलॉक करने का अनुरोध पूरा नहीं हो सका."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="3801002648649640407">"RUIM कार्ड की सेवा देने वाली कंपनी के लॉक को अनलॉक करने का अनुरोध पूरा नहीं हो सका."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"RUIM कार्ड की सेवा देने वाली कंपनी के मोबाइल नेटवर्क से रोक हटाने का अनुरोध पूरा नहीं हो सका."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"RUIM कार्ड को अनलॉक करने का अनुरोध पूरा नहीं हो सका."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"PUK को अनलॉक नहीं किया जा सका."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"PUK को अनलॉक नहीं किया जा सका."</string>
@@ -2418,13 +2436,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"नेटवर्क के सबसेट की सेवा देने वाली कंपनी के लॉक को अनलॉक करने का अनुरोध पूरा नहीं हो सका."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"सिम नेटवर्क को अनलॉक किया गया."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"सिम नेटवर्क के सबसेट को अनलॉक किया गया."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="8249342930499801740">"सिम नेटवर्क को अनलॉक किया गया ."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"सिम कार्ड की सेवा देने वाली कंपनी के मोबाइल नेटवर्क से रोक हटाने का अनुरोध पूरा हुआ."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"कारोबार के लिए इस्तेमाल होने वाले सिम को अनलॉक किया गया."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"सिम को अनलॉक किया गया."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"RUIM कार्ड के network1 को अनलॉक किया गया."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"RUIM कार्ड के network2 को अनलॉक किया गया."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"Hrpd नेटवर्क वाले RUIM कार्ड को अनलॉक किया गया."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6020936629725666932">"RUIM कार्ड की सेवा देने वाली कंपनी के लॉक को अनलॉक किया गया."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"RUIM कार्ड की सेवा देने वाली कंपनी के मोबाइल नेटवर्क से रोक हटाने का अनुरोध पूरा हुआ."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"कारोबार के लिए इस्तेमाल होने वाले RUIM कार्ड को अनलॉक किया गया."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"RUIM कार्ड को अनलॉक किया गया."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"PUK अनलॉक किया गया."</string>
@@ -2580,27 +2598,22 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ऐप्लिकेशन"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"अब आपके फ़िंगरप्रिंट की पहचान नहीं की जा सकती. फ़िंगरप्रिंट अनलॉक की सुविधा को दोबारा सेट अप करें."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"सुरक्षा और निजता"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"स्क्रीन अनलॉक करें और यूएसबी को फिर से कनेक्ट करें"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"यूएसबी को कनेक्ट करने के लिए स्क्रीन को अनलॉक करें"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"ऐडवांस सुरक्षा की सुविधा चालू होने पर, यूएसबी को कनेक्ट करने के लिए स्क्रीन को अनलॉक करना ज़रूरी है"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"ऐडवांस सुरक्षा की सुविधा चालू होने पर, यूएसबी को कनेक्ट करने के लिए स्क्रीन को अनलॉक करना ज़रूरी है"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"ऐडवांस सुरक्षा की सुविधा चालू होने पर, तेज़ी से चार्ज करने के लिए स्क्रीन को अनलॉक करना ज़रूरी है"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"ऐडवांस सुरक्षा की सुविधा चालू होने पर, तेज़ी से चार्ज करने या यूएसबी कनेक्ट करने के लिए, स्क्रीन को अनलॉक करना ज़रूरी है"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"आवाज़ बंद करें"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"सूचनाओं की आवाज़ या वाइब्रेशन को बंद कर दिया गया"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"फ़ोन रीस्टार्ट करने के बाद ही आपको ऐडवांस सुरक्षा के तहत यूएसबी से जुड़ी सूचनाएं मिलेंगी"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"यूएसबी से कोई संदिग्ध गतिविधि की गई"</string>
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
-    <skip />
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"यूएसबी से डेटा ट्रांसफ़र करने की सुविधा बंद कर दी गई है"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"क्या आपको फ़िंगरप्रिंट अनलॉक की सुविधा का इस्तेमाल करने में समस्या आ रही है?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"डिवाइस को अनलॉक करने का अनुभव बेहतर बनाने की सलाह देखने के लिए टैप करें"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"कर्सर ब्लिंक करने की सेटिंग बंद करें"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"टीवी बंद करने के लिए पावर बटन को दबाकर रखें"</string>
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"सिस्टम के संसाधन से जुड़ी सूचनाएं"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"संसाधन का ज़्यादा इस्तेमाल"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"<xliff:g id="APP_NAME">%1$s</xliff:g> ऐप्लिकेशन बहुत ज़्यादा संसाधन इस्तेमाल कर रहा है."</string>
 </resources>

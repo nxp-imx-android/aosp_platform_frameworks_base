@@ -3102,16 +3102,14 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                 if ("--checkin".equals(arg)) {
                     useCheckinFormat = true;
                     isRealCheckin = true;
-                    if (Flags.realCheckinHistoryStartTime()) {
-                        long realCheckinDurationLimit = mContext.getResources().getInteger(
-                                com.android.internal.R.integer
-                                .config_batteryHistoryDumpRealCheckinWindowSize);
-                        if (realCheckinDurationLimit > 0) {
-                            monotonicClockStartTime =
-                                mMonotonicClock.monotonicTime() - realCheckinDurationLimit;
-                            if (monotonicClockStartTime < 0) {
-                                monotonicClockStartTime = 0;
-                            }
+                    long realCheckinDurationLimit = mContext.getResources().getInteger(
+                            com.android.internal.R.integer
+                            .config_batteryHistoryDumpRealCheckinWindowSize);
+                    if (realCheckinDurationLimit > 0) {
+                        monotonicClockStartTime =
+                            mMonotonicClock.monotonicTime() - realCheckinDurationLimit;
+                        if (monotonicClockStartTime < 0) {
+                            monotonicClockStartTime = 0;
                         }
                     }
                 } else if ("--history".equals(arg)) {
@@ -3143,16 +3141,14 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                 } else if ("-c".equals(arg)) {
                     useCheckinFormat = true;
                     flags |= BatteryStats.DUMP_INCLUDE_HISTORY;
-                    if (Flags.checkinHistoryStartTime()) {
-                        long checkinDurationLimit = mContext.getResources().getInteger(
-                                com.android.internal.R.integer
-                                .config_batteryHistoryDumpCheckinWindowSize);
-                        if (checkinDurationLimit > 0) {
-                            monotonicClockStartTime =
-                                mMonotonicClock.monotonicTime() - checkinDurationLimit;
-                            if (monotonicClockStartTime < 0) {
-                                monotonicClockStartTime = 0;
-                            }
+                    long checkinDurationLimit = mContext.getResources().getInteger(
+                            com.android.internal.R.integer
+                            .config_batteryHistoryDumpCheckinWindowSize);
+                    if (checkinDurationLimit > 0) {
+                        monotonicClockStartTime =
+                            mMonotonicClock.monotonicTime() - checkinDurationLimit;
+                        if (monotonicClockStartTime < 0) {
+                            monotonicClockStartTime = 0;
                         }
                     }
                 } else if ("--proto".equals(arg)) {

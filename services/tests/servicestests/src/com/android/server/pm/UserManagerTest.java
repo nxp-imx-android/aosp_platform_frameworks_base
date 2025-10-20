@@ -147,12 +147,18 @@ public final class UserManagerTest {
         List<UserInfo> list = mUserManager.getUsers();
         for (UserInfo user : list) {
             // Keep system and current user
-            if (user.id != UserHandle.USER_SYSTEM &&
-                    user.id != currentUser &&
-                    user.id != communalProfileId &&
-                    !user.isMain()) {
-                removeUser(user.id);
+            if (user.id == UserHandle.USER_SYSTEM
+                    || user.id == currentUser
+                    || user.id == communalProfileId
+                    || user.isMain()) {
+                continue;
             }
+            if (android.multiuser.Flags.disallowRemovingLastAdminUser()
+                    && mUserManager.getUserRemovability(user.id)
+                            != UserManager.REMOVE_RESULT_USER_IS_REMOVABLE) {
+                continue;
+            }
+            removeUser(user.id);
         }
     }
 
@@ -182,7 +188,7 @@ public final class UserManagerTest {
 
     @Test
     public void testCloneUser() throws Exception {
-        assumeCloneEnabled();
+        assumeCloneSupported();
         UserHandle mainUser = mUserManager.getMainUser();
         assumeTrue("Main user is null", mainUser != null);
         // Get the default properties for clone user type.
@@ -258,7 +264,7 @@ public final class UserManagerTest {
     @Test
     public void testCommunalProfile() throws Exception {
         assumeTrue("Device doesn't support communal profiles ",
-                mUserManager.isUserTypeEnabled(UserManager.USER_TYPE_PROFILE_COMMUNAL));
+                mUserManager.isUserTypeSupported(UserManager.USER_TYPE_PROFILE_COMMUNAL));
 
         // Create communal profile if needed
         if (mUserManager.getCommunalProfile() == null) {
@@ -398,7 +404,7 @@ public final class UserManagerTest {
     @Test
     public void testSupervisingProfile() throws Exception {
         assumeTrue("Device doesn't support supervising profiles ",
-                mUserManager.isUserTypeEnabled(UserManager.USER_TYPE_PROFILE_SUPERVISING));
+                mUserManager.isUserTypeSupported(UserManager.USER_TYPE_PROFILE_SUPERVISING));
 
         final UserTypeDetails userTypeDetails =
                 UserTypeFactory.getUserTypes().get(UserManager.USER_TYPE_PROFILE_SUPERVISING);
@@ -982,7 +988,7 @@ public final class UserManagerTest {
     @Test
     public void testRemoveUserWhenPossible_withProfiles() throws Exception {
         assumeHeadlessModeEnabled();
-        assumeCloneEnabled();
+        assumeCloneSupported();
         final List<String> profileTypesToCreate = Arrays.asList(
                 UserManager.USER_TYPE_PROFILE_CLONE,
                 USER_TYPE_PROFILE_MANAGED
@@ -2235,10 +2241,9 @@ public final class UserManagerTest {
                 UserManager.isHeadlessSystemUserMode());
     }
 
-    private void assumeCloneEnabled() {
-        // assume clone profile is supported on the device
+    private void assumeCloneSupported() {
         assumeTrue("Device doesn't support clone profiles ",
-                mUserManager.isUserTypeEnabled(UserManager.USER_TYPE_PROFILE_CLONE));
+                mUserManager.isUserTypeSupported(UserManager.USER_TYPE_PROFILE_CLONE));
     }
 
     private boolean isAutomotive() {

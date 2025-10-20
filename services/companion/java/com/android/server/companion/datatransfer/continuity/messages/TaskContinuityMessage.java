@@ -21,21 +21,15 @@ import android.util.proto.ProtoOutputStream;
 import java.io.IOException;
 
 /**
- * Represents a possible type for the "data" field on the
- * {@link TaskContinuityMessage} proto. This interface may be implemented by
- * message subclasses to support serialization and deserialization as part of
- * {@link TaskContinuityMessage}.
+ * Represents a possible type for the "data" field on the {@link TaskContinuityMessage} proto. This
+ * interface may be implemented by message subclasses to support serialization and deserialization
+ * as part of {@link TaskContinuityMessage}.
  */
 public interface TaskContinuityMessage {
 
-    /**
-     * Returns the proto field number for this message type.
-     */
+    /** Returns the proto field number for this message type. */
     long getFieldNumber();
 
-    /**
-     * Writes this object to a proto output stream.
-     */
+    /** Writes this object to a proto output stream. */
     void writeToProto(ProtoOutputStream pos) throws IOException;
-
 }

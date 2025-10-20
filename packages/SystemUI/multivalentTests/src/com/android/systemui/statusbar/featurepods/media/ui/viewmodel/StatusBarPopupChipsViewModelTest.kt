@@ -17,16 +17,18 @@
 package com.android.systemui.statusbar.featurepods.media.ui.viewmodel
 
 import android.platform.test.annotations.EnableFlags
-import androidx.compose.runtime.snapshots.Snapshot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.media.remedia.data.repository.mediaRepository
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
+import com.android.systemui.statusbar.featurepods.media.domain.interactor.mediaControlChipInteractor
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
 import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.statusBarPopupChipsViewModelFactory
@@ -45,6 +47,7 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
+        kosmos.mediaControlChipInteractor.initialize()
         underTest.activateIn(kosmos.testScope)
     }
 
@@ -58,33 +61,61 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
     @Test
     fun shownPopupChips_activeMedia_restHidden_mediaControlChipShown() =
         kosmos.runTest {
-            val shownPopupChips = underTest.shownPopupChips
             val userMedia = MediaData(active = true, song = "test")
 
-            mediaFilterRepository.addCurrentUserMediaEntry(userMedia)
+            updateMedia(userMedia)
 
-            Snapshot.takeSnapshot {
-                assertThat(shownPopupChips).hasSize(1)
-                assertThat(shownPopupChips.first().chipId).isEqualTo(PopupChipId.MediaControl)
-            }
+            assertThat(underTest.shownPopupChips).hasSize(1)
+            assertThat(underTest.shownPopupChips.first().chipId).isEqualTo(PopupChipId.MediaControl)
         }
 
     @Test
     fun shownPopupChips_mediaChipToggled_popupShown() =
         kosmos.runTest {
-            val shownPopupChips = underTest.shownPopupChips
-
             val userMedia = MediaData(active = true, song = "test")
 
-            mediaFilterRepository.addCurrentUserMediaEntry(userMedia)
+            updateMedia(userMedia)
 
-            Snapshot.takeSnapshot {
-                assertThat(shownPopupChips).hasSize(1)
-                val mediaChip = shownPopupChips.first()
-                assertThat(mediaChip.isPopupShown).isFalse()
+            assertThat(underTest.shownPopupChips).hasSize(1)
+            val mediaChip = underTest.shownPopupChips.first()
+            assertThat(mediaChip.isPopupShown).isFalse()
 
-                mediaChip.showPopup.invoke()
-                assertThat(shownPopupChips.first().isPopupShown).isTrue()
-            }
+            mediaChip.showPopup.invoke()
+            assertThat(underTest.shownPopupChips.first().isPopupShown).isTrue()
         }
+
+    @Test
+    fun isPopupShown_chipHiddenThenReshown_popupHidden() =
+        kosmos.runTest {
+            val userMedia = MediaData(active = true, song = "test")
+            updateMedia(userMedia)
+
+            assertThat(underTest.shownPopupChips).hasSize(1)
+            var mediaChip = underTest.shownPopupChips.first()
+            assertThat(mediaChip.isPopupShown).isFalse()
+
+            mediaChip.showPopup.invoke()
+
+            assertThat(underTest.shownPopupChips.first().isPopupShown).isTrue()
+
+            // Update the media to hide the chip while the popup is still showing.
+            val noMedia = MediaData(active = false, song = "")
+            updateMedia(noMedia)
+
+            assertThat(underTest.shownPopupChips).hasSize(0)
+
+            updateMedia(userMedia)
+
+            assertThat(underTest.shownPopupChips).hasSize(1)
+            mediaChip = underTest.shownPopupChips.first()
+            assertThat(mediaChip.isPopupShown).isFalse()
+        }
+
+    private fun Kosmos.updateMedia(mediaData: MediaData) {
+        if (MediaControlsInComposeFlag.isEnabled) {
+            mediaRepository.addCurrentUserMediaEntry(mediaData)
+        } else {
+            mediaControlChipInteractor.updateMediaControlChipModelLegacy(mediaData)
+        }
+    }
 }

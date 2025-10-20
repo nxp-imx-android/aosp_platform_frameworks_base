@@ -66,7 +66,7 @@
     <string name="ThreeWCMmi" msgid="2436550866139999411">"మూడు మార్గాల కాలింగ్"</string>
     <string name="RuacMmi" msgid="1876047385848991110">"అవాంఛిత అంతరాయ కాల్స్‌ల తిరస్కరణ"</string>
     <string name="CndMmi" msgid="185136449405618437">"కాలింగ్ నంబర్ డెలివరీ"</string>
-    <string name="DndMmi" msgid="8797375819689129800">"అంతరాయం కలిగించవద్దు"</string>
+    <string name="DndMmi" msgid="8797375819689129800">"డిస్టర్బ్ చేయవద్దు"</string>
     <string name="CLIRDefaultOnNextCallOn" msgid="4511621022859867988">"కాలర్ ID ఆటోమేటిక్‌లపై పరిమితి ఉంటుంది. తర్వాత కాల్: పరిమితి ఉంటుంది"</string>
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"కాలర్ ID ఆటోమేటిక్‌లపై పరిమితి ఉంటుంది. తర్వాత కాల్: పరిమితి లేదు"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"కాలర్ ID ఆటోమేటిక్‌లపై పరిమితి లేదు. తర్వాత కాల్: పరిమితి ఉంటుంది"</string>
@@ -231,8 +231,8 @@
     <string name="gnss_time_update_service" msgid="9039489496037616095">"GNSS సమయ అప్‌డేట్ సర్వీస్"</string>
     <string name="device_policy_manager_service" msgid="5085762851388850332">"పరికర పాలసీ మేనేజర్ సర్వీస్"</string>
     <string name="music_recognition_manager_service" msgid="7481956037950276359">"మ్యూజిక్ గుర్తింపు మేనేజర్ సర్వీస్"</string>
-    <string name="factory_reset_warning" msgid="6858705527798047809">"మీ పరికరంలోని డేటా తొలగించబడుతుంది"</string>
-    <string name="factory_reset_message" msgid="2657049595153992213">"నిర్వాహక యాప్‌ ఉపయోగించడం సాధ్యపడదు. మీ పరికరంలోని డేటా ఇప్పుడు తొలగించబడుతుంది.\n\nమీకు ప్రశ్నలు ఉంటే, మీ సంస్థ యొక్క నిర్వాహకులను సంప్రదించండి."</string>
+    <string name="factory_reset_warning" msgid="6858705527798047809">"మీ డివైజ్‌లోని డేటా ఎరేజ్ (ఫ్యాక్టరీ రీసెట్) అవుతుంది"</string>
+    <string name="factory_reset_message" msgid="2657049595153992213">"అడ్మిన్ యాప్‌ను ఉపయోగించడం సాధ్యపడదు. మీ డివైజ్‌లోని డేటా ఇప్పుడు ఫ్యాక్టరీ రీసెట్ అవుతుంది.\n\nమీకు ప్రశ్నలు ఉంటే, మీ సంస్థ అడ్మిన్‌ను కాంటాక్ట్ చేయండి."</string>
     <string name="printing_disabled_by" msgid="3517499806528864633">"ముద్రణ <xliff:g id="OWNER_APP">%s</xliff:g> ద్వారా నిలిపివేయబడింది."</string>
     <string name="personal_apps_suspension_title" msgid="7561416677884286600">"మీ పని ప్రొఫైల్‌ను‌ ఆన్ చేయి"</string>
     <string name="personal_apps_suspension_text" msgid="6115455688932935597">"మీరు మీ కార్యాలయ ప్రొఫైల్‌ను ప్రారంభించే వరకు, మీ వ్యక్తిగత యాప్‌లు బ్లాక్ చేయబడతాయి"</string>
@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"కార్యాలయ ప్రొఫైల్‌కి మార్చు"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"వ్యక్తిగత <xliff:g id="APP_NAME">%1$s</xliff:g>‌కు మార్చండి"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"వర్క్ <xliff:g id="APP_NAME">%1$s</xliff:g>‌కు మార్చండి"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"కాంటాక్ట్‌లు"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"మీ కాంటాక్ట్‌లను యాక్సెస్ చేయడానికి"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"కాంటాక్ట్‌లు, ఖాతాలు"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"మీ కాంటాక్ట్‌లను యాక్సెస్ చేయండి, ఈ డివైజ్‌లో కాంటాక్ట్‌లను సేవ్ చేయగల మీ ఖాతాలకు సంబంధించిన లిస్ట్‌ను చూడండి"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"లొకేషన్"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"ఈ పరికర లొకేషన్‌ను యాక్సెస్ చేయడానికి"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"క్యాలెండర్"</string>
@@ -345,7 +345,7 @@
     <string name="permgrouplab_sms" msgid="795737735126084874">"SMS"</string>
     <string name="permgroupdesc_sms" msgid="5726462398070064542">"SMS మెసేజ్‌లను పంపడం, చూడటం"</string>
     <string name="permgrouplab_storage" msgid="17339216290379241">"ఫైల్స్"</string>
-    <string name="permgroupdesc_storage" msgid="5378659041354582769">"మీ పరికరంలోని ఫైల్స్‌ని యాక్సెస్ చేస్తుంది"</string>
+    <string name="permgroupdesc_storage" msgid="5378659041354582769">"మీ డివైజ్‌లోని ఫైల్స్‌ను యాక్సెస్ చేస్తుంది"</string>
     <string name="permgrouplab_readMediaAural" msgid="1858331312624942053">"మ్యూజిక్, ఆడియో"</string>
     <string name="permgroupdesc_readMediaAural" msgid="7565467343667089595">"మీ పరికరంలో మ్యూజిక్, ఆడియోను యాక్సెస్ చేయండి"</string>
     <string name="permgrouplab_readMediaVisual" msgid="4724874717811908660">"ఫోటోలు, వీడియోలు"</string>
@@ -356,7 +356,7 @@
     <string name="permgroupdesc_activityRecognition" msgid="4725624819457670704">"ఫిజికల్ యాక్టివిటీని యాక్సెస్ చేయండి"</string>
     <string name="permgrouplab_camera" msgid="9090413408963547706">"కెమెరా"</string>
     <string name="permgroupdesc_camera" msgid="7585150538459320326">"చిత్రాలను తీయడానికి మరియు వీడియోను రికార్డ్ చేయడానికి"</string>
-    <string name="permgrouplab_nearby_devices" msgid="5529147543651181991">"సమీపంలోని పరికరాలు"</string>
+    <string name="permgrouplab_nearby_devices" msgid="5529147543651181991">"\'సమీపంలోని డివైజ్‌ల\'"</string>
     <string name="permgroupdesc_nearby_devices" msgid="3213561597116913508">"సమీప పరికరాలను కనుగొనండి అలాగే కనెక్ట్ చేయండి"</string>
     <string name="permgrouplab_calllog" msgid="7926834372073550288">"కాల్ లాగ్స్‌"</string>
     <string name="permgroupdesc_calllog" msgid="2026996642917801803">"ఫోన్ కాల్ లాగ్‌ని చదవండి మరియు రాయండి"</string>
@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"కంటి కదలికను ఖచ్చితంగా ట్రాక్ చేయడం"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"కదలిక, అలాగే ఏరియా డేటా"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"కళ్ళు, ముఖం, శరీరాన్ని ట్రాక్ చేయడానికి, అలాగే ఏరియాను స్కాన్ చేయడానికి"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"కచ్చితమైన హెడ్ కదలిక, అలాగే ఏరియా డేటా"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"హెడ్‌ను కచ్చితంగా ట్రాక్ చేయడానికి, అలాగే ఏరియాను స్కాన్ చేయడానికి"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"ఖచ్చితమైన మూవ్‌మెంట్, ఏరియా డేటా"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"ఏరియాను ఖచ్చితంగా స్కాన్ చేయడం, హెడ్‌ను ట్రాక్ చేయడం"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"విండో కంటెంట్‍ను తిరిగి పొందుతుంది"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"మీరు పరస్పర చర్య చేస్తున్న విండో కంటెంట్‌‍ను పరిశీలిస్తుంది."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"తాకడం ద్వారా విశ్లేషణను ఆన్ చేయండి"</string>
@@ -498,7 +498,7 @@
     <string name="permdesc_broadcastSticky" product="default" msgid="134529339678913453">"ప్రసారం ముగిసిన తర్వాత భద్రపరచబడే ప్రసారాలను పంపడానికి యాప్‌ను అనుమతిస్తుంది. అత్యధిక వినియోగం వలన ఫోన్ నెమ్మదిగా పని చేయవచ్చు లేదా అధిక పరిమాణంలో మెమరీని ఉపయోగించడం వలన అస్థిరంగా మారవచ్చు."</string>
     <string name="permlab_readContacts" msgid="8776395111787429099">"మీ కాంటాక్ట్‌లను చదవడం"</string>
     <string name="permdesc_readContacts" product="tablet" msgid="6430093481659992692">"టాబ్లెట్‌లో స్టోరేజ్‌ చేసిన మీ కాంటాక్ట్‌లకు సంబంధించిన డేటాను చదవడానికి యాప్‌ను అనుమతిస్తుంది. కాంటాక్ట్‌లను క్రియేట్ చేసిన మీ టాబ్లెట్‌లోని ఖాతాలకు కూడా యాప్‌లకు యాక్సెస్ ఉంటుంది. ఇందులో మీరు ఇన్‌స్టాల్ చేసిన యాప్‌ల ద్వారా క్రియేట్ చేయబడిన ఖాతాలు ఉండవచ్చు. ఈ అనుమతి, మీ కాంటాక్ట్ డేటాను సేవ్ చేయడానికి యాప్‌లను అనుమతిస్తుంది, హానికరమైన యాప్‌లు మీకు తెలియకుండానే కాంటాక్ట్ డేటాను షేర్ చేయవచ్చు."</string>
-    <string name="permdesc_readContacts" product="tv" msgid="8400138591135554789">"మీ Android TV పరికరంలో స్టోరేజ్‌ చేసిన కాంటాక్ట్‌లకు సంబంధించిన డేటాను చదవడానికి యాప్‌ను అనుమతిస్తుంది. కాంటాక్ట్‌లను క్రియేట్ చేసిన మీ Android TV పరికరంలోని ఖాతాలకు కూడా యాప్‌లకు యాక్సెస్ ఉంటుంది. ఇందులో మీరు ఇన్‌స్టాల్ చేసిన యాప్‌ల ద్వారా క్రియేట్ చేయబడిన ఖాతాలు ఉండవచ్చు. ఈ అనుమతి, మీ కాంటాక్ట్ డేటాను సేవ్ చేయడానికి యాప్‌లను అనుమతిస్తుంది, హానికరమైన యాప్‌లు మీకు తెలియకుండానే కాంటాక్ట్ డేటాను షేర్ చేయవచ్చు."</string>
+    <string name="permdesc_readContacts" product="tv" msgid="8400138591135554789">"మీ Android TV డివైజ్‌లో స్టోరేజ్ చేసిన కాంటాక్ట్‌లకు సంబంధించిన డేటాను రీడ్ చేయడానికి యాప్‌ను అనుమతిస్తుంది. కాంటాక్ట్‌లను క్రియేట్ చేసిన మీ Android TV డివైజ్‌లోని ఖాతాలను కూడా యాప్‌లు యాక్సెస్ చేస్తాయి. ఇందులో మీరు ఇన్‌స్టాల్ చేసిన యాప్‌ల ద్వారా క్రియేట్ అయిన ఖాతాలు కూడా ఉండవచ్చు. ఈ అనుమతి, మీ కాంటాక్ట్ డేటాను సేవ్ చేయడానికి యాప్‌లను అనుమతిస్తుంది, హానికరమైన యాప్‌లు మీకు తెలియకుండానే కాంటాక్ట్ డేటాను షేర్ చేసే అవకాశం ఉంది."</string>
     <string name="permdesc_readContacts" product="default" msgid="4911989776203207644">"ఫోన్‌లో స్టోరేజ్‌ చేసిన మీ కాంటాక్ట్‌లకు సంబంధించిన డేటాను చదవడానికి యాప్‌ను అనుమతిస్తుంది. కాంటాక్ట్‌లను క్రియేట్ చేసిన మీ ఫోన్‌లోని ఖాతాలను కూడా యాప్‌లు యాక్సెస్ చేయగలవు. ఇందులో మీరు ఇన్‌స్టాల్ చేసిన యాప్‌ల ద్వారా క్రియేట్ చేయబడిన ఖాతాలు ఉండవచ్చు. ఈ అనుమతి, మీ కాంటాక్ట్ డేటాను సేవ్ చేయడానికి యాప్‌లను అనుమతిస్తుంది, హానికరమైన యాప్‌లు మీకు తెలియకుండానే కాంటాక్ట్ డేటాను షేర్ చేయవచ్చు."</string>
     <string name="permlab_writeContacts" msgid="8919430536404830430">"మీ కాంటాక్ట్‌లను ఎడిట్ చేయడం"</string>
     <string name="permdesc_writeContacts" product="tablet" msgid="6422419281427826181">"మీ టాబ్లెట్‌లో స్టోరేజ్‌ చేసి ఉన్న కాంటాక్ట్‌లకు సంబంధించిన డేటాను ఎడిట్ చేయడానికి యాప్‌ను అనుమతిస్తుంది. ఈ అనుమతి, కాంటాక్ట్ డేటాను తొలగించడానికి యాప్‌లను అనుమతిస్తుంది."</string>
@@ -639,6 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"సమీపంలోని అల్ట్రా-వైడ్‌బ్యాండ్ పరికరాల మధ్య సంబంధిత పొజిషన్‌ను నిర్ణయించడానికి యాప్‌ను అనుమతించండి"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"సమీపంలోని Wi-Fi పరికరాలతో ఇంటరాక్ట్ చేస్తుంది"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"అడ్వర్టయిజ్, కనెక్ట్ చేయడానికి, సమీపంలోని Wi-Fi పరికరాల సంబంధిత పొజిషన్‌ను నిర్ణయించడానికి యాప్‌ను అనుమతిస్తుంది"</string>
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"లోకల్ నెట్‌వర్క్ డివైజ్‌లను యాక్సెస్ చేయడం"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"లోకల్ నెట్‌వర్క్ డివైజ్‌లను యాక్సెస్ చేయడానికి యాప్‌ను అనుమతిస్తుంది"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"సమీపంలో పరికరాల మధ్య సాపేక్ష స్థానాన్ని నిర్ణయించండి"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"సమీపంలోని పరికరాల మధ్య సాపేక్ష స్థానాన్ని నిర్ణయించడానికి యాప్‌ను అనుమతించండి"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"ప్రాధాన్యత ఇవ్వబడిన NFC చెల్లింపు సేవల సమాచారం"</string>
@@ -683,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"మీ పరిసరాలను స్కాన్ చేయడానికి యాప్‌ను అనుమతిస్తుంది."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"మీ పరిసర ఏరియాని క్షుణ్ణంగా స్కాన్ చేయడం"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"మీ పరిసరాలను క్షుణ్ణంగా స్కాన్ చేయడానికి యాప్‌ను అనుమతిస్తుంది."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"బ్యాక్‌గ్రౌండ్‌లో XR డేటాను ట్రాక్ చేయడం"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"బ్యాక్‌గ్రౌండ్‌లో XR ట్రాకింగ్‌ను యాక్సెస్ చేయడం"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"బ్యాక్‌గ్రౌండ్‌లో XR డేటాను యాక్సెస్ చేయడానికి యాప్‌ను అనుమతిస్తుంది."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"కీలను క్యాప్చర్ చేయండి"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"సిస్టమ్ షార్ట్‌కట్‌లు, చర్యలను ప్రాసెస్ చేయడానికి ముందు కీలను క్యాప్చర్ చేయడానికి యాప్‌ను అనుమతిస్తుంది."</string>
@@ -1052,6 +1054,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"సరైనది!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"మళ్లీ ట్రై చేయండి"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"మళ్లీ ట్రై చేయండి"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"అన్ని ఫీచర్ల కోసం, డేటా కోసం అన్‌లాక్ చేయండి"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"ఫేస్ అన్‌లాక్ ప్రయత్నాల గరిష్ఠ పరిమితిని మించిపోయారు"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"SIM లేదు"</string>
@@ -1448,7 +1454,7 @@
     <string name="no_permissions" msgid="5729199278862516390">"అనుమతులు అవసరం లేదు"</string>
     <string name="perm_costs_money" msgid="749054595022779685">"దీనికి మీకు డబ్బు ఖర్చు కావచ్చు"</string>
     <string name="dlg_ok" msgid="5103447663504839312">"సరే"</string>
-    <string name="usb_charging_notification_title" msgid="1674124518282666955">"USB ద్వారా ఈ పరికరాన్ని ఛార్జ్ చేస్తోంది"</string>
+    <string name="usb_charging_notification_title" msgid="1674124518282666955">"USB ద్వారా ఈ డివైజ్‌‌ను ఛార్జ్ చేస్తోంది"</string>
     <string name="usb_supplying_notification_title" msgid="5378546632408101811">"USB ద్వారా కనెక్ట్ చేయబడిన పరికరాన్ని ఛార్జ్ చేస్తోంది"</string>
     <string name="usb_mtp_notification_title" msgid="1065989144124499810">"USB ఫైల్ బదిలీ ఆన్ చేయబడింది"</string>
     <string name="usb_ptp_notification_title" msgid="5043437571863443281">"USB ద్వారా PTP ఆన్ చేయబడింది"</string>
@@ -1621,6 +1627,9 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"<xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>) ద్వారా రిక్వెస్ట్ చేయబడింది"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"అవును"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"కాదు"</string>
+    <string name="emergency_location_notification_title" msgid="917557758257778958">"ఎమర్జెన్సీ కోసం లొకేషన్ షేర్ చేయబడింది"</string>
+    <string name="emergency_location_notification_message" msgid="1877038822515882885">"మీ క్యారియర్ నుండి మీ లొకేషన్‌కు ఎమర్జెన్సీ సర్వీసులు అందాయి"</string>
+    <string name="emergency_location_notification_learn_more" msgid="8718634939217070481">"మరింత తెలుసుకోండి"</string>
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"తొలగింపు పరిమితి మించిపోయింది"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"<xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g>, ఖాతా <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g>కి సంబంధించి <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> తొలగించబడే అంశాలు ఉన్నాయి. మీరు ఏమి చేయాలనుకుంటున్నారు?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"అంశాలను తొలగించండి"</string>
@@ -1791,8 +1800,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"రెండు వాల్యూమ్ కీలను కొన్ని సెకన్ల పాటు నొక్కి పట్టుకోవడం ద్వారా యాక్సెసిబిలిటీ అయిన <xliff:g id="SERVICE">%1$s</xliff:g> ఆన్ అవుతుంది. ఇది మీ పరికరం పని చేసే విధానాన్ని మార్చవచ్చు.\n\nసెట్టింగ్‌లు &gt; యాక్సెసిబిలిటీలో, వేరొక ఫీచర్‌ను ప్రారంభించేలా ఈ షార్ట్ కట్‌ను మీరు మార్చవచ్చు."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"ఆన్ చేయి"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"ఆన్ చేయకండి"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"ఆన్"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"ఆఫ్"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"<xliff:g id="SERVICE">%1$s</xliff:g>కి మీ పరికరంపై పూర్తి కంట్రోల్‌ను ఇవ్వాలనుకుంటున్నారా?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"యాక్సెసిబిలిటీ అవసరాలు ఉన్నప్పుడు మీకు సహాయం చేయడానికి యాప్‌లకు ఫుల్‌ కంట్రోల్‌ ఇవ్వడం సమంజసమే. అయితే అన్ని యాప్‌లకు అలా కంట్రోల్ ఇవ్వడం సరికాదు."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"స్క్రీన్‌ను చూసి, కంట్రోల్ చేయగలగడం"</string>
@@ -1806,6 +1817,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"ఫీచర్‌ని ఉపయోగించడం ప్రారంభించడానికి, దాన్ని ట్యాప్ చేయండి:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"యాక్సెసిబిలిటీ బటన్‌తో ఉపయోగించడానికి ఫీచర్లను ఎంచుకోండి"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"వాల్యూమ్ కీల షార్ట్‌కట్‌తో ఉపయోగించడానికి ఫీచర్లను ఎంచుకోండి"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> ఆఫ్ చేయబడింది"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"షార్ట్‌కట్‌లను ఎడిట్ చేయండి"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"పూర్తయింది"</string>
@@ -1984,8 +2005,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"మీ అడ్మిన్ అప్‌డేట్ చేశారు.\nసెట్టింగ్‌లకు వెళ్లి, మంజూరు చేసిన అనుమతులను చూడండి"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"మీ నిర్వాహకులు తొలగించారు"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"సరే"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"బ్యాటరీ సేవర్ ముదురు రంగు రూపాన్ని ఆన్ చేసి, బ్యాక్‌గ్రౌండ్ యాక్టివిటీ, కొన్ని విజువల్ ఎఫెక్ట్‌లు, నిర్దిష్ట ఫీచర్‌లు, ఇంకా కొన్ని నెట్‌వర్క్ కనెక్షన్‌లను పరిమితం చేస్తుంది లేదా ఆఫ్ చేస్తుంది."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"బ్యాటరీ సేవర్ ముదురు రంగు రూపాన్ని ఆన్ చేసి, బ్యాక్‌గ్రౌండ్ యాక్టివిటీ, కొన్ని విజువల్ ఎఫెక్ట్‌లు, నిర్దిష్ట ఫీచర్‌లు, ఇంకా కొన్ని నెట్‌వర్క్ కనెక్షన్‌లను పరిమితం చేస్తుంది లేదా ఆఫ్ చేస్తుంది."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"బ్యాటరీ సేవర్ డార్క్ థీమ్‌ను ఆన్ చేసి, బ్యాక్‌గ్రౌండ్ యాక్టివిటీని, కొన్ని విజువల్ ఎఫెక్ట్‌లను, నిర్దిష్ట ఫీచర్‌లను, ఇంకా కొన్ని నెట్‌వర్క్ కనెక్షన్‌లను పరిమితం చేస్తుంది లేదా ఆఫ్ చేస్తుంది."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"బ్యాటరీ సేవర్ డార్క్ థీమ్‌ను ఆన్ చేసి, బ్యాక్‌గ్రౌండ్ యాక్టివిటీని, కొన్ని విజువల్ ఎఫెక్ట్‌లను, నిర్దిష్ట ఫీచర్‌లను, ఇంకా కొన్ని నెట్‌వర్క్ కనెక్షన్‌లను పరిమితం చేస్తుంది లేదా ఆఫ్ చేస్తుంది."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"డేటా వినియోగాన్ని తగ్గించడంలో డేటా సేవర్ సహాయకరంగా ఉంటుంది. బ్యాక్‌గ్రౌండ్‌లో కొన్ని యాప్‌లు డేటాను పంపకుండా లేదా స్వీకరించకుండా నిరోధిస్తుంది. మీరు ప్రస్తుతం ఉపయోగిస్తోన్న యాప్‌, డేటాను యాక్సెస్ చేయగలదు. కానీ త‌క్కువ సార్లు మాత్ర‌మే అలా చేయవచ్చు. ఉదాహరణకు, మీరు ఇమేజ్‌ల‌పై ట్యాప్ చేసే వరకు అవి క‌నిపించ‌వు."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"డేటా సేవర్‌ను ఆన్ చేయాలా?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"ఆన్ చేయి"</string>
@@ -2004,7 +2025,7 @@
     <string name="zen_mode_forever_dnd" msgid="3423201955704180067">"మీరు అంతరాయం కలిగించవద్దు ఎంపిక ఆఫ్ చేసే వరకు"</string>
     <string name="zen_mode_rule_name_combination" msgid="7174598364351313725">"<xliff:g id="FIRST">%1$s</xliff:g> / <xliff:g id="REST">%2$s</xliff:g>"</string>
     <string name="toolbar_collapse_description" msgid="8009920446193610996">"కుదించండి"</string>
-    <string name="zen_mode_feature_name" msgid="3785547207263754500">"అంతరాయం కలిగించవద్దు"</string>
+    <string name="zen_mode_feature_name" msgid="3785547207263754500">"డిస్టర్బ్ చేయవద్దు"</string>
     <string name="zen_mode_downtime_feature_name" msgid="5886005761431427128">"ముఖ్యమైన పనిలో ఉన్నప్పుడు"</string>
     <string name="zen_mode_default_weeknights_name" msgid="7902108149994062847">"వారపు రోజుల్లో రాత్రి"</string>
     <string name="zen_mode_default_weekends_name" msgid="4707200272709377930">"వారాంతం"</string>
@@ -2047,12 +2068,9 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"గరిష్టీకరించు"</string>
     <string name="close_button_text" msgid="10603510034455258">"మూసివేయండి"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
-    <skip />
+    <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
+    <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
+    <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"పికప్ చేయండి"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"వీడియో కాల్"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"కట్ చేయండి"</string>
@@ -2363,8 +2381,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"IMPI అన్‌లాక్ పిన్"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"నెట్‌వర్క్ సబ్‌సెట్ సర్వీస్ ప్రొవైడర్ అన్‌లాక్ పిన్"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"SIM నెట్‌వర్క్ అన్‌లాక్‌ను అభ్యర్థిస్తోంది..."</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="6742563947637715645">"SIM నెట్‌వర్క్ సబ్‌సెట్ అన్‌లాక్‌ను అభ్యర్థిస్తోంది..."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="2033399698172403560">"SIM సర్వీస్ ప్రొవైడర్ అన్‌లాక్‌ అభ్యర్థించబడుతోంది..."</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"SIM నెట్‌వర్క్ సబ్‌సెట్ అన్‌లాక్‌ను రిక్వెస్ట్ చేస్తోంది…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"SIM సర్వీస్ ప్రొవైడర్ అన్‌లాక్ రిక్వెస్ట్ చేయబడుతోంది…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"SIM కార్పొరేట్ అన్‌లాక్‌ను అభ్యర్థిస్తోంది..."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"PUK అన్‌లాక్‌ను అభ్యర్థిస్తోంది…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"PUK అన్‌లాక్‌ను అభ్యర్థిస్తోంది…"</string>
@@ -2390,15 +2408,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"PUK అన్‌లాక్‌ను అభ్యర్థిస్తోంది…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"PUK అన్‌లాక్‌ను అభ్యర్థిస్తోంది…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"SIM నెట్‌వర్క్ అన్‌లాక్ రిక్వెస్ట్‌ విఫలమైంది."</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="3372797822292089708">"SIM నెట్‌వర్క్ సబ్‌సెట్ అన్‌లాక్ రిక్వెస్ట్‌ విఫలమైంది."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="1878443146720411381">"SIM సర్వీస్ ప్రొవైడర్ అన్‌లాక్ రిక్వెస్ట్‌ విఫలమైంది."</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"SIM నెట్‌వర్క్ సబ్‌సెట్ అన్‌లాక్ రిక్వెస్ట్‌ విఫలమైంది."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"SIM సర్వీస్ ప్రొవైడర్ అన్‌లాక్ రిక్వెస్ట్ విఫలమైంది."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"SIM కార్పొరేట్ అన్‌లాక్ రిక్వెస్ట్‌ విఫలమైంది."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"SIM అన్‌లాక్‌ రిక్వెస్ట్‌ విఫలమైంది."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"RUIM నెట్‌వర్క్ అన్‌లాక్ రిక్వెస్ట్‌ విఫలమైంది."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"RUIM నెట్‌వర్క్2 అన్‌లాక్ రిక్వెస్ట్‌ విఫలమైంది."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"RUIM Hrpd అన్‌లాక్ రిక్వెస్ట్‌ విఫలమైంది."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"RUIM కార్పొరేట్ అన్‌లాక్ రిక్వెస్ట్‌ విఫలమైంది."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="3801002648649640407">"RUIM సర్వీస్ ప్రొవైడర్ అన్‌లాక్ రిక్వెస్ట్‌ విఫలమైంది."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"RUIM సర్వీస్ ప్రొవైడర్ అన్‌లాక్ రిక్వెస్ట్ విఫలమైంది."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"RUIM అన్‌లాక్ రిక్వెస్ట్‌ విఫలమైంది."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"PUK అన్‌లాక్ విజయవంతం కాలేదు."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"PUK అన్‌లాక్ విజయవంతం కాలేదు."</string>
@@ -2418,13 +2436,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"నెట్‌వర్క్ సబ్‌సెట్ సర్వీస్ ప్రొవైడర్ అన్‌లాక్ రిక్వెస్ట్‌ విఫలమైంది."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"SIM నెట్‌వర్క్ అన్‌లాక్ విజయవంతమైంది."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"SIM నెట్‌వర్క్ సబ్‌సెట్ అన్‌లాక్ విజయవంతమైంది."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="8249342930499801740">"SIM సర్వీస్ ప్రొవైడర్ అన్‌లాక్ విజయవంతమైంది."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"SIM సర్వీస్ ప్రొవైడర్ అన్‌లాక్ విజయవంతమైంది."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"SIM కార్పొరేట్ అన్‌లాక్ విజయవంతమైంది."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"SIM అన్‌లాక్‌ విజయవంతమైంది."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"RUIM నెట్‌వర్క్1 అన్‌లాక్ విజయవంతమైంది."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"RUIM నెట్‌వర్క్2 అన్‌లాక్ విజయవంతమైంది."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"RUIM Hrpd అన్‌లాక్ రిక్వెస్ట్‌ విజయవంతమైంది."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6020936629725666932">"RUIM సర్వీస్ ప్రొవైడర్ అన్‌లాక్ విజయవంతమైంది."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"RUIM సర్వీస్ ప్రొవైడర్ అన్‌లాక్ విజయవంతమైంది."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"RUIM కార్పొరేట్ అన్‌లాక్ రిక్వెస్ట్‌ విజయవంతమైంది."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"RUIM అన్‌లాక్ విజయవంతమైంది."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"PUK అన్‌లాక్ విజయవంతమైంది."</string>
@@ -2452,7 +2470,7 @@
     <string name="turn_on_magnification_settings_action" msgid="8521433346684847700">"సెట్టింగ్‌లలో ఆన్ చేయండి"</string>
     <string name="dismiss_action" msgid="1728820550388704784">"విస్మరించు"</string>
     <string name="sensor_privacy_start_use_mic_notification_content_title" msgid="2420858361276370367">"పరికరం మైక్రోఫోన్‌ను అన్‌బ్లాక్ చేయండి"</string>
-    <string name="sensor_privacy_start_use_camera_notification_content_title" msgid="7287720213963466672">"పరికరంలోని కెమెరాను అన్‌బ్లాక్ చేయండి"</string>
+    <string name="sensor_privacy_start_use_camera_notification_content_title" msgid="7287720213963466672">"డివైజ్‌లోని కెమెరాను అన్‌బ్లాక్ చేయండి"</string>
     <string name="sensor_privacy_start_use_notification_content_text" msgid="7595608891015777346">"&lt;b&gt;<xliff:g id="APP">%s</xliff:g>&lt;/b&gt; యాప్, ఇతర యాప్‌లు, సర్వీస్‌ల కోసం"</string>
     <string name="sensor_privacy_start_use_dialog_turn_on_button" msgid="7089318886628390827">"అన్‌బ్లాక్ చేయండి"</string>
     <string name="sensor_privacy_notification_channel_label" msgid="936036783155261349">"సెన్సార్ గోప్యత"</string>
@@ -2580,27 +2598,22 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"అప్లికేషన్‌లు"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"మీ వేలిముద్రలను ఇకపై గుర్తించడం సాధ్యం కాదు. వేలిముద్ర అన్‌లాక్‌ను మళ్లీ సెటప్ చేయండి."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"సెక్యూరిటీ &amp; గోప్యత"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"స్క్రీన్‌ను అన్‌లాక్ చేసి, USBని తిరిగి కనెక్ట్ చేయండి"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"USBకి కనెక్ట్ చేయడానికి స్క్రీన్‌ను అన్‌లాక్ చేయండి"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"USB కనెక్టివిటీని ప్రారంభించడానికి అడ్వాన్స్‌డ్ ప్రొటెక్షన్ కోసం, మీ స్క్రీన్ అన్‌లాక్ చేయబడి ఉండాలి"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"అడ్వాన్స్‌డ్ ప్రొటెక్షన్ ఆన్‌లో ఉన్నప్పుడు, USB కనెక్టివిటీ కోసం మీ స్క్రీన్ అన్‌లాక్ అయి ఉండాలి."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"ఫాస్టర్ ఛార్జింగ్‌కు అడ్వాన్స్‌డ్ ప్రొటెక్షన్ కోసం, మీ స్క్రీన్ అన్‌లాక్ చేయబడి ఉండాలి"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"అడ్వాన్స్‌డ్ ప్రొటెక్షన్ ఆన్‌లో ఉన్నప్పుడు, ఫాస్ట్ ఛార్జింగ్ కోసం లేదా USB కనెక్టివిటీ కోసం మీ స్క్రీన్ అన్‌లాక్ అయి ఉండాలి."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"మ్యూట్ చేయండి"</string>
-    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"నోటిఫికేషన్‌లు మ్యూట్ చేయడం జరిగింది"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"నోటిఫికేషన్‌లను మ్యూట్ చేశారు"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"మీరు మీ డివైజ్‌ను రీస్టార్ట్ చేసేంత వరకు, అడ్వాన్స్‌డ్ ప్రొటెక్షన్ USB నోటిఫికేషన్‌లను అందుకోరు"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"USB యాక్టివిటీ అనుమానాస్పదంగా ఉంది"</string>
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
-    <skip />
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"USB డేటా సిగ్నల్ డిజేబుల్ అయింది"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"వేలిముద్ర అన్‌లాక్‌తో సమస్య ఉందా?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"మీ అన్‌లాకింగ్ ఎక్స్‌పీరియన్స్‌ను మెరుగుపరిచేందుకు చిట్కాలను రివ్యూ చేయడానికి ట్యాప్ చేయండి"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"బ్లింక్ అవ్వకూడదు"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"పవర్ బటన్‌ను ఎక్కువసేపు నొక్కి, ఉంచి, టీవీని ఆఫ్ చేయండి"</string>
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"సిస్టమ్ రిసోర్స్ అలర్ట్‌లు"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"రిసోర్స్‌ల మితిమీరిన వినియోగం"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"<xliff:g id="APP_NAME">%1$s</xliff:g> యాప్ మరీ ఎక్కువ రిసోర్స్‌లను ఉపయోగిస్తోంది."</string>
 </resources>

@@ -18,8 +18,11 @@ package com.android.settingslib.bluetooth;
 import static com.android.settingslib.bluetooth.BluetoothUtils.getInputDevice;
 import static com.android.settingslib.bluetooth.BluetoothUtils.getSelectedChannelIndex;
 import static com.android.settingslib.bluetooth.BluetoothUtils.isAvailableAudioSharingMediaBluetoothDevice;
+import static com.android.settingslib.bluetooth.BluetoothUtils.isBluetoothDiagnosisAvailable;
 import static com.android.settingslib.bluetooth.BluetoothUtils.isDeviceStylus;
 import static com.android.settingslib.bluetooth.BluetoothUtils.modifySelectedChannelIndex;
+import static com.android.settingslib.bluetooth.BluetoothUtils.showConnectionFailure;
+import static com.android.settingslib.bluetooth.BluetoothUtils.showPairingFailure;
 import static com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast.UNKNOWN_VALUE_PLACEHOLDER;
 import static com.android.settingslib.bluetooth.LocalBluetoothLeBroadcastAssistant.UNKNOWN_CHANNEL;
 import static com.android.settingslib.flags.Flags.FLAG_ENABLE_DETERMINING_ADVANCED_DETAILS_HEADER_WITH_METADATA;
@@ -64,6 +67,7 @@ import android.media.AudioDeviceAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -139,6 +143,9 @@ public class BluetoothUtilsTest {
     private static final String TEST_EXCLUSIVE_MANAGER_PACKAGE = "com.test.manager";
     private static final String TEST_EXCLUSIVE_MANAGER_COMPONENT = "com.test.manager/.component";
     private static final String TEST_ADDRESS = "11:22:33:44:55:66";
+
+    private static final String BLUETOOTH_DIAGNOSIS_KEY = "cs_bt_diagnostics_enabled";
+
     private static final int TEST_BROADCAST_ID = 25;
 
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -1765,6 +1772,68 @@ public class BluetoothUtilsTest {
                 BluetoothUtils.hasConnectedBroadcastAssistantDevice(mLocalBluetoothManager);
 
         assertThat(isAssistantConnected).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BLUETOOTH_DIAGNOSIS)
+    public void isBluetoothDiagnosisAvailable_featureIsEnabled_returnTrue() {
+        Settings.Secure.putInt(mContext.getContentResolver(), BLUETOOTH_DIAGNOSIS_KEY, 1);
+
+        assertThat(isBluetoothDiagnosisAvailable(mContext)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BLUETOOTH_DIAGNOSIS)
+    public void isBluetoothDiagnosisAvailable_featureIsNotEnabled_returnFalse() {
+        assertThat(isBluetoothDiagnosisAvailable(mContext)).isFalse();
+    }
+
+    @Test
+    public void showPairingFailure_failureWithinTimeout_returnTrue() {
+        when(mCachedBluetoothDevice.getBondFailureTimeMillis()).thenReturn(10000L);
+        SystemClock.setCurrentTimeMillis(20000L);
+
+        assertThat(showPairingFailure(mCachedBluetoothDevice)).isTrue();
+    }
+
+    @Test
+    public void showPairingFailure_noFailure_returnFalse() {
+        when(mCachedBluetoothDevice.getBondFailureTimeMillis()).thenReturn(-1L);
+        SystemClock.setCurrentTimeMillis(20000L);
+
+        assertThat(showPairingFailure(mCachedBluetoothDevice)).isFalse();
+    }
+
+    @Test
+    public void showPairingFailure_failureOutOfTimeout_returnFalse() {
+        when(mCachedBluetoothDevice.getBondFailureTimeMillis()).thenReturn(10000L);
+        SystemClock.setCurrentTimeMillis(80000L);
+
+        assertThat(showPairingFailure(mCachedBluetoothDevice)).isFalse();
+    }
+
+    @Test
+    public void showConnectionFailure_failureOutOfTimeout_returnFalse() {
+        when(mCachedBluetoothDevice.getConnectionFailureTimeMillis()).thenReturn(10000L);
+        SystemClock.setCurrentTimeMillis(80000L);
+
+        assertThat(showConnectionFailure(mCachedBluetoothDevice)).isFalse();
+    }
+
+    @Test
+    public void showConnectionFailure_failureWithinTimeout_returnTrue() {
+        when(mCachedBluetoothDevice.getConnectionFailureTimeMillis()).thenReturn(10000L);
+        SystemClock.setCurrentTimeMillis(20000L);
+
+        assertThat(showConnectionFailure(mCachedBluetoothDevice)).isTrue();
+    }
+
+    @Test
+    public void showConnectionFailure_noFailure_returnFalse() {
+        when(mCachedBluetoothDevice.getConnectionFailureTimeMillis()).thenReturn(-1L);
+        SystemClock.setCurrentTimeMillis(20000L);
+
+        assertThat(showConnectionFailure(mCachedBluetoothDevice)).isFalse();
     }
 
     private BluetoothLeBroadcastMetadata createMetadataWithChannels(

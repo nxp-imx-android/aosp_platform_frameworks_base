@@ -194,6 +194,11 @@ class TransitionController {
             mOnStartCollect = onStartCollect;
             mLegacySync = legacySync;
         }
+
+        boolean isAborted(BLASTSyncEngine syncEngine) {
+            return mTransition == null ? syncEngine.getSyncSet(mLegacySync.mSyncId) == null
+                    : mTransition.isAborted();
+        }
     }
 
     private final ArrayList<QueuedTransition> mQueuedTransitions = new ArrayList<>();
@@ -272,6 +277,10 @@ class TransitionController {
         mSyncEngine.addOnIdleListener(this::tryStartCollectFromQueue);
     }
 
+    boolean isFlushing() {
+        return mTransitionPlayers.isEmpty();
+    }
+
     void flushRunningTransitions() {
         // Temporarily clear so that nothing gets started/queued while flushing
         final ArrayList<TransitionPlayerRecord> temp = new ArrayList<>(mTransitionPlayers);
@@ -291,8 +300,10 @@ class TransitionController {
             mCollectingTransition.abort();
         }
         mRemotePlayer.clear();
-        for (int i = 0; i < mQueuedTransitions.size(); ++i) {
-            final QueuedTransition queued = mQueuedTransitions.get(i);
+        final ArrayList<QueuedTransition> queuedTransits = new ArrayList<>(mQueuedTransitions);
+        mQueuedTransitions.clear();
+        for (int i = 0; i < queuedTransits.size(); ++i) {
+            final QueuedTransition queued = queuedTransits.get(i);
             if (queued.mTransition != null) {
                 queued.mTransition.abort();
             } else {
@@ -300,7 +311,6 @@ class TransitionController {
                 mSyncEngine.abort(queued.mLegacySync.mSyncId);
             }
         }
-        mQueuedTransitions.clear();
         mRunningLock.doNotifyLocked();
         // Restore the rest of the player stack
         mTransitionPlayers.addAll(temp);
@@ -338,8 +348,7 @@ class TransitionController {
         if (mCollectingTransition != null) {
             throw new IllegalStateException("Simultaneous transition collection not supported.");
         }
-        if (mTransitionPlayers.isEmpty()) {
-            // This means transitions are being "flushed" due to switching players.
+        if (isFlushing()) {
             transition.abort();
             return;
         }
@@ -781,7 +790,7 @@ class TransitionController {
                 && (endWidth != startWidth || endHeight != startHeight)) {
             displayContent.forAllWindows(w -> {
                 if (w.mToken.mRoundedCornerOverlay && w.mHasSurface) {
-                    w.mSyncMethodOverride = BLASTSyncEngine.METHOD_BLAST;
+                    w.useBlastForNextSync();
                 }
             }, true /* traverseTopToBottom */);
         }
@@ -800,7 +809,7 @@ class TransitionController {
             @NonNull WindowContainer readyGroupRef, @NonNull ActionChain chain) {
         if (mTransitionPlayers.isEmpty()) {
             if (Flags.fallbackTransitionPlayer()) {
-                throw new IllegalStateException("Somehow requesting transition while flushing");
+                Slog.wtfStack(TAG, "Somehow requesting transition while flushing");
             }
             return null;
         }
@@ -843,7 +852,8 @@ class TransitionController {
     Transition requestStartUserTransition(@NonNull Transition transition,
             @Nullable TransitionRequestInfo.UserChange userChange) {
         return requestStartTransition(transition, null /* startTask */,
-                null /* remoteTransition */, null /* displayChange */, userChange);
+                null /* remoteTransition */, null /* displayChange */, userChange,
+                null /* windowingLayerChange */);
     }
 
     @NonNull
@@ -851,7 +861,15 @@ class TransitionController {
             @Nullable RemoteTransition remoteTransition,
             @Nullable TransitionRequestInfo.DisplayChange displayChange) {
         return requestStartTransition(transition, startTask, remoteTransition, displayChange,
-                null /* userChange */);
+                null /* userChange */, null /* windowingLayerChange */);
+    }
+
+    @NonNull
+    Transition requestStartWindowingLayerTransition(@NonNull Transition transition,
+            @NonNull Task startTask,
+            @NonNull TransitionRequestInfo.WindowingLayerChange windowingLayerChange) {
+        return requestStartTransition(transition, startTask, null /* remoteTransition */,
+                null /* displayChange */, null /* userChange */, windowingLayerChange);
     }
 
     /** Asks the transition player (shell) to start a created but not yet started transition. */
@@ -859,7 +877,8 @@ class TransitionController {
     Transition requestStartTransition(@NonNull Transition transition, @Nullable Task startTask,
             @Nullable RemoteTransition remoteTransition,
             @Nullable TransitionRequestInfo.DisplayChange displayChange,
-            @Nullable TransitionRequestInfo.UserChange userChange) {
+            @Nullable TransitionRequestInfo.UserChange userChange,
+            @Nullable TransitionRequestInfo.WindowingLayerChange windowingLayerChange) {
         if (mIsWaitingForDisplayEnabled) {
             ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS,
                     "Disabling player for transition #%d because display isn't enabled yet",
@@ -870,7 +889,7 @@ class TransitionController {
                     transition.getToken(), null));
             return transition;
         }
-        if (mTransitionPlayers.isEmpty() || transition.isAborted()) {
+        if (isFlushing() || transition.isAborted()) {
             // Either flushing or already flushed, so abort here.
             if (transition.isCollecting()) {
                 transition.abort();
@@ -903,15 +922,22 @@ class TransitionController {
                 transition.setPipActivity(null);
             }
 
+            final TransitionRequestInfo.RemoteTransitionInfo remoteInfo;
+            if (remoteTransition != null) {
+                transition.mRemoteDelegate = remoteTransition.getAppThread();
+                remoteInfo = new TransitionRequestInfo.RemoteTransitionInfo(remoteTransition);
+            } else {
+                remoteInfo = null;
+            }
+
             final TransitionRequestInfo request = new TransitionRequestInfo(transition.mType,
-                    startTaskInfo, pipChange, remoteTransition, displayChange,
-                    transition.getRequestedLocation(), userChange, transition.getFlags(),
-                    transition.getSyncId());
+                    startTaskInfo, pipChange, remoteInfo, displayChange,
+                    transition.getRequestedLocation(), userChange, windowingLayerChange,
+                    transition.getFlags(), transition.getSyncId());
 
             transition.mLogger.mRequestTimeNs = SystemClock.elapsedRealtimeNanos();
             transition.mLogger.mRequest = request;
-            getTransitionPlayer().requestStartTransition(
-                    transition.getToken(), request);
+            getTransitionPlayer().requestStartTransition(transition.getToken(), request);
             if (remoteTransition != null) {
                 transition.setRemoteAnimationApp(remoteTransition.getAppThread());
             }
@@ -929,7 +955,8 @@ class TransitionController {
     Transition requestCloseTransitionIfNeeded(@NonNull WindowContainer<?> wc) {
         if (!Flags.fallbackTransitionPlayer() && mTransitionPlayers.isEmpty()) return null;
         if (isCollecting()) return null;
-        if (!wc.isVisibleRequested()) return null;
+
+        if (!Transition.allowsInvisibleExistenceChange(wc) && !wc.isVisibleRequested()) return null;
         return requestStartTransition(createTransition(TRANSIT_CLOSE, 0 /* flags */), wc.asTask(),
                 null /* remoteTransition */, null /* displayChange */);
     }
@@ -1188,6 +1215,7 @@ class TransitionController {
     }
 
     void tryStartCollectFromQueue() {
+        if (isFlushing()) return;
         if (mQueuedTransitions.isEmpty()) return;
         // Only need to try the next one since, even when transition can collect in parallel,
         // they still need to serialize on readiness.
@@ -1231,13 +1259,32 @@ class TransitionController {
             // Post this so that the now-playing transition logic isn't interrupted.
             mAtm.mH.post(() -> {
                 synchronized (mAtm.mGlobalLock) {
+                    // The transition/sync may be aborted if the transition player died.
+                    if (queued.isAborted(mSyncEngine)) return;
                     queued.mOnStartCollect.onCollectStarted(true /* deferred */);
                 }
             });
         }
     }
 
+    /**
+     * Removes transitions with {@link WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION} flag
+     * from the queue
+     */
+    void removeDisplayChangesFromQueue() {
+        for (int i = mQueuedTransitions.size() - 1; i >= 0; i--) {
+            final Transition t = mQueuedTransitions.get(i).mTransition;
+            if (t != null &&
+                    (t.getFlags() & WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION) != 0) {
+                mQueuedTransitions.remove(i);
+            }
+        }
+    }
+
     void moveToPlaying(Transition transition) {
+        if (isFlushing()) {
+            Slog.wtfStack(TAG, "Starting to play a transition while flushing");
+        }
         if (transition == mCollectingTransition) {
             mCollectingTransition = null;
             if (!mWaitingTransitions.isEmpty()) {
@@ -1606,6 +1653,10 @@ class TransitionController {
      */
     boolean startCollectOrQueue(Transition transit, OnStartCollect onStartCollect,
             boolean noopIfDuringDisplayChange) {
+        if (isFlushing()) {
+            transit.abort();
+            return true;
+        }
         if (!mQueuedTransitions.isEmpty()) {
             // Just add to queue since we already have a queue.
             queueTransition(transit, onStartCollect, noopIfDuringDisplayChange);
@@ -1643,9 +1694,9 @@ class TransitionController {
      */
     @Nullable
     Transition createAndStartCollecting(int type) {
-        if (mTransitionPlayers.isEmpty()) {
+        if (isFlushing()) {
             if (Flags.fallbackTransitionPlayer()) {
-                throw new IllegalStateException("Can't create transition while flushing");
+                Slog.wtf(TAG, "Trying to create a transition while flushing");
             }
             return null;
         }

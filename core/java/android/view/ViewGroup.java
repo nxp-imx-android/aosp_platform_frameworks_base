@@ -19,7 +19,6 @@ package android.view;
 import static android.view.WindowInsetsAnimation.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE;
 import static android.view.WindowInsetsAnimation.Callback.DISPATCH_MODE_STOP;
 import static android.view.flags.Flags.FLAG_TOOLKIT_VIEWGROUP_SET_REQUESTED_FRAME_RATE_API;
-import static android.view.flags.Flags.scrollCaptureTargetZOrderFix;
 import static android.view.flags.Flags.toolkitViewgroupSetRequestedFrameRateApi;
 
 import android.animation.LayoutTransition;
@@ -146,7 +145,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
      * Views which have been hidden or removed which need to be animated on
      * their way out.
      * This field should be made private, so it is hidden from the SDK.
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     protected ArrayList<View> mDisappearingChildren;
@@ -155,7 +154,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
      * Listener used to propagate events indicating when children are added
      * and/or removed from a view group.
      * This field should be made private, so it is hidden from the SDK.
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 123768704)
     protected OnHierarchyChangeListener mOnHierarchyChangeListener;
@@ -253,7 +252,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
      * Internal flags.
      *
      * This field should be made private, so it is hidden from the SDK.
-     * {@hide}
+     * @hide
      */
     @ViewDebug.ExportedProperty(flagMapping = {
             @ViewDebug.FlagToString(mask = FLAG_CLIP_CHILDREN, equals = FLAG_CLIP_CHILDREN,
@@ -336,7 +335,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
      * {@link #getChildStaticTransformation(View, android.view.animation.Transformation)} should
      * set this flags in {@link #mGroupFlags}.
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 123769647)
     protected static final int FLAG_SUPPORT_STATIC_TRANSFORMATIONS = 0x800;
@@ -390,7 +389,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
 
     /**
      * When set, this ViewGroup should not intercept touch events.
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 123983692)
     protected static final int FLAG_DISALLOW_INTERCEPT = 0x80000;
@@ -461,7 +460,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     /**
      * Indicates which types of drawing caches are to be kept in memory.
      * This field should be made private, so it is hidden from the SDK.
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     protected int mPersistentDrawingCache;
@@ -4778,7 +4777,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     }
 
     /**
-     * {@hide}
+     * @hide
      */
     @Override
     protected <T extends View> T findViewTraversal(@IdRes int id) {
@@ -4805,7 +4804,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     }
 
     /**
-     * {@hide}
+     * @hide
      */
     @Override
     protected <T extends View> T findViewWithTagTraversal(Object tag) {
@@ -4832,7 +4831,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     }
 
     /**
-     * {@hide}
+     * @hide
      */
     @Override
     protected <T extends View> T findViewByPredicateTraversal(Predicate<View> predicate,
@@ -7687,22 +7686,13 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
         }
         final Rect tmpRect = getTempRect();
 
-        ArrayList<View> preorderedList = null;
-        boolean customOrder = false;
-        if (scrollCaptureTargetZOrderFix()) {
-            preorderedList = buildOrderedChildList();
-            customOrder = preorderedList == null && isChildrenDrawingOrderEnabled();
-        }
+        ArrayList<View> preorderedList = buildOrderedChildList();
+        boolean customOrder = preorderedList == null && isChildrenDrawingOrderEnabled();
         final View[] children = mChildren;
         for (int i = 0; i < childrenCount; i++) {
-            View child;
-            if (scrollCaptureTargetZOrderFix()) {
-                // Traverse children in the same order they will be drawn (honors Z if set)
-                final int childIndex = getAndVerifyPreorderedIndex(childrenCount, i, customOrder);
-                child = getAndVerifyPreorderedView(preorderedList, children, childIndex);
-            } else {
-                child = children[i];
-            }
+            // Traverse children in the same order they will be drawn (honors Z if set)
+            final int childIndex = getAndVerifyPreorderedIndex(childrenCount, i, customOrder);
+            View child = getAndVerifyPreorderedView(preorderedList, children, childIndex);
 
             // Only visible views can be captured.
             if (child.getVisibility() != View.VISIBLE) {

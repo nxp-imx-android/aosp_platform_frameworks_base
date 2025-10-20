@@ -35,10 +35,15 @@ import com.android.systemui.Dumpable
 import com.android.systemui.StatusBarInsetsCommand
 import com.android.systemui.SysUICutoutInformation
 import com.android.systemui.SysUICutoutProvider
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAwareStatusBar
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.commandline.CommandRegistry
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
+import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
 import com.android.systemui.statusbar.policy.CallbackController
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.util.leak.RotationUtils.ROTATION_LANDSCAPE
@@ -48,12 +53,10 @@ import com.android.systemui.util.leak.RotationUtils.ROTATION_UPSIDE_DOWN
 import com.android.systemui.util.leak.RotationUtils.Rotation
 import com.android.systemui.util.leak.RotationUtils.getExactRotation
 import com.android.systemui.util.leak.RotationUtils.getResourcesForRotation
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
 import java.io.PrintWriter
 import java.lang.Math.max
 import java.util.concurrent.CopyOnWriteArraySet
+import javax.inject.Inject
 
 /**
  * Encapsulates logic that can solve for the left/right insets required for the status bar contents.
@@ -132,34 +135,22 @@ interface StatusBarContentInsetsProvider :
     fun getStatusBarContentAreaForCurrentRotation(): Rect
 
     fun getStatusBarPaddingTop(@Rotation rotation: Int? = null): Int
-
-    interface Factory {
-        fun create(
-            context: Context,
-            configurationController: ConfigurationController,
-            sysUICutoutProvider: SysUICutoutProvider,
-        ): StatusBarContentInsetsProvider
-    }
 }
 
+@PerDisplaySingleton
 class StatusBarContentInsetsProviderImpl
-@AssistedInject
+@Inject
 constructor(
-    @Assisted val context: Context,
-    @Assisted val configurationController: ConfigurationController,
+    @DisplayAwareStatusBar val context: Context,
+    @DisplayAware val configurationController: StatusBarConfigurationController,
     val dumpManager: DumpManager,
     val commandRegistry: CommandRegistry,
-    @Assisted val sysUICutoutProvider: SysUICutoutProvider,
-) : StatusBarContentInsetsProvider, ConfigurationController.ConfigurationListener, Dumpable {
-
-    @AssistedFactory
-    interface Factory : StatusBarContentInsetsProvider.Factory {
-        override fun create(
-            context: Context,
-            configurationController: ConfigurationController,
-            sysUICutoutProvider: SysUICutoutProvider,
-        ): StatusBarContentInsetsProviderImpl
-    }
+    @DisplayAware val sysUICutoutProvider: SysUICutoutProvider,
+) :
+    StatusBarContentInsetsProvider,
+    ConfigurationController.ConfigurationListener,
+    Dumpable,
+    SystemUIDisplaySubcomponent.LifecycleListener {
 
     // Limit cache size as potentially we may connect large number of displays
     // (e.g. network displays)
@@ -340,8 +331,10 @@ constructor(
                 // Display#getRoundedCorner) and a padding value. The proper way of doing this is
                 // using safe insets, that take this into account already.
                 // For now, as external displays with corner radius are extremely uncommon, we're
-                // just returning zero.
-                0
+                // just returning an hardcoded small padding.
+                rotatedResources.getDimensionPixelSize(
+                    R.dimen.status_bar_padding_without_rounded_corners
+                )
             }
         val minDotPadding =
             if (isPrivacyDotEnabled)

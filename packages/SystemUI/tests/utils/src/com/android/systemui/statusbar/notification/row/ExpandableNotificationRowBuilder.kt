@@ -27,7 +27,6 @@ import android.content.Intent
 import android.content.pm.LauncherApps
 import android.graphics.drawable.Drawable
 import android.os.UserHandle
-import android.os.UserManager
 import android.provider.DeviceConfig
 import androidx.core.os.bundleOf
 import com.android.internal.config.sysui.SystemUiDeviceConfigFlags
@@ -63,7 +62,6 @@ import com.android.systemui.statusbar.notification.ConversationNotificationProce
 import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.BundleSpec
-import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
@@ -132,7 +130,6 @@ class ExpandableNotificationRowBuilder(
     private val mStatusBarStateController: StatusBarStateController
     private val mKeyguardBypassController: KeyguardBypassController
     private val mGroupMembershipManager: GroupMembershipManager
-    private val mUserManager: UserManager
     private val mHeadsUpManager: HeadsUpManager
     private val mIconManager: IconManager
     private val mContentBinder: NotificationRowContentBinder
@@ -149,6 +146,7 @@ class ExpandableNotificationRowBuilder(
     private val mMainCoroutineContext = mTestScope.coroutineContext
     private val mFakeSystemClock = FakeSystemClock()
     private val mMainExecutor = FakeExecutor(mFakeSystemClock)
+    private val mHeadsUpStyleProvider: HeadsUpStyleProvider
 
     init {
         featureFlags.setDefault(Flags.ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE)
@@ -164,8 +162,8 @@ class ExpandableNotificationRowBuilder(
         mKeyguardBypassController = Mockito.mock(KeyguardBypassController::class.java, STUB_ONLY)
         mGroupMembershipManager = GroupMembershipManagerImpl()
         mSmartReplyController = Mockito.mock(SmartReplyController::class.java, STUB_ONLY)
+        mHeadsUpStyleProvider = kosmos.headsUpStyleProvider
 
-        mUserManager = Mockito.mock(UserManager::class.java, STUB_ONLY)
         mHeadsUpManager =
             kosmos.mockHeadsUpManager.apply {
                 whenever(isTrackingHeadsUp()).thenReturn(MutableStateFlow(false))
@@ -178,6 +176,7 @@ class ExpandableNotificationRowBuilder(
                 mTestScope,
                 mBgCoroutineContext,
                 mMainCoroutineContext,
+                context,
             )
 
         mSmartReplyConstants =
@@ -261,7 +260,7 @@ class ExpandableNotificationRowBuilder(
                 Mockito.mock(Executor::class.java, STUB_ONLY),
                 smartReplyStateInflater,
                 notifLayoutInflaterFactoryProvider,
-                Mockito.mock(HeadsUpStyleProvider::class.java, STUB_ONLY),
+                mHeadsUpStyleProvider,
                 promotedNotificationContentExtractor,
                 Mockito.mock(NotificationRowContentBinderLogger::class.java, STUB_ONLY),
             )
@@ -318,25 +317,13 @@ class ExpandableNotificationRowBuilder(
             { Mockito.mock(NotificationViewFlipperFactory::class.java) },
             NotificationRowIconViewInflaterFactory(
                 kosmos.mockAppIconProvider,
-                NotificationIconStyleProviderImpl(
-                    mUserManager,
-                    kosmos.dumpManager,
-                    kosmos.fakeSystemClock,
-                ),
+                NotificationIconStyleProviderImpl(kosmos.dumpManager, kosmos.fakeSystemClock),
             ),
         )
     }
 
     fun createRowGroup(childCount: Int = 4): ExpandableNotificationRow {
-        val summary =
-            kosmos.buildSummaryNotificationEntry {
-                Notification.Builder(context, "channel")
-                    .setSmallIcon(R.drawable.ic_person)
-                    .setGroupSummary(true)
-                    .setGroup("group")
-            }
-        summary.row = kosmos.createRowWithEntry(summary)
-        val groupBuilder = GroupEntryBuilder().setSummary(summary)
+        val children = ArrayList<NotificationEntry>()
         for (i in 0..<childCount) {
             val childEntry =
                 kosmos.buildNotificationEntry {
@@ -345,10 +332,22 @@ class ExpandableNotificationRowBuilder(
                         .setGroup("group")
                 }
             childEntry.row = kosmos.createRowWithEntry(childEntry)
-            groupBuilder.addChild(childEntry)
-            summary.row.addChildNotification(childEntry.row)
+            children.add(childEntry)
         }
-        groupBuilder.build()
+        val summary =
+            kosmos.buildSummaryNotificationEntry(
+                children,
+                {
+                    Notification.Builder(context, "channel")
+                        .setSmallIcon(R.drawable.ic_person)
+                        .setGroupSummary(true)
+                        .setGroup("group")
+                },
+            )
+        summary.row = kosmos.createRowWithEntry(summary)
+        for (child in children) {
+            summary.row.addChildNotification(child.row)
+        }
         return summary.row
     }
 
@@ -378,6 +377,14 @@ class ExpandableNotificationRowBuilder(
         )
     }
 
+    fun createCompactHUN(notification: Notification): ExpandableNotificationRow {
+        whenever(mHeadsUpStyleProvider.shouldApplyCompactStyle(context.displayId)).thenReturn(true)
+        val row = createRow(notification)
+        row.isHeadsUp = true
+        Mockito.reset(mHeadsUpStyleProvider)
+        return row
+    }
+
     fun createRow(notification: Notification): ExpandableNotificationRow {
         val channel =
             NotificationChannel(
@@ -386,6 +393,8 @@ class ExpandableNotificationRowBuilder(
                 NotificationManager.IMPORTANCE_DEFAULT,
             )
         channel.isBlockable = true
+
+        val promoted = notification.isOngoingEvent && notification.isRequestPromotedOngoing
         val entry =
             NotificationEntryBuilder()
                 .setPkg(PKG)
@@ -397,6 +406,7 @@ class ExpandableNotificationRowBuilder(
                 .setUser(USER_HANDLE)
                 .setPostTime(System.currentTimeMillis())
                 .setChannel(channel)
+                .setFlag(context, Notification.FLAG_PROMOTED_ONGOING, promoted)
                 .build()
 
         // it is for mitigating Rank building process.

@@ -19,6 +19,7 @@ package com.android.server.accessibility.magnification;
 import static android.accessibilityservice.AccessibilityTrace.FLAGS_MAGNIFICATION_CONNECTION;
 import static android.accessibilityservice.AccessibilityTrace.FLAGS_MAGNIFICATION_CONNECTION_CALLBACK;
 import static android.os.Build.HW_TIMEOUT_MULTIPLIER;
+import static android.os.UserHandle.USER_SYSTEM;
 import static android.os.UserHandle.getCallingUserId;
 import static android.view.accessibility.MagnificationAnimationCallback.STUB_ANIMATION_CALLBACK;
 
@@ -56,6 +57,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 import com.android.server.accessibility.AccessibilityTraceManager;
+import com.android.server.accessibility.Flags;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
@@ -291,11 +293,22 @@ public class MagnificationConnectionManager implements
      *
      * @param connect {@code true} if needs connection, otherwise set the connection to null and
      *                destroy all window magnifications.
-     * @return {@code true} if {@link IMagnificationConnection} state is going to change.
      */
     public boolean requestConnection(boolean connect) {
-        final int callingUserId = getCallingUserId();
-        if (mUserManagerInternal.isVisibleBackgroundFullUser(callingUserId)) {
+        return requestConnection(connect, getCallingUserId());
+    }
+
+    @VisibleForTesting
+    boolean requestConnection(boolean connect, int callingUserId) {
+        boolean isValidUser;
+
+        if (Flags.magnificationConnectionApprovesSystemUser()) {
+            isValidUser = callingUserId == USER_SYSTEM
+                    || !mUserManagerInternal.isVisibleBackgroundFullUser(callingUserId);
+        } else {
+            isValidUser = !mUserManagerInternal.isVisibleBackgroundFullUser(callingUserId);
+        }
+        if (!isValidUser) {
             throw new SecurityException("Visible background user(u" + callingUserId
                     + " is not permitted to request magnification connection.");
         }

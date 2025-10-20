@@ -696,6 +696,14 @@ public class DeveloperVerifierController {
     }
 
     /**
+     * Clear the experiment associated with a package name if it exists. If the package name is
+     * null, clear all experiments.
+     */
+    public void clearExperiment(@Nullable String packageName) {
+        mExperimentProvider.clearExperiment(packageName);
+    }
+
+    /**
      * Check if there is an experiment for the given package.
      */
     public boolean hasExperiments(String packageName) {

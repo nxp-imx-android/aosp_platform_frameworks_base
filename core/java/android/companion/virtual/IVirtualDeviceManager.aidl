@@ -23,8 +23,10 @@ import android.companion.virtual.IVirtualDeviceSoundEffectListener;
 import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
+import android.companion.virtual.computercontrol.IAutomatedPackageListener;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.content.AttributionSource;
+import android.content.Intent;
 
 /**
  * Interface for communication between VirtualDeviceManager and VirtualDeviceManagerService.
@@ -81,6 +83,21 @@ interface IVirtualDeviceManager {
     void unregisterVirtualDeviceListener(in IVirtualDeviceListener listener);
 
     /**
+     * Registers a listener to receive notifications for automated packages.
+     */
+    void registerAutomatedPackageListener(in IAutomatedPackageListener listener);
+
+    /**
+     * Unregisters a previously registered listener.
+     */
+    void unregisterAutomatedPackageListener(in IAutomatedPackageListener listener);
+
+    /**
+     * Returns the intent to warn the user about launching an application that is being automated.
+     */
+    Intent createAutomatedAppLaunchWarningIntent(in String packageName, int userId);
+
+    /**
      * Returns the ID of the device which owns the display with the given ID.
      */
     int getDeviceIdForDisplayId(int displayId);
@@ -102,6 +119,11 @@ interface IVirtualDeviceManager {
      * Returns the device policy for the given virtual device and policy type.
      */
     int getDevicePolicy(int deviceId, int policyType);
+
+    /**
+     * Returns the device policy for the given display ID and policy type.
+     */
+    int getDevicePolicyForDisplayId(int displayId, int policyType);
 
     /**
      * Returns device-specific session id for playback, or AUDIO_SESSION_ID_GENERATE

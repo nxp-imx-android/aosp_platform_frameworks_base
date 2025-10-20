@@ -29,6 +29,7 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
+import com.android.wm.shell.desktopmode.FakeShellDesktopState
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import java.util.function.Supplier
 import org.junit.Before
@@ -52,13 +53,16 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     private val displayController = mock<DisplayController>()
     private val rootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
     private val indicatorSurfaceFactory = mock<MultiDisplayDragMoveIndicatorSurface.Factory>()
-    private val desktopState = FakeDesktopState()
+    private val shellDesktopState = FakeShellDesktopState(FakeDesktopState())
     private val indicatorSurface0 = mock<MultiDisplayDragMoveIndicatorSurface>()
     private val indicatorSurface1 = mock<MultiDisplayDragMoveIndicatorSurface>()
+    private val indicatorSurface2 = mock<MultiDisplayDragMoveIndicatorSurface>()
     private val transaction = mock<SurfaceControl.Transaction>()
     private val transactionSupplier = mock<Supplier<SurfaceControl.Transaction>>()
     private val taskInfo = mock<RunningTaskInfo>()
+    private val taskInfo2 = mock<RunningTaskInfo>()
     private val taskLeash = mock<SurfaceControl>()
+    private val taskLeash2 = mock<SurfaceControl>()
     private val displayContext0 = mock<Context>()
     private val displayContext1 = mock<Context>()
     private lateinit var spyDisplayLayout0: DisplayLayout
@@ -80,7 +84,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
                 displayController,
                 rootTaskDisplayAreaOrganizer,
                 indicatorSurfaceFactory,
-                desktopState,
+                shellDesktopState,
             )
 
         TestDisplay.DISPLAY_0.getSpyDisplayLayout(resources.resources)
@@ -88,6 +92,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         spyDisplayLayout1 = TestDisplay.DISPLAY_1.getSpyDisplayLayout(resources.resources)
 
         taskInfo.taskId = TASK_ID
+        taskInfo2.taskId = TASK_ID_2
         whenever(displayController.getDisplayLayout(0)).thenReturn(spyDisplayLayout0)
         whenever(displayController.getDisplayLayout(1)).thenReturn(spyDisplayLayout1)
         whenever(displayController.getDisplayContext(0)).thenReturn(displayContext0)
@@ -96,8 +101,10 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             .thenReturn(indicatorSurface0)
         whenever(indicatorSurfaceFactory.create(eq(displayContext1), eq(taskLeash)))
             .thenReturn(indicatorSurface1)
+        whenever(indicatorSurfaceFactory.create(eq(displayContext0), eq(taskLeash2)))
+            .thenReturn(indicatorSurface2)
         whenever(transactionSupplier.get()).thenReturn(transaction)
-        desktopState.canEnterDesktopMode = true
+        shellDesktopState.canBeWindowDropTarget = true
     }
 
     @Test
@@ -117,7 +124,10 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
+        Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX,
+    )
     fun onDrag_boundsIntersectWithStartDisplay_showIndicator() {
         controller.onDragMove(
             RectF(100f, 100f, 200f, 200f), // intersect with display 0
@@ -144,9 +154,12 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
+        Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX,
+    )
     fun onDrag_boundsIntersectWithDesktopModeUnsupportedDisplay_noIndicatorOnThatDisplay() {
-        desktopState.overrideDesktopModeSupportPerDisplay[1] = false
+        shellDesktopState.overrideWindowDropTargetEligibility[1] = false
 
         controller.onDragMove(
             RectF(100f, -100f, 200f, 200f), // intersect with display 0 and 1
@@ -163,7 +176,10 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
+        Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX,
+    )
     fun onDrag_boundsIntersectWithNonStartDisplayAndMoveAway_showHideAndDisposeIndicator() {
         controller.onDragMove(
             RectF(100f, -100f, 200f, 200f), // intersect with display 0 and 1
@@ -229,7 +245,52 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         verify(indicatorSurface1).dispose(transaction)
     }
 
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
+        Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX,
+    )
+    fun disposeAllIndicators_verifyAllIndicatorsDisposed() {
+        // Drag a first task to create indicators on two displays
+        controller.onDragMove(
+            RectF(100f, -100f, 200f, 200f), // intersect with display 0 and 1
+            currentDisplayId = 1,
+            startDisplayId = 0,
+            taskLeash,
+            taskInfo,
+            displayIds = setOf(0, 1),
+        ) {
+            transaction
+        }
+
+        // Drag the second task to create an indicator on one display
+        controller.onDragMove(
+            RectF(150f, 150f, 250f, 250f), // intersect with display 0 only
+            currentDisplayId = 0,
+            startDisplayId = 0,
+            taskLeash2,
+            taskInfo2,
+            displayIds = setOf(0, 1),
+        ) {
+            transaction
+        }
+
+        // Verify indicators for both tasks are created
+        verify(indicatorSurfaceFactory).create(eq(displayContext0), eq(taskLeash))
+        verify(indicatorSurfaceFactory).create(eq(displayContext1), eq(taskLeash))
+        verify(indicatorSurfaceFactory).create(eq(displayContext0), eq(taskLeash2))
+
+        // Dispose all indicators
+        controller.disposeAllIndicators(transaction)
+
+        // Verify indicators for both tasks are disposed
+        verify(indicatorSurface0).dispose(transaction)
+        verify(indicatorSurface1).dispose(transaction)
+        verify(indicatorSurface2).dispose(transaction)
+    }
+
     companion object {
         private const val TASK_ID = 10
+        private const val TASK_ID_2 = 11
     }
 }

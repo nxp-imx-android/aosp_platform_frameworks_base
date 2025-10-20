@@ -25,7 +25,6 @@ import android.content.res.XmlResourceParser;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.VibratorInfo;
-import android.os.vibrator.Flags;
 import android.os.vibrator.persistence.ParsedVibration;
 import android.os.vibrator.persistence.VibrationXmlParser;
 import android.text.TextUtils;
@@ -137,17 +136,12 @@ final class HapticFeedbackCustomization {
         mHapticCustomizations = hapticCustomizations;
 
         // Load customizations specified by input sources.
-        if (android.os.vibrator.Flags.hapticFeedbackInputSourceCustomizationEnabled()) {
-            mHapticCustomizationsForSourceRotary =
-                    loadCustomizedFeedbackVibrationFromRes(res, vibratorInfo,
-                            R.xml.haptic_feedback_customization_source_rotary_encoder);
-            mHapticCustomizationsForSourceTouchScreen =
-                    loadCustomizedFeedbackVibrationFromRes(res, vibratorInfo,
-                            R.xml.haptic_feedback_customization_source_touchscreen);
-        } else {
-            mHapticCustomizationsForSourceRotary = new SparseArray<>();
-            mHapticCustomizationsForSourceTouchScreen = new SparseArray<>();
-        }
+        mHapticCustomizationsForSourceRotary =
+                loadCustomizedFeedbackVibrationFromRes(res, vibratorInfo,
+                        R.xml.haptic_feedback_customization_source_rotary_encoder);
+        mHapticCustomizationsForSourceTouchScreen =
+                loadCustomizedFeedbackVibrationFromRes(res, vibratorInfo,
+                        R.xml.haptic_feedback_customization_source_touchscreen);
 
         // Load customizations specified for usages.
         if (android.os.vibrator.Flags.hapticFeedbackWithCustomUsage()) {
@@ -275,9 +269,6 @@ final class HapticFeedbackCustomization {
 
     @Nullable
     private static TypedXmlPullParser readCustomizationResources(Resources res, int xmlResId) {
-        if (!Flags.loadHapticFeedbackVibrationCustomizationFromResources()) {
-            return null;
-        }
         final XmlResourceParser resParser;
         try {
             resParser = res.getXml(xmlResId);

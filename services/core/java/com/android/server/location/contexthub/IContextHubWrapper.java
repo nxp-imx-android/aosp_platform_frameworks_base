@@ -104,6 +104,12 @@ public abstract class IContextHubWrapper {
                 List<String> nanoappPermissions, List<String> messagePermissions);
 
         /**
+         * Handles the HAL service death.
+         */
+        void handleServiceDied();
+
+
+        /**
          * Handles a restart of the service.
          */
         void handleServiceRestart();
@@ -451,6 +457,7 @@ public abstract class IContextHubWrapper {
         private final Map<Integer, ContextHubAidlCallback> mAidlCallbackMap =
                     new HashMap<>();
 
+        private Runnable mHandleServiceDeathCallback = null;
         private Runnable mHandleServiceRestartCallback = null;
 
         // Use this thread in case where the execution requires to be on a service thread.
@@ -559,6 +566,11 @@ public abstract class IContextHubWrapper {
         @Override
         public void binderDied() {
             Log.i(TAG, "Context Hub AIDL HAL died");
+            if (mHandleServiceDeathCallback != null) {
+                mHandleServiceDeathCallback.run();
+            } else {
+                Log.e(TAG, "mHandleServiceDeathCallback is not set");
+            }
 
             setHub(maybeConnectToAidlGetProxy());
             if (getHub() == null) {
@@ -942,6 +954,7 @@ public abstract class IContextHubWrapper {
                 return;
             }
 
+            mHandleServiceDeathCallback = callback::handleServiceDied;
             mHandleServiceRestartCallback = callback::handleServiceRestart;
             mAidlCallbackMap.put(contextHubId, new ContextHubAidlCallback(contextHubId, callback));
             registerExistingCallback(contextHubId);

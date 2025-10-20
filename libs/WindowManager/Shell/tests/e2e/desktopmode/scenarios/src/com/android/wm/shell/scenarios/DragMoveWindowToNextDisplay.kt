@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.scenarios
 
+import android.app.ActivityOptions
 import android.graphics.Point
 import android.hardware.display.DisplayManager
 import android.platform.test.annotations.RequiresFlagsEnabled
@@ -29,10 +30,12 @@ import android.view.DisplayInfo
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
+import com.android.server.wm.flicker.helpers.ImmersiveAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.window.flags.Flags
 import com.android.wm.shell.Utils
 import com.android.wm.shell.shared.desktopmode.DesktopState
+import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -52,12 +55,14 @@ abstract class DragMoveWindowToNextDisplay {
     private val wmHelper = WindowManagerStateHelper(getInstrumentation())
     private val device = UiDevice.getInstance(getInstrumentation())
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(getInstrumentation()))
+    private val immersiveAppHelper = ImmersiveAppHelper(getInstrumentation())
+    private val immersiveApp = DesktopModeAppHelper(immersiveAppHelper)
     private val displayManager =
         getInstrumentation().targetContext.getSystemService(DisplayManager::class.java)
 
     @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
     @get:Rule(order = 1)
-    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
+    val testSetupRule = Utils.testSetupRuleFunctional(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
     @get:Rule(order = 2) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
     @get:Rule(order = 3) val desktopMouseRule = DesktopMouseTestRule()
     @get:Rule(order = 4)
@@ -73,7 +78,61 @@ abstract class DragMoveWindowToNextDisplay {
     fun moveToNextDisplay() {
         testApp.enterDesktopMode(wmHelper, device)
         val connectedDisplayId = connectedDisplayRule.setupTestDisplay()
+        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(connectedDisplayId).waitForAndVerify()
 
+        dragWindowToDisplay(connectedDisplayId)
+
+        // Verify app window moved to target display
+        wmHelper
+            .StateSyncBuilder()
+            .add("testApp is on the connected display") { dump ->
+                val display =
+                    requireNotNull(dump.wmState.getDisplay(connectedDisplayId)) {
+                        "Display $connectedDisplayId not found"
+                    }
+                display.containsActivity(testApp)
+            }
+            .waitForAndVerify()
+    }
+
+    @Test
+    fun cannotMoveToDisplayWithFullscreenApp() {
+        testApp.enterDesktopMode(wmHelper, device)
+        val connectedDisplayId = connectedDisplayRule.setupTestDisplay()
+        immersiveAppHelper.launchViaIntent(
+            wmHelper,
+            waitConditionsBuilder =
+                wmHelper.StateSyncBuilder().withAppTransitionIdle(connectedDisplayId),
+            options = ActivityOptions.makeBasic().setLaunchDisplayId(connectedDisplayId),
+        )
+        immersiveApp.enterImmersiveMode(wmHelper, device)
+        val initialBounds =
+            checkNotNull(testApp.getCaptionForTheApp(wmHelper, device)?.visibleBounds)
+
+        dragWindowToDisplay(connectedDisplayId)
+
+        // Verify app window stayed at the same display
+        wmHelper
+            .StateSyncBuilder()
+            .add("testApp is on the default display") { dump ->
+                val display =
+                    requireNotNull(dump.wmState.getDisplay(DEFAULT_DISPLAY)) {
+                        "Display $DEFAULT_DISPLAY not found"
+                    }
+                display.containsActivity(testApp)
+            }
+            .waitForAndVerify()
+        // Verify app window stayed at the same position
+        val finalBounds = checkNotNull(testApp.getCaptionForTheApp(wmHelper, device)?.visibleBounds)
+        assertThat(finalBounds).isEqualTo(initialBounds)
+    }
+
+    @After
+    fun teardown() {
+        testApp.exit(wmHelper)
+    }
+
+    private fun dragWindowToDisplay(connectedDisplayId: Int) {
         val captionBounds =
             checkNotNull(testApp.getCaptionForTheApp(wmHelper, device)?.visibleBounds)
         val dragCoords = Point(captionBounds.centerX(), captionBounds.centerY())
@@ -92,22 +151,5 @@ abstract class DragMoveWindowToNextDisplay {
         )
         desktopMouseRule.stopDrag()
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
-
-        // Verify app window moved to target display
-        wmHelper
-            .StateSyncBuilder()
-            .add("testApp is on the connected display") { dump ->
-                val display =
-                    requireNotNull(dump.wmState.getDisplay(connectedDisplayId)) {
-                        "Display $connectedDisplayId not found"
-                    }
-                display.containsActivity(testApp)
-            }
-            .waitForAndVerify()
-    }
-
-    @After
-    fun teardown() {
-        testApp.exit(wmHelper)
     }
 }

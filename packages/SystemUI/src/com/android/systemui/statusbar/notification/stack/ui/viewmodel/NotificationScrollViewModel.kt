@@ -35,10 +35,12 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.domain.interactor.RemoteInputInteractor
+import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.LockscreenDisplayConfig
 import com.android.systemui.statusbar.notification.stack.domain.interactor.LockscreenNotificationDisplayConfigInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.NotificationStackAppearanceInteractor
@@ -74,10 +76,12 @@ constructor(
     dumpManager: DumpManager,
     private val stackAppearanceInteractor: NotificationStackAppearanceInteractor,
     private val lockscreenAppearanceInteractor: LockscreenNotificationDisplayConfigInteractor,
+    brightnessMirrorShowingInteractorLazy: Lazy<BrightnessMirrorShowingInteractor>,
     shadeInteractor: ShadeInteractor,
     shadeModeInteractor: ShadeModeInteractor,
     bouncerInteractor: BouncerInteractor,
     private val remoteInputInteractor: RemoteInputInteractor,
+    private val headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     sceneInteractor: SceneInteractor,
     // TODO(b/336364825) Remove Lazy when SceneContainerFlag is released -
     // while the flag is off, creating this object too early results in a crash
@@ -165,6 +169,10 @@ constructor(
                     }
                     is Transition -> {
                         state.isTransitioningBetween(Scenes.Shade, Scenes.QuickSettings) ||
+                            state.isTransitioning(
+                                from = Scenes.QuickSettings,
+                                to = Scenes.Lockscreen,
+                            ) ||
                             state.fromContent == Scenes.Lockscreen &&
                                 (state.toContent == Overlays.Bouncer ||
                                     state.toContent == Scenes.Gone)
@@ -249,12 +257,27 @@ constructor(
             flowOf(0f)
         }
 
+    private val brightnessMirrorShowing: Flow<Boolean> =
+        if (SceneContainerFlag.isEnabled) {
+            brightnessMirrorShowingInteractorLazy.get().isShowing
+        } else {
+            flowOf(false)
+        }
+
     /**
      * Whether the Notifications are interactive for touches, accessibility, and focus. When false,
      * scene container will handle touches.
      */
     val interactive: Flow<Boolean> =
-        blurFraction.map { it != 1f }.distinctUntilChanged().dumpWhileCollecting("interactive")
+        combine(
+                blurFraction,
+                brightnessMirrorShowing,
+                headsUpNotificationInteractor.hasPinnedRows,
+            ) { blurFraction, brightnessMirrorShowing, hasPinnedHun ->
+                (blurFraction != 1f || hasPinnedHun) && !brightnessMirrorShowing
+            }
+            .distinctUntilChanged()
+            .dumpWhileCollecting("interactive")
 
     /** Whether we should close any open notification guts. */
     val shouldCloseGuts: Flow<Boolean> = stackAppearanceInteractor.shouldCloseGuts

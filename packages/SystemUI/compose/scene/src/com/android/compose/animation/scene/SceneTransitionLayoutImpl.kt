@@ -54,7 +54,6 @@ import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
-import androidx.compose.ui.zIndex
 import com.android.compose.animation.scene.UserActionResult.ShowOverlay.HideCurrentOverlays
 import com.android.compose.animation.scene.content.Content
 import com.android.compose.animation.scene.content.Overlay
@@ -181,10 +180,14 @@ internal class SceneTransitionLayoutImpl(
         null
     internal val sharedValues: MutableMap<ValueKey, MutableMap<ElementKey?, SharedValue<*, *>>>
         get() =
-            _sharedValues
-                ?: mutableMapOf<ValueKey, MutableMap<ElementKey?, SharedValue<*, *>>>().also {
-                    _sharedValues = it
-                }
+            if (ancestors.isNotEmpty()) {
+                ancestors[0].layoutImpl.sharedValues
+            } else {
+                _sharedValues
+                    ?: mutableMapOf<ValueKey, MutableMap<ElementKey?, SharedValue<*, *>>>().also {
+                        _sharedValues = it
+                    }
+            }
 
     // TODO(b/317958526): Lazily allocate scene gesture handlers the first time they are needed.
     internal val horizontalDraggableHandler: DraggableHandler

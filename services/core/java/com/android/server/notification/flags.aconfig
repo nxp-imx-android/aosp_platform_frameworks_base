@@ -16,13 +16,6 @@ flag {
 }
 
 flag {
-  name: "refactor_attention_helper"
-  namespace: "systemui"
-  description: "This flag controls the refactoring of NMS to NotificationAttentionHelper"
-  bug: "291907312"
-}
-
-flag {
   name: "cross_app_polite_notifications"
   namespace: "systemui"
   description: "This flag controls the cross-app effect of polite notifications"
@@ -34,13 +27,6 @@ flag {
   namespace: "systemui"
   description: "This flag controls the vibrate while unlocked setting of polite notifications"
   bug: "270456865"
-}
-
-flag {
-  name: "autogroup_summary_icon_update"
-  namespace: "systemui"
-  description: "This flag controls the fix for notifications autogroup summary icon updates"
-  bug: "227693160"
 }
 
 flag {
@@ -134,6 +120,13 @@ flag {
 }
 
 flag {
+  name: "channel_vibration_ignore_invalid_pattern"
+  namespace: "notifications"
+  description: "Ignore invalid patterns (e.g. empty array) and fall back to default vibration instead of none"
+  bug: "447121175"
+}
+
+flag {
   name: "nm_binder_perf_reduce_zen_broadcasts"
   namespace: "systemui"
   description: "Don't send duplicate zen-related (policy changed, etc) broadcasts"
@@ -194,41 +187,13 @@ flag {
   }
 }
 
-flag {
-  name: "log_visually_changed_updates"
-  namespace: "systemui"
-  description: "Logs a notification update if it is visually changed"
-  bug: "420989666"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
 
-flag {
-  name: "skip_policy_access_nls_check"
-  namespace: "systemui"
-  description: "When querying whether a caller has Notification Policy Access, don't explicitly look in the NLSes list. All NLSes are also ConditionProviders so this is unnecessary."
-  bug: "390441924"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
 
 flag {
   name: "random_conversation_ids"
   namespace: "systemui"
   description: "Use random ids for new conversation channels, instead of concatenating parent id and conversation id"
   bug: "432250872"
-}
-
-flag {
-  name: "preferences_throws_on_invalid_uid"
-  namespace: "systemui"
-  description: "Throw IAE when calling getOrCreatePackagePreferences() with INVALID_UID."
-  bug: "430250142"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {
@@ -240,3 +205,41 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+  name: "fix_managed_services_double_binding"
+  namespace: "notifications"
+  description: "Couple of tweaks to fix b/434679743"
+  bug: "434679743"
+}
+
+flag {
+  name: "limit_managed_services_count"
+  namespace: "systemui"
+  description: "Enforce a maximum number of allowed components in ManagedServices"
+  bug: "428701593"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
+  name: "disable_nas_affects_classification_and_summarization"
+  namespace: "notifications"
+  description: "Disabling NAS also unclassifies and unsummarizes existing notifications"
+  bug: "446994142"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+# Start: Flags that have been cleaned up in code but must remain defined for CTS
+
+flag {
+  name: "autogroup_summary_icon_update"
+  namespace: "systemui"
+  description: "This flag controls the fix for notifications autogroup summary icon updates"
+  bug: "227693160"
+}
+
+# End: Flags that have been cleaned up in code but must remain defined for CTS

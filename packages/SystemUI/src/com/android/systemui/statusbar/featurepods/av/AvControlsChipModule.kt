@@ -16,20 +16,30 @@
 
 package com.android.systemui.statusbar.featurepods.av
 
+import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.featurepods.av.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.featurepods.av.domain.interactor.AvControlsChipInteractorImpl
-import dagger.Binds
+import com.android.systemui.statusbar.featurepods.av.domain.interactor.NoOpAvControlsChipInteractor
 import dagger.Module
+import dagger.Provides
+import javax.inject.Provider
 
 /** Module providing dependencies for Audio/Video controls feature pod. */
 @Module
-abstract class AvControlsChipModule {
+class AvControlsChipModule {
 
-    /** Binds an [AvControlsChipInteractor] */
-    @Binds
+    /** Provides an [AvControlsChipInteractor] based on whether is is enabled by a flag */
+    @Provides
     @SysUISingleton
-    abstract fun providesAvControlsChipInteractor(
-        impl: AvControlsChipInteractorImpl
-    ): AvControlsChipInteractor
+    fun provideAvControlsChipInteractor(
+        avControlsChipSupported: Provider<AvControlsChipInteractorImpl>,
+        avControlsChipNotSupported: Provider<NoOpAvControlsChipInteractor>,
+    ): AvControlsChipInteractor {
+        return if (Flags.expandedPrivacyIndicatorsOnLargeScreen()) {
+            avControlsChipSupported.get()
+        } else {
+            avControlsChipNotSupported.get()
+        }
+    }
 }

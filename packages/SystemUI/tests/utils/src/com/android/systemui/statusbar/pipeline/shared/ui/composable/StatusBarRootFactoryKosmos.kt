@@ -20,7 +20,9 @@ import com.android.systemui.clock.ui.viewmodel.clockViewModelFactory
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.media.controls.ui.controller.mediaHierarchyManager
 import com.android.systemui.media.controls.ui.view.qsMediaHost
+import com.android.systemui.media.remedia.ui.viewmodel.factory.mediaViewModelFactory
 import com.android.systemui.plugins.fakeDarkIconDispatcher
+import com.android.systemui.scene.ui.view.mockShadeRootView
 import com.android.systemui.statusbar.events.domain.interactor.systemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.connectedDisplaysStatusBarNotificationIconViewStoreFactory
 import com.android.systemui.statusbar.phone.ui.statusBarIconController
@@ -33,6 +35,7 @@ val Kosmos.statusBarRootFactory by
     Kosmos.Fixture {
         StatusBarRootFactory(
             notificationIconsBinder = mock(),
+            shadeWindowRootView = mockShadeRootView,
             iconViewStoreFactory = connectedDisplaysStatusBarNotificationIconViewStoreFactory,
             clockViewModelFactory = clockViewModelFactory,
             darkIconManagerFactory = mock(),
@@ -42,6 +45,7 @@ val Kosmos.statusBarRootFactory by
             eventAnimationInteractor = systemStatusEventAnimationInteractor,
             mediaHierarchyManager = mediaHierarchyManager,
             mediaHost = qsMediaHost,
+            mediaViewModelFactory = mediaViewModelFactory,
             darkIconDispatcher = fakeDarkIconDispatcher,
             homeStatusBarViewBinder = homeStatusBarViewBinder,
             homeStatusBarViewModelFactory = defaultDisplayHomeStatusBarViewModelFactory,

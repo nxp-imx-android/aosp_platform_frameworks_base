@@ -17,7 +17,11 @@
 package com.android.systemui.statusbar.pipeline.battery.ui.viewmodel
 
 import android.content.Context
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.android.systemui.common.shared.model.ContentDescription
@@ -306,6 +310,17 @@ sealed class BatteryViewModel(
             } else {
                 13.sp
             }
+        }
+
+        /**
+         * [TextStyle] for status bar battery text [Composable]s. The size of this text will scale
+         * consistent with display size changes
+         */
+        @OptIn(ExperimentalMaterial3ExpressiveApi::class) // Required for bodyMediumEmphasized style
+        @Composable
+        fun getStatusBarBatteryTextStyle(context: Context): TextStyle {
+            val baseStyle = MaterialTheme.typography.bodyMediumEmphasized
+            return baseStyle.copy(fontSize = baseStyle.fontSize * getScaleFactor(context))
         }
 
         private fun getScaleFactor(context: Context): Float {

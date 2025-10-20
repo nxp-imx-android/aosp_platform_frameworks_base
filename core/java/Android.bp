@@ -265,7 +265,12 @@ filegroup {
         "android/util/AndroidException.java",
         "android/view/DisplayAdjustments.java",
         "android/view/ViewDebug.java",
-    ],
+    ] + select(release_flag("RELEASE_NATIVE_FRAMEWORK_PROTOTYPE"), {
+        true: [
+            "android/app/INativeApplicationThread.aidl",
+        ],
+        default: [],
+    }),
     visibility: ["//frameworks/base/test-mock"],
 }
 
@@ -604,17 +609,6 @@ cc_library {
     ],
 }
 
-cc_library {
-    name: "libactivity_manager_procstate_aidl-cpp",
-    host_supported: true,
-    srcs: [
-        ":activity_manager_procstate_aidl",
-    ],
-    aidl: {
-        export_aidl_headers: true,
-    },
-}
-
 // Build Rust bindings for PermissionController. Needed by keystore2.
 aidl_interface {
     name: "android.os.permissions_aidl",
@@ -669,6 +663,24 @@ aidl_interface {
     },
 }
 
+// Build Rust bindings as usbauthservice depends on this.
+aidl_interface {
+    name: "android.hardware.usb.auth",
+    unstable: true,
+    host_supported: true,
+    srcs: [
+        "android/hardware/usb/UsbAuthorizationStatus.aidl",
+        "android/hardware/usb/UsbAuthorizationSystemState.aidl",
+        "android/hardware/usb/UsbAuthDeviceInfo.aidl",
+        "android/hardware/usb/IUsbAuthManager.aidl",
+    ],
+    backend: {
+        rust: {
+            enabled: true,
+        },
+    },
+}
+
 aidl_interface {
     name: "android.companion.virtual.virtualdevice_aidl",
     unstable: true,
@@ -682,6 +694,13 @@ aidl_interface {
 filegroup {
     name: "frameworks-base-java-overview",
     srcs: ["overview.html"],
+}
+
+filegroup {
+    name: "framework-telecom-core-shared-srcs",
+    srcs: [
+        "com/android/internal/os/SomeArgs.java",
+    ],
 }
 
 // Avoid including Parcelable classes as we don't want to have two copies of
@@ -726,12 +745,27 @@ filegroup {
     ],
 }
 
-filegroup {
-    name: "android-os-statsbootstrap-aidl",
+aidl_interface {
+    name: "android.os.statsbootstrap_aidl",
+    unstable: true,
     srcs: [
         "android/os/IStatsBootstrapAtomService.aidl",
         "android/os/StatsBootstrapAtom.aidl",
         "android/os/StatsBootstrapAtomValue.aidl",
+    ],
+    backend: {
+        cpp: {
+            enabled: true,
+        },
+    },
+}
+
+filegroup {
+    name: "android-os-binderstatsconsumer-aidl",
+    srcs: [
+        "android/os/binder/IBinderStatsConsumerService.aidl",
+        "android/os/binder/BinderCallsStats.aidl",
+        "android/os/binder/BinderSpamStats.aidl",
     ],
     visibility: ["//frameworks/native/libs/binder"],
 }
@@ -842,4 +876,46 @@ aidl_interface {
             enabled: true,
         },
     },
+}
+
+aidl_interface {
+    name: "native_application_thread_aidl",
+    srcs: [
+        "android/app/INativeApplicationThread.aidl",
+    ],
+    unstable: true,
+    backend: {
+        java: {
+            // java code is generated through framework-core-sources.
+            enabled: false,
+        },
+        rust: {
+            enabled: true,
+        },
+    },
+}
+
+aidl_interface {
+    name: "libactivity_manager_procstate_aidl",
+    srcs: [
+        ":activity_manager_procstate_aidl",
+    ],
+    host_supported: true,
+    unstable: true,
+    backend: {
+        java: {
+            // java code is generated through framework-core-sources.
+            enabled: false,
+        },
+        rust: {
+            enabled: true,
+        },
+    },
+}
+
+filegroup {
+    name: "framework-device-policy-metadata-sources",
+    srcs: [
+        "android/app/admin/metadata/*.java",
+    ],
 }

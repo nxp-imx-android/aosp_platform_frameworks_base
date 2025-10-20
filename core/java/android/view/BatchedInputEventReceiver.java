@@ -26,7 +26,7 @@ import android.os.Trace;
  * @hide
  */
 public class BatchedInputEventReceiver extends InputEventReceiver {
-    private Choreographer mChoreographer;
+    private final Choreographer mChoreographer;
     private boolean mBatchingEnabled;
     private boolean mBatchedInputScheduled;
     private final String mTag;
@@ -77,7 +77,16 @@ public class BatchedInputEventReceiver extends InputEventReceiver {
 
         mBatchingEnabled = batchingEnabled;
         traceBoolVariable("mBatchingEnabled", mBatchingEnabled);
-        mHandler.removeCallbacks(mConsumeBatchedInputEvents);
+        if (mHandler.hasCallbacks(mConsumeBatchedInputEvents)) {
+            mHandler.removeCallbacks(mConsumeBatchedInputEvents);
+            // Existence of `mConsumeBatchedInputEvents` implies that there are pending batched
+            // input events from the last time batching was enabled that need to be consumed -
+            // consume them so the receiver keeps getting `onBatchedInputEventPending()`
+            // notifications.
+            if (batchingEnabled) {
+                scheduleBatchedInput();
+            }
+        }
         if (!batchingEnabled) {
             unscheduleBatchedInput();
             mHandler.post(mConsumeBatchedInputEvents);

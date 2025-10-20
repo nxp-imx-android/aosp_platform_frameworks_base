@@ -191,11 +191,7 @@ public class StatusBarNotification implements Parcelable {
 
     private String groupKey() {
         if (overrideGroupKey != null) {
-            if (Flags.notificationForceGrouping()) {
-                return overrideGroupKey;
-            } else {
-                return user.getIdentifier() + "|" + pkg + "|" + "g:" + overrideGroupKey;
-            }
+            return overrideGroupKey;
         }
         final String group = getNotification().getGroup();
         final String sortKey = getNotification().getSortKey();

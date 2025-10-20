@@ -17,11 +17,16 @@
 package com.android.systemui.screencapture.record.smallscreen.ui.compose
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -34,33 +39,47 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformIconButton
+import com.android.compose.modifiers.thenIf
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
+import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
+import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.RecordDetailsPopupType
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.SmallScreenCaptureRecordViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
-@ScreenCaptureScope
+@ScreenCaptureUiScope
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 class SmallScreenCaptureRecordContent
 @Inject
@@ -106,58 +125,193 @@ constructor(private val viewModelFactory: SmallScreenCaptureRecordViewModel.Fact
                             ),
                         iconResource = R.drawable.ic_close,
                     )
-                    Spacer(Modifier.width(12.dp))
-                    val recordIcon by
-                        loadIcon(
-                            viewModel = viewModel,
-                            resId = R.drawable.ic_screenrecord,
-                            contentDescription = null,
+                    AnimatedVisibility(visible = viewModel.shouldShowSettingsButton) {
+                        ToggleToolbarButton(
+                            checked = viewModel.shouldShowDetails,
+                            onCheckedChanged = { viewModel.shouldShowSettings(it) },
+                            icon = {
+                                LoadingIcon(
+                                    icon =
+                                        loadIcon(
+                                                viewModel = viewModel,
+                                                resId = R.drawable.ic_settings,
+                                                contentDescription = null,
+                                            )
+                                            .value,
+                                    modifier = Modifier.size(24.dp),
+                                )
+                            },
                         )
-                    PrimaryButton(
-                        onClick = { viewModel.startRecording() },
-                        text = stringResource(R.string.screen_capture_toolbar_record_button),
-                        icon = recordIcon,
-                        contentPadding = PaddingValues(horizontal = 14.dp),
-                        iconPadding = 4.dp,
+                    }
+                    AnimatedVisibility(visible = viewModel.shouldShowMarkupButton) {
+                        ToggleToolbarButton(
+                            checked = viewModel.markupEnabled == true,
+                            onCheckedChanged = { viewModel.setMarkupEnabled(it) },
+                            icon = {
+                                LoadingIcon(
+                                    icon =
+                                        loadIcon(
+                                                viewModel = viewModel,
+                                                resId = R.drawable.ic_markup,
+                                                contentDescription = null,
+                                            )
+                                            .value,
+                                    modifier = Modifier.size(24.dp),
+                                )
+                            },
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+
+                    val coroutineScope = rememberCoroutineScope()
+                    var buttonJob: Job? by remember { mutableStateOf(null) }
+                    ToolbarPrimaryButton(
+                        recording = viewModel.isRecording,
+                        onClick = {
+                            if (buttonJob == null) {
+                                buttonJob =
+                                    coroutineScope.launch {
+                                        viewModel.onPrimaryButtonTapped()
+                                        buttonJob = null
+                                    }
+                            }
+                        },
+                        viewModel = viewModel,
                         modifier = Modifier.height(40.dp),
                     )
                 }
             }
 
-            Surface(
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(28.dp),
-                shadowElevation = 2.dp,
-                modifier = Modifier.animateContentSize(),
+            AnimatedVisibility(
+                visible = viewModel.shouldShowDetails,
+                enter = fadeIn(),
+                exit = fadeOut(),
             ) {
-                AnimatedContent(
-                    targetState = viewModel.detailsPopup,
-                    contentAlignment = Alignment.Center,
-                    transitionSpec = { fadeIn() togetherWith fadeOut() },
-                    modifier = Modifier.widthIn(max = 352.dp),
-                ) { currentPopup ->
-                    val contentModifier = Modifier.fillMaxWidth()
-                    when (currentPopup) {
-                        RecordDetailsPopupType.Empty -> {
-                            /* show nothing */
+                Surface(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(28.dp),
+                    shadowElevation = 2.dp,
+                    modifier = Modifier.animateContentSize(),
+                ) {
+                    AnimatedContent(
+                        targetState = viewModel.detailsPopup,
+                        contentAlignment = Alignment.Center,
+                        transitionSpec = { fadeIn() togetherWith fadeOut() },
+                        modifier = Modifier.widthIn(max = 352.dp),
+                    ) { currentPopup ->
+                        val contentModifier = Modifier.fillMaxWidth()
+                        when (currentPopup) {
+                            RecordDetailsPopupType.Settings ->
+                                RecordDetailsSettings(
+                                    parametersViewModel =
+                                        viewModel.recordDetailsParametersViewModel,
+                                    targetViewModel = viewModel.recordDetailsTargetViewModel,
+                                    drawableLoaderViewModel = viewModel,
+                                    onAppSelectorClicked = { viewModel.showAppSelector() },
+                                    modifier = contentModifier,
+                                )
+
+                            RecordDetailsPopupType.AppSelector ->
+                                RecordDetailsAppSelector(
+                                    viewModel = viewModel.recordDetailsAppSelectorViewModel,
+                                    onBackPressed = { viewModel.showSettings() },
+                                    onTaskSelected = {
+                                        viewModel.recordDetailsTargetViewModel.selectTask(it)
+                                        viewModel.showSettings()
+                                    },
+                                    modifier = contentModifier,
+                                )
+
+                            RecordDetailsPopupType.MarkupColorSelector ->
+                                RecordDetailsMarkupColorSelector(modifier = contentModifier)
                         }
-                        RecordDetailsPopupType.Settings ->
-                            RecordDetailsSettings(
-                                viewModel = viewModel.recordDetailsParametersViewModel,
-                                drawableLoaderViewModel = viewModel,
-                                modifier = contentModifier,
-                            )
-                        RecordDetailsPopupType.AppSelector ->
-                            RecordDetailsAppSelector(
-                                viewModel = viewModel.recordDetailsAppSelectorViewModel,
-                                onBackPressed = { viewModel.showSettings() },
-                                modifier = contentModifier,
-                            )
-                        RecordDetailsPopupType.MarkupColorSelector ->
-                            RecordDetailsMarkupColorSelector(modifier = contentModifier)
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ToggleToolbarButton(
+    checked: Boolean,
+    onCheckedChanged: (Boolean) -> Unit,
+    icon: @Composable BoxScope.() -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val secondaryColor = MaterialTheme.colorScheme.secondary
+    val shape = RoundedCornerShape(12.dp)
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier =
+            modifier
+                .size(48.dp)
+                .padding(6.dp)
+                .clip(shape)
+                .thenIf(checked) { Modifier.background(color = secondaryColor, shape = shape) }
+                .clickable(onClick = { onCheckedChanged(!checked) }),
+    ) {
+        CompositionLocalProvider(
+            LocalContentColor provides
+                if (checked) {
+                    MaterialTheme.colorScheme.onSecondary
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                }
+        ) {
+            icon()
+        }
+    }
+}
+
+@Composable
+private fun ToolbarPrimaryButton(
+    recording: Boolean,
+    viewModel: DrawableLoaderViewModel,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AnimatedContent(targetState = recording) { isRecording ->
+        if (isRecording) {
+            PrimaryButton(
+                onClick = onClick,
+                text = stringResource(R.string.screenrecord_stop_label),
+                icon =
+                    loadIcon(
+                            viewModel = viewModel,
+                            resId = R.drawable.ic_stop,
+                            contentDescription = null,
+                        )
+                        .value,
+                contentPadding = PaddingValues(horizontal = 14.dp),
+                iconPadding = 4.dp,
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError,
+                    ),
+                modifier = modifier,
+            )
+        } else {
+            PrimaryButton(
+                onClick = onClick,
+                text = stringResource(R.string.screen_capture_toolbar_record_button),
+                icon =
+                    loadIcon(
+                            viewModel = viewModel,
+                            resId = R.drawable.ic_screenrecord,
+                            contentDescription = null,
+                        )
+                        .value,
+                contentPadding = PaddingValues(horizontal = 14.dp),
+                iconPadding = 4.dp,
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
+                modifier = modifier,
+            )
         }
     }
 }

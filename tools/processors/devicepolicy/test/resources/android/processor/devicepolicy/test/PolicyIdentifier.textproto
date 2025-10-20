@@ -1,0 +1,128 @@
+policy_metadata {
+  identifier {
+    field_name: "SIMPLE_BOOLEAN_POLICY"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Boolean"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy 1\nSecond line"
+  type_specific_metadata {
+    boolean_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  allowed_scopes: POLICY_SCOPE_DEVICE
+  affected_resource: RESOURCE_PER_USER
+  required_permission: "android.permission.MANAGE_POLICY_SIMPLE_BOOLEAN"
+  required_cross_user_permission: "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL"
+}
+policy_metadata {
+  identifier {
+    field_name: "SIMPLE_ENUM_POLICY"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy 2"
+  type_specific_metadata {
+    enum_metadata {
+      default_value: 1
+      int_def_name: "android.app.admin.PolicyIdentifier.SimpleEnumPolicyEnum"
+      documentation: "Enum for {@link SIMPLE_ENUM_POLICY}\n\n@hide"
+      values {
+        field_name {
+          field_name: "ENUM_ENTRY_1"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        documentation: "First entry"
+      }
+      values {
+        field_name {
+          field_name: "ENUM_ENTRY_2"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        int_value: 1
+        documentation: "Second entry"
+      }
+      values {
+        field_name {
+          field_name: "ENUM_ENTRY_3"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        int_value: 2
+        documentation: "Third entry"
+      }
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_DEVICE
+  allowed_scopes: POLICY_SCOPE_PARENT_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+  required_permission: "android.permission.MANAGE_POLICY_SIMPLE_ENUM"
+  required_cross_user_permission: "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS"
+}
+policy_metadata {
+  identifier {
+    field_name: "SIMPLE_INTEGER_POLICY"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy 3"
+  type_specific_metadata {
+    integer_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+}
+policy_metadata {
+  identifier {
+    field_name: "SIMPLE_STRING_POLICY"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "String"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy 4"
+  type_specific_metadata {
+    string_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+}
+policy_metadata {
+  identifier {
+    field_name: "SIMPLE_STRING_LIST_POLICY"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "List<java.lang.String>"
+    package_name: "java.util"
+  }
+  documentation: "Test policy 5"
+  type_specific_metadata {
+    list_of_string_metadata {
+      element_metadata {
+        empty_string_allowed: true
+      }
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+}

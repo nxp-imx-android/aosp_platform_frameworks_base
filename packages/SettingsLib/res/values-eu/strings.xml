@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Konektatzen…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Konektatuta<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Parekatzen…"</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Ezin da parekatu"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Ezin da konektatu"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Konektatuta (telefonoaren audiorik gabe)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Konektatuta (gailuaren audiorik gabe)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Konektatuta (telefonoaren edo gailuaren audiorik gabe)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -116,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Aktibo (eskuinekoa soilik)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Aktibo (ezkerrekoa eta eskuinekoa)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Ezin izan da eguneratu ingurunea"</string>
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"Ezin izan da eguneratu aurrezarpena"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Hautatuta"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Aktibo (multimedia-edukia soilik). Bateria: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Aktibo (multimedia-edukia soilik). L aldearen bateria: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>. R aldearen bateria: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Gailu gonbidatua. Bateria: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
@@ -273,7 +277,7 @@
     <string name="adb_pair_method_qrcode_title" msgid="6982904096137468634">"Parekatu gailua QR kode batekin"</string>
     <string name="adb_pair_method_qrcode_summary" msgid="7130694277228970888">"Parekatu gailu gehiago QR kode bat eskaneatuta"</string>
     <string name="adb_pair_method_code_title" msgid="1122590300445142904">"Parekatu gailua parekatze-kode batekin"</string>
-    <string name="adb_pair_method_code_summary" msgid="6370414511333685185">"Parekatu gailu gehiago sei digituko kode batekin"</string>
+    <string name="adb_pair_method_code_summary" msgid="6370414511333685185">"Parekatu gailu gehiago 6 digituko kode batekin"</string>
     <string name="adb_paired_devices_title" msgid="5268997341526217362">"Parekatutako gailuak"</string>
     <string name="adb_wireless_device_connected_summary" msgid="3039660790249148713">"Konektatuta daudenak"</string>
     <string name="adb_wireless_device_details_title" msgid="7129369670526565786">"Gailuaren xehetasunak"</string>
@@ -345,7 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Modu hau gaituta dagoenean, baliteke gailuaren MAC helbidea aldatzea MAC helbideak ausaz antolatzeko aukera gaituta daukan sare batera konektatzen den bakoitzean."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Sare neurtua"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Neurtu gabeko sarea"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Erregistroen buffer-tamainak"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Erregistroen buffer-tamaina"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Hautatu erregistroen buffer-tamainak"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Erregistro iraunkorraren biltegia garbitu nahi duzu?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Erregistro iraunkor hau kontrolatzeari uzten diogunean gailuan dituzun erregistroko datuak ezabatu beharko ditugu."</string>
@@ -452,7 +456,7 @@
     <string name="force_allow_on_external" msgid="9187902444231637880">"Behartu aplikazioak onartzera kanpoko memorian"</string>
     <string name="force_allow_on_external_summary" msgid="8525425782530728238">"Aplikazioek kanpoko memorian idatz dezakete, ezarritako balioak kontuan izan gabe"</string>
     <string name="force_resizable_activities" msgid="7143612144399959606">"Behartu jardueren tamaina doitu ahal izatera"</string>
-    <string name="force_resizable_activities_summary" msgid="2490382056981583062">"Eman aukera jarduera guztien tamaina doitzeko, leiho batean baino gehiagotan erabili ahal izan daitezen, ezarritako balioak kontuan izan gabe"</string>
+    <string name="force_resizable_activities_summary" msgid="2490382056981583062">"Eman aukera jarduera guztien tamaina doitzeko, leiho batean baino gehiagotan erabili ahal izan daitezen, ezarritako balioak kontuan izan gabe."</string>
     <string name="enable_freeform_support" msgid="7599125687603914253">"Gaitu estilo libreko leihoak"</string>
     <string name="local_backup_password_title" msgid="4631017948933578709">"Babeskopien pasahitz lokala"</string>
     <string name="local_backup_password_summary_none" msgid="7646898032616361714">"Une honetan, ordenagailuko babeskopia osoak ez daude babestuta"</string>

@@ -71,6 +71,7 @@ android_ravenwood_test {
         "modules-utils-binary-xml",
         "flag-junit",
         "apct-perftests-utils",
+        "framework-telecom.stubs",
     ],
     srcs: [
         "src/com/android/server/power/stats/*.java",

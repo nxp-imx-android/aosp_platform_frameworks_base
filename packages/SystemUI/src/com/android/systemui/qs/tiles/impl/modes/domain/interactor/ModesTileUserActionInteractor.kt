@@ -16,15 +16,12 @@
 
 package com.android.systemui.qs.tiles.impl.modes.domain.interactor
 
-import android.app.Flags
 import android.content.Intent
 import android.provider.Settings
-import android.util.Log
 import com.android.settingslib.notification.modes.ZenMode
 import com.android.systemui.animation.Expandable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
-import com.android.systemui.qs.flags.QsInCompose
 import com.android.systemui.qs.tiles.base.domain.actions.QSTileIntentUserInputHandler
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileUserActionInteractor
 import com.android.systemui.qs.tiles.base.domain.model.QSTileInput
@@ -73,36 +70,14 @@ constructor(
     }
 
     suspend fun handleToggleClick(modesTileModel: ModesTileModel) {
-        if (QsInCompose.isUnexpectedlyInLegacyMode()) {
-            return
-        }
-
         // If no modes are on, turn on the last mode that was manually activated. Otherwise, turn
         // them all off.
         // We want this toggle to work as a shortcut to DND in most cases, but it should still
         // correctly toggle the tile state to "off" as the user would expect when more modes are on.
         if (modesTileModel.activeModes.isEmpty()) {
-            if (Flags.modesUiTileReactivatesLast()) {
-                // TODO: b/405988332 - When inlining modes_ui_tile_reactivates_last, this is just
-                //   activateMode(modesTileModel.quickMode)
-                val modeToActivate = modesTileModel.quickMode
-                if (modeToActivate == null) {
-                    Log.wtf(TAG, "No quick mode to activate!?")
-                    return
-                }
-                activateMode(modeToActivate)
-            } else {
-                val dnd = zenModeInteractor.dndMode.value
-                if (dnd == null) {
-                    Log.wtf(TAG, "Triggered DND but it's null!?")
-                    return
-                }
-                activateMode(dnd)
-            }
+            activateMode(modesTileModel.quickMode)
         } else {
-            if (Flags.modesUiTileReactivatesLast()) {
-                dataInteractor.setQuickModeOverride(modesTileModel.activeModes.mapNotNull { it.id })
-            }
+            dataInteractor.setQuickModeOverride(modesTileModel.activeModes.map { it.id })
             zenModeInteractor.deactivateAllModes()
         }
     }

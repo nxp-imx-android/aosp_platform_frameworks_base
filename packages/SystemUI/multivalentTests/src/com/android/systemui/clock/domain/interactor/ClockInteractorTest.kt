@@ -18,11 +18,13 @@ package com.android.systemui.clock.domain.interactor
 
 import android.app.AlarmManager
 import android.content.Intent
+import android.platform.test.annotations.EnableFlags
 import android.provider.AlarmClock
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.clock.ClockModernization
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.collectLastValue
@@ -32,7 +34,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.statusbar.policy.NextAlarmController.NextAlarmChangeCallback
 import com.android.systemui.statusbar.policy.nextAlarmController
-import com.android.systemui.testKosmos
+import com.android.systemui.testKosmosNew
 import com.android.systemui.tuner.TunerService.Tunable
 import com.android.systemui.tuner.tunerService
 import com.android.systemui.util.time.fakeSystemClock
@@ -54,8 +56,8 @@ import org.mockito.kotlin.verify
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class ClockInteractorTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
-    private val underTest = kosmos.clockInteractor
+    private val kosmos = testKosmosNew()
+    private val Kosmos.underTest by Kosmos.Fixture { clockInteractor }
 
     @Test
     fun launchClockActivity_default() =
@@ -71,6 +73,9 @@ class ClockInteractorTest : SysuiTestCase() {
     @Test
     fun launchClockActivity_nextAlarmIntent() =
         kosmos.runTest {
+            // Need to initialize underTest to register the callback.
+            val underTest = kosmos.clockInteractor
+
             val captor =
                 argumentCaptor<NextAlarmChangeCallback> {
                     verify(nextAlarmController).addCallback(capture())
@@ -86,12 +91,14 @@ class ClockInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             val timeZoneOrLocaleChanges by collectValues(underTest.onTimezoneOrLocaleChanged)
 
+            assertThat(timeZoneOrLocaleChanges).hasSize(1)
+
             sendIntentActionBroadcast(Intent.ACTION_TIMEZONE_CHANGED)
             sendIntentActionBroadcast(Intent.ACTION_LOCALE_CHANGED)
             sendIntentActionBroadcast(Intent.ACTION_LOCALE_CHANGED)
             sendIntentActionBroadcast(Intent.ACTION_TIMEZONE_CHANGED)
 
-            assertThat(timeZoneOrLocaleChanges).hasSize(4)
+            assertThat(timeZoneOrLocaleChanges).hasSize(5)
         }
 
     @Test
@@ -149,6 +156,7 @@ class ClockInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(ClockModernization.FLAG_NAME)
     fun showSeconds_tunerChanges_flowEmits() =
         kosmos.runTest {
             val showSeconds by collectLastValue(underTest.showSeconds)
@@ -180,6 +188,7 @@ class ClockInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(ClockModernization.FLAG_NAME)
     fun currentTime_showSecondsTrue_changesEverySecond() =
         kosmos.runTest {
             val currentTime by collectLastValue(underTest.currentTime)
@@ -203,6 +212,7 @@ class ClockInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(ClockModernization.FLAG_NAME)
     fun currentTime_showSecondsTrueToFalse_notChangesEverySecond() =
         kosmos.runTest {
             val currentTime by collectLastValue(underTest.currentTime)
@@ -232,6 +242,7 @@ class ClockInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(ClockModernization.FLAG_NAME)
     fun currentTime_showSecondsFalseToTrue_changesEverySecond() =
         kosmos.runTest {
             val currentTime by collectLastValue(underTest.currentTime)

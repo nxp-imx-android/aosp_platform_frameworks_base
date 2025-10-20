@@ -153,6 +153,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     public static final int EXIT_REASON_DESKTOP_MODE = 12;
     public static final int EXIT_REASON_FULLSCREEN_REQUEST = 13;
     public static final int EXIT_REASON_CHILD_TASK_ENTER_BUBBLE = 14;
+    public static final int EXIT_REASON_DRAG_TO_FULLSCREEN = 15;
     @IntDef(value = {
             EXIT_REASON_UNKNOWN,
             EXIT_REASON_APP_DOES_NOT_SUPPORT_MULTIWINDOW,
@@ -168,7 +169,8 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
             EXIT_REASON_FULLSCREEN_SHORTCUT,
             EXIT_REASON_DESKTOP_MODE,
             EXIT_REASON_FULLSCREEN_REQUEST,
-            EXIT_REASON_CHILD_TASK_ENTER_BUBBLE
+            EXIT_REASON_CHILD_TASK_ENTER_BUBBLE,
+            EXIT_REASON_DRAG_TO_FULLSCREEN
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface ExitReason{}
@@ -323,14 +325,13 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     }
 
     protected StageCoordinator createStageCoordinator() {
-        return new StageCoordinator(mContext, DEFAULT_DISPLAY, mSyncQueue,
-                mTaskOrganizer, mDisplayController, mDisplayImeController,
+        return StageCoordinatorAbstract.createStageCoordinator(mContext, DEFAULT_DISPLAY,
+                mSyncQueue, mTaskOrganizer, mDisplayController, mDisplayImeController,
                 mDisplayInsetsController, mTransitions, mTransactionPool, mIconProvider,
                 mMainExecutor, mMainHandler, mRecentTasksOptional, mLaunchAdjacentController,
                 mWindowDecorViewModel, mSplitState, mDesktopTasksController,
-                mDesktopUserRepositories, mRootTDAOrganizer,
-                mRootDisplayAreaOrganizer, mDesktopState, mActivityTaskManager, mMSDLPlayer,
-                mBubbleController);
+                mDesktopUserRepositories, mRootTDAOrganizer, mRootDisplayAreaOrganizer,
+                mDesktopState, mActivityTaskManager, mMSDLPlayer, mBubbleController);
     }
 
     @Override
@@ -410,6 +411,11 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     /** Check whether the task is the single-top root or the root of one of the stages. */
     public boolean isTaskRootOrStageRoot(int taskId) {
         return mStageCoordinator.isRootOrStageRoot(taskId);
+    }
+
+    /** Returns true if a divider fling animation is currently playing. */
+    public boolean isDividerFlinging() {
+        return mStageCoordinator.isDividerFlinging();
     }
 
     public @SplitPosition int getSplitPosition(int taskId) {
@@ -1081,6 +1087,10 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
                 return "DESKTOP_MODE";
             case EXIT_REASON_FULLSCREEN_REQUEST:
                 return "FULLSCREEN_REQUEST";
+            case EXIT_REASON_DRAG_TO_FULLSCREEN:
+                return "EXIT_REASON_DRAG_TO_FULLSCREEN";
+            case EXIT_REASON_CHILD_TASK_ENTER_BUBBLE:
+                return "CHILD_TASK_ENTER_BUBBLE";
             default:
                 return "unknown reason, reason int = " + exitReason;
         }

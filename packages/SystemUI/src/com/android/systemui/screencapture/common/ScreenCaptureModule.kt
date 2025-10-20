@@ -18,64 +18,29 @@ package com.android.systemui.screencapture.common
 
 import android.app.Activity
 import com.android.systemui.CoreStartable
-import com.android.systemui.screencapture.ScreenCaptureUiStartable
-import com.android.systemui.screencapture.cast.ScreenCaptureCastComponent
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
-import com.android.systemui.screencapture.record.ScreenCaptureRecordComponent
+import com.android.systemui.screencapture.ScreenCaptureStartable
+import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
+import com.android.systemui.screencapture.record.largescreen.ui.DirectoryPickerActivity
 import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
-import com.android.systemui.screencapture.sharescreen.ScreenCaptureShareScreenComponent
-import com.android.systemui.screencapture.ui.ScreenCaptureActivity
+import com.android.systemui.screencapture.ui.ShareScreenActivity
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 
-/**
- * Top level Dagger Module for Screen Capture.
- *
- * Injects Screen Capture Subcomponents into the System UI dagger graph via
- * [SystemUIModule][com.android.systemui.dagger.SystemUIModule].
- */
-@Module(
-    subcomponents =
-        [
-            ScreenCaptureCastComponent::class,
-            ScreenCaptureComponent::class,
-            ScreenCaptureRecordComponent::class,
-            ScreenCaptureShareScreenComponent::class,
-        ]
-)
+@Module(subcomponents = [ScreenCaptureComponent::class])
 interface ScreenCaptureModule {
-    @Binds
-    @IntoMap
-    @ScreenCaptureTypeKey(ScreenCaptureType.CAST)
-    fun bindCastComponentBuilder(
-        impl: ScreenCaptureCastComponent.Builder
-    ): ScreenCaptureComponent.Builder
 
     @Binds
     @IntoMap
-    @ScreenCaptureTypeKey(ScreenCaptureType.RECORD)
-    fun bindRecordComponentBuilder(
-        impl: ScreenCaptureRecordComponent.Builder
-    ): ScreenCaptureComponent.Builder
+    @ClassKey(ScreenCaptureStartable::class)
+    fun bindScreenCaptureUiStartable(impl: ScreenCaptureStartable): CoreStartable
 
     @Binds
     @IntoMap
-    @ScreenCaptureTypeKey(ScreenCaptureType.SHARE_SCREEN)
-    fun bindShareScreenComponentBuilder(
-        impl: ScreenCaptureShareScreenComponent.Builder
-    ): ScreenCaptureComponent.Builder
-
-    @Binds
-    @IntoMap
-    @ClassKey(ScreenCaptureActivity::class)
-    fun provideScreenCaptureActivity(activity: ScreenCaptureActivity): Activity
-
-    @Binds
-    @IntoMap
-    @ClassKey(ScreenCaptureUiStartable::class)
-    fun bindScreenCaptureUiStartable(impl: ScreenCaptureUiStartable): CoreStartable
+    @ClassKey(ShareScreenActivity::class)
+    fun bindsShareScreenActivity(impl: ShareScreenActivity): Activity
 
     @Binds
     @IntoMap
@@ -83,4 +48,12 @@ interface ScreenCaptureModule {
     fun provideSmallScreenPostRecordingActivity(
         activity: SmallScreenPostRecordingActivity
     ): Activity
+
+    @Binds
+    @IntoMap
+    @ClassKey(DirectoryPickerActivity::class)
+    fun bindDirectoryPickerActivity(activity: DirectoryPickerActivity): Activity
+
+    @Binds
+    fun bindDrawableLoaderViewModel(impl: DrawableLoaderViewModelImpl): DrawableLoaderViewModel
 }

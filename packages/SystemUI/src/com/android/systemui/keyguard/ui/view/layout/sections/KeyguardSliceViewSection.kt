@@ -17,6 +17,7 @@
 
 package com.android.systemui.keyguard.ui.view.layout.sections
 
+import android.content.Context
 import android.os.Handler
 import android.view.LayoutInflater
 import androidx.constraintlayout.widget.Barrier
@@ -27,18 +28,25 @@ import com.android.keyguard.KeyguardSliceViewController
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dump.DumpManager
+import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardSection
+import com.android.systemui.keyguard.ui.binder.KeyguardSliceViewBinder
+import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
+import com.android.systemui.keyguard.ui.viewmodel.KeyguardSmartspaceViewModel
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
 import com.android.systemui.res.R
 import com.android.systemui.settings.DisplayTracker
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.lockscreen.LockscreenSmartspaceController
 import com.android.systemui.statusbar.policy.ConfigurationController
 import javax.inject.Inject
+import kotlinx.coroutines.DisposableHandle
 
 class KeyguardSliceViewSection
 @Inject
 constructor(
+    @ShadeDisplayAware val context: Context,
     val smartspaceController: LockscreenSmartspaceController,
     val layoutInflater: LayoutInflater,
     @Main val handler: Handler,
@@ -47,12 +55,15 @@ constructor(
     val configurationController: ConfigurationController,
     val dumpManager: DumpManager,
     val displayTracker: DisplayTracker,
+    val keyguardInteractor: KeyguardInteractor,
+    val aodBurnInViewModel: AodBurnInViewModel,
+    val keyguardSmartspaceViewModel: KeyguardSmartspaceViewModel,
 ) : KeyguardSection() {
     private lateinit var sliceView: KeyguardSliceView
+    private var disposableHandle: DisposableHandle? = null
 
     override fun addViews(constraintLayout: ConstraintLayout) {
         if (smartspaceController.isEnabled) return
-
         sliceView =
             layoutInflater.inflate(R.layout.keyguard_slice_view, null, false) as KeyguardSliceView
         constraintLayout.addView(sliceView)
@@ -60,7 +71,6 @@ constructor(
 
     override fun bindData(constraintLayout: ConstraintLayout) {
         if (smartspaceController.isEnabled) return
-
         val controller =
             KeyguardSliceViewController(
                 handler,
@@ -71,23 +81,38 @@ constructor(
                 dumpManager,
                 displayTracker,
             )
+        controller.setupUri(null)
         controller.init()
+
+        disposableHandle?.dispose()
+        disposableHandle =
+            KeyguardSliceViewBinder.bind(
+                sliceView,
+                keyguardInteractor,
+                controller,
+                aodBurnInViewModel,
+            )
     }
 
     override fun applyConstraints(constraintSet: ConstraintSet) {
         if (smartspaceController.isEnabled) return
-
+        val dateWeatherPaddingStart = KeyguardSmartspaceViewModel.getDateWeatherStartMargin(context)
         constraintSet.apply {
             connect(
                 R.id.keyguard_slice_view,
                 ConstraintSet.START,
                 ConstraintSet.PARENT_ID,
                 ConstraintSet.START,
+                dateWeatherPaddingStart,
             )
             connect(
                 R.id.keyguard_slice_view,
                 ConstraintSet.END,
-                ConstraintSet.PARENT_ID,
+                if (keyguardSmartspaceViewModel.isFullWidthShade.value) {
+                    ConstraintSet.PARENT_ID
+                } else {
+                    R.id.split_shade_guideline
+                },
                 ConstraintSet.END,
             )
             constrainHeight(R.id.keyguard_slice_view, ConstraintSet.WRAP_CONTENT)
@@ -110,7 +135,6 @@ constructor(
 
     override fun removeViews(constraintLayout: ConstraintLayout) {
         if (smartspaceController.isEnabled) return
-
         constraintLayout.removeView(R.id.keyguard_slice_view)
     }
 }

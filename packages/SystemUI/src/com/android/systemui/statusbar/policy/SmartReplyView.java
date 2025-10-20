@@ -262,15 +262,11 @@ public class SmartReplyView extends ViewGroup {
         //
         // A prioritized list of all potential suggestion buttons (`smartSuggestions`) is
         // constructed to define the *selection priority* for fitting buttons onto a single line.
-        // When `Flags.notificationAnimatedActionsTreatment()` is enabled, this selection
-        // priority is:
+        // This selection priority is:
         //   1. Animated Replies
         //   2. Animated Actions
         //   3. Standard Actions
         //   4. Standard Replies
-        // Otherwise, if the flag is disabled, the selection priority is:
-        //   1. Standard Actions
-        //   2. Standard Replies
         //
         // Buttons are iterated in this selection priority order. If a button fits (possibly after
         // squeezing preceding, lower-priority, single-line buttons that are candidates for
@@ -284,14 +280,10 @@ public class SmartReplyView extends ViewGroup {
         List<View> smartSuggestions = new ArrayList<>();
         List<View> smartActions = filterActionsOrReplies(SmartButtonType.ACTION);
         List<View> smartReplies = filterActionsOrReplies(SmartButtonType.REPLY);
-        List<View> animatedReplies = new ArrayList<>();
-        List<View> animatedActions = new ArrayList<>();
-        if (Flags.notificationAnimatedActionsTreatment()) {
-            animatedReplies = filterActionsOrReplies(SmartButtonType.ANIMATED_REPLY);
-            animatedActions = filterActionsOrReplies(SmartButtonType.ANIMATED_ACTION);
-            smartSuggestions.addAll(animatedReplies);
-            smartSuggestions.addAll(animatedActions);
-        }
+        List<View> animatedReplies = filterActionsOrReplies(SmartButtonType.ANIMATED_REPLY);
+        List<View> animatedActions = filterActionsOrReplies(SmartButtonType.ANIMATED_ACTION);
+        smartSuggestions.addAll(animatedReplies);
+        smartSuggestions.addAll(animatedActions);
 
         smartSuggestions.addAll(smartActions);
         smartSuggestions.addAll(smartReplies);
@@ -430,7 +422,7 @@ public class SmartReplyView extends ViewGroup {
                         Math.max(getSuggestedMinimumWidth(), accumulatedMeasures.mMeasuredWidth),
                         widthMeasureSpec),
                 resolveSize(buttonHeight, heightMeasureSpec));
-        if (Flags.notificationAnimatedActionsTreatment() && mSmartRepliesGeneratedByAssistant) {
+        if (mSmartRepliesGeneratedByAssistant) {
             logAnimatedRepliesAndActionsImpressions(animatedReplies, animatedActions);
         }
         mLastMeasureTime = SystemClock.elapsedRealtime();

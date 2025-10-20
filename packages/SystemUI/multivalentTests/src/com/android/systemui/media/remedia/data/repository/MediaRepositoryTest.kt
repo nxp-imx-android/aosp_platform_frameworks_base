@@ -18,6 +18,8 @@ package com.android.systemui.media.remedia.data.repository
 
 import android.content.packageManager
 import android.media.session.MediaSession
+import android.os.UserHandle
+import android.provider.Settings
 import androidx.test.annotation.UiThreadTest
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -30,6 +32,7 @@ import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.remedia.data.model.MediaDataModel
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
+import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
@@ -261,6 +264,30 @@ class MediaRepositoryTest : SysuiTestCase() {
                     canResumeData.toDataModel(underTest.currentMedia[4]),
                 )
                 .inOrder()
+        }
+
+    @Test
+    fun toggleMediaControlsOnLockscreen() =
+        testScope.runTest {
+            val allowMediaOnLockscreen by collectLastValue(underTest.allowMediaPlayerOnLockscreen)
+
+            assertThat(allowMediaOnLockscreen).isTrue()
+
+            kosmos.fakeSettings.putBoolForUser(
+                Settings.Secure.MEDIA_CONTROLS_LOCK_SCREEN,
+                value = false,
+                UserHandle.USER_CURRENT,
+            )
+
+            assertThat(allowMediaOnLockscreen).isFalse()
+
+            kosmos.fakeSettings.putBoolForUser(
+                Settings.Secure.MEDIA_CONTROLS_LOCK_SCREEN,
+                value = true,
+                UserHandle.USER_CURRENT,
+            )
+
+            assertThat(allowMediaOnLockscreen).isTrue()
         }
 
     private fun TestScope.addCurrentUserMediaEntry(data: MediaData) {

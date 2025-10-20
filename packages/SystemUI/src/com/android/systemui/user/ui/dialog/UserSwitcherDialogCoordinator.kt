@@ -18,6 +18,8 @@
 package com.android.systemui.user.ui.dialog
 
 import android.app.Dialog
+import android.content.Context
+import android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR_SUB_PANEL
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.logging.UiEventLogger
@@ -29,6 +31,7 @@ import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.classifier.FalsingCollector
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.qs.tiles.UserDetailView
@@ -59,6 +62,7 @@ constructor(
     private val falsingCollector: Lazy<FalsingCollector>,
     private val userSwitcherViewModel: Lazy<UserSwitcherViewModel>,
     private val shadeDialogContextInteractor: Lazy<ShadeDialogContextInteractor>,
+    private val displayPropertiesRepository: Lazy<DisplayWindowPropertiesRepository>,
 ) : CoreStartable {
 
     private var currentDialog: Dialog? = null
@@ -71,7 +75,13 @@ constructor(
     private fun startHandlingDialogShowRequests() {
         applicationScope.get().launch {
             interactor.get().dialogShowRequests.filterNotNull().collect { request ->
-                val context = request.context ?: shadeDialogContextInteractor.get().context
+                val context: Context =
+                    request.context?.let {
+                        displayPropertiesRepository
+                            .get()
+                            .get(it.displayId, TYPE_STATUS_BAR_SUB_PANEL)
+                            ?.context
+                    } ?: shadeDialogContextInteractor.get().context
                 val (dialog, dialogCuj) =
                     when (request) {
                         is ShowDialogRequestModel.ShowAddUserDialog ->

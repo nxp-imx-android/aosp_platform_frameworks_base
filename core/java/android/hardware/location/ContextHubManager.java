@@ -141,7 +141,7 @@ public final class ContextHubManager {
     /**
      * Constants describing the type of events from a Context Hub, as defined in
      * {@link ContextHubClientCallback}.
-     * {@hide}
+     * @hide
      */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = { "EVENT_" }, value = {
@@ -508,11 +508,10 @@ public final class ContextHubManager {
      *
      * @return the list of HubInfo objects
      * @see HubInfo
-     * @hide
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     @NonNull
-    @FlaggedApi(Flags.FLAG_OFFLOAD_API)
+    @FlaggedApi(Flags.FLAG_GET_HUBS_API)
     public List<HubInfo> getHubs() {
         try {
             return mService.getHubs();

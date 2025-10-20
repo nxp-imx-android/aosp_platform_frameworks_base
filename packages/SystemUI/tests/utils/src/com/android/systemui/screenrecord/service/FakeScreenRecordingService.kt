@@ -16,10 +16,8 @@
 
 package com.android.systemui.screenrecord.service
 
-import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget
-import com.android.systemui.screenrecord.ScreenRecordingAudioSource
-import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
-import com.android.systemui.screenrecord.domain.interactor.Status
+import com.android.systemui.screenrecord.data.repository.Status
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,7 +32,7 @@ class FakeScreenRecordingService : IScreenRecordingService.Stub() {
     val currentCallback: FakeScreenRecordingServiceCallbackWrapper?
         get() = _callback.value
 
-    private val _status = MutableStateFlow<Status>(Status.Initial)
+    private val _status = MutableStateFlow<Status>(Status.initial)
     val status: Flow<Status> = _status.asStateFlow()
 
     override fun setCallback(callback: IScreenRecordingServiceCallback?) {
@@ -46,22 +44,16 @@ class FakeScreenRecordingService : IScreenRecordingService.Stub() {
         _callback.value?.onRecordingInterrupted(0, reason)
     }
 
-    override fun startRecording(
-        captureTarget: MediaProjectionCaptureTarget?,
-        audioSource: Int,
-        displayId: Int,
-        shouldShowTaps: Boolean,
-    ) {
-        _status.value =
-            Status.Started(
-                ScreenRecordingParameters(
-                    captureTarget = captureTarget,
-                    audioSource = ScreenRecordingAudioSource.entries[audioSource],
-                    displayId = displayId,
-                    shouldShowTaps = shouldShowTaps,
-                )
-            )
+    override fun startRecording(parameters: ScreenRecordingParameters) {
+        _status.value = Status.Started(parameters)
         _callback.value?.onRecordingStarted()
+    }
+
+    override fun updateParameters(parameters: ScreenRecordingParameters) {
+        require(_status.value is Status.Started) {
+            "Updating parameters only when the recording is ongoing should be enforced by the caller"
+        }
+        _status.value = Status.Started(parameters)
     }
 }
 

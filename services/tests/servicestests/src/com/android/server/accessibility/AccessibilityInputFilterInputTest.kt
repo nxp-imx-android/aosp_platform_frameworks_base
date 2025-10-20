@@ -26,6 +26,9 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.platform.test.flag.junit.SetFlagsRule
+import android.testing.AndroidTestingRunner
+import android.testing.TestableLooper
+import android.util.SparseArray
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.DisplayAdjustments
@@ -44,12 +47,11 @@ import android.view.MotionEvent.ACTION_HOVER_MOVE
 import android.view.MotionEvent.ACTION_MOVE
 import android.view.MotionEvent.ACTION_UP
 import android.view.WindowManagerPolicyConstants.FLAG_PASS_TO_USER
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.cts.input.BlockingQueueEventVerifier
 import com.android.cts.input.inputeventmatchers.withDeviceId
 import com.android.cts.input.inputeventmatchers.withMotionAction
 import com.android.cts.input.inputeventmatchers.withSource
-import com.android.cts.input.BlockingQueueEventVerifier
 import com.android.server.LocalServices
 import com.android.server.accessibility.gestures.EventDispatcher
 import com.android.server.accessibility.magnification.MagnificationProcessor
@@ -67,11 +69,10 @@ import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.doAnswer
-import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
-import org.mockito.stubbing.OngoingStubbing
-
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.whenever
 
 /**
  * Create a MotionEvent with the provided action, eventTime, and source
@@ -86,7 +87,7 @@ fun createMotionEvent(action: Int, downTime: Long, eventTime: Long, source: Int,
     val xPrecision = 0f
     val yPrecision = 0f
     val edgeFlags = 0
-    val displayId = 0
+    val displayId = DEFAULT_DISPLAY
     return MotionEvent.obtain(
         downTime, eventTime, action, x, y, pressure, size, metaState,
         xPrecision, yPrecision, deviceId, edgeFlags, source, displayId
@@ -99,7 +100,8 @@ fun createMotionEvent(action: Int, downTime: Long, eventTime: Long, source: Int,
  * The main interaction with AccessibilityInputFilter in these tests is with the filterInputEvent
  * and sendInputEvent APIs of InputFilter.
  */
-@RunWith(AndroidJUnit4::class)
+@RunWith(AndroidTestingRunner::class)
+@TestableLooper.RunWithLooper
 class AccessibilityInputFilterInputTest {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
 
@@ -143,9 +145,11 @@ class AccessibilityInputFilterInputTest {
 
     @Mock
     private lateinit var host: IInputFilterHost
+    private lateinit var testableLooper: TestableLooper
     private lateinit var ams: AccessibilityManagerService
     private lateinit var context: Context
     private lateinit var a11yInputFilter: AccessibilityInputFilter
+    private lateinit var displayList: ArrayList<Display>
     private val touchDeviceId = 1
     private val fromTouchScreen = allOf(withDeviceId(touchDeviceId), withSource(SOURCE_TOUCHSCREEN))
     private val fromInjectedTouchScreen =
@@ -161,17 +165,22 @@ class AccessibilityInputFilterInputTest {
             withSource(STYLUS_SOURCE)
         )
     private val joystickDeviceId = 3
-    private val fromJoystick = allOf(withDeviceId(joystickDeviceId), withSource(SOURCE_JOYSTICK))
+    private val fromJoystick =
+        allOf(
+            withDeviceId(joystickDeviceId),
+            withSource(SOURCE_JOYSTICK),
+            withMotionAction(ACTION_MOVE)
+        )
 
     @Before
     fun setUp() {
+        testableLooper = TestableLooper.get(this)
         context = Mockito.spy(ContextWrapper(instrumentation.context))
         LocalServices.removeServiceForTest(WindowManagerInternal::class.java)
         LocalServices.addService(WindowManagerInternal::class.java, mockWindowManagerService)
         inputManagerGlobalSession = InputManagerGlobal.createTestSession(inputManager)
         val inputManager = InputManager(context)
-        whenever(context.getSystemService(Mockito.eq(Context.INPUT_SERVICE)))
-            .thenReturn(inputManager)
+        doReturn(inputManager).whenever(context).getSystemService(Mockito.eq(Context.INPUT_SERVICE))
 
         whenever(mockA11yController.isAccessibilityTracingEnabled).thenReturn(false)
         whenever(
@@ -181,23 +190,28 @@ class AccessibilityInputFilterInputTest {
         )
 
         ams = Mockito.spy(AccessibilityManagerService(context))
-        val displayList = arrayListOf(createStubDisplay(DEFAULT_DISPLAY, DisplayInfo()))
-        whenever(ams.validDisplayList).thenReturn(displayList)
-        whenever(ams.magnificationProcessor).thenReturn(mockMagnificationProcessor)
+        displayList = arrayListOf(createStubDisplay(DEFAULT_DISPLAY, DisplayInfo()))
+        doReturn(displayList).whenever(ams).validDisplayList
+        doReturn(mockMagnificationProcessor).whenever(ams).magnificationProcessor
 
         doAnswer {
             val event = it.getArgument(0) as MotionEvent
             inputEvents.add(MotionEvent.obtain(event))
-        }.`when`(host).sendInputEvent(any(), anyInt())
+        }.whenever(host).sendInputEvent(any(), anyInt())
 
-        a11yInputFilter = AccessibilityInputFilter(context, ams)
+        a11yInputFilter = AccessibilityInputFilter(context, ams,
+            SparseArray(0),
+            SparseArray(0),
+            testableLooper.looper)
         a11yInputFilter.install(host)
+        testableLooper.processAllMessages()
     }
 
     @After
     fun tearDown() {
         if (this::a11yInputFilter.isInitialized) {
             a11yInputFilter.uninstall()
+            testableLooper.processAllMessages()
         }
         if (this::inputManagerGlobalSession.isInitialized) {
             inputManagerGlobalSession.close()
@@ -223,6 +237,31 @@ class AccessibilityInputFilterInputTest {
 
         sendTouchEvent(ACTION_UP, downTime, SystemClock.uptimeMillis())
         verifier.assertReceivedMotion(allOf(fromTouchScreen, withMotionAction(ACTION_UP)))
+
+        verifier.assertNoEvents()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_IGNORE_INPUT_EVENTS_FROM_DISPLAY_WITHOUT_HANDLER)
+    fun testTouchEventsWithTouchExplorationIgnoredOnProxyedDisplay() {
+        val proxiedDisplay = DEFAULT_DISPLAY + 1
+        displayList.add(createStubDisplay(proxiedDisplay, DisplayInfo()))
+        doReturn(true).whenever(ams).isDisplayProxyed(proxiedDisplay)
+        enableFeatures(AccessibilityInputFilter.FLAG_FEATURE_TOUCH_EXPLORATION)
+        val downTime = SystemClock.uptimeMillis()
+
+        sendTouchEvent(ACTION_DOWN, downTime, downTime, displayId = proxiedDisplay)
+        // DOWN event on proxied display does not get transformed
+        verifier.assertReceivedMotion(allOf(fromTouchScreen, withMotionAction(ACTION_DOWN)))
+
+        sendTouchEvent(ACTION_DOWN, downTime, downTime, displayId = DEFAULT_DISPLAY)
+        // DOWN event on non-proxied display gets transformed to HOVER_ENTER
+        verifier.assertReceivedMotion(
+            allOf(
+                fromInjectedTouchScreen,
+                withMotionAction(ACTION_HOVER_ENTER)
+            )
+        )
 
         verifier.assertNoEvents()
     }
@@ -656,11 +695,14 @@ class AccessibilityInputFilterInputTest {
         return display
     }
 
-    private fun sendTouchEvent(action: Int, downTime: Long, eventTime: Long) {
+    private fun sendTouchEvent(action: Int, downTime: Long, eventTime: Long, displayId: Int = DEFAULT_DISPLAY) {
         if (action == ACTION_DOWN) {
             assertEquals(downTime, eventTime)
         }
-        send(createMotionEvent(action, downTime, eventTime, SOURCE_TOUCHSCREEN, touchDeviceId))
+        val event =
+            createMotionEvent(action, downTime, eventTime, SOURCE_TOUCHSCREEN, touchDeviceId)
+        event.displayId = displayId
+        send(event)
     }
 
     private fun sendStylusEvent(action: Int, downTime: Long, eventTime: Long) {
@@ -681,11 +723,10 @@ class AccessibilityInputFilterInputTest {
         // this event for subsequent checks
         val eventCopy = if (event is MotionEvent) MotionEvent.obtain(event) else event
         a11yInputFilter.filterInputEvent(eventCopy, FLAG_PASS_TO_USER)
+        testableLooper.processAllMessages()
     }
 
     private fun enableFeatures(features: Int) {
         instrumentation.runOnMainSync { a11yInputFilter.setUserAndEnabledFeatures(0, features) }
     }
 }
-
-private fun <T> whenever(methodCall: T): OngoingStubbing<T> = `when`(methodCall)

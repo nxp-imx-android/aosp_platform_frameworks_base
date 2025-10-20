@@ -21,7 +21,6 @@ import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 
-import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TRANSITIONS;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_IN;
@@ -266,6 +265,7 @@ class SplitScreenTransitions {
         }
 
         startTransaction.apply();
+        finishTransaction.apply();
         onFinish(null /* wct */);
     }
 
@@ -381,6 +381,9 @@ class SplitScreenTransitions {
             mSplitInvocationListenerExecutor.execute(() -> mSplitInvocationListener
                     .onSplitAnimationInvoked(true /*animationRunning*/));
         }
+        if (remoteTransition != null && remoteTransition.getAppThread() != null) {
+            wct.setAnimationDelegate(remoteTransition.getAppThread().asBinder());
+        }
         final IBinder transition = mTransitions.startTransition(transitType, wct, handler);
         setEnterTransition(transition, remoteTransition, extraTransitType, resizeAnim,
                 snapPosition);
@@ -446,7 +449,6 @@ class SplitScreenTransitions {
             Transitions.TransitionHandler handler,
             @Nullable TransitionConsumedCallback consumedCallback,
             @Nullable TransitionFinishedCallback finishCallback,
-            @Nullable SplitDecorManager mainDecor, @Nullable SplitDecorManager sideDecor,
             @Nullable List<SplitDecorManager> decorManagers) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
                 "  splitTransition deduced Resize split screen.");
@@ -454,13 +456,8 @@ class SplitScreenTransitions {
                 mPendingResize != null);
         if (mPendingResize != null) {
             mPendingResize.cancel(null);
-            if (enableFlexibleSplit()) {
-                for (SplitDecorManager stage : decorManagers) {
-                    stage.cancelRunningAnimations();
-                }
-            } else {
-                mainDecor.cancelRunningAnimations();
-                sideDecor.cancelRunningAnimations();
+            for (SplitDecorManager stage : decorManagers) {
+                stage.cancelRunningAnimations();
             }
             mAnimations.clear();
             onFinish(null /* wct */);
@@ -506,20 +503,20 @@ class SplitScreenTransitions {
                 mStageCoordinator.finishEnterSplitScreen(finishT);
             }
 
-            mPendingEnter.onConsumed(aborted);
+            mPendingEnter.onConsumed(aborted, finishT);
             mPendingEnter = null;
             mStageCoordinator.notifySplitAnimationStatus(false /*animationRunning*/);
             ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onTransitionConsumed for enter transition");
         } else if (isPendingDismiss(transition)) {
-            mPendingDismiss.onConsumed(aborted);
+            mPendingDismiss.onConsumed(aborted, finishT);
             mPendingDismiss = null;
             ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onTransitionConsumed for dismiss transition");
         } else if (isPendingResize(transition)) {
-            mPendingResize.onConsumed(aborted);
+            mPendingResize.onConsumed(aborted, finishT);
             mPendingResize = null;
             ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onTransitionConsumed for resize transition");
         } else if (isPendingPassThrough(transition)) {
-            mPendingRemotePassthrough.onConsumed(aborted);
+            mPendingRemotePassthrough.onConsumed(aborted, finishT);
             mPendingRemotePassthrough.mRemoteHandler.onTransitionConsumed(transition, aborted,
                     finishT);
             mPendingRemotePassthrough = null;
@@ -602,7 +599,7 @@ class SplitScreenTransitions {
 
     /** Calls when the transition got consumed. */
     interface TransitionConsumedCallback {
-        void onConsumed(boolean aborted);
+        void onConsumed(boolean aborted, SurfaceControl.Transaction t);
     }
 
     /** Calls when the transition finished. */
@@ -668,9 +665,9 @@ class SplitScreenTransitions {
             setFinishedCallback(finishedCb);
         }
 
-        void onConsumed(boolean aborted) {
+        void onConsumed(boolean aborted, SurfaceControl.Transaction finishT) {
             if (mConsumedCallback != null) {
-                mConsumedCallback.onConsumed(aborted);
+                mConsumedCallback.onConsumed(aborted, finishT);
             }
         }
 

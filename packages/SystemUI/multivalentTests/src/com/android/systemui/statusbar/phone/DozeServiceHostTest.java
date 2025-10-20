@@ -24,18 +24,21 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.content.Context;
 import android.graphics.Point;
 import android.hardware.display.AmbientDisplayConfiguration;
 import android.os.PowerManager;
 import android.testing.TestableLooper.RunWithLooper;
+import android.view.Display;
+import android.view.DisplayInfo;
 import android.view.View;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
-
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.assist.AssistManager;
@@ -102,22 +105,27 @@ public class DozeServiceHostTest extends SysuiTestCase {
     @Mock private DozeInteractor mDozeInteractor;
     @Mock private AmbientDisplayConfiguration mAmbientDisplayConfiguration;
     @Mock private AodDimInteractor mAodDimInteractor;
+    @Mock private Display mDisplay;
 
+    private Context mContextSpy;
     private KosmosJavaAdapter mKosmos;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
+        mContextSpy = spy(mContext);
+        when(mContextSpy.getDisplay()).thenReturn(mDisplay);
+
         mKosmos = new KosmosJavaAdapter(this);
         mDozeServiceHost = new DozeServiceHost(mDozeLog, mPowerManager, mWakefullnessLifecycle,
                 mStatusBarStateController, mDeviceProvisionedController,
-                mHeadsUpManager, mBatteryController, mScrimController,
+                mHeadsUpManager, mBatteryController, () -> mScrimController,
                 () -> mBiometricUnlockController, () -> mAssistManager, mDozeScrimController,
                 mKeyguardUpdateMonitor, mPulseExpansionHandler, mNotificationShadeWindowController,
                 mNotificationWakeUpCoordinator, mAuthController,
                 mShadeLockscreenInteractor, mDozeInteractor,
                 mKosmos.getDeviceEntryFingerprintAuthInteractor(),
-                mKosmos.getTestScope(), mContext, mAmbientDisplayConfiguration,
+                mKosmos.getTestScope(), mContextSpy, mAmbientDisplayConfiguration,
                 mAodDimInteractor);
 
         mDozeServiceHost.initialize(
@@ -237,8 +245,22 @@ public class DozeServiceHostTest extends SysuiTestCase {
 
     @Test
     public void onSlpiTap_calls_DozeInteractor() {
+        mockDisplayScaleFactor(1f);
+
         mDozeServiceHost.onSlpiTap(100, 200);
+
         verify(mDozeInteractor).setLastTapToWakePosition(new Point(100, 200));
+    }
+
+    @Test
+    public void onSlpiTap_withDisplayScaling() {
+        final float scaleFactor = 1.5f;
+        mockDisplayScaleFactor(scaleFactor);
+
+        mDozeServiceHost.onSlpiTap(100, 200);
+
+        verify(mDozeInteractor).setLastTapToWakePosition(
+                new Point((int) (100 / scaleFactor), (int) (200 / scaleFactor)));
     }
 
     @Test
@@ -265,5 +287,33 @@ public class DozeServiceHostTest extends SysuiTestCase {
 
         // THEN interactor's dim amount is updated
         verify(mAodDimInteractor).setDimAmount(eq(.54f));
+    }
+
+    private void mockDisplayScaleFactor(float scaleFactor) {
+        final Display.Mode[] modes;
+        final int naturalWidth = 1080;
+        final int naturalHeight = 2400;
+
+        if (scaleFactor == 1f) {
+            modes = new Display.Mode[] {
+                new Display.Mode(1, naturalWidth, naturalHeight, 60),
+            };
+        } else {
+            final int physicalWidth = (int) (naturalWidth * scaleFactor);
+            final int physicalHeight = (int) (naturalHeight * scaleFactor);
+            modes = new Display.Mode[] {
+                new Display.Mode(1, naturalWidth, naturalHeight, 60),
+                new Display.Mode(2, physicalWidth, physicalHeight, 60)
+            };
+        }
+
+        doAnswer(invocation -> {
+            DisplayInfo info = invocation.getArgument(0);
+            info.supportedModes = modes;
+            info.modeId = 1;
+            info.logicalWidth = naturalWidth;
+            info.logicalHeight = naturalHeight;
+            return null;
+        }).when(mDisplay).getDisplayInfo(any(DisplayInfo.class));
     }
 }

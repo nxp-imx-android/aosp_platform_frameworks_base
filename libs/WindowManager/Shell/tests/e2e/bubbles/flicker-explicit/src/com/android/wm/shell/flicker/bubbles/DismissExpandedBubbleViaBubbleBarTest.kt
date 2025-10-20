@@ -22,25 +22,24 @@ import android.tools.NavBar
 import android.tools.device.apphelpers.MessagingAppHelper
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
 import android.tools.traces.component.IComponentNameMatcher
-import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
-import com.android.wm.shell.Utils
+import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCases
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesNotExpandedTestCases
-import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
+import com.android.wm.shell.flicker.bubbles.utils.AssumptionRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaTouchOutside
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.dismissBubbleAppViaBubbleBarItem
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
-import org.junit.Assume.assumeTrue
-import org.junit.Before
+import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameters
 
 /**
  * Test dismissing one of bubble apps by dragging a bubble item from bubble bar to dismiss view.
@@ -65,16 +64,13 @@ import org.junit.runners.Parameterized
  * - [BubbleAlwaysVisibleTestCases]
  * - [BubbleAppBecomesNotExpandedTestCases]
  */
-@FlakyTest(bugId = 430273288)
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE, Flags.FLAG_ENABLE_BUBBLE_BAR)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-class DismissExpandedBubbleViaBubbleBarTest(navBar: NavBar) :
-    BubbleFlickerTestBase(),
-    BubbleAlwaysVisibleTestCases,
-    BubbleAppBecomesNotExpandedTestCases {
+class DismissExpandedBubbleViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(),
+    BubbleAlwaysVisibleTestCases, BubbleAppBecomesNotExpandedTestCases {
 
     companion object {
         private val previousApp = MessagingAppHelper(instrumentation)
@@ -92,14 +88,20 @@ class DismissExpandedBubbleViaBubbleBarTest(navBar: NavBar) :
             }
         )
 
-        @Parameterized.Parameters(name = "{0}")
+        @Parameters(name = "{0}")
         @JvmStatic
-        fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL, NavBar.MODE_3BUTTON)
+        fun data(): List<NavBar> = NavBar.entries
     }
 
-    @get:Rule
-    val setUpRule = ApplyPerParameterRule(
-        Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
+    @get:Rule(order = 1)
+    val assumptionRule = AssumptionRule(
+        condition = { tapl.isTablet },
+        message = "The bubble bar is only available on large screen devices",
+    )
+
+    @get:Rule(order = 2)
+    val setUpRule = RunOncePerParameterRule(
+        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
         params = arrayOf(navBar),
     )
 
@@ -107,12 +109,6 @@ class DismissExpandedBubbleViaBubbleBarTest(navBar: NavBar) :
         get() = recordTraceWithTransitionRule.reader
 
     override val previousApp: IComponentNameMatcher = Companion.previousApp
-
-    @Before
-    override fun setUp() {
-        assumeTrue(tapl.isTablet)
-        super.setUp()
-    }
 
     @Test
     override fun previousAppWindowReplacesTestAppAsTopWindow() {

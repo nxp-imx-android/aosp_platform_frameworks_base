@@ -27,6 +27,7 @@ import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.WindowConfiguration;
 import android.app.compat.CompatChanges;
+import android.companion.virtualdevice.flags.Flags;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
 import android.content.AttributionSource;
@@ -38,16 +39,19 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.UserHandle;
+import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.Pair;
 import android.util.Slog;
 import android.view.Display;
 import android.window.DisplayWindowPolicyController;
 
 import com.android.internal.annotations.GuardedBy;
-import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.BlockedAppStreamingActivity;
 import com.android.modules.expresslog.Counter;
 
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -56,20 +60,13 @@ import java.util.function.Supplier;
 /**
  * A controller to control the policies of the windows that can be displayed on the virtual display.
  */
-public class GenericWindowPolicyController extends DisplayWindowPolicyController {
+final class GenericWindowPolicyController extends DisplayWindowPolicyController {
 
     private static final String TAG = "GenericWindowPolicyController";
 
     private static final ComponentName BLOCKED_APP_STREAMING_COMPONENT =
             new ComponentName("android", BlockedAppStreamingActivity.class.getName());
-
-    /** Interface to listen running applications change on virtual display. */
-    public interface RunningAppsChangedListener {
-        /**
-         * Notifies the running applications change.
-         */
-        void onRunningAppsChanged(ArraySet<Integer> runningUids);
-    }
+    private static final int FLAG_NONE = 0;
 
     /** Interface to react to activity changes on the virtual display. */
     public interface ActivityListener {
@@ -86,13 +83,29 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
                 @Nullable IntentSender intentSender);
 
         /** Called when a secure window shows on the virtual display. */
-        void onSecureWindowShown(int displayId, @NonNull ActivityInfo activityInfo);
+        void onSecureWindowShown(int displayId, @NonNull ComponentName componentName,
+                int uid);
 
-        /** Called when a secure window is no longer shown on the virtual display. */
+        /**
+         * Called when a secure window is no longer shown on the virtual display.
+         *
+         * <p>This could mean that either an activity (previously with secure content) doesn't show
+         * secure content anymore, or a different activity with insecure content is launched on the
+         * display.</p>
+         */
         void onSecureWindowHidden(int displayId);
 
         /** Returns true when an intent should be intercepted */
         boolean shouldInterceptIntent(@NonNull Intent intent);
+
+        /**
+         * Called when the set of running apps on this display changes.
+         *
+         * @param uidPackagePairs Set of pairs of UID and package name corresponding to all
+         *   activities currently present on the display.
+         */
+        void onRunningAppsChanged(int displayId,
+                @NonNull ArraySet<Pair<Integer, String>> uidPackagePairs);
     }
 
     /**
@@ -128,17 +141,16 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
     private final CountDownLatch mDisplayIdSetLatch = new CountDownLatch(1);
 
     // Used for detecting changes in the window flags.
-    private int mCurrentWindowFlags = 0;
+    @GuardedBy("mGenericWindowPolicyControllerLock")
+    private final WindowFlagsTracker mWindowFlagsTracker = new WindowFlagsTracker();
+    // TODO(b/449765707): Remove this once we clean up gwpc_secure_window_state_tracking flag.
+    private int mCurrentWindowFlags = FLAG_NONE;
 
     @NonNull
     @GuardedBy("mGenericWindowPolicyControllerLock")
-    private final ArraySet<Integer> mRunningUids = new ArraySet<>();
+    private final ArraySet<Pair<Integer, String>> mRunningUidPackagePairs = new ArraySet<>();
     @NonNull private final ActivityListener mActivityListener;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
-    @NonNull
-    @GuardedBy("mGenericWindowPolicyControllerLock")
-    private final ArraySet<RunningAppsChangedListener> mRunningAppsChangedListeners =
-            new ArraySet<>();
     @NonNull private final Set<String> mDisplayCategories;
 
     @GuardedBy("mGenericWindowPolicyControllerLock")
@@ -168,8 +180,8 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
      *   applicable to displays that support home activities, i.e. they're created with the relevant
      *   virtual display flag.
      */
-    public GenericWindowPolicyController(
-            AttributionSource attributionSource,
+    GenericWindowPolicyController(
+            @NonNull AttributionSource attributionSource,
             @NonNull ArraySet<UserHandle> allowedUsers,
             boolean activityLaunchAllowedByDefault,
             @NonNull Set<ComponentName> activityPolicyExemptions,
@@ -233,9 +245,15 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
     /**
      * Set whether to show activities in recents on the host device.
      */
-    public void setShowInHostDeviceRecents(boolean showInHostDeviceRecents) {
+    void setShowInHostDeviceRecents(boolean showInHostDeviceRecents) {
         synchronized (mGenericWindowPolicyControllerLock) {
             mShowTasksInHostDeviceRecents = showInHostDeviceRecents;
+        }
+    }
+
+    boolean isActivityLaunchAllowedByDefault() {
+        synchronized (mGenericWindowPolicyControllerLock) {
+            return mActivityLaunchAllowedByDefault;
         }
     }
 
@@ -270,20 +288,6 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
     void removeActivityPolicyExemption(@NonNull String packageName) {
         synchronized (mGenericWindowPolicyControllerLock) {
             mActivityPolicyPackageExemptions.remove(packageName);
-        }
-    }
-
-    /** Register a listener for running applications changes. */
-    public void registerRunningAppsChangedListener(@NonNull RunningAppsChangedListener listener) {
-        synchronized (mGenericWindowPolicyControllerLock) {
-            mRunningAppsChangedListeners.add(listener);
-        }
-    }
-
-    /** Unregister a listener for running applications changes. */
-    public void unregisterRunningAppsChangedListener(@NonNull RunningAppsChangedListener listener) {
-        synchronized (mGenericWindowPolicyControllerLock) {
-            mRunningAppsChangedListeners.remove(listener);
         }
     }
 
@@ -367,17 +371,20 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
     @SuppressWarnings("AndroidFrameworkRequiresPermission")
     public boolean keepActivityOnWindowFlagsChanged(ActivityInfo activityInfo, int windowFlags,
             int systemWindowFlags) {
-        int displayId = waitAndGetDisplayId();
+        final int displayId = waitAndGetDisplayId();
         if (displayId != INVALID_DISPLAY) {
-            // The callback is fired only when windowFlags are changed. To let VirtualDevice owner
-            // aware that the virtual display has a secure window on top.
-            // Post callback on the main thread, so it doesn't block activity launching.
-            if ((windowFlags & FLAG_SECURE) != 0 && (mCurrentWindowFlags & FLAG_SECURE) == 0) {
-                mHandler.post(
-                        () -> mActivityListener.onSecureWindowShown(displayId, activityInfo));
-            }
-            if ((windowFlags & FLAG_SECURE) == 0 && (mCurrentWindowFlags & FLAG_SECURE) != 0) {
-                mHandler.post(() -> mActivityListener.onSecureWindowHidden(displayId));
+            final ComponentName componentName = activityInfo.getComponentName();
+            if (Flags.gwpcSecureWindowStateTracking()) {
+                final ComponentName topComponentName = mWindowFlagsTracker.getTopComponentName();
+                if (Objects.equals(componentName, topComponentName)) {
+                    final int currentWindowFlags = mWindowFlagsTracker.getCurrentWindowFlags();
+                    detectSecureWindowStatusChange(windowFlags, currentWindowFlags, componentName,
+                            activityInfo.applicationInfo.uid, displayId);
+                    mWindowFlagsTracker.setWindowFlagsForComponentName(componentName, windowFlags);
+                }
+            } else {
+                detectSecureWindowStatusChange(windowFlags, mCurrentWindowFlags, componentName,
+                        activityInfo.applicationInfo.uid, displayId);
             }
         }
         mCurrentWindowFlags = windowFlags;
@@ -386,7 +393,7 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
                 activityInfo.packageName,
                 UserHandle.getUserHandleForUid(activityInfo.applicationInfo.uid))) {
             // TODO(b/201712607): Add checks for the apps that use SurfaceView#setSecure.
-            if ((windowFlags & FLAG_SECURE) != 0
+            if (isSecureContent(windowFlags)
                     || (systemWindowFlags & SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS) != 0) {
                 notifyActivityBlocked(activityInfo, /* intentSender= */ null);
                 return false;
@@ -398,35 +405,46 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
 
     @Override
     public void onTopActivityChanged(ComponentName topActivity, int uid, @UserIdInt int userId) {
-        int displayId = waitAndGetDisplayId();
+        final int displayId = waitAndGetDisplayId();
         // Don't send onTopActivityChanged() callback when topActivity is null because it's defined
         // as @NonNull in ActivityListener interface. Sends onDisplayEmpty() callback instead when
         // there is no activity running on virtual display.
-        if (topActivity != null && displayId != INVALID_DISPLAY) {
-            // Post callback on the main thread so it doesn't block activity launching
-            mHandler.post(() ->
-                    mActivityListener.onTopActivityChanged(displayId, topActivity, userId));
+        if (topActivity == null || displayId == INVALID_DISPLAY) {
+            return;
         }
+
+        // Post callback on the main thread so it doesn't block activity launching
+        mHandler.post(() ->
+                mActivityListener.onTopActivityChanged(displayId, topActivity, userId));
+
+        if (!Flags.gwpcSecureWindowStateTracking()) {
+            return;
+        }
+
+        final int windowFlagsForComponentName =
+                mWindowFlagsTracker.getWindowFlagsForComponentName(topActivity);
+        final int currentWindowFlags = mWindowFlagsTracker.getCurrentWindowFlags();
+        mWindowFlagsTracker.setTopComponentName(topActivity);
+        detectSecureWindowStatusChange(windowFlagsForComponentName, currentWindowFlags,
+                topActivity, uid, displayId);
     }
 
     @Override
-    public void onRunningAppsChanged(ArraySet<Integer> runningUids) {
+    public void onRunningAppsChanged(ArraySet<Pair<Integer, String>> uidPackagePairs) {
         synchronized (mGenericWindowPolicyControllerLock) {
-            mRunningUids.clear();
-            mRunningUids.addAll(runningUids);
+            mRunningUidPackagePairs.clear();
+            mRunningUidPackagePairs.addAll(uidPackagePairs);
             int displayId = waitAndGetDisplayId();
-            if (mRunningUids.isEmpty() && displayId != INVALID_DISPLAY) {
-                // Post callback on the main thread so it doesn't block activity launching
-                mHandler.post(() -> mActivityListener.onDisplayEmpty(displayId));
+            if (displayId == INVALID_DISPLAY) {
+                return;
             }
-            if (!mRunningAppsChangedListeners.isEmpty()) {
-                final ArraySet<RunningAppsChangedListener> listeners =
-                        new ArraySet<>(mRunningAppsChangedListeners);
-                mHandler.post(() -> {
-                    for (RunningAppsChangedListener listener : listeners) {
-                        listener.onRunningAppsChanged(runningUids);
-                    }
-                });
+            mHandler.post(() ->
+                    mActivityListener.onRunningAppsChanged(displayId, uidPackagePairs));
+            if (mRunningUidPackagePairs.isEmpty()) {
+                if (Flags.gwpcSecureWindowStateTracking()) {
+                    mWindowFlagsTracker.clear();
+                }
+                mHandler.post(() -> mActivityListener.onDisplayEmpty(displayId));
             }
         }
     }
@@ -437,6 +455,7 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
             return mShowTasksInHostDeviceRecents;
         }
     }
+
     @Override
     public @Nullable ComponentName getCustomHomeComponent() {
         return mCustomHomeComponent;
@@ -448,8 +467,13 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
      */
     boolean containsUid(int uid) {
         synchronized (mGenericWindowPolicyControllerLock) {
-            return mRunningUids.contains(uid);
+            for (int i = 0; i < mRunningUidPackagePairs.size(); ++i) {
+                if (mRunningUidPackagePairs.valueAt(i).first == uid) {
+                    return true;
+                }
+            }
         }
+        return false;
     }
 
     private boolean activityMatchesDisplayCategory(ActivityInfo activityInfo) {
@@ -484,6 +508,23 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
         }
     }
 
+    private void detectSecureWindowStatusChange(int newWindowFlags, int previousWindowFlags,
+            @NonNull ComponentName componentName, int uid, int displayId) {
+        if (previousWindowFlags == newWindowFlags) {
+            return;
+        }
+
+        // The callback is fired only when window flags have changed, to let the VirtualDevice owner
+        // know that the secure/insecure state of the content on the virtual display has changed.
+        // Post callback on the main thread, so it doesn't block activity launching.
+        if (isSecureContent(newWindowFlags) && !isSecureContent(previousWindowFlags)) {
+            mHandler.post(
+                    () -> mActivityListener.onSecureWindowShown(displayId, componentName, uid));
+        } else if (!isSecureContent(newWindowFlags) && isSecureContent(previousWindowFlags)) {
+            mHandler.post(() -> mActivityListener.onSecureWindowHidden(displayId));
+        }
+    }
+
     private static boolean isAllowedByPolicy(boolean allowedByDefault,
             Set<ComponentName> exemptions, ComponentName component) {
         // Either allowed and the exemptions do not contain the component,
@@ -491,10 +532,57 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
         return allowedByDefault != exemptions.contains(component);
     }
 
-    @VisibleForTesting
-    int getRunningAppsChangedListenersSizeForTesting() {
-        synchronized (mGenericWindowPolicyControllerLock) {
-            return mRunningAppsChangedListeners.size();
+    private static boolean isSecureContent(int windowFlags) {
+        return (windowFlags & FLAG_SECURE) != 0;
+    }
+
+    private static final class WindowFlagsTracker {
+        private final Object mLock = new Object();
+        @GuardedBy("mLock")
+        private final Map<ComponentName, Integer> mComponentNameToWindowFlagsMap = new ArrayMap<>();
+        @GuardedBy("mLock")
+        private ComponentName mTopComponentName = null;
+
+        int getWindowFlagsForComponentName(@NonNull ComponentName componentName) {
+            synchronized (mLock) {
+                return getWindowFlagsForComponentNameLocked(componentName);
+            }
+        }
+
+        int getCurrentWindowFlags() {
+            synchronized (mLock) {
+                return getWindowFlagsForComponentNameLocked(mTopComponentName);
+            }
+        }
+
+        void setWindowFlagsForComponentName(@NonNull ComponentName componentName, int windowFlags) {
+            synchronized (mLock) {
+                mComponentNameToWindowFlagsMap.put(componentName, windowFlags);
+            }
+        }
+
+        @NonNull
+        ComponentName getTopComponentName() {
+            synchronized (mLock) {
+                return mTopComponentName;
+            }
+        }
+
+        void setTopComponentName(@NonNull ComponentName componentName) {
+            synchronized (mLock) {
+                mTopComponentName = componentName;
+            }
+        }
+
+        void clear() {
+            synchronized (mLock) {
+                mComponentNameToWindowFlagsMap.clear();
+                mTopComponentName = null;
+            }
+        }
+
+        private int getWindowFlagsForComponentNameLocked(@NonNull ComponentName componentName) {
+            return mComponentNameToWindowFlagsMap.getOrDefault(componentName, FLAG_NONE);
         }
     }
 }

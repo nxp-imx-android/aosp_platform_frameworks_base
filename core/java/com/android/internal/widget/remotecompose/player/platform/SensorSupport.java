@@ -87,7 +87,6 @@ public class SensorSupport {
     }
 
     private void registerListener() {
-        Sensor[] s = {mAcc, mGyro, mMag, mLight};
         if (mListener != null) {
             unregisterListener();
         }

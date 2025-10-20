@@ -30,6 +30,10 @@ class FlashlightLogger @Inject constructor(@FlashlightLog private val buffer: Lo
         buffer.log(TAG, DEBUG, { str1 = state.toString() }, { "Flashlight state=$str1" })
     }
 
+    fun dialogW(msg: String) {
+        buffer.log(TAG, WARNING, { str1 = msg }, { "Flashlight Dialog: $str1" })
+    }
+
     fun d(msg: String) {
         buffer.log(TAG, DEBUG, { str1 = msg }, { "$str1" })
     }

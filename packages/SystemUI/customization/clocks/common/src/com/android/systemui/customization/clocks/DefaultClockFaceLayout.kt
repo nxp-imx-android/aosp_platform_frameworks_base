@@ -16,6 +16,7 @@
 
 package com.android.systemui.customization.clocks
 
+import android.content.Context
 import android.util.DisplayMetrics
 import android.view.View
 import android.view.ViewGroup
@@ -23,7 +24,6 @@ import android.widget.FrameLayout
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.viewinterop.AndroidView
@@ -34,68 +34,70 @@ import androidx.constraintlayout.widget.ConstraintSet.PARENT_ID
 import androidx.constraintlayout.widget.ConstraintSet.START
 import androidx.constraintlayout.widget.ConstraintSet.TOP
 import androidx.constraintlayout.widget.ConstraintSet.WRAP_CONTENT
-import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.MovableElementContentScope
 import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.customization.clocks.utils.ContextUtils.getSafeStatusBarHeight
 import com.android.systemui.plugins.keyguard.ui.clocks.AodClockBurnInModel
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockFaceLayout
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockPreviewConfig
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
+import com.android.systemui.plugins.keyguard.ui.composable.elements.MovableLockscreenElement
 import kotlin.collections.List
 
 /** A ClockFaceLayout that applies the default lockscreen layout to a single view */
 open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
     override val views = listOf(view)
 
-    override val elements: List<LockscreenElement> by lazy {
+    var smallClockModifier: MovableElementContentScope.() -> Modifier = { Modifier }
+    var largeClockModifier: MovableElementContentScope.() -> Modifier = { Modifier }
+    override val elements: List<MovableLockscreenElement> by lazy {
         if (view.id == ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE) {
-            listOf(largeClockElement)
+            listOf(LargeClockElement())
         } else {
-            listOf(smallClockElement)
+            listOf(SmallClockElement())
         }
     }
 
-    private val smallClockElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.Clock.Small
-            override val context = view.context
+    private inner class SmallClockElement : MovableLockscreenElement {
+        override val key = LockscreenElementKeys.Clock.Small
+        override val context: Context = view.context
+        override val source = ElementSource.DYNAMIC
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                clockView(
-                    view = view,
-                    modifier =
-                        Modifier.height(dimensionResource(clocksR.dimen.small_clock_height))
-                            .then(context.burnInModifier),
-                )
-            }
+        @Composable
+        override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {
+            ClockView(
+                view,
+                Modifier.height(dimensionResource(clocksR.dimen.small_clock_height))
+                    .then(contentScope.smallClockModifier())
+                    .then(context.burnInModifier)
+                    .then(context.nonAuthUIModifier),
+            )
         }
+    }
 
-    private val largeClockElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.Clock.Large
-            override val context = view.context
+    private inner class LargeClockElement : MovableLockscreenElement {
+        override val key = LockscreenElementKeys.Clock.Large
+        override val context: Context = view.context
+        override val source = ElementSource.DYNAMIC
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                // TODO(b/418824686): Migrate stepping animation to compose
-                clockView(view, Modifier.wrapContentSize().then(context.burnInModifier))
-            }
+        @Composable
+        override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {
+            ClockView(
+                view,
+                Modifier.wrapContentSize()
+                    .then(contentScope.largeClockModifier())
+                    .then(context.burnInModifier)
+                    .then(context.nonAuthUIModifier),
+            )
         }
+    }
 
     companion object {
         @Composable
-        fun clockView(view: View?, modifier: Modifier = Modifier) {
+        fun ClockView(view: View?, modifier: Modifier = Modifier) {
             AndroidView(
                 factory = {
                     FrameLayout(it).apply {
@@ -152,17 +154,9 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
             constrainMaxHeight(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, 0)
 
             val largeClockTopMargin =
-                if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
-                    view.context.getSafeStatusBarHeight() / 2 +
-                        res.getDimensionPixelSize(clocksR.dimen.keyguard_smartspace_top_offset) +
-                        res.getDimensionPixelSize(clocksR.dimen.enhanced_smartspace_height)
-                } else {
-                    view.context.getSafeStatusBarHeight() +
-                        res.getDimensionPixelSize(clocksR.dimen.small_clock_padding_top) +
-                        res.getDimensionPixelSize(clocksR.dimen.keyguard_smartspace_top_offset) +
-                        res.getDimensionPixelSize(clocksR.dimen.date_weather_view_height) +
-                        res.getDimensionPixelSize(clocksR.dimen.enhanced_smartspace_height)
-                }
+                view.context.getSafeStatusBarHeight() / 2 +
+                    res.getDimensionPixelSize(clocksR.dimen.keyguard_smartspace_top_offset) +
+                    res.getDimensionPixelSize(clocksR.dimen.enhanced_smartspace_height)
 
             connect(
                 ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE,

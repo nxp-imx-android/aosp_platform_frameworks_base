@@ -33,7 +33,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.os.Parcelable;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemClock;
@@ -649,19 +648,14 @@ public final class AccessibilityInteractionController {
 
     private void getWindowSurfaceInfoUiThread(IWindowSurfaceInfoCallback callback) {
         try {
-            if (Flags.copySurfaceControlForWindowScreenshots()) {
-                SurfaceControl sc = mViewRootImpl.getSurfaceControl();
-                if (sc.isValid()) {
-                    SurfaceControl copiedSc = new SurfaceControl(sc,
-                            "AccessibilityInteractionController"
-                                    + "#getWindowSurfaceInfoUiThread");
-                    callback.provideWindowSurfaceInfo(mViewRootImpl.getWindowFlags(),
-                            Process.myUid(),
-                            copiedSc);
-                }
-            } else {
-                callback.provideWindowSurfaceInfo(mViewRootImpl.getWindowFlags(), Process.myUid(),
-                        mViewRootImpl.getSurfaceControl());
+            SurfaceControl sc = mViewRootImpl.getSurfaceControl();
+            if (sc.isValid()) {
+                SurfaceControl copiedSc = new SurfaceControl(sc,
+                        "AccessibilityInteractionController"
+                                + "#getWindowSurfaceInfoUiThread");
+                callback.provideWindowSurfaceInfo(mViewRootImpl.getWindowFlags(),
+                        Process.myUid(),
+                        copiedSc);
             }
         } catch (RemoteException re) {
             // ignore - the other side will time out
@@ -1302,11 +1296,11 @@ public final class AccessibilityInteractionController {
 
     private boolean handleClickableSpanActionUiThread(
             View view, int virtualDescendantId, Bundle arguments) {
-        Parcelable span = arguments.getParcelable(ACTION_ARGUMENT_ACCESSIBLE_CLICKABLE_SPAN);
-        if (!(span instanceof AccessibilityClickableSpan)) {
+        AccessibilityClickableSpan span = arguments.getParcelable(
+                ACTION_ARGUMENT_ACCESSIBLE_CLICKABLE_SPAN, AccessibilityClickableSpan.class);
+        if (span == null) {
             return false;
         }
-
         // Find the original ClickableSpan if it's still on the screen
         AccessibilityNodeInfo infoWithSpan = null;
         AccessibilityNodeProvider provider = view.getAccessibilityNodeProvider();
@@ -1320,7 +1314,7 @@ public final class AccessibilityInteractionController {
         }
 
         // Click on the corresponding span
-        ClickableSpan clickableSpan = ((AccessibilityClickableSpan) span).findClickableSpan(
+        ClickableSpan clickableSpan = span.findClickableSpan(
                 infoWithSpan.getOriginalText());
         if (clickableSpan != null) {
             clickableSpan.onClick(view);

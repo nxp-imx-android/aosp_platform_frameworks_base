@@ -5784,7 +5784,7 @@ public final class ContactsContract {
          * @param contactId Contact ID, which can potentially be a managed profile contact ID.
          * @return A map from a mimetype to a list of the entity content values.
          *
-         * {@hide}
+         * @hide
          */
         @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
         @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
@@ -9394,6 +9394,14 @@ public final class ContactsContract {
                 "setAccountAttributes";
 
         /**
+         * The method to invoke in order to reset the account attributes.
+         *
+         * @hide
+         */
+        public static final String RESET_ACCOUNT_ATTRIBUTES_METHOD =
+                "resetAccountAttributes";
+
+        /**
          * The method to invoke in order to get the account attributes.
          *
          * @hide
@@ -9547,18 +9555,21 @@ public final class ContactsContract {
          * attributes enabled or set.
          *
          * @param resolver The {@link ContentResolver} to use for the query.
-         * @param account  The account to query. If {@code null}, this will query the
-         * attributes of the local, device-only account.
+         * @param account  The account to query. If {@code null}, this queries the attributes of
+         *                 the <strong>local, device-only account</strong> (where both account_name
+         *                 and account_type are null).
          * @param dataSet  The data set specific to the account type, which may be {@code null}.
          * @return A {@code long} representing the attributes bitmask.
          * @throws IllegalStateException if the specified account does not exist or its
-         * attributes could not be determined.
+         *                               attributes could not be determined.
          */
         @FlaggedApi(Flags.FLAG_NEW_ACCOUNT_ATTRIBUTES_API_ENABLED)
         @RequiresPermission(android.Manifest.permission.READ_CONTACTS)
         public static @AccountAttributes.AttributeFlags long getAccountAttributes(
                 @NonNull ContentResolver resolver,
                 @Nullable Account account, @Nullable String dataSet) {
+            Objects.requireNonNull(resolver, "ContentResolver cannot be null");
+
             Bundle extras = new Bundle();
             if (account != null) {
                 extras.putString(ACCOUNT_NAME, account.name);
@@ -9590,22 +9601,25 @@ public final class ContactsContract {
          * <h4>Security</h4>
          * <p> This method requires that the calling application to be the authenticator
          * for the account's type.
-         * @see android.accounts.AccountManager#getAuthenticatorTypes()
          *
-         * @param resolver        The {@code ContentResolver} to use for the update.
-         * @param account         The target account. If {@code null}, this operation applies to the
-         *                        local, device-only account.
-         * @param dataSet         The data set within the account, which may be {@code null}.
+         * @param resolver      The {@code ContentResolver} to use for the update.
+         * @param account       @param account The target account.
+         * @param dataSet       The data set within the account, which may be {@code null}.
          * @param newAttributes The complete new bitmask of attributes to apply.
          * @throws IllegalArgumentException if {@code newAttributes} contains any undefined
          *                                  bits, has semantic conflicts, or the account is
          *                                  otherwise invalid.
+         * @throws SecurityException        if the calling package is not the authenticator for the
+         *                                  account type.
+         * @see android.accounts.AccountManager#getAuthenticatorTypes()
          */
         @FlaggedApi(Flags.FLAG_NEW_ACCOUNT_ATTRIBUTES_API_ENABLED)
         @RequiresPermission(android.Manifest.permission.WRITE_CONTACTS)
         public static void setAccountAttributes(@NonNull ContentResolver resolver,
                 @Nullable Account account, @Nullable String dataSet,
                 @AccountAttributes.AttributeFlags long newAttributes) {
+            Objects.requireNonNull(resolver, "ContentResolver cannot be null");
+
             Bundle extras = new Bundle();
             if (account != null) {
                 extras.putString(ACCOUNT_NAME, account.name);
@@ -9617,6 +9631,45 @@ public final class ContactsContract {
             extras.putLong(KEY_ACCOUNT_ATTRIBUTES, newAttributes);
             nullSafeCall(resolver, ContactsContract.AUTHORITY_URI,
                     SET_ACCOUNT_ATTRIBUTES_METHOD, null,
+                    extras);
+        }
+
+        /**
+         * Resets the attributes for a given account to their system-evaluated defaults.
+         *
+         * <p>This operation removes any explicit overrides set via
+         * {@link #setAccountAttributes} and causes the system to immediately re-evaluate the
+         * account's attributes based on its type and other characteristics
+         *
+         * <h4>Security</h4>
+         * <p>This method requires that the calling application be the authenticator for the
+         * account's type, as defined in {@link android.accounts.AccountManager}.
+         *
+         * @param resolver The {@code ContentResolver} to use for the update.
+         * @param account  @param account The target account.
+         * @param dataSet  The data set within the account, which may be {@code null}.
+         * @throws IllegalArgumentException if the target account is otherwise invalid.
+         * @throws SecurityException        if the calling package is not the authenticator for the
+         *                                  account type.
+         * @see android.accounts.AccountManager#getAuthenticatorTypes()
+         */
+        @FlaggedApi(Flags.FLAG_NEW_ACCOUNT_ATTRIBUTES_API_ENABLED)
+        @RequiresPermission(android.Manifest.permission.WRITE_CONTACTS)
+        public static void resetAccountAttributes(@NonNull ContentResolver resolver,
+                @Nullable Account account, @Nullable String dataSet) {
+            Objects.requireNonNull(resolver, "ContentResolver cannot be null");
+
+            Bundle extras = new Bundle();
+            if (account != null) {
+                extras.putString(ACCOUNT_NAME, account.name);
+                extras.putString(ACCOUNT_TYPE, account.type);
+            }
+            if (!TextUtils.isEmpty(dataSet)) {
+                extras.putString(DATA_SET, dataSet);
+            }
+            // No need to put attributes, the method name implies the action.
+            nullSafeCall(resolver, ContactsContract.AUTHORITY_URI,
+                    RESET_ACCOUNT_ATTRIBUTES_METHOD, null,
                     extras);
         }
     }

@@ -18,9 +18,6 @@ package com.android.systemui.statusbar.notification.row
 import android.app.INotificationManager
 import android.app.Notification
 import android.app.NotificationChannel
-import android.app.NotificationChannel.NEWS_ID
-import android.app.NotificationChannel.PROMOTIONS_ID
-import android.app.NotificationChannel.RECS_ID
 import android.app.NotificationChannel.SOCIAL_MEDIA_ID
 import android.app.NotificationManager.IMPORTANCE_LOW
 import android.content.ComponentName
@@ -82,7 +79,6 @@ class BundledNotificationInfoTest : SysuiTestCase() {
 
     private lateinit var underTest: NotificationInfo
     private lateinit var notificationChannel: NotificationChannel
-    private lateinit var defaultNotificationChannel: NotificationChannel
     private lateinit var classifiedNotificationChannel: NotificationChannel
     private lateinit var sbn: StatusBarNotification
     private lateinit var entry: NotificationEntry
@@ -99,6 +95,7 @@ class BundledNotificationInfoTest : SysuiTestCase() {
     private val channelEditorDialogController = mock<ChannelEditorDialogController>()
     private val packageDemotionInteractor = mock<PackageDemotionInteractor>()
     private val assistantFeedbackController = mock<AssistantFeedbackController>()
+    private val onSettingsClick = mock<NotificationInfo.OnSettingsClickListener>()
 
     @Before
     fun setUp() {
@@ -127,8 +124,7 @@ class BundledNotificationInfoTest : SysuiTestCase() {
         systemPackageInfo.packageName = TEST_SYSTEM_PACKAGE_NAME
         whenever(mockPackageManager.getPackageInfo(eq(TEST_SYSTEM_PACKAGE_NAME), anyInt()))
             .thenReturn(systemPackageInfo)
-        whenever(mockPackageManager.getPackageInfo(eq("android"), anyInt()))
-            .thenReturn(packageInfo)
+        whenever(mockPackageManager.getPackageInfo(eq("android"), anyInt())).thenReturn(packageInfo)
         whenever(mockPackageManager.getApplicationLabel(applicationInfo)).thenReturn("App")
 
         val assistant = ComponentName("package", "service")
@@ -151,16 +147,10 @@ class BundledNotificationInfoTest : SysuiTestCase() {
 
         // Some test channels.
         notificationChannel = NotificationChannel(TEST_CHANNEL, TEST_CHANNEL_NAME, IMPORTANCE_LOW)
-        defaultNotificationChannel =
-            NotificationChannel(
-                NotificationChannel.DEFAULT_CHANNEL_ID,
-                TEST_CHANNEL_NAME,
-                IMPORTANCE_LOW,
-            )
         classifiedNotificationChannel =
             NotificationChannel(SOCIAL_MEDIA_ID, "social", IMPORTANCE_LOW)
 
-        val notification = Notification()
+        val notification = Notification.Builder(mContext, notificationChannel.id).build()
         notification.extras.putParcelable(
             Notification.EXTRA_BUILDER_APPLICATION_INFO,
             applicationInfo,
@@ -187,8 +177,17 @@ class BundledNotificationInfoTest : SysuiTestCase() {
         whenever(assistantFeedbackController.isFeedbackEnabled).thenReturn(false)
         whenever(assistantFeedbackController.getInlineDescriptionResource(any()))
             .thenReturn(R.string.notification_channel_summary_automatic)
-    }
 
+        whenever(
+                mockINotificationManager.getNotificationChannel(
+                    anyString(),
+                    anyInt(),
+                    eq(sbn.packageName),
+                    eq(notificationChannel.id),
+                )
+            )
+            .thenReturn(notificationChannel)
+    }
 
     @Test
     fun testHandleCloseControls_DoesNotMakeBinderCalllIfUnchanged() {
@@ -202,8 +201,14 @@ class BundledNotificationInfoTest : SysuiTestCase() {
 
     @Test
     fun testToggleCallsUpdate() {
-        whenever(mockINotificationManager.isAdjustmentSupportedForPackage(
-            anyInt(), anyString(), anyString())).thenReturn(true)
+        whenever(
+                mockINotificationManager.isAdjustmentSupportedForPackage(
+                    anyInt(),
+                    anyString(),
+                    anyString(),
+                )
+            )
+            .thenReturn(true)
 
         bindNotification()
 
@@ -218,8 +223,14 @@ class BundledNotificationInfoTest : SysuiTestCase() {
 
     @Test
     fun testToggleContainerCallsUpdate() {
-        whenever(mockINotificationManager.isAdjustmentSupportedForPackage(
-            anyInt(), anyString(), anyString())).thenReturn(true)
+        whenever(
+                mockINotificationManager.isAdjustmentSupportedForPackage(
+                    anyInt(),
+                    anyString(),
+                    anyString(),
+                )
+            )
+            .thenReturn(true)
 
         bindNotification()
 
@@ -234,13 +245,29 @@ class BundledNotificationInfoTest : SysuiTestCase() {
 
     @Test
     fun testSummaryText() {
-        val channel = NotificationChannel(NEWS_ID, "news", 2)
-        entry = NotificationEntryBuilder(entry)
-            .updateRanking { it.setChannel(channel) }
-            .build()
+        entry =
+            NotificationEntryBuilder(entry)
+                .updateRanking { it.setChannel(classifiedNotificationChannel) }
+                .build()
         bindNotification()
-        assertThat((underTest.findViewById(R.id.feature_summary) as TextView).text).isEqualTo(
-            "For App")
+        assertThat((underTest.findViewById(R.id.feature_summary) as TextView).text)
+            .isEqualTo("For App")
+    }
+
+    @Test
+    fun testTurnOffNotifications() {
+        bindNotification()
+        underTest.findViewById<View>(R.id.turn_off_notifications).performClick()
+        verify(channelEditorDialogController)
+            .prepareDialogForApp(
+                "App",
+                sbn.packageName,
+                sbn.uid,
+                notificationChannel,
+                null,
+                onSettingsClick,
+            )
+        verify(channelEditorDialogController).show()
     }
 
     private fun bindNotification(
@@ -255,7 +282,7 @@ class BundledNotificationInfoTest : SysuiTestCase() {
         pkg: String = TEST_PACKAGE_NAME,
         entry: NotificationEntry = this.entry,
         entryAdapter: EntryAdapter = this.entryAdapter,
-        onSettingsClick: NotificationInfo.OnSettingsClickListener? = mock(),
+        onSettingsClick: NotificationInfo.OnSettingsClickListener? = this.onSettingsClick,
         onAppSettingsClick: NotificationInfo.OnAppSettingsClickListener? = mock(),
         onFeedbackClickListener: NotificationInfo.OnFeedbackClickListener? = mock(),
         uiEventLogger: UiEventLogger = this.uiEventLogger,

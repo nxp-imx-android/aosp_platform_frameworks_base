@@ -267,21 +267,23 @@ public final class Debug
         public static final int OTHER_GL = 15;
         /** @hide */
         public static final int OTHER_OTHER_MEMTRACK = 16;
+        /** @hide */
+        public static final int OTHER_MEMFD = 17;
 
         // Needs to be declared here for the DVK_STAT ranges below.
         /** @hide */
         @UnsupportedAppUsage
-        public static final int NUM_OTHER_STATS = 17;
+        public static final int NUM_OTHER_STATS = 18;
 
         // Dalvik subsections.
         /** @hide */
-        public static final int OTHER_DALVIK_NORMAL = 17;
+        public static final int OTHER_DALVIK_NORMAL = 18;
         /** @hide */
-        public static final int OTHER_DALVIK_LARGE = 18;
+        public static final int OTHER_DALVIK_LARGE = 19;
         /** @hide */
-        public static final int OTHER_DALVIK_ZYGOTE = 19;
+        public static final int OTHER_DALVIK_ZYGOTE = 20;
         /** @hide */
-        public static final int OTHER_DALVIK_NON_MOVING = 20;
+        public static final int OTHER_DALVIK_NON_MOVING = 21;
         // Section begins and ends for dumpsys, relative to the DALVIK categories.
         /** @hide */
         public static final int OTHER_DVK_STAT_DALVIK_START =
@@ -292,17 +294,17 @@ public final class Debug
 
         // Dalvik Other subsections.
         /** @hide */
-        public static final int OTHER_DALVIK_OTHER_LINEARALLOC = 21;
+        public static final int OTHER_DALVIK_OTHER_LINEARALLOC = 22;
         /** @hide */
-        public static final int OTHER_DALVIK_OTHER_ACCOUNTING = 22;
+        public static final int OTHER_DALVIK_OTHER_ACCOUNTING = 23;
         /** @hide */
-        public static final int OTHER_DALVIK_OTHER_ZYGOTE_CODE_CACHE = 23;
+        public static final int OTHER_DALVIK_OTHER_ZYGOTE_CODE_CACHE = 24;
         /** @hide */
-        public static final int OTHER_DALVIK_OTHER_APP_CODE_CACHE = 24;
+        public static final int OTHER_DALVIK_OTHER_APP_CODE_CACHE = 25;
         /** @hide */
-        public static final int OTHER_DALVIK_OTHER_COMPILER_METADATA = 25;
+        public static final int OTHER_DALVIK_OTHER_COMPILER_METADATA = 26;
         /** @hide */
-        public static final int OTHER_DALVIK_OTHER_INDIRECT_REFERENCE_TABLE = 26;
+        public static final int OTHER_DALVIK_OTHER_INDIRECT_REFERENCE_TABLE = 27;
         /** @hide */
         public static final int OTHER_DVK_STAT_DALVIK_OTHER_START =
                 OTHER_DALVIK_OTHER_LINEARALLOC - NUM_OTHER_STATS;
@@ -312,11 +314,11 @@ public final class Debug
 
         // Dex subsections (Boot vdex, App dex, and App vdex).
         /** @hide */
-        public static final int OTHER_DEX_BOOT_VDEX = 27;
+        public static final int OTHER_DEX_BOOT_VDEX = 28;
         /** @hide */
-        public static final int OTHER_DEX_APP_DEX = 28;
+        public static final int OTHER_DEX_APP_DEX = 29;
         /** @hide */
-        public static final int OTHER_DEX_APP_VDEX = 29;
+        public static final int OTHER_DEX_APP_VDEX = 30;
         /** @hide */
         public static final int OTHER_DVK_STAT_DEX_START = OTHER_DEX_BOOT_VDEX - NUM_OTHER_STATS;
         /** @hide */
@@ -324,9 +326,9 @@ public final class Debug
 
         // Art subsections (App image, boot image).
         /** @hide */
-        public static final int OTHER_ART_APP = 30;
+        public static final int OTHER_ART_APP = 31;
         /** @hide */
-        public static final int OTHER_ART_BOOT = 31;
+        public static final int OTHER_ART_BOOT = 32;
         // LINT.ThenChange(/system/memory/libmeminfo/include/meminfo/androidprocheaps.h)
         /** @hide */
         public static final int OTHER_DVK_STAT_ART_START = OTHER_ART_APP - NUM_OTHER_STATS;
@@ -555,6 +557,7 @@ public final class Debug
                 case OTHER_GRAPHICS: return "EGL mtrack";
                 case OTHER_GL: return "GL mtrack";
                 case OTHER_OTHER_MEMTRACK: return "Other mtrack";
+                case OTHER_MEMFD: return "Memfd";
                 case OTHER_DALVIK_NORMAL: return ".Heap";
                 case OTHER_DALVIK_LARGE: return ".LOS";
                 case OTHER_DALVIK_ZYGOTE: return ".Zygote";
@@ -1353,8 +1356,16 @@ public final class Debug
      *            in ".trace", it will be appended for you.
      * @param bufferSize The maximum amount of trace data we gather. If not
      *            given, it defaults to 8MB.
-     * @param flags Flags to control method tracing. The only one that is
-     *            currently defined is {@link #TRACE_COUNT_ALLOCS}.
+     * @param flags Flags to control method tracing. The following flags are supported:
+     *            0x0001 {@link #TRACE_COUNT_ALLOCS}
+     *
+     *            Flags to control time source: These are available with API #34 and higher.
+     *            0x0010 Report the elapsed time since the start of the trace.
+     *            0x0100 Report the time the thread has spent on the CPU since the start of the
+     *                   trace. Please note that the thread cpu incurs a significant (typically
+     *                   2-3x) performance penalty. Use this flag only when necessary.
+     *            If neither of these flags are set, both the elapsed time and the thread cpu time
+     *            are reported.
      */
     public static void startMethodTracing(String tracePath, int bufferSize, int flags) {
         VMDebug.startMethodTracing(fixTracePath(tracePath), bufferSize, flags, false, 0);
@@ -2071,7 +2082,11 @@ public final class Debug
     /** @hide */
     public static final int MEMINFO_SWAP_CACHED = 26;
     /** @hide */
-    public static final int MEMINFO_COUNT = 27;
+    public static final int MEMINFO_SEC_PAGE_TABLES = 27;
+    /** @hide */
+    public static final int MEMINFO_PERCPU = 28;
+    /** @hide */
+    public static final int MEMINFO_COUNT = 29;
 
     /**
      * Retrieves /proc/meminfo.  outSizes is filled with fields
@@ -2608,7 +2623,7 @@ public final class Debug
      * These properties are only set during platform debugging, and are not
      * meant to be used as a general-purpose properties store.
      *
-     * {@hide}
+     * @hide
      *
      * @param cl The class to (possibly) modify
      * @param partial If false, sets all static fields, otherwise, only set
@@ -2732,7 +2747,7 @@ public final class Debug
      * Return a string consisting of methods and locations at multiple call stack levels.
      * @param depth the number of levels to return, starting with the immediate caller.
      * @return a string describing the call stack.
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public static String getCallers(final int depth) {
@@ -2748,7 +2763,7 @@ public final class Debug
      * Return a string consisting of methods and locations at multiple call stack levels.
      * @param depth the number of levels to return, starting with the immediate caller.
      * @return a string describing the call stack.
-     * {@hide}
+     * @hide
      */
     public static String getCallers(final int start, int depth) {
         final StackTraceElement[] callStack = Thread.currentThread().getStackTrace();
@@ -2766,7 +2781,7 @@ public final class Debug
      * @param depth the number of levels to return, starting with the immediate caller.
      * @param linePrefix prefix to put in front of each location.
      * @return a string describing the call stack.
-     * {@hide}
+     * @hide
      */
     public static String getCallers(final int depth, String linePrefix) {
         final StackTraceElement[] callStack = Thread.currentThread().getStackTrace();
@@ -2779,7 +2794,7 @@ public final class Debug
 
     /**
      * @return a String describing the immediate caller of the calling method.
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public static String getCaller() {
@@ -2836,28 +2851,12 @@ public final class Debug
     public static native long getDmabufHeapTotalExportedKb();
 
     /**
-     * Return memory size in kilobytes allocated for ION heaps or -1 if
-     * /sys/kernel/ion/total_heaps_kb could not be read.
-     *
-     * @hide
-     */
-    public static native long getIonHeapsSizeKb();
-
-    /**
      * Return memory size in kilobytes allocated for DMA-BUF heap pools or -1 if
      * /sys/kernel/dma_heap/total_pools_kb could not be read.
      *
      * @hide
      */
     public static native long getDmabufHeapPoolsSizeKb();
-
-    /**
-     * Return memory size in kilobytes allocated for ION pools or -1 if
-     * /sys/kernel/ion/total_pools_kb could not be read.
-     *
-     * @hide
-     */
-    public static native long getIonPoolsSizeKb();
 
     /**
      * Returns the global total GPU-private memory in kB or -1 on error.

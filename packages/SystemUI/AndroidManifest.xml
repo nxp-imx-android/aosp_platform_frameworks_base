@@ -537,21 +537,17 @@
             android:singleUser="true"
             android:permission="android.permission.LAUNCH_CAPTURE_CONTENT_ACTIVITY_FOR_NOTE" />
 
-        <activity android:name=".screencapture.ui.ScreenCaptureActivity"
-            android:excludeFromRecents="true"
-            android:exported="false"
-            android:finishOnCloseSystemDialogs="true"
-            android:launchMode="singleInstance"
-            android:showForAllUsers="true"
-            android:theme="@style/ScreenCapture" />
-
         <activity
             android:name=".screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity"
-            android:excludeFromRecents="true"
             android:exported="false"
-            android:finishOnCloseSystemDialogs="true"
             android:showForAllUsers="true"
             android:theme="@style/ScreenCapture.PostRecord" />
+
+        <activity
+            android:name=".screencapture.record.largescreen.ui.DirectoryPickerActivity"
+            android:exported="false"
+            android:showForAllUsers="true"
+            android:theme="@style/Theme.Transparent" />
 
         <service android:name=".screenrecord.service.ScreenRecordingService" />
 
@@ -720,6 +716,16 @@
         <!-- started from MediaProjectionManager -->
         <activity
             android:name=".mediaprojection.permission.MediaProjectionPermissionActivity"
+            android:showForAllUsers="true"
+            android:exported="true"
+            android:theme="@style/Theme.SystemUI.MediaProjectionAlertDialog"
+            android:finishOnCloseSystemDialogs="true"
+            android:launchMode="singleTop"
+            android:excludeFromRecents="true"
+            android:visibleToInstantApps="true"/>
+
+        <activity
+            android:name=".screencapture.ui.ShareScreenActivity"
             android:showForAllUsers="true"
             android:exported="true"
             android:theme="@style/Theme.SystemUI.MediaProjectionAlertDialog"
@@ -1118,7 +1124,6 @@
 
         <receiver android:name=".user.UserDialogReceiver"
             android:exported="true"
-            android:featureFlag="com.android.systemui.multiuser_open_user_switcher_dialog"
             android:permission="android.permission.CREATE_USERS">
             <intent-filter>
                 <action android:name="com.android.systemui.action.LAUNCH_USER_SWITCHER_DIALOG" />

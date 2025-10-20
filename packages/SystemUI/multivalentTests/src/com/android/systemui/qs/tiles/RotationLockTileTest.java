@@ -17,7 +17,6 @@
 package com.android.systemui.qs.tiles;
 
 import static android.hardware.SensorPrivacyManager.Sensors.CAMERA;
-import static android.platform.test.flag.junit.FlagsParameterization.allCombinationsOf;
 
 import static junit.framework.TestCase.assertEquals;
 
@@ -28,10 +27,10 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.hardware.SensorPrivacyManager;
 import android.os.Handler;
-import android.platform.test.flag.junit.FlagsParameterization;
 import android.testing.TestableLooper;
 import android.testing.TestableResources;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.internal.logging.MetricsLogger;
@@ -42,19 +41,16 @@ import com.android.systemui.plugins.qs.QSTile;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.qs.QSHost;
 import com.android.systemui.qs.QsEventLogger;
-import com.android.systemui.qs.flags.QSComposeFragment;
-import com.android.systemui.qs.flags.QsInCompose;
 import com.android.systemui.qs.logging.QSLogger;
 import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.res.R;
+import com.android.systemui.rotation.RotationPolicyWrapper;
 import com.android.systemui.statusbar.policy.BatteryController;
-import com.android.systemui.statusbar.policy.DeviceStateRotationLockSettingController;
 import com.android.systemui.statusbar.policy.RotationLockController;
 import com.android.systemui.statusbar.policy.RotationLockControllerImpl;
 import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.settings.FakeSettings;
 import com.android.systemui.util.time.FakeSystemClock;
-import com.android.systemui.rotation.RotationPolicyWrapper;
 import com.android.systemui.util.wrapper.CameraRotationSettingProvider;
 
 import org.junit.After;
@@ -64,27 +60,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
-
-import java.util.List;
-import java.util.Optional;
-
-@RunWith(ParameterizedAndroidJunit4.class)
+@RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @SmallTest
 public class RotationLockTileTest extends SysuiTestCase {
 
     private static final String PACKAGE_NAME = "package_name";
-    private static final String[] DEFAULT_SETTINGS = new String[]{
-            "0:0",
-            "1:2"
-    };
-
-    @Parameters(name = "{0}")
-    public static List<FlagsParameterization> getParams() {
-        return allCombinationsOf(QSComposeFragment.FLAG_NAME);
-    }
 
     @Mock
     private PackageManager mPackageManager;
@@ -103,8 +84,6 @@ public class RotationLockTileTest extends SysuiTestCase {
     @Mock
     private BatteryController mBatteryController;
     @Mock
-    Optional<DeviceStateRotationLockSettingController> mDeviceStateRotationLockSettingController;
-    @Mock
     RotationPolicyWrapper mRotationPolicyWrapper;
     @Mock
     CameraRotationSettingProvider mCameraRotationSettingProvider;
@@ -116,11 +95,6 @@ public class RotationLockTileTest extends SysuiTestCase {
     private RotationLockTile mLockTile;
     private TestableResources mTestableResources;
     private FakeExecutor mFakeExecutor = new FakeExecutor(new FakeSystemClock());
-
-    public RotationLockTileTest(FlagsParameterization flags) {
-        super();
-        mSetFlagsRule.setFlagsParameterization(flags);
-    }
 
     @Before
     public void setUp() throws Exception {
@@ -136,8 +110,6 @@ public class RotationLockTileTest extends SysuiTestCase {
         mController = new RotationLockControllerImpl(
                 mRotationPolicyWrapper,
                 mCameraRotationSettingProvider,
-                mDeviceStateRotationLockSettingController,
-                DEFAULT_SETTINGS,
                 mFakeExecutor,
                 mFakeExecutor
         );
@@ -314,10 +286,6 @@ public class RotationLockTileTest extends SysuiTestCase {
     }
 
     private QSTile.Icon createExpectedIcon(int resId) {
-        if (QsInCompose.isEnabled()) {
-            return new QSTileImpl.DrawableIconWithRes(mContext.getDrawable(resId), resId);
-        } else {
-            return QSTileImpl.ResourceIcon.get(resId);
-        }
+        return new QSTileImpl.DrawableIconWithRes(mContext.getDrawable(resId), resId);
     }
 }

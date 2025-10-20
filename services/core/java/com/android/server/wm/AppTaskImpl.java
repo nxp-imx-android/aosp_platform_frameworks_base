@@ -17,6 +17,10 @@
 package com.android.server.wm;
 
 import static android.Manifest.permission.REPOSITION_SELF_WINDOWS;
+import static android.Manifest.permission.USE_PINNED_WINDOWING_LAYER;
+import static android.app.ActivityManager.AppTask.WINDOWING_LAYER_NORMAL_APP;
+import static android.app.ActivityManager.AppTask.WINDOWING_LAYER_PINNED;
+import static android.app.AppOpsManager.MODE_ALLOWED;
 import static android.app.TaskInfo.SELF_MOVABLE_ALLOWED;
 import static android.app.TaskInfo.SELF_MOVABLE_DEFAULT;
 import static android.app.TaskMoveRequestHandler.REMOTE_CALLBACK_BOUNDS_KEY;
@@ -35,26 +39,37 @@ import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_ACTIVITY_STARTS;
+import static com.android.server.wm.ActivityTaskManagerService.checkPermission;
 import static com.android.server.wm.ActivityTaskSupervisor.REMOVE_FROM_RECENTS;
 import static com.android.server.wm.BackgroundActivityStartController.BalVerdict;
 import static com.android.server.wm.RootWindowContainer.MATCH_ATTACHED_TASK_OR_RECENT_TASKS;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager;
+import android.app.ActivityManager.AppTask.WindowingLayer;
+import android.app.AppOpsManager;
 import android.app.IAppTask;
 import android.app.IApplicationThread;
 import android.app.TaskMoveRequestHandler;
+import android.app.TaskWindowingLayerRequestHandler;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.IRemoteCallback;
+import android.os.Looper;
 import android.os.Parcel;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.Slog;
+import android.window.TransitionRequestInfo.WindowingLayerChange;
+
+import com.android.internal.annotations.VisibleForTesting;
+
+import java.util.Objects;
 
 /**
  * An implementation of IAppTask, that allows an app to manage its own tasks via
@@ -63,15 +78,25 @@ import android.util.Slog;
  */
 class AppTaskImpl extends IAppTask.Stub {
     private static final String TAG = "AppTaskImpl";
+    /** Used to detect potential SysUI crash to reject the unhandled request. */
+    @VisibleForTesting
+    static final int WINDOWING_LAYER_CALLBACK_INVOKE_TIMEOUT_MS = 1000;
     private final ActivityTaskManagerService mService;
 
     private final int mTaskId;
     private final int mCallingUid;
+    private final Handler mHandler;
 
     public AppTaskImpl(ActivityTaskManagerService service, int taskId, int callingUid) {
+        this(service, taskId, callingUid, new Handler(Looper.getMainLooper()));
+    }
+
+    @VisibleForTesting
+    AppTaskImpl(ActivityTaskManagerService service, int taskId, int callingUid, Handler handler) {
         mService = service;
         mTaskId = taskId;
         mCallingUid = callingUid;
+        mHandler = handler;
     }
 
     private void checkCallerOrSystemOrRoot() {
@@ -189,7 +214,7 @@ class AppTaskImpl extends IAppTask.Stub {
         final int origCallingUid = Binder.getCallingUid();
         final long origId = Binder.clearCallingIdentity();
         try {
-            if (mService.checkPermission(REPOSITION_SELF_WINDOWS, origCallingPid, origCallingUid)
+            if (checkPermission(REPOSITION_SELF_WINDOWS, origCallingPid, origCallingUid)
                     != PERMISSION_GRANTED) {
                 reportTaskMoveRequestResult(
                         RESULT_FAILED_NO_PERMISSIONS, INVALID_DISPLAY, null /* bounds */, callback);
@@ -221,7 +246,7 @@ class AppTaskImpl extends IAppTask.Stub {
                 transition.setRequestedLocation(displayId, bounds);
                 transition.addTransactionPresentedListener(() ->
                         reportTaskMoveRequestResult(
-                            result, task.getDisplayId(), task.getBounds(), callback));
+                                result, task.getDisplayId(), task.getBounds(), callback));
                 controller.startCollectOrQueue(transition,
                         (deferred) -> {
                             if (deferred) {
@@ -253,10 +278,10 @@ class AppTaskImpl extends IAppTask.Stub {
     /**
      * Reports execution result of a {@link #moveTaskTo} request using the callback provided.
      *
-     * @param result The result code.
+     * @param result    The result code.
      * @param displayId The final display ID of the moved task after request execution.
-     * @param bounds The final bounds on host display of the moved task after request execution.
-     * @param callback The callback to notify about request result.
+     * @param bounds    The final bounds on host display of the moved task after request execution.
+     * @param callback  The callback to notify about request result.
      */
     private void reportTaskMoveRequestResult(
             int result, int displayId, Rect bounds, IRemoteCallback callback) {
@@ -310,7 +335,7 @@ class AppTaskImpl extends IAppTask.Stub {
         final int taskMovableState = task.getSelfMovable();
         final boolean isTaskMovable = (taskMovableState == SELF_MOVABLE_ALLOWED
                 || (taskMovableState == SELF_MOVABLE_DEFAULT
-                    && task.getWindowingMode() == WINDOWING_MODE_FREEFORM));
+                && task.getWindowingMode() == WINDOWING_MODE_FREEFORM));
         if (!isTaskMovable) {
             return RESULT_FAILED_IMMOVABLE_TASK;
         }
@@ -377,6 +402,152 @@ class AppTaskImpl extends IAppTask.Stub {
                 }
             } finally {
                 Binder.restoreCallingIdentity(origId);
+            }
+        }
+    }
+
+    @Override
+    public void requestWindowingLayer(@WindowingLayer int layer, IRemoteCallback callback) {
+        checkCallerOrSystemOrRoot();
+        Objects.requireNonNull(callback, "The callback provided is null.");
+        if (!com.android.window.flags.Flags.enableInteractivePictureInPicture()) {
+            Slog.d(TAG, "Requesting windowing layer not enabled.");
+            sendWindowingLayerResult(TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE,
+                    callback);
+            return;
+        }
+
+        final int origCallingPid = Binder.getCallingPid();
+        final int origCallingUid = Binder.getCallingUid();
+        final long origId = Binder.clearCallingIdentity();
+        try {
+            synchronized (mService.mGlobalLock) {
+                final Task task = mService.mRootWindowContainer.anyTaskForId(mTaskId);
+                if (task == null) {
+                    Slog.w(TAG, "Did not find any task to request windowing layer.");
+                    sendWindowingLayerResult(
+                            TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE, callback);
+                    return;
+                }
+                final String packageName = task.getBasePackageName();
+                if (!isWindowingLayerRequestAllowed(layer, origCallingPid,
+                        origCallingUid, packageName)) {
+                    sendWindowingLayerResult(
+                            TaskWindowingLayerRequestHandler.RESULT_FAILED_INSUFFICIENT_PERMISSIONS,
+                            callback);
+                    return;
+                }
+
+                final TransitionController controller = mService.getTransitionController();
+                final Transition transition = new Transition(TRANSIT_CHANGE, 0, controller,
+                        mService.mWindowManager.mSyncEngine);
+
+                // todo(b/444174844): optimize for 1 transition
+                controller.startCollectOrQueue(transition,
+                        (deferred) -> {
+                            if (deferred) {
+                                if (!isWindowingLayerRequestAllowed(layer,
+                                        origCallingPid, origCallingUid, packageName)) {
+                                    sendWindowingLayerResult(
+                                            TaskWindowingLayerRequestHandler
+                                                    .RESULT_FAILED_INSUFFICIENT_PERMISSIONS,
+                                            callback);
+                                    transition.abort();
+                                    return;
+                                }
+                            }
+                            final ObservedRemoteCallback observedCallback =
+                                    new ObservedRemoteCallback(callback);
+                            transition.addTransitionEndedListener(() ->
+                                    rejectRequestIfNotHandledAfterTimeout(observedCallback));
+                            controller.requestStartWindowingLayerTransition(transition, task,
+                                    new WindowingLayerChange(layer, observedCallback));
+                            transition.setReady(task, true);
+                        });
+            }
+        } finally {
+            Binder.restoreCallingIdentity(origId);
+        }
+    }
+
+    private boolean isWindowingLayerRequestAllowed(@WindowingLayer int layer,
+            int pid, int uid, String packageName) {
+        if (layer == WINDOWING_LAYER_PINNED) {
+            final AppOpsManager appOpsManager = mService.getAppOpsManager();
+            return checkPermission(USE_PINNED_WINDOWING_LAYER, pid, uid) == PERMISSION_GRANTED
+                    && appOpsManager.checkOpNoThrow(AppOpsManager.OP_PICTURE_IN_PICTURE, uid,
+                    packageName) == MODE_ALLOWED;
+        }
+        if (layer == WINDOWING_LAYER_NORMAL_APP) {
+            return true; // no permissions required
+        }
+        return false;
+    }
+
+    private void sendWindowingLayerResult(@TaskWindowingLayerRequestHandler.Result int result,
+            IRemoteCallback callback) {
+        final Bundle bundle = new Bundle();
+        bundle.putInt(TaskWindowingLayerRequestHandler.REMOTE_CALLBACK_RESULT_KEY, result);
+        try {
+            callback.sendResult(bundle);
+        } catch (RemoteException e) {
+            // Client thrown an exception back to the server, ignoring it.
+        }
+    }
+
+    /** Verifies the callback was invoked by sysUI in time and rejects the request if wasn't */
+    private void rejectRequestIfNotHandledAfterTimeout(ObservedRemoteCallback callback) {
+        mHandler.postDelayed(() -> {
+            final Bundle bundle = new Bundle();
+            bundle.putInt(TaskWindowingLayerRequestHandler.REMOTE_CALLBACK_RESULT_KEY,
+                    TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE);
+            try {
+                callback.sendFallbackResult(bundle,
+                        () -> Slog.w(TAG, "WindowingLayerChange not handled properly, "
+                                + "rejecting."));
+            } catch (RemoteException e) {
+                // Client thrown an exception back to the server, ignoring it.
+            }
+        }, WINDOWING_LAYER_CALLBACK_INVOKE_TIMEOUT_MS);
+    }
+
+    /**
+     * {@link IRemoteCallback} decorator to observe whether base callback was called.
+     */
+    private static final class ObservedRemoteCallback extends IRemoteCallback.Stub {
+
+        private boolean mAnyResultSent = false;
+        private final IRemoteCallback mCallback;
+
+        private ObservedRemoteCallback(IRemoteCallback callback) {
+            mCallback = callback;
+        }
+
+        /**
+         * Sends a {@code data} as a fallback callback execution, only if callback was not already
+         * invoked, otherwise it's a no-op.
+         *
+         * @param onFallback executed if fallback is actually triggered
+         */
+        void sendFallbackResult(Bundle data, Runnable onFallback) throws RemoteException {
+            synchronized (this) {
+                if (!mAnyResultSent) {
+                    onFallback.run();
+                    sendResult(data);
+                }
+            }
+        }
+
+        @Override
+        public void sendResult(Bundle data) throws RemoteException {
+            synchronized (this) {
+                if (mAnyResultSent) {
+                    Slog.w(TAG, "Attempted to invoke callback more than once. Skipping sending"
+                            + " result with bundle=" + data);
+                    return;
+                }
+                mAnyResultSent = true;
+                mCallback.sendResult(data);
             }
         }
     }

@@ -26,6 +26,7 @@ import com.android.systemui.media.controls.ui.controller.MediaCarouselController
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.controller.MediaHostStatesManager
 import com.android.systemui.media.controls.ui.controller.MediaLocation
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.util.animation.DisappearParameters
 import com.android.systemui.util.animation.MeasurementInput
 import com.android.systemui.util.animation.MeasurementOutput
@@ -110,6 +111,8 @@ class MediaHost(
      * ```
      */
     fun init(@MediaLocation location: Int) {
+        if (MediaControlsInComposeFlag.isEnabled) return
+
         if (inited) {
             return
         }

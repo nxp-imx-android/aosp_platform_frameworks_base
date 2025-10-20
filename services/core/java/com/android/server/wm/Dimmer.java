@@ -282,10 +282,6 @@ class Dimmer {
         return mDimState != null;
     }
 
-    boolean isDimming() {
-        return mDimState != null && mDimState.isDimming();
-    }
-
     @NonNull
     private DimState obtainDimState(@NonNull WindowState window) {
         if (mDimState == null) {

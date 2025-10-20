@@ -45,13 +45,13 @@ import android.util.Log
 import androidx.media.utils.MediaConstants
 import com.android.app.tracing.coroutines.asyncTraced as async
 import com.android.app.tracing.coroutines.traceCoroutine
-import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.graphics.ImageLoader
 import com.android.systemui.media.NotificationMediaManager.isPlayingState
+import com.android.systemui.media.controls.shared.MediaLogger
 import com.android.systemui.media.controls.shared.model.MediaAction
 import com.android.systemui.media.controls.shared.model.MediaButton
 import com.android.systemui.media.controls.shared.model.MediaData
@@ -86,6 +86,7 @@ constructor(
     private val imageLoader: ImageLoader,
     private val statusBarManager: StatusBarManager,
     private val media3ActionFactory: Media3ActionFactory,
+    private val mediaLogger: MediaLogger,
 ) {
     private val mediaProcessingJobs = ConcurrentHashMap<String, Job>()
 
@@ -192,6 +193,7 @@ constructor(
                 }
             }
 
+            mediaLogger.logMediaNotificationEnteredPipeline(sbn.packageName, song)
             // Don't attempt to load bitmaps if the job was cancelled.
             coroutineContext.ensureActive()
 
@@ -502,21 +504,12 @@ constructor(
         sbn.notification.extras.containsKey(Notification.EXTRA_MEDIA_REMOTE_DEVICE)
 
     private fun getResumeMediaAction(action: Runnable): MediaAction {
-        val iconId =
-            if (Flags.mediaControlsUiUpdate()) {
-                R.drawable.ic_media_play_button
-            } else {
-                R.drawable.ic_media_play
-            }
+        val iconId = R.drawable.ic_media_play_button
         return MediaAction(
             Icon.createWithResource(context, iconId).setTint(themeText).loadDrawable(context),
             action,
             context.getString(R.string.controls_media_button_play),
-            if (Flags.mediaControlsUiUpdate()) {
-                context.getDrawable(R.drawable.ic_media_play_button_container)
-            } else {
-                context.getDrawable(R.drawable.ic_media_play_container)
-            },
+            context.getDrawable(R.drawable.ic_media_play_button_container),
         )
     }
 

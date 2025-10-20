@@ -18,14 +18,25 @@ package com.android.server.wm;
 
 import static android.content.pm.ActivityInfo.CONFIG_COLOR_MODE;
 import static android.content.pm.ActivityInfo.CONFIG_DENSITY;
+import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD;
+import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD_HIDDEN;
+import static android.content.pm.ActivityInfo.CONFIG_NAVIGATION;
 import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
+import static android.view.Display.INVALID_DISPLAY;
 import static android.view.Display.TYPE_INTERNAL;
+import static android.window.DesktopExperienceFlags.ENABLE_AUTO_RECOVERY_FROM_SELF_KILL;
 import static android.window.DesktopExperienceFlags.ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_COMPAT_MODE;
 import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 
 import android.annotation.NonNull;
+import android.app.ActivityOptions;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.os.Binder;
+
+import com.android.server.LocalServices;
+import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 
 import java.io.PrintWriter;
 
@@ -44,11 +55,19 @@ import java.io.PrintWriter;
  * <p>Display compat mode comes with restart handle menu, with which the app process gets recreated,
  * and all the config changes get reloaded by the app, at the timing the user wants to do so with
  * the risk of losing the current state of the app.
+ *
+ * <p>A secondary feature is "compat mode" for ComputerControl (virtual) displays. Any
+ * application moving to/from a VirtualDisplay owned by a ComputerControl session should see a
+ * number of configuration changes suppressed.
  */
 class AppCompatDisplayCompatModePolicy {
 
     private static final int DISPLAY_COMPAT_MODE_CONFIG_MASK =
             CONFIG_DENSITY | CONFIG_TOUCHSCREEN | CONFIG_COLOR_MODE;
+
+    private static final int COMPUTER_CONTROL_COMPAT_MODE_CONFIG_MASK =
+            CONFIG_TOUCHSCREEN | CONFIG_COLOR_MODE | CONFIG_NAVIGATION
+                    | CONFIG_KEYBOARD_HIDDEN | CONFIG_KEYBOARD;
 
     @NonNull
     private final ActivityRecord mActivityRecord;
@@ -57,6 +76,17 @@ class AppCompatDisplayCompatModePolicy {
      * {@code true} if the activity has moved to a different display and has not been restarted yet.
      */
     private boolean mDisplayChangedWithoutRestart;
+
+    /**
+     * {@code true} if the activity was destroyed during an activity relaunch caused by display
+     * move. This needs to be stored here as we need to wait for the activity to be fully destroyed
+     * asynchronously before relaunching it.
+     */
+    private boolean mDestroyedDuringDisplayMoveActivityRelaunch;
+
+    private boolean mDisplayChangedForComputerControlWithoutRestart;
+
+    private int mLastDisplayId = INVALID_DISPLAY;
 
     AppCompatDisplayCompatModePolicy(@NonNull ActivityRecord activityRecord) {
         mActivityRecord = activityRecord;
@@ -92,6 +122,7 @@ class AppCompatDisplayCompatModePolicy {
      */
     void onMovedToDisplay(@NonNull DisplayContent previousDisplay,
             @NonNull DisplayContent newDisplay) {
+        mLastDisplayId = newDisplay.getDisplayId();
         if (previousDisplay.getDisplayInfo().type == TYPE_INTERNAL
                 && newDisplay.getDisplayInfo().type == TYPE_INTERNAL) {
             // A transition between internal displays (fold<->unfold on foldable) is not considered
@@ -100,6 +131,20 @@ class AppCompatDisplayCompatModePolicy {
             return;
         }
         mDisplayChangedWithoutRestart = true;
+
+        if (android.companion.virtualdevice.flags.Flags.computerControlConfigChangeOverride()) {
+            VirtualDeviceManagerInternal vdmInternal =
+                    LocalServices.getService(VirtualDeviceManagerInternal.class);
+            if (vdmInternal != null) {
+                int previousDisplayId = previousDisplay.getDisplayId();
+                int newDisplayId = newDisplay.getDisplayId();
+
+                if (vdmInternal.isComputerControlDisplay(previousDisplayId)
+                        || vdmInternal.isComputerControlDisplay(newDisplayId)) {
+                    mDisplayChangedForComputerControlWithoutRestart = true;
+                }
+            }
+        }
 
         if (ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE.isTrue() && shouldRestartOnDisplayMove()) {
             // At this point, a transition for moving the app between displays should be running, so
@@ -123,6 +168,44 @@ class AppCompatDisplayCompatModePolicy {
      */
     void onProcessRestarted() {
         mDisplayChangedWithoutRestart = false;
+        mDisplayChangedForComputerControlWithoutRestart = false;
+    }
+
+    /**
+     * Called when the activity is finishing itself.
+     */
+    void onActivityFinishing() {
+        if (shouldRecoverFromSelfKillOnDisplayMove()) {
+            mDestroyedDuringDisplayMoveActivityRelaunch = true;
+        }
+    }
+
+    /**
+     * Called when the activity has been destroyed.
+     */
+    void onActivityDestroyed() {
+        if (!ENABLE_AUTO_RECOVERY_FROM_SELF_KILL.isTrue()) {
+            return;
+        }
+
+        if (mDestroyedDuringDisplayMoveActivityRelaunch) {
+            // Posting to the handler to wait for the activity to be fully destroyed and to use the
+            // system default identity (not app's identity) because the app process may already be
+            // in background at this point, and relaunching itself can be blocked by BAL.
+            mActivityRecord.mAtmService.mH.post(() -> {
+                final int callingPid = Binder.getCallingPid();
+                final int callingUid = Binder.getCallingUid();
+                final Intent restartIntent = new Intent(mActivityRecord.intent);
+                final SafeActivityOptions options = new SafeActivityOptions(
+                        ActivityOptions.makeBasic().setLaunchDisplayId(mLastDisplayId),
+                        callingPid, callingUid);
+                mActivityRecord.mAtmService.getActivityStartController().startActivityInPackage(
+                        mActivityRecord.getUid(), callingPid, callingUid,
+                        mActivityRecord.packageName, null, restartIntent, null, null, null, 0, 0,
+                        options, mActivityRecord.mUserId, null, "onActivityDestroyed", false, null,
+                        /* allowBalExemptionForSystemProcess */ true);
+            });
+        }
     }
 
     private boolean isInDisplayCompatMode() {
@@ -141,8 +224,15 @@ class AppCompatDisplayCompatModePolicy {
      * display compat mode is not enabled for the activity.
      */
     int getDisplayCompatModeConfigMask() {
+        int configMask = 0;
+        if (mDisplayChangedForComputerControlWithoutRestart) {
+            configMask = getComputerControlDisplayCompatModeConfigMask();
         // Enable display compat mode only when display move is involved.
-        return mDisplayChangedWithoutRestart ? getStaticDisplayCompatModeConfigMask() : 0;
+        } else if (mDisplayChangedWithoutRestart) {
+            configMask = getStaticDisplayCompatModeConfigMask();
+        }
+
+        return configMask;
     }
 
     private int getStaticDisplayCompatModeConfigMask() {
@@ -161,12 +251,41 @@ class AppCompatDisplayCompatModePolicy {
         return DISPLAY_COMPAT_MODE_CONFIG_MASK & (~supportedConfigChanged);
     }
 
+    private int getComputerControlDisplayCompatModeConfigMask() {
+        if (!android.companion.virtualdevice.flags.Flags.computerControlConfigChangeOverride()) {
+            return 0;
+        }
+
+        final int supportedConfigChanged = mActivityRecord.info.getRealConfigChanged();
+        return COMPUTER_CONTROL_COMPAT_MODE_CONFIG_MASK & (~supportedConfigChanged);
+    }
+
+    /**
+     * Returns {@code true} if the activity is likely to be unintentionally killing itself on
+     * display move.
+     */
+    boolean shouldRecoverFromSelfKillOnDisplayMove() {
+        if (!ENABLE_AUTO_RECOVERY_FROM_SELF_KILL.isTrue()) {
+            return false;
+        }
+        // TODO(b/446998828):  Make sure that this returns true only when we're sure it's needed.
+        //  For example, once an app has moved between displays, this returns true for any activity
+        //  relaunch (not necessarily the one associated to display move).
+        return mActivityRecord.isRelaunching() && mDisplayChangedWithoutRestart;
+    }
+
     void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
         if (isEligibleForDisplayCompatMode()) {
             pw.println(prefix + "isEligibleForDisplayCompatMode=true");
         }
         if (isInDisplayCompatMode()) {
             pw.println(prefix + "isInDisplayCompatMode=true");
+        }
+        if (mDisplayChangedWithoutRestart) {
+            pw.println(prefix + "displayChangedWithoutRestart=true");
+        }
+        if (mDisplayChangedForComputerControlWithoutRestart) {
+            pw.println(prefix + "displayChangedForComputerControlWithoutRestart=true");
         }
     }
 }

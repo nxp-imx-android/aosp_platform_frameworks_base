@@ -90,6 +90,7 @@ import android.view.animation.Animation;
 
 import com.android.internal.policy.IKeyguardDismissCallback;
 import com.android.internal.policy.IShortcutService;
+import com.android.server.policy.keyguard.KeyguardServiceDelegate;
 import com.android.server.wm.DisplayRotation;
 
 import java.io.PrintWriter;
@@ -181,6 +182,12 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
      * Does NOT immediately request the device to lock.
      */
     void showDismissibleKeyguard();
+
+    /**
+     * Return the KeyguardServiceDelegate instance. System Server uses this for granular keyguard
+     * logic control.
+     */
+    KeyguardServiceDelegate getKeyguardServiceDelegate();
 
     /**
      * Interface to the Window Manager state associated with a particular
@@ -542,18 +549,13 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
             case TYPE_SYSTEM_DIALOG:
                 return  6;
             case TYPE_TOAST:
-                if (Flags.bugToastsOnTopOfBubble()) {
-                    // system added toasts must be on top of any always-on-top windows.
-                    // toasts and the plugged-in battery thing
-                    // canAddInternalSystemWindow is to distinguish between legacy toasts and ones
-                    // managed by the system. A legacy toast can have an arbitrary view and tap jack
-                    // other views. Toasts are given low priority to prevent this. Toasts added by
-                    // the system are safe and can have higher visibility.
-                    return canAddInternalSystemWindow ? 27 : 7;
-                } else {
-                    // toasts and the plugged-in battery thing
-                    return 7;
-                }
+                // system added toasts must be on top of any always-on-top windows.
+                // toasts and the plugged-in battery thing
+                // canAddInternalSystemWindow is to distinguish between legacy toasts and ones
+                // managed by the system. A legacy toast can have an arbitrary view and tap jack
+                // other views. Toasts are given low priority to prevent this. Toasts added by
+                // the system are safe and can have higher visibility.
+                return canAddInternalSystemWindow ? 27 : 7;
             case TYPE_PRIORITY_PHONE:
                 // SIM errors and unlock.  Not sure if this really should be in a high layer.
                 return  8;
@@ -906,8 +908,18 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
 
     /**
      * Return whether the default display is on and not blocked by a black surface.
+     *
+     * @deprecated Use {@link #isScreenOn(int)} instead, to better support multi-display.
      */
-    public boolean isScreenOn();
+    @Deprecated
+    default boolean isScreenOn() {
+        return isScreenOn(Display.DEFAULT_DISPLAY);
+    }
+
+    /**
+     * Return whether the specified display is on and not blocked by a black surface.
+     */
+    boolean isScreenOn(int displayId);
 
     /**
      * @param ignoreScreenOn {@code true} if screen state should be ignored.
@@ -1245,4 +1257,10 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
      * @return {@code true} if the key will be handled globally.
      */
     boolean isGlobalKey(int keyCode);
+
+    /**
+     * Inject a {@link SingleKeyGestureDetector.SingleKeyRule} for customized key gesture handling.
+     * @param singleKeyRule The rule to inject.
+     */
+    void addSingleKeyRule(@NonNull SingleKeyGestureDetector.SingleKeyRule singleKeyRule);
 }

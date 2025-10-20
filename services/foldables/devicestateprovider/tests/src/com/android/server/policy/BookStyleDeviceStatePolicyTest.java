@@ -20,6 +20,10 @@ import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.STATE_OFF;
 import static android.view.Display.STATE_ON;
 
+import static com.android.server.policy.BookStyleDeviceStatePolicy.DEVICE_STATE_CLOSED;
+import static com.android.server.policy.BookStyleDeviceStatePolicy.DEVICE_STATE_HALF_OPENED;
+import static com.android.server.policy.BookStyleDeviceStatePolicy.DEVICE_STATE_OPENED;
+
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
@@ -42,11 +46,13 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.hardware.devicestate.DeviceState;
 import android.hardware.display.DisplayManager;
 import android.hardware.input.InputSensorInfo;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManager.ScreenTimeoutPolicyListener;
+import android.os.PowerManagerInternal;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableContext;
 import android.view.Display;
@@ -55,10 +61,9 @@ import android.view.Surface;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.server.LocalServices;
 import com.android.server.devicestate.DeviceStateProvider;
 import com.android.server.devicestate.DeviceStateProvider.Listener;
-import com.android.server.policy.feature.flags.FakeFeatureFlagsImpl;
-import com.android.server.policy.feature.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -71,6 +76,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.reflection.FieldSetter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,9 +89,9 @@ import java.util.Map;
 @RunWith(AndroidTestingRunner.class)
 public final class BookStyleDeviceStatePolicyTest {
 
-    private static final int DEVICE_STATE_CLOSED = 0;
-    private static final int DEVICE_STATE_HALF_OPENED = 1;
-    private static final int DEVICE_STATE_OPENED = 2;
+    private static final int EXTERNAL_DISPLAY_ID = 17;
+    private static final int DEVICE_STATE_CONCURRENT_INNER_DEFAULT = 4;
+    private static final int DEVICE_STATE_REAR_DISPLAY_OUTER_DEFAULT = 5;
 
     @Captor
     private ArgumentCaptor<Integer> mDeviceStateCaptor;
@@ -103,8 +109,6 @@ public final class BookStyleDeviceStatePolicyTest {
     PowerManager mPowerManager;
     @Mock
     private Display mDisplay;
-
-    private final FakeFeatureFlagsImpl mFakeFeatureFlags = new FakeFeatureFlagsImpl();
 
     private final Configuration mConfiguration = new Configuration();
 
@@ -128,10 +132,6 @@ public final class BookStyleDeviceStatePolicyTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
 
-        mFakeFeatureFlags.setFlag(Flags.FLAG_ENABLE_FOLDABLES_POSTURE_BASED_CLOSED_STATE, true);
-        mFakeFeatureFlags.setFlag(Flags.FLAG_ENABLE_DUAL_DISPLAY_BLOCKING, true);
-        mFakeFeatureFlags.setFlag(Flags.FLAG_FORCE_FOLDABLES_TENT_MODE_WITH_SCREEN_WAKELOCK, true);
-
         when(mInputSensorInfo.getName()).thenReturn("hall-effect");
         mHallSensor = new Sensor(mInputSensorInfo);
         when(mInputSensorInfo.getName()).thenReturn("hinge-angle");
@@ -153,6 +153,10 @@ public final class BookStyleDeviceStatePolicyTest {
         when(mDisplayManager.getDisplay(eq(DEFAULT_DISPLAY))).thenReturn(mDisplay);
         mContext.addMockSystemService(DisplayManager.class, mDisplayManager);
         mContext.addMockSystemService(PowerManager.class, mPowerManager);
+
+        // it's all static so we need to clear state between tests
+        LocalServices.removeServiceForTest(PowerManagerInternal.class);
+        LocalServices.addService(PowerManagerInternal.class, mock(PowerManagerInternal.class));
 
         mContext.ensureTestableResources();
         when(mContext.getResources().getConfiguration()).thenReturn(mConfiguration);
@@ -226,23 +230,12 @@ public final class BookStyleDeviceStatePolicyTest {
     }
 
     @Test
-    public void test_postureBasedClosedState_createPolicy_doesNotRegisterHallSensor() {
-        mFakeFeatureFlags.setFlag(Flags.FLAG_ENABLE_FOLDABLES_POSTURE_BASED_CLOSED_STATE, true);
+    public void test_createPolicy_doesNotRegisterHallSensor() {
         clearInvocations(mSensorManager);
 
         mInstrumentation.runOnMainSync(() -> mProvider = createProvider());
 
         verify(mSensorManager, never()).registerListener(any(), eq(mHallSensor), anyInt());
-    }
-
-    @Test
-    public void test_postureBasedClosedStateDisabled_createPolicy_registersHallSensor() {
-        mFakeFeatureFlags.setFlag(Flags.FLAG_ENABLE_FOLDABLES_POSTURE_BASED_CLOSED_STATE, false);
-        clearInvocations(mSensorManager);
-
-        mInstrumentation.runOnMainSync(() -> mProvider = createProvider());
-
-        verify(mSensorManager).registerListener(any(), eq(mHallSensor), anyInt());
     }
 
     @Test
@@ -616,7 +609,6 @@ public final class BookStyleDeviceStatePolicyTest {
     @Test
     public void test_unfoldTo85Degrees_screenWakeLockExists_forceTentModeWithWakeLockEnabled()
             throws Exception {
-        mFakeFeatureFlags.setFlag(Flags.FLAG_FORCE_FOLDABLES_TENT_MODE_WITH_SCREEN_WAKELOCK, true);
         mInstrumentation.runOnMainSync(() -> mProvider = createProvider());
         mPolicy.getDeviceStateProvider().onSystemReady();
         sendHingeAngle(0f);
@@ -639,7 +631,6 @@ public final class BookStyleDeviceStatePolicyTest {
     @Test
     public void test_unfoldTo85Degrees_noScreenWakelock_forceTentModeWithWakeLockEnabled()
             throws Exception {
-        mFakeFeatureFlags.setFlag(Flags.FLAG_FORCE_FOLDABLES_TENT_MODE_WITH_SCREEN_WAKELOCK, true);
         mInstrumentation.runOnMainSync(() -> mProvider = createProvider());
         mPolicy.getDeviceStateProvider().onSystemReady();
         sendHingeAngle(0f);
@@ -661,7 +652,6 @@ public final class BookStyleDeviceStatePolicyTest {
     @Test
     public void test_unfoldTo85Degrees_afterScreenWakeLockBecomesActive_keepsClosedDeviceState()
             throws Exception {
-        mFakeFeatureFlags.setFlag(Flags.FLAG_FORCE_FOLDABLES_TENT_MODE_WITH_SCREEN_WAKELOCK, true);
         mInstrumentation.runOnMainSync(() -> mProvider = createProvider());
         mPolicy.getDeviceStateProvider().onSystemReady();
         sendHingeAngle(0f);
@@ -681,7 +671,6 @@ public final class BookStyleDeviceStatePolicyTest {
     @Test
     public void test_unfoldTo85Degrees_screenWakeLockPresentAndThenRemoved_movesToHalfOpenedState()
             throws Exception {
-        mFakeFeatureFlags.setFlag(Flags.FLAG_FORCE_FOLDABLES_TENT_MODE_WITH_SCREEN_WAKELOCK, true);
         mInstrumentation.runOnMainSync(() -> mProvider = createProvider());
         mPolicy.getDeviceStateProvider().onSystemReady();
         sendHingeAngle(0f);
@@ -697,17 +686,6 @@ public final class BookStyleDeviceStatePolicyTest {
 
         sendHingeAngle(85f);
         assertLatestReportedState(DEVICE_STATE_HALF_OPENED);
-    }
-
-    @Test
-    public void test_unfoldTo85Degrees_notSubscribedToWakeLocks_forceTentModeWithWakeLockDisabled()
-            throws Exception {
-        mFakeFeatureFlags.setFlag(Flags.FLAG_FORCE_FOLDABLES_TENT_MODE_WITH_SCREEN_WAKELOCK, false);
-        mInstrumentation.runOnMainSync(() -> mProvider = createProvider());
-
-        mPolicy.getDeviceStateProvider().onSystemReady();
-
-        verify(mPowerManager, never()).addScreenTimeoutPolicyListener(anyInt(), any(), any());
     }
 
     @Test
@@ -758,6 +736,34 @@ public final class BookStyleDeviceStatePolicyTest {
         assertNoListenersForSensor(mLeftAccelerometer);
         assertNoListenersForSensor(mRightAccelerometer);
         assertNoListenersForSensor(mOrientationSensor);
+    }
+
+    @Test
+    public void test_externalDisplay_noDualDisplayModes() {
+        List<Integer> lastStatesIdentifiers = new ArrayList<>();
+        Listener captureStates = new Listener() {
+            @Override
+            public void onSupportedDeviceStatesChanged(DeviceState[] newDeviceStates, int reason) {
+                lastStatesIdentifiers.clear();
+                Arrays.stream(newDeviceStates)
+                        .map(DeviceState::getIdentifier)
+                        .forEach(lastStatesIdentifiers::add);
+            }
+
+            @Override
+            public void onStateChanged(int identifier) {
+            }
+        };
+        mProvider.setListener(captureStates);
+        Display display = mock(Display.class);
+        when(display.getType()).thenReturn(Display.TYPE_EXTERNAL);
+        when(mDisplayManager.getDisplay(EXTERNAL_DISPLAY_ID)).thenReturn(display);
+        DisplayManager.DisplayListener displayListener = (DisplayManager.DisplayListener) mProvider;
+
+        displayListener.onDisplayAdded(EXTERNAL_DISPLAY_ID);
+
+        assertThat(lastStatesIdentifiers).containsNoneOf(DEVICE_STATE_CONCURRENT_INNER_DEFAULT,
+                DEVICE_STATE_REAR_DISPLAY_OUTER_DEFAULT);
     }
 
     @Test
@@ -870,9 +876,8 @@ public final class BookStyleDeviceStatePolicyTest {
     }
 
     private DeviceStateProvider createProvider() {
-        mPolicy = new BookStyleDeviceStatePolicy(mFakeFeatureFlags, mContext, mHingeAngleSensor,
-                mHallSensor, mLeftAccelerometer, mRightAccelerometer,
-                /* closeAngleDegrees= */ null);
+        mPolicy = new BookStyleDeviceStatePolicy(mContext, mHingeAngleSensor,
+                mLeftAccelerometer, mRightAccelerometer, /* closeAngleDegrees= */ null);
         return mPolicy.getDeviceStateProvider();
     }
 

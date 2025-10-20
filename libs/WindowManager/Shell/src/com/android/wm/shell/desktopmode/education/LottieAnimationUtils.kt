@@ -33,13 +33,13 @@ import kotlinx.coroutines.withContext
 
 private fun getMaterialColorMap(colorScheme: ColorScheme) =
     mapOf(
-        ".Primary" to colorScheme.primary,
+        ".primary" to colorScheme.primary,
         ".onPrimary" to colorScheme.onPrimary,
-        ".Tertiary" to colorScheme.tertiary,
-        ".Surface" to colorScheme.surface,
+        ".tertiary" to colorScheme.tertiary,
+        ".surface" to colorScheme.surface,
         ".onSurface" to colorScheme.onSurface,
         ".sContainerHighest" to colorScheme.surfaceContainerHighest,
-        ".InverseSurface" to colorScheme.inverseSurface,
+        ".inverseSurface" to colorScheme.inverseSurface,
     )
 
 private fun applyDynamicColors(

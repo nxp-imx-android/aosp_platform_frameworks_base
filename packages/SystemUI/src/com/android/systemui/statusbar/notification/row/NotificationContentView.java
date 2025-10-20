@@ -28,7 +28,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.RemoteException;
-import android.os.Trace;
 import android.service.notification.StatusBarNotification;
 import android.util.ArrayMap;
 import android.util.AttributeSet;
@@ -61,7 +60,6 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.RemoteInputEntryAdapter;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
-import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationCompactHeadsUpTemplateViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationCustomViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationHeaderViewWrapper;
@@ -256,14 +254,12 @@ public class NotificationContentView extends FrameLayout implements Notification
     public void reinflate() {
         mMinContractedHeight = getResources().getDimensionPixelSize(
                 R.dimen.min_notification_layout_height);
-        if (AsyncHybridViewInflation.isEnabled()) {
-            //TODO (b/217799515): single-line view height is the greater of two heights: text view
-            // height and icon height (when there's an icon). icon height is fixed to be
-            // conversation_single_line_face_pile_size (24dp), the text view's height is 16sp,
-            // its pixel height changes with the system's font scaling factor.
-            mMinSingleLineHeight = getResources().getDimensionPixelSize(
-                    R.dimen.conversation_single_line_face_pile_size);
-        }
+        //TODO (b/217799515): single-line view height is the greater of two heights: text view
+        // height and icon height (when there's an icon). icon height is fixed to be
+        // conversation_single_line_face_pile_size (24dp), the text view's height is 16sp,
+        // its pixel height changes with the system's font scaling factor.
+        mMinSingleLineHeight = getResources().getDimensionPixelSize(
+                R.dimen.conversation_single_line_face_pile_size);
     }
 
     public void setHeights(int smallHeight, int headsUpMaxHeight, int maxHeight) {
@@ -620,7 +616,6 @@ public class NotificationContentView extends FrameLayout implements Notification
      * @param child single-line content view to set
      */
     public void setSingleLineView(@Nullable HybridNotificationView child) {
-        if (AsyncHybridViewInflation.isUnexpectedlyInLegacyMode()) return;
         if (mSingleLineView != null) {
             mOnContentViewInactiveListeners.remove(mSingleLineView);
             mSingleLineView.animate().cancel();
@@ -902,20 +897,15 @@ public class NotificationContentView extends FrameLayout implements Notification
     }
 
     public int getMinHeight(boolean likeGroupExpanded) {
-        if (likeGroupExpanded || !mIsChildInGroup || isGroupExpanded()) {
+        if (likeGroupExpanded || !mIsChildInGroup || isParentGroupExpanded()) {
             return mContractedChild != null
                     ? getViewHeight(VISIBLE_TYPE_CONTRACTED) : mMinContractedHeight;
         } else {
-            if (AsyncHybridViewInflation.isEnabled()) {
-                if (mSingleLineView != null) {
-                    return getViewHeight(VISIBLE_TYPE_SINGLELINE);
-                } else {
-                    //TODO(b/217799515): investigate the impact of min-height value
-                    return mMinSingleLineHeight;
-                }
+            if (mSingleLineView != null) {
+                return getViewHeight(VISIBLE_TYPE_SINGLELINE);
             } else {
-                AsyncHybridViewInflation.assertInLegacyMode();
-                return mSingleLineView.getHeight();
+                //TODO(b/217799515): investigate the impact of min-height value
+                return mMinSingleLineHeight;
             }
         }
     }
@@ -926,6 +916,10 @@ public class NotificationContentView extends FrameLayout implements Notification
 
     private boolean isGroupExpanded() {
         return mContainingNotification.isGroupExpanded();
+    }
+
+    private boolean isParentGroupExpanded() {
+        return mContainingNotification.isParentGroupExpanded();
     }
 
     public void setClipTopAmount(int clipTopAmount) {
@@ -1264,6 +1258,10 @@ public class NotificationContentView extends FrameLayout implements Notification
         }
     }
 
+    private boolean shouldShowSingleLineView() {
+        return mIsChildInGroup && !isParentGroupExpanded();
+    }
+
     /**
      * @return one of the static enum types in this view, calculated from the current state
      */
@@ -1277,14 +1275,13 @@ public class NotificationContentView extends FrameLayout implements Notification
                 height = mContentHeight;
             }
             int expandedVisualType = getVisualTypeForHeight(height);
-            final boolean shouldShowSingleLineView = mIsChildInGroup && !isGroupExpanded();
             final boolean isSingleLineViewPresent = mSingleLineView != null;
 
-            if (shouldShowSingleLineView && !isSingleLineViewPresent) {
+            if (shouldShowSingleLineView() && !isSingleLineViewPresent) {
                 Log.wtf(TAG, "calculateVisibleType: SingleLineView is not available!");
             }
 
-            final int collapsedVisualType = shouldShowSingleLineView && isSingleLineViewPresent
+            final int collapsedVisualType = shouldShowSingleLineView() && isSingleLineViewPresent
                     ? VISIBLE_TYPE_SINGLELINE
                     : getVisualTypeForHeight(mContainingNotification.getCollapsedHeight());
             return mTransformationStartVisibleType == collapsedVisualType
@@ -1305,10 +1302,9 @@ public class NotificationContentView extends FrameLayout implements Notification
         if (!noExpandedChild && viewHeight == getViewHeight(VISIBLE_TYPE_EXPANDED)) {
             return VISIBLE_TYPE_EXPANDED;
         }
-        final boolean shouldShowSingleLineView = mIsChildInGroup && !isGroupExpanded();
         final boolean isSingleLinePresent =  mSingleLineView != null;
 
-        if (!mUserExpanding && shouldShowSingleLineView && isSingleLinePresent) {
+        if (!mUserExpanding && shouldShowSingleLineView() && isSingleLinePresent) {
             return VISIBLE_TYPE_SINGLELINE;
         }
 
@@ -1379,7 +1375,6 @@ public class NotificationContentView extends FrameLayout implements Notification
         if (mHeadsUpChild != null) {
             mHeadsUpWrapper.setIsChildInGroup(mIsChildInGroup);
         }
-        updateAllSingleLineViews();
     }
 
     public void onNotificationUpdated(NotificationEntry entry) {
@@ -1395,7 +1390,6 @@ public class NotificationContentView extends FrameLayout implements Notification
         mBeforeN = NotificationBundleUi.isEnabled()
                 ? mContainingNotification.getEntryAdapter().getTargetSdk() < Build.VERSION_CODES.N
                 : entry.targetSdk < Build.VERSION_CODES.N;
-        updateAllSingleLineViews();
 
         if (mContractedChild != null) {
             mContractedWrapper.onContentUpdated(mContainingNotification);
@@ -1414,41 +1408,6 @@ public class NotificationContentView extends FrameLayout implements Notification
         mPreviousHeadsUpRemoteInputIntent = null;
         applySystemActions(mExpandedChild, entry);
         applySystemActions(mHeadsUpChild, entry);
-    }
-
-    private void updateAllSingleLineViews() {
-        updateSingleLineView();
-    }
-
-    private void updateSingleLineView() {
-        try {
-            Trace.beginSection("NotifContentView#updateSingleLineView");
-            if (mSbn == null) {
-                return;
-            }
-            if (AsyncHybridViewInflation.isEnabled()) {
-                return;
-            }
-            AsyncHybridViewInflation.assertInLegacyMode();
-            if (mIsChildInGroup) {
-                boolean isNewView = mSingleLineView == null;
-                mSingleLineView = mHybridGroupManager.bindFromNotification(
-                        /* reusableView = */ mSingleLineView,
-                        /* contentView = */ mContractedChild,
-                        /* notification = */ mSbn,
-                        /* parent = */ this
-                );
-                if (isNewView && mSingleLineView != null) {
-                    updateViewVisibility(mVisibleType, VISIBLE_TYPE_SINGLELINE,
-                            mSingleLineView, mSingleLineView);
-                }
-            } else if (mSingleLineView != null) {
-                removeView(mSingleLineView);
-                mSingleLineView = null;
-            }
-        } finally {
-            Trace.endSection();
-        }
     }
 
     /**
@@ -2062,7 +2021,6 @@ public class NotificationContentView extends FrameLayout implements Notification
         if (mIsChildInGroup && mSingleLineView != null) {
             removeView(mSingleLineView);
             mSingleLineView = null;
-            updateAllSingleLineViews();
         }
     }
 

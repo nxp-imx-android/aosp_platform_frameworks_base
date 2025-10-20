@@ -16,8 +16,6 @@
 
 package com.android.systemui.keyguard.domain.interactor
 
-import android.app.ActivityManager
-import android.app.WindowConfiguration
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -29,7 +27,6 @@ import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
-import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.StatusBarState
 import com.android.systemui.keyguard.shared.model.StatusBarState.KEYGUARD
@@ -68,6 +65,38 @@ class FromLockscreenTransitionInteractorTest : SysuiTestCase() {
     fun setup() {
         transitionRepository = kosmos.fakeKeyguardTransitionRepository
     }
+
+    @Test
+    @DisableSceneContainer
+    fun testOccludedFailsafe() =
+        testScope.runTest {
+            underTest.start()
+            transitionRepository.sendTransitionSteps(
+                from = KeyguardState.OFF,
+                to = KeyguardState.AOD,
+                testScope,
+            )
+
+            // Simulate the device being put into OCCLUDED state, but was somehow missed by the
+            // FromAodTransitionInteractor
+            keyguardRepository.setKeyguardOccluded(true)
+            runCurrent()
+            reset(transitionRepository)
+
+            transitionRepository.sendTransitionStep(
+                TransitionStep(
+                    transitionState = TransitionState.STARTED,
+                    from = KeyguardState.AOD,
+                    to = KeyguardState.LOCKSCREEN,
+                )
+            )
+            runCurrent()
+
+            // After the above step was STARTED, the transition should be corrected to go to
+            // OCCLUDED
+            assertThatRepository(transitionRepository)
+                .startedTransition(from = KeyguardState.LOCKSCREEN, to = KeyguardState.OCCLUDED)
+        }
 
     @Test
     @DisableSceneContainer
@@ -234,45 +263,6 @@ class FromLockscreenTransitionInteractorTest : SysuiTestCase() {
             runCurrent()
 
             assertThatRepository(transitionRepository).noTransitionsStarted()
-        }
-
-    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    fun testTransitionsToOccluded_whenShowWhenLockedActivityOnTop() =
-        testScope.runTest {
-            underTest.start()
-            runCurrent()
-
-            reset(transitionRepository)
-            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(
-                true,
-                ActivityManager.RunningTaskInfo().apply {
-                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_STANDARD
-                },
-            )
-            runCurrent()
-
-            assertThatRepository(transitionRepository)
-                .startedTransition(from = KeyguardState.LOCKSCREEN, to = KeyguardState.OCCLUDED)
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    fun testTransitionsToDream_whenDreamActivityOnTop() =
-        testScope.runTest {
-            underTest.start()
-            runCurrent()
-
-            reset(transitionRepository)
-            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(
-                true,
-                ActivityManager.RunningTaskInfo().apply {
-                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_DREAM
-                },
-            )
-            runCurrent()
-
-            assertThatRepository(transitionRepository)
-                .startedTransition(from = KeyguardState.LOCKSCREEN, to = KeyguardState.DREAMING)
         }
 
     @Test

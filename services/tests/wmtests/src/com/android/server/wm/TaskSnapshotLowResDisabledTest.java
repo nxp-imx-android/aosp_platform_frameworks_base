@@ -30,6 +30,8 @@ import android.window.TaskSnapshot;
 
 import androidx.test.filters.MediumTest;
 
+import com.android.window.flags.Flags;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,7 +63,7 @@ public class TaskSnapshotLowResDisabledTest extends TaskSnapshotPersisterTestBas
     public void setUp() {
         super.setUp();
         MockitoAnnotations.initMocks(this);
-        mCache = new TaskSnapshotCache(mLoader);
+        mCache = new TaskSnapshotCache(mLoader, mWm.mH);
     }
 
     @Test
@@ -76,7 +78,11 @@ public class TaskSnapshotLowResDisabledTest extends TaskSnapshotPersisterTestBas
         assertNotNull(snapshot);
         assertEquals(MOCK_SNAPSHOT_ID, snapshot.getId());
         assertEquals(TEST_INSETS, snapshot.getContentInsets());
-        assertNotNull(snapshot.getSnapshot());
+        if (Flags.reduceTaskSnapshotMemoryUsage()) {
+            assertNull(snapshot.getSnapshot());
+        } else {
+            assertNotNull(snapshot.getSnapshot());
+        }
         assertEquals(Configuration.ORIENTATION_PORTRAIT, snapshot.getOrientation());
         assertNull(mLoader.loadTask(1, mTestUserId, true /* isLowResolution */));
     }

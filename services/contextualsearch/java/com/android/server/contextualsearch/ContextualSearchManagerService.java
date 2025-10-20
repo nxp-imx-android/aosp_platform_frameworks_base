@@ -30,6 +30,7 @@ import static android.content.Intent.FLAG_ACTIVITY_NO_USER_ACTION;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_AWARE;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static com.android.hardware.input.Flags.enableContextualSearchDesktopEntrypoints;
 
 import static com.android.server.wm.ActivityTaskManagerInternal.ASSIST_KEY_CONTENT;
 import static com.android.server.wm.ActivityTaskManagerInternal.ASSIST_KEY_STRUCTURE;
@@ -53,6 +54,7 @@ import android.app.contextualsearch.flags.Flags;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -214,10 +216,17 @@ public class ContextualSearchManagerService extends SystemService {
     }
 
     private String getContextualSearchPackageName() {
-      synchronized (this) {
-         return mTemporaryPackage != null ? mTemporaryPackage : mContext
-                .getResources().getString(R.string.config_defaultContextualSearchPackageName);
-      }
+        synchronized (this) {
+            if (mTemporaryPackage != null) {
+                return mTemporaryPackage;
+            }
+            if (mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_PC)
+                    && !enableContextualSearchDesktopEntrypoints()) {
+                return "";
+            }
+            return mContext.getResources()
+                    .getString(R.string.config_defaultContextualSearchPackageName);
+        }
     }
 
     void resetTemporaryPackage() {
@@ -386,6 +395,7 @@ public class ContextualSearchManagerService extends SystemService {
             }
         }
         final int displayId = getDisplayIdFromConfig(config);
+        if (DEBUG) Log.d(TAG, "Taking contextual search screenshot for displayId=" + displayId);
         final ScreenshotHardwareBuffer shb =
                 mWmInternal.takeContextualSearchScreenshot(csUid, displayId);
         final Bitmap bm = shb != null ? shb.asBitmap() : null;

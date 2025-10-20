@@ -16,12 +16,14 @@
 
 package com.android.systemui.statusbar.domain.interactor
 
+import com.android.systemui.keyguard.domain.interactor.keyguardOcclusionInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardServiceShowLockscreenInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardSurfaceBehindInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.windowManagerLockscreenVisibilityInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.power.domain.interactor.powerInteractor
+import com.android.systemui.scene.domain.interactor.sceneInteractor
 
 val Kosmos.statusBarKeyguardViewManagerInteractor by
     Kosmos.Fixture {
@@ -32,5 +34,6 @@ val Kosmos.statusBarKeyguardViewManagerInteractor by
             wmLockscreenVisibilityInteractor = windowManagerLockscreenVisibilityInteractor,
             surfaceBehindInteractor = keyguardSurfaceBehindInteractor,
             showLockscreenInteractor = keyguardServiceShowLockscreenInteractor,
+            sceneInteractor = { sceneInteractor },
         )
     }

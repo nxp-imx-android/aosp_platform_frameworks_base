@@ -97,7 +97,7 @@ class BouncerContentTest : SysuiTestCase() {
     private fun BouncerContentUnderTest() {
         PlatformTheme {
             TestContentScope {
-                BouncerContent(
+                BouncerContentLayout(
                     viewModel =
                         rememberViewModel("test") {
                             kosmos.bouncerOverlayContentViewModelFactory.create()

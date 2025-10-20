@@ -123,7 +123,8 @@ class DisplayGroupAllocator {
         // desktop mode not supported on device or this display
         // or display is internal, and should be in a different group to the
         // projected and extended mode displays.
-        if (!mCanDeviceEnterDesktopMode || type == Display.TYPE_INTERNAL) {
+        if (!mCanDeviceEnterDesktopMode || type == Display.TYPE_INTERNAL
+                || type == Display.TYPE_OVERLAY) {
             return REASON_NON_DESKTOP;
         }
 

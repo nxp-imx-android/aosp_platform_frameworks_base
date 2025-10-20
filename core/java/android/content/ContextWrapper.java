@@ -973,6 +973,13 @@ public class ContextWrapper extends Context {
         mBase.unbindService(conn);
     }
 
+
+    @Override
+    public void rebindService(@NonNull ServiceConnection conn,
+            @NonNull BindServiceFlags flags) {
+        mBase.rebindService(conn, flags);
+    }
+
     @Override
     public boolean startInstrumentation(ComponentName className,
             @Nullable String profileFile, @Nullable Bundle arguments) {
@@ -1313,7 +1320,7 @@ public class ContextWrapper extends Context {
         return mBase.createDeviceProtectedStorageContext();
     }
 
-    /** {@hide} */
+    /** @hide */
     @SystemApi
     @Override
     public Context createCredentialProtectedStorageContext() {
@@ -1333,14 +1340,14 @@ public class ContextWrapper extends Context {
         return mBase.isDeviceProtectedStorage();
     }
 
-    /** {@hide} */
+    /** @hide */
     @SystemApi
     @Override
     public boolean isCredentialProtectedStorage() {
         return mBase.isCredentialProtectedStorage();
     }
 
-    /** {@hide} */
+    /** @hide */
     @Override
     public boolean canLoadUnsafeResources() {
         return mBase.canLoadUnsafeResources();

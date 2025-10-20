@@ -44,6 +44,7 @@ import static com.android.server.am.BroadcastRecord.getReceiverPackageName;
 import static com.android.server.am.BroadcastRecord.getReceiverProcessName;
 import static com.android.server.am.BroadcastRecord.getReceiverUid;
 import static com.android.server.am.BroadcastRecord.isDeliveryStateTerminal;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_UNDEFINED;
 import static com.android.window.flags.Flags.balCheckBroadcastWhenDispatched;
 
 import android.annotation.CheckResult;
@@ -507,7 +508,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
 
             final boolean processWarm = queue.isProcessWarm();
             if (processWarm) {
-                mService.mOomAdjuster.unfreezeTemporarily(queue.app,
+                mService.unfreezeTemporarily(queue.app,
                         CachedAppOptimizer.UNFREEZE_REASON_START_RECEIVER);
                 // The process could be killed as part of unfreezing. So, check again if it
                 // is still warm.
@@ -770,7 +771,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
         if ((queue != null) && getRunningIndexOf(queue) >= 0) {
             return queue.getPreferredSchedulingGroupLocked();
         }
-        return ProcessList.SCHED_GROUP_UNDEFINED;
+        return SCHED_GROUP_UNDEFINED;
     }
 
     @GuardedBy("mService")
@@ -791,9 +792,25 @@ class BroadcastQueueImpl extends BroadcastQueue {
             }
             queue.enqueueOutgoingBroadcast(r);
             mHistory.onBroadcastFrozenLocked(r);
-            mService.mOomAdjuster.mCachedAppOptimizer.freezeAppAsyncImmediateLSP(r.callerApp);
+            mService.getCachedAppOptimizer().freezeAppAsyncImmediateLSP(r.callerApp);
             return;
         }
+
+        if (Flags.limitPendingBroadcastsPerSenderUid()) {
+            final int numPending = mHistory.getPendingBroadcastCountForSenderUid(r.callingUid);
+            if (numPending >= mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID) {
+                final long oldestPendingTime = mHistory.getOldestPendingBroadcastEnqueueTime(
+                        r.callingUid);
+                if (oldestPendingTime > SystemClock.uptimeMillis() - DateUtils.HOUR_IN_MILLIS) {
+                    final StringBuilder sb = new StringBuilder();
+                    sb.append("Too many pending broadcasts from uid ").append(r.callingUid)
+                            .append("; dropping ").append(r).append(".");
+                    mHistory.appendPendingBroadcastsSummaryForUid(sb, r.callingUid);
+                    Slog.wtf(TAG, sb.toString());
+                }
+            }
+        }
+
         if (DEBUG_BROADCAST || r.debugLog()) {
             logv("Enqueuing " + r + " for " + r.receivers.size() + " receivers");
         }
@@ -993,7 +1010,8 @@ class BroadcastQueueImpl extends BroadcastQueue {
             return true;
         }
 
-        final String skipReason = shouldSkipReceiver(queue, r, index);
+        final Intent receiverIntent = r.getReceiverIntent(receiver);
+        final String skipReason = shouldSkipReceiver(queue, r, index, receiverIntent);
         if (skipReason != null) {
             mRunningColdStart = null;
             finishReceiverActiveLocked(queue, BroadcastRecord.DELIVERY_SKIPPED, skipReason);
@@ -1029,9 +1047,8 @@ class BroadcastQueueImpl extends BroadcastQueue {
             return true;
         }
         queue.setProcessStartInitiatedTimestampMillis(SystemClock.uptimeMillis());
-        // TODO: b/335420031 - cache receiver intent to avoid multiple calls to getReceiverIntent.
         mService.mProcessList.getAppStartInfoTracker().handleProcessBroadcastStart(
-                startTimeNs, queue.app, r.getReceiverIntent(receiver), r.alarm /* isAlarm */);
+                startTimeNs, queue.app, receiverIntent, r.alarm /* isAlarm */);
         return false;
     }
 
@@ -1064,9 +1081,12 @@ class BroadcastQueueImpl extends BroadcastQueue {
                 r.dispatchClockTime = System.currentTimeMillis();
             }
 
-            final String skipReason = shouldSkipReceiver(queue, r, index);
+            final Object receiver = r.receivers.get(index);
+            final Intent receiverIntent = r.getReceiverIntent(receiver);
+            final String skipReason = shouldSkipReceiver(queue, r, index, receiverIntent);
             if (skipReason == null) {
-                final boolean isBlockingDispatch = dispatchReceivers(queue, r, index);
+                final boolean isBlockingDispatch = dispatchReceivers(queue, r, index,
+                        receiverIntent);
                 if (isBlockingDispatch) {
                     traceEnd(cookie);
                     return false;
@@ -1092,7 +1112,10 @@ class BroadcastQueueImpl extends BroadcastQueue {
      */
     @GuardedBy("mService")
     private String shouldSkipReceiver(@NonNull BroadcastProcessQueue queue,
-            @NonNull BroadcastRecord r, int index) {
+            @NonNull BroadcastRecord r, int index, @Nullable Intent receiverIntent) {
+        if (receiverIntent == null) {
+            return "getReceiverIntent";
+        }
         final int oldDeliveryState = getDeliveryState(r, index);
         final ProcessRecord app = queue.app;
         final Object receiver = r.receivers.get(index);
@@ -1109,10 +1132,6 @@ class BroadcastQueueImpl extends BroadcastQueue {
         final String skipReason = mSkipPolicy.shouldSkipMessage(r, receiver);
         if (skipReason != null) {
             return skipReason;
-        }
-        final Intent receiverIntent = r.getReceiverIntent(receiver);
-        if (receiverIntent == null) {
-            return "getReceiverIntent";
         }
 
         // Ignore registered receivers from a previous PID
@@ -1134,7 +1153,8 @@ class BroadcastQueueImpl extends BroadcastQueue {
     @GuardedBy("mService")
     @CheckResult
     private boolean dispatchReceivers(@NonNull BroadcastProcessQueue queue,
-            @NonNull BroadcastRecord r, int index) throws BroadcastRetryException {
+            @NonNull BroadcastRecord r, int index, @NonNull Intent receiverIntent)
+            throws BroadcastRetryException {
         final ProcessRecord app = queue.app;
         final Object receiver = r.receivers.get(index);
 
@@ -1168,7 +1188,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
                     == PowerExemptionManager.TEMPORARY_ALLOW_LIST_TYPE_APP_FREEZING_DELAYED) {
                 // Only delay freezer, don't add to any temp allowlist
                 // TODO: Add a unit test
-                mService.mOomAdjuster.mCachedAppOptimizer.unfreezeTemporarily(app,
+                mService.getCachedAppOptimizer().unfreezeTemporarily(app,
                         CachedAppOptimizer.UNFREEZE_REASON_START_RECEIVER,
                         r.options.getTemporaryAppAllowlistDuration());
             } else {
@@ -1185,7 +1205,6 @@ class BroadcastQueueImpl extends BroadcastQueue {
         setDeliveryState(queue, app, r, index, receiver, BroadcastRecord.DELIVERY_SCHEDULED,
                 "scheduleReceiverWarmLocked");
 
-        final Intent receiverIntent = r.getReceiverIntent(receiver);
         final IApplicationThread thread = app.getOnewayThread();
         if (thread != null) {
             try {
@@ -1253,7 +1272,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
         final ProcessRecord app = r.resultToApp;
         final IApplicationThread thread = (app != null) ? app.getOnewayThread() : null;
         if (thread != null) {
-            mService.mOomAdjuster.unfreezeTemporarily(
+            mService.unfreezeTemporarily(
                     app, CachedAppOptimizer.UNFREEZE_REASON_FINISH_RECEIVER);
             if (r.shareIdentity && app.uid != r.callingUid) {
                 mService.mPackageManagerInt.grantImplicitAccess(r.userId, r.intent,
@@ -2096,7 +2115,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
                 mService.updateLruProcessLocked(queue.app, false, null);
             }
 
-            mService.mOomAdjuster.unfreezeTemporarily(queue.app,
+            mService.unfreezeTemporarily(queue.app,
                     CachedAppOptimizer.UNFREEZE_REASON_START_RECEIVER);
 
             mService.mProcessStateController.noteBroadcastDeliveryStarted(queue.app,

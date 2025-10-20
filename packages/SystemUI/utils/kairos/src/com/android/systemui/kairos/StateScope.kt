@@ -135,7 +135,7 @@ interface StateScope : TransactionScope {
      * ```
      *
      * @see Incremental.mergeEventsIncrementally
-     * @see merge
+     * @see mergeReduce
      */
     fun <K, V> Events<MapPatch<K, Events<V>>>.mergeEventsIncrementally(
         initialEvents: DeferredValue<Map<K, Events<V>>>
@@ -160,7 +160,7 @@ interface StateScope : TransactionScope {
      * ```
      *
      * @see Incremental.mergeEventsIncrementallyPromptly
-     * @see merge
+     * @see mergeReduce
      */
     fun <K, V> Events<MapPatch<K, Events<V>>>.mergeEventsIncrementallyPromptly(
         initialEvents: DeferredValue<Map<K, Events<V>>>
@@ -185,7 +185,7 @@ interface StateScope : TransactionScope {
      * ```
      *
      * @see Incremental.mergeEventsIncrementally
-     * @see merge
+     * @see mergeReduce
      */
     fun <K, V> Events<MapPatch<K, Events<V>>>.mergeEventsIncrementally(
         initialEvents: Map<K, Events<V>> = emptyMap()
@@ -210,7 +210,7 @@ interface StateScope : TransactionScope {
      * ```
      *
      * @see Incremental.mergeEventsIncrementallyPromptly
-     * @see merge
+     * @see mergeReduce
      */
     fun <K, V> Events<MapPatch<K, Events<V>>>.mergeEventsIncrementallyPromptly(
         initialEvents: Map<K, Events<V>> = emptyMap()

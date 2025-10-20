@@ -51,7 +51,6 @@ import android.database.ContentObserver;
 import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.UserHandle;
-import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.view.View;
@@ -70,7 +69,6 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.graphics.SfVsyncFrameCallbackProvider;
-import com.android.server.accessibility.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.common.ui.view.SeekBarWithIconButtonsView;
 import com.android.systemui.common.ui.view.SeekBarWithIconButtonsView.OnSeekBarWithIconButtonsChangeListener;
@@ -158,7 +156,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void initSettingPanel_checkAllowMagnifyTypingWithSecureSettings() {
         verify(mSecureSettings).getIntForUser(
                 eq(Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED),
@@ -167,7 +164,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void initSettingPanel_checkAllowMagnifyKeyboardWithSecureSettings() {
         int defaultValue = AccessibilityUtils.getMagnificationMagnifyKeyboardDefaultValue(mContext);
         verify(mSecureSettings).getIntForUser(
@@ -234,7 +230,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     @Test
     // TODO: b/413441693 - After flag rollout: consolidate showSettingPanel_* tests to one per
     //  capability+mode, i.e. one FULLSCREEN test that checks the expected state of all toggles.
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void showSettingPanel_fullScreenMode_showMagnifyKeyboardAndFollowTyping() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
@@ -248,7 +243,19 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void showSettingPanel_fullScreenOnlyCapability_showMagnifyKeyboardAndFollowTyping() {
+        setupMagnificationCapabilityAndMode(
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN,
+                /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
+        mWindowMagnificationSettings.showSettingPanel();
+
+        final View magnifyKeyboard = getInternalView(R.id.magnifier_keyboard_view);
+        assertThat(magnifyKeyboard.getVisibility()).isEqualTo(View.VISIBLE);
+        final View followTyping = getInternalView(R.id.magnifier_typing_view);
+        assertThat(followTyping.getVisibility()).isEqualTo(View.VISIBLE);
+    }
+
+    @Test
     public void showSettingPanel_windowOnlyCapability_hideMagnifyKeyboard_showFollowTyping() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW,
@@ -262,7 +269,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void showSettingPanel_windowMode_hideMagnifyKeyboard_showFollowTyping() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
@@ -376,7 +382,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void performClick_setMagnifyTypingSwitch_toggleMagnifyTypingSwitchMode() {
         CompoundButton magnifyTypingSwitch =
                 getInternalView(R.id.magnifier_typing_switch);
@@ -399,7 +404,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void performClick_setMagnifyKeyboardSwitch_toggleMagnifyKeyboardSwitchMode() {
         CompoundButton magnifyKeyboardSwitch =
                 getInternalView(R.id.magnifier_keyboard_switch);
@@ -522,7 +526,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void showSettingsPanel_MagnifyTypingObserverRegistered() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
@@ -537,7 +540,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void showSettingsPanel_MagnifyKeyboardObserverRegistered() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
@@ -565,7 +567,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void hideSettingsPanel_magnifyTypingObserverUnregistered() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
@@ -579,7 +580,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void hideSettingsPanel_magnifyKeyboardObserverUnregistered() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
@@ -593,7 +593,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void magnifyTypingSwitch_settingsValueIsTrue_switchIsChecked() {
         when(mSecureSettings.getIntForUser(eq(ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED),
                 anyInt(), eq(UserHandle.USER_CURRENT))).thenReturn(1);
@@ -607,7 +606,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void magnifyTypingSwitch_settingsValueIsFalse_switchIsUnchecked() {
         when(mSecureSettings.getIntForUser(eq(ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED),
                 anyInt(), eq(UserHandle.USER_CURRENT))).thenReturn(0);
@@ -621,7 +619,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void magnifyKeyboardSwitch_settingsValueIsTrue_switchIsChecked() {
         when(mSecureSettings.getIntForUser(eq(ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME),
                 anyInt(), eq(UserHandle.USER_CURRENT))).thenReturn(1);
@@ -635,7 +632,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void magnifyKeyboardSwitch_settingsValueIsFalse_switchIsUnchecked() {
         when(mSecureSettings.getIntForUser(eq(ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME),
                 anyInt(), eq(UserHandle.USER_CURRENT))).thenReturn(0);

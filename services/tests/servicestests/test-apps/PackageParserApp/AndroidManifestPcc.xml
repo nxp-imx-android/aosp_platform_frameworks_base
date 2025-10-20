@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.android.servicestests.apps.packageparserapp">
+    <application>
+        <activity android:name=".MyActivity" />
+
+        <private-compute>
+            <activity android:name=".PccActivity" />
+            <service android:name=".PccService" />
+            <receiver android:name=".PccReceiver" />
+            <provider android:name=".PccProvider"
+                android:authorities="com.android.servicestests.apps.packageparserapp.pccprovider" />
+            <activity-alias android:name=".PccActivityAlias" android:targetActivity=".PccActivity" />
+            <activity-alias android:name=".PccActivityAliasToNormal" android:targetActivity=".MyActivity" />
+        </private-compute>
+
+        <service android:name=".MyService" />
+        <receiver android:name=".MyReceiver" />
+        <provider android:name=".MyProvider"
+            android:authorities="com.android.servicestests.apps.packageparserapp.myprovider" />
+        <activity-alias android:name=".MyActivityAliasToPcc"
+            android:featureFlag="android.app.privatecompute.flags.enable_pcc_framework_support"
+            android:targetActivity=".PccActivity" />
+
+    </application>
+</manifest>

@@ -51,7 +51,7 @@ class PrivacyItemController @Inject constructor(
         // LINT.IfChange
         @VisibleForTesting const val TIME_TO_HOLD_INDICATORS = 5_000L
         @VisibleForTesting const val TIME_TO_HOLD_INDICATORS_FOR_LOCATION = 10_000L
-        // LINT.ThenChange(/core/java/android/permission/PermissionUsageHelper.java)
+        // LINT.ThenChange(/core/java/android/permission/PermissionUsageHelper.java, /packages/SystemUI/src/com/android/systemui/appops/AppOpsControllerImpl.java)
     }
 
     @VisibleForTesting

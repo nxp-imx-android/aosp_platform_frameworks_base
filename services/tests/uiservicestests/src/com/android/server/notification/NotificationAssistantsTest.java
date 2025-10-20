@@ -623,7 +623,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void testSetAdjustmentTypeSupportedState() throws Exception {
         int userId = ActivityManager.getCurrentUser();
 
@@ -647,7 +646,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void testSetAdjustmentTypeSupportedState_readWriteXml_entries() throws Exception {
         int userId = ActivityManager.getCurrentUser();
 
@@ -671,7 +669,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void testSetAdjustmentTypeSupportedState_readWriteXml_empty() throws Exception {
         int userId = ActivityManager.getCurrentUser();
 
@@ -687,7 +684,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void testDisallowAdjustmentType() {
         mAssistants.disallowAdjustmentType(mZero.id, Adjustment.KEY_RANKING_SCORE);
         assertThat(mAssistants.getAllowedAssistantAdjustments(mZero.id))
@@ -700,7 +696,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void testAllowAdjustmentType() {
         mAssistants.disallowAdjustmentType(mZero.id, Adjustment.KEY_RANKING_SCORE);
         assertThat(mAssistants.getAllowedAssistantAdjustments(mZero.id))
@@ -747,7 +742,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void testAllowAdjustmentType_classifListEmpty_resetDefaultClassificationTypes() {
         mAssistants.setAssistantClassificationTypeState(mZero.id, TYPE_PROMOTION, false);
         mAssistants.setAssistantClassificationTypeState(mZero.id, TYPE_NEWS, false);
@@ -762,7 +756,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void testAllowAdjustmentType_classifListNotEmpty_doNotResetDefaultClassificationTypes() {
         mAssistants.setAssistantClassificationTypeState(mZero.id, TYPE_PROMOTION, false);
         mAssistants.setAssistantClassificationTypeState(mZero.id, TYPE_SOCIAL_MEDIA, false);
@@ -777,7 +770,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void testClassificationAdjustments_readWriteXml_userSetStateMaintained()
             throws Exception {
         // Turn on KEY_TYPE classification for mZero (parent) but not 11 (managed profile)
@@ -822,18 +814,15 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
 
         ArrayList<String> expected = new ArrayList<>(List.of(DEFAULT_ALLOWED_ADJUSTMENTS));
 
-        /* TODO: b/433554352 - restore when summarization is disabled by default again
         if (android.app.Flags.nmSummarizationOnboardingUi()) {
             expected.remove(KEY_SUMMARIZATION);
         }
-         */
 
         assertThat(mAssistants.getAllowedAssistantAdjustments(mZero.id))
                 .containsExactlyElementsIn(expected);
     }
 
     @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void testSetAssistantClassificationTypeState_allow() {
         mAssistants.setAssistantClassificationTypeState(mZero.id, TYPE_CONTENT_RECOMMENDATION,
                 false);
@@ -848,7 +837,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void testSetAssistantClassificationTypeState_disallow() {
         mAssistants.setAssistantClassificationTypeState(mZero.id, TYPE_PROMOTION, false);
         assertThat(mAssistants.getAllowedClassificationTypes(mZero.id))
@@ -856,7 +844,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void testClassificationTypes_forProfile_followsFullUser() {
         mAssistants.setAssistantClassificationTypeState(11, TYPE_NEWS, false);
         assertThat(mAssistants.getAllowedClassificationTypes(11))
@@ -889,7 +876,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void testDefaultAllowedKeyAdjustments_readWriteXml() throws Exception {
         mAssistants.loadDefaultsFromConfig(true);
 
@@ -1060,8 +1046,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
 
     @Test
     @SuppressWarnings("GuardedBy")
-    @EnableFlags({android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION,
-            Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI, Flags.FLAG_NM_SUMMARIZATION,
+    @EnableFlags({Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI, Flags.FLAG_NM_SUMMARIZATION,
             Flags.FLAG_NM_SUMMARIZATION_UI})
     public void testPullAdjustmentPreferencesStats_fillsOutStatsEvent()
             throws Exception {

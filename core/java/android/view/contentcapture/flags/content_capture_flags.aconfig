@@ -36,16 +36,6 @@ flag {
 }
 
 flag {
-    name: "warm_up_background_thread_for_content_capture"
-    namespace: "system_performance"
-    description: "Feature flag to warm up the background thread for content capture"
-    bug: "408273598"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_export_assist_virtual_node_to_ccapi"
     namespace: "ailabs"
     description: "Feature flag to enable exporting assist api virtual node to content capture"
@@ -57,4 +47,18 @@ flag {
     namespace: "ailabs"
     description: "Feature flag to reduce binder transaction for content capture, by batching metrics logging and reducing the number of flush events"
     bug: "433614684"
+}
+
+flag {
+    name: "new_heuristics_for_importance_enabled"
+    namespace: "ailabs"
+    description: "Feature flag to extend heuristics for calculating whether a node is considered important for content capture"
+    bug: "444631439"
+}
+
+flag {
+    name: "flush_on_non_empty_text"
+    namespace: "ailabs"
+    description: "Feature flag to flush text changed event when text is non-empty"
+    bug: "451804320"
 }

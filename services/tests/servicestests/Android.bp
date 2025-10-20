@@ -34,6 +34,7 @@ android_test {
         "test-apps/TopologyTestApp/src/**/*.java",
     ],
 
+    exclude_srcs: ["src/com/android/server/signalcollector/**/*.java"],
     static_libs: [
         "ActivityContext",
         "CtsAccessibilityCommon",
@@ -54,7 +55,6 @@ android_test {
         "cts-input-lib",
         "cts-wm-util",
         "desktop-test-lib",
-        "flag-junit",
         "flag-junit",
         "framework-protos",
         "frameworks-base-testutils",
@@ -90,7 +90,6 @@ android_test {
         "services.supervision",
         "services.usage",
         "servicestests-utils",
-        "signal_collector_flags_lib",
         "testables",
         // TODO: remove once Android migrates to JUnit 4.12,
         // which provides assertThrows
@@ -98,6 +97,11 @@ android_test {
         "truth",
     ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
         "true": ["service-crashrecovery-pre-jarjar"],
+        default: [],
+    }) + select(release_flag("RELEASE_ANOMALY_DETECTOR"), {
+        true: [
+            "signal-collector-service-test",
+        ],
         default: [],
     }),
 
@@ -151,6 +155,7 @@ android_test {
         ":SuspendTestApp",
         ":TopologyTestApp",
         "data/broken_shortcut.xml",
+        "data/test_supplemental_security_patches.xml",
     ],
 
     java_resources: [
@@ -214,7 +219,8 @@ android_ravenwood_test {
         "services.core.ravenwood",
     ],
     srcs: [
-        "src/com/android/server/am/BoundServiceSessionTests.java",
+        "src/com/android/server/am/psc/**/*.java",
+        "src/com/android/server/am/BinderSessionTests.java",
     ],
 }
 
@@ -269,6 +275,8 @@ java_library {
     static_libs: [
         "junit",
         "mockito-target-minus-junit4",
+        "androidx.annotation_annotation",
+        "services.core",
     ],
     libs: [
         "android.test.runner.stubs.system",
@@ -282,8 +290,12 @@ java_library {
         "utils/**/*.java",
         "utils/**/*.kt",
     ],
+    static_libs: [
+        "services.core.ravenwood",
+    ],
     libs: [
         "android.test.runner.stubs.system",
+        "androidx.annotation_annotation",
         "junit",
         "mockito-ravenwood-prebuilt",
     ],
@@ -309,6 +321,8 @@ java_library {
     static_libs: [
         "junit",
         "mockito-target-extended-minus-junit4",
+        "androidx.annotation_annotation",
+        "services.core",
     ],
     libs: [
         "android.test.runner.stubs.system",
@@ -1104,4 +1118,24 @@ test_module_config {
         "device-tests",
     ],
     include_filters: ["com.android.server.incident"],
+}
+
+test_module_config {
+    name: "FrameworksServicesTests_adb",
+    base: "FrameworksServicesTests",
+    test_suites: [
+        "automotive-tests",
+        "device-tests",
+    ],
+    include_filters: ["com.android.server.adb"],
+}
+
+test_module_config {
+    name: "FrameworksServicesTests_companion_virtual",
+    base: "FrameworksServicesTests",
+    test_suites: [
+        "automotive-tests",
+        "device-tests",
+    ],
+    include_filters: ["com.android.server.companion.virtual"],
 }

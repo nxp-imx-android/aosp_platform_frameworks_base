@@ -182,7 +182,6 @@ import static com.android.server.wm.WindowStateAnimator.DRAW_PENDING;
 import static com.android.server.wm.WindowStateAnimator.HAS_DRAWN;
 import static com.android.server.wm.WindowStateAnimator.PRESERVED_SURFACE_LAYER;
 import static com.android.server.wm.WindowStateAnimator.READY_TO_SHOW;
-import static com.android.window.flags.Flags.surfaceTrustedOverlay;
 
 import android.annotation.CallSuper;
 import android.annotation.NonNull;
@@ -322,6 +321,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     final boolean mIsWallpaper;
     private final boolean mIsFloatingLayer;
     int mViewVisibility;
+
+    private String mName;
 
     /**
      * Flags to disable system UI functions. This can only be set by the one which has the
@@ -748,6 +749,20 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      */
     int mFrameRateSelectionPriority = RefreshRatePolicy.LAYER_PRIORITY_UNSET;
 
+
+    /**
+     * A value representing the importance of the window from the system perspective. A higher
+     * priority value means the window will get preferred access to the limited resource in
+     * rendering.
+     */
+    int mSystemContentPriority = 0;
+    /**
+     * A score contributing to the {@link mSystemContentPriority}. This score is calculated based on
+     * the recent user interaction history. The newer interacted window will typically get a higher
+     * score.
+     */
+    int mInteractionPriorityScore = 0;
+
     /**
      * This is the frame rate which is passed to SurfaceFlinger if the window set a
      * preferredDisplayModeId or is part of the high refresh rate deny list.
@@ -757,7 +772,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     static final int BLAST_TIMEOUT_DURATION = 5000; /* milliseconds */
 
-    class DrawHandler {
+    static class DrawHandler {
         final Consumer<SurfaceControl.Transaction> mConsumer;
         final int mSeqId;
 
@@ -766,7 +781,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             mConsumer = consumer;
         }
     }
-    private final List<DrawHandler> mDrawHandlers = new ArrayList<>();
+    private final ArrayList<DrawHandler> mDrawHandlers = new ArrayList<>();
 
     /**
      * Indicates whether inset animations are currently running within the Window.
@@ -1074,12 +1089,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         mInputWindowHandle.setFocusable(false);
         mInputWindowHandle.setOwnerPid(s.mPid);
         mInputWindowHandle.setOwnerUid(s.mUid);
+        updateName();
         mInputWindowHandle.setName(getName());
         mInputWindowHandle.setPackageName(mAttrs.packageName);
         mInputWindowHandle.setLayoutParamsType(mAttrs.type);
-        if (!surfaceTrustedOverlay()) {
-            mInputWindowHandle.setTrustedOverlay(isWindowTrustedOverlay());
-        }
         if (DEBUG) {
             Slog.v(TAG, "Window " + this + " client=" + c.asBinder()
                             + " token=" + token + " (" + mAttrs.token + ")" + " params=" + a);
@@ -1142,9 +1155,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     @Override
     void setInitialSurfaceControlProperties(SurfaceControl.Builder b) {
         super.setInitialSurfaceControlProperties(b);
-        if (surfaceTrustedOverlay() && isWindowTrustedOverlay()) {
-            getPendingTransaction().setTrustedOverlay(mSurfaceControl, true);
-        }
+        getPendingTransaction().setTrustedOverlay(mSurfaceControl, isWindowTrustedOverlay());
         getPendingTransaction().setSecure(mSurfaceControl, isSecureLocked());
         // All apps should be considered as occluding when computing TrustedPresentation Thresholds.
         final boolean canOccludePresentation = !mSession.mCanAddInternalSystemWindow;
@@ -2102,16 +2113,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     @Override
     void onResize() {
-        final ArrayList<WindowState> resizingWindows = mWmService.mResizingWindows;
-        if (mHasSurface && !isGoneForLayout() && !resizingWindows.contains(this)) {
-            ProtoLog.d(WM_DEBUG_RESIZE, "onResize: Resizing %s", this);
-            resizingWindows.add(this);
-            if (mWmService.mAlwaysSeqId) {
-                if (mSyncState != SYNC_STATE_NONE && !getSyncGroup().mReady) {
-                    mPendingSyncResize = true;
-                }
-            }
-        }
         if (mControllableInsetProvider != null) {
             mControllableInsetProvider.onWindowBoundsChanged();
         }
@@ -2247,7 +2248,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         // IME parent may failed to attach to the app during rotating the screen.
         // See DisplayContent#shouldImeAttachedToApp, DisplayContent#isImeControlledByApp
         if ((diff & CONFIG_WINDOW_CONFIGURATION) != 0) {
-            // If the window was the IME layering target, updates the IME surface parent in case
+            // If the window was the IME layering target, updates the IME parent in case
             // the IME surface may be wrongly positioned when the window configuration affects the
             // IME surface association. (e.g. Attach IME surface on the display instead of the
             // app when the app bounds being letterboxed.)
@@ -3282,11 +3283,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     boolean destroySurface(boolean cleanupOnResume, boolean appStopped) {
         boolean destroyedSomething = false;
 
-        // Copying to a different list as multiple children can be removed.
-        final ArrayList<WindowState> childWindows = new ArrayList<>(mChildren);
-        for (int i = childWindows.size() - 1; i >= 0; --i) {
-            final WindowState c = childWindows.get(i);
-            destroyedSomething |= c.destroySurface(cleanupOnResume, appStopped);
+        if (!mChildren.isEmpty()) {
+            // Copying to a different list as multiple children can be removed.
+            final ArrayList<WindowState> childWindows = new ArrayList<>(mChildren);
+            for (int i = childWindows.size() - 1; i >= 0; --i) {
+                final WindowState c = childWindows.get(i);
+                destroyedSomething |= c.destroySurface(cleanupOnResume, appStopped);
+            }
         }
 
         if (!(appStopped || mWindowRemovalAllowed || cleanupOnResume)) {
@@ -4280,10 +4283,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         pw.println(prefix + "mBufferSeqId=" + mBufferSeqId);
     }
 
+    void updateName() {
+        mName = Integer.toHexString(System.identityHashCode(this)) + " " + getWindowTag();
+    }
+
     @Override
     String getName() {
-        return Integer.toHexString(System.identityHashCode(this))
-                + " " + getWindowTag();
+        return mName;
     }
 
     CharSequence getWindowTag() {
@@ -4534,8 +4540,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     @Override
     boolean forAllWindows(ToBooleanFunction<WindowState> callback, boolean traverseTopToBottom) {
         if (mChildren.isEmpty()) {
-            // The window has no children so we just return it.
-            return applyInOrderWithImeWindows(callback, traverseTopToBottom);
+            // The window has no children so we apply the callback on it.
+            return applyInOrderWithImeContainer(callback, traverseTopToBottom);
         }
 
         if (traverseTopToBottom) {
@@ -4545,7 +4551,16 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
     }
 
-    private boolean forAllWindowBottomToTop(ToBooleanFunction<WindowState> callback) {
+    /**
+     * For all windows at or below this window call the callback, traversing the hierarchy from
+     * bottom-to-top in terms of z-order.
+     *
+     * @param callback Calls the {@link ToBooleanFunction#apply} method for each window found and
+     *                 stops the search if {@link ToBooleanFunction#apply} returns true.
+     * @return True if the search ended before we reached the end of the hierarchy due to
+     *         {@link ToBooleanFunction#apply} returning true.
+     */
+    private boolean forAllWindowBottomToTop(@NonNull ToBooleanFunction<WindowState> callback) {
         // We want to consume the negative sublayer children first because they need to appear
         // below the parent, then this window (the parent), and then the positive sublayer children
         // because they need to appear above the parent.
@@ -4554,7 +4569,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         WindowState child = mChildren.get(i);
 
         while (i < count && child.mSubLayer < 0) {
-            if (child.applyInOrderWithImeWindows(callback, false /* traverseTopToBottom */)) {
+            if (child.applyInOrderWithImeContainer(callback, false /* traverseTopToBottom */)) {
                 return true;
             }
             i++;
@@ -4564,12 +4579,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             child = mChildren.get(i);
         }
 
-        if (applyInOrderWithImeWindows(callback, false /* traverseTopToBottom */)) {
+        if (applyInOrderWithImeContainer(callback, false /* traverseTopToBottom */)) {
             return true;
         }
 
         while (i < count) {
-            if (child.applyInOrderWithImeWindows(callback, false /* traverseTopToBottom */)) {
+            if (child.applyInOrderWithImeContainer(callback, false /* traverseTopToBottom */)) {
                 return true;
             }
             i++;
@@ -4589,9 +4604,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         final SparseArray<InsetsSource> mergedLocalInsetsSources =
                 createMergedSparseArray(localInsetsSourcesFromParent, mLocalInsetsSources);
 
-        // Insets provided by the IME window can effect all the windows below it and hence it needs
-        // to be visited in the correct order. Because of which updateAboveInsetsState() can't be
-        // used here and instead forAllWindows() is used.
+        // forAllWindows is the reliable way to visit the ImeContainer and the windows within this
+        // WindowState in the correct order. updateAboveInsetsState doesn't take the placement of
+        // the ImeContainer relative to the IME Layering Target into account
+        // (see #applyForImeContainerIfNeeded).
         forAllWindows(w -> {
             if (!w.mAboveInsetsState.equals(aboveInsetsState)) {
                 w.mAboveInsetsState.set(aboveInsetsState);
@@ -4599,8 +4615,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             }
 
             if (!mergedLocalInsetsSources.contentEquals(w.mMergedLocalInsetsSources)) {
-                w.mMergedLocalInsetsSources = mergedLocalInsetsSources;
-                insetsChangedWindows.add(w);
+                // The traversal will reach the ImeContainer (and thus the IME Window) if this
+                // window is the current IME Layering Target. However, we should not copy the local
+                // insets to the IME window.
+                if (!w.mIsImWindow) {
+                    w.mMergedLocalInsetsSources = mergedLocalInsetsSources;
+                    insetsChangedWindows.add(w);
+                }
             }
 
             final SparseArray<InsetsSourceProvider> providers = w.mInsetsSourceProviders;
@@ -4612,7 +4633,16 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }, true /* traverseTopToBottom */);
     }
 
-    private boolean forAllWindowTopToBottom(ToBooleanFunction<WindowState> callback) {
+    /**
+     * For all windows at or below this window call the callback, traversing the hierarchy from
+     * top-to-bottom in terms of z-order.
+     *
+     * @param callback Calls the {@link ToBooleanFunction#apply} method for each window found and
+     *                 stops the search if {@link ToBooleanFunction#apply} returns true.
+     * @return True if the search ended before we reached the end of the hierarchy due to
+     *         {@link ToBooleanFunction#apply} returning true.
+     */
+    private boolean forAllWindowTopToBottom(@NonNull ToBooleanFunction<WindowState> callback) {
         // We want to consume the positive sublayer children first because they need to appear
         // above the parent, then this window (the parent), and then the negative sublayer children
         // because they need to appear above the parent.
@@ -4620,7 +4650,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         WindowState child = mChildren.get(i);
 
         while (i >= 0 && child.mSubLayer >= 0) {
-            if (child.applyInOrderWithImeWindows(callback, true /* traverseTopToBottom */)) {
+            if (child.applyInOrderWithImeContainer(callback, true /* traverseTopToBottom */)) {
                 return true;
             }
             --i;
@@ -4630,12 +4660,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             child = mChildren.get(i);
         }
 
-        if (applyInOrderWithImeWindows(callback, true /* traverseTopToBottom */)) {
+        if (applyInOrderWithImeContainer(callback, true /* traverseTopToBottom */)) {
             return true;
         }
 
         while (i >= 0) {
-            if (child.applyInOrderWithImeWindows(callback, true /* traverseTopToBottom */)) {
+            if (child.applyInOrderWithImeContainer(callback, true /* traverseTopToBottom */)) {
                 return true;
             }
             --i;
@@ -4648,29 +4678,56 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         return false;
     }
 
-    private boolean applyImeWindowsIfNeeded(ToBooleanFunction<WindowState> callback,
+    /**
+     * For all windows at or below the {@link ImeContainer} call the callback if this window is the
+     * current {@link DisplayContent#mImeLayeringTarget}, otherwise skip this.
+     *
+     * @param callback Calls the {@link ToBooleanFunction#apply} method for each window found and
+     *                 stops the search if {@link ToBooleanFunction#apply} returns true.
+     * @param traverseTopToBottom If true traverses the hierarchy from top-to-bottom in terms of
+     *                            z-order, else from bottom-to-top.
+     * @return True if the search ended before we reached the end of the hierarchy, due to
+     *         {@link ToBooleanFunction#apply} returning true.
+     */
+    private boolean applyForImeContainerIfNeeded(@NonNull ToBooleanFunction<WindowState> callback,
             boolean traverseTopToBottom) {
-        // No need to apply to IME window if the window is not the current IME layering target.
+        // Skip traversing the ImeContainer if this window is not the current IME layering target.
         if (!isImeLayeringTarget()) {
             return false;
         }
-        return mDisplayContent.forAllImeWindows(callback, traverseTopToBottom);
+        return mDisplayContent.getImeContainer().forAllWindowForce(callback, traverseTopToBottom);
     }
 
-    private boolean applyInOrderWithImeWindows(ToBooleanFunction<WindowState> callback,
+    /**
+     * Apply the callback on this window. If this window is the current
+     * {@link DisplayContent#mImeLayeringTarget}, also applies this callback on the
+     * {@link ImeContainer} based on the given order.
+     *
+     * <p>To maintain a visual traversal order, the {@link ImeContainer} is initially skipped during
+     * window hierarchy traversal if there is an {@link DisplayContent#mImeLayeringTarget}, and it
+     * is re-visited as soon as traversal reaches the {@link DisplayContent#mImeLayeringTarget},
+     * which will always be right below it. See {@link ImeContainer} for details.
+     *
+     * @param callback Calls the {@link ToBooleanFunction#apply} method for each window found and
+     *                 stops the search if {@link ToBooleanFunction#apply} returns true.
+     * @param traverseTopToBottom If true traverses the hierarchy from top-to-bottom in terms of
+     *                            z-order, else from bottom-to-top.
+     * @return True if the search ended before we reached the end of the hierarchy, due to
+     *         {@link ToBooleanFunction#apply} returning true.
+     */
+    private boolean applyInOrderWithImeContainer(@NonNull ToBooleanFunction<WindowState> callback,
             boolean traverseTopToBottom) {
         if (traverseTopToBottom) {
-            if (applyImeWindowsIfNeeded(callback, traverseTopToBottom)
-                    || callback.apply(this)) {
-                return true;
-            }
+            // If this window is the current IME Layering target, the IME Container is above it,
+            // so traverse that first.
+            return applyForImeContainerIfNeeded(callback, true /* traverseTopToBottom */)
+                    || callback.apply(this);
         } else {
-            if (callback.apply(this)
-                    || applyImeWindowsIfNeeded(callback, traverseTopToBottom)) {
-                return true;
-            }
+            // If this window is the current IME Layering target, the IME Container is above it,
+            // so traverse that last.
+            return callback.apply(this)
+                    || applyForImeContainerIfNeeded(callback, false /* traverseTopToBottom */);
         }
-        return false;
     }
 
     WindowState getWindow(Predicate<WindowState> callback) {
@@ -4943,7 +5000,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 new WindowAnimationSpec(anim, position, false /* canSkipFirstFrame */,
                         0 /* windowCornerRadius */),
                 mWmService.mSurfaceAnimationRunner);
-        final Transaction t = mActivityRecord != null
+        final Transaction t = mActivityRecord != null && mActivityRecord.isVisibleRequested()
                 ? getSyncTransaction() : getPendingTransaction();
         startAnimation(t, adapter);
         commitPendingTransaction();
@@ -5196,6 +5253,14 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
     }
 
+    private void updateSystemContentPriorityIfNeeded() {
+        int newPriority = mInteractionPriorityScore;
+        if (newPriority != mSystemContentPriority) {
+            getPendingTransaction().setSystemContentPriority(mSurfaceControl, newPriority);
+            mSystemContentPriority = newPriority;
+        }
+    }
+
     @Override
     void prepareSurfaces() {
         mIsDimming = false;
@@ -5203,6 +5268,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             updateSurfacePositionNonOrganized();
             // Send information to SurfaceFlinger about the priority of the current window.
             updateFrameRateSelectionPriorityIfNeeded();
+            updateSystemContentPriorityIfNeeded();
             if (isVisibleRequested()) {
                 updateScaleIfNeeded();
             }
@@ -5852,7 +5918,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             skipLayout = true;
         } else if (syncActive) {
             // Currently in a Sync.
-            if (mWmService.mAlwaysSeqId ? syncSeqId >= mSyncSeqId : !syncStillPending) {
+            if (mWmService.mAlwaysSeqId ? (syncSeqId >= mSyncSeqId && syncSeqId >= mBufferSeqId)
+                    : !syncStillPending) {
                 layoutNeeded = onSyncFinishedDrawing();
             }
             if (postDrawTransaction != null
@@ -5934,6 +6001,17 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         return syncGroup.mSyncMethod;
     }
 
+    void useBlastForNextSync() {
+        if (mSyncMethodOverride == BLASTSyncEngine.METHOD_BLAST) return;
+        mSyncMethodOverride = BLASTSyncEngine.METHOD_BLAST;
+        final BLASTSyncEngine.SyncGroup syncGroup = getSyncGroup();
+        // If not in sync, then the seqId will be incremented in prepareSync (when added)
+        if (syncGroup == null || syncGroup.mSyncMethod == BLASTSyncEngine.METHOD_BLAST) {
+            return;
+        }
+        mBufferSeqId = mSyncSeqId + 1;
+    }
+
     boolean shouldSyncWithBuffers() {
         if (!mDrawHandlers.isEmpty()) return true;
         return getSyncMethod() == BLASTSyncEngine.METHOD_BLAST;
@@ -5991,41 +6069,38 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     /**
      * Drain the draw handlers, called from finishDrawing()
-     * See {@link WindowState#mPendingDrawHandlers}
      */
-    boolean executeDrawHandlers(SurfaceControl.Transaction t, int seqId) {
-        boolean hadHandlers = false;
+    private boolean executeDrawHandlers(@Nullable SurfaceControl.Transaction t, int seqId) {
+        final int numDrawHandlers = mDrawHandlers.size();
+        if (numDrawHandlers == 0) {
+            return false;
+        }
+
         boolean applyHere = false;
         if (t == null) {
             t = mTmpTransaction;
             applyHere = true;
         }
 
-        final List<DrawHandler> handlersToRemove = new ArrayList<>();
-        // Iterate forwards to ensure we process in the same order
-        // we added.
-        for (int i = 0; i < mDrawHandlers.size(); i++) {
+        final ArrayList<DrawHandler> consumedHandlers = new ArrayList<>();
+        // Iterate in the order the handlers were added.
+        for (int i = 0; i < numDrawHandlers; i++) {
             final DrawHandler h = mDrawHandlers.get(i);
             if (h.mSeqId <= seqId) {
                 h.mConsumer.accept(t);
-                handlersToRemove.add(h);
-                hadHandlers = true;
+                consumedHandlers.add(h);
             }
         }
-        for (int i = 0; i < handlersToRemove.size(); i++) {
-            final DrawHandler h = handlersToRemove.get(i);
-            mDrawHandlers.remove(h);
+        if (consumedHandlers.isEmpty()) {
+            return false;
         }
 
-        if (hadHandlers) {
-            mWmService.mH.removeMessages(WINDOW_STATE_BLAST_SYNC_TIMEOUT, this);
-        }
-
+        mDrawHandlers.removeAll(consumedHandlers);
+        mWmService.mH.removeMessages(WINDOW_STATE_BLAST_SYNC_TIMEOUT, this);
         if (applyHere) {
             t.apply();
         }
-
-        return hadHandlers;
+        return true;
     }
 
     /**
@@ -6059,13 +6134,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     boolean isTrustedOverlay() {
-        if (surfaceTrustedOverlay()) {
-            WindowState parentWindow = getParentWindow();
-            return isWindowTrustedOverlay() || (parentWindow != null
-                    && parentWindow.isWindowTrustedOverlay());
-        } else {
-            return mInputWindowHandle.isTrustedOverlay();
-        }
+        WindowState parentWindow = getParentWindow();
+        return isWindowTrustedOverlay() || (parentWindow != null
+                && parentWindow.isWindowTrustedOverlay());
     }
 
     public boolean receiveFocusFromTapOutside() {
@@ -6120,12 +6191,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (!mWmService.mAlwaysSeqId) {
             return mPrepareSyncSeqId > 0;
         }
-        final boolean cancel = Math.max(mSyncSeqId, mBufferSeqId) > seqId;
-        if (cancel) {
-            Trace.instant(TRACE_TAG_WINDOW_MANAGER, "cancelDraw clientSeqId=" + seqId
-                    + " serverSeqId=" + mSyncSeqId + " bufferSeqId=" + mBufferSeqId);
-        }
-        return cancel;
+        return Math.max(mSyncSeqId, mBufferSeqId) > seqId;
     }
 
     public boolean isActivityWindow() {

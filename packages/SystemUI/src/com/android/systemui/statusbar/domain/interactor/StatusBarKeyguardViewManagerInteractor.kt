@@ -24,7 +24,10 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInterac
 import com.android.systemui.keyguard.domain.interactor.WindowManagerLockscreenVisibilityInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.power.domain.interactor.PowerInteractor
+import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
+import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -51,6 +54,7 @@ constructor(
     wmLockscreenVisibilityInteractor: WindowManagerLockscreenVisibilityInteractor,
     surfaceBehindInteractor: KeyguardSurfaceBehindInteractor,
     showLockscreenInteractor: KeyguardServiceShowLockscreenInteractor,
+    sceneInteractor: Lazy<SceneInteractor>,
 ) {
     /** Occlusion state to apply whenever a keyguard transition is STARTED, if any. */
     private val occlusionStateFromStartedStep: Flow<OccludedState> =
@@ -58,7 +62,14 @@ constructor(
             .map { startedStep ->
                 val wakefulness = powerInteractor.detailedWakefulness.value
                 val transitioningFromPowerButtonGesture =
-                    KeyguardState.deviceIsAsleepInState(startedStep.from) &&
+                    KeyguardState.deviceIsAsleepInState(
+                        startedStep.from,
+                        if (SceneContainerFlag.isEnabled) {
+                            sceneInteractor.get().currentScene.value
+                        } else {
+                            null
+                        },
+                    ) &&
                         startedStep.to == KeyguardState.OCCLUDED &&
                         wakefulness.powerButtonLaunchGestureTriggered
 
@@ -121,7 +132,7 @@ constructor(
         combine(
                 wmLockscreenVisibilityInteractor.lockscreenVisibility,
                 surfaceBehindInteractor.isAnimatingSurface,
-            ) { lockscreenVisible, animatingSurface ->
+            ) { (lockscreenVisible, _), animatingSurface ->
                 lockscreenVisible || animatingSurface
             }
             .distinctUntilChanged()

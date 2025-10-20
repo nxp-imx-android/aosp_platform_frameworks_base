@@ -41,13 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Aplikazio-eguneratzeak desinstalatu nahi dituzu?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Aplikazio-eguneratzeak desinstalatu nahi dituzu erabiltzaile guztientzat?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Aplikazioa desinstalatu nahi duzu erabiltzaile guztientzat?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"Aplikazioa desinstalatu nahi duzu \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" erabiltzailearentzat?"</string>
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Aplikazio hau desinstalatu nahi duzu \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" erabiltzailearentzat?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Ez da aurkitu aplikazioa"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Ezin da desinstalatu aplikazioa"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Ez da desinstalatu aplikazioa"</string>
     <string name="title_archive" msgid="2876455228073419830">"Aplikazioa artxibatu nahi duzu?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Aplikazio hau erabiltzaile guztientzat artxibatu nahi duzu?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"Aplikazioa \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" erabiltzailearentzat artxibatu nahi duzu?"</string>
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Aplikazio hau artxibatu nahi duzu \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" erabiltzailearentzat?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Aplikazioa leheneratu nahi duzu?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Zerbait egin behar duzu"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Ez dago behar adina biltegiratzeko toki"</string>
@@ -96,26 +96,18 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Aplikazioa leheneratzeko, <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> instalatu beharko duzu"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Arazo bat izan da aplikazioa leheneratzean"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> aplikazio honen zati da: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Aplikazio hau blokeatu egin da. Gailua eta datuak seguru mantentzeko, garatzaile egiaztatuen aplikazioak soilik instala daitezke.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Ez da eguneratu aplikazioa. Gailua eta datuak seguru mantentzeko, garatzaile egiaztatuen eguneratzeaksoilik instala daitezke.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Aplikazio hau ez da instalatu. Baliteke egiaztatu gabeko garatzaileen aplikazioak seguruak ez izatea.&lt;/p&gt; &lt;p&gt;Interneteko konexioa behar da aplikazioaren garatzailea egiaztatzeko. Egiaztatu konektatuta zaudela eta instala ezazu berriro. &lt;/p&gt; &lt;a href=https://g.co/android/developer&amp;gtLortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Ez da eguneratu aplikazioa. Baliteke egiaztatu gabeko garatzaileen eguneratzeak seguruak ez izatea.&lt;/p&gt; &lt;p&gt;Interneteko konexioa behar da aplikazioaren garatzailea egiaztatzeko. Egiaztatu konektatuta zaudela eta egunera ezazu berriro. &lt;/p&gt; &lt;a href=https://g.co/android/developer&amp;gtLortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Arazo bat izan da aplikazio honen garatzailea egiaztatzean. Baliteke egiaztatu gabeko garatzaileen aplikazioak seguruak ez izatea; beraz, ez da instalatu aplikazioa.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Arazo bat izan da aplikazio honen garatzailea egiaztatzean. Baliteke egiaztatu gabeko garatzaileen eguneratzeak seguruak ez izatea; beraz, ez da eguneratu aplikazioa.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Aplikazioa blokeatu egin da, arazo bat izan delako garatzailea egiaztatzean. Gailua eta datuak seguru mantentzeko, garatzaile egiaztatuen aplikazioak soilik instala daitezke.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;Aplikazioa ez da eguneratu, arazo bat izan delako garatzailea egiaztatzean. Gailua eta datuak seguru mantentzeko, garatzaile egiaztatuen eguneratzeaksoilik instala daitezke.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Egiaztatu gabe instalatzen baduzu, gogoan izan egiaztatu gabeko garatzaileen aplikazioek gailua eta datuak arriskuan jarriko dituztela agian."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Egiaztatu gabe eguneratzen baduzu, gogoan izan egiaztatu gabeko garatzaileen eguneratzeek gailua eta datuak arriskuan jarriko dituztela agian."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Ez da egiaztatu aplikazioaren garatzailea"</string>
-    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Ez dago Interneteko konexiorik; beraz, ezin da egiaztatu aplikazioaren garatzailea"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Internet gabe; ezin da egiaztatu garatzailea"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Ezin da egiaztatu aplikazioaren garatzailea"</string>
     <string name="install_without_verifying" msgid="5359680595440741626">"Instalatu egiaztatu gabe"</string>
     <string name="update_without_verifying" msgid="2841466981431484179">"Eguneratu egiaztatu gabe"</string>
@@ -135,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Leheneratu"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Desinstalatu eguneratzeak"</string>
     <string name="button_settings" msgid="3837571366246132287">"Ezarpenak"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Saiatu berriro"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> aplikazioaren klona"</string>
 </resources>

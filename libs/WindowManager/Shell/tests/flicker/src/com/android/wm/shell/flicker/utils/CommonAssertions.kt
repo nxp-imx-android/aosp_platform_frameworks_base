@@ -25,6 +25,7 @@ import android.tools.flicker.subject.layers.LayerTraceEntrySubject
 import android.tools.flicker.subject.layers.LayersTraceSubject
 import android.tools.helpers.WindowUtils
 import android.tools.traces.component.IComponentMatcher
+import android.tools.traces.component.ComponentNameMatcher.Companion.DESKTOP_HANDLE
 
 fun FlickerTest.appPairsDividerIsVisibleAtEnd() {
     assertLayersEnd { this.isVisible(APP_PAIR_SPLIT_DIVIDER_COMPONENT) }
@@ -140,6 +141,16 @@ fun FlickerTest.layerBecomesVisible(component: IComponentMatcher) {
     assertLayers { this.isInvisible(component).then().isVisible(component) }
 }
 
+fun FlickerTest.layerBecomesVisibleThenInvisible(component: IComponentMatcher) {
+    assertLayers {
+        this.isInvisible(component)
+            .then()
+            .isVisible(component)
+            .then()
+            .isInvisible(component)
+    }
+}
+
 fun FlickerTest.layerBecomesInvisible(component: IComponentMatcher) {
     assertLayers { this.isVisible(component).then().isInvisible(component) }
 }
@@ -158,6 +169,12 @@ fun FlickerTest.layerIsVisibleAtEnd(component: IComponentMatcher) {
 
 fun FlickerTest.layerKeepVisible(component: IComponentMatcher) {
     assertLayers { this.isVisible(component) }
+}
+
+fun FlickerTest.layerKeepVisibleOrOccluded(component: IComponentMatcher) {
+    assertLayers { this.isVisible(component)
+        .then().isOccluded(component, isOptional = true)
+        .then().isVisible(component) }
 }
 
 fun FlickerTest.splitAppLayerBoundsBecomesVisible(
@@ -399,6 +416,18 @@ fun FlickerTest.appWindowIsNotContainAtStart(component: IComponentMatcher) {
 
 fun FlickerTest.appWindowKeepVisible(component: IComponentMatcher) {
     assertWm { this.isAppWindowVisible(component) }
+}
+
+/**
+ * Asserts that a layer has no associated desktop handle.
+ *
+ * This check is performed on the layers trace, ensuring no layer corresponding to a
+ * desktop handle is present at the end of the scenario.
+ */
+fun FlickerTest.layerHasNoDesktopHandleAtEnd() {
+    assertLayersEnd {
+        this.notContains(DESKTOP_HANDLE)
+    }
 }
 
 fun FlickerTest.dockedStackDividerIsVisibleAtEnd() {

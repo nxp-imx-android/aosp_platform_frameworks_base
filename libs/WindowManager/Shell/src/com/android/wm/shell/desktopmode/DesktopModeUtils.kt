@@ -38,6 +38,8 @@ import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.graphics.Rect
 import android.os.SystemProperties
 import android.util.Size
+import android.view.DragEvent
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import android.window.SplashScreen.SPLASH_SCREEN_STYLE_ICON
 import com.android.internal.policy.DesktopModeCompatUtils
@@ -205,6 +207,31 @@ fun calculateMaximizeBounds(displayLayout: DisplayLayout, taskInfo: RunningTaskI
 }
 
 /**
+ * Position the new window based on the drag event. It uses the drag shadow to maintain the relative
+ * position on the new window. If shadow has anomaly, the new window is created from the top-center
+ * at the drop point.
+ */
+fun positionDragAndDropBounds(newBounds: Rect, dragEvent: DragEvent) {
+    val shadowSurface = dragEvent.dragSurface
+    if (
+        DesktopExperienceFlags.ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS.isTrue() &&
+            shadowSurface != null &&
+            shadowSurface.isValid &&
+            shadowSurface.width != 0
+    ) {
+        // Calculate the horizontal offset to maintain the touch point's relative
+        // position on the new window.
+        val dropOffset =
+            calculateDropPositionOffset(dragEvent.offsetX, shadowSurface.width, newBounds.width())
+        // Position the new window based on the drop point and its relative offset.
+        newBounds.offsetTo(dragEvent.x.toInt() - dropOffset, dragEvent.y.toInt())
+    } else {
+        // Position the new window to the top-center at the drop point.
+        newBounds.offsetTo(dragEvent.x.toInt() - (newBounds.width() / 2), dragEvent.y.toInt())
+    }
+}
+
+/**
  * Calculates the largest size that can fit in a given area while maintaining a specific aspect
  * ratio.
  */
@@ -261,17 +288,9 @@ fun calculateAspectRatio(taskInfo: TaskInfo): Float {
 }
 
 /** Returns whether the task is maximized. */
-fun isTaskMaximized(taskInfo: RunningTaskInfo, displayController: DisplayController): Boolean {
-    val displayLayout =
-        displayController.getDisplayLayout(taskInfo.displayId)
-            ?: error("Could not get display layout for display=${taskInfo.displayId}")
+fun isTaskMaximized(taskInfo: RunningTaskInfo, displayLayout: DisplayLayout): Boolean {
     val stableBounds = Rect()
     displayLayout.getStableBounds(stableBounds)
-    return isTaskMaximized(taskInfo, stableBounds)
-}
-
-/** Returns whether the task is maximized. */
-fun isTaskMaximized(taskInfo: RunningTaskInfo, stableBounds: Rect): Boolean {
     val currentTaskBounds = taskInfo.configuration.windowConfiguration.bounds
     return if (taskInfo.isResizeable) {
         isTaskBoundsEqual(currentTaskBounds, stableBounds)
@@ -376,10 +395,7 @@ fun decideDesktopTaskPlacementBounds(
     // TODO: b/365723620 - Handle non running tasks that were launched after reboot.
     // If task is already visible, it must have been handled already and added to desktop mode.
     // Cascade task only if it's not visible yet.
-    if (
-        DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue() &&
-            !taskRepository.isVisibleTask(task.taskId)
-    ) {
+    if (!taskRepository.isVisibleTask(task.taskId)) {
         val displayLayout = displayController.getDisplayLayout(requestedDisplayId)
         if (displayLayout != null) {
             val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
@@ -480,6 +496,20 @@ fun createActivityOptionsForStartTask(
 }
 
 /**
+ * Calculates the horizontal offset from the left edge of a new window to the user's touch point.
+ * This preserves the same relative position of the touch point as it was on the dragShadow, which
+ * allows a better positioning based on user's finger.
+ */
+private fun calculateDropPositionOffset(
+    dragOffsetX: Float,
+    shadowWidth: Int,
+    windowWidth: Int,
+): Int {
+    val touchPointHorizontalRatio = dragOffsetX / shadowWidth.toFloat()
+    return (windowWidth * touchPointHorizontalRatio).toInt()
+}
+
+/**
  * Calculates the desired initial bounds for applications in desktop windowing. This is done as a
  * scale of the screen bounds.
  */
@@ -495,6 +525,16 @@ private fun positionInScreen(desiredSize: Size, stableBounds: Rect): Rect =
         val offset = DesktopTaskPosition.Center.getTopLeftCoordinates(stableBounds, this)
         offsetTo(offset.x, offset.y)
     }
+
+/**
+ * Gets the freeform caption insets if task was eligible for exclude caption insets from app bounds
+ * compatibility treatment. Returns 0 if no compatibility treatment was applied.
+ */
+val TaskInfo.freeformCaptionInsets: Int
+    get() =
+        configuration.windowConfiguration.appBounds?.let {
+            it.top - configuration.windowConfiguration.bounds.top
+        } ?: 0
 
 /**
  * Whether the activity's aspect ratio can be changed or if it should be maintained as if it was

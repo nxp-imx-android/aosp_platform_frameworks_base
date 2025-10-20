@@ -572,10 +572,6 @@ public class AudioDeviceBroker {
                 mBtHelper.stopBluetoothSco(eventSource);
             }
         }
-        // In BT classic for communication, the device changes from a2dp to sco device,
-        // but for LE Audio or Hearing Aid it stays the same and we must trigger the proper
-        // stream volume alignment.
-        mAudioService.postUpdateContextualVolumes();
 
         updateCommunicationRoute(eventSource);
     }
@@ -2726,8 +2722,8 @@ public class AudioDeviceBroker {
                     mAccessibilityStrategyId, Arrays.asList(preferredCommunicationDevice));
             appliedCommunicationDevice = preferredCommunicationDevice;
         }
-        onUpdatePhoneStrategyDevice(preferredCommunicationDevice);
 
+        onUpdatePhoneStrategyDevice(preferredCommunicationDevice);
 
         if (appliedCommunicationDevice != null && AudioSystem.isBluetoothLeOutDevice(
                 appliedCommunicationDevice.getInternalType())) {
@@ -2859,6 +2855,10 @@ public class AudioDeviceBroker {
         }
         dispatchCommunicationDevice();
         mAudioService.updateRingerModeMutedStreams();
+        // In BT classic for communication, the device changes from a2dp to sco device,
+        // but for LE Audio or Hearing Aid it stays the same and we must trigger the proper
+        // stream volume alignment.
+        mAudioService.postUpdateContextualVolumes();
     }
 
     @GuardedBy("mDeviceStateLock")
@@ -3055,7 +3055,8 @@ public class AudioDeviceBroker {
                 Settings.Secure.AUDIO_DEVICE_INVENTORY, UserHandle.USER_CURRENT);
     }
 
-    void onReadAudioDeviceSettings() {
+    void onReadAudioDeviceSettings(
+            boolean binauralEnabledDefault, boolean transauralEnabledDefault) {
         final SettingsAdapter settingsAdapter = mAudioService.getSettings();
         final ContentResolver contentResolver = mAudioService.getContentResolver();
         String settings = readDeviceSettings();
@@ -3089,12 +3090,16 @@ public class AudioDeviceBroker {
         }
 
         if (settings != null && !settings.equals("")) {
-            setDeviceSettings(settings);
+            if (setDeviceSettings(settings, binauralEnabledDefault, transauralEnabledDefault)) {
+                onPersistAudioDeviceSettings();
+            }
         }
     }
 
-    void setDeviceSettings(String settings) {
-        mDeviceInventory.setDeviceSettings(settings);
+    boolean setDeviceSettings(String settings,
+            boolean binauralEnabledDefault, boolean transauralEnabledDefault) {
+        return mDeviceInventory.setDeviceSettings(
+                settings, binauralEnabledDefault, transauralEnabledDefault);
     }
 
     /** Test only method. */

@@ -16,6 +16,7 @@
 
 package com.android.systemui.screenshot.scroll;
 
+import static com.android.systemui.Flags.deleteAfterScrollCapture;
 import static com.android.systemui.shared.Flags.usePreferredImageEditor;
 
 import android.animation.ValueAnimator;
@@ -82,6 +83,7 @@ public class LongScreenshotActivity extends Activity {
 
     public static final String EXTRA_CAPTURE_RESPONSE = "capture-response";
     public static final String EXTRA_SCREENSHOT_USER_HANDLE = "screenshot-userhandle";
+    public static final String EXTRA_ORIGINAL_SCREENSHOT_URI = "original-screenshot";
     private static final String KEY_SAVED_IMAGE_PATH = "saved-image-path";
 
     private final UiEventLogger mUiEventLogger;
@@ -104,6 +106,7 @@ public class LongScreenshotActivity extends Activity {
     private ScrollCaptureResponse mScrollCaptureResponse;
     private UserHandle mScreenshotUserHandle;
     private File mSavedImagePath;
+    private Uri mOriginalScreenshotUri;
 
     private ListenableFuture<File> mCacheSaveFuture;
     private ListenableFuture<ImageLoader.Result> mCacheLoadFuture;
@@ -173,6 +176,8 @@ public class LongScreenshotActivity extends Activity {
         mScrollCaptureResponse = intent.getParcelableExtra(EXTRA_CAPTURE_RESPONSE);
         mScreenshotUserHandle = intent.getParcelableExtra(EXTRA_SCREENSHOT_USER_HANDLE,
                 UserHandle.class);
+        mOriginalScreenshotUri = intent.getParcelableExtra(
+                EXTRA_ORIGINAL_SCREENSHOT_URI, Uri.class);
         if (mScreenshotUserHandle == null) {
             mScreenshotUserHandle = Process.myUserHandle();
         }
@@ -487,6 +492,12 @@ public class LongScreenshotActivity extends Activity {
         } catch (CancellationException | InterruptedException | ExecutionException e) {
             Log.e(TAG, "failed to export", e);
             return;
+        }
+        if (deleteAfterScrollCapture() && mOriginalScreenshotUri != null
+                && !Uri.EMPTY.equals(mOriginalScreenshotUri)) {
+            Log.i(TAG,
+                    "Scroll capture saved, deleting original screenshot " + mOriginalScreenshotUri);
+            getContentResolver().delete(mOriginalScreenshotUri, null, null);
         }
         Uri exported = ContentProvider.getUriWithoutUserId(result.uri);
         Log.e(TAG, action + " uri=" + exported);

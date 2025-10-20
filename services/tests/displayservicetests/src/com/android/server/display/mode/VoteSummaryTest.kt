@@ -24,10 +24,11 @@ import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import org.junit.Test
 import org.junit.runner.RunWith
 
+private const val FLOAT_TOLERANCE = 0.001f
+
 @SmallTest
 @RunWith(TestParameterInjector::class)
 class VoteSummaryTest {
-
     enum class SupportedRefreshRatesTestCase(
             val supportedModesVoteEnabled: Boolean,
             internal val summaryRefreshRates: List<SupportedRefreshRatesVote.RefreshRates>?,
@@ -187,6 +188,52 @@ class VoteSummaryTest {
         assertThat(result).hasSize(1)
     }
 
+    @Test
+    fun testValidSummary_renderRateAchievable() {
+        val summary = createSummary()
+        summary.minRenderFrameRate = 48f
+        summary.maxRenderFrameRate = 48f
+
+        val result = summary.filterModes(arrayOf(createMode(1, 120f, 240f)))
+
+        assertThat(result).hasSize(1)
+    }
+
+    @Test
+    fun testInvalidSummary_renderRateNotAchievable() {
+        val summary = createSummary()
+        summary.minRenderFrameRate = 48f
+        summary.maxRenderFrameRate = 48f
+
+        val result = summary.filterModes(arrayOf(createMode(1, 120f, 120f)))
+
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun testDisableRenderRateSwitching_renderRateAchievable() {
+        val summary = createSummary()
+        summary.minRenderFrameRate = 48f
+        summary.maxRenderFrameRate = 48f
+
+        summary.disableRenderRateSwitching(240f, 80f)
+
+        assertThat(summary.minRenderFrameRate).isEqualTo(48f)
+        assertThat(summary.minRenderFrameRate).isWithin(FLOAT_TOLERANCE).of(48f)
+    }
+
+    @Test
+    fun testDisableRenderRateSwitching_renderRateNotAchievable() {
+        val summary = createSummary()
+        summary.minRenderFrameRate = 48f
+        summary.maxRenderFrameRate = 48f
+
+        summary.disableRenderRateSwitching(120f, 80f)
+
+        assertThat(summary.minRenderFrameRate).isEqualTo(80f)
+        assertThat(summary.minRenderFrameRate).isWithin(FLOAT_TOLERANCE).of(80f)
+    }
+
     enum class RejectedModesTestCase(
             internal val summaryRejectedModes: Set<Int>?,
             val modesToFilter: Array<Display.Mode>,
@@ -228,7 +275,7 @@ class VoteSummaryTest {
 
 
 private fun createMode(modeId: Int, refreshRate: Float, vsyncRate: Float): Display.Mode {
-    return Display.Mode(modeId, 600, 800, refreshRate, vsyncRate, false,
+    return Display.Mode(modeId, -1, 0, 600, 800, refreshRate, vsyncRate,
             FloatArray(0), IntArray(0))
 }
 

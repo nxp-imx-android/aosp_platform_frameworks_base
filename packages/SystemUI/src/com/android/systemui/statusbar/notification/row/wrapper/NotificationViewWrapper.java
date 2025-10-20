@@ -34,6 +34,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.compose.ui.platform.ComposeView;
+
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.graphics.ColorUtils;
 import com.android.internal.util.ContrastColorUtil;
@@ -78,6 +80,8 @@ public abstract class NotificationViewWrapper implements TransformableView {
                 return new NotificationCompactMessagingTemplateViewWrapper(ctx, v, row);
             } else if ("progress".equals(v.getTag())) {
                 return new NotificationProgressTemplateViewWrapper(ctx, v, row);
+            } else if ("metric".equals(v.getTag())) {
+                return new NotificationMetricTemplateViewWrapper(ctx, v, row);
             }
 
             if (NotificationBundleUi.isEnabled()
@@ -93,6 +97,8 @@ public abstract class NotificationViewWrapper implements TransformableView {
             return new NotificationTemplateViewWrapper(ctx, v, row);
         } else if (v instanceof NotificationHeaderView) {
             return new NotificationHeaderViewWrapper(ctx, v, row);
+        } else if (v instanceof ComposeView && row.isBundle()) {
+            return new BundleHeaderViewWrapper(ctx, v, row);
         } else {
             return new NotificationCustomViewWrapper(ctx, v, row);
         }

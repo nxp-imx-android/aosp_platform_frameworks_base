@@ -41,13 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Nyahpasang kemaskinian apl?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Nyahpasang kemaskinian apl untuk semua pengguna?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Nyahpasang apl ini untuk semua pengguna?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"Nyahpasang apl ini untuk pengguna \'<xliff:g id="USER_NAME">%1$s</xliff:g>\'?"</string>
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Nyahpasang apl ini untuk pengguna \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Apl tidak ditemukan"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Tidak dapat menyahpasang apl ini"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Apl tidak dinyahpasang"</string>
     <string name="title_archive" msgid="2876455228073419830">"Arkibkan apl ini?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Arkibkan apl ini untuk semua pengguna?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"Arkibkan apl ini untuk pengguna \'<xliff:g id="USER_NAME">%1$s</xliff:g>\'?"</string>
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Arkibkan apl ini untuk pengguna \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Pulihkan apl ini?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Tindakan diperlukan"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Storan tidak mencukupi"</string>
@@ -61,7 +61,7 @@
     <string name="message_external_source_blocked" product="tablet" msgid="1404860482919177902">"Untuk keselamatan, tablet anda kini tidak dibenarkan memasang apl yang tidak diketahui daripada sumber ini pada masa ini. Anda boleh menukar pilihan ini dalam Tetapan."</string>
     <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"Untuk keselamatan, TV anda tidak dibenarkan memasang apl yang tidak diketahui daripada sumber ini pada masa ini. Anda boleh menukar pilihan ini dalam Tetapan."</string>
     <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"Untuk keselamatan anda, jam tangan anda tidak dibenarkan memasang apl yang tidak diketahui daripada sumber ini pada masa ini. Anda boleh menukar pilihan ini dalam Tetapan."</string>
-    <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"Untuk keselamatan anda, telefon anda kini tidak dibenarkan memasang apl yang tidak diketahui daripada sumber ini pada masa ini. Anda boleh menukar pilihan ini dalam Tetapan."</string>
+    <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"Untuk keselamatan anda, telefon anda tidak dibenarkan memasang apl yang tidak diketahui daripada sumber ini pada masa ini. Anda boleh menukar pilihan ini dalam Tetapan."</string>
     <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"Telefon dan data peribadi anda lebih mudah diserang oleh apl yang tidak diketahui. Dengan memasang apl ini, anda bersetuju bahawa anda bertanggungjawab atas sebarang kerosakan pada telefon anda atau kehilangan data yang mungkin disebabkan oleh penggunaan apl tersebut."</string>
     <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"Tablet dan data peribadi anda lebih mudah diserang oleh apl yang tidak diketahui. Dengan memasang apl ini, anda bersetuju bahawa anda bertanggungjawab atas sebarang kerosakan pada tablet anda atau kehilangan data yang mungkin disebabkan oleh penggunaan apl tersebut."</string>
     <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"TV dan data peribadi anda lebih mudah diserang oleh apl yang tidak diketahui. Dengan memasang apl ini, anda bersetuju bahawa anda bertanggungjawab atas sebarang kerosakan pada TV anda atau kehilangan data yang mungkin disebabkan oleh penggunaan apl tersebut."</string>
@@ -96,16 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Untuk memulihkan apl ini, anda perlu memasang <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Terdapat masalah semasa memuatkan apl ini"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> merupakan sebahagian daripada apl yang berikut: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Apl ini disekat. Untuk membantu anda memastikan peranti dan data anda kekal selamat, hanya apl daripada pembangun yang disahkan boleh dipasang.&lt;/p&gt; &lt;a href=&gt;Ketahui pengesahan pembangun dengan lebih lanjut&lt;/a&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Apl ini tidak dikemaskinikan. Untuk membantu anda memastikan peranti dan data anda kekal selamat, hanya kemaskinian daripada pembangun yang disahkan boleh dipasang.&lt;/p&gt; &lt;a href=&gt;Ketahui pengesahan pembangun dengan lebih lanjut&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
-    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Terdapat masalah semasa mengesahkan pembangun apl ini. Apl daripada pembangun yang tidak disahkan mungkin tidak selamat, maka apl tidak dipasangkan.&lt;/p&gt; &lt;a href=&gt;Ketahui pengesahan pembangun dengan lebih lanjut&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Terdapat masalah semasa mengesahkan pembangun apl ini. Kemaskinian daripada pembangun yang tidak disahkan mungkin tidak selamat, maka apl tidak dikemaskinikan.&lt;/p&gt; &lt;a href=&gt;Ketahui pengesahan pembangun dengan lebih lanjut&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Apl ini telah disekat kerana terdapat masalah semasa mengesahkan pembangun apl. Untuk membantu anda memastikan peranti dan data anda kekal selamat, hanya apl daripada pembangun yang disahkan boleh dipasang.&lt;/p&gt; &lt;a href=&gt;Ketahui pengesahan pembangun dengan lebih lanjut&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;Apl ini tidak dikemaskinikan kerana terdapat masalah semasa mengesahkan pembangun apl. Untuk membantu anda memastikan peranti dan data anda kekal selamat, hanya kemaskinian daripada pembangun yang disahkan boleh dipasang.&lt;/p&gt; &lt;a href=&gt;Ketahui pengesahan pembangun dengan lebih lanjut&lt;/a&gt;"</string>
+    <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Apl ini disekat. Untuk membantu anda memastikan peranti dan data anda selamat, hanya apl daripada pembangun yang disahkan boleh dipasang.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Ketahui lebih lanjut tentang pengesahan pembangun&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Apl ini tidak dikemaskinikan. Untuk membantu anda memastikan peranti dan data anda selamat, hanya kemaskinian daripada pembangun yang disahkan boleh dipasang.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Ketahui lebih lanjut tentang pengesahan pembangun&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Apl ini tidak dipasang. Apl daripada pembangun yang tidak disahkan mungkin tidak selamat.&lt;/p&gt; &lt;p&gt;Sambungan Internet diperlukan untuk mengesahkan pembangun apl. Semak sambungan anda, kemudian cuba buat pemasangan sekali lagi. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Ketahui lebih lanjut tentang pengesahan pembangun&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="8094414928318316598">"&lt;p&gt;Apl ini tidak dikemaskinikan. Kemaskinian daripada pembangun yang tidak disahkan mungkin tidak selamat.&lt;/p&gt; &lt;p&gt;Sambungan Internet diperlukan untuk mengesahkan pembangun apl. Semak sambungan anda, kemudian cuba buat pengemaskinian sekali lagi. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Ketahui lebih lanjut tentang pengesahan pembangun&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="3830073638843524892">"&lt;p&gt;Terdapat masalah semasa mengesahkan pembangun apl ini. Apl daripada pembangun yang tidak disahkan mungkin tidak selamat, maka apl tidak dipasangkan.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Ketahui lebih lanjut tentang pengesahan pembangun&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="342184955548504019">"&lt;p&gt;Terdapat masalah semasa mengesahkan pembangun apl ini. Kemaskinian daripada pembangun yang tidak disahkan mungkin tidak selamat, maka apl tidak dikemaskinikan.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Ketahui lebih lanjut tentang pengesahan pembangun&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;Apl ini telah disekat kerana terdapat masalah semasa mengesahkan pembangun apl. Untuk membantu anda memastikan peranti dan data anda selamat, hanya apl daripada pembangun yang disahkan boleh dipasang.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Ketahui lebih lanjut tentang pengesahan pembangun&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;Apl ini tidak dikemaskinikan kerana terdapat masalah semasa mengesahkan pembangun apl. Untuk membantu anda memastikan peranti dan data anda selamat, hanya kemaskinian daripada pembangun yang disahkan boleh dipasang.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Ketahui lebih lanjut tentang pengesahan pembangun&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Jika anda memasang tanpa membuat pengesahan, perlu diingat bahawa apl daripada pembangun yang tidak disahkan mungkin boleh mendatangkan risiko kepada peranti dan data anda."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Jika anda melakukan kemaskinian tanpa membuat pengesahan, sentiasa ingat bahawa kemaskinian daripada pembangun yang tidak disahkan mungkin boleh mendatangkan risiko kepada peranti dan data anda."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Pembangun apl tidak disahkan"</string>
@@ -114,7 +112,7 @@
     <string name="install_without_verifying" msgid="5359680595440741626">"Pasang tanpa pengesahan"</string>
     <string name="update_without_verifying" msgid="2841466981431484179">"Kemas kinikan tanpa membuat pengesahan"</string>
     <string name="button_install" msgid="7434013176505680162">"Pasang"</string>
-    <string name="button_update" msgid="3046719350226327526">"Kemaskinian"</string>
+    <string name="button_update" msgid="3046719350226327526">"Kemas kinikan"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Kemas kinikan juga"</string>
     <string name="button_done" msgid="3408025390982260629">"Selesai"</string>
     <string name="button_open" msgid="6892684987374117955">"Buka"</string>
@@ -129,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Pulihkan"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Nyahpasang kemaskinian"</string>
     <string name="button_settings" msgid="3837571366246132287">"Tetapan"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Cuba lagi"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Klon <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

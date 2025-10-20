@@ -154,9 +154,7 @@ public class SystemBackupAgent extends BackupAgentHelper {
         addHelperIfEligibleForUser(SYSTEM_GENDER_HELPER,
                 new SystemGrammaticalGenderBackupHelper(mUserId));
         addHelperIfEligibleForUser(DISPLAY_HELPER, new DisplayBackupHelper(mUserId));
-        if (com.android.hardware.input.Flags.enableBackupAndRestoreForInputGestures()) {
-            addHelperIfEligibleForUser(INPUT_HELPER, new InputBackupHelper(mUserId));
-        }
+        addHelperIfEligibleForUser(INPUT_HELPER, new InputBackupHelper(mUserId));
         if (DesktopExperienceFlags.ENABLE_BACKUP_AND_RESTORE_DISPLAY_WINDOW_SETTINGS.isTrue()) {
             addHelperIfEligibleForUser(DISPLAY_WINDOW_HELPER,
                     new DisplayWindowSettingsBackupHelper(mUserId));
@@ -193,7 +191,8 @@ public class SystemBackupAgent extends BackupAgentHelper {
      */
     @Override
     public void onRestoreFile(ParcelFileDescriptor data, long size,
-            int type, String domain, String path, long mode, long mtime)
+            int type, String domain, String path, long mode, long mtime,
+            long appVersionCode, int transportFlags, String contentVersion)
             throws IOException {
         Slog.i(TAG, "Restoring file domain=" + domain + " path=" + path);
 

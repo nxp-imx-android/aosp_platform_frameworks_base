@@ -26,11 +26,11 @@ import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.RelaunchBubbleIntoSplitScreenTest.Companion.bubbleApp
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleExitTestCases
 import com.android.wm.shell.flicker.bubbles.testcase.SecondarySplitEnterTestCases
-import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaTouchOutside
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.withBubbleFullyDismissedAndGone
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
+import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import com.android.wm.shell.flicker.utils.SplitScreenUtils
 import com.android.wm.shell.flicker.utils.SplitScreenUtils.enterSplit
 import com.android.wm.shell.flicker.utils.SplitScreenUtils.withSplitScreenComplete
@@ -92,7 +92,7 @@ class RelaunchBubbleIntoSplitScreenTest : BubbleFlickerTestBase(),
                     secondaryApp.openNewTaskWithRecycle(uiDevice, wmHelper) {
                         // TODO: b/432604687 - Expected behavior is blocked by WM core reparent.
                         // Reopen the collapsed bubble.
-                        // withBubbleAppInExpandedState(bubbleApp)
+                        // withBubbleExpanded(bubbleApp)
 
                         // Current behavior: Bubble task is converted into split.
                         withBubbleFullyDismissedAndGone()
@@ -107,9 +107,9 @@ class RelaunchBubbleIntoSplitScreenTest : BubbleFlickerTestBase(),
             )
     }
 
-    @get:Rule
-    val setUpRule = ApplyPerParameterRule(
-        testSetupRule(NavBar.MODE_GESTURAL).around(recordTraceWithTransitionRule),
+    @get:Rule(order = 1)
+    val setUpRule = RunOncePerParameterRule(
+        wrappedRule = testSetupRule(NavBar.MODE_GESTURAL).around(recordTraceWithTransitionRule),
     )
 
     override val traceDataReader

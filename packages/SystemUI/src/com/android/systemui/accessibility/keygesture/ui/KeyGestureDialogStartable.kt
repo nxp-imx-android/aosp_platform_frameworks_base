@@ -16,6 +16,7 @@
 
 package com.android.systemui.accessibility.keygesture.ui
 
+import android.annotation.StringRes
 import android.hardware.input.KeyGestureEvent
 import android.text.Annotation
 import android.text.Spanned
@@ -36,10 +37,11 @@ import com.android.compose.PlatformButton
 import com.android.compose.PlatformOutlinedButton
 import com.android.compose.theme.PlatformTheme
 import com.android.hardware.input.Flags
+import com.android.internal.accessibility.util.TtsPrompt
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.CoreStartable
 import com.android.systemui.accessibility.keygesture.domain.KeyGestureDialogInteractor
-import com.android.systemui.accessibility.keygesture.domain.model.KeyGestureConfirmInfo
+import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConfirmInfo
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dialog.ui.composable.AlertDialogContent
@@ -64,24 +66,154 @@ constructor(
 
     @VisibleForTesting var dialogType: Int = 0
 
+    /**
+     * Defines a strategy for handling the specific behaviors of different key gesture confirmation
+     * dialogs. This allows `createDialog` to be agnostic to the specific logic of each dialog type.
+     */
+    private interface DialogBehaviorDelegate {
+        @get:StringRes val negativeButtonTextId: Int
+
+        @get:StringRes val positiveButtonTextId: Int
+
+        /** Called after the dialog is created but before it's shown. */
+        fun onDialogCreated(info: KeyGestureConfirmInfo) {}
+
+        /** Called when the positive button is clicked. */
+        fun onPositiveButtonClick(info: KeyGestureConfirmInfo)
+
+        /** Called when the dialog is canceled. */
+        fun onDialogCanceled(info: KeyGestureConfirmInfo) {}
+
+        /** Called when the dialog is dismissed for any reason. */
+        fun onDialogDismissed(info: KeyGestureConfirmInfo) {}
+    }
+
+    /**
+     * A base class for dialog delegates that handles the most common behavior: enabling a shortcut
+     * when the positive button is clicked and using standard button texts.
+     */
+    private abstract class BaseDialogDelegate(
+        protected val interactor: KeyGestureDialogInteractor
+    ) : DialogBehaviorDelegate {
+        override val negativeButtonTextId: Int =
+            R.string.accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text
+        override val positiveButtonTextId: Int =
+            R.string.accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text
+
+        override fun onPositiveButtonClick(info: KeyGestureConfirmInfo) {
+            interactor.enableShortcutsForTargets(enable = true, info.targetName)
+        }
+    }
+
+    /**
+     * Delegate for standard keyboard shortcuts (e.g., Select to Speak) that only require the common
+     * "enable" action.
+     */
+    private class DefaultDialogDelegate(interactor: KeyGestureDialogInteractor) :
+        BaseDialogDelegate(interactor)
+
+    /**
+     * Delegate for the screen reader shortcut, which extends the base behavior by adding a
+     * Text-to-Speech prompt for accessibility.
+     */
+    private class ScreenReaderDialogDelegate(interactor: KeyGestureDialogInteractor) :
+        BaseDialogDelegate(interactor) {
+        private var ttsPrompt: TtsPrompt? = null
+
+        override fun onDialogCreated(info: KeyGestureConfirmInfo) {
+            info.ttsText?.let { text -> ttsPrompt = interactor.createTtsPromptForText(text) }
+            interactor.enableShortcutsForTargets(enable = true, info.targetName)
+        }
+
+        override fun onPositiveButtonClick(info: KeyGestureConfirmInfo) {}
+
+        override fun onDialogCanceled(info: KeyGestureConfirmInfo) {
+            // We need to remove the shortcut target if the user clicks the negative
+            // button or clicks outside of the dialog.
+            interactor.enableShortcutsForTargets(enable = false, info.targetName)
+        }
+
+        override fun onDialogDismissed(info: KeyGestureConfirmInfo) {
+            ttsPrompt?.dismiss()
+        }
+    }
+
+    /**
+     * Delegate for the magnification shortcut which turns on the magnification shortcuts and zoom
+     * in automatically
+     */
+    private class MagnifyMagnificationDialogDelegate(interactor: KeyGestureDialogInteractor) :
+        BaseDialogDelegate(interactor) {
+        override val negativeButtonTextId: Int =
+            R.string.accessibility_key_gesture_magnification_dialog_negative_button_text
+        override val positiveButtonTextId: Int =
+            R.string.accessibility_key_gesture_magnification_dialog_positive_button_text
+
+        override fun onDialogCreated(info: KeyGestureConfirmInfo) {
+            interactor.enableShortcutsForTargets(enable = true, info.targetName)
+            interactor.enableMagnificationAndZoomIn(info.displayId)
+        }
+
+        override fun onPositiveButtonClick(info: KeyGestureConfirmInfo) {}
+
+        override fun onDialogCanceled(info: KeyGestureConfirmInfo) {
+            // We need to remove the shortcut target if the user clicks the negative
+            // button or clicks outside of the dialog.
+            interactor.enableShortcutsForTargets(enable = false, info.targetName)
+        }
+    }
+
+    private fun getDialogDelegate(keyGestureType: Int): DialogBehaviorDelegate {
+        return when (keyGestureType) {
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION ->
+                if (Flags.enableMagnifyMagnificationKeyGestureDialog()) {
+                    MagnifyMagnificationDialogDelegate(interactor)
+                } else {
+                    DefaultDialogDelegate(interactor)
+                }
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER ->
+                ScreenReaderDialogDelegate(interactor)
+            else -> DefaultDialogDelegate(interactor)
+        }
+    }
+
     override fun start() {
         if (
             !Flags.enableTalkbackAndMagnifierKeyGestures() &&
                 !Flags.enableSelectToSpeakKeyGestures() &&
+                !Flags.enableTalkbackKeyGestures() &&
                 !Flags.enableVoiceAccessKeyGestures()
         ) {
             return
         }
 
         mainScope.launch {
-            interactor.keyGestureConfirmDialogRequest.collectLatest { keyGestureConfirmInfo ->
-                createDialog(keyGestureConfirmInfo)
+            interactor.keyGestureConfirmDialogRequest.collectLatest { requestPair ->
+                processDialogRequest(requestPair)
             }
         }
     }
 
+    private fun processDialogRequest(requestPair: Pair<Boolean, KeyGestureConfirmInfo?>) {
+        if (requestPair.first) {
+            createDialog(requestPair.second)
+            return
+        }
+
+        dismissDialog(requestPair.second)
+    }
+
+    private fun dismissDialog(keyGestureConfirmInfo: KeyGestureConfirmInfo?) {
+        if (dialogType == keyGestureConfirmInfo?.keyGestureType) {
+            currentDialog?.dismiss()
+        }
+    }
+
     private fun createDialog(keyGestureConfirmInfo: KeyGestureConfirmInfo?) {
-        // Ignore other type of first-time keyboard shortcuts while the dialog is showing.
+        // Ignore other type of first-time keyboard shortcuts while there is an existing dialog.
+        // `currentDialog` will be reset when the dialog dismissal listener is called, which will be
+        // executed asynchronously. Thus, to avoid race condition, we should check the nullable of
+        // this value to determine if the current dialog is fully finished.
         if (currentDialog != null) {
             return
         }
@@ -90,25 +222,7 @@ constructor(
             return
         }
 
-        val negativeButtonTextId =
-            if (
-                keyGestureConfirmInfo.keyGestureType ==
-                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION
-            ) {
-                R.string.accessibility_key_gesture_magnification_dialog_negative_button_text
-            } else {
-                android.R.string.cancel
-            }
-
-        val positiveButtonTextId =
-            if (
-                keyGestureConfirmInfo.keyGestureType ==
-                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION
-            ) {
-                R.string.accessibility_key_gesture_magnification_dialog_positive_button_text
-            } else {
-                R.string.accessibility_key_gesture_dialog_positive_button_text
-            }
+        val delegate = getDialogDelegate(keyGestureConfirmInfo.keyGestureType)
 
         currentDialog =
             dialogFactory.create { dialog ->
@@ -122,20 +236,24 @@ constructor(
                             )
                         },
                         negativeButton = {
-                            PlatformOutlinedButton(onClick = { dialog.dismiss() }) {
-                                Text(stringResource(id = negativeButtonTextId))
+                            PlatformOutlinedButton(
+                                onClick = {
+                                    // We need explicitly call `cancel` here; otherwise, clicking
+                                    // the negative button, the cancel listener won't be triggered.
+                                    dialog.cancel()
+                                }
+                            ) {
+                                Text(stringResource(id = delegate.negativeButtonTextId))
                             }
                         },
                         positiveButton = {
                             PlatformButton(
                                 onClick = {
-                                    interactor.onPositiveButtonClick(
-                                        keyGestureConfirmInfo.targetName
-                                    )
+                                    delegate.onPositiveButtonClick(keyGestureConfirmInfo)
                                     dialog.dismiss()
                                 }
                             ) {
-                                Text(stringResource(id = positiveButtonTextId))
+                                Text(stringResource(id = delegate.positiveButtonTextId))
                             }
                         },
                     )
@@ -144,15 +262,10 @@ constructor(
 
         currentDialog?.let { dialog ->
             dialogType = keyGestureConfirmInfo.keyGestureType
-            val tts =
-                if (dialogType == KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER) {
-                    interactor.performTtsPromptForText(keyGestureConfirmInfo.contentText)
-                } else {
-                    null
-                }
-
+            delegate.onDialogCreated(keyGestureConfirmInfo)
+            dialog.setOnCancelListener { delegate.onDialogCanceled(keyGestureConfirmInfo) }
             dialog.setOnDismissListener {
-                tts?.dismiss()
+                delegate.onDialogDismissed(keyGestureConfirmInfo)
                 currentDialog = null
             }
             dialog.show()

@@ -93,6 +93,7 @@ combined_apis {
         "framework-sdkextensions",
         "framework-sdksandbox",
         "framework-statsd",
+        "framework-telecom",
         "framework-tethering",
         "framework-uwb",
         "framework-virtualization",
@@ -116,7 +117,9 @@ combined_apis {
         true: [
             "framework-conscrypt-nsc",
         ],
-        default: [],
+        default: [
+            "framework-network-security-config",
+        ],
     }) + select(release_flag("RELEASE_RANGING_STACK"), {
         true: [
             "framework-ranging",
@@ -394,8 +397,9 @@ stubs_defaults {
     arg_files: [":frameworks-base-core-AndroidManifest.xml"],
     aidl: {
         include_dirs: [
-            "frameworks/av/aidl",
+            "frameworks/av/media/aidl",
             "frameworks/base/media/aidl",
+            "frameworks/base/telecomm/framework/aidl-export",
             "frameworks/base/telephony/java",
             "frameworks/native/libs/permission/aidl",
             "hardware/interfaces/biometrics/common/aidl",
@@ -511,9 +515,10 @@ java_defaults {
         "//frameworks/base/location",
         "//frameworks/base/nfc",
         "//frameworks/base/packages/CrashRecovery/framework",
+        "//frameworks/base/packages/NetworkSecurityConfig",
         "//packages/modules/NeuralNetworks:__subpackages__",
         // TODO(b/429127828): Clean this up along with RELEASE_TELEPHONY_MODULE
-        "//packages/modules/Telephony/framework:__subpackages__",
+        "//packages/modules/Telephony:__subpackages__",
         "//packages/modules/Virtualization:__subpackages__",
     ],
     plugins: ["error_prone_android_framework"],

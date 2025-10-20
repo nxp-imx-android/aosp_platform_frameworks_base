@@ -402,7 +402,6 @@ flag {
   namespace: "enterprise"
   description: "Split up existing create and provision managed profile API."
   bug: "375382324"
-  is_exported: true
 }
 
 flag {
@@ -471,10 +470,31 @@ flag {
 }
 
 flag {
+  name: "dont_write_is_system_authority"
+  namespace: "enterprise"
+  description: "Stop writing redundant is-system attribute in EnforcingAdmin XML representation ."
+  bug: "336315393"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
+  name: "tighten_admin_instantiation"
+  namespace: "enterprise"
+  description: "Don't allow arbitrary EnforcingAdmin authority to be read from disk."
+  bug: "336315393"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "cross_profile_widget_provider_bulk_apis"
   namespace: "enterprise"
   description: "Add bulk APIs for cross profile widget providers"
   bug: "421053737"
+  is_exported: true
 }
 
 flag {
@@ -483,6 +503,16 @@ flag {
   namespace: "enterprise"
   description: "Enable the policy streamlining APIs."
   bug: "434919316"
+}
+
+flag {
+  name: "remove_hack_in_policy_engine"
+  namespace: "enterprise"
+  description: "[Coexistence] Remove hack for handling user control disabled policy result code in the policy engine."
+  bug: "285532044"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }
 
 flag {
@@ -499,4 +529,44 @@ flag {
   description: "Adds a new API for extra that contains EnforcingAdmin"
   bug: "414733570"
   is_exported: true
+}
+
+flag {
+  name: "device_owner_for_all"
+  namespace: "enterprise"
+  description: "Enable any user (not just the Main User) to be a DeviceOwner"
+  bug: "435271558"
+}
+
+flag {
+  name: "multi_user_management_device_provisioning"
+  is_exported: true
+  namespace: "enterprise"
+  description: "Enable the multi user management device provisioning APIs."
+  bug: "390162247"
+}
+
+flag {
+  name: "policy_streamlining_screen_capture"
+  namespace: "enterprise"
+  description: "Redirect set/getScreenCaptureDisabled to the generic set/getPolicy APIs"
+  bug: "434919316"
+}
+
+flag {
+  name: "common_criteria_mode_coexistence"
+  namespace: "enterprise"
+  description: "Enables coexistence support for setCommonCriteriaModeEnabled"
+  bug: "436799232"
+  is_exported: true
+}
+
+flag {
+  name: "fix_disabled_by_admin_short_message_not_shown"
+  namespace: "enterprise"
+  description: "[HSUM]Test Issues Review Request for 1TCs fail at Device Owner Tests -> Policy transparency test -> Disallow config tethering test [run-on-secondary-user]"
+  bug: "448569510"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }

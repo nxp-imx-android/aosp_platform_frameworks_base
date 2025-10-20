@@ -530,13 +530,6 @@ public interface WindowManager extends ViewManager {
     int TRANSIT_FLAG_KEYGUARD_UNOCCLUDING = (1 << 13); // 0x2000
 
     /**
-     * Transition flag: Indicates that there is a physical display switch
-     * TODO(b/316112906) remove after defer_display_updates flag roll out
-     * @hide
-     */
-    int TRANSIT_FLAG_PHYSICAL_DISPLAY_SWITCH = (1 << 14); // 0x4000
-
-    /**
      * Transition flag: Indicates that aod is showing hidden by entering doze
      * @hide
      */
@@ -574,7 +567,6 @@ public interface WindowManager extends ViewManager {
             TRANSIT_FLAG_KEYGUARD_APPEARING,
             TRANSIT_FLAG_KEYGUARD_OCCLUDING,
             TRANSIT_FLAG_KEYGUARD_UNOCCLUDING,
-            TRANSIT_FLAG_PHYSICAL_DISPLAY_SWITCH,
             TRANSIT_FLAG_AOD_APPEARING,
             TRANSIT_FLAG_AVOID_MOVE_TO_FRONT,
             TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION
@@ -1168,7 +1160,6 @@ public interface WindowManager extends ViewManager {
      * </pre>
      *
      */
-    @FlaggedApi(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT_API)
     String PROPERTY_CAMERA_COMPAT_ALLOW_SIMULATE_REQUESTED_ORIENTATION =
             "android.window.PROPERTY_CAMERA_COMPAT_ALLOW_SIMULATE_REQUESTED_ORIENTATION";
 
@@ -1411,6 +1402,7 @@ public interface WindowManager extends ViewManager {
      * {@link android.R.attr#maxAspectRatio min aspect ratio}
      * {@link android.R.attr#resizeableActivity unresizable} on large screen devices with the
      * ignore orientation request display setting enabled since Android 16 (API level 36) or higher.
+     * <p>This property is ignored if the app's target SDK is Android 17 (API level 37) or higher.
      *
      * <p>The default value is {@code false}.
      *
@@ -1431,7 +1423,6 @@ public interface WindowManager extends ViewManager {
      * </pre>
      * @hide
      */
-    // TODO(b/357141415): Remove this from sdk 37
     String PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY =
             "android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY";
 
@@ -1663,7 +1654,6 @@ public interface WindowManager extends ViewManager {
      * &lt;/activity&gt;
      * </pre>
      */
-    @FlaggedApi(Flags.FLAG_SUPPORTS_MULTI_INSTANCE_SYSTEM_UI)
     public static final String PROPERTY_SUPPORTS_MULTI_INSTANCE_SYSTEM_UI =
             "android.window.PROPERTY_SUPPORTS_MULTI_INSTANCE_SYSTEM_UI";
 
@@ -2680,8 +2670,7 @@ public interface WindowManager extends ViewManager {
          * @hide
          */
         public static boolean isSubWindowType(@WindowType int type) {
-            return (type >= FIRST_SUB_WINDOW && type <= LAST_SUB_WINDOW)
-                    || type == TYPE_STATUS_BAR_SUB_PANEL;
+            return (type >= FIRST_SUB_WINDOW && type <= LAST_SUB_WINDOW);
         }
 
         /** @deprecated this is ignored, this value is set automatically when needed. */
@@ -3159,7 +3148,7 @@ public interface WindowManager extends ViewManager {
          * Touches can slide out of the window but they cannot necessarily slide
          * back in (unless the other window with touch focus permits it).
          *
-         * {@hide}
+         * @hide
          */
         @UnsupportedAppUsage
         @TestApi
@@ -3359,7 +3348,7 @@ public interface WindowManager extends ViewManager {
          * types that normally only appear on the owning user's screen. Refer to each window type
          * to determine its default behavior.
          *
-         * {@hide} */
+         * @hide */
         @SystemApi
         @RequiresPermission(permission.INTERNAL_SYSTEM_WINDOW)
         public static final int SYSTEM_FLAG_SHOW_FOR_ALL_USERS = 1 << 4;
@@ -3376,20 +3365,20 @@ public interface WindowManager extends ViewManager {
          * Never animate position changes of the window.
          *
          * @see android.R.styleable#Window_windowNoMoveAnimation
-         * {@hide}
+         * @hide
          */
         @UnsupportedAppUsage
         public static final int PRIVATE_FLAG_NO_MOVE_ANIMATION = 1 << 6;
 
         /** Window flag: the client side view can intercept back progress, so system does not
          * need to pilfer pointers.
-         * {@hide} */
+         * @hide */
         public static final int PRIVATE_FLAG_APP_PROGRESS_GENERATION_ALLOWED = 1 << 7;
 
         /** Window flag: a special option intended for system dialogs.  When
          * this flag is set, the window will demand focus unconditionally when
          * it is created.
-         * {@hide} */
+         * @hide */
         public static final int PRIVATE_FLAG_SYSTEM_ERROR = 1 << 8;
 
         /**
@@ -3397,14 +3386,14 @@ public interface WindowManager extends ViewManager {
          * necessary. If a window size can be known by the LayoutParams, we can use the size to
          * relayout window, and we don't have to measure the view hierarchy before laying out the
          * views. This reduces the chances to perform measure.
-         * {@hide}
+         * @hide
          */
         public static final int PRIVATE_FLAG_OPTIMIZE_MEASURE = 1 << 9;
 
         /**
          * Flag that prevents the wallpaper behind the current window from receiving touch events.
          *
-         * {@hide}
+         * @hide
          */
         public static final int PRIVATE_FLAG_DISABLE_WALLPAPER_TOUCH_EVENTS = 1 << 10;
 
@@ -3420,7 +3409,7 @@ public interface WindowManager extends ViewManager {
          * is given, and the window is covering the display cutout. The extended frame will not be
          * larger than the parent frame.
          *
-         * {@hide}
+         * @hide
          */
         public static final int PRIVATE_FLAG_LAYOUT_SIZE_EXTENDED_BY_CUTOUT = 1 << 12;
 
@@ -4179,6 +4168,9 @@ public interface WindowManager extends ViewManager {
          * <p>
          * This must be one of the supported modes obtained for the display(s) the window is on.
          * A value of {@code 0} means no preference.
+         * <p>
+         * The display resolution part of the mode requested by apps is treated as a
+         * preference and may be ignored by the system based on device capabilities.
          *
          * @see Display#getSupportedModes()
          * @see Display.Mode#getModeId()
@@ -5410,44 +5402,44 @@ public interface WindowManager extends ViewManager {
         public static final int SCREEN_ORIENTATION_CHANGED = 1<<10;
         public static final int SCREEN_BRIGHTNESS_CHANGED = 1<<11;
         public static final int ROTATION_ANIMATION_CHANGED = 1<<12;
-        /** {@hide} */
+        /** @hide */
         public static final int BUTTON_BRIGHTNESS_CHANGED = 1<<13;
-        /** {@hide} */
+        /** @hide */
         public static final int SYSTEM_UI_VISIBILITY_CHANGED = 1<<14;
-        /** {@hide} */
+        /** @hide */
         public static final int SYSTEM_UI_LISTENER_CHANGED = 1<<15;
-        /** {@hide} */
+        /** @hide */
         public static final int INPUT_FEATURES_CHANGED = 1<<16;
-        /** {@hide} */
+        /** @hide */
         public static final int PRIVATE_FLAGS_CHANGED = 1<<17;
-        /** {@hide} */
+        /** @hide */
         public static final int USER_ACTIVITY_TIMEOUT_CHANGED = 1<<18;
-        /** {@hide} */
+        /** @hide */
         public static final int TRANSLUCENT_FLAGS_CHANGED = 1<<19;
-        /** {@hide} */
+        /** @hide */
         public static final int SURFACE_INSETS_CHANGED = 1<<20;
-        /** {@hide} */
+        /** @hide */
         public static final int PREFERRED_REFRESH_RATE_CHANGED = 1 << 21;
-        /** {@hide} */
+        /** @hide */
         public static final int DISPLAY_FLAGS_CHANGED = 1 << 22;
-        /** {@hide} */
+        /** @hide */
         public static final int PREFERRED_DISPLAY_MODE_ID = 1 << 23;
-        /** {@hide} */
+        /** @hide */
         public static final int ACCESSIBILITY_ANCHOR_CHANGED = 1 << 24;
-        /** {@hide} */
+        /** @hide */
         @TestApi
         public static final int ACCESSIBILITY_TITLE_CHANGED = 1 << 25;
-        /** {@hide} */
+        /** @hide */
         public static final int COLOR_MODE_CHANGED = 1 << 26;
-        /** {@hide} */
+        /** @hide */
         public static final int INSET_FLAGS_CHANGED = 1 << 27;
-        /** {@hide} */
+        /** @hide */
         public static final int MINIMAL_POST_PROCESSING_PREFERENCE_CHANGED = 1 << 28;
-        /** {@hide} */
+        /** @hide */
         public static final int BLUR_BEHIND_RADIUS_CHANGED = 1 << 29;
-        /** {@hide} */
+        /** @hide */
         public static final int PREFERRED_MIN_DISPLAY_REFRESH_RATE = 1 << 30;
-        /** {@hide} */
+        /** @hide */
         public static final int PREFERRED_MAX_DISPLAY_REFRESH_RATE = 1 << 31;
 
         // internal buffer to backup/restore parameters under compatibility mode.
@@ -6452,7 +6444,6 @@ public interface WindowManager extends ViewManager {
      *                   when entered or exited trusted presentation per the thresholds.
      * @see TrustedPresentationThresholds
      */
-    @FlaggedApi(Flags.FLAG_TRUSTED_PRESENTATION_LISTENER_FOR_WINDOW)
     default void registerTrustedPresentationListener(@NonNull IBinder window,
             @NonNull TrustedPresentationThresholds thresholds,  @NonNull Executor executor,
             @NonNull Consumer<Boolean> listener) {
@@ -6465,7 +6456,6 @@ public interface WindowManager extends ViewManager {
      *
      * @see WindowManager#registerTrustedPresentationListener(IBinder, TrustedPresentationThresholds, Executor, Consumer)
      */
-    @FlaggedApi(Flags.FLAG_TRUSTED_PRESENTATION_LISTENER_FOR_WINDOW)
     default void unregisterTrustedPresentationListener(@NonNull Consumer<Boolean> listener) {
         throw new UnsupportedOperationException();
     }
@@ -6492,7 +6482,6 @@ public interface WindowManager extends ViewManager {
      * @return Returns the {@link InputTransferToken} that can be used to transfer touch gesture
      * to or from other windows.
      */
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     @NonNull
     default InputTransferToken registerBatchedSurfaceControlInputReceiver(
             @NonNull InputTransferToken hostInputTransferToken,
@@ -6522,7 +6511,6 @@ public interface WindowManager extends ViewManager {
      * @return Returns the {@link InputTransferToken} that can be used to transfer touch gesture
      * to or from other windows.
      */
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     @NonNull
     default InputTransferToken registerUnbatchedSurfaceControlInputReceiver(
             @NonNull InputTransferToken hostInputTransferToken,
@@ -6544,7 +6532,6 @@ public interface WindowManager extends ViewManager {
      *
      * @param surfaceControl The SurfaceControl to remove and unregister the input channel for.
      */
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     default void unregisterSurfaceControlInputReceiver(@NonNull SurfaceControl surfaceControl) {
         throw new UnsupportedOperationException(
                 "unregisterSurfaceControlInputReceiver is not implemented");
@@ -6563,7 +6550,6 @@ public interface WindowManager extends ViewManager {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     @TestApi
     @Nullable
     default IBinder getSurfaceControlInputClientToken(@NonNull SurfaceControl surfaceControl) {
@@ -6642,7 +6628,6 @@ public interface WindowManager extends ViewManager {
      * @see android.view.SurfaceControlViewHost.SurfacePackage#getInputTransferToken()
      * @see AttachedSurfaceControl#getInputTransferToken()
      */
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     default boolean transferTouchGesture(@NonNull InputTransferToken transferFromToken,
             @NonNull InputTransferToken transferToToken) {
         throw new UnsupportedOperationException("transferTouchGesture is not implemented");

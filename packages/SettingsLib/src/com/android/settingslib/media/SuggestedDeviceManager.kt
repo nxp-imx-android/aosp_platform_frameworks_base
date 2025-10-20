@@ -21,6 +21,8 @@ import android.media.SuggestedDeviceInfo
 import android.os.Handler
 import android.util.Log
 import androidx.annotation.GuardedBy
+import androidx.annotation.VisibleForTesting
+import com.android.media.flags.Flags.useSuggestedDeviceConnectionManager
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTED
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING
@@ -31,8 +33,10 @@ import java.util.concurrent.CopyOnWriteArraySet
 
 private const val TAG = "SuggestedDeviceManager"
 
-private const val CONNECTING_TIMEOUT_MS = 20_000L
-private const val CONNECTING_FAILED_TIMEOUT_MS = 10_000L
+@VisibleForTesting
+const val CONNECTING_TIMEOUT_MS = 30_000L
+@VisibleForTesting
+const val CONNECTING_FAILED_TIMEOUT_MS = 10_000L
 
 /**
  * Provides data to render and handles user interactions for the suggested device chip within the
@@ -49,25 +53,27 @@ private const val CONNECTING_FAILED_TIMEOUT_MS = 10_000L
 class SuggestedDeviceManager(
   private val localMediaManager: LocalMediaManager,
   private val handler: Handler,
+  private val suggestedDeviceConnectionManager: SuggestedDeviceConnectionManager,
 ) {
   private val lock: Any = Object()
   private val listeners = CopyOnWriteArraySet<Listener>()
   @GuardedBy("lock") private var mediaDevices: List<MediaDevice> = listOf()
   @GuardedBy("lock") private var topSuggestion: SuggestedDeviceInfo? = null
   @GuardedBy("lock") private var suggestedDeviceState: SuggestedDeviceState? = null
-  // Overrides the connection state obtained from the [MediaDevice] that matches the
-  // [topSuggestion]. This is necessary to prevent UI state jumps during connection attempts or
-  // when displaying error messages.
-  @GuardedBy("lock") @MediaDeviceState private var connectionStateOverride: Int? = null
+  // Overrides the suggested device state obtained from the [MediaDevice] that matches the
+  // [topSuggestion]. This is necessary to prevent hiding or changing the title of the suggested
+  // device chip during connection attempts or when displaying error messages.
+  @GuardedBy("lock") private var suggestedStateOverride: SuggestedDeviceState? = null
+  @GuardedBy("lock") private var hideSuggestedDeviceState: Boolean = false
 
-  private val onConnectionStateOverrideExpiredRunnable = Runnable {
+  private val onSuggestedStateOverrideExpiredRunnable = Runnable {
     synchronized(lock) {
-      if (connectionStateOverride == STATE_CONNECTING_FAILED) {
+      if (suggestedStateOverride?.connectionState == STATE_CONNECTING_FAILED) {
         // After the connection error, hide the suggestion chip until the new suggestion is
         // requested.
-        topSuggestion = null
+        hideSuggestedDeviceState = true
       }
-      connectionStateOverride = null
+      suggestedStateOverride = null
       updateSuggestedDeviceStateLocked(topSuggestion, mediaDevices)
     }
     dispatchOnSuggestedDeviceUpdated()
@@ -101,16 +107,9 @@ class SuggestedDeviceManager(
         newSuggestedDeviceState: SuggestedDeviceState,
         success: Boolean,
       ) {
-        if (!isCurrentSuggestion(newSuggestedDeviceState.suggestedDeviceInfo)) {
-          Log.w(TAG, "onConnectSuggestedDeviceFinished. Suggestion got changed.")
-          return
+        if (!useSuggestedDeviceConnectionManager()) {
+          onSuggestedDeviceConnectionFinished(newSuggestedDeviceState, success)
         }
-        if (!success) {
-          overrideConnectionStateWithExpiration(
-            connectionState = STATE_CONNECTING_FAILED,
-            timeoutMs = CONNECTING_FAILED_TIMEOUT_MS,
-          )
-        } // On success, the state should automatically be updated by the MediaDevice state.
       }
     }
 
@@ -140,8 +139,30 @@ class SuggestedDeviceManager(
     }
   }
 
+  fun cancelAllRequests() {
+    if (useSuggestedDeviceConnectionManager()) suggestedDeviceConnectionManager.cancel()
+  }
+
   fun requestDeviceSuggestion() {
+    if (suggestedDeviceState?.connectionState == STATE_CONNECTING) {
+      Log.i(TAG, "Connection in progress, aborting request for a new suggestion.")
+      return
+    }
     localMediaManager.requestDeviceSuggestion()
+    stopHidingSuggestedDeviceState()
+  }
+
+  private fun stopHidingSuggestedDeviceState() {
+    var stateChanged = false
+    synchronized(lock) {
+      if (hideSuggestedDeviceState) {
+        hideSuggestedDeviceState = false
+        stateChanged = updateSuggestedDeviceStateLocked(topSuggestion, mediaDevices)
+      }
+    }
+    if (stateChanged) {
+      dispatchOnSuggestedDeviceUpdated()
+    }
   }
 
   fun getSuggestedDevice(): SuggestedDeviceState? {
@@ -160,11 +181,44 @@ class SuggestedDeviceManager(
       Log.w(TAG, "Suggestion got changed, aborting connection.")
       return
     }
-    overrideConnectionStateWithExpiration(
-      connectionState = STATE_CONNECTING,
-      timeoutMs = CONNECTING_TIMEOUT_MS,
-    )
-    localMediaManager.connectSuggestedDevice(newSuggestedDeviceState, routingChangeInfo)
+    if (useSuggestedDeviceConnectionManager()) {
+      try {
+        suggestedDeviceConnectionManager.connect(
+          newSuggestedDeviceState,
+          routingChangeInfo,
+        ) { suggestedDeviceState, success ->
+          onSuggestedDeviceConnectionFinished(suggestedDeviceState, success)
+        }
+        overrideSuggestedStateWithExpiration(
+          connectionState = STATE_CONNECTING,
+          timeoutMs = CONNECTING_TIMEOUT_MS,
+        )
+      } catch (e: IllegalStateException) {
+        Log.e(TAG, "Connection already in progress", e)
+      }
+    } else {
+      overrideSuggestedStateWithExpiration(
+        connectionState = STATE_CONNECTING,
+        timeoutMs = CONNECTING_TIMEOUT_MS,
+      )
+      localMediaManager.connectSuggestedDevice(newSuggestedDeviceState, routingChangeInfo)
+    }
+  }
+
+  private fun onSuggestedDeviceConnectionFinished(
+    newSuggestedDeviceState: SuggestedDeviceState,
+    success: Boolean,
+  ) {
+    if (!isCurrentSuggestion(newSuggestedDeviceState.suggestedDeviceInfo)) {
+      Log.w(TAG, "onSuggestedDeviceConnectionFinished. Suggestion got changed.")
+      return
+    }
+    if (!success) {
+      overrideSuggestedStateWithExpiration(
+        connectionState = STATE_CONNECTING_FAILED,
+        timeoutMs = CONNECTING_FAILED_TIMEOUT_MS,
+      )
+    } // On success, the state should automatically be updated by the MediaDevice state.
   }
 
   private fun eagerlyUpdateState() {
@@ -180,7 +234,8 @@ class SuggestedDeviceManager(
     newTopSuggestion: SuggestedDeviceInfo?,
     newMediaDevices: List<MediaDevice>,
   ): Boolean {
-    val newSuggestedDeviceState =
+    tryClearSuggestedStateOverrideLocked(newMediaDevices)
+    val newSuggestedDeviceState = suggestedStateOverride ?:
       calculateNewSuggestedDeviceStateLocked(newTopSuggestion, newMediaDevices)
     if (newSuggestedDeviceState != suggestedDeviceState) {
       suggestedDeviceState = newSuggestedDeviceState
@@ -192,24 +247,23 @@ class SuggestedDeviceManager(
   @GuardedBy("lock")
   private fun calculateNewSuggestedDeviceStateLocked(
     newTopSuggestion: SuggestedDeviceInfo?,
-    newMediaDevices: List<MediaDevice>
+    newMediaDevices: List<MediaDevice>,
   ): SuggestedDeviceState? {
+    if (hideSuggestedDeviceState) {
+      return null
+    }
+
     if (newTopSuggestion == null) {
-      clearConnectionStateOverrideLocked()
       return null
     }
 
     val newConnectionState =
       getConnectionStateFromMatchedDeviceLocked(newTopSuggestion, newMediaDevices)
-    if (shouldClearStateOverride(newTopSuggestion, newConnectionState)) {
-      clearConnectionStateOverrideLocked()
-    }
-
     return if (isConnectedState(newConnectionState)) {
       // Don't display a suggestion if the MediaDevice that matches the suggestion is connected.
       null
     } else {
-      SuggestedDeviceState(newTopSuggestion, connectionStateOverride ?: newConnectionState)
+      SuggestedDeviceState(newTopSuggestion, newConnectionState)
     }
   }
 
@@ -226,15 +280,6 @@ class SuggestedDeviceManager(
     return matchedDevice?.state ?: STATE_DISCONNECTED
   }
 
-  private fun shouldClearStateOverride(
-    newTopSuggestion: SuggestedDeviceInfo,
-    @MediaDeviceState newConnectionState: Int,
-  ): Boolean {
-    // Don't clear the state override if a matched device is in DISCONNECTED state. Currently, the
-    // DISCONNECTED state can be reported during connection that can lead to UI flicker.
-    return !isCurrentSuggestion(newTopSuggestion) || newConnectionState != STATE_DISCONNECTED
-  }
-
   private fun isConnectedState(@MediaDeviceState state: Int): Boolean =
     state == STATE_CONNECTED || state == STATE_SELECTED
 
@@ -246,20 +291,31 @@ class SuggestedDeviceManager(
       suggestedDeviceState?.suggestedDeviceInfo?.routeId == suggestedDeviceInfo.routeId
     }
 
-  private fun overrideConnectionStateWithExpiration(connectionState: Int, timeoutMs: Long) {
+  private fun overrideSuggestedStateWithExpiration(connectionState: Int, timeoutMs: Long) {
     synchronized(lock) {
-      connectionStateOverride = connectionState
-      suggestedDeviceState = suggestedDeviceState?.copy(connectionState = connectionState)
-      handler.removeCallbacks(onConnectionStateOverrideExpiredRunnable)
-      handler.postDelayed(onConnectionStateOverrideExpiredRunnable, timeoutMs)
+      suggestedStateOverride = suggestedDeviceState?.copy(connectionState = connectionState)
+      suggestedDeviceState = suggestedStateOverride
+      handler.removeCallbacks(onSuggestedStateOverrideExpiredRunnable)
+      handler.postDelayed(onSuggestedStateOverrideExpiredRunnable, timeoutMs)
     }
     dispatchOnSuggestedDeviceUpdated()
   }
 
   @GuardedBy("lock")
-  private fun clearConnectionStateOverrideLocked() {
-    connectionStateOverride = null
-    handler.removeCallbacks(onConnectionStateOverrideExpiredRunnable)
+  private fun tryClearSuggestedStateOverrideLocked(newMediaDevices: List<MediaDevice>) {
+    suggestedStateOverride?.let { override ->
+      val newConnectionState =
+          getConnectionStateFromMatchedDeviceLocked(override.suggestedDeviceInfo, newMediaDevices)
+      // Clear the state override unless the matched device state is:
+      // - STATE_DISCONNECTED: This state might be reported during the connection process,
+      //   potentially causing UI flicker.
+      // - Same connection state as in the override: Getting an event with the same device state
+      //   should not affect the override timeout.
+      if (newConnectionState !in setOf(STATE_DISCONNECTED, override.connectionState)) {
+        suggestedStateOverride = null
+        handler.removeCallbacks(onSuggestedStateOverrideExpiredRunnable)
+      }
+    }
   }
 
   private fun dispatchOnSuggestedDeviceUpdated() {

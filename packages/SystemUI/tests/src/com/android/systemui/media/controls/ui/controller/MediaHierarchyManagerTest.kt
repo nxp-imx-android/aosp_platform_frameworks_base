@@ -17,6 +17,7 @@
 package com.android.systemui.media.controls.ui.controller
 
 import android.graphics.Rect
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import android.testing.TestableLooper
@@ -24,7 +25,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.keyguard.KeyguardViewController
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
@@ -93,6 +94,7 @@ import org.mockito.kotlin.lastValue
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @DisableSceneContainer
+@DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
 class MediaHierarchyManagerTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
@@ -107,7 +109,6 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
     @Mock private lateinit var mediaCarouselController: MediaCarouselController
     @Mock private lateinit var mediaCarouselScrollHandler: MediaCarouselScrollHandler
     @Mock private lateinit var wakefulnessLifecycle: WakefulnessLifecycle
-    @Mock private lateinit var keyguardViewController: KeyguardViewController
     @Mock private lateinit var mediaDataManager: MediaDataManager
     @Mock private lateinit var uniqueObjectHostView: UniqueObjectHostView
     @Mock private lateinit var dreamOverlayStateController: DreamOverlayStateController
@@ -157,7 +158,6 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
                 bypassController,
                 mediaCarouselController,
                 mediaDataManager,
-                keyguardViewController,
                 dreamOverlayStateController,
                 kosmos.keyguardInteractor,
                 kosmos.keyguardTransitionInteractor,
@@ -914,7 +914,6 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
         whenever(statusBarStateController.state).thenReturn(StatusBarState.KEYGUARD)
         whenever(statusBarStateController.isDozing).thenReturn(false)
         whenever(statusBarStateController.isExpanded).thenReturn(true)
-        whenever(keyguardViewController.isBouncerShowing).thenReturn(false)
         settings.putInt(Settings.Secure.MEDIA_CONTROLS_LOCK_SCREEN, 1)
         statusBarCallback.value.onStatePreChange(StatusBarState.SHADE, StatusBarState.KEYGUARD)
         whenever(dreamOverlayStateController.isOverlayActive).thenReturn(false)

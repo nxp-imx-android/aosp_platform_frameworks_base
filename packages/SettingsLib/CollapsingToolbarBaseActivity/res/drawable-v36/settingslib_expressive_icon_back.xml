@@ -16,8 +16,7 @@
 -->
 
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:start="16dp">
+    <item>
         <shape>
             <size android:width="40dp" android:height="40dp" />
             <solid android:color="@color/settingslib_materialColorSurfaceContainerHighest" />
@@ -29,9 +28,7 @@
     <item
         android:width="16dp"
         android:height="16dp"
-        android:gravity="center"
-        android:start="16dp"
->
+        android:gravity="center">
         <vector
             android:width="16dp"
             android:height="16dp"

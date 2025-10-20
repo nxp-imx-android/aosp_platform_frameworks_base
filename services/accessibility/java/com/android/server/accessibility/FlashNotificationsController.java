@@ -73,7 +73,7 @@ import java.util.ListIterator;
 
 class FlashNotificationsController {
     private static final String LOG_TAG = "FlashNotifController";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(LOG_TAG);
 
     private static final String WAKE_LOCK_TAG = "a11y:FlashNotificationsController";
 

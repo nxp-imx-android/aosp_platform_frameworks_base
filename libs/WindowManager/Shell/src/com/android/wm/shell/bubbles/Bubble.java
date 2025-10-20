@@ -18,7 +18,6 @@ package com.android.wm.shell.bubbles;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PRIVATE;
-import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 
 import android.annotation.DimenRes;
@@ -36,7 +35,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ShortcutInfo;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.graphics.Path;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
@@ -56,11 +54,13 @@ import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
+import com.android.wm.shell.bubbles.model.BubbleIcon;
 import com.android.wm.shell.common.ComponentUtils;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.bubbles.BubbleInfo;
 import com.android.wm.shell.shared.bubbles.ParcelableFlyoutMessage;
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.taskview.TaskView;
 
 import java.io.PrintWriter;
@@ -154,8 +154,7 @@ public class Bubble implements BubbleViewProvider {
     }
 
     private FlyoutMessage mFlyoutMessage;
-    // The developer provided image for the bubble
-    private Bitmap mBubbleBitmap;
+    private BubbleIcon mBubbleIcon;
     // The app badge for the bubble
     private BitmapInfo mBadgeBitmap;
     // App badge without any markings for important conversations
@@ -222,11 +221,17 @@ public class Bubble implements BubbleViewProvider {
     private Intent mIntent;
 
     /**
-     * Set while preparing a transition for animation. Several steps are needed before animation
-     * starts, so this is used to detect and route associated events to the coordinating transition.
+     * Sets the transition that is currently animating this Bubble. This should be set when
+     * preparing the transition for animation.
+     * Several steps are needed before animation actually starts, so this is used to detect and
+     * route associated events to the coordinating transition.
+     * It will be cleanup after the transition animation has completed.
      */
     @Nullable
-    private BubbleTransitions.BubbleTransition mPreparingTransition;
+    private BubbleTransitions.BubbleTransition mCurrentTransition;
+
+    /** Sets to true in case we remove the icon review before Bubble removal. */
+    private boolean mIsPendingRemoval;
 
     /**
      * Create a bubble with limited information based on given {@link ShortcutInfo}.
@@ -397,6 +402,18 @@ public class Bubble implements BubbleViewProvider {
         return b;
     }
 
+    /** Creates an app bubble with a pending intent that can be controlled by a client. */
+    public static Bubble createClientControlledAppBubble(PendingIntent pendingIntent,
+            UserHandle user, @Nullable Icon icon, IBinder clientToken,
+            @ShellMainThread Executor mainExecutor, @ShellBackgroundThread Executor bgExecutor) {
+        Bubble b = new Bubble(pendingIntent, user,
+                getAppBubbleKeyForApp(ComponentUtils.getPackageName(pendingIntent), user),
+                mainExecutor, bgExecutor);
+        b.mIcon = icon;
+        b.mClientToken = clientToken;
+        return b;
+    }
+
     /** Creates a task bubble. */
     public static Bubble createTaskBubble(TaskInfo info, UserHandle user, @Nullable Icon icon,
             @ShellMainThread Executor mainExecutor, @ShellBackgroundThread Executor bgExecutor) {
@@ -489,14 +506,14 @@ public class Bubble implements BubbleViewProvider {
                 getTitle(),
                 getAppName(),
                 isImportantConversation(),
-                showAppBadge(),
-                getParcelableFlyoutMessage());
+                getParcelableFlyoutMessage(),
+                isApp());
     }
 
     /** Creates a parcelable flyout message to send to launcher. */
     @Nullable
     private ParcelableFlyoutMessage getParcelableFlyoutMessage() {
-        if (mFlyoutMessage == null) {
+        if (mFlyoutMessage == null || !showFlyout()) {
             return null;
         }
         // the icon is only used in group chats
@@ -539,8 +556,8 @@ public class Bubble implements BubbleViewProvider {
     }
 
     @Override
-    public Bitmap getBubbleIcon() {
-        return mBubbleBitmap;
+    public BubbleIcon getBubbleIcon() {
+        return mBubbleIcon;
     }
 
     @Override
@@ -629,8 +646,8 @@ public class Bubble implements BubbleViewProvider {
     }
 
     @Nullable
-    public BubbleTransitions.BubbleTransition getPreparingTransition() {
-        return mPreparingTransition;
+    public BubbleTransitions.BubbleTransition getCurrentTransition() {
+        return mCurrentTransition;
     }
 
     /**
@@ -682,7 +699,7 @@ public class Bubble implements BubbleViewProvider {
      * {@code cleanupTaskView} to avoid recreating it in the new mode.
      */
     public void cleanupViews(boolean cleanupTaskView) {
-        ProtoLog.d(WM_SHELL_BUBBLES, "Bubble#cleanupViews=%s cleanupTaskView=%b", getKey(),
+        BubbleLog.d("Bubble.cleanupViews() key=%s cleanupTaskView=%b", getKey(),
                 cleanupTaskView);
         cleanupExpandedView(cleanupTaskView);
         mIconView = null;
@@ -708,16 +725,19 @@ public class Bubble implements BubbleViewProvider {
     /**
      * Sets the current bubble-transition that is coordinating a change in this bubble.
      */
-    @VisibleForTesting
-    public void setPreparingTransition(BubbleTransitions.BubbleTransition transit) {
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "setPreparingTransition: transit=%s", transit);
-        mPreparingTransition = transit;
+    public void setCurrentTransition(@Nullable BubbleTransitions.BubbleTransition transit) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "setCurrentTransition: transit=%s", transit);
+        mCurrentTransition = transit;
     }
 
     /** Whether this bubble is currently converting to bubble bar. */
     public boolean isConvertingToBar() {
-        return getPreparingTransition() != null
-                && getPreparingTransition().isConvertingBubbleToBar();
+        return getCurrentTransition() != null && getCurrentTransition().isConvertingBubbleToBar();
+    }
+
+    /** Whether this bubble is currently switching to expanded from another bubble using jumpcut. */
+    public boolean isJumpcutBubbleSwitching() {
+        return getCurrentTransition() != null && getCurrentTransition().isJumpcutBubbleSwitching();
     }
 
     /**
@@ -751,7 +771,7 @@ public class Bubble implements BubbleViewProvider {
             BubbleIconFactory iconFactory,
             BubbleAppInfoProvider appInfoProvider,
             boolean skipInflation) {
-        ProtoLog.v(WM_SHELL_BUBBLES, "Inflate bubble key=%s", getKey());
+        BubbleLog.v("Bubble.inflate() key=%s", getKey());
         if (mInflationTask != null && !mInflationTask.isFinished()) {
             mInflationTask.cancel();
         }
@@ -790,9 +810,9 @@ public class Bubble implements BubbleViewProvider {
         if (!isInflated()) {
             mIconView = info.imageView;
             mExpandedView = info.expandedView;
-            ProtoLog.d(WM_SHELL_BUBBLES, "Bubble#setViewInfo %s setting expanded view to %s",
-                    mKey, info.bubbleBarExpandedView);
             mBubbleBarExpandedView = info.bubbleBarExpandedView;
+            BubbleLog.d("Bubble.setViewInfo() key=%s setting expanded view info to %s",
+                    mKey, mExpandedView != null ? mExpandedView : mBubbleBarExpandedView);
         }
 
         mShortcutInfo = info.shortcutInfo;
@@ -804,7 +824,7 @@ public class Bubble implements BubbleViewProvider {
 
         mBadgeBitmap = info.badgeBitmap;
         mRawBadgeBitmap = info.rawBadgeBitmap;
-        mBubbleBitmap = info.bubbleBitmap;
+        mBubbleIcon = info.bubbleIcon;
 
         mDotColor = info.dotColor;
 
@@ -971,7 +991,7 @@ public class Bubble implements BubbleViewProvider {
     /**
      * Whether this notification should be shown in the shade.
      */
-    boolean showInShade() {
+    public boolean showInShade() {
         return !shouldSuppressNotification() || !mIsDismissable;
     }
 
@@ -988,6 +1008,15 @@ public class Bubble implements BubbleViewProvider {
      */
     boolean isSuppressable() {
         return (mFlags & Notification.BubbleMetadata.FLAG_SUPPRESSABLE_BUBBLE) != 0;
+    }
+
+    /** Marks as pending removal in case we remove the icon review before Bubble removal. */
+    void markAsPendingRemoval() {
+        mIsPendingRemoval = true;
+    }
+
+    boolean isPendingRemoval() {
+        return mIsPendingRemoval;
     }
 
     /**
@@ -1133,7 +1162,7 @@ public class Bubble implements BubbleViewProvider {
      * Whether an app badge should be shown for this bubble.
      */
     public boolean showAppBadge() {
-        return isChat() || isShortcut() || isNote();
+        return !isApp();
     }
 
     /**
@@ -1306,7 +1335,7 @@ public class Bubble implements BubbleViewProvider {
         pw.print("  autoExpand:    "); pw.println(shouldAutoExpand());
         pw.print("  isDismissable: "); pw.println(mIsDismissable);
         pw.println("  bubbleMetadataFlagListener null?: " + (mBubbleMetadataFlagListener == null));
-        pw.println("  preparingTransition null?: " + (mPreparingTransition == null));
+        pw.println("  mCurrentTransition null?: " + (mCurrentTransition == null));
         pw.println("  isConvertingToBar: " + isConvertingToBar());
         if (mExpandedView != null) {
             mExpandedView.dump(pw, "  ");

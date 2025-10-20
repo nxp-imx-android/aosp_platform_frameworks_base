@@ -47,6 +47,7 @@ abstract class RestartAppInDesktopMode(
     @Test
     open fun restartFromAppHandleMenu() {
         val connectedDisplayId = connectedDisplayRule.setupTestDisplay()
+        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(connectedDisplayId).waitForAndVerify()
         testApp.enterDesktopMode(wmHelper, device)
         testApp.moveToNextDisplayViaKeyboard(wmHelper, connectedDisplayId)
 

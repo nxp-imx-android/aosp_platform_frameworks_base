@@ -31,6 +31,7 @@ import android.app.IProcessObserver;
 import android.app.IScreenCaptureObserver;
 import android.app.IServiceConnection;
 import android.app.IStopUserCallback;
+import android.app.ITaskMoveAllowedListener;
 import android.app.ITaskStackListener;
 import android.app.IUiAutomationConnection;
 import android.app.IUidObserver;
@@ -86,7 +87,7 @@ import java.util.List;
  * System private API for talking with the activity task manager that handles how activities are
  * managed on screen.
  *
- * {@hide}
+ * @hide
  */
 // TODO(b/174040395): Make this interface private to ActivityTaskManager.java and have external
 // caller go through that call instead. This would help us better separate and control the API
@@ -140,6 +141,8 @@ interface IActivityTaskManager {
     boolean isActivityStartAllowedOnDisplay(int displayId, in Intent intent, in String resolvedType,
             int userId);
     boolean isTaskMoveAllowedOnDisplay(int displayId);
+    void registerTaskMoveAllowedListener(in ITaskMoveAllowedListener listener);
+    void unregisterTaskMoveAllowedListener(in ITaskMoveAllowedListener listener);
 
     void unhandledBack();
 
@@ -182,6 +185,7 @@ interface IActivityTaskManager {
     List<IBinder> getAppTasks(in String callingPackage);
     void startSystemLockTaskMode(int taskId);
     void stopSystemLockTaskMode();
+    void rebuildSystemLockTaskPinnedMode();
     void finishVoiceTask(in IVoiceInteractionSession session);
     int addAppTask(in IBinder activityToken, in Intent intent,
             in ActivityManager.TaskDescription description, in Bitmap thumbnail);
@@ -358,12 +362,14 @@ interface IActivityTaskManager {
     void detachNavigationBarFromApp(in IBinder transition);
 
     /**
-     * Marks a process as a delegate for the currently playing remote transition animation. This
-     * must be called from a process that is already a remote transition player or delegate. Any
-     * marked delegates are cleaned-up automatically at the end of the transition.
-     * @param caller is the IApplicationThread representing the calling process.
+     * Informs the transition system that the current transition is about to be animated by a
+     * remote process rather than the calling process. Core must have already been informed of
+     * the delegate process via RemoteTransition or WindowContainerTransaction.setAnimationDelegate.
+     * This must be called from a process that is already a remote transition player or delegate.
+     * Delegates are cleaned-up automatically at the end of the transition.
+     * @param transition is the token representing the transition being animated.
      */
-    void setRunningRemoteTransitionDelegate(in IApplicationThread caller);
+    void setRunningRemoteTransitionDelegate(in IBinder transition);
 
     /**
      * Prepare the back navigation in the server. This setups the leashed for sysui to animate
@@ -379,8 +385,9 @@ interface IActivityTaskManager {
     /**
      * This setups the leashed for sysui to animate the current back gesture.
      * Only valid after startBackNavigation.
+     * @return Returns whether system can prepare back animation.
      */
-    void startPredictiveBackAnimation();
+    boolean startPredictiveBackAnimation();
 
     /**
      * registers a callback to be invoked when a background activity launch is aborted.

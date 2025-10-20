@@ -23,65 +23,64 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
-import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementContentScope
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.composable.elements.LockscreenUpperRegionElementProvider.Companion.LayoutType
 import com.android.systemui.keyguard.ui.composable.elements.LockscreenUpperRegionElementProvider.Companion.getLayoutType
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardMediaViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
 import kotlin.collections.List
 
+@SysUISingleton
 class MediaElementProvider
 @Inject
 constructor(
     @ShadeDisplayAware private val context: Context,
     private val mediaViewModelFactory: KeyguardMediaViewModel.Factory,
 ) : LockscreenElementProvider {
-    override val elements: List<LockscreenElement> by lazy { listOf(mediaCarouselElement) }
+    override val elements: List<LockscreenElement> by lazy { listOf(MediaCarouselElement()) }
 
-    private val mediaCarouselElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.MediaCarousel
-            override val context = this@MediaElementProvider.context
+    private inner class MediaCarouselElement : LockscreenElement {
+        override val key = LockscreenElementKeys.MediaCarousel
+        override val context = this@MediaElementProvider.context
+        override val source = ElementSource.STANDARD
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                val horizontalPadding =
-                    when (getLayoutType()) {
-                        LayoutType.WIDE -> dimensionResource(R.dimen.notification_side_paddings)
-                        LayoutType.NARROW ->
-                            dimensionResource(R.dimen.notification_side_paddings) +
+        @Composable
+        override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
+            val viewModel =
+                rememberViewModel("MediaCarouselElement") { mediaViewModelFactory.create() }
+
+            val horizontalPadding =
+                when (getLayoutType(viewModel.shadeMode)) {
+                    LayoutType.WIDE -> dimensionResource(R.dimen.notification_side_paddings)
+                    LayoutType.NARROW ->
+                        dimensionResource(R.dimen.notification_side_paddings) +
                                 dimensionResource(R.dimen.notification_panel_margin_horizontal)
-                    }
+                }
 
-                val viewModel =
-                    rememberViewModel("MediaCarouselElement") { mediaViewModelFactory.create() }
-
-                AnimatedVisibility(viewModel.isMediaVisible) {
-                    Element(
-                        key = Media.Elements.mediaCarousel,
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = horizontalPadding),
-                    ) {
-                        Media(
-                            viewModelFactory = viewModel.mediaViewModelFactory,
-                            presentationStyle = MediaPresentationStyle.Default,
-                            behavior = viewModel.mediaUiBehavior,
-                            onDismissed = viewModel::onSwipeToDismiss,
-                        )
-                    }
+            AnimatedVisibility(viewModel.isMediaActive && !viewModel.isDozing) {
+                Element(
+                    key = Media.Elements.mediaCarousel,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = horizontalPadding),
+                ) {
+                    Media(
+                        viewModelFactory = viewModel.mediaViewModelFactory,
+                        presentationStyle = MediaPresentationStyle.Default,
+                        behavior = viewModel.mediaUiBehavior,
+                        onDismissed = viewModel::onSwipeToDismiss,
+                    )
                 }
             }
         }
+    }
 }

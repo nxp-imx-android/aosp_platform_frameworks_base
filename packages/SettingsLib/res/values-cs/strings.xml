@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Připojování..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Připojeno k zařízení <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Párování..."</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Nelze spárovat"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Nelze se připojit"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Připojeno k zařízení <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (bez telefonu)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Připojeno k zařízení <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (bez médií)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Připojeno k zařízení <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (bez telefonu a médií)"</string>
@@ -116,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Aktivní (pouze pravé)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Aktivní (levé a pravé)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Okolí se nepodařilo aktualizovat"</string>
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"Předvolbu nelze aktualizovat"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Vybráno"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Aktivní (pouze média). Baterie: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Aktivní (pouze média), baterie: L <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, P <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Zařízení hosta. Baterie: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
@@ -345,7 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Když je tento režim aktivován, adresa MAC tohoto zařízení se může změnit pokaždé, když se zařízení připojí k síti s aktivovanou randomizací adres MAC."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Měřená"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Neměřená"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Vyrovnávací paměť protokolovacího nástroje"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Velikost vyrovnávací paměti protokolovacího nástroje"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Velikost vyrovnávací paměti protokol. nástroje"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Vymazat trvalé úložiště protokolovacího nástroje?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Pokud již pomocí nástroje na trvalé protokolování nic nemonitorujeme, jsme povinni jeho data uložená v zařízení vymazat."</string>
@@ -449,7 +453,7 @@
     <string name="show_all_anrs_summary" msgid="8562788834431971392">"U aplikací na pozadí zobrazí dialog „Aplikace neodpovídá“"</string>
     <string name="show_notification_channel_warnings" msgid="3448282400127597331">"Zobrazovat upozornění ohledně kanálu oznámení"</string>
     <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"Když aplikace odešle oznámení bez platného kanálu, na obrazovce se zobrazí upozornění"</string>
-    <string name="force_allow_on_external" msgid="9187902444231637880">"Vynucovat povolení aplikací na externím úložišti"</string>
+    <string name="force_allow_on_external" msgid="9187902444231637880">"Vynutit povolení aplikací na externím úložišti"</string>
     <string name="force_allow_on_external_summary" msgid="8525425782530728238">"Každou aplikaci bude možné zapsat do externího úložiště, bez ohledu na hodnoty manifestu"</string>
     <string name="force_resizable_activities" msgid="7143612144399959606">"Vynucovat možnost změny velikosti aktivit"</string>
     <string name="force_resizable_activities_summary" msgid="2490382056981583062">"Umožní změnu velikosti všech aktivit na několik oken (bez ohledu na hodnoty manifestu)"</string>
@@ -665,7 +669,7 @@
     <string name="user_grant_admin_message" msgid="1673791931033486709">"Administrátoři mají zvláštní oprávnění, která ostatní uživatelé nemají. Administrátor může spravovat všechny uživatele, aktualizovat nebo resetovat toto zařízení, zobrazit všechny nainstalované aplikace a udělit nebo zrušit ostatním administrátorská práva."</string>
     <string name="user_grant_admin_button" msgid="5441486731331725756">"Nastavit jako administrátora"</string>
     <string name="user_setup_dialog_title" msgid="8037342066381939995">"Nastavit uživatele?"</string>
-    <string name="user_setup_dialog_message" msgid="269931619868102841">"Ujistěte se, že je uživatel k dispozici a může si v zařízení nastavit svůj prostor"</string>
+    <string name="user_setup_dialog_message" msgid="269931619868102841">"Ujistěte se, že je uživatel k dispozici a může si v zařízení nastavit svůj prostor."</string>
     <string name="user_setup_profile_dialog_message" msgid="4788197052296962620">"Nastavit profil?"</string>
     <string name="user_setup_button_setup_now" msgid="1708269547187760639">"Nastavit"</string>
     <string name="user_setup_button_setup_later" msgid="8712980133555493516">"Teď ne"</string>
@@ -700,7 +704,7 @@
     <string name="not_grant_admin" msgid="3557849576157702485">"Ne, nenastavovat jako administrátora"</string>
     <string name="guest_exit_dialog_button" msgid="1736401897067442044">"Ukončit"</string>
     <string name="guest_exit_dialog_title_non_ephemeral" msgid="7675327443743162986">"Uložit aktivitu hosta?"</string>
-    <string name="guest_exit_dialog_message_non_ephemeral" msgid="223385323235719442">"Aktivitu z aktuální relace můžete uložit, nebo všechny aplikace a data smazat"</string>
+    <string name="guest_exit_dialog_message_non_ephemeral" msgid="223385323235719442">"Aktivitu z aktuální relace můžete uložit nebo všechny aplikace a data smazat"</string>
     <string name="guest_exit_clear_data_button" msgid="3425812652180679014">"Smazat"</string>
     <string name="guest_exit_save_data_button" msgid="3690974510644963547">"Uložit"</string>
     <string name="guest_exit_button" msgid="5774985819191803960">"Ukončit režim hosta"</string>

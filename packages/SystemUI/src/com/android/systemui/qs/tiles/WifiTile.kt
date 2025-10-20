@@ -35,7 +35,6 @@ import com.android.systemui.plugins.qs.QSTile
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.qs.QSHost
 import com.android.systemui.qs.QsEventLogger
-import com.android.systemui.qs.flags.QsInCompose
 import com.android.systemui.qs.logging.QSLogger
 import com.android.systemui.qs.tileimpl.QSTileImpl
 import com.android.systemui.qs.tiles.base.shared.model.QSTileConfigProvider
@@ -83,11 +82,7 @@ constructor(
 
     init {
         lifecycle.coroutineScope.launch {
-            lifecycle.repeatOnLifecycle(
-                // TODO: b/403434908 - Workaround for "not listening to tile updates". Can be reset
-                //   to RESUMED if either b/403434908 is fixed or QsInCompose is inlined.
-                if (QsInCompose.isEnabled) Lifecycle.State.RESUMED else Lifecycle.State.CREATED
-            ) {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 dataInteractor.tileData().collect { refreshState(it) }
             }
         }
@@ -116,8 +111,9 @@ constructor(
         state?.apply {
             this.state = tileState.activationState.legacyState
             icon =
-                (tileState.icon as? Icon.Loaded)?.res?.let { resId -> maybeLoadResourceIcon(resId) }
-                    ?: SignalIcon(SignalDrawable.getState(0, 4, false))
+                (tileState.icon as? Icon.Loaded)?.resId?.let { resId ->
+                    maybeLoadResourceIcon(resId)
+                } ?: SignalIcon(SignalDrawable.getState(0, 4, false))
             label = tileState.label
             secondaryLabel = tileState.secondaryLabel
             contentDescription = tileState.contentDescription

@@ -59,6 +59,7 @@ class CsvMetricCollector : BaseCollectionListener<String?>() {
         }
 
         fun setActiveName(className: String, methodName: String) {
+            dbg { "setActiveName" }
             bgThreadName =
                 if (className.isEmpty() || methodName.isEmpty()) {
                     "${BG_THREAD_NAME_PREFIX}not_set}"

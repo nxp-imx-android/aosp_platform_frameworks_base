@@ -65,6 +65,7 @@ public class AssociationStore {
             CHANGE_TYPE_REMOVED,
             CHANGE_TYPE_UPDATED_ADDRESS_CHANGED,
             CHANGE_TYPE_UPDATED_ADDRESS_UNCHANGED,
+            CHANGE_TYPE_UPDATED_DATA_SYNC_TYPES,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChangeType {
@@ -74,6 +75,7 @@ public class AssociationStore {
     public static final int CHANGE_TYPE_REMOVED = 1;
     public static final int CHANGE_TYPE_UPDATED_ADDRESS_CHANGED = 2;
     public static final int CHANGE_TYPE_UPDATED_ADDRESS_UNCHANGED = 3;
+    public static final int CHANGE_TYPE_UPDATED_DATA_SYNC_TYPES = 4;
 
     /** Listener for any changes to associations. */
     public interface OnChangeListener {
@@ -96,6 +98,10 @@ public class AssociationStore {
                     break;
 
                 case CHANGE_TYPE_UPDATED_ADDRESS_UNCHANGED:
+                    onAssociationUpdated(association, false);
+                    break;
+
+                case CHANGE_TYPE_UPDATED_DATA_SYNC_TYPES:
                     onAssociationUpdated(association, false);
                     break;
             }
@@ -264,6 +270,12 @@ public class AssociationStore {
         }
 
         if (updated.isActive()) {
+            // Check if the data sync flags have changed.
+            if (updated.getSystemDataSyncFlags() != current.getSystemDataSyncFlags()) {
+                broadcastChange(CHANGE_TYPE_UPDATED_DATA_SYNC_TYPES, updated);
+                return;
+            }
+
             // Check if the MacAddress has changed.
             final MacAddress updatedAddress = updated.getDeviceMacAddress();
             final MacAddress currentAddress = current.getDeviceMacAddress();
@@ -271,6 +283,7 @@ public class AssociationStore {
 
             broadcastChange(macAddressChanged ? CHANGE_TYPE_UPDATED_ADDRESS_CHANGED
                     : CHANGE_TYPE_UPDATED_ADDRESS_UNCHANGED, updated);
+            return;
         }
     }
 
@@ -564,19 +577,23 @@ public class AssociationStore {
             }
         }
         synchronized (mRemoteListeners) {
-            final int userId = association.getUserId();
-            final List<AssociationInfo> updatedAssociations = getActiveAssociationsByUser(userId);
             // Notify listeners if ADDED, REMOVED or UPDATED_ADDRESS_CHANGED.
             // Do NOT notify when UPDATED_ADDRESS_UNCHANGED, which means a minor tweak in
             // association's configs, which "listeners" won't (and shouldn't) be able to see.
             if (changeType != CHANGE_TYPE_UPDATED_ADDRESS_UNCHANGED) {
+                final int userId = association.getUserId();
+                List<AssociationInfo> associationsForCurrentUser =
+                        getActiveAssociationsByUser(userId);
+                List<AssociationInfo> allAssociations = getActiveAssociations();
                 mRemoteListeners.broadcast((listener, callbackUserId) -> {
                     int listenerUserId = (int) callbackUserId;
-                    if (listenerUserId == userId || listenerUserId == UserHandle.USER_ALL) {
-                        try {
-                            listener.onAssociationsChanged(updatedAssociations);
-                        } catch (RemoteException ignored) {
+                    try {
+                        if (listenerUserId == userId) {
+                            listener.onAssociationsChanged(associationsForCurrentUser);
+                        } else if (listenerUserId == UserHandle.USER_ALL) {
+                            listener.onAssociationsChanged(allAssociations);
                         }
+                    } catch (RemoteException ignored) {
                     }
                 });
             }

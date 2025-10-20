@@ -96,8 +96,6 @@
     <string name="notification_bubble_title" msgid="6082910224488253378">"Cuadro"</string>
     <string name="manage_bubbles_text" msgid="7730624269650594419">"Administrar"</string>
     <string name="accessibility_bubble_dismissed" msgid="8367471990421247357">"Se descartó el cuadro."</string>
-    <string name="bubble_shortcut_label" msgid="666269077944378311">"Burbujas"</string>
-    <string name="bubble_shortcut_long_label" msgid="6088437544312894043">"Mostrar burbujas"</string>
     <string name="restart_button_description" msgid="4564728020654658478">"Presiona para reiniciar esta app y tener una mejor vista"</string>
     <string name="user_aspect_ratio_settings_button_hint" msgid="734835849600713016">"Cambiar la relación de aspecto de esta app en Configuración"</string>
     <string name="user_aspect_ratio_settings_button_description" msgid="4315566801697411684">"Cambiar relación de aspecto"</string>
@@ -143,7 +141,7 @@
     <string name="collapse_menu_text" msgid="7515008122450342029">"Cerrar menú"</string>
     <string name="desktop_mode_app_header_chip_text" msgid="7617377295944971651">"<xliff:g id="APP_NAME">%1$s</xliff:g> (renderización en ventanas de escritorio)"</string>
     <string name="desktop_mode_maximize_menu_maximize_text" msgid="3275717276171114411">"Maximizar pantalla"</string>
-    <string name="desktop_mode_maximize_menu_snap_text" msgid="5673738963174074006">"Dividir pantalla"</string>
+    <string name="desktop_mode_maximize_menu_snap_text" msgid="5673738963174074006">"Cambiar tamaño"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"No se puede mover la app aquí"</string>
     <string name="desktop_mode_talkback_state_opening" msgid="8505494249513712682">"Abriendo una nueva ventana de la app"</string>
     <string name="desktop_mode_talkback_state_closing" msgid="6791583518636526904">"Cerrando la ventana de la app"</string>

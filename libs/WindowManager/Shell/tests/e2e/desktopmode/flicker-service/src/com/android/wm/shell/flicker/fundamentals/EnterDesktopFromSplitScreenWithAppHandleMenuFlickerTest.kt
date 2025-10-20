@@ -24,9 +24,11 @@ import android.tools.flicker.FlickerBuilder
 import android.tools.flicker.FlickerTest
 import android.tools.flicker.FlickerTestFactory
 import android.tools.flicker.assertions.FlickerChecker
+import android.tools.traces.component.ComponentNameMatcher.Companion.DESKTOP_WALLPAPER_ACTIVITY
 import com.android.wm.shell.flicker.DesktopModeBaseTest
 import com.android.wm.shell.scenarios.EnterDesktopFromSplitScreenWithAppHandleMenu
 import com.android.wm.shell.Utils
+import com.android.wm.shell.flicker.utils.appWindowBecomesVisible
 import com.android.wm.shell.flicker.utils.appWindowInsideDisplayBoundsAtEnd
 import com.android.wm.shell.flicker.utils.appWindowIsInvisibleAtEnd
 import com.android.wm.shell.flicker.utils.appWindowOnTopAtEnd
@@ -82,6 +84,10 @@ class EnterDesktopFromSplitScreenWithAppHandleMenuFlickerTest(flicker: FlickerTe
 
     @Test
     fun splitScreenDividerBecomesInvisible() = flicker.splitScreenDividerBecomesInvisible()
+
+    @Test
+    fun wallpaperActivityBecomesVisible() =
+        flicker.appWindowBecomesVisible(DESKTOP_WALLPAPER_ACTIVITY)
 
     companion object {
         @Parameterized.Parameters(name = "{0}")

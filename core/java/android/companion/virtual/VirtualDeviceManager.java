@@ -34,13 +34,16 @@ import android.annotation.SystemService;
 import android.annotation.TestApi;
 import android.annotation.UserIdInt;
 import android.app.PendingIntent;
+import android.app.role.RoleManager;
 import android.companion.AssociationInfo;
 import android.companion.virtual.audio.VirtualAudioDevice;
 import android.companion.virtual.audio.VirtualAudioDevice.AudioConfigurationChangeCallback;
 import android.companion.virtual.camera.VirtualCamera;
 import android.companion.virtual.camera.VirtualCameraConfig;
+import android.companion.virtual.computercontrol.AutomatedPackageListener;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
+import android.companion.virtual.computercontrol.IAutomatedPackageListener;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.companion.virtual.sensor.VirtualSensor;
 import android.companion.virtualdevice.flags.Flags;
@@ -126,6 +129,21 @@ public final class VirtualDeviceManager {
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     public @interface PendingIntentLaunchStatus {}
 
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(flag = true, prefix = "UI_MODE_", value = {
+            Configuration.UI_MODE_TYPE_NORMAL,
+            Configuration.UI_MODE_TYPE_DESK,
+            Configuration.UI_MODE_TYPE_CAR,
+            Configuration.UI_MODE_TYPE_TELEVISION,
+            Configuration.UI_MODE_TYPE_APPLIANCE,
+            Configuration.UI_MODE_TYPE_WATCH,
+            Configuration.UI_MODE_TYPE_VR_HEADSET,
+            Configuration.UI_MODE_NIGHT_NO,
+            Configuration.UI_MODE_NIGHT_YES})
+    @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+    public @interface DisplayUiMode {}
+
     /**
      * Status for {@link VirtualDevice#launchPendingIntent}, indicating that the launch was
      * successful.
@@ -171,6 +189,10 @@ public final class VirtualDeviceManager {
     @GuardedBy("mVirtualDeviceListeners")
     private final List<VirtualDeviceListenerDelegate> mVirtualDeviceListeners = new ArrayList<>();
 
+    @GuardedBy("mAutomatedPackageListeners")
+    private final List<AutomatedPackageListenerDelegate> mAutomatedPackageListeners =
+            new ArrayList<>();
+
     /** @hide */
     public VirtualDeviceManager(
             @Nullable IVirtualDeviceManager service, @NonNull Context context) {
@@ -215,6 +237,8 @@ public final class VirtualDeviceManager {
      * @param executor An executor to run the callback on.
      * @param callback A callback to get notified about the result of this operation.
      *
+     * @throws IllegalArgumentException when the given params contain invalid information.
+     *
      * @hide
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_COMPUTER_CONTROL)
@@ -231,7 +255,7 @@ public final class VirtualDeviceManager {
         Objects.requireNonNull(callback, "callback must not be null");
         try {
             IComputerControlSessionCallback callbackProxy =
-                    new ComputerControlSession.CallbackProxy(executor, callback);
+                    new ComputerControlSession.CallbackProxy(mContext, executor, callback);
             mService.requestComputerControlSession(
                     mContext.getAttributionSource(), params, callbackProxy);
         } catch (RemoteException e) {
@@ -349,6 +373,92 @@ public final class VirtualDeviceManager {
     }
 
     /**
+     * Registers a listener to receive notifications when the set of automated apps changes.
+     *
+     * @param executor The executor where the listener is executed on.
+     * @param listener The listener to add.
+     * @throws SecurityException if the caller does not hold the {@link RoleManager#ROLE_HOME} role.
+     * @see #unregisterAutomatedPackageListener
+     * @hide
+     */
+    public void registerAutomatedPackageListener(
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull AutomatedPackageListener listener) {
+        if (mService == null) {
+            Log.w(TAG, "Failed to register listener; no virtual device manager service.");
+            return;
+        }
+        final AutomatedPackageListenerDelegate delegate =
+                new AutomatedPackageListenerDelegate(Objects.requireNonNull(executor),
+                        Objects.requireNonNull(listener));
+        synchronized (mAutomatedPackageListeners) {
+            try {
+                mService.registerAutomatedPackageListener(delegate);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+            mAutomatedPackageListeners.add(delegate);
+        }
+    }
+
+    /**
+     * Unregisters a listener previously registered with {@link #registerAutomatedPackageListener}.
+     *
+     * @param listener The listener to unregister.
+     * @throws SecurityException if the caller does not hold the {@link RoleManager#ROLE_HOME} role.
+     * @see #registerAutomatedPackageListener
+     * @hide
+     */
+    public void unregisterAutomatedPackageListener(@NonNull AutomatedPackageListener listener) {
+        if (mService == null) {
+            Log.w(TAG, "Failed to unregister listener; no virtual device manager service.");
+            return;
+        }
+        Objects.requireNonNull(listener);
+        synchronized (mAutomatedPackageListeners) {
+            final Iterator<AutomatedPackageListenerDelegate> it =
+                    mAutomatedPackageListeners.iterator();
+            while (it.hasNext()) {
+                final AutomatedPackageListenerDelegate delegate = it.next();
+                if (delegate.mListener == listener) {
+                    try {
+                        mService.unregisterAutomatedPackageListener(delegate);
+                    } catch (RemoteException e) {
+                        throw e.rethrowFromSystemServer();
+                    }
+                    it.remove();
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the intent to warn the user about launching an application that is being automated.
+     *
+     * <p>If the given package is not being automated for this user, or if no intent interception
+     * is needed, returns {@code null}.</p>
+     *
+     * @param packageName the app being launched
+     * @param userId the user associated with that app
+     *
+     * @hide
+     */
+    @Nullable
+    public Intent createAutomatedAppLaunchWarningIntent(
+            @NonNull String packageName, @UserIdInt int userId) {
+        if (mService == null) {
+            Log.w(TAG, "Failed to create intent, no virtual device manager service");
+            return null;
+        }
+        try {
+            return mService.createAutomatedAppLaunchWarningIntent(
+                    Objects.requireNonNull(packageName), userId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Returns the device policy for the given virtual device and policy type.
      *
      * <p>In case the virtual device identifier is not valid,
@@ -372,6 +482,31 @@ public final class VirtualDeviceManager {
         }
         try {
             return mService.getDevicePolicy(deviceId, policyType);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Returns the device policy for the display with the given ID and the given policy type.
+     *
+     * <p>In case the display does not exist or is not owned by a virtual device,
+     * {@link VirtualDeviceParams#DEVICE_POLICY_DEFAULT} is returned.
+     *
+     * @hide
+     */
+    public @VirtualDeviceParams.DevicePolicy int getDevicePolicyForDisplayId(
+            int displayId, @VirtualDeviceParams.PolicyType int policyType) {
+        if (displayId == Context.DEVICE_ID_DEFAULT) {
+            // Avoid unnecessary binder call, for default display, policy will be always default.
+            return VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
+        }
+        if (mService == null) {
+            Log.w(TAG, "Failed to retrieve device policy; no virtual device manager service.");
+            return VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
+        }
+        try {
+            return mService.getDevicePolicyForDisplayId(displayId, policyType);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -1172,7 +1307,7 @@ public final class VirtualDeviceManager {
          * @see Configuration#uiMode
          */
         @FlaggedApi(Flags.FLAG_DEVICE_AWARE_UI_MODE)
-        public void setDisplayUiMode(int displayId, int uiMode) {
+        public void setDisplayUiMode(int displayId, @DisplayUiMode int uiMode) {
             if (!Flags.deviceAwareUiMode()) {
                 throw new UnsupportedOperationException("Required flag is not enabled");
             }
@@ -1332,11 +1467,11 @@ public final class VirtualDeviceManager {
                 @NonNull UserHandle user) {}
 
         /**
-         * Called when there is no longer any window with a secure surface shown on the device.
+         * Called when a secure window is no longer shown on the virtual display.
          *
-         * <p>This is only called once there are no more secure windows shown on the device. If
-         * there are multiple secure windows shown on the device, this callback will be called only
-         * once all of them are hidden.</p>
+         * <p>This could mean that either an activity (previously with secure content) doesn't show
+         * secure content anymore, or a different activity with insecure content is launched on the
+         * display.</p>
          *
          * @param displayId The display ID on which the window was shown before.
          *
@@ -1438,6 +1573,30 @@ public final class VirtualDeviceManager {
             } finally {
                 Binder.restoreCallingIdentity(token);
             }
+        }
+    }
+
+    /**
+     * A wrapper for {@link AutomatedPackageListener} that executes callbacks on the given executor.
+     */
+    private static class AutomatedPackageListenerDelegate extends IAutomatedPackageListener.Stub {
+        private final AutomatedPackageListener mListener;
+        private final Executor mExecutor;
+
+        private AutomatedPackageListenerDelegate(
+                Executor executor, AutomatedPackageListener listener) {
+            mExecutor = executor;
+            mListener = listener;
+        }
+
+        @Override
+        public void onAutomatedPackagesChanged(
+                @NonNull String automatingPackage,
+                @NonNull List<String> automatedPackages,
+                @NonNull UserHandle user) {
+            Binder.withCleanCallingIdentity(() ->
+                    mExecutor.execute(() -> mListener.onAutomatedPackagesChanged(
+                            automatingPackage, automatedPackages, user)));
         }
     }
 }

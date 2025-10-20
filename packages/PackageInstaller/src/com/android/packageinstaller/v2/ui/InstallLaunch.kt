@@ -184,6 +184,10 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
                 }
             }
 
+            InstallStage.STAGE_VERIFICATION_FAILURE -> {
+                showInstallationDialog()
+            }
+
             else -> {
                 Log.d(LOG_TAG, "Unimplemented stage: " + installStage.stageCode)
                 showDialogInner(null)
@@ -323,6 +327,9 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
                 installViewModel!!.onNegativeVerificationUserResponse()
                 // Don't finish the activity at this time, it shows App not installed dialog later
                 shouldFinish = false
+            }
+            InstallStage.STAGE_VERIFICATION_FAILURE -> {
+                resultCode = RESULT_OK
             }
         }
         setResult(resultCode, null, shouldFinish)

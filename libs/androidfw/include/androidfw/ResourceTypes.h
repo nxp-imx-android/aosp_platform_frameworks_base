@@ -1022,7 +1022,7 @@ struct ResTable_config
             //   codes ('fr', 'en' etc. etc.). The high bit for both bytes is
             //   zero.
             //
-            // - A single 16 bit little endian packed value representing an
+            // - A single 16 bit big-endian packed value representing an
             //   ISO-639-2 3 letter language code. This will be of the form:
             //
             //   {1, t, t, t, t, t, s, s, s, s, s, f, f, f, f, f}
@@ -1035,7 +1035,7 @@ struct ResTable_config
             // For backwards compatibility, languages that have unambiguous
             // two letter codes are represented in that format.
             //
-            // The layout is always bigendian irrespective of the runtime
+            // The layout is always big-endian irrespective of the runtime
             // architecture.
             char language[2];
             
@@ -1049,7 +1049,7 @@ struct ResTable_config
             //   in the same manner as the language codes, though we should need
             //   only 10 bits to represent them, instead of the 15.
             //
-            // The layout is always bigendian irrespective of the runtime
+            // The layout is always big-endian irrespective of the runtime
             // architecture.
             char country[2];
         };

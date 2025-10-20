@@ -24,13 +24,15 @@ import static android.media.audio.Flags.FLAG_AUDIO_FOCUS_DESKTOP;
 import static android.media.audio.Flags.FLAG_DEPRECATE_STREAM_BT_SCO;
 import static android.media.audio.Flags.FLAG_FOCUS_EXCLUSIVE_WITH_RECORDING;
 import static android.media.audio.Flags.FLAG_FOCUS_FREEZE_TEST_API;
+import static android.media.audio.Flags.FLAG_GUARD_STREAM_VOLUME_APIS;
 import static android.media.audio.Flags.FLAG_REGISTER_VOLUME_CALLBACK_API_HARDENING;
 import static android.media.audio.Flags.FLAG_SCO_MANAGED_BY_AUDIO;
+import static android.media.audio.Flags.FLAG_STREAM_ASSISTANT_PUBLIC;
 import static android.media.audio.Flags.FLAG_SUPPORTED_DEVICE_TYPES_API;
 import static android.media.audio.Flags.FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT;
+import static android.media.audio.Flags.audioFocusIsolation;
 import static android.media.audio.Flags.autoPublicVolumeApiHardening;
-import static android.media.audio.Flags.cacheGetStreamMinMaxVolume;
-import static android.media.audio.Flags.cacheGetStreamVolume;
+import static android.media.audio.Flags.streamAssistantPublic;
 import static android.media.audiopolicy.Flags.FLAG_ENABLE_FADE_MANAGER_CONFIGURATION;
 import static android.media.audiopolicy.Flags.FLAG_MULTI_ZONE_AUDIO;
 
@@ -429,9 +431,8 @@ public class AudioManager {
     public static final int STREAM_TTS = AudioSystem.STREAM_TTS;
     /** Used to identify the volume of audio streams for accessibility prompts */
     public static final int STREAM_ACCESSIBILITY = AudioSystem.STREAM_ACCESSIBILITY;
-    /** @hide Used to identify the volume of audio streams for virtual assistant */
-    @SystemApi
-    @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
+    /** Used to identify the volume of audio streams for virtual assistant */
+    @FlaggedApi(FLAG_STREAM_ASSISTANT_PUBLIC)
     public static final int STREAM_ASSISTANT = AudioSystem.STREAM_ASSISTANT;
 
     /** Number of audio streams */
@@ -447,8 +448,18 @@ public class AudioManager {
             AudioManager.STREAM_DTMF,  AudioManager.STREAM_ACCESSIBILITY };
 
     /** @hide */
+    private static final int[] PUBLIC_STREAM_TYPES_WITH_ASSISTANT = {AudioManager.STREAM_VOICE_CALL,
+            AudioManager.STREAM_SYSTEM, AudioManager.STREAM_RING, AudioManager.STREAM_MUSIC,
+            AudioManager.STREAM_ALARM, AudioManager.STREAM_NOTIFICATION,
+            AudioManager.STREAM_DTMF, AudioManager.STREAM_ACCESSIBILITY,
+            AudioManager.STREAM_ASSISTANT};
+
+    /** @hide */
     @TestApi
     public static final int[] getPublicStreamTypes() {
+        if (streamAssistantPublic()) {
+            return PUBLIC_STREAM_TYPES_WITH_ASSISTANT;
+        }
         return PUBLIC_STREAM_TYPES;
     }
 
@@ -1291,10 +1302,9 @@ public class AudioManager {
      * @hide
      **/
     public static void clearVolumeCache(String api) {
-        if (cacheGetStreamMinMaxVolume() && (VOLUME_MAX_CACHING_API.equals(api)
-                || VOLUME_MIN_CACHING_API.equals(api))) {
+        if (VOLUME_MAX_CACHING_API.equals(api) || VOLUME_MIN_CACHING_API.equals(api)) {
             IpcDataCache.invalidateCache(IpcDataCache.MODULE_SYSTEM, api);
-        } else if (cacheGetStreamVolume() && VOLUME_CACHING_API.equals(api)) {
+        } else if (VOLUME_CACHING_API.equals(api)) {
             IpcDataCache.invalidateCache(IpcDataCache.MODULE_SYSTEM, api);
         } else {
             Log.w(TAG, "invalid clearVolumeCache for api " + api);
@@ -1334,20 +1344,17 @@ public class AudioManager {
     /**
      * Returns the maximum volume index for a particular stream.
      *
+     * <p>Starting with targetSdkVersion 37, requires {@link Manifest.permission#QUERY_AUDIO_VOLUME}
+     * to use this API.</p>
+     *
      * @param streamType The stream type whose maximum volume index is returned.
      * @return The maximum valid volume index for the stream.
      * @see #getStreamVolume(int)
      */
+    @FlaggedApi(FLAG_GUARD_STREAM_VOLUME_APIS)
+    @RequiresPermission(value = Manifest.permission.QUERY_AUDIO_VOLUME, conditional = true)
     public int getStreamMaxVolume(int streamType) {
-        if (cacheGetStreamMinMaxVolume()) {
-            return mVolMaxCache.query(new VolumeCacheQuery(streamType, QUERY_VOL_MAX));
-        }
-        final IAudioService service = getService();
-        try {
-            return service.getStreamMaxVolume(streamType);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return mVolMaxCache.query(new VolumeCacheQuery(streamType, QUERY_VOL_MAX));
     }
 
     /**
@@ -1375,35 +1382,24 @@ public class AudioManager {
      */
     @TestApi
     public int getStreamMinVolumeInt(int streamType) {
-        if (cacheGetStreamMinMaxVolume()) {
-            return mVolMinCache.query(new VolumeCacheQuery(streamType, QUERY_VOL_MIN));
-        }
-        final IAudioService service = getService();
-        try {
-            return service.getStreamMinVolume(streamType);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return mVolMinCache.query(new VolumeCacheQuery(streamType, QUERY_VOL_MIN));
     }
 
     /**
      * Returns the current volume index for a particular stream.
+     *
+     * <p>Starting with targetSdkVersion 37, requires {@link Manifest.permission#QUERY_AUDIO_VOLUME}
+     * to use this API.</p>
      *
      * @param streamType The stream type whose volume index is returned.
      * @return The current volume index for the stream.
      * @see #getStreamMaxVolume(int)
      * @see #setStreamVolume(int, int, int)
      */
+    @FlaggedApi(FLAG_GUARD_STREAM_VOLUME_APIS)
+    @RequiresPermission(value = Manifest.permission.QUERY_AUDIO_VOLUME, conditional = true)
     public int getStreamVolume(int streamType) {
-        if (cacheGetStreamVolume()) {
-            return mVolCache.query(new VolumeCacheQuery(streamType, QUERY_VOL));
-        }
-        final IAudioService service = getService();
-        try {
-            return service.getStreamVolume(streamType);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return mVolCache.query(new VolumeCacheQuery(streamType, QUERY_VOL));
     }
 
     // keep in sync with frameworks/av/services/audiopolicy/common/include/Volume.h
@@ -1418,25 +1414,11 @@ public class AudioManager {
             STREAM_ALARM,
             STREAM_NOTIFICATION,
             STREAM_DTMF,
-            STREAM_ACCESSIBILITY }
-    )
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface PublicStreamTypes {}
-
-    /** @hide */
-    @IntDef(flag = false, prefix = "STREAM", value = {
-            STREAM_VOICE_CALL,
-            STREAM_SYSTEM,
-            STREAM_RING,
-            STREAM_MUSIC,
-            STREAM_ALARM,
-            STREAM_NOTIFICATION,
-            STREAM_DTMF,
             STREAM_ACCESSIBILITY,
             STREAM_ASSISTANT }
     )
     @Retention(RetentionPolicy.SOURCE)
-    public @interface VolumeControlStreamTypes {}
+    public @interface PublicStreamTypes {}
 
     /**
      * Returns the volume in dB (decibel) for the given stream type at the given volume index, on
@@ -1478,6 +1460,12 @@ public class AudioManager {
      * @return true if the stream type is available in SDK
      */
     public static boolean isPublicStreamType(int streamType) {
+        if (streamAssistantPublic()) {
+            if (streamType == STREAM_ASSISTANT) {
+                return true;
+            }
+        }
+
         switch (streamType) {
             case STREAM_VOICE_CALL:
             case STREAM_SYSTEM:
@@ -4983,6 +4971,112 @@ public class AudioManager {
     }
 
     /**
+     * Isolates the given uid's audio focus management.
+     *
+     * <p>When a uid's audio focus management is isolated, its audio focus requests are always
+     * granted, and other applications' requests are not affected by the audio focus state of
+     * isolated uids.
+     *
+     * <p>This is useful, for example, when rerouting an application's audio to another audio
+     * device, with the audio focus requests of that application not affecting the audio focus
+     * requests of the other applications.
+     *
+     * <p>Any existing audio focus requests corresponding {@link #AUDIOFOCUS_GAIN} are preserved and
+     * all other requests receive a {@link #AUDIOFOCUS_LOSS}.
+     *
+     * <p>Isolated uids only permit a single focus entry per uid, so they do not support {@link
+     * #AUDIOFOCUS_GAIN_TRANSIENT} focus requests. Subsequent focus requests within an isolated uid
+     * result in the previous request receiving a {@link #AUDIOFOCUS_LOSS}.
+     *
+     * <p>Only one isolation request may be active for a given uid at a given time.
+     *
+     * <p>Isolated uids are not impacted by external policy based focus requests.
+     *
+     * @param uid The uid of the app's audio focus management to isolate.
+     * @return The isolation token to pass to {@link #exitFocusIsolation} in order to take the uid
+     *     out of isolation, or null if focus isolation failed.
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED)
+    public @Nullable FocusIsolationToken enterFocusIsolation(int uid) {
+        if (!audioFocusIsolation()) {
+            Log.w(TAG, "enterFocusIsolation: Request ignored. Flag is disabled.");
+            return null;
+        }
+        try {
+            var binder = new Binder();
+            if (getService().enterFocusIsolation(uid, binder)) {
+                return new FocusIsolationToken(binder);
+            } else {
+                return null;
+            }
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Removes the given uid from isolation.
+     *
+     * <p>Subsequent focus requests from the uid are treated normally. Any active focus request
+     * under isolation corresponding to an {@link #AUDIOFOCUS_GAIN} either receives an {@link
+     * #AUDIOFOCUS_LOSS}, or acts as if newly requesting audio focus based on the values of the
+     * mode.
+     *
+     * @param token The token obtained from {@link #enterFocusIsolation}, which identifies the uid
+     *     to remove from isolation.
+     * @param mode Describes what to do with any active audio focus requests from the affected uid.
+     * @return Whether the operation was successful.
+     * @see #enterFocusIsolation
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED)
+    public boolean exitFocusIsolation(
+            @NonNull FocusIsolationToken token, @FocusIsolationExitMode int mode) {
+        if (!audioFocusIsolation()) {
+            Log.w(TAG, "exitFocusIsolation: Request ignored. Flag is disabled.");
+            return false;
+        }
+        Objects.requireNonNull(token);
+        try {
+            return getService().exitFocusIsolation(token.mIBinder, mode);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /** @hide */
+    public static class FocusIsolationToken {
+        private final IBinder mIBinder;
+
+        private FocusIsolationToken(IBinder ibinder) {
+            mIBinder = ibinder;
+        }
+    }
+
+    /**
+     * @hide When exiting focus isolation, if the uid had requested focus, it will retain audio
+     *     focus. Other focus owners will lose focus
+     */
+    public static final int FOCUS_ISOLATION_EXIT_RETAIN_FOCUS = 1;
+
+    /**
+     * @hide When exiting focus isolation, if the uid had requested focus, it will lose audio focus,
+     *     and this will have no impact on other focus owners
+     */
+    public static final int FOCUS_ISOLATION_EXIT_LOSE_FOCUS = 2;
+
+    /** @hide */
+    @IntDef({
+        FOCUS_ISOLATION_EXIT_RETAIN_FOCUS,
+        FOCUS_ISOLATION_EXIT_LOSE_FOCUS,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FocusIsolationExitMode {}
+
+    // ===========================================================
+
+    /**
      * @hide
      * Returns whether a client is currently holding audio focus.
      * @param pckgName the name of the package of the client
@@ -6229,7 +6323,7 @@ public class AudioManager {
     }
 
      /**
-      * {@hide}
+      * @hide
       */
      private final IBinder mICallBack = new Binder();
 
@@ -6928,7 +7022,7 @@ public class AudioManager {
      * @param device type of device connected/disconnected (AudioManager.DEVICE_OUT_xxx)
      * @param state  new connection state: 1 connected, 0 disconnected
      * @param name   device name
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
@@ -6961,7 +7055,7 @@ public class AudioManager {
      * Indicate wired accessory connection state change.
      * @param device {@link AudioDeviceAttributes} of the device to "fake-connect"
      * @param connected true for connected, false for disconnected
-     * {@hide}
+     * @hide
      */
     @TestApi
     @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
@@ -6984,7 +7078,7 @@ public class AudioManager {
      * @param previousDevice Bluetooth device disconnected or null if there is no disconnected
      * devices
      * @param info contain all info related to the device. {@link BluetoothProfileConnectionInfo}
-     * {@hide}
+     * @hide
      */
     @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
     @RequiresPermission(Manifest.permission.BLUETOOTH_STACK)
@@ -6999,7 +7093,7 @@ public class AudioManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public IRingtonePlayer getRingtonePlayer() {
         try {
             return getService().getRingtonePlayer();
@@ -8961,6 +9055,13 @@ public class AudioManager {
      */
     public static boolean hasHapticChannelsImpl(@NonNull Context context, @NonNull Uri uri) {
         MediaExtractor extractor = new MediaExtractor();
+        if (context.getUserId() == UserHandle.USER_CURRENT) {
+            // Use the current userId to create user context to avoid the exception thrown
+            // during getting content provider accessing non-positive specialized user ID
+            // (USER_CURRENT) through context.getUserId().
+            context = context.createContextAsUser(
+                    UserHandle.of(UserHandle.myUserId()), 0);
+        }
         try {
             extractor.setDataSource(context, uri, null);
             for (int i = 0; i < extractor.getTrackCount(); i++) {

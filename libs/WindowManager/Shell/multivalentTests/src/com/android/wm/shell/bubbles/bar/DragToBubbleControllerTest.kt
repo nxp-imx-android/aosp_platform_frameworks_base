@@ -20,6 +20,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.IIntentSender
 import android.content.pm.ShortcutInfo
+import android.graphics.Insets
 import android.graphics.Rect
 import android.os.UserHandle
 import android.platform.test.annotations.EnableFlags
@@ -31,9 +32,12 @@ import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
 import com.android.wm.shell.bubbles.BubbleController
+import com.android.wm.shell.bubbles.BubblePositioner
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation
+import com.android.wm.shell.shared.bubbles.DeviceConfig
 import com.android.wm.shell.shared.bubbles.DragZoneFactory
 import com.android.wm.shell.shared.bubbles.DropTargetView
+import com.android.wm.shell.shared.bubbles.logging.EntryPoint
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule
@@ -41,6 +45,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.stub
@@ -53,7 +58,19 @@ class DragToBubbleControllerTest {
 
     @get:Rule val animatorTestRule = AnimatorTestRule()
     private val context = getApplicationContext<Context>()
-    private val bubbleController: BubbleController = mock()
+    private val deviceConfig =
+        DeviceConfig(
+            windowBounds = Rect(0, 0, 1000, 2000),
+            isLargeScreen = true,
+            isSmallTablet = false,
+            isLandscape = false,
+            isRtl = false,
+            insets = Insets.of(0, 0, 0, 0)
+        )
+    private val bubblePositioner = BubblePositioner(context, deviceConfig)
+    private val bubbleController: BubbleController = mock {
+        on { positioner } doReturn bubblePositioner
+    }
 
     private lateinit var dragToBubbleController: DragToBubbleController
     private lateinit var dropTargetContainer: ViewGroup
@@ -136,7 +153,12 @@ class DragToBubbleControllerTest {
         }
 
         verify(bubbleController)
-            .expandStackAndSelectBubble(pendingIntent, userHandle, BubbleBarLocation.LEFT)
+            .expandStackAndSelectBubble(
+                pendingIntent,
+                userHandle,
+                EntryPoint.TASKBAR_ICON_DRAG,
+                BubbleBarLocation.LEFT,
+            )
         assertThat(dragToBubbleController.isDropHandled).isTrue()
     }
 
@@ -153,7 +175,12 @@ class DragToBubbleControllerTest {
             dragToBubbleController.onItemDropped(shortcutInfo)
         }
 
-        verify(bubbleController).expandStackAndSelectBubble(shortcutInfo, BubbleBarLocation.LEFT)
+        verify(bubbleController)
+            .expandStackAndSelectBubble(
+                shortcutInfo,
+                EntryPoint.TASKBAR_ICON_DRAG,
+                BubbleBarLocation.LEFT,
+            )
         assertThat(dragToBubbleController.isDropHandled).isTrue()
     }
 
@@ -181,9 +208,14 @@ class DragToBubbleControllerTest {
         runOnMainSync { dragToBubbleController.onItemDropped(shortcutInfo) }
 
         assertThat(dropTargetContainer.childCount).isEqualTo(0)
-        verify(bubbleController, never()).expandStackAndSelectBubble(any<ShortcutInfo>(), any())
         verify(bubbleController, never())
-            .expandStackAndSelectBubble(any<PendingIntent>(), any(), any())
+            .expandStackAndSelectBubble(
+                any<ShortcutInfo>(),
+                eq(EntryPoint.TASKBAR_ICON_DRAG),
+                any(),
+            )
+        verify(bubbleController, never())
+            .expandStackAndSelectBubble(any<PendingIntent>(), any(), any(), any())
     }
 
     @Test

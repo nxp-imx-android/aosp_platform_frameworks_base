@@ -19,10 +19,10 @@ package com.android.systemui.qs.tiles.impl.cell.domain.interactor
 import android.content.Context
 import android.os.UserHandle
 import com.android.settingslib.graph.SignalDrawable
-import com.android.systemui.Flags as AconfigFlags
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.qs.flags.QsSplitInternetTile
 import com.android.systemui.qs.pipeline.shared.QSPipelineFlagsRepository
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileDataInteractor
 import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
@@ -88,7 +88,7 @@ constructor(
                                     is SignalIconModel.Satellite -> {
                                         MobileDataTileIcon.ResourceIcon(
                                             Icon.Resource(
-                                                signalLevelIcon.icon.res,
+                                                signalLevelIcon.icon.resId,
                                                 signalLevelIcon.icon.contentDescription,
                                             )
                                         )
@@ -127,6 +127,6 @@ constructor(
     override fun availability(user: UserHandle): Flow<Boolean> = flowOf(isAvailable())
 
     fun isAvailable(): Boolean {
-        return AconfigFlags.qsSplitInternetTile()
+        return QsSplitInternetTile.isEnabled
     }
 }

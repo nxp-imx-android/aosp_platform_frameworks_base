@@ -24,8 +24,6 @@ import static android.app.StatusBarManager.EXTRA_KM_PRIVATE_NOTIFS_ALLOWED;
 import static android.app.admin.DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED;
 import static android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_SECURE_NOTIFICATIONS;
 import static android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_UNREDACTED_NOTIFICATIONS;
-import static android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES;
-import static android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE;
 import static android.os.UserHandle.USER_ALL;
 import static android.provider.Settings.Secure.LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS;
 import static android.provider.Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS;
@@ -63,9 +61,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
-import android.platform.test.flag.junit.FlagsParameterization;
 import android.provider.Settings;
 import android.util.SparseArray;
 
@@ -73,7 +68,6 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.widget.LockPatternUtils;
 import com.android.systemui.LauncherProxyService;
-import com.android.systemui.flags.SceneContainerFlagParameterizationKt;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor;
@@ -90,7 +84,6 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
 import com.android.systemui.statusbar.notification.collection.render.NotificationVisibilityProvider;
-import com.android.systemui.statusbar.notification.row.shared.LockscreenOtpRedaction;
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.WifiRepository;
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
@@ -108,13 +101,9 @@ import kotlinx.coroutines.flow.StateFlow;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -123,20 +112,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 @SmallTest
-@RunWith(ParameterizedAndroidJunit4.class)
 public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
 
-    @Parameters(name = "{0}")
-    public static List<FlagsParameterization> getParams() {
-        List<FlagsParameterization> aconfigCombinations = FlagsParameterization.allCombinationsOf(
-                FLAG_ALLOW_PRIVATE_PROFILE,
-                FLAG_ENABLE_PRIVATE_SPACE_FEATURES);
-        return SceneContainerFlagParameterizationKt.andSceneContainer(aconfigCombinations);
-    }
-
-    public NotificationLockscreenUserManagerTest(FlagsParameterization flags) {
-        mSetFlagsRule.setFlagsParameterization(flags);
-    }
+    public NotificationLockscreenUserManagerTest() {}
 
     private static final int TEST_PROFILE_USERHANDLE = 12;
     @Mock
@@ -226,6 +204,8 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
         when(mUserManager.getProfilesIncludingCommunal(currentUserId)).thenReturn(
                 Lists.newArrayList(mCurrentUser, mWorkUser, mCommunalUser));
         when(mUserManager.getUsers()).thenReturn(Lists.newArrayList(
+                mCurrentUser, mWorkUser, mSecondaryUser, mCommunalUser));
+        when(mUserManager.getAliveUsers()).thenReturn(Lists.newArrayList(
                 mCurrentUser, mWorkUser, mSecondaryUser, mCommunalUser));
         when(mUserManager.getProfiles(mSecondaryUser.id)).thenReturn(Lists.newArrayList(
                 mSecondaryUser));
@@ -548,7 +528,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(LockscreenOtpRedaction.FLAG_NAME)
     public void testHasSensitiveContent_notRedactedIfNotLocked() {
         // Allow private notifications for this user
         mSettings.putIntForUser(LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS, 1,
@@ -569,7 +548,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(LockscreenOtpRedaction.FLAG_NAME)
     public void testHasSensitiveContent_notRedactedIfUnlockedSinceReceipt() {
         // Allow private notifications for this user
         mSettings.putIntForUser(LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS, 1,
@@ -589,7 +567,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(LockscreenOtpRedaction.FLAG_NAME)
     public void testHasSensitiveContent_notRedactedIfNotLockedForLongEnough() {
         // Allow private notifications for this user
         mSettings.putIntForUser(LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS, 1,
@@ -609,7 +586,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(LockscreenOtpRedaction.FLAG_NAME)
     public void testHasSensitiveContent_notRedactedIfOnWifi() {
         // Allow private notifications for this user
         mSettings.putIntForUser(LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS, 1,
@@ -630,7 +606,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(LockscreenOtpRedaction.FLAG_NAME)
     public void testHasSensitiveContent_notRedactedIfConnectedToWifiSinceReceiving() {
         // Allow private notifications for this user
         mSettings.putIntForUser(LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS, 1,
@@ -651,25 +626,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(LockscreenOtpRedaction.FLAG_NAME)
-    public void testHasSensitiveContent_notRedactedIfFlagDisabled() {
-        // Allow private notifications for this user
-        mSettings.putIntForUser(LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS, 1,
-                mCurrentUser.id);
-        changeSetting(LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS);
-        // Claim the device was last locked 1 day ago
-        mLockscreenUserManager.mLastLockTime
-                .set(mSensitiveNotifPostTime - TimeUnit.DAYS.toMillis(1));
-        mLockscreenUserManager.mLocked.set(true);
-        mLockscreenUserManager.mConnectedToWifi.set(false);
-
-        // Sensitive Content notifications are always redacted
-        assertEquals(REDACTION_TYPE_NONE,
-                mLockscreenUserManager.getRedactionType(mSensitiveContentNotif));
-    }
-
-    @Test
-    @EnableFlags(LockscreenOtpRedaction.FLAG_NAME)
     public void testNewSensitiveNotification_notRedactedIfOldCreationTime() {
         // Allow private notifications for this user
         mSettings.putIntForUser(LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS, 1,
@@ -686,7 +642,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(LockscreenOtpRedaction.FLAG_NAME)
     public void testHasSensitiveContent_redacted() {
         // Allow private notifications for this user
         mSettings.putIntForUser(LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS, 1,
@@ -1127,7 +1082,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_ALLOW_PRIVATE_PROFILE, FLAG_ENABLE_PRIVATE_SPACE_FEATURES})
     public void testProfileAvailabilityIntent() {
         mLockscreenUserManager.mCurrentProfiles.clear();
         assertEquals(0, mLockscreenUserManager.mCurrentProfiles.size());
@@ -1138,7 +1092,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_ALLOW_PRIVATE_PROFILE, FLAG_ENABLE_PRIVATE_SPACE_FEATURES})
     public void testProfileUnAvailabilityIntent() {
         mLockscreenUserManager.mCurrentProfiles.clear();
         assertEquals(0, mLockscreenUserManager.mCurrentProfiles.size());
@@ -1146,34 +1099,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
         simulateProfileAvailabilityActions(Intent.ACTION_PROFILE_UNAVAILABLE);
         int numProfiles = android.multiuser.Flags.supportCommunalProfile() ? 3 : 2;
         assertEquals(numProfiles, mLockscreenUserManager.mCurrentProfiles.size());
-    }
-
-    @Test
-    @DisableFlags({FLAG_ALLOW_PRIVATE_PROFILE, FLAG_ENABLE_PRIVATE_SPACE_FEATURES})
-    public void testManagedProfileAvailabilityIntent() {
-        mLockscreenUserManager.mCurrentProfiles.clear();
-        mLockscreenUserManager.mCurrentManagedProfiles.clear();
-        assertEquals(0, mLockscreenUserManager.mCurrentProfiles.size());
-        assertEquals(0, mLockscreenUserManager.mCurrentManagedProfiles.size());
-        mLockscreenUserManager.mCurrentProfiles.append(0, mock(UserInfo.class));
-        simulateProfileAvailabilityActions(Intent.ACTION_MANAGED_PROFILE_AVAILABLE);
-        int numProfiles = android.multiuser.Flags.supportCommunalProfile() ? 3 : 2;
-        assertEquals(numProfiles, mLockscreenUserManager.mCurrentProfiles.size());
-        assertEquals(1, mLockscreenUserManager.mCurrentManagedProfiles.size());
-    }
-
-    @Test
-    @DisableFlags({FLAG_ALLOW_PRIVATE_PROFILE, FLAG_ENABLE_PRIVATE_SPACE_FEATURES})
-    public void testManagedProfileUnAvailabilityIntent() {
-        mLockscreenUserManager.mCurrentProfiles.clear();
-        mLockscreenUserManager.mCurrentManagedProfiles.clear();
-        assertEquals(0, mLockscreenUserManager.mCurrentProfiles.size());
-        assertEquals(0, mLockscreenUserManager.mCurrentManagedProfiles.size());
-        mLockscreenUserManager.mCurrentProfiles.append(0, mock(UserInfo.class));
-        simulateProfileAvailabilityActions(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
-        int numProfiles = android.multiuser.Flags.supportCommunalProfile() ? 3 : 2;
-        assertEquals(numProfiles, mLockscreenUserManager.mCurrentProfiles.size());
-        assertEquals(1, mLockscreenUserManager.mCurrentManagedProfiles.size());
     }
 
     private void simulateProfileAvailabilityActions(String intentAction) {

@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.policy
 
 import android.app.ActivityOptions
+import android.app.Flags.notificationAnimatedActionContentDescription
 import android.app.Flags.notificationsRedesignTemplates
 import android.app.Notification
 import android.app.Notification.Action.SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY
@@ -48,7 +49,6 @@ import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
 import android.widget.Button
 import androidx.appcompat.content.res.AppCompatResources
-import com.android.systemui.Flags
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.shared.system.ActivityManagerWrapper
@@ -145,29 +145,25 @@ constructor(
     ): List<Button> {
         val finalCombinedButtons: List<Button>
 
-        if (Flags.notificationAnimatedActionsTreatment()) {
-            // Order is Animated Replies -> Animated Actions -> Smart Replies -> Smart Actions
+        // Order is Animated Replies -> Animated Actions -> Smart Replies -> Smart Actions
 
-            // Filter buttons based on their type for the animated treatment
-            val animatedReplyButtons =
-                smartReplyButtons.filter { it.getButtonType() == SmartButtonType.ANIMATED_REPLY }
-            val regularReplyButtons =
-                smartReplyButtons.filter { it.getButtonType() == SmartButtonType.REPLY }
+        // Filter buttons based on their type for the animated treatment
+        val animatedReplyButtons =
+            smartReplyButtons.filter { it.getButtonType() == SmartButtonType.ANIMATED_REPLY }
+        val regularReplyButtons =
+            smartReplyButtons.filter { it.getButtonType() == SmartButtonType.REPLY }
 
-            val animatedActionButtons =
-                smartActionButtons.filter { it.getButtonType() == SmartButtonType.ANIMATED_ACTION }
-            val regularActionButtons =
-                smartActionButtons.filter { it.getButtonType() == SmartButtonType.ACTION }
+        val animatedActionButtons =
+            smartActionButtons.filter { it.getButtonType() == SmartButtonType.ANIMATED_ACTION }
+        val regularActionButtons =
+            smartActionButtons.filter { it.getButtonType() == SmartButtonType.ACTION }
 
-            finalCombinedButtons =
-                animatedReplyButtons +
-                    animatedActionButtons +
-                    regularReplyButtons +
-                    regularActionButtons
-        } else {
-            // Order is Smart Replies -> Smart Actions
-            finalCombinedButtons = smartReplyButtons + smartActionButtons
-        }
+        finalCombinedButtons =
+            animatedReplyButtons +
+                animatedActionButtons +
+                regularReplyButtons +
+                regularActionButtons
+
         return finalCombinedButtons
     }
 
@@ -453,8 +449,7 @@ constructor(
         packageContext: Context,
     ): Button {
         val isAnimatedAction =
-            Flags.notificationAnimatedActionsTreatment() &&
-                smartActions.fromAssistant &&
+            smartActions.fromAssistant &&
                 action.extras.getBoolean(Notification.Action.EXTRA_IS_ANIMATED, false)
         val layoutRes =
             if (isAnimatedAction) {
@@ -469,6 +464,14 @@ constructor(
         return (LayoutInflater.from(parent.context).inflate(layoutRes, parent, false) as Button)
             .apply {
                 text = action.title
+                if (
+                    notificationAnimatedActionContentDescription() &&
+                        isAnimatedAction &&
+                        action.extras.containsKey(Notification.Action.EXTRA_CONTENT_DESCRIPTION)
+                ) {
+                    contentDescription =
+                        action.extras.getString(Notification.Action.EXTRA_CONTENT_DESCRIPTION)
+                }
 
                 // We received the Icon from the application - so use the Context of the application
                 // to
@@ -574,10 +577,7 @@ constructor(
         choice: CharSequence,
         delayOnClickListener: Boolean,
     ): Button {
-        val enableAnimatedReply =
-            Flags.notificationAnimatedActionsTreatment() &&
-                smartReplies.fromAssistant &&
-                isAnimatedReply(choice)
+        val enableAnimatedReply = smartReplies.fromAssistant && isAnimatedReply(choice)
         val layoutRes =
             if (enableAnimatedReply) {
                 R.layout.animated_action_button
@@ -596,6 +596,13 @@ constructor(
                     // attributionText with different color to choice text
                     val fullTextWithAttribution = formatChoiceWithAttribution(choice)
                     text = fullTextWithAttribution
+                    if (notificationAnimatedActionContentDescription()) {
+                        val animatedReplyContentDescription =
+                            getAnimatedReplyContentDescription(choice)
+                        if (animatedReplyContentDescription != null) {
+                            contentDescription = animatedReplyContentDescription
+                        }
+                    }
                     // Add the icon to the Animated Reply button
                     val animatedReplyIconSize =
                         context.resources.getDimensionPixelSize(
@@ -677,7 +684,7 @@ constructor(
                 smartReplyController.smartReplySent(
                     entry,
                     replyIndex,
-                    if (Flags.notificationAnimatedActionsTreatment()) choice else button.text,
+                    choice,
                     getNotificationLocation(entry).toMetricsEventEnum(),
                     false, /* modifiedBeforeSending */
                 )
@@ -725,6 +732,19 @@ constructor(
             }
         }
         return false
+    }
+
+    // Get content description if it's animated reply.
+    private fun getAnimatedReplyContentDescription(choice: CharSequence): String? {
+        if (choice is Spanned) {
+            val annotations = choice.getSpans(0, choice.length, Annotation::class.java)
+            for (annotation in annotations) {
+                if (annotation.key == "contentDescription") {
+                    return annotation.value
+                }
+            }
+        }
+        return null
     }
 
     // Format the text by concatenating attributionText with attribution text color to choice text

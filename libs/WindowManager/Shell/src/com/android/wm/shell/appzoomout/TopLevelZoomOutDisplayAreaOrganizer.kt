@@ -69,10 +69,10 @@ class TopLevelZoomOutDisplayAreaOrganizer(
 
     /**
      * Registers the TopLevelZoomOutDisplayAreaOrganizer to manage the display area of
-     * [DisplayAreaOrganizer.FEATURE_WINDOWED_MAGNIFICATION].
+     * [DisplayAreaOrganizer.FEATURE_TOP_LEVEL_ZOOM].
      */
     fun registerOrganizer() {
-        val displayAreaInfos = registerOrganizer(FEATURE_WINDOWED_MAGNIFICATION)
+        val displayAreaInfos = registerOrganizer(FEATURE_TOP_LEVEL_ZOOM)
         for (i in displayAreaInfos.indices) {
             val info = displayAreaInfos[i]
             onDisplayAreaAppeared(info.displayAreaInfo, info.leash)

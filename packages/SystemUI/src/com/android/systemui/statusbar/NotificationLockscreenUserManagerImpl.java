@@ -20,7 +20,6 @@ import static android.app.StatusBarManager.EXTRA_KM_PRIVATE_NOTIFS_ALLOWED;
 import static android.app.admin.DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED;
 import static android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_SECURE_NOTIFICATIONS;
 import static android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_UNREDACTED_NOTIFICATIONS;
-import static android.os.Flags.allowPrivateProfile;
 import static android.os.UserHandle.USER_ALL;
 import static android.os.UserHandle.USER_NULL;
 import static android.provider.Settings.Secure.OTP_NOTIFICATION_REDACTION_LOCK_TIME;
@@ -78,7 +77,6 @@ import com.android.systemui.shared.system.SysUiStatsLog;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
 import com.android.systemui.statusbar.notification.collection.render.NotificationVisibilityProvider;
-import com.android.systemui.statusbar.notification.row.shared.LockscreenOtpRedaction;
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.WifiRepository;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
@@ -201,7 +199,7 @@ public class NotificationLockscreenUserManagerImpl implements
                     // the user before calling into DPM
                     sendingUserId = mCurrentUserId;
                     @SuppressLint("MissingPermission")
-                    List<UserInfo> users = mUserManager.getUsers();
+                    List<UserInfo> users = mUserManager.getAliveUsers();
                     for (int i = users.size() - 1; i >= 0; i--) {
                         changed |= updateDpcSettings(users.get(i).id);
                     }
@@ -376,7 +374,7 @@ public class NotificationLockscreenUserManagerImpl implements
 
         // To avoid dependency injection cycle, finish constructing this object before using the
         // KeyguardInteractor. The CoroutineScope will only be null in tests.
-        if (LockscreenOtpRedaction.isEnabled() && coroutineScope != null) {
+        if (coroutineScope != null) {
             mMainExecutor.execute(() -> {
                 JavaAdapterKt.collectFlow(coroutineScope,
                     keyguardInteractor.get().isKeyguardDismissible(),
@@ -493,10 +491,8 @@ public class NotificationLockscreenUserManagerImpl implements
         filter.addAction(Intent.ACTION_USER_UNLOCKED);
         filter.addAction(Intent.ACTION_MANAGED_PROFILE_AVAILABLE);
         filter.addAction(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
-        if (privateSpaceFlagsEnabled()) {
-            filter.addAction(Intent.ACTION_PROFILE_AVAILABLE);
-            filter.addAction(Intent.ACTION_PROFILE_UNAVAILABLE);
-        }
+        filter.addAction(Intent.ACTION_PROFILE_AVAILABLE);
+        filter.addAction(Intent.ACTION_PROFILE_UNAVAILABLE);
         mBroadcastDispatcher.registerReceiver(mBaseBroadcastReceiver, filter,
                 null /* executor */, UserHandle.ALL);
 
@@ -774,10 +770,6 @@ public class NotificationLockscreenUserManagerImpl implements
      * This version of the method logs a metric about the request.
      */
     private boolean shouldShowSensitiveContentRedactedView(NotificationEntry ent) {
-        if (!LockscreenOtpRedaction.isEnabled()) {
-            return false;
-        }
-
         if (ent.getRanking() == null || !ent.getRanking().hasSensitiveContent()) {
             return false;
         }
@@ -977,15 +969,8 @@ public class NotificationLockscreenUserManagerImpl implements
     }
 
     private boolean profileAvailabilityActions(String action){
-        return privateSpaceFlagsEnabled()?
-                Objects.equals(action,Intent.ACTION_PROFILE_AVAILABLE)||
-                        Objects.equals(action,Intent.ACTION_PROFILE_UNAVAILABLE):
-                Objects.equals(action,Intent.ACTION_MANAGED_PROFILE_AVAILABLE)||
-                        Objects.equals(action,Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
-    }
-
-    private static boolean privateSpaceFlagsEnabled() {
-        return allowPrivateProfile() && android.multiuser.Flags.enablePrivateSpaceFeatures();
+        return Objects.equals(action,Intent.ACTION_PROFILE_AVAILABLE)||
+                        Objects.equals(action,Intent.ACTION_PROFILE_UNAVAILABLE);
     }
 
     @Override

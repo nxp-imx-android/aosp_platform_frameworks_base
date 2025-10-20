@@ -24,7 +24,7 @@ import static android.app.Notification.FLAG_NO_CLEAR;
 import static android.app.Notification.FLAG_ONGOING_EVENT;
 import static android.app.Notification.VISIBILITY_PRIVATE;
 import static android.app.Notification.VISIBILITY_PUBLIC;
-import static android.service.notification.Flags.notificationForceGrouping;
+import static android.app.NotificationManager.IMPORTANCE_MAX;
 import static android.service.notification.Flags.notificationRegroupOnClassification;
 
 import android.annotation.FlaggedApi;
@@ -118,13 +118,6 @@ public class GroupHelper {
     private final PackageManager mPackageManager;
     private boolean mIsTestHarnessExempted;
 
-    // Only contains notifications that are not explicitly grouped by the app (aka no group or
-    // sort key).
-    // userId|packageName -> (keys of notifications that aren't in an explicit app group -> flags)
-    @GuardedBy("mUngroupedNotifications")
-    private final ArrayMap<String, ArrayMap<String, NotificationAttributes>> mUngroupedNotifications
-            = new ArrayMap<>();
-
     // Contains the list of notifications that should be aggregated (forced grouping)
     // but there are less than mAutoGroupAtCount per section for a package.
     // The primary map's key is the full aggregated group key: userId|pkgName|g:groupName
@@ -153,33 +146,42 @@ public class GroupHelper {
             getNotificationShadeSections(AUTOGROUP_AT_COUNT_DEFAULT,
                 AUTOGROUP_BUNDLES_AT_COUNT_DEFAULT);
 
-    private static List<NotificationSectioner> NOTIFICATION_BUNDLE_SECTIONS;
+    /**
+     * The list of sections where autogrouping is always applied, so that notifications don't
+     * become exempt from classification just because they are posted in a group that contains
+     * non-classified notifications.
+     */
+    private static List<NotificationSectioner> NOTIFICATION_NAS_SECTIONS;
 
     private static List<NotificationSectioner> getNotificationShadeSections(int autogroupAtCount,
             int autogroupBundlesAtCount) {
         ArrayList<NotificationSectioner> sectionsList = new ArrayList<>();
-        if (android.service.notification.Flags.notificationClassification()) {
-            sectionsList.addAll(List.of(
+        sectionsList.addAll(List.of(
                 new NotificationSectioner("PromotionsSection", 0,
                         autogroupBundlesAtCount, (record) ->
                         NotificationChannel.PROMOTIONS_ID.equals(record.getChannel().getId())
-                        && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT),
+                                && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT),
                 new NotificationSectioner("SocialSection", 0,
                         autogroupBundlesAtCount, (record) ->
                         NotificationChannel.SOCIAL_MEDIA_ID.equals(record.getChannel().getId())
-                        && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT),
+                                && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT),
                 new NotificationSectioner("NewsSection", 0,
                         autogroupBundlesAtCount, (record) ->
                         NotificationChannel.NEWS_ID.equals(record.getChannel().getId())
-                        && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT),
+                                && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT),
                 new NotificationSectioner("RecsSection", 0,
                         autogroupBundlesAtCount, (record) ->
                         NotificationChannel.RECS_ID.equals(record.getChannel().getId())
-                        && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT)
-                ));
+                                && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT)
+        ));
 
-            NOTIFICATION_BUNDLE_SECTIONS = new ArrayList<>(sectionsList);
+        if (android.app.Flags.nmHighlights()) {
+            sectionsList.add(new NotificationSectioner("HighlightsSection", 0,
+                    autogroupBundlesAtCount, (record) ->
+                    record.getProposedImportance() == IMPORTANCE_MAX));
         }
+
+        NOTIFICATION_NAS_SECTIONS = new ArrayList<>(sectionsList);
 
         if (Flags.notificationForceGroupConversations()) {
             // add priority people section
@@ -216,10 +218,6 @@ public class GroupHelper {
         mIsTestHarnessExempted = ActivityManager.isRunningInUserTestHarness() && isExempted;
     }
 
-    private String generatePackageKey(int userId, String pkg) {
-        return userId + "|" + pkg;
-    }
-
     @VisibleForTesting
     protected static int getAutogroupSummaryFlags(
             @NonNull final ArrayMap<String, NotificationAttributes> childrenMap) {
@@ -251,21 +249,13 @@ public class GroupHelper {
     public boolean onNotificationPosted(NotificationRecord record, boolean autogroupSummaryExists) {
         boolean sbnToBeAutogrouped = false;
         try {
-            if (notificationForceGrouping()) {
-                final StatusBarNotification sbn = record.getSbn();
-                if (!sbn.isAppGroup()) {
-                    sbnToBeAutogrouped = maybeGroupWithSections(record, autogroupSummaryExists);
-                } else {
-                    maybeUngroupOnAppGrouped(record);
-                }
+            final StatusBarNotification sbn = record.getSbn();
+            if (!sbn.isAppGroup()) {
+                sbnToBeAutogrouped = maybeGroupWithSections(record, autogroupSummaryExists);
             } else {
-                final StatusBarNotification sbn = record.getSbn();
-                if (!sbn.isAppGroup()) {
-                    sbnToBeAutogrouped = maybeGroup(sbn, autogroupSummaryExists);
-                } else {
-                    maybeUngroup(sbn, false, sbn.getUserId());
-                }
+                maybeUngroupOnAppGrouped(record);
             }
+
         } catch (Exception e) {
             Slog.e(TAG, "Failure processing new notification", e);
         }
@@ -280,170 +270,13 @@ public class GroupHelper {
      */
     public void onNotificationRemoved(NotificationRecord record) {
         try {
-            if (notificationForceGrouping()) {
-                Slog.wtf(TAG,
-                        "This overload of onNotificationRemoved() should not be called if "
-                                + "notification_force_grouping is enabled!",
-                        new Exception("call stack"));
-                onNotificationRemoved(record, new ArrayList<>(), false);
-            } else {
-                final StatusBarNotification sbn = record.getSbn();
-                maybeUngroup(sbn, true, sbn.getUserId());
-            }
+            Slog.wtf(TAG,
+                    "This overload of onNotificationRemoved() should not be called if "
+                            + "notification_force_grouping is enabled!",
+                    new Exception("call stack"));
+            onNotificationRemoved(record, new ArrayList<>(), false);
         } catch (Exception e) {
             Slog.e(TAG, "Error processing canceled notification", e);
-        }
-    }
-
-    /**
-     * A non-app grouped notification has been added or updated
-     * Evaluate if:
-     * (a) an existing autogroup summary needs updated flags
-     * (b) a new autogroup summary needs to be added with correct flags
-     * (c) other non-app grouped children need to be moved to the autogroup
-     *
-     * And stores the list of upgrouped notifications & their flags
-     */
-    private boolean maybeGroup(StatusBarNotification sbn, boolean autogroupSummaryExists) {
-        int flags = 0;
-        List<String> notificationsToGroup = new ArrayList<>();
-        List<NotificationAttributes> childrenAttr = new ArrayList<>();
-        // Indicates whether the provided sbn should be autogrouped by the caller.
-        boolean sbnToBeAutogrouped = false;
-        synchronized (mUngroupedNotifications) {
-            String packageKey = generatePackageKey(sbn.getUserId(), sbn.getPackageName());
-            final ArrayMap<String, NotificationAttributes> children =
-                    mUngroupedNotifications.getOrDefault(packageKey, new ArrayMap<>());
-            NotificationAttributes attr = new NotificationAttributes(sbn.getNotification().flags,
-                    sbn.getNotification().getSmallIcon(), sbn.getNotification().color,
-                    sbn.getNotification().visibility, Notification.GROUP_ALERT_CHILDREN,
-                    sbn.getNotification().getChannelId());
-            children.put(sbn.getKey(), attr);
-            mUngroupedNotifications.put(packageKey, children);
-
-            if (children.size() >= mAutoGroupAtCount || autogroupSummaryExists) {
-                flags = getAutogroupSummaryFlags(children);
-                notificationsToGroup.addAll(children.keySet());
-                childrenAttr.addAll(children.values());
-            }
-        }
-        if (notificationsToGroup.size() > 0) {
-            if (autogroupSummaryExists) {
-                NotificationAttributes attr = new NotificationAttributes(flags,
-                        sbn.getNotification().getSmallIcon(), sbn.getNotification().color,
-                        VISIBILITY_PRIVATE, Notification.GROUP_ALERT_CHILDREN,
-                        sbn.getNotification().getChannelId());
-                if (Flags.autogroupSummaryIconUpdate()) {
-                    attr = updateAutobundledSummaryAttributes(sbn.getPackageName(), childrenAttr,
-                            attr);
-                }
-
-                mCallback.updateAutogroupSummary(sbn.getUserId(), sbn.getPackageName(),
-                        AUTOGROUP_KEY, attr);
-            } else {
-                Icon summaryIcon = sbn.getNotification().getSmallIcon();
-                int summaryIconColor = sbn.getNotification().color;
-                int summaryVisibility = VISIBILITY_PRIVATE;
-                String summaryChannelId = sbn.getNotification().getChannelId();
-                if (Flags.autogroupSummaryIconUpdate()) {
-                    // Calculate the initial summary icon, icon color and visibility
-                    NotificationAttributes iconAttr = getAutobundledSummaryAttributes(
-                            sbn.getPackageName(), childrenAttr);
-                    summaryIcon = iconAttr.icon;
-                    summaryIconColor = iconAttr.iconColor;
-                    summaryVisibility = iconAttr.visibility;
-                    summaryChannelId = iconAttr.channelId;
-                }
-
-                NotificationAttributes attr = new NotificationAttributes(flags, summaryIcon,
-                        summaryIconColor, summaryVisibility, Notification.GROUP_ALERT_CHILDREN,
-                        summaryChannelId);
-                mCallback.addAutoGroupSummary(sbn.getUserId(), sbn.getPackageName(), sbn.getKey(),
-                        AUTOGROUP_KEY, Integer.MAX_VALUE, attr);
-            }
-            for (String keyToGroup : notificationsToGroup) {
-                if (keyToGroup.equals(sbn.getKey())) {
-                    // Autogrouping for the provided notification is to be done synchronously.
-                    sbnToBeAutogrouped = true;
-                } else {
-                    mCallback.addAutoGroup(keyToGroup, AUTOGROUP_KEY, /*requestSort=*/true);
-                }
-            }
-        }
-        return sbnToBeAutogrouped;
-    }
-
-    /**
-     * A notification was added that's app grouped, or a notification was removed.
-     * Evaluate whether:
-     * (a) an existing autogroup summary needs updated flags
-     * (b) if we need to remove our autogroup overlay for this notification
-     * (c) we need to remove the autogroup summary
-     *
-     * And updates the internal state of un-app-grouped notifications and their flags.
-     */
-    private void maybeUngroup(StatusBarNotification sbn, boolean notificationGone, int userId) {
-        boolean removeSummary = false;
-        int summaryFlags = FLAG_INVALID;
-        boolean updateSummaryFlags = false;
-        boolean removeAutogroupOverlay = false;
-        List<NotificationAttributes> childrenAttrs = new ArrayList<>();
-        synchronized (mUngroupedNotifications) {
-            String key = generatePackageKey(sbn.getUserId(), sbn.getPackageName());
-            final ArrayMap<String, NotificationAttributes> children =
-                    mUngroupedNotifications.getOrDefault(key, new ArrayMap<>());
-            if (children.size() == 0) {
-                return;
-            }
-
-            // if this notif was autogrouped and now isn't
-            if (children.containsKey(sbn.getKey())) {
-                // if this notification was contributing flags that aren't covered by other
-                // children to the summary, reevaluate flags for the summary
-                int flags = children.remove(sbn.getKey()).flags;
-                // this
-                if (hasAnyFlag(flags, ANY_CHILDREN_FLAGS)) {
-                    updateSummaryFlags = true;
-                    summaryFlags = getAutogroupSummaryFlags(children);
-                }
-                // if this notification still exists and has an autogroup overlay, but is now
-                // grouped by the app, clear the overlay
-                if (!notificationGone && sbn.getOverrideGroupKey() != null) {
-                    removeAutogroupOverlay = true;
-                }
-
-                // If there are no more children left to autogroup, remove the summary
-                if (children.size() == 0) {
-                    removeSummary = true;
-                } else {
-                    childrenAttrs.addAll(children.values());
-                }
-            }
-        }
-
-        if (removeSummary) {
-            mCallback.removeAutoGroupSummary(userId, sbn.getPackageName(), AUTOGROUP_KEY);
-        } else {
-            NotificationAttributes attr = new NotificationAttributes(summaryFlags,
-                    sbn.getNotification().getSmallIcon(), sbn.getNotification().color,
-                    VISIBILITY_PRIVATE, Notification.GROUP_ALERT_CHILDREN,
-                    sbn.getNotification().getChannelId());
-            boolean attributesUpdated = false;
-            if (Flags.autogroupSummaryIconUpdate()) {
-                NotificationAttributes newAttr = updateAutobundledSummaryAttributes(
-                        sbn.getPackageName(), childrenAttrs, attr);
-                if (!newAttr.equals(attr)) {
-                    attributesUpdated = true;
-                    attr = newAttr;
-                }
-            }
-
-            if (updateSummaryFlags || attributesUpdated) {
-                mCallback.updateAutogroupSummary(userId, sbn.getPackageName(), AUTOGROUP_KEY, attr);
-            }
-        }
-        if (removeAutogroupOverlay) {
-            mCallback.removeAutoGroup(sbn.getKey());
         }
     }
 
@@ -502,28 +335,6 @@ public class GroupHelper {
 
         return new NotificationAttributes(0, newIcon, newColor, newVisibility,
                 newGroupAlertBehavior, channelId);
-    }
-
-    NotificationAttributes updateAutobundledSummaryAttributes(@NonNull String packageName,
-            @NonNull List<NotificationAttributes> childrenAttr,
-            @NonNull NotificationAttributes oldAttr) {
-        NotificationAttributes newAttr = getAutobundledSummaryAttributes(packageName,
-                childrenAttr);
-        Icon newIcon = newAttr.icon;
-        int newColor = newAttr.iconColor;
-        String newChannelId = newAttr.channelId;
-        if (newAttr.icon == null) {
-            newIcon = oldAttr.icon;
-        }
-        if (newAttr.iconColor == Notification.COLOR_INVALID) {
-            newColor = oldAttr.iconColor;
-        }
-        if (newAttr.channelId == null) {
-            newChannelId = oldAttr.channelId;
-        }
-
-        return new NotificationAttributes(oldAttr.flags, newIcon, newColor, newAttr.visibility,
-                oldAttr.groupAlertBehavior, newChannelId);
     }
 
     private NotificationAttributes getSummaryAttributes(String pkgName,
@@ -776,7 +587,7 @@ public class GroupHelper {
                 // If bundled and the section did not change, do not un-autogroup
                 final NotificationSectioner sectioner = getSection(record);
                 if (sectioner != null
-                        && NOTIFICATION_BUNDLE_SECTIONS.contains(sectioner)
+                        && NOTIFICATION_NAS_SECTIONS.contains(sectioner)
                         && fullAggregateGroupKey.equals(
                             FullyQualifiedGroupKey.forRecord(record, sectioner))) {
                     if (DEBUG) {
@@ -837,7 +648,6 @@ public class GroupHelper {
      * @param notificationList the full notification list from NotificationManagerService
      * @param summaryByGroupKey the map of group summaries from NotificationManagerService
      */
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_FORCE_GROUPING)
     protected void onNotificationPostedWithDelay(final NotificationRecord record,
             final List<NotificationRecord> notificationList,
             final Map<String, NotificationRecord> summaryByGroupKey) {
@@ -889,18 +699,16 @@ public class GroupHelper {
 
                 boolean aggregated =
                         addToUngroupedAndMaybeAggregate(record, fullAggregateGroupKey, sectioner);
-                if (android.service.notification.Flags.notificationClassification()) {
-                    if (!aggregated && isSummaryWithAllChildrenBundled(record, notificationList,
-                            new ArrayList<>())) {
-                        // Cancel the summary and cache it if does not get aggregated
-                        // in order to avoid empty summaries
-                        if (DEBUG) {
-                            Slog.i(TAG,
-                                    "Empty group summary to be canceled and cached: " + record);
-                        }
-                        mCallback.removeAppProvidedSummary(record.getKey());
-                        cacheCanceledSummary(record);
+                if (!aggregated && isSummaryWithAllChildrenBundled(record, notificationList,
+                        new ArrayList<>())) {
+                    // Cancel the summary and cache it if does not get aggregated
+                    // in order to avoid empty summaries
+                    if (DEBUG) {
+                        Slog.i(TAG,
+                                "Empty group summary to be canceled and cached: " + record);
                     }
+                    mCallback.removeAppProvidedSummary(record.getKey());
+                    cacheCanceledSummary(record);
                 }
 
                 return;
@@ -908,8 +716,7 @@ public class GroupHelper {
 
             // Check if summary & child notifications are not part of the same section/bundle
             // Needs a check here if notification was bundled while enqueued
-            if (notificationRegroupOnClassification()
-                    && android.service.notification.Flags.notificationClassification()) {
+            if (notificationRegroupOnClassification()) {
                 if (isGroupChildBundled(record, summaryByGroupKey)) {
                     if (DEBUG) {
                         Slog.v(TAG, "isGroupChildInDifferentBundleThanSummary: " + record);
@@ -991,7 +798,7 @@ public class GroupHelper {
 
     private static boolean isInBundleSection(final NotificationRecord record) {
         final NotificationSectioner sectioner = getSection(record);
-        return (sectioner != null && NOTIFICATION_BUNDLE_SECTIONS.contains(sectioner));
+        return (sectioner != null && NOTIFICATION_NAS_SECTIONS.contains(sectioner));
     }
 
     /**
@@ -1011,7 +818,6 @@ public class GroupHelper {
      * @param sendingDelete whether the removed notification is being removed in a way that sends
      *                     its {@code deleteIntent}
      */
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_FORCE_GROUPING)
     protected void onNotificationRemoved(final NotificationRecord record,
             final List<NotificationRecord> notificationList, boolean sendingDelete) {
         final StatusBarNotification sbn = record.getSbn();
@@ -1123,7 +929,6 @@ public class GroupHelper {
      * @param notificationList the full notification list from NotificationManagerService
      * @param summaryByGroupKey the map of group summaries from NotificationManagerService
      */
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_FORCE_GROUPING)
     protected void onGroupedNotificationRemovedWithDelay(final NotificationRecord summaryRecord,
             final List<NotificationRecord> notificationList,
             final Map<String, NotificationRecord> summaryByGroupKey) {
@@ -1220,7 +1025,7 @@ public class GroupHelper {
                         && (r.mOriginalFlags & FLAG_GROUP_SUMMARY) == 0
                         && summaryGroupKey.equals(oldGroupKey)) {
                     final NotificationSectioner sectioner = getSection(r);
-                    if (sectioner == null || NOTIFICATION_BUNDLE_SECTIONS.contains(sectioner)) {
+                    if (sectioner == null || NOTIFICATION_NAS_SECTIONS.contains(sectioner)) {
                         if (DEBUG) {
                             Slog.i(TAG, "onGroupSummaryAdded skip bundled child: " + r);
                         }
@@ -1249,7 +1054,6 @@ public class GroupHelper {
      * @param channel the channel that was updated
      * @param notificationList the full notification list from NotificationManagerService
      */
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_FORCE_GROUPING)
     public void onChannelUpdated(final int userId, final String pkgName,
             final NotificationChannel channel, final List<NotificationRecord> notificationList,
             ArrayMap<String, NotificationRecord> summaryByGroupKey) {
@@ -1286,7 +1090,6 @@ public class GroupHelper {
      *
      * @param record the notification which had its channel updated
      */
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_FORCE_GROUPING)
     public void onChannelUpdated(final NotificationRecord record) {
         synchronized (mAggregatedNotifications) {
             ArrayMap<String, NotificationRecord> notificationsToCheck = new ArrayMap<>();
@@ -1306,7 +1109,6 @@ public class GroupHelper {
      * @param record the notification which had its channel updated
      * @param originalSummaryExists the original group summary exists
      */
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_FORCE_GROUPING)
     public void onNotificationUnbundled(final NotificationRecord record,
             final boolean originalSummaryExists) {
         synchronized (mAggregatedNotifications) {
@@ -1358,7 +1160,7 @@ public class GroupHelper {
             if (isChildOfValidAppGroup(record) || isNotAppGroupPrevInvalidSection(record)) {
                 // Check if section changes to a bundle section
                 NotificationSectioner sectioner = getSection(record);
-                if (sectioner != null && NOTIFICATION_BUNDLE_SECTIONS.contains(sectioner)) {
+                if (sectioner != null && NOTIFICATION_NAS_SECTIONS.contains(sectioner)) {
                     FullyQualifiedGroupKey newFullAggregateGroupKey =
                             new FullyQualifiedGroupKey(userId, pkgName, sectioner);
                     if (DEBUG) {
@@ -2182,11 +1984,7 @@ public class GroupHelper {
             if (!Flags.notificationForceGroupConversations()) {
                 if (record.isConversation()) {
                     // Bundled conversations are groupable
-                    if (android.service.notification.Flags.notificationClassification()) {
-                        if (!NOTIFICATION_BUNDLE_SECTIONS.contains(this)) {
-                            return false;
-                        }
-                    } else {
+                    if (!NOTIFICATION_NAS_SECTIONS.contains(this)) {
                         return false;
                     }
                 }

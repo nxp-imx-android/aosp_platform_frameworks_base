@@ -23,8 +23,10 @@ import android.view.InputEvent
 import android.view.MotionEvent
 import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.Flags.restrictCommunalShadeToWhenIdle
 import com.android.systemui.ambient.touch.TouchHandler.TouchSession
 import com.android.systemui.ambient.touch.dagger.ShadeModule
+import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
 import com.android.systemui.scene.domain.interactor.SceneInteractor
@@ -52,6 +54,7 @@ constructor(
     private val dreamManager: DreamManager,
     private val communalViewModel: CommunalViewModel,
     private val communalSettingsInteractor: CommunalSettingsInteractor,
+    private val communalSceneInteractor: CommunalSceneInteractor,
     private val sceneInteractor: SceneInteractor,
     private val windowRootViewProvider: Optional<Provider<WindowRootView>>,
     @param:Named(ShadeModule.NOTIFICATION_SHADE_GESTURE_INITIATION_HEIGHT)
@@ -147,7 +150,11 @@ constructor(
             // Send touches to central surfaces only when on the glanceable hub while not dreaming.
             // While sending touches where while dreaming will open the shade, the shade
             // while closing if opened then closed in the same gesture.
-            surfaces.get().handleExternalShadeWindowTouch(event)
+            if (
+                !restrictCommunalShadeToWhenIdle() || communalSceneInteractor.isIdleOnCommunal.value
+            ) {
+                surfaces.get().handleExternalShadeWindowTouch(event)
+            }
         } else {
             // Send touches to the shade view when dreaming.
             shadeViewController.handleExternalTouch(event)

@@ -50,7 +50,6 @@ import android.view.ViewConfiguration;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
-import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.WindowContainerTransaction;
 
@@ -81,7 +80,6 @@ import java.util.function.BiFunction;
 public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearLayout> {
     private final Handler mHandler;
     private final @ShellMainThread ShellExecutor mMainExecutor;
-    private final @ShellBackgroundThread ShellExecutor mBgExecutor;
     private final Choreographer mChoreographer;
     private final SyncTransactionQueue mSyncQueue;
     private final DesktopConfig mDesktopConfig;
@@ -111,10 +109,9 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
             @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
             DesktopConfig desktopConfig) {
         super(context, handler, transitions, userContext, displayController, taskOrganizer,
-                taskInfo, taskSurface, windowDecorViewHostSupplier);
+                taskInfo, taskSurface, windowDecorViewHostSupplier, bgExecutor);
         mHandler = handler;
         mMainExecutor = mainExecutor;
-        mBgExecutor = bgExecutor;
         mChoreographer = choreographer;
         mSyncQueue = syncQueue;
         mDesktopConfig = desktopConfig;
@@ -131,7 +128,6 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
         mDragPositioningCallback = dragPositioningCallback;
     }
 
-    @Override
     @NonNull
     Rect calculateValidDragArea() {
         final Context displayContext = mDisplayController.getDisplayContext(mTaskInfo.displayId);
@@ -211,26 +207,10 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
         // at the same, whereas applying them independently causes flickering. See b/270202228.
         relayout(taskInfo, t, t, true /* applyStartTransactionOnDraw */,
                 shouldSetTaskVisibilityPositionAndCrop, hasGlobalFocus, displayExclusionRegion,
-                /* inSyncWithTransition= */ false, /* forceReinflation= */ false);
-    }
-
-    /** TODO(b/437224867): Remove this workaround for "Wallpaper & Style" bug in Settings */
-    void onThemeChanged() {
-        final SurfaceControl.Transaction t = mSurfaceControlTransactionSupplier.get();
-        final boolean shouldSetTaskVisibilityPositionAndCrop =
-                !mDesktopConfig.isVeiledResizeEnabled()
-                        && mTaskDragResizer.isResizingOrAnimating();
-        final boolean applyTransactionOnDraw = mTaskInfo.isFreeform();
-        relayout(mTaskInfo, t, t, applyTransactionOnDraw, shouldSetTaskVisibilityPositionAndCrop,
-                mHasGlobalFocus, mExclusionRegion, /* inSyncWithTransition= */ false,
-                /* forceReinflation= */ true);
-        if (!applyTransactionOnDraw) {
-            t.apply();
-        }
+                /* inSyncWithTransition= */ false);
     }
 
     @VisibleForTesting
-    /** TODO(b/437224867): Remove forceReinflation param */
     static void updateRelayoutParams(
             RelayoutParams relayoutParams,
             @NonNull Context context,
@@ -243,30 +223,20 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
             boolean hasGlobalFocus,
             @NonNull Region globalExclusionRegion,
             boolean shouldSetBackground,
-            boolean inSyncWithTransition,
-            boolean forceReinflation) {
+            boolean inSyncWithTransition) {
         relayoutParams.reset();
         relayoutParams.mRunningTaskInfo = taskInfo;
         relayoutParams.mLayoutResId = R.layout.caption_window_decor;
         relayoutParams.mCaptionHeightCalculator = getCaptionHeightCalculator();
-        if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
-            relayoutParams.mShadowRadiusId = hasGlobalFocus
-                    ? R.dimen.freeform_decor_shadow_focused_thickness
-                    : R.dimen.freeform_decor_shadow_unfocused_thickness;
-        } else {
-            relayoutParams.mShadowRadius = hasGlobalFocus
-                    ? context.getResources().getDimensionPixelSize(
-                    R.dimen.freeform_decor_shadow_focused_thickness)
-                    : context.getResources().getDimensionPixelSize(
-                            R.dimen.freeform_decor_shadow_unfocused_thickness);
-        }
+        relayoutParams.mShadowRadiusId = hasGlobalFocus
+                ? R.dimen.freeform_decor_shadow_focused_thickness
+                : R.dimen.freeform_decor_shadow_unfocused_thickness;
         relayoutParams.mApplyStartTransactionOnDraw = applyStartTransactionOnDraw;
         relayoutParams.mSetTaskVisibilityPositionAndCrop = shouldSetTaskVisibilityPositionAndCrop;
         relayoutParams.mIsCaptionVisible = taskInfo.isFreeform()
                 || (isStatusBarVisible && !isKeyguardVisibleAndOccluded);
         relayoutParams.mDisplayExclusionRegion.set(globalExclusionRegion);
         relayoutParams.mInSyncWithTransition = inSyncWithTransition;
-        relayoutParams.mForceReinflation = forceReinflation;
 
         if (TaskInfoKt.isTransparentCaptionBarAppearance(taskInfo)) {
             // If the app is requesting to customize the caption bar, allow input to fall
@@ -294,13 +264,11 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
     }
 
     @SuppressLint("MissingPermission")
-    /** TODO(b/437224867): Remove forceReinflation param */
     void relayout(RunningTaskInfo taskInfo,
             SurfaceControl.Transaction startT, SurfaceControl.Transaction finishT,
             boolean applyStartTransactionOnDraw, boolean shouldSetTaskVisibilityPositionAndCrop,
             boolean hasGlobalFocus,
-            @NonNull Region globalExclusionRegion, boolean inSyncWithTransition,
-            boolean forceReinflation) {
+            @NonNull Region globalExclusionRegion, boolean inSyncWithTransition) {
         final boolean isFreeform =
                 taskInfo.getWindowingMode() == WindowConfiguration.WINDOWING_MODE_FREEFORM;
         final boolean isDragResizeable = ENABLE_WINDOWING_SCALED_RESIZING.isTrue()
@@ -315,7 +283,7 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
                 mIsKeyguardVisibleAndOccluded,
                 mDisplayController.getInsetsState(taskInfo.displayId), hasGlobalFocus,
                 globalExclusionRegion, mDesktopConfig.shouldSetBackground(taskInfo),
-                inSyncWithTransition, forceReinflation);
+                inSyncWithTransition);
 
         relayout(mRelayoutParams, startT, finishT, wct, oldRootView, getLeash(), mResult);
         // After this line, mTaskInfo is up-to-date and should be used instead of taskInfo

@@ -16,9 +16,9 @@
 
 package com.android.systemui.biometrics.domain.interactor
 
-import android.hardware.biometrics.BiometricManager
 import com.android.internal.widget.lockPatternUtils
 import com.android.systemui.biometrics.BiometricPromptLogger
+import com.android.systemui.biometrics.biometricManager
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
 import com.android.systemui.biometrics.data.repository.promptRepository
 import com.android.systemui.display.domain.interactor.displayStateInteractor
@@ -35,7 +35,7 @@ val Kosmos.promptSelectorInteractor by Fixture {
         promptRepository = promptRepository,
         credentialInteractor = credentialInteractor,
         lockPatternUtils = lockPatternUtils,
-        biometricManager = mock<BiometricManager>(),
+        biometricManager = biometricManager,
         bgScope = testScope.backgroundScope,
         sessionTracker = mock<SessionTracker>(),
         biometricPromptLogger = mock<BiometricPromptLogger>(),

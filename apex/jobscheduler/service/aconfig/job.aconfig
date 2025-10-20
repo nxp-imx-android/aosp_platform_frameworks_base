@@ -71,6 +71,16 @@ flag {
 }
 
 flag {
+    name: "enhance_system_job_limit_exception"
+    namespace: "backstage_power"
+    description: "Enhance the IllegalStateException with debug information about top jobs when the system UID exceeds the job scheduling limit."
+    bug: "438864409"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "include_trace_tag_in_job_name"
     namespace: "backstage_power"
     description: "Add the trace tag to the job name"
@@ -81,40 +91,10 @@ flag {
 }
 
 flag {
-    name: "fix_deadline_delay_job_stall"
+    name: "use_perfetto_sdk_for_tracing"
     namespace: "backstage_power"
-    description: "Fix deadline and delay job stall due to a incorrect time check in TimeController"
-    bug: "400440145"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "fix_reporting_active_jobs"
-    namespace: "backstage_power"
-    description: "Correctly report the active jobs to idle controller"
-    bug: "425761099"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "allow_cmp_exemption_for_restricted_bucket"
-    namespace: "backstage_power"
-    description: "Allow CMP exemption for apps in Restricted bucket due to timeout reason"
-    bug: "409606405"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "update_media_backup_exemption_policy"
-    namespace: "backstage_power"
-    description: "Update the criteria for media backup job exemption"
-    bug: "436531976"
+    description: "Enable JobScheduler tracing via the Perfetto SDK."
+    bug: "441360426"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Се поврзува..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Поврзано<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Се спарува..."</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Не може да се спари"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Не може да се поврзе"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Поврзан со <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (без телефон)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Поврзан со <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (без аудиовизуелни содржини)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Поврзан со <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (без телефон и аудиовизуел.)"</string>
@@ -116,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Активно (само десно)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Активно (лево и десно)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Не можеше да се ажурира опкружувањето"</string>
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"Не можеше да се ажурира зададената вредност"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Избрано"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Активно (само аудиовизуелни содржини). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> батерија."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Активно (само аудиовизуелни содржини). Л: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g> батерија, Д: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> батерија."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Гостински уред. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> батерија."</string>
@@ -345,7 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Кога е овозможен режимов, MAC-адресата на уредов може да се менува секојпат кога ќе се поврзе на мрежа што има овозможена рандомизација на MAC-адреси."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Со ограничен интернет"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Без ограничен интернет"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Големини на евиденциски меѓумемории"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Големина на привремената меморија на евиденцијата"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Изберете големини за секоја евиденциска меѓумеморија"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Да се избрише постојаната меморија на дневникот?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Кога веќе не го следиме постојаниот дневник, мора да ги избришеме податоците на дневникот што се наоѓаат на вашиот уред."</string>
@@ -403,11 +407,11 @@
     <string name="touchpad_visualizer" msgid="3707916068870825115">"Прикажувај влезни податоци од допирната подлога"</string>
     <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"Преклопување на екранот што прикажува влезни податоци од допирната подлога и познати движења"</string>
     <string name="show_screen_updates" msgid="2078782895825535494">"Прикажи ажурир. површина"</string>
-    <string name="show_screen_updates_summary" msgid="2126932969682087406">"Осветли површ. на прозорци при нивно ажурирање"</string>
+    <string name="show_screen_updates_summary" msgid="2126932969682087406">"Ги осветлува површините на прозорците кога ќе се ажурираат"</string>
     <string name="show_hw_screen_updates" msgid="2021286231267747506">"Покажувај ажурирања на приказот"</string>
-    <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"Осветлувај го приказот при повлекување во прозорците"</string>
+    <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"Го осветлува приказот при повлекување во прозорците"</string>
     <string name="show_hw_layers_updates" msgid="5268370750002509767">"Покажувај ажурирања на хардверски слоеви"</string>
-    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"Осветлувај ги хардверските слоеви со зелено кога се ажурираат"</string>
+    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"Ги осветлува хардверските слоеви со зелено кога се ажурираат"</string>
     <string name="debug_hw_overdraw" msgid="8944851091008756796">"Отстр. греш. на GPU"</string>
     <string name="disable_overlays" msgid="4206590799671557143">"Оневозможи HW-преклопувања"</string>
     <string name="disable_overlays_summary" msgid="1954852414363338166">"Секогаш користи GPU за составување екран"</string>
@@ -416,11 +420,11 @@
     <string name="usb_audio_disable_routing" msgid="3367656923544254975">"Исклучи USB-пренасочување"</string>
     <string name="usb_audio_disable_routing_summary" msgid="8768242894849534699">"Исклучи автоматско пренасочување до USB-аудиоуреди"</string>
     <string name="debug_layout" msgid="1659216803043339741">"Прикажи граници на распоред"</string>
-    <string name="debug_layout_summary" msgid="8825829038287321978">"Прикажувај граници на исечок, маргини итн."</string>
+    <string name="debug_layout_summary" msgid="8825829038287321978">"Прикажува граници на исечок, маргини итн."</string>
     <string name="force_rtl_layout_all_locales" msgid="8690762598501599796">"Наметни насока „оддесно налево“"</string>
-    <string name="force_rtl_layout_all_locales_summary" msgid="6663016859517239880">"Наметни насока „оддесно налево“ за распоредот на екранот за сите локални стандарди"</string>
+    <string name="force_rtl_layout_all_locales_summary" msgid="6663016859517239880">"Наметнува насока „оддесно налево“ за распоредот на екранот за сите локални стандарди"</string>
     <string name="transparent_navigation_bar" msgid="1933192171384678484">"Проѕирна лента за навигација"</string>
-    <string name="transparent_navigation_bar_summary" msgid="5454359021817330722">"Направете ја заднината на лентата за навигација стандардно проѕирна"</string>
+    <string name="transparent_navigation_bar_summary" msgid="5454359021817330722">"Ја прави заднината на лентата за навигација стандардно проѕирна"</string>
     <string name="window_blurs" msgid="6831008984828425106">"Дозволи замаглувања на ниво на прозорци"</string>
     <string name="force_msaa" msgid="4081288296137775550">"Принудно користи 4x MSAA"</string>
     <string name="force_msaa_summary" msgid="9070437493586769500">"Овозможи 4x MSAA за апликации OpenGL ES 2.0"</string>
@@ -574,7 +578,7 @@
     <string name="use_system_language_to_select_input_method_subtypes" msgid="4865195835541387040">"Користи ги системските јазици"</string>
     <string name="failed_to_open_app_settings_toast" msgid="764897252657692092">"Подесувањата за <xliff:g id="SPELL_APPLICATION_NAME">%1$s</xliff:g> не се отворија"</string>
     <string name="ime_security_warning" msgid="6547562217880551450">"Овој метод на внес може да го собере сиот текст кој го пишувате, вклучувајќи и лични податоци како што се, лозинки и броеви на кредитни картички. Тоа го прави апликацијата <xliff:g id="IME_APPLICATION_NAME">%1$s</xliff:g>. Користи го овој метод на внес?"</string>
-    <string name="direct_boot_unaware_dialog_message" msgid="7845398276735021548">"Забелешка: по рестартирање, апликацијава не може да се вклучи додека не го отклучите телефонот"</string>
+    <string name="direct_boot_unaware_dialog_message" msgid="7845398276735021548">"Забелешка: По рестартирање, апликацијава не може да се вклучи додека не го отклучите телефонот"</string>
     <string name="ims_reg_title" msgid="8197592958123671062">"Состојба на IMS-регистрација"</string>
     <string name="ims_reg_status_registered" msgid="884916398194885457">"Регистриран"</string>
     <string name="ims_reg_status_not_registered" msgid="2989287366045704694">"Не е регистриран"</string>

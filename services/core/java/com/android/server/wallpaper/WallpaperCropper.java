@@ -16,7 +16,6 @@
 
 package com.android.server.wallpaper;
 
-import static android.app.Flags.fixWallpaperCropsOnRestore;
 import static android.app.WallpaperManager.ORIENTATION_LANDSCAPE;
 import static android.app.WallpaperManager.ORIENTATION_PORTRAIT;
 import static android.app.WallpaperManager.ORIENTATION_UNKNOWN;
@@ -53,8 +52,6 @@ import libcore.io.IoUtils;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -240,8 +237,7 @@ public class WallpaperCropper {
         // exists. In that case we'd rather go to case 6 and use the portrait suggested crop. This
         // is in order to have a consistent wallpaper position on both SQUARE_PORTRAIT and
         // SQUARE_LANDSCAPE orientations.
-        boolean skip = fixWallpaperCropsOnRestore()
-                && foldedOrientation == ORIENTATION_LANDSCAPE
+        boolean skip = foldedOrientation == ORIENTATION_LANDSCAPE
                 && suggestedCrops.contains(ORIENTATION_PORTRAIT);
         suggestedDisplaySize = defaultDisplayInfo.defaultDisplaySizes.get(foldedOrientation);
         if (suggestedCrop != null && !skip) {
@@ -287,8 +283,8 @@ public class WallpaperCropper {
         Rect adjustedCrop = getAdjustedCrop(crop, bitmapSize, displaySize, true, rtl, ADD);
         // only keep the visible part (without parallax)
         float suggestedDisplayRatio = 1f * displaySize.x / displaySize.y;
-        int widthToRemove = (int) (adjustedCrop.width()
-                - (((float) adjustedCrop.height()) * suggestedDisplayRatio) + 0.5f);
+        int widthToRemove = (int) Math.max(0, (adjustedCrop.width()
+                - (((float) adjustedCrop.height()) * suggestedDisplayRatio) + 0.5f));
         if (rtl) {
             adjustedCrop.left += widthToRemove;
         } else {
@@ -370,7 +366,7 @@ public class WallpaperCropper {
                 adjustedCrop.left = 0;
                 adjustedCrop.right = bitmapSize.x;
             }
-            int heightToRemove = (int) (crop.height() - (adjustedCrop.width() / screenRatio));
+            int heightToRemove = Math.round(crop.height() - (adjustedCrop.width() / screenRatio));
             adjustedCrop.top += heightToRemove / 2 + heightToRemove % 2;
             adjustedCrop.bottom -= heightToRemove / 2;
         }
@@ -429,21 +425,6 @@ public class WallpaperCropper {
             }
 
             result.put(wallpaper.mCropHints.keyAt(i), adjustedRect);
-        }
-        return result;
-    }
-
-    /**
-     * Inverse operation of {@link #getRelativeCropHints(WallpaperData)}
-     */
-    static List<Rect> getOriginalCropHints(
-            WallpaperData wallpaper, List<Rect> relativeCropHints) {
-        List<Rect> result = new ArrayList<>();
-        for (Rect crop : relativeCropHints) {
-            Rect originalRect = new Rect(crop);
-            originalRect.scale(wallpaper.mSampleSize);
-            originalRect.offset(wallpaper.cropHint.left, wallpaper.cropHint.top);
-            result.add(originalRect);
         }
         return result;
     }

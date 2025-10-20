@@ -61,4 +61,18 @@
     <attr name="expressiveSelectorWithWidgetPreferenceExtraWidgetContainerStyle" format="reference" />
     <attr name="expressiveSelectorWithWidgetPreferenceExtraWidgetDividerStyle" format="reference" />
     <attr name="expressiveSelectorWithWidgetPreferenceExtraWidgetImageStyle" format="reference" />
+
+    <attr name="expressiveFooterPreferenceTheme" format="reference" />
+    <attr name="expressiveFooterPreferenceRootLayoutStyle" format="reference" />
+    <attr name="expressiveFooterPreferenceIconFrameStyle" format="reference" />
+    <attr name="expressiveFooterPreferenceIconStyle" format="reference" />
+    <attr name="expressiveFooterPreferenceLinearLayoutStyle" format="reference" />
+    <attr name="expressiveFooterPreferenceTitleStyle" format="reference" />
+    <attr name="expressiveFooterPreferenceLearnMoreStyle" format="reference" />
+
+    <attr name="expressivePreferenceCategoryTheme" format="reference" />
+    <attr name="expressivePreferenceCategoryRootLayoutStyle" format="reference" />
+    <attr name="expressivePreferenceCategoryRelativeLayoutStyle" format="reference" />
+    <attr name="expressivePreferenceCategoryTitleStyle" format="reference" />
+    <attr name="expressivePreferenceCategorySummaryStyle" format="reference" />
 </resources>

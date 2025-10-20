@@ -37,7 +37,6 @@ java_library {
     ],
     static_libs: [
         "window-sidecar",
-        "aconfig_androidx_window_sidecar_flags_lib",
         "androidx.window.extensions",
     ],
     installable: true,
@@ -58,23 +57,12 @@ prebuilt_etc {
     filename_from_src: true,
 }
 
-aconfig_declarations {
-    name: "sidecar_flags",
-    package: "androidx.window.sidecar.flags",
-    container: "system",
-    srcs: ["src/androidx/window/sidecar/flags/sidecar_flags.aconfig"],
-}
-
-java_aconfig_library {
-    name: "aconfig_androidx_window_sidecar_flags_lib",
-    aconfig_declarations: "sidecar_flags",
-}
-
 // Extensions
 java_library {
     name: "androidx.window.extensions",
     srcs: [
         "src/androidx/window/extensions/**/*.java",
+        "src/androidx/window/extensions/**/*.aidl",
         "src/androidx/window/util/**/*.java",
         "src/androidx/window/common/**/*.java",
     ],

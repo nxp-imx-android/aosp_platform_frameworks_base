@@ -38,7 +38,7 @@ public abstract class SecureLockDeviceServiceInternal {
 
     /**
      * @see AuthenticationPolicyManager#getSecureLockDeviceAvailability()
-     * @param user calling {@link UserHandle} to check that secure lock device is available for
+     * @param user {@link UserHandle} to check that secure lock device is available for
      * @return {@link GetSecureLockDeviceAvailabilityRequestStatus} int indicating whether secure
      * lock device is available for the calling user
      *
@@ -49,7 +49,7 @@ public abstract class SecureLockDeviceServiceInternal {
 
     /**
      * @see AuthenticationPolicyManager#enableSecureLockDevice(EnableSecureLockDeviceParams)
-     * @param user {@link UserHandle} of caller requesting to enable secure lock device
+     * @param user {@link UserHandle} secure lock device is being disabled for
      * @param params {@link EnableSecureLockDeviceParams} for caller to supply params related
      *               to the secure lock request
      * @return {@link EnableSecureLockDeviceRequestStatus} int indicating the result of the
@@ -61,7 +61,7 @@ public abstract class SecureLockDeviceServiceInternal {
 
     /**
      * @see AuthenticationPolicyManager#disableSecureLockDevice(DisableSecureLockDeviceParams)
-     * @param user {@link UserHandle} of caller requesting to disable secure lock device
+     * @param user {@link UserHandle} secure lock device is being disabled for
      * @param params {@link DisableSecureLockDeviceParams} for caller to supply params related
      *               to the secure lock device request
      * @return {@link DisableSecureLockDeviceRequestStatus} int indicating the result of the
@@ -70,6 +70,20 @@ public abstract class SecureLockDeviceServiceInternal {
     @DisableSecureLockDeviceRequestStatus
     public abstract int disableSecureLockDevice(UserHandle user,
             DisableSecureLockDeviceParams params);
+
+    /**
+     * @see SecureLockDeviceService#onStrongBiometricAuthenticationSuccess
+     * @param user that performed the successful biometric authentication
+     * @hide
+     */
+    public abstract void onStrongBiometricAuthenticationSuccess(UserHandle user);
+
+    /**
+     * @see SecureLockDeviceService#hasUserCompletedTwoFactorAuthentication
+     * @param user to check for two-factor authentication completion
+     * @hide
+     */
+    public abstract boolean hasUserCompletedTwoFactorAuthentication(UserHandle user);
 
     /**
      * @see AuthenticationPolicyManager#isSecureLockDeviceEnabled()

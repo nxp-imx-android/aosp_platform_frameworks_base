@@ -4127,8 +4127,7 @@ static DemuxFilterRecordSettings getFilterRecordSettings(JNIEnv *env, const jobj
     jint scIndexMask = env->GetIntField(settings, env->GetFieldID(clazz, "mScIndexMask", "I"));
 
     // Backward compatibility for S- apps.
-    if (scIndexType == DemuxRecordScIndexType::SC &&
-        scIndexMask > static_cast<int32_t>(DemuxScIndex::SEQUENCE)) {
+    if (scIndexType == DemuxRecordScIndexType::SC && scIndexMask >= (1 << 4)) {
         scIndexType = DemuxRecordScIndexType::SC_AVC;
     }
     DemuxFilterRecordSettings filterRecordSettings {

@@ -89,6 +89,10 @@ class AppIdPermissionPolicy : SchemePolicy() {
         }
     }
 
+    override fun MutateStateScope.onUserRemoved(userId: Int) {
+        onPermissionFlagsChangedListeners.forEachIndexed { _, it -> it.onUserRemoved(userId) }
+    }
+
     override fun MutateStateScope.onAppIdRemoved(appId: Int) {
         newState.userStates.forEachIndexed { userStateIndex, _, userState ->
             if (appId in userState.appIdPermissionFlags) {
@@ -96,6 +100,7 @@ class AppIdPermissionPolicy : SchemePolicy() {
                 // Skip notifying the change listeners since the app ID no longer exists.
             }
         }
+        onPermissionFlagsChangedListeners.forEachIndexed { _, it -> it.onAppIdRemoved(appId) }
     }
 
     override fun MutateStateScope.onStorageVolumeMounted(
@@ -108,6 +113,9 @@ class AppIdPermissionPolicy : SchemePolicy() {
             // The package may still be removed even if it was once notified as installed.
             val packageState =
                 newState.externalState.packageStates[packageName] ?: return@forEachIndexed
+            // The package may still be unavailable if the storage volume is removed before fully
+            // scanned, in which case we should skip it and wait for the next time.
+            packageState.androidPackage ?: return@forEachIndexed
             adoptPermissions(packageState, changedPermissionNames)
             addPermissionGroups(packageState)
             addPermissions(packageState, changedPermissionNames)
@@ -121,12 +129,14 @@ class AppIdPermissionPolicy : SchemePolicy() {
         packageNames.forEachIndexed { _, packageName ->
             val packageState =
                 newState.externalState.packageStates[packageName] ?: return@forEachIndexed
+            packageState.androidPackage ?: return@forEachIndexed
             val installedPackageState = if (isSystemUpdated) packageState else null
             evaluateAllPermissionStatesForPackage(packageState, installedPackageState)
         }
         packageNames.forEachIndexed { _, packageName ->
             val packageState =
                 newState.externalState.packageStates[packageName] ?: return@forEachIndexed
+            packageState.androidPackage ?: return@forEachIndexed
             newState.externalState.userIds.forEachIndexed { _, userId ->
                 inheritImplicitPermissionStates(packageState.appId, userId)
             }
@@ -163,7 +173,7 @@ class AppIdPermissionPolicy : SchemePolicy() {
             // The removed package could be the reason why other packages sharing the same UID might
             // have been granted a permission. As a result, all permissions requested by the app ID
             // must be re-evaluated.
-            if (Flags.purposeDeclarationEnabled()) {
+            if (Flags.ppdInstallTimeEnabled()) {
                 evaluateAllPermissionStatesForAppId(appId)
             }
         }
@@ -1038,7 +1048,7 @@ class AppIdPermissionPolicy : SchemePolicy() {
             // declare at least one valid purpose in its manifest before it can be granted. Note
             // that a flag state may have INSTALL_GRANTED and PURPOSE_REVOKED bits set, in which
             // case the permission will not be granted.
-            if (Flags.purposeDeclarationEnabled() && permission.requiresPurpose) {
+            if (Flags.ppdInstallTimeEnabled() && permission.requiresPurpose) {
                 val hasValidPurpose =
                     requestingPackageStates.anyIndexed { _, it ->
                         hasValidPurposeForPackage(it.androidPackage!!, permission)
@@ -2046,6 +2056,24 @@ class AppIdPermissionPolicy : SchemePolicy() {
             oldFlags: Int,
             newFlags: Int,
         )
+
+        /**
+         * Called when a user is removed from the system.
+         *
+         * Implementations should keep this method fast to avoid stalling the locked state mutation,
+         * and only call external code after [onStateMutated] when the new state has actually become
+         * the current state visible to external code.
+         */
+        fun onUserRemoved(userId: Int) {}
+
+        /**
+         * Called when an application ID (appId) is removed from the system.
+         *
+         * Implementations should keep this method fast to avoid stalling the locked state mutation,
+         * and only call external code after [onStateMutated] when the new state has actually become
+         * the current state visible to external code.
+         */
+        fun onAppIdRemoved(appId: Int) {}
 
         /**
          * Called when the upcoming new state has become the current state.

@@ -16,34 +16,30 @@
 
 package com.android.systemui.statusbar.notification.footer.ui.viewmodel
 
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
-import android.provider.Settings
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.shared.model.StatusBarState
-import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.power.data.repository.powerRepository
 import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.power.shared.model.WakefulnessState
-import com.android.systemui.res.R
 import com.android.systemui.shade.shadeTestUtil
-import com.android.systemui.shared.settings.data.repository.fakeSecureSettingsRepository
 import com.android.systemui.statusbar.notification.data.model.NotifStats
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
-import com.android.systemui.statusbar.notification.footer.shared.NotifRedesignFooter
+import com.android.systemui.statusbar.notification.data.repository.setActiveNotifs
 import com.android.systemui.testKosmos
 import com.android.systemui.util.ui.isAnimating
 import com.android.systemui.util.ui.value
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -56,14 +52,8 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val kosmos =
         testKosmos().apply {
             fakeFeatureFlagsClassic.apply { set(Flags.FULL_SCREEN_USER_SWITCHER, false) }
+            useUnconfinedTestDispatcher()
         }
-    private val testScope = kosmos.testScope
-    private val activeNotificationListRepository = kosmos.activeNotificationListRepository
-    private val fakeKeyguardRepository = kosmos.fakeKeyguardRepository
-    private val powerRepository = kosmos.powerRepository
-    private val fakeSecureSettingsRepository = kosmos.fakeSecureSettingsRepository
-
-    private val shadeTestUtil by lazy { kosmos.shadeTestUtil }
 
     private lateinit var underTest: FooterViewModel
 
@@ -85,10 +75,33 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     fun messageVisible_whenFilteredNotifications() =
-        testScope.runTest {
+        kosmos.runTest {
+            val visible by collectLastValue(underTest.message.isVisible)
+            activeNotificationListRepository.hasFilteredOutSeenNotifications.value = true
+            assertThat(visible).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun messageVisible_whenFilteredNotificationsAndEmptyShade() =
+        kosmos.runTest {
             val visible by collectLastValue(underTest.message.isVisible)
 
+            activeNotificationListRepository.setActiveNotifs(count = 0)
+            activeNotificationListRepository.hasFilteredOutSeenNotifications.value = true
+
+            assertThat(visible).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun messageVisible_whenFilteredNotificationsAndShadeNotEmpty() =
+        kosmos.runTest {
+            val visible by collectLastValue(underTest.message.isVisible)
+
+            activeNotificationListRepository.setActiveNotifs(count = 1)
             activeNotificationListRepository.hasFilteredOutSeenNotifications.value = true
 
             assertThat(visible).isTrue()
@@ -96,17 +109,15 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     fun messageVisible_whenNoFilteredNotifications() =
-        testScope.runTest {
+        kosmos.runTest {
             val visible by collectLastValue(underTest.message.isVisible)
-
             activeNotificationListRepository.hasFilteredOutSeenNotifications.value = false
-
             assertThat(visible).isFalse()
         }
 
     @Test
     fun clearAllButtonVisible_whenHasClearableNotifs() =
-        testScope.runTest {
+        kosmos.runTest {
             val visible by collectLastValue(underTest.clearAllButton.isVisible)
 
             activeNotificationListRepository.notifStats.value =
@@ -116,14 +127,13 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     hasNonClearableSilentNotifs = false,
                     hasClearableSilentNotifs = true,
                 )
-            runCurrent()
 
             assertThat(visible?.value).isTrue()
         }
 
     @Test
     fun clearAllButtonVisible_whenHasNoClearableNotifs() =
-        testScope.runTest {
+        kosmos.runTest {
             val visible by collectLastValue(underTest.clearAllButton.isVisible)
 
             activeNotificationListRepository.notifStats.value =
@@ -133,16 +143,16 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     hasNonClearableSilentNotifs = false,
                     hasClearableSilentNotifs = false,
                 )
-            runCurrent()
 
             assertThat(visible?.value).isFalse()
         }
 
     @Test
     fun clearAllButtonVisible_whenMessageVisible() =
-        testScope.runTest {
+        kosmos.runTest {
             val visible by collectLastValue(underTest.clearAllButton.isVisible)
 
+            activeNotificationListRepository.setActiveNotifs(count = 1)
             activeNotificationListRepository.notifStats.value =
                 NotifStats(
                     hasNonClearableAlertingNotifs = false,
@@ -151,16 +161,14 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     hasClearableSilentNotifs = true,
                 )
             activeNotificationListRepository.hasFilteredOutSeenNotifications.value = true
-            runCurrent()
 
             assertThat(visible?.value).isFalse()
         }
 
     @Test
     fun clearAllButtonAnimating_whenShadeExpandedAndTouchable() =
-        testScope.runTest {
+        kosmos.runTest {
             val visible by collectLastValue(underTest.clearAllButton.isVisible)
-            runCurrent()
 
             // WHEN shade is expanded AND QS not expanded
             fakeKeyguardRepository.setStatusBarState(StatusBarState.SHADE)
@@ -171,7 +179,6 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 lastWakeReason = WakeSleepReason.POWER_BUTTON,
                 lastSleepReason = WakeSleepReason.OTHER,
             )
-            runCurrent()
 
             // AND there are clearable notifications
             activeNotificationListRepository.notifStats.value =
@@ -181,7 +188,6 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     hasNonClearableSilentNotifs = false,
                     hasClearableSilentNotifs = true,
                 )
-            runCurrent()
 
             // THEN button visibility should animate
             assertThat(visible?.isAnimating).isTrue()
@@ -189,9 +195,8 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     fun clearAllButtonAnimating_whenShadeNotExpanded() =
-        testScope.runTest {
+        kosmos.runTest {
             val visible by collectLastValue(underTest.clearAllButton.isVisible)
-            runCurrent()
 
             // WHEN shade is collapsed
             fakeKeyguardRepository.setStatusBarState(StatusBarState.SHADE)
@@ -204,7 +209,6 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 lastWakeReason = WakeSleepReason.POWER_BUTTON,
                 lastSleepReason = WakeSleepReason.OTHER,
             )
-            runCurrent()
 
             // AND there are clearable notifications
             activeNotificationListRepository.notifStats.value =
@@ -214,102 +218,18 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     hasNonClearableSilentNotifs = false,
                     hasClearableSilentNotifs = true,
                 )
-            runCurrent()
 
             // THEN button visibility should not animate
             assertThat(visible?.isAnimating).isFalse()
         }
 
     @Test
-    @DisableFlags(NotifRedesignFooter.FLAG_NAME)
-    fun manageButton_whenHistoryDisabled() =
-        testScope.runTest {
-            val buttonLabel by collectLastValue(underTest.manageOrHistoryButton.labelId)
-            runCurrent()
-
-            // WHEN notification history is disabled
-            fakeSecureSettingsRepository.setInt(Settings.Secure.NOTIFICATION_HISTORY_ENABLED, 0)
-
-            // THEN label is "Manage"
-            assertThat(buttonLabel).isEqualTo(R.string.manage_notifications_text)
-        }
-
-    @Test
-    @DisableFlags(NotifRedesignFooter.FLAG_NAME)
-    fun historyButton_whenHistoryEnabled() =
-        testScope.runTest {
-            val buttonLabel by collectLastValue(underTest.manageOrHistoryButton.labelId)
-            runCurrent()
-
-            // WHEN notification history is disabled
-            fakeSecureSettingsRepository.setInt(Settings.Secure.NOTIFICATION_HISTORY_ENABLED, 1)
-
-            // THEN label is "History"
-            assertThat(buttonLabel).isEqualTo(R.string.manage_notifications_history_text)
-        }
-
-    @Test
-    @DisableFlags(NotifRedesignFooter.FLAG_NAME)
-    fun manageButtonOnClick_whenHistoryDisabled() =
-        testScope.runTest {
-            val onClick by collectLastValue(underTest.manageOrHistoryButtonClick)
-            runCurrent()
-
-            // WHEN notification history is disabled
-            fakeSecureSettingsRepository.setInt(Settings.Secure.NOTIFICATION_HISTORY_ENABLED, 0)
-
-            // THEN onClick leads to settings page
-            assertThat(onClick?.targetIntent?.action)
-                .isEqualTo(Settings.ACTION_NOTIFICATION_SETTINGS)
-            assertThat(onClick?.backStack).isEmpty()
-        }
-
-    @Test
-    @DisableFlags(NotifRedesignFooter.FLAG_NAME)
-    fun historyButtonOnClick_whenHistoryEnabled() =
-        testScope.runTest {
-            val onClick by collectLastValue(underTest.manageOrHistoryButtonClick)
-            runCurrent()
-
-            // WHEN notification history is enabled
-            fakeSecureSettingsRepository.setInt(Settings.Secure.NOTIFICATION_HISTORY_ENABLED, 1)
-
-            // THEN onClick leads to history page
-            assertThat(onClick?.targetIntent?.action)
-                .isEqualTo(Settings.ACTION_NOTIFICATION_HISTORY)
-            assertThat(onClick?.backStack?.map { it.action })
-                .containsExactly(Settings.ACTION_NOTIFICATION_SETTINGS)
-        }
-
-    @Test
-    @DisableFlags(NotifRedesignFooter.FLAG_NAME)
-    fun manageButtonVisible_whenMessageVisible() =
-        testScope.runTest {
-            val visible by collectLastValue(underTest.manageOrHistoryButton.isVisible)
-
-            activeNotificationListRepository.hasFilteredOutSeenNotifications.value = true
-
-            assertThat(visible?.value).isFalse()
-        }
-
-    @Test
-    @DisableFlags(NotifRedesignFooter.FLAG_NAME)
-    fun manageButtonVisible_whenMessageNotVisible() =
-        testScope.runTest {
-            val visible by collectLastValue(underTest.manageOrHistoryButton.isVisible)
-
-            activeNotificationListRepository.hasFilteredOutSeenNotifications.value = false
-
-            assertThat(visible?.value).isTrue()
-        }
-
-    @Test
-    @EnableFlags(NotifRedesignFooter.FLAG_NAME)
     fun settingsAndHistoryButtonsNotVisible_whenMessageVisible() =
-        testScope.runTest {
+        kosmos.runTest {
             val settingsVisible by collectLastValue(underTest.settingsButtonVisible)
             val historyVisible by collectLastValue(underTest.historyButtonVisible)
 
+            activeNotificationListRepository.setActiveNotifs(count = 1)
             activeNotificationListRepository.hasFilteredOutSeenNotifications.value = true
 
             assertThat(settingsVisible).isFalse()
@@ -317,9 +237,8 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NotifRedesignFooter.FLAG_NAME)
     fun settingsAndHistoryButtonsNotVisible_whenMessageNotVisible() =
-        testScope.runTest {
+        kosmos.runTest {
             val settingsVisible by collectLastValue(underTest.settingsButtonVisible)
             val historyVisible by collectLastValue(underTest.historyButtonVisible)
 

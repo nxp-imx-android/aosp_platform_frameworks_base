@@ -278,7 +278,6 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
     private void addChildTask(Task task, int position) {
         if (DEBUG_ROOT_TASK) Slog.d(TAG_WM, "Set task=" + task + " on taskDisplayArea=" + this);
 
-        addRootTaskReferenceIfNeeded(task);
         position = findPositionForRootTask(position, task, true /* adding */);
 
         super.addChild(task, position);
@@ -1068,6 +1067,12 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
                     return adjacentRootTask[0];
                 }
                 return sourceTask.getCreatedByOrganizerTask();
+            }
+            if (com.android.window.flags.Flags.rootTaskForBubble()) {
+                final Task parentTask = sourceTask.getParent().asTask();
+                if (parentTask != null && parentTask.mCreatedByOrganizer) {
+                    return parentTask;
+                }
             }
         }
 

@@ -21,6 +21,7 @@ import static com.android.wm.shell.pip2.phone.PipTransition.PIP_DESTINATION_BOUN
 import android.annotation.Nullable;
 import android.app.TaskInfo;
 import android.content.Context;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Bundle;
@@ -97,6 +98,10 @@ public class PipDisplayTransferHandler implements
             Rect boundsOnRelease) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                 "%s scheduleMovePipToDisplay from=%d to=%d", TAG, originDisplayId, targetDisplayId);
+        mPipDisplayLayoutState.setDisplayId(targetDisplayId);
+        mPipDisplayLayoutState.setDisplayLayout(
+                mDisplayController.getDisplayLayout(targetDisplayId));
+        mPipBoundsState.updateMinMaxSize(mPipBoundsState.getAspectRatio());
 
         // Set bounds to the bounds on drag release so that we can use this as the origin bounds
         // during animation to snap to the display's edge.
@@ -107,6 +112,7 @@ public class PipDisplayTransferHandler implements
         // is released and the display ID and layout are updated.
         mPipBoundsAlgorithm.snapToMovementBoundsEdge(boundsOnRelease,
                 mDisplayController.getDisplayLayout(targetDisplayId));
+        snapBoundsWithinMinMaxSize(boundsOnRelease);
 
         Bundle extra = new Bundle();
         extra.putInt(ORIGIN_DISPLAY_ID_KEY, originDisplayId);
@@ -114,6 +120,38 @@ public class PipDisplayTransferHandler implements
         extra.putParcelable(PIP_DESTINATION_BOUNDS, boundsOnRelease);
 
         mPipTransitionState.setState(PipTransitionState.SCHEDULED_BOUNDS_CHANGE, extra);
+    }
+
+    /**
+     * Restricts {@param bounds} to the allowed min/max size constraints and snaps bounds to the
+     * correct edge based on the snap fraction.
+     */
+    private void snapBoundsWithinMinMaxSize(Rect bounds) {
+        final float snapFraction = mPipBoundsAlgorithm.getSnapAlgorithm().getSnapFraction(
+                bounds,
+                mPipBoundsAlgorithm.getMovementBounds(bounds),
+                mPipBoundsState.getStashedState());
+
+        final Point minSize = mPipBoundsState.getMinSize();
+        final Point maxSize = mPipBoundsState.getMaxSize();
+        int newWidth = bounds.width();
+        int newHeight = bounds.height();
+
+        if (bounds.width() < minSize.x || bounds.height() < minSize.y) {
+            newWidth = minSize.x;
+            newHeight = minSize.y;
+        } else if (bounds.width() > maxSize.x || bounds.height() > maxSize.y) {
+            newWidth = maxSize.x;
+            newHeight = maxSize.y;
+        }
+
+        bounds.set(0, 0, newWidth, newHeight);
+
+        mPipBoundsAlgorithm.getSnapAlgorithm().applySnapFraction(bounds,
+                mPipBoundsAlgorithm.getMovementBounds(bounds), snapFraction,
+                mPipBoundsState.getStashedState(), mPipBoundsState.getStashOffset(),
+                mPipDisplayLayoutState.getDisplayBounds(),
+                mPipDisplayLayoutState.getDisplayLayout().stableInsets());
     }
 
     @Override
@@ -158,10 +196,6 @@ public class PipDisplayTransferHandler implements
                 Trace.instant(Trace.TRACE_TAG_WINDOW_MANAGER,
                         "PipDisplayTransferHandler#changingPipBounds");
 
-                mPipDisplayLayoutState.setDisplayId(mTargetDisplayId);
-                mPipDisplayLayoutState.setDisplayLayout(
-                        mDisplayController.getDisplayLayout(mTargetDisplayId));
-
                 mPipSurfaceTransactionHelper.round(startTx, pipLeash, true).shadow(startTx,
                         pipLeash, true /* applyShadowRadius */);
                 // Set state to exiting and exited PiP to unregister input consumer on the current
@@ -177,7 +211,7 @@ public class PipDisplayTransferHandler implements
 
                 final PipResizeAnimator animator = mPipResizeAnimatorSupplier.get(mContext,
                         mPipSurfaceTransactionHelper, pipLeash, startTx, finishTx,
-                        mPipBoundsState.getBounds(), mPipBoundsState.getBounds(), pipBounds,
+                        pipBounds, mPipBoundsState.getBounds(), pipBounds,
                         duration, 0);
 
                 animator.setAnimationEndCallback(() -> {

@@ -51,12 +51,10 @@ import com.android.systemui.media.taptotransfer.sender.MediaTttSenderCoordinator
 import com.android.systemui.mediaprojection.taskswitcher.MediaProjectionTaskSwitcherCoreStartable
 import com.android.systemui.shortcut.ShortcutKeyDispatcher
 import com.android.systemui.statusbar.ImmersiveModeConfirmation
-import com.android.systemui.statusbar.gesture.GesturePointerEventListener
 import com.android.systemui.statusbar.notification.InstantAppNotifier
 import com.android.systemui.statusbar.notification.headsup.StatusBarHeadsUpChangeListener
 import com.android.systemui.stylus.StylusUsiPowerStartable
 import com.android.systemui.temporarydisplay.chipbar.ChipbarCoordinator
-import com.android.systemui.theme.ThemeOverlayController
 import com.android.systemui.usb.StorageNotification
 import com.android.systemui.util.NotificationChannels
 import com.android.systemui.wmshell.WMShell
@@ -155,12 +153,6 @@ abstract class SystemUICoreStartableModule {
     @ClassKey(RingtonePlayer::class)
     abstract fun bind(sysui: RingtonePlayer): CoreStartable
 
-    /** Inject into GesturePointerEventHandler. */
-    @Binds
-    @IntoMap
-    @ClassKey(GesturePointerEventListener::class)
-    abstract fun bindGesturePointerEventListener(sysui: GesturePointerEventListener): CoreStartable
-
     /** Inject into SessionTracker. */
     @Binds
     @IntoMap
@@ -184,12 +176,6 @@ abstract class SystemUICoreStartableModule {
     @IntoMap
     @ClassKey(StorageNotification::class)
     abstract fun bindStorageNotification(sysui: StorageNotification): CoreStartable
-
-    /** Inject into ThemeOverlayController. */
-    @Binds
-    @IntoMap
-    @ClassKey(ThemeOverlayController::class)
-    abstract fun bindThemeOverlayController(sysui: ThemeOverlayController): CoreStartable
 
     /** Inject into MediaOutputSwitcherDialogUI. */
     @Binds

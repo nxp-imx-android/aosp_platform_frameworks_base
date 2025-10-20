@@ -19,7 +19,6 @@ package com.android.keyguard
 import android.app.Presentation
 import android.content.Context
 import android.graphics.Color
-import android.graphics.Rect
 import android.os.Bundle
 import android.view.Display
 import android.view.Gravity
@@ -27,6 +26,7 @@ import android.view.View
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.WindowManager
 import android.widget.FrameLayout
+import com.android.systemui.plugins.keyguard.VRect
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockFaceController
 import com.android.systemui.res.R
@@ -83,7 +83,7 @@ constructor(
             ) {
                 clock?.let {
                     faceController.events.onTargetRegionChanged(
-                        Rect(it.left, it.top, it.width, it.height)
+                        VRect(it.left, it.top, it.width, it.height)
                     )
                 }
             }

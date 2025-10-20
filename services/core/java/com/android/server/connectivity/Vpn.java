@@ -26,10 +26,11 @@ import static android.net.RouteInfo.RTN_UNREACHABLE;
 import static android.net.VpnManager.NOTIFICATION_CHANNEL_VPN;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_ENCAP_TYPE_AUTO;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_IP_VERSION_AUTO;
+import static android.net.platform.flags.Flags.collectVpnMetrics;
+import static android.net.platform.flags.Flags.reenableInnerIpv6OnVpn;
 import static android.net.vcn.util.PersistableBundleUtils.STRING_DESERIALIZER;
 import static android.os.PowerWhitelistManager.REASON_VPN;
 import static android.os.UserHandle.PER_USER_RANGE;
-import static android.net.platform.flags.Flags.collectVpnMetrics;
 import static android.telephony.CarrierConfigManager.KEY_MIN_UDP_PORT_4500_NAT_TIMEOUT_SEC_INT;
 import static android.telephony.CarrierConfigManager.KEY_PREFERRED_IKE_PROTOCOL_INT;
 
@@ -394,6 +395,12 @@ public class Vpn {
     @Nullable
     private final VpnConnectivityMetrics mVpnConnectivityMetrics;
 
+    /**
+     * Instance responsible for handling Inner IPv6 address when MTU changes. This field will get
+     * assigned via {@link reenableInnerIpv6OnVpn} in VPN constructor
+     */
+    private boolean mReenableInnerIpv6OnVpn = false;
+
     @VisibleForTesting
     VpnProfileStore getVpnProfileStore() {
         return mVpnProfileStore;
@@ -602,6 +609,16 @@ public class Vpn {
             }
         }
 
+        /** Verify the binder calling UID is the one passed in arguments or the SYSTEM_UID */
+        public void verifyCallingUidOrSystemUidAndPackage(
+                Context context, String packageName, int userId) {
+            final int callingUid = Binder.getCallingUid();
+            if (getAppUid(context, packageName, userId) != callingUid
+                    && callingUid != Process.SYSTEM_UID) {
+                throw new SecurityException(packageName + " does not belong to uid " + callingUid);
+            }
+        }
+
         /**
          * @see VpnConnectivityMetrics.
          *
@@ -669,7 +686,7 @@ public class Vpn {
         mIsPackageTargetingAtLeastQ = doesPackageTargetAtLeastQ(mPackage);
         mVpnConnectivityMetrics = collectVpnMetrics()
                 ? mDeps.makeVpnConnectivityMetrics(userId, mConnectivityManager) : null;
-
+        mReenableInnerIpv6OnVpn = reenableInnerIpv6OnVpn();
         try {
             netService.registerObserver(mObserver);
         } catch (RemoteException e) {
@@ -1308,8 +1325,12 @@ public class Vpn {
         // We can't just check that packageName matches mPackage, because if the app was uninstalled
         // and reinstalled it will no longer be prepared. Similarly if there is a shared UID, the
         // calling package may not be the same as the prepared package. Check both UID and package.
-        return getAppUid(mContext, packageName, mUserId) == mOwnerUID
-                && mPackage.equals(packageName);
+        return isCurrentPreparedPackage(packageName, getAppUid(mContext, packageName, mUserId));
+    }
+
+    @GuardedBy("this")
+    private boolean isCurrentPreparedPackage(String packageName, int uid) {
+        return uid == mOwnerUID && mPackage.equals(packageName);
     }
 
     /** Prepare the VPN for the given package. Does not perform permission checks. */
@@ -1800,10 +1821,15 @@ public class Vpn {
                 throw new IllegalArgumentException("At least one address must be specified");
             }
             Connection connection = new Connection();
-            if (!mContext.bindServiceAsUser(intent, connection,
-                    Context.BIND_AUTO_CREATE | Context.BIND_FOREGROUND_SERVICE,
-                    new UserHandle(mUserId))) {
-                throw new IllegalStateException("Cannot bind " + config.user);
+            final long oldToken = Binder.clearCallingIdentity();
+            try {
+                if (!mContext.bindServiceAsUser(intent, connection,
+                        Context.BIND_AUTO_CREATE | Context.BIND_FOREGROUND_SERVICE,
+                        new UserHandle(mUserId))) {
+                    throw new IllegalStateException("Cannot bind " + config.user);
+                }
+            } finally {
+                Binder.restoreCallingIdentity(oldToken);
             }
 
             mConnection = connection;
@@ -2761,6 +2787,10 @@ public class Vpn {
         void onSessionLost(int token, @Nullable Exception exception);
     }
 
+    interface VpnNetworkCallback {
+        void onVpnNetworkLinkPropertiesChanged(@NonNull LinkProperties lp);
+    }
+
     private static boolean isIPv6Only(List<LinkAddress> linkAddresses) {
         boolean hasIPV6 = false;
         boolean hasIPV4 = false;
@@ -2807,7 +2837,7 @@ public class Vpn {
      *   <li>Subsequent Network changes result in new onDefaultNetworkChanged() callbacks. See (2).
      * </ol>
      */
-    class IkeV2VpnRunner extends VpnRunner implements IkeV2VpnRunnerCallback {
+    class IkeV2VpnRunner extends VpnRunner implements IkeV2VpnRunnerCallback, VpnNetworkCallback {
         @NonNull private static final String TAG = "IkeV2VpnRunner";
 
         // 5 seconds grace period before tearing down the IKE Session in case new default network
@@ -2816,7 +2846,8 @@ public class Vpn {
 
         @NonNull private final IpSecManager mIpSecManager;
         @NonNull private final Ikev2VpnProfile mProfile;
-        @NonNull private final ConnectivityManager.NetworkCallback mNetworkCallback;
+        @NonNull private final ConnectivityManager.NetworkCallback mUnderlyingNetworkCallback;
+        @NonNull private final ConnectivityManager.NetworkCallback mVpnNetworkCallback;
 
         /**
          * Executor upon which ALL callbacks must be run.
@@ -2897,7 +2928,9 @@ public class Vpn {
             mProfile = profile;
             mExecutor = executor;
             mIpSecManager = (IpSecManager) mContext.getSystemService(Context.IPSEC_SERVICE);
-            mNetworkCallback = new VpnIkev2Utils.Ikev2VpnNetworkCallback(TAG, this, mExecutor);
+            mUnderlyingNetworkCallback =
+                    new VpnIkev2Utils.Ikev2VpnNetworkCallback(TAG, this, mExecutor);
+            mVpnNetworkCallback = new VpnUtils.VpnNetworkCallback(TAG, this, mExecutor);
             mSessionKey = UUID.randomUUID().toString();
             // Add log for debugging flaky test. b/242833779
             Log.d(TAG, "Generate session key = " + mSessionKey);
@@ -2940,11 +2973,18 @@ public class Vpn {
                         .addTransportType(NetworkCapabilities.TRANSPORT_TEST)
                         .addCapability(NET_CAPABILITY_NOT_VPN)
                         .build();
-                mConnectivityManager.requestNetwork(req, mNetworkCallback);
+                mConnectivityManager.requestNetwork(req, mUnderlyingNetworkCallback);
             } else {
-                mConnectivityManager.registerSystemDefaultNetworkCallback(mNetworkCallback,
-                        new Handler(mLooper));
+                mConnectivityManager.registerSystemDefaultNetworkCallback(
+                        mUnderlyingNetworkCallback, new Handler(mLooper));
             }
+            final NetworkRequest vpnNetworkRequest =
+                    new NetworkRequest.Builder()
+                            .removeCapability(NET_CAPABILITY_NOT_VPN)
+                            .addTransportType(NetworkCapabilities.TRANSPORT_VPN)
+                            .build();
+
+            mConnectivityManager.registerNetworkCallback(vpnNetworkRequest, mVpnNetworkCallback);
         }
 
         private boolean isActiveNetwork(@Nullable Network network) {
@@ -3162,6 +3202,34 @@ public class Vpn {
          * <p>This method is called multiple times over the lifetime of an IkeSession (or default
          * network), and MUST always be called on the mExecutor thread in order to ensure
          * consistency of the Ikev2VpnRunner fields.
+         *
+         * <p>This method recomputes the VPN network's MTU and updates its IPv6 capability. It
+         * handles IP address and MTU changes based on the type of transition.
+         *
+         * <p><b>Remove IPv6:</b> Removing an IPv6 address (e.g., transitioning from IPv4+IPv6 to
+         * IPv4 only) is handled in a single step within this method. The {@code
+         * IpSecTunnelInterface} is updated directly to remove the IPv6 address. After removal, the
+         * VPN is restarted to ensure all unconnected IPv6 sockets are closed and can retry on the
+         * new network.
+         *
+         * <p><b>Re-enable IPv6:</b> Re-enabling/Adding an IPv6 address (e.g., transitioning from
+         * IPv4 to IPV4+IPv6) is a two-step process. This two steps process is required because the
+         * kernel's MTU must be increased *before* it can accept the new IPv6 address.
+         *
+         * <ol>
+         *   <li>First, this method sends the old LinkProperties but with the *new MTU* to the
+         *       ConnectivityService and subsequently the kernel.
+         *   <li>Second, the completion of Connectivity update (including kernel update) triggers
+         *       the {@code onVpnNetworkLinkPropertiesChanged()} callback. That callback is then
+         *       responsible for adding the new IPv6 LinkAddress to the IpSecTunnelIface and the
+         *       LinkProperties. The address update on LinkProperties is not done in step 1 to
+         *       prevent a transient inconsistency between LinkProperties and IpSecTunnelIface.
+         * </ol>
+         *
+         * <p><b>Other Cases:</b> Address changes during migration are only expected when IPv6
+         * addresses are added or removed due to MTU changes. Since inner addresses are not
+         * renegotiated during child migration, other address transitions (e.g., IPv6-to-IPv6 or
+         * IPv4-to-IPv4 address changes) are not handled here.
          */
         public void onChildMigrated(
                 int token,
@@ -3186,10 +3254,13 @@ public class Vpn {
                     // Ignore stale runner.
                     if (mVpnRunner != this) return;
 
+                    final int oldMtu = mConfig.mtu;
                     final LinkProperties oldLp = makeLinkProperties();
 
                     setUnderlyingNetworksAndMetrics(new Network[] {network});
-                    setMtuAndMetrics(calculateVpnMtu());
+                    final int newMtu = calculateVpnMtu();
+                    setMtuAndMetrics(newMtu);
+
                     final LinkProperties newLp = makeLinkProperties();
 
                     // If MTU is < 1280, IPv6 addresses will be removed. If there are no addresses
@@ -3218,9 +3289,26 @@ public class Vpn {
                                     removed.getAddress(), removed.getPrefixLength());
                         }
                     } else {
-                        // Put below update into else block is because agentConnect() will do
-                        // the same things, so there is no need to do the redundant work.
-                        if (!newLp.equals(oldLp)) doSendLinkProperties(mNetworkAgent, newLp);
+                        if (mReenableInnerIpv6OnVpn && needReenableIPv6Locked(newMtu, oldMtu)) {
+                            // To reenable IPv6, we will first only update the MTU via
+                            // doSendLinkProperties. After the MTU update is completed,
+                            // onVpnNetworkLinkPropertiesChanged will be fired and we will then
+                            // update the LinkAddresses and relevant configurations.
+                            mEventChanges.log(
+                                    "[IKEEvent-"
+                                            + mSessionKey
+                                            + "] onChildMigrated - ReenableIPv6 newMtu "
+                                            + newMtu
+                                            + " oldMtu "
+                                            + oldMtu);
+                            Log.d(TAG, "ReenableIPv6 newMtu " + newMtu + " oldMtu " + oldMtu);
+                            oldLp.setMtu(newMtu);
+                            doSendLinkProperties(mNetworkAgent, oldLp);
+                        } else {
+                            // Put below update into else block is because agentConnect() will do
+                            // the same things, so there is no need to do the redundant work.
+                            if (!newLp.equals(oldLp)) doSendLinkProperties(mNetworkAgent, newLp);
+                        }
                     }
                 }
 
@@ -3235,6 +3323,71 @@ public class Vpn {
             } catch (IOException | IllegalArgumentException e) {
                 Log.d(TAG, "Transform application failed for token " + token, e);
                 onSessionLost(token, e);
+            }
+        }
+
+        @Override
+        public void onVpnNetworkLinkPropertiesChanged(@NonNull LinkProperties lp) {
+            // Ignore if config set to false
+            if (!mReenableInnerIpv6OnVpn) {
+                return;
+            }
+
+            // If the service isn't running, this is a stale runner, or the new properties
+            // don't match the current interface, then we can't proceed.
+            if (!mIsRunning) {
+                Log.d(TAG, "onVpnNetworkLinkPropertiesChanged ignored; Not running");
+                return;
+            }
+
+            synchronized (Vpn.this) {
+                if (mVpnRunner != this
+                        || mInterface == null
+                        || !Objects.equals(mInterface, lp.getInterfaceName())) {
+                    Log.d(
+                            TAG,
+                            "onVpnNetworkLinkPropertiesChanged ignored; invalid state or stale"
+                                    + " callback.");
+                    return;
+                }
+
+                final LinkProperties newLp = makeLinkProperties();
+                Log.d(
+                        TAG,
+                        "onVpnNetworkLinkPropertiesChanged received lp "
+                                + lp
+                                + " ; maybe update it to "
+                                + newLp);
+
+                // If LinkProperties does not support IPv6 or does not change within the session, we
+                // do not need to compare address difference.
+                if (lp.getMtu() < IPV6_MIN_MTU || newLp.equals(lp)) {
+                    return;
+                }
+
+                final Set<LinkAddress> newLinkAddresses = new HashSet<>(newLp.getLinkAddresses());
+                newLinkAddresses.removeAll(lp.getAllLinkAddresses());
+                Log.d(TAG, "New LinkAddresses " + newLinkAddresses);
+
+                // Add any new LinkAddresses to the tunnel interface. This includes cases where
+                // IPv6 addresses were previously removed in onChildMigrated due to low MTU,
+                // but are now available again because the MTU has increased.
+                if (!newLinkAddresses.isEmpty()) {
+                    for (LinkAddress added : newLinkAddresses) {
+                        try {
+                            mTunnelIface.addAddress(added.getAddress(), added.getPrefixLength());
+                        } catch (Exception ex) {
+                            Log.i(TAG, "Add LinkAddress to mTunnelIface failed.", ex);
+                        }
+                    }
+                }
+
+                // Update newLp and send to NetworkAgent after the tunnel interface has been
+                // updated.
+                if (mNetworkAgent != null) {
+                    Log.d(TAG, "Update actual VPN Network LinkProperties");
+                    doSendLinkProperties(mNetworkAgent, newLp);
+                }
             }
         }
 
@@ -3332,6 +3485,23 @@ public class Vpn {
                     mProfile.getMaxMtu(),
                     underlyingMtu,
                     mIkeConnectionInfo.getLocalAddress() instanceof Inet4Address);
+        }
+
+        @GuardedBy("Vpn.this")
+        private boolean hasIpv6AddressLocked(@NonNull List<LinkAddress> addresses) {
+            for (LinkAddress addr : addresses) {
+                if (addr.isIpv6()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @GuardedBy("Vpn.this")
+        private boolean needReenableIPv6Locked(int newMtu, int oldMtu) {
+            return newMtu >= IPV6_MIN_MTU
+                    && oldMtu < IPV6_MIN_MTU
+                    && hasIpv6AddressLocked(mConfig.addresses);
         }
 
         /**
@@ -4065,7 +4235,8 @@ public class Vpn {
                 mCarrierConfigManager.unregisterCarrierConfigChangeListener(
                         mCarrierConfigChangeListener);
             }
-            mConnectivityManager.unregisterNetworkCallback(mNetworkCallback);
+            mConnectivityManager.unregisterNetworkCallback(mUnderlyingNetworkCallback);
+            mConnectivityManager.unregisterNetworkCallback(mVpnNetworkCallback);
 
             mExecutor.shutdown();
         }
@@ -4089,6 +4260,10 @@ public class Vpn {
 
     private void verifyCallingUidAndPackage(String packageName) {
         mDeps.verifyCallingUidAndPackage(mContext, packageName, mUserId);
+    }
+
+    private void verifyCallingUidOrSystemUidAndPackage(String packageName) {
+        mDeps.verifyCallingUidOrSystemUidAndPackage(mContext, packageName, mUserId);
     }
 
     @VisibleForTesting
@@ -4159,6 +4334,10 @@ public class Vpn {
         return isCurrentPreparedPackage(packageName) && isIkev2VpnRunner();
     }
 
+    private boolean isCurrentIkev2VpnLocked(@NonNull String packageName, int uid) {
+        return isCurrentPreparedPackage(packageName, uid) && isIkev2VpnRunner();
+    }
+
     /**
      * Deletes an app-provisioned VPN profile.
      *
@@ -4182,6 +4361,32 @@ public class Vpn {
                 } else {
                     prepareInternal(VpnConfig.LEGACY_VPN);
                 }
+            }
+
+            getVpnProfileStore().remove(getProfileNameForPackage(packageName));
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+    }
+
+    /**
+     * Deletes an app-provisioned VPN profile because the provisioning app has been uninstalled.
+     *
+     * @param packageName the package name of the app provisioning this profile
+     * @param uid the uid of the app provisioning this profile
+     */
+    public synchronized void deleteVpnProfileDueToAppRemoval(
+            @NonNull String packageName, int uid) {
+        requireNonNull(packageName, "No package name provided");
+
+        verifyCallingUidOrSystemUidAndPackage(packageName);
+        enforceNotRestrictedUser();
+
+        final long token = Binder.clearCallingIdentity();
+        try {
+            // If this profile is providing the current VPN, turn it off.
+            if (isCurrentIkev2VpnLocked(packageName, uid)) {
+                prepareInternal(VpnConfig.LEGACY_VPN);
             }
 
             getVpnProfileStore().remove(getProfileNameForPackage(packageName));
@@ -4725,6 +4930,11 @@ public class Vpn {
             pw.increaseIndent();
             mEventChanges.reverseDump(pw);
             pw.decreaseIndent();
+
+            if (mVpnConnectivityMetrics != null) {
+                pw.println();
+                mVpnConnectivityMetrics.dump(pw);
+            }
         }
     }
 

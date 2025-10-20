@@ -156,11 +156,13 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
 
         var callingAttributionTag: String? = null
 
+        val isConfirmDeveloperVerificationAction = (Flags.verificationService()
+                && PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION == intent.action)
+
         isSessionInstall =
             PackageInstaller.ACTION_CONFIRM_PRE_APPROVAL == intent.action
                 || PackageInstaller.ACTION_CONFIRM_INSTALL == intent.action
-                || (Flags.verificationService()
-                && PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION == intent.action)
+                || isConfirmDeveloperVerificationAction
 
         sessionId = if (isSessionInstall)
             intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, SessionInfo.INVALID_ID)
@@ -196,6 +198,22 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
             if (sessionId != SessionInfo.INVALID_ID)
                 packageInstaller.getSessionInfo(sessionId)
             else null
+
+        // This case is launching the extra intent that is included in the failure result received
+        // by the installer when the installation failed because of developer verification.
+        // For this case, the session is already finished so there is no valid SessionInfo.
+        // Only show the developer verification dialog without app snippet.
+        if (isConfirmDeveloperVerificationAction && sessionInfo == null) {
+            val failureReason = intent.getIntExtra(
+                PackageInstaller.EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON,
+                PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN
+            )
+            val packageName = intent.getStringExtra(PackageInstaller.EXTRA_PACKAGE_NAME)
+            val packageInfo = generateStubPackageInfo(packageName)
+            isAppUpdating = isAppUpdating(packageInfo)
+            return InstallVerificationFailure(failureReason, isAppUpdating)
+        }
+
         if (sessionInfo != null) {
             callingAttributionTag = sessionInfo.installerAttributionTag
             if (sessionInfo.originatingUid != Process.INVALID_UID) {
@@ -235,7 +253,13 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
             return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
         }
 
-        isTrustedSource = isInstallRequestFromTrustedSource(sourceInfo, this.intent, originatingUid)
+        val isPrivilegedAndKnown = sourceInfo != null && sourceInfo.isPrivilegedApp &&
+                intent.getBooleanExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, false)
+        val isInstallPkgPermissionGranted = originatingUid != Process.INVALID_UID &&
+                isPermissionGranted(context, Manifest.permission.INSTALL_PACKAGES, originatingUid)
+
+        isTrustedSource = isPrivilegedAndKnown || isInstallPkgPermissionGranted
+
         // In general case, the originatingUid is callingUid. If callingUid is INVALID_UID, return
         // InstallAborted in the check above. When the originatingUid is INVALID_UID here, it means
         // the originatingUid is from the system download manager or the system documents manager,
@@ -246,7 +270,20 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
             return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
         }
 
-        val restriction = getDevicePolicyRestrictions(isTrustedSource)
+        // Bypass the unknown source user restrictions check when either of the following
+        // two conditions is met:
+        // 1. An installer with the INSTALL_PACKAGES permission initiated the
+        // installation via the PackageInstaller APIs and not via an
+        // ACTION_VIEW or ACTION_INSTALL_PACKAGE intent.
+        // 2. An installer is a privileged app and initiated the installer via
+        // the ACTION_INSTALL_PACKAGE or ACTION_VIEW intent, but it has set the
+        // EXTRA_NOT_UNKNOWN_SOURCE flag to be true in the intent.
+        val isIntentInstall =
+            Intent.ACTION_VIEW == intent.action
+                    || Intent.ACTION_INSTALL_PACKAGE == intent.action
+        val bypassUnknownSourceRestrictions =
+            (!isIntentInstall && isInstallPkgPermissionGranted) || isPrivilegedAndKnown
+        val restriction = getDevicePolicyRestrictions(bypassUnknownSourceRestrictions)
         if (restriction != null) {
             val adminSupportDetailsIntent =
                 devicePolicyManager!!.createAdminSupportIntent(restriction)
@@ -272,21 +309,8 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
         }
     }
 
-    private fun isInstallRequestFromTrustedSource(
-        sourceInfo: ApplicationInfo?,
-        intent: Intent,
-        callingUid: Int,
-    ): Boolean {
-        val isPrivilegedAndKnown = sourceInfo != null && sourceInfo.isPrivilegedApp &&
-            intent.getBooleanExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, false)
-        val isInstallPkgPermissionGranted = callingUid != Process.INVALID_UID
-                && isPermissionGranted(context, Manifest.permission.INSTALL_PACKAGES, callingUid)
-
-        return isPrivilegedAndKnown || isInstallPkgPermissionGranted
-    }
-
-    private fun getDevicePolicyRestrictions(isTrustedSource: Boolean): String? {
-        val restrictions: Array<String> = if (isTrustedSource) {
+    private fun getDevicePolicyRestrictions(bypassUnknownSourceRestrictions: Boolean): String? {
+        val restrictions: Array<String> = if (bypassUnknownSourceRestrictions) {
             arrayOf(UserManager.DISALLOW_INSTALL_APPS)
         } else {
             arrayOf(
@@ -742,9 +766,13 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
             return Pair(null, null)
         }
 
-        val existingUpdateOwnerLabel = getExistingUpdateOwnerLabel(pkgInfo)
+        val existingUpdateOwnerPackageName = getExistingUpdateOwner(pkgInfo)
+        val existingUpdateOwnerLabel = PackageUtil.getApplicationLabel(
+            context,
+            existingUpdateOwnerPackageName.toString()
+        )
 
-        var requestedUpdateOwnerLabel: CharSequence? = if (
+        var requestedPackageName: CharSequence? = if (
             isAppUpdating &&
             !TextUtils.isEmpty(existingUpdateOwnerLabel) &&
             userActionReason == PackageInstaller.REASON_REMIND_OWNERSHIP
@@ -758,16 +786,12 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
             }
             val originatingPackageName =
                 getPackageNameForUid(context, uid, callingPackage)
-            getApplicationLabel(originatingPackageName)
+            originatingPackageName
         } else {
             null
         }
 
-        return Pair(existingUpdateOwnerLabel, requestedUpdateOwnerLabel)
-    }
-
-    private fun getExistingUpdateOwnerLabel(pkgInfo: PackageInfo): CharSequence? {
-        return getApplicationLabel(getExistingUpdateOwner(pkgInfo))
+        return Pair(existingUpdateOwnerPackageName, requestedPackageName)
     }
 
     private fun getExistingUpdateOwner(pkgInfo: PackageInfo): String? {
@@ -775,19 +799,6 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
             val packageName = pkgInfo.packageName
             val sourceInfo = packageManager.getInstallSourceInfo(packageName)
             sourceInfo.updateOwnerPackageName
-        } catch (e: PackageManager.NameNotFoundException) {
-            null
-        }
-    }
-
-    private fun getApplicationLabel(packageName: String?): CharSequence? {
-        return try {
-            val appInfo = packageName?.let {
-                packageManager.getApplicationInfo(
-                    it, PackageManager.ApplicationInfoFlags.of(0)
-                )
-            }
-            appInfo?.let { packageManager.getApplicationLabel(it) }
         } catch (e: PackageManager.NameNotFoundException) {
             null
         }

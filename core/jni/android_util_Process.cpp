@@ -64,8 +64,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#define GUARD_THREAD_PRIORITY 0
-
 using namespace android;
 
 static constexpr bool kDebugPolicy = false;
@@ -82,11 +80,6 @@ static constexpr size_t kProcReadStackBufferSize = 1024;
 // retry with a relatively large heap-allocated buffer.  We double
 // this size and retry until the whole file fits.
 static constexpr size_t kProcReadMinHeapBufferSize = 4096;
-
-#if GUARD_THREAD_PRIORITY
-Mutex gKeyCreateMutex;
-static pthread_key_t gBgKey = -1;
-#endif
 
 // For both of these, err should be in the errno range (positive), not a status_t (negative)
 static void signalExceptionForError(JNIEnv* env, int err, int tid) {
@@ -534,23 +527,6 @@ jlongArray android_os_Process_getSchedAffinity(JNIEnv* env, jobject clazz, jint 
     return masks;
 }
 
-static void android_os_Process_setCanSelfBackground(JNIEnv* env, jobject clazz, jboolean bgOk) {
-    // Establishes the calling thread as illegal to put into the background.
-    // Typically used only for the system process's main looper.
-#if GUARD_THREAD_PRIORITY
-    ALOGV("Process.setCanSelfBackground(%d) : tid=%d", bgOk, gettid());
-    {
-        Mutex::Autolock _l(gKeyCreateMutex);
-        if (gBgKey == -1) {
-            pthread_key_create(&gBgKey, NULL);
-        }
-    }
-
-    // inverted:  not-okay, we set a sentinel value
-    pthread_setspecific(gBgKey, (void*)(bgOk ? 0 : 0xbaad));
-#endif
-}
-
 jint android_os_Process_getThreadScheduler(JNIEnv* env, jclass clazz,
                                               jint tid)
 {
@@ -584,24 +560,7 @@ void android_os_Process_setThreadScheduler(JNIEnv* env, jclass clazz,
 #endif
 }
 
-void android_os_Process_setThreadPriority(JNIEnv* env, jobject clazz,
-                                              jint pid, jint pri)
-{
-#if GUARD_THREAD_PRIORITY
-    // if we're putting the current thread into the background, check the TLS
-    // to make sure this thread isn't guarded.  If it is, raise an exception.
-    if (pri >= ANDROID_PRIORITY_BACKGROUND) {
-        if (pid == gettid()) {
-            void* bgOk = pthread_getspecific(gBgKey);
-            if (bgOk == ((void*)0xbaad)) {
-                ALOGE("Thread marked fg-only put self in background!");
-                jniThrowException(env, "java/lang/SecurityException", "May not put this thread into background");
-                return;
-            }
-        }
-    }
-#endif
-
+void android_os_Process_setThreadPriorityNative(JNIEnv* env, jobject clazz, jint pid, jint pri) {
     int rc = androidSetThreadPriority(pid, pri);
     if (rc != 0) {
         if (rc == INVALID_OPERATION) {
@@ -613,12 +572,6 @@ void android_os_Process_setThreadPriority(JNIEnv* env, jobject clazz,
 
     //ALOGI("Setting priority of %" PRId32 ": %" PRId32 ", getpriority returns %d\n",
     //     pid, pri, getpriority(PRIO_PROCESS, pid));
-}
-
-void android_os_Process_setCallingThreadPriority(JNIEnv* env, jobject clazz,
-                                                        jint pri)
-{
-    android_os_Process_setThreadPriority(env, clazz, gettid(), pri);
 }
 
 jint android_os_Process_getThreadPriority(JNIEnv* env, jobject clazz,
@@ -1406,10 +1359,10 @@ void android_os_Process_freezeCgroupUID(JNIEnv* env, jobject clazz, jint uid, jb
 static const JNINativeMethod methods[] = {
         {"getUidForName", "(Ljava/lang/String;)I", (void*)android_os_Process_getUidForName},
         {"getGidForName", "(Ljava/lang/String;)I", (void*)android_os_Process_getGidForName},
-        {"setThreadPriority", "(II)V", (void*)android_os_Process_setThreadPriority},
         {"setThreadScheduler", "(III)V", (void*)android_os_Process_setThreadScheduler},
-        {"setCanSelfBackground", "(Z)V", (void*)android_os_Process_setCanSelfBackground},
-        {"setThreadPriority", "(I)V", (void*)android_os_Process_setCallingThreadPriority},
+        // @FastNative
+        {"setThreadPriorityNative", "(II)V", (void*)android_os_Process_setThreadPriorityNative},
+        // @FastNative
         {"getThreadPriority", "(I)I", (void*)android_os_Process_getThreadPriority},
         {"getThreadScheduler", "(I)I", (void*)android_os_Process_getThreadScheduler},
         {"setThreadGroup", "(II)V", (void*)android_os_Process_setThreadGroup},

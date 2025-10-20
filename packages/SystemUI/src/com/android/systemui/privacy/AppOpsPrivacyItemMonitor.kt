@@ -16,6 +16,9 @@
 
 package com.android.systemui.privacy
 
+import android.Manifest.permission.PACKAGE_USAGE_STATS
+import android.annotation.RequiresPermission
+import android.annotation.WorkerThread
 import android.app.ActivityManager
 import android.app.AppOpsManager
 import android.content.Context
@@ -61,6 +64,7 @@ constructor(
     private val activityManager: ActivityManager,
     private val context: Context,
     private val uiEventLogger: UiEventLogger,
+    private val locationAccumulatedLogger: LocationAccumulatedLogger,
 ) : PrivacyItemMonitor {
 
     @VisibleForTesting
@@ -137,6 +141,17 @@ constructor(
                             code in USER_INDEPENDENT_OPS
                     ) {
                         logger.logUpdatedItemFromAppOps(code, uid, packageName, active)
+
+                        if (code in OPS_LOCATION) {
+                            logger.logLocationAppOps(
+                                uid,
+                                packageName,
+                                getUidImportance(uid),
+                                !isBackgroundApp(uid),
+                                isSystemApp(code, uid, packageName),
+                            )
+                        }
+
                         dispatchOnPrivacyItemsChanged()
                     }
                 }
@@ -211,6 +226,7 @@ constructor(
 
         listening = shouldListen
         if (shouldListen) {
+            locationAccumulatedLogger.startLogging()
             appOpsController.addCallback(OPS, appOpsCallback)
             userTracker.addCallback(userTrackerCallback, bgExecutor)
             onCurrentProfilesChanged()
@@ -255,7 +271,7 @@ constructor(
                     .filter { item -> item.code == AppOpsManager.OP_FINE_LOCATION }
                     .distinct()
             val locationOpBySystem = locationOp.any { item -> isSystemApp(item) }
-            val locationOpByBackground = locationOp.any { item -> isBackgroundApp(item) }
+            val locationOpByBackground = locationOp.any { item -> isBackgroundApp(item.uid) }
             synchronized(lock) {
                 lastLocationIndicator = items.any { it.privacyType == PrivacyType.TYPE_LOCATION }
                 lastLocationIndicatorWithSystem = lastLocationIndicator || locationOpBySystem
@@ -278,40 +294,72 @@ constructor(
     private fun logLocationAccesses() {
         // TODO(b/419834493): Add logbuffer logging here for bugreport debugging.
         synchronized(lock) {
-            if (!lastHighPowerLocationOp && hasHighPowerLocationAccess) {
-                uiEventLogger.log {
-                    LocationIndicatorEvent.LOCATION_INDICATOR_MONITOR_HIGH_POWER.id
-                }
-            }
-            if (!lastLocationIndicator && hasNonSystemForegroundLocationAccess) {
-                uiEventLogger.log { LocationIndicatorEvent.LOCATION_INDICATOR_NON_SYSTEM_APP.id }
-            }
-            if (!lastLocationIndicatorWithSystem) {
-                if (hasNonSystemForegroundLocationAccess || hasSystemLocationAccess) {
-                    uiEventLogger.log { LocationIndicatorEvent.LOCATION_INDICATOR_SYSTEM_APP.id }
-                }
-            }
-            if (!lastLocationIndicatorWithBackround) {
-                if (hasNonSystemForegroundLocationAccess || hasBackgroundLocationAccess) {
-                    uiEventLogger.log {
-                        LocationIndicatorEvent.LOCATION_INDICATOR_BACKGROUND_APP.id
-                    }
-                }
-            }
-            if (!lastLocationIndicatorWithSystemAndBackround) {
-                if (
-                    hasNonSystemForegroundLocationAccess ||
-                        hasSystemLocationAccess ||
-                        hasBackgroundLocationAccess
-                ) {
-                    uiEventLogger.log { LocationIndicatorEvent.LOCATION_INDICATOR_ALL_APP.id }
-                }
-            }
+            logLocationIndicatorEvent(
+                lastState = lastHighPowerLocationOp,
+                currentState = hasHighPowerLocationAccess,
+                onEvent = LocationIndicatorEvent.LOCATION_INDICATOR_MONITOR_HIGH_POWER,
+                offEvent = LocationIndicatorEvent.LOCATION_INDICATOR_MONITOR_HIGH_POWER_OFF,
+            )
+            logLocationIndicatorEvent(
+                lastState = lastLocationIndicator,
+                currentState = hasNonSystemForegroundLocationAccess,
+                onEvent = LocationIndicatorEvent.LOCATION_INDICATOR_NON_SYSTEM_APP,
+                offEvent = LocationIndicatorEvent.LOCATION_INDICATOR_NON_SYSTEM_APP_OFF,
+                logType = LocationAccumulatedLogger.LocationLogType.NON_SYSTEM_FG,
+            )
+
+            // No background access
+            val hasSystemAccess = hasNonSystemForegroundLocationAccess || hasSystemLocationAccess
+            logLocationIndicatorEvent(
+                lastState = lastLocationIndicatorWithSystem,
+                currentState = hasSystemAccess,
+                onEvent = LocationIndicatorEvent.LOCATION_INDICATOR_SYSTEM_APP,
+                offEvent = LocationIndicatorEvent.LOCATION_INDICATOR_SYSTEM_APP_OFF,
+                logType = LocationAccumulatedLogger.LocationLogType.SYSTEM,
+            )
+
+            // No system access
+            val hasBackgroundAccess =
+                hasNonSystemForegroundLocationAccess || hasBackgroundLocationAccess
+            logLocationIndicatorEvent(
+                lastState = lastLocationIndicatorWithBackround,
+                currentState = hasBackgroundAccess,
+                onEvent = LocationIndicatorEvent.LOCATION_INDICATOR_BACKGROUND_APP,
+                offEvent = LocationIndicatorEvent.LOCATION_INDICATOR_BACKGROUND_APP_OFF,
+                logType = LocationAccumulatedLogger.LocationLogType.BACKGROUND,
+            )
+
+            val hasAllAccess =
+                hasNonSystemForegroundLocationAccess ||
+                    hasSystemLocationAccess ||
+                    hasBackgroundLocationAccess
+            logLocationIndicatorEvent(
+                lastLocationIndicatorWithSystemAndBackround,
+                hasAllAccess,
+                LocationIndicatorEvent.LOCATION_INDICATOR_ALL_APP,
+                LocationIndicatorEvent.LOCATION_INDICATOR_ALL_APP_OFF,
+                LocationAccumulatedLogger.LocationLogType.ALL,
+            )
 
             hasHighPowerLocationAccess = false
             hasSystemLocationAccess = false
             hasBackgroundLocationAccess = false
             hasNonSystemForegroundLocationAccess = false
+        }
+    }
+
+    private fun logLocationIndicatorEvent(
+        lastState: Boolean,
+        currentState: Boolean,
+        onEvent: LocationIndicatorEvent,
+        offEvent: LocationIndicatorEvent,
+        logType: LocationAccumulatedLogger.LocationLogType? = null,
+    ) {
+        if (lastState != currentState) {
+            uiEventLogger.log(if (currentState) onEvent else offEvent)
+            if (logType == null) return
+
+            locationAccumulatedLogger.logForType(logType, currentState)
         }
     }
 
@@ -378,7 +426,7 @@ constructor(
 
         if (item.code == AppOpsManager.OP_FINE_LOCATION) {
             val isSystem = isSystemApp(item)
-            val isBackground = isBackgroundApp(item)
+            val isBackground = isBackgroundApp(item.uid)
             if (isSystem) {
                 synchronized(lock) { hasSystemLocationAccess = true }
             }
@@ -404,7 +452,11 @@ constructor(
      * make sure to update PermissionUsageHelper when changing this method.
      */
     private fun isSystemApp(item: AppOpItem): Boolean {
-        val user = UserHandle.getUserHandleForUid(item.uid)
+        return isSystemApp(item.code, item.uid, item.packageName)
+    }
+
+    private fun isSystemApp(code: Int, uid: Int, packageName: String): Boolean {
+        val user = UserHandle.getUserHandleForUid(uid)
 
         // Don't show apps belonging to background users except managed users.
         var foundUser = false
@@ -417,17 +469,16 @@ constructor(
             return true
         }
 
-        val permission = AppOpsManager.opToPermission(item.code)
-        val permissionFlags: Int =
-            packageManager.getPermissionFlags(permission, item.packageName, user)
+        val permission = AppOpsManager.opToPermission(code)
+        val permissionFlags: Int = packageManager.getPermissionFlags(permission, packageName, user)
         val isSystem =
             if (
                 PermissionChecker.checkPermissionForPreflight(
                     context,
                     permission,
                     PermissionChecker.PID_UNKNOWN,
-                    item.uid,
-                    item.packageName,
+                    uid,
+                    packageName,
                 ) == PermissionChecker.PERMISSION_GRANTED
             ) {
                 ((permissionFlags and PackageManager.FLAG_PERMISSION_USER_SENSITIVE_WHEN_GRANTED) ==
@@ -444,14 +495,28 @@ constructor(
      * <p>TODO(b/422799135): refactor isSystemApp() and isBackgroundApp(). Before this is fixed,
      * make sure to update PermissionUsageHelper when changing this method.
      */
-    private fun isBackgroundApp(item: AppOpItem): Boolean {
+    @WorkerThread
+    @RequiresPermission(PACKAGE_USAGE_STATS)
+    private fun isBackgroundApp(uid: Int): Boolean {
+        return getUidImportance(uid) >
+            ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE
+    }
+
+    @WorkerThread
+    @RequiresPermission(PACKAGE_USAGE_STATS)
+    private fun getUidImportance(uid: Int): Int {
         for (processInfo in activityManager.runningAppProcesses) {
-            if (processInfo.uid == item.uid) {
-                return (processInfo.importance >
-                    ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE)
+            if (processInfo.uid == uid) {
+                return processInfo.importance
             }
         }
-        return false
+
+        if (android.location.flags.Flags.locationIndicatorGetUidImportanceFallback()) {
+            // In case a uid is not found because runningAppProcesses might return stale results
+            return activityManager.getUidImportance(uid)
+        }
+
+        return -1
     }
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {
@@ -463,6 +528,7 @@ constructor(
                 ipw.println("micCameraAvailable: $micCameraAvailable")
                 ipw.println("locationAvailable: $locationAvailable")
                 ipw.println("Callback: $callback")
+                locationAccumulatedLogger.writeToPrintWriter(ipw)
             }
             ipw.println("Current user ids: ${userTracker.userProfiles.map { it.id }}")
         }
@@ -474,12 +540,19 @@ constructor(
         // Copied from LocationControllerImpl.java
         @UiEvent(doc = "Location indicator shown for high power access")
         LOCATION_INDICATOR_MONITOR_HIGH_POWER(935),
+        @UiEvent(doc = "Location indicator hidden for high power access")
+        LOCATION_INDICATOR_MONITOR_HIGH_POWER_OFF(2417),
         // Copied from LocationControllerImpl.java
         @UiEvent(
             doc =
                 "Location indicator shown for system, non-system, foreground app access (i.e., excluding background)"
         )
         LOCATION_INDICATOR_SYSTEM_APP(936),
+        @UiEvent(
+            doc =
+                "Location indicator hidden for system, non-system, foreground app access (i.e., excluding background)"
+        )
+        LOCATION_INDICATOR_SYSTEM_APP_OFF(2418),
         // Copied from LocationControllerImpl.java
         @UiEvent(
             doc =
@@ -488,10 +561,22 @@ constructor(
         LOCATION_INDICATOR_NON_SYSTEM_APP(937),
         @UiEvent(
             doc =
+                "Location indicator hidden for non-system, foreground app access (i.e., excluding system and background)"
+        )
+        LOCATION_INDICATOR_NON_SYSTEM_APP_OFF(2419),
+        @UiEvent(
+            doc =
                 "Location indicator shown for non-system, foreground, background app access (i.e., excluding system)"
         )
         LOCATION_INDICATOR_BACKGROUND_APP(2325),
-        @UiEvent(doc = "Location indicator shown for all access") LOCATION_INDICATOR_ALL_APP(2354);
+        @UiEvent(
+            doc =
+                "Location indicator hidden for non-system, foreground, background app access (i.e., excluding system)"
+        )
+        LOCATION_INDICATOR_BACKGROUND_APP_OFF(2420),
+        @UiEvent(doc = "Location indicator shown for all access") LOCATION_INDICATOR_ALL_APP(2354),
+        @UiEvent(doc = "Location indicator hidden for all access")
+        LOCATION_INDICATOR_ALL_APP_OFF(2421);
 
         override fun getId(): Int {
             return id

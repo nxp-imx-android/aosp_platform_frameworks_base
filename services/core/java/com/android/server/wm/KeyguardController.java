@@ -79,9 +79,6 @@ class KeyguardController {
     private static final boolean ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS =
             Flags.ensureKeyguardDoesTransitionStartingBugFix();
 
-    private static final boolean REMOVE_DEFAULT_DISPLAY_USAGE =
-            Flags.keyguardRemoveDefaultDisplayUsage();
-
     private static final String TAG = TAG_WITH_CLASS_NAME ? "KeyguardController" : TAG_ATM;
 
     static final String KEYGUARD_SLEEP_TOKEN_TAG = "keyguard";
@@ -219,7 +216,7 @@ class KeyguardController {
                 } else if (keyguardShowing && !state.mKeyguardShowing) {
                     transition.addFlag(TRANSIT_FLAG_KEYGUARD_APPEARING);
                 }
-                if (mWindowManager.mFlags.mAodTransition && aodShowing && !state.mAodShowing) {
+                if (Flags.aodTransition() && aodShowing && !state.mAodShowing) {
                     transition.addFlag(TRANSIT_FLAG_AOD_APPEARING);
                 }
             }
@@ -244,7 +241,7 @@ class KeyguardController {
         state.mAodShowing = aodShowing;
         state.writeEventLog("setKeyguardShown");
 
-        if (keyguardChanged || (mWindowManager.mFlags.mAodTransition && aodChanged)) {
+        if (keyguardChanged || (Flags.aodTransition() && aodChanged)) {
             if (keyguardChanged) {
                 // Irrelevant to AOD.
                 state.mKeyguardGoingAway = false;
@@ -254,7 +251,7 @@ class KeyguardController {
             }
             if (goingAwayRemoved
                     || (keyguardShowing && !Display.isOffState(dc.getDisplayInfo().state))
-                    || (mWindowManager.mFlags.mAodTransition && aodShowing)) {
+                    || (Flags.aodTransition() && aodShowing)) {
                 // Keyguard decided to show or stopped going away. Send a transition to animate back
                 // to the locked state before holding the sleep token again
                 if (!ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS) {
@@ -262,7 +259,7 @@ class KeyguardController {
                         dc.requestTransitionAndLegacyPrepare(TRANSIT_TO_FRONT,
                                 TRANSIT_FLAG_KEYGUARD_APPEARING, /* trigger= */ null, chain);
                     }
-                    if (mWindowManager.mFlags.mAodTransition && aodChanged && aodShowing) {
+                    if (Flags.aodTransition() && aodChanged && aodShowing) {
                         dc.requestTransitionAndLegacyPrepare(TRANSIT_TO_FRONT,
                                 TRANSIT_FLAG_AOD_APPEARING, /* trigger= */ null, chain);
                     }
@@ -345,12 +342,8 @@ class KeyguardController {
             mRootWindowContainer.resumeFocusedTasksTopActivities();
             mRootWindowContainer.ensureActivitiesVisible();
             mRootWindowContainer.addStartingWindowsForVisibleActivities();
-            if (REMOVE_DEFAULT_DISPLAY_USAGE) {
-                for (int i = changedDisplays.size() - 1; i >= 0; i--) {
-                    changedDisplays.get(i).executeAppTransition();
-                }
-            } else {
-                mWindowManager.executeAppTransition();
+            for (int i = changedDisplays.size() - 1; i >= 0; i--) {
+                changedDisplays.get(i).executeAppTransition();
             }
         } finally {
             mService.continueWindowLayout();
@@ -550,11 +543,7 @@ class KeyguardController {
             dc.mAtmService.getTransitionController().requestTransitionIfNeeded(
                     TRANSIT_OPEN, TRANSIT_FLAG_KEYGUARD_GOING_AWAY, null /* trigger */, dc, chain);
             updateKeyguardSleepToken();
-            if (REMOVE_DEFAULT_DISPLAY_USAGE) {
-                dc.executeAppTransition();
-            } else {
-                mWindowManager.executeAppTransition();
-            }
+            dc.executeAppTransition();
         } finally {
             mService.continueWindowLayout();
             mService.mChainTracker.endPartial();
@@ -612,7 +601,14 @@ class KeyguardController {
     private KeyguardDisplayState getDisplayState(int displayId) {
         KeyguardDisplayState state = mDisplayStates.get(displayId);
         if (state == null) {
-            state = new KeyguardDisplayState(mService, displayId);
+            final DisplayContent dc = mRootWindowContainer.getDisplayContent(displayId);
+
+            if (displayId == DEFAULT_DISPLAY || dc == null || dc.isKeyguardAlwaysUnlocked()) {
+                state = new KeyguardDisplayState(mService, displayId);
+            } else {
+                final KeyguardDisplayState defaultState = mDisplayStates.get(DEFAULT_DISPLAY);
+                state = new KeyguardDisplayState(mService, displayId, defaultState);
+            }
             mDisplayStates.append(displayId, state);
         }
         return state;
@@ -719,6 +715,16 @@ class KeyguardController {
         KeyguardDisplayState(ActivityTaskManagerService service, int displayId) {
             mService = service;
             mDisplayId = displayId;
+        }
+
+        KeyguardDisplayState(ActivityTaskManagerService service, int displayId,
+                @Nullable KeyguardDisplayState copyFrom) {
+            this(service, displayId);
+            if (copyFrom != null) {
+                mKeyguardShowing = copyFrom.mKeyguardShowing;
+                mAodShowing = copyFrom.mAodShowing;
+                mKeyguardGoingAway = copyFrom.mKeyguardGoingAway;
+            }
         }
 
         void onRemoved(@NonNull DisplayContent dc) {

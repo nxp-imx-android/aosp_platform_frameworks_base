@@ -37,6 +37,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.KeyguardState.ALTERNATE_BOUNCER
 import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
 import com.android.systemui.keyguard.shared.model.KeyguardState.DOZING
+import com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING
 import com.android.systemui.keyguard.shared.model.KeyguardState.GLANCEABLE_HUB
 import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
@@ -47,8 +48,10 @@ import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.shade.data.repository.ShadeConfigRepository
 import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.util.kotlin.sample
 import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
@@ -91,11 +94,13 @@ constructor(
     private val wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor,
     @ShadeDisplayAware configurationInteractor: ConfigurationInteractor,
     shadeRepository: ShadeRepository,
+    shadeConfigRepository: ShadeConfigRepository,
     private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
     sceneInteractorProvider: Provider<SceneInteractor>,
     private val fromGoneTransitionInteractor: Provider<FromGoneTransitionInteractor>,
     private val fromLockscreenTransitionInteractor: Provider<FromLockscreenTransitionInteractor>,
     private val fromOccludedTransitionInteractor: Provider<FromOccludedTransitionInteractor>,
+    private val fromDreamingTransitionInteractor: Provider<FromDreamingTransitionInteractor>,
     private val fromAlternateBouncerTransitionInteractor:
         Provider<FromAlternateBouncerTransitionInteractor>,
     private val lockPatternUtils: LockPatternUtils,
@@ -112,7 +117,7 @@ constructor(
                 keyguardTransitionInteractor.isInTransition(
                     edge = Edge.create(from = LOCKSCREEN, to = AOD)
                 ),
-                shadeRepository.legacyUseSplitShade,
+                shadeConfigRepository.legacyUseSplitShade,
                 configurationInteractor.dimensionPixelSize(R.dimen.keyguard_split_shade_top_margin),
             ) { bounds, isTransitioningToAod, useSplitShade, keyguardSplitShadeTopMargin ->
                 if (isTransitioningToAod) {
@@ -167,7 +172,7 @@ constructor(
         }
 
     /** Doze transition information. */
-    val dozeTransitionModel: Flow<DozeTransitionModel> = repository.dozeTransitionModel
+    val dozeTransitionModel: StateFlow<DozeTransitionModel> = repository.dozeTransitionModel
 
     val isPulsing: Flow<Boolean> = dozeTransitionModel.map { it.to == DozeStateModel.DOZE_PULSING }
 
@@ -224,7 +229,7 @@ constructor(
             }
             .stateIn(
                 scope = applicationScope,
-                started = SharingStarted.WhileSubscribed(),
+                started = SharingStarted.Eagerly,
                 initialValue = false,
             )
 
@@ -278,11 +283,17 @@ constructor(
     /** Whether the primary bouncer is showing or about to show soon. */
     @JvmField
     val primaryBouncerShowing: StateFlow<Boolean> =
-        combine(
-                bouncerRepository.primaryBouncerShow,
-                bouncerRepository.primaryBouncerShowingSoon,
-            ) { showing, showingSoon ->
-                showing || showingSoon
+        if (SceneContainerFlag.isEnabled) {
+                sceneInteractorProvider.get().transitionState.map {
+                    it.isIdle(Overlays.Bouncer) || it.isTransitioning(to = Overlays.Bouncer)
+                }
+            } else {
+                combine(
+                    bouncerRepository.primaryBouncerShow,
+                    bouncerRepository.primaryBouncerShowingSoon,
+                ) { showing, showingSoon ->
+                    showing || showingSoon
+                }
             }
             .stateIn(
                 scope = applicationScope,
@@ -382,6 +393,7 @@ constructor(
                 val currentKeyguardState = keyguardTransitionInteractor.currentKeyguardState.value
                 val isKeyguardDismissible = isKeyguardDismissible.value
 
+                if (shadeRepository.qsExpansion.value > 0f) return@transform
                 if (
                     statusBarState.value == StatusBarState.KEYGUARD &&
                         isKeyguardDismissible &&
@@ -405,6 +417,8 @@ constructor(
         configurationInteractor
             .dimensionPixelSize(R.dimen.keyguard_translate_distance_on_swipe_up)
             .flatMapLatest { translationDistance ->
+                // TODO: b/441274212 - Update this to use the correct signals when SceneContainer is
+                //  turned on.
                 combineTransform(
                     shadeRepository.legacyShadeExpansion.onStart { emit(0f) },
                     keyguardTransitionInteractor.transitionValue(GONE).onStart { emit(0f) },
@@ -533,6 +547,7 @@ constructor(
         when (keyguardTransitionInteractor.transitionState.value.to) {
             LOCKSCREEN -> fromLockscreenTransitionInteractor.get().dismissKeyguard()
             OCCLUDED -> fromOccludedTransitionInteractor.get().dismissFromOccluded()
+            DREAMING -> fromDreamingTransitionInteractor.get().dismissFromDreaming()
             ALTERNATE_BOUNCER ->
                 fromAlternateBouncerTransitionInteractor.get().dismissAlternateBouncer()
             else -> Log.v(TAG, "Keyguard was dismissed, no direct transition call needed")

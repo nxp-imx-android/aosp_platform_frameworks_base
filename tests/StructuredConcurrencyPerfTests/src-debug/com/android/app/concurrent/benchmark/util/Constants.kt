@@ -17,6 +17,8 @@ package com.android.app.concurrent.benchmark.util
 
 const val DEBUG = true
 
+const val VERBOSE_DEBUG = false
+
 const val PERFETTO_CONFIG =
     """
 # Enable periodic flushing of the trace buffer into the output file.

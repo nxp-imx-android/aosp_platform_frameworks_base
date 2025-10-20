@@ -102,7 +102,7 @@ import android.telephony.UiccSlotMapping;
  * TelephonyManager class.  A few places are still using this directly.
  * Please clean them up if possible and use TelephonyManager instead.
  *
- * {@hide}
+ * @hide
  */
 interface ITelephony {
 
@@ -852,9 +852,11 @@ interface ITelephony {
      * @param subId the id of the subscription.
      * @param reason the reason the allowed network type change is taking place
      * @param allowedNetworkTypes the allowed network types.
+     * @param callingPackage the package that changed set the allowed network types.
      * @return true on success; false on any failure.
      */
-    boolean setAllowedNetworkTypesForReason(int subId, int reason, long allowedNetworkTypes);
+    boolean setAllowedNetworkTypesForReason(int subId, int reason, long allowedNetworkTypes,
+            String callingPackage);
 
     /**
      * Get the user enabled state of Mobile Data.
@@ -1127,6 +1129,12 @@ interface ITelephony {
      * @return {@code true} if the device supports TTY mode.
      */
     boolean isTtyModeSupported();
+
+    /**
+     * Returns the current TTY mode of the device. For TTY to be on the user must enable it in
+     * settings and have a wired headset plugged in.
+     */
+    int getCurrentTtyMode();
 
     boolean isRttSupported(int subscriptionId);
 
@@ -3322,6 +3330,14 @@ interface ITelephony {
      * @return {@code true} if the value is set successfully, {@code false} otherwise.
      */
     boolean setMaxAllowedSatelliteDataModeForCtsTest(int maxAllowedDataMode);
+
+    /**
+     * This API can be used for testing purposes to uncap the max allowed data mode.
+     *
+     * @return {@code true} if the max allowed data mode is uncapped successfully,
+     * {@code false} otherwise.
+     */
+    boolean uncapMaxAllowedSatelliteDataMode();
 
     /**
      * Request to get the session stats of the satellite service.

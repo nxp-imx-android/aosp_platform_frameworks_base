@@ -237,6 +237,27 @@ class TvInputHardwareManager implements TvInputHal.Callback {
             }
             int previousConfigsLength = connection.getConfigsLengthLocked();
             int previousCableConnectionStatus = connection.getInputStateLocked();
+
+            if (configs != null) {
+                /*
+                   This method is called when a new connection is created or when there is a change
+                   in the stream configuration. When a new connection is created,
+                   connection.mConfigs is null. If the stream is updated and a new config is
+                   generated, it is added to the configs array by TvInputHal. This new added
+                   configuration has to be marked as the current active config for this connection.
+                */
+                TvStreamConfig nextActiveConfig = configs[0];
+                for (TvStreamConfig config : configs) {
+                    if (config.getGeneration() > nextActiveConfig.getGeneration()) {
+                        nextActiveConfig = config;
+                    }
+                }
+                final TvInputHardwareImpl hardwareImpl = connection.getHardwareImplLocked();
+                if (hardwareImpl != null) {
+                    hardwareImpl.mActiveConfig = nextActiveConfig;
+                }
+            }
+
             connection.updateConfigsLocked(configs);
             String inputId = mHardwareInputIdMap.get(deviceId);
             if (inputId != null) {
@@ -257,7 +278,7 @@ class TvInputHardwareManager implements TvInputHal.Callback {
                     deviceId, cableConnectionStatus, connection);
                 mPendingTvinputInfoEvents.removeIf(message -> message.arg1 == deviceId);
                 mPendingTvinputInfoEvents.add(msg);
-           }
+            }
             ITvInputHardwareCallback callback = connection.getCallbackLocked();
             if (callback != null) {
                 try {

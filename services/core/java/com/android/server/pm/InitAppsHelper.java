@@ -175,10 +175,7 @@ final class InitAppsHelper {
         final List<ApexManager.ScanResult> apexScanResults = scanApexPackagesTraced(packageParser);
         mApexManager.notifyScanResult(apexScanResults);
 
-        // If this flag is enabled, system directories will be scanned in parallel. This doesn't
-        // affect the order that packages are installed in.
-        scanSystemDirs(packageParser, mExecutorService,
-                android.content.pm.Flags.parallelPackageParsingAcrossSystemDirs());
+        scanSystemDirs(packageParser, mExecutorService);
 
         // Parse overlay configuration files to set default enable state, mutability, and
         // priority of system overlays.
@@ -343,30 +340,23 @@ final class InitAppsHelper {
         }
     }
 
-    // Helper function for either immediately scanning scanDir using the input scan parameters, or
-    // just collecting them in scanParamsList to be processed in parallel later.
+    // Helper function for collecting input scan parameters to be processed in parallel later.
     @GuardedBy({"mPm.mInstallLock", "mPm.mLock"})
-    private void processOrCollectScanParams(List<ScanParams> scanParamsList, File scanDir,
+    private void collectScanParams(List<ScanParams> scanParamsList, File scanDir,
             int parseFlags, int scanFlags, PackageParser2 packageParser,
             ExecutorService executorService, ApexManager.ActiveApexInfo apexInfo) {
-        if (scanParamsList == null) {
-            scanDirTracedLI(scanDir, parseFlags, scanFlags, packageParser, executorService,
-                    apexInfo);
-        } else {
-            scanParamsList.add((scanFlags & SCAN_AS_APK_IN_APEX) != 0
-                    ? ScanParams.forApkInApexScan(scanDir, parseFlags, scanFlags, apexInfo)
-                    : ScanParams.forApkPartitionScan(scanDir, parseFlags, scanFlags));
-        }
+        scanParamsList.add((scanFlags & SCAN_AS_APK_IN_APEX) != 0
+                ? ScanParams.forApkInApexScan(scanDir, parseFlags, scanFlags, apexInfo)
+                : ScanParams.forApkPartitionScan(scanDir, parseFlags, scanFlags));
     }
 
     /**
      * First part of init dir scanning
      */
     @GuardedBy({"mPm.mInstallLock", "mPm.mLock"})
-    private void scanSystemDirs(PackageParser2 packageParser, ExecutorService executorService,
-            boolean parallelDirScan) {
+    private void scanSystemDirs(PackageParser2 packageParser, ExecutorService executorService) {
         File frameworkDir = new File(Environment.getRootDirectory(), "framework");
-        List<ScanParams> scanParamsList = parallelDirScan ? new ArrayList<>() : null;
+        List<ScanParams> scanParamsList = new ArrayList<>();
 
         // Collect vendor/product/system_ext overlay packages. (Do this before scanning
         // any apps.)
@@ -377,32 +367,29 @@ final class InitAppsHelper {
             if (partition.getOverlayFolder() == null) {
                 continue;
             }
-            processOrCollectScanParams(scanParamsList, partition.getOverlayFolder(),
+            collectScanParams(scanParamsList, partition.getOverlayFolder(),
                       mSystemParseFlags, mSystemScanFlags | partition.scanFlag, packageParser,
                       executorService, partition.apexInfo);
         }
-        processOrCollectScanParams(scanParamsList, frameworkDir, mSystemParseFlags,
+        collectScanParams(scanParamsList, frameworkDir, mSystemParseFlags,
                   mSystemScanFlags | SCAN_NO_DEX | SCAN_AS_PRIVILEGED, packageParser,
                   executorService, null);
 
         for (int i = 0, size = mDirsToScanAsSystem.size(); i < size; i++) {
             final ScanPartition partition = mDirsToScanAsSystem.get(i);
             if (partition.getPrivAppFolder() != null) {
-                processOrCollectScanParams(scanParamsList, partition.getPrivAppFolder(),
+                collectScanParams(scanParamsList, partition.getPrivAppFolder(),
                         mSystemParseFlags,
                         mSystemScanFlags | SCAN_AS_PRIVILEGED | partition.scanFlag,
                         packageParser, executorService, partition.apexInfo);
             }
-            processOrCollectScanParams(scanParamsList, partition.getAppFolder(), mSystemParseFlags,
+            collectScanParams(scanParamsList, partition.getAppFolder(), mSystemParseFlags,
                     mSystemScanFlags | partition.scanFlag, packageParser, executorService,
                     partition.apexInfo);
         }
 
-        // Scan all directories with the parameters contained in scanParamsList. If parallelDirScan
-        // is not enabled, we will have already scanned and processed everything by this point.
-        if (parallelDirScan) {
-            parallelScanDirTracedLI(scanParamsList, packageParser, executorService);
-        }
+        // Scan all directories with the parameters contained in scanParamsList.
+        parallelScanDirTracedLI(scanParamsList, packageParser, executorService);
 
         if (!mPm.mPackages.containsKey("android")) {
             throw new IllegalStateException(

@@ -28,10 +28,11 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.Barrier
 import com.android.internal.widget.CachingIconView
 import com.android.systemui.Flags.enableSuggestedDeviceUi
+import com.android.systemui.FontStyles.GSF_BODY_MEDIUM
 import com.android.systemui.FontStyles.GSF_HEADLINE_SMALL
-import com.android.systemui.FontStyles.GSF_LABEL_LARGE
 import com.android.systemui.FontStyles.GSF_LABEL_MEDIUM
 import com.android.systemui.FontStyles.GSF_TITLE_MEDIUM
+import com.android.systemui.FontStyles.GSF_TITLE_MEDIUM_EMPHASIZED
 import com.android.systemui.res.R
 import com.android.systemui.surfaceeffects.loadingeffect.LoadingEffectView
 import com.android.systemui.surfaceeffects.ripple.MultiRippleView
@@ -207,8 +208,10 @@ class MediaViewHolder constructor(itemView: View) {
             )
 
         val headlineSmallTF: Typeface = Typeface.create(GSF_HEADLINE_SMALL, Typeface.NORMAL)
+        val titleMediumEmphasizedTF: Typeface =
+            Typeface.create(GSF_TITLE_MEDIUM_EMPHASIZED, Typeface.NORMAL)
         val titleMediumTF: Typeface = Typeface.create(GSF_TITLE_MEDIUM, Typeface.NORMAL)
         val labelMediumTF: Typeface = Typeface.create(GSF_LABEL_MEDIUM, Typeface.NORMAL)
-        val labelLargeTF: Typeface = Typeface.create(GSF_LABEL_LARGE, Typeface.NORMAL)
+        val bodyMediumTF: Typeface = Typeface.create(GSF_BODY_MEDIUM, Typeface.NORMAL)
     }
 }

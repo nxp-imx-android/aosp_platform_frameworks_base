@@ -22,16 +22,16 @@ import android.graphics.Rect
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.logging.uiEventLoggerFake
 import com.android.internal.util.ScreenshotRequest
 import com.android.internal.util.mockScreenshotHelper
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.kosmos.testScope
-import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.kosmos.runTest
+import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screenshot.mockImageCapture
-import com.android.systemui.testKosmos
+import com.android.systemui.testKosmosNew
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -48,8 +48,7 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class ScreenshotInteractorTest : SysuiTestCase() {
-    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val testScope = kosmos.testScope
+    private val kosmos = testKosmosNew()
 
     @Mock private lateinit var mockBitmap: Bitmap
 
@@ -61,13 +60,13 @@ class ScreenshotInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun takeFullscreenScreenshot_callsScreenshotHelper_withCorrectRequest() {
-        testScope.runTest {
+    fun requestFullscreenScreenshot_callsScreenshotHelper_withCorrectRequest() {
+        kosmos.runTest {
             val displayId = 3
-            interactor.takeFullscreenScreenshot(displayId)
+            interactor.requestFullscreenScreenshot(displayId)
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
-            verify(kosmos.mockScreenshotHelper, times(1))
+            verify(mockScreenshotHelper, times(1))
                 .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
 
             val capturedRequest = screenshotRequestCaptor.lastValue
@@ -79,23 +78,38 @@ class ScreenshotInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun takePartialScreenshot_callsScreenshotHelper_withCorrectRequest() {
-        testScope.runTest {
+    fun requestFullscreenScreenshot_logsEvent() =
+        kosmos.runTest {
+            val displayId = 3
+
+            interactor.requestFullscreenScreenshot(displayId)
+
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
+            assertThat(uiEventLoggerFake.eventId(0))
+                .isEqualTo(
+                    ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_FULLSCREEN_SCREENSHOT_REQUESTED
+                        .id
+                )
+        }
+
+    @Test
+    fun requestPartialScreenshot_callsScreenshotHelper_withCorrectRequest() {
+        kosmos.runTest {
             val bounds = Rect(0, 0, 100, 100)
             val displayId = 3
-            whenever(kosmos.mockImageCapture.captureDisplay(eq(displayId), eq(bounds)))
+            whenever(mockImageCapture.captureDisplay(eq(displayId), eq(bounds)))
                 .thenReturn(mockBitmap)
 
             val mainUser = UserInfo(0, "primary user", UserInfo.FLAG_MAIN)
             val secondaryUser = UserInfo(1, "secondary user", 0)
-            kosmos.fakeUserRepository.setUserInfos(listOf(mainUser, secondaryUser))
-            kosmos.fakeUserRepository.setSelectedUserInfo(secondaryUser)
+            fakeUserRepository.setUserInfos(listOf(mainUser, secondaryUser))
+            fakeUserRepository.setSelectedUserInfo(secondaryUser)
 
-            interactor.takePartialScreenshot(bounds, displayId)
+            interactor.requestPartialScreenshot(bounds, displayId)
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
-            verify(kosmos.mockImageCapture, times(1)).captureDisplay(any(), eq(bounds))
-            verify(kosmos.mockScreenshotHelper, times(1))
+            verify(mockImageCapture, times(1)).captureDisplay(any(), eq(bounds))
+            verify(mockScreenshotHelper, times(1))
                 .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
 
             val capturedRequest = screenshotRequestCaptor.lastValue
@@ -108,4 +122,21 @@ class ScreenshotInteractorTest : SysuiTestCase() {
             assertThat(capturedRequest.userId).isEqualTo(secondaryUser.id)
         }
     }
+
+    @Test
+    fun requestPartialScreenshot_logsEvent() =
+        kosmos.runTest {
+            val bounds = Rect(0, 0, 100, 100)
+            val displayId = 3
+            whenever(mockImageCapture.captureDisplay(eq(displayId), eq(bounds)))
+                .thenReturn(mockBitmap)
+
+            interactor.requestPartialScreenshot(bounds, displayId)
+
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
+            assertThat(uiEventLoggerFake.eventId(0))
+                .isEqualTo(
+                    ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_REQUESTED.id
+                )
+        }
 }

@@ -29,13 +29,14 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.concurrency.fakeExecutor
+import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModeRepository
-import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
+import com.android.systemui.statusbar.gesture.swipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.notification.data.model.activeNotificationModel
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
@@ -45,6 +46,7 @@ import com.android.systemui.statusbar.notification.promoted.shared.model.Promote
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.notification.shared.CallType
 import com.android.systemui.statusbar.phone.ongoingcall.data.repository.ongoingCallRepository
+import com.android.systemui.statusbar.phone.ongoingcall.shared.PerDisplayOngoingCallStatusBarVisibility
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.statusbar.window.StatusBarWindowController
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
@@ -69,7 +71,11 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
-@DisableFlags(StatusBarChipsModernization.FLAG_NAME, PromotedNotificationUi.FLAG_NAME)
+@DisableFlags(
+    StatusBarChipsModernization.FLAG_NAME,
+    PromotedNotificationUi.FLAG_NAME,
+    PerDisplayOngoingCallStatusBarVisibility.FLAG_NAME,
+)
 class OngoingCallControllerTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
@@ -81,7 +87,7 @@ class OngoingCallControllerTest : SysuiTestCase() {
 
     private lateinit var controller: OngoingCallController
 
-    private val mockSwipeStatusBarAwayGestureHandler = mock<SwipeStatusBarAwayGestureHandler>()
+    private val mockSwipeStatusBarAwayGestureHandler = kosmos.swipeStatusBarAwayGestureHandler
     private val mockOngoingCallListener = mock<OngoingCallListener>()
     private val mockIActivityManager = mock<IActivityManager>()
     private val mockStatusBarWindowController = mock<StatusBarWindowController>()
@@ -109,7 +115,7 @@ class OngoingCallControllerTest : SysuiTestCase() {
                 mockIActivityManager,
                 DumpManager(),
                 mockStatusBarWindowControllerStore,
-                mockSwipeStatusBarAwayGestureHandler,
+                kosmos.displaySubcomponentPerDisplayRepository,
                 statusBarModeRepository,
                 logcatLogBuffer("OngoingCallControllerViaRepoTest"),
             )

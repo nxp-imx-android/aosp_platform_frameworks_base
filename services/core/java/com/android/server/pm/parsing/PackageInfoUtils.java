@@ -36,6 +36,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PathPermission;
 import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
+import android.content.pm.UsesPermissionPurposeInfo;
 import android.content.pm.ProcessInfo;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ServiceInfo;
@@ -43,10 +44,12 @@ import android.content.pm.SharedLibraryInfo;
 import android.content.pm.Signature;
 import android.content.pm.SigningDetails;
 import android.content.pm.SigningInfo;
+import android.content.pm.ValidGeneralPurposeInfo;
 import android.content.pm.ValidPurposeInfo;
 import android.content.pm.overlay.OverlayPaths;
 import android.os.Environment;
 import android.os.PatternMatcher;
+import android.os.Process;
 import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -68,6 +71,7 @@ import com.android.internal.pm.pkg.component.ParsedProcess;
 import com.android.internal.pm.pkg.component.ParsedProvider;
 import com.android.internal.pm.pkg.component.ParsedService;
 import com.android.internal.pm.pkg.component.ParsedUsesPermission;
+import com.android.internal.pm.pkg.component.ParsedValidGeneralPurpose;
 import com.android.internal.pm.pkg.component.ParsedValidPurpose;
 import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
 import com.android.internal.pm.pkg.parsing.ParsingUtils;
@@ -199,6 +203,9 @@ public class PackageInfoUtils {
             if (size > 0) {
                 info.requestedPermissions = new String[size];
                 info.requestedPermissionsFlags = new int[size];
+                if (android.permission.flags.Flags.ppdManifestEnabled()) {
+                    info.requestedPermissionsPurposes = new ArrayMap<>();
+                }
                 int index = 0;
                 for (ParsedUsesPermission usesPermission : usesPermissions) {
                     info.requestedPermissions[index] = usesPermission.getName();
@@ -218,6 +225,14 @@ public class PackageInfoUtils {
                     if (pkg.getImplicitPermissions().contains(info.requestedPermissions[index])) {
                         info.requestedPermissionsFlags[index] |=
                                 PackageInfo.REQUESTED_PERMISSION_IMPLICIT;
+                    }
+                    if (android.permission.flags.Flags.ppdManifestEnabled()) {
+                        if (!usesPermission.getGeneralPurposes().isEmpty()) {
+                            UsesPermissionPurposeInfo ppi =
+                                    new UsesPermissionPurposeInfo(usesPermission.getName(),
+                                            usesPermission.getGeneralPurposes());
+                            info.requestedPermissionsPurposes.put(usesPermission.getName(), ppi);
+                        }
                     }
                     index++;
                 }
@@ -473,7 +488,7 @@ public class PackageInfoUtils {
 
         updateApplicationInfo(info, flags, state);
 
-        initForUser(info, pkg, userId, state);
+        initForUser(info, pkg, pkgSetting, userId, state);
 
         // TODO(b/135203078): Remove PackageParser1/toAppInfoWithoutState and clean all this up
         PackageStateUnserialized pkgState = pkgSetting.getTransientState();
@@ -787,6 +802,7 @@ public class PackageInfoUtils {
         pi.knownCerts = p.getKnownCerts();
         pi.requiresPurpose = p.isPurposeRequired();
         pi.requiresPurposeTargetSdkVersion = p.getRequiresPurposeTargetSdkVersion();
+        pi.requiresGeneralPurposeTargetSdkVersion = p.getRequiresGeneralPurposeTargetSdkVersion();
         for (ParsedValidPurpose validPurpose : p.getValidPurposes()) {
             if (validPurpose != null) {
                 pi.validPurposes =
@@ -794,6 +810,15 @@ public class PackageInfoUtils {
                                 new ValidPurposeInfo(
                                         validPurpose.getName(),
                                         validPurpose.getMaxTargetSdkVersion()));
+            }
+        }
+        for (ParsedValidGeneralPurpose validGeneralPurpose : p.getValidGeneralPurposes()) {
+            if (validGeneralPurpose != null) {
+                pi.validGeneralPurposes =
+                        CollectionUtils.add(pi.validGeneralPurposes, validGeneralPurpose.getName(),
+                                new ValidGeneralPurposeInfo(
+                                        validGeneralPurpose.getName(),
+                                        validGeneralPurpose.getMaxTargetSdkVersion()));
             }
         }
 
@@ -1074,10 +1099,21 @@ public class PackageInfoUtils {
     }
 
     private static void initForUser(ApplicationInfo output, AndroidPackage input,
-            @UserIdInt int userId, PackageUserStateInternal state) {
+            PackageStateInternal pkgSetting, @UserIdInt int userId,
+            PackageUserStateInternal state) {
         PackageImpl pkg = ((PackageImpl) input);
         String packageName = input.getPackageName();
         output.uid = UserHandle.getUid(userId, UserHandle.getAppId(input.getUid()));
+        int pccId = pkgSetting.getPccId();
+        if (Process.isPccUid(pccId)) {
+            output.pccUid = UserHandle.getUid(userId, pccId);
+        } else {
+            // The only other expected value is INVALID_UID
+            if (pccId != Process.INVALID_UID) {
+                Slog.wtf(TAG, "Package " + packageName + " has a non-PCC uid assigned: " + pccId);
+            }
+            output.pccUid = Process.INVALID_UID;
+        }
 
         if ("android".equals(packageName)) {
             output.dataDir = SYSTEM_DATA_PATH;

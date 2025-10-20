@@ -25,7 +25,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.ImeTracker;
 import android.view.inputmethod.InputBinding;
 import android.view.inputmethod.InputMethodSubtype;
-import android.window.ImeOnBackInvokedDispatcher;
 import com.android.internal.inputmethod.IConnectionlessHandwritingCallback;
 import com.android.internal.inputmethod.IInlineSuggestionsRequestCallback;
 import com.android.internal.inputmethod.IInputMethodPrivilegedOperations;
@@ -60,7 +59,7 @@ oneway interface IInputMethod {
         EditorInfo editorInfo;
         boolean restarting;
         int navigationBarFlags;
-        ImeOnBackInvokedDispatcher imeDispatcher;
+        ResultReceiver imeBackCallbackReceiver;
     }
 
     void startInput(in StartInputParams params);

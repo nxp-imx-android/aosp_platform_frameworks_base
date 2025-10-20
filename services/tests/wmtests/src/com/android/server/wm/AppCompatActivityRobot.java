@@ -290,6 +290,11 @@ class AppCompatActivityRobot {
         mDisplayContent.setIgnoreOrientationRequest(enabled);
     }
 
+    void setOnLargeScreen() {
+        setIgnoreOrientationRequest(true);
+        doReturn(true).when(mDisplayContent).isLargeScreen();
+    }
+
     void setTopActivityOrganizedTask() {
         doReturn(mTaskStack.top()).when(mActivityStack.top()).getOrganizedTask();
     }

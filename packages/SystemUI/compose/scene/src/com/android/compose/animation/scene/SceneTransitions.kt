@@ -23,14 +23,17 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.fastForEach
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.transformation.PropertyTransformation
+import com.android.compose.animation.scene.transformation.SharedElementPropertyTransformation
 import com.android.compose.animation.scene.transformation.SharedElementTransformation
 import com.android.compose.animation.scene.transformation.TransformationMatcher
 import com.android.compose.animation.scene.transformation.TransformationWithRange
+import com.android.compose.animation.scene.transformation.TransformedElementPropertyTransformation
 import com.android.internal.jank.Cuj.CujType
 
 /** The transitions configuration of a [SceneTransitionLayout]. */
 class SceneTransitions
 internal constructor(
+    internal val defaultTransitionSpec: DefaultTransitionSpec?,
     internal val transitionSpecs: List<TransitionSpecImpl>,
     internal val interruptionHandler: InterruptionHandler,
 ) {
@@ -107,20 +110,23 @@ internal constructor(
         return match
     }
 
-    private fun defaultTransition(from: ContentKey, to: ContentKey) =
-        TransitionSpecImpl(
+    private fun defaultTransition(from: ContentKey, to: ContentKey): TransitionSpecImpl {
+        return TransitionSpecImpl(
             key = null,
             from,
             to,
             cuj = null,
-            previewTransformationSpec = null,
+            previewTransformationSpec = defaultTransitionSpec?.previewTransformationSpec,
             reversePreviewTransformationSpec = null,
-            TransformationSpec.EmptyProvider,
+            transformationSpec =
+                defaultTransitionSpec?.transformationSpec ?: TransformationSpec.EmptyProvider,
         )
+    }
 
     companion object {
         val Empty =
             SceneTransitions(
+                defaultTransitionSpec = null,
                 transitionSpecs = emptyList(),
                 interruptionHandler = DefaultInterruptionHandler,
             )
@@ -248,6 +254,11 @@ internal class TransitionSpecImpl(
     ): TransformationSpecImpl? = previewTransformationSpec?.invoke(transition)
 }
 
+internal class DefaultTransitionSpec(
+    val previewTransformationSpec: ((TransitionState.Transition) -> TransformationSpecImpl)?,
+    val transformationSpec: (TransitionState.Transition) -> TransformationSpecImpl,
+)
+
 /**
  * An implementation of [TransformationSpec] that allows the quick retrieval of an element
  * [ElementTransformations].
@@ -277,79 +288,130 @@ internal class TransformationSpecImpl(
         element: ElementKey,
         content: ContentKey,
     ): ElementTransformations? {
-        var shared: TransformationWithRange<SharedElementTransformation>? = null
-        var offset: TransformationWithRange<PropertyTransformation<Offset>>? = null
-        var size: TransformationWithRange<PropertyTransformation<IntSize>>? = null
-        var drawScale: TransformationWithRange<PropertyTransformation<Scale>>? = null
-        var alpha: TransformationWithRange<PropertyTransformation<Float>>? = null
+        var shared: SharedElementTransformation? = null
+        var offset: TransformationWithRange<TransformedElementPropertyTransformation<Offset>>? =
+            null
+        var size: TransformationWithRange<TransformedElementPropertyTransformation<IntSize>>? = null
+        var drawScale: TransformationWithRange<TransformedElementPropertyTransformation<Scale>>? =
+            null
+        var alpha: TransformationWithRange<TransformedElementPropertyTransformation<Float>>? = null
+        var sharedOffset: SharedElementPropertyTransformation<Offset>? = null
+        var sharedSize: SharedElementPropertyTransformation<IntSize>? = null
+        var sharedDrawScale: SharedElementPropertyTransformation<Scale>? = null
+        var sharedAlpha: SharedElementPropertyTransformation<Float>? = null
 
         transformationMatchers.fastForEach { transformationMatcher ->
             if (!transformationMatcher.matcher.matches(element, content)) {
                 return@fastForEach
             }
 
-            val transformation = transformationMatcher.factory.create()
-            val property =
-                when (transformation) {
-                    is SharedElementTransformation -> {
-                        throwIfNotNull(shared, element, name = "shared")
-                        shared =
-                            TransformationWithRange(transformation, transformationMatcher.range)
-                        return@fastForEach
+            when (val transformation = transformationMatcher.factory.create()) {
+                is SharedElementTransformation -> {
+                    throwIfNotNull(shared, element, name = "shared")
+                    check(transformationMatcher.range == null) {
+                        "sharedElement() transformation for $element should not have a range"
                     }
-                    is PropertyTransformation<*> -> transformation.property
+                    shared = transformation
                 }
+                is TransformedElementPropertyTransformation<*> -> {
+                    when (transformation.property) {
+                        PropertyTransformation.Property.Offset -> {
+                            throwIfNotNull(offset, element, name = "offset")
+                            offset =
+                                TransformationWithRange(
+                                    transformation
+                                        as TransformedElementPropertyTransformation<Offset>,
+                                    transformationMatcher.range,
+                                )
+                        }
+                        PropertyTransformation.Property.Size -> {
+                            throwIfNotNull(size, element, name = "size")
+                            size =
+                                TransformationWithRange(
+                                    transformation
+                                        as TransformedElementPropertyTransformation<IntSize>,
+                                    transformationMatcher.range,
+                                )
+                        }
+                        PropertyTransformation.Property.Scale -> {
+                            throwIfNotNull(drawScale, element, name = "drawScale")
+                            drawScale =
+                                TransformationWithRange(
+                                    transformation
+                                        as TransformedElementPropertyTransformation<Scale>,
+                                    transformationMatcher.range,
+                                )
+                        }
+                        PropertyTransformation.Property.Alpha -> {
+                            throwIfNotNull(alpha, element, name = "alpha")
+                            alpha =
+                                TransformationWithRange(
+                                    transformation
+                                        as TransformedElementPropertyTransformation<Float>,
+                                    transformationMatcher.range,
+                                )
+                        }
+                    }
+                }
+                is SharedElementPropertyTransformation<*> -> {
+                    check(transformationMatcher.range == null) {
+                        "SharedElementPropertyTransformation for $element should not have a range"
+                    }
 
-            when (property) {
-                is PropertyTransformation.Property.Offset -> {
-                    throwIfNotNull(offset, element, name = "offset")
-                    offset =
-                        TransformationWithRange(
-                            transformation as PropertyTransformation<Offset>,
-                            transformationMatcher.range,
-                        )
-                }
-                is PropertyTransformation.Property.Size -> {
-                    throwIfNotNull(size, element, name = "size")
-                    size =
-                        TransformationWithRange(
-                            transformation as PropertyTransformation<IntSize>,
-                            transformationMatcher.range,
-                        )
-                }
-                is PropertyTransformation.Property.Scale -> {
-                    throwIfNotNull(drawScale, element, name = "drawScale")
-                    drawScale =
-                        TransformationWithRange(
-                            transformation as PropertyTransformation<Scale>,
-                            transformationMatcher.range,
-                        )
-                }
-                is PropertyTransformation.Property.Alpha -> {
-                    throwIfNotNull(alpha, element, name = "alpha")
-                    alpha =
-                        TransformationWithRange(
-                            transformation as PropertyTransformation<Float>,
-                            transformationMatcher.range,
-                        )
+                    when (transformation.property) {
+                        PropertyTransformation.Property.Offset -> {
+                            throwIfNotNull(sharedOffset, element, name = "sharedOffset")
+                            sharedOffset =
+                                transformation as SharedElementPropertyTransformation<Offset>
+                        }
+                        PropertyTransformation.Property.Size -> {
+                            throwIfNotNull(sharedSize, element, name = "sharedSize")
+                            sharedSize =
+                                transformation as SharedElementPropertyTransformation<IntSize>
+                        }
+                        PropertyTransformation.Property.Scale -> {
+                            throwIfNotNull(sharedDrawScale, element, name = "sharedDrawScale")
+                            sharedDrawScale =
+                                transformation as SharedElementPropertyTransformation<Scale>
+                        }
+                        PropertyTransformation.Property.Alpha -> {
+                            throwIfNotNull(sharedAlpha, element, name = "sharedAlpha")
+                            sharedAlpha =
+                                transformation as SharedElementPropertyTransformation<Float>
+                        }
+                    }
                 }
             }
         }
 
         return if (
-            shared == null && offset == null && size == null && drawScale == null && alpha == null
+            shared == null &&
+                offset == null &&
+                size == null &&
+                drawScale == null &&
+                alpha == null &&
+                sharedOffset == null &&
+                sharedSize == null &&
+                sharedDrawScale == null &&
+                sharedAlpha == null
         ) {
             null
         } else {
-            ElementTransformations(shared, offset, size, drawScale, alpha)
+            ElementTransformations(
+                shared,
+                offset,
+                size,
+                drawScale,
+                alpha,
+                sharedOffset,
+                sharedSize,
+                sharedDrawScale,
+                sharedAlpha,
+            )
         }
     }
 
-    private fun throwIfNotNull(
-        previous: TransformationWithRange<*>?,
-        element: ElementKey,
-        name: String,
-    ) {
+    private fun throwIfNotNull(previous: Any?, element: ElementKey, name: String) {
         if (previous != null) {
             error("$element has multiple $name transformations")
         }
@@ -358,9 +420,13 @@ internal class TransformationSpecImpl(
 
 /** The transformations of an element during a transition. */
 internal class ElementTransformations(
-    val shared: TransformationWithRange<SharedElementTransformation>?,
-    val offset: TransformationWithRange<PropertyTransformation<Offset>>?,
-    val size: TransformationWithRange<PropertyTransformation<IntSize>>?,
-    val drawScale: TransformationWithRange<PropertyTransformation<Scale>>?,
-    val alpha: TransformationWithRange<PropertyTransformation<Float>>?,
+    val shared: SharedElementTransformation?,
+    val offset: TransformationWithRange<TransformedElementPropertyTransformation<Offset>>?,
+    val size: TransformationWithRange<TransformedElementPropertyTransformation<IntSize>>?,
+    val scale: TransformationWithRange<TransformedElementPropertyTransformation<Scale>>?,
+    val alpha: TransformationWithRange<TransformedElementPropertyTransformation<Float>>?,
+    val sharedOffset: SharedElementPropertyTransformation<Offset>?,
+    val sharedSize: SharedElementPropertyTransformation<IntSize>?,
+    val sharedDrawScale: SharedElementPropertyTransformation<Scale>?,
+    val sharedAlpha: SharedElementPropertyTransformation<Float>?,
 )

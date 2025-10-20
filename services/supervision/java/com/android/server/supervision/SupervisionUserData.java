@@ -20,6 +20,9 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.os.PersistableBundle;
+import android.app.supervision.Policy;
+import java.util.ArrayList;
+import java.util.List;
 import android.util.ArraySet;
 import android.util.IndentingPrintWriter;
 
@@ -31,6 +34,7 @@ public class SupervisionUserData {
     public boolean supervisionLockScreenEnabled;
     @Nullable public PersistableBundle supervisionLockScreenOptions;
     ArraySet<String> supervisionRoleHolders = new ArraySet<>();
+    List<Policy> policies = new ArrayList<>();
 
     public SupervisionUserData(@UserIdInt int userId) {
         this.userId = userId;
@@ -45,6 +49,12 @@ public class SupervisionUserData {
         pw.println("supervisionRoleHolders: " + supervisionRoleHolders);
         pw.println("supervisionLockScreenEnabled: " + supervisionLockScreenEnabled);
         pw.println("supervisionLockScreenOptions: " + supervisionLockScreenOptions);
+        pw.println("policies list size(): " + policies.size());
+        pw.increaseIndent();
+        for (Policy policy : policies) {
+            pw.println("policy: " + policy);
+        }
+        pw.decreaseIndent();
         pw.decreaseIndent();
     }
 }

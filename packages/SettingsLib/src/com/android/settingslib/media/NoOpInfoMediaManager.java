@@ -95,12 +95,18 @@ import java.util.concurrent.Executor;
     }
 
     @Override
-    protected void selectRoute(@NonNull MediaRoute2Info route, @NonNull RoutingSessionInfo info) {
+    protected void selectRoute(
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingSessionInfo info,
+            @NonNull RoutingChangeInfo routingChangeInfo) {
         // Do nothing.
     }
 
     @Override
-    protected void deselectRoute(@NonNull MediaRoute2Info route, @NonNull RoutingSessionInfo info) {
+    protected void deselectRoute(
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingSessionInfo info,
+            @NonNull RoutingChangeInfo routingChangeInfo) {
         // Do nothing.
     }
 

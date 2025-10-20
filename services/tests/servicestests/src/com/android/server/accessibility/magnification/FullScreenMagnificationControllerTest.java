@@ -54,7 +54,6 @@ import android.graphics.Region;
 import android.hardware.display.DisplayManagerInternal;
 import android.os.Looper;
 import android.os.UserHandle;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
@@ -623,7 +622,6 @@ public class FullScreenMagnificationControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void imeRegionContains_pointInsideImeRegion_returnsTrue() {
         for (int displayId = 0; displayId < DISPLAY_COUNT; displayId++) {
             register(displayId);
@@ -639,7 +637,6 @@ public class FullScreenMagnificationControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void imeRegionContains_pointOutsideImeRegion_returnsFalse() {
         for (int displayId = 0; displayId < DISPLAY_COUNT; displayId++) {
             register(displayId);
@@ -655,7 +652,6 @@ public class FullScreenMagnificationControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void imeRegionContains_pointInsideMagnifiedImeRegion_returnsTrue() {
         for (int displayId = 0; displayId < DISPLAY_COUNT; displayId++) {
             register(displayId);

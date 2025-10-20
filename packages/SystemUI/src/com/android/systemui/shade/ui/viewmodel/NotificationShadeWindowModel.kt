@@ -21,8 +21,10 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
+import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
 import com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING
 import com.android.systemui.keyguard.shared.model.KeyguardState.GLANCEABLE_HUB
+import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
 import com.android.systemui.keyguard.shared.model.KeyguardState.OCCLUDED
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -54,21 +56,29 @@ constructor(
     val isKeyguardOccluded: Flow<Boolean> =
         listOf(
                 // Finished in state...
-                keyguardTransitionInteractor.transitionValue(OCCLUDED).map { it == 1f },
+                keyguardTransitionInteractor.transitionValue(Scenes.Occluded, OCCLUDED).map {
+                    it == 1f
+                },
                 keyguardTransitionInteractor.transitionValue(DREAMING).map { it == 1f },
                 keyguardTransitionInteractor.transitionValue(Scenes.Communal, GLANCEABLE_HUB).map {
                     it == 1f
                 },
 
                 // ... or transitions between those states
-                keyguardTransitionInteractor.isInTransition(Edge.create(OCCLUDED, DREAMING)),
-                keyguardTransitionInteractor.isInTransition(Edge.create(DREAMING, OCCLUDED)),
                 keyguardTransitionInteractor.isInTransition(
-                    edge = Edge.create(from = OCCLUDED, to = Scenes.Communal),
+                    edge = Edge.INVALID,
+                    edgeWithoutSceneContainer = Edge.create(OCCLUDED, DREAMING),
+                ),
+                keyguardTransitionInteractor.isInTransition(
+                    edge = Edge.INVALID,
+                    edgeWithoutSceneContainer = Edge.create(DREAMING, OCCLUDED),
+                ),
+                keyguardTransitionInteractor.isInTransition(
+                    edge = Edge.INVALID,
                     edgeWithoutSceneContainer = Edge.create(from = OCCLUDED, to = GLANCEABLE_HUB),
                 ),
                 keyguardTransitionInteractor.isInTransition(
-                    edge = Edge.create(from = Scenes.Communal, to = OCCLUDED),
+                    edge = Edge.INVALID,
                     edgeWithoutSceneContainer = Edge.create(from = GLANCEABLE_HUB, to = OCCLUDED),
                 ),
                 keyguardTransitionInteractor.isInTransition(
@@ -95,11 +105,23 @@ constructor(
             }
             .distinctUntilChanged()
 
+    /** Whether transitions are animating GONE->AOD or not */
+    val isAnimatingGoneToAod: Flow<Boolean> =
+        keyguardTransitionInteractor.isInTransition(
+            edge = Edge.create(Scenes.Gone, AOD),
+            edgeWithoutSceneContainer = Edge.create(GONE, AOD),
+        )
+
     /** Whether we're on dream or transitioning to dream. */
     val isOnOrGoingToDream: Flow<Boolean> =
         combine(
-                keyguardTransitionInteractor.transitionValue(DREAMING).map { it == 1f },
-                keyguardTransitionInteractor.isInTransition(Edge.create(to = DREAMING)),
+                keyguardTransitionInteractor
+                    .transitionValue(Scenes.Dream, stateWithoutSceneContainer = DREAMING)
+                    .map { it == 1f },
+                keyguardTransitionInteractor.isInTransition(
+                    Edge.create(to = Scenes.Dream),
+                    edgeWithoutSceneContainer = Edge.create(to = DREAMING),
+                ),
             ) { onDream, transitioningToDream ->
                 onDream || transitioningToDream
             }

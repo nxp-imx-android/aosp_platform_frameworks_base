@@ -19,13 +19,14 @@ package com.android.systemui.selectiontoolbar.app.service
 import android.service.selectiontoolbar.RemoteSelectionToolbar
 import android.service.selectiontoolbar.SelectionToolbarRenderService
 import android.util.IndentingPrintWriter
+import android.util.Log
 import android.util.Slog
 import android.view.selectiontoolbar.ShowInfo
 import java.io.FileDescriptor
 import java.io.PrintWriter
 
 class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
-    // TODO(b/215497659): handle remove if the client process dies.
+
     // Only show one toolbar, dismiss the old ones and remove from cache
     private val toolbarCache = mutableMapOf<Int, RemoteSelectionToolbar>()
 
@@ -33,49 +34,48 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
         val existingToolbar = toolbarCache[uid]
         // Only allow one package to create one toolbar
         if (existingToolbar != null) {
-            Slog.e(TAG, "Do not allow multiple toolbar for the uid : $uid")
-            return
+            verboseLog("Reshow for existing toolbar for uid: $uid")
+            toolbarUiExecutor.execute { existingToolbar.show(showInfo) }
+        } else {
+            verboseLog("Show new toolbar for uid: $uid")
+            val toolbar =
+                RemoteSelectionToolbar(
+                    uid,
+                    this,
+                    showInfo,
+                    callbackWrapper,
+                    ::transferTouch,
+                    ::onPasteAction,
+                )
+            toolbarCache[uid] = toolbar
+            toolbarUiExecutor.execute { toolbar.show(showInfo) }
         }
-
-        val toolbar =
-            RemoteSelectionToolbar(
-                uid,
-                this,
-                showInfo,
-                callbackWrapper,
-                ::transferTouch,
-                ::onPasteAction,
-            )
-        toolbarCache[uid] = toolbar
-        mainThreadHandler.post { toolbar.show(showInfo) }
-
-        Slog.v(TAG, "onShow() for uid: $uid")
     }
 
     override fun onHide(uid: Int) {
         val toolbar = toolbarCache[uid]
         if (toolbar != null) {
-            Slog.v(TAG, "onHide() for uid: $uid")
-            mainThreadHandler.post { toolbar.hide(uid) }
+            verboseLog("onHide() for uid: $uid")
+            toolbarUiExecutor.execute { toolbar.hide(uid) }
         }
     }
 
     override fun onDismiss(uid: Int) {
-        Slog.v(TAG, "onDismiss() for uid: $uid")
+        verboseLog("onDismiss() for uid: $uid")
+        removeAndDismissToolbar(uid)
+    }
+
+    override fun onUidDied(uid: Int) {
+        warnLog("onUidDied for uid: $uid")
         removeAndDismissToolbar(uid)
     }
 
     private fun removeAndDismissToolbar(uid: Int) {
         val toolbar = toolbarCache[uid]
         if (toolbar != null) {
-            mainThreadHandler.post { toolbar.dismiss(uid) }
+            toolbarUiExecutor.execute { toolbar.dismiss(uid) }
             toolbarCache -= uid
         }
-    }
-
-    override fun onUidDied(uid: Int) {
-        Slog.w(TAG, "onUidDied for uid: $uid")
-        removeAndDismissToolbar(uid)
     }
 
     override fun dump(fd: FileDescriptor, pw: PrintWriter, args: Array<String>) {
@@ -97,5 +97,20 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
 
     companion object {
         private const val TAG = "SysUiRemoteToolbarRenderService"
+
+        private val VERBOSE_LOG = Log.isLoggable(TAG, Log.VERBOSE)
+        private val WARN_LOG = Log.isLoggable(TAG, Log.WARN)
+
+        private fun verboseLog(message: String) {
+            if (VERBOSE_LOG) {
+                Slog.v(TAG, message)
+            }
+        }
+
+        private fun warnLog(message: String) {
+            if (WARN_LOG) {
+                Slog.w(TAG, message)
+            }
+        }
     }
 }

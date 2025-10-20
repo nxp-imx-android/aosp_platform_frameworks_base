@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Ansluter…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Ansluten<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Parkopplar…"</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Det gick inte att parkoppla"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Det gick inte att ansluta"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Ansluten (ingen mobil)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Ansluten (inga medier)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Ansluten (ingen mobil och inga medier) <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -116,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Aktiv (endast höger)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Aktiv (vänster och höger)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Det gick inte att uppdatera omgivningsläget"</string>
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"Det gick inte att uppdatera förinställningen"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Markerad"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Aktiv (endast media). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> batteri."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Aktiv (endast media). V: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, H: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> batteri."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Gästenhet. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> batteri."</string>
@@ -345,7 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"När det här läget är aktiverat kan enhetens MAC-adress ändras varje gång den ansluts till ett nätverk där slumpgenerering av MAC-adress har aktiverats."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Med datapriser"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Utan datapriser"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Buffertstorlekar för logg"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Buffertstorlek för logg"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Välj loggstorlekar per loggbuffert"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Vill du rensa lagringsutrymmet för loggar?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"När övervakningen inte längre görs med permanent loggning måste loggdata som finns på enheten raderas."</string>
@@ -393,7 +397,7 @@
     <string name="debug_monitoring_category" msgid="1597387133765424994">"Övervakning"</string>
     <string name="window_management_category" msgid="2015535427098365170">"Fönsterhantering"</string>
     <string name="strict_mode" msgid="889864762140862437">"Strikt läge aktiverat"</string>
-    <string name="strict_mode_summary" msgid="1838248687233554654">"Tänd skärm när app gör omfattande åtgärd på huvudtråd"</string>
+    <string name="strict_mode_summary" msgid="1838248687233554654">"Tänd skärm när appar gör omfattande åtgärd på huvudtråd"</string>
     <string name="pointer_location" msgid="7516929526199520173">"Pekarens plats"</string>
     <string name="pointer_location_summary" msgid="957120116989798464">"Överlägg på skärmen med aktuella skärmtryck"</string>
     <string name="show_touches" msgid="8437666942161289025">"Visa tryck"</string>

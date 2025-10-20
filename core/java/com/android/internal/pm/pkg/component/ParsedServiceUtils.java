@@ -50,8 +50,8 @@ public class ParsedServiceUtils {
     @NonNull
     public static ParseResult<ParsedService> parseService(String[] separateProcesses,
             ParsingPackage pkg, Resources res, XmlResourceParser parser, int flags,
-            boolean useRoundIcon, @Nullable String defaultSplitName, @NonNull ParseInput input)
-            throws XmlPullParserException, IOException {
+            boolean useRoundIcon, @Nullable String defaultSplitName, @NonNull ParseInput input,
+            boolean runInPccSandbox) throws XmlPullParserException, IOException {
         boolean visibleToEphemeral;
         boolean setExported;
 
@@ -108,6 +108,10 @@ public class ParsedServiceUtils {
                             R.styleable.AndroidManifestService_allowSharedIsolatedProcess, sa)
                             | flag(ServiceInfo.FLAG_SINGLE_USER,
                             R.styleable.AndroidManifestService_singleUser, sa)));
+
+            if (runInPccSandbox) {
+                service.setFlags(service.getFlags() | ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX);
+            }
 
             if (Flags.enableSystemUserOnlyForServicesAndProviders()) {
                 service.setFlags(service.getFlags() | flag(ServiceInfo.FLAG_SYSTEM_USER_ONLY,

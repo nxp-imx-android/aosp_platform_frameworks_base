@@ -30,6 +30,7 @@ import static com.android.server.display.config.DisplayDeviceConfigTestUtilsKt.c
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyFloat;
@@ -88,6 +89,11 @@ import com.android.server.display.brightness.BrightnessEvent;
 import com.android.server.display.brightness.BrightnessReason;
 import com.android.server.display.brightness.clamper.BrightnessClamperController;
 import com.android.server.display.brightness.clamper.BrightnessClamperController.DisplayDeviceData;
+import com.android.server.display.brightness.strategy.AutoBrightnessFallbackStrategy;
+import com.android.server.display.brightness.strategy.AutomaticBrightnessStrategy;
+import com.android.server.display.brightness.strategy.DozeBrightnessStrategy;
+import com.android.server.display.brightness.strategy.FallbackBrightnessStrategy;
+import com.android.server.display.brightness.strategy.ScreenOffBrightnessStrategy;
 import com.android.server.display.color.ColorDisplayService;
 import com.android.server.display.config.HighBrightnessModeData;
 import com.android.server.display.config.HysteresisLevels;
@@ -529,6 +535,10 @@ public final class DisplayPowerControllerTest {
         when(mHolder.automaticBrightnessController.getAmbientLux()).thenReturn(ambientLux);
         when(followerDpc.automaticBrightnessController.getBrightnessFromNits(nits))
                 .thenReturn(followerBrightness);
+        when(mHolder.dpc.mDisplayBrightnessController.convertToNits(leadBrightness))
+                .thenReturn(nits);
+        when(mHolder.dpc.mDisplayBrightnessController.getBrightnessFromNits(anyFloat()))
+                .thenReturn(followerBrightness);
 
         mHolder.dpc.addDisplayBrightnessFollower(followerDpc.dpc);
         advanceTime(1);
@@ -562,6 +572,10 @@ public final class DisplayPowerControllerTest {
                 .thenReturn(nits);
         when(mHolder.automaticBrightnessController.getAmbientLux()).thenReturn(ambientLux);
         when(followerDpc.automaticBrightnessController.getBrightnessFromNits(nits))
+                .thenReturn(followerBrightness);
+        when(mHolder.dpc.mDisplayBrightnessController.convertToNits(leadBrightness))
+                .thenReturn(nits);
+        when(mHolder.dpc.mDisplayBrightnessController.getBrightnessFromNits(anyFloat()))
                 .thenReturn(followerBrightness);
 
         mHolder.dpc.updateBrightness();
@@ -859,25 +873,22 @@ public final class DisplayPowerControllerTest {
         mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
         advanceTime(1); // Run updatePowerState
 
-        verify(mHolder.screenOffBrightnessSensorController, atLeastOnce())
-                .setLightSensorEnabled(true);
+        assertTrue(mHolder.dpc.getLastSelectedStrategy() instanceof ScreenOffBrightnessStrategy);
 
         // The display turns on and we use the brightness value recommended by
         // ScreenOffBrightnessSensorController
-        clearInvocations(mHolder.screenOffBrightnessSensorController);
         float brightness = 0.14f;
-        when(mHolder.screenOffBrightnessSensorController.getAutomaticScreenBrightness())
-                .thenReturn(brightness);
+        setScreenOffLightSensorController(brightness);
+
         dpr.policy = DisplayPowerRequest.POLICY_BRIGHT;
         when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_ON);
-        when(mHolder.automaticBrightnessController.getAutomaticScreenBrightness(
-                any(BrightnessEvent.class))).thenReturn(PowerManager.BRIGHTNESS_INVALID_FLOAT);
+        when(mHolder.automaticBrightnessController.getAutomaticScreenBrightness(null))
+                .thenReturn(PowerManager.BRIGHTNESS_INVALID_FLOAT);
 
         mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
         advanceTime(1); // Run updatePowerState
 
-        verify(mHolder.screenOffBrightnessSensorController, atLeastOnce())
-                .getAutomaticScreenBrightness();
+        assertTrue(mHolder.dpc.getLastSelectedStrategy() instanceof AutoBrightnessFallbackStrategy);
         verify(mHolder.animator).animateTo(eq(brightness), anyFloat(), anyFloat(), eq(false));
     }
 
@@ -894,25 +905,21 @@ public final class DisplayPowerControllerTest {
         mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
         advanceTime(1); // Run updatePowerState
 
-        verify(mHolder.screenOffBrightnessSensorController, atLeastOnce())
-                .setLightSensorEnabled(true);
+        assertTrue(mHolder.dpc.getLastSelectedStrategy() instanceof ScreenOffBrightnessStrategy);
 
         // The display turns on and we use the brightness value recommended by
         // ScreenOffBrightnessSensorController
-        clearInvocations(mHolder.screenOffBrightnessSensorController);
         float brightness = 0.14f;
-        when(mHolder.screenOffBrightnessSensorController.getAutomaticScreenBrightness())
-                .thenReturn(brightness);
+        setScreenOffLightSensorController(brightness);
         when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_ON);
-        when(mHolder.automaticBrightnessController.getAutomaticScreenBrightness(
-                any(BrightnessEvent.class))).thenReturn(PowerManager.BRIGHTNESS_INVALID_FLOAT);
+        when(mHolder.automaticBrightnessController.getAutomaticScreenBrightness(null))
+                .thenReturn(PowerManager.BRIGHTNESS_INVALID_FLOAT);
 
         mHolder.dpc.updateBrightness();
         advanceTime(1); // Run updatePowerState
 
-        verify(mHolder.screenOffBrightnessSensorController, atLeastOnce())
-                .getAutomaticScreenBrightness();
         verify(mHolder.animator).animateTo(eq(brightness), anyFloat(), anyFloat(), eq(false));
+        assertTrue(mHolder.dpc.getLastSelectedStrategy() instanceof AutoBrightnessFallbackStrategy);
     }
 
     @Test
@@ -928,28 +935,25 @@ public final class DisplayPowerControllerTest {
         when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_DOZE);
         DisplayPowerRequest dpr = new DisplayPowerRequest();
         dpr.policy = DisplayPowerRequest.POLICY_DOZE;
+        dpr.dozeScreenBrightness = 0.1f;
         mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
         advanceTime(1); // Run updatePowerState
-
-        verify(mHolder.screenOffBrightnessSensorController, atLeastOnce())
-                .setLightSensorEnabled(true);
+        assertTrue(mHolder.dpc.getLastSelectedStrategy() instanceof DozeBrightnessStrategy);
 
         // The display turns on and we use the brightness value recommended by
         // ScreenOffBrightnessSensorController
-        clearInvocations(mHolder.screenOffBrightnessSensorController);
-        float brightness = 0.14f;
-        when(mHolder.screenOffBrightnessSensorController.getAutomaticScreenBrightness())
-                .thenReturn(brightness);
+        float brightness = 0.121f;
+        setScreenOffLightSensorController(brightness);
         dpr.policy = DisplayPowerRequest.POLICY_BRIGHT;
         when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_ON);
-        when(mHolder.automaticBrightnessController.getAutomaticScreenBrightness(
-                any(BrightnessEvent.class))).thenReturn(PowerManager.BRIGHTNESS_INVALID_FLOAT);
+        when(mHolder.automaticBrightnessController.getAutomaticScreenBrightness(null))
+                .thenReturn(PowerManager.BRIGHTNESS_INVALID_FLOAT);
 
+        clearInvocations(mHolder.animator);
         mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
         advanceTime(1); // Run updatePowerState
 
-        verify(mHolder.screenOffBrightnessSensorController, atLeastOnce())
-                .getAutomaticScreenBrightness();
+        assertTrue(mHolder.dpc.getLastSelectedStrategy() instanceof AutoBrightnessFallbackStrategy);
         verify(mHolder.animator).animateTo(eq(brightness), anyFloat(), anyFloat(), eq(false));
     }
 
@@ -961,8 +965,7 @@ public final class DisplayPowerControllerTest {
         mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
         advanceTime(1); // Run updatePowerState
 
-        verify(mHolder.screenOffBrightnessSensorController, atLeastOnce())
-                .setLightSensorEnabled(false);
+        assertTrue(mHolder.dpc.getLastSelectedStrategy() instanceof FallbackBrightnessStrategy);
     }
 
     @Test
@@ -976,8 +979,7 @@ public final class DisplayPowerControllerTest {
         mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
         advanceTime(1); // Run updatePowerState
 
-        verify(mHolder.screenOffBrightnessSensorController, atLeastOnce())
-                .setLightSensorEnabled(false);
+        assertTrue(mHolder.dpc.getLastSelectedStrategy() instanceof FallbackBrightnessStrategy);
     }
 
     @Test
@@ -985,30 +987,16 @@ public final class DisplayPowerControllerTest {
         Settings.System.putInt(mContext.getContentResolver(),
                 Settings.System.SCREEN_BRIGHTNESS_MODE,
                 Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC);
+        mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
         DisplayPowerRequest dpr = new DisplayPowerRequest();
         dpr.policy = DisplayPowerRequest.POLICY_BRIGHT;
+        when(mHolder.automaticBrightnessController.getAutomaticScreenBrightness(
+                null)).thenReturn(0.3f);
 
         mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
         advanceTime(1); // Run updatePowerState
 
-        verify(mHolder.screenOffBrightnessSensorController, atLeastOnce())
-                .setLightSensorEnabled(false);
-    }
-
-    @Test
-    public void testSetScreenOffBrightnessSensorDisabled_DisplayIsAFollower() {
-        Settings.System.putInt(mContext.getContentResolver(),
-                Settings.System.SCREEN_BRIGHTNESS_MODE,
-                Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC);
-        DisplayPowerRequest dpr = new DisplayPowerRequest();
-        dpr.policy = DisplayPowerRequest.POLICY_OFF;
-
-        mHolder.dpc.onDisplayChanged(mHolder.hbmMetadata, /* leadDisplayId= */ 42);
-        mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
-        advanceTime(1); // Run updatePowerState
-
-        verify(mHolder.screenOffBrightnessSensorController, atLeastOnce())
-                .setLightSensorEnabled(false);
+        assertTrue(mHolder.dpc.getLastSelectedStrategy() instanceof FallbackBrightnessStrategy);
     }
 
     @Test
@@ -1025,22 +1013,7 @@ public final class DisplayPowerControllerTest {
         mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
         advanceTime(1); // Run updatePowerState
 
-        verify(mHolder.screenOffBrightnessSensorController, atLeastOnce())
-                .setLightSensorEnabled(false);
-    }
-
-    @Test
-    public void testStopScreenOffBrightnessSensorControllerWhenDisplayDeviceChanges() {
-        // New display device
-        setUpDisplay(DISPLAY_ID, "new_unique_id", mHolder.display, mock(DisplayDevice.class),
-                mock(DisplayDeviceConfig.class), /* isEnabled= */ true);
-
-        mHolder.dpc.onDisplayChanged(mHolder.hbmMetadata, Layout.NO_LEAD_DISPLAY);
-        DisplayPowerRequest dpr = new DisplayPowerRequest();
-        mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
-        advanceTime(1); // Run updatePowerState
-
-        verify(mHolder.screenOffBrightnessSensorController).stop();
+        assertTrue(mHolder.dpc.getLastSelectedStrategy() instanceof AutomaticBrightnessStrategy);
     }
 
     @Test
@@ -1273,6 +1246,7 @@ public final class DisplayPowerControllerTest {
         when(mHolder.brightnessSetting.getBrightnessNitsForDefaultDisplay()).thenReturn(nits);
         when(mHolder.automaticBrightnessController.getBrightnessFromNits(nits))
                 .thenReturn(newBrightness);
+        mHolder.dpc.mDisplayBrightnessController.setAndNotifyCurrentScreenBrightness(newBrightness);
         // New display device
         setUpDisplay(DISPLAY_ID, "new_unique_id", mHolder.display, mock(DisplayDevice.class),
                 mock(DisplayDeviceConfig.class), /* isEnabled= */ true);
@@ -1280,8 +1254,9 @@ public final class DisplayPowerControllerTest {
         DisplayPowerRequest dpr = new DisplayPowerRequest();
         mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
         advanceTime(1); // Run updatePowerState
-        verify(mHolder.animator).animateTo(eq(newBrightness), anyFloat(), anyFloat(),
-                eq(false));
+        assertTrue(mHolder.dpc.getLastSelectedStrategy() instanceof FallbackBrightnessStrategy);
+        verify(mHolder.animator, times(2)).animateTo(eq(newBrightness),
+                anyFloat(), anyFloat(), eq(false));
     }
 
     @Test
@@ -1741,8 +1716,6 @@ public final class DisplayPowerControllerTest {
     public void testOffloadBlocker_turnON_thenOFF_cancelBlockScreenOnNotCalledIfUnblocked() {
         // Set up.
         when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
-        when(mDisplayManagerFlagsMock.isOffloadSessionCancelBlockScreenOnEnabled())
-                .thenReturn(true);
         int initState = Display.STATE_OFF;
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
@@ -1780,8 +1753,6 @@ public final class DisplayPowerControllerTest {
     public void testOffloadBlocker_turnON_thenOFF_cancelBlockScreenOn() {
         // Set up.
         when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
-        when(mDisplayManagerFlagsMock.isOffloadSessionCancelBlockScreenOnEnabled())
-                .thenReturn(true);
         int initState = Display.STATE_OFF;
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
@@ -1821,8 +1792,8 @@ public final class DisplayPowerControllerTest {
         float brightness = 0.34f;
         when(mHolder.displayPowerState.getColorFadeLevel()).thenReturn(1.0f);
         when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_ON);
-        when(mHolder.automaticBrightnessController.getAutomaticScreenBrightness(
-                any(BrightnessEvent.class))).thenReturn(PowerManager.BRIGHTNESS_INVALID_FLOAT);
+        when(mHolder.automaticBrightnessController.getAutomaticScreenBrightness(null))
+                .thenReturn(PowerManager.BRIGHTNESS_INVALID_FLOAT);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
 
         mHolder.dpc.setBrightnessFromOffload(brightness);
@@ -1846,7 +1817,7 @@ public final class DisplayPowerControllerTest {
         when(mHolder.displayPowerState.getColorFadeLevel()).thenReturn(1.0f);
         when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_ON);
         when(mHolder.automaticBrightnessController.getAutomaticScreenBrightness(
-                any(BrightnessEvent.class))).thenReturn(PowerManager.BRIGHTNESS_INVALID_FLOAT);
+                null)).thenReturn(PowerManager.BRIGHTNESS_INVALID_FLOAT);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
 
         mHolder.dpc.setBrightnessFromOffload(brightness);
@@ -1858,8 +1829,11 @@ public final class DisplayPowerControllerTest {
                 eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
         assertEquals(BrightnessReason.REASON_OFFLOAD, mHolder.dpc.mBrightnessReason.getReason());
 
+        clearInvocations(mHolder.animator);
         // Now automatic brightness becomes available
         brightness = 0.22f;
+        when(mHolder.automaticBrightnessController.getAutomaticScreenBrightness(
+                null)).thenReturn(brightness);
         when(mHolder.automaticBrightnessController.getAutomaticScreenBrightness(
                 any(BrightnessEvent.class))).thenReturn(brightness);
 
@@ -1873,7 +1847,6 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testSwitchToDozeAutoBrightnessMode() {
-        when(mDisplayManagerFlagsMock.areAutoBrightnessModesEnabled()).thenReturn(true);
         when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_DOZE);
 
         DisplayPowerRequest dpr = new DisplayPowerRequest();
@@ -1896,7 +1869,6 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testDoesNotSwitchFromIdleToDozeAutoBrightnessMode() {
-        when(mDisplayManagerFlagsMock.areAutoBrightnessModesEnabled()).thenReturn(true);
         when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_DOZE);
         when(mHolder.automaticBrightnessController.isInIdleMode()).thenReturn(true);
 
@@ -1909,21 +1881,7 @@ public final class DisplayPowerControllerTest {
     }
 
     @Test
-    public void testDoesNotSwitchDozeAutoBrightnessModeIfFeatureFlagOff() {
-        when(mDisplayManagerFlagsMock.areAutoBrightnessModesEnabled()).thenReturn(false);
-        when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_DOZE);
-
-        DisplayPowerRequest dpr = new DisplayPowerRequest();
-        mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
-        advanceTime(1); // Run updatePowerState
-
-        verify(mHolder.automaticBrightnessController, never())
-                .switchMode(eq(AUTO_BRIGHTNESS_MODE_DOZE), /* sendUpdate= */ anyBoolean());
-    }
-
-    @Test
     public void testSwitchToBedtimeAutoBrightnessMode_wearBedtimeEnabledAndBrightRequest() {
-        when(mDisplayManagerFlagsMock.areAutoBrightnessModesEnabled()).thenReturn(true);
         when(mDisplayManagerFlagsMock.isAutoBrightnessModeBedtimeWearEnabled()).thenReturn(true);
         Settings.Global.putInt(mContext.getContentResolver(), Settings.Global.Wearable.BEDTIME_MODE,
                 /* value= */ 1);
@@ -1941,7 +1899,6 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testNotSwitchToBedtimeAutoBrightnessMode_wearBedtimeDisabled() {
-        when(mDisplayManagerFlagsMock.areAutoBrightnessModesEnabled()).thenReturn(true);
         when(mDisplayManagerFlagsMock.isAutoBrightnessModeBedtimeWearEnabled()).thenReturn(true);
         Settings.Global.putInt(mContext.getContentResolver(), Settings.Global.Wearable.BEDTIME_MODE,
                 /* value= */ 0);
@@ -1959,7 +1916,6 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testSwitchToDozeAutoBrightnessMode_wearBedtimeEnabledAndDozeRequest() {
-        when(mDisplayManagerFlagsMock.areAutoBrightnessModesEnabled()).thenReturn(true);
         when(mDisplayManagerFlagsMock.isAutoBrightnessModeBedtimeWearEnabled()).thenReturn(true);
         Settings.Global.putInt(mContext.getContentResolver(), Settings.Global.Wearable.BEDTIME_MODE,
                 /* value= */ 1);
@@ -1972,7 +1928,7 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Run updatePowerState
 
         verify(mHolder.automaticBrightnessController)
-                .switchMode(eq(AUTO_BRIGHTNESS_MODE_DOZE), /* sendUpdate= */ anyBoolean());
+                .switchMode(eq(AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR), /* sendUpdate= */ anyBoolean());
     }
 
     @Test
@@ -2071,7 +2027,6 @@ public final class DisplayPowerControllerTest {
     @Test
     public void testDozeManualBrightness_DpcRefactorEnabled() {
         when(mDisplayManagerFlagsMock.isDisplayOffloadEnabled()).thenReturn(true);
-        when(mDisplayManagerFlagsMock.isRefactorDisplayPowerControllerEnabled()).thenReturn(true);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
         Settings.System.putInt(mContext.getContentResolver(),
@@ -2390,8 +2345,6 @@ public final class DisplayPowerControllerTest {
     public void stylusUsageStarted_disablesAutomaticBrightnessStrategy() {
         when(mDisplayManagerFlagsMock.isBlockAutobrightnessChangesOnStylusUsage())
                 .thenReturn(true);
-        when(mDisplayManagerFlagsMock.isRefactorDisplayPowerControllerEnabled())
-                .thenReturn(true);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
         mHolder.dpc.setDisplayOffloadSession(mDisplayOffloadSession);
         Settings.System.putInt(mContext.getContentResolver(),
@@ -2550,7 +2503,7 @@ public final class DisplayPowerControllerTest {
         when(displayDeviceConfigMock.getScreenOffBrightnessSensor()).thenReturn(
                 createSensorData(Sensor.STRING_TYPE_LIGHT));
         when(displayDeviceConfigMock.getScreenOffBrightnessSensorValueToLux())
-                .thenReturn(new int[0]);
+                .thenReturn(new int[]{50, 100});
         when(displayDeviceConfigMock.getDefaultDozeBrightness())
                 .thenReturn(DEFAULT_DOZE_BRIGHTNESS);
         when(displayDeviceConfigMock.getIdleStylusTimeoutMillis()).thenReturn(5);
@@ -2611,6 +2564,14 @@ public final class DisplayPowerControllerTest {
                 displayId, deviceInfo, isEnabled, isAutoBrightnessAvailable);
     }
 
+    private void setScreenOffLightSensorController(float brightness) {
+        ScreenOffBrightnessSensorController screenOffBrightnessSensorController =
+                mHolder.dpc.mDisplayBrightnessController.getScreenOffBrightnessSensorController();
+        screenOffBrightnessSensorController.setLightSensorEnabled(true);
+        screenOffBrightnessSensorController.registerAndSetLastSensorValue(1);
+        when(mHolder.brightnessMappingStrategy.getBrightness(100)).thenReturn(brightness);
+    }
+
     private DisplayPowerControllerHolder createDisplayPowerController(int displayId,
             DisplayDeviceInfo deviceInfo, boolean isEnabled, boolean isAutoBrightnessAvailable) {
         final DisplayPowerState displayPowerState = mock(DisplayPowerState.class);
@@ -2621,8 +2582,6 @@ public final class DisplayPowerControllerTest {
         final BrightnessMappingStrategy brightnessMappingStrategy =
                 mock(BrightnessMappingStrategy.class);
         final HysteresisLevels hysteresisLevels = mock(HysteresisLevels.class);
-        final ScreenOffBrightnessSensorController screenOffBrightnessSensorController =
-                mock(ScreenOffBrightnessSensorController.class);
         final HighBrightnessModeController hbmController = mock(HighBrightnessModeController.class);
         final NormalBrightnessModeController normalBrightnessModeController =
                 new NormalBrightnessModeController();
@@ -2639,7 +2598,6 @@ public final class DisplayPowerControllerTest {
 
         TestInjector injector = spy(new TestInjector(displayPowerState, animator,
                 automaticBrightnessController, wakelockController, brightnessMappingStrategy,
-                screenOffBrightnessSensorController,
                 hbmController, normalBrightnessModeController,
                 clamperController));
 
@@ -2666,9 +2624,8 @@ public final class DisplayPowerControllerTest {
                 mMockPluginManager);
 
         return new DisplayPowerControllerHolder(dpc, display, displayPowerState, brightnessSetting,
-                animator, automaticBrightnessController, wakelockController,
-                screenOffBrightnessSensorController, hbmController, clamperController,
-                hbmMetadata, brightnessMappingStrategy, injector, config);
+                animator, automaticBrightnessController, wakelockController, hbmController,
+                clamperController, hbmMetadata, brightnessMappingStrategy, injector, config);
     }
 
     /**
@@ -2683,7 +2640,6 @@ public final class DisplayPowerControllerTest {
         public final DualRampAnimator<DisplayPowerState> animator;
         public final AutomaticBrightnessController automaticBrightnessController;
         public final WakelockController wakelockController;
-        public final ScreenOffBrightnessSensorController screenOffBrightnessSensorController;
         public final HighBrightnessModeController hbmController;
 
         public final BrightnessClamperController clamperController;
@@ -2697,7 +2653,6 @@ public final class DisplayPowerControllerTest {
                 DualRampAnimator<DisplayPowerState> animator,
                 AutomaticBrightnessController automaticBrightnessController,
                 WakelockController wakelockController,
-                ScreenOffBrightnessSensorController screenOffBrightnessSensorController,
                 HighBrightnessModeController hbmController,
                 BrightnessClamperController clamperController,
                 HighBrightnessModeMetadata hbmMetadata,
@@ -2711,7 +2666,6 @@ public final class DisplayPowerControllerTest {
             this.animator = animator;
             this.automaticBrightnessController = automaticBrightnessController;
             this.wakelockController = wakelockController;
-            this.screenOffBrightnessSensorController = screenOffBrightnessSensorController;
             this.hbmController = hbmController;
             this.clamperController = clamperController;
             this.hbmMetadata = hbmMetadata;
@@ -2727,7 +2681,6 @@ public final class DisplayPowerControllerTest {
         private final AutomaticBrightnessController mAutomaticBrightnessController;
         private final WakelockController mWakelockController;
         private final BrightnessMappingStrategy mBrightnessMappingStrategy;
-        private final ScreenOffBrightnessSensorController mScreenOffBrightnessSensorController;
         private final HighBrightnessModeController mHighBrightnessModeController;
 
         private final NormalBrightnessModeController mNormalBrightnessModeController;
@@ -2738,7 +2691,6 @@ public final class DisplayPowerControllerTest {
                 AutomaticBrightnessController automaticBrightnessController,
                 WakelockController wakelockController,
                 BrightnessMappingStrategy brightnessMappingStrategy,
-                ScreenOffBrightnessSensorController screenOffBrightnessSensorController,
                 HighBrightnessModeController highBrightnessModeController,
                 NormalBrightnessModeController normalBrightnessModeController,
                 BrightnessClamperController clamperController) {
@@ -2747,7 +2699,6 @@ public final class DisplayPowerControllerTest {
             mAutomaticBrightnessController = automaticBrightnessController;
             mWakelockController = wakelockController;
             mBrightnessMappingStrategy = brightnessMappingStrategy;
-            mScreenOffBrightnessSensorController = screenOffBrightnessSensorController;
             mHighBrightnessModeController = highBrightnessModeController;
             mNormalBrightnessModeController = normalBrightnessModeController;
             mClamperController = clamperController;
@@ -2821,13 +2772,6 @@ public final class DisplayPowerControllerTest {
             return mBrightnessMappingStrategy;
         }
 
-        @Override
-        ScreenOffBrightnessSensorController getScreenOffBrightnessSensorController(
-                SensorManager sensorManager, Sensor lightSensor, Handler handler,
-                ScreenOffBrightnessSensorController.Clock clock, int[] sensorValueToLux,
-                BrightnessMappingStrategy brightnessMapper) {
-            return mScreenOffBrightnessSensorController;
-        }
 
         @Override
         HighBrightnessModeController getHighBrightnessModeController(Handler handler, int width,

@@ -19,8 +19,10 @@ package com.android.server.wm;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
+import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.view.InsetsSource.ID_IME;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static android.view.WindowInsets.Type.captionBar;
 import static android.view.WindowInsets.Type.ime;
 import static android.view.WindowInsets.Type.navigationBars;
 import static android.view.WindowInsets.Type.statusBars;
@@ -38,16 +40,22 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import android.app.StatusBarManager;
+import android.content.ComponentName;
 import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Binder;
+import android.os.RemoteException;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.view.IDisplayWindowInsetsController;
 import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
 import android.view.InsetsSourceControl;
@@ -171,6 +179,29 @@ public class InsetsPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    public void testControlsForDispatch_nonFullscreenMultiWindowTaskVisible_remoteInsetControl()
+            throws RemoteException {
+        addStatusBar();
+        addNavigationBar();
+        final IDisplayWindowInsetsController insetsController = spy(
+                createDisplayWindowInsetsController());
+        mDisplayContent.setRemoteInsetsController(insetsController);
+        mDisplayContent.getDisplayPolicy().setSystemBarRemoteInsetsControllerAllowed(true);
+
+        final WindowState win = newWindowBuilder("app", TYPE_APPLICATION).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setWindowingMode(WINDOWING_MODE_MULTI_WINDOW).setDisplay(
+                mDisplayContent).build();
+        final ComponentName component = win.mActivityRecord.mActivityComponent;
+        assertNotNull(component);
+        win.getTask().setBounds(new Rect(1, 1, 10, 10));
+        final InsetsSourceControl[] controls = addWindowAndGetControlsForDispatch(win);
+
+        // The remote insets controller should control the system bars.
+        assertNull(controls);
+        verify(insetsController).topFocusedWindowChanged(eq(component), anyInt());
+    }
+
+    @Test
     public void testControlsForDispatch_forceStatusBarVisible() {
         addStatusBar().mAttrs.forciblyShownTypes |= statusBars();
         addNavigationBar();
@@ -214,7 +245,7 @@ public class InsetsPolicyTest extends WindowTestsBase {
     @Test
     public void testControlsForDispatch_remoteInsetsControllerControlsBars_appHasNoControl() {
         mDisplayContent.setRemoteInsetsController(createDisplayWindowInsetsController());
-        mDisplayContent.getDisplayPolicy().setRemoteInsetsControllerControlsSystemBars(true);
+        mDisplayContent.getDisplayPolicy().setSystemBarRemoteInsetsControllerAllowed(true);
         addStatusBar();
         addNavigationBar();
 
@@ -905,6 +936,69 @@ public class InsetsPolicyTest extends WindowTestsBase {
         final var imeInsetsHidden = win.getInsetsState().calculateInsets(win.getFrame(),
                 win.getBounds(), ime(), true);
         assertEquals(Insets.NONE, imeInsetsHidden);
+    }
+
+    @Test
+    public void testEnforceInsetsPolicyForTarget_imeInsetsForFreeform() {
+        final InsetsPolicy policy = mDisplayContent.getInsetsPolicy();
+        final InsetsState originalState = new InsetsState();
+        final int captionBarId = InsetsSource.createId(null, 0, captionBar());
+        final InsetsSource captionBarSource = new InsetsSource(captionBarId, captionBar());
+        final InsetsSource imeSource = new InsetsSource(ID_IME, ime());
+        imeSource.setVisible(true);
+        originalState.addSource(imeSource);
+        originalState.addSource(captionBarSource);
+
+        // Create two windows in the same freeform task.
+        final Task freeformTask = createTask(mDisplayContent, WINDOWING_MODE_FREEFORM,
+                ACTIVITY_TYPE_STANDARD);
+        final WindowState imeTargetWindow = createAppWindow(freeformTask, TYPE_APPLICATION,
+                "imeTarget");
+        final WindowState anotherWindowInSameTask = createAppWindow(freeformTask, TYPE_APPLICATION,
+                "anotherWindow");
+
+        // Create a window in a different freeform task.
+        final Task anotherFreeformTask = createTask(mDisplayContent, WINDOWING_MODE_FREEFORM,
+                ACTIVITY_TYPE_STANDARD);
+        final WindowState windowInDifferentTask = createAppWindow(
+                anotherFreeformTask, TYPE_APPLICATION, "windowInDifferentTask");
+
+        // Set the IME target and request IME visibility.
+        mDisplayContent.setImeInputTarget(imeTargetWindow);
+        imeTargetWindow.setRequestedVisibleTypes(ime(), ime());
+
+        // Case 1: A window in the same task as the IME target should receive IME insets.
+        InsetsState resultState = policy.enforceInsetsPolicyForTarget(
+                anotherWindowInSameTask, originalState);
+        assertEquals(
+                "Window in same task should get IME insets",
+                imeSource, resultState.peekSource(ID_IME));
+        // It should also keep other insets like caption bar for floating windows.
+        resultState = policy.enforceInsetsPolicyForTarget(
+                anotherWindowInSameTask, originalState);
+        assertEquals("Window in same task should still get IME insets",
+                imeSource, resultState.peekSource(ID_IME));
+        assertEquals("Floating window should keep caption bar insets",
+                captionBarSource, resultState.peekSource(captionBarId));
+
+        // Case 2: The IME target window itself should receive IME insets.
+        resultState = policy.enforceInsetsPolicyForTarget(imeTargetWindow, originalState);
+        assertEquals("IME target window should get IME insets",
+                imeSource, resultState.peekSource(ID_IME));
+
+        // Case 3: A window in a different task should NOT receive IME insets.
+        resultState = policy.enforceInsetsPolicyForTarget(windowInDifferentTask, originalState);
+        assertNull("Window in different task should not get IME insets",
+                resultState.peekSource(ID_IME));
+
+        // Case 4: Pinned (PIP) window should not receive IME insets.
+        final Task pinnedTask = createTask(mDisplayContent, WINDOWING_MODE_PINNED,
+                ACTIVITY_TYPE_STANDARD);
+        final WindowState pinnedWindow = createAppWindow(pinnedTask, TYPE_APPLICATION,
+                "pinnedWindow");
+        mDisplayContent.setImeInputTarget(pinnedWindow);
+        resultState = policy.enforceInsetsPolicyForTarget(pinnedWindow, originalState);
+        assertNull("Pinned window should not get IME insets", resultState.peekSource(ID_IME));
     }
 
 

@@ -41,6 +41,8 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.util.Log;
 import android.view.SurfaceControl;
 import android.view.animation.AlphaAnimation;
@@ -144,6 +146,59 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
         mergeSync(mTransitionHandler, token);
         flushHandlers();
 
+        verify(startT).setColor(any(), any());
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_POLISH_CLOSE_WALLPAPER_INCLUDES_OPEN_CHANGE)
+    public void testNoAnimationBackgroundForSingleChangeTransition() {
+        // This test verifies that a background color layer is not created when there is only
+        // a single change in the transition, even if it's an opaque task. This prevents the
+        // background from incorrectly occluding other UI elements.
+        final TransitionInfo.Change closeTask = new ChangeBuilder(TRANSIT_TO_BACK)
+                .setTask(createTaskInfo(1))
+                .build();
+
+        final IBinder token = new Binder();
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TO_BACK)
+                .addChange(closeTask)
+                .build();
+        final SurfaceControl.Transaction startT = MockTransactionPool.create();
+        final SurfaceControl.Transaction finishT = MockTransactionPool.create();
+
+        mTransitionHandler.startAnimation(token, info, startT, finishT,
+                mock(Transitions.TransitionFinishCallback.class));
+
+        mergeSync(mTransitionHandler, token);
+        flushHandlers();
+
+        // Verify that no background color is set because there's only one change.
+        verify(startT, never()).setColor(any(), any());
+    }
+
+    @Test
+    @DisableFlags(com.android.window.flags.Flags.FLAG_POLISH_CLOSE_WALLPAPER_INCLUDES_OPEN_CHANGE)
+    public void testAnimationBackgroundForSingleChangeTransition_flagDisabled() {
+        // This test verifies that a background color layer IS created when there is only
+        // a single change in the transition IF the feature flag is disabled.
+        final TransitionInfo.Change closeTask = new ChangeBuilder(TRANSIT_TO_BACK)
+                .setTask(createTaskInfo(1))
+                .build();
+
+        final IBinder token = new Binder();
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TO_BACK)
+                .addChange(closeTask)
+                .build();
+        final SurfaceControl.Transaction startT = MockTransactionPool.create();
+        final SurfaceControl.Transaction finishT = MockTransactionPool.create();
+
+        mTransitionHandler.startAnimation(token, info, startT, finishT,
+                mock(Transitions.TransitionFinishCallback.class));
+
+        mergeSync(mTransitionHandler, token);
+        flushHandlers();
+
+        // Verify that a background color is set because the flag is disabled.
         verify(startT).setColor(any(), any());
     }
 

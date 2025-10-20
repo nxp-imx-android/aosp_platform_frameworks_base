@@ -42,6 +42,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -124,21 +125,31 @@ class UserTrackerImplTest : SysuiTestCase() {
 
     @Test fun testNotInitialized() = testScope.runTest { assertThat(tracker.initialized).isFalse() }
 
-    @Test(expected = IllegalStateException::class)
-    fun testGetUserIdBeforeInitThrowsException() = testScope.runTest { tracker.userId }
+    @Test
+    fun testGetUserIdBeforeInitThrowsException() =
+        testScope.runTest { assertThrows(IllegalStateException::class.java) { tracker.userId } }
 
-    @Test(expected = IllegalStateException::class)
-    fun testGetUserHandleBeforeInitThrowsException() = testScope.runTest { tracker.userHandle }
+    @Test
+    fun testGetUserHandleBeforeInitThrowsException() =
+        testScope.runTest { assertThrows(IllegalStateException::class.java) { tracker.userHandle } }
 
-    @Test(expected = IllegalStateException::class)
-    fun testGetUserContextBeforeInitThrowsException() = testScope.runTest { tracker.userContext }
+    @Test
+    fun testGetUserContextBeforeInitThrowsException() =
+        testScope.runTest {
+            assertThrows(IllegalStateException::class.java) { tracker.userContext }
+        }
 
-    @Test(expected = IllegalStateException::class)
+    @Test
     fun testGetUserContentResolverBeforeInitThrowsException() =
-        testScope.runTest { tracker.userContentResolver }
+        testScope.runTest {
+            assertThrows(IllegalStateException::class.java) { tracker.userContentResolver }
+        }
 
-    @Test(expected = IllegalStateException::class)
-    fun testGetUserProfilesBeforeInitThrowsException() = testScope.runTest { tracker.userProfiles }
+    @Test
+    fun testGetUserProfilesBeforeInitThrowsException() =
+        testScope.runTest {
+            assertThrows(IllegalStateException::class.java) { tracker.userProfiles }
+        }
 
     @Test
     fun testInitialize() =

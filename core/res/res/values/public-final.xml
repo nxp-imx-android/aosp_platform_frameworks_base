@@ -405,9 +405,9 @@
   <public type="attr" name="flipInterval" id="0x01010179" />
   <public type="attr" name="fillViewport" id="0x0101017a" />
   <public type="attr" name="prompt" id="0x0101017b" />
-  <!-- {@deprecated Use minDate instead.} -->
+  <!-- @deprecated Use minDate instead. -->
   <public type="attr" name="startYear" id="0x0101017c" />
-  <!-- {@deprecated Use maxDate instead.} -->
+  <!-- @deprecated Use maxDate instead. -->
   <public type="attr" name="endYear" id="0x0101017d" />
   <public type="attr" name="mode" id="0x0101017e" />
   <public type="attr" name="layout_x" id="0x0101017f" />
@@ -710,21 +710,21 @@
 
   <!-- Equivalent to 0xffaaaaaa -->
   <public type="color" name="darker_gray" id="0x01060000" />
-  <!-- {@deprecated Use a text color from your theme instead.} -->
+  <!-- @deprecated Use a text color from your theme instead. -->
   <public type="color" name="primary_text_dark" id="0x01060001" />
-  <!-- {@deprecated Use a text color from your theme instead.} -->
+  <!-- @deprecated Use a text color from your theme instead. -->
   <public type="color" name="primary_text_dark_nodisable" id="0x01060002" />
-  <!-- {@deprecated Use a text color from your theme instead.} -->
+  <!-- @deprecated Use a text color from your theme instead. -->
   <public type="color" name="primary_text_light" id="0x01060003" />
-  <!-- {@deprecated Use a text color from your theme instead.} -->
+  <!-- @deprecated Use a text color from your theme instead. -->
   <public type="color" name="primary_text_light_nodisable" id="0x01060004" />
-  <!-- {@deprecated Use a text color from your theme instead.} -->
+  <!-- @deprecated Use a text color from your theme instead. -->
   <public type="color" name="secondary_text_dark" id="0x01060005" />
-  <!-- {@deprecated Use a text color from your theme instead.} -->
+  <!-- @deprecated Use a text color from your theme instead. -->
   <public type="color" name="secondary_text_dark_nodisable" id="0x01060006" />
-  <!-- {@deprecated Use a text color from your theme instead.} -->
+  <!-- @deprecated Use a text color from your theme instead. -->
   <public type="color" name="secondary_text_light" id="0x01060007" />
-  <!-- {@deprecated Use a text color from your theme instead.} -->
+  <!-- @deprecated Use a text color from your theme instead. -->
   <public type="color" name="secondary_text_light_nodisable" id="0x01060008" />
   <!-- Equivalent to 0xff808080 -->
   <public type="color" name="tab_indicator_text" id="0x01060009" />
@@ -737,9 +737,9 @@
   <public type="color" name="background_dark" id="0x0106000e" />
   <!-- Equivalent to 0xffffffff -->
   <public type="color" name="background_light" id="0x0106000f" />
-  <!-- {@deprecated Use a text color from your theme instead.} -->
+  <!-- @deprecated Use a text color from your theme instead. -->
   <public type="color" name="tertiary_text_dark" id="0x01060010" />
-  <!-- {@deprecated Use a text color from your theme instead.} -->
+  <!-- @deprecated Use a text color from your theme instead. -->
   <public type="color" name="tertiary_text_light" id="0x01060011" />
 
   <public type="array" name="emailAddressTypes" id="0x01070000" />
@@ -1068,7 +1068,7 @@
 
   <!-- View ID of the {@link android.inputmethodservice.KeyboardView} within
        an input method's input area.
-       {@deprecated Use Copy this definition into your own application project.} -->
+       @deprecated Use Copy this definition into your own application project. -->
   <public type="id" name="keyboardView" id="0x01020026" />
   <!-- View ID of a {@link android.view.View} to close a popup keyboard -->
   <public type="id" name="closeButton" id="0x01020027" />
@@ -1083,7 +1083,7 @@
   <public type="style" name="Theme.InputMethod" id="0x01030054" />
   <public type="style" name="Theme.NoDisplay" id="0x01030055" />
   <public type="style" name="Animation.InputMethod" id="0x01030056" />
-  <!-- {@deprecated Use Copy this definition into your own application project.} -->
+  <!-- @deprecated Use Copy this definition into your own application project. -->
   <public type="style" name="Widget.KeyboardView" id="0x01030057" />
   <public type="style" name="ButtonBar" id="0x01030058" />
   <public type="style" name="Theme.Panel" id="0x01030059" />
@@ -2816,7 +2816,7 @@
     <public type="attr" name="iconSpaceReserved" id="0x01010561"/>
     <public type="attr" name="defaultFocusHighlightEnabled" id="0x01010562" />
     <public type="attr" name="persistentWhenFeatureAvailable" id="0x01010563"/>
-    <!-- {@deprecated Use windowSplashscreenAnimatedIcon instead } -->
+    <!-- @deprecated Use windowSplashscreenAnimatedIcon instead  -->
     <public type="attr" name="windowSplashscreenContent" id="0x01010564" />
     <!-- @hide @SystemApi -->
     <public type="attr" name="requiredSystemPropertyName" id="0x01010565" />
@@ -2905,7 +2905,7 @@
     <public type="attr" name="usesNonSdkApi" id="0x0101058e" />
     <public type="attr" name="nonInteractiveUiTimeout" id="0x0101058f" />
     <public type="attr" name="isLightTheme" id="0x01010590" />
-    <!-- {@deprecated Use requiredSplitTypes instead.} -->
+    <!-- @deprecated Use requiredSplitTypes instead. -->
     <public type="attr" name="isSplitRequired" id="0x01010591" />
     <public type="attr" name="textLocale" id="0x01010592" />
     <public type="attr" name="settingsSliceUri" id="0x01010593" />
@@ -2955,11 +2955,11 @@
     <public type="string" name="config_feedbackIntentExtraKey" id="0x0104001f" />
     <!-- @hide @SystemApi -->
     <public type="string" name="config_feedbackIntentNameKey" id="0x01040020" />
-    <!-- @hide @SystemApi @TestApi -->
+    <!-- @hide @SystemApi -->
     <public type="string" name="config_defaultAssistant" id="0x01040021" />
     <!-- @hide @SystemApi -->
     <public type="string" name="config_defaultBrowser" id="0x01040022" />
-    <!-- @hide @SystemApi @TestApi -->
+    <!-- @hide @SystemApi -->
     <public type="string" name="config_defaultDialer" id="0x01040023" />
     <!-- @hide @SystemApi -->
     <public type="string" name="config_defaultSms" id="0x01040024" />
@@ -3009,7 +3009,7 @@
     <public type="string" name="config_defaultCallRedirection" id="0x01040025" />
     <!-- @hide @SystemApi -->
     <public type="string" name="config_defaultCallScreening" id="0x01040026" />
-    <!-- @hide @SystemApi @TestApi -->
+    <!-- @hide @SystemApi -->
     <public type="string" name="config_systemGallery" id="0x01040027" />
 
     <public type="id" name="accessibilityActionPressAndHold" id="0x0102004a" />
@@ -3160,9 +3160,9 @@
     <public type="dimen" name="system_app_widget_background_radius" id="0x01050008" />
     <public type="dimen" name="system_app_widget_inner_radius" id="0x01050009" />
 
-    <!-- @hide @SystemApi @TestApi -->
+    <!-- @hide @SystemApi -->
     <public type="string" name="config_systemAutomotiveCluster" id="0x01040028" />
-    <!-- @hide @SystemApi @TestApi -->
+    <!-- @hide @SystemApi -->
     <public type="string" name="config_systemAutomotiveProjection" id="0x01040029" />
     <!-- @hide @SystemApi -->
     <public type="string" name="config_systemShell" id="0x0104002a" />
@@ -3345,7 +3345,7 @@
     <public name="config_devicePolicyManagement" />
     <!-- @hide @SystemApi -->
     <public name="config_systemAppProtectionService" />
-    <!-- @hide @SystemApi @TestApi -->
+    <!-- @hide @SystemApi -->
     <public name="config_systemAutomotiveCalendarSyncManager" />
     <!-- @hide @SystemApi -->
     <public name="config_defaultAutomotiveNavigation" />
@@ -3363,7 +3363,7 @@
   <public type="string" name="config_devicePolicyManagement" id="0x0104003d" />
     <!-- @hide @SystemApi -->
   <public type="string" name="config_systemAppProtectionService" id="0x0104003e" />
-    <!-- @hide @SystemApi @TestApi -->
+    <!-- @hide @SystemApi -->
   <public type="string" name="config_systemAutomotiveCalendarSyncManager" id="0x0104003f" />
     <!-- @hide @SystemApi -->
   <public type="string" name="config_defaultAutomotiveNavigation" id="0x01040040" />

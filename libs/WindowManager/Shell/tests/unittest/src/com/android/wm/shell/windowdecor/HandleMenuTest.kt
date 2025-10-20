@@ -25,10 +25,12 @@ import android.graphics.Color
 import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper
 import android.view.Display
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.LayoutInflater
 import android.view.SurfaceControl
 import android.view.SurfaceControlViewHost
@@ -149,7 +151,7 @@ class HandleMenuTest : ShellTestCase() {
             addOverride(R.dimen.desktop_mode_handle_menu_width, MENU_WIDTH)
             addOverride(R.dimen.desktop_mode_handle_menu_height, MENU_HEIGHT)
             addOverride(R.dimen.desktop_mode_handle_menu_margin_top, MENU_TOP_MARGIN)
-            addOverride(R.dimen.desktop_mode_handle_menu_margin_start, MENU_START_MARGIN)
+            addOverride(R.dimen.desktop_mode_handle_menu_padding_left_bottom_right, MENU_PADDING)
             addOverride(
                 R.dimen.desktop_mode_handle_menu_pill_spacing_margin,
                 MENU_PILL_SPACING_MARGIN,
@@ -177,7 +179,7 @@ class HandleMenuTest : ShellTestCase() {
         handleMenu = createAndShowHandleMenu(SPLIT_POSITION_UNDEFINED)
         assertTrue(handleMenu.handleMenuViewContainer is AdditionalViewHostViewContainer)
         // Verify menu is created near top-left of task.
-        val expected = Point(MENU_START_MARGIN, MENU_TOP_MARGIN)
+        val expected = Point(0, MENU_TOP_MARGIN)
         assertEquals(expected.toPointF(), handleMenu.handleMenuPosition)
     }
 
@@ -240,7 +242,59 @@ class HandleMenuTest : ShellTestCase() {
         assertThat(drawable.bitmap).isEqualTo(mockAppIcon)
     }
 
-    private suspend fun createTaskInfo(windowingMode: Int, splitPosition: Int? = null) {
+    @Test
+    @DisableFlags(FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
+    fun splitButton_onDefaultDisplay_flagOff_isVisible() = runTest {
+        createTaskInfo(windowingMode = WINDOWING_MODE_FULLSCREEN, displayId = DEFAULT_DISPLAY)
+        val handleMenu = createAndShowHandleMenu()
+
+        val handleMenuView =
+            checkNotNull(handleMenu.handleMenuView) { "Expected non-null handle menu view" }
+        val splitButton = handleMenuView.rootView.findViewById<View>(R.id.split_screen_button)
+        assertThat(splitButton.visibility).isEqualTo(View.VISIBLE)
+    }
+
+    @Test
+    @DisableFlags(FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
+    fun splitButton_onExternalDisplay_flagOff_isGone() = runTest {
+        createTaskInfo(windowingMode = WINDOWING_MODE_FULLSCREEN, displayId = EXTERNAL_DISPLAY_ID)
+        val handleMenu = createAndShowHandleMenu()
+
+        val handleMenuView =
+            checkNotNull(handleMenu.handleMenuView) { "Expected non-null handle menu view" }
+        val splitButton = handleMenuView.rootView.findViewById<View>(R.id.split_screen_button)
+        assertThat(splitButton.visibility).isEqualTo(View.GONE)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
+    fun splitButton_onExternalDisplay_flagOn_isVisible() = runTest {
+        createTaskInfo(windowingMode = WINDOWING_MODE_FULLSCREEN, displayId = EXTERNAL_DISPLAY_ID)
+        val handleMenu = createAndShowHandleMenu()
+
+        val handleMenuView =
+            checkNotNull(handleMenu.handleMenuView) { "Expected non-null handle menu view" }
+        val splitButton = handleMenuView.rootView.findViewById<View>(R.id.split_screen_button)
+        assertThat(splitButton.visibility).isEqualTo(View.VISIBLE)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
+    fun splitButton_onDefaultDisplay_flagOn_isVisible() = runTest {
+        createTaskInfo(windowingMode = WINDOWING_MODE_FULLSCREEN, displayId = DEFAULT_DISPLAY)
+        val handleMenu = createAndShowHandleMenu()
+
+        val handleMenuView =
+            checkNotNull(handleMenu.handleMenuView) { "Expected non-null handle menu view" }
+        val splitButton = handleMenuView.rootView.findViewById<View>(R.id.split_screen_button)
+        assertThat(splitButton.visibility).isEqualTo(View.VISIBLE)
+    }
+
+    private suspend fun createTaskInfo(
+        windowingMode: Int,
+        splitPosition: Int? = null,
+        displayId: Int = DEFAULT_DISPLAY
+    ) {
         val taskDescriptionBuilder =
             ActivityManager.TaskDescription.Builder().setBackgroundColor(Color.YELLOW)
         val bounds =
@@ -259,7 +313,7 @@ class HandleMenuTest : ShellTestCase() {
             }
         mockDesktopWindowDecoration.mTaskInfo =
             TestRunningTaskInfoBuilder()
-                .setDisplayId(Display.DEFAULT_DISPLAY)
+                .setDisplayId(displayId)
                 .setTaskDescriptionBuilder(taskDescriptionBuilder)
                 .setWindowingMode(windowingMode)
                 .setBounds(bounds)
@@ -301,6 +355,7 @@ class HandleMenuTest : ShellTestCase() {
                 }
                 else -> error("Invalid windowing mode")
             }
+        val captionView = LayoutInflater.from(mContext).inflate(layoutId, null)
         val handleMenu =
             if (DesktopExperienceFlags.ENABLE_WINDOW_DECORATION_REFACTOR.isTrue) {
                 handleMenuFactory.create(
@@ -324,6 +379,7 @@ class HandleMenuTest : ShellTestCase() {
                     isBrowserApp = false,
                     openInAppOrBrowserIntent = null,
                     mockDesktopModeUiEventLogger,
+                    captionView = captionView,
                     captionWidth = HANDLE_WIDTH,
                     captionHeight = 50,
                     captionX = captionX,
@@ -349,6 +405,7 @@ class HandleMenuTest : ShellTestCase() {
                     isBrowserApp = false,
                     openInAppOrBrowserIntent = null,
                     mockDesktopModeUiEventLogger,
+                    captionView = captionView,
                     captionWidth = HANDLE_WIDTH,
                     captionHeight = 50,
                     captionX = captionX,
@@ -375,9 +432,12 @@ class HandleMenuTest : ShellTestCase() {
         private const val MENU_WIDTH = 200
         private const val MENU_HEIGHT = 400
         private const val MENU_TOP_MARGIN = 10
-        private const val MENU_START_MARGIN = 20
+        private const val MENU_PADDING = 20
         private const val MENU_PILL_SPACING_MARGIN = 4
         private const val HANDLE_WIDTH = 80
         private const val APP_NAME = "Test App"
+        private const val EXTERNAL_DISPLAY_ID = 1
+        private const val FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX =
+            "com.android.window.flags.enable_non_default_display_split_bugfix"
     }
 }

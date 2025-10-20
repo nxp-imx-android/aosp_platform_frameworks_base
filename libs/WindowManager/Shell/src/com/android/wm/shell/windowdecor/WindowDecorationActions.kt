@@ -33,6 +33,9 @@ interface WindowDecorationActions {
     /** Minimizes the task. */
     fun onMinimize(taskInfo: RunningTaskInfo)
 
+    /** Close the task */
+    fun onClose(taskInfo: RunningTaskInfo)
+
     /**
      * Moves task to immersive mode or exits immersive and restores task to previous size if task is
      * already in immersive.
@@ -86,4 +89,11 @@ interface WindowDecorationActions {
 
     /** Opens the handle menu. */
     fun onOpenHandleMenu(taskId: Int)
+
+    /**
+     * Opens an arbitrary Intent.
+     *
+     * @param intent to be launched
+     */
+    fun onOpenIntent(taskId: Int, intent: Intent)
 }

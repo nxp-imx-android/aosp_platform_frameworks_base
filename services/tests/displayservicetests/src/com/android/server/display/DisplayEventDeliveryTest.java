@@ -312,6 +312,7 @@ public class DisplayEventDeliveryTest extends EventDeliveryTestBase {
             bringTestActivityTop();
 
             // The test activity becomes non-cached and should receive the pending display events
+            // in the right order
             for (int i = 0; i < mDisplayCount; i++) {
                 // The pending DISPLAY_ADDED & DISPLAY_CHANGED should arrive now
                 displayBundleAt(i).waitDisplayEvent(DISPLAY_ADDED);

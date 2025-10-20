@@ -16,6 +16,7 @@
 
 package com.android.systemui.wmshell;
 
+import static com.android.systemui.Flags.shadeAppLaunchAnimationSkipInDesktop;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_BOUNCER_SHOWING;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_BUBBLES_EXPANDED;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_BUBBLES_MANAGE_MENU_EXPANDED;
@@ -42,6 +43,7 @@ import android.view.KeyEvent;
 
 import androidx.annotation.NonNull;
 
+import com.android.app.displaylib.PerDisplayRepository;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
@@ -105,6 +107,7 @@ public final class WMShell implements
         CoreStartable,
         CommandQueue.Callbacks {
     private static final String TAG = WMShell.class.getSimpleName();
+    private static final boolean DEBUG = false;
     private static final long INVALID_SYSUI_STATE_MASK =
             SYSUI_STATE_DIALOG_SHOWING
                     | SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING
@@ -138,6 +141,7 @@ public final class WMShell implements
     private final CommunalTransitionViewModel mCommunalTransitionViewModel;
     private final JavaAdapter mJavaAdapter;
     private final Executor mSysUiMainExecutor;
+    private final PerDisplayRepository<SysUiState> mPerDisplaySysUiStateRepository;
 
     // Listeners and callbacks. Note that we prefer member variable over anonymous class here to
     // avoid the situation that some implementations, like KeyguardUpdateMonitor, use WeakReference
@@ -220,7 +224,9 @@ public final class WMShell implements
             NoteTaskInitializer noteTaskInitializer,
             CommunalTransitionViewModel communalTransitionViewModel,
             JavaAdapter javaAdapter,
-            @Main Executor sysUiMainExecutor) {
+            @Main Executor sysUiMainExecutor,
+            PerDisplayRepository<SysUiState> perDisplayRepository
+    ) {
         mContext = context;
         mShell = shell;
         mCommandQueue = commandQueue;
@@ -242,6 +248,7 @@ public final class WMShell implements
         mCommunalTransitionViewModel = communalTransitionViewModel;
         mJavaAdapter = javaAdapter;
         mSysUiMainExecutor = sysUiMainExecutor;
+        mPerDisplaySysUiStateRepository = perDisplayRepository;
     }
 
     @Override
@@ -302,11 +309,13 @@ public final class WMShell implements
                     }
                 }, mSysUiMainExecutor);
         pip.addOnIsInPipStateChangedListener((isInPip) -> {
-            if (!isInPip) {
-                Log.d(TAG, "Reset disable_gesture_pip_animating on pip exit");
-                mSysUiState.setFlag(SYSUI_STATE_DISABLE_GESTURE_PIP_ANIMATING, false)
-                        .commitUpdate();
-            }
+            mSysUiMainExecutor.execute(() -> {
+                if (!isInPip) {
+                    Log.d(TAG, "Reset disable_gesture_pip_animating on pip exit");
+                    mSysUiState.setFlag(SYSUI_STATE_DISABLE_GESTURE_PIP_ANIMATING, false)
+                            .commitUpdate();
+                }
+            });
         });
         mSysUiState.addCallback((sysUiStateFlag, displayId) -> {
             mIsSysUiStateValid = (sysUiStateFlag & INVALID_SYSUI_STATE_MASK) == 0;
@@ -433,14 +442,79 @@ public final class WMShell implements
                 new DesktopRepository.VisibleTasksListener() {
                     @Override
                     public void onTasksVisibilityChanged(int displayId, int visibleTasksCount) {
-                        if (displayId == Display.DEFAULT_DISPLAY) {
+                        if (displayId == Display.DEFAULT_DISPLAY
+                                && !shadeAppLaunchAnimationSkipInDesktop()) {
                             mSysUiState.setFlag(SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE,
                                             visibleTasksCount > 0)
                                     .commitUpdate(mDisplayTracker.getDefaultDisplayId());
                         }
-                        // TODO(b/278084491): update sysui state for changes on other displays
                     }
                 }, mSysUiMainExecutor);
+        desktopMode.addDeskChangeListener(new DesktopRepository.DeskChangeListener() {
+            @Override
+            public void onDeskAdded(int displayId, int deskId) {
+
+            }
+
+            @Override
+            public void onDeskRemoved(int displayId, int deskId) {
+
+            }
+
+            @Override
+            public void onActiveDeskChanged(int displayId, int newActiveDeskId,
+                    int oldActiveDeskId) {
+                if (DEBUG) {
+                    Log.d(TAG, "onActiveDeskChanged: displayId=" + displayId
+                            + ", newActiveDeskId=" + newActiveDeskId
+                            + ", oldActiveDeskId=" + oldActiveDeskId);
+                }
+                SysUiState sysUiState = mPerDisplaySysUiStateRepository.get(displayId);
+                if (sysUiState == null) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onActiveDeskChanged: sysUiState is null for displayId="
+                                + displayId);
+                    }
+                    return;
+                }
+                if (!shadeAppLaunchAnimationSkipInDesktop()) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onActiveDeskChanged displayId=" + displayId
+                                + ": shadeAppLaunchAnimationSkipInDesktop flag is false");
+                    }
+                    return;
+                }
+                boolean enterFreeform = newActiveDeskId != DesktopRepository.INVALID_DESK_ID
+                        && oldActiveDeskId == DesktopRepository.INVALID_DESK_ID;
+                boolean exitFreeform = newActiveDeskId == DesktopRepository.INVALID_DESK_ID
+                        && oldActiveDeskId != DesktopRepository.INVALID_DESK_ID;
+                if (enterFreeform) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onActiveDeskChanged displayId=" + displayId
+                                + ": enter freeform:  FREEFORM_ACTIVE_IN_DESKTOP_MODE -> true");
+                    }
+                    sysUiState.setFlag(SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE,
+                            true).commitUpdate();
+                } else if (exitFreeform) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onActiveDeskChanged displayId=" + displayId
+                                + ": exit freeform:  FREEFORM_ACTIVE_IN_DESKTOP_MODE -> false");
+                    }
+                    sysUiState.setFlag(SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE,
+                            false).commitUpdate();
+                } else {
+                    if (DEBUG) {
+                        Log.d(TAG, "onActiveDeskChanged displayId=" + displayId
+                                + ": No state change required");
+                    }
+                }
+            }
+
+            @Override
+            public void onCanCreateDesksChanged(boolean canCreateDesks) {
+
+            }
+        }, mSysUiMainExecutor);
         mCommandQueue.addCallback(new CommandQueue.Callbacks() {
             @Override
             public void moveFocusedTaskToDesktop(int displayId) {

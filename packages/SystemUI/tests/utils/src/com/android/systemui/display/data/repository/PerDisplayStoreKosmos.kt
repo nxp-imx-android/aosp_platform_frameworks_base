@@ -24,8 +24,15 @@ import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.model.SysUiState
+import com.android.systemui.model.sysUiStateOverrideFactory
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.plus
 
 class FakePerDisplayStore(
     backgroundApplicationScope: CoroutineScope,
@@ -45,7 +52,9 @@ class FakePerDisplayStore(
     }
 }
 
-data class TestPerDisplayInstance(val displayId: Int)
+data class TestPerDisplayInstance(val displayId: Int) {
+    val creationThread = Thread.currentThread().threadId()
+}
 
 val Kosmos.fakePerDisplayStore by
     Kosmos.Fixture {
@@ -60,6 +69,7 @@ class FakePerDisplayInstanceProviderWithSetupAndTeardown :
     PerDisplayInstanceProviderWithSetup<TestPerDisplayInstance> {
     val destroyed = mutableListOf<TestPerDisplayInstance>()
     val created = mutableListOf<TestPerDisplayInstance>()
+    private var createdLatch = CountDownLatch(1)
 
     override fun destroyInstance(instance: TestPerDisplayInstance) {
         destroyed += instance
@@ -67,27 +77,57 @@ class FakePerDisplayInstanceProviderWithSetupAndTeardown :
 
     override fun setupInstance(instance: TestPerDisplayInstance) {
         created += instance
+        createdLatch.countDown()
     }
 
     override fun createInstance(displayId: Int): TestPerDisplayInstance? {
         return TestPerDisplayInstance(displayId)
+    }
+
+    /** Awaits any new creation and setup finished.. */
+    fun awaitCreation() {
+        createdLatch.await(2, TimeUnit.SECONDS)
+        createdLatch = CountDownLatch(1)
+    }
+}
+
+class FakePerDisplaySysUIStateProvider(private val kosmos: Kosmos) :
+    PerDisplayInstanceProviderWithTeardown<SysUiState>,
+    PerDisplayInstanceProviderWithSetup<SysUiState> {
+    val destroyed = mutableListOf<SysUiState>()
+    val created = mutableListOf<SysUiState>()
+
+    override fun destroyInstance(instance: SysUiState) {
+        destroyed += instance
+    }
+
+    override fun setupInstance(instance: SysUiState) {
+        created += instance
+    }
+
+    override fun createInstance(displayId: Int): SysUiState? {
+        return kosmos.sysUiStateOverrideFactory.invoke(displayId)
     }
 }
 
 val Kosmos.fakePerDisplayInstanceProviderWithSetupAndTeardown by
     Kosmos.Fixture { FakePerDisplayInstanceProviderWithSetupAndTeardown() }
 
+val Kosmos.fakePerDisplayInstanceProviderSysUIStateWithSetupAndTeardown by
+    Kosmos.Fixture { FakePerDisplaySysUIStateProvider(this) }
+
 val Kosmos.perDisplayDumpHelper by Kosmos.Fixture { PerDisplayRepoDumpHelper(dumpManager) }
 val Kosmos.fakeDisplayInstanceLifecycleManager by
     Kosmos.Fixture { FakeDisplayInstanceLifecycleManager() }
 
-val Kosmos.fakePerDisplayInstanceRepository by
+val Kosmos.fakePerDisplaySysUIStateInstanceRepository by
     Kosmos.Fixture {
         { lifecycleManager: DisplayInstanceLifecycleManager? ->
             PerDisplayInstanceRepositoryImpl(
-                debugName = "fakePerDisplayInstanceRepository",
-                instanceProvider = fakePerDisplayInstanceProviderWithSetupAndTeardown,
+                debugName = "fakePerDisplaySysUIStateInstanceRepository",
+                instanceProvider = fakePerDisplayInstanceProviderSysUIStateWithSetupAndTeardown,
                 lifecycleManager,
+                testDispatcher,
                 testScope.backgroundScope,
                 displayRepository,
                 perDisplayDumpHelper,
@@ -96,7 +136,27 @@ val Kosmos.fakePerDisplayInstanceRepository by
     }
 
 fun Kosmos.createPerDisplayInstanceRepository(
-    overrideLifecycleManager: DisplayInstanceLifecycleManager? = null
+    overrideLifecycleManager: DisplayInstanceLifecycleManager? = null,
+    createInstanceEagerly: Boolean = false,
+    mainThreadForDefaultDisplayEagerlyCreation: Boolean = false,
+    mainThreadContext: CoroutineContext = testDispatcher,
+    bgThreadContext: CoroutineContext = testScope.backgroundScope.coroutineContext,
 ): PerDisplayInstanceRepositoryImpl<TestPerDisplayInstance> {
-    return fakePerDisplayInstanceRepository(overrideLifecycleManager)
+    return PerDisplayInstanceRepositoryImpl(
+        debugName = "fakePerDisplayInstanceRepository",
+        instanceProvider = fakePerDisplayInstanceProviderWithSetupAndTeardown,
+        lifecycleManager = overrideLifecycleManager,
+        mainContext = mainThreadContext,
+        bgApplicationScope = testScope.backgroundScope + bgThreadContext,
+        displayRepository = displayRepository,
+        initCallback = perDisplayDumpHelper,
+        createInstanceEagerly = createInstanceEagerly,
+        mainThreadForDefaultDisplayEagerlyCreation = mainThreadForDefaultDisplayEagerlyCreation,
+    )
+}
+
+fun Kosmos.createPerDisplayInstanceSysUIStateRepository(
+    overrideLifecycleManager: DisplayInstanceLifecycleManager? = null
+): PerDisplayInstanceRepositoryImpl<SysUiState> {
+    return fakePerDisplaySysUIStateInstanceRepository(overrideLifecycleManager)
 }

@@ -76,8 +76,6 @@
         android:clipToPadding="false"
         />
 
-    <include layout="@layout/brightness_mirror_container" />
-
     <com.android.systemui.scrim.ScrimView
         android:id="@+id/scrim_in_front"
         android:layout_width="match_parent"

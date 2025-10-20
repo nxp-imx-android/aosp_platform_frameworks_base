@@ -31,8 +31,8 @@ import com.android.launcher3.icons.BaseIconFactory
 import com.android.launcher3.icons.IconFactory
 import com.android.launcher3.util.UserIconInfo
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.screencapture.common.ScreenCapture
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUi
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.shared.system.PackageManagerWrapper
 import javax.inject.Inject
 import javax.inject.Provider
@@ -51,7 +51,7 @@ interface ScreenCaptureIconRepository {
 }
 
 /** Default implementation of [ScreenCaptureIconRepository]. */
-@ScreenCaptureScope
+@ScreenCaptureUiScope
 class ScreenCaptureIconRepositoryImpl
 @Inject
 constructor(
@@ -60,7 +60,7 @@ constructor(
     private val userManager: UserManager,
     private val packageManagerWrapper: PackageManagerWrapper,
     private val packageManager: PackageManager,
-    @ScreenCapture private val iconFactoryProvider: Provider<IconFactory>,
+    @ScreenCaptureUi private val iconFactoryProvider: Provider<IconFactory>,
 ) : ScreenCaptureIconRepository {
 
     override suspend fun loadIcon(

@@ -41,16 +41,24 @@ object DesktopTestHelpers {
         displayId: Int = DEFAULT_DISPLAY,
         bounds: Rect? = null,
         userId: Int = ActivityManager.getCurrentUser(),
+        taskId: Int? = null,
     ): RunningTaskInfo =
         TestRunningTaskInfoBuilder()
             .setDisplayId(displayId)
             .setParentTaskId(displayId)
             .setToken(MockToken().token())
             .setActivityType(ACTIVITY_TYPE_STANDARD)
+            .setTopActivityType(ACTIVITY_TYPE_STANDARD)
             .setWindowingMode(WINDOWING_MODE_FREEFORM)
             .setLastActiveTime(100)
             .setUserId(userId)
-            .apply { bounds?.let { setBounds(it) } }
+            .apply { taskId?.let { setTaskId(it) } }
+            .apply {
+                bounds?.let { b ->
+                    setBounds(b)
+                    setPositionInParent(b.left, b.top)
+                }
+            }
             .build()
 
     fun createPinnedTask(displayId: Int = DEFAULT_DISPLAY, bounds: Rect? = null): RunningTaskInfo =
@@ -104,6 +112,7 @@ object DesktopTestHelpers {
             .setDisplayId(displayId)
             .setToken(MockToken().token())
             .setActivityType(ACTIVITY_TYPE_HOME)
+            .setTopActivityType(ACTIVITY_TYPE_HOME)
             .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
             .setUserId(userId)
             .setLastActiveTime(100)

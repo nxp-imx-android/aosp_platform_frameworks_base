@@ -326,6 +326,7 @@ public final class VirtualDeviceParams implements Parcelable {
     public static final int POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS = 7;
 
     private final int mLockState;
+    @NonNull private final ArraySet<UserHandle> mAllowedUsers;
     @NonNull private final ArraySet<UserHandle> mUsersWithMatchingAccounts;
     @NavigationPolicy
     private final int mDefaultNavigationPolicy;
@@ -348,6 +349,7 @@ public final class VirtualDeviceParams implements Parcelable {
 
     private VirtualDeviceParams(
             @LockState int lockState,
+            @NonNull Set<UserHandle> allowedUsers,
             @NonNull Set<UserHandle> usersWithMatchingAccounts,
             @NavigationPolicy int defaultNavigationPolicy,
             @NonNull Set<ComponentName> crossTaskNavigationExemptions,
@@ -365,6 +367,7 @@ public final class VirtualDeviceParams implements Parcelable {
             long screenOffTimeout,
             @Nullable ViewConfigurationParams viewConfigurationParams) {
         mLockState = lockState;
+        mAllowedUsers = new ArraySet<>(Objects.requireNonNull(allowedUsers));
         mUsersWithMatchingAccounts =
                 new ArraySet<>(Objects.requireNonNull(usersWithMatchingAccounts));
         mDefaultNavigationPolicy = defaultNavigationPolicy;
@@ -389,6 +392,7 @@ public final class VirtualDeviceParams implements Parcelable {
     @SuppressWarnings("unchecked")
     private VirtualDeviceParams(Parcel parcel) {
         mLockState = parcel.readInt();
+        mAllowedUsers = (ArraySet<UserHandle>) parcel.readArraySet(null);
         mUsersWithMatchingAccounts = (ArraySet<UserHandle>) parcel.readArraySet(null);
         mDefaultNavigationPolicy = parcel.readInt();
         mCrossTaskNavigationExemptions = (ArraySet<ComponentName>) parcel.readArraySet(null);
@@ -459,6 +463,23 @@ public final class VirtualDeviceParams implements Parcelable {
     @Nullable
     public ComponentName getInputMethodComponent() {
         return mInputMethodComponent;
+    }
+
+    /**
+     * Returns the users allowed to stream in this display.
+     *
+     * <p>This constraint is applied in conjunction with any other constraint, like {@link
+     * #getUsersWithMatchingAccounts}, such that only users matching all constraints will be
+     * allowed.
+     *
+     * <p>If empty (default), this field should be ignored and only the other constraints should be
+     * applied.
+     *
+     * @hide
+     */
+    @NonNull
+    public Set<UserHandle> getAllowedUsers() {
+        return Collections.unmodifiableSet(mAllowedUsers);
     }
 
     /**
@@ -654,6 +675,7 @@ public final class VirtualDeviceParams implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeInt(mLockState);
+        dest.writeArraySet(mAllowedUsers);
         dest.writeArraySet(mUsersWithMatchingAccounts);
         dest.writeInt(mDefaultNavigationPolicy);
         dest.writeArraySet(mCrossTaskNavigationExemptions);
@@ -697,6 +719,7 @@ public final class VirtualDeviceParams implements Parcelable {
             }
         }
         return mLockState == that.mLockState
+                && mAllowedUsers.equals(that.mAllowedUsers)
                 && mUsersWithMatchingAccounts.equals(that.mUsersWithMatchingAccounts)
                 && Objects.equals(
                         mCrossTaskNavigationExemptions, that.mCrossTaskNavigationExemptions)
@@ -716,11 +739,11 @@ public final class VirtualDeviceParams implements Parcelable {
     @Override
     public int hashCode() {
         int hashCode = Objects.hash(
-                mLockState, mUsersWithMatchingAccounts, mCrossTaskNavigationExemptions,
-                mDefaultNavigationPolicy, mActivityPolicyExemptions, mDefaultActivityPolicy, mName,
-                mDevicePolicies, mHomeComponent, mInputMethodComponent, mAudioPlaybackSessionId,
-                mAudioRecordingSessionId, mDimDuration, mScreenOffTimeout,
-                mViewConfigurationParams);
+                mLockState, mAllowedUsers, mUsersWithMatchingAccounts,
+                mCrossTaskNavigationExemptions, mDefaultNavigationPolicy, mActivityPolicyExemptions,
+                mDefaultActivityPolicy, mName, mDevicePolicies, mHomeComponent,
+                mInputMethodComponent, mAudioPlaybackSessionId, mAudioRecordingSessionId,
+                mDimDuration, mScreenOffTimeout, mViewConfigurationParams);
         for (int i = 0; i < mDevicePolicies.size(); i++) {
             hashCode = 31 * hashCode + mDevicePolicies.keyAt(i);
             hashCode = 31 * hashCode + mDevicePolicies.valueAt(i);
@@ -733,6 +756,7 @@ public final class VirtualDeviceParams implements Parcelable {
     public String toString() {
         return "VirtualDeviceParams("
                 + " mLockState=" + mLockState
+                + " mAllowedUsers=" + mAllowedUsers
                 + " mUsersWithMatchingAccounts=" + mUsersWithMatchingAccounts
                 + " mDefaultNavigationPolicy=" + mDefaultNavigationPolicy
                 + " mCrossTaskNavigationExemptions=" + mCrossTaskNavigationExemptions
@@ -757,6 +781,7 @@ public final class VirtualDeviceParams implements Parcelable {
     public void dump(PrintWriter pw, String prefix) {
         pw.println(prefix + "mName=" + mName);
         pw.println(prefix + "mLockState=" + mLockState);
+        pw.println(prefix + "mAllowedUsers=" + mAllowedUsers);
         pw.println(prefix + "mUsersWithMatchingAccounts=" + mUsersWithMatchingAccounts);
         pw.println(prefix + "mDefaultNavigationPolicy=" + mDefaultNavigationPolicy);
         pw.println(prefix + "mCrossTaskNavigationExemptions=" + mCrossTaskNavigationExemptions);
@@ -793,6 +818,7 @@ public final class VirtualDeviceParams implements Parcelable {
         private static final Duration INFINITE_TIMEOUT = Duration.ofDays(365 * 1000);
 
         private @LockState int mLockState = LOCK_STATE_DEFAULT;
+        @NonNull private Set<UserHandle> mAllowedUsers = Collections.emptySet();
         @NonNull private Set<UserHandle> mUsersWithMatchingAccounts = Collections.emptySet();
         @NonNull private Set<ComponentName> mCrossTaskNavigationExemptions = Collections.emptySet();
         @NavigationPolicy
@@ -989,6 +1015,24 @@ public final class VirtualDeviceParams implements Parcelable {
         }
 
         /**
+         * Sets the users allowed to stream in this display.
+         *
+         * <p>This constraint is applied in conjunction with any other constraint, like {@link
+         * #setUsersWithMatchingAccounts}, such that only users matching all constraints will be
+         * allowed.
+         *
+         * <p>If set to empty (default), this field is ignored and only the other constraints will
+         * be applied.
+         *
+         * @hide
+         */
+        @NonNull
+        public Builder setAllowedUsers(@NonNull Set<UserHandle> allowedUsers) {
+            mAllowedUsers = Objects.requireNonNull(allowedUsers);
+            return this;
+        }
+
+        /**
          * Sets the user handles with matching managed accounts on the remote device to which
          * this virtual device is streaming. The caller is responsible for verifying the presence
          * and legitimacy of a matching managed account on the remote device.
@@ -1002,6 +1046,9 @@ public final class VirtualDeviceParams implements Parcelable {
          * only if there is no device policy, or if the nearby streaming policy is
          * {@link android.app.admin.DevicePolicyManager#NEARBY_STREAMING_ENABLED
          * NEARBY_STREAMING_ENABLED}.
+         *
+         * <p>This constraint is applied in conjunction with any other constraint, like {@link
+         * #setAllowedUsers}, such that only users matching all constraints will be allowed.
          *
          * @param usersWithMatchingAccounts A set of user handles with matching managed
          *   accounts on the remote device this is streaming to.
@@ -1391,6 +1438,7 @@ public final class VirtualDeviceParams implements Parcelable {
 
             return new VirtualDeviceParams(
                     mLockState,
+                    mAllowedUsers,
                     mUsersWithMatchingAccounts,
                     mDefaultNavigationPolicy,
                     mCrossTaskNavigationExemptions,

@@ -58,6 +58,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     public TestRule compatChangeRule = new PlatformCompatChangeRule();
 
     @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testDisplayRotationCompatPolicy_presentWhenEnabled() {
         runTestScenario((robot) -> {
             robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
@@ -67,6 +68,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testDisplayRotationCompatPolicy_notPresentWhenDisabled() {
         runTestScenario((robot) -> {
             robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ false);
@@ -76,6 +78,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testDisplayRotationCompatPolicy_startedWhenEnabled() {
         runTestScenario((robot) -> {
             robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
@@ -97,6 +100,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
 
     @Test
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testSimReqOrientationPolicy_notPresentWhenNoDW() {
         runTestScenario((robot) -> {
             robot.dw().allowEnterDesktopMode(/* isAllowed= */ false);
@@ -116,6 +120,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testSimReqOrientationPolicy_notPresentWhenNoFlagAndNoDW() {
         runTestScenario((robot) -> {
@@ -173,6 +178,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testCameraStateManager_existsWhenDisplayRotationCompatPolicyExists() {
         runTestScenario((robot) -> {
             robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
@@ -183,6 +189,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testCameraStateManager_startedWhenDisplayRotationCompatPolicyExists() {
         runTestScenario((robot) -> {
             robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
@@ -194,7 +201,8 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     }
 
     @Test
-    @DisableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
+    @DisableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES})
     public void testCameraStateManager_doesNotExistWhenNoPolicyExists() {
         runTestScenario((robot) -> {
             robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ false);
@@ -206,6 +214,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testIsCameraCompatTreatmentActive_whenTreatmentForTopActivityIsEnabled() {
         runTestScenario((robot) -> {
             robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
@@ -219,6 +228,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testIsCameraCompatTreatmentNotActive_whenTreatmentForTopActivityIsDisabled() {
         runTestScenario((robot) -> {
             robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
@@ -232,6 +242,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     @EnableCompatChanges(OVERRIDE_MIN_ASPECT_RATIO_ONLY_FOR_CAMERA)
     public void testShouldOverrideMinAspectRatioForCamera_whenCameraIsNotRunning() {
         runTestScenario((robot) -> {
@@ -247,6 +258,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     @DisableCompatChanges(OVERRIDE_MIN_ASPECT_RATIO_ONLY_FOR_CAMERA)
     public void testShouldOverrideMinAspectRatioForCamera_whenCameraIsRunning_overrideDisabled() {
         runTestScenario((robot) -> {
@@ -262,6 +274,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     @EnableCompatChanges(OVERRIDE_MIN_ASPECT_RATIO_ONLY_FOR_CAMERA)
     public void testShouldOverrideMinAspectRatioForCameraFullscr_cameraIsRunning_overrideEnabled() {
         runTestScenario((robot) -> {

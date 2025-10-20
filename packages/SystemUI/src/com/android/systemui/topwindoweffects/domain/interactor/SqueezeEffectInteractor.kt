@@ -17,6 +17,7 @@
 package com.android.systemui.topwindoweffects.domain.interactor
 
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.shared.Flags
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepository
 import java.io.PrintWriter
 import javax.inject.Inject
@@ -39,7 +40,7 @@ constructor(private val squeezeEffectRepository: SqueezeEffectRepository) {
                 squeezeEffectRepository.isPowerButtonPressedAsSingleGesture,
                 isPowerButtonLongPressed,
             ) { isEnabled, isPowerButtonPressedAsSingleGesture, isPowerButtonLongPressed ->
-                val useInitialRumble = squeezeEffectRepository.useHapticRumble()
+                val useInitialRumble = Flags.enableLppAssistInvocationInitialRumble()
                 when {
                     !isPowerButtonPressedAsSingleGesture -> PowerButtonSemantics.CANCEL_SQUEEZE
                     isEnabled && isPowerButtonPressedAsSingleGesture && useInitialRumble ->

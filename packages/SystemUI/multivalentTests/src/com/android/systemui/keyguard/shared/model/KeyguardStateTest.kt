@@ -34,18 +34,20 @@ class KeyguardStateTest : SysuiTestCase() {
      * GONE is transformed to UNDEFINED it makes sure that GONE and UNDEFINED need to have the same
      * value. This assumption is important as with scene container flag enabled call sites will only
      * check the result passing in UNDEFINED.
-     *
-     * This is true today, but as more states may become obsolete this assumption may not be true
-     * anymore and therefore [deviceIsAwakeInState] would need to be rewritten to factor in the
-     * scene state.
      */
     @Test
     @EnableSceneContainer
     fun assertUndefinedResultMatchesObsoleteStateResults() {
         for (state in KeyguardState.entries) {
+            if (state == KeyguardState.UNDEFINED) {
+                continue
+            }
             val isAwakeInSceneContainer =
-                KeyguardState.deviceIsAwakeInState(state.mapToSceneContainerState())
-            val isAwake = KeyguardState.deviceIsAwakeInState(state)
+                KeyguardState.deviceIsAwakeInState(
+                    state.mapToSceneContainerState(),
+                    state.mapToSceneContainerContent(),
+                )
+            val isAwake = KeyguardState.deviceIsAwakeInState(state, null)
             assertThat(isAwakeInSceneContainer).isEqualTo(isAwake)
         }
     }

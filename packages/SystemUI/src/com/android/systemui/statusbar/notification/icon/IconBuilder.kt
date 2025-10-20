@@ -27,12 +27,8 @@ import javax.inject.Inject
 
 /** Testable wrapper around Context. */
 class IconBuilder @Inject constructor(@StatusBarMain private val context: Context) {
-    @JvmOverloads
-    fun createIconView(
-        entry: NotificationEntry,
-        // TODO b/362720336: remove all usages of this without a provided context.
-        context: Context = this.context,
-    ): StatusBarIconView {
+
+    fun createIconView(entry: NotificationEntry, context: Context): StatusBarIconView {
         return StatusBarIconView(
             context,
             "${entry.sbn.packageName}/0x${Integer.toHexString(entry.sbn.id)}",
@@ -40,9 +36,20 @@ class IconBuilder @Inject constructor(@StatusBarMain private val context: Contex
         )
     }
 
-    @JvmOverloads
-    fun createIconView(entry: BundleEntry, context: Context = this.context): StatusBarIconView {
+    fun createIconView(entry: BundleEntry, context: Context): StatusBarIconView {
         return StatusBarIconView(context, entry.key, null, entry)
+    }
+
+    // TODO b/362720336: remove all usages of this without a provided context.
+    @Deprecated("Use createIconView(entry, context), providing the correct context.")
+    fun createIconView(entry: NotificationEntry): StatusBarIconView {
+        return createIconView(entry, context)
+    }
+
+    // TODO b/362720336: remove all usages of this without a provided context.
+    @Deprecated("Use createIconView(entry, context), providing the correct context.")
+    fun createIconView(entry: BundleEntry): StatusBarIconView {
+        return createIconView(entry, context)
     }
 
     fun getIconContentDescription(n: Notification): CharSequence {

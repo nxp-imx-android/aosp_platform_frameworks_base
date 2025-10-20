@@ -63,6 +63,7 @@ import com.android.systemui.scene.domain.interactor.WindowRootViewVisibilityInte
 import com.android.systemui.settings.UserContextProvider;
 import com.android.systemui.shade.ShadeController;
 import com.android.systemui.shade.ShadeDisplayAware;
+import com.android.systemui.shared.system.ActivityManagerWrapper;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.NotificationPresenter;
 import com.android.systemui.statusbar.StatusBarState;
@@ -147,6 +148,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
     private NotifGutsViewListener mGutsListener;
     private final HeadsUpManager mHeadsUpManager;
     private final ActivityStarter mActivityStarter;
+    private final ActivityManagerWrapper mActivityManagerWrapper;
 
     @Inject
     public NotificationGutsManager(
@@ -178,7 +180,8 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
             DeviceProvisionedController deviceProvisionedController,
             MetricsLogger metricsLogger,
             HeadsUpManager headsUpManager,
-            ActivityStarter activityStarter) {
+            ActivityStarter activityStarter,
+            ActivityManagerWrapper activityManagerWrapper) {
         mContext = context;
         mMainHandler = mainHandler;
         mBgHandler = bgHandler;
@@ -208,6 +211,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         mMetricsLogger = metricsLogger;
         mHeadsUpManager = headsUpManager;
         mActivityStarter = activityStarter;
+        mActivityManagerWrapper = activityManagerWrapper;
     }
 
     public void setUpWithPresenter(NotificationPresenter presenter,
@@ -318,7 +322,8 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
             row.onGutsClosed();
             if (!g.willBeRemoved() && !row.isRemoved()) {
                 mListContainer.onHeightChanged(
-                        row, !mPresenter.isPresenterFullyCollapsed() /* needsAnimation */);
+                        row, !mPresenter.isPresenterFullyCollapsed() /* needsAnimation */,
+                        "NGM.bindGuts");
             }
             if (mNotificationGutsExposed == g) {
                 mNotificationGutsExposed = null;
@@ -382,7 +387,8 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         notificationSnoozeView.setStatusBarNotification(sbn);
         notificationSnoozeView.setSnoozeOptions(ranking.getSnoozeCriteria());
         guts.setHeightChangedListener((NotificationGuts g) -> {
-            mListContainer.onHeightChanged(row, row.isShown() /* needsAnimation */);
+            mListContainer.onHeightChanged(row, row.isShown() /* needsAnimation */,
+                    "NGM.initializeSnoozeView");
         });
     }
 
@@ -794,6 +800,12 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
             return false;
         }
 
+        if (mActivityManagerWrapper.isLockTaskKioskModeActive()) {
+            // If the device is locked in kiosk mode, the user should not be able to access
+            // notification guts to change any settings.
+            return false;
+        }
+
         final ExpandableNotificationRow row = (ExpandableNotificationRow) view;
         if (row.isNotificationRowLongClickable()) {
             view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
@@ -852,7 +864,8 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 }
 
                 row.closeRemoteInput();
-                mListContainer.onHeightChanged(row, true /* needsAnimation */);
+                mListContainer.onHeightChanged(row, true /* needsAnimation */,
+                        "NGM.openGutsInternal");
                 mGutsMenuItem = menuItem;
                 if(NotificationBundleUi.isEnabled()) {
                     row.getEntryAdapter().setInlineControlsShown(true);

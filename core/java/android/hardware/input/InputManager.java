@@ -69,6 +69,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 
 /**
@@ -258,6 +259,39 @@ public final class InputManager {
         int REMAPPABLE_MODIFIER_KEY_SHIFT_LEFT = KeyEvent.KEYCODE_SHIFT_LEFT;
         int REMAPPABLE_MODIFIER_KEY_SHIFT_RIGHT = KeyEvent.KEYCODE_SHIFT_RIGHT;
         int REMAPPABLE_MODIFIER_KEY_CAPS_LOCK = KeyEvent.KEYCODE_CAPS_LOCK;
+    }
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = {"CONTROLLER_BUTTON_"}, value = {
+            ControllerButton.CONTROLLER_BUTTON_SOUTH,
+            ControllerButton.CONTROLLER_BUTTON_EAST,
+            ControllerButton.CONTROLLER_BUTTON_NORTH,
+            ControllerButton.CONTROLLER_BUTTON_WEST,
+            ControllerButton.CONTROLLER_BUTTON_L1,
+            ControllerButton.CONTROLLER_BUTTON_R1,
+            ControllerButton.CONTROLLER_BUTTON_L2,
+            ControllerButton.CONTROLLER_BUTTON_R2,
+            ControllerButton.CONTROLLER_BUTTON_SELECT,
+            ControllerButton.CONTROLLER_BUTTON_START,
+            ControllerButton.CONTROLLER_BUTTON_MODE,
+            ControllerButton.CONTROLLER_BUTTON_THUMBSTICK_LEFT,
+            ControllerButton.CONTROLLER_BUTTON_THUMBSTICK_RIGHT,
+    })
+    public @interface ControllerButton {
+        int CONTROLLER_BUTTON_SOUTH = KeyEvent.KEYCODE_BUTTON_A;
+        int CONTROLLER_BUTTON_EAST = KeyEvent.KEYCODE_BUTTON_B;
+        int CONTROLLER_BUTTON_NORTH = KeyEvent.KEYCODE_BUTTON_X;
+        int CONTROLLER_BUTTON_WEST = KeyEvent.KEYCODE_BUTTON_Y;
+        int CONTROLLER_BUTTON_L1 = KeyEvent.KEYCODE_BUTTON_L1;
+        int CONTROLLER_BUTTON_R1 = KeyEvent.KEYCODE_BUTTON_R1;
+        int CONTROLLER_BUTTON_L2 = KeyEvent.KEYCODE_BUTTON_L2;
+        int CONTROLLER_BUTTON_R2 = KeyEvent.KEYCODE_BUTTON_R2;
+        int CONTROLLER_BUTTON_SELECT = KeyEvent.KEYCODE_BUTTON_SELECT;
+        int CONTROLLER_BUTTON_START = KeyEvent.KEYCODE_BUTTON_START;
+        int CONTROLLER_BUTTON_MODE = KeyEvent.KEYCODE_BUTTON_MODE;
+        int CONTROLLER_BUTTON_THUMBSTICK_LEFT = KeyEvent.KEYCODE_BUTTON_THUMBL;
+        int CONTROLLER_BUTTON_THUMBSTICK_RIGHT = KeyEvent.KEYCODE_BUTTON_THUMBR;
     }
 
     /**
@@ -689,6 +723,97 @@ public final class InputManager {
     }
 
     /**
+     * Remaps a controller button.
+     *
+     * @param identifier The unique identifier for the device.
+     * @param fromButton The controller button getting remapped. This represents the positional
+     *                   code for the key.
+     * @param toKeyCode The key code that it is mapped to.
+     *
+     * @throws IllegalArgumentException if the provided fromButton is not a valid controller button
+     * @throws IllegalArgumentException if the provided toKeycode is not a valid gamepad keycode.
+     * @see KeyEvent#isGamepadButton(int)
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(com.android.hardware.input.Flags.FLAG_CONTROLLER_REMAPPING)
+    @RequiresPermission(Manifest.permission.CONTROLLER_REMAPPING)
+    public void remapControllerButton(@NonNull InputDeviceIdentifier identifier,
+            @ControllerButton int fromButton, int toKeyCode) {
+        Objects.requireNonNull(identifier, "Device identifier must not be null");
+        try {
+            mIm.remapControllerButton(mContext.getUserId(), identifier, fromButton, toKeyCode);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Removes controller button remapping.
+     *
+     * @param identifier The unique identifier for the device.
+     * @param fromButton The controller button getting remapped. This represents the positional code
+     *                for the button.
+     *
+     * @throws IllegalArgumentException if the provided fromButton is not a valid controller button
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(com.android.hardware.input.Flags.FLAG_CONTROLLER_REMAPPING)
+    @RequiresPermission(Manifest.permission.CONTROLLER_REMAPPING)
+    public void removeControllerButtonRemapping(@NonNull InputDeviceIdentifier identifier,
+            @ControllerButton int fromButton) {
+        Objects.requireNonNull(identifier, "Device identifier must not be null");
+        try {
+            mIm.removeControllerButtonRemapping(mContext.getUserId(), identifier, fromButton);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Clears all existing controller button remapping for a given device.
+     *
+     * @param identifier The unique identifier for the device.
+     *
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(com.android.hardware.input.Flags.FLAG_CONTROLLER_REMAPPING)
+    @RequiresPermission(Manifest.permission.CONTROLLER_REMAPPING)
+    public void clearAllControllerButtonRemapping(@NonNull InputDeviceIdentifier identifier) {
+        Objects.requireNonNull(identifier, "Device identifier must not be null");
+        try {
+            mIm.clearAllControllerButtonRemapping(mContext.getUserId(), identifier);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Provides the current controller button remapping for a given device.
+     *
+     * @param identifier The unique identifier for the device.
+     * @return a {fromButton, toKeycode} map that contains the existing controller button remapping.
+     *
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(com.android.hardware.input.Flags.FLAG_CONTROLLER_REMAPPING)
+    @NonNull
+    @SuppressWarnings("unchecked")
+    @RequiresPermission(Manifest.permission.CONTROLLER_REMAPPING)
+    public Map<Integer, Integer> getControllerButtonRemapping(
+            @NonNull InputDeviceIdentifier identifier) {
+        Objects.requireNonNull(identifier, "Device identifier must not be null");
+        try {
+            return mIm.getControllerButtonRemapping(mContext.getUserId(), identifier);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Gets the TouchCalibration applied to the specified input device's coordinates.
      *
      * @param inputDeviceDescriptor The input device descriptor.
@@ -1020,6 +1145,22 @@ public final class InputManager {
     @NonNull
     public VirtualKeyboard createVirtualKeyboard(@NonNull VirtualKeyboardConfig config) {
         return mGlobal.createVirtualKeyboard(config);
+    }
+
+    /**
+     * Returns a {@link VirtualGamepad} to the caller.
+     * See {@link android.hardware.input.VirtualGamepadConfig} for additional configurations
+     * available, e.g. display association, vendor id, product id, device name.
+     *
+     * @param config the gamepad configuration
+     * @return VirtualGamepad a virtual gamepad device
+     *
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.INJECT_EVENTS)
+    @NonNull
+    public VirtualGamepad createVirtualGamepad(@NonNull VirtualGamepadConfig config) {
+        return mGlobal.createVirtualGamepad(config);
     }
 
     /**
@@ -1842,5 +1983,4 @@ public final class InputManager {
     public boolean unregisterKeyEventActivityListener(@NonNull KeyEventActivityListener listener) {
         return mGlobal.unregisterKeyEventActivityListener(listener);
     }
-
 }

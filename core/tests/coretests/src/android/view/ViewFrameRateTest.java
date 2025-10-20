@@ -16,6 +16,7 @@
 
 package android.view;
 
+import static android.view.Surface.FRAME_RATE_CATEGORY_DEFAULT;
 import static android.view.Surface.FRAME_RATE_CATEGORY_HIGH;
 import static android.view.Surface.FRAME_RATE_CATEGORY_HIGH_HINT;
 import static android.view.Surface.FRAME_RATE_CATEGORY_LOW;
@@ -26,7 +27,7 @@ import static android.view.flags.Flags.FLAG_TOOLKIT_FRAME_RATE_TOUCH_BOOST_25Q1;
 import static android.view.flags.Flags.FLAG_TOOLKIT_INITIAL_TOUCH_BOOST;
 import static android.view.flags.Flags.FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY;
 import static android.view.flags.Flags.FLAG_VIEW_VELOCITY_API;
-import static android.view.flags.Flags.toolkitFrameRateBySizeReadOnly;
+import static android.view.flags.Flags.toolkitDisableCategoryOnMrr;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -104,10 +105,13 @@ public class ViewFrameRateTest {
             return;
         }
         waitForFrameRateCategoryToSettle();
+        int expected = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_HIGH_HINT;
         mActivityRule.runOnUiThread(() -> {
             mMovingView.offsetLeftAndRight(100);
             runAfterDraw(() -> {
-                assertEquals(FRAME_RATE_CATEGORY_HIGH_HINT,
+                assertEquals(expected,
                         mViewRoot.getLastPreferredFrameRateCategory());
             });
         });
@@ -269,8 +273,9 @@ public class ViewFrameRateTest {
         mActivityRule.runOnUiThread(() -> {
             mMovingView.offsetLeftAndRight(100);
             runAfterDraw(() -> {
-                int expected = toolkitFrameRateBySizeReadOnly()
-                        ? FRAME_RATE_CATEGORY_LOW : FRAME_RATE_CATEGORY_NORMAL;
+                int expected = hasArrSupport()
+                        ? FRAME_RATE_CATEGORY_DEFAULT
+                        : FRAME_RATE_CATEGORY_NORMAL;
                 float frameRate = mViewRoot.getLastPreferredFrameRate();
                 // frame rate shouldn't be boost with TYPE_INPUT_METHOD window type
                 assertTrue(frameRate == 0);
@@ -312,7 +317,10 @@ public class ViewFrameRateTest {
             mMovingView.setOnClickListener((v) -> {});
         });
         waitForFrameRateCategoryToSettle();
-        mActivityRule.runOnUiThread(() -> assertEquals(FRAME_RATE_CATEGORY_LOW,
+        int expected = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_LOW;
+        mActivityRule.runOnUiThread(() -> assertEquals(expected,
                 mViewRoot.getLastPreferredFrameRateCategory()));
 
         int[] position = new int[2];
@@ -374,13 +382,17 @@ public class ViewFrameRateTest {
         params.width = width * 2;
         params.height = height * 2;
 
+        int expected = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_HIGH_HINT;
+
         // frame rate category should be HIGH_HINT when the size is changed
         mActivityRule.runOnUiThread(() -> {
             mMovingView.setLayoutParams(params);
             runAfterDraw(() -> {
                 assertTrue(mMovingView.getWidth() > width);
                 assertTrue(mMovingView.getHeight() > height);
-                assertEquals(FRAME_RATE_CATEGORY_HIGH_HINT,
+                assertEquals(expected,
                         mViewRoot.getLastPreferredFrameRateCategory());
             });
         });
@@ -394,7 +406,7 @@ public class ViewFrameRateTest {
             runAfterDraw(() -> {
                 assertEquals(width, mMovingView.getWidth());
                 assertEquals(height, mMovingView.getHeight());
-                assertEquals(FRAME_RATE_CATEGORY_HIGH_HINT,
+                assertEquals(expected,
                         mViewRoot.getLastPreferredFrameRateCategory());
             });
         });
@@ -520,8 +532,9 @@ public class ViewFrameRateTest {
         // Now that it is small, any invalidation should have a normal category
         mActivityRule.runOnUiThread(() -> {
             mMovingView.invalidate();
-            int expected = toolkitFrameRateBySizeReadOnly()
-                    ? FRAME_RATE_CATEGORY_LOW : FRAME_RATE_CATEGORY_NORMAL;
+            int expected = hasArrSupport()
+                    ? FRAME_RATE_CATEGORY_DEFAULT
+                    : FRAME_RATE_CATEGORY_NORMAL;
             runAfterDraw(
                     () -> assertEquals(expected, mViewRoot.getLastPreferredFrameRateCategory()));
         });
@@ -552,8 +565,9 @@ public class ViewFrameRateTest {
         // Now that it is small, any invalidation should have a normal category
         mActivityRule.runOnUiThread(() -> {
             mMovingView.invalidate();
-            int expected = toolkitFrameRateBySizeReadOnly()
-                    ? FRAME_RATE_CATEGORY_LOW : FRAME_RATE_CATEGORY_NORMAL;
+            int expected = hasArrSupport()
+                    ? FRAME_RATE_CATEGORY_DEFAULT
+                    : FRAME_RATE_CATEGORY_NORMAL;
             runAfterDraw(
                     () -> assertEquals(expected, mViewRoot.getLastPreferredFrameRateCategory()));
         });
@@ -584,8 +598,9 @@ public class ViewFrameRateTest {
         // Now that it is small, any invalidation should have a normal category
         mActivityRule.runOnUiThread(() -> {
             mMovingView.invalidate();
-            int expected = toolkitFrameRateBySizeReadOnly()
-                    ? FRAME_RATE_CATEGORY_LOW : FRAME_RATE_CATEGORY_NORMAL;
+            int expected = hasArrSupport()
+                    ? FRAME_RATE_CATEGORY_DEFAULT
+                    : FRAME_RATE_CATEGORY_NORMAL;
             runAfterDraw(
                     () -> assertEquals(expected, mViewRoot.getLastPreferredFrameRateCategory()));
         });
@@ -616,7 +631,9 @@ public class ViewFrameRateTest {
         // Now that it is small, any invalidation should have a high category
         mActivityRule.runOnUiThread(() -> {
             mMovingView.invalidate();
-            int expected = FRAME_RATE_CATEGORY_NORMAL;
+            int expected = hasArrSupport()
+                    ? FRAME_RATE_CATEGORY_DEFAULT
+                    : FRAME_RATE_CATEGORY_NORMAL;
             runAfterDraw(
                     () -> assertEquals(expected, mViewRoot.getLastPreferredFrameRateCategory()));
         });
@@ -647,7 +664,9 @@ public class ViewFrameRateTest {
         // Now that it is small, any invalidation should have a high category
         mActivityRule.runOnUiThread(() -> {
             mMovingView.invalidate();
-            int expected = FRAME_RATE_CATEGORY_NORMAL;
+            int expected = hasArrSupport()
+                    ? FRAME_RATE_CATEGORY_DEFAULT
+                    : FRAME_RATE_CATEGORY_NORMAL;
             runAfterDraw(
                     () -> assertEquals(expected, mViewRoot.getLastPreferredFrameRateCategory()));
         });
@@ -670,7 +689,9 @@ public class ViewFrameRateTest {
         waitForFrameRateCategoryToSettle();
         mActivityRule.runOnUiThread(() -> {
             mMovingView.invalidate();
-            int expected = FRAME_RATE_CATEGORY_NORMAL;
+            int expected = hasArrSupport()
+                    ? FRAME_RATE_CATEGORY_DEFAULT
+                    : FRAME_RATE_CATEGORY_NORMAL;
             runAfterDraw(() -> assertEquals(expected,
                     mViewRoot.getLastPreferredFrameRateCategory()));
         });
@@ -689,8 +710,11 @@ public class ViewFrameRateTest {
             mMovingView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_LOW);
             mMovingView.setFrameContentVelocity(1f);
             mMovingView.invalidate();
+            int expected = hasArrSupport()
+                    ? FRAME_RATE_CATEGORY_DEFAULT
+                    : FRAME_RATE_CATEGORY_LOW;
             runAfterDraw(() -> {
-                assertEquals(FRAME_RATE_CATEGORY_LOW,
+                assertEquals(expected,
                         mViewRoot.getLastPreferredFrameRateCategory());
                 assertEquals(60f, mViewRoot.getLastPreferredFrameRate());
             });
@@ -709,18 +733,23 @@ public class ViewFrameRateTest {
             mMovingView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_LOW);
         });
         waitForFrameRateCategoryToSettle();
+        int expectedLow = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_LOW;
         mActivityRule.runOnUiThread(() -> {
             mMovingView.invalidate();
-            runAfterDraw(() -> assertEquals(FRAME_RATE_CATEGORY_LOW,
+            runAfterDraw(() -> assertEquals(expectedLow,
                     mViewRoot.getLastPreferredFrameRateCategory()));
         });
         waitForAfterDraw();
+        int expectedNormal = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_NORMAL;
         mActivityRule.runOnUiThread(() -> {
             mMovingView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_NORMAL);
             mMovingView.setAlpha(0.9f);
             runAfterDraw(() -> {
-                assertEquals(FRAME_RATE_CATEGORY_NORMAL,
-                        mViewRoot.getLastPreferredFrameRateCategory());
+                assertEquals(expectedNormal, mViewRoot.getLastPreferredFrameRateCategory());
             });
         });
         waitForAfterDraw();
@@ -786,6 +815,9 @@ public class ViewFrameRateTest {
         }
         mMovingView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_NO_PREFERENCE);
         waitForFrameRateCategoryToSettle();
+        int expected = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_NO_PREFERENCE;
 
         mActivityRule.runOnUiThread(() -> {
             mMovingView.offsetLeftAndRight(10);
@@ -795,7 +827,7 @@ public class ViewFrameRateTest {
             mMovingView.invalidate();
             runAfterDraw(() -> {
                 assertEquals(0f, mViewRoot.getLastPreferredFrameRate(), 0f);
-                assertEquals(FRAME_RATE_CATEGORY_NO_PREFERENCE,
+                assertEquals(expected,
                         mViewRoot.getLastPreferredFrameRateCategory());
             });
         });
@@ -860,7 +892,10 @@ public class ViewFrameRateTest {
             mMovingView.setOnClickListener((v) -> {});
         });
         waitForFrameRateCategoryToSettle();
-        mActivityRule.runOnUiThread(() -> assertEquals(FRAME_RATE_CATEGORY_LOW,
+        int expectedLow = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_LOW;
+        mActivityRule.runOnUiThread(() -> assertEquals(expectedLow,
                 mViewRoot.getLastPreferredFrameRateCategory()));
         int[] position = new int[2];
         mActivityRule.runOnUiThread(() -> {
@@ -881,7 +916,10 @@ public class ViewFrameRateTest {
         );
         down.setSource(InputDevice.SOURCE_TOUCHSCREEN);
         instrumentation.sendPointerSync(down);
-        assertEquals(FRAME_RATE_CATEGORY_HIGH_HINT, mViewRoot.getLastPreferredFrameRateCategory());
+        int expectedHighHint = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_HIGH_HINT;
+        assertEquals(expectedHighHint, mViewRoot.getLastPreferredFrameRateCategory());
 
         // Should still be boost with position changed
         mActivityRule.runOnUiThread(() -> {
@@ -924,7 +962,10 @@ public class ViewFrameRateTest {
         );
         down.setSource(InputDevice.SOURCE_TOUCHSCREEN);
         instrumentation.sendPointerSync(down);
-        assertEquals(FRAME_RATE_CATEGORY_HIGH_HINT, mViewRoot.getLastPreferredFrameRateCategory());
+        int expected = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_HIGH_HINT;
+        assertEquals(expected, mViewRoot.getLastPreferredFrameRateCategory());
 
         MotionEvent up = MotionEvent.obtain(
                 now, // downTime
@@ -940,9 +981,12 @@ public class ViewFrameRateTest {
         // Wait for idle timeout - 100 ms logner to avoid flaky
         Thread.sleep(3100);
 
+        expected = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_NO_PREFERENCE;
         // Should not touch boost after the time out
         assertEquals(false, mViewRoot.getIsTouchBoosting());
-        assertEquals(FRAME_RATE_CATEGORY_NO_PREFERENCE,
+        assertEquals(expected,
                 mViewRoot.getLastPreferredFrameRateCategory());
     }
 
@@ -955,19 +999,25 @@ public class ViewFrameRateTest {
             return;
         }
         waitForFrameRateCategoryToSettle();
+        int expectedHigh = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_HIGH;
         mActivityRule.runOnUiThread(() -> {
             mMovingView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_HIGH);
             mMovingView.setFrameContentVelocity(Float.MAX_VALUE);
             mMovingView.invalidate();
-            runAfterDraw(() -> assertEquals(FRAME_RATE_CATEGORY_HIGH,
+            runAfterDraw(() -> assertEquals(expectedHigh,
                     mViewRoot.getLastPreferredFrameRateCategory()));
         });
         waitForAfterDraw();
 
         // Wait for idle timeout
         Thread.sleep(1000);
+        int expectedNoPreference = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_NO_PREFERENCE;
         assertEquals(0f, mViewRoot.getLastPreferredFrameRate());
-        assertEquals(FRAME_RATE_CATEGORY_NO_PREFERENCE,
+        assertEquals(expectedNoPreference,
                 mViewRoot.getLastPreferredFrameRateCategory());
     }
 
@@ -1006,25 +1056,34 @@ public class ViewFrameRateTest {
         // Wait for idle timeout
         Thread.sleep(1000);
         assertEquals(45f, mViewRoot.getLastPreferredFrameRate());
-        assertEquals(FRAME_RATE_CATEGORY_NORMAL, mViewRoot.getLastPreferredFrameRateCategory());
+        int expectedNormal = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_NORMAL;
+        assertEquals(expectedNormal, mViewRoot.getLastPreferredFrameRateCategory());
 
         // Removing the vector drawable with NORMAL should drop the category to LOW
         mActivityRule.runOnUiThread(() -> parents[0].removeView(progressBars[1]));
         Thread.sleep(1000);
+        int expectedLow = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_LOW;
         assertEquals(45f, mViewRoot.getLastPreferredFrameRate());
-        assertEquals(FRAME_RATE_CATEGORY_LOW,
+        assertEquals(expectedLow,
                 mViewRoot.getLastPreferredFrameRateCategory());
         // Removing the one voting for frame rate should leave only the category
         mActivityRule.runOnUiThread(() -> parents[0].removeView(progressBars[2]));
         Thread.sleep(1000);
         assertEquals(0f, mViewRoot.getLastPreferredFrameRate());
-        assertEquals(FRAME_RATE_CATEGORY_LOW,
+        assertEquals(expectedLow,
                 mViewRoot.getLastPreferredFrameRateCategory());
         // Removing the last one should leave it with no preference
         mActivityRule.runOnUiThread(() -> parents[0].removeView(progressBars[0]));
         Thread.sleep(1000);
+        int expectedNoPreference = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_NO_PREFERENCE;
         assertEquals(0f, mViewRoot.getLastPreferredFrameRate());
-        assertEquals(FRAME_RATE_CATEGORY_NO_PREFERENCE,
+        assertEquals(expectedNoPreference,
                 mViewRoot.getLastPreferredFrameRateCategory());
     }
 
@@ -1046,9 +1105,12 @@ public class ViewFrameRateTest {
             renderNodeAnimator[0].setTarget(mMovingView);
             renderNodeAnimator[0].start();
             mMovingView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_LOW);
+            int expected = hasArrSupport()
+                    ? FRAME_RATE_CATEGORY_DEFAULT
+                    : FRAME_RATE_CATEGORY_LOW;
             runAfterDraw(() -> {
                 assertEquals(0f, mViewRoot.getLastPreferredFrameRate());
-                assertEquals(FRAME_RATE_CATEGORY_LOW,
+                assertEquals(expected,
                         mViewRoot.getLastPreferredFrameRateCategory());
             });
         });
@@ -1060,8 +1122,11 @@ public class ViewFrameRateTest {
 
         // Wait for idle timeout
         Thread.sleep(1000);
+        int expected = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_NO_PREFERENCE;
         assertEquals(0f, mViewRoot.getLastPreferredFrameRate());
-        assertEquals(FRAME_RATE_CATEGORY_NO_PREFERENCE,
+        assertEquals(expected,
                 mViewRoot.getLastPreferredFrameRateCategory());
     }
 
@@ -1079,13 +1144,17 @@ public class ViewFrameRateTest {
         renderNodeAnimator[0] = new RenderNodeAnimator(RenderNodeAnimator.ALPHA, 0f);
         renderNodeAnimator[0].setDuration(100000);
 
+        int expectedLow = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_LOW;
+
         mActivityRule.runOnUiThread(() -> {
             renderNodeAnimator[0].setTarget(mMovingView);
             renderNodeAnimator[0].start();
             mMovingView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_LOW);
             runAfterDraw(() -> {
                 assertEquals(0f, mViewRoot.getLastPreferredFrameRate());
-                assertEquals(FRAME_RATE_CATEGORY_LOW,
+                assertEquals(expectedLow,
                         mViewRoot.getLastPreferredFrameRateCategory());
             });
         });
@@ -1098,8 +1167,11 @@ public class ViewFrameRateTest {
         });
 
         Thread.sleep(1000);
+        int expectedNoPreference = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_NO_PREFERENCE;
         assertEquals(0f, mViewRoot.getLastPreferredFrameRate());
-        assertEquals(FRAME_RATE_CATEGORY_NO_PREFERENCE,
+        assertEquals(expectedNoPreference,
                 mViewRoot.getLastPreferredFrameRateCategory());
     }
 
@@ -1138,6 +1210,9 @@ public class ViewFrameRateTest {
             return;
         }
         waitForFrameRateCategoryToSettle();
+        int expected = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_HIGH_HINT;
         mActivityRule.runOnUiThread(() -> {
             TranslateAnimation translateAnimation = new TranslateAnimation(
                     Animation.RELATIVE_TO_PARENT, 0f, // fromXDelta
@@ -1149,7 +1224,7 @@ public class ViewFrameRateTest {
 
             mMovingView.startAnimation(translateAnimation);
 
-            runAfterDraw(() -> assertEquals(FRAME_RATE_CATEGORY_HIGH_HINT,
+            runAfterDraw(() -> assertEquals(expected,
                     mViewRoot.getLastPreferredFrameRateCategory()));
         });
         waitForAfterDraw();
@@ -1190,7 +1265,10 @@ public class ViewFrameRateTest {
 
             // The frame rate should be "Normal" during fling gestures,
             // even if there's a moving View.
-            assertEquals(FRAME_RATE_CATEGORY_NORMAL,
+            int expected = hasArrSupport()
+                    ? FRAME_RATE_CATEGORY_DEFAULT
+                    : FRAME_RATE_CATEGORY_NORMAL;
+            assertEquals(expected,
                     mViewRoot.getLastPreferredFrameRateCategory());
         });
         waitForAfterDraw();
@@ -1231,7 +1309,10 @@ public class ViewFrameRateTest {
 
             // The frame rate should be "Normal" during fling gestures,
             // even if there's a moving View.
-            assertEquals(FRAME_RATE_CATEGORY_NORMAL,
+            int expected = hasArrSupport()
+                    ? FRAME_RATE_CATEGORY_DEFAULT
+                    : FRAME_RATE_CATEGORY_NORMAL;
+            assertEquals(expected,
                     mViewRoot.getLastPreferredFrameRateCategory());
         });
         waitForAfterDraw();
@@ -1303,6 +1384,10 @@ public class ViewFrameRateTest {
         if (mAfterDrawThrowable != null) {
             throw mAfterDrawThrowable;
         }
+    }
+
+    private boolean hasArrSupport() {
+        return toolkitDisableCategoryOnMrr() && !mViewRoot.getHasArrSupport();
     }
 
     private void waitForFrameRateCategoryToSettle() throws Throwable {

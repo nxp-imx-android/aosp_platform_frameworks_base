@@ -64,6 +64,9 @@ import android.os.Vibrator;
 import android.os.WorkSource;
 import android.os.WorkSource.WorkChain;
 import android.os.test.TestLooper;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.testing.TestableContext;
 import android.util.IntArray;
@@ -83,10 +86,16 @@ import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.power.FrameworkStatsLogger.WakelockEventType;
 import com.android.server.power.batterysaver.BatterySaverStateMachine;
 import com.android.server.power.feature.PowerManagerFlags;
+import com.android.server.power.feature.flags.Flags;
 import com.android.server.statusbar.StatusBarManagerInternal;
 
+import com.google.testing.junit.testparameterinjector.TestParameter;
+import com.google.testing.junit.testparameterinjector.TestParameterInjector;
+
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
@@ -98,6 +107,7 @@ import java.util.concurrent.Executor;
 /**
  * Tests for {@link com.android.server.power.Notifier}
  */
+@RunWith(TestParameterInjector.class)
 public class NotifierTest {
     private static final String SYSTEM_PROPERTY_QUIESCENT = "ro.boot.quiescent";
     private static final int USER_ID = 0;
@@ -111,6 +121,8 @@ public class NotifierTest {
     private static final int OWNER_WORK_SOURCE_UID_1 = 3456;
     private static final int OWNER_WORK_SOURCE_UID_2 = 3457;
     private static final int PID = 5678;
+
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Mock private BatterySaverStateMachine mBatterySaverStateMachineMock;
     @Mock private PowerManagerService.NativeWrapper mNativeWrapperMock;
@@ -297,10 +309,32 @@ public class NotifierTest {
     }
 
     @Test
-    public void testOnGlobalWakefulnessChangeStarted() {
-        createNotifier();
+    @DisableFlags(Flags.FLAG_INTERACTIVE_DOZE_EXPERIENCE)
+    public void testOnGlobalWakefulnessChangeStarted_interactiveDozeFlagOff(
+                @TestParameter boolean interactivDozeConfigEnabled) {
+        testOnGlobalWakefulnessChangeStarted(
+                /* interactiveDozeConfigEnabled= */ interactivDozeConfigEnabled,
+                /* expectCallSetDisplayInteractivity= */ true);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_INTERACTIVE_DOZE_EXPERIENCE)
+    public void testOnGlobalWakefulnessChangeStarted_interactiveDozeFlagOn(
+                @TestParameter boolean interactivDozeConfigEnabled) {
+        testOnGlobalWakefulnessChangeStarted(
+                /* interactiveDozeConfigEnabled= */ interactivDozeConfigEnabled,
+                /* expectCallSetDisplayInteractivity= */ !interactivDozeConfigEnabled);
+    }
+
+    private void testOnGlobalWakefulnessChangeStarted(
+            boolean interactiveDozeConfigEnabled,
+            boolean expectCallSetDisplayInteractivity) {
         // GIVEN system is currently non-interactive
         when(mPowerManagerFlags.isPerDisplayWakeByTouchEnabled()).thenReturn(false);
+        when(mResourcesSpy.getBoolean(
+                com.android.internal.R.bool.config_enableInteractiveDoze))
+                .thenReturn(interactiveDozeConfigEnabled);
+        createNotifier();
         final int displayId1 = 101;
         final int displayId2 = 102;
         final int[] displayIds = new int[]{displayId1, displayId2};
@@ -315,10 +349,14 @@ public class NotifierTest {
         mTestLooper.dispatchAll();
 
         // THEN input is notified of all displays being interactive
-        final SparseBooleanArray expectedDisplayInteractivities = new SparseBooleanArray();
-        expectedDisplayInteractivities.put(displayId1, true);
-        expectedDisplayInteractivities.put(displayId2, true);
-        verify(mInputManagerInternal).setDisplayInteractivities(expectedDisplayInteractivities);
+        if (expectCallSetDisplayInteractivity) {
+            final SparseBooleanArray expectedDisplayInteractivities = new SparseBooleanArray();
+            expectedDisplayInteractivities.put(displayId1, true);
+            expectedDisplayInteractivities.put(displayId2, true);
+            verify(mInputManagerInternal).setDisplayInteractivities(expectedDisplayInteractivities);
+        } else {
+            verify(mInputManagerInternal, never()).setDisplayInteractivities(any());
+        }
         verify(mInputMethodManagerInternal).setInteractive(/* interactive= */ true);
     }
 
@@ -388,10 +426,32 @@ public class NotifierTest {
     }
 
     @Test
-    public void testOnGroupWakefulnessChangeStarted_perDisplayWakeByTouchEnabled() {
-        createNotifier();
+    @DisableFlags(Flags.FLAG_INTERACTIVE_DOZE_EXPERIENCE)
+    public void testOnGroupWakefulnessChangeStarted_perDisplayWakeByTouchOn_interactiveDozeFlagOff(
+            @TestParameter boolean interactivDozeConfigEnabled) {
+        testOnGroupWakefulnessChangeStarted_perDisplayWakeByTouchEnabled(
+                /* interactiveDozeConfigEnabled= */ interactivDozeConfigEnabled,
+                /* expectCallSetDisplayInteractivity= */ true);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_INTERACTIVE_DOZE_EXPERIENCE)
+    public void testOnGroupWakefulnessChangeStarted_perDisplayWakeByTouchOn_interactiveDozeFlagOn(
+            @TestParameter boolean interactivDozeConfigEnabled) {
+        testOnGroupWakefulnessChangeStarted_perDisplayWakeByTouchEnabled(
+                /* interactiveDozeConfigEnabled= */ interactivDozeConfigEnabled,
+                /* expectCallSetDisplayInteractivity= */ !interactivDozeConfigEnabled);
+    }
+
+    private void testOnGroupWakefulnessChangeStarted_perDisplayWakeByTouchEnabled(
+            boolean interactiveDozeConfigEnabled,
+            boolean expectCallSetDisplayInteractivity) {
         // GIVEN per-display wake by touch flag is enabled
         when(mPowerManagerFlags.isPerDisplayWakeByTouchEnabled()).thenReturn(true);
+        when(mResourcesSpy.getBoolean(
+                com.android.internal.R.bool.config_enableInteractiveDoze))
+                .thenReturn(interactiveDozeConfigEnabled);
+        createNotifier();
         final int groupId = 456;
         final int displayId1 = 1001;
         final int displayId2 = 1002;
@@ -405,11 +465,15 @@ public class NotifierTest {
                 groupId, WAKEFULNESS_AWAKE, changeReason, /* eventTime= */ 999);
         mTestLooper.dispatchAll();
 
-        // THEN native input manager is updated that the displays are interactive
-        final SparseBooleanArray expectedDisplayInteractivities = new SparseBooleanArray();
-        expectedDisplayInteractivities.put(displayId1, true);
-        expectedDisplayInteractivities.put(displayId2, true);
-        verify(mInputManagerInternal).setDisplayInteractivities(expectedDisplayInteractivities);
+        if (expectCallSetDisplayInteractivity) {
+            // THEN native input manager is updated that the displays are interactive
+            final SparseBooleanArray expectedDisplayInteractivities = new SparseBooleanArray();
+            expectedDisplayInteractivities.put(displayId1, true);
+            expectedDisplayInteractivities.put(displayId2, true);
+            verify(mInputManagerInternal).setDisplayInteractivities(expectedDisplayInteractivities);
+        } else {
+            verify(mInputManagerInternal, never()).setDisplayInteractivities(any());
+        }
     }
 
     @Test

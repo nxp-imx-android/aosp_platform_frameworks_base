@@ -225,7 +225,9 @@ TEST_F(FlaggedResourcesTest, ReadWriteFlagChunk) {
   const std::string compiled_files_dir = GetTestPath("compiled");
   ASSERT_TRUE(CompileFile(GetTestPath("res/values/strings.xml"),
                           R"(<resources  xmlns:android="http://schemas.android.com/apk/res/android">
-                                <string name="text1" android:featureFlag="test.package.rwFlag">foobar</string>
+<string name="text1" android:featureFlag="test.package.rwFlag">foobar</string>
+<string name="text2">foobar</string>
+<string name="text3" android:featureFlag="test.package.rwFlag">@string/text2</string>
                               </resources>)",
                           compiled_files_dir, &noop_diag,
                           {"--feature-flags", "test.package.rwFlag"}));
@@ -243,6 +245,7 @@ TEST_F(FlaggedResourcesTest, ReadWriteFlagChunk) {
 
   std::string output;
   DumpChunksToString(loaded_apk.get(), &output);
+  SCOPED_TRACE(output);
 
   std::string expected1 =
       R"OUT_END(  [RES_TABLE_FLAG_LIST] chunkSize: 12 headerSize: 8 count: 1
@@ -250,12 +253,40 @@ TEST_F(FlaggedResourcesTest, ReadWriteFlagChunk) {
   ASSERT_TRUE(output.contains(expected1));
 
   std::string expected2 =
-      R"OUT_END(    [RES_TABLE_FLAGGED] chunkSize: 120 headerSize: 16 name: test.package.rwFlag negated: false
-      [ResTable_type] chunkSize: 104 headerSize: 84 id: 0x01 name: string flags: 0x00 (DENSE) entryCount: 1 entryStart: 88 config: 
+      R"OUT_END([RES_TABLE_FLAGGED] chunkSize: 144 headerSize: 16 name: test.package.rwFlag negated: false
+      [ResTable_type] chunkSize: 128 headerSize: 84 id: 0x01 name: string flags: 0x00 (DENSE) entryCount: 3 entryStart: 96 config: 
         [ResTable_entry] id: 0x0000 name: text1 keyIndex: 0 size: 8 flags: 0x0000
-          [Res_value] size: 8 dataType: 0x03 data: 0x00000000 ("foobar"))OUT_END";
+          [Res_value] size: 8 dataType: 0x03 data: 0x00000000 ("foobar")
+        [ResTable_entry] id: 0x0002 name: text3 keyIndex: 2 size: 8 flags: 0x0000
+          [Res_value] size: 8 dataType: 0x01 data: 0x7f010001 (@0x7f010001))OUT_END";
 
   ASSERT_TRUE(output.contains(expected2));
 }
 
+TEST_F(FlaggedResourcesTest, ReadWriteFlagsOnOverlayFails) {
+  const std::string compiled_files_dir = GetTestPath("compiled");
+  ASSERT_TRUE(CompileFile(GetTestPath("res/values/strings.xml"),
+                          R"(<resources  xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="text1" android:featureFlag="test.package.rwFlag">foobar</string>
+                              </resources>)",
+                          compiled_files_dir, &noop_diag,
+                          {"--feature-flags", "test.package.rwFlag"}));
+  const std::string manifest_file = GetTestPath("AndroidManifest.xml");
+  WriteFile(manifest_file, R"(
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.aapt.command.test">
+      <overlay android:targetPackage="com.example.target" />
+    </manifest>)");
+  const std::string out_apk = GetTestPath("out.apk");
+  std::vector<std::string> link_args = {
+      "--manifest",
+      manifest_file,
+      "-o",
+      out_apk,
+  };
+
+  test::TestDiagnosticsImpl diag;
+  ASSERT_FALSE(Link(link_args, compiled_files_dir, &diag));
+  ASSERT_TRUE(diag.GetLog().contains("Read/Write flags not allowed in overlay packages"));
+}
 }  // namespace aapt

@@ -17,11 +17,13 @@
 package com.android.wm.shell.bubbles
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
 import android.content.res.Resources
 import android.graphics.Color
 import android.os.Handler
+import android.os.UserHandle
 import android.os.UserManager
 import android.view.IWindowManager
 import android.view.WindowManager
@@ -30,11 +32,16 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.R
+import com.android.internal.logging.InstanceIdSequence
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.internal.statusbar.IStatusBarService
 import com.android.launcher3.icons.BubbleIconFactory
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.bubbles.logging.BubbleLogger
+import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
+import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
+import com.android.wm.shell.bubbles.model.BubbleIcon
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayImeController
@@ -78,9 +85,10 @@ class BubbleViewInfoTaskTest {
     private lateinit var bubbleLogger: BubbleLogger
     private lateinit var expandedViewManager: BubbleExpandedViewManager
     private lateinit var appInfoProvider: FakeBubbleAppInfoProvider
+    private lateinit var sessionTracker: BubbleSessionTracker
 
     private val bubbleTaskViewFactory = BubbleTaskViewFactory {
-        BubbleTaskView(mock<TaskView>(), directExecutor())
+        BubbleTaskView(mock<TaskView>(), directExecutor(), bubbleController)
     }
 
     @Before
@@ -112,6 +120,8 @@ class BubbleViewInfoTaskTest {
             )
         bubblePositioner = BubblePositioner(context, windowManager)
         bubbleLogger = BubbleLogger(UiEventLoggerFake())
+        val instanceIdSequence = InstanceIdSequence(/* instanceIdMax= */ 10)
+        sessionTracker = BubbleSessionTrackerImpl(instanceIdSequence, bubbleLogger)
         val bubbleData =
             BubbleData(
                 context,
@@ -171,6 +181,7 @@ class BubbleViewInfoTaskTest {
                 { Optional.empty() },
                 Optional.empty(),
                 { false },
+                sessionTracker,
             )
 
         // TODO: (b/371829099) - when optional overflow is no longer flagged we can enable this
@@ -267,6 +278,24 @@ class BubbleViewInfoTaskTest {
     }
 
     @Test
+    fun appBubble_usesAppIcon() {
+        val bubble = createAppBubble()
+        val task = createBubbleViewInfoTask(bubble)
+        task.startSync()
+
+        assertThat(bubble.bubbleIcon).isInstanceOf(BubbleIcon.AppIcon::class.java)
+    }
+
+    @Test
+    fun chatBubble_usesCustomBubbleIcon() {
+        val bubble = createBubbleWithShortcut()
+        val task = createBubbleViewInfoTask(bubble)
+        task.startSync()
+
+        assertThat(bubble.bubbleIcon).isInstanceOf(BubbleIcon.Custom::class.java)
+    }
+
+    @Test
     fun cancel_beforeBackgroundWorkStarts_bubbleNotInflated() {
         val bubble = createBubbleWithShortcut()
         val task = createBubbleViewInfoTask(bubble)
@@ -327,6 +356,11 @@ class BubbleViewInfoTaskTest {
             bgExecutor,
             metadataFlagListener
         )
+    }
+
+    private fun createAppBubble(): Bubble {
+        val intent = Intent().apply { setPackage("com.app.bubble") }
+        return Bubble.createAppBubble(intent, UserHandle.of(0), null, mainExecutor, bgExecutor)
     }
 
     private fun createBubbleViewInfoTask(

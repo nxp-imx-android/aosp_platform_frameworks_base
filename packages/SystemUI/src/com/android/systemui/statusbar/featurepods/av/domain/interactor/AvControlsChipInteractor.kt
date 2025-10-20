@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.featurepods.av.domain.interactor
 
-import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.shade.data.repository.PrivacyChipRepository
@@ -29,10 +28,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -46,49 +42,46 @@ import kotlinx.coroutines.flow.stateIn
  */
 interface AvControlsChipInteractor {
     /** Encodes whether the feature is enabled. */
-    val isEnabled: StateFlow<Boolean>
+    // val isEnabled: StateFlow<Boolean>
 
     /** Chip updates. */
     val model: StateFlow<AvControlsChipModel>
 
     /** Whether the display of the privacy dot should be suppressed to avoid duplicity. */
     val isShowingAvChip: StateFlow<Boolean>
+}
 
-    /** Initializes the feature. */
-    fun initialize()
+/**
+ * This implementation is to be used in case the Audio/Video control chip functionality is not
+ * available.
+ */
+class NoOpAvControlsChipInteractor @Inject constructor() : AvControlsChipInteractor {
+    // override val isEnabled = MutableStateFlow<Boolean>(false)
+    override val model = MutableStateFlow<AvControlsChipModel>(AvControlsChipModel())
+    override val isShowingAvChip = MutableStateFlow<Boolean>(false)
 }
 
 class AvControlsChipInteractorImpl
 @Inject
 constructor(
-    @Background backgroundScope: CoroutineScope,
+    @Background private val backgroundScope: CoroutineScope,
     private val privacyChipRepository: PrivacyChipRepository,
     statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
 ) : AvControlsChipInteractor {
-    private val _isEnabled = MutableStateFlow(false)
-    override val isEnabled = _isEnabled.asStateFlow()
+    // override val isEnabled = MutableStateFlow<Boolean>(true)
+
     override val model: StateFlow<AvControlsChipModel> =
-        isEnabled
-            .flatMapLatest { isEnabled ->
-                if (isEnabled) {
-                    privacyChipRepository.privacyItems.map { privacyItems ->
-                        AvControlsChipModel(
-                            sensorActivityModel =
-                                createSensorActivityModel(
-                                    cameraActive =
-                                        privacyItems.any {
-                                            it.privacyType == PrivacyType.TYPE_CAMERA
-                                        },
-                                    microphoneActive =
-                                        privacyItems.any {
-                                            it.privacyType == PrivacyType.TYPE_MICROPHONE
-                                        },
-                                )
+        privacyChipRepository.privacyItems
+            .map { privacyItems ->
+                AvControlsChipModel(
+                    sensorActivityModel =
+                        createSensorActivityModel(
+                            cameraActive =
+                                privacyItems.any { it.privacyType == PrivacyType.TYPE_CAMERA },
+                            microphoneActive =
+                                privacyItems.any { it.privacyType == PrivacyType.TYPE_MICROPHONE },
                         )
-                    }
-                } else {
-                    flowOf(AvControlsChipModel(sensorActivityModel = SensorActivityModel.Inactive))
-                }
+                )
             }
             .stateIn(
                 scope = backgroundScope,
@@ -98,20 +91,12 @@ constructor(
             )
 
     override val isShowingAvChip: StateFlow<Boolean> =
-        isEnabled
-            .flatMapLatest { isEnabled ->
-                if (isEnabled) {
-                    combine(
-                        model,
-                        statusBarModeRepositoryStore.defaultDisplay.isInFullscreenMode,
-                    ) { chipModel: AvControlsChipModel, isInFullscreenMode: Boolean ->
-                        when (chipModel.sensorActivityModel) {
-                            is SensorActivityModel.Inactive -> false
-                            is SensorActivityModel.Active -> !isInFullscreenMode
-                        }
-                    }
-                } else {
-                    flowOf(false)
+        combine(model, statusBarModeRepositoryStore.defaultDisplay.isInFullscreenMode) {
+                chipModel: AvControlsChipModel,
+                isInFullscreenMode: Boolean ->
+                when (chipModel.sensorActivityModel) {
+                    is SensorActivityModel.Inactive -> false
+                    is SensorActivityModel.Active -> !isInFullscreenMode
                 }
             }
             .stateIn(
@@ -136,12 +121,4 @@ constructor(
 
             else -> SensorActivityModel.Inactive
         }
-
-    /**
-     * The VC/Privacy control chip may not be enabled on all form factors, so only the relevant form
-     * factors should initialize the interactor. This must be called from a CoreStartable.
-     */
-    override fun initialize() {
-        _isEnabled.value = Flags.expandedPrivacyIndicatorsOnLargeScreen()
-    }
 }

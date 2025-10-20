@@ -32,23 +32,6 @@ flag {
 }
 
 flag {
-    name: "adpf_graphics_pipeline"
-    is_exported: true
-    namespace: "game"
-    description: "Guards use of SessionCreationConfig and Graphics Pipeline mode"
-    is_fixed_read_only: true
-    bug: "367803904"
-}
-
-flag {
-    name: "adpf_hwui_gpu"
-    namespace: "game"
-    description: "Guards use of the FMQ channel for ADPF"
-    is_fixed_read_only: true
-    bug: "330922490"
-}
-
-flag {
     name: "adpf_measure_during_input_event_boost"
     namespace: "game"
     description: "Guards use of a boost when view measures during input events"
@@ -80,21 +63,6 @@ flag {
 }
 
 flag {
-    name: "adpf_use_fmq_channel"
-    namespace: "game"
-    description: "Guards use of the FMQ channel for ADPF"
-    bug: "315894228"
-}
-
-flag {
-    name: "adpf_use_fmq_channel_fixed"
-    namespace: "game"
-    description: "Guards use of the FMQ channel for ADPF with a readonly flag"
-    is_fixed_read_only: true
-    bug: "315894228"
-}
-
-flag {
     name: "adpf_use_load_hints"
     namespace: "game"
     description: "Guards use of the ADPF public load hints behind a readonly flag"
@@ -117,7 +85,6 @@ flag {
     namespace: "profile_experiences"
     description: "Guards a new Private Profile type in UserManager - everything from its setup to config to deletion."
     bug: "299069460"
-    is_exported: true
 }
 
 flag {
@@ -202,6 +169,14 @@ flag {
 }
 
 flag {
+     name: "binder_netlink_enabled"
+     is_exported: false
+     namespace: "system_performance"
+     description: "Enables use of netlink for binder error reporting"
+     bug: "332610283"
+}
+
+flag {
     name: "bluetooth_bugreport_mode"
     is_exported: true
     namespace: "bluetooth"
@@ -236,6 +211,30 @@ flag {
      namespace: "system_performance"
      description: "Disables madvise of .art files by default during app start."
      bug: "382110550"
+}
+
+flag {
+    name: "enable_angle_deny_list"
+    namespace: "gpu"
+    description: "Whether to use native driver for apps in the denylist"
+    bug: "434014731"
+}
+
+flag {
+    name: "enable_angle_for_games"
+    namespace: "gpu"
+    description: "Whether to use angle driver for games not in the denylist"
+    bug: "440630034"
+}
+
+flag {
+    name: "enforce_strict_file_mode_check"
+    namespace: "backstage_power"
+    description: "Throw an IllegalArgumentException if the file mode passed to ParcelFileDescriptor#parseMode is unknown."
+    bug: "414387646"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -334,6 +333,20 @@ flag {
 }
 
 flag {
+    name: "native_app_zygote"
+    namespace: "system_performance"
+    description: "Enable support for the native-only variant of App Zygote"
+    bug: "442732151"
+}
+
+flag {
+    name: "native_framework_prototype"
+    namespace: "system_performance"
+    description: "Enable support for the native framework prototype"
+    bug: "406925781"
+}
+
+flag {
     name: "network_time_uses_shared_memory"
     namespace: "system_performance"
     description: "SystemClock.currentNetworkTimeMillis() reads network time offset from shared memory"
@@ -350,10 +363,10 @@ flag {
 }
 
 flag {
-    name: "query_angle_choice_flag"
-    namespace: "gpu"
-    description: "Unconditionally querying ANGLE choice to fix a driver load malfunction"
-    bug: "408439360"
+    name: "parcel_string_cache_enabled"
+    namespace: "system_performance"
+    description: "Enable JNIStringCache in Parcel"
+    bug: "442140362"
 }
 
 flag {
@@ -397,6 +410,14 @@ flag {
 }
 
 flag {
+    name: "supplemental_security_patches"
+    is_exported: false
+    namespace: "dynamic_spl"
+    description: "access supplemental security files of CVEs patched beyond the SPL"
+    bug: "446032302"
+}
+
+flag {
     name: "update_engine_api"
     namespace: "art_mainline"
     description: "Update Engine APIs for ART"
@@ -410,6 +431,13 @@ flag {
      namespace: "system_performance"
      description: "Whether MessageQueue can use the new concurrent implementation in any process"
      bug: "418770969"
+}
+
+flag {
+    name: "use_query_angle_choice"
+    namespace: "gpu"
+    description: "Use new query for ANGLE choice"
+    bug: "408439360"
 }
 
 flag {

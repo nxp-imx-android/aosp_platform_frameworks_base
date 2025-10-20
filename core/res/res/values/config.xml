@@ -528,6 +528,12 @@
     <!-- If this is true, the screen will come on when you unplug usb/power/whatever. -->
     <bool name="config_unplugTurnsOnScreen">false</bool>
 
+    <!-- Whether Activity.requestFullscreenMode() is enabled.
+         This should be disabled on devices that do not support this feature (e.g. Android
+         Automotive). When disabled, the API will be rejected with
+         RESULT_FAILED_NOT_SUPPORTED. -->
+    <bool name="config_fullscreenRequestSupported">true</bool>
+
     <!-- If this is true, the message that USB is only being used for charging will be shown. -->
     <bool name="config_usbChargingMessage">true</bool>
 
@@ -1537,6 +1543,9 @@
          wrong guesses, improving usability. -->
     <bool name="config_softwareLskfRateLimiterEnforcing">false</bool>
 
+    <!-- The shortlink to display when the user is locked out on the lockscreen. -->
+    <string name="config_lockscreenLockoutShortlink" translatable="false">g.co/android/unlock</string>
+
     <!-- Default value of the setting that controls whether animations should be disabled while
          entering the PIN on the lockscreen.
          False means animations should be enabled by default.
@@ -1547,6 +1556,19 @@
          True means the pattern should be visible by default.
          False means the pattern should not be visible by default. -->
     <bool name="config_lockPatternVisibleDefault">true</bool>
+
+    <!-- If true, then enable the failed authentication lock feature (aka adaptive auth) which
+         locks the device after repeated authentication failures. Setting this to false weakens user
+         protection and is not recommended for production devices. -->
+    <bool name="config_enableFailedAuthLock">true</bool>
+
+    <!-- The maximum number of failed authentication attempts allowed before the device is locked,
+         if failed authentication lock is enabled -->
+    <integer name="config_maxAllowedFailedAuthAttempts">5</integer>
+
+    <!-- Whether to show a user-facing toggle for failed authentication lock if the feature is
+         enabled. -->
+    <bool name="config_enableFailedAuthLockToggle">true</bool>
 
     <!-- Control the behavior when the user long presses the home button.
             0 - Nothing
@@ -2860,6 +2882,9 @@
 
     <!-- Whether there is to be a chosen Dock User who is the only user allowed to dream. -->
     <bool name="config_dreamsOnlyEnabledForDockUser">false</bool>
+
+    <!-- Whether to support restricting dreams to wireless charging. -->
+    <bool name="config_supportDreamWirelessChargingRestriction">false</bool>
     <!-- Whether dreams are disabled when ambient mode is suppressed. -->
     <bool name="config_dreamsDisabledByAmbientModeSuppressionConfig">false</bool>
     <!-- Whether to restrict dreams to wireless charging. -->
@@ -2964,12 +2989,27 @@
      during initialization when the setting is still null. -->
     <bool name="config_dozePickupGestureEnabled">true</bool>
 
+    <!-- Control whether doze is enabled by default. This value will be used during initialization
+     when the setting is still null. -->
+    <bool name="config_dozeEnabled">true</bool>
+
+    <!-- Control whether the single tap gesture is enabled by default. This value will be used
+     during initialization when the setting is still null. -->
+    <bool name="config_dozeTapGestureEnabled">true</bool>
+
+    <!-- Control whether the double tap gesture is enabled by default. This value will be used
+     during initialization when the setting is still null. -->
+    <bool name="config_dozeDoubleTapGestureEnabled">true</bool>
+
     <!-- Control whether the always on display mode is enabled by default. This value will be used
          during initialization when the setting is still null. -->
     <bool name="config_dozeAlwaysOnEnabled">true</bool>
 
     <!-- If AOD can show an ambient version of the wallpaper -->
     <bool name="config_dozeSupportsAodWallpaper">false</bool>
+
+    <!-- If AOD can detect inactivity to power down the display to save power. -->
+    <bool name="config_dozeSupportsAodInactivityDetection">false</bool>
 
     <!-- Whether the display blanks itself when transitioning from a doze to a non-doze state -->
     <bool name="config_displayBlanksAfterDoze">false</bool>
@@ -3310,6 +3350,11 @@
          0 (Default) : boot to the previous foreground user if there is one, otherwise the first switchable user.
          1 : boot to the first switchable full user for initial boot (unprovisioned device), else to the headless system user, i.e. user 0. -->
     <integer name="config_hsumBootStrategy">0</integer>
+
+    <!-- List of activities (flattened component names) allowed to be launched when the current user is the Headless System User -->
+    <string-array name="config_hsu_allowlist_activitivies" translatable="false">
+       <!-- default empty (meaning all activities will be allowed) -->
+    </string-array>
 
     <!-- Whether multiple admins are allowed on the device. If set to true, new users can be created
          with admin privileges and admin privileges can be granted/revoked from existing users. -->
@@ -4028,6 +4073,7 @@
     <!-- Flag specifying whether the device will use the "allow_hold_in_ims_call" carrier config
          option.  When false, the device will support holding of IMS calls, regardless of the
          carrier config setting. -->
+    <!-- @deprecated all carriers should support hold so this is obsolete -->
     <bool name="config_device_respects_hold_carrier_config">true</bool>
 
     <!-- Flag specifying whether VT should be available for carrier: independent of
@@ -4446,6 +4492,24 @@
 
     <!-- Indicating if ringtone vibration settings supported or not. -->
     <bool name="config_ringtoneVibrationSettingsSupported">false</bool>
+
+    <!-- Mapping for the ringtone vibration pattern name to metric ID for logging
+         ringtone vibration customization.
+     Example:
+     <string-array name="config_ringtoneVibrationPatternToMetricIdMapping" translatable="false">
+       <item>Classic_ringtone.xml,101</item>
+       <item>Bumps.xml,102</item>
+     </string-array> -->
+    <string-array name="config_ringtoneVibrationPatternToMetricIdMapping" translatable="false" />
+
+    <!-- Mapping for the notification vibration pattern name to metric ID for logging
+         notification vibration customization.
+     Example:
+     <string-array name="config_notificationVibrationPatternToMetricIdMapping" translatable="false">
+       <item>Classic_notification.xml,201</item>
+       <item>Taps.xml,202</item>
+     </string-array> -->
+    <string-array name="config_notificationVibrationPatternToMetricIdMapping" translatable="false" />
 
     <!-- If the device should still vibrate even in low power mode, for certain priority vibrations
      (e.g. accessibility, alarms). This is mainly for Wear devices that don't have speakers. -->
@@ -5011,6 +5075,11 @@
          Example: "1A:2B:3C:4D"
      -->
     <string-array name="config_companionPermSyncEnabledCerts" translatable="false"></string-array>
+
+    <!-- Certificate digests for trusted apps that will be allowed to obtain the knownSigner
+         CompanionDeviceManager permissions to send PCC messages. The digest should be SHA-256 hash
+         of the signing certificate. -->
+    <string-array name="config_cdmKnownSignersPCC" translatable="false" />
 
     <!-- The package name for the default wellbeing app.
          This package must be trusted, as it has the permissions to control other applications
@@ -6115,9 +6184,20 @@
     <!-- The list of packages that will use ANGLE as the GLES driver -->
     <string-array name="config_angleAllowList"></string-array>
 
+    <!-- The list of packages that will not use ANGLE as the GLES driver, overridden by RRO -->
+    <string-array name="config_angleDenyList"></string-array>
+
+    <!-- The global list of packages that should not use ANGLE as the GLES driver, they should
+         either not get modified or included in the device denylist above, and it's enforced by test
+         com.android.angle.denylist.app.GtsAngleDenyListDriverTest-->
+    <string-array name="config_angleGlobalDenyList">
+        <item>net.kishonti.gfxbench</item>
+        <item>net.kishonti.gfxbench.vulkan.v50005.corporate</item>
+    </string-array>
+
     <!-- The list of packages to automatically opt in to refresh rate suppressing by small area
-    detection. Format of this array should be packageName:threshold and threshold value should
-     be between 0 to 1-->
+         detection. Format of this array should be packageName:threshold and threshold value should
+         be between 0 to 1-->
     <string-array name="config_smallAreaDetectionAllowlist" translatable="false">
         <!-- Add packages:threshold here -->
     </string-array>
@@ -6482,7 +6562,7 @@
         - Option 0 - Left.
         - Option 1 - Center.
         - Option 2 - Right.
-    If given value is outside of this range, the option 0 (left) is assummed. -->
+    If given value is outside of this range, the option 0 (left) is assumed. -->
     <integer name="config_letterboxDefaultPositionForBookModeReachability">0</integer>
 
     <!-- Default vertical position of the letterboxed app window when reachability is
@@ -6543,21 +6623,30 @@
     <bool name="config_isCompatFakeFocusEnabled">false</bool>
 
     <!-- Whether camera compat treatment is enabled for issues caused by orientation mismatch
-        between camera buffers and an app window. This includes force rotation of fixed
-        orientation activities connected to the camera in fullscreen and showing a tooltip in
-        split screen. -->
+         between camera buffers and an app window. This includes force rotation of fixed
+         orientation activities connected to the camera in fullscreen and showing a tooltip in
+         split screen. -->
     <bool name="config_isWindowManagerCameraCompatTreatmentEnabled">false</bool>
 
     <!-- Whether should use split screen aspect ratio for the activity when camera compat treatment
-        is enabled and activity is connected to the camera in fullscreen. -->
+         is enabled and activity is connected to the camera in fullscreen. -->
     <bool name="config_isWindowManagerCameraCompatSplitScreenAspectRatioEnabled">false</bool>
 
     <!-- Whether camera compat treatment which simulates app's requested orientation is enabled. The
-        purpose of the treatment is to mitigate issues caused by orientation mismatch between camera
-        buffer and an app window. This includes letterboxing fixed orientation activities connected
-        to the camera, cropping the camera buffer (rotate-and-crop) and sandboxing display rotation
-        to match what the apps most likely expect in their requested orientation. -->
+         purpose of the treatment is to mitigate issues caused by orientation mismatch between
+         camera buffer and an app window. This includes letterboxing fixed orientation activities
+         connected to the camera, cropping the camera buffer (rotate-and-crop) and sandboxing
+         display rotation to match what the apps most likely expect in their requested
+         orientation. -->
     <bool name="config_isCameraCompatSimulateRequestedOrientationTreatmentEnabled">true</bool>
+
+    <!-- Whether camera compat treatment which simulates app's requested orientation is enabled for
+         landscape cameras. The purpose of the treatment is to mitigate issues caused by apps
+         hardcoding portrait camera sensor. The treatment includes letterboxing fixed orientation
+         activities connected to the camera, cropping the camera buffer (rotate-and-crop) and sensor
+         orientation to portrait, and sandboxing display rotation to match what the apps most likely
+         expect in their requested orientation. -->
+    <bool name="config_isCameraCompatSimReqOrientationLandscapeTreatmentEnabled">false</bool>
 
     <!-- Docking is a uiMode configuration change and will cause activities to relaunch if it's not
          handled. If true, the configuration change will be sent but activities will not be
@@ -7031,6 +7120,11 @@
     <!-- Wear OS: the name of the package containing the Media Sessions APK. -->
     <string name="config_wearMediaSessionsPackage" translatable="false"/>
 
+    <!-- WebView: the name of the class to be used by WebView to customise text selection menus. -->
+    <string name="config_webViewSelectionActionMenuClientPackage" translatable="false">
+        android.webkit.SelectionActionMenuClient
+    </string>
+
     <bool name="config_secondaryBuiltInDisplayIsRound">@bool/config_windowIsRound</bool>
 
     <!-- The display round config for each display in a multi-display device. -->
@@ -7475,9 +7569,6 @@
     <!-- Defines the minimum interval (in ms) between two input-based user-activity poke events. -->
     <integer name="config_minMillisBetweenInputUserActivityEvents">100</integer>
 
-    <!-- Name of the starting activity for DisplayCompat host. specific to automotive.-->
-    <string name="config_defaultDisplayCompatHostActivity" translatable="false"></string>
-
     <!-- Name of the starting activity for launch on private display. specific to automotive.-->
     <string name="config_defaultLaunchOnPrivateDisplayRouterActivity" translatable="false"></string>
 
@@ -7520,7 +7611,7 @@
     <integer name="config_maxDesktopWindowingActiveTasks">0</integer>
 
     <!-- Maximum number desks on a device running Desktop Windowing. Set to 0 for unlimited. -->
-    <integer name="config_maxDesktopWindowingDesks">0</integer>
+    <integer name="config_maxDesktopWindowingDesks">4</integer>
 
     <!-- Whether a display enters desktop mode by default when the windowing mode of the display's
          root TaskDisplayArea is set to WINDOWING_MODE_FREEFORM. -->
@@ -7671,6 +7762,12 @@
     <string-array name="config_appFunctionDeviceSettingsPackages" translatable="false">
     </string-array>
 
+    <!-- Defines the default allowlist of package names for preloaded agents authorized to use App
+         Function features. This static list operates as a fallback allowlist in case the
+         updatable allowlist is not available. -->
+    <string-array name="config_defaultAppFunctionAgentAllowlist" translatable="false">
+    </string-array>
+
     <!-- Package name for developer verification service provider app [DO NOT TRANSLATE] -->
     <string name="config_developerVerificationServiceProviderPackageName" translatable="false"></string>
     <!-- Package name for developer verification policy delegate app [DO NOT TRANSLATE] -->
@@ -7699,4 +7796,17 @@
     <!-- The delay in milliseconds to show the toast after the user presses the power button. -->
     <integer name="config_turnOffTvToastPostDelayMs">0</integer>
 
+    <!-- A list of permissions to be granted under WatchFaceBehavior role
+        It can only contain non-AOSP permissions outside of the android.*
+        and com.android.* namespace. -->
+    <string-array name="config_watchFacePermissions" translatable="false"/>
+
+    <!-- Whether the device supports Interactive Doze mode. -->
+    <bool name="config_enableInteractiveDoze">false</bool>
+
+    <!-- Whether to force color fade. -->
+    <bool name="config_forceColorFade">false</bool>
+
+    <!-- location button service components -->
+    <string name="config_locationButtonRenderService" translatable="false">com.android.systemui/.widget.service.LocationButtonRenderService</string>
 </resources>

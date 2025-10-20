@@ -95,7 +95,7 @@ constructor(
         return isCancellationError() || isUnableToProcessError()
     }
 
-    private val fingerprintErrorMessage: Flow<FingerprintMessage> =
+    val fingerprintErrorMessage: Flow<FingerprintMessage> =
         fingerprintAuthInteractor.fingerprintError
             .filterNot { it.shouldSuppressError() }
             .sample(biometricSettingsInteractor.fingerprintAuthCurrentlyAllowed, ::Pair)
@@ -109,13 +109,13 @@ constructor(
                 }
             }
 
-    private val fingerprintHelpMessage: Flow<FingerprintMessage> =
+    val fingerprintHelpMessage: Flow<FingerprintMessage> =
         fingerprintAuthInteractor.fingerprintHelp
             .sample(biometricSettingsInteractor.fingerprintAuthCurrentlyAllowed, ::Pair)
             .filter { (_, fingerprintAuthAllowed) -> fingerprintAuthAllowed }
             .map { (helpStatus, _) -> FingerprintMessage(helpStatus.msg) }
 
-    private val fingerprintFailMessage: Flow<FingerprintMessage> =
+    val fingerprintFailMessage: Flow<FingerprintMessage> =
         fingerprintPropertyInteractor.isUdfps.flatMapLatest { isUdfps ->
             fingerprintAuthInteractor.fingerprintFailure
                 .sample(biometricSettingsInteractor.fingerprintAuthCurrentlyAllowed)
@@ -186,7 +186,7 @@ constructor(
                 }
             }
 
-    private val faceHelpMessage: Flow<FaceMessage> =
+    val faceHelpMessage: Flow<FaceMessage> =
         faceHelp
             .filterNot {
                 // Message deferred to potentially show at face timeout error instead
@@ -196,13 +196,13 @@ constructor(
             .filter { (helpMessage, filterCondition) -> filterCondition(helpMessage) }
             .map { (status, _) -> FaceMessage(status.msg) }
 
-    private val faceFailureMessage: Flow<FaceMessage> =
+    val faceFailureMessage: Flow<FaceMessage> =
         faceFailure
             .sample(biometricSettingsInteractor.faceAuthCurrentlyAllowed)
             .filter { faceAuthCurrentlyAllowed -> faceAuthCurrentlyAllowed }
             .map { FaceFailureMessage(resources.getString(R.string.keyguard_face_failed)) }
 
-    private val faceErrorMessage: Flow<FaceMessage> =
+    val faceErrorMessage: Flow<FaceMessage> =
         faceError
             .filterNot { it.shouldSuppressError() }
             .sample(biometricSettingsInteractor.faceAuthCurrentlyAllowed, ::Pair)

@@ -24,8 +24,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 import androidx.test.rule.ActivityTestRule;
 
-import com.android.window.flags.Flags;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -70,10 +68,7 @@ public class ActionBarContextViewTest {
                 View.MeasureSpec.makeMeasureSpec(1000, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(2000, View.MeasureSpec.AT_MOST));
 
-        // Flags.actionModeEdgeToEdge() enabled:
         // 210 = 200 (content height) + 5 (external top padding) + 5 (external bottom padding)
-        // Flags.actionModeEdgeToEdge() disabled:
-        // If content height is greater than 0, the measured height should be content height (200).
-        assertEquals(Flags.actionModeEdgeToEdge() ? 210 : 200, view.getMeasuredHeight());
+        assertEquals(210, view.getMeasuredHeight());
     }
 }

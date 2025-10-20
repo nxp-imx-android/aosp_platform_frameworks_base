@@ -31,6 +31,7 @@ import com.android.compatibility.common.tradefed.build.CompatibilityBuildHelper;
 import com.android.ddmlib.Log;
 import com.android.tests.rollback.host.AbandonSessionsRule;
 import com.android.tradefed.device.DeviceNotAvailableException;
+import com.android.tradefed.device.ITestDevice;
 import com.android.tradefed.device.PackageInfo;
 import com.android.tradefed.testtype.DeviceJUnit4ClassRunner;
 import com.android.tradefed.testtype.junit4.BaseHostJUnit4Test;
@@ -48,6 +49,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RunWith(DeviceJUnit4ClassRunner.class)
@@ -93,13 +95,7 @@ public class StagedInstallInternalTest extends BaseHostJUnit4Test {
         } catch (AssertionError e) {
             Log.e(TAG, e);
         }
-        // Delete test APEXes from the preinstalled partitions and test-only sysconfig.
-        // Note that installed APEX files will be deleted by apexd after reboot.
-        deleteFiles("/system/apex/" + APK_IN_APEX_TESTAPEX_NAME + "*.apex",
-                "/system/apex/test.rebootless_apex_v*.apex",
-                "/vendor/apex/test.rebootless_apex_v*.apex",
-                "/system/app/TestApp/TestAppAv1.apk",
-                TEST_VENDOR_APEX_ALLOW_LIST);
+        deleteFilesAndReboot();
     }
 
     @Before
@@ -113,21 +109,28 @@ public class StagedInstallInternalTest extends BaseHostJUnit4Test {
     }
 
     /**
-     * Deletes files and reboots the device if necessary.
-     * @param files the paths of files which might contain wildcards
+     * Delete test APEXes from the preinstalled partitions and test-only sysconfig.
+     * Note that installed APEX files will be deleted by apexd after reboot except SHIM APEX.
+     * Hence, SHIM APEX should be uninstalled instead.
      */
-    private void deleteFiles(String... files) throws Exception {
+    private void deleteFilesAndReboot() throws Exception {
+        // paths of files to delete, which might contain wildcards
+        String[] files = {"/system/apex/" + APK_IN_APEX_TESTAPEX_NAME + "*.apex",
+                "/system/apex/test.rebootless_apex_v*.apex",
+                "/vendor/apex/test.rebootless_apex_v*.apex",
+                "/system/app/TestApp/TestAppAv1.apk",
+                TEST_VENDOR_APEX_ALLOW_LIST};
         if (!getDevice().isAdbRoot()) {
             getDevice().enableAdbRoot();
         }
 
-        boolean found = false;
+        boolean filesFound = false;
         boolean remountSystem = false;
         boolean remountVendor = false;
         for (String file : files) {
             CommandResult result = getDevice().executeShellV2Command("ls " + file);
             if (result.getStatus() == CommandStatus.SUCCESS) {
-                found = true;
+                filesFound = true;
                 if (file.startsWith("/system")) {
                     remountSystem = true;
                 } else if (file.startsWith("/vendor")) {
@@ -136,7 +139,7 @@ public class StagedInstallInternalTest extends BaseHostJUnit4Test {
             }
         }
 
-        if (found) {
+        if (filesFound) {
             if (remountSystem) {
                 getDevice().remountSystemWritable();
             }
@@ -146,8 +149,27 @@ public class StagedInstallInternalTest extends BaseHostJUnit4Test {
             for (String file : files) {
                 getDevice().executeShellCommand("rm -rf " + file);
             }
+        }
+
+        boolean shimApexUninstalled = false;
+        final ITestDevice.ApexInfo shimApex = getShimApex().orElseThrow(
+                () -> new AssertionError("Can't find " + SHIM_APEX_PACKAGE_NAME));
+        if (!shimApex.sourceDir.startsWith("/system")) {
+            getDevice().uninstallPackage(SHIM_APEX_PACKAGE_NAME);
+            shimApexUninstalled = true;
+        }
+
+        if (filesFound || shimApexUninstalled) {
             getDevice().reboot();
         }
+    }
+
+    /**
+     * Returns the active shim apex as optional.
+     */
+    public Optional<ITestDevice.ApexInfo> getShimApex() throws DeviceNotAvailableException {
+        return getDevice().getActiveApexes().stream().filter(
+                apex -> apex.name.equals(SHIM_APEX_PACKAGE_NAME)).findAny();
     }
 
     private void pushTestApex(String fileName) throws Exception {
@@ -351,6 +373,27 @@ public class StagedInstallInternalTest extends BaseHostJUnit4Test {
     }
 
     @Test
+    public void testAbandonShouldCleanUpApexSession_AbandonDuringVerification() throws Exception {
+        String before = getDevice().executeShellCommand("apexd --dump sessions");
+        getDevice().setProperty("apexd.test_hook.submit_staged_session", "sleep_ms 1000");
+        try {
+            runPhase("testAbandonShouldCleanUpApexSession_AbandonDuringVerification");
+            String after = getDevice().executeShellCommand("apexd --dump sessions");
+            assertThat(after).isEqualTo(before);
+        } finally {
+            getDevice().setProperty("apexd.test_hook.submit_staged_session", "");
+        }
+    }
+
+    @Test
+    public void testAbandonShouldCleanUpApexSession_AbandonAfterVerification() throws Exception {
+        String before = getDevice().executeShellCommand("apexd --dump sessions");
+        runPhase("testAbandonShouldCleanUpApexSession_AbandonAfterVerification");
+        String after = getDevice().executeShellCommand("apexd --dump sessions");
+        assertThat(after).isEqualTo(before);
+    }
+
+    @Test
     public void testStagedSessionShouldCleanUpOnVerificationFailure() throws Exception {
         assumeTrue("Device does not support updating APEX",
                 mHostUtils.isApexUpdateSupported());
@@ -431,6 +474,13 @@ public class StagedInstallInternalTest extends BaseHostJUnit4Test {
         getDevice().reboot();
 
         runPhase("testFailStagedSessionIfStagingDirectoryDeleted_Verify");
+    }
+
+    @Test
+    public void testAbandonedSessionShouldNotBlockNewStaging() throws Exception {
+        runPhase("testAbandonedSessionShouldNotBlockNewStaging_Commit");
+        getDevice().reboot();
+        runPhase("testAbandonedSessionShouldNotBlockNewStaging_Verify");
     }
 
     @Test

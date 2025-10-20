@@ -21,7 +21,6 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.MessageQueue;
-import android.os.Trace;
 import android.util.Log;
 import android.util.SparseIntArray;
 
@@ -270,35 +269,12 @@ public abstract class InputEventReceiver {
         return nativeGetToken(mReceiverPtr);
     }
 
-    private String getShortDescription(InputEvent event) {
-        if (event instanceof MotionEvent motion) {
-            return "MotionEvent " + MotionEvent.actionToString(motion.getAction()) + " deviceId="
-                    + motion.getDeviceId() + " source=0x"
-                    + Integer.toHexString(motion.getSource()) +  " historySize="
-                    + motion.getHistorySize();
-        } else if (event instanceof KeyEvent key) {
-            return "KeyEvent " + KeyEvent.actionToString(key.getAction())
-                    + " deviceId=" + key.getDeviceId();
-        } else {
-            Log.wtf(TAG, "Illegal InputEvent type: " + event);
-            return "InputEvent";
-        }
-    }
-
     // Called from native code.
     @SuppressWarnings("unused")
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     private void dispatchInputEvent(int seq, InputEvent event) {
-        if (Trace.isTagEnabled(Trace.TRACE_TAG_INPUT)) {
-            // This 'if' block is an optimization - without it, 'getShortDescription' will be
-            // called unconditionally, which is expensive.
-            Trace.traceBegin(Trace.TRACE_TAG_INPUT,
-                    "dispatchInputEvent " + getShortDescription(event));
-        }
         mSeqMap.put(event.getSequenceNumber(), seq);
         onInputEvent(event);
-        // If tracing is not enabled, `traceEnd` is a no-op (so we don't need to guard it with 'if')
-        Trace.traceEnd(Trace.TRACE_TAG_INPUT);
     }
 
     /**

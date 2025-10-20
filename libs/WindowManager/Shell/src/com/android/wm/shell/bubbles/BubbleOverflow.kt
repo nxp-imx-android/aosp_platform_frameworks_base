@@ -18,7 +18,6 @@ package com.android.wm.shell.bubbles
 
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.InsetDrawable
@@ -29,11 +28,12 @@ import androidx.core.content.ContextCompat
 import com.android.launcher3.icons.BubbleIconFactory
 import com.android.wm.shell.R
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView
+import com.android.wm.shell.bubbles.model.BubbleIcon
 
 class BubbleOverflow(private val context: Context, private val positioner: BubblePositioner) :
     BubbleViewProvider {
 
-    private lateinit var bitmap: Bitmap
+    private lateinit var bitmap: BubbleIcon.Custom
 
     private var dotColor = 0
     private var showDot = false
@@ -129,7 +129,7 @@ class BubbleOverflow(private val context: Context, private val positioner: Bubbl
         // Update bitmap
         val fg = InsetDrawable(overflowBtn?.iconDrawable, overflowIconInset)
         val drawable = AdaptiveIconDrawable(ColorDrawable(colorAccent), fg)
-        bitmap = iconFactory.getBubbleBitmap(drawable)
+        bitmap = BubbleIcon.Custom(iconFactory.getBubbleBitmap(drawable))
 
         // Attach BubbleOverflow to BadgedImageView
         overflowBtn?.setRenderedBubble(this)

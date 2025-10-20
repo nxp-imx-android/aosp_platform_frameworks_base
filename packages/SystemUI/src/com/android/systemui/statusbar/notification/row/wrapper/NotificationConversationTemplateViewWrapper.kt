@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification.row.wrapper
 
-import android.app.Flags
 import android.app.Flags.notificationsRedesignTemplates
 import android.content.Context
 import android.graphics.drawable.AnimatedImageDrawable
@@ -74,9 +73,7 @@ class NotificationConversationTemplateViewWrapper(
             conversationIconContainer =
                 requireViewById(com.android.internal.R.id.conversation_icon_container)
             conversationIconView = requireViewById(com.android.internal.R.id.conversation_icon)
-            if (Flags.notificationsRedesignAppIcons()) {
-                badgeIconView = requireViewById(com.android.internal.R.id.icon)
-            }
+            badgeIconView = requireViewById(com.android.internal.R.id.icon)
             conversationBadgeBg =
                 requireViewById(com.android.internal.R.id.conversation_icon_badge_bg)
             expandBtn = requireViewById(com.android.internal.R.id.expand_button)

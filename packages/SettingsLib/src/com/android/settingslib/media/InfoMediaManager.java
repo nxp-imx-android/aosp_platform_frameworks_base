@@ -54,6 +54,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.settingslib.bluetooth.CachedBluetoothDevice;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -117,7 +118,6 @@ public abstract class InfoMediaManager {
                 @NonNull List<SuggestedDeviceInfo> deviceSuggestions) {
         }
     }
-
 
     /** Checked exception that signals the specified package is not present in the system. */
     public static class PackageNotAvailableException extends Exception {
@@ -231,10 +231,14 @@ public abstract class InfoMediaManager {
             @NonNull MediaRoute2Info route, @NonNull RoutingChangeInfo routingChangeInfo);
 
     protected abstract void selectRoute(
-            @NonNull MediaRoute2Info route, @NonNull RoutingSessionInfo info);
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingSessionInfo info,
+            @NonNull RoutingChangeInfo routingChangeInfo);
 
     protected abstract void deselectRoute(
-            @NonNull MediaRoute2Info route, @NonNull RoutingSessionInfo info);
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingSessionInfo info,
+            @NonNull RoutingChangeInfo routingChangeInfo);
 
     protected abstract void releaseSession(@NonNull RoutingSessionInfo sessionInfo);
 
@@ -440,9 +444,10 @@ public abstract class InfoMediaManager {
      * Add a MediaDevice to let it play current media.
      *
      * @param device MediaDevice
+     * @param routingChangeInfo the invocation details of the media routing change.
      * @return If add device successful return {@code true}, otherwise return {@code false}
      */
-    boolean addDeviceToPlayMedia(MediaDevice device) {
+    boolean addDeviceToPlayMedia(MediaDevice device, RoutingChangeInfo routingChangeInfo) {
         Log.i(TAG, "addDeviceToPlayMedia(), device = " + device.getName() + "/" + device.getId());
         final RoutingSessionInfo info = getActiveRoutingSession();
         if (!info.getSelectableRoutes().contains(device.mRouteInfo.getId())) {
@@ -451,7 +456,7 @@ public abstract class InfoMediaManager {
             return false;
         }
 
-        selectRoute(device.mRouteInfo, info);
+        selectRoute(device.mRouteInfo, info, routingChangeInfo);
         return true;
     }
 
@@ -521,9 +526,10 @@ public abstract class InfoMediaManager {
      * Remove a {@code device} from current media.
      *
      * @param device MediaDevice
+     * @param routingChangeInfo the invocation details of the media routing change.
      * @return If device stop successful return {@code true}, otherwise return {@code false}
      */
-    boolean removeDeviceFromPlayMedia(MediaDevice device) {
+    boolean removeDeviceFromPlayMedia(MediaDevice device, RoutingChangeInfo routingChangeInfo) {
         Log.i(TAG,
                 "removeDeviceFromPlayMedia(), device = " + device.getName() + "/" + device.getId());
         final RoutingSessionInfo info = getActiveRoutingSession();
@@ -533,7 +539,7 @@ public abstract class InfoMediaManager {
             return false;
         }
 
-        deselectRoute(device.mRouteInfo, info);
+        deselectRoute(device.mRouteInfo, info, routingChangeInfo);
         return true;
     }
 
@@ -641,8 +647,18 @@ public abstract class InfoMediaManager {
         }
     }
 
+    /**
+     * Gets the list of suggested devices.
+     *
+     * @return the list of suggested devices.
+     */
     @NonNull
-    List<SuggestedDeviceInfo> getSuggestions() {
+    /* package */ List<SuggestedDeviceInfo> getSuggestions() {
+        return getSuggestionsWithPackage().getValue();
+    }
+
+    @NonNull
+    private Map.Entry<String, List<SuggestedDeviceInfo>> getSuggestionsWithPackage() {
         // Give suggestions in the following order
         // 1. Suggestions from the local router
         // 2. Suggestions from the proxy router if only one proxy router is providing suggestions
@@ -650,17 +666,16 @@ public abstract class InfoMediaManager {
         synchronized (mLock) {
             List<SuggestedDeviceInfo> suggestions = mSuggestedDeviceMap.get(mPackageName);
             if (suggestions != null) {
-                return suggestions;
-            }
-            if (mSuggestedDeviceMap.size() == 1) {
-                for (List<SuggestedDeviceInfo> packageSuggestions : mSuggestedDeviceMap.values()) {
-                    if (packageSuggestions != null) {
-                        return packageSuggestions;
-                    }
+                return new AbstractMap.SimpleEntry<>(mPackageName, suggestions);
+            } else if (mSuggestedDeviceMap.size() == 1) {
+                Map.Entry<String, List<SuggestedDeviceInfo>> singleEntry =
+                        mSuggestedDeviceMap.entrySet().iterator().next();
+                if (singleEntry.getValue() != null) {
+                    return singleEntry;
                 }
             }
         }
-        return List.of();
+        return new AbstractMap.SimpleEntry<>("", Collections.emptyList());
     }
 
     // Go through all current MediaDevices, and update the ones that are suggested.
@@ -670,42 +685,27 @@ public abstract class InfoMediaManager {
         }
         Set<String> suggestedDevices = new HashSet<>();
         // Prioritize suggestions from the package, otherwise pick any.
-        for (SuggestedDeviceInfo suggestion : getSuggestions()) {
+        Map.Entry<String, List<SuggestedDeviceInfo>> deviceSuggestionsByPackage =
+                getSuggestionsWithPackage();
+        for (SuggestedDeviceInfo suggestion : deviceSuggestionsByPackage.getValue()) {
             suggestedDevices.add(suggestion.getRouteId());
         }
         boolean didUpdate = false;
+        String suggestingPackage = deviceSuggestionsByPackage.getKey();
+        boolean isSuggestedByApp = mPackageName.equals(suggestingPackage);
         synchronized (mLock) {
             for (MediaDevice device : mMediaDevices) {
-                if (device.isSuggestedDevice()) {
-                    if (!suggestedDevices.contains(device.getId())) {
-                        device.setIsSuggested(false);
-                        // Case 1: Device was suggested only by setDeviceSuggestions(), and has been
-                        // updated to no longer be suggested.
-                        if (!device.isSuggestedByRouteListingPreferences()) {
-                            didUpdate = true;
-                        }
-                        // Case 2: Device was suggested by both setDeviceSuggestions() and RLP.
-                        // Since it's still suggested by RLP, no update.
-                    } else {
-                        // Case 3: Device was suggested (either by RLP or by
-                        // setDeviceSuggestions()), and should still be suggested.
-                        device.setIsSuggested(true);
-                    }
+                boolean wasSuggested = device.isSuggestedDevice();
+                if (suggestedDevices.contains(device.getId())) {
+                    device.setIsSuggested(/* suggested= */ true, isSuggestedByApp);
                 } else {
-                    if (suggestedDevices.contains(device.getId())) {
-                        // Case 4: Device was not suggested by either RLP or setDeviceSuggestions()
-                        // but is now suggested.
-                        device.setIsSuggested(true);
-                        didUpdate = true;
-                    } else {
-                        // Case 5: Device was not suggested by either RLP or setDeviceSuggestions()
-                        // and is still not suggested.
-                        device.setIsSuggested(false);
-                    }
+                    device.setIsSuggested(/* suggested= */ false, /* suggestedByApp= */ false);
+                }
+                if (wasSuggested != device.isSuggestedDevice()) {
+                    didUpdate = true;
                 }
             }
         }
-
         return didUpdate;
     }
 

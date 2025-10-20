@@ -155,6 +155,29 @@ public class SelectorWithWidgetPreferenceTest {
     }
 
     @Test
+    public void setTitleMaxLines_updatesTitleViewMaxLines() {
+        final int newMaxLines = 5;
+        View view = LayoutInflater.from(mContext)
+                .inflate(mPreference.getLayoutResource(), null /* root */);
+        PreferenceViewHolder preferenceViewHolder =
+                PreferenceViewHolder.createInstanceForTests(view);
+        TextView title = (TextView) preferenceViewHolder.findViewById(android.R.id.title);
+
+        // Bind to set the initial state and verify it's the default.
+        mPreference.onBindViewHolder(preferenceViewHolder);
+        assertThat(title.getMaxLines()).isEqualTo(SelectorWithWidgetPreference.DEFAULT_MAX_LINES);
+
+        // Set a new max lines value programmatically.
+        mPreference.setTitleMaxLines(newMaxLines);
+
+        // Re-bind the view holder to apply the change.
+        mPreference.onBindViewHolder(preferenceViewHolder);
+
+        // Assert that the TextView's max lines property is updated.
+        assertThat(title.getMaxLines()).isEqualTo(newMaxLines);
+    }
+
+    @Test
     public void onBindViewHolder_appliesWidgetContentDescription() {
         mPreference = new SelectorWithWidgetPreference(mContext);
         View view = LayoutInflater.from(mContext)

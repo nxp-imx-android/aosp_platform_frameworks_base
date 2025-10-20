@@ -54,13 +54,9 @@ abstract class ClickAndFocus() : TestScenarioBase() {
 
     @Before
     fun setup() {
-        connectedDisplayRule.setupTestDisplay()
-        // TODO(b/426420246): Use launchViaIntentOnDisplay
-        testAppInExternalDisplay.launchViaIntent(wmHelper)
-        testAppInExternalDisplay.moveToNextDisplayViaKeyboard(
-            wmHelper,
-            connectedDisplayRule.addedDisplays.first()
-        )
+        val displayId = connectedDisplayRule.setupTestDisplay()
+        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(displayId).waitForAndVerify()
+        testAppInExternalDisplay.launchViaIntentOnDisplay(wmHelper, displayId)
         testAppInMainDisplay.launchViaIntent(wmHelper)
     }
 

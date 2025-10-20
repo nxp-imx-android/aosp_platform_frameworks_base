@@ -51,7 +51,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
-import android.window.ImeOnBackInvokedDispatcher;
 
 import com.android.internal.inputmethod.DirectBootAwareness;
 import com.android.internal.inputmethod.IBooleanListener;
@@ -59,6 +58,7 @@ import com.android.internal.inputmethod.IConnectionlessHandwritingCallback;
 import com.android.internal.inputmethod.IImeTracker;
 import com.android.internal.inputmethod.IInputMethodClient;
 import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
+import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.IRemoteInputConnection;
 import com.android.internal.inputmethod.InputMethodInfoSafeList;
 import com.android.internal.inputmethod.StartInputFlags;
@@ -176,13 +176,15 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
             @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,
             @Nullable IRemoteInputConnection inputConnection,
             @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
+            @Nullable IRemoteComputerControlInputConnection remoteComputerControlInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
+            @NonNull ResultReceiver imeBackCallbackReceiver, boolean imeRequestedVisible,
             int startInputSeq) {
         offload(() -> mInner.startInputOrWindowGainedFocus(startInputReason, client,
                 windowToken, startInputFlags, softInputMode, windowFlags, editorInfo,
-                inputConnection, remoteAccessibilityInputConnection, unverifiedTargetSdkVersion,
-                userId, imeDispatcher, imeRequestedVisible, startInputSeq));
+                inputConnection, remoteAccessibilityInputConnection,
+                remoteComputerControlInputConnection, unverifiedTargetSdkVersion, userId,
+                imeBackCallbackReceiver, imeRequestedVisible, startInputSeq));
     }
 
     @Override
@@ -340,6 +342,13 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
     @Override
     public void setStylusWindowIdleTimeoutForTest(IInputMethodClient client, long timeout) {
         mInner.setStylusWindowIdleTimeoutForTest(client, timeout);
+    }
+
+    @IInputMethodManagerImpl.PermissionVerified("android.permission.TEST_INPUT_METHOD")
+    @Override
+    public void setAllowedImesByPolicyForTest(
+            IInputMethodClient client, @NonNull List<String> allowedPackages) {
+        mInner.setAllowedImesByPolicyForTest(client, allowedPackages);
     }
 
     @Override

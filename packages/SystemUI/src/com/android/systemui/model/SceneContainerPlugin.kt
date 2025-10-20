@@ -20,7 +20,8 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.scene.domain.interactor.SceneContainerOcclusionInteractor
+import com.android.systemui.scene.data.model.peek
+import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
@@ -55,8 +56,8 @@ interface SceneContainerPlugin {
 
     data class SceneContainerPluginState(
         val scene: SceneKey,
+        val sceneBehind: SceneKey? = null,
         val overlays: Set<OverlayKey>,
-        val invisibleDueToOcclusion: Boolean,
         val isVisible: Boolean,
     )
 }
@@ -66,7 +67,7 @@ class SceneContainerPluginImpl
 @Inject
 constructor(
     private val sceneInteractor: Lazy<SceneInteractor>,
-    private val occlusionInteractor: Lazy<SceneContainerOcclusionInteractor>,
+    private val sceneBackInteractor: Lazy<SceneBackInteractor>,
     private val shadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
 ) : SceneContainerPlugin {
 
@@ -89,14 +90,14 @@ constructor(
         }
         val transitionState = sceneInteractor.get().transitionState.value
         val idleTransitionStateOrNull = transitionState as? ObservableTransitionState.Idle
-        val invisibleDueToOcclusion = occlusionInteractor.get().invisibleDueToOcclusion.value
+        val sceneBehind = sceneBackInteractor.get().backStack.value.peek()
         return idleTransitionStateOrNull?.let { idleState ->
             EvaluatorByFlag[flag]?.invoke(
                 SceneContainerPlugin.SceneContainerPluginState(
                     scene = idleState.currentScene,
+                    sceneBehind = sceneBehind,
                     overlays = idleState.currentOverlays,
                     isVisible = sceneInteractor.get().isVisible.value,
-                    invisibleDueToOcclusion = invisibleDueToOcclusion,
                 )
             )
         }
@@ -119,8 +120,12 @@ constructor(
                     {
                         when {
                             !it.isVisible -> false
+                            Overlays.NotificationsShade in it.overlays -> true
+                            Overlays.QuickSettingsShade in it.overlays -> true
+                            it.scene == Scenes.Lockscreen && Overlays.Bouncer in it.overlays ->
+                                false
+                            it.scene == Scenes.Occluded -> false
                             it.scene != Scenes.Gone -> true
-                            it.overlays.isNotEmpty() -> true
                             else -> false
                         }
                     },
@@ -128,9 +133,11 @@ constructor(
                     {
                         when {
                             !it.isVisible -> false
-                            it.scene == Scenes.Lockscreen -> true
                             it.scene == Scenes.Shade -> true
                             Overlays.NotificationsShade in it.overlays -> true
+                            it.scene == Scenes.Lockscreen &&
+                                Overlays.Bouncer !in it.overlays &&
+                                Overlays.QuickSettingsShade !in it.overlays -> true
                             else -> false
                         }
                     },
@@ -146,11 +153,17 @@ constructor(
                 SYSUI_STATE_BOUNCER_SHOWING to { it.isVisible && Overlays.Bouncer in it.overlays },
                 SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING to
                     {
-                        it.isVisible && it.scene == Scenes.Lockscreen
+                        when {
+                            !it.isVisible -> false
+                            it.scene == Scenes.Lockscreen -> true
+                            it.sceneBehind == Scenes.Lockscreen -> true
+                            Overlays.Bouncer in it.overlays -> true
+                            else -> false
+                        }
                     },
                 SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING_OCCLUDED to
                     {
-                        it.scene == Scenes.Lockscreen && it.invisibleDueToOcclusion
+                        it.scene == Scenes.Occluded || it.sceneBehind == Scenes.Occluded
                     },
                 SYSUI_STATE_COMMUNAL_HUB_SHOWING to { it.isVisible && it.scene == Scenes.Communal },
             )

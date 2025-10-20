@@ -104,7 +104,6 @@ public final class Display {
     private final DisplayManagerGlobal mGlobal;
     private final int mDisplayId;
     private final int mFlags;
-    private final int mType;
     private final int mOwnerUid;
     private final String mOwnerPackageName;
     private final Resources mResources;
@@ -727,7 +726,6 @@ public final class Display {
 
         // Cache properties that cannot change as long as the display is valid.
         mFlags = displayInfo.flags;
-        mType = displayInfo.type;
         mOwnerUid = displayInfo.ownerUid;
         mOwnerPackageName = displayInfo.ownerPackageName;
     }
@@ -839,7 +837,10 @@ public final class Display {
     @UnsupportedAppUsage
     @TestApi
     public int getType() {
-        return mType;
+        synchronized (mLock) {
+            updateDisplayInfoLocked();
+            return mDisplayInfo.type;
+        }
     }
 
     /**
@@ -848,7 +849,7 @@ public final class Display {
      */
     @FlaggedApi(FLAG_DISPLAY_TOPOLOGY_API)
     public boolean isInternal() {
-        return mType == TYPE_INTERNAL;
+        return getType() == TYPE_INTERNAL;
     }
 
 
@@ -2432,6 +2433,33 @@ public final class Display {
         /**
          * @hide
          */
+        public static final int FLAG_ARR_RENDER_RATE = 1 << 0;
+        /**
+         * @hide
+         *
+         * A synthetic display mode flag that indicates the mode is used to override the display's
+         * logical width and height without changing the mode reported to SurfaceFlinger.
+         */
+        public static final int FLAG_SIZE_OVERRIDE = 1 << 1;
+        /**
+         * @hide
+         *
+         * A synthetic display mode flag that indicates the mode has corrected anisotropy.
+         */
+        public static final int FLAG_ANISOTROPY_CORRECTION = 1 << 2;
+
+        /** @hide */
+        @IntDef(flag = true, prefix = {"FLAG_"}, value = {
+                FLAG_ARR_RENDER_RATE,
+                FLAG_SIZE_OVERRIDE,
+                FLAG_ANISOTROPY_CORRECTION
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface ModeFlags {}
+
+        /**
+         * @hide
+         */
         public static final Mode[] EMPTY_ARRAY = new Mode[0];
 
         /**
@@ -2440,6 +2468,9 @@ public final class Display {
         public static final int INVALID_MODE_ID = -1;
 
         private final int mModeId;
+        private final int mParentModeId;
+        @ModeFlags
+        private final int mFlags;
         private final int mWidth;
         private final int mHeight;
         private final float mPeakRefreshRate;
@@ -2449,7 +2480,6 @@ public final class Display {
         @NonNull
         @HdrCapabilities.HdrType
         private final int[] mSupportedHdrTypes;
-        private final boolean mIsSynthetic;
 
         /**
          * @hide
@@ -2483,22 +2513,23 @@ public final class Display {
          */
         public Mode(int modeId, int width, int height, float refreshRate, float vsyncRate,
                 float[] alternativeRefreshRates, @HdrCapabilities.HdrType int[] supportedHdrTypes) {
-            this(modeId, width, height, refreshRate, vsyncRate, false, alternativeRefreshRates,
-                    supportedHdrTypes);
+            this(modeId, INVALID_MODE_ID, 0, width, height, refreshRate, vsyncRate,
+                    alternativeRefreshRates, supportedHdrTypes);
         }
 
         /**
          * @hide
          */
-        public Mode(int modeId, int width, int height, float refreshRate, float vsyncRate,
-                boolean isSynthetic, float[] alternativeRefreshRates,
-                @HdrCapabilities.HdrType int[] supportedHdrTypes) {
+        public Mode(int modeId, int parentModeId, @ModeFlags int flags,
+                int width, int height, float refreshRate, float vsyncRate,
+                float[] alternativeRefreshRates, @HdrCapabilities.HdrType int[] supportedHdrTypes) {
             mModeId = modeId;
+            mParentModeId = parentModeId;
+            mFlags = flags;
             mWidth = width;
             mHeight = height;
             mPeakRefreshRate = refreshRate;
             mVsyncRate = vsyncRate;
-            mIsSynthetic = isSynthetic;
             mAlternativeRefreshRates =
                     Arrays.copyOf(alternativeRefreshRates, alternativeRefreshRates.length);
             Arrays.sort(mAlternativeRefreshRates);
@@ -2511,6 +2542,27 @@ public final class Display {
          */
         public int getModeId() {
             return mModeId;
+        }
+
+        /**
+         * Returns parent mode's id if the mode is derived from other Display.Mode.
+         * Returns INVALID_MODE_ID in other cases.
+         * @hide
+         */
+        public int getParentModeId() {
+            return mParentModeId;
+        }
+
+        /**
+         * Returns flags associated with this mode.
+         * @hide
+         */
+
+        @SuppressWarnings("UnflaggedApi") // For testing only
+        @TestApi
+        @ModeFlags
+        public int getFlags() {
+            return mFlags;
         }
 
         /**
@@ -2565,14 +2617,14 @@ public final class Display {
         }
 
         /**
-         * Returns true if mode is synthetic and does not have corresponding
-         * SurfaceControl.DisplayMode
+         * Returns true if switching to this mode does not actually switch display mode on
+         * SurfaceFlinger level
          * @hide
          */
         @SuppressWarnings("UnflaggedApi") // For testing only
         @TestApi
         public boolean isSynthetic() {
-            return mIsSynthetic;
+            return mParentModeId != INVALID_MODE_ID || (mFlags & FLAG_ARR_RENDER_RATE) != 0;
         }
 
         /**
@@ -2694,6 +2746,8 @@ public final class Display {
         public int hashCode() {
             int hash = 1;
             hash = hash * 17 + mModeId;
+            hash = hash * 17 + mParentModeId;
+            hash = hash * 17 + mFlags;
             hash = hash * 17 + mWidth;
             hash = hash * 17 + mHeight;
             hash = hash * 17 + Float.floatToIntBits(mPeakRefreshRate);
@@ -2707,11 +2761,12 @@ public final class Display {
         public String toString() {
             return new StringBuilder("{")
                     .append("id=").append(mModeId)
+                    .append(", parentModeId=").append(mParentModeId)
+                    .append(", flags=").append(flagsToString(mFlags))
                     .append(", width=").append(mWidth)
                     .append(", height=").append(mHeight)
                     .append(", fps=").append(mPeakRefreshRate)
                     .append(", vsync=").append(mVsyncRate)
-                    .append(", synthetic=").append(mIsSynthetic)
                     .append(", alternativeRefreshRates=")
                     .append(Arrays.toString(mAlternativeRefreshRates))
                     .append(", supportedHdrTypes=")
@@ -2720,41 +2775,56 @@ public final class Display {
                     .toString();
         }
 
+        private static String flagsToString(@ModeFlags int flags) {
+            StringBuilder msg = new StringBuilder();
+            if ((flags & FLAG_ARR_RENDER_RATE) != 0) {
+                msg.append(", FLAG_ARR_RENDER_RATE");
+            }
+            if ((flags & FLAG_SIZE_OVERRIDE) != 0) {
+                msg.append(", FLAG_SIZE_OVERRIDE");
+            }
+            if ((flags & FLAG_ANISOTROPY_CORRECTION) != 0) {
+                msg.append(", FLAG_ANISOTROPY_CORRECTION");
+            }
+            return msg.toString();
+        }
+
         @Override
         public int describeContents() {
             return 0;
         }
 
         private Mode(Parcel in) {
-            this(in.readInt(), in.readInt(), in.readInt(), in.readFloat(), in.readFloat(),
-                    in.readBoolean(), in.createFloatArray(), in.createIntArray());
+            this(in.readInt(), in.readInt(), in.readInt(), in.readInt(), in.readInt(),
+                    in.readFloat(), in.readFloat(), in.createFloatArray(), in.createIntArray());
         }
 
         @Override
         public void writeToParcel(Parcel out, int parcelableFlags) {
             out.writeInt(mModeId);
+            out.writeInt(mParentModeId);
+            out.writeInt(mFlags);
             out.writeInt(mWidth);
             out.writeInt(mHeight);
             out.writeFloat(mPeakRefreshRate);
             out.writeFloat(mVsyncRate);
-            out.writeBoolean(mIsSynthetic);
             out.writeFloatArray(mAlternativeRefreshRates);
             out.writeIntArray(mSupportedHdrTypes);
         }
 
         @SuppressWarnings("hiding")
-        public static final @android.annotation.NonNull Parcelable.Creator<Mode> CREATOR
-                = new Parcelable.Creator<Mode>() {
-            @Override
-            public Mode createFromParcel(Parcel in) {
-                return new Mode(in);
-            }
+        public static final @android.annotation.NonNull Parcelable.Creator<Mode> CREATOR =
+                new Parcelable.Creator<>() {
+                    @Override
+                    public Mode createFromParcel(Parcel in) {
+                        return new Mode(in);
+                    }
 
-            @Override
-            public Mode[] newArray(int size) {
-                return new Mode[size];
-            }
-        };
+                    @Override
+                    public Mode[] newArray(int size) {
+                        return new Mode[size];
+                    }
+                };
 
         /**
          * Builder is used to create {@link Display.Mode} objects

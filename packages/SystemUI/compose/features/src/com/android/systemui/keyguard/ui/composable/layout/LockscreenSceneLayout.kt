@@ -25,13 +25,13 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.VerticalAlignmentLine
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntRect
+import com.android.compose.animation.scene.BaseContentScope
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory.Companion.lockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope.Companion.LockscreenElement
 import kotlin.math.max
 import kotlin.math.min
 
@@ -109,23 +109,24 @@ object LockIconAlignmentLines {
  *   as it may be drawn on top of the UDFPS (under display fingerprint sensor)
  */
 @Composable
-fun ContentScope.LockscreenSceneLayout(
+fun LockscreenScope<ContentScope>.LockscreenSceneLayout(
     viewModel: LockscreenContentViewModel,
-    factory: LockscreenElementFactory,
-    context: LockscreenElementContext,
     modifier: Modifier = Modifier,
 ) {
     Layout(
         content = {
-            factory.lockscreenElement(LockscreenElementKeys.StatusBar, context)
-            factory.lockscreenElement(LockscreenElementKeys.Region.Upper, context)
-            factory.lockscreenElement(LockscreenElementKeys.LockIcon, context)
-            factory.lockscreenElement(LockscreenElementKeys.AmbientIndicationArea, context)
-            factory.lockscreenElement(LockscreenElementKeys.Region.Lower, context)
-            factory.lockscreenElement(LockscreenElementKeys.SettingsMenu, context)
+            LockscreenElement(LockscreenElementKeys.StatusBar)
+            LockscreenElement(LockscreenElementKeys.Region.Upper)
+            LockscreenElement(LockscreenElementKeys.LockIcon)
+            LockscreenElement(LockscreenElementKeys.AmbientIndicationArea)
+            LockscreenElement(LockscreenElementKeys.Region.Lower)
+            LockscreenElement(LockscreenElementKeys.SettingsMenu)
         },
         // Hide the lock screen elements when an overlay is shown above.
-        modifier = modifier.thenIf(isIdleWithOverlay()) { Modifier.graphicsLayer { alpha = 0f } },
+        modifier =
+            modifier.thenIf(contentScope.isIdleWithOverlay()) {
+                Modifier.graphicsLayer { alpha = 0f }
+            },
     ) { measurables, constraints ->
         check(measurables.size == 6)
         val statusBarMeasurable = measurables[0]
@@ -192,12 +193,6 @@ fun ContentScope.LockscreenSceneLayout(
             upperRegionPlaceable.placeRelative(0, statusBarPlaceable.measuredHeight)
             lockIconPlaceable.place(lockIconBounds.left, lockIconBounds.top)
 
-            ambientIndicationPlaceable.place(
-                0,
-                if (viewModel.isUdfpsSupported) lockIconBounds.bottom
-                else lockIconBounds.top - ambientIndicationPlaceable.measuredHeight,
-            )
-
             lowerRegionPlaceable.place(
                 0,
                 constraints.maxHeight - lowerRegionPlaceable.measuredHeight,
@@ -211,6 +206,6 @@ fun ContentScope.LockscreenSceneLayout(
     }
 }
 
-private fun ContentScope.isIdleWithOverlay(): Boolean {
+private fun BaseContentScope.isIdleWithOverlay(): Boolean {
     return !layoutState.isTransitioning() && layoutState.currentOverlays.isNotEmpty()
 }

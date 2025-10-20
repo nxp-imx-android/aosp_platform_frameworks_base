@@ -32,8 +32,6 @@ import static android.app.Notification.VISIBILITY_PUBLIC;
 import static android.app.Notification.VISIBILITY_SECRET;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
-import static android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION;
-import static android.service.notification.Flags.FLAG_NOTIFICATION_FORCE_GROUPING;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION;
 import static android.service.notification.NotificationListenerService.REASON_APP_CANCEL;
 import static android.platform.test.flag.junit.SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT;
@@ -210,11 +208,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     private String getExpectedAutogroupKey(final NotificationRecord record) {
-        if (android.service.notification.Flags.notificationForceGrouping()) {
-            return GroupHelper.getFullAggregateGroupKey(record);
-        } else {
-            return AUTOGROUP_KEY;
-        }
+        return GroupHelper.getFullAggregateGroupKey(record);
     }
 
     @Test
@@ -500,7 +494,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testAutoGrouped_singleOngoing_removeOngoingChild() {
         final String pkg = "package";
 
@@ -609,35 +602,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
-    public void testAutoGrouped_singleOngoing_removeNonOngoingChild() {
-        final String pkg = "package";
-
-        // Post AUTOGROUP_AT_COUNT ongoing notifications
-        ArrayList<NotificationRecord> notifications = new ArrayList<>();
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
-                    UserHandle.SYSTEM);
-            if (i == 0) {
-                r.getNotification().flags |= FLAG_ONGOING_EVENT;
-            }
-            notifications.add(r);
-        }
-
-        for (NotificationRecord r: notifications) {
-            mGroupHelper.onNotificationPosted(r, false);
-        }
-
-        // remove ongoing
-        mGroupHelper.onNotificationRemoved(notifications.get(1));
-
-        // Summary is still ongoing
-        verify(mCallback, never()).updateAutogroupSummary(anyInt(), anyString(), anyString(),
-                any());
-    }
-
-    @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testAutoGrouped_singleOngoing_removeNonOngoingChild_forceGrouping() {
         final String pkg = "package";
 
@@ -719,35 +683,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
-    public void testAutoGrouped_allAutoCancel_updateChildAppGrouped() {
-        final String pkg = "package";
-
-        // Post AUTOGROUP_AT_COUNT ongoing notifications
-        ArrayList<NotificationRecord> notifications = new ArrayList<>();
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
-                    UserHandle.SYSTEM);
-            r.getNotification().flags |= FLAG_AUTO_CANCEL;
-            notifications.add(r);
-        }
-
-        for (NotificationRecord r: notifications) {
-            mGroupHelper.onNotificationPosted(r, false);
-        }
-
-        // One notification is now grouped by app
-        NotificationRecord r = getNotificationRecord(pkg, 0, "0", UserHandle.SYSTEM,
-                "app group now", false);
-        mGroupHelper.onNotificationPosted(r, true);
-
-        // Summary should be still be autocancelable
-        verify(mCallback, never()).updateAutogroupSummary(anyInt(), anyString(), anyString(),
-                any());
-    }
-
-    @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testAutoGrouped_allAutoCancel_updateChildAppGrouped_forceGrouping() {
         final String pkg = "package";
 
@@ -775,32 +710,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
-    public void testAutoGrouped_allAutoCancel_removeChild() {
-        final String pkg = "package";
-
-        // Post AUTOGROUP_AT_COUNT ongoing notifications
-        ArrayList<NotificationRecord> notifications = new ArrayList<>();
-        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
-            NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
-                    UserHandle.SYSTEM);
-            r.getNotification().flags |= FLAG_AUTO_CANCEL;
-            notifications.add(r);
-        }
-
-        for (NotificationRecord r: notifications) {
-            mGroupHelper.onNotificationPosted(r, false);
-        }
-
-        mGroupHelper.onNotificationRemoved(notifications.get(0));
-
-        // Summary should still be autocancelable
-        verify(mCallback, never()).updateAutogroupSummary(anyInt(), anyString(), anyString(),
-                any());
-    }
-
-    @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testAutoGrouped_allAutoCancel_removeChild_forceGrouping() {
         final String pkg = "package";
 
@@ -825,7 +734,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testAutoGrouped_updateOngoingChild_updatesSummary() {
         final String pkg = "package";
         final String expectedGroupKey = GroupHelper.getFullAggregateGroupKey(pkg,
@@ -856,7 +764,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testAutoGrouped_noFlagsUpdate_doesNotUpdateSummary() {
         final String pkg = "package";
         final String expectedGroupKey = GroupHelper.getFullAggregateGroupKey(pkg,
@@ -888,7 +795,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testAddAggregateSummary_summaryNoChildren_updateFlags_updatesSummary() {
         final String pkg = "package";
         final String expectedGroupKey = GroupHelper.getFullAggregateGroupKey(pkg,
@@ -935,7 +841,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testAddAggregateSummary_childrenNoSummary_updateFlags_updatesSummary() {
         final String pkg = "package";
         final String expectedGroupKey = GroupHelper.getFullAggregateGroupKey(pkg,
@@ -981,7 +886,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testDropToZeroRemoveGroup() {
         final String pkg = "package";
         ArrayList<NotificationRecord> posted = new ArrayList<>();
@@ -1044,7 +948,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_CLASSIFICATION})
     public void testAppStartsGroupingBundledNotification_doesNotUnAutogroup() {
         final String pkg = "package";
         final NotificationChannel socialChannel = new NotificationChannel(
@@ -1084,7 +987,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testNewNotificationsAddedToAutogroup_ifOriginalNotificationsCanceled() {
         final String pkg = "package";
         ArrayList<NotificationRecord> posted = new ArrayList<>();
@@ -1127,7 +1029,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testPostedAutogroupSummaryCanceled_ifAutogroupEmpty() {
         final String pkg = "package";
         final String groupName = AGGREGATE_GROUP_KEY + "AlertingSection";
@@ -1147,7 +1048,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE})
     public void testAddSummary_sameIcon_sameColor() {
         final String pkg = "package";
         final Icon icon = mock(Icon.class);
@@ -1182,7 +1082,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE})
     public void testAddSummary_diffIcon_diffColor() {
         final String pkg = "package";
         final Icon initialIcon = mock(Icon.class);
@@ -1230,7 +1129,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE})
     public void testAddSummary_diffVisibility() {
         final String pkg = "package";
         final Icon icon = mock(Icon.class);
@@ -1274,8 +1172,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE,
-            FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testAutoGrouped_diffIcon_diffColor_removeChild_updateTo_sameIcon_sameColor_forceGrouping() {
         final String pkg = "package";
         final Icon initialIcon = mock(Icon.class);
@@ -1312,7 +1208,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testAutobundledSummaryIcon_sameIcon() {
         final String pkg = "package";
         final Icon icon = mock(Icon.class);
@@ -1331,7 +1226,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testAutobundledSummaryIcon_diffIcon() {
         final String pkg = "package";
         // Spy GroupHelper for getMonochromeAppIcon
@@ -1352,7 +1246,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testAutobundledSummaryIconColor_sameColor() {
         final String pkg = "package";
         final int iconColor = Color.BLUE;
@@ -1370,7 +1263,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testAutobundledSummaryIconColor_diffColor() {
         final String pkg = "package";
         // Create notifications with different icon colors
@@ -1387,7 +1279,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testAutobundledSummaryVisibility_hasPublicChildren() {
         final String pkg = "package";
         final int iconColor = Color.BLUE;
@@ -1407,7 +1298,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testAutobundledSummaryVisibility_noPublicChildren() {
         final String pkg = "package";
         final int iconColor = Color.BLUE;
@@ -1484,7 +1374,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testAutobundledSummaryChannelId() {
         final String pkg = "package";
         final int iconColor = Color.BLUE;
@@ -1503,7 +1392,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testAutobundledSummaryChannelId_noChildren() {
         final String pkg = "package";
         // No child notifications
@@ -1515,7 +1403,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testMonochromeAppIcon_adaptiveIconExists() throws Exception {
         final String pkg = "testPackage";
         final int monochromeIconResId = 1234;
@@ -1529,7 +1416,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AUTOGROUP_SUMMARY_ICON_UPDATE)
     public void testMonochromeAppIcon_adaptiveIconMissing_fallback() throws Exception {
         final String pkg = "testPackage";
         final int fallbackIconResId = R.drawable.ic_notification_summary_auto;
@@ -1539,7 +1425,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testGetAggregateGroupKey() {
         final String fullAggregateGroupKey = GroupHelper.getFullAggregateGroupKey("pkg",
                 "groupKey", 1234);
@@ -1547,7 +1432,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testNoGroup_postingUnderLimit_forcedGrouping() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
@@ -1562,7 +1446,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testNoGroup_AutobundledAlready_forcedGrouping() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
@@ -1577,7 +1460,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testNoGroup_isCanceled_forcedGrouping() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
@@ -1593,7 +1475,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testNoGroup_isAggregated_forcedGrouping() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
@@ -1609,7 +1490,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testNoGroup_multiPackage_forcedGrouping() {
         final String pkg = "package";
         final String pkg2 = "package2";
@@ -1629,7 +1509,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testNoGroup_multiUser_forcedGrouping() {
         final String pkg = "package";
         final List<NotificationRecord> notificationList = new ArrayList<>();
@@ -1648,7 +1527,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testNoGroup_summaryWithChildren_forcedGrouping() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
@@ -1671,7 +1549,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testNoGroup_groupWithSummary_forcedGrouping() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
@@ -1695,7 +1572,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testAddAggregateSummary_summaryNoChildren() {
         final String pkg = "package";
         final String expectedGroupKey = GroupHelper.getFullAggregateGroupKey(pkg,
@@ -1720,7 +1596,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testAddAggregateSummary_childrenNoSummary() {
         final String pkg = "package";
         final String expectedGroupKey = GroupHelper.getFullAggregateGroupKey(pkg,
@@ -1745,7 +1620,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testAddAggregateSummary_multipleSections() {
         final String pkg = "package";
         final String expectedGroupKey_alerting = GroupHelper.getFullAggregateGroupKey(pkg,
@@ -1783,7 +1657,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testUpdateAggregateSummary_postUngroupedAfterForcedGrouping() {
         final String pkg = "package";
         final String expectedGroupKey = GroupHelper.getFullAggregateGroupKey(pkg,
@@ -1824,7 +1697,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testUpdateAggregateSummary_postAfterForcedGrouping() {
         final String pkg = "package";
         final String expectedGroupKey = GroupHelper.getFullAggregateGroupKey(pkg,
@@ -1867,7 +1739,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testRemoveAggregateSummary_removeAllNotifications() {
         final String pkg = "package";
         final String expectedGroupKey = GroupHelper.getFullAggregateGroupKey(pkg,
@@ -1904,7 +1775,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRemoveChildNotification_summaryForceGrouped() {
         // Check that removing all child notifications from a group will trigger empty summary
         // force grouping re-evaluation
@@ -1960,7 +1831,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRemoveChildNotification_groupBecomesSingleton() {
         // Check that removing child notifications from a group will trigger singleton force
         // grouping re-evaluation
@@ -2026,7 +1897,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRemoveAllGroupNotifications_noForceGrouping() {
         // Check that removing all notifications from a group will not trigger any force grouping
         // re-evaluation
@@ -2073,7 +1944,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRemoveAllGroupChildNotifications_emptySummaryCanceled() {
         // Check that removing all notifications from a group will not trigger any force grouping
         // re-evaluation
@@ -2116,7 +1987,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRemoveAllGroupChildNotifications_emptySummaryCanceledAndCached() {
         // Check that removing all notifications from a group will not trigger any force grouping
         // re-evaluation
@@ -2177,7 +2048,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testUpdateToUngroupableSection_cleanupUngrouped() {
         final String pkg = "package";
         // Post notification w/o group in a valid section
@@ -2213,7 +2084,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testUpdateToUngroupableSection_afterAutogroup_isUngrouped() {
         final String pkg = "package";
         final List<NotificationRecord> notificationList = new ArrayList<>();
@@ -2256,7 +2127,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testUpdateToUngroupableSection_onRemoved_isUngrouped() {
         final String pkg = "package";
         final List<NotificationRecord> notificationList = new ArrayList<>();
@@ -2299,7 +2170,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testUpdateToUngroupableSection_afterForceGrouping_isUngrouped() {
         final String pkg = "package";
         final String groupName = "testGroup";
@@ -2346,7 +2217,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRepostWithNewChannel_afterAutogrouping_isRegrouped() {
         final String pkg = "package";
         final List<NotificationRecord> notificationList = new ArrayList<>();
@@ -2406,7 +2277,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRepostWithNewChannel_afterForceGrouping_isRegrouped() {
         final String pkg = "package";
         final String groupName = "testGroup";
@@ -2472,7 +2343,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testMoveAggregateGroups_updateChannel() {
         final String pkg = "package";
         final String expectedGroupKey_alerting = GroupHelper.getFullAggregateGroupKey(pkg,
@@ -2522,7 +2392,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     @DisableFlags(FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION)
     public void testMoveAggregateGroups_updateChannel_multipleChannels() {
         final String pkg = "package";
@@ -2595,9 +2464,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testMoveAggregateGroups_updateChannel_multipleChannels_regroupOnClassifEnabled() {
         final String pkg = "package";
         final String expectedGroupKey_alerting = GroupHelper.getFullAggregateGroupKey(pkg,
@@ -2673,9 +2540,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testMoveSections_notificationBundled() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final String pkg = "package";
@@ -2747,9 +2612,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     @DisableFlags(FLAG_NOTIFICATION_FORCE_GROUP_CONVERSATIONS)
     public void testBundleUngroupedConversations_notificationsBundled() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
@@ -2815,9 +2678,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testCacheAndCancelAppSummary_notificationBundled() {
         // check that the original app summary is canceled & cached on classification regrouping
         final List<NotificationRecord> notificationList = new ArrayList<>();
@@ -2876,9 +2737,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testSingletonGroupsRegrouped_notificationBundledBeforeDelayTimeout() {
         // Check that singleton group notifications are regrouped if classification is done
@@ -2953,9 +2812,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testSingletonGroupsRegrouped_notificationBundledAfterDelayTimeout() {
         // Check that singleton group notifications are regrouped if classification is done
@@ -3027,9 +2884,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
-            FLAG_NOTIFICATION_CLASSIFICATION})
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testValidGroupsRegrouped_notificationBundledWhileEnqueued() {
         // Check that valid group notifications are regrouped if classification is done
         // before onNotificationPostedWithDelay (within DELAY_FOR_ASSISTANT_TIME)
@@ -3085,9 +2940,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
-            FLAG_NOTIFICATION_CLASSIFICATION})
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testUnbundleNotification_originalSummaryMissing_autogroupInNewSection() {
         // Check that unbundled notifications are moved to the original section and aggregated
         // with existing autogrouped notifications
@@ -3183,9 +3036,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
-            FLAG_NOTIFICATION_CLASSIFICATION})
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testUnbundleNotification_originalSummaryMissing_autogroupInNewSectionOnly() {
         // Check that unbundled notifications are moved to the original section and aggregated
         // with existing autogrouped notifications
@@ -3279,9 +3130,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
-            FLAG_NOTIFICATION_CLASSIFICATION})
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testUnbundleNotification_originalSummaryExists() {
         // Check that unbundled notifications are moved to the original section and original group
         // when the original summary is still present
@@ -3393,9 +3242,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
-            FLAG_NOTIFICATION_CLASSIFICATION})
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testUnbundleByImportanceNotification_originalSummaryExists() {
         // Check that unbundled notifications are moved to the original section and original group
         // when the original summary is still present
@@ -3507,9 +3354,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
-            FLAG_NOTIFICATION_CLASSIFICATION})
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testUnbundleByImportanceNotification_originalSummaryRemoved() {
         // Check that unbundled notifications are moved to the original section and autogrouped
         // when the original summary is not present
@@ -3622,9 +3467,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testClassifyWithAlertingImportance_doesNotBundle() {
         // Check that classified notifications are autogrouped when channel importance
         // is updated DEFAULT to LOW
@@ -3709,7 +3552,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testMoveAggregateGroups_updateChannel_groupsUngrouped() {
         final String pkg = "package";
         final String expectedGroupKey_silent = GroupHelper.getFullAggregateGroupKey(pkg,
@@ -3779,7 +3621,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testAutogroup_updateChannel_reachedMinAutogroupCount() {
         final String pkg = "package";
         final NotificationChannel channel1 = new NotificationChannel("TEST_CHANNEL_ID1",
@@ -3833,8 +3674,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testNoGroup_singletonGroup_underLimit() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
@@ -3856,7 +3696,6 @@ public class GroupHelperTest extends UiServiceTestCase {
 
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     @DisableFlags(Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS)
     public void testAddAggregateSummary_singletonGroup_disableFlag() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
@@ -3879,8 +3718,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testAddAggregateSummary_singletonGroups() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
@@ -3919,8 +3757,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testAddAggregateSummary_summaryTriggers_singletonGroups() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
@@ -3969,8 +3806,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testCancelCachedSummary_singletonGroups() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
@@ -4004,8 +3840,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRemoveCachedSummary_singletonGroups_removeChildren() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
@@ -4053,7 +3888,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     @DisableFlags(FLAG_NOTIFICATION_FORCE_GROUP_CONVERSATIONS)
     public void testNonGroupableChildren_singletonGroups_disableConversations() {
         // Check that singleton groups with children that are not groupable, is not grouped
@@ -4108,7 +3942,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_CONVERSATIONS})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_CONVERSATIONS})
     public void testNonGroupableChildren_singletonGroups_enableConversations() {
         // Check that singleton groups with children that are not groupable, is not grouped
         // Conversations are groupable (FLAG_NOTIFICATION_FORCE_GROUP_CONVERSATIONS is enabled)
@@ -4167,7 +4001,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     @DisableFlags(FLAG_NOTIFICATION_FORCE_GROUP_CONVERSATIONS)
     public void testNonGroupableNotifications() {
         // Check that there is no valid section for: conversations, calls, foreground services
@@ -4213,52 +4046,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
-    @DisableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
-    public void testGroupSectioners() {
-        final NotificationRecord notification_alerting = getNotificationRecord(mPkg, 0, "", mUser,
-                "", false, IMPORTANCE_DEFAULT);
-        assertThat(GroupHelper.getSection(notification_alerting).mName).isEqualTo(
-                "AlertingSection");
-
-        final NotificationRecord notification_silent = getNotificationRecord(mPkg, 0, "", mUser,
-                "", false, IMPORTANCE_LOW);
-        assertThat(GroupHelper.getSection(notification_silent).mName).isEqualTo("SilentSection");
-
-        // Check that special categories are grouped by their importance
-        final NotificationChannel promoChannel = new NotificationChannel(
-                NotificationChannel.PROMOTIONS_ID, NotificationChannel.PROMOTIONS_ID,
-                IMPORTANCE_DEFAULT);
-        final NotificationRecord notification_promotion = getNotificationRecord(mPkg, 0, "", mUser,
-                "", false, promoChannel);
-        assertThat(GroupHelper.getSection(notification_promotion).mName).isEqualTo(
-                "AlertingSection");
-
-        final NotificationChannel newsChannel = new NotificationChannel(NotificationChannel.NEWS_ID,
-                NotificationChannel.NEWS_ID, IMPORTANCE_DEFAULT);
-        final NotificationRecord notification_news = getNotificationRecord(mPkg, 0, "", mUser,
-                "", false, newsChannel);
-        assertThat(GroupHelper.getSection(notification_news).mName).isEqualTo(
-                "AlertingSection");
-
-        final NotificationChannel socialChannel = new NotificationChannel(
-                NotificationChannel.SOCIAL_MEDIA_ID, NotificationChannel.SOCIAL_MEDIA_ID,
-                IMPORTANCE_DEFAULT);
-        final NotificationRecord notification_social = getNotificationRecord(mPkg, 0, "", mUser,
-                "", false, socialChannel);
-        assertThat(GroupHelper.getSection(notification_social).mName).isEqualTo(
-                "AlertingSection");
-
-        final NotificationChannel recsChannel = new NotificationChannel(NotificationChannel.RECS_ID,
-                NotificationChannel.RECS_ID, IMPORTANCE_DEFAULT);
-        final NotificationRecord notification_recs = getNotificationRecord(mPkg, 0, "", mUser,
-                "", false, recsChannel);
-        assertThat(GroupHelper.getSection(notification_recs).mName).isEqualTo(
-                "AlertingSection");
-    }
-
-    @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_CLASSIFICATION})
     public void testGroupSectioners_withClassificationSections() {
         final NotificationRecord notification_alerting = getNotificationRecord(mPkg, 0, "", mUser,
                 "", false, IMPORTANCE_DEFAULT);
@@ -4358,7 +4145,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_CONVERSATIONS})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_CONVERSATIONS})
     public void testNonGroupableNotifications_forceGroupConversations() {
         // Check that there is no valid section for: calls, foreground services, media notifications
         NotificationRecord notification_call = spy(getNotificationRecord(mPkg, 0, "", mUser,
@@ -4398,8 +4185,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_FORCE_GROUP_CONVERSATIONS})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_CONVERSATIONS})
     public void testConversationGroupSections() {
         // Check that there is a single section for silent/alerting conversations
         NotificationRecord notification_conversation_silent = getNotificationRecord(mPkg, 0, "",
@@ -4427,7 +4213,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void onNotificationRemoved_lastChildOfCachedSummary_firesCachedSummaryDeleteIntent() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
@@ -4465,7 +4250,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testGroupSummaryAdded_hadUngroupedNotif_doesNotAutogroup() {
         // Scenario:
         //  * child notification posted before summary; added to ungrouped notifications
@@ -4519,7 +4303,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testGroupSummaryAdded_onlyUnrelatedGroupedNotifs() {
         // If all of the existing ungrouped notifications have nothing to do with the summary
         // they should still get grouped as needed.
@@ -4556,7 +4339,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testGroupSummaryAdded_unAggregatesAutogroupedNotifications() {
         // Scenario:
         //  * child notifications posted before summary and force-grouped
@@ -4615,7 +4397,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testGroupSummaryAddedDifferentChannel_unAggregatesAutogroupedNotifications() {
         // Scenario:
         //  * child notifications posted before summary and force-grouped
@@ -4675,7 +4456,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_CLASSIFICATION})
     public void testGroupSummaryAdded_doesnNotUnAggregateBundledNotifications() {
         // Scenario:
         //  * child notifications posted before summary and classified (bundled) and force-grouped

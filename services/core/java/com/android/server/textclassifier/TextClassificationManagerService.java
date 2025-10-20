@@ -35,6 +35,7 @@ import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.Process;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.os.UserHandle;
 import android.provider.DeviceConfig;
 import android.service.textclassifier.ITextClassifierCallback;
@@ -529,6 +530,22 @@ public final class TextClassificationManagerService extends ITextClassifierServi
                 }
                 consumeServiceNoExceptLocked(textClassifierServiceConsumer, serviceState.mService);
             } else {
+                if (com.android.server.textclassifier.Flags
+                        .textclassifierPendingRequestTimeoutEnabled()) {
+                    if (!serviceState.mBinding && serviceState.mLastDisconnectTime == 0) {
+                        serviceState.mLastDisconnectTime = SystemClock.elapsedRealtime();
+                    }
+                    if (serviceState.mLastDisconnectTime > 0
+                            && (SystemClock.elapsedRealtime() - serviceState.mLastDisconnectTime)
+                            > serviceState.PENDING_REQUEST_TIMEOUT_MS) {
+                        Slog.w(
+                                LOG_TAG, serviceState.mPackageName
+                                + " has been disconnected for too long. Failing request.");
+                        serviceState.handlePendingRequestsLocked();
+                        callback.onFailure();
+                        return;
+                    }
+                }
                 serviceState.mPendingRequests.add(
                         new PendingRequest(
                                 methodName,
@@ -909,6 +926,7 @@ public final class TextClassificationManagerService extends ITextClassifierServi
 
     private final class ServiceState {
         private static final int MAX_PENDING_REQUESTS = 20;
+        private static final long PENDING_REQUEST_TIMEOUT_MS = 10000;
 
         @UserIdInt
         final int mUserId;
@@ -942,6 +960,8 @@ public final class TextClassificationManagerService extends ITextClassifierServi
         boolean mInstalled;
         @GuardedBy("mLock")
         boolean mEnabled;
+        @GuardedBy("mLock")
+        long mLastDisconnectTime = 0;
 
         private ServiceState(
                 @UserIdInt int userId, @NonNull String packageName, boolean isTrusted) {
@@ -1178,6 +1198,7 @@ public final class TextClassificationManagerService extends ITextClassifierServi
             private void init(@Nullable ITextClassifierService service,
                     @Nullable ComponentName name) {
                 synchronized (mLock) {
+                    mLastDisconnectTime = (service != null) ? 0 : SystemClock.elapsedRealtime();
                     mService = service;
                     mBinding = false;
                     updateServiceInfoLocked(mUserId, name);

@@ -49,7 +49,6 @@
     <item type="id" name="height_animator_start_value_tag"/>
     <item type="id" name="x_animator_tag_start_value"/>
     <item type="id" name="y_animator_tag_start_value"/>
-    <item type="id" name="qs_icon_tag"/>
     <item type="id" name="scrim"/>
     <item type="id" name="scrim_alpha_start"/>
     <item type="id" name="scrim_alpha_end"/>
@@ -162,9 +161,6 @@
     <item type="id" name="accessibility_action_controls_move_before" />
     <item type="id" name="accessibility_action_controls_move_after" />
 
-    <item type="id" name="accessibility_action_qs_move_to_position" />
-    <item type="id" name="accessibility_action_qs_add_to_position" />
-
     <!-- Accessibility actions for window magnification. -->
     <item type="id" name="accessibility_action_zoom_in"/>
     <item type="id" name="accessibility_action_zoom_out"/>
@@ -197,8 +193,6 @@
 
     <!-- face scanning view id -->
     <item type="id" name="face_scanning_anim"/>
-
-    <item type="id" name="qqs_tile_layout"/>
 
     <!-- The buttons in the Quick Settings footer actions.-->
     <item type="id" name="multi_user_switch"/>
@@ -282,6 +276,9 @@
     <!--Id for the biometric prompt UDFPS accessibility overlay. -->
     <item type="id" name="biometric_prompt_udfps_accessibility_overlay" />
 
+    <!--Id for the secure lock device biometric auth composable. -->
+    <item type="id" name="secure_lock_device_biometric_auth_content" />
+
     <!-- Id for the udfps accessibility overlay -->
     <item type="id" name="udfps_accessibility_overlay" />
     <item type="id" name="udfps_accessibility_overlay_top_guideline" />
@@ -305,4 +302,9 @@
     <item type="id" name="screen_off_animation_guard_set" />
     <item type="id" name="screen_off_animation_guard_reported_wtf" />
     <item type="id" name="screen_off_animation_guard_screen_off_updates" />
+
+    <!-- Used in nodes inside QSFragmentCompose -->
+    <item type="id" name="quick_settings_container" />
+    <item type="id" name="quick_settings_panel" />
+    <item type="id" name="qs_footer_actions" />
 </resources>

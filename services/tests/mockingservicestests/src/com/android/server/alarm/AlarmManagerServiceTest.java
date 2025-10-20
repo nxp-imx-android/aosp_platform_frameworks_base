@@ -150,10 +150,8 @@ import android.os.ServiceManager;
 import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
-import android.platform.test.flag.util.FlagSetException;
 import android.provider.DeviceConfig;
 import android.text.format.DateFormat;
 import android.util.ArraySet;
@@ -428,20 +426,6 @@ public final class AlarmManagerServiceTest {
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule(NULL_DEFAULT);
 
-    /**
-     * Have to do this to switch the {@link Flags} implementation to {@link FakeFeatureFlagsImpl}.
-     * All methods that need any flag enabled should use the
-     * {@link android.platform.test.annotations.EnableFlags} annotation, in which case disabling
-     * the flag will fail with an exception that we will swallow here.
-     */
-    private void disableFlagsNotSetByAnnotation() {
-        try {
-            mSetFlagsRule.disableFlags(Flags.FLAG_ACQUIRE_WAKELOCK_BEFORE_SEND);
-        } catch (FlagSetException fse) {
-            // Expected if the test about to be run requires this enabled.
-        }
-    }
-
     @Before
     public void setUp() {
         doReturn(mIActivityManager).when(ActivityManager::getService);
@@ -517,8 +501,6 @@ public final class AlarmManagerServiceTest {
         mInjector = new Injector(mMockContext);
         mService = new AlarmManagerService(mMockContext, mInjector);
         spyOn(mService);
-
-        disableFlagsNotSetByAnnotation();
 
         mService.onStart();
 
@@ -950,7 +932,6 @@ public final class AlarmManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ACQUIRE_WAKELOCK_BEFORE_SEND)
     public void testWakelockOrderingFirstAlarm() throws Exception {
         final long triggerTime = mNowElapsedTest + 5000;
         final PendingIntent alarmPi = getNewMockPendingIntent();
@@ -974,7 +955,6 @@ public final class AlarmManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ACQUIRE_WAKELOCK_BEFORE_SEND)
     public void testWakelockOrderingNonFirst() throws Exception {
         final long triggerTime = mNowElapsedTest + 5000;
         final PendingIntent alarmPi = getNewMockPendingIntent();
@@ -996,7 +976,6 @@ public final class AlarmManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ACQUIRE_WAKELOCK_BEFORE_SEND)
     public void testWakelockReleasedWhenSendFails() throws Exception {
         final PendingIntent alarmPi = getNewMockPendingIntent();
         doThrow(new PendingIntent.CanceledException("test")).when(alarmPi).send(eq(mMockContext),
@@ -1023,7 +1002,6 @@ public final class AlarmManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ACQUIRE_WAKELOCK_BEFORE_SEND)
     public void testWakelockReleasedOnListenerException() throws Exception {
         final long triggerTime = mNowElapsedTest + 5000;
         final IAlarmListener listener = getNewListener(() -> {

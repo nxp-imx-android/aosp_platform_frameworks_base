@@ -20,8 +20,6 @@ import static android.app.NotificationChannel.SOCIAL_MEDIA_ID;
 import static android.app.NotificationManager.IMPORTANCE_HIGH;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
 import static android.platform.test.flag.junit.SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT;
-import static android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION;
-import static android.service.notification.Flags.FLAG_NOTIFICATION_FORCE_GROUPING;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -198,7 +196,6 @@ public class NotificationAdjustmentExtractorTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION, FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testClassificationAdjustments_triggerRegrouping_whenSilent() {
         NotificationChannel social = new NotificationChannel(
                 SOCIAL_MEDIA_ID, "social", IMPORTANCE_LOW);
@@ -221,7 +218,6 @@ public class NotificationAdjustmentExtractorTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION, FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testClassificationAdjustments_unclassifyTriggersUnbundling() {
         GroupHelper groupHelper = mock(GroupHelper.class);
         NotificationAdjustmentExtractor extractor = new NotificationAdjustmentExtractor();
@@ -249,24 +245,6 @@ public class NotificationAdjustmentExtractorTest extends UiServiceTestCase {
         assertThat(regroupingTask2).isNotNull();
         regroupingTask2.applyChangesLocked(r);
         verify(groupHelper, times(1)).onNotificationUnbundled(r, false);
-    }
-
-    @Test
-    @DisableFlags({FLAG_NOTIFICATION_CLASSIFICATION, FLAG_NOTIFICATION_FORCE_GROUPING})
-    public void testClassificationAdjustments_notTriggerRegrouping_flagsDisabled() {
-        GroupHelper groupHelper = mock(GroupHelper.class);
-        NotificationAdjustmentExtractor extractor = new NotificationAdjustmentExtractor();
-        extractor.setGroupHelper(groupHelper);
-
-        NotificationRecord r = generateRecord();
-
-        Bundle classificationAdj = new Bundle();
-        classificationAdj.putParcelable(Adjustment.KEY_TYPE, mock(NotificationChannel.class));
-        Adjustment adjustment = new Adjustment("pkg", r.getKey(), classificationAdj, "", 0);
-        r.addAdjustment(adjustment);
-
-        RankingReconsideration regroupingTask = extractor.process(r);
-        assertThat(regroupingTask).isNull();
     }
 
     private NotificationRecord generateRecord() {

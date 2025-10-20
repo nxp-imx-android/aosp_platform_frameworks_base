@@ -20,8 +20,8 @@ flag {
 }
 
 flag {
-     name: "no_checkpoint_on_finalize"
+     name: "report_active_db_configuration"
      namespace: "system_performance"
-     description: "Do not checkpoint WAL if closing in the finalizer"
-     bug: "397982577"
+     description: "Report the active DB journal and sync modes"
+     bug: "444244330"
 }

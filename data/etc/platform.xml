@@ -221,6 +221,9 @@
     <assign-permission name="android.permission.REGISTER_STATS_PULL_ATOM" uid="keystore" />
 
     <assign-permission name="android.permission.DYNAMIC_INSTRUMENTATION" uid="uprobestats" />
+    <assign-permission name="android.permission.SET_ACTIVITY_WATCHER" uid="uprobestats" />
+    <assign-permission name="android.permission.INTERACT_ACROSS_USERS_FULL" uid="uprobestats" />
+    <assign-permission name="android.permission.REAL_GET_TASKS" uid="uprobestats" />
 
     <split-permission name="android.permission.ACCESS_FINE_LOCATION">
         <new-permission name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -281,12 +284,10 @@
         <new-permission name="android.permission.BODY_SENSORS_BACKGROUND" />
     </split-permission>
     <split-permission name="android.permission.BODY_SENSORS"
-                      featureFlag="android.permission.flags.replace_body_sensor_permission_enabled"
                       targetSdk="36">
         <new-permission name="android.permission.health.READ_HEART_RATE" />
     </split-permission>
     <split-permission name="android.permission.BODY_SENSORS_BACKGROUND"
-                      featureFlag="android.permission.flags.replace_body_sensor_permission_enabled"
                       targetSdk="36">
         <new-permission name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
     </split-permission>
@@ -322,6 +323,12 @@
     </split-permission>
     <split-permission name="android.permission.ACCESS_MEDIA_LOCATION">
         <new-permission name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    </split-permission>
+
+    <split-permission name="android.permission.INTERNET"
+                      featureFlag="android.permission.flags.access_local_network_permission_enabled"
+                      targetSdk="37">
+        <new-permission name="android.permission.ACCESS_LOCAL_NETWORK" />
     </split-permission>
 
     <!-- This is a list of all the libraries available for application

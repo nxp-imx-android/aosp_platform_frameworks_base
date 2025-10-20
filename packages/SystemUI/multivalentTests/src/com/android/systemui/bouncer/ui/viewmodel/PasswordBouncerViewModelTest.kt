@@ -17,9 +17,12 @@
 package com.android.systemui.bouncer.ui.viewmodel
 
 import android.content.pm.UserInfo
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
@@ -35,6 +38,7 @@ import com.android.systemui.kosmos.collectValues
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
@@ -46,6 +50,7 @@ import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
 import com.google.common.truth.Truth.assertThat
 import java.util.UUID
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
@@ -60,7 +65,7 @@ import org.mockito.kotlin.verify
 @RunWith(AndroidJUnit4::class)
 class PasswordBouncerViewModelTest : SysuiTestCase() {
 
-    private val kosmos = testKosmos()
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val isInputEnabled = MutableStateFlow(true)
     private val onIntentionalUserInputMock: () -> Unit = mock()
 
@@ -87,6 +92,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             assertThat(underTest.textFieldState.text.toString()).isEmpty()
             assertThat(currentOverlays).contains(Overlays.Bouncer)
             assertThat(underTest.authenticationMethod).isEqualTo(AuthenticationMethodModel.Password)
+            assertThat(underTest.isPasswordRevealed.value).isFalse()
         }
 
     @Test
@@ -99,6 +105,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
 
             underTest.onHidden()
             assertThat(underTest.textFieldState.text.toString()).isEmpty()
+            assertThat(underTest.isPasswordRevealed.value).isFalse()
         }
 
     @Test
@@ -270,6 +277,9 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             // Assert initial value, before the UI subscribes.
             assertThat(underTest.isImeSwitcherButtonVisible.value).isFalse()
 
+            // Current implementation only emits if 300ms have passed and a subscriber exists.
+            advanceTimeBy(300.milliseconds)
+
             // Subscription starts; verify a fresh value is fetched.
             val isImeSwitcherButtonVisible by collectLastValue(underTest.isImeSwitcherButtonVisible)
             assertThat(isImeSwitcherButtonVisible).isTrue()
@@ -338,6 +348,133 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             runCurrent()
             // focus should not be requested again
             assertThat(textInputFocusRequested).isFalse()
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun moreButtonsAndIndicators_isDisabled_whenFlagNotEnabled() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, true)
+
+            assertThat(underTest.isMoreIndicatorsAndButtonsEnabled).isFalse()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun moreButtonsAndIndicators_isDisabled_whenDisabledInConfig() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, false)
+
+            assertThat(underTest.isMoreIndicatorsAndButtonsEnabled).isFalse()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun moreButtonsAndIndicators_isEnabled_whenFlagAndConfigEnabled() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, true)
+
+            assertThat(underTest.isMoreIndicatorsAndButtonsEnabled).isTrue()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun onRevealPasswordButtonClicked_showsPassword_hidesAfterDelay() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, true)
+
+            val isPasswordRevealed by collectLastValue(underTest.isPasswordRevealed)
+
+            underTest.onRevealPasswordButtonClicked()
+            runCurrent()
+
+            assertThat(isPasswordRevealed).isTrue()
+
+            advanceTimeBy(5.seconds - 1.milliseconds)
+
+            assertThat(isPasswordRevealed).isTrue()
+
+            advanceTimeBy(2.milliseconds)
+
+            assertThat(isPasswordRevealed).isFalse()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun onRevealPasswordButtonClicked_showsPassword_hides5sAfterTextInput() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, true)
+
+            val isPasswordRevealed by collectLastValue(underTest.isPasswordRevealed)
+
+            underTest.onRevealPasswordButtonClicked()
+            runCurrent()
+
+            assertThat(isPasswordRevealed).isTrue()
+
+            advanceTimeBy(2.seconds)
+
+            underTest.textFieldState.setTextAndPlaceCursorAtEnd("p")
+
+            advanceTimeBy(4.seconds)
+
+            // Still revealed after a total of 6 seconds after clicking the "reveal" button because
+            // text has been entered after 2s.
+            assertThat(isPasswordRevealed).isTrue()
+
+            advanceTimeBy(1.seconds - 1.milliseconds)
+
+            assertThat(isPasswordRevealed).isTrue()
+
+            advanceTimeBy(2.milliseconds)
+
+            assertThat(isPasswordRevealed).isFalse()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun onRevealPasswordButtonClicked_doesNotRevealPassword_whenNotEnabled() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, false)
+
+            val isPasswordRevealed by collectLastValue(underTest.isPasswordRevealed)
+
+            underTest.onRevealPasswordButtonClicked()
+            runCurrent()
+
+            assertThat(isPasswordRevealed).isFalse()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun onInactivity_clearPassword_whenRevealable() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, true)
+
+            underTest.textFieldState.setTextAndPlaceCursorAtEnd("p")
+
+            advanceTimeBy(2.seconds)
+            assertThat(underTest.textFieldState.text.toString()).isEqualTo("p")
+
+            underTest.textFieldState.setTextAndPlaceCursorAtEnd("pa")
+
+            advanceTimeBy(30.seconds - 1.milliseconds)
+            assertThat(underTest.textFieldState.text.toString()).isEqualTo("pa")
+
+            advanceTimeBy(2.milliseconds)
+            assertThat(underTest.textFieldState.text.toString()).isEmpty()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun onInactivity_dontClearPassword_whenNotRevealable() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, false)
+
+            underTest.textFieldState.setTextAndPlaceCursorAtEnd("p")
+
+            advanceTimeBy(31.seconds)
+            assertThat(underTest.textFieldState.text.toString()).isEqualTo("p")
         }
 
     private fun Kosmos.showBouncer() {

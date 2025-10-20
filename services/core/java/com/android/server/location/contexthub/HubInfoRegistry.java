@@ -168,6 +168,7 @@ class HubInfoRegistry implements ContextHubHalEndpointCallback.IEndpointLifecycl
 
     /** Retrieve the list of hubs available. */
     List<HubInfo> getHubs() {
+        refreshCachedHubs();
         synchronized (mLock) {
             return mHubsInfo;
         }
@@ -178,7 +179,7 @@ class HubInfoRegistry implements ContextHubHalEndpointCallback.IEndpointLifecycl
         try {
             hubInfos = mContextHubWrapper.getHubs();
         } catch (RemoteException e) {
-            Log.e(TAG, "RemoteException while getting Hub info", e);
+            Log.e(TAG, "RemoteException while getting Hub info: " + e.getMessage());
             hubInfos = Collections.emptyList();
         }
 
@@ -192,7 +193,7 @@ class HubInfoRegistry implements ContextHubHalEndpointCallback.IEndpointLifecycl
         try {
             endpointInfos = mContextHubWrapper.getEndpoints();
         } catch (RemoteException e) {
-            Log.e(TAG, "RemoteException while getting Hub info", e);
+            Log.e(TAG, "RemoteException while getting Hub info:" + e.getMessage());
             endpointInfos = Collections.emptyList();
         }
 
@@ -265,6 +266,7 @@ class HubInfoRegistry implements ContextHubHalEndpointCallback.IEndpointLifecycl
 
     /** Return a list of {@link HubEndpointInfo} that represents endpoints with the matching id. */
     public List<HubEndpointInfo> findEndpoints(long endpointIdQuery) {
+        refreshCachedEndpoints();
         List<HubEndpointInfo> searchResult = new ArrayList<>();
         synchronized (mLock) {
             for (HubEndpointInfo.HubEndpointIdentifier endpointId : mHubEndpointInfos.keySet()) {
@@ -280,6 +282,7 @@ class HubInfoRegistry implements ContextHubHalEndpointCallback.IEndpointLifecycl
      * Return a list of {@link HubEndpointInfo} that represents endpoints with the matching service.
      */
     public List<HubEndpointInfo> findEndpointsWithService(String serviceDescriptor) {
+        refreshCachedEndpoints();
         List<HubEndpointInfo> searchResult = new ArrayList<>();
         synchronized (mLock) {
             for (HubEndpointInfo endpointInfo : mHubEndpointInfos.values()) {

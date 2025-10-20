@@ -19,10 +19,10 @@ package com.android.wm.shell.windowdecor
 import android.animation.ValueAnimator
 import android.annotation.DimenRes
 import android.content.Context
-import android.content.res.Resources
 import android.util.AttributeSet
 import android.widget.ImageButton
 import com.android.wm.shell.R
+import com.android.wm.shell.windowdecor.extension.getDimensionPixelSize
 
 /**
  * [ImageButton] for the handle at the top of fullscreen apps. Has custom hover and press handling
@@ -72,6 +72,7 @@ class HandleImageButton(context: Context?, attrs: AttributeSet?) : ImageButton(c
     private fun animateHandle(duration: Long, endPadding: Int) {
         if (handleAnimator.isRunning) {
             handleAnimator.cancel()
+            handleAnimator.removeAllListeners()
         }
         handleAnimator.duration = duration
         handleAnimator.setIntValues(paddingLeft, endPadding)
@@ -83,10 +84,7 @@ class HandleImageButton(context: Context?, attrs: AttributeSet?) : ImageButton(c
     }
 
     private fun loadDimensionPixelSize(@DimenRes resourceId: Int): Int {
-        if (resourceId == Resources.ID_NULL) {
-            return 0
-        }
-        return context.resources.getDimensionPixelSize(resourceId)
+        return context.resources.getDimensionPixelSize(resourceId, 0)
     }
 
     companion object {

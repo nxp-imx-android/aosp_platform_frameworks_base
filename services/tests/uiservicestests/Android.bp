@@ -130,6 +130,7 @@ android_test {
     // Include test java files but not the notification & zen ones which are separated
     srcs: [
         "src/**/*.java",
+        "src/**/*.kt",
     ],
 
     exclude_srcs: [

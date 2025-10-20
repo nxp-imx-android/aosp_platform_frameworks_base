@@ -17,8 +17,12 @@
 package com.android.server.supervision;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.UserIdInt;
+import android.app.supervision.PackagePolicy;
+import android.app.supervision.Policy;
 import android.app.supervision.SupervisionRecoveryInfo;
+import android.app.supervision.flags.Flags;
 import android.os.Environment;
 import android.os.PersistableBundle;
 import android.util.ArraySet;
@@ -38,6 +42,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Provides storage and retrieval of device supervision recovery information and user data.
@@ -67,6 +73,16 @@ public class SupervisionSettings {
     private static final String KEY_ROLE_HOLDER = "supervision_role_holder";
     private static final String KEY_LOCK_SCREEN_ENABLED = "supervision_lockscreen_enabled";
     private static final String KEY_LOCK_SCREEN_OPTIONS = "supervision_lockscreen_options";
+
+    // Policy related keys.
+    private static final String KEY_POLICIES_LIST = "policies_list";
+    private static final String KEY_POLICY_HOLDER = "policy_holder";
+    private static final String KEY_POLICY_TYPE = "policy_type";
+    private static final String KEY_POLICY_VERSION = "policy_version";
+    private static final String KEY_POLICY_ENABLED = "policy_enabled";
+    // PackagePolicy related keys.
+    private static final String KEY_PACKAGE_NAME = "package_name";
+    private static final String KEY_PACKAGE_RESTRICTION_TYPE = "package_restriction_type";
 
     private AtomicFile recoveryInfoFile =
             new AtomicFile(
@@ -161,6 +177,9 @@ public class SupervisionSettings {
                                     data.supervisionRoleHolders.add(roleHolder);
                                 }
                             }
+                        } else if (Flags.enableSupervisionManagerPolicyApis()
+                                && parser.getName().equals(KEY_POLICIES_LIST)) {
+                            parsePolicies(parser, data);
                         }
                     }
                 }
@@ -200,6 +219,12 @@ public class SupervisionSettings {
                     }
                     xml.endTag(null, KEY_ROLE_HOLDERS_LIST);
                 }
+
+                // Add policies to the XML.
+                if (Flags.enableSupervisionManagerPolicyApis()) {
+                    addPolicyToXml(xml, data.policies);
+                }
+
                 if (data.supervisionLockScreenOptions != null) {
                     xml.startTag(null, KEY_LOCK_SCREEN_OPTIONS);
                     data.supervisionLockScreenOptions.saveToXml(xml);
@@ -283,6 +308,71 @@ public class SupervisionSettings {
         } catch (IOException | XmlPullParserException e) {
             userDataFile.failWrite(stream);
             Slog.e(SupervisionLog.TAG, "Failed to save recovery info", e);
+        }
+    }
+
+    private void addPolicyToXml(TypedXmlSerializer xml, List<Policy> policies)
+            throws XmlPullParserException, IOException {
+
+        if (policies == null || policies.isEmpty()) {
+            return;
+        }
+
+        xml.startTag(null, KEY_POLICIES_LIST);
+        for (Policy policy : policies) {
+            xml.startTag(null, KEY_POLICY_HOLDER);
+            xml.attribute(null, KEY_POLICY_TYPE, policy.getIdentifier());
+
+            // Add policy specific data to the XML.
+            switch (policy) {
+                case PackagePolicy pp -> {
+                    xml.attributeLong(null, KEY_POLICY_VERSION, policy.getVersion());
+                    xml.attributeBoolean(null, KEY_POLICY_ENABLED, policy.isEnabled());
+                    xml.attribute(null, KEY_PACKAGE_NAME, pp.getPackageName());
+                    xml.attributeInt(null, KEY_PACKAGE_RESTRICTION_TYPE, pp.getRestrictionType());
+                }
+                default -> {
+                    Slog.e(
+                            SupervisionLog.TAG,
+                            "Unsupported policy type: " + policy.getClass().getSimpleName());
+                }
+            }
+
+            xml.endTag(null, KEY_POLICY_HOLDER);
+        }
+        xml.endTag(null, KEY_POLICIES_LIST);
+    }
+
+    private void parsePolicies(TypedXmlPullParser parser, SupervisionUserData data)
+            throws XmlPullParserException, IOException {
+        final int policiesDepth = parser.getDepth();
+        while (XmlUtils.nextElementWithin(parser, policiesDepth)) {
+            if (parser.getName().equals(KEY_POLICY_HOLDER)) {
+                Policy policy = restorePolicyFromXml(parser);
+                if (policy != null) {
+                    data.policies.add(policy);
+                }
+            }
+        }
+    }
+
+    @Nullable
+    private Policy restorePolicyFromXml(TypedXmlPullParser parser)
+            throws XmlPullParserException, IOException {
+        String policyType = parser.getAttributeValue(null, KEY_POLICY_TYPE);
+        long version = parser.getAttributeLong(null, KEY_POLICY_VERSION);
+        boolean isEnabled = parser.getAttributeBoolean(null, KEY_POLICY_ENABLED);
+
+        switch (policyType) {
+            case Policy.PACKAGE_POLICY_IDENTIFIER -> {
+                String packageName = parser.getAttributeValue(null, KEY_PACKAGE_NAME);
+                int restrictionType = parser.getAttributeInt(null, KEY_PACKAGE_RESTRICTION_TYPE);
+                return new PackagePolicy(version, packageName, restrictionType, isEnabled);
+            }
+            default -> {
+                Slog.e(SupervisionLog.TAG, "Unsupported policy type: " + policyType);
+                return null;
+            }
         }
     }
 }

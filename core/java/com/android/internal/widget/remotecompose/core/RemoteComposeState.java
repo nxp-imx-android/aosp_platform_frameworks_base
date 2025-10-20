@@ -18,6 +18,7 @@ package com.android.internal.widget.remotecompose.core;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
+import com.android.internal.widget.remotecompose.core.operations.DataDynamicListFloat;
 import com.android.internal.widget.remotecompose.core.operations.utilities.ArrayAccess;
 import com.android.internal.widget.remotecompose.core.operations.utilities.CollectionsAccess;
 import com.android.internal.widget.remotecompose.core.operations.utilities.DataMap;
@@ -55,6 +56,7 @@ public class RemoteComposeState implements CollectionsAccess {
     // path information
     private final IntMap<Object> mPathMap = new IntMap<>();
     private final IntMap<float[]> mPathData = new IntMap<>();
+    private final IntIntMap mPathWinding = new IntIntMap();
 
     private boolean[] mColorOverride = new boolean[sMaxColors];
     @NonNull private final IntMap<ArrayAccess> mCollectionMap = new IntMap<>();
@@ -180,6 +182,24 @@ public class RemoteComposeState implements CollectionsAccess {
      */
     public @Nullable float [] getPathData(int id) {
         return mPathData.get(id);
+    }
+
+    /**
+     * Get the winding associated with the path id
+     * @param id the id of the path
+     * @return the winding
+     */
+    public int getPathWinding(int id) {
+        return mPathWinding.get(id);
+    }
+
+    /**
+     * Set the winding associated with the path id
+     * @param id the id of the path
+     * @param winding the winding
+     */
+    public void putPathWinding(int id, int winding) {
+        mPathWinding.put(id, winding);
     }
 
     /**
@@ -577,6 +597,20 @@ public class RemoteComposeState implements CollectionsAccess {
     }
 
     @Override
+    public @Nullable float [] getDynamicFloats(int id) {
+        ArrayAccess array = mCollectionMap.get(id & 0xFFFFF);
+        if (array instanceof DataDynamicListFloat) {
+            return array.getFloats();
+        }
+        return null;
+    }
+
+    @Override
+    public @Nullable ArrayAccess getArray(int id) {
+        return mCollectionMap.get(id & 0xFFFFF);
+    }
+
+    @Override
     public int getId(int listId, int index) {
         ArrayAccess array = mCollectionMap.get(listId & 0xFFFFF);
         if (array != null) {
@@ -643,4 +677,13 @@ public class RemoteComposeState implements CollectionsAccess {
     public @Nullable Object getObject(int id) {
         return mObjectMap.get(id);
     }
+
+    /**
+     * Mark the variable with id to be dirty
+     * @param id
+     */
+    public void markVariableDirty(int id) {
+        updateListeners(id);
+    }
+
 }

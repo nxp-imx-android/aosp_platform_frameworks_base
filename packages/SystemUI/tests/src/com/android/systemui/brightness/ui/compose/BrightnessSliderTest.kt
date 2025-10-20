@@ -17,6 +17,7 @@
 package com.android.systemui.brightness.ui.compose
 
 import android.content.res.Configuration
+import android.platform.test.annotations.WithDesktopTest
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.CompositionLocalProvider
@@ -25,9 +26,11 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertHeightIsEqualTo
+import androidx.compose.ui.test.assertTopPositionInRootIsEqualTo
 import androidx.compose.ui.test.hasStateDescription
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -37,14 +40,23 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.brightness.data.repository.fakeScreenBrightnessRepository
+import com.android.systemui.brightness.shared.model.LinearBrightness
 import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel
+import com.android.systemui.brightness.ui.viewmodel.brightnessSliderViewModelFactory
+import com.android.systemui.brightness.ui.viewmodel.create
 import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.haptics.slider.sliderHapticsViewModelFactory
+import com.android.systemui.kosmos.testScope
+import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
 import com.android.systemui.utils.PolicyRestriction
 import java.util.Locale
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -94,11 +106,47 @@ class BrightnessSliderTest : SysuiTestCase() {
         composeRule
             .onNodeWithText(context.getString(R.string.accessibility_brightness))
             .assert(hasStateDescription("12%"))
+    }
 
-        // Verify the slider's height.
-        composeRule
-            .onNodeWithTag(resIdToTestTag("slider"))
-            .assertHeightIsEqualTo(52.dp)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    @WithDesktopTest
+    fun verifySize() = with(kosmos) {
+        testScope.runTest {
+            val viewModel = brightnessSliderViewModelFactory.create()
+            viewModel.activateIn(this)
+
+            // Set the brightness value so that the brightness slider container will be drawn.
+            with(fakeScreenBrightnessRepository) {
+                setBrightness(LinearBrightness(25f))
+                setMinMaxBrightness(LinearBrightness(0f), LinearBrightness(100f))
+            }
+
+            runCurrent()
+            composeRule.setContent {
+                PlatformTheme {
+                    BrightnessSliderContainer(
+                        viewModel = viewModel,
+                        modifier = Modifier
+                            .wrapContentHeight()
+                            .fillMaxWidth(),
+                        containerColors = ContainerColors(
+                            Color.Transparent,
+                            ContainerColors.defaultContainerColor
+                        )
+                    )
+                }
+            }
+
+            // Verify the brightness slider's height.
+            composeRule
+                .onNodeWithTag(resIdToTestTag("slider")).assertHeightIsEqualTo(52.dp)
+
+            // Verify the brightness slider's vertical padding.
+            composeRule
+                .onNodeWithTag(resIdToTestTag("brightness_slider"))
+                .assertTopPositionInRootIsEqualTo(6.dp)
+        }
     }
 
     @Test

@@ -35,6 +35,8 @@ import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
+import static android.view.WindowManager.TRANSIT_TO_FRONT;
+import static android.window.TransitionInfo.FLAG_ALWAYS_ON_TOP;
 import static android.window.TransitionInfo.FLAG_CROSS_PROFILE_OWNER_THUMBNAIL;
 import static android.window.TransitionInfo.FLAG_FILLS_TASK;
 import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
@@ -79,12 +81,16 @@ import static org.mockito.Mockito.verify;
 import static java.lang.Integer.MAX_VALUE;
 
 import android.app.ActivityManager;
+import android.app.WindowConfiguration;
+import android.content.ComponentName;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.IBinder;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -213,6 +219,7 @@ public class TransitionTests extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_USE_ACTIVITY_LEASH_FOR_LETTERBOXING)
     public void testCreateInfo_Activity() {
         final Task theTask = createTask(mDisplayContent);
         final ActivityRecord closing = createActivityRecord(theTask);
@@ -262,6 +269,41 @@ public class TransitionTests extends WindowTestsBase {
         assertEquals(closing.mActivityComponent, closingChange.getActivityComponent());
         assertEquals(closingActivityTransitionInfo, closingChange.getActivityTransitionInfo());
         assertNull(closingChange.getActivityTransitionInfo().getAppCompatTransitionInfo());
+        assertNull(openingChange.getTopCompatActivityLeash());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_APP_COMPAT_REFACTORING,
+            Flags.FLAG_APP_COMPAT_REFACTORING_USE_ACTIVITY_LEASH_FOR_LETTERBOXING})
+    public void testCreateInfo_ActivityWithLeash() {
+        final Task theTask = createTask(mDisplayContent);
+        final ActivityRecord opening = createActivityRecord(theTask);
+        opening.getRequestedOverrideConfiguration().windowConfiguration.setBounds(
+                new Rect(10, 10, 200, 300));
+        opening.onRequestedOverrideConfigurationChanged(
+                opening.getRequestedOverrideConfiguration());
+        final WindowState appWindow = newWindowBuilder("appWindow",
+                TYPE_BASE_APPLICATION).setWindowToken(opening).build();
+        opening.mAppCompatController.getLetterboxPolicy().start(appWindow);
+        final ArrayMap<WindowContainer, Transition.ChangeInfo> changes = new ArrayMap<>();
+        // Start states.
+        changes.put(theTask,
+                new Transition.ChangeInfo(theTask, false /* vis */, false /* exChg */));
+        fillChangeMap(changes, theTask);
+        // End states.
+        theTask.setVisibleRequested(true);
+        final ArraySet<WindowContainer> participants =
+                new ArraySet<>(new WindowContainer[]{theTask});
+        final ArrayList<Transition.ChangeInfo> targets =
+                Transition.calculateTargets(participants, changes);
+
+        final TransitionInfo info =
+                Transition.calculateTransitionInfo(TRANSIT_OPEN, 0 /* flags */, targets, mMockT);
+
+        final List<TransitionInfo.Change> transitionChanges = info.getChanges();
+        final TransitionInfo.Change openingChange = transitionChanges.get(0);
+        assertEquals(TRANSIT_TO_FRONT, openingChange.getMode());
+        assertNotNull(openingChange.getTopCompatActivityLeash());
     }
 
     @Test
@@ -460,7 +502,8 @@ public class TransitionTests extends WindowTestsBase {
         }
 
         final WallpaperWindowToken wallpaperWindowToken = spy(new WallpaperWindowToken(mWm,
-                mock(IBinder.class), true, mDisplayContent, true /* ownerCanManageAppTokens */));
+                mock(IBinder.class), null /* options */));
+        mDisplayContent.addWindowToken(wallpaperWindowToken);
         final WindowState wallpaperWindow = newWindowBuilder("wallpaperWindow",
                 TYPE_WALLPAPER).setWindowToken(wallpaperWindowToken).build();
         wallpaperWindowToken.setVisibleRequested(false);
@@ -656,13 +699,15 @@ public class TransitionTests extends WindowTestsBase {
         ArrayMap<WindowContainer, Transition.ChangeInfo> changes = transition.mChanges;
         ArraySet<WindowContainer> participants = transition.mParticipants;
 
-        final WallpaperWindowToken wallpaper1 =  new WallpaperWindowToken(mWm,
-                mock(IBinder.class), true, otherDisplay, true /* ownerCanManageAppTokens */);
+        final WallpaperWindowToken wallpaper1 =  new WallpaperWindowToken(mWm, mock(IBinder.class),
+                null /* options */);
+        otherDisplay.addWindowToken(wallpaper1);
         final WindowState wallpaperWindow1 = newWindowBuilder("closing",
                 TYPE_WALLPAPER).setWindowToken(wallpaper1).build();
 
-        final WallpaperWindowToken wallpaper2 =  new WallpaperWindowToken(mWm,
-                mock(IBinder.class), true, otherDisplay, true /* ownerCanManageAppTokens */);
+        final WallpaperWindowToken wallpaper2 =  new WallpaperWindowToken(mWm, mock(IBinder.class),
+                null /* options */);
+        otherDisplay.addWindowToken(wallpaper2);
         final WindowState wallpaperWindow2 = newWindowBuilder("opening",
                 TYPE_WALLPAPER).setWindowToken(wallpaper2).build();
 
@@ -700,7 +745,8 @@ public class TransitionTests extends WindowTestsBase {
         final Transition transition = createTestTransition(TRANSIT_OPEN);
 
         final WallpaperWindowToken wallpaperWindowToken = new WallpaperWindowToken(mWm,
-                mock(IBinder.class), true, mDisplayContent, true /* ownerCanManageAppTokens */);
+                mock(IBinder.class), null /* options */);
+        mDisplayContent.addWindowToken(wallpaperWindowToken);
         // Make DA organized so we can check that they don't get included.
         WindowContainer parent = wallpaperWindowToken.getParent();
         makeDisplayAreaOrganized(parent, mDisplayContent);
@@ -1192,8 +1238,8 @@ public class TransitionTests extends WindowTestsBase {
         final WindowState navBar = newWindowBuilder("navBar", TYPE_NAVIGATION_BAR).build();
         final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
         final WindowToken decorToken = new WindowToken.Builder(mWm, mock(IBinder.class),
-                TYPE_NAVIGATION_BAR_PANEL).setDisplayContent(mDisplayContent)
-                .setRoundedCornerOverlay(true).build();
+                TYPE_NAVIGATION_BAR_PANEL).setRoundedCornerOverlay(true).build();
+        mDisplayContent.addWindowToken(decorToken);
         final WindowState screenDecor = newWindowBuilder("screenDecor",
                 decorToken.windowType).setWindowToken(decorToken).build();
         final WindowState[] windows = {statusBar, navBar, ime, screenDecor};
@@ -1635,8 +1681,6 @@ public class TransitionTests extends WindowTestsBase {
         // Make sure the unrelated activity is NOT collected.
         final Transition.ChangeInfo activity1ChangeInfo = closeTransition.mChanges.get(activity1);
         assertNull(activity1ChangeInfo);
-        // No need to wait for the activity in transient hide task.
-        assertEquals(WindowContainer.SYNC_STATE_NONE, activity1.mSyncState);
 
         // An active transient launch overrides idle state to avoid clearing power mode before the
         // transition is finished.
@@ -1819,6 +1863,33 @@ public class TransitionTests extends WindowTestsBase {
         assertTrue(controller.isTransientHide(appTask));
         assertTrue(controller.isTransientVisible(appTask));
         assertTrue(controller.isTransientLaunch(recent));
+    }
+
+    @Test
+    public void testRecentsTransientLaunchSyncState() {
+        final ActivityRecord recent = new ActivityBuilder(mAtm)
+                .setTask(mDisplayContent.getDefaultTaskDisplayArea().getRootHomeTask())
+                .setVisible(false).build();
+        final ActivityRecord app = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        final RecentTasks recentTasks = mAtm.getRecentTasks();
+        spyOn(recentTasks);
+        doReturn(true).when(recentTasks).isCallerRecents(anyInt());
+        doReturn(new ComponentName("pkg", "cls")).when(recentTasks).getRecentsComponent();
+        requestTransition(recent, TRANSIT_TO_FRONT);
+        final Transition transition = recent.mTransitionController.getCollectingTransition();
+        transition.mParallelCollectType = Transition.PARALLEL_TYPE_RECENTS;
+
+        assertTrue(mAtm.getActivityStartController().startExistingRecentsIfPossible(
+                recent.intent, null /* options */));
+        assertTrue(transition.hasTransientLaunch());
+        assertThat(transition.mParticipants).contains(recent);
+        assertThat(transition.mParticipants).contains(app.getTask());
+        // No need to wait for the activity in transient hide task.
+        assertEquals(WindowContainer.SYNC_STATE_NONE, app.mSyncState);
+        // The recents transition can play without waiting for the redraw to complete.
+        if (com.android.window.flags.Flags.skipAddRecentsToSyncSet()) {
+            assertEquals(WindowContainer.SYNC_STATE_NONE, recent.mSyncState);
+        }
     }
 
     @Test
@@ -3357,6 +3428,97 @@ public class TransitionTests extends WindowTestsBase {
 
         WindowContainer ancestor = Transition.findCommonAncestor(sortedTargets, display1Task);
         assertTrue(ancestor.isDescendantOf(otherDisplay.getParent()));
+    }
+
+    @Test
+    public void testSetAlwaysOnTopChange() {
+        final TransitionController controller = mDisplayContent.mTransitionController;
+        controller.setFullReadyTrackingForTest(true);
+
+        final TestTransitionPlayer player = registerTestTransitionPlayer();
+        final Transition transition = createTestTransition(TRANSIT_CHANGE, controller);
+
+        // Create task and make it visible.
+        final Task task = createTask(mDisplayContent);
+        task.setVisibleRequested(true);
+
+        // Start collecting to get a snapshot before changing the AoT.
+        controller.moveToCollecting(transition);
+        transition.collect(task);
+
+        // Change AoT, since it's a spy, need to do a bit of mocking.
+        task.setAlwaysOnTop(true);
+        doReturn(true).when(task).isAlwaysOnTop();
+
+        controller.requestStartTransition(transition, task, null /* remote */, null /* display */);
+
+        // Make a transition ready manually with a test condition. This will force
+        // TransitionController to collect order changes.
+        final Transition.ReadyCondition testCondition = new Transition.ReadyCondition("test");
+        transition.mReadyTracker.add(testCondition);
+        transition.mReadyTracker.meet(testCondition);
+
+        player.start();
+
+        // Make sure there's only AoT change.
+        final TransitionInfo info = player.mLastReady;
+        assertTrue((info.getChanges().get(0).getFlags() & TransitionInfo.FLAG_ALWAYS_ON_TOP) != 0);
+        assertEquals(TRANSIT_CHANGE, info.getChanges().get(0).getMode());
+        assertTrue(
+                info.getChanges().stream()
+                        .noneMatch(change -> (change.getFlags() & FLAG_MOVED_TO_TOP) == 1));
+        player.finish();
+    }
+
+    @Test
+    public void testOrderChangesWhenExitAlwaysOnTop() {
+        final TransitionController controller = mDisplayContent.mTransitionController;
+        controller.setFullReadyTrackingForTest(true);
+
+        final TestTransitionPlayer player = registerTestTransitionPlayer();
+        final Transition transition = createTestTransition(TRANSIT_CHANGE, controller);
+
+        // Start with always-on-top task and a regular task.
+        final Task task = createTask(mDisplayContent);
+        task.setVisibleRequested(true);
+
+        // Change AoT, since it's a spy, need to do a bit of mocking.
+        final Task alwaysOnTopTask = createTask(mDisplayContent);
+        final WindowConfiguration wc = mock(WindowConfiguration.class);
+        doReturn(wc).when(alwaysOnTopTask).getWindowConfiguration();
+        alwaysOnTopTask.setVisibleRequested(true);
+        alwaysOnTopTask.setAlwaysOnTop(true);
+        doReturn(true).when(wc).isAlwaysOnTop();
+        doReturn(true).when(alwaysOnTopTask).isAlwaysOnTop();
+
+        // Start collecting to get a snapshot before changing the AoT.
+        controller.moveToCollecting(transition);
+        transition.collect(task);
+        transition.collect(alwaysOnTopTask);
+
+        // Change AoT back.
+        alwaysOnTopTask.setAlwaysOnTop(false);
+        doReturn(false).when(wc).isAlwaysOnTop();
+        doReturn(false).when(alwaysOnTopTask).isAlwaysOnTop();
+
+        controller.requestStartTransition(transition, task, null /* remote */, null /* display */);
+
+        // Make a transition ready manually with a test condition. This will force
+        // TransitionController to collect order changes.
+        final Transition.ReadyCondition testCondition = new Transition.ReadyCondition("test");
+        transition.mReadyTracker.add(testCondition);
+        transition.mReadyTracker.meet(testCondition);
+
+        player.start();
+
+        // Make sure there's only a move to top change.
+        final TransitionInfo info = player.mLastReady;
+        assertTrue((info.getChanges().get(0).getFlags() & TransitionInfo.FLAG_MOVED_TO_TOP) != 0);
+        assertTrue(
+                info.getChanges().stream()
+                        .noneMatch(change -> (change.getFlags() & FLAG_ALWAYS_ON_TOP) == 1));
+        assertEquals(TRANSIT_CHANGE, info.getChanges().get(0).getMode());
+        player.finish();
     }
 
     private void tryFinishTransitionSyncSet(Transition transition) {

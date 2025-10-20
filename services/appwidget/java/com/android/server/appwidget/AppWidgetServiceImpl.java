@@ -17,7 +17,6 @@
 package com.android.server.appwidget;
 
 import static android.appwidget.AppWidgetProviderInfo.WIDGET_FEATURE_CONFIGURATION_OPTIONAL;
-import static android.appwidget.flags.Flags.playStorePinWidgets;
 import static android.appwidget.flags.Flags.remoteAdapterConversion;
 import static android.appwidget.flags.Flags.remoteViewsProto;
 import static android.appwidget.flags.Flags.removeAppWidgetServiceIoFromCriticalPath;
@@ -91,6 +90,7 @@ import android.content.pm.UserPackage;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
+import android.database.ContentObserver;
 import android.graphics.Point;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
@@ -111,6 +111,7 @@ import android.os.Trace;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.DeviceConfig;
+import android.provider.Settings;
 import android.service.appwidget.AppWidgetServiceDumpProto;
 import android.service.appwidget.GeneratedPreviewsProto;
 import android.service.appwidget.WidgetProto;
@@ -178,6 +179,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -433,6 +435,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         computeMaximumWidgetBitmapMemory();
         registerBroadcastReceiver();
         registerOnCrossProfileProvidersChangedListener();
+        registerSettingsObserver();
 
         LocalServices.addService(AppWidgetManagerInternal.class, new AppWidgetManagerLocal());
     }
@@ -606,6 +609,53 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         // The device policy is an optional component.
         if (mDevicePolicyManagerInternal != null) {
             mDevicePolicyManagerInternal.addOnCrossProfileWidgetProvidersChangeListener(this);
+        }
+    }
+
+    /**
+     * Registers a content observer for settings changes.
+     */
+    private void registerSettingsObserver() {
+        final Uri fontScaleUri = Settings.System.getUriFor(Settings.System.FONT_SCALE);
+        final Uri[] urisToObserve = new Uri[]{fontScaleUri};
+
+        final ContentObserver mSettingsObserver = new ContentObserver(mCallbackHandler) {
+            @Override
+            public void onChange(boolean selfChange, @NonNull Collection<Uri> uris, int flags,
+                @NonNull UserHandle user) {
+                for (Uri uri : uris) {
+                    if (uri.equals(fontScaleUri)) {
+                        onFontScaleChanged(user.getIdentifier());
+                    }
+                }
+            }
+        };
+
+        final ContentResolver resolver = mContext.getContentResolver();
+        for (Uri uri : urisToObserve) {
+            resolver.registerContentObserver(uri, /* notifyForDescendants= */ false,
+                mSettingsObserver, UserHandle.USER_ALL);
+        }
+    }
+
+    /**
+     * When the font scale setting changes for a user, request a widget update from all of the
+     * providers for that user.
+     */
+    private void onFontScaleChanged(int userId) {
+        if (DEBUG) {
+            Slog.i(TAG, "onFontScaleChanged " + userId);
+        }
+        synchronized (mLock) {
+            for (Provider provider : mProviders) {
+                if (provider.widgets.isEmpty()
+                    || (userId != UserHandle.getUserId(provider.id.uid)
+                        && userId != UserHandle.USER_ALL)) {
+                    continue;
+                }
+                sendUpdateIntentLocked(provider, getWidgetIds(provider.widgets),
+                    /* interactive= */ true);
+            }
         }
     }
 
@@ -888,40 +938,52 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                         || !packageName.equals(provider.id.componentName.getPackageName())) {
                     continue;
                 }
-                if (provider.setMaskedByStoppedPackageLocked(isStopped)) {
-                    if (provider.isMaskedLocked()) {
-                        maskWidgetsViewsLocked(provider, null);
-                        cancelBroadcastsLocked(provider);
-                    } else {
+                boolean changed = provider.setMaskedByStoppedPackageLocked(isStopped);
+                boolean masked = provider.isMaskedLocked();
+                if (masked && changed) {
+                    maskWidgetsViewsLocked(provider, null);
+                    cancelBroadcastsLocked(provider);
+                } else if (!masked) {
+                    if (changed) {
                         unmaskWidgetsViewsLocked(provider);
-                        final int widgetCount = provider.widgets.size();
-                        if (widgetCount > 0) {
-                            final int[] widgetIds = new int[widgetCount];
-                            for (int j = 0; j < widgetCount; j++) {
-                                widgetIds[j] = provider.widgets.get(j).appWidgetId;
-                            }
-                            registerForBroadcastsLocked(provider, widgetIds);
-                            sendUpdateIntentLocked(provider, widgetIds, /* interactive= */ false);
+                    }
+                    // Re-register AlarmManager broadcast and send APPWIDGET_UPDATE even if we have
+                    // not observed a change in masked state.
+                    // We may have received a PACKAGE_RESTARTED, but did not mask the widget
+                    // (masked == false) because the package was already unstopped by the time we
+                    // queried PackageManager.isPackageStoppedForUser. In that case, the
+                    // PendingIntents for this widget will have still been cancelled, and we need
+                    // to trigger a widget update so that the provider can create new PendingIntents
+                    // for their widget. Also, the broadcast has been cleared from AlarmManager and
+                    // must be re-registered.
+                    final int widgetCount = provider.widgets.size();
+                    if (widgetCount > 0) {
+                        final int[] widgetIds = new int[widgetCount];
+                        for (int j = 0; j < widgetCount; j++) {
+                            widgetIds[j] = provider.widgets.get(j).appWidgetId;
                         }
+                        cancelBroadcastsLocked(provider);
+                        registerForBroadcastsLocked(provider, widgetIds);
+                        sendUpdateIntentLocked(provider, widgetIds, /* interactive= */ false);
+                    }
 
-                        final int pendingIdsCount = provider.pendingDeletedWidgetIds.size();
-                        if (pendingIdsCount > 0) {
-                            if (DEBUG) {
-                                Slog.i(TAG, "Sending missed deleted broadcasts for "
-                                        + provider.id.componentName + " "
-                                        + provider.pendingDeletedWidgetIds);
-                            }
-                            for (int j = 0; j < pendingIdsCount; j++) {
-                                sendDeletedIntentLocked(provider.id.componentName,
-                                        provider.id.getProfile(),
-                                        provider.pendingDeletedWidgetIds.get(j));
-                            }
-                            provider.pendingDeletedWidgetIds.clear();
-                            if (widgetCount == 0) {
-                                sendDisabledIntentLocked(provider);
-                            }
-                            saveGroupStateAsync(provider.id.getProfile().getIdentifier());
+                    final int pendingIdsCount = provider.pendingDeletedWidgetIds.size();
+                    if (pendingIdsCount > 0) {
+                        if (DEBUG) {
+                            Slog.i(TAG, "Sending missed deleted broadcasts for "
+                                + provider.id.componentName + " "
+                                + provider.pendingDeletedWidgetIds);
                         }
+                        for (int j = 0; j < pendingIdsCount; j++) {
+                            sendDeletedIntentLocked(provider.id.componentName,
+                                provider.id.getProfile(),
+                                provider.pendingDeletedWidgetIds.get(j));
+                        }
+                        provider.pendingDeletedWidgetIds.clear();
+                        if (widgetCount == 0) {
+                            sendDisabledIntentLocked(provider);
+                        }
+                        saveGroupStateAsync(provider.id.getProfile().getIdentifier());
                     }
                 }
             }
@@ -2031,7 +2093,8 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         final int userId = UserHandle.getCallingUserId();
 
         if (DEBUG) {
-            Slog.i(TAG, "getAppWidgetViews() " + userId);
+            Slog.i(TAG, "getAppWidgetViews() " + userId + " callingPackage=" + callingPackage
+                    + " appWidgetId=" + appWidgetId);
         }
 
         // Make sure the package runs under the caller uid.
@@ -2579,7 +2642,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         boolean hasClearAppUserData = mContext.checkPermission(
                 Manifest.permission.CLEAR_APP_USER_DATA, callingPid, callingUid)
                 == PackageManager.PERMISSION_GRANTED;
-        boolean hasInstallPackages = playStorePinWidgets() && mContext.checkPermission(
+        boolean hasInstallPackages = mContext.checkPermission(
                 Manifest.permission.INSTALL_PACKAGES, callingPid, callingUid)
                 == PackageManager.PERMISSION_GRANTED;
         return hasClearAppUserData || hasInstallPackages;
@@ -3395,7 +3458,11 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         // If the provider was not found it may be because it was restored and
         // we did not know its UID so let us find if there is such one.
         if (existing == null) {
-            ProviderId restoredProviderId = new ProviderId(UNKNOWN_UID, componentName);
+            ProviderId restoredProviderId =
+                    new ProviderId(
+                            UNKNOWN_UID,
+                            componentName,
+                            /* profileId= */ providerId.getProfile().getIdentifier());
             existing = lookupProviderLocked(restoredProviderId);
         }
 
@@ -5105,9 +5172,9 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                     }
                     return;
                 }
-                widget.event.merge(event);
+                widget.eventBuilder.merge(event);
                 if (mWidgetEventsReportIntervalMs <= 0) {
-                    widget.reportWidgetEventIfNeededLocked(mUsageStatsManagerInternal);
+                    widget.saveWidgetEventIfNeededLocked(mUsageStatsManagerInternal);
                 }
             }
         }
@@ -5649,16 +5716,16 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     }
 
     /**
-     * Reports any pending widget events to UsageStatsManager.
+     * Saves any pending widget events to UsageStatsService and FrameworkStatsLog.
      */
-    private void reportWidgetEventsToUsageStats() {
+    private void saveWidgetEvents() {
         if (DEBUG) {
-            Slog.i(TAG, "reportWidgetEventsToUsageStats");
+            Slog.i(TAG, "saveWidgetEvents");
         }
         synchronized (mLock) {
             final int widgetCount = mWidgets.size();
             for (int i = 0; i < widgetCount; i++) {
-                mWidgets.get(i).reportWidgetEventIfNeededLocked(mUsageStatsManagerInternal);
+                mWidgets.get(i).saveWidgetEventIfNeededLocked(mUsageStatsManagerInternal);
             }
         }
     }
@@ -6078,7 +6145,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         int tag = TAG_UNDEFINED; // for use while saving state (the index)
 
         public int getUserId() {
-            return UserHandle.getUserId(id.uid);
+            return id.getProfile().getIdentifier();
         }
 
         public boolean isInPackageForUser(String packageName, int userId) {
@@ -6257,14 +6324,30 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     static final class ProviderId {
         final int uid;
         final ComponentName componentName;
+        final UserHandle profile;
 
         ProviderId(int uid, ComponentName componentName) {
+            this(uid, componentName, UserHandle.getUserId(uid));
+            if (uid == UNKNOWN_UID) {
+                Slog.w(TAG, "ProviderId created with UNKNOWN_UID for " + componentName);
+            }
+        }
+
+        /**
+         * @param uid the uid associated with the provider OR {@code UNKNOWN_UID} if provider is
+         *     pending restore.
+         * @param componentName the component name of the provider.
+         * @param profileId the profile id associated with the provider. Helps disambiguate between
+         *     restored providers with the {@code UNKNOWN_UID} and same component name.
+         */
+        ProviderId(int uid, ComponentName componentName, int profileId) {
             this.uid = uid;
             this.componentName = componentName;
+            this.profile = UserHandle.of(profileId);
         }
 
         public UserHandle getProfile() {
-            return UserHandle.getUserHandleForUid(uid);
+            return profile;
         }
 
         @Override
@@ -6288,6 +6371,8 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                 }
             } else if (!componentName.equals(other.componentName)) {
                 return false;
+            } else if (profile != other.profile) {
+                return false;
             }
             return true;
         }
@@ -6297,13 +6382,15 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             int result = uid;
             result = 31 * result + ((componentName != null)
                     ? componentName.hashCode() : 0);
+            result = 31 * result + profile.getIdentifier();
             return result;
         }
 
         @Override
         public String toString() {
-            return "ProviderId{user:" + UserHandle.getUserId(uid) + ", app:"
-                    + UserHandle.getAppId(uid) + ", cmp:" + componentName + '}';
+            return "ProviderId{uid:" + uid + ", app:"
+                    + UserHandle.getAppId(uid) + ", cmp:" + componentName + ", profile:" + profile
+                    + '}';
         }
     }
 
@@ -6477,7 +6564,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         SparseLongArray updateSequenceNos = new SparseLongArray(2);
         boolean trackingUpdate = false;
         boolean isFirstConfigActivityPending = false;
-        final AppWidgetEvent.Builder event = new AppWidgetEvent.Builder();
+        final AppWidgetEvent.Builder eventBuilder = new AppWidgetEvent.Builder();
 
         @Override
         public String toString() {
@@ -6503,23 +6590,51 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         }
 
         /**
-         * Reports a widget event to UsageStatsManager if there is event data to report.
+         * If the eventBuilder is not empty, saves the pending widget event to UsageStatsService and
+         * FrameworkStatsLog.
          */
-        public void reportWidgetEventIfNeededLocked(
+        public void saveWidgetEventIfNeededLocked(
                 @NonNull UsageStatsManagerInternal usageStatsManager) {
             // Each event must have a non-zero duration.
-            if (event.isEmpty()) {
+            if (eventBuilder.isEmpty() || provider == null) {
                 return;
             }
 
+            AppWidgetEvent event = eventBuilder.build();
             usageStatsManager.reportUserInteractionEvent(
                     provider.id.componentName.getPackageName(),
-                    UserHandle.getUserId(provider.id.uid), event.build().toBundle());
-            if (DEBUG) {
-                Slog.i(TAG, "Reported widget interaction usage event: " + event.build());
-            }
+                    UserHandle.getUserId(provider.id.uid), event.toBundle());
 
-            event.clear();
+            int hostUid = host != null ? host.id.uid : -1;
+            String providerComponent =
+                    provider.info != null ? provider.info.provider.flattenToString() : null;
+            int left, top, right, bottom;
+            if (event.getPosition() != null) {
+                left = event.getPosition().left;
+                top = event.getPosition().top;
+                right = event.getPosition().right;
+                bottom = event.getPosition().bottom;
+            } else {
+                left = -1;
+                top = -1;
+                right = -1;
+                bottom = -1;
+            }
+            FrameworkStatsLog.write(FrameworkStatsLog.WIDGET_INTERACTION_EVENT,
+                    /* hostUid= */ hostUid,
+                    /* provider= */ providerComponent,
+                    /* start= */ event.getStart().toEpochMilli(),
+                    /* end= */ event.getEnd().toEpochMilli(),
+                    /* visibleDuration= */ event.getVisibleDuration().toMillis(),
+                    /* rectLeft= */ left,
+                    /* rectTop= */ top,
+                    /* rectRight= */ right,
+                    /* rectBottom= */ bottom);
+
+            if (DEBUG) {
+                Slog.i(TAG, "Reported widget interaction usage event: " + event);
+            }
+            eventBuilder.clear();
         }
     }
 
@@ -6870,7 +6985,11 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                                     info.provider = componentName;
 
                                     p = new Provider();
-                                    p.id = new ProviderId(UNKNOWN_UID, componentName);
+                                    p.id =
+                                            new ProviderId(
+                                                    UNKNOWN_UID,
+                                                    componentName,
+                                                    /* profileId= */ userId);
                                     p.setPartialInfoLocked(info);
                                     p.zombie = true;
                                     mProviders.add(p);
@@ -7381,8 +7500,8 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         }
 
         @Override
-        public void reportWidgetEventsToUsageStats() {
-            AppWidgetServiceImpl.this.reportWidgetEventsToUsageStats();
+        public void saveWidgetEvents() {
+            AppWidgetServiceImpl.this.saveWidgetEvents();
         }
     }
 }

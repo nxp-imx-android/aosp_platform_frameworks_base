@@ -1,6 +1,15 @@
 {
   "presubmit": [
     {
+      "name": "FrameworksCoreTests_companion_virtual"
+    },
+    {
+      "name": "FrameworksServicesTests_companion_virtual"
+    },
+    {
+      "name": "VirtualDeviceServicesTests"
+    },
+    {
       "name": "CtsVirtualDevicesTestCases"
     },
     {

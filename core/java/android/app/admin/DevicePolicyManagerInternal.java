@@ -232,6 +232,19 @@ public abstract class DevicePolicyManagerInternal {
     public abstract List<String> getDefaultCrossProfilePackages();
 
     /**
+     * Sets the hidden state of an application for the specified user.
+     *
+     * @param systemEntity  The service entity that hides the application. This can
+     *                     be just the calling package name, or any string of the caller's choice
+     *                     can be used.
+     * @param packageName The package name of the app to hide or unhide.
+     * @param userId  The user for whom to hide application
+     * @param hidden {@code true} if the package should be hidden, {@code false} if unhidden.
+     */
+    public abstract void setApplicationHiddenBySystem(String systemEntity,
+            String packageName, @UserIdInt int userId, boolean hidden);
+
+    /**
      * Sends the {@code intent} to the package holding the
      * {@link android.app.role.RoleManager#ROLE_DEVICE_MANAGER} role and packages with cross
      * profile capabilities, meaning the application must have the {@code crossProfile}
@@ -295,6 +308,13 @@ public abstract class DevicePolicyManagerInternal {
     public abstract void resetOp(int op, String packageName, @UserIdInt int userId);
 
     /**
+     * Returns the input method packages permitted by Device policy, {@code null} means
+     * all input methods are allowed.
+     */
+    @Nullable
+    public abstract Set<String> getPermittedInputMethodPackages(@UserIdInt int userId);
+
+    /**
      * Checks if the calling process has been granted permission to apply a device policy on a
      * specific user.
      *
@@ -327,6 +347,11 @@ public abstract class DevicePolicyManagerInternal {
      * True if either the entire device or the user is organization managed.
      */
     public abstract boolean isUserOrganizationManaged(@UserIdInt int userId);
+
+    /**
+     * True if the entire device is organization managed.
+     */
+    public abstract boolean isDeviceOrganizationManaged();
 
     /**
      * Returns a map of admin to {@link Bundle} map of restrictions set by the admins for the

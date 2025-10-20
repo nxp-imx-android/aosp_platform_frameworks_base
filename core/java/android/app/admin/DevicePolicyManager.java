@@ -56,12 +56,13 @@ import static android.Manifest.permission.SET_TIME;
 import static android.Manifest.permission.SET_TIME_ZONE;
 import static android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME;
 import static android.app.admin.DeviceAdminInfo.HEADLESS_DEVICE_OWNER_MODE_UNSUPPORTED;
-import static android.app.admin.flags.Flags.FLAG_DEVICE_THEFT_API_ENABLED;
-import static android.app.admin.flags.Flags.FLAG_REMOVE_MANAGED_PROFILE_ENABLED;
 import static android.app.admin.flags.Flags.FLAG_CROSS_PROFILE_WIDGET_PROVIDER_BULK_APIS;
+import static android.app.admin.flags.Flags.FLAG_DEVICE_THEFT_API_ENABLED;
+import static android.app.admin.flags.Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING;
+import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING;
+import static android.app.admin.flags.Flags.FLAG_REMOVE_MANAGED_PROFILE_ENABLED;
 import static android.app.admin.flags.Flags.FLAG_SECONDARY_LOCKSCREEN_API_ENABLED;
 import static android.app.admin.flags.Flags.FLAG_SPLIT_CREATE_MANAGED_PROFILE_ENABLED;
-import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING;
 import static android.app.admin.flags.Flags.onboardingBugreportV2Enabled;
 import static android.app.admin.flags.Flags.onboardingConsentlessBugreports;
 import static android.content.Intent.LOCAL_FLAG_FROM_SYSTEM;
@@ -98,6 +99,7 @@ import android.app.IServiceConnection;
 import android.app.KeyguardManager;
 import android.app.admin.SecurityLog.SecurityEvent;
 import android.app.admin.flags.Flags;
+import android.app.admin.metadata.PolicyTransportValueConvertor;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
@@ -560,6 +562,30 @@ public class DevicePolicyManager {
     @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_PROVISION_MANAGED_DEVICE
         = "android.app.action.PROVISION_MANAGED_DEVICE";
+
+
+    // TODO(b/390162247): Rename this since it's no longer an intent action. It
+    // can be moved out of the ACTION_PROVISION_* constant group and potentially
+    // migrated to an enum with other modes. Also, consider renaming the
+    // checkProvisioningPrecondition parameter to managementMode.
+    /**
+     * Constant to indicate multi-user device provisioning.
+     *
+     * <p> When multi-user device provisioning has completed, an intent of the type
+     * {@link DeviceAdminReceiver#ACTION_PROFILE_PROVISIONING_COMPLETE} is
+     * broadcast. The extra {@link #EXTRA_PROVISIONING_ACTION} will be set to
+     * {@link #ACTION_PROVISION_MULTI_USER_DEVICE}.
+     *
+     * <p> This can also be passed to {@link #checkProvisioningPrecondition} to check if the
+     * multi-user device provisioning is allowed.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_PROVISION_MULTI_USER_DEVICE =
+            "android.app.admin.action.PROVISION_MULTI_USER_DEVICE";
 
     /**
      * Activity action: launch when user provisioning completed, i.e.
@@ -2359,7 +2385,7 @@ public class DevicePolicyManager {
      *
      * <p> When returned from {@link #getPasswordComplexity()}, the constant represents
      * the exact complexity band the password is in.
-     * When passed to {@link #setRequiredPasswordComplexity(int), it sets the minimum complexity
+     * When passed to {@link #setRequiredPasswordComplexity(int)}, it sets the minimum complexity
      * band which the password must meet.
      */
     public static final int PASSWORD_COMPLEXITY_NONE = 0;
@@ -2375,7 +2401,7 @@ public class DevicePolicyManager {
      *
      * <p> When returned from {@link #getPasswordComplexity()}, the constant represents
      * the exact complexity band the password is in.
-     * When passed to {@link #setRequiredPasswordComplexity(int), it sets the minimum complexity
+     * When passed to {@link #setRequiredPasswordComplexity(int)}, it sets the minimum complexity
      * band which the password must meet.
      *
      * @see #PASSWORD_QUALITY_SOMETHING
@@ -2396,7 +2422,7 @@ public class DevicePolicyManager {
      *
      * <p> When returned from {@link #getPasswordComplexity()}, the constant represents
      * the exact complexity band the password is in.
-     * When passed to {@link #setRequiredPasswordComplexity(int), it sets the minimum complexity
+     * When passed to {@link #setRequiredPasswordComplexity(int)}, it sets the minimum complexity
      * band which the password must meet.
      *
      * @see #PASSWORD_QUALITY_NUMERIC_COMPLEX
@@ -2418,7 +2444,7 @@ public class DevicePolicyManager {
      *
      * <p> When returned from {@link #getPasswordComplexity()}, the constant represents
      * the exact complexity band the password is in.
-     * When passed to {@link #setRequiredPasswordComplexity(int), it sets the minimum complexity
+     * When passed to {@link #setRequiredPasswordComplexity(int)}, it sets the minimum complexity
      * band which the password must meet.
      *
      * @see #PASSWORD_QUALITY_NUMERIC_COMPLEX
@@ -2970,6 +2996,32 @@ public class DevicePolicyManager {
     @SystemApi
     public static final int STATUS_HEADLESS_ONLY_SYSTEM_USER = 17;
 
+    // TODO(b/435271558): expose as @SystemApi
+    /**
+     * Result code for {@link #checkProvisioningPrecondition}.
+     *
+     * <p>Returned for {@link #ACTION_PROVISION_MANAGED_DEVICE} when provisioning a DPC into
+     * the {@link DeviceAdminInfo#HEADLESS_DEVICE_OWNER_MODE_SINGLE_USER} mode but the target user
+     * is not the first full user of the device (i.e., first user other than the headless system
+     * user).
+     *
+     * @hide
+     */
+    public static final int STATUS_HEADLESS_SINGLE_USER_MODE_ONLY_SUPPORTED_ON_FIRST_FULL_USER = 18;
+
+
+    /**
+     * Result code for {@link #checkProvisioningPreCondition}.
+     *
+     * <p>Returned for {@link #ACTION_PROVISION_MULTI_USER_DEVICE} when the device is not
+     * running in headless system user mode.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    public static final int STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED = 19;
+
     /**
      * Result codes for {@link #checkProvisioningPrecondition} indicating all the provisioning pre
      * conditions.
@@ -2984,7 +3036,9 @@ public class DevicePolicyManager {
             STATUS_CANNOT_ADD_MANAGED_PROFILE, STATUS_DEVICE_ADMIN_NOT_SUPPORTED,
             STATUS_SPLIT_SYSTEM_USER_DEVICE_SYSTEM_USER,
             STATUS_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS,
-            STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED, STATUS_HEADLESS_ONLY_SYSTEM_USER
+            STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED, STATUS_HEADLESS_ONLY_SYSTEM_USER,
+            STATUS_HEADLESS_SINGLE_USER_MODE_ONLY_SUPPORTED_ON_FIRST_FULL_USER,
+            STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED
     })
     public @interface ProvisioningPrecondition {}
 
@@ -4882,7 +4936,7 @@ public class DevicePolicyManager {
      * If this method is called on the {@link DevicePolicyManager} instance returned by
      * {@link #getParentProfileInstance(ComponentName)}, then password complexity requirements
      * set on the primary {@link DevicePolicyManager} must be cleared first by calling
-     * {@link #setRequiredPasswordComplexity} with {@link #PASSWORD_COMPLEXITY_NONE) first.
+     * {@link #setRequiredPasswordComplexity} with {@link #PASSWORD_COMPLEXITY_NONE} first.
      *
      * <p><string>Note:</strong> this method is ignored on
      * {PackageManager#FEATURE_AUTOMOTIVE automotive builds}.
@@ -9971,6 +10025,16 @@ public class DevicePolicyManager {
     @SystemApi
     @SuppressLint("RequiresPermission")
     public boolean isDeviceManaged() {
+        // TODO(b/390162247): Add API level check to avoid breaking existing apps targeting old API.
+        if (android.app.admin.flags.Flags.multiUserManagementDeviceProvisioning()
+                && mService != null) {
+            try {
+                // TODO(b/390162247): Consider adding a cache just like we do for hasDeviceOwner.
+                return mService.isDeviceManaged();
+            } catch (RemoteException re) {
+                throw re.rethrowFromSystemServer();
+            }
+        }
         return mHasDeviceOwnerCache.query(null);
     }
 
@@ -13352,7 +13416,7 @@ public class DevicePolicyManager {
      * Admins can explicitly enable it with this API.
      *
      * <p> This method enables preferential network service with a default configuration.
-     * To fine-tune the configuration, use {@link #setPreferentialNetworkServiceConfigs) instead.
+     * To fine-tune the configuration, use {@link #setPreferentialNetworkServiceConfigs} instead.
      * <p> Before Android version {@link android.os.Build.VERSION_CODES#TIRAMISU}:
      * this method can be called by the profile owner of a managed profile.
      * <p> Starting from Android version {@link android.os.Build.VERSION_CODES#TIRAMISU}:
@@ -15284,7 +15348,7 @@ public class DevicePolicyManager {
 
     /**
      * Called by the device owner (since API 26) or profile owner (since API 24) or holders of the
-     * permission {@link android.Manifest.permission#MANAGE_DEVICE_POLICY_ORGANIZATION_IDENTITY
+     * permission {@link android.Manifest.permission#MANAGE_DEVICE_POLICY_ORGANIZATION_IDENTITY}
      * to retrieve the name of the organization under management.
      *
      * @param admin Which {@link DeviceAdminReceiver} this request is associated with. Null if the
@@ -15538,6 +15602,30 @@ public class DevicePolicyManager {
     }
 
     /**
+     * Clears the multi-user device management state for testing purposes. Can only remove
+     * management set up by test packages. Does not send a broadcast about the removal.
+     *
+     * @param adminReceiver The administration compononent to remove.
+     * @throws SecurityException if the caller is not shell / root or the admin package
+     *         isn't a test application see {@link ApplicationInfo#FLAG_TEST_APP}.
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS)
+    // TODO(b/390162247): Remove adminReceiver param once we decide where to store
+    // provisioning-related data instead of ActiveAdmin.
+    public void clearMultiUserDeviceManagement(@NonNull ComponentName adminReceiver) {
+        try {
+            if (mService != null) {
+                mService.clearMultiUserDeviceManagement(adminReceiver);
+            }
+        } catch (RemoteException re) {
+            throw re.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Returns whether the device has been provisioned.
      *
      * <p>Not for use by third-party applications.
@@ -15598,7 +15686,7 @@ public class DevicePolicyManager {
     /**
      * @hide
      * Force update user setup completed status for the given {@code userId}.
-     * @throws {@link SecurityException} if the caller has no
+     * @throws SecurityException if the caller has no
      *         {@code android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS}.
      */
     @TestApi
@@ -17192,6 +17280,29 @@ public class DevicePolicyManager {
     }
 
     /**
+     * Specifies enabled Common Criteria Mode.
+     * When the device is in Common Criteria mode, certain device functionalities are tuned to meet
+     * the higher security level required by Common Criteria certification.
+     *
+     * @hide
+     */
+    public static final int COMMON_CRITERIA_MODE_ENABLED = 0;
+
+    /**
+     * Specifies disabled Common Criteria Mode.
+     *
+     * @hide
+     */
+    public static final int COMMON_CRITERIA_MODE_DISABLED = 1;
+
+    /** @hide */
+    @IntDef(
+            prefix = {"COMMON_CRITERIA_MODE_"},
+            value = {COMMON_CRITERIA_MODE_ENABLED, COMMON_CRITERIA_MODE_DISABLED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface CommonCriteriaMode {}
+
+    /**
      * Called by device owner or profile owner of an organization-owned managed profile to toggle
      * Common Criteria mode for the device. When the device is in Common Criteria mode,
      * certain device functionalities are tuned to meet the higher
@@ -17711,6 +17822,37 @@ public class DevicePolicyManager {
         if (mService != null) {
             try {
                 mService.provisionFullyManagedDevice(provisioningParams, mContext.getPackageName());
+            } catch (ServiceSpecificException e) {
+                throw new ProvisioningException(e, e.errorCode, getErrorMessage(e));
+            } catch (RemoteException re) {
+                throw re.rethrowFromSystemServer();
+            }
+        }
+    }
+
+    /**
+     * Provisions a device intended for use by multiple users for management.
+     *
+     * <p>The method {@link #checkProvisioningPrecondition} must be returning {@link #STATUS_OK}
+     * before calling this method. If it doesn't, a {@link ProvisioningException} will be thrown.
+     *
+     * @param provisioningParams Params required to provision a multi-user device, see
+     * {@link MultiUserDeviceProvisioningParams}.
+     *
+     * @throws ProvisioningException if an error occurred during provisioning.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS)
+    public void provisionMultiUserDevice(
+            @NonNull MultiUserDeviceProvisioningParams provisioningParams)
+            throws ProvisioningException {
+        if (mService != null) {
+            try {
+                mService.provisionMultiUserDevice(
+                        provisioningParams.getTransportParams(), mContext.getPackageName());
             } catch (ServiceSpecificException e) {
                 throw new ProvisioningException(e, e.errorCode, getErrorMessage(e));
             } catch (RemoteException re) {
@@ -18528,6 +18670,7 @@ public class DevicePolicyManager {
         return HEADLESS_DEVICE_OWNER_MODE_UNSUPPORTED;
     }
 
+    // LINT.IfChange(policy_scope)
     /**
      * Flag used by {@link #setPolicy} to apply the policy to the same user as the context user.
      */
@@ -18558,6 +18701,71 @@ public class DevicePolicyManager {
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface PolicyScope {}
+    // LINT.ThenChange(/tools/processors/devicepolicy/proto/policy_metadata.proto:policy_scope)
+
+    // LINT.IfChange(resource_type)
+    /**
+     * Indicates that a policy has a device wide effect. There is a single final value that
+     * controls what the behaviour of the system should be.
+     *
+     * @hide
+     */
+    public static final int RESOURCE_DEVICE_WIDE = 0x0001;
+
+    /**
+     * Indicates that a policy can have a different effect for each user. The effective value of
+     * the policy depends on the user it is queried for.
+     *
+     * @hide
+     */
+    public static final int RESOURCE_PER_USER = 0x0002;
+    // LINT.ThenChange(/tools/processors/devicepolicy/proto/policy_metadata.proto:resource_type)
+
+    /**
+     * Possible resource types
+     *
+     * @hide
+     */
+    @IntDef(prefix = { "RESOURCE_DEVICE_" }, value = {
+            RESOURCE_DEVICE_WIDE,
+            RESOURCE_PER_USER,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ResourceType {}
+
+    /** @hide */
+    public static final int NOT_A_DPC = -1;
+    /** @hide */
+    public static final int DEFAULT_DEVICE_OWNER = 1;
+    /** @hide */
+    public static final int FINANCED_DEVICE_OWNER = 2;
+    /** @hide */
+    public static final int PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE = 3;
+    /** @hide */
+    public static final int PROFILE_OWNER_ON_USER_0 = 4;
+    /** @hide */
+    public static final int PROFILE_OWNER = 5;
+    /** @hide */
+    public static final int PROFILE_OWNER_ON_USER = 6;
+    /** @hide */
+    public static final int AFFILIATED_PROFILE_OWNER_ON_USER = 7;
+
+    /**
+     * Possible DPC types.
+     *
+     * @hide
+     */
+    @IntDef(value = {
+            NOT_A_DPC,
+            DEFAULT_DEVICE_OWNER,
+            FINANCED_DEVICE_OWNER,
+            PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE,
+            PROFILE_OWNER_ON_USER_0,
+            PROFILE_OWNER,
+            PROFILE_OWNER_ON_USER,
+            AFFILIATED_PROFILE_OWNER_ON_USER
+    })
+    public @interface DpcType {}
 
     /**
      * Sets the given policy.
@@ -18580,16 +18788,40 @@ public class DevicePolicyManager {
             @Nullable T value) {
         throwIfParentInstance("setPolicy");
         if (mService != null) {
-            // TODO(b/434655549): Implement as a generic handler.
-            if (id.equals(PolicyIdentifier.SCREEN_CAPTURE_DISABLED)) {
-                if (value == null) return; // No way to clear the policy.
-
-                // TODO(b/434615264): Actually use the scope here.
-                setScreenCaptureDisabled(null, (Boolean) value);
-            } else {
-                throw new IllegalArgumentException("Unhandled policy " + id);
+            try {
+                mService.setPolicy(mContext.getPackageName(), id.getId(), scope,
+                        policyValueToTransport(id, value));
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
             }
         }
+    }
+
+    @Nullable
+    private static <T> PolicyValueTransport policyValueToTransport(
+            @NonNull PolicyIdentifier<T> id,
+            @Nullable T value
+    ) {
+        if (value == null) {
+            return null;
+        }
+
+        return PolicyTransportValueConvertor.getInstance(id).toTransport(value);
+    }
+
+    /**
+     * Template free version of setPolicy to clear policies. The other type specific versions
+     * defined below don't allow specifying null as a value.
+     *
+     * @hide
+     */
+    @TestApi
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
+    public void clearPolicy(
+            @NonNull String key,
+            @PolicyScope int scope) {
+        // TODO(b/434920631): Remove this method and use {@link #setPolicy} in tests directly.
+        setPolicy(new PolicyIdentifier(key), scope, null);
     }
 
     /**
@@ -18605,5 +18837,20 @@ public class DevicePolicyManager {
             boolean value) {
         // TODO(b/434920631): Remove this method and use {@link #setPolicy} in tests directly.
         setPolicy(new PolicyIdentifier<Boolean>(key), scope, Boolean.valueOf(value));
+    }
+
+    /**
+     * Template free version of setPolicy for integers.
+     *
+     * @hide
+     */
+    @TestApi
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
+    public void setIntegerPolicy(
+            @NonNull String key,
+            @PolicyScope int scope,
+            int value) {
+        // TODO(b/434920631): Remove this method and use {@link #setPolicy} in tests directly.
+        setPolicy(new PolicyIdentifier<Integer>(key), scope, Integer.valueOf(value));
     }
 }

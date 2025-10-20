@@ -47,6 +47,8 @@ val Kosmos.promptViewModel by Fixture {
         accessibilityManager = accessibilityManager,
         promptFallbackViewModelFactory = promptFallbackViewModelFactory,
         shadeInteractor = shadeInteractor,
+        promptIconViewModelFactory = promptIconViewModelFactory,
+        biometricAuthIconViewModelFactory = biometricAuthIconViewModelFactory_biometricPrompt,
     )
 }
 

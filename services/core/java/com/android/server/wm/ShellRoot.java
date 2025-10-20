@@ -76,10 +76,10 @@ public class ShellRoot {
                         + " is not an acceptable shell root layer.");
         }
         mToken = new WindowToken.Builder(dc.mWmService, client.asBinder(), mWindowType)
-                .setDisplayContent(dc)
                 .setPersistOnEmpty(true)
                 .setOwnerCanManageAppTokens(true)
                 .build();
+        dc.addWindowToken(mToken);
         mSurfaceControl = mToken.makeChildSurface(null)
                 .setContainerLayer()
                 .setName("Shell Root Leash " + dc.getDisplayId())

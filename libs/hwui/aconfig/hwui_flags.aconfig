@@ -177,18 +177,13 @@ flag {
 }
 
 flag {
-  name: "bitmap_parcel_ashmem_as_immutable"
-  namespace: "system_performance"
-  description: "Whether to parcel implicit copies of bitmaps to ashmem as immutable"
-  bug: "400807118"
-}
-
-flag {
-  name: "bitmap_use_memfd"
-  namespace: "system_performance"
-  description: "Whether to parcel implicit copies of bitmaps to memfd instead of ashmem"
-  bug: "400807118"
-  is_fixed_read_only: true
+  name: "fix_avd_wrong_resources"
+  namespace: "core_graphics"
+  description: "Fix that AVD loads from the wrong Resources instance in applyTheme"
+  bug: "448274242"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }
 
 flag {
@@ -216,4 +211,11 @@ flag {
   metadata {
     purpose: PURPOSE_BUGFIX
   }
+}
+
+flag {
+  name: "image_decoder_gainmap_fail"
+  namespace: "core_graphics"
+  description: "Add API for partial decoding of gainmap images with ImageDecoder"
+  bug: "437807032"
 }

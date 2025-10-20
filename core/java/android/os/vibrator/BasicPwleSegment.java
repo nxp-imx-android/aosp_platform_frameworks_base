@@ -196,7 +196,7 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeInt(PARCEL_TOKEN_PWLE);
+        dest.writeInt(PARCEL_TOKEN_BASIC_PWLE);
         dest.writeFloat(mStartIntensity);
         dest.writeFloat(mEndIntensity);
         dest.writeFloat(mStartSharpness);

@@ -32,9 +32,6 @@ import com.android.systemui.authentication.shared.model.AuthenticationWipeModel.
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.log.table.TableLogBuffer
-import com.android.systemui.log.table.logDiffsForTable
-import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
@@ -69,7 +66,6 @@ constructor(
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     private val repository: AuthenticationRepository,
     private val selectedUserInteractor: SelectedUserInteractor,
-    @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
 ) {
     /**
      * The currently-configured authentication method. This determines how the authentication
@@ -89,11 +85,7 @@ constructor(
      * `true` even when the lockscreen is showing and still needs to be dismissed by the user to
      * proceed.
      */
-    val authenticationMethod: Flow<AuthenticationMethodModel> =
-        repository.authenticationMethod.logDiffsForTable(
-            tableLogBuffer = tableLogBuffer,
-            initialValue = AuthenticationMethodModel.None,
-        )
+    val authenticationMethod: StateFlow<AuthenticationMethodModel> = repository.authenticationMethod
 
     /**
      * Whether the auto confirm feature is enabled for the currently-selected user.
@@ -157,12 +149,19 @@ constructor(
      * To be notified whenever a lockout is started, the caller should subscribe to
      * [onAuthenticationResult].
      *
-     * Note that the value is in milliseconds and matches [SystemClock.elapsedRealtime].
+     * Note that the value should be compared to [SystemClock.elapsedRealtime].milliseconds.
      *
      * Also note that the value may change when the selected user is changed.
      */
-    val lockoutEndTimestamp: Long?
-        get() = repository.lockoutEndTimestamp
+    val lockoutEndTime: Duration?
+        get() = repository.lockoutEndTime
+
+    /**
+     * Whether the primary authentication attempt was the same as a previous attempt since the last
+     * successful authentication.
+     */
+    val isDuplicateAttempt: StateFlow<Boolean>
+        get() = repository.isDuplicateAttempt
 
     /**
      * Models an imminent wipe risk to the user, profile, or device upon further unsuccessful
@@ -251,7 +250,10 @@ constructor(
         }
 
         // Authentication failed.
-        repository.reportAuthenticationAttempt(isSuccessful = false)
+        repository.reportAuthenticationAttempt(
+            isSuccessful = false,
+            authenticationResult.isDuplicate,
+        )
 
         if (authenticationResult.lockoutDurationMs > 0) {
             // Lockout has been triggered.
@@ -271,9 +273,13 @@ constructor(
         return repository.getMaximumTimeToLock()
     }
 
-    /** Returns `true` if the power button should instantly lock the device, `false` otherwise. */
-    suspend fun getPowerButtonInstantlyLocks(): Boolean {
-        return !getAuthenticationMethod().isSecure || repository.getPowerButtonInstantlyLocks()
+    /**
+     * Returns `true` if the power button should instantly lock the device, `false` otherwise.
+     *
+     * WARNING: This causes a blocking IPC to LockPatternUtils (b/446735679).
+     */
+    fun getPowerButtonInstantlyLocks(): Boolean {
+        return repository.getPowerButtonInstantlyLocks()
     }
 
     private suspend fun shouldSkipAuthenticationAttempt(
@@ -283,7 +289,7 @@ constructor(
     ): Boolean {
         return when {
             // Lockout is active, the UI layer should not have called this; skip the attempt.
-            repository.lockoutEndTimestamp != null -> true
+            repository.lockoutEndTime != null -> true
             // Auto-confirm attempt when the feature is not enabled; skip the attempt.
             isAutoConfirmAttempt && !isAutoConfirmEnabled.value -> true
             // The pin is too short; skip only if this is an auto-confirm attempt.

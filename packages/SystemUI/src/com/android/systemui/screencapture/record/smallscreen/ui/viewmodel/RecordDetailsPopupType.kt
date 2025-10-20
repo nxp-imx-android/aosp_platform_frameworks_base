@@ -17,7 +17,6 @@
 package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 
 enum class RecordDetailsPopupType {
-    Empty,
     Settings,
     AppSelector,
     MarkupColorSelector,

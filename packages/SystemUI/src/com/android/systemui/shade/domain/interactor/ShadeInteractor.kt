@@ -16,7 +16,9 @@
 
 package com.android.systemui.shade.domain.interactor
 
+import android.graphics.Rect
 import com.android.compose.animation.scene.TransitionKey
+import com.android.systemui.shade.ShadeOverlayBoundsListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -47,7 +49,8 @@ interface ShadeInteractor : BaseShadeInteractor {
     /**
      * Whether the user is expanding or collapsing either the shade or quick settings with user
      * input (i.e. dragging a pointer). This will be true even if the user's input gesture had ended
-     * but a transition they initiated is still animating.
+     * but a transition they initiated is still animating. It will also be true if the gesture was
+     * originated by the user but outside of System UI.
      */
     val isUserInteracting: StateFlow<Boolean>
 
@@ -155,6 +158,15 @@ interface BaseShadeInteractor {
      * is open. If both are already collapsed, this has no effect.
      */
     fun collapseEitherShade(loggingReason: String, transitionKey: TransitionKey? = null)
+
+    /** Sets the bounds of the currently visible shade overlay in window coordinates. */
+    fun setShadeOverlayBounds(bounds: Rect?)
+
+    /** Add a listener for shade overlay bounds changes. */
+    fun addShadeOverlayBoundsListener(listener: ShadeOverlayBoundsListener)
+
+    /** Remove a listener for shade overlay bounds changes. */
+    fun removeShadeOverlayBoundsListener(listener: ShadeOverlayBoundsListener)
 }
 
 fun createAnyExpansionFlow(

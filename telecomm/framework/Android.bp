@@ -9,11 +9,41 @@ package {
 }
 
 filegroup {
-    name: "framework-telecomm-sources",
+    name: "framework-telecom-annotation-sources",
     srcs: [
-        "**/*.java",
-        "**/*.aidl",
+        "java/android/telecom/Annotation.java",
     ],
     path: "java",
-    visibility: ["//frameworks/base"],
+    visibility: [
+        "//frameworks/base",
+        "//packages/modules/Telephony:__subpackages__",
+    ],
+}
+
+filegroup {
+    name: "framework-telecom-internal-sources",
+    srcs: [
+        "java/**/*.java",
+        "java/**/*.aidl",
+    ],
+    path: "java",
+    exclude_srcs: [
+        "java/android/telecom/Annotation.java",
+    ],
+    visibility: [
+        "//frameworks/base:__subpackages__",
+        "//packages/modules/Telephony/telecom:__subpackages__",
+    ],
+}
+
+filegroup {
+    name: "framework-telecom-aidl-export-sources",
+    srcs: [
+        "aidl-export/**/*.aidl",
+    ],
+    path: "aidl-export",
+    visibility: [
+        "//cts/tests/tests:__subpackages__",
+        "//packages/modules/Telephony/telecom:__subpackages__",
+    ],
 }

@@ -26,6 +26,7 @@ import com.android.systemui.statusbar.systemstatusicons.alarm.ui.viewmodel.NextA
 import com.android.systemui.statusbar.systemstatusicons.bluetooth.ui.viewmodel.BluetoothIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.connecteddisplay.ui.viewmodel.ConnectedDisplayIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.datasaver.ui.viewmodel.DataSaverIconViewModel
+import com.android.systemui.statusbar.systemstatusicons.devicesatellite.ui.viewmodel.DeviceBasedSatelliteIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.domain.interactor.OrderedIconSlotNamesInteractor
 import com.android.systemui.statusbar.systemstatusicons.ethernet.ui.viewmodel.EthernetIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.hotspot.ui.viewmodel.HotspotIconViewModel
@@ -33,6 +34,7 @@ import com.android.systemui.statusbar.systemstatusicons.mobile.ui.viewmodel.Mobi
 import com.android.systemui.statusbar.systemstatusicons.profile.ui.viewmodel.ManagedProfileIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.MuteIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.VibrateIconViewModel
+import com.android.systemui.statusbar.systemstatusicons.tty.ui.viewmodel.TtyIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.vpn.ui.viewmodel.VpnIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.wifi.ui.viewmodel.WifiIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.zenmode.ui.viewmodel.ZenModeIconViewModel
@@ -59,12 +61,14 @@ constructor(
     bluetoothIconViewModelFactory: BluetoothIconViewModel.Factory,
     connectedDisplayIconViewModelFactory: ConnectedDisplayIconViewModel.Factory,
     dataSaverIconViewModelFactory: DataSaverIconViewModel.Factory,
+    deviceBasedSatelliteIconViewModelFactory: DeviceBasedSatelliteIconViewModel.Factory,
     ethernetIconViewModelFactory: EthernetIconViewModel.Factory,
     hotspotIconViewModelFactory: HotspotIconViewModel.Factory,
     managedProfileIconViewModelFactory: ManagedProfileIconViewModel.Factory,
     mobileSystemStatusIconsViewModelFactory: MobileSystemStatusIconsViewModel.Factory,
     muteIconViewModelFactory: MuteIconViewModel.Factory,
     nextAlarmIconViewModelFactory: NextAlarmIconViewModel.Factory,
+    ttyIconViewModelFactory: TtyIconViewModel.Factory,
     vibrateIconViewModelFactory: VibrateIconViewModel.Factory,
     vpnIconViewModelFactory: VpnIconViewModel.Factory,
     wifiIconViewModelFactory: WifiIconViewModel.Factory,
@@ -83,12 +87,16 @@ constructor(
         connectedDisplayIconViewModelFactory.create(context)
     }
     private val dataSaverIcon by lazy { dataSaverIconViewModelFactory.create(context) }
+    private val deviceSatelliteIcon by lazy {
+        deviceBasedSatelliteIconViewModelFactory.create(context)
+    }
     private val ethernetIcon by lazy { ethernetIconViewModelFactory.create(context) }
     private val hotspotIcon by lazy { hotspotIconViewModelFactory.create(context) }
     private val managedProfileIcon by lazy { managedProfileIconViewModelFactory.create(context) }
     private val mobileIcons by lazy { mobileSystemStatusIconsViewModelFactory.create(context) }
     private val muteIcon by lazy { muteIconViewModelFactory.create(context) }
     private val nextAlarmIcon by lazy { nextAlarmIconViewModelFactory.create(context) }
+    private val ttyIcon by lazy { ttyIconViewModelFactory.create(context) }
     private val vibrateIcon by lazy { vibrateIconViewModelFactory.create(context) }
     private val vpnIcon by lazy { vpnIconViewModelFactory.create(context) }
     private val wifiIcon by lazy { wifiIconViewModelFactory.create(context) }
@@ -100,12 +108,14 @@ constructor(
             bluetoothIcon,
             connectedDisplayIcon,
             dataSaverIcon,
+            deviceSatelliteIcon,
             ethernetIcon,
             hotspotIcon,
             managedProfileIcon,
             mobileIcons,
             muteIcon,
             nextAlarmIcon,
+            ttyIcon,
             vibrateIcon,
             vpnIcon,
             wifiIcon,
@@ -135,12 +145,14 @@ constructor(
             launch { bluetoothIcon.activate() }
             launch { connectedDisplayIcon.activate() }
             launch { dataSaverIcon.activate() }
+            launch { deviceSatelliteIcon.activate() }
             launch { ethernetIcon.activate() }
             launch { hotspotIcon.activate() }
             launch { managedProfileIcon.activate() }
             launch { mobileIcons.activate() }
             launch { muteIcon.activate() }
             launch { nextAlarmIcon.activate() }
+            launch { ttyIcon.activate() }
             launch { vibrateIcon.activate() }
             launch { vpnIcon.activate() }
             launch { wifiIcon.activate() }

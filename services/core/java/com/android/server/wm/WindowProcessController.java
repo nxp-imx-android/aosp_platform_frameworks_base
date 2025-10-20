@@ -29,8 +29,8 @@ import static android.view.WindowManager.TRANSIT_FLAG_APP_CRASHED;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CONFIGURATION;
 import static com.android.internal.util.Preconditions.checkArgument;
-import static com.android.server.am.ProcessList.INVALID_ADJ;
-import static com.android.server.am.ProcessList.PERCEPTIBLE_APP_ADJ;
+import static com.android.server.am.psc.Constants.INVALID_ADJ;
+import static com.android.server.am.psc.Constants.PERCEPTIBLE_APP_ADJ;
 import static com.android.server.wm.ActivityRecord.State.DESTROYED;
 import static com.android.server.wm.ActivityRecord.State.DESTROYING;
 import static com.android.server.wm.ActivityRecord.State.PAUSED;
@@ -58,6 +58,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityThread;
+import android.app.ApplicationExitInfo;
 import android.app.BackgroundStartPrivileges;
 import android.app.IApplicationThread;
 import android.app.ProfilerInfo;
@@ -92,8 +93,7 @@ import com.android.internal.app.HeavyWeightSwitcherActivity;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.Watchdog;
-import com.android.server.am.Flags;
-import com.android.server.am.ProcessStateController;
+import com.android.server.am.psc.AsyncBatchSession;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.art.ReasonMapping;
 import com.android.server.grammaticalinflection.GrammaticalInflectionManagerInternal;
@@ -189,13 +189,14 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     private volatile boolean mHasClientActivities;
     // Is this process currently showing a non-activity UI that the user is interacting with?
     // E.g. The status bar when it is expanded, but not when it is minimized. When true the process
-    // will be set to use the ProcessList#SCHED_GROUP_TOP_APP scheduling group to boost performance.
+    // will be set to use the {@link com.android.server.am.psc.Constants#SCHED_GROUP_TOP_APP}
+    // scheduling group to boost performance.
     private volatile boolean mHasTopUi;
     // Is the process currently showing a non-activity UI that overlays on-top of activity UIs on
     // screen. E.g. display a window of type
     // android.view.WindowManager.LayoutParams#TYPE_APPLICATION_OVERLAY When true the process will
-    // oom adj score will be set to ProcessList#PERCEPTIBLE_APP_ADJ at minimum to reduce the chance
-    // of the process getting killed.
+    // oom adj score will be set to {@link com.android.server.am.psc.Constants#PERCEPTIBLE_APP_ADJ}
+    // at minimum to reduce the chance of the process getting killed.
     private volatile boolean mHasOverlayUi;
     // Want to clean up resources from showing UI?
     private volatile boolean mPendingUiClean;
@@ -363,6 +364,17 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     private volatile long mPerceptibleTaskStoppedTimeMillis = Long.MIN_VALUE;
 
     private volatile PackageOptimizationInfo mOptimizationInfo = null;
+
+    /**
+     * Last exit info for the process, set once shortly after construction.
+     */
+    @Nullable
+    private volatile ApplicationExitInfo mLastExitInfo;
+
+    /**
+     * Whether we logged AppRestartOccurred event for the process.
+     */
+    private boolean mAppRestartLogged;
 
     public WindowProcessController(@NonNull ActivityTaskManagerService atm,
             @NonNull ApplicationInfo info, String name, int uid, int userId, Object owner,
@@ -878,6 +890,21 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         return mHasActivities || mHasRecentTasks;
     }
 
+    /**
+     * Check if any Activity is visible (or visibility requested) and not pinned.
+     */
+    boolean hasVisibleNotPinnedActivity() {
+        if (!hasVisibleActivities()) return false;
+        for (int i = mActivities.size() - 1; i >= 0; --i) {
+            final ActivityRecord activityRecord = mActivities.get(i);
+            if ((activityRecord.isVisible() || activityRecord.isVisibleRequested())
+                    && !activityRecord.inPinnedWindowingMode()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Nullable
     TaskDisplayArea getTopActivityDisplayArea() {
         if (mActivities.isEmpty()) {
@@ -1286,7 +1313,9 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
                 // this process, we'd find out the one with the minimal layer, thus it'll
                 // get a higher adj score.
             } else if (!visible && bestInvisibleState != PAUSING) {
-                if (state == PAUSING) {
+                // Also check RESUMED in case the activity is pending to be stopped by
+                // ActivityRecord#makeInvisible.
+                if (state == PAUSING || state == RESUMED) {
                     bestInvisibleState = PAUSING;
                     // Treat PAUSING as visible in case the next activity in the same process has
                     // not yet been set as visible-requested.
@@ -1386,9 +1415,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         int freeformTasks = 0;
         boolean anyTaskOnExternalDisplay = false;
         int relaunchReason;
-        final boolean logCrashDesktopInfo =
-                com.android.window.flags.Flags.enableCrashLoggingForDesktop()
-                        && canEnterDesktopMode(mAtm.mContext);
+        final boolean logCrashDesktopInfo = canEnterDesktopMode(mAtm.mContext);
 
         synchronized (mAtm.mGlobalLock) {
             relaunchReason = computeRelaunchReasonInner();
@@ -1453,25 +1480,17 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
 
         // Multiple OomAdjuster affecting state changes can occur, wrap those state changes in a
         // BatchSession.
-        try (ProcessStateController.AsyncBatchSession batchSession =
-                     mAtm.mActivityStateUpdater.startBatchSession()) {
+        try (AsyncBatchSession batchSession = mAtm.mActivityStateUpdater.startBatchSession()) {
             if (updateOomAdj) {
                 prepareOomAdjustment();
             }
 
             // Posting on handler so WM lock isn't held when we call into AM.
-            if (Flags.pushActivityStateToOomadjuster()) {
-                // updateProcessInfo can trigger an OomAdjuster update, let the
-                // ProcessStateController batch session handle it.
-                batchSession.enqueue(
-                        () -> mListener.updateProcessInfo(updateServiceConnectionActivities,
-                                activityChange, updateOomAdj));
-            } else {
-                final Message m = PooledLambda.obtainMessage(
-                        WindowProcessListener::updateProcessInfo,
-                        mListener, updateServiceConnectionActivities, activityChange, updateOomAdj);
-                mAtm.mH.sendMessage(m);
-            }
+            // updateProcessInfo can trigger an OomAdjuster update, let the
+            // ProcessStateController batch session handle it.
+            batchSession.enqueue(
+                    () -> mListener.updateProcessInfo(updateServiceConnectionActivities,
+                            activityChange, updateOomAdj));
         }
     }
 
@@ -1544,23 +1563,15 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
 
         // Multiple OomAdjuster affecting state changes can occur, wrap those state changes in a
         // BatchSession.
-        try (ProcessStateController.AsyncBatchSession batchSession =
-                     mAtm.mActivityStateUpdater.startBatchSession()) {
+        try (AsyncBatchSession batchSession = mAtm.mActivityStateUpdater.startBatchSession()) {
             prepareOomAdjustment();
             // Posting the message at the front of queue so WM lock isn't held when we call into AM,
             // and the process state of starting activity can be updated quicker which will give it
             // a higher scheduling group.
-            if (Flags.pushActivityStateToOomadjuster()) {
-                batchSession.postToHead();
-                batchSession.enqueue(
-                        () -> mListener.onStartActivity(topProcessState, shouldSetProfileProc(),
-                                packageName, info.applicationInfo.longVersionCode));
-            } else {
-                final Message m = PooledLambda.obtainMessage(WindowProcessListener::onStartActivity,
-                        mListener, topProcessState, shouldSetProfileProc(), packageName,
-                        info.applicationInfo.longVersionCode);
-                mAtm.mH.sendMessageAtFrontOfQueue(m);
-            }
+            batchSession.postToHead();
+            batchSession.enqueue(
+                    () -> mListener.onStartActivity(topProcessState, shouldSetProfileProc(),
+                            packageName, info.applicationInfo.longVersionCode));
         }
     }
 
@@ -2166,6 +2177,29 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         mStoppedState = stoppedState;
     }
 
+    /** Returns LastExitInfo value (which is effectively a constructor param). */
+    @Nullable
+    ApplicationExitInfo getLastExitInfo() {
+        return mLastExitInfo;
+    }
+
+    /**
+     * Sets LastExitInfo. The function is called only once, right after construction.
+     * This effectively makes LastExitInfo a constructor param.
+     */
+    public void initLastExitInfo(@Nullable ApplicationExitInfo exitInfo) {
+        mLastExitInfo = exitInfo;
+    }
+
+    boolean isAppRestartLogged() {
+        return mAppRestartLogged;
+    }
+
+    /** Sets AppRestartLogged flag. */
+    void setAppRestartLogged() {
+        mAppRestartLogged = true;
+    }
+
     boolean getWasStoppedLogged() {
         return mWasStoppedLogged;
     }
@@ -2370,9 +2404,6 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     }
 
     void addListener(@NonNull WindowProcessController.Listener listener) {
-        if (!com.android.window.flags.Flags.disposeTaskFragmentSynchronously()) {
-            return;
-        }
         if (mListeners == null) {
             mListeners = new ArrayList<>();
         }

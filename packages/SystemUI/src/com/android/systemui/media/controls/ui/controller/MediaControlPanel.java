@@ -20,8 +20,6 @@ import static android.provider.Settings.ACTION_MEDIA_CONTROLS_SETTINGS;
 
 import static com.android.systemui.Flags.communalHub;
 import static com.android.systemui.media.controls.domain.pipeline.MediaActionsKt.getNotificationActions;
-import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_END_ALPHA;
-import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_START_ALPHA;
 
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
@@ -33,6 +31,7 @@ import android.app.WallpaperColors;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.theming.ThemeStyle;
 import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Color;
@@ -104,7 +103,6 @@ import com.android.systemui.media.controls.util.MediaDataUtils;
 import com.android.systemui.media.controls.util.MediaUiEventLogger;
 import com.android.systemui.media.dialog.MediaOutputDialogManager;
 import com.android.systemui.monet.ColorScheme;
-import com.android.systemui.monet.Style;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.res.R;
@@ -177,6 +175,8 @@ public class MediaControlPanel {
     // Time in millis for playing turbulence noise that is played after a touch ripple.
     @VisibleForTesting
     static final long TURBULENCE_NOISE_PLAY_DURATION = 7500L;
+    public static final float MEDIA_PLAYER_SCRIM_START_ALPHA = 0.65f;
+    public static final float MEDIA_PLAYER_SCRIM_END_ALPHA = 0.75f;
 
     private final SeekBarViewModel mSeekBarViewModel;
     private final CommunalSceneInteractor mCommunalSceneInteractor;
@@ -205,6 +205,7 @@ public class MediaControlPanel {
     private boolean mIsArtworkBound = false;
     private int mArtworkBoundId = 0;
     private int mArtworkNextBindRequestId = 0;
+    private boolean mPageArrowsVisible = false;
 
     private final KeyguardStateController mKeyguardStateController;
     private final ActivityIntentHelper mActivityIntentHelper;
@@ -232,7 +233,8 @@ public class MediaControlPanel {
     private TurbulenceNoiseAnimationConfig mTurbulenceNoiseAnimationConfig;
     private boolean mWasPlaying = false;
     private boolean mButtonClicked = false;
-    @Nullable private Runnable mOnSuggestionSpaceVisibleRunnable = null;
+    @Nullable
+    private Runnable mOnSuggestionSpaceVisibleRunnable = null;
 
     private final PaintDrawCallback mNoiseDrawCallback =
             new PaintDrawCallback() {
@@ -606,10 +608,13 @@ public class MediaControlPanel {
     }
 
     /**
-     * Should be called when the space that holds device suggestions becomes visible to the user.
+     * Called when the panel becomes fully visible.
      */
-    public void onSuggestionSpaceVisible() {
+    public void onPanelFullyVisible() {
         if (!Flags.enableSuggestedDeviceUi()) {
+            return;
+        }
+        if (mMediaData.getResumption()) {
             return;
         }
         @Nullable Runnable onSuggestionVisibleRunnable = mOnSuggestionSpaceVisibleRunnable;
@@ -623,6 +628,7 @@ public class MediaControlPanel {
             return;
         }
         View deviceSuggestionButton = mMediaViewHolder.getDeviceSuggestionButton();
+        View deviceSuggestionContainer = mMediaViewHolder.getDeviceSuggestionContainer();
         TextView deviceText = mMediaViewHolder.getSeamlessText();
         @Nullable SuggestionData suggestionData = data.getSuggestionData();
         if (suggestionData != null) {
@@ -639,10 +645,16 @@ public class MediaControlPanel {
                 setSuggestionText(suggestionDeviceData);
                 setSuggestionIcon(suggestionDeviceData);
                 deviceSuggestionButton.setVisibility(View.VISIBLE);
+                deviceSuggestionContainer.setImportantForAccessibility(
+                        View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
                 return;
             }
         }
         deviceSuggestionButton.setVisibility(View.GONE);
+        // Change the importantForAccessibility attribute instead of visibility since the latter
+        // is manipulated by the TransitionLayout and the Guts animation logic.
+        deviceSuggestionContainer.setImportantForAccessibility(
+                View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
         deviceText.setVisibility(View.VISIBLE);
         return;
     }
@@ -671,7 +683,7 @@ public class MediaControlPanel {
                 break;
             default:
                 Log.wtf(TAG, "Invalid media device state for suggestion: "
-                                + suggestionData.getConnectionState());
+                        + suggestionData.getConnectionState());
         }
         mMediaViewHolder.getDeviceSuggestionText().setText(suggestionText);
     }
@@ -753,8 +765,8 @@ public class MediaControlPanel {
                         boolean showOverLockscreen =
                                 mKeyguardStateController.isShowing()
                                         && mActivityIntentHelper.wouldPendingShowOverLockscreen(
-                                                deviceIntent,
-                                                mLockscreenUserManager.getCurrentUserId());
+                                        deviceIntent,
+                                        mLockscreenUserManager.getCurrentUserId());
                         if (deviceIntent.isActivity()) {
                             if (!showOverLockscreen) {
                                 mActivityStarter.postStartActivityDismissingKeyguard(deviceIntent);
@@ -880,7 +892,8 @@ public class MediaControlPanel {
             WallpaperColors wallpaperColors = getWallpaperColor(artworkIcon);
             boolean darkTheme = false;
             if (wallpaperColors != null) {
-                mutableColorScheme = new ColorScheme(wallpaperColors, darkTheme, Style.CONTENT);
+                mutableColorScheme = new ColorScheme(wallpaperColors, darkTheme,
+                        ThemeStyle.CONTENT);
                 artwork = addGradientToPlayerAlbum(artworkIcon, mutableColorScheme, finalWidth,
                         finalHeight);
                 isArtworkBound = true;
@@ -892,7 +905,7 @@ public class MediaControlPanel {
                     Drawable icon = mContext.getPackageManager()
                             .getApplicationIcon(data.getPackageName());
                     mutableColorScheme = new ColorScheme(WallpaperColors.fromDrawable(icon),
-                            darkTheme, Style.CONTENT);
+                            darkTheme, ThemeStyle.CONTENT);
                 } catch (PackageManager.NameNotFoundException e) {
                     Log.w(TAG, "Cannot find icon for package " + data.getPackageName(), e);
                 }
@@ -1079,8 +1092,6 @@ public class MediaControlPanel {
     }
 
     private void bindPageButtons() {
-        if (!Flags.mediaCarouselArrows()) return;
-
         ImageButton pageLeft = mMediaViewHolder.getPageLeft();
         pageLeft.setOnClickListener(v -> {
             mMediaCarouselController.getMediaCarouselScrollHandler().scrollByStep(-1);
@@ -1095,7 +1106,8 @@ public class MediaControlPanel {
     }
 
     void setPageArrowsVisible(boolean visible) {
-        if (!Flags.mediaCarouselArrows()) return;
+        if (mPageArrowsVisible == visible) return;
+        mPageArrowsVisible = visible;
 
         ConstraintSet expandedSet = mMediaViewController.getExpandedLayout();
         setVisibleAndAlpha(expandedSet, R.id.page_left, visible);
@@ -1114,13 +1126,11 @@ public class MediaControlPanel {
     }
 
     void setPageLeftEnabled(boolean enabled) {
-        if (!Flags.mediaCarouselArrows()) return;
         ImageButton pageLeft = mMediaViewHolder.getPageLeft();
         pageLeft.setEnabled(enabled);
     }
 
     void setPageRightEnabled(boolean enabled) {
-        if (!Flags.mediaCarouselArrows()) return;
         ImageButton pageRight = mMediaViewHolder.getPageRight();
         pageRight.setEnabled(enabled);
     }
@@ -1307,7 +1317,7 @@ public class MediaControlPanel {
         int notVisibleValue;
         if (!shouldBeHiddenDueToScrubbing
                 && ((buttonId == R.id.actionPrev && semanticActions.getReservePrev())
-                    || (buttonId == R.id.actionNext && semanticActions.getReserveNext()))) {
+                || (buttonId == R.id.actionNext && semanticActions.getReserveNext()))) {
             notVisibleValue = ConstraintSet.INVISIBLE;
             mMediaViewHolder.getAction(buttonId).setFocusable(visible);
             mMediaViewHolder.getAction(buttonId).setClickable(visible);
@@ -1347,7 +1357,7 @@ public class MediaControlPanel {
         return semanticActions != null && SEMANTIC_ACTIONS_HIDE_WHEN_SCRUBBING.stream().allMatch(
                 id -> (semanticActions.getActionById(id) != null
                         || ((id == R.id.actionPrev && semanticActions.getReservePrev())
-                            || (id == R.id.actionNext && semanticActions.getReserveNext())))
+                        || (id == R.id.actionNext && semanticActions.getReserveNext())))
         );
     }
 

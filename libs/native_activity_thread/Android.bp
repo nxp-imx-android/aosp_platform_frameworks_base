@@ -41,6 +41,27 @@ rust_bindgen {
     ],
 }
 
+rust_bindgen {
+    name: "libnative_service_bindgen",
+    crate_name: "native_service_bindgen",
+    wrapper_src: "src/bindings/native_service.h",
+    source_stem: "native_service_bindings",
+    header_libs: [
+        "libandroid_headers_private",
+    ],
+    shared_libs: [
+        "libandroid",
+        "libbinder_ndk",
+    ],
+}
+
+rust_bindgen {
+    name: "libtime_bindgen",
+    crate_name: "time_bindgen",
+    wrapper_src: "src/bindings/time.h",
+    source_stem: "time_bindings",
+}
+
 rust_library {
     name: "libnative_activity_thread",
     crate_name: "native_activity_thread",
@@ -51,11 +72,19 @@ rust_library {
     rustlibs: [
         "activitymanager_structured_aidl-rust",
         "libanyhow",
+        "libatrace_rust",
+        "libbitflags",
         "libbinder_rs",
         "libdlext_bindgen",
         "liblogger",
         "liblibc",
+        "libnix",
         "liblog_rust",
         "liblooper_bindgen",
+        "libnative_service_bindgen",
+        "librustutils",
+        "libtime_bindgen",
+        "native_application_thread_aidl-rust",
+        "libactivity_manager_procstate_aidl-rust",
     ],
 }

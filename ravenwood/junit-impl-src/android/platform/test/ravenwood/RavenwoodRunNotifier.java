@@ -44,15 +44,35 @@ class RavenwoodRunNotifier extends RunNotifier {
     private Description mCurrentSuite = null;
     private final ArrayList<Throwable> mOutOfTestFailures = new ArrayList<>();
 
-    private boolean mBeforeTest = true;
-    private boolean mAfterTest = false;
+    /**
+     * If true, we're outside of a single "test" execution (which includes
+     * execution of {@code @Before/After} and various injected code from the instance rules).
+     * Typically, when it's true, we're in a {@code @BeforeClass}, but it could be
+     * from the test runner.
+     */
+    private boolean mInBeforeClass = true;
+    /**
+     * Similar to the above flag.  Typically, when it's true, we're in a
+     * {@code @AfterClass}, but it could be from the test runner.
+     */
+    private boolean mInAfterClass = false;
+    /**
+     * When a {@code @Before} method throws, junit will skip the rest of the {@code @Before}
+     * methods and the test method itself, but {@code @After} methods will still be executed.
+     * Then, if any of the {@code @After} methods also fail, we'd report multiple failures
+     * from a single test. If this happens, Tradefed would only report the
+     * last exception, which is not useful at all because we're more interested
+     * in the first exception, which may have caused the subsequent exceptions.
+     * We use this flag to report only one failure from each test at most.
+     */
+    private boolean mAlreadyFailed = false;
 
     RavenwoodRunNotifier(RunNotifier realNotifier) {
         mRealNotifier = realNotifier;
     }
 
     private boolean isInTest() {
-        return !mBeforeTest && !mAfterTest;
+        return !mInBeforeClass && !mInAfterClass;
     }
 
     @Override
@@ -91,8 +111,9 @@ class RavenwoodRunNotifier extends RunNotifier {
         Log.i(RavenwoodAwareTestRunner.TAG, "testSuiteStarted: " + description);
         mRealNotifier.fireTestSuiteStarted(description);
 
-        mBeforeTest = true;
-        mAfterTest = false;
+        mInBeforeClass = true;
+        mInAfterClass = false;
+        mAlreadyFailed = false;
 
         // Keep track of the current suite, needed if the outer test is a Suite,
         // in which case its children are test classes. (not test methods)
@@ -109,12 +130,12 @@ class RavenwoodRunNotifier extends RunNotifier {
 
         maybeHandleOutOfTestFailures();
 
-        mBeforeTest = true;
-        mAfterTest = false;
+        mInBeforeClass = true;
+        mInAfterClass = false;
 
         // Restore the upper suite.
         mSuiteStack.pop();
-        mCurrentSuite = mSuiteStack.size() == 0 ? null : mSuiteStack.peek();
+        mCurrentSuite = mSuiteStack.isEmpty() ? null : mSuiteStack.peek();
     }
 
     @Override
@@ -122,18 +143,20 @@ class RavenwoodRunNotifier extends RunNotifier {
         Log.i(RavenwoodAwareTestRunner.TAG, "testStarted: " + description);
         mRealNotifier.fireTestStarted(description);
 
-        mAfterTest = false;
-        mBeforeTest = false;
+        mInAfterClass = false;
+        mInBeforeClass = false;
+        mAlreadyFailed = false;
     }
 
     @Override
     public void fireTestFailure(Failure failure) {
         Log.i(RavenwoodAwareTestRunner.TAG, "testFailure: " + failure);
 
-        if (isInTest()) {
-            mRealNotifier.fireTestFailure(failure);
-        } else {
+        if (!isInTest()) {
             mOutOfTestFailures.add(failure.getException());
+        } else if (!mAlreadyFailed) {
+            mAlreadyFailed = true;
+            mRealNotifier.fireTestFailure(failure);
         }
     }
 
@@ -159,7 +182,8 @@ class RavenwoodRunNotifier extends RunNotifier {
         Log.i(RavenwoodAwareTestRunner.TAG, "testFinished: " + description);
         mRealNotifier.fireTestFinished(description);
 
-        mAfterTest = true;
+        mInAfterClass = true;
+        mAlreadyFailed = false;
     }
 
     @Override
@@ -174,29 +198,27 @@ class RavenwoodRunNotifier extends RunNotifier {
      *
      * This is to work around b/364395552.
      */
-    private boolean maybeHandleOutOfTestFailures() {
-        if (mOutOfTestFailures.size() == 0) {
-            return false;
+    private void maybeHandleOutOfTestFailures() {
+        if (mOutOfTestFailures.isEmpty()) {
+            return;
         }
         Throwable th;
         if (mOutOfTestFailures.size() == 1) {
-            th = mOutOfTestFailures.get(0);
+            th = mOutOfTestFailures.getFirst();
         } else {
             th = new MultipleFailureException(mOutOfTestFailures);
         }
-        if (mBeforeTest) {
+        if (mInBeforeClass) {
             reportBeforeTestFailure(mCurrentSuite, th);
-            return true;
+            return;
         }
-        if (mAfterTest) {
+        if (mInAfterClass) {
             reportAfterTestFailure(th);
-            return true;
         }
-        return false;
     }
 
     public void reportBeforeTestFailure(Description suiteDesc, Throwable th) {
-        // If a failure happens befere running any tests, we'll need to pretend
+        // If a failure happens before running any tests, we'll need to pretend
         // as if each test in the suite reported the failure, to work around b/364395552.
         for (var child : suiteDesc.getChildren()) {
             if (child.isSuite()) {

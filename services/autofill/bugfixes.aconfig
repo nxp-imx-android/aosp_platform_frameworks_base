@@ -135,10 +135,20 @@ flag {
 }
 
 flag {
-  name: "add_null_check_for_augmented_inline_request"
+  name: "use_focused_view_to_get_afm_in_view_root"
   namespace: "autofill"
-  description: "Add null check for augmented inline request"
-  bug: "427159531"
+  description: "Use focused view context to get autofill manager, for fixing dropdown suggestion blocking physical keyboard input"
+  bug: "329678461"
+  metadata {
+      purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
+  name: "get_view_coordinates_in_ui_thread"
+  namespace: "autofill"
+  description: "Avoid native crash due to threading issue"
+  bug: "442258201"
   metadata {
     purpose: PURPOSE_BUGFIX
   }

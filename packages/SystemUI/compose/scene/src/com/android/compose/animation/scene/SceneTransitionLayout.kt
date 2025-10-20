@@ -32,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerType
-import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -64,6 +63,7 @@ import com.android.compose.gesture.NestedScrollableBound
 fun SceneTransitionLayout(
     state: SceneTransitionLayoutState,
     modifier: Modifier = Modifier,
+    transitions: SceneTransitions? = null,
     swipeSourceDetector: SwipeSourceDetector = DefaultEdgeDetector,
     swipeDetector: SwipeDetector = DefaultSwipeDetector,
     @FloatRange(from = 0.0, to = 0.5) transitionInterceptionThreshold: Float = 0.05f,
@@ -74,6 +74,7 @@ fun SceneTransitionLayout(
     SceneTransitionLayoutForTesting(
         state,
         modifier,
+        transitions,
         swipeSourceDetector,
         swipeDetector,
         transitionInterceptionThreshold,
@@ -162,28 +163,10 @@ interface ElementStateScope {
     fun ElementKey.targetSize(content: ContentKey): IntSize?
 
     /**
-     * Return the *last known size* of [this] element in the given [content], i.e. the size of the
-     * element, or `null` if the element is not composed and measured in that content (yet).
-     *
-     * Note: Usually updated **after** the measurement pass and after processing children. However,
-     * if the target size is known **in advance** (like during transitions involving transformations
-     * or shared elements), the update happens **before** measurement pass. This earlier update
-     * allows children to potentially use this predetermined size during their own measurement.
-     */
-    fun ElementKey.lastSize(content: ContentKey): IntSize?
-
-    /**
      * Return the *target* offset of [this] element in the given [content], i.e. the size of the
      * element when idle, or `null` if the element is not composed and placed in that content (yet).
      */
     fun ElementKey.targetOffset(content: ContentKey): Offset?
-
-    /**
-     * Return the *target* layout coordinates of [this] element in the given [content], i.e. the
-     * LayoutCoordinates of the element when idle, or `null` if the element is not composed and
-     * placed in that content (yet).
-     */
-    fun ElementKey.targetCoordinates(content: ContentKey): LayoutCoordinates?
 
     /**
      * Return the *target* size of [this] content, i.e. the size of the content when idle, or `null`
@@ -323,6 +306,24 @@ interface BaseContentScope : ElementStateScope {
     fun Modifier.disableSwipesWhenScrolling(
         bounds: NestedScrollableBound = NestedScrollableBound.Any
     ): Modifier
+
+    /**
+     * Return the alpha of [this] element in this content, given the current transition state and
+     * transition transformations (e.g. fade).
+     *
+     * Important: This should *not* be read during composition and should instead be read during
+     * layout, drawing or in a LaunchedEffect.
+     */
+    fun ElementKey.currentAlpha(): Float?
+
+    /**
+     * Return the drawing scale of [this] element in this content, given the current transition
+     * state and transition transformations (e.g. drawScale).
+     *
+     * Important: This should *not* be read during composition and should instead be read during
+     * layout, drawing or in a LaunchedEffect.
+     */
+    fun ElementKey.currentScale(): Scale?
 }
 
 @Stable
@@ -788,6 +789,7 @@ class FixedDistance(private val distance: Dp) : UserActionDistance {
 internal fun SceneTransitionLayoutForTesting(
     state: SceneTransitionLayoutState,
     modifier: Modifier = Modifier,
+    transitions: SceneTransitions? = null,
     swipeSourceDetector: SwipeSourceDetector = DefaultEdgeDetector,
     swipeDetector: SwipeDetector = DefaultSwipeDetector,
     transitionInterceptionThreshold: Float = 0f,
@@ -804,9 +806,29 @@ internal fun SceneTransitionLayoutForTesting(
     val defaultEffectFactory = checkNotNull(LocalOverscrollFactory.current)
     val animationScope = rememberCoroutineScope()
     val decayAnimationSpec = rememberSplineBasedDecay<Float>()
+    val mutableState =
+        when (state) {
+            is HoistedSceneTransitionLayoutStateImpl -> {
+                state.rememberUiBoundState(transitions ?: SceneTransitions.Empty)
+            }
+            is MutableSceneTransitionLayoutStateImpl -> {
+                check(transitions == null) {
+                    "transitions should be passed to rememberMutableSceneTransitionLayoutState() " +
+                        "when the state is created during composition"
+                }
+
+                state
+            }
+            is NestedSceneTransitionLayoutState ->
+                error(
+                    "SceneTransitionLayout shouldn't be able to receive a " +
+                        "NestedSceneTransitionLayoutState"
+                )
+        }
+
     val layoutImpl = remember {
         SceneTransitionLayoutImpl(
-                state = state as MutableSceneTransitionLayoutStateImpl,
+                state = mutableState,
                 density = density,
                 layoutDirection = layoutDirection,
                 swipeSourceDetector = swipeSourceDetector,
@@ -830,7 +852,7 @@ internal fun SceneTransitionLayoutForTesting(
     layoutImpl.updateContents(builder, layoutDirection, defaultEffectFactory)
 
     SideEffect {
-        if (state != layoutImpl.state) {
+        if (mutableState != layoutImpl.state) {
             error(
                 "This SceneTransitionLayout was bound to a different SceneTransitionLayoutState" +
                     " that was used when creating it, which is not supported"

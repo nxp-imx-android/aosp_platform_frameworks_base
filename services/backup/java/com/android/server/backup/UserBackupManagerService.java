@@ -91,13 +91,13 @@ import android.text.TextUtils;
 import android.util.ArraySet;
 import android.util.AtomicFile;
 import android.util.EventLog;
-import android.util.FeatureFlagUtils;
 import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.annotations.VisibleForTesting.Visibility;
 import com.android.internal.util.Preconditions;
 import com.android.server.AppWidgetBackupBridge;
 import com.android.server.EventLogTags;
@@ -188,6 +188,14 @@ public class UserBackupManagerService {
     // 1 : initial release
     public static final String BACKUP_MANIFEST_FILENAME = "_manifest";
     public static final int BACKUP_MANIFEST_VERSION = 1;
+
+    // Name and current contents version of the cross-platform manifest file
+    //
+    // Manifest version history:
+    //
+    // 1 : initial release
+    public static final String CROSS_PLATFORM_MANIFEST_FILENAME = "_cross_platform_manifest";
+    public static final int CROSS_PLATFORM_MANIFEST_VERSION = 1;
 
     // External archive format version history:
     //
@@ -452,6 +460,8 @@ public class UserBackupManagerService {
         mConstants = backupManagerConstants;
         mActivityManager = activityManager;
         mActivityManagerInternal = activityManagerInternal;
+        mScheduledBackupEligibility =
+                getEligibilityRules(mPackageManager, userId, mContext, BackupDestination.CLOUD);
 
         mBaseStateDir = null;
         mDataDir = null;
@@ -467,7 +477,6 @@ public class UserBackupManagerService {
         mBackupPasswordManager = null;
         mPackageManagerBinder = null;
         mBackupManagerBinder = null;
-        mScheduledBackupEligibility = null;
     }
 
     private UserBackupManagerService(
@@ -561,7 +570,10 @@ public class UserBackupManagerService {
         mJournalDir.mkdirs(); // creates mBaseStateDir along the way
         mJournal = null; // will be created on first use
 
-        mConstants = new BackupManagerConstants(mBackupHandler, mContext.getContentResolver());
+        // We need a context for the user in question to observe setting changes for that user.
+        Context userContext = mContext.createContextAsUser(UserHandle.of(mUserId), /* flags */ 0);
+
+        mConstants = new BackupManagerConstants(mBackupHandler, userContext.getContentResolver());
         // We are observing changes to the constants throughout the lifecycle of BMS. This is
         // because we reference the constants in multiple areas of BMS, which otherwise would
         // require frequent starting and stopping.
@@ -1612,10 +1624,15 @@ public class UserBackupManagerService {
         }
     }
 
-    private BackupEligibilityRules getEligibilityRulesForRestoreAtInstall(long restoreToken) {
+    @VisibleForTesting(visibility = Visibility.PRIVATE)
+    protected BackupEligibilityRules getEligibilityRulesForRestoreAtInstall(long restoreToken) {
         if (mAncestralBackupDestination == BackupDestination.DEVICE_TRANSFER
                 && restoreToken == mAncestralToken) {
             return getEligibilityRulesForOperation(BackupDestination.DEVICE_TRANSFER);
+        } else if (Flags.enableCrossPlatformTransfer()
+                && mAncestralBackupDestination == BackupDestination.CROSS_PLATFORM_TRANSFER
+                && restoreToken == mAncestralToken) {
+            return getEligibilityRulesForOperation(BackupDestination.CROSS_PLATFORM_TRANSFER);
         } else {
             // If we're not using the ancestral data set, it means we're restoring from a backup
             // that happened on this device.
@@ -3977,11 +3994,6 @@ public class UserBackupManagerService {
     @BackupDestination
     int getBackupDestinationFromTransport(TransportConnection transportConnection)
             throws TransportNotAvailableException, RemoteException {
-        if (!shouldUseNewBackupEligibilityRules()) {
-            // Return the default to stick to the legacy behaviour.
-            return BackupDestination.CLOUD;
-        }
-
         final long oldCallingId = Binder.clearCallingIdentity();
         try {
             BackupTransportClient transport =
@@ -3989,18 +4001,17 @@ public class UserBackupManagerService {
                             /* caller */ "BMS.getBackupDestinationFromTransport");
             if ((transport.getTransportFlags() & BackupAgent.FLAG_DEVICE_TO_DEVICE_TRANSFER) != 0) {
                 return BackupDestination.DEVICE_TRANSFER;
+            } else if (Flags.enableCrossPlatformTransfer()
+                    && (transport.getTransportFlags()
+                                    & BackupAgent.FLAG_CROSS_PLATFORM_DATA_TRANSFER_IOS)
+                            != 0) {
+                return BackupDestination.CROSS_PLATFORM_TRANSFER;
             } else {
                 return BackupDestination.CLOUD;
             }
         } finally {
             Binder.restoreCallingIdentity(oldCallingId);
         }
-    }
-
-    @VisibleForTesting
-    boolean shouldUseNewBackupEligibilityRules() {
-        return FeatureFlagUtils.isEnabled(
-                mContext, FeatureFlagUtils.SETTINGS_USE_NEW_BACKUP_ELIGIBILITY_RULES);
     }
 
     public IBackupManager getBackupManagerBinder() {

@@ -33,6 +33,7 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.Process;
+import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.text.TextUtils;
 import android.util.Log;
@@ -631,9 +632,10 @@ public interface ImeTracker {
         public Token onStart(@NonNull String component, int uid, @Type int type, @Origin int origin,
                 @SoftInputShowHideReason int reason, boolean fromUser) {
             final var token = Token.createToken(component);
-            final long startTime = System.currentTimeMillis();
+            final long startWallTimeMs = System.currentTimeMillis();
+            final long startTimestampMs = SystemClock.elapsedRealtime();
             IInputMethodManagerGlobalInvoker.onStart(token, uid, type,
-                    origin, reason, fromUser, startTime);
+                    origin, reason, fromUser, startWallTimeMs, startTimestampMs);
 
             log("%s: %s at %s reason %s fromUser %s%s", token.mTag,
                     getOnStartPrefix(type), Debug.originToString(origin),

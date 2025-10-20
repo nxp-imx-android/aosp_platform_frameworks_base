@@ -19,6 +19,7 @@ package com.android.keyguard;
 import static android.app.StatusBarManager.SESSION_KEYGUARD;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
+import static android.security.Flags.secureLockDevice;
 
 import static com.android.keyguard.KeyguardSecurityContainer.BOUNCER_DISMISSIBLE_KEYGUARD;
 import static com.android.keyguard.KeyguardSecurityContainer.BOUNCER_DISMISS_BIOMETRIC;
@@ -29,6 +30,7 @@ import static com.android.keyguard.KeyguardSecurityContainer.BOUNCER_DISMISS_SIM
 import static com.android.keyguard.KeyguardSecurityContainer.USER_TYPE_PRIMARY;
 import static com.android.keyguard.KeyguardSecurityContainer.USER_TYPE_SECONDARY_USER;
 import static com.android.keyguard.KeyguardSecurityContainer.USER_TYPE_WORK_PROFILE;
+import static com.android.keyguard.KeyguardSecurityModel.SecurityMode.SecureLockDeviceBiometricAuth;
 import static com.android.keyguard.KeyguardSecurityModel.SecurityMode.SimPin;
 import static com.android.keyguard.KeyguardSecurityModel.SecurityMode.SimPuk;
 import static com.android.systemui.DejankUtils.whitelistIpcs;
@@ -90,6 +92,7 @@ import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
+import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor;
 import com.android.systemui.shared.system.SysUiStatsLog;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
@@ -122,6 +125,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
     private static final String TAG = "KeyguardSecurityView";
 
     private final AdminSecondaryLockScreenController mAdminSecondaryLockScreenController;
+    private final Lazy<SecureLockDeviceInteractor> mSecureLockDeviceInteractor;
     private final LockPatternUtils mLockPatternUtils;
     private final KeyguardUpdateMonitor mUpdateMonitor;
     private final KeyguardSecurityModel mSecurityModel;
@@ -248,9 +252,10 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
         }
 
         @Override
-        public void reportUnlockAttempt(int userId, boolean success, int timeoutMs) {
+        public void reportUnlockAttempt(int userId, boolean success, int timeoutMs,
+                boolean isDuplicate) {
             if (timeoutMs == 0 && !success) {
-                mBouncerMessageInteractor.onPrimaryAuthIncorrectAttempt();
+                mBouncerMessageInteractor.onPrimaryAuthIncorrectAttempt(isDuplicate);
             }
             int bouncerSide = SysUiStatsLog.KEYGUARD_BOUNCER_PASSWORD_ENTERED__SIDE__DEFAULT;
             if (mView.isSidedSecurityMode()) {
@@ -430,7 +435,14 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
 
                 @Override
                 public void onDevicePolicyManagerStateChanged() {
-                    showPrimarySecurityScreen(false);
+                    if (secureLockDevice() && (mSecureLockDeviceInteractor.get()
+                            .isSecureLockDeviceEnabled().getValue() || mSecureLockDeviceInteractor
+                            .get().isAuthenticatedButPendingDismissal().getValue())) {
+                        Log.d(TAG, "Secure lock device is enabled or keyguard dismissal from"
+                                + " secure lock device is pending, do not reshow security screen.");
+                    } else {
+                        showPrimarySecurityScreen(false);
+                    }
                 }
             };
     private final SelectedUserInteractor mSelectedUserInteractor;
@@ -477,7 +489,8 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
             @Background Executor bgExecutor,
             Provider<DeviceEntryInteractor> deviceEntryInteractor,
             Lazy<WindowRootViewBlurInteractor> rootViewBlurInteractorProvider,
-            Lazy<BouncerInteractor> bouncerInteractor
+            Lazy<BouncerInteractor> bouncerInteractor,
+            Lazy<SecureLockDeviceInteractor> secureLockDeviceInteractor
     ) {
         super(view);
         mRootViewBlurInteractor = rootViewBlurInteractorProvider;
@@ -491,6 +504,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
         mSecurityViewFlipperController = securityViewFlipperController;
         mAdminSecondaryLockScreenController = adminSecondaryLockScreenControllerFactory.create(
                 mKeyguardSecurityCallback);
+        mSecureLockDeviceInteractor = secureLockDeviceInteractor;
         mConfigurationController = configurationController;
         mLastOrientation = getResources().getConfiguration().orientation;
         mFalsingCollector = falsingCollector;
@@ -841,6 +855,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
                         boolean didRunAnimation = controller.startDisappearAnimation(
                                 onFinishRunnable);
                         if (!didRunAnimation && onFinishRunnable != null) {
+                            Log.i(TAG, "View did not invoke onFinishRunnable directly");
                             onFinishRunnable.run();
                         }
                     });
@@ -956,9 +971,9 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
                     break;
             }
         }
-        // A check to dismiss was made without any authentication. Verify there are no remaining SIM
-        // screens, which may happen on an unlocked lockscreen
-        if (!authenticated) {
+        // A check to dismiss was made without any authentication, or the previous code believes
+        // that bouncer is no longer required. Verify there are no remaining SIM screens first.
+        if (!authenticated || finish) {
             SecurityMode securityMode = mSecurityModel.getSecurityMode(targetUserId);
             if (Arrays.asList(SimPin, SimPuk).contains(securityMode)) {
                 Log.v(TAG, "Dismiss called but SIM/PUK unlock screen still required");
@@ -966,6 +981,17 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
                 showSecurityScreen(securityMode);
                 finish = false;
             }
+        }
+
+        // If secure lock device requires second-factor biometric auth after the bouncer auth.
+        if (finish && secureLockDevice() && mSecureLockDeviceInteractor.get()
+                .isSecureLockDeviceEnabled().getValue() && !mSecureLockDeviceInteractor.get()
+                .isAuthenticatedButPendingDismissal().getValue()
+        ) {
+            Log.d(TAG, "Secure lock device biometric auth required after primary auth");
+            // SecureLockDeviceBiometricAuth screen will be shown by KeyguardBouncerViewBinder
+            // collection of strong biometric auth flag
+            return false;
         }
 
         // Check for device admin specified additional security measures.
@@ -1125,6 +1151,10 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
     @VisibleForTesting
     void showSecurityScreen(SecurityMode securityMode) {
         if (DEBUG) Log.d(TAG, "showSecurityScreen(" + securityMode + ")");
+        if (secureLockDevice() && SceneContainerFlag.isEnabled()
+                && securityMode == SecureLockDeviceBiometricAuth) {
+            return;
+        }
 
         if (securityMode == SecurityMode.Invalid || securityMode == mCurrentSecurityMode) {
             return;
@@ -1133,7 +1163,6 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
         getCurrentSecurityController(oldView -> oldView.onPause());
 
         mCurrentSecurityMode = securityMode;
-
         getCurrentSecurityController(
                 newView -> {
                     newView.onResume(KeyguardSecurityView.VIEW_REVEALED);
@@ -1309,6 +1338,40 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
     }
 
     /**
+     * Resets the view flipper and reinflates the child view shown during secure lock device
+     * biometric authentication.
+     * @param onViewInflatedListener provides callback to be performed after the view is inflated
+     */
+    public void showSecureLockDeviceView(
+            KeyguardSecurityViewFlipperController.OnViewInflatedCallback onViewInflatedListener) {
+        mSecurityViewFlipperController.clearViews();
+        mCurrentSecurityMode = SecureLockDeviceBiometricAuth;
+        mSecurityViewFlipperController.getSecurityView(mCurrentSecurityMode,
+                mKeyguardSecurityCallback, (controller) -> {
+                    mView.updateSecurityViewFlipper();
+                    onViewInflatedListener.onViewInflated(controller);
+                });
+    }
+
+    /**
+     * Resets the view flipper and reinflates the child view shown during secure lock device
+     * biometric authentication.
+     * @param onViewInflatedListener provides callback to be performed after the view is inflated
+     */
+    public void onSecureLockDeviceBiometricAuthInterrupted(
+            KeyguardSecurityViewFlipperController.OnViewInflatedCallback onViewInflatedListener) {
+        SecurityMode newSecurityMode =
+                mSecurityModel.getSecurityMode(mSelectedUserInteractor.getSelectedUserId());
+        mSecurityViewFlipperController.clearViews();
+        mSecurityViewFlipperController.getSecurityView(newSecurityMode,
+                mKeyguardSecurityCallback, (controller) -> {
+                    mView.updateSecurityViewFlipper();
+                    onViewInflatedListener.onViewInflated(controller);
+                });
+        mViewMediatorCallback.resetKeyguard();
+    }
+
+    /**
      * Fades and translates in/out the security screen.
      * Fades in as expansion approaches 0.
      * Animation duration is between 0.33f and 0.67f of panel expansion fraction.
@@ -1328,5 +1391,13 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
 
     public boolean isLandscapeOrientation() {
         return mLastOrientation == Configuration.ORIENTATION_LANDSCAPE;
+    }
+
+    /**
+     * Called to reset the security mode after device entry from unlock in secure lock device mode.
+     */
+    public void onSecureLockDeviceUnlock() {
+        final int selectedUserId = mSelectedUserInteractor.getSelectedUserId();
+        mCurrentSecurityMode = mSecurityModel.getSecurityMode(selectedUserId);
     }
 }

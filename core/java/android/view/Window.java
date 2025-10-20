@@ -1377,7 +1377,7 @@ public abstract class Window {
     }
 
     /**
-     * {@hide}
+     * @hide
      */
     protected void dispatchWindowAttributesChanged(WindowManager.LayoutParams attrs) {
         if (mCallback != null) {

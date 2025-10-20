@@ -16,21 +16,29 @@
 
 package com.android.systemui.screencapture.domain.interactor
 
+import android.content.Context
 import android.content.res.Resources
-import com.android.dream.lowlight.dagger.qualifiers.Application
+import android.os.UserHandle
+import android.widget.Toast
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.mediaprojection.devicepolicy.ScreenCaptureDevicePolicyResolver
 import com.android.systemui.res.R
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureActivityIntentParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.data.repository.ScreenCaptureUiRepository
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.onConfigChanged
+import com.android.systemui.user.data.repository.UserRepository
+import dagger.Lazy
+import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -39,10 +47,14 @@ import kotlinx.coroutines.flow.stateIn
 class ScreenCaptureUiInteractor
 @Inject
 constructor(
+    @Application private val context: Context,
     @Main private val resources: Resources,
     @Application private val scope: CoroutineScope,
     configurationController: ConfigurationController,
     private val repository: ScreenCaptureUiRepository,
+    private val userRepository: UserRepository,
+    private val devicePolicyResolver: Lazy<ScreenCaptureDevicePolicyResolver>,
+    @Main private val mainExecutor: Executor,
 ) {
 
     val isLargeScreen: Flow<Boolean?> =
@@ -51,9 +63,27 @@ constructor(
             .map { resources.getBoolean(R.bool.config_enableLargeScreenScreencapture) }
             .stateIn(scope, SharingStarted.WhileSubscribed(), null)
 
-    fun uiState(type: ScreenCaptureType): Flow<ScreenCaptureUiState> = repository.uiState(type)
+    fun uiState(type: ScreenCaptureType): StateFlow<ScreenCaptureUiState> = repository.uiState(type)
 
-    fun show(parameters: ScreenCaptureActivityIntentParameters) {
+    fun show(parameters: ScreenCaptureUiParameters) {
+        if (
+            devicePolicyResolver
+                .get()
+                .isScreenCaptureCompletelyDisabled(
+                    UserHandle.of(userRepository.getSelectedUserInfo().id)
+                )
+        ) {
+            mainExecutor.execute {
+                Toast.makeText(
+                        context,
+                        R.string.screen_capture_blocked_by_admin,
+                        Toast.LENGTH_SHORT,
+                    )
+                    .show()
+            }
+            return
+        }
+
         repository.updateStateForType(type = parameters.screenCaptureType) {
             if (it is ScreenCaptureUiState.Visible) {
                 return@updateStateForType it
@@ -69,6 +99,17 @@ constructor(
                 return@updateStateForType it
             } else {
                 return@updateStateForType ScreenCaptureUiState.Invisible
+            }
+        }
+    }
+
+    fun onScreenSharingApproved(taskId: Int) {
+        val uiState = repository.uiState(ScreenCaptureType.SHARE_SCREEN).value
+        if (uiState is ScreenCaptureUiState.Visible) {
+            val parameters = uiState.parameters as? ScreenCaptureUiParameters.ShareScreen ?: return
+            parameters.onApprovedCallback?.invoke(taskId)
+            repository.updateStateForType(ScreenCaptureType.SHARE_SCREEN) {
+                ScreenCaptureUiState.Invisible
             }
         }
     }

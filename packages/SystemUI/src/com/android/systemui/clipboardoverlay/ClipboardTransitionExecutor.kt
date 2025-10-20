@@ -66,6 +66,7 @@ constructor(
             )
         transition.second.startExit()
         if (clipboardOverlayMultiuser()) {
+            transition.first.launchDisplayId = window.context.displayId
             activityStarter.startActivityDismissingKeyguard(
                 ActivityStartOptions(
                     intent,

@@ -22,9 +22,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryUdfpsInteractor
 import com.android.systemui.flags.andSceneContainer
-import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
-import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
-import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.transition.fakeKeyguardTransitionAnimationCallback
 import com.android.systemui.keyguard.shared.transition.keyguardTransitionAnimationCallbackDelegator
 import com.android.systemui.kosmos.Kosmos
@@ -33,9 +30,6 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.scene.domain.interactor.sceneInteractor
-import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -51,9 +45,15 @@ import platform.test.runner.parameterized.Parameters
 class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private val kosmos: Kosmos = testKosmos()
-
-    private lateinit var underTest: LockscreenContentViewModel
     private val activationJob = Job()
+    private val viewState: ViewStateAccessor = ViewStateAccessor({ 0f })
+    private val Kosmos.underTest by
+        Kosmos.Fixture {
+            lockscreenContentViewModelFactory.create(
+                fakeKeyguardTransitionAnimationCallback,
+                viewState,
+            )
+        }
 
     companion object {
         @JvmStatic
@@ -70,48 +70,10 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
     @Before
     fun setup() {
         with(kosmos) {
-            shadeRepository.setShadeLayoutWide(false)
-            underTest =
-                lockscreenContentViewModelFactory.create(fakeKeyguardTransitionAnimationCallback)
+            enableSingleShade()
             underTest.activateIn(testScope, activationJob)
         }
     }
-
-    @Test
-    fun isContentVisible_whenNotOccluded_visible() =
-        kosmos.runTest {
-            keyguardOcclusionRepository.setShowWhenLockedActivityInfo(false, null)
-            runCurrent()
-            assertThat(underTest.isContentVisible).isTrue()
-        }
-
-    @Test
-    fun isContentVisible_whenOccluded_notVisible() =
-        kosmos.runTest {
-            keyguardOcclusionRepository.setShowWhenLockedActivityInfo(true, null)
-            fakeKeyguardTransitionRepository.transitionTo(
-                KeyguardState.LOCKSCREEN,
-                KeyguardState.OCCLUDED,
-            )
-            runCurrent()
-            assertThat(underTest.isContentVisible).isFalse()
-        }
-
-    @Test
-    fun isContentVisible_whenOccluded_notVisible_evenIfShadeShown() =
-        kosmos.runTest {
-            enableSingleShade()
-            keyguardOcclusionRepository.setShowWhenLockedActivityInfo(true, null)
-            fakeKeyguardTransitionRepository.transitionTo(
-                KeyguardState.LOCKSCREEN,
-                KeyguardState.OCCLUDED,
-            )
-            runCurrent()
-
-            sceneInteractor.snapToScene(Scenes.Shade, "")
-            runCurrent()
-            assertThat(underTest.isContentVisible).isFalse()
-        }
 
     @Test
     fun activate_setsDelegate_onKeyguardTransitionAnimationCallbackDelegator() =
@@ -127,30 +89,6 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
             activationJob.cancel()
             runCurrent()
             assertThat(keyguardTransitionAnimationCallbackDelegator.delegate).isNull()
-        }
-
-    @Test
-    fun isContentVisible_whenOccluded_notVisibleInOccluded_visibleInAod() =
-        kosmos.runTest {
-            enableSingleShade()
-            keyguardOcclusionRepository.setShowWhenLockedActivityInfo(true, null)
-            fakeKeyguardTransitionRepository.transitionTo(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.OCCLUDED,
-            )
-            runCurrent()
-
-            sceneInteractor.snapToScene(Scenes.Shade, "")
-            runCurrent()
-            assertThat(underTest.isContentVisible).isFalse()
-
-            fakeKeyguardTransitionRepository.transitionTo(KeyguardState.OCCLUDED, KeyguardState.AOD)
-            runCurrent()
-
-            sceneInteractor.snapToScene(Scenes.Lockscreen, "")
-            runCurrent()
-
-            assertThat(underTest.isContentVisible).isTrue()
         }
 
     fun isUdfpsSupported_withoutUdfps_false() =

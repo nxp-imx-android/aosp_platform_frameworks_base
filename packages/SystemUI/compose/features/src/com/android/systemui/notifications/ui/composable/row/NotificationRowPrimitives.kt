@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -50,6 +51,7 @@ import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
 import com.android.compose.animation.scene.ValueKey
 import com.android.compose.animation.scene.animateElementFloatAsState
+import com.android.compose.theme.LocalAndroidColorScheme
 
 object NotificationRowPrimitives {
     object Elements {
@@ -67,13 +69,18 @@ object NotificationRowPrimitives {
 /** The Icon displayed at the start of any notification row. */
 @Composable
 fun BundleIcon(@DrawableRes drawable: Int?, large: Boolean, modifier: Modifier = Modifier) {
-    val iconBackground = notificationProtectionColor()
+    val iconBackground = LocalAndroidColorScheme.current.surfaceEffect2
     Box(
         modifier =
             if (large) {
                 modifier.size(40.dp).background(color = iconBackground, shape = CircleShape)
             } else {
-                modifier.size(20.dp)
+                modifier
+                    .size(24.dp)
+                    .background(
+                        color = iconBackground,
+                        shape = RoundedCornerShape(24.dp, 24.dp, 24.dp, 24.dp),
+                    )
             }
     ) {
         if (drawable == null) return@Box
@@ -84,7 +91,7 @@ fun BundleIcon(@DrawableRes drawable: Int?, large: Boolean, modifier: Modifier =
                 if (large) {
                     Modifier.fillMaxSize(.5f).align(Alignment.Center)
                 } else {
-                    Modifier.padding(2.dp)
+                    Modifier.padding(2.dp).align(Alignment.Center)
                 },
             contentScale = ContentScale.Fit,
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
@@ -133,7 +140,7 @@ fun ContentScope.ExpansionControl(
 
 @Composable
 private fun ContentScope.PillBackground(modifier: Modifier = Modifier) {
-    val surfaceColor = notificationProtectionColor()
+    val surfaceColor = LocalAndroidColorScheme.current.surfaceEffect3
     // Needs to be a shared element so it does not overlap while animating
     ElementWithValues(NotificationRowPrimitives.Elements.PillBackground, modifier) {
         Box(

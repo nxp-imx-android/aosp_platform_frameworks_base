@@ -379,7 +379,7 @@ public class RcsUceAdapter {
 
     /**
      * An application can use {@link #addOnPublishStateChangedListener} to register a
-     * {@link OnPublishStateChangedListener ), which will notify the user when the publish state to
+     * {@link OnPublishStateChangedListener}, which will notify the user when the publish state to
      * the network changes.
      * @hide
      */

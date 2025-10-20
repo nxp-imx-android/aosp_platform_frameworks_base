@@ -31,7 +31,7 @@ object QuickSettings {
 
         val TileElementMatcher = ElementKey.withIdentity { it is TileIdentity }
 
-        val QuickQuickSettings = ElementKey("QuickQuickSettings")
+        val QuickQuickSettingsAndMedia = ElementKey("QuickQuickSettingsAndMedia")
         val SplitShadeQuickSettings = ElementKey("SplitShadeQuickSettings")
     }
 
@@ -42,6 +42,7 @@ object QuickSettings {
             val Default = 1f
             val LockscreenSceneStarting = 0f
             val GoneSceneStarting = 0.3f
+            val OccludedSceneStarting = 0.3f
         }
     }
 }

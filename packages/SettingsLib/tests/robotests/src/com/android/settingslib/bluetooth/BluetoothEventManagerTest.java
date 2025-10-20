@@ -341,28 +341,20 @@ public class BluetoothEventManagerTest {
     }
 
     @Test
-    public void dispatchAclConnectionStateChanged_aclDisconnected_shouldNotCallbackSubDevice() {
+    public void dispatchAclConnectionStateChanged_forSubDevice_shouldDispatchCallback() {
+        // This test verifies that ACL state changes for sub-devices are handled.
+        // A previous implementation skipped this, but the check was removed.
         when(mCachedDeviceManager.isSubDevice(mBluetoothDevice)).thenReturn(true);
         mBluetoothEventManager.registerCallback(mBluetoothCallback);
-        mIntent = new Intent(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-        mIntent.putExtra(BluetoothDevice.EXTRA_DEVICE, mBluetoothDevice);
+        Intent intent = new Intent(BluetoothDevice.ACTION_ACL_CONNECTED);
+        intent.putExtra(BluetoothDevice.EXTRA_DEVICE, mBluetoothDevice);
 
-        mContext.sendBroadcast(mIntent);
+        mContext.sendBroadcast(intent);
 
-        verify(mBluetoothCallback, never()).onAclConnectionStateChanged(mCachedBluetoothDevice,
-                BluetoothAdapter.STATE_DISCONNECTED);
-    }
-
-    @Test
-    public void dispatchAclConnectionStateChanged_aclConnected_shouldNotCallbackSubDevice() {
-        when(mCachedDeviceManager.isSubDevice(mBluetoothDevice)).thenReturn(true);
-        mBluetoothEventManager.registerCallback(mBluetoothCallback);
-        mIntent = new Intent(BluetoothDevice.ACTION_ACL_CONNECTED);
-        mIntent.putExtra(BluetoothDevice.EXTRA_DEVICE, mBluetoothDevice);
-
-        mContext.sendBroadcast(mIntent);
-
-        verify(mBluetoothCallback, never()).onAclConnectionStateChanged(mCachedBluetoothDevice,
+        // Verify that the callback is dispatched and the device state is updated.
+        verify(mCachedBluetoothDevice).onAclStateChanged(eq(BluetoothAdapter.STATE_CONNECTED),
+                anyInt());
+        verify(mBluetoothCallback).onAclConnectionStateChanged(mCachedBluetoothDevice,
                 BluetoothAdapter.STATE_CONNECTED);
     }
 

@@ -45,7 +45,8 @@ class PackageManagerBubbleAppInfoProvider @Inject constructor() : BubbleAppInfoP
                         or PackageManager.MATCH_DIRECT_BOOT_AWARE)
             )
             val appName = if (appInfo != null) pm.getApplicationLabel(appInfo)?.toString() else null
-            val appIcon = pm.getApplicationIcon(bubble.packageName)
+
+            val appIcon = appInfo.loadUnbadgedIcon(pm)
             return BubbleAppInfo(
                 appName = appName,
                 appIcon = appIcon,

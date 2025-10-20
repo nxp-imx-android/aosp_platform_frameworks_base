@@ -16,6 +16,10 @@
 
 package com.android.systemui.util.time;
 
+import androidx.annotation.NonNull;
+
+import java.time.Instant;
+
 /**
  * Testable wrapper around {@link android.os.SystemClock}.
  *
@@ -40,4 +44,10 @@ public interface SystemClock {
 
     /** @see System#currentTimeMillis()  */
     long currentTimeMillis();
+
+    /** @see System#currentTimeMillis()  */
+    @NonNull
+    default Instant currentTime() {
+        return Instant.ofEpochMilli(currentTimeMillis());
+    }
 }

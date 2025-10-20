@@ -21,7 +21,6 @@ import android.app.NotificationChannel.SYSTEM_RESERVED_IDS
 import android.util.ArrayMap
 import android.util.ArraySet
 import com.android.internal.annotations.VisibleForTesting
-import com.android.systemui.Flags.notificationSkipSilentUpdates
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.statusbar.NotificationRemoteInputManager
@@ -516,36 +515,26 @@ constructor(
                     }
                 } else { // shouldHeadsUpEver = false
                     if (posted.isHeadsUpEntry) {
-                        if (notificationSkipSilentUpdates()) {
-                            if (
-                                posted.isPinnedByUser ||
-                                    mHeadsUpManager.canRemoveImmediately(posted.entry.key)
-                            ) {
-                                // We don't want this to be interrupting anymore, let's remove it.
-                                // If the notification is pinned by the user, the only way a user
-                                // can un-pin it by tapping the status bar notification chip. Since
-                                // that's a clear user action, we should remove the HUN immediately
-                                // instead of waiting for any sort of minimum timeout.
-                                // TODO(b/401068530) Ensure that status bar chip HUNs are not
-                                //  removed for silent update
-                                // If we can remove the notification immediately, let's remove it in
-                                // this update.
-                                hunMutator.removeNotification(
-                                    posted.key,
-                                    /* releaseImmediately= */ true,
-                                )
-                            } else {
-                                // Do NOT remove HUN for non-user update.
-                                // Let the HUN show for its remaining duration.
-                            }
-                        } else {
-                            // We don't want this to be interrupting anymore, let's remove it
-                            // If the notification is pinned by the user, the only way a user can
-                            // un-pin it is by tapping the status bar notification chip. Since
+                        if (
+                            posted.isPinnedByUser ||
+                                mHeadsUpManager.canRemoveImmediately(posted.entry.key)
+                        ) {
+                            // We don't want this to be interrupting anymore, let's remove it.
+                            // If the notification is pinned by the user, the only way a user
+                            // can un-pin it by tapping the status bar notification chip. Since
                             // that's a clear user action, we should remove the HUN immediately
                             // instead of waiting for any sort of minimum timeout.
-                            val shouldRemoveImmediately = posted.isPinnedByUser
-                            hunMutator.removeNotification(posted.key, shouldRemoveImmediately)
+                            // TODO(b/401068530) Ensure that status bar chip HUNs are not
+                            //  removed for silent update
+                            // If we can remove the notification immediately, let's remove it in
+                            // this update.
+                            hunMutator.removeNotification(
+                                posted.key,
+                                /* releaseImmediately= */ true,
+                            )
+                        } else {
+                            // Do NOT remove HUN for non-user update.
+                            // Let the HUN show for its remaining duration.
                         }
                     } else {
                         // Don't let the bind finish
@@ -646,36 +635,16 @@ constructor(
                                 isBinding = isBinding,
                             )
                     }
-                if (notificationSkipSilentUpdates()) {
-                    // TODO(b/403703828) Move canceling to OnBeforeFinalizeFilter, since we are not
-                    //  removing from HeadsUpManager and don't need to deal with re-entrant behavior
-                    //  between HeadsUpCoordinator, HeadsUpManager, and VisualStabilityManager.
-                    if (
-                        posted?.shouldHeadsUpEver == false &&
-                            !posted.isHeadsUpEntry &&
-                            posted.isBinding
-                    ) {
-                        // Don't let the bind finish
-                        cancelHeadsUpBind(posted.entry)
-                    }
-                } else {
-                    // Handle cancelling heads up here, rather than in the OnBeforeFinalizeFilter,
-                    // so that work can be done before the ShadeListBuilder is run. This prevents
-                    // re-entrant behavior between this Coordinator, HeadsUpManager, and
-                    // VisualStabilityManager.
-                    if (posted?.shouldHeadsUpEver == false) {
-                        if (posted.isHeadsUpEntry) {
-                            // We don't want this to be interrupting anymore, let's remove it
-                            mHeadsUpManager.removeNotification(
-                                posted.key,
-                                /* removeImmediately= */ false,
-                                "onEntryUpdated",
-                            )
-                        } else if (posted.isBinding) {
-                            // Don't let the bind finish
-                            cancelHeadsUpBind(posted.entry)
-                        }
-                    }
+                // TODO(b/403703828) Move canceling to OnBeforeFinalizeFilter, since we are not
+                //  removing from HeadsUpManager and don't need to deal with re-entrant behavior
+                //  between HeadsUpCoordinator, HeadsUpManager, and VisualStabilityManager.
+                if (
+                    posted?.shouldHeadsUpEver == false &&
+                        !posted.isHeadsUpEntry &&
+                        posted.isBinding
+                ) {
+                    // Don't let the bind finish
+                    cancelHeadsUpBind(posted.entry)
                 }
                 // Update last updated time for this entry
                 setUpdateTime(entry, mSystemClock.currentTimeMillis())
@@ -961,14 +930,18 @@ constructor(
         object : OnHeadsUpChangedListener {
             override fun onHeadsUpStateChanged(entry: NotificationEntry, isHeadsUp: Boolean) {
                 if (!isHeadsUp) {
-                    mNotifPromoter.invalidateList("headsUpEnded: ${entry.logKey}")
-                    mHeadsUpViewBinder.unbindHeadsUpView(entry)
-                    endNotifLifetimeExtensionIfExtended(entry)
+                    mExecutor.execute {
+                        mNotifPromoter.invalidateList("headsUpEnded: ${entry.logKey}")
+                        mHeadsUpViewBinder.unbindHeadsUpView(entry)
+                        endNotifLifetimeExtensionIfExtended(entry)
+                    }
                 }
             }
 
             override fun onHeadsUpAnimatingAwayEnded(entry: NotificationEntry) {
-                mNotifPromoter.invalidateList("headsUpAnimatingAwayEnded: ${entry.logKey}")
+                mExecutor.execute {
+                    mNotifPromoter.invalidateList("headsUpAnimatingAwayEnded: ${entry.logKey}")
+                }
             }
         }
 

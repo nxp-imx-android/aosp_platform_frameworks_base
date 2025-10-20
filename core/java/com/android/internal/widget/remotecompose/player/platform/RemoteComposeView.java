@@ -18,6 +18,7 @@ package com.android.internal.widget.remotecompose.player.platform;
 import static com.android.internal.widget.remotecompose.core.RemoteClock.nanoTime;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -43,6 +44,7 @@ import com.android.internal.widget.remotecompose.core.operations.Utils;
 import com.android.internal.widget.remotecompose.player.RemoteComposeDocument;
 
 import java.time.Clock;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -68,6 +70,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
     boolean mHasClickAreas = false;
     Point mActionDownPoint = new Point(0, 0);
     AndroidRemoteContext mARContext;
+    Map<Integer, Object> mResolvedData = null;
 
     float mDensity = Float.NaN;
     long mStart;
@@ -178,6 +181,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
      *
      * @param value The {@link RemoteComposeDocument} to set.
      */
+    @SuppressWarnings("ReferenceEquality") // newClock != mClock
     public void setDocument(@NonNull RemoteComposeDocument value) {
         Clock newClock = value.getClock();
         if (newClock != mClock) {
@@ -188,7 +192,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
 
         mDocument = value;
         mMaxFrameRate = DEFAULT_FRAME_RATE;
-        mDocument.initializeContext(mARContext);
+        mDocument.initializeContext(mARContext, mResolvedData);
         mDisable = false;
         if (mDocument.getDocument().bitmapMemory() > MAX_BITMAP_MEMORY) {
             mDisable = true;
@@ -560,7 +564,6 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int index = event.getActionIndex();
-        int action = event.getActionMasked();
         int pointerId = event.getPointerId(index);
         if (USE_VIEW_AREA_CLICK && mHasClickAreas) {
             return super.onTouchEvent(event);
@@ -839,5 +842,14 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
 
     private float getDefaultTextSize() {
         return new TextView(getContext()).getTextSize();
+    }
+
+    /**
+     * Set the resolved data for the document
+     *
+     * @param resolvedData the resolved data
+     */
+    public void setResolvedData(@Nullable Map<Integer, Object> resolvedData) {
+        mResolvedData = resolvedData;
     }
 }

@@ -60,16 +60,17 @@ constructor(@Assisted private val context: Context, interactor: ConnectedDisplay
 
     override suspend fun onActivated(): Nothing = hydrator.activate()
 
-    private fun Boolean.toUiState(): Icon? =
-        if (this) {
+    private fun Boolean.toUiState(): Icon? {
+        return if (this) {
             Icon.Resource(
-                res = R.drawable.stat_sys_connected_display,
+                resId = R.drawable.stat_sys_connected_display,
                 contentDescription =
                     ContentDescription.Resource(R.string.connected_display_icon_desc),
             )
         } else {
             null
         }
+    }
 
     private fun ConnectedDisplayInteractor.State.isVisible(): Boolean =
         when (this) {

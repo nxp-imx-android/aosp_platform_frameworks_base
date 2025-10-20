@@ -167,6 +167,10 @@ interface IDisplayManager {
     @EnforcePermission("CONTROL_DISPLAY_BRIGHTNESS")
     void setTemporaryBrightness(int displayId, float brightness);
 
+    // Temporally sets the display brightness mode.
+    @EnforcePermission("CONFIGURE_DISPLAY_BRIGHTNESS")
+    boolean setTemporaryBrightnessMode(int displayId, int brightnessMode);
+
     // Saves the display brightness.
     @EnforcePermission("CONTROL_DISPLAY_BRIGHTNESS")
     void setBrightness(int displayId, float brightness);

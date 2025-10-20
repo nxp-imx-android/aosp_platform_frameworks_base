@@ -28,7 +28,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnLongClickListener
-import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
@@ -76,9 +75,8 @@ import com.android.wm.shell.windowdecor.common.createBackgroundDrawable
 import com.android.wm.shell.windowdecor.extension.identityHashCode
 import com.android.wm.shell.windowdecor.extension.isLightCaptionBarAppearance
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
+import com.android.wm.shell.windowdecor.extension.throttleFirstClicks
 import com.android.wm.shell.windowdecor.viewholder.util.AppHeaderDimensions
-import com.android.wm.shell.windowdecor.viewholder.util.DefaultAppHeaderDimensions
-import com.android.wm.shell.windowdecor.viewholder.util.LargeAppHeaderDimensions
 
 /**
  * A desktop mode window decoration used when the window is floating (i.e. freeform). It hosts finer
@@ -94,6 +92,7 @@ class AppHeaderViewHolder(
     onCaptionGenericMotionListener: View.OnGenericMotionListener,
     onMaximizeHoverAnimationFinishedListener: () -> Unit,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
+    private val dimensions: AppHeaderDimensions,
 ) : WindowDecorationViewHolder<AppHeaderViewHolder.HeaderData>() {
 
     data class HeaderData(
@@ -108,12 +107,6 @@ class AppHeaderViewHolder(
     private val decorThemeUtil = DecorThemeUtil(context)
     private val lightColors = dynamicLightColorScheme(context)
     private val darkColors = dynamicDarkColorScheme(context)
-    private val dimensions: AppHeaderDimensions =
-        if (DesktopExperienceFlags.ENABLE_TALL_APP_HEADERS.isTrue) {
-            LargeAppHeaderDimensions(context.resources)
-        } else {
-            DefaultAppHeaderDimensions(context.resources)
-        }
 
     override val rootView =
         appHeaderView
@@ -167,13 +160,25 @@ class AppHeaderViewHolder(
         captionHandle.setOnTouchListener(onCaptionTouchListener)
         openMenuButton.setOnClickListener(onCaptionButtonClickListener)
         openMenuButton.setOnTouchListener(onCaptionTouchListener)
-        closeWindowButton.setOnClickListener(onCaptionButtonClickListener)
-        maximizeWindowButton.setOnClickListener(onCaptionButtonClickListener)
+        closeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
+            onCaptionButtonClickListener.onClick(v)
+        }
+        maximizeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
+            onCaptionButtonClickListener.onClick(v)
+        }
+        minimizeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
+            onCaptionButtonClickListener.onClick(v)
+        }
+        openMenuButton.throttleFirstClicks(CLICK_DELAY) { v ->
+            onCaptionButtonClickListener.onClick(v)
+        }
         maximizeWindowButton.setOnTouchListener(onCaptionTouchListener)
         maximizeWindowButton.setOnGenericMotionListener(onCaptionGenericMotionListener)
         maximizeWindowButton.onLongClickListener = onLongClickListener
         closeWindowButton.setOnTouchListener(onCaptionTouchListener)
-        minimizeWindowButton.setOnClickListener(onCaptionButtonClickListener)
+        minimizeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
+            onCaptionButtonClickListener.onClick(v)
+        }
         minimizeWindowButton.setOnTouchListener(onCaptionTouchListener)
         maximizeButtonView.onHoverAnimationFinishedListener =
             onMaximizeHoverAnimationFinishedListener
@@ -720,14 +725,7 @@ class AppHeaderViewHolder(
 
     fun runOnAppChipGlobalLayout(runnable: () -> Unit) {
         // Wait for app chip to be inflated before notifying repository.
-        openMenuButton.viewTreeObserver.addOnGlobalLayoutListener(
-            object : OnGlobalLayoutListener {
-                override fun onGlobalLayout() {
-                    runnable()
-                    openMenuButton.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                }
-            }
-        )
+        openMenuButton.post { runnable() }
     }
 
     fun getAppChipLocationInWindow(): Rect {
@@ -983,16 +981,18 @@ class AppHeaderViewHolder(
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun toString(): String {
-        return "AppHandleViewHolder(rootView=${rootView.identityHashCode.toHexString()})"
+        return "AppHeaderViewHolder(rootView=${rootView.identityHashCode.toHexString()})"
     }
 
     companion object {
         private const val DARK_THEME_UNFOCUSED_OPACITY = 140 // 55%
         private const val LIGHT_THEME_UNFOCUSED_OPACITY = 166 // 65%
         private const val FOCUSED_OPACITY = 255
+        private const val CLICK_DELAY: Long = 500
     }
 
-    class Factory {
+    /** Factory for creating [AppHeaderViewHolder] instances. */
+    interface Factory {
         fun create(
             rootView: View?,
             context: Context,
@@ -1003,6 +1003,23 @@ class AppHeaderViewHolder(
             onCaptionGenericMotionListener: View.OnGenericMotionListener,
             onMaximizeHoverAnimationFinishedListener: () -> Unit,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
+            dimensions: AppHeaderDimensions,
+        ): AppHeaderViewHolder
+    }
+
+    /** The default factory for creating [AppHeaderViewHolder] instances. */
+    class DefaultFactory : Factory {
+        override fun create(
+            rootView: View?,
+            context: Context,
+            windowDecorationActions: WindowDecorationActions,
+            onCaptionTouchListener: View.OnTouchListener,
+            onCaptionButtonClickListener: View.OnClickListener,
+            onLongClickListener: OnLongClickListener,
+            onCaptionGenericMotionListener: View.OnGenericMotionListener,
+            onMaximizeHoverAnimationFinishedListener: () -> Unit,
+            desktopModeUiEventLogger: DesktopModeUiEventLogger,
+            dimensions: AppHeaderDimensions,
         ): AppHeaderViewHolder =
             AppHeaderViewHolder(
                 rootView,
@@ -1014,6 +1031,7 @@ class AppHeaderViewHolder(
                 onCaptionGenericMotionListener,
                 onMaximizeHoverAnimationFinishedListener,
                 desktopModeUiEventLogger,
+                dimensions,
             )
     }
 }

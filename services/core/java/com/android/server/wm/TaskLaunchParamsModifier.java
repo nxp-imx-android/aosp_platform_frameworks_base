@@ -153,7 +153,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
         // source is a freeform window in a fullscreen display launching an activity on the same
         // display.
         if (launchMode == WINDOWING_MODE_UNDEFINED
-                && canInheritWindowingModeFromSource(display, suggestedDisplayArea, source)) {
+                && canInheritWindowingModeFromSource(display, suggestedDisplayArea, source, task)) {
             // The source's windowing mode may be different from its task, e.g. activity is set
             // to fullscreen and its task is pinned windowing mode when the activity is entering
             // pip.
@@ -411,9 +411,19 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
                 && launchMode != task.getRequestedOverrideWindowingMode();
     }
 
+    /**
+     * Determines whether a task can inherit the windowing mode from its source activity.
+     *
+     * @param display the display where the task will be launched.
+     * @param suggestedDisplayArea the suggested display area for the task.
+     * @param source the source activity that initiated the launch, or null if none.
+     * @param targetTask the task being launched, or null if creating a new task.
+     * @return true if the target task can inherit the source's windowing mode, false otherwise.
+     */
     private boolean canInheritWindowingModeFromSource(@NonNull DisplayContent display,
-            TaskDisplayArea suggestedDisplayArea, @Nullable ActivityRecord source) {
-        if (source == null) {
+            TaskDisplayArea suggestedDisplayArea, @Nullable ActivityRecord source,
+            @Nullable Task targetTask) {
+        if (source == null || source.getTask() == null) {
             return false;
         }
 
@@ -424,9 +434,17 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
             return false;
         }
 
+        // Only fullscreen and freeform sources are allowed to inherit their windowing mode.
         final int sourceWindowingMode = source.getTask().getWindowingMode();
         if (sourceWindowingMode != WINDOWING_MODE_FULLSCREEN
                 && sourceWindowingMode != WINDOWING_MODE_FREEFORM) {
+            return false;
+        }
+
+        // Bubble task can only inherit from the fullscreen source task.
+        // TODO(b/407669465): Replace mLaunchNextToBubble with property check in root task approach.
+        if (sourceWindowingMode == WINDOWING_MODE_FREEFORM && targetTask != null
+                && targetTask.mLaunchNextToBubble) {
             return false;
         }
 
@@ -668,14 +686,12 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
     private void adjustBoundsToAvoidConflictInDisplayArea(@NonNull TaskDisplayArea displayArea,
             @NonNull Rect inOutBounds) {
         final List<Rect> taskBoundsToCheck = new ArrayList<>();
-        displayArea.forAllRootTasks(task -> {
-            if (!task.inFreeformWindowingMode()) {
+        displayArea.forAllLeafTasks(task -> {
+            if (!task.inFreeformWindowingMode() || !task.isVisibleRequested()) {
                 return;
             }
+            taskBoundsToCheck.add(task.getBounds());
 
-            for (int j = 0; j < task.getChildCount(); ++j) {
-                taskBoundsToCheck.add(task.getChildAt(j).getBounds());
-            }
         }, false /* traverseTopToBottom */);
         adjustBoundsToAvoidConflict(displayArea.getBounds(), taskBoundsToCheck, inOutBounds);
     }

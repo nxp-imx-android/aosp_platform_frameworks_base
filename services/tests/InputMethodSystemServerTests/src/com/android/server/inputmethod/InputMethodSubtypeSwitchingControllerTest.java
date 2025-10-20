@@ -24,6 +24,7 @@ import static com.android.server.inputmethod.InputMethodUtils.NOT_A_SUBTYPE_INDE
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -42,6 +43,7 @@ import com.android.server.inputmethod.InputMethodSubtypeSwitchingController.ImeS
 
 import org.junit.Test;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -348,6 +350,49 @@ public final class InputMethodSubtypeSwitchingControllerTest {
                 List.of(hardIme));
     }
 
+    /** Verifies that items are filtered correctly. */
+    @Test
+    public void testGetItems() throws Exception {
+        final var controller = new InputMethodSubtypeSwitchingController();
+
+        final var normalItem = createTestItem("Normal", true /* showInImeSwitcherMenu */,
+                false /* isAuxiliary */);
+        final var hiddenItem = createTestItem("Hidden", false /* showInImeSwitcherMenu */,
+                false /* isAuxiliary */);
+        final var auxItem = createTestItem("Aux", true /* showInImeSwitcherMenu */,
+                true /* isAuxiliary */);
+        final var hiddenAuxItem = createTestItem("HiddenAux", false /* showInImeSwitcherMenu */,
+                true /* isAuxiliary */);
+
+        final var allItems = List.of(normalItem, hiddenItem, auxItem, hiddenAuxItem);
+
+        // Use reflection to set the private mEnabledItems field for testing.
+        final Field enabledItemsField =
+                InputMethodSubtypeSwitchingController.class.getDeclaredField("mEnabledItems");
+        enabledItemsField.setAccessible(true);
+        enabledItemsField.set(controller, allItems);
+
+        // Test case 1: getItems(forMenu=false, includeAuxiliary=false)
+        // Should return non-auxiliary items.
+        var result = controller.getItems(false /* forMenu */, false /* includeAuxiliary */);
+        assertEquals(List.of(normalItem, hiddenItem), result);
+
+        // Test case 2: getItems(forMenu=true, includeAuxiliary=false)
+        // Should return non-auxiliary items that are shown in the menu.
+        result = controller.getItems(true /* forMenu */, false /* includeAuxiliary */);
+        assertEquals(List.of(normalItem), result);
+
+        // Test case 3: getItems(forMenu=false, includeAuxiliary=true)
+        // Should return all items.
+        result = controller.getItems(false /* forMenu */, true /* includeAuxiliary */);
+        assertEquals(allItems, result);
+
+        // Test case 4: getItems(forMenu=true, includeAuxiliary=true)
+        // Should return all items that are shown in the menu.
+        result = controller.getItems(true /* forMenu */, true /* includeAuxiliary */);
+        assertEquals(List.of(normalItem, auxItem), result);
+    }
+
     /** Verifies that switch aware and switch unaware IMEs are combined together. */
     @Test
     public void testSwitchAwareAndUnawareCombined() {
@@ -543,6 +588,104 @@ public final class InputMethodSubtypeSwitchingControllerTest {
                 0, subtype0.compareTo(subtype1));
     }
 
+    /** Verifies the {@code ImeSubtypeListItem.equals} and {@code ImeSubtypeListItem.hashCode}. */
+    @Test
+    public void testEqualsAndHashCode() {
+        final var component1 = new ComponentName("com.example.ime1", "Ime");
+        final var subtypes1 = new ArrayList<InputMethodSubtype>();
+        subtypes1.add(createTestSubtype(SYSTEM_LOCALE));
+        final var imi1 =
+                createTestImi(component1, subtypes1, true /* supportsSwitchingToNextInputMethod */);
+
+        final var item1 =
+                new ImeSubtypeListItem(
+                        "Ime", "Subtype", "Layout", imi1, 0 /* subtypeIndex */,
+                        true /* showInImeSwitcherMenu */, false /* isAuxiliary */,
+                        true /* suitableForHardware */);
+
+        // Test equality with null.
+        assertNotNull("Item should not be null.", item1);
+
+        // Test equals and hashCode with an equivalent item.
+        final var item2 =
+                new ImeSubtypeListItem(
+                        "Ime", "Subtype", "Layout", imi1, 0 /* subtypeIndex */,
+                        true /* showInImeSwitcherMenu */, false /* isAuxiliary */,
+                        true /* suitableForHardware */);
+        assertEquals("Equivalent items should be equal.", item1, item2);
+        assertEquals("Hash code of equivalent items should be equal.",
+                item1.hashCode(), item2.hashCode());
+
+        // Test equals with different items.
+        final var diffImeName =
+                new ImeSubtypeListItem(
+                        "OtherIme", "Subtype", "Layout", imi1, 0 /* subtypeIndex */,
+                        true /* showInImeSwitcherMenu */, false /* isAuxiliary */,
+                        true /* suitableForHardware */);
+        assertNotEquals("Items with different IME names should not be equal.",
+                item1, diffImeName);
+
+        final var diffSubtypeName =
+                new ImeSubtypeListItem(
+                        "Ime", "OtherSubtype", "Layout", imi1, 0 /* subtypeIndex */,
+                        true /* showInImeSwitcherMenu */, false /* isAuxiliary */,
+                        true /* suitableForHardware */);
+        assertNotEquals("Items with different subtype names should not be equal.",
+                item1, diffSubtypeName);
+
+        final var diffLayoutName =
+                new ImeSubtypeListItem(
+                        "Ime", "Subtype", "OtherLayout", imi1, 0 /* subtypeIndex */,
+                        true /* showInImeSwitcherMenu */, false /* isAuxiliary */,
+                        true /* suitableForHardware */);
+        assertNotEquals("Items with different layout names should not be equal.",
+                item1, diffLayoutName);
+
+        final var component2 = new ComponentName("com.example.ime2", "Ime");
+        final var subtypes2 = new ArrayList<InputMethodSubtype>();
+        subtypes2.add(createTestSubtype(SYSTEM_LOCALE));
+        final var imi2 =
+                createTestImi(component2, subtypes2, true /* supportsSwitchingToNextInputMethod */);
+        final var diffImi =
+                new ImeSubtypeListItem(
+                        "Ime", "Subtype", "Layout", imi2, 0 /* subtypeIndex */,
+                        true /* showInImeSwitcherMenu */, false /* isAuxiliary */,
+                        true /* suitableForHardware */);
+        assertNotEquals("Items with different IMEs should not be equal.", item1, diffImi);
+
+        final var diffSubtypeIndex =
+                new ImeSubtypeListItem(
+                        "Ime", "Subtype", "Layout", imi1, 1 /* subtypeIndex */,
+                        true /* showInImeSwitcherMenu */, false /* isAuxiliary */,
+                        true /* suitableForHardware */);
+        assertNotEquals("Items with different subtype indices should not be equal.",
+                item1, diffSubtypeIndex);
+
+        final var diffShowInMenu =
+                new ImeSubtypeListItem(
+                        "Ime", "Subtype", "Layout", imi1, 0 /* subtypeIndex */,
+                        false /* showInImeSwitcherMenu */, false /* isAuxiliary */,
+                        true /* suitableForHardware */);
+        assertNotEquals("Items with different show in menu flags should not be equal.",
+                item1, diffShowInMenu);
+
+        final var diffAuxiliary =
+                new ImeSubtypeListItem(
+                        "Ime", "Subtype", "Layout", imi1, 0 /* subtypeIndex */,
+                        true /* showInImeSwitcherMenu */, true /* isAuxiliary */,
+                        true /* suitableForHardware */);
+        assertNotEquals("Items with different auxiliary flags should not be equal.",
+                item1, diffAuxiliary);
+
+        final var diffSuitableForHardware =
+                new ImeSubtypeListItem(
+                        "Ime", "Subtype", "Layout", imi1, 0 /* subtypeIndex */,
+                        true /* showInImeSwitcherMenu */, false /* isAuxiliary */,
+                        false /* suitableForHardware */);
+        assertNotEquals("Items with different suitable for hardware flags should not be equal.",
+                item1, diffSuitableForHardware);
+    }
+
     /**
      * Moves the given item from its current position to the front of the given list.
      *
@@ -646,6 +789,16 @@ public final class InputMethodSubtypeSwitchingControllerTest {
         return new ImeSubtypeListItem(imeName, subtypeName, null /* layoutName */,
                 imi, subtypeIndex, true /* showInImeSwitcherMenu */, false /* isAuxiliary */,
                 true /* suitableForHardware */);
+    }
+
+    private static ImeSubtypeListItem createTestItem(@NonNull String imeName,
+            boolean showInImeSwitcherMenu, boolean isAuxiliary) {
+        final var componentName = new ComponentName(TEST_PACKAGE_NAME, imeName);
+        final var imi = createTestImi(componentName, null /* subtypes */,
+                true /* supportsSwitchingToNextInputMethod */);
+        return new ImeSubtypeListItem(imeName, null /* subtypeName */, null /* layoutName */,
+                imi, NOT_A_SUBTYPE_INDEX, showInImeSwitcherMenu, isAuxiliary,
+                false /* suitableForHardware */);
     }
 
     /**

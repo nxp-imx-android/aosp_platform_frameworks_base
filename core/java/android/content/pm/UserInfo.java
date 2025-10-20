@@ -591,7 +591,6 @@ public class UserInfo implements Parcelable {
         return UserHandle.of(id);
     }
 
-    // TODO(b/142482943): Probably include mUserType here, which means updating TestDevice, etc.
     @Override
     public String toString() {
         // NOTE:  do not change this string, it's used by 'pm list users', which in turn is

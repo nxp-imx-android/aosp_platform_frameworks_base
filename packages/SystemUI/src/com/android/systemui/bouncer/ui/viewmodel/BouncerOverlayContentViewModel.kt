@@ -20,6 +20,8 @@ import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyResources
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.core.graphics.drawable.toBitmap
@@ -33,17 +35,19 @@ import com.android.systemui.authentication.shared.model.BouncerInputSide
 import com.android.systemui.bouncer.domain.interactor.BouncerActionButtonInteractor
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.bouncer.shared.model.BouncerActionButtonModel
+import com.android.systemui.bouncer.ui.BouncerColors.surfaceColor
 import com.android.systemui.bouncer.ui.helper.BouncerHapticPlayer
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.shared.model.Text
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.domain.interactor.KeyguardDismissActionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardMediaKeyInteractor
-import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.user.ui.viewmodel.UserSwitcherViewModel
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.awaitCancellation
@@ -53,6 +57,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 
 /** Models UI state for the content of the bouncer overlay. */
@@ -74,9 +79,13 @@ constructor(
     private val bouncerActionButtonInteractor: BouncerActionButtonInteractor,
     private val keyguardDismissActionInteractor: KeyguardDismissActionInteractor,
     private val sceneInteractor: SceneInteractor,
-) : ExclusiveActivatable() {
+    private val windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
+) : HydratedActivatable() {
     private val _selectedUserImage = MutableStateFlow<Bitmap?>(null)
     val selectedUserImage: StateFlow<Bitmap?> = _selectedUserImage.asStateFlow()
+
+    private val _selectedUserName = MutableStateFlow<Text?>(null)
+    val selectedUserName: StateFlow<Text?> = _selectedUserName.asStateFlow()
 
     val message: BouncerMessageViewModel by lazy { bouncerMessageViewModelFactory.create() }
 
@@ -141,7 +150,13 @@ constructor(
      * Whether to show a "back" button on bouncer. This is enabled for large screen interaction as
      * these typically don't rely on touch gestures to go back.
      */
-    val showBackButton = bouncerInteractor.isImproveLargeScreenInteractionEnabled
+    val showBackButton =
+        Flags.backButtonOnBouncerFix() && bouncerInteractor.isImproveLargeScreenInteractionEnabled
+
+    /** Whether to show the accessibility button on the bouncer. */
+    val showAccessibilityButton =
+        Flags.bouncerAccessibilityButtonForDesktop() &&
+            bouncerInteractor.isShowAccessibilityButtonOnBouncerEnabled
 
     private val _isInputPreferredOnLeftSide = MutableStateFlow(false)
     val isInputPreferredOnLeftSide = _isInputPreferredOnLeftSide.asStateFlow()
@@ -157,8 +172,20 @@ constructor(
     /** How much the bouncer UI should be scaled. */
     val scale: StateFlow<Float> = bouncerInteractor.scale
 
-    private val _isInputEnabled =
-        MutableStateFlow(authenticationInteractor.lockoutEndTimestamp == null)
+    /** Bouncer background color */
+    val backgroundColor by
+        windowRootViewBlurInteractor.isBlurCurrentlySupported
+            .map { Color(applicationContext.surfaceColor(it)) }
+            .hydratedStateOf(
+                "backgroundColor",
+                Color(
+                    applicationContext.surfaceColor(
+                        windowRootViewBlurInteractor.isBlurCurrentlySupported.value
+                    )
+                ),
+            )
+
+    private val _isInputEnabled = MutableStateFlow(authenticationInteractor.lockoutEndTime == null)
     private val isInputEnabled: StateFlow<Boolean> = _isInputEnabled.asStateFlow()
 
     override suspend fun onActivated(): Nothing {
@@ -167,6 +194,7 @@ constructor(
             launch { message.activate() }
             launch {
                 authenticationInteractor.authenticationMethod
+                    .filter { it !is AuthenticationMethodModel.Biometric }
                     .map(::getChildViewModel)
                     .collectLatest { childViewModelOrNull ->
                         _authMethodViewModel.value = childViewModelOrNull
@@ -190,6 +218,10 @@ constructor(
                         it.image.toBitmap(iconSize, iconSize)
                     }
                     .collect { _selectedUserImage.value = it }
+            }
+
+            launch {
+                userSwitcher.selectedUser.map { it.name }.collect { _selectedUserName.value = it }
             }
 
             launch {
@@ -471,6 +503,10 @@ constructor(
 
     fun navigateBack() {
         sceneInteractor.hideOverlay(Overlays.Bouncer, "back button clicked")
+    }
+
+    fun showAccessibilityDialog() {
+        // TODO: b/449824070 - Show dialog once implemented.
     }
 
     data class DialogViewModel(

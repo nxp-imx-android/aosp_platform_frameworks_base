@@ -49,6 +49,14 @@ public class SecurityStateManager {
      */
     public static final String KEY_KERNEL_VERSION = "kernel_version";
 
+    /**
+     * The supplemental security patches key returned as part of the {@code Bundle} from
+     * {@code getGlobalSecurityState}. The value is a {@code String[]} where each element is the ID
+     * of a patched CVE, e.g. "CVE-2024-12345".
+     */
+    @FlaggedApi(Flags.FLAG_SUPPLEMENTAL_SECURITY_PATCHES)
+    public static final String KEY_SUPPLEMENTAL_PATCHES = "supplemental_security_patches";
+
     private final ISecurityStateManager mService;
 
     /**

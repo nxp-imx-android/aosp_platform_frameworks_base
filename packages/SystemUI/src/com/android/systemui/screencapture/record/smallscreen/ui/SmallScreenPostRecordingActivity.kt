@@ -16,6 +16,9 @@
 
 package com.android.systemui.screencapture.record.smallscreen.ui
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -38,43 +41,50 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarData
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarVisuals
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.booleanResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.MimeTypes
+import com.android.compose.PlatformButton
 import com.android.compose.PlatformOutlinedButton
+import com.android.compose.PlatformTextButton
 import com.android.compose.theme.PlatformTheme
+import com.android.systemui.dialog.ui.composable.AlertDialogContent
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
+import com.android.systemui.screencapture.record.smallscreen.player.ui.compose.VideoPlayer
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingViewModel
+import com.android.systemui.statusbar.phone.SystemUIDialogFactory
+import com.android.systemui.statusbar.phone.create
 import javax.inject.Inject
+import kotlin.coroutines.resume
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 class SmallScreenPostRecordingActivity
 @Inject
-constructor(private val viewModelFactory: PostRecordingViewModel.Factory) : ComponentActivity() {
+constructor(
+    private val videoPlayer: VideoPlayer,
+    private val viewModelFactory: PostRecordingViewModel.Factory,
+    private val postRecordSnackbarDialogs: PostRecordSnackbarDialogs,
+    private val systemUIDialogFactory: SystemUIDialogFactory,
+) : ComponentActivity() {
+
+    private val shouldShowVideoSaved: Boolean
+        get() = intent.getBooleanExtra(SHOULD_SHOW_VIDEO_SAVED, SHOULD_SHOW_VIDEO_SAVED_DEFAULT)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,34 +94,32 @@ constructor(private val viewModelFactory: PostRecordingViewModel.Factory) : Comp
 
     @Composable
     private fun Content() {
+        val coroutineScope = rememberCoroutineScope()
         val viewModel =
             rememberViewModel("SmallScreenPostRecordingActivity#viewModel") {
                 viewModelFactory.create(intent.data ?: error("Data URI is missing"))
             }
 
-        var shouldShowSavedToast by rememberSaveable { mutableStateOf(true) }
-        val snackbarHostState = remember { SnackbarHostState() }
-
-        LaunchedEffect(shouldShowSavedToast) {
-            if (!shouldShowSavedToast) return@LaunchedEffect
-            shouldShowSavedToast = true
-            snackbarHostState.showSnackbar(
-                SnackbarVisualsWithIcon(
-                    iconRes = R.drawable.ic_sync_saved_locally,
-                    message = getString(R.string.screen_record_video_saved),
-                )
-            )
+        LaunchedEffect(shouldShowVideoSaved) {
+            if (shouldShowVideoSaved) {
+                intent.putExtra(SHOULD_SHOW_VIDEO_SAVED, false)
+                postRecordSnackbarDialogs.showVideoSaved()
+            }
         }
 
         val shouldUseFlatBottomBar =
             booleanResource(R.bool.screen_record_post_recording_flat_bottom_bar)
-        Box(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing)) {
+        Box(
+            modifier =
+                Modifier.background(MaterialTheme.colorScheme.surface)
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+        ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 if (!shouldUseFlatBottomBar) {
                     Spacer(modifier = Modifier.size(50.dp))
                 }
                 Box(modifier = Modifier.weight(1f).align(Alignment.CenterHorizontally)) {
-                    // TODO(b/430553811): Add video player
+                    videoPlayer.Content(uri = viewModel.videoUri, modifier = Modifier.fillMaxSize())
                 }
                 Spacer(modifier = Modifier.size(32.dp))
                 Row(
@@ -120,7 +128,10 @@ constructor(private val viewModelFactory: PostRecordingViewModel.Factory) : Comp
                 ) {
                     val rowModifier = Modifier.weight(1f).fillMaxHeight()
                     PostRecordButton(
-                        onClick = { viewModel.retake() },
+                        onClick = {
+                            viewModel.retake()
+                            finish()
+                        },
                         drawableLoaderViewModel = viewModel,
                         iconRes = R.drawable.ic_arrow_back,
                         labelRes = R.string.screen_record_retake,
@@ -134,7 +145,14 @@ constructor(private val viewModelFactory: PostRecordingViewModel.Factory) : Comp
                         modifier = rowModifier,
                     )
                     PostRecordButton(
-                        onClick = { viewModel.delete() },
+                        onClick = {
+                            coroutineScope.launch {
+                                if (confirmDeletion(viewModel)) {
+                                    postRecordSnackbarDialogs.showVideoDeleted(viewModel.videoUri)
+                                    finish()
+                                }
+                            }
+                        },
                         drawableLoaderViewModel = viewModel,
                         iconRes = R.drawable.ic_screenshot_delete,
                         labelRes = R.string.screen_record_delete,
@@ -166,73 +184,70 @@ constructor(private val viewModelFactory: PostRecordingViewModel.Factory) : Comp
                     )
                 }
             }
-            TextButton(
-                onClick = { finish() },
-                modifier = Modifier.padding(horizontal = 12.dp).size(48.dp).align(Alignment.TopEnd),
-            ) {
-                LoadingIcon(
-                    icon = loadIcon(viewModel, R.drawable.ic_close, null).value,
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(24.dp),
-                )
-            }
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier.align(Alignment.TopCenter),
-            ) { data ->
-                PostRecordSnackbar(viewModel = viewModel, data = data, modifier = Modifier)
-            }
         }
     }
-}
 
-@Composable
-private fun PostRecordSnackbar(
-    viewModel: DrawableLoaderViewModel,
-    data: SnackbarData,
-    modifier: Modifier = Modifier,
-) {
-    val visuals = data.visuals as? SnackbarVisualsWithIcon ?: return
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier =
-            modifier
-                .background(
-                    color = MaterialTheme.colorScheme.inverseSurface,
-                    shape = RoundedCornerShape(percent = 50),
-                )
-                .padding(start = 12.dp, end = 20.dp)
-                .height(48.dp),
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier =
-                Modifier.background(
-                        color = MaterialTheme.colorScheme.inverseOnSurface,
-                        shape = CircleShape,
+    private suspend fun confirmDeletion(viewModel: DrawableLoaderViewModel) =
+        suspendCancellableCoroutine { continuation ->
+            val dialog =
+                systemUIDialogFactory.create(context = this) { dialog ->
+                    LaunchedEffect(dialog) {
+                        dialog.setOnDismissListener {
+                            if (continuation.isActive) continuation.resume(false)
+                        }
+                    }
+                    AlertDialogContent(
+                        title = {
+                            Text(stringResource(R.string.screen_record_delete_dialog_title))
+                        },
+                        content = {
+                            Text(stringResource(R.string.screen_record_delete_dialog_content))
+                        },
+                        icon = {
+                            LoadingIcon(
+                                loadIcon(
+                                        viewModel = viewModel,
+                                        resId = R.drawable.ic_screenshot_delete,
+                                        contentDescription = null,
+                                    )
+                                    .value
+                            )
+                        },
+                        positiveButton = {
+                            PlatformButton(
+                                onClick = {
+                                    continuation.resume(true)
+                                    dialog.dismiss()
+                                }
+                            ) {
+                                Text(stringResource(id = R.string.screen_record_delete))
+                            }
+                        },
+                        negativeButton = {
+                            PlatformTextButton(onClick = { dialog.dismiss() }) {
+                                Text(stringResource(id = R.string.cancel))
+                            }
+                        },
                     )
-                    .size(24.dp),
-        ) {
-            LoadingIcon(
-                icon = loadIcon(viewModel, visuals.iconRes, null).value,
-                tint = MaterialTheme.colorScheme.inverseSurface,
-                modifier = modifier.size(16.dp),
-            )
+                }
+            dialog.show()
+            continuation.invokeOnCancellation { dialog.dismiss() }
         }
-        Text(
-            text = visuals.message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.inverseOnSurface,
-        )
-        if (visuals.actionLabel != null) {
-            TextButton(onClick = data::performAction) {
-                Text(
-                    text = visuals.actionLabel,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.inverseOnSurface,
-                )
-            }
+
+    companion object {
+
+        private const val SHOULD_SHOW_VIDEO_SAVED = "should_show_video_saved"
+        private const val SHOULD_SHOW_VIDEO_SAVED_DEFAULT = false
+
+        fun getStartingIntent(
+            context: Context,
+            videoUri: Uri,
+            shouldShowVideoSaved: Boolean = SHOULD_SHOW_VIDEO_SAVED_DEFAULT,
+        ): Intent {
+            return Intent(context, SmallScreenPostRecordingActivity::class.java)
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                .setDataAndType(videoUri, MimeTypes.VIDEO_MP4)
+                .putExtra(SHOULD_SHOW_VIDEO_SAVED, shouldShowVideoSaved)
         }
     }
 }
@@ -260,11 +275,3 @@ private fun PostRecordButton(
         Text(text = stringResource(labelRes), style = MaterialTheme.typography.labelLarge)
     }
 }
-
-private data class SnackbarVisualsWithIcon(
-    override val message: String,
-    @DrawableRes val iconRes: Int,
-    override val actionLabel: String? = null,
-    override val withDismissAction: Boolean = true,
-    override val duration: SnackbarDuration = SnackbarDuration.Short,
-) : SnackbarVisuals

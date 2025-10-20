@@ -39,6 +39,7 @@ import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
 import android.content.pm.SigningDetails;
 import android.content.pm.SigningInfo;
+import android.content.pm.ValidGeneralPurposeInfo;
 import android.content.pm.ValidPurposeInfo;
 import android.os.Debug;
 import android.os.PatternMatcher;
@@ -59,6 +60,7 @@ import com.android.internal.pm.pkg.component.ParsedPermission;
 import com.android.internal.pm.pkg.component.ParsedProvider;
 import com.android.internal.pm.pkg.component.ParsedService;
 import com.android.internal.pm.pkg.component.ParsedUsesPermission;
+import com.android.internal.pm.pkg.component.ParsedValidGeneralPurpose;
 import com.android.internal.pm.pkg.component.ParsedValidPurpose;
 import com.android.internal.pm.pkg.parsing.ParsingPackageHidden;
 import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
@@ -517,6 +519,7 @@ public class PackageInfoCommonUtils {
         pi.knownCerts = p.getKnownCerts();
         pi.requiresPurpose = p.isPurposeRequired();
         pi.requiresPurposeTargetSdkVersion = p.getRequiresPurposeTargetSdkVersion();
+        pi.requiresGeneralPurposeTargetSdkVersion = p.getRequiresGeneralPurposeTargetSdkVersion();
         for (ParsedValidPurpose validPurpose : p.getValidPurposes()) {
             if (validPurpose != null) {
                 pi.validPurposes =
@@ -524,6 +527,15 @@ public class PackageInfoCommonUtils {
                                 new ValidPurposeInfo(
                                         validPurpose.getName(),
                                         validPurpose.getMaxTargetSdkVersion()));
+            }
+        }
+        for (ParsedValidGeneralPurpose validGeneralPurpose : p.getValidGeneralPurposes()) {
+            if (validGeneralPurpose != null) {
+                pi.validGeneralPurposes =
+                        CollectionUtils.add(pi.validGeneralPurposes, validGeneralPurpose.getName(),
+                                new ValidGeneralPurposeInfo(
+                                        validGeneralPurpose.getName(),
+                                        validGeneralPurpose.getMaxTargetSdkVersion()));
             }
         }
 

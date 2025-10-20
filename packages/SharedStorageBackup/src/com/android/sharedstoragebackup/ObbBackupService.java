@@ -39,7 +39,7 @@ import com.android.internal.backup.IObbBackupService;
  * Service that the Backup Manager Services delegates OBB backup/restore operations to,
  * because those require accessing external storage.
  *
- * {@hide}
+ * @hide
  */
 public class ObbBackupService extends Service {
     static final String TAG = "ObbBackupService";

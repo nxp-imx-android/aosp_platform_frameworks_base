@@ -23,11 +23,13 @@ import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.view.IRemoteAnimationFinishedCallback
 import android.view.RemoteAnimationTarget
+import android.view.SurfaceControl
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.WindowManagerLockscreenVisibilityManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardDismissTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardShowWhileAwakeInteractor
@@ -37,6 +39,8 @@ import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.window.flags.Flags
 import com.android.wm.shell.keyguard.KeyguardTransitions
+import com.android.wm.shell.shared.compat.AnimatedSurface
+import com.android.wm.shell.shared.compat.SurfaceTransition.Params
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
 import org.junit.Rule
@@ -282,8 +286,9 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     fun remoteAnimationInstantlyFinished_ifDismissTransitionNotStarted() {
-        val mockedCallback = mock<IRemoteAnimationFinishedCallback>()
+        val mockedTransaction = mock<SurfaceControl.Transaction>()
 
         // Call the onAlreadyGone callback immediately.
         doAnswer { invocation -> (invocation.getArgument(1) as (() -> Unit)).invoke() }
@@ -294,17 +299,38 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
         // the callback immediately.
         whenever(deviceEntryInteractor.isDeviceEntered).thenReturn(MutableStateFlow(true))
 
-        whenever(selectedUserInteractor.getSelectedUserId()).thenReturn(-1)
+        whenever(selectedUserInteractor.getSelectedUserId()).thenReturn(0)
+        underTest.onKeyguardServiceSystemReady()
 
+        val params = mock<Params>()
+        whenever(params.apps).thenReturn(arrayOf(mock<AnimatedSurface>()))
+        whenever(params.startTransaction).thenReturn(mockedTransaction)
+        whenever(params.hasFinishedCallback()).thenReturn(true)
+
+        underTest.onKeyguardGoingAwayRemoteAnimationStart(params)
+
+        verify(params).invokeCallback(eq(mockedTransaction))
+    }
+
+    @Test
+    fun remoteAnimationNotInstantlyFinished_wmRequestsAnimationOnBoot() {
+        val mockedCallback = mock<IRemoteAnimationFinishedCallback>()
+
+        whenever(deviceEntryInteractor.isDeviceEntered).thenReturn(MutableStateFlow(false))
+        whenever(selectedUserInteractor.getSelectedUserId()).thenReturn(0)
         underTest.onKeyguardGoingAwayRemoteAnimationStart(
-            transit = 0,
-            apps = arrayOf(mock<RemoteAnimationTarget>()),
-            wallpapers = emptyArray(),
-            nonApps = emptyArray(),
-            finishedCallback = mockedCallback,
+            Params.create(
+                /* startTime= */ 0L,
+                /* fadeoutDuration= */ 0L,
+                /* transit= */ 0,
+                /* apps= */ arrayOf(mock<RemoteAnimationTarget>()),
+                /* wallpapers= */ emptyArray<RemoteAnimationTarget>(),
+                /* nonApps= */ emptyArray<RemoteAnimationTarget>(),
+                /* finishedCallback= */ mockedCallback,
+            )
         )
 
-        verify(mockedCallback).onAnimationFinished()
+        verify(mockedCallback, never()).onAnimationFinished()
         verifyNoMoreInteractions(mockedCallback)
     }
 

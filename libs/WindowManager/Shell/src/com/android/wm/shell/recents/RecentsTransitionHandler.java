@@ -30,7 +30,6 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.view.WindowManager.TRANSIT_SLEEP;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
-import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX;
 import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 import static android.window.TransitionInfo.FLAG_TRANSLUCENT;
@@ -41,6 +40,7 @@ import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSI
 import static com.android.wm.shell.shared.ShellSharedConstants.KEY_EXTRA_SHELL_CAN_HAND_OFF_ANIMATION;
 import static com.android.wm.shell.shared.split.SplitBounds.KEY_EXTRA_SPLIT_BOUNDS;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_END_RECENTS_TRANSITION;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_PIP_BOUNDS_CHANGE;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_REMOVE_PIP;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION;
 
@@ -80,7 +80,6 @@ import androidx.annotation.NonNull;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.IResultReceiver;
 import com.android.internal.protolog.ProtoLog;
-import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.common.DisplayController;
@@ -110,6 +109,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
 
     // A placeholder for a synthetic transition that isn't backed by a true system transition
     public static final IBinder SYNTHETIC_TRANSITION = new Binder();
+
+    private static final int CANCEL_WITH_SNAPSHOTS_FINISH_TIMEOUT_MS = 200;
 
     private final Transitions mTransitions;
     private final ShellTaskOrganizer mShellTaskOrganizer;
@@ -201,8 +202,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
     public IBinder startRecentsTransition(PendingIntent intent, Intent fillIn, Bundle options,
             @Nullable WindowContainerTransaction wct,
             IApplicationThread appThread, IRecentsAnimationRunner listener) {
-        // only care about latest one.
-        mAnimApp = appThread;
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                "startRecentsTransition");
 
         // TODO(b/366021931): Formalize this later
         final boolean isSyntheticRequest = options.getBoolean(
@@ -236,7 +237,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             transition = startSyntheticRecentsTransition(listener, displayId);
         } else {
             transition = startRealRecentsTransition(intent, fillIn, options, wct, listener,
-                    displayId);
+                    displayId, appThread);
         }
         return transition;
     }
@@ -247,7 +248,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
     private IBinder startSyntheticRecentsTransition(@NonNull IRecentsAnimationRunner listener,
             int displayId) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                "RecentsTransitionHandler.startRecentsTransition(synthetic)");
+                "RecentsTransitionHandler.startSyntheticRecentsTransition");
 
         // Create a new synthetic transition and start it immediately
         final RecentsController controller = new RecentsController(listener, displayId);
@@ -261,13 +262,14 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
      */
     private IBinder startRealRecentsTransition(PendingIntent intent, Intent fillIn, Bundle options,
             @Nullable WindowContainerTransaction requestWct, IRecentsAnimationRunner listener,
-            int displayId) {
+            int displayId, IApplicationThread appThread) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                "RecentsTransitionHandler.startRecentsTransition, displayId=%d", displayId);
+                "RecentsTransitionHandler.startRealRecentsTransition(): displayId=%d", displayId);
 
         final WindowContainerTransaction wct = requestWct != null
                 ? requestWct : new WindowContainerTransaction();
         wct.sendPendingIntent(intent, fillIn, options);
+        wct.setAnimationDelegate(appThread.asBinder());
 
         // Find the mixed handler which should handle this request (if we are in a state where a
         // mixed handler is needed).  This is slightly convoluted because starting the transition
@@ -281,10 +283,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 break;
             }
         }
-        final int transitionType = Flags.enableRecentsBookendTransition()
-                ? TRANSIT_START_RECENTS_TRANSITION
-                : TRANSIT_TO_FRONT;
-        final IBinder transition = mTransitions.startTransition(transitionType,
+        final IBinder transition = mTransitions.startTransition(TRANSIT_START_RECENTS_TRANSITION,
                 wct, mixer == null ? this : mixer);
         if (mixer != null) {
             setTransitionForMixer.accept(transition);
@@ -360,7 +359,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     "RecentsTransitionHandler.startAnimation: failed to start animation");
             return false;
         }
-        Transitions.setRunningRemoteTransitionDelegate(animApp);
+        Transitions.setRunningRemoteTransitionDelegate(transition);
         return true;
     }
 
@@ -471,8 +470,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         // next called.
         private Pair<int[], TaskSnapshot[]> mPendingPauseSnapshotsForCancel;
 
-        // Used to track a pending finish transition, this is only non-null if
-        // enableRecentsBookendTransition() is enabled
+        // Used to track a pending finish transition
         private IBinder mPendingFinishTransition;
         private IResultReceiver mPendingRunnerFinishCb;
         // This stores the pending finish transaction to merge with the actual finish transaction
@@ -519,8 +517,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             }
 
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                    "[%d] RecentsController.cancel: toHome=%b reason=%s",
-                    mInstanceId, toHome, reason);
+                    "[%d] RecentsController.cancel: toHome=%b withScreenshots=%b reason=%s",
+                    mInstanceId, toHome, withScreenshots, reason);
             if (mListener != null) {
                 if (withScreenshots) {
                     sendCancelWithSnapshots();
@@ -548,10 +546,28 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 }
             }
             if (mFinishCB != null) {
-                finishInner(toHome, false /* userLeave */, null /* finishCb */, "cancel");
+                if (withScreenshots) {
+                    // Launcher is supposed to apply screenshots, wait for the Recents to draw them,
+                    // and Binder call finish into the recents controller on its own.
+                    ProtoLog.d(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                            "[%d] RecentsController.cancel: waiting for Launcher to finish",
+                            mInstanceId);
+                    setupFinishOnTimeout(mTransition);
+                } else {
+                    finishInner(toHome, false /* userLeave */, null /* finishCb */, "cancel");
+                }
             } else {
                 cleanUp();
             }
+        }
+
+        private void setupFinishOnTimeout(IBinder transitionToken) {
+            mExecutor.executeDelayed(() -> {
+                if (mTransition == transitionToken && mFinishCB != null) {
+                    finishInner(true /* toHome */, false /* userLeave */, null /* finishCb */,
+                            "cancel-timeout");
+                }
+            }, CANCEL_WITH_SNAPSHOTS_FINISH_TIMEOUT_MS);
         }
 
         /**
@@ -1046,25 +1062,23 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 return;
             }
 
-            if (Flags.enableRecentsBookendTransition()) {
-                if (info.getType() == TRANSIT_END_RECENTS_TRANSITION) {
-                    // This is a pending finish, so merge the end transition to trigger completing
-                    // the cleanup of the recents transition
-                    ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                            "[%d] RecentsController.merge: TRANSIT_END_RECENTS_TRANSITION",
-                            mInstanceId);
-                    consumeMerge(info, startT, finishT, finishCallback);
-                    return;
-                } else if (mPendingFinishTransition != null) {
-                    // This transition is interrupting a pending finish that was already sent, so
-                    // pre-empt the pending finish transition since the state has already changed
-                    // in the core
-                    ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                            "[%d] RecentsController.merge: Awaiting TRANSIT_END_RECENTS_TRANSITION",
-                            mInstanceId);
-                    onFinishInner(null /* wct */);
-                    return;
-                }
+            if (info.getType() == TRANSIT_END_RECENTS_TRANSITION) {
+                // This is a pending finish, so merge the end transition to trigger completing
+                // the cleanup of the recents transition
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                        "[%d] RecentsController.merge: TRANSIT_END_RECENTS_TRANSITION",
+                        mInstanceId);
+                consumeMerge(info, startT, finishT, finishCallback);
+                return;
+            } else if (mPendingFinishTransition != null) {
+                // This transition is interrupting a pending finish that was already sent, so
+                // pre-empt the pending finish transition since the state has already changed
+                // in the core
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                        "[%d] RecentsController.merge: Awaiting TRANSIT_END_RECENTS_TRANSITION",
+                        mInstanceId);
+                onFinishInner(null /* wct */);
+                return;
             }
 
             if (info.getType() == TRANSIT_SLEEP) {
@@ -1075,10 +1089,11 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 return;
             }
 
-            if (info.getType() == TRANSIT_REMOVE_PIP) {
+            if (info.getType() == TRANSIT_REMOVE_PIP
+                    || info.getType() == TRANSIT_PIP_BOUNDS_CHANGE) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                         "[%d] RecentsController.merge: transit_remove_pip", mInstanceId);
-                // Cancel the merge if transition is removing PiP; PiP is on top of everything else.
+                // Cancel the merge if transition is resizing/removing PiP; PiP is always on top.
                 cancel(true /* toHome */, mWillFinishToHome /* withScreenshots */,
                         "transit_remove_pip");
                 return;
@@ -1109,7 +1124,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             for (int i = 0; i < info.getChanges().size(); ++i) {
                 final TransitionInfo.Change change = info.getChanges().get(i);
                 final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
-                if (Flags.fixBubblesToRecents() && taskInfo != null && mBubbleController.isPresent()
+                if (taskInfo != null && mBubbleController.isPresent()
                         && mBubbleController.get().hasStableBubbleForTask(taskInfo.taskId)) {
                     ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                             "[%d]   Canceling due to bubble task", mInstanceId);
@@ -1535,8 +1550,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 return;
             }
 
-            if (mFinishCB == null || (Flags.enableRecentsBookendTransition()
-                    && mPendingFinishTransition != null)) {
+            if (mFinishCB == null || mPendingFinishTransition != null) {
                 Slog.e(TAG, "Duplicate call to finish");
                 if (runnerFinishCb != null) {
                     try {
@@ -1557,21 +1571,6 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     && !mWillFinishToHome
                     && mPausingTasks != null
                     && mState == STATE_NORMAL;
-            if (!Flags.enableRecentsBookendTransition()) {
-                // This is only necessary when the recents transition is finished using a finishWCT,
-                // otherwise a new transition will notify the relevant observers
-                if (returningToApp && allAppsAreTranslucent(mPausingTasks)) {
-                    mHomeTransitionObserver.notifyHomeVisibilityChanged(true);
-                } else if (!toHome && mState == STATE_NEW_TASK
-                        && allAppsAreTranslucent(mOpeningTasks)) {
-                    // We are opening a translucent app. Launcher is still visible so we do nothing.
-                } else if (!toHome) {
-                    // For some transitions, we may have notified home activity that it became
-                    // visible. We need to notify the observer that we are no longer going home.
-                    mHomeTransitionObserver.notifyHomeVisibilityChanged(false);
-                }
-            }
-
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                     "[%d] RecentsController.finishInner: toHome=%b userLeave=%b "
                             + "willFinishToHome=%b state=%d hasPausingTasks=%b reason=%s",
@@ -1725,19 +1724,17 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             // We need to clear the WCT to send finishWCT=null for Recents.
                             wct.clear();
 
-                            if (Flags.enableRecentsBookendTransition()) {
-                                // Notify the mixers of the pending finish
-                                for (int i = 0; i < mMixers.size(); ++i) {
-                                    mMixers.get(i).handleFinishRecents(returningToApp, wct, t);
-                                }
-
-                                // In this case, we've already started the PIP transition, so we can
-                                // clean up immediately
-                                mPendingRunnerFinishCb = runnerFinishCb;
-                                mPendingFinishTransaction = t;
-                                onFinishInner(null);
-                                return;
+                            // Notify the mixers of the pending finish
+                            for (int i = 0; i < mMixers.size(); ++i) {
+                                mMixers.get(i).handleFinishRecents(returningToApp, wct, t);
                             }
+
+                            // In this case, we've already started the PIP transition, so we can
+                            // clean up immediately
+                            mPendingRunnerFinishCb = runnerFinishCb;
+                            mPendingFinishTransaction = t;
+                            onFinishInner(null);
+                            return;
                         }
                     }
                 }
@@ -1748,35 +1745,29 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 mMixers.get(i).handleFinishRecents(returningToApp, wct, t);
             }
 
-            if (Flags.enableRecentsBookendTransition()) {
-                if (!wct.isEmpty()) {
-                    if (requiresBookendTransition) {
-                        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                                "[%d] RecentsController.finishInner: "
-                                        + "Queuing TRANSIT_END_RECENTS_TRANSITION", mInstanceId);
-                        mPendingRunnerFinishCb = runnerFinishCb;
-                        mPendingFinishTransaction = t;
-                        mPendingFinishTransition = mTransitions.startTransition(
-                                TRANSIT_END_RECENTS_TRANSITION, wct,
-                                new PendingFinishTransitionHandler());
-                    } else {
-                        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                                "[%d] RecentsController.finishInner: Non-transition affecting wct",
-                                mInstanceId);
-                        mPendingRunnerFinishCb = runnerFinishCb;
-                        mPendingFinishTransaction = t;
-                        onFinishInner(wct);
-                    }
-                } else {
-                    // If there's no work to do, just go ahead and clean up
+            if (!wct.isEmpty()) {
+                if (requiresBookendTransition) {
+                    ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                            "[%d] RecentsController.finishInner: "
+                                    + "Queuing TRANSIT_END_RECENTS_TRANSITION", mInstanceId);
                     mPendingRunnerFinishCb = runnerFinishCb;
                     mPendingFinishTransaction = t;
-                    onFinishInner(null /* wct */);
+                    mPendingFinishTransition = mTransitions.startTransition(
+                            TRANSIT_END_RECENTS_TRANSITION, wct,
+                            new PendingFinishTransitionHandler());
+                } else {
+                    ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                            "[%d] RecentsController.finishInner: Non-transition affecting wct",
+                            mInstanceId);
+                    mPendingRunnerFinishCb = runnerFinishCb;
+                    mPendingFinishTransaction = t;
+                    onFinishInner(wct);
                 }
             } else {
+                // If there's no work to do, just go ahead and clean up
                 mPendingRunnerFinishCb = runnerFinishCb;
                 mPendingFinishTransaction = t;
-                onFinishInner(wct);
+                onFinishInner(null /* wct */);
             }
         }
 
@@ -1909,7 +1900,6 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         /**
          * A temporary transition handler used with the pending finish transition, which runs the
          * cleanup/finish logic once the pending transition is merged/handled.
-         * This is only initialized if Flags.enableRecentsBookendTransition() is enabled.
          */
         private class PendingFinishTransitionHandler implements Transitions.TransitionHandler {
             @Override

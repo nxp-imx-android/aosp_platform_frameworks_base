@@ -2,12 +2,31 @@ package: "com.android.server.accessibility"
 container: "system"
 
 # NOTE: Keep alphabetized to help limit merge conflicts from multiple simultaneous editors.
+flag {
+    name: "accessibility_debug_log_base_on_prop"
+    namespace: "accessibility"
+    description: "Enable/Disable debug log by setting property. Support per file LOG_TAG or all files by using TAG AccessibilityLogUtil"
+    bug: "438268325"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
 
 flag {
     name: "cleanup_a11y_overlays"
     namespace: "accessibility"
     description: "Removes all attached accessibility overlays when a service is removed."
     bug: "271490102"
+}
+
+flag {
+    name: "enable_autoclick_for_connected_displays"
+    namespace: "accessibility"
+    description: "Fix autoclick to work with connected displays."
+    bug: "407807880"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -32,6 +51,13 @@ flag {
 }
 
 flag {
+    name: "enable_color_correction_saturation"
+    namespace: "accessibility"
+    description: "Feature allows users to change color correction saturation for daltonizer."
+    bug: "322829049"
+}
+
+flag {
     name: "enable_low_vision_generic_feedback"
     namespace: "accessibility"
     description: "Use generic feedback for low vision."
@@ -43,6 +69,13 @@ flag {
     namespace: "accessibility"
     description: "Use HaTS for low vision feedback."
     bug: "397794341"
+}
+
+flag {
+    name: "enable_magnification_follows_mouse_with_pointer_motion_filter"
+    namespace: "accessibility"
+    description: "Whether to enable mouse following using pointer motion filter"
+    bug: "361817142"
 }
 
 flag {
@@ -67,17 +100,13 @@ flag {
 }
 
 flag {
-    name: "enable_magnification_follows_mouse_with_pointer_motion_filter"
+    name: "enable_magnification_ui_for_fullscreen_only_capability"
     namespace: "accessibility"
-    description: "Whether to enable mouse following using pointer motion filter"
-    bug: "361817142"
-}
-
-flag {
-    name: "enable_magnification_magnify_nav_bar_and_ime"
-    namespace: "accessibility"
-    description: "Whether to enable magnify navigation bar and ime on full screen"
-    bug: "342509709"
+    description: "Whether to enable magnification UI for fullscreen only capability"
+    bug: "363166354"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -105,6 +134,26 @@ flag {
 }
 
 flag {
+    name: "ignore_input_events_from_display_without_handler"
+    namespace: "accessibility"
+    description: "Fixes a bug in AccessibilityInputFilter so that input events from a display without an EventHandler are immediately passed through"
+    bug: "438713099"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "magnification_connection_approves_system_user"
+    namespace: "accessibility"
+    description: "Adds special case to automatically approve the system user when requesting connection"
+    bug: "402109095"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "manager_lifecycle_user_change"
     namespace: "accessibility"
     description: "Use A11yManagerService's Lifecycle to change users, instead of listening for user changed events."
@@ -115,20 +164,10 @@ flag {
 }
 
 flag {
-    name: "notify_qs_tile_changed_after_user_initialization"
+    name: "remove_all_shortcuts_when_force_stop_always_on_service"
     namespace: "accessibility"
-    description: "Pause SysUI notifying QuickSettings tiles changed until the user in AMS finishes initialization."
-    bug: "392560794"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "pointer_up_motion_event_in_touch_exploration"
-    namespace: "accessibility"
-    description: "Allows POINTER_UP motionEvents to trigger during touch exploration."
-    bug: "374930391"
+    description: "Remove all a11y shortcuts when always-on a11y services are force stop."
+    bug: "364691067"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -142,10 +181,13 @@ flag {
 }
 
 flag {
-    name: "enable_color_correction_saturation"
+    name: "shell_command_enforce_permission"
     namespace: "accessibility"
-    description: "Feature allows users to change color correction saturation for daltonizer."
-    bug: "322829049"
+    description: "Adds a permission check to 'cmd accessibility' shell command"
+    bug: "227200331"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -159,11 +201,8 @@ flag {
 }
 
 flag {
-    name: "touch_explorer_a11y_events_include_display_id"
+    name: "type_speech_state_change_allowed"
     namespace: "accessibility"
-    description: "When sending an A11y event, TouchExplorer will include its displayId"
-    bug: "431092453"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
+    description: "Allow global dispatch for TYPE_SPEECH_STATE_CHANGE"
+    bug: "444032233"
 }

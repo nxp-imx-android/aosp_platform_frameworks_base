@@ -83,7 +83,6 @@ android_test {
         "flag-junit",
         "flag-junit",
         "flickerlib-parsers",
-        "flickerlib-trace_processor_shell",
         "frameworks-base-testutils",
         "frameworks-core-util-lib",
         "guava",
@@ -868,4 +867,15 @@ test_module_config {
         "android.os.MessageStackTest",
         "android.os.WaitStateTest",
     ],
+}
+
+test_module_config {
+    name: "FrameworksCoreTests_companion_virtual",
+    base: "FrameworksCoreTests",
+    test_suites: [
+        "automotive-tests",
+        "device-platinum-tests",
+        "device-tests",
+    ],
+    include_filters: ["android.companion.virtual."],
 }

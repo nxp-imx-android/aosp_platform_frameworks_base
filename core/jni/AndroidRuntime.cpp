@@ -169,6 +169,9 @@ extern int register_android_os_UEventObserver(JNIEnv* env);
 extern int register_android_os_HidlMemory(JNIEnv* env);
 extern int register_android_os_MemoryFile(JNIEnv* env);
 extern int register_android_os_SharedMemory(JNIEnv* env);
+#ifdef ANDROID_NATIVE_FRAMEWORK_PROTOTYPE
+extern int register_android_os_NativeZygoteProcess(JNIEnv* env);
+#endif
 extern int register_android_service_DataLoaderService(JNIEnv* env);
 extern int register_android_os_incremental_IncrementalManager(JNIEnv* env);
 extern int register_android_net_LocalSocketImpl(JNIEnv* env);
@@ -201,6 +204,7 @@ extern int register_android_view_VelocityTracker(JNIEnv* env);
 extern int register_android_view_VerifiedKeyEvent(JNIEnv* env);
 extern int register_android_view_VerifiedMotionEvent(JNIEnv* env);
 extern int register_android_content_res_ObbScanner(JNIEnv* env);
+extern int register_android_content_res_CameraCompatibilityInfo(JNIEnv* env);
 extern int register_android_content_res_Configuration(JNIEnv* env);
 extern int register_android_animation_PropertyValuesHolder(JNIEnv *env);
 extern int register_android_security_Scrypt(JNIEnv *env);
@@ -1561,6 +1565,7 @@ static const RegJNIRec gRegJNI[] = {
         REG_JNI(register_android_content_StringBlock),
         REG_JNI(register_android_content_XmlBlock),
         REG_JNI(register_android_content_res_ApkAssets),
+        REG_JNI(register_android_content_res_CameraCompatibilityInfo),
         REG_JNI(register_android_content_res_ResourceTimer),
         REG_JNI(register_android_text_AndroidCharacter),
         REG_JNI(register_android_text_Hyphenator),
@@ -1631,6 +1636,9 @@ static const RegJNIRec gRegJNI[] = {
         REG_JNI(register_android_net_LocalSocketImpl),
         REG_JNI(register_android_os_MemoryFile),
         REG_JNI(register_android_os_SharedMemory),
+#ifdef ANDROID_NATIVE_FRAMEWORK_PROTOTYPE
+        REG_JNI(register_android_os_NativeZygoteProcess),
+#endif
         REG_JNI(register_android_os_incremental_IncrementalManager),
         REG_JNI(register_com_android_internal_content_om_OverlayConfig),
         REG_JNI(register_com_android_internal_content_om_OverlayManagerImpl),

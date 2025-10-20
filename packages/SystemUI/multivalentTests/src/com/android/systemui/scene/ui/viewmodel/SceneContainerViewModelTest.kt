@@ -16,6 +16,8 @@
 
 package com.android.systemui.scene.ui.viewmodel
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_OUTSIDE
@@ -23,15 +25,16 @@ import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.DefaultEdgeDetector
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.classifier.fakeFalsingManager
+import com.android.systemui.desktop.domain.interactor.enableUsingDesktopStatusBar
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.currentValue
-import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -157,14 +160,13 @@ class SceneContainerViewModelTest : SysuiTestCase() {
             fakeFalsingManager.setIsFalseTouch(true)
             val currentScene by collectLastValue(underTest.currentScene)
             fakeSceneDataSource.changeScene(toScene = Scenes.Lockscreen)
-            runCurrent()
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
 
             sceneContainerConfig.sceneKeys
                 .filter { it != currentScene }
                 .filter {
-                    // Moving to the Communal and Dream scene is not currently falsing protected.
-                    it != Scenes.Communal && it != Scenes.Dream
+                    // These scenes are not currently falsing protected.
+                    it != Scenes.Communal && it != Scenes.Dream && it != Scenes.Occluded
                 }
                 .forEach { toScene ->
                     assertWithMessage("Protected scene $toScene not properly protected")
@@ -179,7 +181,6 @@ class SceneContainerViewModelTest : SysuiTestCase() {
             fakeFalsingManager.setIsFalseTouch(true)
             val currentScene by collectLastValue(underTest.currentScene)
             fakeSceneDataSource.changeScene(toScene = Scenes.Lockscreen)
-            runCurrent()
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
 
             sceneContainerConfig.sceneKeys
@@ -200,7 +201,6 @@ class SceneContainerViewModelTest : SysuiTestCase() {
             fakeFalsingManager.setIsFalseTouch(true)
             val currentScene by collectLastValue(underTest.currentScene)
             fakeSceneDataSource.changeScene(toScene = Scenes.Gone)
-            runCurrent()
             assertThat(currentScene).isEqualTo(Scenes.Gone)
 
             sceneContainerConfig.sceneKeys
@@ -242,7 +242,6 @@ class SceneContainerViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val currentScene by collectLastValue(underTest.currentScene)
             fakeSceneDataSource.changeScene(toScene = Scenes.Gone)
-            runCurrent()
             assertThat(currentScene).isEqualTo(Scenes.Gone)
 
             sceneContainerConfig.overlayKeys.forEach { overlay ->
@@ -257,7 +256,6 @@ class SceneContainerViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val currentScene by collectLastValue(underTest.currentScene)
             fakeSceneDataSource.changeScene(toScene = Scenes.Lockscreen)
-            runCurrent()
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
 
             sceneContainerConfig.overlayKeys.forEach { overlay ->
@@ -273,7 +271,6 @@ class SceneContainerViewModelTest : SysuiTestCase() {
             fakeFalsingManager.setIsFalseTouch(true)
             val currentScene by collectLastValue(underTest.currentScene)
             fakeSceneDataSource.changeScene(toScene = Scenes.Lockscreen)
-            runCurrent()
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
 
             sceneContainerConfig.overlayKeys.forEach { overlay ->
@@ -289,7 +286,6 @@ class SceneContainerViewModelTest : SysuiTestCase() {
             fakeFalsingManager.setIsFalseTouch(true)
             val currentScene by collectLastValue(underTest.currentScene)
             fakeSceneDataSource.changeScene(toScene = Scenes.Gone)
-            runCurrent()
             assertThat(currentScene).isEqualTo(Scenes.Gone)
 
             sceneContainerConfig.overlayKeys.forEach { overlay ->
@@ -368,6 +364,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun getActionableContentKey_multipleOverlays_returnsTopOverlay() =
         kosmos.runTest {
             enableDualShade()
@@ -400,6 +397,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun edgeDetector_splitShade_usesDefaultEdgeDetector() =
         kosmos.runTest {
             val shadeMode by collectLastValue(shadeMode)
@@ -410,6 +408,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun edgeDetector_dualShade_narrowScreen_usesSceneContainerSwipeDetector() =
         kosmos.runTest {
             val shadeMode by collectLastValue(shadeMode)
@@ -421,6 +420,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun edgeDetector_dualShade_wideScreen_usesSceneContainerSwipeDetector() =
         kosmos.runTest {
             val shadeMode by collectLastValue(shadeMode)
@@ -429,5 +429,23 @@ class SceneContainerViewModelTest : SysuiTestCase() {
             assertThat(shadeMode).isEqualTo(ShadeMode.Dual)
             assertThat(underTest.swipeSourceDetector)
                 .isInstanceOf(SceneContainerSwipeDetector::class.java)
+        }
+
+    @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
+    fun onEmptySpaceMotionEvent_hidesDualShadeOverlays_onDesktopMode() =
+        kosmos.runTest {
+            // GIVEN a device in desktop mode with dual shade enabled and an overlay present
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            enableDualShade()
+            enableUsingDesktopStatusBar()
+            sceneInteractor.showOverlay(Overlays.QuickSettingsShade, "test")
+            assertThat(currentOverlays).isNotEmpty()
+
+            // WHEN a touch event occurs outside the shade window
+            underTest.onEmptySpaceMotionEvent(MotionEvent.obtain(0, 0, ACTION_OUTSIDE, 0f, 0f, 0))
+
+            // THEN the overlay is hidden
+            assertThat(currentOverlays).isEmpty()
         }
 }

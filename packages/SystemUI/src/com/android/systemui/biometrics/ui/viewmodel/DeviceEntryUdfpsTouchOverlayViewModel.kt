@@ -20,6 +20,10 @@ import android.security.Flags.secureLockDevice
 import com.android.keyguard.logging.DeviceEntryIconLogger
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor
 import com.android.systemui.keyguard.ui.viewmodel.DeviceEntryIconViewModel
+import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Overlays
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
 import com.android.systemui.statusbar.phone.SystemUIDialogManager
 import com.android.systemui.statusbar.phone.hideAffordancesRequest
@@ -42,12 +46,25 @@ constructor(
     alternateBouncerInteractor: AlternateBouncerInteractor,
     secureLockDeviceInteractor: Lazy<SecureLockDeviceInteractor>,
     systemUIDialogManager: SystemUIDialogManager,
+    sceneInteractor: Lazy<SceneInteractor>,
     logger: DeviceEntryIconLogger,
 ) : UdfpsTouchOverlayViewModel {
     private val deviceEntryViewAlphaIsMostlyVisible: Flow<Boolean> =
-        deviceEntryIconViewModel.deviceEntryViewAlpha
-            .map { it > ALLOW_TOUCH_ALPHA_THRESHOLD }
-            .distinctUntilChanged()
+        if (SceneContainerFlag.isEnabled) {
+            combine(
+                deviceEntryIconViewModel.isVisible,
+                sceneInteractor.get().currentScene,
+                sceneInteractor.get().currentOverlays,
+            ) { isVisible, currentScene, currentOverlays ->
+                isVisible &&
+                    currentScene == Scenes.Lockscreen &&
+                    !currentOverlays.contains(Overlays.Bouncer)
+            }
+        } else {
+            deviceEntryIconViewModel.deviceEntryViewAlpha
+                .map { it > ALLOW_TOUCH_ALPHA_THRESHOLD }
+                .distinctUntilChanged()
+        }
 
     override val shouldHandleTouches: Flow<Boolean> =
         combine(

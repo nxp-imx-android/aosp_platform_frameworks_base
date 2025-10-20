@@ -695,5 +695,7 @@ public class KeyStoreException extends Exception {
                         IS_SYSTEM_ERROR | IS_TRANSIENT_ERROR, ERROR_INTERNAL_SYSTEM_ERROR));
         sErrorCodeToFailureInfo.put(ResponseCode.INFO_NOT_AVAILABLE,
                 new PublicErrorInformation(IS_SYSTEM_ERROR, ERROR_INTERNAL_SYSTEM_ERROR));
+        // TODO(b/395078130): use ResponseCode.TOO_MANY_APP_KEYS when available everywhere
+        sErrorCodeToFailureInfo.put(29, new PublicErrorInformation(0, ERROR_INCORRECT_USAGE));
     }
 }

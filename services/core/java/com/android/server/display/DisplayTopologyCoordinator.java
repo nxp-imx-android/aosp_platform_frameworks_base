@@ -16,6 +16,7 @@
 
 package com.android.server.display;
 
+import android.annotation.Nullable;
 import android.hardware.display.DisplayTopology;
 import android.hardware.display.DisplayTopologyGraph;
 import android.os.Trace;
@@ -44,6 +45,7 @@ import java.util.function.Consumer;
 class DisplayTopologyCoordinator {
     private static final String TAG = "DisplayTopologyCoordinator";
 
+    @Nullable
     private static String getUniqueId(DisplayInfo info) {
         if (info.displayId == Display.DEFAULT_DISPLAY && info.type == Display.TYPE_INTERNAL) {
             return "internal";
@@ -151,12 +153,23 @@ class DisplayTopologyCoordinator {
      * @param info The new display info
      */
     void onDisplayChanged(DisplayInfo info) {
-        if (!isDisplayAllowedInTopology(info, /* shouldLog= */ false)) {
+        if (!isDisplayAllowedInTopology(info)) {
             return;
         }
         synchronized (mSyncRoot) {
-            if (mTopology.updateDisplay(info.displayId, info.logicalWidth, info.logicalHeight,
-                    info.logicalDensityDpi)) {
+            boolean topologyUpdated = mTopology.updateDisplay(info.displayId, info.logicalWidth,
+                    info.logicalHeight, info.logicalDensityDpi);
+
+            String uniqueId = getUniqueId(info);
+            String oldUniqueId = mDisplayIdToUniqueIdMapping.get(info.displayId);
+            if (uniqueId != null && oldUniqueId != null && !uniqueId.equals(oldUniqueId)) {
+                addDisplayIdMappingLocked(info);
+
+                // Restore the displays' positions by unique ID
+                topologyUpdated |= restoreTopologyLocked();
+            }
+
+            if (topologyUpdated) {
                 sendTopologyUpdateLocked();
             }
         }
@@ -272,8 +285,16 @@ class DisplayTopologyCoordinator {
     @GuardedBy("mSyncRoot")
     private void addDisplayIdMappingLocked(DisplayInfo info) {
         final String uniqueId = getUniqueId(info);
+        if (null == uniqueId) {
+            Slog.e(TAG, "Can't find uniqueId for displayId=" + info.displayId);
+            return;
+        }
         mUniqueIdToDisplayIdMapping.put(uniqueId, info.displayId);
         mDisplayIdToUniqueIdMapping.put(info.displayId, uniqueId);
+    }
+
+    boolean isDisplayAllowedInTopology(DisplayInfo info) {
+        return isDisplayAllowedInTopology(info, /* shouldLog= */ false);
     }
 
     private boolean isDisplayAllowedInTopology(DisplayInfo info, boolean shouldLog) {

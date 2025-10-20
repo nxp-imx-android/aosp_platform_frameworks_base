@@ -1,0 +1,16 @@
+package: "android.app.privatecompute.flags"
+container: "system"
+
+flag {
+    name: "enable_pcc_framework_support"
+    namespace: "private_compute"
+    description: "Enable framework support for private compute core"
+    bug: "430201829"
+}
+
+flag {
+    name: "adopt_pcc_framework_for_hotword_detection"
+    namespace: "private_compute"
+    description: "Adopt PCC framework for hotword detection"
+    bug: "451580175"
+}

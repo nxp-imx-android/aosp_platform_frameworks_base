@@ -2622,7 +2622,7 @@
              Note that even if no splashscreen content is set on the theme, the system may still
              show a splash screen using the other attributes on the theme, like the
              {@link android.R.attr#windowBackground}.
-             {@deprecated Use windowSplashscreenAnimatedIcon instead.}
+             @deprecated Use windowSplashscreenAnimatedIcon instead.
              -->
         <attr name="windowSplashscreenContent" format="reference" />
 
@@ -3333,10 +3333,10 @@
              <code>android:onClick="sayHello"</code>, you must declare a
              <code>public void sayHello(View v)</code> method of your context
              (typically, your Activity).
-             {@deprecated View actually traverses the Context
+             @deprecated View actually traverses the Context
              hierarchy looking for the relevant method, which is fragile (an intermediate
              ContextWrapper adding a same-named method would change behavior) and restricts
-             bytecode optimizers such as R8. Instead, use View.setOnClickListener.}-->
+             bytecode optimizers such as R8. Instead, use View.setOnClickListener. -->
         <attr name="onClick" format="string" />
 
         <!-- Defines over-scrolling behavior. This property is used only if the
@@ -4403,6 +4403,8 @@
             <flag name="typeContextClicked" value="0x00800000" />
             <!-- Receives {@link android.view.accessibility.AccessibilityEvent#TYPE_ASSIST_READING_CONTEXT} events. -->
             <flag name="typeAssistReadingContext" value="0x01000000" />
+            <!-- Receives {@link android.view.accessibility.AccessibilityEvent#TYPE_SPEECH_STATE_CHANGE} events. -->
+            <flag name="typeSpeechStateChange" value="0x02000000" />
             <!-- Receives {@link android.view.accessibility.AccessibilityEvent#TYPES_ALL_MASK} i.e. all events. -->
             <flag name="typeAllMask" value="0xffffffff" />
         </attr>
@@ -4515,7 +4517,7 @@
         <attr name="canRequestTouchExplorationMode" format="boolean" />
         <!-- Attribute whether the accessibility service wants to be able to request enhanced
              web accessibility enhancements.
-             {@deprecated Not used by the framework}
+             @deprecated Not used by the framework
          -->
         <attr name="canRequestEnhancedWebAccessibility" format="boolean" />
         <!-- Attribute whether the accessibility service wants to be able to request to
@@ -5411,7 +5413,7 @@
              does not implement android.graphics.drawable.Animatable.-->
         <attr name="interpolator" format="reference" />
         <!-- Timeout between frames of animation in milliseconds.
-             {@deprecated Not used by the framework}. -->
+             @deprecated Not used by the framework. -->
         <attr name="animationResolution" format="integer" />
         <!-- Defines if the associated drawables need to be mirrored when in RTL mode.
              Default is false. -->
@@ -5835,7 +5837,7 @@
         <attr name="scrollHorizontally" format="boolean" />
         <!-- Whether the characters of the field are displayed as
              password dots instead of themselves.
-             {@deprecated Use inputType instead.} -->
+             @deprecated Use inputType instead. -->
         <attr name="password" format="boolean" />
         <!-- Constrains the text to a single horizontally scrolling line
              instead of letting it wrap onto multiple lines, and advances
@@ -5845,10 +5847,10 @@
              The default value is false (multi-line wrapped text mode) for non-editable text, but if
              you specify any value for inputType, the default is true (single-line input field mode).
 
-             {@deprecated This attribute is deprecated. Use <code>maxLines</code> instead to change
+             @deprecated This attribute is deprecated. Use <code>maxLines</code> instead to change
              the layout of a static text, and use the <code>textMultiLine</code> flag in the
              inputType attribute instead for editable text views (if both singleLine and inputType
-             are supplied, the inputType flags will override the value of singleLine). } -->
+             are supplied, the inputType flags will override the value of singleLine). -->
         <attr name="singleLine" format="boolean" />
         <!-- Specifies whether the widget is enabled. The interpretation of the enabled state varies by subclass.
              For example, a non-enabled EditText prevents the user from editing the contained text, and
@@ -5884,7 +5886,7 @@
         <attr name="linksClickable" format="boolean" />
         <!-- If set, specifies that this TextView has a numeric input method.
              The default is false.
-             {@deprecated Use inputType instead.} -->
+             @deprecated Use inputType instead. -->
         <attr name="numeric">
             <!-- Input is numeric. -->
             <flag name="integer" value="0x01" />
@@ -5901,16 +5903,16 @@
         <attr name="digits" format="string" />
         <!-- If set, specifies that this TextView has a phone number input
              method. The default is false.
-             {@deprecated Use inputType instead.} -->
+             @deprecated Use inputType instead. -->
         <attr name="phoneNumber" format="boolean" />
         <!-- If set, specifies that this TextView should use the specified
              input method (specified by fully-qualified class name).
-             {@deprecated Use inputType instead.} -->
+             @deprecated Use inputType instead. -->
         <attr name="inputMethod" format="string" />
         <!-- If set, specifies that this TextView has a textual input method
              and should automatically capitalize what the user types.
              The default is "none".
-             {@deprecated Use inputType instead.} -->
+             @deprecated Use inputType instead. -->
         <attr name="capitalize">
             <!-- Don't automatically capitalize anything. -->
             <enum name="none" value="0" />
@@ -5924,13 +5926,13 @@
         <!-- If set, specifies that this TextView has a textual input method
              and automatically corrects some common spelling errors.
              The default is "false".
-             {@deprecated Use inputType instead.} -->
+             @deprecated Use inputType instead. -->
         <attr name="autoText" format="boolean" />
         <!-- If set, specifies that this TextView has an input method.
              It will be a textual one unless it has otherwise been specified.
              For TextView, this is false by default.  For EditText, it is
              true by default.
-             {@deprecated Use inputType instead.} -->
+             @deprecated Use inputType instead. -->
         <attr name="editable" format="boolean" />
         <!-- If set, the text view will include its current complete text
              inside of its frozen icicle in addition to meta-data such as
@@ -6383,7 +6385,7 @@
         <attr name="headerBackground" />
 
         <!-- The list year's text appearance in the list.
-             {@deprecated Use yearListTextColor. }-->
+             @deprecated Use yearListTextColor. -->
         <attr name="yearListItemTextAppearance" format="reference" />
         <!-- @hide The list year's text appearance in the list when activated. -->
         <attr name="yearListItemActivatedTextAppearance" format="reference" />
@@ -6401,28 +6403,28 @@
         </attr>
 
         <!-- The first year (inclusive), for example "1940".
-             {@deprecated Use minDate instead.} -->
+             @deprecated Use minDate instead. -->
         <attr name="startYear" format="integer" />
         <!-- The last year (inclusive), for example "2010".
-             {@deprecated Use maxDate instead.} -->
+             @deprecated Use maxDate instead. -->
         <attr name="endYear" format="integer" />
         <!-- The text appearance for the month (ex. May) in the selected date header.
-             {@deprecated Use headerTextColor instead.} -->
+             @deprecated Use headerTextColor instead. -->
         <attr name="headerMonthTextAppearance" format="reference" />
         <!-- The text appearance for the day of month (ex. 28) in the selected date header.
-             {@deprecated Use headerTextColor instead.} -->
+             @deprecated Use headerTextColor instead. -->
         <attr name="headerDayOfMonthTextAppearance" format="reference" />
         <!-- The text appearance for the year (ex. 2014) in the selected date header.
-             {@deprecated Use headerTextColor instead.} -->
+             @deprecated Use headerTextColor instead. -->
         <attr name="headerYearTextAppearance" format="reference" />
         <!-- The background color for the header's day of week.
-             {@deprecated No longer displayed.} -->
+             @deprecated No longer displayed. -->
         <attr name="dayOfWeekBackground" format="color" />
         <!-- The text color for the header's day of week.
-             {@deprecated No longer displayed.} -->
+             @deprecated No longer displayed. -->
         <attr name="dayOfWeekTextAppearance" format="reference" />
         <!-- The list year's selected circle color in the list.
-             {@deprecated No longer displayed.} -->
+             @deprecated No longer displayed. -->
         <attr name="yearListSelectorColor" format="color" />
 
         <!-- @hide Whether this time picker is being displayed within a dialog,
@@ -6752,10 +6754,10 @@
              @deprecated Use headerTextColor instead. -->
         <attr name="headerTimeTextAppearance" format="reference" />
         <!-- The color for the AM/PM selectors.
-             {@deprecated Use headerTextColor instead.}-->
+             @deprecated Use headerTextColor instead.-->
         <attr name="amPmTextColor" format="color" />
         <!-- The background color state list for the AM/PM selectors.
-             {@deprecated Use headerBackground instead.}-->
+             @deprecated Use headerBackground instead.-->
         <attr name="amPmBackgroundColor" format="color" />
 
         <!-- @hide Whether this time picker is being displayed within a dialog,
@@ -8284,8 +8286,8 @@
         <attr name="hint" />
         <!-- If supplied, this string will be displayed as the text of the "Search" button.
           <i>Optional attribute.</i>
-          {@deprecated This will create a non-standard UI appearance, because the search bar UI is
-                       changing to use only icons for its buttons.}-->
+          @deprecated This will create a non-standard UI appearance, because the search bar UI is
+                      changing to use only icons for its buttons. -->
         <attr name="searchButtonText" format="string" />
         <attr name="inputType" />
         <attr name="imeOptions" />
@@ -8616,10 +8618,10 @@
 
         <!-- Name of a method on the Context used to inflate the menu that will be
              called when the item is clicked.
-             {@deprecated Menu actually traverses the Context hierarchy looking for the
+             @deprecated Menu actually traverses the Context hierarchy looking for the
              relevant method, which is fragile (an intermediate ContextWrapper adding a
              same-named method would change behavior) and restricts bytecode optimizers
-             such as R8. Instead, use MenuItem.setOnMenuItemClickListener.} -->
+             such as R8. Instead, use MenuItem.setOnMenuItemClickListener. -->
         <attr name="onClick" />
 
         <!-- How this item should display in the Action Bar, if present. -->
@@ -8878,143 +8880,143 @@
     <declare-styleable name="VoiceInteractionSession">
     </declare-styleable>
 
-    <!-- {@deprecated Copy this definition into your own application project.} -->
+    <!-- @deprecated Copy this definition into your own application project. -->
     <declare-styleable name="KeyboardView">
         <!-- Default KeyboardView style.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="keyboardViewStyle" format="reference" />
 
         <!-- Image for the key. This image needs to be a StateListDrawable, with the following
              possible states: normal, pressed, checkable, checkable+pressed, checkable+checked,
              checkable+checked+pressed.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="keyBackground" format="reference" />
 
         <!-- Size of the text for character keys.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="keyTextSize" format="dimension" />
 
         <!-- Size of the text for custom keys with some text and no icon.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="labelTextSize" format="dimension" />
 
         <!-- Color to use for the label in a key.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="keyTextColor" format="color" />
 
         <!-- Layout resource for key press feedback.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="keyPreviewLayout" format="reference" />
 
         <!-- Vertical offset of the key press feedback from the key.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="keyPreviewOffset" format="dimension" />
 
         <!-- Height of the key press feedback popup.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="keyPreviewHeight" format="dimension" />
 
         <!-- Amount to offset the touch Y coordinate by, for bias correction.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="verticalCorrection" format="dimension" />
 
         <!-- Layout resource for popup keyboards.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="popupLayout" format="reference" />
 
-        <!-- {@deprecated Copy this definition into your own application project.} -->
+        <!-- @deprecated Copy this definition into your own application project. -->
         <attr name="shadowColor" />
-        <!-- {@deprecated Copy this definition into your own application project.} -->
+        <!-- @deprecated Copy this definition into your own application project. -->
         <attr name="shadowRadius" />
     </declare-styleable>
 
-    <!-- {@deprecated Copy this definition into your own application project.} -->
+    <!-- @deprecated Copy this definition into your own application project. -->
     <declare-styleable name="KeyboardViewPreviewState">
         <!-- State for {@link android.inputmethodservice.KeyboardView KeyboardView}
                 key preview background.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="state_long_pressable" format="boolean" />
     </declare-styleable>
 
-    <!-- {@deprecated Copy this definition into your own application project.} -->
+    <!-- @deprecated Copy this definition into your own application project. -->
     <declare-styleable name="Keyboard">
         <!-- Default width of a key, in pixels or percentage of display width.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="keyWidth" format="dimension|fraction" />
         <!-- Default height of a key, in pixels or percentage of display width.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="keyHeight" format="dimension|fraction" />
         <!-- Default horizontal gap between keys.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="horizontalGap" format="dimension|fraction" />
         <!-- Default vertical gap between rows of keys.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="verticalGap" format="dimension|fraction" />
     </declare-styleable>
 
-    <!-- {@deprecated Copy this definition into your own application project.} -->
+    <!-- @deprecated Copy this definition into your own application project. -->
     <declare-styleable name="Keyboard_Row">
         <!-- Row edge flags.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="rowEdgeFlags">
             <!-- Row is anchored to the top of the keyboard.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
             <flag name="top" value="4" />
             <!-- Row is anchored to the bottom of the keyboard.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
             <flag name="bottom" value="8" />
         </attr>
         <!-- Mode of the keyboard. If the mode doesn't match the
              requested keyboard mode, the row will be skipped.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="keyboardMode" format="reference" />
     </declare-styleable>
 
-    <!-- {@deprecated Copy this definition into your own application project.} -->
+    <!-- @deprecated Copy this definition into your own application project. -->
     <declare-styleable name="Keyboard_Key">
         <!-- The unicode value or comma-separated values that this key outputs.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="codes" format="integer|string" />
         <!-- The XML keyboard layout of any popup keyboard.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="popupKeyboard" format="reference" />
         <!-- The characters to display in the popup keyboard.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="popupCharacters" format="string" />
         <!-- Key edge flags.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="keyEdgeFlags">
             <!-- Key is anchored to the left of the keyboard.
-                 {@deprecated Copy this definition into your own application project.} -->
+                 @deprecated Copy this definition into your own application project. -->
             <flag name="left" value="1" />
             <!-- Key is anchored to the right of the keyboard.
-                 {@deprecated Copy this definition into your own application project.} -->
+                 @deprecated Copy this definition into your own application project. -->
             <flag name="right" value="2" />
         </attr>
         <!-- Whether this is a modifier key such as Alt or Shift.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="isModifier" format="boolean" />
         <!-- Whether this is a toggle key.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="isSticky" format="boolean" />
         <!-- Whether long-pressing on this key will make it repeat.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="isRepeatable" format="boolean" />
         <!-- The icon to show in the popup preview.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="iconPreview" format="reference" />
         <!-- The string of characters to output when this key is pressed.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="keyOutputText" format="string" />
         <!-- The label to display on the key.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="keyLabel" format="string" />
         <!-- The icon to display on the key instead of the label.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="keyIcon" format="reference" />
         <!-- Mode of the keyboard. If the mode doesn't match the
              requested keyboard mode, the key will be skipped.
-             {@deprecated Copy this definition into your own application project.} -->
+             @deprecated Copy this definition into your own application project. -->
         <attr name="keyboardMode" />
     </declare-styleable>
 
@@ -9518,11 +9520,11 @@
     <eat-comment />
     <declare-styleable name="GlowPadView">
         <!-- Reference to an array resource that be used as description for the targets around the circle.
-             {@deprecated Removed.} -->
+             @deprecated Removed. -->
         <attr name="targetDescriptions" format="reference" />
 
         <!-- Reference to an array resource that be used to announce the directions with targets around the circle.
-             {@deprecated Removed.} -->
+             @deprecated Removed. -->
         <attr name="directionDescriptions" format="reference" />
     </declare-styleable>
 
@@ -10308,8 +10310,8 @@
         <attr name="setupActivity" format="string" />
         <!-- Component name of an activity that allows the user to modify the settings for this
              service.
-             {@deprecated This value is deprecated and not used by the framework starting from API
-                         level 26. Use setupActivity instead.} -->
+             @deprecated This value is deprecated and not used by the framework starting from API
+                         level 26. Use setupActivity instead. -->
         <attr name="settingsActivity" />
         <!-- Attribute whether the TV input service can record programs. This value can be changed
              at runtime by calling
@@ -10560,22 +10562,22 @@
     </declare-styleable>
 
     <!-- Attributes that are read when parsing a &lt;fontfamily&gt; tag.
-         {@deprecated Use Jetpack Core library instead.}
+         @deprecated Use Jetpack Core library instead.
      -->
     <declare-styleable name="FontFamily">
         <!-- The authority of the Font Provider to be used for the request.
-             {@deprecated Use app:fontProviderAuthority with Jetpack Core library instead for
-              consistent behavior across all devices.}
+             @deprecated Use app:fontProviderAuthority with Jetpack Core library instead for
+             consistent behavior across all devices.
          -->
         <attr name="fontProviderAuthority" format="string" />
         <!-- The package for the Font Provider to be used for the request. This is used to verify
         the identity of the provider.
-             {@deprecated Use app:fontProviderPackage with Jetpack Core library instead.}
+             @deprecated Use app:fontProviderPackage with Jetpack Core library instead.
          -->
         <attr name="fontProviderPackage" format="string" />
         <!-- The query to be sent over to the provider. Refer to your font provider's documentation
         on the format of this string.
-             {@deprecated Use app:fontProviderQuery with Jetpack Core library instead.}
+             @deprecated Use app:fontProviderQuery with Jetpack Core library instead.
          -->
         <attr name="fontProviderQuery" format="string" />
         <!-- The sets of hashes for the certificates the provider should be signed with. This is
@@ -10583,7 +10585,7 @@
         part of the system image. This value may point to one list or a list of lists, where each
         individual list represents one collection of signature hashes. Refer to your font provider's
         documentation for these values.
-             {@deprecated Use app:fontProviderCerts with Jetpack Core library instead.}
+             @deprecated Use app:fontProviderCerts with Jetpack Core library instead.
          -->
         <attr name="fontProviderCerts" format="reference" />
         <!-- Provides the system font family name to check before downloading the font. For example

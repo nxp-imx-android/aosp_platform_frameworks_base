@@ -61,7 +61,7 @@ class RecentTaskViewModelTest : SysuiTestCase() {
             // Act
             val viewModel =
                 RecentTaskViewModel(
-                    task = fakeTask,
+                    model = fakeTask,
                     iconInteractor = screenCaptureIconInteractor,
                     labelInteractor = screenCaptureLabelInteractor,
                     thumbnailInteractor = screenCaptureThumbnailInteractor,
@@ -69,7 +69,7 @@ class RecentTaskViewModelTest : SysuiTestCase() {
 
             // Assert
             with(viewModel) {
-                assertThat(task).isEqualTo(fakeTask)
+                assertThat(model).isEqualTo(fakeTask)
                 assertThat(icon).isNull()
                 assertThat(label).isNull()
                 assertThat(thumbnail).isNull()
@@ -94,7 +94,7 @@ class RecentTaskViewModelTest : SysuiTestCase() {
             // Act
             val viewModel =
                 RecentTaskViewModel(
-                    task = fakeTask,
+                    model = fakeTask,
                     iconInteractor = screenCaptureIconInteractor,
                     labelInteractor = screenCaptureLabelInteractor,
                     thumbnailInteractor = screenCaptureThumbnailInteractor,
@@ -102,7 +102,7 @@ class RecentTaskViewModelTest : SysuiTestCase() {
 
             // Assert
             with(viewModel) {
-                assertThat(task).isEqualTo(fakeTask)
+                assertThat(model).isEqualTo(fakeTask)
                 assertThat(icon).isNull()
                 assertThat(label).isNull()
                 assertThat(thumbnail).isNull()
@@ -125,13 +125,13 @@ class RecentTaskViewModelTest : SysuiTestCase() {
                 )
             val viewModel =
                 RecentTaskViewModel(
-                    task = fakeTask,
+                    model = fakeTask,
                     iconInteractor = screenCaptureIconInteractor,
                     labelInteractor = screenCaptureLabelInteractor,
                     thumbnailInteractor = screenCaptureThumbnailInteractor,
                 )
             with(viewModel) {
-                assertThat(task).isEqualTo(fakeTask)
+                assertThat(model).isEqualTo(fakeTask)
                 assertThat(icon).isNull()
                 assertThat(label).isNull()
                 assertThat(thumbnail).isNull()
@@ -143,7 +143,7 @@ class RecentTaskViewModelTest : SysuiTestCase() {
 
             // Assert
             with(viewModel) {
-                assertThat(task).isEqualTo(fakeTask)
+                assertThat(model).isEqualTo(fakeTask)
                 assertThat(icon).isEqualTo(fakeScreenCaptureIconRepository.fakeIcon)
                 assertThat(label).isEqualTo(fakeScreenCaptureLabelRepository.fakeLabel)
                 assertThat(thumbnail).isEqualTo(fakeScreenCaptureThumbnailRepository.fakeThumbnail)

@@ -17,14 +17,17 @@
 package android.companion.datatransfer.continuity;
 
 import android.companion.datatransfer.continuity.IHandoffRequestCallback;
+import android.companion.datatransfer.continuity.IHandoffFeatureStateListener;
 import android.companion.datatransfer.continuity.IRemoteTaskListener;
 import android.companion.datatransfer.continuity.RemoteTask;
 
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
+import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.NonNull;
+import android.annotation.UserHandleAware;
 import android.content.Context;
 import android.os.RemoteException;
 import android.util.ArrayMap;
@@ -35,15 +38,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.Executor;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 /**
- * This class facilitates task continuity between devices owned by the same user.
- * This includes synchronizing lists of open tasks between a user's devices, as well as requesting
- * to hand off a task from one device to another. Handing a task off to a device will resume the
- * application on the receiving device, preserving the state of the task.
+ * This class facilitates task continuity between devices owned by the same user. This includes
+ * synchronizing lists of open tasks between a user's devices, as well as requesting to hand off a
+ * task from one device to another. Handing a task off to a device will resume the application on
+ * the receiving device, preserving the state of the task.
  *
  * @hide
  */
@@ -54,24 +58,59 @@ public class TaskContinuityManager {
     private final Context mContext;
     private final ITaskContinuityManager mService;
 
-    private final RemoteTaskListenerHolder mListenerHolder;
+    private final Map<Integer, RemoteTaskListenerHolder> mRemoteTaskListenerHolderByUserId;
+    private final Map<Integer, HandoffFeatureStateListenerHolder>
+            mHandoffFeatureStateListenerHolderForUsers;
 
     /** @hide */
-    @IntDef(prefix = {"HANDOFF_REQUEST_RESULT"}, value = {
-        HANDOFF_REQUEST_RESULT_SUCCESS,
-        HANDOFF_REQUEST_RESULT_FAILURE_TASK_NOT_FOUND,
-        HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK,
-        HANDOFF_REQUEST_RESULT_FAILURE_SENDER_LOST_CONNECTION,
-        HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT,
-        HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND,
-    })
+    @IntDef(
+            prefix = {"HANDOFF_AVAILABILITY_STATUS"},
+            value = {
+                HANDOFF_AVAILABILITY_STATUS_AVAILABLE,
+                HANDOFF_AVAILABILITY_STATUS_DISABLED_BY_POLICY,
+                HANDOFF_AVAILABILITY_STATUS_UNSUPPORTED_HARDWARE,
+            })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface HandoffAvailabilityStatus {}
 
+    /**
+     * Indicates that handoff is available for the current device. The current device will only
+     * display tasks on remote devices when Handoff is available and enabled, and is only capable of
+     * both receiving and sending Handoff requests when available and enabled.
+     *
+     * @see #enableHandoffForDevice(boolean)
+     */
+    public static final int HANDOFF_AVAILABILITY_STATUS_AVAILABLE = 0;
+
+    /**
+     * Indicates that handoff is unavailable for the current device because it is blocked
+     * system-wide by an enterprise policy.
+     */
+    public static final int HANDOFF_AVAILABILITY_STATUS_DISABLED_BY_POLICY = 1;
+
+    /**
+     * Indicates that handoff is unavailable for the current device because it is not supported on
+     * the hardware.
+     */
+    public static final int HANDOFF_AVAILABILITY_STATUS_UNSUPPORTED_HARDWARE = 2;
+
+    /** @hide */
+    @IntDef(
+            prefix = {"HANDOFF_REQUEST_RESULT"},
+            value = {
+                HANDOFF_REQUEST_RESULT_SUCCESS,
+                HANDOFF_REQUEST_RESULT_FAILURE_TASK_NOT_FOUND,
+                HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK,
+                HANDOFF_REQUEST_RESULT_FAILURE_SENDER_LOST_CONNECTION,
+                HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT,
+                HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND,
+                HANDOFF_REQUEST_RESULT_FAILURE_HANDOFF_DISABLED,
+                HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR,
+            })
     @Retention(RetentionPolicy.SOURCE)
     public @interface HandoffRequestResultCode {}
 
-    /**
-     * Indicate a request for handoff completed successfully.
-     */
+    /** Indicate a request for handoff completed successfully. */
     public static final int HANDOFF_REQUEST_RESULT_SUCCESS = 0;
 
     /**
@@ -98,9 +137,7 @@ public class TaskContinuityManager {
      */
     public static final int HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT = 4;
 
-    /**
-     * Indicates a request for handoff failed because the remote device was not found.
-     */
+    /** Indicates a request for handoff failed because the remote device was not found. */
     public static final int HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND = 5;
 
     /**
@@ -109,19 +146,20 @@ public class TaskContinuityManager {
      */
     public static final int HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR = 6;
 
+    /** Indicates a request for handoff failed because handoff is disabled on the current device. */
+    public static final int HANDOFF_REQUEST_RESULT_FAILURE_HANDOFF_DISABLED = 7;
+
     /** @hide */
     public TaskContinuityManager(
-        @NonNull Context context,
-        @NonNull ITaskContinuityManager service) {
+            @NonNull Context context, @NonNull ITaskContinuityManager service) {
 
         mContext = context;
         mService = service;
-        mListenerHolder = new RemoteTaskListenerHolder(service);
+        mRemoteTaskListenerHolderByUserId = new HashMap<>();
+        mHandoffFeatureStateListenerHolderForUsers = new HashMap<>();
     }
 
-    /**
-     * Listener to be notified when the list of remote tasks changes.
-    */
+    /** Listener to be notified when the list of remote tasks changes. */
     public interface RemoteTaskListener {
         /**
          * Invoked when the list of remote tasks changes.
@@ -132,8 +170,23 @@ public class TaskContinuityManager {
     }
 
     /**
-     * Callback to be invoked when a handoff request is completed.
+     * Listener to the feature state of Handoff on the current device. Feature state includes
+     * whether Handoff is available on the current device, as well is if it is currently enabled.
+     * Handoff may be unavailable on the device due to unsupported hardware or enterprise policy.
+     * See #enableHandoffForDevice(boolean) for more details.
      */
+    public interface HandoffFeatureStateListener {
+        /**
+         * Invoked when the feature state of Handoff changes.
+         *
+         * @param availabilityStatus The availability status of Handoff on the current device.
+         * @param enabled Whether Handoff is enabled on the current device.
+         */
+        void onHandoffFeatureStateChanged(
+                @HandoffAvailabilityStatus int availabilityStatus, boolean enabled);
+    }
+
+    /** Callback to be invoked when a handoff request is completed. */
     public interface HandoffRequestCallback {
 
         /**
@@ -144,9 +197,7 @@ public class TaskContinuityManager {
          * @param resultCode The result code of the handoff request.
          */
         void onHandoffRequestFinished(
-            int associationId,
-            int remoteTaskId,
-            @HandoffRequestResultCode int resultCode);
+                int associationId, int remoteTaskId, @HandoffRequestResultCode int resultCode);
     }
 
     /**
@@ -154,34 +205,54 @@ public class TaskContinuityManager {
      *
      * @param executor The executor to be used to invoke the listener.
      * @param listener The listener to be registered.
+     * @throws SecurityException if the caller does not hold the {@link
+     *     android.Manifest.permission#READ_REMOTE_TASKS} permission.
      */
+    @RequiresPermission(android.Manifest.permission.READ_REMOTE_TASKS)
+    @UserHandleAware
     public void registerRemoteTaskListener(
-        @NonNull Executor executor,
-        @NonNull RemoteTaskListener listener) {
+            @NonNull Executor executor, @NonNull RemoteTaskListener listener) {
 
         Objects.requireNonNull(executor);
         Objects.requireNonNull(listener);
 
         try {
-            mListenerHolder.registerListener(executor, listener);
-            // TODO: joeantonetti - Send an initial notification to the listener after it's
-            // attached.
+            synchronized (mRemoteTaskListenerHolderByUserId) {
+                int userId = mContext.getUserId();
+                if (!mRemoteTaskListenerHolderByUserId.containsKey(userId)) {
+                    mRemoteTaskListenerHolderByUserId.put(
+                            userId, new RemoteTaskListenerHolder(userId, mService));
+                }
+
+                mRemoteTaskListenerHolderByUserId.get(userId).registerListener(executor, listener);
+            }
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
     }
 
     /**
-     * Unregisters a listener previously registered with
-     * {@link #registerRemoteTaskListener}.
+     * Unregisters a listener previously registered with {@link #registerRemoteTaskListener}.
      *
      * @param listener The listener to be unregistered.
+     * @throws SecurityException if the caller does not hold the {@link
+     *     android.Manifest.permission#READ_REMOTE_TASKS} permission.
      */
+    @RequiresPermission(android.Manifest.permission.READ_REMOTE_TASKS)
+    @UserHandleAware
     public void unregisterRemoteTaskListener(@NonNull RemoteTaskListener listener) {
         Objects.requireNonNull(listener);
 
         try {
-            mListenerHolder.unregisterListener(listener);
+            synchronized (mRemoteTaskListenerHolderByUserId) {
+                int userId = mContext.getUserId();
+                if (!mRemoteTaskListenerHolderByUserId.containsKey(userId)) {
+                    mRemoteTaskListenerHolderByUserId.put(
+                            userId, new RemoteTaskListenerHolder(userId, mService));
+                }
+
+                mRemoteTaskListenerHolderByUserId.get(userId).unregisterListener(listener);
+            }
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -191,25 +262,110 @@ public class TaskContinuityManager {
      * Requests a handoff of the specified remote task to the current device.
      *
      * @param associationId The ID of the association to which the remote device is connected. This
-     *                      is the same ID returned by {@link RemoteTask#getDeviceId()}.
+     *     is the same ID returned by {@link RemoteTask#getDeviceId()}.
      * @param remoteTaskId The remote task to hand off.
      * @param executor The executor to be used to invoke the callback.
      * @param callback The callback to be invoked when the handoff request is finished.
+     * @throws SecurityException if the caller does not hold the {@link
+     *     android.Manifest.permission#REQUEST_TASK_HANDOFF} permission.
      */
+    @RequiresPermission(android.Manifest.permission.REQUEST_TASK_HANDOFF)
+    @UserHandleAware
     public void requestHandoff(
-        int associationId,
-        int remoteTaskId,
-        @NonNull Executor executor,
-        @NonNull HandoffRequestCallback callback) {
+            int associationId,
+            int remoteTaskId,
+            @NonNull Executor executor,
+            @NonNull HandoffRequestCallback callback) {
 
         Objects.requireNonNull(executor);
         Objects.requireNonNull(callback);
 
         try {
-            HandoffRequestCallbackHolder callbackHolder
-                = new HandoffRequestCallbackHolder(executor, callback);
+            HandoffRequestCallbackHolder callbackHolder =
+                    new HandoffRequestCallbackHolder(executor, callback);
 
-            mService.requestHandoff(associationId, remoteTaskId, callbackHolder);
+            int userId = mContext.getUserId();
+            mService.requestHandoff(userId, associationId, remoteTaskId, callbackHolder);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Enables or disables handoff for the current device if Handoff is available on the current
+     * device. If Handoff is not available, this operation will have no effect. By default, Handoff
+     * is enabled. This method will also notify registered listeners from {@link
+     * #registerHandoffFeatureStateListener} if the enablement status has changed.
+     *
+     * @param enabled Whether handoff should be enabled or disabled.
+     * @throws SecurityException if the caller does not hold the {@link
+     *     android.Manifest.permission#MODIFY_HANDOFF_SETTINGS} permission.
+     */
+    @UserHandleAware
+    @RequiresPermission(android.Manifest.permission.MODIFY_HANDOFF_SETTINGS)
+    public void enableHandoffForDevice(boolean enabled) {
+        try {
+            int userId = mContext.getUserId();
+            mService.enableHandoffForDevice(userId, enabled);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Registers a listener to be notified when the handoff's feature state changes.
+     *
+     * @param executor The executor to be used to invoke the listener.
+     * @param listener The listener to be registered.
+     * @throws SecurityException if the caller does not hold the {@link
+     *     android.Manifest.permission#READ_HANDOFF_SETTINGS} permission.
+     */
+    @RequiresPermission(android.Manifest.permission.READ_HANDOFF_SETTINGS)
+    @UserHandleAware
+    public void registerHandoffFeatureStateListener(
+            @NonNull Executor executor, @NonNull HandoffFeatureStateListener listener) {
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(listener);
+
+        try {
+            synchronized (mHandoffFeatureStateListenerHolderForUsers) {
+                int userId = mContext.getUserId();
+                if (!mHandoffFeatureStateListenerHolderForUsers.containsKey(userId)) {
+                    mHandoffFeatureStateListenerHolderForUsers.put(
+                            userId, new HandoffFeatureStateListenerHolder(userId, mService));
+                }
+                mHandoffFeatureStateListenerHolderForUsers
+                        .get(userId)
+                        .registerListener(executor, listener);
+            }
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Unregisters a listener previously registered with {@link
+     * #registerHandoffFeatureStateListener}.
+     *
+     * @param listener The listener to be unregistered.
+     * @throws SecurityException if the caller does not hold the {@link
+     *     android.Manifest.permission#READ_HANDOFF_SETTINGS} permission.
+     */
+    @RequiresPermission(android.Manifest.permission.READ_HANDOFF_SETTINGS)
+    @UserHandleAware
+    public void unregisterHandoffFeatureStateListener(
+            @NonNull HandoffFeatureStateListener listener) {
+        Objects.requireNonNull(listener);
+
+        try {
+            synchronized (mHandoffFeatureStateListenerHolderForUsers) {
+                int userId = mContext.getUserId();
+                if (!mHandoffFeatureStateListenerHolderForUsers.containsKey(userId)) {
+                    mHandoffFeatureStateListenerHolderForUsers.put(
+                            userId, new HandoffFeatureStateListenerHolder(userId, mService));
+                }
+                mHandoffFeatureStateListenerHolderForUsers.get(userId).unregisterListener(listener);
+            }
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -220,8 +376,7 @@ public class TaskContinuityManager {
         private final HandoffRequestCallback mCallback;
 
         HandoffRequestCallbackHolder(
-            @NonNull Executor executor,
-            @NonNull HandoffRequestCallback callback) {
+                @NonNull Executor executor, @NonNull HandoffRequestCallback callback) {
 
             mExecutor = executor;
             mCallback = callback;
@@ -229,53 +384,61 @@ public class TaskContinuityManager {
 
         @Override
         public void onHandoffRequestFinished(
-            int associationId,
-            int remoteTaskId,
-            @HandoffRequestResultCode int resultCode) throws RemoteException {
+                int associationId, int remoteTaskId, @HandoffRequestResultCode int resultCode)
+                throws RemoteException {
             mExecutor.execute(
-                () -> mCallback.onHandoffRequestFinished(associationId, remoteTaskId, resultCode));
+                    () ->
+                            mCallback.onHandoffRequestFinished(
+                                    associationId, remoteTaskId, resultCode));
         }
     }
 
-    /**
-     * Helper class which manages registered listeners and proxies them behind a single
-     * IRemoteTaskListener, which is lazily registered with ITaskContinuityManager if there is
-     * a single registered listener.
-     */
-    private final class RemoteTaskListenerHolder extends IRemoteTaskListener.Stub {
+    private final class HandoffFeatureStateListenerHolder
+            extends IHandoffFeatureStateListener.Stub {
+
+        private final int mUserId;
+        private final ITaskContinuityManager mService;
 
         @GuardedBy("mListeners")
-        private final Map<RemoteTaskListener, Executor> mListeners = new ArrayMap<>();
+        private final Map<HandoffFeatureStateListener, Executor> mListeners = new ArrayMap<>();
 
         @GuardedBy("mListeners")
         private boolean mRegistered = false;
 
         @GuardedBy("mListeners")
-        private final List<RemoteTask> mLastReceivedRemoteTasks = new ArrayList<>();
+        private @HandoffAvailabilityStatus int mLastReceivedAvailabilityStatus =
+                HANDOFF_AVAILABILITY_STATUS_AVAILABLE;
 
-        public RemoteTaskListenerHolder(ITaskContinuityManager service) {}
+        @GuardedBy("mListeners")
+        private boolean mLastReceivedEnabled = false;
+
+        public HandoffFeatureStateListenerHolder(int userId, ITaskContinuityManager service) {
+            mUserId = userId;
+            mService = service;
+        }
 
         /**
-         * Registers a listener to be notified of remote task changes.
+         * Registers a listener to be notified of Handoff feature state changes.
          *
          * @param executor The executor on which the listener should be invoked.
          * @param listener The listener to register.
          */
         public void registerListener(
-            @NonNull Executor executor,
-            @NonNull RemoteTaskListener listener) throws RemoteException {
+                @NonNull Executor executor, @NonNull HandoffFeatureStateListener listener)
+                throws RemoteException {
 
             Objects.requireNonNull(executor);
             Objects.requireNonNull(listener);
 
-            synchronized(mListeners) {
+            synchronized (mListeners) {
                 if (!mRegistered) {
-                    mService.registerRemoteTaskListener(this);
+                    mService.registerHandoffFeatureStateListener(mUserId, this);
                     mRegistered = true;
                 } else {
-                    executor.execute(() ->
-                        listener.onRemoteTasksChanged(mLastReceivedRemoteTasks)
-                    );
+                    executor.execute(
+                            () ->
+                                    listener.onHandoffFeatureStateChanged(
+                                            mLastReceivedAvailabilityStatus, mLastReceivedEnabled));
                 }
 
                 mListeners.put(listener, executor);
@@ -287,23 +450,112 @@ public class TaskContinuityManager {
          *
          * @param listener The listener to unregister.
          */
-        public void unregisterListener(
-            @NonNull RemoteTaskListener listener) throws RemoteException {
+        public void unregisterListener(@NonNull HandoffFeatureStateListener listener)
+                throws RemoteException {
 
             Objects.requireNonNull(listener);
 
-            synchronized(mListeners) {
+            synchronized (mListeners) {
                 mListeners.remove(listener);
                 if (mListeners.isEmpty() && mRegistered) {
                     mRegistered = false;
-                    mService.unregisterRemoteTaskListener(this);
+                    mService.unregisterHandoffFeatureStateListener(mUserId, this);
+                }
+            }
+        }
+
+        @Override
+        public void onHandoffFeatureStateChanged(
+                @HandoffAvailabilityStatus int availabilityStatus, boolean enabled)
+                throws RemoteException {
+            synchronized (mListeners) {
+                mLastReceivedAvailabilityStatus = availabilityStatus;
+                mLastReceivedEnabled = enabled;
+
+                for (Map.Entry<HandoffFeatureStateListener, Executor> entry :
+                        mListeners.entrySet()) {
+                    HandoffFeatureStateListener listener = entry.getKey();
+                    Executor executor = entry.getValue();
+                    executor.execute(
+                            () ->
+                                    listener.onHandoffFeatureStateChanged(
+                                            mLastReceivedAvailabilityStatus, mLastReceivedEnabled));
+                }
+            }
+        }
+    }
+
+    /**
+     * Helper class which manages registered listeners and proxies them behind a single
+     * IRemoteTaskListener, which is lazily registered with ITaskContinuityManager if there is a
+     * single registered listener.
+     */
+    private final class RemoteTaskListenerHolder extends IRemoteTaskListener.Stub {
+
+        private final int mUserId;
+        private final ITaskContinuityManager mService;
+
+        @GuardedBy("mListeners")
+        private final Map<RemoteTaskListener, Executor> mListeners = new ArrayMap<>();
+
+        @GuardedBy("mListeners")
+        private boolean mRegistered = false;
+
+        @GuardedBy("mListeners")
+        private final List<RemoteTask> mLastReceivedRemoteTasks = new ArrayList<>();
+
+        public RemoteTaskListenerHolder(int userId, ITaskContinuityManager service) {
+            mUserId = userId;
+            mService = service;
+        }
+
+        /**
+         * Registers a listener to be notified of remote task changes.
+         *
+         * @param executor The executor on which the listener should be invoked.
+         * @param listener The listener to register.
+         */
+        public void registerListener(
+                @NonNull Executor executor, @NonNull RemoteTaskListener listener)
+                throws RemoteException {
+
+            Objects.requireNonNull(executor);
+            Objects.requireNonNull(listener);
+
+            synchronized (mListeners) {
+                if (!mRegistered) {
+                    mService.registerRemoteTaskListener(mUserId, this);
+                    mRegistered = true;
+                } else {
+                    executor.execute(() -> listener.onRemoteTasksChanged(mLastReceivedRemoteTasks));
+                }
+
+                mListeners.put(listener, executor);
+            }
+        }
+
+        /**
+         * Unregisters a previously registered listener.
+         *
+         * @param listener The listener to unregister.
+         */
+        public void unregisterListener(@NonNull RemoteTaskListener listener)
+                throws RemoteException {
+
+            Objects.requireNonNull(listener);
+
+            synchronized (mListeners) {
+                mListeners.remove(listener);
+                if (mListeners.isEmpty() && mRegistered) {
+                    mRegistered = false;
+                    mService.unregisterRemoteTaskListener(mUserId, this);
                 }
             }
         }
 
         @Override
         public void onRemoteTasksChanged(List<RemoteTask> remoteTasks) throws RemoteException {
-            synchronized(mListeners) {
+            synchronized (mListeners) {
                 mLastReceivedRemoteTasks.clear();
                 mLastReceivedRemoteTasks.addAll(remoteTasks);
 

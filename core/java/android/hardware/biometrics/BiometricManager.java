@@ -688,7 +688,8 @@ public class BiometricManager {
             getEnrollmentStatus() {
         try {
             final List<BiometricEnrollmentStatusInternal> statusInternalList =
-                    mService.getEnrollmentStatusList(mContext.getOpPackageName());
+                    mService.getEnrollmentStatusList(mContext.getUserId(),
+                            mContext.getOpPackageName());
             return convertBiometricEnrollmentStatusInternalToMap(statusInternalList);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();

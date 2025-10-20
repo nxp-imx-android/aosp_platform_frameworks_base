@@ -30,13 +30,6 @@ flag {
 }
 
 flag {
-    name: "enable_le_audio_qr_code_private_broadcast_sharing"
-    namespace: "pixel_cross_device_control"
-    description: "Gates whether to enable LE audio private broadcast sharing via QR code"
-    bug: "388674074"
-}
-
-flag {
     name: "enable_determining_advanced_details_header_with_metadata"
     namespace: "pixel_cross_device_control"
     description: "Use metadata instead of device type to determine whether a bluetooth device should use advanced details header."
@@ -83,6 +76,13 @@ flag {
     is_exported: true
     bug: "323791114"
     is_exported: true
+}
+
+flag {
+  name: "metadata_refactor"
+  namespace: "android_settings"
+  description: "Flag for refactoring the infrastructure for a clearer separation between get, device state and metadata"
+  bug: "447037228"
 }
 
 flag {
@@ -150,6 +150,13 @@ flag {
     namespace: "accessibility"
     description: "Enable the ambient volume control in device details and hearing devices dialog."
     bug: "357878944"
+}
+
+flag {
+    name: "hearing_devices_separated_preset_control"
+    namespace: "accessibility"
+    description: "Enable the separated preset control in device details and hearing devices dialog."
+    bug: "417628947"
 }
 
 flag {
@@ -278,4 +285,14 @@ flag {
     namespace: "cross_device_experiences"
     description: "Enable Bluetooth problem detection and diagnosis"
     bug: "411309851"
+}
+
+flag {
+    name: "enable_limited_app_info_metadata_for_apex"
+    namespace: "modularization"
+    description: "Enable APKs-in-APEX to opt out of limited AppInfo UI behavior"
+    bug: "449011063"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

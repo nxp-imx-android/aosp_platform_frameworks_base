@@ -27,6 +27,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.ApexStagedEvent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.IPackageManagerNative;
@@ -43,6 +44,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.cts.install.lib.Install;
 import com.android.cts.install.lib.InstallUtils;
+import com.android.cts.install.lib.LocalIntentSender;
 import com.android.cts.install.lib.TestApp;
 import com.android.cts.install.lib.Uninstall;
 
@@ -61,6 +63,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @RunWith(JUnit4.class)
@@ -218,6 +221,45 @@ public class StagedInstallInternalTest {
     }
 
     @Test
+    public void testAbandonShouldCleanUpApexSession_AbandonDuringVerification() throws Exception {
+        assertThat(InstallUtils.getInstalledVersion(SHIM_APEX_PACKAGE_NAME)).isEqualTo(1);
+        int sessionId = Install.single(APEX_V2).setStaged().createSession();
+        try (PackageInstaller.Session session =
+                     InstallUtils.openPackageInstallerSession(sessionId)) {
+            LocalIntentSender sender = new LocalIntentSender();
+            session.commit(sender.getIntentSender());
+            // wait 500 ms to give apexd a chance to start the verification
+            Thread.sleep(500);
+            session.abandon();
+            Intent result = sender.pollResult(1, TimeUnit.MINUTES);
+            assertThat(result).isNotNull();
+            InstallUtils.assertStatusFailure(result);
+        }
+    }
+
+    @Test
+    public void testAbandonShouldCleanUpApexSession_AbandonAfterVerification() throws Exception {
+        assertThat(InstallUtils.getInstalledVersion(SHIM_APEX_PACKAGE_NAME)).isEqualTo(1);
+        int sessionId = Install.single(APEX_V2).setStaged().createSession();
+        try (PackageInstaller.Session session =
+                     InstallUtils.openPackageInstallerSession(sessionId)) {
+            LocalIntentSender sender = new LocalIntentSender();
+            session.commit(sender.getIntentSender());
+            // commit() should succeed first
+            Intent result = sender.pollResult(1, TimeUnit.MINUTES);
+            assertThat(result).isNotNull();
+            InstallUtils.assertStatusSuccess(result);
+
+            session.abandon();
+            // abandon() should report failure
+            result = sender.pollResult(1, TimeUnit.MINUTES);
+            assertThat(result).isNotNull();
+            InstallUtils.assertStatusFailure(result);
+        }
+    }
+
+
+    @Test
     public void testStagedSessionShouldCleanUpOnVerificationFailure() throws Exception {
         // APEX verification
         InstallUtils.commitExpectingFailure(AssertionError.class, "apexd verification failed",
@@ -279,6 +321,26 @@ public class StagedInstallInternalTest {
         PackageInstaller.SessionInfo info =
                 InstallUtils.getPackageInstaller().getSessionInfo(sessionId);
         assertThat(info.isStagedSessionFailed()).isTrue();
+    }
+
+    @Test
+    public void testAbandonedSessionShouldNotBlockNewStaging_Commit() throws Exception {
+        int sessionId2 = Install.single(TestApp.Apex2).setStaged().commit();
+        InstallUtils.getPackageInstaller().abandonSession(sessionId2);
+
+        int sessionId3 = Install.single(TestApp.Apex3).setStaged().commit();
+        assertSessionReady(sessionId3);
+        storeSessionId(sessionId3);
+    }
+
+    @Test
+    public void testAbandonedSessionShouldNotBlockNewStaging_Verify() throws Exception {
+        int sessionId = retrieveLastSessionId();
+        PackageInstaller.SessionInfo info = InstallUtils.getStagedSessionInfo(sessionId);
+        assertThat(info).isNotNull();
+        assertThat(info.isStagedSessionApplied()).isTrue();
+
+        assertThat(InstallUtils.getInstalledVersion(SHIM_APEX_PACKAGE_NAME)).isEqualTo(3);
     }
 
     @Test

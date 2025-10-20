@@ -347,7 +347,6 @@ public class AutomaticBrightnessStrategyTest {
     @Test
     public void testAutoBrightnessState_modeSwitch() {
         // Setup the test
-        when(mDisplayManagerFlags.areAutoBrightnessModesEnabled()).thenReturn(true);
         mAutomaticBrightnessStrategy.setUseAutoBrightness(true);
         boolean allowAutoBrightnessWhileDozing = false;
         int brightnessReason = BrightnessReason.REASON_UNKNOWN;

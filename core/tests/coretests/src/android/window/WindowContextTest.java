@@ -23,6 +23,7 @@ import static android.view.WindowManager.LayoutParams.INVALID_WINDOW_TYPE;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.window.WindowProvider.KEY_REPARENT_TO_DEFAULT_DISPLAY_WITH_DISPLAY_REMOVAL;
 
@@ -441,29 +442,29 @@ public class WindowContextTest {
     }
 
     @Test
-    public void testSetWindowTypeOverride() {
+    public void testSetFallbackWindowType() {
         int windowType = INVALID_WINDOW_TYPE;
-        mWindowContext.setWindowTypeOverride(windowType);
-        assertThat(mWindowContext.getWindowTypeOverride()).isEqualTo(windowType);
+        mWindowContext.setFallbackWindowType(windowType);
+        assertThat(mWindowContext.getFallbackWindowType()).isEqualTo(windowType);
 
         windowType = mWindowContext.getWindowType();
-        mWindowContext.setWindowTypeOverride(windowType);
-        assertThat(mWindowContext.getWindowTypeOverride()).isEqualTo(windowType);
+        mWindowContext.setFallbackWindowType(windowType);
+        assertThat(mWindowContext.getFallbackWindowType()).isEqualTo(windowType);
 
         windowType = TYPE_APPLICATION_ATTACHED_DIALOG;
-        mWindowContext.setWindowTypeOverride(windowType);
-        assertThat(mWindowContext.getWindowTypeOverride()).isEqualTo(windowType);
+        mWindowContext.setFallbackWindowType(windowType);
+        assertThat(mWindowContext.getFallbackWindowType()).isEqualTo(windowType);
 
         final int invalidType = TYPE_APPLICATION;
         assertThrows(IllegalArgumentException.class,
-                () -> mWindowContext.setWindowTypeOverride(invalidType));
+                () -> mWindowContext.setFallbackWindowType(invalidType));
     }
 
     @Test
-    public void testSetWindowTypeOverrideAndAddView_invalidWindowType_noOverride() {
+    public void testSetFallbackWindowTypeAndAddView_invalidFallbackWindowType_noOverride() {
         WindowManager.LayoutParams params =
                 new WindowManager.LayoutParams(TYPE_APPLICATION_OVERLAY);
-        mWindowContext.setWindowTypeOverride(INVALID_WINDOW_TYPE);
+        mWindowContext.setFallbackWindowType(INVALID_WINDOW_TYPE);
         final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
         mInstrumentation.runOnMainSync(() -> wm.addView(new View(mWindowContext), params));
 
@@ -471,10 +472,10 @@ public class WindowContextTest {
     }
 
     @Test
-    public void testSetWindowTypeOverrideAndAddView_windowContextType_override() {
+    public void testSetFallbackWindowTypeAndAddView_invalidWindowContextType_override() {
         int windowType = mWindowContext.getWindowType();
         WindowManager.LayoutParams params = new WindowManager.LayoutParams();
-        mWindowContext.setWindowTypeOverride(windowType);
+        mWindowContext.setFallbackWindowType(windowType);
         final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
         mInstrumentation.runOnMainSync(() -> wm.addView(new View(mWindowContext), params));
 
@@ -482,9 +483,21 @@ public class WindowContextTest {
     }
 
     @Test
-    public void testSetWindowTypeOverrideAndAddView_subWindowWithoutParentWindow_throwException() {
+    public void testSetFallbackWindowTypeAndAddView_statusBarPanel_override() {
+        int windowType = mWindowContext.getWindowType();
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL);
+        mWindowContext.setFallbackWindowType(windowType);
+        final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
+        mInstrumentation.runOnMainSync(() -> wm.addView(new View(mWindowContext), params));
+
+        assertThat(params.type).isEqualTo(windowType);
+    }
+
+    @Test
+    public void testSetFallbackWindowTypeAndAddView_subWindowWithoutParent_throwException() {
         WindowManager.LayoutParams params = new WindowManager.LayoutParams();
-        mWindowContext.setWindowTypeOverride(TYPE_APPLICATION_ATTACHED_DIALOG);
+        mWindowContext.setFallbackWindowType(TYPE_APPLICATION_ATTACHED_DIALOG);
         final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
 
         assertThrows(IllegalArgumentException.class,
@@ -493,7 +506,7 @@ public class WindowContextTest {
     }
 
     @Test
-    public void testSetWindowTypeOverrideAndAddView_subWindowWithParentWindow_override()
+    public void testSetFallbackWindowTypeAndAddView_subWindowWithParent_override()
             throws InterruptedException {
         final View parentWindow = new View(mWindowContext);
         final AttachStateListener listener = new AttachStateListener();
@@ -505,7 +518,7 @@ public class WindowContextTest {
 
         assertTrue(listener.mLatch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS));
 
-        mWindowContext.setWindowTypeOverride(TYPE_APPLICATION_ATTACHED_DIALOG);
+        mWindowContext.setFallbackWindowType(TYPE_APPLICATION_ATTACHED_DIALOG);
 
         WindowManager.LayoutParams params = new WindowManager.LayoutParams();
         mInstrumentation.runOnMainSync(() -> wm.addView(new View(mWindowContext), params));
@@ -514,7 +527,51 @@ public class WindowContextTest {
     }
 
     @Test
-    public void testSetWindowTypeOverrideAndUpdateLayout_diffType_noOverride() {
+    public void testSetFallbackWindowTypeAndAddView_isSubWindow_noOverride()
+            throws InterruptedException {
+        final View parentWindow = new View(mWindowContext);
+        final AttachStateListener listener = new AttachStateListener();
+        parentWindow.addOnAttachStateChangeListener(listener);
+        mWindowContext.attachWindow(parentWindow);
+        final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
+        mInstrumentation.runOnMainSync(() -> wm.addView(
+                parentWindow, new WindowManager.LayoutParams(TYPE_APPLICATION_OVERLAY)));
+
+        assertTrue(listener.mLatch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS));
+
+        mWindowContext.setFallbackWindowType(TYPE_APPLICATION_ATTACHED_DIALOG);
+
+        WindowManager.LayoutParams params =
+                new WindowManager.LayoutParams(TYPE_APPLICATION_SUB_PANEL);
+        mInstrumentation.runOnMainSync(() -> wm.addView(new View(mWindowContext), params));
+
+        assertThat(params.type).isEqualTo(TYPE_APPLICATION_SUB_PANEL);
+    }
+
+    @Test
+    public void testSetFallbackWindowTypeAndAddView_typeMatch_noOverride()
+            throws InterruptedException {
+        final View parentWindow = new View(mWindowContext);
+        final AttachStateListener listener = new AttachStateListener();
+        parentWindow.addOnAttachStateChangeListener(listener);
+        mWindowContext.attachWindow(parentWindow);
+        final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
+        mInstrumentation.runOnMainSync(() -> wm.addView(
+                parentWindow, new WindowManager.LayoutParams(TYPE_APPLICATION_OVERLAY)));
+
+        assertTrue(listener.mLatch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS));
+
+        mWindowContext.setFallbackWindowType(TYPE_APPLICATION_ATTACHED_DIALOG);
+
+        WindowManager.LayoutParams params =
+                new WindowManager.LayoutParams(TYPE_APPLICATION_OVERLAY);
+        mInstrumentation.runOnMainSync(() -> wm.addView(new View(mWindowContext), params));
+
+        assertThat(params.type).isEqualTo(TYPE_APPLICATION_OVERLAY);
+    }
+
+    @Test
+    public void testSetFallbackWindowTypeAndUpdateLayout_diffType_noOverride() {
         final View view = new View(mWindowContext);
         mWindowContext.attachWindow(view);
         final WindowManager wm = mWindowContext.getSystemService(WindowManager.class);
@@ -523,7 +580,7 @@ public class WindowContextTest {
 
         mInstrumentation.runOnMainSync(() -> wm.addView(view, params));
 
-        mWindowContext.setWindowTypeOverride(TYPE_APPLICATION_ATTACHED_DIALOG);
+        mWindowContext.setFallbackWindowType(TYPE_APPLICATION_ATTACHED_DIALOG);
 
         mInstrumentation.runOnMainSync(() -> wm.updateViewLayout(view, params));
 

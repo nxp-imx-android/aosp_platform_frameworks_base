@@ -864,6 +864,12 @@ class SplitPresenter extends JetpackTaskFragmentOrganizer {
             // bounds. Return failure to create a new SplitContainer which fills task bounds.
             final TaskFragmentContainer primaryContainer = splitContainer.getPrimaryContainer();
             final TaskFragmentContainer secondaryContainer = splitContainer.getSecondaryContainer();
+            if (primaryContainer.areLastRequestedBoundsEqual(null)
+                    && secondaryContainer.areLastRequestedBoundsEqual(null)
+                    && secondaryContainer.isLastAdjacentTaskFragmentEqual(null, null)) {
+                // No need to update since it is already expanded.
+                return RESULT_EXPANDED;
+            }
             if (primaryContainer.getInfo() == null || secondaryContainer.getInfo() == null) {
                 return RESULT_EXPAND_FAILED_NO_TF_INFO;
             }

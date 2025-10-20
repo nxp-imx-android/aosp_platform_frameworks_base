@@ -2557,6 +2557,21 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     }
 
     @Test
+    public void getPermittedInputMethods() throws Exception {
+        setupProfileOwner();
+        configureProfileOwnerOfOrgOwnedDevice(admin1, CALLER_USER_HANDLE);
+
+        // Allow all input methods
+        parentDpm.setPermittedInputMethods(admin1, null);
+        assertThat(parentDpm.getPermittedInputMethods(admin1)).isNull();
+
+        // Allow only system input methods
+        parentDpm.setPermittedInputMethods(admin1, new ArrayList<>());
+        assertThat(parentDpm.getPermittedInputMethods(admin1)).isEmpty();
+    }
+
+
+    @Test
     public void testGetProxyParameters() throws Exception {
         assertThat(dpm.getProxyParameters(inetAddrProxy("192.0.2.1", 1234), emptyList()))
                 .isEqualTo(new Pair<>("192.0.2.1:1234", ""));
@@ -3202,7 +3217,7 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         mContext.callerPermissions.add(permission.MANAGE_PROFILE_AND_DEVICE_OWNERS);
         mContext.callerPermissions.add(permission.MANAGE_USERS);
         assertExpectException(IllegalStateException.class,
-                /* messageRegex= */ "change provisioning state unless a .* owner is set",
+                /* messageRegex= */ "change provisioning state unless a .* is managed",
                 () -> dpm.setUserProvisioningState(DevicePolicyManager.STATE_USER_SETUP_FINALIZED,
                         CALLER_USER_HANDLE));
         assertThat(dpm.getUserProvisioningState())
@@ -8970,6 +8985,35 @@ public class DevicePolicyManagerTest extends DpmTestBase {
 
         assertThat(enforcingAdmins.size()).isEqualTo(1);
         assertThat(enforcingAdmins.getFirst().getPackageName()).isEqualTo(admin1.getPackageName());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_SET_KEYGUARD_DISABLED_FEATURES_COEXISTENCE)
+    public void getEnforcingAdminsForPolicy_keyguardDisabledFeatures_returnsManagedProfileAdminForParent()
+            throws Exception {
+        // Set-up managed profile with parent as system user.
+        mContext.callerPermissions.add(permission.BIND_DEVICE_ADMIN);
+        final int managedProfileUserId = 78;
+        final int managedProfileAdminUid = UserHandle.getUid(managedProfileUserId,
+                DpmMockContext.SYSTEM_UID);
+        mContext.binder.callingUid = DpmMockContext.SYSTEM_UID;
+        mContext.packageName = admin1.getPackageName();
+        // Add a managed profile belonging to the system user.
+        addManagedProfile(admin1, managedProfileAdminUid, admin1);
+        // Set policy on the managed profile.
+        mContext.binder.callingUid = managedProfileAdminUid;
+        dpm.setKeyguardDisabledFeatures(admin1, DevicePolicyManager.KEYGUARD_DISABLE_FINGERPRINT);
+        when(getServices().lockPatternUtils.isProfileWithUnifiedChallenge(
+                managedProfileUserId)).thenReturn(true);
+        mContext.callerPermissions.add(permission.QUERY_ADMIN_POLICY);
+
+        // Get enforcing admins on parent.
+        List<EnforcingAdmin> enforcingAdmins = dpm.getEnforcingAdminsForPolicy(
+                DevicePolicyIdentifiers.KEYGUARD_DISABLED_FEATURES_POLICY,
+                UserHandle.USER_SYSTEM).getAllAdmins();
+
+        assertThat(enforcingAdmins.size()).isEqualTo(1);
+        assertThat(enforcingAdmins.getFirst().getComponentName()).isEqualTo(admin1);
     }
 
     private void setupVpnAuthorization(String userVpnPackage, int userVpnUid) {

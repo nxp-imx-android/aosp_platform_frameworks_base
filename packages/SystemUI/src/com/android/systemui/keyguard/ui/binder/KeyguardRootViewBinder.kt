@@ -203,13 +203,11 @@ object KeyguardRootViewBinder {
                         }
                     }
 
-                    if (Flags.newDozingKeyguardStates()) {
-                        launch("$TAG#nonAuthUIAlpha") {
-                            viewModel.nonAuthUIAlpha.collect { alpha ->
-                                for (childView in childViews) {
-                                    if (!authUiIds.contains(childView.key)) {
-                                        childView.value.alpha = alpha
-                                    }
+                    launch("$TAG#nonAuthUIAlpha") {
+                        viewModel.nonAuthUIAlpha.collect { alpha ->
+                            for (childView in childViews) {
+                                if (!authUiIds.contains(childView.key)) {
+                                    childView.value.alpha = alpha
                                 }
                             }
                         }
@@ -229,9 +227,7 @@ object KeyguardRootViewBinder {
                         viewModel.translationY.collect { y ->
                             childViews[burnInLayerId]?.translationY = y
                             childViews[largeClockId]?.translationY = y
-                            if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
-                                childViews[largeClockDateId]?.translationY = y
-                            }
+                            childViews[largeClockDateId]?.translationY = y
                             childViews[aodPromotedNotificationId]?.translationY = y
                             childViews[aodNotificationIconContainerId]?.translationY = y
                         }

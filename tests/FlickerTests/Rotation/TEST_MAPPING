@@ -1,16 +1,28 @@
 {
   "wm": [
     {
-      "name": "FlickerTestsRotation-CatchAll"
+      "name": "FlickerTestsRotation-CatchAll",
+      "keywords": [
+        "device"
+      ]
     },
     {
-      "name": "FlickerTestsRotation-ChangeAppRotationTest"
+      "name": "FlickerTestsRotation-ChangeAppRotationTest",
+      "keywords": [
+        "device"
+      ]
     },
     {
-      "name": "FlickerTestsRotation-OpenShowWhenLockedSeamlessAppRotationTest"
+      "name": "FlickerTestsRotation-OpenShowWhenLockedSeamlessAppRotationTest",
+      "keywords": [
+        "device"
+      ]
     },
     {
-      "name": "FlickerTestsRotation-SeamlessAppRotationTest"
+      "name": "FlickerTestsRotation-SeamlessAppRotationTest",
+      "keywords": [
+        "device"
+      ]
     }
   ]
 }

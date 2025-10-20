@@ -23,8 +23,11 @@ java_library {
     srcs: [
         "*.kt",
     ],
-    libs: ["com.android.systemui.util.kotlin"],
-    static_libs: ["SystemUILogLib"],
+    static_libs: [
+        "com.android.systemui.util.kotlin",
+        "SystemUILogLib",
+        "SystemUISharedLib",
+    ],
     defaults: [
         "SystemUI_pod_defaults_api",
     ],

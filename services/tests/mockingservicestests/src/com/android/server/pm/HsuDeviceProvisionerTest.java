@@ -15,7 +15,10 @@
  */
 package com.android.server.pm;
 
+import static android.os.UserHandle.USER_NULL;
+import static android.os.UserHandle.USER_SYSTEM;
 import static android.provider.Settings.Global.DEVICE_PROVISIONED;
+import static android.provider.Settings.Secure.BUGREPORT_IN_POWER_MENU;
 import static android.provider.Settings.Secure.USER_SETUP_COMPLETE;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -27,6 +30,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 
+import android.annotation.UserIdInt;
 import android.content.ContentResolver;
 import android.database.ContentObserver;
 import android.os.Handler;
@@ -43,12 +47,14 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 
 public final class HsuDeviceProvisionerTest {
 
     private static final String TAG = HsuDeviceProvisionerTest.class.getSimpleName();
+
+    @UserIdInt
+    private static final int MAIN_USER_ID = 4;
 
     @Rule public final Expect expect = Expect.create();
     @Rule
@@ -59,7 +65,7 @@ public final class HsuDeviceProvisionerTest {
                     .spyStatic(Settings.Secure.class)
                     .build();
     @Mock private ContentResolver mMockContentResolver;
-    @Captor private ArgumentCaptor<ContentObserver> mCaptorContentObserver;
+    @Mock private UserManagerService mMockUms;
 
     private HsuDeviceProvisioner mFixture;
 
@@ -71,34 +77,73 @@ public final class HsuDeviceProvisionerTest {
     }
 
     @Test
-    public void testInit_UserSetupComplete_provisioned() {
-
+    public void testInit_provisioned() {
         mockIsDeviceProvisioned(true);
+
         mFixture.init();
 
-        verifyUserSetupCompleteNeverCalled();
         verifyContentObserverNeverRegistered();
+        verifyNoSecureSettingsSet();
     }
 
     @Test
-    public void testInit_UserSetupNotComplete_notProvisioned() {
-
+    public void testInit_notProvisioned_setObserver() {
         mockIsDeviceProvisioned(false);
+
         mFixture.init();
 
-        verify(mMockContentResolver)
-                .registerContentObserver(
-                        eq(Settings.Global.getUriFor(Settings.Global.DEVICE_PROVISIONED)),
-                        eq(false),
-                        mCaptorContentObserver.capture());
+        var contentObserver = verifyContentObserverRegistered();
+        expect.that(contentObserver).isSameInstanceAs(mFixture);
+        verifyNoSecureSettingsSet();
+    }
 
-        var contentObserver = mCaptorContentObserver.getValue();
+    @Test
+    public void testOnChange_notProvisioned_dontSetAnything() {
+        mockIsDeviceProvisioned(false);
 
-        mockIsDeviceProvisioned(true);
         mFixture.onChange(true);
 
-        verifyUserSetupCompleteCalled();
-        verifyContentObserverUnregistered(contentObserver);
+        verifyNoSecureSettingsSet();
+    }
+
+    @Test
+    public void testOnChange_provisioned_setUserSetupComplete() {
+        mockIsDeviceProvisioned(true);
+
+        mFixture.onChange(true);
+
+        verifySettingCopied(USER_SETUP_COMPLETE, 1);
+    }
+
+    @Test
+    public void testOnChange_provisioned_copyBugreportInPowerMenu_RealUser() {
+        mockIsDeviceProvisioned(true);
+        mFixture.setBootUser(MAIN_USER_ID);
+        mockSettingValue(Settings.Secure.BUGREPORT_IN_POWER_MENU, 1, MAIN_USER_ID);
+
+        mFixture.onChange(true);
+
+        verifySettingCopiedForUser(Settings.Secure.BUGREPORT_IN_POWER_MENU, 1, USER_SYSTEM);
+    }
+
+    @Test
+    public void testOnChange_provisioned_copyBugreportInPowerMenu_NoUser() {
+        mockIsDeviceProvisioned(true);
+        mFixture.setBootUser(USER_NULL);
+
+        mFixture.onChange(true);
+
+        verifySettingNotCopied(Settings.Secure.BUGREPORT_IN_POWER_MENU);
+    }
+
+    @Test
+    public void testOnChange_provisioned_copyBugreportInPowerMenu_SystemUser() {
+        mockIsDeviceProvisioned(true);
+        mFixture.setBootUser(USER_SYSTEM);
+
+        mFixture.onChange(true);
+
+        verifySettingNotCopied(Settings.Secure.BUGREPORT_IN_POWER_MENU);
     }
 
     private void mockIsDeviceProvisioned(boolean value) {
@@ -106,21 +151,19 @@ public final class HsuDeviceProvisionerTest {
         doReturn(value ? 1 : 0).when(() -> Settings.Global.getInt(any(), eq(DEVICE_PROVISIONED)));
     }
 
-    private void verifyUserSetupCompleteCalled() {
-        try {
-            verify(() -> Settings.Secure.putInt(mMockContentResolver, USER_SETUP_COMPLETE, 1));
-        } catch (Throwable t) {
-            Log.e(TAG, "verify failure:", t);
-            expect.withMessage("USER_SETUP_COMPLETE was not set").fail();
-        }
+    private void mockSettingValue(String settingName, int value, @UserIdInt int userId) {
+        Log.d(TAG, "mockSettingValue(" + settingName + ", " + value + ", " + userId + ")");
+        doReturn(value).when(() -> Settings.Secure.getIntForUser(
+                                eq(mMockContentResolver), eq(settingName), anyInt(), eq(userId)));
     }
 
-    private void verifyUserSetupCompleteNeverCalled() {
+    private void verifyNoSecureSettingsSet() {
         try {
-            verify(() -> Settings.Secure.putInt(any(), eq(USER_SETUP_COMPLETE), anyInt()), never());
+            verify(() -> Settings.Secure.putInt(any(), any(), anyInt()), never());
         } catch (Throwable t) {
             Log.e(TAG, "verify failure:", t);
-            expect.withMessage("USER_SETUP_COMPLETE should not have been set").fail();
+            expect.withMessage("Settings.Secure.putInt() should not have been called, verify() "
+                    + "failed: %s", t).fail();
         }
     }
 
@@ -129,7 +172,8 @@ public final class HsuDeviceProvisionerTest {
             verify(mMockContentResolver).unregisterContentObserver(contentObserver);
         } catch (Throwable t) {
             Log.e(TAG, "verify failure:", t);
-            expect.withMessage("ContentResolver (%s) was not unregistered", contentObserver).fail();
+            expect.withMessage("ContentResolver (%s) was not unregistered, verify() failed: %s",
+                    contentObserver, t).fail();
         }
     }
 
@@ -139,7 +183,46 @@ public final class HsuDeviceProvisionerTest {
                     .registerContentObserver(any(), anyBoolean(), any());
         } catch (Throwable t) {
             Log.e(TAG, "verify failure:", t);
-            expect.withMessage("should not have registered a content observer").fail();
+            expect.withMessage("should not have registered a content observer, verify() failed: %s",
+                    t).fail();
+        }
+    }
+
+    private ContentObserver verifyContentObserverRegistered() {
+        ArgumentCaptor<ContentObserver> captor = ArgumentCaptor.forClass(ContentObserver.class);
+        verify(mMockContentResolver)
+                .registerContentObserver(
+                        eq(Settings.Global.getUriFor(Settings.Global.DEVICE_PROVISIONED)),
+                        eq(false),
+                        captor.capture());
+        return captor.getValue();
+    }
+
+    private void verifySettingNotCopied(String settingName) {
+        try {
+            verify(() -> Settings.Secure.putInt(any(), eq(settingName), anyInt()), never());
+        } catch (Throwable t) {
+            Log.e(TAG, "verify failure:", t);
+            expect.withMessage("Setting %s should not have been copied: %s", settingName, t).fail();
+        }
+    }
+
+    private void verifySettingCopied(String settingName, int value) {
+        try {
+            verify(() -> Settings.Secure.putInt(mMockContentResolver, settingName, value));
+        } catch (Throwable t) {
+            Log.e(TAG, "verify failure:", t);
+            expect.withMessage("Settings should have been copied: %s", t).fail();
+        }
+    }
+
+    private void verifySettingCopiedForUser(String settingName, int value, @UserIdInt int userId) {
+        try {
+            verify(() -> Settings.Secure.putIntForUser(
+                                    mMockContentResolver, settingName, value, userId));
+        } catch (Throwable t) {
+            Log.e(TAG, "verify failure:", t);
+            expect.withMessage("Settings should have been copied: %s", t).fail();
         }
     }
 }

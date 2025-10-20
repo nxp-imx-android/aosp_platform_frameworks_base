@@ -32,6 +32,7 @@ import com.android.systemui.plugins.qs.TileDetailsViewModel
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.qs.QSHost
 import com.android.systemui.qs.QsEventLogger
+import com.android.systemui.qs.flags.QsSplitInternetTile
 import com.android.systemui.qs.logging.QSLogger
 import com.android.systemui.qs.tileimpl.QSTileImpl
 import com.android.systemui.qs.tiles.dialog.InternetDetailsViewModel
@@ -80,6 +81,10 @@ constructor(
         }
     }
 
+    override fun isAvailable(): Boolean {
+        return !QsSplitInternetTile.isEnabled
+    }
+
     override fun getTileLabel(): CharSequence =
         mContext.getString(R.string.quick_settings_internet_label)
 
@@ -112,6 +117,8 @@ constructor(
     override fun getLongClickIntent(): Intent = WIFI_SETTINGS
 
     companion object {
+        const val TILE_SPEC: String = "internet"
+
         private val WIFI_SETTINGS = Intent(Settings.ACTION_WIFI_SETTINGS)
     }
 }

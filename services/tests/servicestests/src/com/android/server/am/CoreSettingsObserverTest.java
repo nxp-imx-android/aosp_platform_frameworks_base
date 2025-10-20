@@ -24,16 +24,24 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import android.annotation.UserIdInt;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.UserHandle;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.test.mock.MockContentResolver;
 import android.virtualdevice.cts.common.VirtualDeviceRule;
@@ -63,16 +71,28 @@ public class CoreSettingsObserverTest {
     private static final String TEST_SETTING_SECURE_INT = "secureInt";
     private static final String TEST_SETTING_GLOBAL_FLOAT = "globalFloat";
     private static final String TEST_SETTING_SYSTEM_STRING = "systemString";
+    private static final String TEST_SETTING_SYSTEM_STRING_FOR_SECONDARY_USER =
+            "systemString_user10";
 
     private static final int TEST_INT = 111;
     private static final float TEST_FLOAT = 3.14f;
     private static final String TEST_STRING = "testString";
     private static final float TOLERANCE = 0.001f;
 
+    private static final String TEST_STRING_FOR_SECONDARY_USER = "testString_user10";
+    private static final int SYSTEM_USER_ID = UserHandle.USER_SYSTEM;
+    private static final int SECONDARY_USER_ID = 10;
+
+    @Rule
+    public final SetFlagsRule flags =
+            new SetFlagsRule(SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT);
+
     @Rule
     public ServiceThreadRule mServiceThreadRule = new ServiceThreadRule();
     @Rule
     public final VirtualDeviceRule mVirtualDeviceRule = VirtualDeviceRule.createDefault();
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     private ActivityManagerService mAms;
     @Mock
@@ -89,6 +109,8 @@ public class CoreSettingsObserverTest {
         CoreSettingsObserver.sSecureSettingToTypeMap.put(TEST_SETTING_SECURE_INT, int.class);
         CoreSettingsObserver.sGlobalSettingToTypeMap.put(TEST_SETTING_GLOBAL_FLOAT, float.class);
         CoreSettingsObserver.sSystemSettingToTypeMap.put(TEST_SETTING_SYSTEM_STRING, String.class);
+        CoreSettingsObserver.sSystemSettingToTypeMap.put(
+                TEST_SETTING_SYSTEM_STRING_FOR_SECONDARY_USER, String.class);
     }
 
     @AfterClass
@@ -117,18 +139,21 @@ public class CoreSettingsObserverTest {
         when(mResources.obtainTypedArray(anyInt())).thenReturn(mockTypedArray);
 
         // Initialize ActivityManagerService and CoreSettingsObserver.
-        mAms = new ActivityManagerService(new TestInjector(mContext),
-                mServiceThreadRule.getThread());
-        mCoreSettingsObserver = new CoreSettingsObserver(mAms);
+        mAms = spy(new ActivityManagerService(new TestInjector(mContext),
+                mServiceThreadRule.getThread()));
+        mockGetRunningUserIds(SYSTEM_USER_ID);
+        mCoreSettingsObserver = CoreSettingsObserver.create(mAms);
     }
 
     @Test
     public void testPopulateSettings() {
-        Settings.Secure.putInt(mContentResolver, TEST_SETTING_SECURE_INT, TEST_INT);
+        Settings.Secure.putIntForUser(
+                mContentResolver, TEST_SETTING_SECURE_INT, TEST_INT, SYSTEM_USER_ID);
         Settings.Global.putFloat(mContentResolver, TEST_SETTING_GLOBAL_FLOAT, TEST_FLOAT);
-        Settings.System.putString(mContentResolver, TEST_SETTING_SYSTEM_STRING, TEST_STRING);
+        Settings.System.putStringForUser(
+                mContentResolver, TEST_SETTING_SYSTEM_STRING, TEST_STRING, SYSTEM_USER_ID);
 
-        final Bundle settingsBundle = getPopulatedBundle();
+        final Bundle settingsBundle = getPopulatedBundle(SYSTEM_USER_ID);
 
         // Assert that the bundle contains the correct values.
         assertThat(settingsBundle.getInt(TEST_SETTING_SECURE_INT)).isEqualTo(TEST_INT);
@@ -139,7 +164,7 @@ public class CoreSettingsObserverTest {
 
     @Test
     public void testPopulateSettings_settingNotSet() {
-        final Bundle settingsBundle = getPopulatedBundle();
+        final Bundle settingsBundle = getPopulatedBundle(SYSTEM_USER_ID);
 
         // Assert that the bundle does not contain any of the test settings.
         assertWithMessage("Bundle should not contain %s", TEST_SETTING_SECURE_INT)
@@ -152,12 +177,14 @@ public class CoreSettingsObserverTest {
 
     @Test
     public void testPopulateSettings_settingDeleted() {
-        Settings.Secure.putInt(mContentResolver, TEST_SETTING_SECURE_INT, TEST_INT);
+        Settings.Secure.putIntForUser(
+                mContentResolver, TEST_SETTING_SECURE_INT, TEST_INT, SYSTEM_USER_ID);
         Settings.Global.putFloat(mContentResolver, TEST_SETTING_GLOBAL_FLOAT, TEST_FLOAT);
-        Settings.System.putString(mContentResolver, TEST_SETTING_SYSTEM_STRING, TEST_STRING);
+        Settings.System.putStringForUser(
+                mContentResolver, TEST_SETTING_SYSTEM_STRING, TEST_STRING, SYSTEM_USER_ID);
 
         // Trigger the observer and get the populated bundle.
-        Bundle settingsBundle = getPopulatedBundle();
+        Bundle settingsBundle = getPopulatedBundle(SYSTEM_USER_ID);
 
         // Assert that the bundle contains the correct values initially.
         assertThat(settingsBundle.getInt(TEST_SETTING_SECURE_INT)).isEqualTo(TEST_INT);
@@ -167,8 +194,9 @@ public class CoreSettingsObserverTest {
 
         // Delete one of the settings.
         Settings.Global.putString(mContentResolver, TEST_SETTING_GLOBAL_FLOAT, null);
+
         // Trigger the observer again.
-        settingsBundle = getPopulatedBundle();
+        settingsBundle = getPopulatedBundle(SYSTEM_USER_ID);
 
         // Assert that the deleted setting is no longer in the bundle.
         assertWithMessage("Bundle should not contain %s", TEST_SETTING_GLOBAL_FLOAT)
@@ -182,13 +210,104 @@ public class CoreSettingsObserverTest {
     public void testPopulateSettings_withInvalidDeviceId() {
         mVirtualDeviceRule.createManagedVirtualDevice();
         when(mContext.createDeviceContext(anyInt())).thenThrow(new IllegalArgumentException());
-        testPopulateSettings();
+        Settings.Secure.putIntForUser(
+                mContentResolver, TEST_SETTING_SECURE_INT, TEST_INT, SYSTEM_USER_ID);
+        Settings.Global.putFloat(mContentResolver, TEST_SETTING_GLOBAL_FLOAT, TEST_FLOAT);
+        Settings.System.putStringForUser(
+                mContentResolver, TEST_SETTING_SYSTEM_STRING, TEST_STRING, SYSTEM_USER_ID);
+
+        Bundle settingsBundle = getPopulatedBundle(SYSTEM_USER_ID);
+
+        assertThat(settingsBundle.getInt(TEST_SETTING_SECURE_INT)).isEqualTo(TEST_INT);
+        assertThat(settingsBundle.getFloat(TEST_SETTING_GLOBAL_FLOAT)).isEqualTo(TEST_FLOAT);
+        assertThat(settingsBundle.getString(TEST_SETTING_SYSTEM_STRING)).isEqualTo(TEST_STRING);
     }
 
-    private Bundle getPopulatedBundle() {
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_CORE_SETTINGS_MULTI_USER)
+    public void testPopulateSettings_multiUser_onUserStarting() {
+        // Initially, only system user is running.
+        Settings.System.putStringForUser(
+                mContentResolver, TEST_SETTING_SYSTEM_STRING, TEST_STRING, SYSTEM_USER_ID);
         mCoreSettingsObserver.onChange(false);
-        return mCoreSettingsObserver.getCoreSettings().getBundle(
-                String.valueOf(Context.DEVICE_ID_DEFAULT));
+
+        // Verify settings for system user are loaded, and not for secondary user.
+        Bundle settingsForSystemUser = getPopulatedBundle(SYSTEM_USER_ID);
+        assertThat(settingsForSystemUser.getString(TEST_SETTING_SYSTEM_STRING))
+                .isEqualTo(TEST_STRING);
+        Bundle settingsForSecondaryUser = getPopulatedBundle(SECONDARY_USER_ID);
+        assertWithMessage("settings for user %s", SECONDARY_USER_ID)
+                .that(settingsForSecondaryUser).isNull();
+
+        // Start secondary user.
+        mockGetRunningUserIds(SYSTEM_USER_ID, SECONDARY_USER_ID);
+        Settings.System.putStringForUser(mContentResolver,
+                TEST_SETTING_SYSTEM_STRING_FOR_SECONDARY_USER, TEST_STRING_FOR_SECONDARY_USER,
+                SECONDARY_USER_ID);
+        mCoreSettingsObserver.onUserStarting(SECONDARY_USER_ID);
+
+        // Verify settings for both users are now loaded.
+        settingsForSystemUser = getPopulatedBundle(SYSTEM_USER_ID);
+        assertThat(settingsForSystemUser.getString(TEST_SETTING_SYSTEM_STRING))
+                .isEqualTo(TEST_STRING);
+        settingsForSecondaryUser = getPopulatedBundle(SECONDARY_USER_ID);
+        assertThat(settingsForSecondaryUser.getString(
+                TEST_SETTING_SYSTEM_STRING_FOR_SECONDARY_USER))
+                .isEqualTo(TEST_STRING_FOR_SECONDARY_USER);
+    }
+
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_CORE_SETTINGS_MULTI_USER)
+    public void testPopulateSettings_multiUser_onUserStopping() {
+        // Initially, system user and secondary user are running.
+        mockGetRunningUserIds(SYSTEM_USER_ID, SECONDARY_USER_ID);
+        Settings.System.putStringForUser(
+                mContentResolver, TEST_SETTING_SYSTEM_STRING, TEST_STRING, SYSTEM_USER_ID);
+        Settings.System.putStringForUser(mContentResolver,
+                TEST_SETTING_SYSTEM_STRING_FOR_SECONDARY_USER, TEST_STRING_FOR_SECONDARY_USER,
+                SECONDARY_USER_ID);
+        mCoreSettingsObserver.onChange(false);
+
+        // Verify settings for both users are loaded.
+        Bundle settingsForSystemUser = getPopulatedBundle(SYSTEM_USER_ID);
+        assertThat(settingsForSystemUser.getString(TEST_SETTING_SYSTEM_STRING))
+                .isEqualTo(TEST_STRING);
+        Bundle settingsForSecondaryUser = getPopulatedBundle(SECONDARY_USER_ID);
+        assertThat(settingsForSecondaryUser.getString(
+                TEST_SETTING_SYSTEM_STRING_FOR_SECONDARY_USER))
+                .isEqualTo(TEST_STRING_FOR_SECONDARY_USER);
+
+        // Stop user secondary user.
+        mockGetRunningUserIds(SYSTEM_USER_ID);
+        mCoreSettingsObserver.onUserStopping(SECONDARY_USER_ID);
+
+        // Verify settings for system user are still loaded, but not for secondary user.
+        settingsForSystemUser = getPopulatedBundle(SYSTEM_USER_ID);
+        assertThat(settingsForSystemUser.getString(TEST_SETTING_SYSTEM_STRING))
+                .isEqualTo(TEST_STRING);
+        settingsForSecondaryUser = getPopulatedBundle(SECONDARY_USER_ID);
+        assertWithMessage("settings for user %s", SECONDARY_USER_ID)
+                .that(settingsForSecondaryUser).isNull();
+    }
+
+    private void mockGetRunningUserIds(@UserIdInt int... userIds) {
+        doReturn(userIds).when(mAms).getRunningUserIds();
+    }
+
+    private Bundle getPopulatedBundle(@UserIdInt int userId) {
+        return getPopulatedBundle(userId, Context.DEVICE_ID_DEFAULT);
+    }
+
+    private Bundle getPopulatedBundle(@UserIdInt int userId, int deviceId) {
+        mCoreSettingsObserver.onChange(false);
+        Bundle userBundle = mCoreSettingsObserver.getCoreSettings(userId);
+        if (userBundle == null || userBundle == Bundle.EMPTY) {
+            return null;
+        }
+        if (android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()) {
+            return userBundle.getBundle(String.valueOf(deviceId));
+        }
+        return userBundle;
     }
 
     private class TestInjector extends Injector {

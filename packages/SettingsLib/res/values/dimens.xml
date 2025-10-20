@@ -112,4 +112,10 @@
     <dimen name="dialog_side_padding">24dp</dimen>
     <dimen name="dialog_button_bar_top_padding">32dp</dimen>
     <dimen name="button_corner_radius">28dp</dimen>
+
+    <!-- Size of hearing device preset spinner-->
+    <dimen name="hearing_devices_preset_spinner_height">56dp</dimen>
+    <dimen name="hearing_devices_preset_spinner_padding">22dp</dimen>
+    <dimen name="hearing_devices_preset_spinner_icon_size">24dp</dimen>
+    <dimen name="hearing_devices_preset_spinner_background_radius">28dp</dimen>
 </resources>

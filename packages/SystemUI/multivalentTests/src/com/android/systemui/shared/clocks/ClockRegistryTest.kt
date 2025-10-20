@@ -35,33 +35,34 @@ import com.android.systemui.plugins.keyguard.ui.clocks.ClockPickerConfig
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockProviderPlugin
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockSettings
 import com.android.systemui.util.ThreadAssert
-import com.android.systemui.util.mockito.argumentCaptor
-import com.android.systemui.util.mockito.eq
-import junit.framework.Assert.assertEquals
-import junit.framework.Assert.fail
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.TestScope
 import org.json.JSONArray
 import org.json.JSONObject
+import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito.never
-import org.mockito.Mockito.spy
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when` as whenever
 import org.mockito.junit.MockitoJUnit
+import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.never
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
-@RunWith(AndroidJUnit4::class)
 @SmallTest
+@RunWith(AndroidJUnit4::class)
 class ClockRegistryTest : SysuiTestCase() {
 
-    @JvmField @Rule val mockito = MockitoJUnit.rule()
+    @JvmField @Rule val mockitoRule: MockitoRule = MockitoJUnit.rule()
     private lateinit var scheduler: TestCoroutineScheduler
     private lateinit var dispatcher: CoroutineDispatcher
     private lateinit var scope: TestScope
@@ -90,35 +91,39 @@ class ClockRegistryTest : SysuiTestCase() {
         }
     }
 
-    private class FakeLifecycle(private val tag: String, private val plugin: ClockProviderPlugin?) :
-        PluginLifecycleManager<ClockProviderPlugin> {
+    private class FakeLifecycle(
+        override val componentName: ComponentName,
+        private val testPlugin: ClockProviderPlugin? = null,
+    ) : PluginLifecycleManager<ClockProviderPlugin> {
         var onLoad: (() -> Unit)? = null
         var onUnload: (() -> Unit)? = null
 
-        private var mIsLoaded: Boolean = true
+        constructor(
+            tag: String,
+            testPlugin: ClockProviderPlugin? = null,
+        ) : this(ComponentName("Package[$tag]", "Class[$tag]"), testPlugin)
 
-        override fun isLoaded() = mIsLoaded
+        override var isLoaded: Boolean = true
+            private set
 
-        override fun getPlugin(): ClockProviderPlugin? = if (isLoaded) plugin else null
+        override val plugin: ClockProviderPlugin?
+            get() = if (isLoaded) testPlugin else null
 
-        var mComponentName = ComponentName("Package[$tag]", "Class[$tag]")
+        override val packageName: String
+            get() = componentName.packageName
 
-        override fun toString() = "Manager[$tag]"
-
-        override fun getPackage(): String = mComponentName.getPackageName()
-
-        override fun getComponentName(): ComponentName = mComponentName
+        override fun toString() = "Manager[${componentName.className}]"
 
         override fun loadPlugin() {
-            if (!mIsLoaded) {
-                mIsLoaded = true
+            if (!isLoaded) {
+                isLoaded = true
                 onLoad?.invoke()
             }
         }
 
         override fun unloadPlugin() {
-            if (mIsLoaded) {
-                mIsLoaded = false
+            if (isLoaded) {
+                isLoaded = false
                 onUnload?.invoke()
             }
         }
@@ -185,7 +190,6 @@ class ClockRegistryTest : SysuiTestCase() {
                     scope = scope.backgroundScope,
                     mainDispatcher = dispatcher,
                     bgDispatcher = dispatcher,
-                    isEnabled = true,
                     handleAllUsers = true,
                     defaultClockProvider = fakeDefaultProvider,
                     keepAllLoaded = false,
@@ -202,7 +206,7 @@ class ClockRegistryTest : SysuiTestCase() {
 
         verify(mockPluginManager)
             .addPluginListener(captor.capture(), eq(ClockProviderPlugin::class.java), eq(true))
-        pluginListener = captor.value
+        pluginListener = captor.firstValue
     }
 
     @Test
@@ -387,11 +391,7 @@ class ClockRegistryTest : SysuiTestCase() {
 
     @Test
     fun unknownPluginAttached_clockAndListUnchanged_loadRequested() {
-        val lifecycle =
-            FakeLifecycle("", null).apply {
-                mComponentName = ComponentName("some.other.package", "SomeClass")
-            }
-
+        val lifecycle = FakeLifecycle(ComponentName("some.other.package", "SomeClass"))
         var changeCallCount = 0
         var listChangeCallCount = 0
         registry.registerClockChangeListener(
@@ -415,18 +415,11 @@ class ClockRegistryTest : SysuiTestCase() {
     @Test
     fun knownPluginAttached_clockAndListChanged_loadedCurrent() {
         val metroLifecycle =
-            FakeLifecycle("Metro", null).apply {
-                mComponentName = ComponentName("com.android.systemui.clocks.metro", "Metro")
-            }
+            FakeLifecycle(ComponentName("com.android.systemui.clocks.metro", "Metro"))
         val bignumLifecycle =
-            FakeLifecycle("BigNum", null).apply {
-                mComponentName = ComponentName("com.android.systemui.clocks.bignum", "BigNum")
-            }
+            FakeLifecycle(ComponentName("com.android.systemui.clocks.bignum", "BigNum"))
         val calligraphyLifecycle =
-            FakeLifecycle("Calligraphy", null).apply {
-                mComponentName =
-                    ComponentName("com.android.systemui.clocks.calligraphy", "Calligraphy")
-            }
+            FakeLifecycle(ComponentName("com.android.systemui.clocks.calligraphy", "Calligraphy"))
 
         var changeCallCount = 0
         var listChangeCallCount = 0

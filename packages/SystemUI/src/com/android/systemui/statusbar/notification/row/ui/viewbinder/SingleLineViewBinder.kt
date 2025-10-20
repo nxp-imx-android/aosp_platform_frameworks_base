@@ -16,31 +16,38 @@
 
 package com.android.systemui.statusbar.notification.row.ui.viewbinder
 
+import com.android.systemui.statusbar.notification.NmSummarizationAllFlag
 import com.android.systemui.statusbar.notification.row.HybridConversationNotificationView
 import com.android.systemui.statusbar.notification.row.HybridNotificationView
-import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleLineViewModel
 
 object SingleLineViewBinder {
     @JvmStatic
     fun bind(viewModel: SingleLineViewModel?, view: HybridNotificationView?) {
         if (view is HybridConversationNotificationView) {
-            if (AsyncHybridViewInflation.isUnexpectedlyInLegacyMode()) return
-
             viewModel?.conversationData?.avatar?.let { view.setAvatar(it) }
-            view.setText(
-                viewModel?.titleText,
-                viewModel?.contentText,
-                viewModel?.conversationData?.conversationSenderName,
-                viewModel?.conversationData?.summarization
-            )
+            if (NmSummarizationAllFlag.isEnabled) {
+                view.setText(
+                    viewModel?.titleText,
+                    viewModel?.contentText,
+                    viewModel?.conversationData?.conversationSenderName,
+                    viewModel?.summarization,
+                )
+            } else {
+                view.setText(
+                    viewModel?.titleText,
+                    viewModel?.contentText,
+                    viewModel?.conversationData?.conversationSenderName,
+                    viewModel?.conversationData?.summarization,
+                )
+            }
         } else {
             // bind the title and content text views
             view?.apply {
                 bind(
                     /* title = */ viewModel?.titleText,
                     /* text = */ viewModel?.contentText,
-                    /* contentView = */ null,
+                    /* summarization = */ viewModel?.summarization,
                 )
             }
         }

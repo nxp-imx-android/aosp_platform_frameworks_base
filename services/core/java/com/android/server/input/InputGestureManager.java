@@ -18,11 +18,15 @@ package com.android.server.input;
 
 import static android.hardware.input.InputGestureData.createKeyTrigger;
 
+import static com.android.hardware.input.Flags.enableContextualSearchDesktopEntrypoints;
 import static com.android.hardware.input.Flags.enableQuickSettingsPanelShortcut;
 import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
 import static com.android.hardware.input.Flags.enableSelectToSpeakKeyGestures;
+import static com.android.hardware.input.Flags.enableTalkbackKeyGestures;
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
 import static com.android.hardware.input.Flags.keyboardA11yShortcutControl;
+import static com.android.hardware.input.Flags.enablePartialScreenshotKeyboardShortcut;
+import static com.android.hardware.input.Flags.keyboardBacklightShortcuts;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -31,7 +35,6 @@ import android.content.Context;
 import android.hardware.input.InputGestureData;
 import android.hardware.input.InputManager;
 import android.hardware.input.KeyGestureEvent;
-import android.os.SystemProperties;
 import android.util.IndentingPrintWriter;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -103,7 +106,7 @@ final class InputGestureManager {
         // Initialize all system shortcuts
         List<InputGestureData> systemShortcuts = new ArrayList<>(List.of(
                 createKeyGesture(
-                        KeyEvent.KEYCODE_A,
+                        KeyEvent.KEYCODE_SPACE,
                         KeyEvent.META_META_ON,
                         KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT,
                         /* allowCaptureByFocusedWindow = */true
@@ -193,15 +196,13 @@ final class InputGestureManager {
                         /* allowCaptureByFocusedWindow = */true
                 )
         ));
-        if ("1".equals(SystemProperties.get("ro.debuggable"))) {
-            systemShortcuts.add(
-                    createKeyGesture(
-                            KeyEvent.KEYCODE_DEL,
-                            KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT,
-                            /* allowCaptureByFocusedWindow = */true
-                    ));
-        }
+        systemShortcuts.add(
+                createKeyGesture(
+                        KeyEvent.KEYCODE_DEL,
+                        KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT,
+                        /* allowCaptureByFocusedWindow = */true
+                ));
         if (DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue()) {
             systemShortcuts.add(
                     createKeyGesture(
@@ -221,15 +222,17 @@ final class InputGestureManager {
         }
         if (enableTalkbackAndMagnifierKeyGestures()) {
             systemShortcuts.add(
-                    createKeyGesture(KeyEvent.KEYCODE_T,
-                            KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
-                            /* allowCaptureByFocusedWindow = */true
-                    ));
-            systemShortcuts.add(
                     createKeyGesture(KeyEvent.KEYCODE_M,
                             KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
                             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+                            /* allowCaptureByFocusedWindow = */true
+                    ));
+        }
+        if (enableTalkbackKeyGestures()) {
+            systemShortcuts.add(
+                    createKeyGesture(KeyEvent.KEYCODE_T,
+                            KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
                             /* allowCaptureByFocusedWindow = */true
                     ));
         }
@@ -318,15 +321,13 @@ final class InputGestureManager {
                             /* allowCaptureByFocusedWindow = */false
                     ));
         }
-        if (DesktopExperienceFlags.CLOSE_TASK_KEYBOARD_SHORTCUT.isTrue()) {
-            systemShortcuts.add(
-                    createKeyGesture(
-                            KeyEvent.KEYCODE_W,
-                            KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK,
-                            /* allowCaptureByFocusedWindow = */false
-                    ));
-        }
+        systemShortcuts.add(
+                createKeyGesture(
+                        KeyEvent.KEYCODE_W,
+                        KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK,
+                        /* allowCaptureByFocusedWindow = */false
+                ));
         if (enableQuickSettingsPanelShortcut()) {
             systemShortcuts.add(
                     createKeyGesture(
@@ -335,6 +336,39 @@ final class InputGestureManager {
                             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL,
                             /* allowCaptureByFocusedWindow = */true
                     ));
+        }
+        if (enablePartialScreenshotKeyboardShortcut()) {
+            systemShortcuts.add(
+                    createKeyGesture(
+                            KeyEvent.KEYCODE_S,
+                            KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
+                            /* allowCaptureByFocusedWindow = */true
+                    ));
+        }
+        if (keyboardBacklightShortcuts()) {
+            systemShortcuts.add(
+                    createKeyGesture(
+                            KeyEvent.KEYCODE_BRIGHTNESS_UP,
+                            KeyEvent.META_META_ON,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_UP,
+                            /* allowCaptureByFocusedWindow = */false
+                    ));
+            systemShortcuts.add(
+                    createKeyGesture(
+                            KeyEvent.KEYCODE_BRIGHTNESS_DOWN,
+                            KeyEvent.META_META_ON,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_DOWN,
+                            /* allowCaptureByFocusedWindow = */false
+                    ));
+        }
+        if (enableContextualSearchDesktopEntrypoints()) {
+            systemShortcuts.add(
+                    createKeyGesture(
+                            KeyEvent.KEYCODE_A,
+                            KeyEvent.META_META_ON,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH,
+                            /* allowCaptureByFocusedWindow= */ true));
         }
         synchronized (mGestureLock) {
             for (InputGestureData systemShortcut : systemShortcuts) {
@@ -360,7 +394,7 @@ final class InputGestureManager {
             }
             if (trigger instanceof InputGestureData.KeyTrigger keyTrigger) {
                 if (KeyEvent.isModifierKey(keyTrigger.getKeycode()) ||
-                        KeyEvent.isSystemKey(keyTrigger.getKeycode())) {
+                        !isKeyAllowedForCustomGesture(keyTrigger.getKeycode())) {
                     return new InputGestureData.Builder().setTrigger(trigger).setKeyGestureType(
                             KeyGestureEvent.KEY_GESTURE_TYPE_SYSTEM_RESERVED).build();
                 }
@@ -385,7 +419,7 @@ final class InputGestureManager {
             }
             if (newGesture.getTrigger() instanceof InputGestureData.KeyTrigger keyTrigger) {
                 if (KeyEvent.isModifierKey(keyTrigger.getKeycode()) ||
-                        KeyEvent.isSystemKey(keyTrigger.getKeycode())) {
+                        !isKeyAllowedForCustomGesture(keyTrigger.getKeycode())) {
                     return InputManager.CUSTOM_INPUT_GESTURE_RESULT_ERROR_RESERVED_GESTURE;
                 }
             }
@@ -514,6 +548,74 @@ final class InputGestureManager {
                 .setKeyGestureType(keyGestureType)
                 .setAllowCaptureByFocusedWindow(allowCaptureByFocusedWindow)
                 .build();
+    }
+
+    private static boolean isKeyAllowedForCustomGesture(int keyCode) {
+        // Don't allow system keys that are always (or conditionally) consumed in
+        // interceptKeyBeforeQueueing, to be used for custom input gesture.
+        // This is to ensure the custom gestures are predictable for the user.
+        // If we want to allow custom key gesture using any of these keys, move them out of
+        // {@link PhoneWindowManager#inteceptKeyBeforeQueueing} or make sure these keys always
+        // reach the custom input gesture handling when they have an associated modifier state.
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_POWER:
+            case KeyEvent.KEYCODE_TV_POWER:
+            case KeyEvent.KEYCODE_ENDCALL:
+            case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_DOWN:
+            case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_UP:
+            case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_LEFT:
+            case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_RIGHT:
+            case KeyEvent.KEYCODE_SLEEP:
+            case KeyEvent.KEYCODE_SOFT_SLEEP:
+            case KeyEvent.KEYCODE_WAKEUP:
+            case KeyEvent.KEYCODE_MUTE:
+            case KeyEvent.KEYCODE_CALL:
+            case KeyEvent.KEYCODE_MEDIA_PLAY:
+            case KeyEvent.KEYCODE_MEDIA_PAUSE:
+            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+            case KeyEvent.KEYCODE_HEADSETHOOK:
+            case KeyEvent.KEYCODE_MEDIA_STOP:
+            case KeyEvent.KEYCODE_MEDIA_NEXT:
+            case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+            case KeyEvent.KEYCODE_MEDIA_REWIND:
+            case KeyEvent.KEYCODE_MEDIA_RECORD:
+            case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+            case KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK:
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+            case KeyEvent.KEYCODE_VOLUME_UP:
+            case KeyEvent.KEYCODE_VOLUME_MUTE:
+            case KeyEvent.KEYCODE_ASSIST:
+            case KeyEvent.KEYCODE_VOICE_ASSIST:
+            case KeyEvent.KEYCODE_WINDOW:
+            case KeyEvent.KEYCODE_STEM_PRIMARY:
+            case KeyEvent.KEYCODE_VIDEO_APP_1:
+            case KeyEvent.KEYCODE_VIDEO_APP_2:
+            case KeyEvent.KEYCODE_VIDEO_APP_3:
+            case KeyEvent.KEYCODE_VIDEO_APP_4:
+            case KeyEvent.KEYCODE_VIDEO_APP_5:
+            case KeyEvent.KEYCODE_VIDEO_APP_6:
+            case KeyEvent.KEYCODE_VIDEO_APP_7:
+            case KeyEvent.KEYCODE_VIDEO_APP_8:
+            case KeyEvent.KEYCODE_FEATURED_APP_1:
+            case KeyEvent.KEYCODE_FEATURED_APP_2:
+            case KeyEvent.KEYCODE_FEATURED_APP_3:
+            case KeyEvent.KEYCODE_FEATURED_APP_4:
+            case KeyEvent.KEYCODE_DEMO_APP_1:
+            case KeyEvent.KEYCODE_DEMO_APP_2:
+            case KeyEvent.KEYCODE_DEMO_APP_3:
+            case KeyEvent.KEYCODE_DEMO_APP_4:
+            case KeyEvent.KEYCODE_STYLUS_BUTTON_PRIMARY:
+            case KeyEvent.KEYCODE_STYLUS_BUTTON_SECONDARY:
+            case KeyEvent.KEYCODE_STYLUS_BUTTON_TERTIARY:
+            case KeyEvent.KEYCODE_STYLUS_BUTTON_TAIL:
+            case KeyEvent.KEYCODE_MACRO_1:
+            case KeyEvent.KEYCODE_MACRO_2:
+            case KeyEvent.KEYCODE_MACRO_3:
+            case KeyEvent.KEYCODE_MACRO_4:
+                return false;
+            default:
+                return true;
+        }
     }
 
     public void dump(IndentingPrintWriter ipw) {

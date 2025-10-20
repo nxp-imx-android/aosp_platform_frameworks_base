@@ -23,6 +23,8 @@ import android.annotation.Nullable;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageInfo;
 import android.graphics.drawable.Drawable;
+import android.os.StrictMode;
+import android.os.StrictMode.ThreadPolicy;
 import android.util.Slog;
 
 import java.util.HashMap;
@@ -54,9 +56,8 @@ public class PackageMetadataCache {
 
             PackageInfo packageInfo;
             try {
-                packageInfo = mPackageManager.getPackageInfo(
-                    packageName,
-                    PackageManager.GET_META_DATA);
+                packageInfo =
+                        mPackageManager.getPackageInfo(packageName, PackageManager.GET_META_DATA);
             } catch (PackageManager.NameNotFoundException e) {
                 Slog.e(TAG, "Failed to get package info for package: " + packageName, e);
                 return null;
@@ -74,7 +75,12 @@ public class PackageMetadataCache {
                 return null;
             }
 
+            final StrictMode.ThreadPolicy oldPolicy = StrictMode.getThreadPolicy();
+            StrictMode.setThreadPolicy(
+                    new ThreadPolicy.Builder(oldPolicy).permitCustomSlowCalls().build());
             byte[] serializedIcon = renderDrawableToByteArray(icon);
+            StrictMode.setThreadPolicy(oldPolicy);
+
             if (serializedIcon == null) {
                 Slog.e(TAG, "Failed to serialize icon for package: " + packageName);
                 return null;

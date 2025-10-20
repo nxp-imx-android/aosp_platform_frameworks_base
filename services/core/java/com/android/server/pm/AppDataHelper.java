@@ -245,14 +245,14 @@ public class AppDataHelper {
             // already held, since it's invoked as a side-effect of
             // executeBatchLI()
             if (e != null) {
-                logCriticalInfo(Log.WARN, "Failed to create app data for " + packageName
+                Slog.w(TAG, "Failed to create app data for " + packageName
                         + ", but trying to recover: " + e);
                 destroyAppDataLeafLIF(packageName, volumeUuid, userId, flags);
                 try {
                     createAppDataResult = mInstaller.createAppData(args);
-                    logCriticalInfo(Log.DEBUG, "Recovery succeeded!");
+                    Slog.d(TAG, "Recovery succeeded!");
                 } catch (Installer.InstallerException e2) {
-                    logCriticalInfo(Log.DEBUG, "Recovery failed!");
+                    Slog.d(TAG, "Recovery failed!");
                 }
             }
 

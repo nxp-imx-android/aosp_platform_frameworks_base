@@ -148,3 +148,6 @@ per-file PictureInPicture* = file:/libs/WindowManager/Shell/OWNERS
 
 # Zygote
 per-file *Zygote* = file:/ZYGOTE_OWNERS
+
+# Native Application
+per-file *NativeApplication* = file:/libs/native_activity_thread/OWNERS

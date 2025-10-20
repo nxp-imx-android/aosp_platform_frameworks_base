@@ -36,7 +36,7 @@ public class AppSearchDataYamlConverter {
      * Converts an array of {@link GenericDocument} objects into a YAML string. This method provides
      * options to control the output.
      *
-     * @param documents The array of {@link GenericDocument} to convert.
+     * @param document The {@link GenericDocument} to convert.
      * @param keepEmptyValues If false, properties with empty values (empty strings, empty array)
      * will be excluded.
      * @param keepNullValues If false, properties with null values will be excluded.
@@ -44,21 +44,16 @@ public class AppSearchDataYamlConverter {
      *     not be included in the output.
      * @return A YAML string representing a list of documents.
      */
-    public static String convertGenericDocumentsToYaml(
-            GenericDocument[] documents,
+    public static String convertGenericDocumentToYaml(
+            GenericDocument document,
             boolean keepEmptyValues,
             boolean keepNullValues,
             boolean keepGenericDocumentProperties) {
-        List<Map<String, Object>> list = new ArrayList<>();
-        for (GenericDocument doc : documents) {
-            list.add(
-                    genericDocumentToMap(
-                        doc,
-                        keepEmptyValues,
-                        keepNullValues,
-                        keepGenericDocumentProperties));
-        }
-        return MinimalYamlGenerator.dump(list);
+        return MinimalYamlGenerator.dump(genericDocumentToMap(
+                document,
+                keepEmptyValues,
+                keepNullValues,
+                keepGenericDocumentProperties));
     }
 
     /**

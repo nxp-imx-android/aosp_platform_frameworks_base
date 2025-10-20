@@ -65,7 +65,6 @@ import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITI
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_INTRA_OPEN;
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_NONE;
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_OPEN;
-import static com.android.wm.shell.Flags.enableDynamicInsetsForAppLaunch;
 import static com.android.wm.shell.transition.DefaultSurfaceAnimator.buildSurfaceAnimation;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.getTransitionBackgroundColorIfSet;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.getTransitionTypeFromInfo;
@@ -121,10 +120,11 @@ import com.android.wm.shell.shared.animation.Interpolators;
 import com.android.wm.shell.sysui.ShellInit;
 
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
 
 /** The default handler that handles anything not already handled. */
 public class DefaultTransitionHandler implements Transitions.TransitionHandler {
-    private static final int MAX_ANIMATION_DURATION = 3000;
+    private static final int MAX_ANIMATION_DURATION = 1500;
     private static final int SIZE_CHANGE_ANIMATION_DURATION = 400;
 
     private final TransactionPool mTransactionPool;
@@ -306,9 +306,6 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
     @Nullable
     final TransitionAnimationHelper.RoundedContentPerDisplay getRoundedContentBounds(
             TransitionInfo.Change change) {
-        if (!enableDynamicInsetsForAppLaunch()) {
-            return null;
-        }
         if (change.getTaskInfo() == null && change.getActivityComponent() == null) {
             return null;
         }
@@ -391,7 +388,9 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         // within the transition to interact with, so a background is unnecessary.
         final boolean allowBackground =
                 !com.android.window.flags.Flags.polishCloseWallpaperIncludesOpenChange()
-                        || info.getChanges().size() > 1;
+                        || (info.getChanges().size() > 1
+                        && (wallpaperTransit != WALLPAPER_TRANSITION_INTRA_OPEN
+                        && wallpaperTransit != WALLPAPER_TRANSITION_INTRA_CLOSE));
 
         for (int i = info.getChanges().size() - 1; i >= 0; --i) {
             final TransitionInfo.Change change = info.getChanges().get(i);
@@ -693,6 +692,12 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         final Color bgColor = Color.valueOf(color);
         final float[] colorArray = new float[] { bgColor.red(), bgColor.green(), bgColor.blue() };
 
+        boolean isSplitTaskInvolved = false;
+        for (var change : info.getChanges()) {
+            isSplitTaskInvolved |= (change.getTaskInfo() != null
+                    && change.getTaskInfo().getWindowingMode() == WINDOWING_MODE_MULTI_WINDOW);
+        }
+
         for (int i = 0; i < info.getRootCount(); ++i) {
             final int displayId = info.getRoot(i).getDisplayId();
             final SurfaceControl backgroundSurface = new SurfaceControl.Builder()
@@ -709,12 +714,14 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
             // Attaching the background surface to the transition root could unexpectedly make it
             // cover one of the split root tasks. To avoid this, put the background surface just
             // above the display area when split is on.
-            final boolean isSplitTaskInvolved =
-                    info.getChanges().stream().anyMatch(c-> c.getTaskInfo() != null
-                            && c.getTaskInfo().getWindowingMode() == WINDOWING_MODE_MULTI_WINDOW);
             if (isSplitTaskInvolved) {
-                mRootTDAOrganizer.relZToDisplayArea(displayId, backgroundSurface, startTransaction,
-                        -1);
+                try {
+                    mRootTDAOrganizer.relZToDisplayArea(
+                            displayId, backgroundSurface, startTransaction, -1);
+                } catch (NoSuchElementException e) {
+                    ProtoLog.wtf(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                            "Unable to add background because display %d does not exist",displayId);
+                }
             }
 
             finishTransaction.remove(backgroundSurface);

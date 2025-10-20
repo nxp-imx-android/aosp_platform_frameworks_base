@@ -37,6 +37,7 @@ import android.platform.test.annotations.Presubmit
 import android.platform.test.flag.junit.SetFlagsRule
 import android.provider.Settings
 import android.testing.TestableContext
+import android.view.Display
 import android.view.InputDevice
 import android.view.KeyCharacterMap
 import android.view.KeyEvent
@@ -200,7 +201,7 @@ class InputManagerServiceTests {
         verify(native).setTouchpadThreeFingerTapShortcutEnabled(anyBoolean())
         verify(native).setTouchpadSystemGesturesEnabled(anyBoolean())
         verify(native).setTouchpadsEnabled(anyBoolean())
-        verify(native).setShowTouches(anyBoolean())
+        verify(native).setShowTouchesEnabled(anyBoolean())
         verify(native).setMotionClassifierEnabled(anyBoolean())
         verify(native).setMaximumObscuringOpacityForTouch(anyFloat())
         verify(native).setStylusPointerIconEnabled(anyBoolean())
@@ -284,6 +285,14 @@ class InputManagerServiceTests {
 
         /* verify onKeyEventActivity callback not called */
         assertEquals(1, callback)
+    }
+
+    @Test
+    fun testSetForceShowTouchesOnDisplay() {
+        localService.setForceShowTouchesOnDisplay(Display.DEFAULT_DISPLAY, true)
+        verify(native).setForceShowTouchesOnDisplay(Display.DEFAULT_DISPLAY, true)
+        localService.setForceShowTouchesOnDisplay(Display.DEFAULT_DISPLAY, false)
+        verify(native).setForceShowTouchesOnDisplay(Display.DEFAULT_DISPLAY, false)
     }
 
     private class AutoClosingVirtualDisplays(val displays: List<VirtualDisplay>) : AutoCloseable {

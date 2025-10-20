@@ -19,7 +19,6 @@ package com.android.systemui.qs.tiles
 import android.graphics.drawable.TestStubDrawable
 import android.os.Handler
 import android.os.UserManager
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.platform.test.flag.junit.FlagsParameterization.allCombinationsOf
 import android.service.quicksettings.Tile
@@ -78,7 +77,6 @@ import org.mockito.kotlin.whenever
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
-@EnableFlags(android.app.Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST)
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 @RunWithLooper(setAsMainLooper = true)

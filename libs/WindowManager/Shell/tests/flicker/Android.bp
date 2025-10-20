@@ -28,7 +28,7 @@ filegroup {
     srcs: ["src/com/android/wm/shell/flicker/utils/*.kt"],
 }
 
-java_library {
+android_library {
     name: "wm-shell-flicker-utils",
     optimize: {
         enabled: false,
@@ -63,7 +63,6 @@ java_defaults {
         "androidx.test.ext.junit",
         "flickerlib",
         "flickerlib-helpers",
-        "flickerlib-trace_processor_shell",
         "flickertestapplib",
         "launcher-aosp-tapl",
         "launcher-helper-lib",
@@ -80,7 +79,7 @@ java_defaults {
     ],
 }
 
-java_library {
+android_library {
     name: "WMShellFlickerTestsBase",
     defaults: ["WMShellFlickerTestsDefault"],
     srcs: ["src/com/android/wm/shell/flicker/*.kt"],

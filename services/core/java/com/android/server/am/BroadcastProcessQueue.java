@@ -19,6 +19,9 @@ package com.android.server.am;
 import static com.android.internal.util.Preconditions.checkState;
 import static com.android.server.am.BroadcastRecord.deliveryStateToString;
 import static com.android.server.am.BroadcastRecord.isReceiverEquals;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_BACKGROUND;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_DEFAULT;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_UNDEFINED;
 
 import android.annotation.CheckResult;
 import android.annotation.IntDef;
@@ -602,16 +605,16 @@ class BroadcastProcessQueue {
 
     public int getPreferredSchedulingGroupLocked() {
         if (!isActive()) {
-            return ProcessList.SCHED_GROUP_UNDEFINED;
+            return SCHED_GROUP_UNDEFINED;
         } else if (mCountForeground > mCountForegroundDeferred) {
             // We have a foreground broadcast somewhere down the queue, so
             // boost priority until we drain them all
-            return ProcessList.SCHED_GROUP_DEFAULT;
+            return SCHED_GROUP_DEFAULT;
         } else if ((mActive != null) && mActive.isForeground()) {
             // We have a foreground broadcast right now, so boost priority
-            return ProcessList.SCHED_GROUP_DEFAULT;
+            return SCHED_GROUP_DEFAULT;
         } else {
-            return ProcessList.SCHED_GROUP_BACKGROUND;
+            return SCHED_GROUP_BACKGROUND;
         }
     }
 
@@ -771,6 +774,7 @@ class BroadcastProcessQueue {
             mCountManifest++;
         }
         invalidateRunnableAt();
+        tracePendingBroadcastsCount();
     }
 
     /**
@@ -812,6 +816,12 @@ class BroadcastProcessQueue {
             mCountManifest--;
         }
         invalidateRunnableAt();
+        tracePendingBroadcastsCount();
+    }
+
+    private void tracePendingBroadcastsCount() {
+        Trace.instantForTrack(Trace.TRACE_TAG_ACTIVITY_MANAGER, "Broadcasts pending per receiver",
+                processName + "/" + uid + ":" + mCountEnqueued);
     }
 
     public void traceProcessStartingBegin() {

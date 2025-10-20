@@ -18,7 +18,9 @@ package android.media;
 
 import static android.media.Utils.parseVibrationEffect;
 
+import android.annotation.FlaggedApi;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -42,6 +44,7 @@ import android.provider.Settings;
 import android.util.Log;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.util.VibrationStatsWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -113,7 +116,7 @@ public class Ringtone {
     private VibrationEffect mVibrationEffect;
     private boolean mIsVibrating;
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public Ringtone(Context context, boolean allowRemote) {
         mContext = context;
@@ -255,10 +258,12 @@ public class Ringtone {
 
     /**
      * Same as AudioManager.hasHapticChannels except it assumes an already created ringtone.
-     * If the ringtone has not been created, it will load based on URI provided at {@link #setUri}
+     * If the ringtone has not been created, it will load based on URI provided
      * and if not URI has been set, it will assume no haptic channels are present.
      * @hide
      */
+    @FlaggedApi(com.android.media.flags.Flags.FLAG_RELEASE_RINGTONE_AS_API)
+    @SystemApi
     public boolean hasHapticChannels() {
         // FIXME: support remote player, or internalize haptic channels support and remove entirely.
         try {
@@ -525,7 +530,7 @@ public class Ringtone {
         return mVibrationEffect;
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public Uri getUri() {
         return mUri;
@@ -568,7 +573,20 @@ public class Ringtone {
         }
         if (Flags.enableRingtoneHapticsCustomization() && mRingtoneVibrationSupported) {
             playVibration();
+            // Note that statsd only allows to log metrics for UIDs in [SYSTEM_UID, SHELL_UID)
+            // and apps in allowed list (e.g. SystemUI). For ringtone haptics customization, statsd
+            // will log only when the ringtone vibration triggered by Telecom (shared SYSTEM_UID)
+            // or SystemUI.
+            getVibrationStatsWriter().logCustomVibrationPatternEventIfNeeded(
+                    VibrationStatsWriter.VIBRATION_PATTERN_PLAYED,
+                    RingtoneManager.TYPE_RINGTONE, mUri);
         }
+    }
+
+    /** @hide */
+    @VisibleForTesting
+    public VibrationStatsWriter getVibrationStatsWriter() {
+        return VibrationStatsWriter.getInstance(mContext);
     }
 
     private void playVibration() {

@@ -241,6 +241,9 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
     private final boolean mEnableUdcSysfsUsbStateUpdate;
     private String mUdcName = "";
 
+    private static final String DEVICE_UAOA_ENABLED_PROPERTY = "ro.usb.userspace.aoa.enabled";
+    private boolean mEnableAoaUserspaceImplementation = false;
+
     /**
      * Counter for tracking UsbOperation operations.
      */
@@ -361,9 +364,20 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
         }
         mControlFds.put(UsbManager.FUNCTION_PTP, ptpFd);
 
-        if (android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+        boolean deviceEnabledUserspaceAoa =
+                SystemProperties.getBoolean(DEVICE_UAOA_ENABLED_PROPERTY, false);
+        Slog.i(TAG, "Device enabled userspace AOA: " + deviceEnabledUserspaceAoa);
+        mEnableAoaUserspaceImplementation =
+                android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()
+                        && deviceEnabledUserspaceAoa
+                        && nativeCheckAccessoryFfsDirectories();
+
+        Slog.i(TAG, "Enabling userspace AOA: " + mEnableAoaUserspaceImplementation);
+
+        if (mEnableAoaUserspaceImplementation) {
             if (!nativeOpenAccessoryControl()) {
-                Slog.e(TAG, "Failed to open control for accessory");
+                Slog.e(TAG, "Failed to open control for accessory, disabling userspace AOA");
+                mEnableAoaUserspaceImplementation = false;
             }
         }
 
@@ -476,9 +490,10 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
             mUEventObserver.startObserving(USB_STATE_MATCH);
         }
 
-        if (android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+        if (mEnableAoaUserspaceImplementation) {
             nativeStartVendorControlRequestMonitor();
         }
+
         sEventLogger = new EventLogger(DUMPSYS_LOG_BUFFER, "UsbDeviceManager activity");
     }
 
@@ -541,7 +556,7 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
 
         int operationId = sUsbOperationCount.incrementAndGet();
 
-        if (android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+        if (mEnableAoaUserspaceImplementation) {
             mAccessoryStrings = nativeGetAccessoryStringsFromFfs();
         } else {
             mAccessoryStrings = nativeGetAccessoryStrings();
@@ -1534,8 +1549,13 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
         }
 
         protected boolean isUsbDataTransferActive(long functions) {
+            boolean isUvcActive =
+                    Flags.considerUvcAsDataTransferActive()
+                            && (functions & UsbManager.FUNCTION_UVC) != 0;
+
             return (functions & UsbManager.FUNCTION_MTP) != 0
-                    || (functions & UsbManager.FUNCTION_PTP) != 0;
+                    || (functions & UsbManager.FUNCTION_PTP) != 0
+                    || isUvcActive;
         }
 
         public UsbAccessory getCurrentAccessory() {
@@ -2168,11 +2188,9 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
                 setUsbConfig(oemFunctions);
 
                 if (mBootCompleted
-                        && (containsFunction(functions, UsbManager.USB_FUNCTION_MTP)
-                        || containsFunction(functions, UsbManager.USB_FUNCTION_PTP))) {
-                    /**
-                     * Start up dependent services.
-                     */
+                        && (isUsbDataTransferActive(
+                                UsbManager.usbFunctionsFromString(functions)))) {
+                    // Start up dependent services.
                     updateUsbStateBroadcastIfNeeded(getAppliedFunctions(mCurrentFunctions));
                 }
 
@@ -2667,6 +2685,10 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
         return nativeGetMaxPacketSize();
     }
 
+    public boolean isAccessoryFfsEnabled() {
+        return mEnableAoaUserspaceImplementation;
+    }
+
     public long getCurrentFunctions() {
         return mHandler.getEnabledFunctions();
     }
@@ -2802,7 +2824,7 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
     /** Update accessory control state (Called by native code). */
     @Keep
     private void updateAccessoryState(String state) {
-        if (!android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+        if (!mEnableAoaUserspaceImplementation) {
             Slog.w(TAG, "Accessory state update from userspace is not supported!");
             return;
         }
@@ -2850,4 +2872,7 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
     private native boolean nativeStartVendorControlRequestMonitor();
 
     private native boolean nativeOpenAccessoryControl();
+
+    private native boolean nativeCheckAccessoryFfsDirectories();
+
 }

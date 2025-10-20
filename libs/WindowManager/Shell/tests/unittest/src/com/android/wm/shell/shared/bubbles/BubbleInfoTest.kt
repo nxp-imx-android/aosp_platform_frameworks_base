@@ -44,12 +44,12 @@ class BubbleInfoTest : ShellTestCase() {
                 "title",
                 "Some app",
                 true,
-                true,
                 ParcelableFlyoutMessage(
                     Icon.createWithContentUri(Uri.parse("content://image/123")),
                     "sender",
                     "message"
-                )
+                ),
+                false,
             )
         val parcel = Parcel.obtain()
         bubbleInfo.writeToParcel(parcel, PARCELABLE_WRITE_RETURN_VALUE)
@@ -72,5 +72,6 @@ class BubbleInfoTest : ShellTestCase() {
             assertThat(title).isEqualTo("sender")
             assertThat(message).isEqualTo("message")
         }
+        assertThat(bubbleInfo.isApp).isFalse()
     }
 }

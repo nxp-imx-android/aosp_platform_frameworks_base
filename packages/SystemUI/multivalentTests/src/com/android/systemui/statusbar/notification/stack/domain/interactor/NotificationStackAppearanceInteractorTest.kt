@@ -22,14 +22,15 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.scene.domain.interactor.sceneInteractor
-import com.android.systemui.shade.data.repository.shadeRepository
+import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimRounding
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -38,7 +39,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class NotificationStackAppearanceInteractorTest : SysuiTestCase() {
 
-    private val kosmos = testKosmos()
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val Kosmos.underTest by Kosmos.Fixture { notificationStackAppearanceInteractor }
 
     @Test
@@ -80,11 +81,11 @@ class NotificationStackAppearanceInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             val stackRounding by collectLastValue(underTest.shadeScrimRounding)
 
-            shadeRepository.setShadeLayoutWide(false)
+            enableSingleShade()
             assertThat(stackRounding)
                 .isEqualTo(ShadeScrimRounding(isTopRounded = true, isBottomRounded = false))
 
-            shadeRepository.setShadeLayoutWide(true)
+            enableSplitShade()
             assertThat(stackRounding)
                 .isEqualTo(ShadeScrimRounding(isTopRounded = true, isBottomRounded = true))
         }
@@ -93,7 +94,9 @@ class NotificationStackAppearanceInteractorTest : SysuiTestCase() {
     fun stackNotificationScrimBounds_withImproperBounds_throwsException() =
         kosmos.runTest {
             assertThrows(IllegalStateException::class.java) {
-                underTest.setNotificationShadeScrimBounds(ShadeScrimBounds(top = 100f, bottom = 99f))
+                underTest.setNotificationShadeScrimBounds(
+                    ShadeScrimBounds(top = 100f, bottom = 99f)
+                )
             }
         }
 

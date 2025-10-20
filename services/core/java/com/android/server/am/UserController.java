@@ -45,6 +45,7 @@ import static com.android.server.am.UserState.STATE_BOOTING;
 import static com.android.server.am.UserState.STATE_RUNNING_LOCKED;
 import static com.android.server.am.UserState.STATE_RUNNING_UNLOCKED;
 import static com.android.server.am.UserState.STATE_RUNNING_UNLOCKING;
+import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_ABORTED;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_INVALID_SESSION_ID;
 import static com.android.server.pm.UserJourneyLogger.EVENT_STATE_BEGIN;
@@ -2267,7 +2268,11 @@ class UserController implements Handler.Callback {
             // it should be moved outside, but for now it's not as there are many calls to
             // external components here afterwards
             updateProfileRelatedCaches();
-            mInjector.getWindowManager().setCurrentUser(userId, uss);
+            if (DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue()) {
+                mInjector.getWindowManager().prepareUserStart(userId);
+            } else {
+                mInjector.getWindowManager().setCurrentUser(userId);
+            }
             mInjector.reportCurWakefulnessUsageEvent();
             // Once the internal notion of the active user has switched, we lock the device
             // with the option to show the user switcher on the keyguard.
@@ -2395,7 +2400,13 @@ class UserController implements Handler.Callback {
 
         if (foreground) {
             t.traceBegin("moveUserToForeground");
-            moveUserToForeground(uss, userId);
+            if (DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue()) {
+                mInjector.getWindowManager().startUserSwitchTransition(oldCurUserId, userId, uss);
+            } else {
+                mInjector.getWindowManager().moveUserToForeground(userId, uss,
+                        "continueStartUserInternal");
+            }
+            EventLogTags.writeAmSwitchUser(userId);
             t.traceEnd();
         } else {
             t.traceBegin("finishUserBoot");
@@ -3219,20 +3230,6 @@ class UserController implements Handler.Callback {
         } else {
             runnable.run();
         }
-    }
-
-    private void moveUserToForeground(UserState uss, int newUserId) {
-        if (DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue()) {
-            mInjector.taskSupervisorResumeFocusedStackTopActivity();
-        } else {
-            boolean homeInFront = mInjector.taskSupervisorSwitchUser(newUserId, uss);
-            if (homeInFront) {
-                mInjector.startHomeActivity(newUserId, "moveUserToForeground");
-            } else {
-                mInjector.taskSupervisorResumeFocusedStackTopActivity();
-            }
-        }
-        EventLogTags.writeAmSwitchUser(newUserId);
     }
 
     // The two methods sendUserStartedBroadcast() and sendUserStartingBroadcast()
@@ -4810,7 +4807,7 @@ class UserController implements Handler.Callback {
          * Returns -1 if the value is unavailable.
          */
         int getLmkdKillCount() {
-            final Integer lmk = ProcessList.getLmkdKillCount(0, ProcessList.CACHED_APP_MIN_ADJ - 1);
+            final Integer lmk = ProcessList.getLmkdKillCount(0, CACHED_APP_MIN_ADJ - 1);
             return lmk != null && lmk >= 0 ? lmk : -1;
         }
 

@@ -80,19 +80,6 @@ class Ravenizer {
         allClasses: ClassNodes,
         stats: RavenizerStats,
     ) {
-        if (options.enableValidation.get) {
-            stats.validationTime = log.iTime("Validating classes") {
-                if (!validateClasses(allClasses)) {
-                    val message = "Invalid test class(es) detected." +
-                            " See error log for details."
-                    if (options.fatalValidation.get) {
-                        throw RavenizerInvalidTestException(message)
-                    } else {
-                        log.w("Warning: $message")
-                    }
-                }
-            }
-        }
         if (includeUnsupportedMockito(allClasses)) {
             log.w("Unsupported Mockito detected in ${inJar.fileName}!")
         }

@@ -20,7 +20,9 @@ import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_VERB
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
+import android.app.RavenwoodAppDriver;
 import android.util.Log;
 import android.util.Pair;
 
@@ -66,6 +68,8 @@ public final class RavenwoodRunnerState {
             Log.v(TAG, "enterTestRunner: " + mRunner);
         }
         RavenwoodDriver.initForRunner();
+        RavenwoodAppDriver.getInstance().reset();
+        RavenwoodErrorHandler.enterTestRunner();
     }
 
     public void enterTestClass() {
@@ -79,11 +83,12 @@ public final class RavenwoodRunnerState {
             Log.v(TAG, "exitTestClass: " + mRunner.mTestJavaClass.getName());
         }
         assertTrue(RAVENWOOD_RULE_ERROR, sActiveProperties.isEmpty());
-        RavenwoodErrorHandler.exitTestClass();
     }
 
     /** Called when a test method is about to start */
     public void enterTestMethod(Description description) {
+        // If the method has @DisabledOnRavenwood, this will skip the execution.
+        assumeTrue(RavenwoodEnablementChecker.getInstance().shouldEnableOnRavenwood(description));
         RavenwoodDriver.enterTestMethod(description);
         RavenwoodErrorHandler.enterTestMethod(description);
     }

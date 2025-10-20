@@ -20,7 +20,6 @@ import static android.Manifest.permission.POST_NOTIFICATIONS;
 import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
 import static android.app.NotificationChannel.DEFAULT_CHANNEL_ID;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.service.notification.Flags.notificationClassification;
 
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
@@ -714,20 +713,20 @@ public class NotificationManager {
         return getService();
     }
 
-    /** {@hide} */
+    /** @hide */
     public NotificationManager(Context context)
     {
         this(context, SystemClock.elapsedRealtimeClock());
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public NotificationManager(Context context, InstantSource clock) {
         mContext = context;
         mClock = clock;
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public static NotificationManager from(Context context) {
         return (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -842,8 +841,7 @@ public class NotificationManager {
      */
     private boolean discardNotify(UserHandle user, String pkg, @Nullable String tag, int id,
             Notification notification) {
-        if (notificationClassification()
-                && NotificationChannel.SYSTEM_RESERVED_IDS.contains(notification.getChannelId())) {
+        if (NotificationChannel.SYSTEM_RESERVED_IDS.contains(notification.getChannelId())) {
             return true;
         }
 
@@ -1005,7 +1003,7 @@ public class NotificationManager {
      *
      * @param targetPackage The package to cancel the notification as. If this package is not your
      *                      package, you can only cancel notifications you posted with
-     *                      {@link #notifyAsPackage(String, String, int, Notification).
+     *                      {@link #notifyAsPackage(String, String, int, Notification)}.
      * @param tag A string identifier for this notification.  May be {@code null}.
      * @param id An identifier for this notification.
      */
@@ -1178,7 +1176,6 @@ public class NotificationManager {
      * Apps can request this permission by sending the user to the activity that matches the system
      * intent action {@link android.provider.Settings#ACTION_APP_NOTIFICATION_PROMOTION_SETTINGS}.
      */
-    @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
     public boolean canPostPromotedNotifications() {
         INotificationManager service = service();
         try {
@@ -1193,7 +1190,6 @@ public class NotificationManager {
      * @hide
      */
     @TestApi
-    @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
     public void setCanPostPromotedNotifications(@NonNull String pkg, int uid, boolean allowed) {
         INotificationManager service = service();
         try {
@@ -1423,8 +1419,7 @@ public class NotificationManager {
      * had before it was deleted.
      */
     public void deleteNotificationChannel(String channelId) {
-        if (notificationClassification()
-                && NotificationChannel.SYSTEM_RESERVED_IDS.contains(channelId)) {
+        if (NotificationChannel.SYSTEM_RESERVED_IDS.contains(channelId)) {
             return;
         }
         INotificationManager service = service();
@@ -2236,7 +2231,6 @@ public class NotificationManager {
      * @hide
      */
     @TestApi
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void allowAssistantAdjustment(@NonNull String capability) {
         INotificationManager service = service();
         try {
@@ -2250,11 +2244,24 @@ public class NotificationManager {
      * @hide
      */
     @TestApi
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void disallowAssistantAdjustment(@NonNull String capability) {
         INotificationManager service = service();
         try {
             service.disallowAssistantAdjustment(mContext.getUserId(), capability);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    public void requestSystemAdjustments(@NonNull List<Adjustment> adjustments) {
+        INotificationManager service = service();
+        try {
+            service.requestSystemAdjustments(adjustments);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -2275,7 +2282,6 @@ public class NotificationManager {
      * @hide
      */
     @TestApi
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void setAssistantAdjustmentKeyTypeState(@Adjustment.Types int type, boolean enabled) {
         setAssistantClassificationTypeState(type, enabled);
     }
@@ -2283,7 +2289,6 @@ public class NotificationManager {
     /**
      * @hide
      */
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void setAssistantClassificationTypeState(@Adjustment.Types int type, boolean enabled) {
         INotificationManager service = service();
         try {
@@ -3593,7 +3598,6 @@ public class NotificationManager {
      * @hide
      */
     @TestApi
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public @NonNull Set<String> getUnsupportedAdjustmentTypes() {
         INotificationManager service = service();
         try {

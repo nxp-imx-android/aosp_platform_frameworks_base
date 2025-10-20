@@ -35,7 +35,6 @@ android_test {
         "androidx.test.ext.junit",
         "desktop-test-lib",
         "flickerlib-helpers",
-        "flickerlib-trace_processor_shell",
         "flickertestapplib",
         "launcher-aosp-tapl",
         "launcher-helper-lib",
@@ -43,4 +42,18 @@ android_test {
         "wm-flicker-common-app-helpers",
         "wm-shell-flicker-utils",
     ],
+}
+
+test_module_config {
+    name: "WMShellSmokeTestsDesktopMode-ProjectedMode",
+    base: "WMShellSmokeTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_annotations: ["com.android.wm.shell.ProjectedOnly"],
+}
+
+test_module_config {
+    name: "WMShellSmokeTestsDesktopMode-ExtendedMode",
+    base: "WMShellSmokeTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_annotations: ["com.android.wm.shell.ExtendedOnly"],
 }

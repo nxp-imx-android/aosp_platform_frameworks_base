@@ -32,15 +32,14 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Process
 import android.os.SystemClock
-import android.os.SystemProperties
 import android.os.test.TestLooper
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.Presubmit
 import android.platform.test.flag.junit.SetFlagsRule
 import android.provider.DeviceConfig
 import android.testing.TestableContext
 import android.testing.TestableResources
-import android.util.AtomicFile
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.InputDevice
 import android.view.KeyCharacterMap
@@ -61,14 +60,13 @@ import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.LocalServices
 import com.android.server.input.InputManagerService.WindowManagerCallbacks
 import com.android.server.input.InputManagerServiceTests.Companion.ACTION_KEY_EVENTS
+import com.android.server.input.data.TestDataStore
 import com.android.server.wm.WindowManagerInternal
-import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
 import junitparams.JUnitParamsRunner
 import junitparams.Parameters
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
@@ -100,13 +98,16 @@ import org.mockito.kotlin.times
     com.android.hardware.input.Flags.FLAG_KEYBOARD_A11Y_SHORTCUT_CONTROL,
     com.android.hardware.input.Flags.FLAG_ENABLE_SELECT_TO_SPEAK_KEY_GESTURES,
     com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_AND_MAGNIFIER_KEY_GESTURES,
+    com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_KEY_GESTURES,
     com.android.hardware.input.Flags.FLAG_ENABLE_VOICE_ACCESS_KEY_GESTURES,
-    com.android.window.flags.Flags.FLAG_CLOSE_TASK_KEYBOARD_SHORTCUT,
     com.android.window.flags.Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,
     com.android.window.flags.Flags.FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS,
     com.android.window.flags.Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
     com.android.hardware.input.Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES,
     com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
+    com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT,
+    com.android.hardware.input.Flags.FLAG_KEYBOARD_BACKLIGHT_SHORTCUTS,
+    com.android.hardware.input.Flags.FLAG_ENABLE_CONTEXTUAL_SEARCH_DESKTOP_ENTRYPOINTS,
 )
 class KeyGestureControllerTests {
 
@@ -160,7 +161,6 @@ class KeyGestureControllerTests {
     val extendedMockitoRule =
         ExtendedMockitoRule.Builder(this)
             .mockStatic(FrameworkStatsLog::class.java)
-            .mockStatic(SystemProperties::class.java)
             .mockStatic(KeyCharacterMap::class.java)
             .mockStatic(DeviceConfig::class.java)
             .mockStatic(LocalServices::class.java)
@@ -184,8 +184,8 @@ class KeyGestureControllerTests {
     private lateinit var testableResources: TestableResources
     private lateinit var keyGestureController: KeyGestureController
     private lateinit var testLooper: TestLooper
-    private lateinit var tempFile: File
-    private lateinit var inputDataStore: InputDataStore
+    private lateinit var testDataStore: TestDataStore
+    private var events = mutableListOf<KeyGestureEvent>()
 
     @Before
     fun setup() {
@@ -193,45 +193,14 @@ class KeyGestureControllerTests {
         setupInputDevices()
         setupBehaviors()
         testLooper = TestLooper()
+        testDataStore = TestDataStore()
         currentPid = Process.myPid()
         ExtendedMockito.doReturn(windowManagerInternal).`when` {
             LocalServices.getService(ArgumentMatchers.eq(WindowManagerInternal::class.java))
         }
-        tempFile = File.createTempFile("input_gestures", ".xml")
-        inputDataStore =
-            InputDataStore(
-                object : InputDataStore.FileInjector("input_gestures.xml") {
-                    private val atomicFile: AtomicFile = AtomicFile(tempFile)
-
-                    override fun openRead(userId: Int): InputStream? {
-                        return atomicFile.openRead()
-                    }
-
-                    override fun startWrite(userId: Int): FileOutputStream? {
-                        return atomicFile.startWrite()
-                    }
-
-                    override fun finishWrite(
-                        userId: Int,
-                        fos: FileOutputStream?,
-                        success: Boolean,
-                    ) {
-                        if (success) {
-                            atomicFile.finishWrite(fos)
-                        } else {
-                            atomicFile.failWrite(fos)
-                        }
-                    }
-
-                    override fun getAtomicFileForUserId(userId: Int): AtomicFile {
-                        return atomicFile
-                    }
-                }
-            )
     }
 
     private fun setupBehaviors() {
-        Mockito.`when`(SystemProperties.get("ro.debuggable")).thenReturn("1")
         testableResources.addOverride(R.bool.config_enableScreenshotChord, true)
         ExtendedMockito.`when`(
                 DeviceConfig.getLong(
@@ -281,7 +250,7 @@ class KeyGestureControllerTests {
                 testableContext,
                 testLooper.looper,
                 testLooper.looper,
-                inputDataStore,
+                testDataStore.getDataStore(),
                 object : KeyGestureController.Injector() {
                     override fun getAccessibilityShortcutController(
                         context: Context?,
@@ -296,10 +265,12 @@ class KeyGestureControllerTests {
                 },
             )
         Mockito.`when`(inputManager.registerKeyGestureEventHandler(any(), any())).thenAnswer {
-            val args = it.arguments
-            if (args[0] != null) {
-                val gestures = args[0] as List<Int>
-                val handler = args[1] as InputManager.KeyGestureEventHandler
+            val gestures = it.getArgument<List<Int>>(0)
+            if (gestures != null) {
+                val handler = it.getArgument<InputManager.KeyGestureEventHandler>(1)
+                requireNotNull(handler) {
+                    "Handler argument cannot be null when gestures are provided"
+                }
                 keyGestureController.registerKeyGestureHandler(
                     gestures.toIntArray(),
                     KeyGestureHandler { event, token ->
@@ -366,12 +337,26 @@ class KeyGestureControllerTests {
 
     @Test
     @Parameters(method = "systemGesturesTestArguments")
+    @EnableFlags(com.android.window.flags.Flags.FLAG_TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY)
     fun testKeyGestures(test: KeyGestureData) {
         setupKeyGestureController()
         testKeyGestureProduced(test, PASS_THROUGH_APP)
     }
 
+    @Keep
+    private fun multiKeyGestureArguments(): Array<KeyGestureData> {
+        return KeyGestureTestData.MULTI_KEY_SYSTEM_GESTURES
+    }
+
     @Test
+    @Parameters(method = "multiKeyGestureArguments")
+    fun testMultiKeyGestures(test: KeyGestureData) {
+        setupKeyGestureController()
+        testKeyGestureProduced(test, BLOCKING_APP)
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY)
     fun testCustomKeyGesturesNotAllowedForSystemGestures() {
         setupKeyGestureController()
         for (systemGesture in systemGesturesTestArguments()) {
@@ -454,6 +439,7 @@ class KeyGestureControllerTests {
 
     @Test
     @Parameters(method = "nonCapturableKeyGestures")
+    @EnableFlags(com.android.window.flags.Flags.FLAG_TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY)
     fun testKeyGestures_withKeyCapture_nonCapturableGestures(test: KeyGestureData) {
         setupKeyGestureController()
         enableKeyCaptureForFocussedWindow()
@@ -600,7 +586,7 @@ class KeyGestureControllerTests {
         val listener = KeyGestureEventListener { event -> events.add(KeyGestureEvent(event)) }
 
         keyGestureController.registerKeyGestureEventListener(listener, 0)
-        sendKeys(intArrayOf(KeyEvent.KEYCODE_CAPS_LOCK))
+        sendKeys(intArrayOf(KeyEvent.KEYCODE_CAPS_LOCK), assertKeysFullyConsumed = false)
         testLooper.dispatchAll()
         assertEquals("Listener should get callbacks on key gesture event completed", 1, events.size)
         assertEquals(
@@ -626,7 +612,7 @@ class KeyGestureControllerTests {
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
             KeyGestureData(
-                "META + ALT + Q -> Launch app",
+                "CTRL + SHIFT + Q -> Launch app",
                 intArrayOf(
                     KeyEvent.KEYCODE_CTRL_LEFT,
                     KeyEvent.KEYCODE_SHIFT_LEFT,
@@ -637,6 +623,22 @@ class KeyGestureControllerTests {
                 KeyEvent.META_CTRL_ON or KeyEvent.META_SHIFT_ON,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
                 AppLaunchData.createLaunchDataForComponent("com.test", "com.test.BookmarkTest"),
+            ),
+            KeyGestureData(
+                "CTRL + Overview -> Toggle Notification Panel",
+                intArrayOf(KeyEvent.KEYCODE_CTRL_LEFT, KeyEvent.KEYCODE_RECENT_APPS),
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL,
+                intArrayOf(KeyEvent.KEYCODE_RECENT_APPS),
+                KeyEvent.META_CTRL_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            ),
+            KeyGestureData(
+                "SHIFT + Brightness Up -> Keyboard Backlight Up",
+                intArrayOf(KeyEvent.KEYCODE_SHIFT_LEFT, KeyEvent.KEYCODE_BRIGHTNESS_UP),
+                KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_UP,
+                intArrayOf(KeyEvent.KEYCODE_BRIGHTNESS_UP),
+                KeyEvent.META_SHIFT_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
         )
     }
@@ -738,7 +740,7 @@ class KeyGestureControllerTests {
         val backupData = keyGestureController.getInputGestureBackupPayload(userId)
 
         // Delete the old data and reinitialize the controller simulating a "fresh" install.
-        tempFile.delete()
+        testDataStore.clear()
         setupKeyGestureController()
         keyGestureController.setCurrentUserId(userId)
         testLooper.dispatchAll()
@@ -902,7 +904,7 @@ class KeyGestureControllerTests {
         val backupData = keyGestureController.getInputGestureBackupPayload(userId)
 
         // Delete the old data and reinitialize the controller simulating a "fresh" install.
-        tempFile.delete()
+        testDataStore.clear()
         setupKeyGestureController()
         keyGestureController.setCurrentUserId(userId)
         testLooper.dispatchAll()
@@ -957,7 +959,11 @@ class KeyGestureControllerTests {
     fun testAccessibilityTvShortcutChordPressed() {
         setupKeyGestureController()
 
-        sendKeys(intArrayOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_DOWN), timeDelayMs = 10000)
+        sendKeys(
+            intArrayOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_DOWN),
+            timeDelayMs = 10000,
+            assertKeysFullyConsumed = false,
+        )
         Mockito.verify(accessibilityShortcutController, times(1)).performAccessibilityShortcut()
     }
 
@@ -976,7 +982,11 @@ class KeyGestureControllerTests {
     fun testAccessibilityTvShortcutChordPressedForLessThanTimeout() {
         setupKeyGestureController()
 
-        sendKeys(intArrayOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_DOWN), timeDelayMs = 0)
+        sendKeys(
+            intArrayOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_DOWN),
+            timeDelayMs = 0,
+            assertKeysFullyConsumed = false,
+        )
         Mockito.verify(accessibilityShortcutController, never()).performAccessibilityShortcut()
     }
 
@@ -1317,7 +1327,7 @@ class KeyGestureControllerTests {
                 /* downTime= */ 0,
                 /* eventTime= */ 0,
                 KeyEvent.ACTION_DOWN,
-                KeyEvent.KEYCODE_SPACE,
+                KeyEvent.KEYCODE_MACRO_1, // Random valid keycode
                 /* repeat= */ 0,
                 KeyEvent.META_META_ON,
             )
@@ -1346,11 +1356,11 @@ class KeyGestureControllerTests {
     }
 
     @Test
-    fun testLongPressEscape_withKeyCapture_exitCalled() {
+    fun testLongPressEscape_withKeyCapture_exitGestureCompleted() {
         setupKeyGestureController()
         enableKeyCaptureForFocussedWindow()
-        var callback = 0
-        val handler = KeyGestureHandler { _, _ -> callback++ }
+        val events = mutableListOf<KeyGestureEvent>()
+        val handler = KeyGestureHandler { event, _ -> events.add(KeyGestureEvent(event)) }
         keyGestureController.registerKeyGestureHandler(
             intArrayOf(KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK),
             handler,
@@ -1359,16 +1369,19 @@ class KeyGestureControllerTests {
         sendKeys(
             intArrayOf(KeyEvent.KEYCODE_ESCAPE),
             timeDelayMs = 2 * LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS,
+            appDelegate = BLOCKING_APP,
         )
         keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
-        assertEquals(1, callback)
+        assertEquals(2, events.size)
+        assertEquals(KeyGestureEvent.ACTION_GESTURE_COMPLETE, events[1].action)
+        assertFalse(events[1].isCancelled)
     }
 
     @Test
-    fun testLongPressEscape_withoutKeyCapture_exitNotCalled() {
+    fun testLongPressEscape_withoutKeyCapture_exitGestureNotCalled() {
         setupKeyGestureController()
-        var callback = 0
-        val handler = KeyGestureHandler { _, _ -> callback++ }
+        val events = mutableListOf<KeyGestureEvent>()
+        val handler = KeyGestureHandler { event, _ -> events.add(KeyGestureEvent(event)) }
         keyGestureController.registerKeyGestureHandler(
             intArrayOf(KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK),
             handler,
@@ -1377,17 +1390,18 @@ class KeyGestureControllerTests {
         sendKeys(
             intArrayOf(KeyEvent.KEYCODE_ESCAPE),
             timeDelayMs = 2 * LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS,
+            appDelegate = BLOCKING_APP,
         )
         keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
-        assertEquals(0, callback)
+        assertEquals(0, events.size)
     }
 
     @Test
-    fun testLongPressEscape_withKeyCapture_exitNotCalled_insufficientDuration() {
+    fun testLongPressEscape_withKeyCapture_insufficientDuration_exitGestureCancelled() {
         setupKeyGestureController()
         enableKeyCaptureForFocussedWindow()
-        var callback = 0
-        val handler = KeyGestureHandler { _, _ -> callback++ }
+        val events = mutableListOf<KeyGestureEvent>()
+        val handler = KeyGestureHandler { event, _ -> events.add(KeyGestureEvent(event)) }
         keyGestureController.registerKeyGestureHandler(
             intArrayOf(KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK),
             handler,
@@ -1396,9 +1410,28 @@ class KeyGestureControllerTests {
         sendKeys(
             intArrayOf(KeyEvent.KEYCODE_ESCAPE),
             timeDelayMs = LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS / 2,
+            appDelegate = BLOCKING_APP,
         )
         keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
-        assertEquals(0, callback)
+        assertEquals(2, events.size)
+        assertEquals(KeyGestureEvent.ACTION_GESTURE_COMPLETE, events[1].action)
+        assertTrue(events[1].isCancelled)
+    }
+
+    @Test
+    @DisableFlags(com.android.window.flags.Flags.FLAG_TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY)
+    fun testKeyGestures_fullscreenKey_toggleFullscreenStateFlagDisabled() {
+        val testData =
+            KeyGestureData(
+                "FULLSCREEN -> Turns a task into fullscreen",
+                intArrayOf(KeyEvent.KEYCODE_FULLSCREEN),
+                KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION,
+                intArrayOf(KeyEvent.KEYCODE_FULLSCREEN),
+                0,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            )
+        setupKeyGestureController()
+        testKeyGestureProduced(testData, PASS_THROUGH_APP)
     }
 
     private fun testKeyGestureProduced(test: KeyGestureData, appDelegate: AppDelegate) {
@@ -1488,6 +1521,7 @@ class KeyGestureControllerTests {
         appDelegate: AppDelegate = PASS_THROUGH_APP,
         timeDelayMs: Long = 0,
         displayId: Int = DEFAULT_DISPLAY,
+        assertKeysFullyConsumed: Boolean = true,
     ) {
         var metaState = 0
         val now = SystemClock.uptimeMillis()
@@ -1507,7 +1541,10 @@ class KeyGestureControllerTests {
                     displayId,
                     /* characters= */ "",
                 )
-            interceptKey(downEvent, appDelegate)
+            val consumed = interceptKey(downEvent, appDelegate)
+            if (assertKeysFullyConsumed) {
+                assertTrue("Key $downEvent should be consumed", consumed)
+            }
             metaState = metaState or MODIFIER.getOrDefault(key, 0)
 
             downEvent.recycle()
@@ -1535,7 +1572,10 @@ class KeyGestureControllerTests {
                     displayId,
                     /* characters= */ "",
                 )
-            interceptKey(upEvent, appDelegate)
+            val consumed = interceptKey(upEvent, appDelegate)
+            if (assertKeysFullyConsumed) {
+                assertTrue("Key $upEvent should be consumed", consumed)
+            }
             metaState = metaState and MODIFIER.getOrDefault(key, 0).inv()
 
             upEvent.recycle()
@@ -1543,14 +1583,23 @@ class KeyGestureControllerTests {
         }
     }
 
-    private fun interceptKey(event: KeyEvent, appDelegate: AppDelegate) {
+    private fun interceptKey(event: KeyEvent, appDelegate: AppDelegate): Boolean {
         keyGestureController.interceptKeyBeforeQueueing(event, FLAG_INTERACTIVE)
         testLooper.dispatchAll()
 
-        val consumed = keyGestureController.interceptKeyBeforeDispatching(null, event, 0) == -1L
-        if (!consumed && !appDelegate.consumeKey(event)) {
-            keyGestureController.interceptUnhandledKey(event, null)
+        if (keyGestureController.interceptKeyBeforeDispatching(null, event, 0) != 0L) {
+            return true
         }
+        if (appDelegate.consumeKey(event)) {
+            return true
+        }
+        if (keyGestureController.interceptUnhandledKey(event, null)) {
+            return true
+        }
+        if (KeyEvent.isModifierKey(event.keyCode)) {
+            return true
+        }
+        return false
     }
 
     fun overrideSendActionKeyEventsToFocusedWindow(

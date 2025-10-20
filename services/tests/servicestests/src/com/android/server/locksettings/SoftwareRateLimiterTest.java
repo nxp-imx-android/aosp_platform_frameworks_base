@@ -25,8 +25,14 @@ import static com.android.server.locksettings.SoftwareRateLimiterResult.RATE_LIM
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
@@ -36,14 +42,20 @@ import com.android.internal.widget.LockPatternUtils;
 import com.android.internal.widget.LockscreenCredential;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 /** atest FrameworksServicesTests:SoftwareRateLimiterTest */
 @SmallTest
@@ -51,12 +63,18 @@ import java.util.Map;
 @RunWith(AndroidJUnit4.class)
 public class SoftwareRateLimiterTest {
 
+    @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
+
+    @Rule public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
     private TestInjector mInjector;
     private SoftwareRateLimiter mRateLimiter;
 
+    @Mock private Runnable mInvalidateLockoutEndTimeCacheMock;
+
     @Before
     public void setup() {
-        mInjector = new TestInjector();
+        mInjector = new TestInjector(mInvalidateLockoutEndTimeCacheMock);
         mRateLimiter = new SoftwareRateLimiter(mInjector);
     }
 
@@ -64,43 +82,47 @@ public class SoftwareRateLimiterTest {
     public void testRateLimitSchedule() {
         mRateLimiter = new SoftwareRateLimiter(mInjector);
         final LskfIdentifier id = new LskfIdentifier(10, 1000);
-        final Duration[] delayTable = mRateLimiter.getDelayTable();
+        final Duration[] timeoutTable = mRateLimiter.getTimeoutTable();
 
-        for (int i = 0; i < delayTable.length; i++) {
+        for (int i = 0; i < timeoutTable.length; i++) {
             final LockscreenCredential guess = newPassword("password" + i);
-            Duration expectedDelay = delayTable[i];
-            if (!expectedDelay.isZero()) {
-                verifyRateLimited(id, guess, expectedDelay);
+            Duration expectedTimeout = timeoutTable[i];
+            if (!expectedTimeout.isZero()) {
+                verifyRateLimited(id, guess, expectedTimeout);
                 mInjector.advanceTime(Duration.ofSeconds(1));
-                verifyRateLimited(id, guess, expectedDelay.minus(Duration.ofSeconds(1)));
-                mInjector.advanceTime(expectedDelay.minus(Duration.ofMillis(1001)));
+                verifyRateLimited(id, guess, expectedTimeout.minus(Duration.ofSeconds(1)));
+                mInjector.advanceTime(expectedTimeout.minus(Duration.ofMillis(1001)));
                 verifyRateLimited(id, guess, Duration.ofMillis(1));
                 mInjector.advanceTime(Duration.ofMillis(1));
             }
-            verifyUniqueWrongGuess(id, guess, delayTable[Math.min(i + 1, delayTable.length - 1)]);
+            verifyUniqueWrongGuess(
+                    id,
+                    guess,
+                    Duration.ZERO,
+                    timeoutTable[Math.min(i + 1, timeoutTable.length - 1)]);
             verifyFailureCounter(id, i + 1);
         }
         verifyNoMoreGuesses(id, newPassword("password"));
     }
 
     // This test re-instantiates the SoftwareRateLimiter, like what happens after a reboot, after
-    // there have already been a certain number of wrong guesses. It verifies that the delay for the
-    // current number of wrong guesses is reset to its original value and starts counting down from
-    // the new instantiation time.
+    // there have already been a certain number of wrong guesses. It verifies that the timeout for
+    // the current number of wrong guesses is reset to its original value and starts counting down
+    // from the new instantiation time.
     @Test
-    public void testExistingDelayResetsOnReinstantiation() {
+    public void testExistingTimeoutResetsOnReinstantiation() {
         final LskfIdentifier id = new LskfIdentifier(10, 1000);
         final LockscreenCredential guess = newPassword("password");
-        final Duration[] delayTable = mRateLimiter.getDelayTable();
-        final int numWrongGuesses = delayTable.length - 1;
-        final Duration expectedDelay = delayTable[numWrongGuesses];
+        final Duration[] timeoutTable = mRateLimiter.getTimeoutTable();
+        final int numWrongGuesses = timeoutTable.length - 1;
+        final Duration expectedTimeout = timeoutTable[numWrongGuesses];
 
         mInjector.setTime(Duration.ofSeconds(10));
         mInjector.writeFailureCounter(id, numWrongGuesses);
         mRateLimiter = new SoftwareRateLimiter(mInjector);
 
         mInjector.setTime(Duration.ofSeconds(1));
-        verifyRateLimited(id, guess, expectedDelay.minus(Duration.ofSeconds(1)));
+        verifyRateLimited(id, guess, expectedTimeout.minus(Duration.ofSeconds(1)));
     }
 
     @Test
@@ -157,7 +179,8 @@ public class SoftwareRateLimiterTest {
                 verifyRateLimited(id, prevGuess);
                 return;
             }
-            mRateLimiter.reportFailure(id, nextGuess, /* isCertainlyWrongGuess= */ true);
+            mRateLimiter.reportFailure(
+                    id, nextGuess, /* isCertainlyWrongGuess= */ true, Duration.ZERO);
         }
         fail("Rate-limiter never kicked in");
     }
@@ -194,7 +217,7 @@ public class SoftwareRateLimiterTest {
 
         for (int i = 0; i < n; i++) {
             verifyUniqueWrongGuess(id, newPassword("password" + i));
-            mInjector.advanceTime(Duration.ofDays(1)); // Advance past any delay
+            mInjector.advanceTime(Duration.ofDays(1)); // Advance past any timeout
         }
         SoftwareRateLimiterResult result = mRateLimiter.apply(id, newPassword("password0"));
         assertThat(result.code).isEqualTo(expectedResultCode);
@@ -206,7 +229,7 @@ public class SoftwareRateLimiterTest {
 
         for (int i = 0; i < SoftwareRateLimiter.MAX_SAVED_WRONG_GUESSES; i++) {
             verifyUniqueWrongGuess(id, newPassword("password" + i));
-            mInjector.advanceTime(Duration.ofDays(1)); // Advance past any delay
+            mInjector.advanceTime(Duration.ofDays(1)); // Advance past any timeout
         }
         // The list of saved guesses should now be full. Try the oldest one, which should cause it
         // to be moved to the front of the list.
@@ -214,7 +237,7 @@ public class SoftwareRateLimiterTest {
 
         // Try a new guess. Then verify that it caused the eviction of password1, not password0.
         verifyUniqueWrongGuess(id, newPassword("passwordN"));
-        mInjector.advanceTime(Duration.ofDays(1)); // Advance past any delay
+        mInjector.advanceTime(Duration.ofDays(1)); // Advance past any timeout
         verifyDuplicateWrongGuess(id, newPassword("password0"));
         verifyUniqueWrongGuess(id, newPassword("password1"));
     }
@@ -404,7 +427,7 @@ public class SoftwareRateLimiterTest {
         mRateLimiter = new SoftwareRateLimiter(mInjector, /* enforcing= */ false);
         for (int i = 0; i < 100; i++) {
             final LockscreenCredential guess = newPassword("password" + i);
-            verifyUniqueWrongGuess(id, guess, Duration.ZERO);
+            verifyUniqueWrongGuess(id, guess, Duration.ZERO, Duration.ZERO);
         }
     }
 
@@ -415,7 +438,7 @@ public class SoftwareRateLimiterTest {
 
         mRateLimiter = new SoftwareRateLimiter(mInjector, /* enforcing= */ false);
         for (int i = 0; i < 100; i++) {
-            verifyUniqueWrongGuess(id, guess, Duration.ZERO);
+            verifyUniqueWrongGuess(id, guess, Duration.ZERO, Duration.ZERO);
         }
     }
 
@@ -430,7 +453,8 @@ public class SoftwareRateLimiterTest {
         for (int i = 0; i < 2; i++) {
             SoftwareRateLimiterResult result = mRateLimiter.apply(id, guess);
             assertThat(result.code).isEqualTo(CONTINUE_TO_HARDWARE);
-            mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ false);
+            mRateLimiter.reportFailure(
+                    id, guess, /* isCertainlyWrongGuess= */ false, Duration.ZERO);
         }
     }
 
@@ -448,10 +472,114 @@ public class SoftwareRateLimiterTest {
                 return;
             }
             assertThat(result.code).isEqualTo(CONTINUE_TO_HARDWARE);
-            mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ false);
+            mRateLimiter.reportFailure(
+                    id, guess, /* isCertainlyWrongGuess= */ false, Duration.ZERO);
             verifyFailureCounter(id, i + 1);
         }
         fail("Rate-limiter never kicked in");
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
+    public void testReportFailureWithHwTimeout_updatesLockoutEndTime() {
+        final LskfIdentifier id = new LskfIdentifier(10, 1000);
+        final LockscreenCredential guess = newPassword("password");
+        final Duration hwTimeout = Duration.ofSeconds(60);
+        final Duration timeSinceBoot = Duration.ofSeconds(10);
+        mInjector.setTime(timeSinceBoot);
+
+        verifyUniqueWrongGuess(id, guess, hwTimeout, hwTimeout);
+
+        final Duration lockoutEndTime = mRateLimiter.getLockoutEndTime(id);
+        assertThat(lockoutEndTime).isEqualTo(timeSinceBoot.plus(hwTimeout));
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
+    public void testReportFailureWithHwTimeout_doesNotUpdateLockoutEndTimeWhenNotManagingEndTime() {
+        final LskfIdentifier id = new LskfIdentifier(10, 1000);
+        final LockscreenCredential guess = newPassword("password");
+        final Duration hwTimeout = Duration.ofSeconds(60);
+        final Duration timeSinceBoot = Duration.ofSeconds(10);
+        mInjector.setTime(timeSinceBoot);
+
+        verifyUniqueWrongGuess(id, guess, hwTimeout, Duration.ZERO);
+
+        final Duration lockoutEndTime = mRateLimiter.getLockoutEndTime(id);
+        assertThat(lockoutEndTime).isEqualTo(Duration.ZERO);
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
+    public void testReportFailureWithHwTimeout_shorterHwTimeoutNotUsed() {
+        final Duration[] timeoutTable = mRateLimiter.getTimeoutTable();
+        final int timeoutThreshold = findIndexOfFirstNonZeroTimeout(timeoutTable);
+        final LskfIdentifier id = new LskfIdentifier(10, 1000);
+        final LockscreenCredential guess5 = newPassword("password5");
+        final Duration swTimeout = timeoutTable[timeoutThreshold];
+        // Shorter than the software timeout
+        final Duration shorterHwTimeout = swTimeout.minus(Duration.ofSeconds(1));
+        final Duration now = Duration.ofSeconds(10);
+        mInjector.setTime(now);
+        makeUniqueWrongGuesses(id, timeoutThreshold - 1);
+        assertThat(mRateLimiter.getLockoutEndTime(id)).isEqualTo(Duration.ZERO);
+        reset(mInvalidateLockoutEndTimeCacheMock);
+
+        verifyUniqueWrongGuess(id, guess5, shorterHwTimeout, swTimeout);
+
+        final Duration expectedLockoutEnd = now.plus(swTimeout);
+        assertThat(mRateLimiter.getLockoutEndTime(id)).isEqualTo(expectedLockoutEnd);
+        // First for the hardware timeout, then for the software timeout
+        verify(mInvalidateLockoutEndTimeCacheMock, times(2)).run();
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
+    public void testReportFailureWithHwTimeout_longerHwTimeoutIsUsed() {
+        final Duration[] timeoutTable = mRateLimiter.getTimeoutTable();
+        final int timeoutThreshold = findIndexOfFirstNonZeroTimeout(timeoutTable);
+        final LskfIdentifier id = new LskfIdentifier(10, 1000);
+        final LockscreenCredential guess5 = newPassword("password5");
+        final Duration swTimeout = timeoutTable[timeoutThreshold];
+        // Longer than the software timeout
+        final Duration longerHwTimeout = swTimeout.plus(Duration.ofSeconds(1));
+        final Duration now = Duration.ofSeconds(10);
+        mInjector.setTime(now);
+        reset(mInvalidateLockoutEndTimeCacheMock);
+        makeUniqueWrongGuesses(id, timeoutThreshold - 1);
+        assertThat(mRateLimiter.getLockoutEndTime(id)).isEqualTo(Duration.ZERO);
+
+        verifyUniqueWrongGuess(id, guess5, longerHwTimeout, longerHwTimeout);
+
+        final Duration expectedLockoutEnd = now.plus(longerHwTimeout);
+        assertThat(mRateLimiter.getLockoutEndTime(id)).isEqualTo(expectedLockoutEnd);
+        verify(mInvalidateLockoutEndTimeCacheMock).run();
+    }
+
+    private static int findIndexOfFirstNonZeroTimeout(Duration[] timeoutTable) {
+        return IntStream.range(0, timeoutTable.length)
+                .filter(i -> !timeoutTable[i].isZero())
+                .findFirst()
+                .getAsInt();
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
+    public void testLockoutEndTime_clearAfterExpiration() {
+        final LskfIdentifier id = new LskfIdentifier(10, 1000);
+        final LockscreenCredential guess = newPassword("password");
+        final Duration hwTimeout = Duration.ofMinutes(1);
+        mInjector.setTime(Duration.ofSeconds(10));
+        reset(mInvalidateLockoutEndTimeCacheMock);
+
+        // Update after recording the hardware timeout.
+        verifyUniqueWrongGuess(id, guess, hwTimeout, hwTimeout);
+        verify(mInvalidateLockoutEndTimeCacheMock).run();
+
+        // Update after clearing the lockout end time.
+        mInjector.advanceTime(Duration.ofMinutes(2));
+        assertThat(mRateLimiter.getLockoutEndTime(id)).isEqualTo(Duration.ZERO);
+        verify(mInvalidateLockoutEndTimeCacheMock, times(2)).run();
     }
 
     private void makeGuessesUntilRateLimited(LskfIdentifier id) {
@@ -462,7 +590,7 @@ public class SoftwareRateLimiterTest {
                 assertThat(result.code).isEqualTo(RATE_LIMITED);
                 return;
             }
-            mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ true);
+            mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ true, Duration.ZERO);
         }
         fail("Rate-limiter never kicked in");
     }
@@ -496,10 +624,10 @@ public class SoftwareRateLimiterTest {
     }
 
     private void verifyRateLimited(
-            LskfIdentifier id, LockscreenCredential guess, Duration expectedRemainingDelay) {
+            LskfIdentifier id, LockscreenCredential guess, Duration expectedTimeout) {
         SoftwareRateLimiterResult result = mRateLimiter.apply(id, guess);
         assertThat(result.code).isEqualTo(RATE_LIMITED);
-        assertThat(result.remainingDelay).isEqualTo(expectedRemainingDelay);
+        assertThat(result.timeout).isEqualTo(expectedTimeout);
     }
 
     // Verifies that the rate-limiter returns a status of DUPLICATE_WRONG_GUESS for the given guess.
@@ -508,22 +636,32 @@ public class SoftwareRateLimiterTest {
         assertThat(result.code).isEqualTo(DUPLICATE_WRONG_GUESS);
     }
 
+    private void makeUniqueWrongGuesses(LskfIdentifier id, int guesses) {
+        for (int i = 0; i < guesses; i++) {
+            final LockscreenCredential guess = newPassword("wrong_guess" + i);
+            verifyUniqueWrongGuess(id, guess);
+        }
+    }
+
     // Verifies that the rate-limiter returns a status of CONTINUE_TO_HARDWARE for the given guess.
-    // Then reports a wrong guess to the rate-limiter.
+    // Then reports a wrong guess to the rate-limiter with a hwTimeout of 0.
     private void verifyUniqueWrongGuess(LskfIdentifier id, LockscreenCredential guess) {
         SoftwareRateLimiterResult result = mRateLimiter.apply(id, guess);
         assertThat(result.code).isEqualTo(CONTINUE_TO_HARDWARE);
-        mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ true);
+        mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ true, Duration.ZERO);
     }
 
-    // Same as above but also verifies the next delay reported by reportFailure().
+    // Same as above but provide a hwTimeout and verify the next timeout from reportFailure().
     private void verifyUniqueWrongGuess(
-            LskfIdentifier id, LockscreenCredential guess, Duration expectedNextDelay) {
+            LskfIdentifier id,
+            LockscreenCredential guess,
+            Duration hwTimeout,
+            Duration expectedNextTimeout) {
         SoftwareRateLimiterResult result = mRateLimiter.apply(id, guess);
         assertThat(result.code).isEqualTo(CONTINUE_TO_HARDWARE);
-        Duration nextDelay =
-                mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ true);
-        assertThat(nextDelay).isEqualTo(expectedNextDelay);
+        Duration nextTimeout =
+                mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ true, hwTimeout);
+        assertThat(nextTimeout).isEqualTo(expectedNextTimeout);
     }
 
     private void verifyFailureCounter(LskfIdentifier id, int expectedValue) {
@@ -535,6 +673,11 @@ public class SoftwareRateLimiterTest {
         private final Map<LskfIdentifier, Integer> mFailureCounters = new HashMap<>();
         private final List<WorkItem> mWorkList = new ArrayList<>();
         private Duration mTimeSinceBoot = Duration.ZERO;
+        private final Runnable mInvalidateLockoutEndTimeCacheRunnable;
+
+        TestInjector(Runnable invalidateLockoutEndTimeCacheRunnable) {
+            mInvalidateLockoutEndTimeCacheRunnable = invalidateLockoutEndTimeCacheRunnable;
+        }
 
         List<WorkItem> getWorkList() {
             return mWorkList;
@@ -576,6 +719,11 @@ public class SoftwareRateLimiterTest {
         @Override
         public int getHardwareRateLimiter(LskfIdentifier id) {
             return FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__WEAVER;
+        }
+
+        @Override
+        public void invalidateLockoutEndTimeCache() {
+            mInvalidateLockoutEndTimeCacheRunnable.run();
         }
     }
 

@@ -298,6 +298,9 @@ interface ISub {
     void setPhoneNumber(int subId, int source, String number,
             String callingPackage, String callingFeatureId);
 
+    String getLastKnownPhoneNumberFromFirstAvailableSource(int subId,
+            String callingPackage, String callingFeatureId);
+
     /**
      * Set the Usage Setting for this subscription.
      *

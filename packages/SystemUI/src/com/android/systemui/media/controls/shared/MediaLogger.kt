@@ -27,6 +27,30 @@ import javax.inject.Inject
 @SysUISingleton
 class MediaLogger @Inject constructor(@MediaLog private val buffer: LogBuffer) {
 
+    fun logMediaNotificationEnteredPipeline(packageName: String, title: CharSequence?) {
+        buffer.log(
+            TAG,
+            LogLevel.DEBUG,
+            {
+                str1 = packageName
+                str2 = title.toString()
+            },
+            { "media notification entered pipeline, packageName: $str1, title: $str2" },
+        )
+    }
+
+    fun logMediaNotificationExitedPipeline(packageName: String, title: CharSequence?) {
+        buffer.log(
+            TAG,
+            LogLevel.DEBUG,
+            {
+                str1 = packageName
+                str2 = title.toString()
+            },
+            { "media notification exited pipeline, packageName: $str1, title: $str2" },
+        )
+    }
+
     fun logMediaLoaded(instanceId: InstanceId, active: Boolean, reason: String) {
         buffer.log(
             TAG,

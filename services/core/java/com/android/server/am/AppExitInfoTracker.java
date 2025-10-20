@@ -623,6 +623,19 @@ public final class AppExitInfoTracker {
         return info;
     }
 
+    /** Returns exit info from the last time the given process had UI, or null. */
+    @Nullable
+    ApplicationExitInfo getLastExitInfoForUiProcess(
+            final String packageName, final int uid, final String processName) {
+        synchronized (mLock) {
+            final AppExitInfoContainer container = mData.get(packageName, uid);
+            if (container == null) {
+                return null;
+            }
+            return container.getMostRecentExitInfoLocked(processName, /* filterHasShownUi */ true);
+        }
+    }
+
     @VisibleForTesting
     void onUserRemoved(int userId) {
         mAppExitInfoSourceZygote.removeByUserId(userId);
@@ -1042,7 +1055,7 @@ public final class AppExitInfoTracker {
             info.setProcessName(app.processName);
             info.setConnectionGroup(app.mServices.getConnectionGroup());
             info.setPackageName(app.info.packageName);
-            info.setPackageList(app.getPackageList());
+            info.setPackageList(app.getProcessPackageNames());
             info.setReason(ApplicationExitInfo.REASON_UNKNOWN);
             info.setSubReason(ApplicationExitInfo.SUBREASON_UNKNOWN);
             info.setStatus(0);
@@ -1051,6 +1064,7 @@ public final class AppExitInfoTracker {
             info.setRss(app.mProfile.getLastRss());
             info.setTimestamp(timestamp);
             info.setHasForegroundServices(app.mServices.hasReportedForegroundServices());
+            info.setHasShownUi(app.getHasShownUi());
         }
 
         return info;
@@ -1332,6 +1346,35 @@ public final class AppExitInfoTracker {
         AppExitInfoContainer(final int maxCapacity) {
             mExitInfos = new ArrayList<ApplicationExitInfo>();
             mMaxCapacity = maxCapacity;
+        }
+
+        /**
+         * Returns the latest exit info that matches all filters, or null.
+         *
+         * @param processNameFilter ProcessName filter. Use empty string ("") to disable.
+         * @param hasShownUiFilter HasShownUi filter. Use null to disable.
+         */
+        @VisibleForTesting
+        @GuardedBy("mLock")
+        @Nullable ApplicationExitInfo getMostRecentExitInfoLocked(
+                final String processNameFilter,
+                final @Nullable Boolean hasShownUiFilter) {
+            ApplicationExitInfo result = null;
+            for (int i = 0, size = mExitInfos.size(); i < size; i++) {
+                final ApplicationExitInfo info = mExitInfos.get(i);
+                if (!TextUtils.isEmpty(processNameFilter)
+                        && !processNameFilter.equals(info.getProcessName())) {
+                    continue;
+                }
+                if (hasShownUiFilter != null && hasShownUiFilter != info.hasShownUi()) {
+                    continue;
+                }
+
+                if (result == null || result.getTimestamp() < info.getTimestamp()) {
+                    result = info;
+                }
+            }
+            return result;
         }
 
         @VisibleForTesting

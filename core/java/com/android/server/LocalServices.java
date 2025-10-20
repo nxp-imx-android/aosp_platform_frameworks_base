@@ -27,7 +27,7 @@ import android.util.ArrayMap;
  * Once all services are converted to the SystemService interface, this class can be absorbed
  * into SystemServiceManager.
  *
- * {@hide}
+ * @hide
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class LocalServices {

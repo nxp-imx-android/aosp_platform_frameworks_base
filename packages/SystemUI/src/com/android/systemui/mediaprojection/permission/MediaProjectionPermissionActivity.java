@@ -56,7 +56,6 @@ import android.util.Log;
 import android.view.Display;
 import android.view.Window;
 
-import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger;
 import com.android.systemui.mediaprojection.MediaProjectionServiceHelper;
 import com.android.systemui.mediaprojection.MediaProjectionUtils;
@@ -65,10 +64,8 @@ import com.android.systemui.mediaprojection.appselector.MediaProjectionAppSelect
 import com.android.systemui.mediaprojection.devicepolicy.ScreenCaptureDevicePolicyResolver;
 import com.android.systemui.mediaprojection.devicepolicy.ScreenCaptureDisabledDialogDelegate;
 import com.android.systemui.res.R;
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureActivityIntentParameters;
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType;
-import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor;
 import com.android.systemui.screencapture.sharescreen.domain.interactor.ScreenCaptureShareScreenFeaturesInteractor;
+import com.android.systemui.screencapture.ui.ShareScreenActivity;
 import com.android.systemui.statusbar.phone.AlertDialogWithDelegate;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
 
@@ -83,14 +80,11 @@ public class MediaProjectionPermissionActivity extends Activity {
     private static final float MAX_APP_NAME_SIZE_PX = 500f;
     private static final String ELLIPSIS = "\u2026";
 
-    private final FeatureFlags mFeatureFlags;
     private final Lazy<ScreenCaptureDevicePolicyResolver> mScreenCaptureDevicePolicyResolver;
     private final StatusBarManager mStatusBarManager;
     private final MediaProjectionMetricsLogger mMediaProjectionMetricsLogger;
     private final ScreenCaptureDisabledDialogDelegate mScreenCaptureDisabledDialogDelegate;
     private final KeyguardManager mKeyguardManager;
-
-    private final ScreenCaptureUiInteractor mScreenCaptureUiInteractor;
 
     private String mPackageName;
     private int mUid;
@@ -106,20 +100,16 @@ public class MediaProjectionPermissionActivity extends Activity {
 
     @Inject
     public MediaProjectionPermissionActivity(
-            FeatureFlags featureFlags,
             Lazy<ScreenCaptureDevicePolicyResolver> screenCaptureDevicePolicyResolver,
             StatusBarManager statusBarManager,
             KeyguardManager keyguardManager,
             MediaProjectionMetricsLogger mediaProjectionMetricsLogger,
-            ScreenCaptureDisabledDialogDelegate screenCaptureDisabledDialogDelegate,
-            ScreenCaptureUiInteractor screenCaptureUiInteractor) {
-        mFeatureFlags = featureFlags;
+            ScreenCaptureDisabledDialogDelegate screenCaptureDisabledDialogDelegate) {
         mScreenCaptureDevicePolicyResolver = screenCaptureDevicePolicyResolver;
         mStatusBarManager = statusBarManager;
         mKeyguardManager = keyguardManager;
         mMediaProjectionMetricsLogger = mediaProjectionMetricsLogger;
         mScreenCaptureDisabledDialogDelegate = screenCaptureDisabledDialogDelegate;
-        mScreenCaptureUiInteractor = screenCaptureUiInteractor;
     }
 
     @Override
@@ -213,11 +203,16 @@ public class MediaProjectionPermissionActivity extends Activity {
 
         final boolean showLargeScreenShareDialog =
                 !hasCastingCapabilities
-                && ScreenCaptureShareScreenFeaturesInteractor
+                        && ScreenCaptureShareScreenFeaturesInteractor
                         .INSTANCE.isLargeScreenSharingEnabled();
         final Runnable screenShareDialogRunnable;
         if (showLargeScreenShareDialog) {
-            screenShareDialogRunnable = this::showShareScreenUI;
+            screenShareDialogRunnable = () -> grantMediaProjectionPermission(
+                    SINGLE_APP,
+                    /* hasCastingCapabilities= */ false,
+                    getDisplay().getDisplayId(),
+                    /* isLargeScreen = */ true
+            );
         } else {
             // Using application context for the dialog, instead of the activity context, so we get
             // the correct screen width when in split screen.
@@ -243,19 +238,6 @@ public class MediaProjectionPermissionActivity extends Activity {
         if (savedInstanceState == null) {
             mMediaProjectionMetricsLogger.notifyPermissionRequestDisplayed(mUid);
         }
-    }
-
-    private void showShareScreenUI() {
-
-        final ScreenCaptureActivityIntentParameters params =
-                new ScreenCaptureActivityIntentParameters(
-                        ScreenCaptureType.SHARE_SCREEN,
-                        mReviewGrantedConsentRequired,
-                        /* resultReceiver= */ null,
-                        /* mediaProjection= */ null,
-                        getHostUserHandle(), mUid);
-        mScreenCaptureUiInteractor.show(params);
-        finish();
     }
 
     private String extractAppName(ApplicationInfo applicationInfo, PackageManager packageManager) {
@@ -314,7 +296,7 @@ public class MediaProjectionPermissionActivity extends Activity {
                     grantMediaProjectionPermission(
                             selectedOption.getMode(),
                             hasCastingCapabilities,
-                            selectedOption.getDisplayId());
+                            selectedOption.getDisplayId(), /* isLargeScreen = */ false);
                 };
         Runnable onCancelClicked = () -> finish(RECORD_CANCEL, /* projection= */ null);
         if (hasCastingCapabilities) {
@@ -351,12 +333,11 @@ public class MediaProjectionPermissionActivity extends Activity {
     }
 
     private void setUpDialog(AlertDialog dialog) {
-        SystemUIDialog.registerDismissListener(dialog);
+        SystemUIDialog.registerDismissListener(dialog, this::onDialogDismissedOrCancelled);
         SystemUIDialog.applyFlags(dialog, /* showWhenLocked= */ false);
         SystemUIDialog.setDialogSize(dialog);
 
         dialog.setOnCancelListener(this::onDialogDismissedOrCancelled);
-        dialog.setOnDismissListener(this::onDialogDismissedOrCancelled);
         dialog.create();
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).setFilterTouchesWhenObscured(true);
 
@@ -403,7 +384,8 @@ public class MediaProjectionPermissionActivity extends Activity {
     }
 
     private void grantMediaProjectionPermission(
-            int screenShareMode, boolean hasCastingCapabilities, int displayId) {
+            int screenShareMode, boolean hasCastingCapabilities,
+            int displayId, boolean isLargeScreen) {
         try {
             IMediaProjection projection =
                     MediaProjectionServiceHelper.createOrReuseProjection(
@@ -413,15 +395,19 @@ public class MediaProjectionPermissionActivity extends Activity {
                 setCommonIntentExtras(intent, hasCastingCapabilities, projection);
                 setResult(RESULT_OK, intent);
                 finish(RECORD_CONTENT_DISPLAY, projection);
-            }
-            if (screenShareMode == SINGLE_APP) {
-                final Intent intent = new Intent(this,
-                        MediaProjectionAppSelectorActivity.class);
+            } else if (screenShareMode == SINGLE_APP) {
+                final Intent intent = new Intent(this, isLargeScreen
+                        ? ShareScreenActivity.class
+                        : MediaProjectionAppSelectorActivity.class);
                 setCommonIntentExtras(intent, hasCastingCapabilities, projection);
-                intent.putExtra(MediaProjectionAppSelectorActivity.EXTRA_HOST_APP_USER_HANDLE,
+                intent.putExtra(isLargeScreen ? ShareScreenActivity.EXTRA_HOST_APP_USER_HANDLE
+                                : MediaProjectionAppSelectorActivity.EXTRA_HOST_APP_USER_HANDLE,
                         getHostUserHandle());
-                intent.putExtra(
-                        MediaProjectionAppSelectorActivity.EXTRA_HOST_APP_UID,
+                if (isLargeScreen) {
+                    intent.putExtra(ShareScreenActivity.EXTRA_PACKAGE_NAME, mPackageName);
+                }
+                intent.putExtra(isLargeScreen ? ShareScreenActivity.EXTRA_HOST_APP_UID
+                                : MediaProjectionAppSelectorActivity.EXTRA_HOST_APP_UID,
                         getLaunchedFromUid());
                 intent.putExtra(EXTRA_USER_REVIEW_GRANTED_CONSENT, mReviewGrantedConsentRequired);
                 intent.setFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
@@ -438,7 +424,7 @@ public class MediaProjectionPermissionActivity extends Activity {
             Log.e(TAG, "Error granting projection permission", e);
             finishAsCancelled();
         } finally {
-            if (mDialog != null) {
+            if (!isLargeScreen && mDialog != null) {
                 mDialog.dismiss();
             }
         }
@@ -480,6 +466,10 @@ public class MediaProjectionPermissionActivity extends Activity {
     }
 
     private void onDialogDismissedOrCancelled(DialogInterface dialogInterface) {
+        onDialogDismissedOrCancelled();
+    }
+
+    private void onDialogDismissedOrCancelled() {
         if (!isFinishing()) {
             finish();
         }

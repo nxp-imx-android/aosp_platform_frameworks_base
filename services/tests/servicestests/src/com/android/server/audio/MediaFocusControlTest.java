@@ -67,6 +67,10 @@ public class MediaFocusControlTest {
         public void forgetUid(int uid) {
         }
 
+        public boolean isPlaybackActiveForUid(int uid) {
+            return true;
+        }
+
         public long getFadeOutDurationMillis(@NonNull AudioAttributes aa) {
             return 100;
         }
@@ -99,17 +103,17 @@ public class MediaFocusControlTest {
     @Test
     public void testSendFocusLossAndUpdate() throws Exception {
         // simulate a media app requesting focus, followed by an alarm
-        mMediaFocusControl.requestAudioFocus(MEDIA_ATTRIBUTES, AudioManager.AUDIOFOCUS_GAIN,
-                mICallBack, null /*focusDispatcher*/, "clientMedia", "packMedia",
-                AudioManager.AUDIOFOCUS_FLAG_TEST /*flags*/, 35 /*sdk*/, false/*forceDuck*/,
-                MEDIA_UID, true /*permissionOverridesCheck*/);
+        mMediaFocusControl.requestAudioFocus(MEDIA_UID, MEDIA_ATTRIBUTES,
+                AudioManager.AUDIOFOCUS_GAIN, mICallBack, null /*focusDispatcher*/,
+                "clientMedia", "packMedia", AudioManager.AUDIOFOCUS_FLAG_TEST /*flags*/,
+                35 /*sdk*/, false/*forceDuck*/, MEDIA_UID, true /*permissionOverridesCheck*/);
         final AudioFocusInfo alarm = new AudioFocusInfo(ALARM_ATTRIBUTES, ALARM_UID,
                 "clientAlarm", "packAlarm",
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK, 0/*lossReceived*/,
                 AudioManager.AUDIOFOCUS_FLAG_TEST /*flags*/, 35 /*sdk*/);
-        mMediaFocusControl.requestAudioFocus(alarm.getAttributes(), alarm.getGainRequest(),
-                mICallBack, null /*focusDispatcher*/, alarm.getClientId(), alarm.getPackageName(),
-                alarm.getFlags(), alarm.getSdkTarget(), false/*forceDuck*/,
+        mMediaFocusControl.requestAudioFocus(ALARM_UID, alarm.getAttributes(),
+                alarm.getGainRequest(), mICallBack, null /*focusDispatcher*/, alarm.getClientId(),
+                alarm.getPackageName(), alarm.getFlags(), alarm.getSdkTarget(), false/*forceDuck*/,
                 alarm.getClientUid(), true /*permissionOverridesCheck*/);
         // verify stack is in expected state
         List<AudioFocusInfo> stack = mMediaFocusControl.getFocusStack();

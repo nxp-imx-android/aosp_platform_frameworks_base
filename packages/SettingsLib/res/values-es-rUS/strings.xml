@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Conectando…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Conectado<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Vinculando..."</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"No se puede vincular"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"No se puede conectar"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Conectado (sin teléfono) a <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Conectado (sin archivos multimedia) a <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Conectado (sin teléfono/multimedia) a <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -116,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Activo (solo derecho)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Activos (izquierdo y derecho)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"No se pudo actualizar el sonido envolvente"</string>
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"No se pudo actualizar el ajuste predeterminado"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Seleccionado"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Activado (solo para contenido multimedia). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de batería."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Activo (solo para contenido multimedia); I: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>; D: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> de batería."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Dispositivo de invitado. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de batería."</string>
@@ -341,11 +345,11 @@
     <string name="private_dns_mode_provider_failure" msgid="8356259467861515108">"No se pudo establecer conexión"</string>
     <string name="wifi_display_certification_summary" msgid="8111151348106907513">"Muestra opciones de certificación de pantalla inalámbrica"</string>
     <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"Aumenta el nivel de registro Wi-Fi y se muestra por SSID RSSI en el selector de Wi-Fi"</string>
-    <string name="wifi_scan_throttling_summary" msgid="2577105472017362814">"Reduce el agotamiento de la batería y mejora el rendimiento de la red."</string>
+    <string name="wifi_scan_throttling_summary" msgid="2577105472017362814">"Reduce el agotamiento de la batería y mejora el rendimiento de la red"</string>
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Si este modo está habilitado, es posible que la dirección MAC del dispositivo cambie cada vez que se conecte a una red que tenga habilitada la aleatorización de MAC."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"De uso medido"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Sin tarifa plana"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Tamaños de los búferes de registro"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Tamaño del búfer del registrador de eventos"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Selecciona el tamaño del Logger por búfer"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"¿Borrar el almacenamiento persistente del registrador?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Cuando ya no usamos el registrador persistente para monitorear, debemos borrar los datos que almacena el registrador en tu dispositivo."</string>
@@ -393,7 +397,7 @@
     <string name="debug_monitoring_category" msgid="1597387133765424994">"Supervisión"</string>
     <string name="window_management_category" msgid="2015535427098365170">"Administración de ventanas"</string>
     <string name="strict_mode" msgid="889864762140862437">"Modo estricto"</string>
-    <string name="strict_mode_summary" msgid="1838248687233554654">"Parpadear si aplicaciones tardan en proceso principal"</string>
+    <string name="strict_mode_summary" msgid="1838248687233554654">"La pantalla parpadea si las aplicaciones tardan en el subproceso principal"</string>
     <string name="pointer_location" msgid="7516929526199520173">"Ubicación del puntero"</string>
     <string name="pointer_location_summary" msgid="957120116989798464">"Muestra los datos táctiles en la pantalla"</string>
     <string name="show_touches" msgid="8437666942161289025">"Mostrar presiones"</string>
@@ -408,7 +412,7 @@
     <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"Las vistas parpadean cuando se actualizan"</string>
     <string name="show_hw_layers_updates" msgid="5268370750002509767">"Mostrar cambios de capas"</string>
     <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"Luz verde en capas de hardware al actualizarse"</string>
-    <string name="debug_hw_overdraw" msgid="8944851091008756796">"Depurar superpos. de GPU"</string>
+    <string name="debug_hw_overdraw" msgid="8944851091008756796">"Depurar superposición de GPU"</string>
     <string name="disable_overlays" msgid="4206590799671557143">"Desactivar superposición de hardware"</string>
     <string name="disable_overlays_summary" msgid="1954852414363338166">"Usar GPU para combinar pantallas"</string>
     <string name="simulate_color_space" msgid="1206503300335835151">"Simular espacio de color"</string>
@@ -425,7 +429,7 @@
     <string name="force_msaa" msgid="4081288296137775550">"Forzar MSAA 4x"</string>
     <string name="force_msaa_summary" msgid="9070437493586769500">"Activar MSAA 4x en aplicaciones OpenGL ES 2.0"</string>
     <string name="show_non_rect_clip" msgid="7499758654867881817">"Depurar operaciones de recorte no rectangulares"</string>
-    <string name="track_frame_time" msgid="522674651937771106">"Perfil procesamiento HWUI"</string>
+    <string name="track_frame_time" msgid="522674651937771106">"Perfil de procesamiento HWUI"</string>
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"Habilitar depuración GPU"</string>
     <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"Permite cargar capas de depuración de GPU para apps de depuración"</string>
     <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"Habilitar registro de proveedor detallado"</string>
@@ -693,7 +697,7 @@
     <string name="guest_remove_guest_confirm_button" msgid="7858123434954143879">"Quitar"</string>
     <string name="guest_resetting" msgid="7822120170191509566">"Restableciendo invitado…"</string>
     <string name="guest_reset_and_restart_dialog_title" msgid="3396657008451616041">"¿Restablecer la sesión de invitado?"</string>
-    <string name="guest_reset_and_restart_dialog_message" msgid="2764425635305200790">"Esta acción comenzará una nueva sesión de invitado y borrará todas las apps y los datos de la sesión actual."</string>
+    <string name="guest_reset_and_restart_dialog_message" msgid="2764425635305200790">"Esta acción comenzará una nueva sesión de invitado y borrará todas las apps y los datos de la sesión actual"</string>
     <string name="guest_exit_dialog_title" msgid="1846494656849381804">"¿Salir del modo de invitado?"</string>
     <string name="guest_exit_dialog_message" msgid="1743218864242719783">"Esta acción borrará todas las apps y los datos de la sesión de invitado actual."</string>
     <string name="grant_admin" msgid="4323199171790522574">"Sí, convertir en administrador"</string>

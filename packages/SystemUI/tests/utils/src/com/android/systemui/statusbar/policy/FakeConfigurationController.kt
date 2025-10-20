@@ -5,6 +5,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
 import dagger.Binds
 import dagger.Module
+import java.util.concurrent.CopyOnWriteArrayList
 import javax.inject.Inject
 
 /** Fake implementation of [ConfigurationController] for tests. */
@@ -12,7 +13,7 @@ import javax.inject.Inject
 class FakeConfigurationController @Inject constructor() :
     ConfigurationController, StatusBarConfigurationController {
 
-    private var listeners = mutableListOf<ConfigurationController.ConfigurationListener>()
+    private var listeners = CopyOnWriteArrayList<ConfigurationController.ConfigurationListener>()
     private var isRtl = false
 
     override fun addCallback(listener: ConfigurationController.ConfigurationListener) {

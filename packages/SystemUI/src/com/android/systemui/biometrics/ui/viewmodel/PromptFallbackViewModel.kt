@@ -62,7 +62,6 @@ constructor(val promptSelectorInteractor: PromptSelectorInteractor) {
     val icCredentialSubtitle: Flow<Int?> =
         watchRangingState.map { status ->
             when (status) {
-                WatchRangingState.WATCH_RANGING_IDLE,
                 WatchRangingState.WATCH_RANGING_STARTED -> {
                     R.string.biometric_dialog_identity_check_watch_ranging
                 }
@@ -77,7 +76,10 @@ constructor(val promptSelectorInteractor: PromptSelectorInteractor) {
 
     /** Whether to show the identity check footer text */
     val icShowFooter: Flow<Boolean> =
-        watchRangingState.map { status -> status == WatchRangingState.WATCH_RANGING_STOPPED }
+        watchRangingState.map { status ->
+            status == WatchRangingState.WATCH_RANGING_STOPPED ||
+                status == WatchRangingState.WATCH_RANGING_IDLE
+        }
 
     /** Whether the credential fallback button should be shown */
     val showCredential: Flow<Boolean> =

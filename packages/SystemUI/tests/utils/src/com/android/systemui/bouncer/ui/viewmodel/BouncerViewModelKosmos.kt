@@ -34,6 +34,7 @@ import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
 import com.android.systemui.user.ui.viewmodel.userSwitcherViewModel
+import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import kotlinx.coroutines.flow.StateFlow
 
 val Kosmos.bouncerUserActionsViewModel by Fixture { BouncerUserActionsViewModel() }
@@ -63,6 +64,7 @@ val Kosmos.bouncerOverlayContentViewModel by Fixture {
         bouncerActionButtonInteractor = bouncerActionButtonInteractor,
         keyguardDismissActionInteractor = keyguardDismissActionInteractor,
         sceneInteractor = sceneInteractor,
+        windowRootViewBlurInteractor = windowRootViewBlurInteractor,
     )
 }
 

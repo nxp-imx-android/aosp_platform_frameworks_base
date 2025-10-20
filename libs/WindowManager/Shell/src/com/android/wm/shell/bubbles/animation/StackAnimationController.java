@@ -25,7 +25,6 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewPropertyAnimator;
 
@@ -43,6 +42,7 @@ import com.android.wm.shell.bubbles.BubblePositioner;
 import com.android.wm.shell.bubbles.BubbleStackView;
 import com.android.wm.shell.common.FloatingContentCoordinator;
 import com.android.wm.shell.shared.animation.PhysicsAnimator;
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.shared.magnetictarget.MagnetizedObject;
 
 import com.google.android.collect.Sets;
@@ -61,8 +61,6 @@ import java.util.function.IntSupplier;
  */
 public class StackAnimationController extends
         PhysicsAnimationLayout.PhysicsAnimationController {
-
-    private static final String TAG = "Bubbs.StackCtrl";
 
     /** Value to use for animating bubbles in and springing stack after fling. */
     private static final float STACK_SPRING_STIFFNESS = 700f;
@@ -460,7 +458,7 @@ public class StackAnimationController extends
             return;
         }
 
-        Log.d(TAG, String.format("Flinging %s.",
+        BubbleLog.d(String.format("Flinging %s.",
                 PhysicsAnimationLayout.getReadablePropertyName(property)));
 
         StackPositionProperty firstBubbleProperty = new StackPositionProperty(property);
@@ -631,7 +629,7 @@ public class StackAnimationController extends
             return;
         }
 
-        Log.d(TAG, String.format("Springing %s to final position %f.",
+        BubbleLog.d(String.format("Springing %s to final position %f.",
                 PhysicsAnimationLayout.getReadablePropertyName(property),
                 finalPosition));
 
@@ -778,7 +776,7 @@ public class StackAnimationController extends
                 final int oldIndex = mLayout.indexOfChild(view);
                 swapped |= animateSwap(view, oldIndex, newIndex, updateAllIcons, after);
             } else {
-                Log.w(TAG, "bubbleViews[" + newIndex + "] is null");
+                BubbleLog.w("bubbleViews[" + newIndex + "] is null");
             }
         }
         if (!swapped) {
@@ -831,6 +829,10 @@ public class StackAnimationController extends
 
     // TODO: do we need this & BubbleStackView#updateBadgesAndZOrder?
     private void updateBadgesAndZOrder(View v, int index) {
+        if (v == null) {
+            // View was removed
+            return;
+        }
         v.setZ(index < NUM_VISIBLE_WHEN_RESTING ? (mMaxBubbles * mElevation) - index : 0f);
         BadgedImageView bv = (BadgedImageView) v;
         if (index == 0) {
@@ -925,7 +927,7 @@ public class StackAnimationController extends
 
     /** Moves the stack to a position instantly, with no animation. */
     public void setStackPosition(PointF pos) {
-        Log.d(TAG, String.format("Setting position to (%f, %f).", pos.x, pos.y));
+        BubbleLog.d(String.format("Setting position to (%f, %f).", pos.x, pos.y));
         mStackPosition.set(pos.x, pos.y);
 
         mPositioner.setRestingPosition(mStackPosition);

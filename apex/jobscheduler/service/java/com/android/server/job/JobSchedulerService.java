@@ -24,6 +24,27 @@ import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED
 import static android.text.format.DateUtils.HOUR_IN_MILLIS;
 import static android.text.format.DateUtils.MINUTE_IN_MILLIS;
 
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_BACK_OFF_POLICY_TYPE;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_DEADLINE_MS;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_DELAY_MS;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_EFFECTIVE_PRIORITY;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_INTERNAL_STOP_REASON;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_JOB_ID;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_JOB_START_LATENCY_MS;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_JOB_STATE_FLAGS;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_NUM_PREVIOUS_ATTEMPTS;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_NUM_RESCHEDULES_DUE_TO_ABANDONMENT;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_NUM_UNCOMPLETED_WORK_ITEMS;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_PERIODIC_JOB_FLEX_INTERVAL_MS;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_PERIODIC_JOB_INTERVAL_MS;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_PROC_STATE;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_PROXY_UID;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_PUBLIC_STOP_REASON;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_REQUESTED_PRIORITY;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_SOURCE_UID;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_STANDBY_BUCKET;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_STATE;
+
 import android.Manifest;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
@@ -78,6 +99,7 @@ import android.os.LimitExceededException;
 import android.os.Looper;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
+import android.os.PerfettoTrace;
 import android.os.Process;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
@@ -186,7 +208,8 @@ public class JobSchedulerService extends com.android.server.SystemService
     public static final String TRACE_TRACK_NAME = "JobScheduler";
 
     /** The maximum number of jobs that we allow an app to schedule */
-    private static final int MAX_JOBS_PER_APP = 150;
+    private static final int DEFAULT_MAX_JOBS_PER_APP = 150;
+    private final int mMaxJobsPerApp;
     /** The number of the most recently completed jobs to keep track of for debugging purposes. */
     private static final int NUM_COMPLETED_JOB_HISTORY = 20;
 
@@ -1390,6 +1413,8 @@ public class JobSchedulerService extends com.android.server.SystemService
     final Constants mConstants;
     final ConstantsObserver mConstantsObserver;
 
+    private final JobPerfettoTracer mPerfettoTracer;
+
     /**
      * Cleans up outstanding jobs when a package is removed. Even if it's being replaced later we
      * still clean up. On reinstall the package will have a new uid.
@@ -1872,12 +1897,17 @@ public class JobSchedulerService extends com.android.server.SystemService
             if (DEBUG) Slog.d(TAG, "SCHEDULE: " + jobStatus.toShortString());
             // Jobs on behalf of others don't apply to the per-app job cap
             if (packageName == null) {
-                if (mJobs.countJobsForUid(callingUid) > MAX_JOBS_PER_APP) {
+                if (mJobs.countJobsForUid(callingUid) > mMaxJobsPerApp) {
                     Slog.w(TAG, "Too many jobs for uid " + callingUid);
                     Counter.logIncrementWithUid(
                             "job_scheduler.value_cntr_w_uid_max_scheduling_limit_hit", callingUid);
-                    throw new IllegalStateException("Apps may not schedule more than "
-                            + MAX_JOBS_PER_APP + " distinct jobs");
+                    String errorMsg = "Apps may not schedule more than "
+                            + mMaxJobsPerApp + " distinct jobs";
+                    if ((callingUid == Process.SYSTEM_UID)
+                            && Flags.enhanceSystemJobLimitException()) {
+                        errorMsg += ". Top jobs: " + mJobs.getTopJobsDebugStringForUid(callingUid);
+                    }
+                    throw new IllegalStateException(errorMsg);
                 }
             }
 
@@ -1985,6 +2015,7 @@ public class JobSchedulerService extends com.android.server.SystemService
                     shouldUseAggressiveBackoff(
                             jobStatus.getNumAbandonedFailures(), jobStatus.getSourceUid()));
 
+            traceJobScheduledLocked(jobStatus);
             // If the job is immediately ready to run, then we can just immediately
             // put it in the pending list and try to schedule it.  This is especially
             // important for jobs with a 0 deadline constraint, since they will happen a fair
@@ -2430,6 +2461,8 @@ public class JobSchedulerService extends com.android.server.SystemService
                     cancelled.getJob().getBackoffPolicy() + 1,
                     shouldUseAggressiveBackoff(
                             cancelled.getNumAbandonedFailures(), cancelled.getSourceUid()));
+
+            traceJobCancelledLocked(cancelled, reason, internalReasonCode);
         }
         // If this is a replacement, bring in the new version of the job
         if (incomingJob != null) {
@@ -2541,6 +2574,71 @@ public class JobSchedulerService extends com.android.server.SystemService
         }
     }
 
+    private JobPerfettoTracer addCommonTraceFieldsLocked(JobPerfettoTracer tracer, JobStatus job) {
+        return tracer.addField(PERFETTO_TRACE_FIELD_JOB_ID, job.getLoggingJobId())
+                .addField(PERFETTO_TRACE_FIELD_SOURCE_UID, job.getSourceUid())
+                .addField(PERFETTO_TRACE_FIELD_PROXY_UID, job.isProxyJob() ? job.getUid() : -1)
+                .addField(PERFETTO_TRACE_FIELD_STANDBY_BUCKET, job.getStandbyBucket())
+                .addField(PERFETTO_TRACE_FIELD_PROC_STATE,
+                        ActivityManager.processStateAmToProto(mUidProcStates.get(job.getUid())));
+    }
+
+    private void traceJobScheduledLocked(JobStatus jobStatus) {
+        if (!Flags.usePerfettoSdkForTracing() || !PerfettoTrace.isJobSchedulerCategoryEnabled()) {
+            return;
+        }
+        final int scheduledState = FrameworkStatsLog.SCHEDULED_JOB_STATE_CHANGED__STATE__SCHEDULED;
+        // For a newly scheduled job, satisfaction status is not meaningful yet.
+        // Set them to false to match what we do for FrameworkStatsLog.
+        long jobStateFlags = JobStatus.packStatesToBits(jobStatus);
+        jobStateFlags &= JobStatus.JOB_STATE_FLAGS_TO_CLEAR_ON_SCHEDULE;
+
+        JobPerfettoTracer tracer = mPerfettoTracer.startEvent(jobStatus.getBatteryName());
+        addCommonTraceFieldsLocked(tracer, jobStatus)
+                .addField(PERFETTO_TRACE_FIELD_STATE, scheduledState)
+                .addField(
+                        PERFETTO_TRACE_FIELD_REQUESTED_PRIORITY,
+                        jobStatus.getJob().getPriority())
+                .addField(
+                        PERFETTO_TRACE_FIELD_EFFECTIVE_PRIORITY,
+                        jobStatus.getEffectivePriority())
+                .addField(
+                        PERFETTO_TRACE_FIELD_NUM_PREVIOUS_ATTEMPTS,
+                        jobStatus.getNumPreviousAttempts())
+                .addField(
+                        PERFETTO_TRACE_FIELD_DEADLINE_MS,
+                        jobStatus.getJob().getMaxExecutionDelayMillis())
+                .addField(
+                        PERFETTO_TRACE_FIELD_DELAY_MS,
+                        jobStatus.getJob().getMinLatencyMillis())
+                .addField(PERFETTO_TRACE_FIELD_JOB_START_LATENCY_MS, 0L)
+                .addField(
+                        PERFETTO_TRACE_FIELD_NUM_UNCOMPLETED_WORK_ITEMS,
+                        jobStatus.getWorkCount())
+                .addField(
+                        PERFETTO_TRACE_FIELD_PERIODIC_JOB_INTERVAL_MS,
+                        jobStatus.getJob().getIntervalMillis())
+                .addField(
+                        PERFETTO_TRACE_FIELD_PERIODIC_JOB_FLEX_INTERVAL_MS,
+                        jobStatus.getJob().getFlexMillis())
+                .addField(
+                        PERFETTO_TRACE_FIELD_NUM_RESCHEDULES_DUE_TO_ABANDONMENT,
+                        jobStatus.getNumAbandonedFailures())
+                .addField(
+                        PERFETTO_TRACE_FIELD_BACK_OFF_POLICY_TYPE,
+                        jobStatus.getJob().getBackoffPolicy() + 1)
+                .addField(
+                        PERFETTO_TRACE_FIELD_INTERNAL_STOP_REASON,
+                        JobProtoEnums.INTERNAL_STOP_REASON_UNKNOWN)
+                .addField(
+                        PERFETTO_TRACE_FIELD_PUBLIC_STOP_REASON,
+                        JobProtoEnums.STOP_REASON_UNDEFINED)
+                .addField(
+                        PERFETTO_TRACE_FIELD_JOB_STATE_FLAGS,
+                        jobStateFlags)
+                .emit();
+    }
+
     @Override
     public void onRestrictedBucketChanged(List<JobStatus> jobs) {
         final int len = jobs.size();
@@ -2594,6 +2692,29 @@ public class JobSchedulerService extends com.android.server.SystemService
         // take a look at its job state for feedback purposes.
     }
 
+    private void traceJobCancelledLocked(JobStatus cancelled,
+            @JobParameters.StopReason int reason, int internalReasonCode) {
+        if (!Flags.usePerfettoSdkForTracing() || !PerfettoTrace.isJobSchedulerCategoryEnabled()) {
+            return;
+        }
+        final int cancelledState =
+                FrameworkStatsLog.SCHEDULED_JOB_STATE_CHANGED__STATE__CANCELLED;
+        // A cancelled job is not running.
+        long jobStateFlags = JobStatus.packStatesToBits(cancelled);
+        jobStateFlags &= JobStatus.JOB_STATE_FLAGS_TO_CLEAR_ON_CANCEL;
+
+        JobPerfettoTracer tracer = mPerfettoTracer.startEvent(cancelled.getBatteryName());
+
+        addCommonTraceFieldsLocked(tracer, cancelled)
+                .addField(PERFETTO_TRACE_FIELD_STATE, cancelledState)
+                .addField(PERFETTO_TRACE_FIELD_INTERNAL_STOP_REASON,
+                        internalReasonCode)
+                .addField(PERFETTO_TRACE_FIELD_PUBLIC_STOP_REASON, reason)
+                .addField(PERFETTO_TRACE_FIELD_JOB_STATE_FLAGS,
+                        jobStateFlags)
+                .emit();
+    }
+
     /**
      * Initializes the system service.
      * <p>
@@ -2603,8 +2724,12 @@ public class JobSchedulerService extends com.android.server.SystemService
      *
      * @param context The system server context.
      */
-    public JobSchedulerService(Context context) {
+    @VisibleForTesting
+    JobSchedulerService(Context context, int maxJobs, @Nullable JobStore jobStore,
+            JobPerfettoTracer jobPerfettoTracer) {
         super(context);
+        mPerfettoTracer = jobPerfettoTracer;
+        mMaxJobsPerApp = maxJobs;
 
         mLocalPM = LocalServices.getService(PackageManagerInternal.class);
         mActivityManagerInternal = Objects.requireNonNull(
@@ -2677,7 +2802,7 @@ public class JobSchedulerService extends com.android.server.SystemService
 
         // Initialize the job store and set up any persisted jobs
         mJobStoreLoadedLatch = new CountDownLatch(1);
-        mJobs = JobStore.get(this);
+        mJobs = jobStore == null ? JobStore.get(this) : jobStore;
         mJobs.initAsync(mJobStoreLoadedLatch);
 
         mBatteryStateTracker = new BatteryStateTracker();
@@ -2729,6 +2854,23 @@ public class JobSchedulerService extends com.android.server.SystemService
             Slog.w(TAG, "!!! RTC not yet good; tracking time updates for job scheduling");
             context.registerReceiver(mTimeSetReceiver, new IntentFilter(Intent.ACTION_TIME_CHANGED));
         }
+    }
+
+    /**
+     * Initializes the system service.
+     * <p>
+     * Subclasses must define a single argument constructor that accepts the context
+     * and passes it to super.
+     * </p>
+     *
+     * @param context The system server context.
+     */
+    public JobSchedulerService(Context context) {
+        this(context, DEFAULT_MAX_JOBS_PER_APP, null, JobPerfettoTracer.create());
+    }
+
+    JobPerfettoTracer getPerfettoTracer() {
+        return mPerfettoTracer;
     }
 
     private final BroadcastReceiver mTimeSetReceiver = new BroadcastReceiver() {
@@ -5982,9 +6124,6 @@ public class JobSchedulerService extends com.android.server.SystemService
             pw.println();
             pw.print(Flags.FLAG_DO_NOT_FORCE_RUSH_EXECUTION_AT_BOOT,
                     Flags.doNotForceRushExecutionAtBoot());
-            pw.println();
-            pw.print(Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY,
-                    Flags.updateMediaBackupExemptionPolicy());
             pw.println();
             pw.print(android.app.job.Flags.FLAG_GET_PENDING_JOB_REASONS_API,
                     android.app.job.Flags.getPendingJobReasonsApi());

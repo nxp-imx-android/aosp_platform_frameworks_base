@@ -57,7 +57,6 @@ import java.util.Objects;
   *  }</pre>
   */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
-@android.ravenwood.annotation.RavenwoodRedirectionClass("Looper_ravenwood")
 public final class Looper {
     /*
      * API Implementation Note:
@@ -201,12 +200,16 @@ public final class Looper {
         }
 
         if (PerfettoTrace.isMQCategoryEnabled()) {
+            final long messageDelayMs = Math.max(0L, msg.when - SystemClock.uptimeMillis());
             if (PerfettoTrace.IS_USE_SDK_TRACING_API_V3) {
                 com.android.internal.dev.perfetto.sdk.PerfettoTrace.begin(
                                 PerfettoTrace.MQ_CATEGORY_V3, "message_queue_receive")
                         .beginProto()
                         .beginNested(2004 /* message_queue */)
                         .addField(1 /* sending_thread_name */, msg.sendingThreadName)
+                        .addField(2 /* receiving_thread_name */, Thread.currentThread().getName())
+                        .addField(3 /* message_code */, msg.what)
+                        .addField(4 /* message_delay_ms */, messageDelayMs)
                         .endNested()
                         .endProto()
                         .setTerminatingFlow(msg.eventId)
@@ -216,6 +219,9 @@ public final class Looper {
                         .beginProto()
                         .beginNested(2004 /* message_queue */)
                         .addField(1 /* sending_thread_name */, msg.sendingThreadName)
+                        .addField(2 /* receiving_thread_name */, Thread.currentThread().getName())
+                        .addField(3 /* message_code */, msg.what)
+                        .addField(4 /* message_delay_ms */, messageDelayMs)
                         .endNested()
                         .endProto()
                         .setTerminatingFlow(msg.eventId)
@@ -260,7 +266,7 @@ public final class Looper {
         }
         long origWorkSource = ThreadLocalWorkSource.setUid(msg.workSourceUid);
         try {
-            dispatchMessage(msg);
+            msg.target.dispatchMessage(msg);
             if (observer != null) {
                 observer.messageDispatched(token, msg);
             }
@@ -325,12 +331,6 @@ public final class Looper {
         msg.recycleUnchecked();
 
         return true;
-    }
-
-    /** Allow ravenwood to hook any "dispatch". */
-    @android.ravenwood.annotation.RavenwoodRedirect
-    private static void dispatchMessage(Message msg) {
-        msg.target.dispatchMessage(msg);
     }
 
     /**
@@ -496,7 +496,7 @@ public final class Looper {
         mLogging = printer;
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public void setTraceTag(long traceTag) {
         mTraceTag = traceTag;
@@ -504,7 +504,7 @@ public final class Looper {
 
     /**
      * Set a thresholds for slow dispatch/delivery log.
-     * {@hide}
+     * @hide
      */
     public void setSlowLogThresholdMs(long slowDispatchThresholdMs, long slowDeliveryThresholdMs) {
         mSlowDispatchThresholdMs = slowDispatchThresholdMs;
@@ -612,7 +612,7 @@ public final class Looper {
                 + ") {" + Integer.toHexString(System.identityHashCode(this)) + "}";
     }
 
-    /** {@hide} */
+    /** @hide */
     public interface Observer {
         /**
          * Called right before a message is dispatched.

@@ -80,11 +80,10 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.repeatOnLifecycle
 import com.android.compose.animation.Expandable
 import com.android.compose.animation.scene.ContentScope
+import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.animatedBackground
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.theme.colorAttr
@@ -94,8 +93,6 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.compose.modifiers.sysuiResTag
-import com.android.systemui.qs.flags.QSComposeFragment
-import com.android.systemui.qs.flags.QsInCompose
 import com.android.systemui.qs.footer.ui.compose.FooterActionsDefaults.FOOTER_TEXT_FADE_DURATION_MILLIS
 import com.android.systemui.qs.footer.ui.compose.FooterActionsDefaults.FOOTER_TEXT_MINIMUM_SCALE_Y
 import com.android.systemui.qs.footer.ui.compose.FooterActionsDefaults.FooterButtonHeight
@@ -117,7 +114,6 @@ fun ContentScope.FooterActionsWithAnimatedVisibility(
     viewModel: FooterActionsViewModel,
     isCustomizing: Boolean,
     customizingAnimationDuration: Int,
-    lifecycleOwner: LifecycleOwner,
     modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(
@@ -138,7 +134,7 @@ fun ContentScope.FooterActionsWithAnimatedVisibility(
             // This view has its own horizontal padding
             // TODO(b/321716470) This should use a lifecycle tied to the scene.
             Element(QuickSettings.Elements.FooterActions, Modifier) {
-                FooterActions(viewModel = viewModel, qsVisibilityLifecycleOwner = lifecycleOwner)
+                FooterActions(viewModel = viewModel)
             }
         }
     }
@@ -146,11 +142,7 @@ fun ContentScope.FooterActionsWithAnimatedVisibility(
 
 /** The Quick Settings footer actions row. */
 @Composable
-fun FooterActions(
-    viewModel: FooterActionsViewModel,
-    qsVisibilityLifecycleOwner: LifecycleOwner,
-    modifier: Modifier = Modifier,
-) {
+fun FooterActions(viewModel: FooterActionsViewModel, modifier: Modifier = Modifier) {
     val context = LocalContext.current
 
     // Collect alphas as soon as we are composed, even when not visible.
@@ -162,32 +154,33 @@ fun FooterActions(
         mutableStateOf<FooterActionsForegroundServicesButtonViewModel?>(null)
     }
     var userSwitcher by remember { mutableStateOf<FooterActionsButtonViewModel?>(null) }
+    var settings by remember { mutableStateOf<FooterActionsButtonViewModel?>(null) }
 
     var textFeedback by remember {
         mutableStateOf<TextFeedbackViewModel>(TextFeedbackViewModel.NoFeedback)
     }
 
-    LaunchedEffect(
-        context,
-        qsVisibilityLifecycleOwner,
-        viewModel,
-        viewModel.security,
-        viewModel.foregroundServices,
-        viewModel.userSwitcher,
-        viewModel.textFeedback,
-    ) {
+    LaunchedEffect(context, viewModel) {
         launch {
             // Listen for dialog requests as soon as we are composed, even when not visible.
             viewModel.observeDeviceMonitoringDialogRequests(context)
         }
+    }
 
-        // Listen for model changes only when QS are visible.
-        qsVisibilityLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            launch { viewModel.security.collect { security = it } }
-            launch { viewModel.foregroundServices.collect { foregroundServices = it } }
-            launch { viewModel.userSwitcher.collect { userSwitcher = it } }
-            launch { viewModel.textFeedback.collect { textFeedback = it } }
-        }
+    // Listen for model changes only when QS are visible.
+    LaunchedEffectWithLifecycle(
+        viewModel.security,
+        viewModel.foregroundServices,
+        viewModel.userSwitcher,
+        viewModel.textFeedback,
+        viewModel.settings,
+        minActiveState = Lifecycle.State.RESUMED,
+    ) {
+        launch { viewModel.security.collect { security = it } }
+        launch { viewModel.foregroundServices.collect { foregroundServices = it } }
+        launch { viewModel.userSwitcher.collect { userSwitcher = it } }
+        launch { viewModel.textFeedback.collect { textFeedback = it } }
+        launch { viewModel.settings.collect { settings = it } }
     }
 
     val backgroundColor =
@@ -238,7 +231,7 @@ fun FooterActions(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CompositionLocalProvider(LocalContentColor provides contentColor) {
-            val useModifierBasedExpandable = remember { QSComposeFragment.isEnabled }
+            val useModifierBasedExpandable = true
 
             // The viewModel to show, in order of priority:
             // 1. Text feedback
@@ -261,7 +254,7 @@ fun FooterActions(
                 Modifier.sysuiResTag("multi_user_switch"),
             )
             IconButton(
-                { viewModel.settings },
+                { settings },
                 useModifierBasedExpandable,
                 Modifier.sysuiResTag("settings_button_container"),
             )
@@ -413,7 +406,7 @@ private fun FooterIcon(icon: Icon, modifier: Modifier = Modifier, tint: Color) {
         is Icon.Loaded -> {
             Icon(icon.drawable.toBitmap().asImageBitmap(), contentDescription, modifier, tint)
         }
-        is Icon.Resource -> Icon(painterResource(icon.res), contentDescription, modifier, tint)
+        is Icon.Resource -> Icon(painterResource(icon.resId), contentDescription, modifier, tint)
     }
 }
 
@@ -536,13 +529,8 @@ private fun TextButton(
             Text(
                 text,
                 Modifier.weight(1f),
-                style =
-                    if (QsInCompose.isEnabled) {
-                        MaterialTheme.typography.labelLarge
-                    } else {
-                        MaterialTheme.typography.bodyMedium
-                    },
-                letterSpacing = if (QsInCompose.isEnabled) 0.em else 0.01.em,
+                style = MaterialTheme.typography.labelLarge,
+                letterSpacing = 0.em,
                 color = colors.content,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -583,13 +571,8 @@ private fun TextButtonContent(
         Text(
             text,
             Modifier.weight(1f),
-            style =
-                if (QsInCompose.isEnabled) {
-                    MaterialTheme.typography.labelLarge
-                } else {
-                    MaterialTheme.typography.bodyMedium
-                },
-            letterSpacing = if (QsInCompose.isEnabled) 0.em else 0.01.em,
+            style = MaterialTheme.typography.labelLarge,
+            letterSpacing = 0.em,
             color = contentColor,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -644,7 +627,7 @@ private fun Modifier.animatedScaledHeight(scale: () -> Float): Modifier {
 @Composable
 @ReadOnlyComposable
 private fun textButtonColors(): TextButtonColors {
-    return if (QsInCompose.isEnabled && notificationShadeBlur()) {
+    return if (notificationShadeBlur()) {
         FooterActionsDefaults.blurTextButtonColors()
     } else {
         FooterActionsDefaults.textButtonColors()
@@ -654,7 +637,7 @@ private fun textButtonColors(): TextButtonColors {
 @Composable
 @ReadOnlyComposable
 private fun numberButtonColors(): TextButtonColors {
-    return if (QsInCompose.isEnabled && notificationShadeBlur()) {
+    return if (notificationShadeBlur()) {
         FooterActionsDefaults.blurTextButtonColors()
     } else {
         FooterActionsDefaults.numberButtonColors()
@@ -664,7 +647,7 @@ private fun numberButtonColors(): TextButtonColors {
 @Composable
 @ReadOnlyComposable
 private fun buttonColorsForModel(footerAction: FooterActionsButtonViewModel): ButtonColors {
-    return if (QsInCompose.isEnabled && notificationShadeBlur()) {
+    return if (notificationShadeBlur()) {
         when (footerAction) {
             is FooterActionsButtonViewModel.PowerActionViewModel ->
                 FooterActionsDefaults.activeButtonColors()

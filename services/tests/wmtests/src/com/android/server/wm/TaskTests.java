@@ -949,27 +949,17 @@ public class TaskTests extends WindowTestsBase {
         final Rect largerLandscapeBounds = new Rect(0, 0, longSide, shortSide);
         inOutConfig.windowConfiguration.setBounds(largerLandscapeBounds);
 
-        // Setup the display with a top stable inset. The later assertion will ensure the inset is
-        // excluded from screenHeightDp.
-        final int statusBarHeight = 100;
-        final DisplayInfo di = display.getDisplayInfo();
-        display.getDisplayPolicy().getDecorInsetsInfo(di.rotation,
-                di.logicalWidth, di.logicalHeight).mConfigInsets.top = statusBarHeight;
-
         // Without limiting to be inside the parent bounds, the out screen size should keep relative
         // to the input bounds.
         final ActivityRecord activity = new ActivityBuilder(mAtm).setTask(task).build();
-        final AppCompatDisplayInsets compatInsets =
-                new AppCompatDisplayInsets(
-                        display, activity, /* letterboxedContainerBounds */ null,
-                        /* useOverrideInsets */ false);
-        final TaskFragment.ConfigOverrideHint overrideHint = new TaskFragment.ConfigOverrideHint();
-        overrideHint.mTmpCompatInsets = compatInsets;
-        task.computeConfigResourceOverrides(inOutConfig, parentConfig, overrideHint);
+        activity.mAppCompatController.getSizeCompatModePolicy().updateAppCompatDisplayInsets();
+        activity.resolveOverrideConfiguration(parentConfig);
+        task.computeConfigResourceOverrides(inOutConfig, parentConfig,
+                activity.mAppCompatController.getSandboxingPolicy().getResolveConfigHint());
 
         assertEquals(largerLandscapeBounds, inOutConfig.windowConfiguration.getAppBounds());
         final float density = parentConfig.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
-        final int expectedHeightDp = (int) ((shortSide - statusBarHeight) / density + 0.5f);
+        final int expectedHeightDp = (int) (shortSide / density + 0.5f);
         assertEquals(expectedHeightDp, inOutConfig.screenHeightDp);
         final int expectedWidthDp = (int) (longSide / density + 0.5f);
         assertEquals(expectedWidthDp, inOutConfig.screenWidthDp);

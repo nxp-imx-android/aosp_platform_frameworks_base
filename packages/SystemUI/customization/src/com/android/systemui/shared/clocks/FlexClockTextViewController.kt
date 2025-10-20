@@ -16,18 +16,19 @@
 
 package com.android.systemui.shared.clocks
 
-import android.graphics.Rect
 import android.icu.util.TimeZone
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
 import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.ClockLogger
-import com.android.systemui.customization.clocks.DigitalTimeFormatter
+import com.android.systemui.customization.clocks.DigitalFormatter
 import com.android.systemui.customization.clocks.DigitalTimespec
 import com.android.systemui.customization.clocks.DigitalTimespecHandler
 import com.android.systemui.customization.clocks.FontTextStyle
 import com.android.systemui.customization.clocks.view.DigitalAlignment
+import com.android.systemui.plugins.keyguard.VPointF
+import com.android.systemui.plugins.keyguard.VRect
 import com.android.systemui.plugins.keyguard.data.model.AlarmData
 import com.android.systemui.plugins.keyguard.data.model.WeatherData
 import com.android.systemui.plugins.keyguard.data.model.ZenData
@@ -48,12 +49,12 @@ data class LayerConfig(
     val aodStyle: FontTextStyle,
     val alignment: DigitalAlignment,
     val timespec: DigitalTimespec,
-    val timeFormatter: DigitalTimeFormatter?,
+    val timeFormatter: DigitalFormatter?,
 )
 
-open class FlexClockTextViewController(
+class FlexClockTextViewController(
     private val clockCtx: ClockContext,
-    private val layerCfg: LayerConfig,
+    layerCfg: LayerConfig,
     isLargeClock: Boolean,
 ) : FlexClockViewController {
     override val view = FlexClockTextView(clockCtx, isLargeClock)
@@ -63,7 +64,7 @@ open class FlexClockTextViewController(
     override var onViewMaxSizeChanged by view::onViewMaxSizeChanged
 
     override val config = ClockFaceConfig()
-    var dozeState: DefaultClockController.AnimationState? = null
+    var dozeState: AnimationState? = null
 
     init {
         view.layoutParams =
@@ -110,8 +111,6 @@ open class FlexClockTextViewController(
 
     override val events =
         object : ClockEvents {
-            override var isReactiveTouchInteractionEnabled = false
-
             override fun onLocaleChanged(locale: Locale) {
                 timespec.formatter.locale = locale
                 refreshTime()
@@ -143,7 +142,7 @@ open class FlexClockTextViewController(
 
             override fun doze(fraction: Float) {
                 if (dozeState == null) {
-                    dozeState = DefaultClockController.AnimationState(fraction)
+                    dozeState = AnimationState(fraction)
                     view.animateDoze(dozeState!!.isActive, false)
                 } else {
                     val (hasChanged, hasJumped) = dozeState!!.update(fraction)
@@ -170,10 +169,10 @@ open class FlexClockTextViewController(
 
             override fun onPickerCarouselSwiping(swipingFraction: Float) {}
 
-            override fun onPositionAnimated(args: ClockPositionAnimationArgs) {}
+            override fun onPositionAnimated(anim: ClockPositionAnimationArgs) {}
 
             override fun onFidgetTap(x: Float, y: Float) {
-                view.animateFidget(x, y)
+                view.animateFidget(VPointF(x, y), enforceBounds = true)
             }
         }
 
@@ -192,7 +191,7 @@ open class FlexClockTextViewController(
             }
 
             override fun onFontSettingChanged(fontSizePx: Float) {
-                view.applyTextSize(fontSizePx)
+                view.applyTextSize(fontSizePx, constrainedByHeight = false)
             }
 
             override fun onThemeChanged(theme: ThemeConfig) {
@@ -203,7 +202,7 @@ open class FlexClockTextViewController(
                 refreshTime()
             }
 
-            override fun onTargetRegionChanged(targetRegion: Rect?) {}
+            override fun onTargetRegionChanged(targetRegion: VRect) {}
 
             override fun onSecondaryDisplayChanged(onSecondaryDisplay: Boolean) {}
         }

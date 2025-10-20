@@ -28,21 +28,20 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.modifiers.padding
+import com.android.compose.animation.scene.ElementContentScope
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardRootViewModel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.AlwaysOnDisplayNotificationIconViewStore
@@ -55,7 +54,6 @@ import com.android.systemui.util.ui.isAnimating
 import com.android.systemui.util.ui.stopAnimating
 import com.android.systemui.util.ui.value
 import javax.inject.Inject
-import kotlin.collections.List
 import kotlinx.coroutines.launch
 
 @SysUISingleton
@@ -70,28 +68,21 @@ constructor(
     private val nicAodIconViewStore: AlwaysOnDisplayNotificationIconViewStore,
     @ShadeDisplayAware private val systemBarUtilsState: SystemBarUtilsState,
 ) : LockscreenElementProvider {
-    override val elements: List<LockscreenElement> by lazy { listOf(aodNotificationElement) }
+    override val elements: List<LockscreenElement> by lazy { listOf(AodNotificationElement()) }
 
-    private val aodNotificationElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.Notifications.AOD.IconShelf
-            override val context = this@AodNotificationIconsElementProvider.context
+    private inner class AodNotificationElement : LockscreenElement {
+        override val key = LockscreenElementKeys.Notifications.AOD.IconShelf
+        override val context = this@AodNotificationIconsElementProvider.context
+        override val source = ElementSource.STANDARD
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                AodNotificationIcons(factory, context)
-            }
+        @Composable
+        override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
+            AodNotificationIcons()
         }
+    }
 
     @Composable
-    private fun ContentScope.AodNotificationIcons(
-        factory: LockscreenElementFactory,
-        context: LockscreenElementContext,
-        modifier: Modifier = Modifier,
-    ) {
+    private fun LockscreenScope<ContentScope>.AodNotificationIcons(modifier: Modifier = Modifier) {
         val isVisible by
             keyguardRootViewModel.isNotifIconContainerVisible.collectAsStateWithLifecycle()
         val transitionState = remember { MutableTransitionState(isVisible.value) }
@@ -113,7 +104,8 @@ constructor(
                         start = dimensionResource(R.dimen.below_clock_padding_start_icons),
                         end = dimensionResource(R.dimen.shelf_icon_container_padding),
                     )
-                    .then(context.burnInModifier),
+                    .then(context.burnInModifier)
+                    .then(context.nonAuthUIModifier),
         ) {
             val scope = rememberCoroutineScope()
             AndroidView(

@@ -25,7 +25,7 @@ import android.os.UserManager;
 import com.android.internal.R;
 import com.android.settingslib.devicestate.AndroidSecureSettings;
 import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManager;
-import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManagerProvider;
+import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManagerImpl;
 import com.android.settingslib.devicestate.PostureDeviceStateConverter;
 import com.android.settingslib.devicestate.SecureSettings;
 import com.android.settingslib.notification.modes.ZenIconLoader;
@@ -86,6 +86,8 @@ import com.android.systemui.statusbar.policy.ZenModeControllerImpl;
 import com.android.systemui.statusbar.policy.bluetooth.data.repository.BluetoothRepository;
 import com.android.systemui.statusbar.policy.bluetooth.data.repository.BluetoothRepositoryImpl;
 import com.android.systemui.statusbar.policy.data.repository.DeviceProvisioningRepositoryModule;
+import com.android.systemui.statusbar.policy.domain.interactor.TtyStatusInteractor;
+import com.android.systemui.statusbar.policy.domain.interactor.impl.TtyStatusInteractorImpl;
 import com.android.systemui.statusbar.policy.profile.data.repository.ManagedProfileRepository;
 import com.android.systemui.statusbar.policy.profile.data.repository.impl.ManagedProfileRepositoryImpl;
 import com.android.systemui.statusbar.policy.vpn.data.repository.VpnRepository;
@@ -158,6 +160,10 @@ public interface StatusBarPolicyModule {
     /** */
     @Binds
     LocationController provideLocationController(LocationControllerImpl controllerImpl);
+
+    /** */
+    @Binds
+    TtyStatusInteractor provideTtyStatusInteractor(TtyStatusInteractorImpl impl);
 
     /** */
     @Binds
@@ -270,8 +276,7 @@ public interface StatusBarPolicyModule {
         return new PostureDeviceStateConverter(context, deviceStateManager);
     }
 
-    /** Returns a singleton instance of DeviceStateAutoRotateSettingManager based on auto-rotate
-     * refactor flag. */
+    /** Returns a singleton instance of DeviceStateAutoRotateSettingManager. */
     @SysUISingleton
     @Provides
     static DeviceStateAutoRotateSettingManager provideAutoRotateSettingsManager(
@@ -281,8 +286,8 @@ public interface StatusBarPolicyModule {
             @Main Handler mainHandler,
             PostureDeviceStateConverter postureDeviceStateConverter
     ) {
-        return DeviceStateAutoRotateSettingManagerProvider.createInstance(context, bgExecutor,
-                secureSettings, mainHandler, postureDeviceStateConverter);
+        return new DeviceStateAutoRotateSettingManagerImpl(context, bgExecutor, secureSettings,
+                mainHandler, postureDeviceStateConverter);
     }
 
     /**

@@ -72,111 +72,131 @@ public class TaskContinuityMessengerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mMockContext =  Mockito.spy(
-            new ContextWrapper(
-                InstrumentationRegistry
-                    .getInstrumentation()
-                    .getTargetContext()));
+        mMockContext =
+                Mockito.spy(
+                        new ContextWrapper(
+                                InstrumentationRegistry.getInstrumentation().getTargetContext()));
 
         // Setup fake services.
-        mCompanionDeviceManager
-            = new CompanionDeviceManager(
-                mMockCompanionDeviceManagerService,
-                mMockContext);
+        mCompanionDeviceManager =
+                new CompanionDeviceManager(mMockCompanionDeviceManagerService, mMockContext);
 
         when(mMockContext.getSystemService(Context.COMPANION_DEVICE_SERVICE))
-            .thenReturn(mCompanionDeviceManager);
+                .thenReturn(mCompanionDeviceManager);
 
         // Create TaskContinuityMessenger.
-        mTaskContinuityMessenger = new TaskContinuityMessenger(mMockContext, mMockListener);
-
+        mTaskContinuityMessenger = new TaskContinuityMessenger(mMockContext);
     }
 
     @Test
-    public void testEnableAndDisable_registersListenersAndFlowsMessages() throws Exception {
+    public void testAddAndRemoveListeners_flowsMessages() throws Exception {
         // Start listening, verifying a message listener is added.
-        ArgumentCaptor<IOnMessageReceivedListener> listenerCaptor
-            = ArgumentCaptor.forClass(IOnMessageReceivedListener.class);
-        mTaskContinuityMessenger.enable();
+        ArgumentCaptor<IOnMessageReceivedListener> listenerCaptor =
+                ArgumentCaptor.forClass(IOnMessageReceivedListener.class);
+        mTaskContinuityMessenger.addListener(mMockListener);
         verify(mMockCompanionDeviceManagerService, times(1))
-            .addOnMessageReceivedListener(
-                eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
-                listenerCaptor.capture());
+                .addOnMessageReceivedListener(
+                        eq(MESSAGE_ONEWAY_TASK_CONTINUITY), listenerCaptor.capture());
         IOnMessageReceivedListener listener = listenerCaptor.getValue();
         assertThat(listener).isNotNull();
 
         // Send a message to the listener.
         int expectedAssociationId = 1;
         connectAssociations(List.of(expectedAssociationId));
-        ContinuityDeviceConnected expectedMessage = new ContinuityDeviceConnected(
-                    List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0])));
+        ContinuityDeviceConnected expectedMessage =
+                new ContinuityDeviceConnected(
+                        List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0], true)));
 
         listener.onMessageReceived(
-            expectedAssociationId,
-            TaskContinuityMessageSerializer.serialize(expectedMessage));
+                expectedAssociationId, TaskContinuityMessageSerializer.serialize(expectedMessage));
         TestableLooper.get(this).processAllMessages();
         verify(mMockListener, times(1))
-            .onMessageReceived(eq(expectedAssociationId), eq(expectedMessage));
+                .onMessageReceived(eq(expectedAssociationId), eq(expectedMessage));
 
         // Stop listening, verifying the message listener is removed.
-        mTaskContinuityMessenger.disable();
+        mTaskContinuityMessenger.removeListener(mMockListener);
         verify(mMockCompanionDeviceManagerService, times(1))
-            .removeOnMessageReceivedListener(
-                eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
-                any());
+                .removeOnMessageReceivedListener(eq(MESSAGE_ONEWAY_TASK_CONTINUITY), any());
+    }
+
+    @Test
+    public void testAddAndRemoveListeners_multipleListeners_flowsMessages() throws Exception {
+        // Start listening, verifying a message listener is added.
+        ArgumentCaptor<IOnMessageReceivedListener> listenerCaptor =
+                ArgumentCaptor.forClass(IOnMessageReceivedListener.class);
+        mTaskContinuityMessenger.addListener(mMockListener);
+        TaskContinuityMessenger.Listener mockListener2 =
+                Mockito.mock(TaskContinuityMessenger.Listener.class);
+        mTaskContinuityMessenger.addListener(mockListener2);
+        verify(mMockCompanionDeviceManagerService, times(1))
+                .addOnMessageReceivedListener(
+                        eq(MESSAGE_ONEWAY_TASK_CONTINUITY), listenerCaptor.capture());
+        IOnMessageReceivedListener listener = listenerCaptor.getValue();
+        assertThat(listener).isNotNull();
+        mTaskContinuityMessenger.removeListener(mMockListener);
+        verify(mMockCompanionDeviceManagerService, never())
+                .removeOnMessageReceivedListener(eq(MESSAGE_ONEWAY_TASK_CONTINUITY), any());
+        mTaskContinuityMessenger.removeListener(mockListener2);
+        verify(mMockCompanionDeviceManagerService, times(1))
+                .removeOnMessageReceivedListener(eq(MESSAGE_ONEWAY_TASK_CONTINUITY), any());
     }
 
     @Test
     public void testSendMessage_sendsMessageToAssociation() throws RemoteException, IOException {
         int associationId = 1;
 
-        mTaskContinuityMessenger.enable();
+        mTaskContinuityMessenger.addListener(mMockListener);
         connectAssociations(List.of(associationId));
-        ContinuityDeviceConnected expectedMessage = new ContinuityDeviceConnected(
-            List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0])));
-        TaskContinuityMessenger.SendMessageResult result
-            = mTaskContinuityMessenger.sendMessage(associationId, expectedMessage);
+        ContinuityDeviceConnected expectedMessage =
+                new ContinuityDeviceConnected(
+                        List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0], true)));
+        TaskContinuityMessenger.SendMessageResult result =
+                mTaskContinuityMessenger.sendMessage(associationId, expectedMessage);
         verify(mMockCompanionDeviceManagerService, times(1))
-            .sendMessage(
-                eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
-                eq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
-                aryEq(new int[]{associationId}));
+                .sendMessage(
+                        eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
+                        eq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
+                        aryEq(new int[] {associationId}));
         assertThat(result).isEqualTo(TaskContinuityMessenger.SendMessageResult.SUCCESS);
     }
 
     @Test
     public void testSendMessage_associationNotFound_returnsFailure()
-        throws RemoteException, IOException {
+            throws RemoteException, IOException {
 
         int associationId = 1;
-        ContinuityDeviceConnected expectedMessage = new ContinuityDeviceConnected(
-            List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0])));
-        TaskContinuityMessenger.SendMessageResult result
-            = mTaskContinuityMessenger.sendMessage(associationId, expectedMessage);
+        ContinuityDeviceConnected expectedMessage =
+                new ContinuityDeviceConnected(
+                        List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0], true)));
+        TaskContinuityMessenger.SendMessageResult result =
+                mTaskContinuityMessenger.sendMessage(associationId, expectedMessage);
         verify(mMockCompanionDeviceManagerService, never())
-            .sendMessage(
-                eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
-                eq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
-                aryEq(new int[]{associationId}));
+                .sendMessage(
+                        eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
+                        eq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
+                        aryEq(new int[] {associationId}));
         assertThat(result)
-            .isEqualTo(TaskContinuityMessenger.SendMessageResult.FAILURE_ASSOCIATION_NOT_FOUND);
+                .isEqualTo(TaskContinuityMessenger.SendMessageResult.FAILURE_ASSOCIATION_NOT_FOUND);
     }
 
     private void connectAssociations(List<Integer> associationIds) {
-        ArgumentCaptor<IOnTransportsChangedListener> listenerCaptor
-            = ArgumentCaptor.forClass(IOnTransportsChangedListener.class);
+        ArgumentCaptor<IOnTransportsChangedListener> listenerCaptor =
+                ArgumentCaptor.forClass(IOnTransportsChangedListener.class);
         try {
             verify(mMockCompanionDeviceManagerService, times(1))
-                .addOnTransportsChangedListener(listenerCaptor.capture());
+                    .addOnTransportsChangedListener(listenerCaptor.capture());
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
 
-        List<AssociationInfo> associationInfos = associationIds.stream()
-            .map(id -> new AssociationInfo.Builder(id, 0, "com.android.test")
-                    .setDisplayName("name")
-                    .build())
-            .collect(Collectors.toList());
+        List<AssociationInfo> associationInfos =
+                associationIds.stream()
+                        .map(
+                                id ->
+                                        new AssociationInfo.Builder(id, 0, "com.android.test")
+                                                .setDisplayName("name")
+                                                .build())
+                        .collect(Collectors.toList());
 
         try {
             listenerCaptor.getValue().onTransportsChanged(associationInfos);

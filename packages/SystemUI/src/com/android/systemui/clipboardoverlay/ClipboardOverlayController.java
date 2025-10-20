@@ -19,13 +19,11 @@ package com.android.systemui.clipboardoverlay;
 import static android.content.Intent.ACTION_CLOSE_SYSTEM_DIALOGS;
 
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.CLIPBOARD_OVERLAY_SHOW_ACTIONS;
-import static com.android.systemui.Flags.clipboardAnnounceLiveRegion;
 import static com.android.systemui.Flags.clipboardOverlayMultiuser;
 import static com.android.systemui.Flags.showClipboardIndication;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_ACTION_SHOWN;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_ACTION_TAPPED;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_DISMISSED_OTHER;
-import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_DISMISS_TAPPED;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_EDIT_TAPPED;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_EXPANDED_FROM_MINIMIZED;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_REMOTE_COPY_TAPPED;
@@ -38,6 +36,7 @@ import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBO
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.ActivityOptions;
 import android.app.RemoteAction;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
@@ -236,24 +235,12 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
                 mClipboardLogger.logUnguarded(CLIPBOARD_OVERLAY_SHOWN_MINIMIZED);
                 mIsMinimized = true;
                 mView.setMinimized(true);
-                if (clipboardAnnounceLiveRegion()) {
-                    animateInWithAnnouncement(mClipboardModel.getType());
-                } else {
-                    animateIn();
-                }
+                animateInWithAnnouncement(mClipboardModel.getType());
             } else {
                 mClipboardLogger.logUnguarded(CLIPBOARD_OVERLAY_SHOWN_EXPANDED);
                 setExpandedView(() -> {
-                    if (clipboardAnnounceLiveRegion()) {
-                        animateInWithAnnouncement(mClipboardModel.getType());
-                    } else {
-                        animateIn();
-                    }
+                    animateInWithAnnouncement(mClipboardModel.getType());
                 });
-            }
-            if (!clipboardAnnounceLiveRegion()) {
-                mWindow.withWindowAttached(() -> mView.announceForAccessibility(
-                        getAccessibilityAnnouncement(mClipboardModel.getType())));
             }
         } else if (!mIsMinimized) {
             setExpandedView(() -> {
@@ -440,31 +427,6 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
         finish(event, null);
     }
 
-    private void animateOut() {
-        if (mExitAnimator != null && mExitAnimator.isRunning()) {
-            return;
-        }
-        mExitAnimator = mView.getExitAnimation();
-        mExitAnimator.addListener(new AnimatorListenerAdapter() {
-            private boolean mCancelled;
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                super.onAnimationCancel(animation);
-                mCancelled = true;
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                if (!mCancelled) {
-                    hideImmediate();
-                }
-            }
-        });
-        mExitAnimator.start();
-    }
-
     private void finish(ClipboardOverlayEvent event, @Nullable Intent intent) {
         if (mExitAnimator != null && mExitAnimator.isRunning()) {
             return;
@@ -489,7 +451,9 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
                             mActivityStarter.startActivityDismissingKeyguard(
                                     new ActivityStartOptions(intent, false, false, null,
                                             intent.getFlags(), null, null, false,
-                                            mUserTracker.getUserHandle(), null));
+                                            mUserTracker.getUserHandle(),
+                                            ActivityOptions.makeBasic()
+                                                    .setLaunchDisplayId(mContext.getDisplayId())));
                         } else {
                             mContext.startActivity(intent);
                         }
@@ -536,11 +500,6 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
         mView.reset();
         mTimeoutHandler.cancelTimeout();
         mClipboardLogger.reset();
-    }
-
-    @Override
-    public void onDismissButtonTapped() {
-        finish(CLIPBOARD_OVERLAY_DISMISS_TAPPED);
     }
 
     @Override

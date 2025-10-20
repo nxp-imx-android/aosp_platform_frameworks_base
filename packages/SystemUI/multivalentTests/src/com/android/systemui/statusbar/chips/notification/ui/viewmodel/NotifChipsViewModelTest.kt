@@ -96,6 +96,26 @@ class NotifChipsViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun chips_onePromotedNotif_keyAndNotificationKeyFilledIn() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0].key).isEqualTo("notif")
+            assertThat(latest!![0].notificationKey).isEqualTo("notif")
+        }
+
+    @Test
     @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, StatusBarConnectedDisplays.FLAG_NAME)
     fun chips_notifMissingStatusBarChipIconView_cdFlagDisabled_empty() =
         kosmos.runTest {

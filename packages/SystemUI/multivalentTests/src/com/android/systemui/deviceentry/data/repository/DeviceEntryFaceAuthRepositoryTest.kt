@@ -43,6 +43,8 @@ import com.android.systemui.Flags as AConfigFlags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
+import com.android.systemui.bouncer.domain.interactor.bouncerIsNotShowing
+import com.android.systemui.bouncer.domain.interactor.bouncerIsShowing
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.coroutines.FlowValue
 import com.android.systemui.coroutines.collectLastValue
@@ -81,7 +83,6 @@ import com.android.systemui.log.FaceAuthenticationLogger
 import com.android.systemui.log.SessionTracker
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.log.table.logcatTableLogBuffer
-import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
@@ -679,6 +680,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
             allPreconditionsToRunFaceAuthAreTrue()
             bouncerRepository.setAlternateVisible(false)
             bouncerRepository.setPrimaryShow(false)
+            kosmos.bouncerIsNotShowing()
 
             assertThat(canFaceAuthRun()).isTrue()
 
@@ -693,6 +695,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
 
             // but bouncer is shown after that.
             bouncerRepository.setPrimaryShow(true)
+            kosmos.bouncerIsShowing()
             assertThat(canFaceAuthRun()).isTrue()
         }
 
@@ -905,6 +908,67 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
+    fun isAuthenticatedIsResetToFalseWhenDeviceIsDreaming() =
+        testScope.runTest {
+            initCollectors()
+            allPreconditionsToRunFaceAuthAreTrue()
+
+            triggerFaceAuth(false)
+
+            authenticationCallback.value.onAuthenticationSucceeded(
+                mock(FaceManager.AuthenticationResult::class.java)
+            )
+
+            assertThat(authenticated()).isTrue()
+
+            keyguardTransitionRepository.sendTransitionStep(
+                TransitionStep(
+                    transitionState = TransitionState.STARTED,
+                    from = KeyguardState.LOCKSCREEN,
+                    to = KeyguardState.DREAMING,
+                )
+            )
+            keyguardTransitionRepository.sendTransitionStep(
+                TransitionStep(
+                    transitionState = TransitionState.FINISHED,
+                    from = KeyguardState.LOCKSCREEN,
+                    to = KeyguardState.DREAMING,
+                )
+            )
+
+            assertThat(authenticated()).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun withSceneContainer_isAuthenticatedIsResetToFalseWhenDeviceIsDreaming() =
+        testScope.runTest {
+            initCollectors()
+            allPreconditionsToRunFaceAuthAreTrue()
+
+            triggerFaceAuth(false)
+
+            authenticationCallback.value.onAuthenticationSucceeded(
+                mock(FaceManager.AuthenticationResult::class.java)
+            )
+            assertThat(authenticated()).isTrue()
+            kosmos.fakeDeviceEntryRepository.deviceUnlockStatus.value =
+                DeviceUnlockStatus(
+                    isUnlocked = true,
+                    deviceUnlockSource = DeviceUnlockSource.FaceWithBypass,
+                )
+            runCurrent()
+
+            kosmos.sceneInteractor.changeScene(
+                toScene = Scenes.Dream,
+                loggingReason = "transition for test",
+            )
+
+            assertThat(authenticated()).isFalse()
+        }
+
+    @Test
     fun isAuthenticatedIsResetToFalseWhenDeviceGoesToSleep() =
         testScope.runTest {
             initCollectors()
@@ -987,9 +1051,6 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
     @EnableSceneContainer
     fun withSceneContainer_isAuthenticatedIsResetToFalseWhenFinishedTransitioningToGoneAndStatusBarStateShade() =
         testScope.runTest {
-            kosmos.statusBarStateController.start()
-            runCurrent()
-
             initCollectors()
             allPreconditionsToRunFaceAuthAreTrue()
 

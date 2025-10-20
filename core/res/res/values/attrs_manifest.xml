@@ -2442,7 +2442,8 @@
              of Android higher than the number given here, the permission will not
              be created.  -->
         <attr name="maxSdkVersion" />
-        <!-- Optional: specify if valid purpose is required for this permission. True indicates
+        <!-- TODO(b/443057927): Remove when updating to specific purpose.
+             Optional: specify if valid purpose is required for this permission. True indicates
              it is required, false or not specifying the element indicates optional.
 
              <p>If set to true, {@link #AndroidManifestValidPurpose valid-purpose} tag must be used
@@ -2453,18 +2454,25 @@
              is currently only supported for normal permissions defined within the platform
              manifest. -->
         <attr name="requiresPurpose" format="boolean" />
-        <!-- Required to be set when {@code requiresPurpose} is {@code true}; optional otherwise.
+        <!-- TODO(b/443057927): Rename for specific purpose.
+             Required to be set when {@code requiresPurpose} is {@code true}; optional otherwise.
              Use it to specify the app's minimum target SDK version for which purpose validation
              should be enforced in order to prevent app compatibility issues. This must be set to
              at least SDK version 37. -->
         <attr name="requiresPurposeTargetSdkVersion"  format="integer" />
-</declare-styleable>
+        <!-- Used to specify the app's minimum target SDK version for which general purpose
+             validation should be enforced in order to prevent app compatibility issues. This must
+             be set to at least SDK version 37. -->
+        <attr name="requiresGeneralPurposeTargetSdkVersion"  format="integer" />
 
-    <!-- The <code>valid-purpose</code> tag is used to specify valid purpose(s) for a permission.
-         If there are multiple valid purposes, use multiple <code>valid-purpose</code> tags.
+    </declare-styleable>
 
-         <p>This appears as a child tag of the
-         {@link #AndroidManifestPermission permission} tag. -->
+     <!-- TODO(b/443057927): Rename for specific purpose.
+          The <code>valid-purpose</code> tag is used to specify valid purpose(s) for a permission.
+          If there are multiple valid purposes, use multiple <code>valid-purpose</code> tags.
+
+          <p>This appears as a child tag of the
+          {@link #AndroidManifestPermission permission} tag. -->
     <declare-styleable name="AndroidManifestValidPurpose" parent="AndroidManifestPermission">
         <!-- Specify the name of the valid purpose. -->
         <attr name="name" />
@@ -2475,6 +2483,24 @@
              be done retroactively on older platform versions. -->
         <attr name="maxTargetSdkVersion" format="integer" />
     </declare-styleable>
+
+     <!-- The <code>valid-general-purpose</code> tag is used to specify valid general purpose(s) for
+          a permission. If there are multiple valid purposes, use multiple
+          <code>valid-general-purpose</code> tags.
+
+          <p>This appears as a child tag of the
+          {@link #AndroidManifestPermission permission} tag. -->
+    <declare-styleable name="AndroidManifestValidGeneralPurpose" parent="AndroidManifestPermission">
+        <!-- Specify the name of the valid purpose. -->
+        <attr name="name" format="string"/>
+        <!-- Optional: This is mainly intended to deprecate a pre-defined purpose. Specify the max
+             target SDK version for which this purpose is valid. Not specifying this attribute
+             signifies the purpose is valid indefinitely. To avoid app compatibility issues, DO NOT
+             simply delete the purpose from the manifest. Note that deprecation of purposes cannot
+             be done retroactively on older platform versions. -->
+        <attr name="maxTargetSdkVersion" format="integer"/>
+    </declare-styleable>
+
 
     <!-- The <code>permission-group</code> tag declares a logical grouping of
          related permissions.
@@ -2604,6 +2630,30 @@
     <declare-styleable name="AndroidManifestPurpose" parent="AndroidManifestUsesPermission">
         <!-- Specify the name of the purpose. -->
         <attr name="name" />
+        <!-- Optional: specify the min SDK version for which the permission is requested with the
+             declared purpose. Not specifying this element implies there’s no lower bound on the
+             SDK version for which the purpose is declared. -->
+        <attr name="minSdkVersion" format="integer|string" />
+        <!-- Optional: specify the max SDK version for which the permission is requested with the
+             declared purpose. Not specifying this element implies there’s no upper bound on the SDK
+             version for which the purpose is declared. -->
+        <attr name="maxSdkVersion" format="integer" />
+    </declare-styleable>
+
+     <!-- Use <code>general-purpose</code> tag to specify general purpose(s) for requesting a
+          permission. General purpose(s) will need to be provided if the requested {@link
+          #AndroidManifestPermission permission} tag's <code>requiresGeneralPurposeTargetSdkVersion
+          </code> attribute is set to a value and the targeted SDK version is greater than or equal
+          to that value. Only valid purposes from the permission's {@link
+          #AndroidManifestValidGeneralPurpose valid-general-purpose} tags should be specified. If
+          there are multiple purposes for requesting the permission, use multiple <code>
+          general-purpose</code> tags.
+
+          <p>This appears as a child tag of the {@link
+          #AndroidManifestUsesPermission uses-permission} tag. -->
+    <declare-styleable name="AndroidManifestGeneralPurpose" parent="AndroidManifestUsesPermission">
+        <!-- Specify the name of the general purpose. -->
+        <attr name="name" format="string" />
         <!-- Optional: specify the min SDK version for which the permission is requested with the
              declared purpose. Not specifying this element implies there’s no lower bound on the
              SDK version for which the purpose is declared. -->
@@ -3093,8 +3143,10 @@
          access to data managed by the application.
 
          <p>This appears as a child tag of the
-         {@link #AndroidManifestApplication application} tag. -->
-    <declare-styleable name="AndroidManifestProvider" parent="AndroidManifestApplication">
+         {@link #AndroidManifestApplication application} or
+         {@link #AndroidManifestPrivateCompute private-compute} tag. -->
+    <declare-styleable name="AndroidManifestProvider"
+        parent="AndroidManifestApplication AndroidManifestPrivateCompute">
         <!-- Required name of the class implementing the provider, deriving from
             {@link android.content.ContentProvider}.  This is a fully
             qualified class name (for example, com.mycompany.myapp.MyProvider); as a
@@ -3214,8 +3266,10 @@
          that can connect with it.  If none are specified, the service can
          only be accessed by direct specification of its class name.
          The service tag appears as a child tag of the
-         {@link #AndroidManifestApplication application} tag. -->
-    <declare-styleable name="AndroidManifestService" parent="AndroidManifestApplication">
+         {@link #AndroidManifestApplication application} or
+         {@link #AndroidManifestPrivateCompute private-compute} tag. -->
+    <declare-styleable name="AndroidManifestService"
+        parent="AndroidManifestApplication AndroidManifestPrivateCompute">
         <!-- Required name of the class implementing the service, deriving from
             {@link android.app.Service}.  This is a fully
             qualified class name (for example, com.mycompany.myapp.MyService); as a
@@ -3289,7 +3343,7 @@
              vendors.
              <p>
              Shared isolated processes are created when using the
-             {@link android.content.Context#BIND_SHARED_ISOLATED_PROCESS) during service binding.
+             {@link android.content.Context#BIND_SHARED_ISOLATED_PROCESS} during service binding.
              <p>
              Note that when this flag is used, the {@link android.R.attr#process} attribute is
              ignored when the process is bound into a shared isolated process by a client.
@@ -3334,8 +3388,10 @@
          it will receive.  If none are specified, the receiver will only
          be run when an Intent is broadcast that is directed at its specific
          class name.  The receiver tag appears as a child tag of the
-         {@link #AndroidManifestApplication application} tag. -->
-    <declare-styleable name="AndroidManifestReceiver" parent="AndroidManifestApplication">
+         {@link #AndroidManifestApplication application} or
+         {@link #AndroidManifestPrivateCompute private-compute} tag. -->
+    <declare-styleable name="AndroidManifestReceiver"
+        parent="AndroidManifestApplication AndroidManifestPrivateCompute">
         <!-- Required name of the class implementing the receiver, deriving from
             {@link android.content.BroadcastReceiver}.  This is a fully
             qualified class name (for example, com.mycompany.myapp.MyReceiver); as a
@@ -3377,8 +3433,10 @@
          that it can handle.  If none are specified, the activity can
          only be started through direct specification of its class name.
          The activity tag appears as a child tag of the
-         {@link #AndroidManifestApplication application} tag. -->
-    <declare-styleable name="AndroidManifestActivity" parent="AndroidManifestApplication">
+         {@link #AndroidManifestApplication application} or
+         {@link #AndroidManifestPrivateCompute private-compute} tag. -->
+    <declare-styleable name="AndroidManifestActivity"
+        parent="AndroidManifestApplication AndroidManifestPrivateCompute">
         <!-- Required name of the class implementing the activity, deriving from
             {@link android.app.Activity}.  This is a fully
             qualified class name (for example, com.mycompany.myapp.MyActivity); as a
@@ -3571,8 +3629,10 @@
          that it can handle.  If none are specified, the activity can
          only be started through direct specification of its class name.
          The activity-alias tag appears as a child tag of the
-         {@link #AndroidManifestApplication application} tag. -->
-    <declare-styleable name="AndroidManifestActivityAlias" parent="AndroidManifestApplication">
+         {@link #AndroidManifestApplication application} or
+         {@link #AndroidManifestPrivateCompute private-compute} tag. -->
+    <declare-styleable name="AndroidManifestActivityAlias"
+        parent="AndroidManifestApplication AndroidManifestPrivateCompute">
         <!-- Required name of the class implementing the activity, deriving from
             {@link android.app.Activity}.  This is a fully
             qualified class name (for example, com.mycompany.myapp.MyActivity); as a
@@ -3604,6 +3664,18 @@
         <attr name="knownActivityEmbeddingCerts" />
         <attr name="intentMatchingFlags"/>
     </declare-styleable>
+
+    <!-- The <code>private-compute</code> tag contains a set of
+         {@link #AndroidManifestProvider provider} or {@link #AndroidManifestActivity activity} or
+         {@link #AndroidManifestActivityAlias activity-alias} or
+         {@link #AndroidManifestReceiver receiver} or {@link #AndroidManifestService service} or
+         components that are available as part of the package's application components,
+         but they run in the Private Compute Core sandbox and will be subject to
+         system restrictions, limiting access to some system resources and
+         restricting communication with non-PCC components.
+         @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    -->
+    <declare-styleable name="AndroidManifestPrivateCompute" parent="AndroidManifestApplication"/>
 
     <!-- The <code>meta-data</code> tag is used to attach additional
          arbitrary data to an application component.  The data can later

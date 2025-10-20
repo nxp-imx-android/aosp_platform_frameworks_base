@@ -143,6 +143,7 @@ import com.android.server.ondeviceintelligence.OnDeviceIntelligenceManagerLocal;
 import com.android.server.pm.parsing.PackageInfoUtils;
 import com.android.server.pm.parsing.pkg.AndroidPackageUtils;
 import com.android.server.pm.permission.PermissionManagerServiceInternal;
+import com.android.server.pm.permission.PermissionManagerServiceInternal.HotwordDetectionServiceProvider;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageState;
 import com.android.server.pm.pkg.PackageStateInternal;
@@ -243,7 +244,11 @@ public class ComputerEngine implements Computer {
         // TODO: Find replacement
         @Nullable
         public SettingBase getSettingBase(int appId) {
-            return mSettings.getSettingLPr(appId);
+            if (Process.isPccUid(appId)) {
+                return mSettings.getPccSettingLPr(appId);
+            } else {
+                return mSettings.getSettingLPr(appId);
+            }
         }
 
         @Nullable
@@ -5780,10 +5785,11 @@ public class ComputerEngine implements Computer {
         if (!Process.isIsolatedUid(uid)) {
             return false;
         }
+        final HotwordDetectionServiceProvider hotwordDetectionServiceProvider =
+                mPermissionManager.getHotwordDetectionServiceProvider();
         final boolean isHotword =
-                mPermissionManager.getHotwordDetectionServiceProvider() != null
-                        && uid
-                        == mPermissionManager.getHotwordDetectionServiceProvider().getUid();
+                 hotwordDetectionServiceProvider != null
+                        && uid == hotwordDetectionServiceProvider.getUid();
         if (isHotword) {
             return true;
         }

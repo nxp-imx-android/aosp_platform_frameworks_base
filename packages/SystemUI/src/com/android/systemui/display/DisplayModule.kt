@@ -22,6 +22,7 @@ import android.view.Display
 import android.view.IWindowManager
 import com.android.app.displaylib.DisplayLibBackground
 import com.android.app.displaylib.DisplayLibComponent
+import com.android.app.displaylib.DisplayLibMainThread
 import com.android.app.displaylib.DisplaysWithDecorationsRepository
 import com.android.app.displaylib.DisplaysWithDecorationsRepositoryCompat
 import com.android.app.displaylib.PerDisplayRepository
@@ -29,6 +30,7 @@ import com.android.app.displaylib.createDisplayLibComponent
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayLib
 import com.android.systemui.display.data.repository.DeviceStateRepository
@@ -40,6 +42,8 @@ import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepos
 import com.android.systemui.display.data.repository.DisplaysWithDecorationsRepositoryImpl
 import com.android.systemui.display.data.repository.FocusedDisplayRepository
 import com.android.systemui.display.data.repository.FocusedDisplayRepositoryImpl
+import com.android.systemui.display.data.repository.KioskModeRepository
+import com.android.systemui.display.data.repository.KioskModeRepositoryImpl
 import com.android.systemui.display.data.repository.PerDisplayRepoDumpHelper
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractorImpl
@@ -54,6 +58,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 
@@ -78,6 +83,9 @@ interface DisplayModule {
     ): DeviceStateRepository
 
     @Binds
+    fun bindsKioskModeRepository(kioskModeRepository: KioskModeRepositoryImpl): KioskModeRepository
+
+    @Binds
     fun bindsFocusedDisplayRepository(
         focusedDisplayRepository: FocusedDisplayRepositoryImpl
     ): FocusedDisplayRepository
@@ -98,6 +106,10 @@ interface DisplayModule {
     @Binds
     @DisplayLibBackground
     fun bindDisplayLibBackground(@Background bgScope: CoroutineScope): CoroutineScope
+
+    @Binds
+    @DisplayLibMainThread
+    fun bindDisplayLibMainThread(@Main mainContext: CoroutineContext): CoroutineContext
 
     companion object {
         @Provides

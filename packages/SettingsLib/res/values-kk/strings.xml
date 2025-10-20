@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Қосылып жатыр..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> жалғанды"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Жұптасып жатыр..."</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Жұптау мүмкін емес."</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Қосылу мүмкін емес."</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> жалғанды (телефонсыз)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> жалғанды (аудиосыз)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> жалғанды (телефонсыз не аудиосыз)"</string>
@@ -116,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Істеп тұр (тек оң жағы)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Істеп тұр (екі жағы да)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Айналаны жаңарту мүмкін болмады."</string>
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"Параметрлер жинағы жаңартылмады."</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Таңдалды"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Істеп тұр (тек мультимедиа). Батарея зарядының деңгейі – <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Істеп тұр (тек мультимедиа). Сол жақ: батарея зарядының деңгейі — <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>. Оң жақ: батарея зарядының деңгейі — <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Қонақ құрылғы. Батарея зарядының деңгейі – <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
@@ -322,10 +326,10 @@
     <string name="bluetooth_select_map_version_dialog_title" msgid="7085934373987428460">"Bluetooth MAP нұсқасын таңдау"</string>
     <string name="bluetooth_select_a2dp_codec_type" msgid="952001408455456494">"Bluetooth аудиокодегі"</string>
     <string name="bluetooth_select_a2dp_codec_type_dialog_title" msgid="7510542404227225545">"Bluetooth аудиокодегін іске қосу\nТаңдау"</string>
-    <string name="bluetooth_select_a2dp_codec_sample_rate" msgid="1638623076480928191">"Bluetooth арқылы дыбыс іріктеу жиілігі"</string>
+    <string name="bluetooth_select_a2dp_codec_sample_rate" msgid="1638623076480928191">"Bluetooth дыбыс дискретизациясының жиілігі"</string>
     <string name="bluetooth_select_a2dp_codec_sample_rate_dialog_title" msgid="5876305103137067798">"Bluetooth аудиокодегін іске қосу\nТаңдау: іріктеу жылдамдығы"</string>
     <string name="bluetooth_select_a2dp_codec_type_help_info" msgid="8647200416514412338">"Сұр түсті болса, бұл оған телефонда не гарнитурада қолдау көрсетілмейтінін білдіреді."</string>
-    <string name="bluetooth_select_a2dp_codec_bits_per_sample" msgid="6253965294594390806">"Бір іріктемедегі Bluetooth дыбысының биті"</string>
+    <string name="bluetooth_select_a2dp_codec_bits_per_sample" msgid="6253965294594390806">"Бір үлгідегі Bluetooth аудио биті"</string>
     <string name="bluetooth_select_a2dp_codec_bits_per_sample_dialog_title" msgid="4898693684282596143">"Bluetooth аудиокодегін іске қосу\nТаңдау: разрядтылық"</string>
     <string name="bluetooth_select_a2dp_codec_channel_mode" msgid="364277285688014427">"Bluetooth дыбыстық арна режимі"</string>
     <string name="bluetooth_select_a2dp_codec_channel_mode_dialog_title" msgid="2076949781460359589">"Bluetooth аудиокодегін іске қосу\nТаңдау: арна режимі"</string>
@@ -345,7 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Бұл режим қосулы болса, құрылғының MAC мекенжайы MAC рандомизациясы қосулы желіге жалғанған сайын өзгеруі мүмкін."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Трафик саналатын желі"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Трафик саналмайды"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Журнал буферінің өлшемдері"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Журналға тіркеуші буферінің өлшемі"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Әр журнал буфері үшін журналға тіркеуші өлшемдерін таңдау"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Тіркеуіштің тұрақты жадын тазарту керек пе?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Тұрақты тіркеуішпен бақылауды тоқтатқаннан кейін, құрылғыңыздағы ол сақтаған деректертің бәрін жоюымыз керек."</string>
@@ -676,7 +680,7 @@
     <string name="profile_info_settings_title" msgid="105699672534365099">"Профильдік ақпарат"</string>
     <string name="user_need_lock_message" msgid="4311424336209509301">"Шектелген профайл жасақтауға дейін қолданбалар мен жеке деректерді қорғау үшін экран бекітпесін тағайындау қажет."</string>
     <string name="user_set_lock_button" msgid="1427128184982594856">"Бекітпе тағайындау"</string>
-    <string name="user_switch_to_user" msgid="6975428297154968543">"Пайдаланушыны ауыстыру: <xliff:g id="USER_NAME">%s</xliff:g>"</string>
+    <string name="user_switch_to_user" msgid="6975428297154968543">"<xliff:g id="USER_NAME">%s</xliff:g> ретінде кіру"</string>
     <string name="creating_new_user_dialog_message" msgid="7232880257538970375">"Жаңа пайдаланушы профилі жасалып жатыр…"</string>
     <string name="creating_new_guest_dialog_message" msgid="1114905602181350690">"Жаңа қонақ профилі жасалып жатыр…"</string>
     <string name="add_user_failed" msgid="4809887794313944872">"Жаңа пайдаланушы жасалмады."</string>

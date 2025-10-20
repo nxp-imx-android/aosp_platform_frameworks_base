@@ -20,8 +20,8 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.kairos.awaitClose
 import com.android.systemui.mediaprojection.appselector.data.RecentTask
 import com.android.systemui.mediaprojection.appselector.data.RecentTaskListProvider
-import com.android.systemui.screencapture.common.ScreenCapture
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUi
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.shared.system.TaskStackChangeListener
 import com.android.systemui.shared.system.TaskStackChangeListeners
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
@@ -42,11 +42,11 @@ interface ScreenCaptureRecentTaskRepository {
 }
 
 /** The default implementation of [ScreenCaptureRecentTaskRepository]. */
-@ScreenCaptureScope
+@ScreenCaptureUiScope
 class ScreenCaptureRecentTaskRepositoryImpl
 @Inject
 constructor(
-    @ScreenCapture scope: CoroutineScope,
+    @ScreenCaptureUi scope: CoroutineScope,
     @Background bgContext: CoroutineContext,
     recentTaskListProvider: RecentTaskListProvider,
     taskStackChangeListeners: TaskStackChangeListeners,

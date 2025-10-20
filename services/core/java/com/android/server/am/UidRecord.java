@@ -16,6 +16,8 @@
 
 package com.android.server.am;
 
+import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
+
 import android.Manifest;
 import android.app.ActivityManager;
 import android.content.pm.PackageManager;
@@ -41,14 +43,6 @@ import java.util.function.Consumer;
 public final class UidRecord extends UidRecordInternal {
     @CompositeRWLock({"mService", "mProcLock"})
     private ArraySet<ProcessRecord> mProcRecords = new ArraySet<>();
-
-    /**
-     * Sequence number associated with the {@link #mCurProcState}. This is incremented using
-     * {@link ActivityManagerService#mProcStateSeqCounter}
-     * when {@link #mCurProcState} changes from background to foreground or vice versa.
-     */
-    @GuardedBy("networkStateUpdate")
-    long curProcStateSeq;
 
     /**
      * Last seq number for which NetworkPolicyManagerService notified ActivityManagerService that
@@ -131,7 +125,7 @@ public final class UidRecord extends UidRecordInternal {
     @Override
     @GuardedBy(anyOf = {"mService", "mProcLock"})
     public int getMinProcAdj() {
-        int minAdj = ProcessList.UNKNOWN_ADJ;
+        int minAdj = UNKNOWN_ADJ;
         for (int i = mProcRecords.size() - 1; i >= 0; i--) {
             int adj = mProcRecords.valueAt(i).getSetAdj();
             if (adj < minAdj) {
@@ -243,7 +237,7 @@ public final class UidRecord extends UidRecordInternal {
         }
 
         long seqToken = proto.start(UidRecordProto.NETWORK_STATE_UPDATE);
-        proto.write(UidRecordProto.ProcStateSequence.CURURENT, curProcStateSeq);
+        proto.write(UidRecordProto.ProcStateSequence.CURURENT, getCurProcStateSeq());
         proto.write(UidRecordProto.ProcStateSequence.LAST_NETWORK_UPDATED,
                 lastNetworkUpdatedProcStateSeq);
         proto.end(seqToken);
@@ -328,7 +322,7 @@ public final class UidRecord extends UidRecordInternal {
         sb.append(" procs:0");
 
         sb.append(" seq(");
-        sb.append(curProcStateSeq);
+        sb.append(getCurProcStateSeq());
         sb.append(",");
         sb.append(lastNetworkUpdatedProcStateSeq);
         sb.append(")}");

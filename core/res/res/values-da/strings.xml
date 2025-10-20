@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Skift til arbejdsprofil"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Skift til <xliff:g id="APP_NAME">%1$s</xliff:g> til privat brug"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Skift til <xliff:g id="APP_NAME">%1$s</xliff:g> til arbejdsbrug"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"Kontakter"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"have adgang til dine kontakter"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Kontakter og konti"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"tilgå dine kontakter og se listen over dine konti, der kan gemme kontakter på denne enhed"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Lokation"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"få adgang til enhedens lokation"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Kalender"</string>
@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"registrer øjenbevægelse præcist"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Data om bevægelse og område"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"registrer øjne, ansigt og krop, og scan område"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Præcise data om hovedbevægelse og område"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"registrer hoved præcist, og scan område"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Præcise data om bevægelse og område"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"scan området præcist, og registrer hovedbevægelser"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Hente indholdet i vinduet"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Undersøge indholdet i et vindue, du interagerer med."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Aktivere Udforsk ved berøring"</string>
@@ -639,6 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Tillad, at appen fastlægger den relative position mellem UWB-enheder (Ultra-Wideband) i nærheden"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"interagere med Wi‑Fi-enheder i nærheden"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Giver appen tilladelse til at informere om, oprette forbindelse til og fastslå den relative placering af Wi‑Fi-enheder i nærheden"</string>
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"tilgå enheder på det lokale netværk"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Tillader, at appen kan få adgang til enheder på det lokale netværk"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"fastlægge relativ position mellem enheder i nærheden"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Tillad, at appen fastlægger den relative position mellem enheder i nærheden"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Foretrukne oplysninger vedrørende NFC-betalingstjeneste"</string>
@@ -683,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Tillader, at appen scanner dine omgivelser."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"scan det nærliggende område præcist"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Tillader, at appen scanner dine omgivelser præcist."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"registrer XR-data i baggrunden"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"tilgå XR-sporing i baggrunden"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Tillader, at appen kan få adgang til XR-data i baggrunden."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"registrer taster"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Tillader, at appen registrerer taster, før systemet kan behandle systemgenveje og -handlinger."</string>
@@ -831,8 +833,8 @@
     <string name="permdesc_register_call_provider" msgid="4201429251459068613">"Tillader, at appen registrerer nye telefonforbindelser."</string>
     <string name="permlab_connection_manager" msgid="3179365584691166915">"administrere telefonforbindelser"</string>
     <string name="permdesc_connection_manager" msgid="1426093604238937733">"Tillader, at appen administrerer telefonforbindelser."</string>
-    <string name="permlab_bind_incall_service" msgid="5990625112603493016">"interager med Call Screen-skærmen"</string>
-    <string name="permdesc_bind_incall_service" msgid="4124917526967765162">"Tillader, at appen styrer, hvornår og hvordan brugeren ser Call Screen-skærmen."</string>
+    <string name="permlab_bind_incall_service" msgid="5990625112603493016">"interager med Filtrér opkald-skærmen"</string>
+    <string name="permdesc_bind_incall_service" msgid="4124917526967765162">"Tillader, at appen styrer, hvornår og hvordan brugeren ser Filtrér opkald-skærmen."</string>
     <string name="permlab_bind_connection_service" msgid="5409268245525024736">"interagere med telefonitjenester"</string>
     <string name="permdesc_bind_connection_service" msgid="6261796725253264518">"Tillader, at appen kan interagere med telefonitjenester for at foretage/modtage opkald."</string>
     <string name="permlab_control_incall_experience" msgid="6436863486094352987">"leverer brugeroplevelsen under opkald"</string>
@@ -1052,6 +1054,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Rigtigt!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Prøv igen"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Prøv igen"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Lås op for at se alle funktioner og data"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Det maksimale antal forsøg på at bruge ansigtsoplåsning er overskredet"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Intet SIM-kort"</string>
@@ -1236,7 +1242,7 @@
     <string name="copyUrl" msgid="6229645005987260230">"Kopier webadresse"</string>
     <string name="selectTextMode" msgid="3225108910999318778">"Markér tekst"</string>
     <string name="undo" msgid="3175318090002654673">"Fortryd"</string>
-    <string name="redo" msgid="7231448494008532233">"Annuller fortryd"</string>
+    <string name="redo" msgid="7231448494008532233">"Annuller fortrydelse"</string>
     <string name="autofill" msgid="511224882647795296">"Autofyld"</string>
     <string name="textSelectionCABTitle" msgid="5151441579532476940">"Tekstmarkering"</string>
     <string name="addToDictionary" msgid="8041821113480950096">"Føj til ordbog"</string>
@@ -1621,6 +1627,9 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"Anmodet om af <xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>)"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"Ja"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"Nej"</string>
+    <string name="emergency_location_notification_title" msgid="917557758257778958">"Lokation delt i nødsituation"</string>
+    <string name="emergency_location_notification_message" msgid="1877038822515882885">"Nødtjenesterne modtog din lokation fra dit mobilselskab"</string>
+    <string name="emergency_location_notification_learn_more" msgid="8718634939217070481">"Få flere oplysninger"</string>
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"Grænsen for sletning er overskredet"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"Der er <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> slettede emner for <xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g>, konto <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g>. Hvad vil du gøre?"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"Slet elementerne"</string>
@@ -1791,8 +1800,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Hvis du holder begge lydstyrkeknapperne nede i et par sekunder, aktiveres hjælpefunktionen <xliff:g id="SERVICE">%1$s</xliff:g>. Det kan ændre på, hvordan din enhed fungerer.\n\nDu kan ændre denne genvej til en anden funktion i Indstillinger &gt; Hjælpefunktioner."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Aktivér"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Aktivér ikke"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"TIL"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"FRA"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Vil du give <xliff:g id="SERVICE">%1$s</xliff:g> fuld kontrol over din enhed?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Fuld kontrol er velegnet til apps, der hjælper dig med hjælpefunktioner, men ikke de fleste apps."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Se og styre skærmen"</string>
@@ -1806,6 +1817,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Tryk på en funktion for at bruge den:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Vælg, hvilke funktioner du vil bruge med knappen til hjælpefunktioner"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Vælg de funktioner, du vil bruge med genvejen til lydstyrkeknapperne"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> er blevet deaktiveret"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Rediger genveje"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Udfør"</string>
@@ -1984,8 +2005,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Opdateret af din administrator.\nGå til Indstillinger for at se de tilladelser, der er blevet givet"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Slettet af din administrator"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Batterisparefunktionen aktiverer Mørkt tema og begrænser eller deaktiverer aktivitet i baggrunden og visse visuelle effekter, funktioner og netværksforbindelser."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Batterisparefunktionen aktiverer Mørkt tema og begrænser eller deaktiverer aktivitet i baggrunden og visse visuelle effekter, funktioner og netværksforbindelser."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Batterisparefunktionen aktiverer Mørkt tema og begrænser eller deaktiverer aktivitet i baggrunden og visse visuelle effekter, funktioner og netværksforbindelser."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Batterisparefunktionen aktiverer Mørkt tema og begrænser eller deaktiverer aktivitet i baggrunden og visse visuelle effekter, funktioner og netværksforbindelser."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Datasparefunktionen forhindrer nogle apps i at sende eller modtage data i baggrunden for at reducere dataforbruget. En app, der er i brug, kan få adgang til data, men gør det måske ikke så ofte. Dette kan f.eks. betyde, at billeder ikke vises, før du trykker på dem."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Vil du aktivere Datasparefunktion?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Aktivér"</string>
@@ -2005,7 +2026,7 @@
     <string name="zen_mode_rule_name_combination" msgid="7174598364351313725">"<xliff:g id="FIRST">%1$s</xliff:g>/<xliff:g id="REST">%2$s</xliff:g>"</string>
     <string name="toolbar_collapse_description" msgid="8009920446193610996">"Skjul"</string>
     <string name="zen_mode_feature_name" msgid="3785547207263754500">"Forstyr ikke"</string>
-    <string name="zen_mode_downtime_feature_name" msgid="5886005761431427128">"Nedetid"</string>
+    <string name="zen_mode_downtime_feature_name" msgid="5886005761431427128">"Pausetid"</string>
     <string name="zen_mode_default_weeknights_name" msgid="7902108149994062847">"Hverdagsaften"</string>
     <string name="zen_mode_default_weekends_name" msgid="4707200272709377930">"Weekend"</string>
     <string name="zen_mode_default_events_name" msgid="2280682960128512257">"Begivenhed"</string>
@@ -2047,12 +2068,9 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"Maksimér"</string>
     <string name="close_button_text" msgid="10603510034455258">"Luk"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
-    <skip />
+    <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
+    <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
+    <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"Besvar"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"Video"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"Afvis"</string>
@@ -2363,8 +2381,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"Pinkode til oplåsning af IMPI"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"Pinkode til oplåsning af tjenesteudbyderens netværksdelmængde"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"Anmoder om oplåsning af SIM-netværket…"</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="6742563947637715645">"Anmoder om oplåsning af delmængden for SIM-netværket…"</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="2033399698172403560">"Anmoder om oplåsning af tjenesteudbyderens SIM…"</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"Anmoder om oplåsning af delmængden for SIM-netværket…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"Anmoder om oplåsning af tjenesteudbyderens SIM…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"Anmoder om oplåsning af virksomhedens SIM…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"Anmoder om oplåsning med PUK-koden…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"Anmoder om oplåsning med PUK-koden…"</string>
@@ -2390,15 +2408,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"Anmoder om oplåsning med PUK-koden…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"Anmoder om oplåsning med PUK-koden…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"Anmodningen om oplåsning af SIM-netværket mislykkedes."</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="3372797822292089708">"Anmodningen om oplåsning af delmængde for SIM-netværket mislykkedes."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="1878443146720411381">"Anmodningen om oplåsning af tjenesteudbyderens SIM mislykkedes."</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"Anmodningen om oplåsning af delmængde for SIM-netværket mislykkedes."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"Anmodningen om oplåsning af tjenesteudbyderens SIM mislykkedes."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"Anmodningen om oplåsning af virksomhedens SIM mislykkedes."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"Anmodningen om oplåsning af SIM mislykkedes."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"Anmodningen om oplåsning af RUIM for Network1 mislykkedes."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"Anmodningen om oplåsning af RUIM for Network2 mislykkedes."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"Anmodningen om oplåsning af HRDP-relateret RUIM mislykkedes."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"Anmodningen om oplåsning af virksomhedens RUIM mislykkedes."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="3801002648649640407">"Anmodningen om oplåsning af tjenesteudbyderens RUIM mislykkedes."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"Anmodningen om oplåsning af tjenesteudbyderens RUIM mislykkedes."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"Anmodningen om oplåsning af RUIM mislykkedes."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"Der kunne ikke låses op med PUK-koden."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"Der kunne ikke låses op med PUK-koden."</string>
@@ -2418,13 +2436,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"Anmodningen om oplåsning af tjenesteudbyderens netværksdelmængde mislykkedes."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"SIM-netværket blev låst op."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"Delmængden for SIM-netværket blev låst op."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="8249342930499801740">"Tjenesteudbyderens SIM blev låst op."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"Tjenesteudbyderens SIM blev låst op."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"Virksomhedens SIM blev låst op."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"SIM blev låst op."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"RUIM for Network1 blev låst op."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"RUIM for Network2 blev låst op."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"HRDP-relateret RUIM blev låst op."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6020936629725666932">"Tjenesteudbyderens RUIM blev låst op."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"Tjenesteudbyderens RUIM blev låst op."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"Virksomhedens RUIM blev låst op."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"RUIM blev låst op."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"Der blev låst op med PUK-koden."</string>
@@ -2580,27 +2598,22 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Apps"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Dine fingeraftryk kan ikke længere genkendes. Konfigurer fingeroplåsning igen."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Sikkerhed og privatliv"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
-    <skip />
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Slå lyden fra"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"Lås skærmen op, og opret USB-forbindelse igen"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"Lås skærmen op for at oprette USB-forbindelse"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"Avanceret beskyttelse kræver, at din skærm er låst op, før der kan oprettes USB-forbindelse"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"Avanceret beskyttelse kræver, at din skærm er låst op, før der kan oprettes USB-forbindelse"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"Avanceret beskyttelse kræver, at din skærm er låst op, for at du kan oplade hurtigere"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"Avanceret beskyttelse kræver, at din skærm er låst op, for at du kan oplade hurtigere eller oprette USB-forbindelse"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Slå fra"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Notifikationer er slået fra"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"Du modtager først USB-notifikationer fra Avanceret beskyttelse, når du har genstartet din enhed"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Mistænkelig USB-aktivitet"</string>
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
-    <skip />
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"USB-datasignalet er blevet deaktiveret"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Har du problemer med fingeroplåsning?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Tryk for at få tips til, hvordan du forbedrer oplåsningsoplevelsen"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Blink ikke"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Hold afbryderknappen nede for at slukke fjernsynet"</string>
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Underretninger om systemressourcer"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Overforbrug af ressourcer"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Appen <xliff:g id="APP_NAME">%1$s</xliff:g> bruger for mange ressourcer."</string>
 </resources>

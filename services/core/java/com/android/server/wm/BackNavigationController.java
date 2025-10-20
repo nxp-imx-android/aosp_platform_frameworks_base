@@ -128,15 +128,20 @@ class BackNavigationController {
      * Set up the necessary leashes for predictive back animation based on previous
      * startBackNavigation state.
      */
-    void startPredictiveBackAnimation() {
+    boolean startPredictiveBackAnimation() {
         synchronized (mWindowManagerService.mGlobalLock) {
             if (mCurrentAnimationBuilder == null) {
-                return;
+                return false;
+            }
+            if (mWindowManagerService.mAtmService.getTransitionController().inTransition()) {
+                mCurrentAnimationBuilder = null;
+                return false;
             }
             final AnimationHandler.ScheduleAnimationBuilder tmp = mCurrentAnimationBuilder;
             mCurrentAnimationBuilder = null;
             scheduleAnimationInner(tmp);
         }
+        return true;
     }
 
     /**
@@ -281,7 +286,10 @@ class BackNavigationController {
                     & PRIVATE_FLAG_APP_PROGRESS_GENERATION_ALLOWED) != 0;
             infoBuilder.setAppProgressAllowed(canInterruptInView && !transferGestureToEmbedded
                     && callbackInfo.isAnimationCallback());
-            mNavigationMonitor.startMonitor(window, navigationObserver);
+            if (!mNavigationMonitor.startMonitor(window, navigationObserver)) {
+                Slog.e(TAG, "Unable to monitor remote binder, returning null.");
+                return null;
+            }
 
             int requestOverride = callbackInfo.getOverrideBehavior();
             ProtoLog.d(WM_DEBUG_BACK_PREVIEW, "startBackNavigation currentTask=%s, "
@@ -455,11 +463,7 @@ class BackNavigationController {
                                 removedWindowContainer);
                 mBackAnimationInProgress = builder != null;
                 if (mBackAnimationInProgress) {
-                    if (Flags.predictiveBackDelayWmTransition()) {
-                        mCurrentAnimationBuilder = builder;
-                    } else {
-                        scheduleAnimationInner(builder);
-                    }
+                    mCurrentAnimationBuilder = builder;
                 }
             }
             infoBuilder.setPrepareRemoteAnimation(prepareAnimation);
@@ -829,21 +833,29 @@ class BackNavigationController {
                     }
                 };
 
-        void startMonitor(@NonNull WindowState window, @NonNull RemoteCallback observer) {
+        boolean startMonitor(@NonNull WindowState window, @NonNull RemoteCallback observer) {
             mNavigatingWindow = window;
             mObserver = observer;
             try {
                 mObserver.getInterface().asBinder().linkToDeath(mListenerDeathRecipient,
                         0 /* flags */);
-            } catch (RemoteException r) {
-                Slog.e(TAG, "Failed to link to death");
+            } catch (RuntimeException | RemoteException r) {
+                Slog.e(TAG, "Failed to link to death " + r);
+                mObserver = null;
+                mNavigatingWindow = null;
+                return false;
             }
+            return true;
         }
 
         void stopMonitorForRemote() {
             if (mObserver != null) {
-                mObserver.getInterface().asBinder().unlinkToDeath(mListenerDeathRecipient,
-                        0 /* flags */);
+                try {
+                    mObserver.getInterface().asBinder().unlinkToDeath(mListenerDeathRecipient,
+                            0 /* flags */);
+                } catch (RuntimeException r) {
+                    Slog.e(TAG, "Failed to unlink to death " + r);
+                }
             }
             mObserver = null;
         }
@@ -957,7 +969,7 @@ class BackNavigationController {
                 final Task topTask = mAnimationHandler.mOpenAnimAdaptor.mAdaptors[0].getTopTask();
                 if (topTask != null) {
                     WindowContainer parent = mAnimationHandler.mOpenActivities[0].getParent();
-                    while (parent != topTask && parent.isDescendantOf(topTask)) {
+                    while (parent != null && parent != topTask && parent.isDescendantOf(topTask)) {
                         controller.collect(parent);
                         parent = parent.getParent();
                     }

@@ -16,7 +16,10 @@
 
 package com.android.server.appfunctions;
 
+import static com.android.server.appfunctions.AppFunctionExecutors.SCHEDULED_EXECUTOR_SERVICE;
+
 import android.annotation.NonNull;
+import android.content.Context;
 import android.os.UserHandle;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -33,6 +36,8 @@ import java.util.function.Function;
 /** Manages {@link AppFunctionAccessHistory} in a multi-user environment. */
 public class MultiUserAppFunctionAccessHistory {
     private static final String TAG = "MultiUserAppFunctionAccess";
+
+    private static MultiUserAppFunctionAccessHistory sInstance = null;
 
     private final Object mLock = new Object();
 
@@ -68,7 +73,7 @@ public class MultiUserAppFunctionAccessHistory {
                         user.getUserIdentifier(),
                         mUserAccessHistoryFactory.apply(user.getUserHandle()));
             }
-            schedulePeriodicAccessHistoryCleanUpJob(user.getUserHandle());
+            schedulePeriodicAccessHistoryCleanUpJob(user.getUserIdentifier());
         }
     }
 
@@ -93,18 +98,16 @@ public class MultiUserAppFunctionAccessHistory {
     }
 
     @GuardedBy("mLock")
-    private void schedulePeriodicAccessHistoryCleanUpJob(@NonNull UserHandle user) {
+    private void schedulePeriodicAccessHistoryCleanUpJob(int userId) {
         if (mScheduledExecutorService.isShutdown()) {
             Slog.e(TAG, "Scheduled executor service is shut down.");
             return;
         }
 
-        if (mUserPeriodicCleanUpFutures.contains(user.getIdentifier())) {
+        if (mUserPeriodicCleanUpFutures.contains(userId)) {
             Slog.i(
                     TAG,
-                    "Periodic history clean up job for user "
-                            + user.getIdentifier()
-                            + " is already scheduled");
+                    "Periodic history clean up job for user " + userId + " is already scheduled");
             return;
         }
 
@@ -112,7 +115,7 @@ public class MultiUserAppFunctionAccessHistory {
                 mScheduledExecutorService.scheduleAtFixedRate(
                         () -> {
                             try {
-                                asUser(user)
+                                asUser(userId)
                                         .deleteExpiredAppFunctionAccessHistories(
                                                 mServiceConfig
                                                     .getAppFunctionAccessHistoryRetentionMillis());
@@ -121,14 +124,14 @@ public class MultiUserAppFunctionAccessHistory {
                                         TAG,
                                         "Fail to delete expired AppFunction access history for user"
                                                 + " "
-                                                + user.getIdentifier(),
+                                                + userId,
                                         e);
                             }
                         },
                         0,
                         mServiceConfig.getAppFunctionExpiredAccessHistoryDeletionIntervalMillis(),
                         TimeUnit.MILLISECONDS);
-        mUserPeriodicCleanUpFutures.put(user.getIdentifier(), scheduledFuture);
+        mUserPeriodicCleanUpFutures.put(userId, scheduledFuture);
     }
 
     @GuardedBy("mLock")
@@ -141,20 +144,42 @@ public class MultiUserAppFunctionAccessHistory {
     }
 
     /**
-     * Starts a {@link AppFunctionAccessHistory} as {@code user}. The caller can use this to
+     * Starts a {@link AppFunctionAccessHistory} as {@code userId}. The caller can use this to
      * interact with {@link AppFunctionAccessHistory} for the target user.
      *
      * @throws IllegalStateException if the {@code user} is not unlocked yet.
      */
     @NonNull
-    public AppFunctionAccessHistory asUser(@NonNull UserHandle user) throws IllegalStateException {
+    public AppFunctionAccessHistory asUser(int userId) throws IllegalStateException {
         synchronized (mLock) {
-            final AppFunctionAccessHistory cache = mUserAccessHistoryMap.get(user.getIdentifier());
+            final AppFunctionAccessHistory cache = mUserAccessHistoryMap.get(userId);
             if (cache == null) {
-                throw new IllegalStateException(
-                        "User " + user.getIdentifier() + " is not unlocked yet");
+                throw new IllegalStateException("User " + userId + " is not unlocked yet");
             }
             return cache;
         }
+    }
+
+    /** Gets a singleton instance. */
+    public static synchronized MultiUserAppFunctionAccessHistory getInstance(
+            @NonNull Context context) {
+        if (sInstance == null) {
+            sInstance =
+                    new MultiUserAppFunctionAccessHistory(
+                            new ServiceConfigImpl(),
+                            SCHEDULED_EXECUTOR_SERVICE,
+                            /* userAccessHistoryFactory */ new Function<>() {
+                                @Override
+                                @NonNull
+                                public AppFunctionAccessHistory apply(
+                                        @NonNull UserHandle userHandle) {
+                                    Objects.requireNonNull(userHandle);
+                                    return new AppFunctionSQLiteAccessHistory(
+                                            context.createContextAsUser(
+                                                    userHandle, /* flags= */ 0));
+                                }
+                            });
+        }
+        return sInstance;
     }
 }

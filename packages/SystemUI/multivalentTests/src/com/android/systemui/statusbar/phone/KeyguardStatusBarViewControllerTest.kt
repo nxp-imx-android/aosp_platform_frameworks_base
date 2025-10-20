@@ -38,6 +38,7 @@ import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
+import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.dreams.ui.viewmodel.dreamViewModel
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
@@ -63,7 +64,6 @@ import com.android.systemui.shade.ShadeViewStateProvider
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.core.NewStatusBarIcons
-import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler
 import com.android.systemui.statusbar.layout.mockStatusBarContentInsetsProvider
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
@@ -80,6 +80,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.settings.SecureSettings
+import com.android.systemui.util.settings.fakeSettings
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
@@ -134,9 +135,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
     @Mock private lateinit var biometricUnlockController: BiometricUnlockController
 
-    @Mock
-    private lateinit var statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore
-
     @Mock private lateinit var userManager: UserManager
 
     @Captor
@@ -145,8 +143,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
     @Captor
     private lateinit var keyguardCallbackCaptor: ArgumentCaptor<KeyguardUpdateMonitorCallback>
-
-    @Mock private lateinit var secureSettings: SecureSettings
 
     @Mock private lateinit var commandQueue: CommandQueue
 
@@ -158,6 +154,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
     private lateinit var keyguardStatusBarView: KeyguardStatusBarView
     private lateinit var controller: KeyguardStatusBarViewController
+    private lateinit var secureSettings: SecureSettings
     private val fakeExecutor = FakeExecutor(FakeSystemClock())
     private val backgroundExecutor = FakeExecutor(FakeSystemClock())
 
@@ -169,6 +166,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         looper = TestableLooper.get(this)
         kosmos = testKosmos()
         testScope = kosmos.testScope
+        secureSettings = kosmos.fakeSettings
         shadeViewStateProvider = TestShadeViewStateProvider()
 
         whenever(
@@ -181,8 +179,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
         whenever(iconManagerFactory.create(ArgumentMatchers.any(), ArgumentMatchers.any()))
             .thenReturn(iconManager)
-        whenever(statusBarContentInsetsProviderStore.forDisplay(context.displayId))
-            .thenReturn(kosmos.mockStatusBarContentInsetsProvider)
         allowTestableLooperAsMainThread()
         looper.runWithLooper {
             keyguardStatusBarView =
@@ -219,7 +215,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
             kosmos.keyguardStatusBarViewModel,
             biometricUnlockController,
             kosmos.statusBarStateController,
-            statusBarContentInsetsProviderStore,
+            kosmos.displaySubcomponentPerDisplayRepository,
             userManager,
             kosmos.statusBarUserChipViewModel,
             secureSettings,
@@ -724,36 +720,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         assertThat(keyguardStatusBarView.alpha).isNotEqualTo(0.5f)
     }
 
-    // TODO(b/195442899): Add more tests for #updateViewState once CLs are finalized.
-    @Test
-    @DisableSceneContainer
-    fun updateForHeadsUp_headsUpShouldBeVisible_viewHidden() {
-        controller.onViewAttached()
-        updateStateToKeyguard()
-        keyguardStatusBarView.visibility = View.VISIBLE
-
-        shadeViewStateProvider.setShouldHeadsUpBeVisible(true)
-        controller.updateForHeadsUp(/* animate= */ false)
-
-        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
-    }
-
-    @Test
-    @DisableSceneContainer
-    fun updateForHeadsUp_headsUpShouldNotBeVisible_viewShown() {
-        controller.onViewAttached()
-        updateStateToKeyguard()
-
-        // Start with the opposite state.
-        shadeViewStateProvider.setShouldHeadsUpBeVisible(true)
-        controller.updateForHeadsUp(/* animate= */ false)
-
-        shadeViewStateProvider.setShouldHeadsUpBeVisible(false)
-        controller.updateForHeadsUp(/* animate= */ false)
-
-        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
-    }
-
     @Test
     fun testNewUserSwitcherDisablesAvatar_newUiOn() =
         testScope.runTest {
@@ -780,42 +746,39 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
     }
 
     @Test
-    fun testBlockedIcons_obeysSettingForVibrateIcon_settingOff() {
-        val str = mContext.getString(com.android.internal.R.string.status_bar_volume)
+    fun testBlockedIcons_obeysSettingForVibrateIcon_settingOff() =
+        testScope.runTest {
+            val str = mContext.getString(com.android.internal.R.string.status_bar_volume)
 
-        // GIVEN the setting is off
-        whenever(secureSettings.getInt(Settings.Secure.STATUS_BAR_SHOW_VIBRATE_ICON, 0))
-            .thenReturn(0)
+            // GIVEN the setting is off
+            secureSettings.putInt(Settings.Secure.STATUS_BAR_SHOW_VIBRATE_ICON, 0)
 
-        // WHEN CollapsedStatusBarFragment builds the blocklist
-        controller.updateBlockedIcons()
+            // WHEN CollapsedStatusBarFragment builds the blocklist
+            controller.updateBlockedIcons()
 
-        // THEN status_bar_volume SHOULD be present in the list
-        val contains = controller.blockedIcons.contains(str)
-        Assert.assertTrue(contains)
-    }
+            // THEN status_bar_volume SHOULD be present in the list
+            val contains = controller.blockedIcons.contains(str)
+            Assert.assertTrue(contains)
+        }
 
     @Test
-    fun testBlockedIcons_obeysSettingForVibrateIcon_settingOn() {
-        val str = mContext.getString(com.android.internal.R.string.status_bar_volume)
+    fun testBlockedIcons_obeysSettingForVibrateIcon_settingOn() =
+        testScope.runTest {
+            val str = mContext.getString(com.android.internal.R.string.status_bar_volume)
 
-        // GIVEN the setting is ON
-        whenever(
-                secureSettings.getIntForUser(
-                    Settings.Secure.STATUS_BAR_SHOW_VIBRATE_ICON,
-                    0,
-                    UserHandle.USER_CURRENT,
-                )
+            // GIVEN the setting is ON
+            secureSettings.putIntForUser(
+                Settings.Secure.STATUS_BAR_SHOW_VIBRATE_ICON,
+                1,
+                UserHandle.USER_CURRENT,
             )
-            .thenReturn(1)
+            // WHEN CollapsedStatusBarFragment builds the blocklist
+            controller.updateBlockedIcons()
 
-        // WHEN CollapsedStatusBarFragment builds the blocklist
-        controller.updateBlockedIcons()
-
-        // THEN status_bar_volume SHOULD NOT be present in the list
-        val contains = controller.blockedIcons.contains(str)
-        Assert.assertFalse(contains)
-    }
+            // THEN status_bar_volume SHOULD NOT be present in the list
+            val contains = controller.blockedIcons.contains(str)
+            Assert.assertFalse(contains)
+        }
 
     private fun updateStateToNotKeyguard() {
         updateStatusBarState(StatusBarState.SHADE)
@@ -1166,16 +1129,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
     private class TestShadeViewStateProvider : ShadeViewStateProvider {
         override var panelViewExpandedHeight: Float = 100f
-        private var mShouldHeadsUpBeVisible = false
         override var lockscreenShadeDragProgress: Float = 0f
-
-        override fun shouldHeadsUpBeVisible(): Boolean {
-            return mShouldHeadsUpBeVisible
-        }
-
-        fun setShouldHeadsUpBeVisible(shouldHeadsUpBeVisible: Boolean) {
-            this.mShouldHeadsUpBeVisible = shouldHeadsUpBeVisible
-        }
     }
 
     private fun lockscreenToDreamTransitionStep(

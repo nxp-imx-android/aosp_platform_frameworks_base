@@ -21,6 +21,10 @@ import static com.android.internal.display.BrightnessSynchronizer.brightnessIntT
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DEFAULT;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DOZE;
+import static com.android.server.display.DisplayDeviceConfig.CONFIG_FILE_FORMAT;
+import static com.android.server.display.DisplayDeviceConfig.PORT_SUFFIX_FORMAT;
+import static com.android.server.display.DisplayDeviceConfig.STABLE_FLAG;
+import static com.android.server.display.DisplayDeviceConfig.STABLE_ID_SUFFIX_FORMAT;
 import static com.android.server.display.config.SensorData.TEMPERATURE_TYPE_SKIN;
 import static com.android.server.display.utils.DeviceConfigParsingUtils.ambientBrightnessThresholdsIntToFloat;
 import static com.android.server.display.utils.DeviceConfigParsingUtils.displayBrightnessThresholdsIntToFloat;
@@ -70,10 +74,12 @@ import com.android.server.display.feature.flags.Flags;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -81,6 +87,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @SmallTest
@@ -108,6 +115,9 @@ public final class DisplayDeviceConfigTest {
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
+    @Rule
+    public final TemporaryFolder mTestFolder = new TemporaryFolder();
+
     @Mock
     private Context mContext;
 
@@ -121,7 +131,6 @@ public final class DisplayDeviceConfigTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(mContext.getResources()).thenReturn(mResources);
-        when(mFlags.areAutoBrightnessModesEnabled()).thenReturn(true);
         when(mFlags.isSensorBasedBrightnessThrottlingEnabled()).thenReturn(true);
         mockDeviceConfigs();
     }
@@ -987,26 +996,6 @@ public final class DisplayDeviceConfigTest {
     }
 
     @Test
-    public void testAutoBrightnessBrighteningLevels_FeatureFlagOff() throws IOException {
-        when(mFlags.areAutoBrightnessModesEnabled()).thenReturn(false);
-        setupDisplayDeviceConfigFromConfigResourceFile();
-        setupDisplayDeviceConfigFromDisplayConfigFile(getContent(getValidLuxThrottling(),
-                getValidProxSensor(), /* includeIdleMode= */ false, /* enableEvenDimmer= */ false));
-
-        assertArrayEquals(new float[]{brightnessIntToFloat(50), brightnessIntToFloat(100),
-                        brightnessIntToFloat(150)},
-                mDisplayDeviceConfig.getAutoBrightnessBrighteningLevels(
-                        AUTO_BRIGHTNESS_MODE_DEFAULT,
-                        Settings.System.SCREEN_BRIGHTNESS_AUTOMATIC_NORMAL), SMALL_DELTA);
-        assertArrayEquals(new float[]{0, 110, 500},
-                mDisplayDeviceConfig.getAutoBrightnessBrighteningLevelsLux(
-                        AUTO_BRIGHTNESS_MODE_DEFAULT,
-                        Settings.System.SCREEN_BRIGHTNESS_AUTOMATIC_NORMAL), ZERO_DELTA);
-        assertArrayEquals(new float[]{2, 200, 600},
-                mDisplayDeviceConfig.getAutoBrightnessBrighteningLevelsNits(), SMALL_DELTA);
-    }
-
-    @Test
     public void testIsAutoBrightnessAvailable_EnabledInConfigResource() throws IOException {
         when(mResources.getBoolean(R.bool.config_automatic_brightness_available)).thenReturn(true);
 
@@ -1108,6 +1097,47 @@ public final class DisplayDeviceConfigTest {
 
         assertEquals(brightnessIntToFloat(90),
                 mDisplayDeviceConfig.getDefaultDozeBrightness(), ZERO_DELTA);
+    }
+
+    @Test
+    public void testLookupOrder() throws IOException {
+        File productDirectory = mTestFolder.newFolder();
+        File vendorDirectory = mTestFolder.newFolder();
+        File ddcDirectory = new File(productDirectory, "/etc/displayconfig");
+
+        long stableId = 12345L | STABLE_FLAG;
+        int port = 72;
+
+        final String stableSuffix = String.format(Locale.ROOT, STABLE_ID_SUFFIX_FORMAT, stableId);
+        final String stableFilename = String.format(Locale.ROOT, CONFIG_FILE_FORMAT, stableSuffix);
+
+
+        final String portSuffix = String.format(Locale.ROOT, PORT_SUFFIX_FORMAT, port);
+        final String portFilename = String.format(Locale.ROOT, CONFIG_FILE_FORMAT, portSuffix);
+
+        // Create files, stable file should be chosen
+        createConfigFile(ddcDirectory, stableFilename, "PhysicalIdFilename");
+        createConfigFile(ddcDirectory, portFilename, "PortFilename");
+
+
+        DisplayDeviceConfig config = DisplayDeviceConfig.createWithoutDefaultValues(
+                productDirectory, vendorDirectory, mContext, stableId, port, false, mFlags);
+        assertEquals("PhysicalIdFilename", config.getName());
+
+        // Delete the stable file, port file should be chosen
+        assertTrue(new File(ddcDirectory, stableFilename).delete());
+        config = DisplayDeviceConfig.createWithoutDefaultValues(productDirectory, vendorDirectory,
+                mContext, stableId, port, false, mFlags);
+        assertEquals("PortFilename", config.getName());
+
+    }
+    private void createConfigFile(File dir, String name, String contentName) throws IOException {
+        File configFile = new File(dir, name);
+        configFile.getParentFile().mkdirs();
+        String content = getContent(getInvalidLuxThrottling(), getValidProxSensor(),
+                /* includeIdleMode= */ true, /* enableEvenDimmer= */ false,
+                contentName);
+        Files.write(configFile.toPath(), content.getBytes(StandardCharsets.UTF_8));
     }
 
     private String getValidLuxThrottling() {
@@ -1513,9 +1543,15 @@ public final class DisplayDeviceConfigTest {
 
     private String getContent(String brightnessCapConfig, String proxSensor,
             boolean includeIdleMode, boolean enableEvenDimmer) {
+        return getContent(brightnessCapConfig, proxSensor, includeIdleMode, enableEvenDimmer,
+                "Example Display");
+    }
+
+    private String getContent(String brightnessCapConfig, String proxSensor,
+            boolean includeIdleMode, boolean enableEvenDimmer, String displayName) {
         return "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
                 + "<displayConfiguration>\n"
-                +   "<name>Example Display</name>\n"
+                +   "<name>" + displayName + "</name>\n"
                 +   "<densityMapping>\n"
                 +       "<density>\n"
                 +           "<height>480</height>\n"

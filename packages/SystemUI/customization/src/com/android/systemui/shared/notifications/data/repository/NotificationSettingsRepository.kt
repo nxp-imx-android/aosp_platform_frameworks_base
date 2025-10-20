@@ -44,12 +44,31 @@ class NotificationSettingsRepository(
             .map { it == 1 }
             .distinctUntilChanged()
 
+    /**
+     *  Bundles are expanded:
+     *  - auto: only if there's one bundle
+     *  - always: always
+     *  - never: never
+     *
+     *  Notifications in a bundle are expanded:
+     *  - always: never
+     *  - never: never
+     *  - auto: notifications that look like singletons if there are multiple bundles
+     */
+    val shouldExpandBundles: StateFlow<Int> =
+        secureSettingsRepository
+            .intSetting(name = Settings.Secure.NOTIFICATION_BUNDLES_ALWAYS_EXPAND)
+            .flowOn(backgroundDispatcher)
+            .stateIn(
+                scope = backgroundScope,
+                started = SharingStarted.Eagerly,
+                initialValue = EXPAND_BUNDLE_AUTO, /* auto */
+            )
+
     /** The current state of the notification setting. */
     suspend fun isShowNotificationsOnLockScreenEnabled(): StateFlow<Boolean> =
         secureSettingsRepository
-            .intSetting(
-                name = Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS,
-            )
+            .intSetting(name = Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS)
             .map { it == 1 }
             .flowOn(backgroundDispatcher)
             .stateIn(scope = backgroundScope)
@@ -68,11 +87,7 @@ class NotificationSettingsRepository(
             .intSetting(name = Settings.System.NOTIFICATION_COOLDOWN_ENABLED)
             .map { it == 1 }
             .flowOn(backgroundDispatcher)
-            .stateIn(
-                scope = backgroundScope,
-                started = SharingStarted.Eagerly,
-                initialValue = true,
-            )
+            .stateIn(scope = backgroundScope, started = SharingStarted.Eagerly, initialValue = true)
 
     /** The default duration for DND mode when enabled. See [Settings.Secure.ZEN_DURATION]. */
     val zenDuration: StateFlow<Int> =
@@ -85,4 +100,10 @@ class NotificationSettingsRepository(
                 started = SharingStarted.Eagerly,
                 initialValue = ZEN_DURATION_PROMPT,
             )
+
+    companion object {
+        const val EXPAND_BUNDLE_AUTO = 0
+        const val EXPAND_BUNDLE_NEVER = -1
+        const val EXPAND_BUNDLE_ALWAYS = 1
+    }
 }

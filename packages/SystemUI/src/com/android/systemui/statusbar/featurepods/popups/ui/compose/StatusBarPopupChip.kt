@@ -57,7 +57,9 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.compose.modifiers.thenIf
+import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.ui.compose.Icon
+import com.android.systemui.common.ui.compose.load
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.featurepods.popups.ui.model.ChipIcon
 import com.android.systemui.statusbar.featurepods.popups.ui.model.ColorsModel
@@ -94,9 +96,7 @@ fun StatusBarPopupChip(
         modifier =
             modifier
                 .minimumInteractiveComponentSize()
-                .thenIf(viewModel.contentDescription != null) {
-                    Modifier.semantics { contentDescription = viewModel.contentDescription!! }
-                }
+                .contentDescription(viewModel.contentDescription)
                 .thenIf(!isPopupShown) {
                     Modifier.clickable(
                         onClick = { viewModel.showPopup() },
@@ -245,4 +245,10 @@ private fun Modifier.overflowFadeOut(hasOverflow: () -> Boolean, fadeLength: Dp)
             if (hasOverflow()) drawRect(brush = gradient, blendMode = BlendMode.DstIn)
         }
     }
+}
+
+@Composable
+private fun Modifier.contentDescription(description: ContentDescription?): Modifier {
+    val resolvedDescription = description?.load() ?: return this
+    return this.semantics { contentDescription = resolvedDescription }
 }

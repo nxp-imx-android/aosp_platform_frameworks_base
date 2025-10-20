@@ -49,6 +49,9 @@ import static android.content.ComponentCallbacks2.TRIM_MEMORY_BACKGROUND;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_COMPACTION;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_FREEZER;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
+import static com.android.server.am.psc.Constants.CACHED_APP_MAX_ADJ;
+import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
+import static com.android.server.am.psc.Constants.PERCEPTIBLE_APP_ADJ;
 
 import android.annotation.IntDef;
 import android.annotation.UptimeMillisLong;
@@ -60,6 +63,7 @@ import android.app.ApplicationExitInfo;
 import android.app.ApplicationExitInfo.Reason;
 import android.app.ApplicationExitInfo.SubReason;
 import android.app.IApplicationThread;
+import android.content.pm.ApplicationInfo;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
@@ -82,6 +86,7 @@ import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.Keep;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BinderfsStatsReader;
 import com.android.internal.os.ProcLocksReader;
@@ -98,6 +103,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -280,10 +286,8 @@ public class CachedAppOptimizer {
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_4 = 10_000;
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_5 = 10 * 60 * 1000;
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_6 = 10 * 60 * 1000;
-    @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_MIN_OOM_ADJ =
-            ProcessList.CACHED_APP_MIN_ADJ;
-    @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_MAX_OOM_ADJ =
-            ProcessList.CACHED_APP_MAX_ADJ;
+    @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_MIN_OOM_ADJ = CACHED_APP_MIN_ADJ;
+    @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_MAX_OOM_ADJ = CACHED_APP_MAX_ADJ;
     // The sampling rate to push app compaction events into statsd for upload.
     @VisibleForTesting static final float DEFAULT_STATSD_SAMPLE_RATE = 0.1f;
     @VisibleForTesting static final long DEFAULT_COMPACT_FULL_RSS_THROTTLE_KB = 12_000L;
@@ -536,6 +540,7 @@ public class CachedAppOptimizer {
     @GuardedBy("mProcLock")
     private boolean mFreezerOverride = false;
     private long mFreezerBinderCallbackLast = -1;
+    private boolean mBinderMonitorEnabled = false;
 
     @VisibleForTesting volatile long mFreezerDebounceTimeout = DEFAULT_FREEZER_DEBOUNCE_TIMEOUT;
     @VisibleForTesting volatile boolean mFreezerExemptInstPkg = DEFAULT_FREEZER_EXEMPT_INST_PKG;
@@ -562,6 +567,31 @@ public class CachedAppOptimizer {
         mSettingsObserver = new SettingsContentObserver();
         mProcLocksReader = new ProcLocksReader();
         mFreezer = mAm.getFreezer();
+
+        // This must be done exactly once, and as early as possible so that system_server can open
+        // the singleton binder netlink socket.  mBinderMonitorEnabled will be false in test
+        // processes, regardless of the flag.
+        mBinderMonitorEnabled = android.os.Flags.binderNetlinkEnabled() && enableBinderReport();
+
+        // Start the monitor thread only if binder monitoring is enabled.
+        if (mBinderMonitorEnabled) {
+            new Thread("BinderMonitor") {
+                @Override
+                public void run() {
+                    Slog.d(TAG_AM, "BinderMonitor enabled");
+                    try {
+                        handleBinderReport();
+                    } catch (RuntimeException e) {
+                        Slog.e(TAG_AM, "Binder monitor failed", e);
+                    } finally {
+                        Slog.e(TAG_AM, "BinderMonitor disabled");
+                        // The thread has exited: ensure that further errors are processed with
+                        // legacy logic.
+                        mBinderMonitorEnabled = false;
+                    }
+                }
+            }.start();
+        }
     }
 
     /**
@@ -607,15 +637,6 @@ public class CachedAppOptimizer {
     public boolean useFreezer() {
         synchronized (mPhenotypeFlagLock) {
             return mUseFreezer;
-        }
-    }
-
-    /**
-     * Returns whether freezer exempts INSTALL_PACKAGES.
-     */
-    public boolean freezerExemptInstPkg() {
-        synchronized (mPhenotypeFlagLock) {
-            return mUseFreezer && mFreezerExemptInstPkg;
         }
     }
 
@@ -754,6 +775,18 @@ public class CachedAppOptimizer {
     }
 
     private native void compactSystem();
+    private native void compactSystemWithMemcg();
+
+    /**
+     * Enable binder reports via generic netlink
+     * @return true if the operation completed successfully, false otherwise.
+     */
+    private native boolean enableBinderReport();
+
+    /**
+     * Wait, read and process binder reports from kernel binder driver.
+     */
+    private native void handleBinderReport();
 
     /**
      * Compacts a process or app
@@ -764,6 +797,7 @@ public class CachedAppOptimizer {
     private static native void compactProcess(int pid, int compactionFlags);
     private static native void performNativeMemcgCompaction(int uid, int pid, int compactionFlags);
     private static native void compactNativeProcess(int pid, int compactionFlags);
+    private static native boolean compactionFlagsValidForMemcg(int compactionFlags);
 
     static private native void cancelCompaction();
 
@@ -1033,7 +1067,7 @@ public class CachedAppOptimizer {
             KEY_COMPACT_THROTTLE_MIN_OOM_ADJ, DEFAULT_COMPACT_THROTTLE_MIN_OOM_ADJ);
 
         // Should only compact cached processes.
-        if (mCompactThrottleMinOomAdj < ProcessList.CACHED_APP_MIN_ADJ) {
+        if (mCompactThrottleMinOomAdj < CACHED_APP_MIN_ADJ) {
             mCompactThrottleMinOomAdj = DEFAULT_COMPACT_THROTTLE_MIN_OOM_ADJ;
         }
     }
@@ -1044,7 +1078,7 @@ public class CachedAppOptimizer {
             KEY_COMPACT_THROTTLE_MAX_OOM_ADJ, DEFAULT_COMPACT_THROTTLE_MAX_OOM_ADJ);
 
         // Should only compact cached processes.
-        if (mCompactThrottleMaxOomAdj > ProcessList.CACHED_APP_MAX_ADJ) {
+        if (mCompactThrottleMaxOomAdj > CACHED_APP_MAX_ADJ) {
             mCompactThrottleMaxOomAdj = DEFAULT_COMPACT_THROTTLE_MAX_OOM_ADJ;
         }
     }
@@ -1203,7 +1237,7 @@ public class CachedAppOptimizer {
             return;
         }
 
-        if (app.getSetAdj() >= ProcessList.CACHED_APP_MIN_ADJ) {
+        if (app.getSetAdj() >= CACHED_APP_MIN_ADJ) {
             final IApplicationThread thread = app.getThread();
             if (thread != null) {
                 try {
@@ -1480,7 +1514,7 @@ public class CachedAppOptimizer {
         if (useCompaction()) {
             // Cancel any currently executing compactions
             // if the process moved out of cached state
-            if (newAdj < oldAdj && newAdj < ProcessList.CACHED_APP_MIN_ADJ) {
+            if (newAdj < oldAdj && newAdj < CACHED_APP_MIN_ADJ) {
                 cancelCompactionForProcess(app, CancelCompactReason.OOM_IMPROVEMENT);
             }
         }
@@ -1548,6 +1582,17 @@ public class CachedAppOptimizer {
         }
     }
 
+    private static int getCompactionFlags(CompactProfile profile) {
+        if (profile == CompactProfile.FULL) {
+            return COMPACT_ACTION_FILE_FLAG | COMPACT_ACTION_ANON_FLAG;
+        } else if (profile == CompactProfile.SOME) {
+            return COMPACT_ACTION_FILE_FLAG;
+        } else if (profile == CompactProfile.ANON) {
+            return COMPACT_ACTION_ANON_FLAG;
+        }
+        return 0;
+    }
+
     private final class MemCompactionHandler extends Handler {
         private MemCompactionHandler() {
             super(mCachedAppOptimizerThread.getLooper());
@@ -1558,7 +1603,7 @@ public class CachedAppOptimizer {
 
             // don't compact if the process has returned to perceptible
             // and this is only a cached/home/prev compaction
-            if (proc.getSetAdj() <= ProcessList.PERCEPTIBLE_APP_ADJ) {
+            if (proc.getSetAdj() <= PERCEPTIBLE_APP_ADJ) {
                 if (DEBUG_COMPACTION) {
                     Slog.d(TAG_AM,
                             "Skipping compaction as process " + name + " is "
@@ -1680,6 +1725,21 @@ public class CachedAppOptimizer {
             return false;
         }
 
+        private EnumMap<CompactProfile, Boolean> mProfileValidForMemcgMap =
+                new EnumMap<>(CompactProfile.class);
+
+        private boolean profileValidForMemcg(CompactProfile profile) {
+            Boolean valid = mProfileValidForMemcgMap.get(profile);
+
+            if (valid == null) {
+                // Use JNI only once
+                valid = compactionFlagsValidForMemcg(getCompactionFlags(profile));
+                mProfileValidForMemcgMap.put(profile, valid);
+            }
+
+            return valid.booleanValue();
+        }
+
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -1785,7 +1845,8 @@ public class CachedAppOptimizer {
                         long zramUsedKbBefore = getUsedZramMemory();
                         long startCpuTime = threadCpuTimeNs();
 
-                        if (Flags.useMemcgForCompaction()) {
+                        if (Flags.useMemcgForCompaction() &&
+                                profileValidForMemcg(resolvedProfile)) {
                             mProcessDependencies.performMemcgCompaction(resolvedProfile, uid, pid);
                         } else {
                             mProcessDependencies.performCompaction(resolvedProfile, pid);
@@ -1848,7 +1909,11 @@ public class CachedAppOptimizer {
                 case COMPACT_SYSTEM_MSG: {
                     Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "compactSystem");
                     long memFreedBefore = getMemoryFreedCompaction();
-                    compactSystem();
+                    if (Flags.useMemcgForCompaction()) {
+                        compactSystemWithMemcg();
+                    } else {
+                        compactSystem();
+                    }
                     long memFreedAfter = getMemoryFreedCompaction();
                     long memFreed = memFreedAfter - memFreedBefore;
                     mCompactStatsManager.logSystemCompactionPerformed(memFreed);
@@ -2033,7 +2098,7 @@ public class CachedAppOptimizer {
          */
         @GuardedBy({"mAm"})
         private void freezeProcess(final ProcessRecord proc) {
-            int pid = proc.getPid(); // Unlocked intentionally
+            final int pid;
             final String name = proc.processName;
             final long unfrozenDuration;
             final boolean frozen;
@@ -2055,7 +2120,7 @@ public class CachedAppOptimizer {
                     return;
                 }
 
-                if (opt.shouldNotFreeze()) {
+                if (opt.shouldNotFreeze() && !Flags.cpuTimeCapabilityBasedFreezePolicy()) {
                     if (DEBUG_FREEZER) {
                         Slog.d(TAG_AM, "Skipping freeze because process is marked "
                                 + "should not be frozen");
@@ -2125,14 +2190,17 @@ public class CachedAppOptimizer {
             EventLog.writeEvent(EventLogTags.AM_FREEZE, pid, name);
 
             // See above for why we're not taking mPhenotypeFlagLock here
-            if (mRandom.nextFloat() < mFreezerStatsdSampleRate) {
+            if (mRandom.nextFloat() < mFreezerStatsdSampleRate
+                    || Flags.unsampledFreezeAtomLogging()) {
+                ApplicationInfo appInfo = proc.info;
                 FrameworkStatsLog.write(FrameworkStatsLog.APP_FREEZE_CHANGED,
                         FrameworkStatsLog.APP_FREEZE_CHANGED__ACTION__FREEZE_APP,
                         pid,
                         name,
                         unfrozenDuration,
                         FrameworkStatsLog.APP_FREEZE_CHANGED__UNFREEZE_REASON__NONE,
-                        UNFREEZE_REASON_NONE);
+                        UNFREEZE_REASON_NONE,
+                        appInfo != null ? appInfo.uid : -1);
             }
 
             try {
@@ -2165,7 +2233,9 @@ public class CachedAppOptimizer {
             app.onProcessUnfrozen();
 
             // See above for why we're not taking mPhenotypeFlagLock here
-            if (mRandom.nextFloat() < mFreezerStatsdSampleRate) {
+            if (mRandom.nextFloat() < mFreezerStatsdSampleRate
+                    || Flags.unsampledFreezeAtomLogging()) {
+                ApplicationInfo appInfo = app.info;
                 FrameworkStatsLog.write(
                         FrameworkStatsLog.APP_FREEZE_CHANGED,
                         FrameworkStatsLog.APP_FREEZE_CHANGED__ACTION__UNFREEZE_APP,
@@ -2173,7 +2243,8 @@ public class CachedAppOptimizer {
                         processName,
                         frozenDuration,
                         FrameworkStatsLog.APP_FREEZE_CHANGED__UNFREEZE_REASON__NONE, // deprecated
-                        reason);
+                        reason,
+                        appInfo != null ? appInfo.uid : -1);
             }
         }
 
@@ -2261,17 +2332,6 @@ public class CachedAppOptimizer {
             compactNativeProcess(pid, compactionFlags);
             mPidCompacting = -1;
         }
-
-        private static int getCompactionFlags(CompactProfile profile) {
-            if (profile == CompactProfile.FULL) {
-                return COMPACT_ACTION_FILE_FLAG | COMPACT_ACTION_ANON_FLAG;
-            } else if (profile == CompactProfile.SOME) {
-                return COMPACT_ACTION_FILE_FLAG;
-            } else if (profile == CompactProfile.ANON) {
-                return COMPACT_ACTION_ANON_FLAG;
-            }
-            return 0;
-        }
     }
 
     static int getUnfreezeReasonCodeFromOomAdjReason(@OomAdjReason int oomAdjReason) {
@@ -2333,11 +2393,71 @@ public class CachedAppOptimizer {
         }
     }
 
+    // Binder error codes that are shared between the jni and java layers.
+    // LINT.IfChange(binderCodes)
+    private static final int BR_REPORT_FAILED = -1;
+    private static final int BR_FROZEN_REPLY = 1;
+    private static final int BR_FAILED_REPLY = 2;
+    private static final int BR_ONEWAY_SPAM_SUSPECT = 3;
+    private static final int BR_TRANSACTION_PENDING_FROZEN = 4;
+    // LINT.ThenChange(/services/core/jni/com_android_server_am_CachedAppOptimizer.cpp:binderCodes)
+
+    /**
+     * Process a binder error message.  This method is called by the binder monitor thread in the
+     * native layer.  The method returns false if there is an error and the monitor thread should
+     * exit.
+     */
+    @Keep
+    private boolean handleBinderReport(int error, int toPid, boolean large, boolean oneway) {
+        switch (error) {
+            case BR_REPORT_FAILED:
+                Slog.e(TAG_AM, "failed to retrieve binder report");
+                break;
+
+            case BR_FROZEN_REPLY:
+                killFrozenProcess(toPid, "Sync transaction while frozen",
+                        ApplicationExitInfo.REASON_FREEZER,
+                        ApplicationExitInfo.SUBREASON_FREEZER_BINDER_TRANSACTION);
+                break;
+
+            case BR_FAILED_REPLY:
+                if (large) {
+                    // If the message was "large", a TransactionTooLargeException} will be
+                    // thrown, and the process will be dealt with in the handler.
+                    Slog.d(TAG_AM, "Ignoring TransactionTooLarge failure");
+                } else if (!oneway) {
+                    // This is an unknown synchronous message failure.  The target might be
+                    // dead, but nothing can be done here.
+                    Slog.d(TAG_AM, "Ignoring unknown synchronous message failure");
+                } else {
+                    killFrozenProcess(toPid, "Async binder space running out while frozen",
+                            ApplicationExitInfo.REASON_FREEZER,
+                            ApplicationExitInfo.SUBREASON_FREEZER_BINDER_ASYNC_FULL);
+                }
+                break;
+
+            case BR_ONEWAY_SPAM_SUSPECT:
+            case BR_TRANSACTION_PENDING_FROZEN:
+                // Binder spamming.
+                break;
+
+            default:
+                // Should not be sent from the lower layers.
+                Slog.e(TAG_AM, "unknown binder error code: " + error);
+                break;
+        }
+        // The monitor thread should continue unless the error code is "failure".  If the monitor
+        // thread exits, the code reverts to
+        return error != BR_REPORT_FAILED;
+    }
+
     /**
      * Kill a frozen process with a specified reason
      */
-    public void killProcess(int pid, String reason, @Reason int reasonCode,
+    @Keep
+    private void killFrozenProcess(int pid, String reason, @Reason int reasonCode,
             @SubReason int subReason) {
+        Slog.i(TAG_AM, "binder error: kill " + pid + " " + reason);
         mAm.mHandler.post(() -> {
             synchronized (mAm) {
                 synchronized (mProcLock) {
@@ -2384,7 +2504,7 @@ public class CachedAppOptimizer {
 
         // Do nothing if the binder error callback is not enabled.
         // That means the frozen apps in a wrong state will be killed when they are unfrozen later.
-        if (!mUseFreezer || !mFreezerBinderCallbackEnabled) {
+        if (!mUseFreezer || !mFreezerBinderCallbackEnabled || mBinderMonitorEnabled) {
             return;
         }
 
@@ -2410,7 +2530,7 @@ public class CachedAppOptimizer {
                 int freezeInfo = mFreezer.getBinderFreezeInfo(current);
 
                 if ((freezeInfo & SYNC_RECEIVED_WHILE_FROZEN) != 0) {
-                    killProcess(current, "Sync transaction while frozen",
+                    killFrozenProcess(current, "Sync transaction while frozen",
                             ApplicationExitInfo.REASON_FREEZER,
                             ApplicationExitInfo.SUBREASON_FREEZER_BINDER_TRANSACTION);
 
@@ -2453,7 +2573,7 @@ public class CachedAppOptimizer {
                     if (free < mFreezerBinderAsyncThreshold) {
                         Slog.w(TAG_AM, "pid " + current
                                 + " has " + free + " free async space, killing");
-                        killProcess(current, "Async binder space running out while frozen",
+                        killFrozenProcess(current, "Async binder space running out while frozen",
                                 ApplicationExitInfo.REASON_FREEZER,
                                 ApplicationExitInfo.SUBREASON_FREEZER_BINDER_ASYNC_FULL);
                     }

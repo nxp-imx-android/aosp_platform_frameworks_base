@@ -232,7 +232,6 @@ public class WindowManagerWrapper implements WindowManager {
         return mBase.replaceContentOnDisplayWithSc(displayId, sc);
     }
 
-    @FlaggedApi(Flags.FLAG_TRUSTED_PRESENTATION_LISTENER_FOR_WINDOW)
     @Override
     public void registerTrustedPresentationListener(@NonNull IBinder window,
             @NonNull TrustedPresentationThresholds thresholds, @NonNull Executor executor,
@@ -240,13 +239,11 @@ public class WindowManagerWrapper implements WindowManager {
         mBase.registerTrustedPresentationListener(window, thresholds, executor, listener);
     }
 
-    @FlaggedApi(Flags.FLAG_TRUSTED_PRESENTATION_LISTENER_FOR_WINDOW)
     @Override
     public void unregisterTrustedPresentationListener(@NonNull Consumer<Boolean> listener) {
         mBase.unregisterTrustedPresentationListener(listener);
     }
 
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     @NonNull
     @Override
     public InputTransferToken registerBatchedSurfaceControlInputReceiver(
@@ -257,7 +254,6 @@ public class WindowManagerWrapper implements WindowManager {
                 hostInputTransferToken, surfaceControl, choreographer, receiver);
     }
 
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     @NonNull
     @Override
     public InputTransferToken registerUnbatchedSurfaceControlInputReceiver(
@@ -268,20 +264,17 @@ public class WindowManagerWrapper implements WindowManager {
                 hostInputTransferToken, surfaceControl, looper, receiver);
     }
 
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     @Override
     public void unregisterSurfaceControlInputReceiver(@NonNull SurfaceControl surfaceControl) {
         mBase.unregisterSurfaceControlInputReceiver(surfaceControl);
     }
 
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     @Nullable
     @Override
     public IBinder getSurfaceControlInputClientToken(@NonNull SurfaceControl surfaceControl) {
         return mBase.getSurfaceControlInputClientToken(surfaceControl);
     }
 
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     @Override
     public boolean transferTouchGesture(@NonNull InputTransferToken transferFromToken,
             @NonNull InputTransferToken transferToToken) {

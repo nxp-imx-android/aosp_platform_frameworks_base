@@ -36,7 +36,6 @@ import com.android.systemui.kairos.util.nameTag
 import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
-import com.android.systemui.statusbar.pipeline.StatusBarInflateCarrierMerged
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
@@ -129,13 +128,7 @@ class DemoMobileConnectionRepositoryKairos(
             .map {
                 when (it) {
                     is First -> it.value.inflateStrength
-                    is Second -> {
-                        if (StatusBarInflateCarrierMerged.isEnabled) {
-                            it.value.inflateSignalStrength
-                        } else {
-                            false
-                        }
-                    }
+                    is Second -> it.value.inflateSignalStrength
                 }
             }
             .also {
@@ -381,40 +374,29 @@ class DemoMobileConnectionRepositoryKairos(
             }
     }
 
-    private val defaultNumberOfLevels: State<Int> =
-        if (StatusBarInflateCarrierMerged.isEnabled) {
-            buildState {
-                lastEvent
-                    .map {
-                        when (it) {
-                            is First -> DEFAULT_NUM_LEVELS
-                            is Second -> it.value.numberOfLevels
-                        }
-                    }
-                    .also {
-                        logDiffsForTable(
-                            name =
-                                nameTag {
-                                    "DemoMobileConnectionRepositoryKairos(subId=$subId).defaultNumberOfLevels"
-                                },
-                            it,
-                            tableLogBuffer,
-                            columnName = "defaultNumberOfLevels",
-                        )
-                    }
+    private val defaultNumberOfLevels: State<Int> = buildState {
+        lastEvent
+            .map {
+                when (it) {
+                    is First -> DEFAULT_NUM_LEVELS
+                    is Second -> it.value.numberOfLevels
+                }
             }
-        } else {
-            stateOf(DEFAULT_NUM_LEVELS)
-        }
+            .also {
+                logDiffsForTable(
+                    name =
+                        nameTag {
+                            "DemoMobileConnectionRepositoryKairos(subId=$subId).defaultNumberOfLevels"
+                        },
+                    it,
+                    tableLogBuffer,
+                    columnName = "defaultNumberOfLevels",
+                )
+            }
+    }
 
     override val numberOfLevels: State<Int> =
-        if (StatusBarInflateCarrierMerged.isEnabled) {
-            createNumberOfLevelsState(inflateSignalStrength, defaultNumberOfLevels)
-        } else {
-            inflateSignalStrength.map { shouldInflate ->
-                if (shouldInflate) DEFAULT_NUM_LEVELS + 1 else DEFAULT_NUM_LEVELS
-            }
-        }
+        createNumberOfLevelsState(inflateSignalStrength, defaultNumberOfLevels)
 
     override val dataEnabled: State<Boolean> = stateOf(true)
 

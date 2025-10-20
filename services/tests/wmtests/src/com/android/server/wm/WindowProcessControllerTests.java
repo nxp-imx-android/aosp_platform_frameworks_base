@@ -63,12 +63,9 @@ import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.LocaleList;
 import android.os.RemoteException;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.Display;
 import android.view.DisplayInfo;
-
-import com.android.window.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -109,14 +106,14 @@ public class WindowProcessControllerTests extends WindowTestsBase {
 
         // Register to ImeContainer on display 1 as a listener.
         final TestDisplayContent testDisplayContent1 = createTestDisplayContentInContainer();
-        final DisplayArea imeContainer1 = testDisplayContent1.getImeContainer();
+        final ImeContainer imeContainer1 = testDisplayContent1.getImeContainer();
         mWpc.registerDisplayAreaConfigurationListener(imeContainer1);
         assertTrue(imeContainer1.containsListener(mWpc));
         assertEquals(imeContainer1, mWpc.getDisplayArea());
 
         // Register to ImeContainer on display 2 as a listener.
         final TestDisplayContent testDisplayContent2 = createTestDisplayContentInContainer();
-        final DisplayArea imeContainer2 = testDisplayContent2.getImeContainer();
+        final ImeContainer imeContainer2 = testDisplayContent2.getImeContainer();
         mWpc.registerDisplayAreaConfigurationListener(imeContainer2);
         assertFalse(imeContainer1.containsListener(mWpc));
         assertTrue(imeContainer2.containsListener(mWpc));
@@ -149,7 +146,7 @@ public class WindowProcessControllerTests extends WindowTestsBase {
                 .setDensityDpi(300)
                 .setPosition(DisplayContent.POSITION_TOP)
                 .build();
-        final DisplayArea imeContainer = display.getImeContainer();
+        final ImeContainer imeContainer = display.getImeContainer();
 
         // Register to the ime container.
         mWpc.registerDisplayAreaConfigurationListener(imeContainer);
@@ -171,7 +168,7 @@ public class WindowProcessControllerTests extends WindowTestsBase {
     @Test
     public void testDestroy_unregistersDisplayAreaListener() {
         final TestDisplayContent testDisplayContent1 = createTestDisplayContentInContainer();
-        final DisplayArea imeContainer1 = testDisplayContent1.getImeContainer();
+        final ImeContainer imeContainer1 = testDisplayContent1.getImeContainer();
         mWpc.registerDisplayAreaConfigurationListener(imeContainer1);
 
         mWpc.destroy();
@@ -213,7 +210,7 @@ public class WindowProcessControllerTests extends WindowTestsBase {
         // Register to the ImeContainer on the new display as a listener.
         final DisplayContent display = new TestDisplayContent.Builder(mAtm, 2000, 1000)
                 .setDensityDpi(300).setPosition(DisplayContent.POSITION_TOP).build();
-        final DisplayArea imeContainer = display.getImeContainer();
+        final ImeContainer imeContainer = display.getImeContainer();
         mWpc.registerDisplayAreaConfigurationListener(imeContainer);
 
         assertEquals(imeContainer, mWpc.getDisplayArea());
@@ -364,6 +361,12 @@ public class WindowProcessControllerTests extends WindowTestsBase {
         activity.setState(STOPPED, "test");
         flags = mWpc.getActivityStateFlags() & exclusiveFlags;
         assertEquals(0, flags);
+
+        activity.setVisibleRequested(true);
+        activity.setState(RESUMED, "test");
+        activity.makeInvisible();
+        flags = mWpc.getActivityStateFlags() & exclusiveFlags;
+        assertEquals(WindowProcessController.ACTIVITY_STATE_FLAG_IS_PAUSING_OR_PAUSED, flags);
     }
 
     @Test
@@ -471,13 +474,8 @@ public class WindowProcessControllerTests extends WindowTestsBase {
         final DisplayPolicy displayPolicy = displayContent.getDisplayPolicy();
         // Setup the decor insets info.
         final DisplayPolicy.DecorInsets.Info decorInsetsInfo = new DisplayPolicy.DecorInsets.Info();
-        final Rect emptyRect = new Rect();
-        decorInsetsInfo.mNonDecorInsets.set(emptyRect);
-        decorInsetsInfo.mConfigInsets.set(emptyRect);
         decorInsetsInfo.mOverrideConfigInsets.set(new Rect(0, 100, 0, 200));
         decorInsetsInfo.mOverrideNonDecorInsets.set(new Rect(0, 0, 0, 200));
-        decorInsetsInfo.mNonDecorFrame.set(new Rect(0, 0, 1000, 1500));
-        decorInsetsInfo.mConfigFrame.set(new Rect(0, 0, 1000, 1500));
         decorInsetsInfo.mOverrideConfigFrame.set(new Rect(0, 100, 1000, 1300));
         decorInsetsInfo.mOverrideNonDecorFrame.set(new Rect(0, 0, 1000, 1300));
         doReturn(decorInsetsInfo).when(displayPolicy)
@@ -514,7 +512,6 @@ public class WindowProcessControllerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CRASH_LOGGING_FOR_DESKTOP)
     public void testGetCrashTag_desktopModeFalse() {
         doReturn(false).when(() -> DesktopModeHelper.canEnterDesktopMode(mContext));
         final ActivityRecord activity = createActivityRecord(mWpc);
@@ -524,7 +521,6 @@ public class WindowProcessControllerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CRASH_LOGGING_FOR_DESKTOP)
     public void testGetCrashTag_desktopModeFalse_relaunchReason() {
         doReturn(false).when(() -> DesktopModeHelper.canEnterDesktopMode(mContext));
         final ActivityRecord activity = createActivityRecord(mWpc);
@@ -536,7 +532,6 @@ public class WindowProcessControllerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CRASH_LOGGING_FOR_DESKTOP)
     public void testGetCrashTag_desktopModeTrue_freeform() {
         doReturn(true).when(() -> DesktopModeHelper.canEnterDesktopMode(mContext));
         final ActivityRecord activity = createActivityRecord(mWpc);
@@ -546,7 +541,6 @@ public class WindowProcessControllerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CRASH_LOGGING_FOR_DESKTOP)
     public void testGetCrashTag_desktopModeTrue_freeformOnExternalDisplay() {
         doReturn(true).when(() -> DesktopModeHelper.canEnterDesktopMode(mContext));
         DisplayInfo displayInfo = new DisplayInfo();

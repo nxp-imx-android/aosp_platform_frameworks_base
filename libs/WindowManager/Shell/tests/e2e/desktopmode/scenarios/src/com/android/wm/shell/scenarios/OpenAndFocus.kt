@@ -21,7 +21,6 @@ import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.KeyEvent.KEYCODE_MINUS
 import android.view.KeyEvent.META_META_ON
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
-import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.KeyEventHelper
 import com.android.server.wm.flicker.helpers.MailAppHelper
@@ -44,7 +43,6 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
 )
 abstract class OpenAndFocus() : TestScenarioBase() {
     private val wmHelper = WindowManagerStateHelper(getInstrumentation())
-    private val device = UiDevice.getInstance(getInstrumentation())
 
     private val testAppInMainDisplay = DesktopModeAppHelper(SimpleAppHelper(getInstrumentation()))
     private val testAppInExternalDisplay =
@@ -55,18 +53,15 @@ abstract class OpenAndFocus() : TestScenarioBase() {
 
     @Before
     fun setup() {
-        connectedDisplayRule.setupTestDisplay()
+        val displayId = connectedDisplayRule.setupTestDisplay()
+        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(displayId).waitForAndVerify()
         testAppInMainDisplay.launchViaIntent(wmHelper)
     }
 
     @Test
     open fun openAndFocus() {
-        // TODO(b/426420246): Use launchViaIntentOnDisplay
-        testAppInExternalDisplay.launchViaIntent(wmHelper)
-        testAppInExternalDisplay.moveToNextDisplayViaKeyboard(
-            wmHelper,
-            connectedDisplayRule.addedDisplays.first()
-        )
+        val displayId = connectedDisplayRule.addedDisplays.first()
+        testAppInExternalDisplay.launchViaIntentOnDisplay(wmHelper, displayId)
 
         // Send minimize via keyboard and observe window to check display focus.
         keyEventHelper.press(KEYCODE_MINUS, META_META_ON)

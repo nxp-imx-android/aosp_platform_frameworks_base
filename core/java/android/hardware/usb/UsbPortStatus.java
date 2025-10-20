@@ -463,6 +463,22 @@ public final class UsbPortStatus implements Parcelable {
     @interface PowerBrickConnectionStatus{}
 
     /** @hide */
+    public UsbPortStatus(Builder builder) {
+        mCurrentMode = builder.mCurrentMode;
+        mCurrentPowerRole = builder.mCurrentPowerRole;
+        mCurrentDataRole = builder.mCurrentDataRole;
+        mSupportedRoleCombinations = builder.mSupportedRoleCombinations;
+        mContaminantProtectionStatus = builder.mContaminantProtectionStatus;
+        mContaminantDetectionStatus = builder.mContaminantDetectionStatus;
+        mPowerTransferLimited = builder.mPowerTransferLimited;
+        mUsbDataStatus = builder.mUsbDataStatus;
+        mPowerBrickConnectionStatus = builder.mPowerBrickConnectionStatus;
+        mComplianceWarnings = builder.mComplianceWarnings;
+        mPlugState = builder.mPlugState;
+        mDisplayPortAltModeInfo = builder.mDisplayPortAltModeInfo;
+    }
+
+    /** @hide */
     public UsbPortStatus(int currentMode, int currentPowerRole, int currentDataRole,
             int supportedRoleCombinations, int contaminantProtectionStatus,
             int contaminantDetectionStatus, @UsbDataStatus int usbDataStatus,
@@ -534,7 +550,7 @@ public final class UsbPortStatus implements Parcelable {
      * Gets the current mode of the port.
      *
      * @return The current mode: {@link #MODE_DFP}, {@link #MODE_UFP},
-     * {@link #MODE_AUDIO_ACCESSORY}, {@link #MODE_DEBUG_ACCESSORY}, or {@link {@link #MODE_NONE} if
+     * {@link #MODE_AUDIO_ACCESSORY}, {@link #MODE_DEBUG_ACCESSORY}, or {@link #MODE_NONE} if
      * nothing is connected.
      */
     public @UsbPortMode int getCurrentMode() {
@@ -932,12 +948,7 @@ public final class UsbPortStatus implements Parcelable {
          */
         @NonNull
         public UsbPortStatus build() {
-            UsbPortStatus status = new UsbPortStatus(mCurrentMode, mCurrentPowerRole,
-                    mCurrentDataRole, mSupportedRoleCombinations, mContaminantProtectionStatus,
-                    mContaminantDetectionStatus, mUsbDataStatus, mPowerTransferLimited,
-                    mPowerBrickConnectionStatus, mComplianceWarnings,
-                    mPlugState, mDisplayPortAltModeInfo);
-            return status;
+            return new UsbPortStatus(this);
         }
     };
 }

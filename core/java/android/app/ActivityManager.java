@@ -89,6 +89,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Singleton;
 import android.util.Size;
+import android.view.Display;
 import android.view.WindowInsetsController.Appearance;
 
 import com.android.internal.annotations.GuardedBy;
@@ -115,6 +116,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -547,6 +549,14 @@ public class ActivityManager {
     public static final int START_ASSISTANT_NOT_ACTIVE_SESSION = FIRST_START_FATAL_ERROR_CODE + 11;
 
     /**
+     * Result for IActivityManager.startAssistantActivity: activity is not allowed to be launched in
+     * the {@link android.os.UserManager#isHeadlessSystemUserMode() Headless System User}.
+     * @hide
+     */
+    public static final int START_NOT_ALLOWED_FOR_HEADLESS_SYSTEM_USER =
+            FIRST_START_FATAL_ERROR_CODE + 12;
+
+    /**
      * Result for IActivityManager.startActivity: the activity was started
      * successfully as normal.
      * @hide
@@ -859,6 +869,8 @@ public class ActivityManager {
             PROCESS_CAPABILITY_BFSL,
             PROCESS_CAPABILITY_USER_RESTRICTED_NETWORK,
             PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL,
+            PROCESS_CAPABILITY_CPU_TIME,
+            PROCESS_CAPABILITY_IMPLICIT_CPU_TIME,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ProcessCapability {}
@@ -1803,12 +1815,14 @@ public class ActivityManager {
      * something with 1GB or less of RAM.  This is mostly intended to be used by apps
      * to determine whether they should turn off certain features that require more RAM.
      */
+    @android.ravenwood.annotation.RavenwoodKeep
     public boolean isLowRamDevice() {
         return isLowRamDeviceStatic();
     }
 
     /** @hide */
     @UnsupportedAppUsage
+    @android.ravenwood.annotation.RavenwoodIgnore
     public static boolean isLowRamDeviceStatic() {
         return RoSystemProperties.CONFIG_LOW_RAM ||
                 (Build.IS_DEBUGGABLE && DEVELOPMENT_FORCE_LOW_RAM);
@@ -3253,6 +3267,103 @@ public class ActivityManager {
         }
     }
 
+    private final Map<Consumer<List<TaskDisplayPolicyState>>, Executor>
+            mDisplayPolicyStateListeners = new ArrayMap<>();
+
+    private final ITaskMoveAllowedListener mTaskMoveAllowedDispatchListener =
+            new ITaskMoveAllowedListener.Stub() {
+                @Override
+                public void onTaskMoveAllowedChanged(int[] keys, boolean[] values) {
+                    dispatchDisplayPolicyChanges(keys, values);
+                }
+            };
+
+    private void dispatchDisplayPolicyChanges(
+            int[] displayIds, boolean[] taskMoveAllowedPerDisplay) {
+        final List<TaskDisplayPolicyState> displayPolicyStates = new ArrayList<>();
+        for (int i = 0; i < displayIds.length; i++) {
+            final int taskMoveAllowedState =
+                    taskMoveAllowedPerDisplay[i]
+                        ? TaskDisplayPolicyState.TASK_MOVE_ALLOWED
+                        : TaskDisplayPolicyState.TASK_MOVE_DISALLOWED;
+            final TaskDisplayPolicyState displayPolicyState =
+                    new TaskDisplayPolicyState(displayIds[i], taskMoveAllowedState);
+            displayPolicyStates.add(displayPolicyState);
+        }
+
+        synchronized (mDisplayPolicyStateListeners) {
+            mDisplayPolicyStateListeners.forEach(
+                    (listener, executor) -> {
+                        executor.execute(() -> listener.accept(displayPolicyStates));
+                    }
+            );
+        }
+    }
+
+    /**
+     * Registers a listener for changes to task display policy states across all displays.
+     *
+     * <p>The listener receives {@link TaskDisplayPolicyState} objects representing the state of
+     * properties that are controlled by policies, e.g. {@link #isTaskMoveAllowedOnDisplay(int)},
+     * for all displays. It is invoked whenever this state changes, including when a display is
+     * connected (its ID is added as a key) or disconnected (its key is removed).
+     *
+     * <p>The listener is also notified of current states upon registration.
+     *
+     * @param executor The {@link Executor} on which the listener callback will be invoked.
+     * @param listener A {@link Consumer} that receives the updated state.
+     * @see #isTaskMoveAllowedOnDisplay
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API)
+    public void registerTaskDisplayPolicyStateListener(
+            @NonNull final @CallbackExecutor Executor executor,
+            @NonNull final Consumer<List<TaskDisplayPolicyState>> listener) {
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(listener);
+
+        synchronized (mDisplayPolicyStateListeners) {
+            if (mDisplayPolicyStateListeners.containsKey(listener)) {
+                return;
+            }
+
+            mDisplayPolicyStateListeners.put(listener, executor);
+
+            if (mDisplayPolicyStateListeners.size() > 1) {
+                return;
+            }
+
+            try {
+                getTaskService().registerTaskMoveAllowedListener(mTaskMoveAllowedDispatchListener);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+    }
+
+    /**
+     * Unregisters a task display policy state listener.
+     *
+     * @see #registerTaskDisplayPolicyStateListener(Executor, Consumer)
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API)
+    public void unregisterTaskDisplayPolicyStateListener(
+            @NonNull Consumer<List<TaskDisplayPolicyState>> listener) {
+        synchronized (mDisplayPolicyStateListeners) {
+            mDisplayPolicyStateListeners.remove(listener);
+
+            if (!mDisplayPolicyStateListeners.isEmpty()) {
+                return;
+            }
+
+            try {
+                getTaskService()
+                        .unregisterTaskMoveAllowedListener(mTaskMoveAllowedDispatchListener);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+    }
+
     /**
      * Information you can retrieve about a particular Service that is
      * currently running in the system.
@@ -3444,7 +3555,11 @@ public class ActivityManager {
         }
     }
 
-    /** @hide */
+    /**
+     * Information you can retrieve about a particular connection to a
+     * Service that is currently running in the system.
+     * @hide
+     */
     @TestApi
     @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
     public static final class ConnectionInfo implements Parcelable {
@@ -3513,16 +3628,25 @@ public class ActivityManager {
             return 0;
         }
 
+        /**
+         * Get the bind service flags for the connection.
+         */
         @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
-        public long getFlags() {
+        public @Context.BindServiceFlagsLongBits long getFlags() {
             return mFlags;
         }
 
+        /**
+         * Get the process name of the client.
+         */
         @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
         public @NonNull String getProcessName() {
             return mProcessName;
         }
 
+        /**
+         * Get the package name of the client.
+         */
         @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
         public @NonNull String getPackageName() {
             return mPackageName;
@@ -3546,6 +3670,10 @@ public class ActivityManager {
 
     /**
      * Returns a list of ConnectionInfo for connections bound to a given service.
+     * @param service The component name of the service to return ConnectionInfo
+     * records for.
+     * @return Returns a list of ConnectionInfo records describing each of
+     * the service connections.
      * @hide
      */
     @TestApi
@@ -4248,7 +4376,8 @@ public class ActivityManager {
 
         /**
          * When {@link #importanceReasonPid} is non-0, this is the importance
-         * of the other pid. @hide
+         * of the other pid.
+         * @hide
          */
         public int importanceReasonImportance;
 
@@ -5780,13 +5909,13 @@ public class ActivityManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public static final int FLAG_OR_STOPPED = 1 << 0;
-    /** {@hide} */
+    /** @hide */
     public static final int FLAG_AND_LOCKED = 1 << 1;
-    /** {@hide} */
+    /** @hide */
     public static final int FLAG_AND_UNLOCKED = 1 << 2;
-    /** {@hide} */
+    /** @hide */
     public static final int FLAG_AND_UNLOCKING_OR_UNLOCKED = 1 << 3;
 
     /**
@@ -5807,7 +5936,7 @@ public class ActivityManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public boolean isVrModePackageEnabled(ComponentName component) {
         try {
             return getService().isVrModePackageEnabled(component);
@@ -6293,6 +6422,38 @@ public class ActivityManager {
      * See {@link android.app.ActivityManager#getAppTasks()}
      */
     public static class AppTask {
+
+        /**
+         * The windowing layer is not specified. The system will use a
+         * {@link #WINDOWING_LAYER_NORMAL_APP} layer.
+         * @hide
+         */
+        public static final int WINDOWING_LAYER_UNDEFINED = 0;
+        /**
+         * The windowing layer for normal application windows.
+         * @hide
+         */
+        public static final int WINDOWING_LAYER_NORMAL_APP = 1;
+        /**
+         * The windowing layer for pinned windows, these windows are typically displayed above
+         * normal application windows.
+         * @hide
+         */
+        public static final int WINDOWING_LAYER_PINNED = 2;
+
+        /**
+         * Defines the windowing layer for a task, which can affect its Z-ordering.
+         * @hide
+         */
+        @IntDef(prefix = { "WINDOWING_LAYER_" }, value = {
+                WINDOWING_LAYER_UNDEFINED,
+                WINDOWING_LAYER_NORMAL_APP,
+                WINDOWING_LAYER_PINNED,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface WindowingLayer {
+        }
+
         private IAppTask mAppTaskImpl;
 
         /** @hide */
@@ -6438,6 +6599,30 @@ public class ActivityManager {
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
+        }
+
+        /**
+         * Requests the windowing layer for this task. This can be used to affect the Z-ordering
+         * of the activity's window relative to other windows.
+         *
+         * <p>
+         * The task will be moved to the requested layer if possible.
+         *
+         * @param layer the {@link WindowingLayer} to move task to.
+         * @param executor an Executor used to invoke the callback
+         * @param callback a callback to receive the result of the request
+         * @hide
+         */
+        // TODO(b/442807136): Complete javadoc, add all requirements and detals needed
+        public void requestWindowingLayer(
+                @WindowingLayer int layer,
+                @NonNull @CallbackExecutor Executor executor,
+                @NonNull OutcomeReceiver<Void, Exception> callback) {
+            Objects.requireNonNull(executor, "executor cannot be null");
+            Objects.requireNonNull(callback, "callback cannot be null");
+            TaskWindowingLayerRequestHandler.requestWindowingLayer(
+                    layer, executor, callback, mAppTaskImpl
+            );
         }
     }
 

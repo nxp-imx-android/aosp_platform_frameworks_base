@@ -245,7 +245,7 @@ public class SkinThermalStatusObserverTest {
         }
 
         @Override
-        public boolean registerThermalServiceListener(IThermalEventListener listener) {
+        public boolean registerThermalEventListener(IThermalEventListener listener) {
             mThermalEventListener = (mRegisterThermalListener ? listener : null);
             return mRegisterThermalListener;
         }

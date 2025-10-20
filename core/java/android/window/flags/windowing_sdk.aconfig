@@ -94,7 +94,6 @@ flag {
     name: "root_task_for_bubble"
     description: "Using a root task to manage Bubble tasks"
     bug: "407669465"
-    is_fixed_read_only: true
 }
 
 flag {
@@ -103,28 +102,6 @@ flag {
     description: "Use the focused display as the fallback"
     bug: "406967985"
     is_fixed_read_only: true
-}
-
-flag {
-    namespace: "windowing_sdk"
-    name: "fix_task_compatible_modes"
-    description: "Make most of the windowing modes compatible"
-    bug: "427336494"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
-    name: "task_fragment_companion_activity"
-    description: "Track the activity to be finished with tf in core"
-    bug: "433459536"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -147,10 +124,9 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "return_all_visible_activities_for_vis"
-    description: "Return all visible activities in multi-tasking feature to VIS"
-    bug: "434114340"
-    is_fixed_read_only: true
+    name: "fix_bubble_trampoline_launch_twice"
+    description: "Fix the transition when a Task Trampoline is launched to Bubble twice"
+    bug: "448009266"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -158,9 +134,9 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "activity_embedding_abort_cross_uid_launch_in_finishing_task_fragment"
-    description: "Aborts cross-uid activity launch from a finishing TaskFragment to avoid race conditions"
-    bug: "427881773"
+    name: "allow_multi_window_non_resizable_activities"
+    description: "Allows non-resizable activities to be launched into WINDOWING_MODE_MULTI_WINDOW."
+    bug: "419379112"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -168,10 +144,19 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "dispose_task_fragment_synchronously"
-    description: "Handle TaskFragment disposal synchronously when handling app died."
-    bug: "429336735"
-    is_fixed_read_only: true
+    name: "refactor_match_parent_bounds"
+    description: "Consolidate fillsParentBounds with matchParentBounds."
+    bug: "409417223"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    namespace: "aaos_core_contrib"
+    name: "home_activity_always_present"
+    description: "Ensure home activity is always present in the system."
+    bug: "445954436"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -179,10 +164,17 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "fix_bal_reparent_existing_task"
-    description: "Avoid reparent existing task when the background launch is not allowed."
-    bug: "434047695"
+    name: "fix_tf_adjacent_visibility"
+    description: "Fix the incorrect visibility calculation on adjacent TaskFragments."
+    bug: "444352552"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    namespace: "windowing_sdk"
+    name: "device_engagement_mode"
+    description: "Track and report device engagement modes, indicating the device's current interaction capabilities (e.g. audio-only)."
+    bug: "423990404"
 }

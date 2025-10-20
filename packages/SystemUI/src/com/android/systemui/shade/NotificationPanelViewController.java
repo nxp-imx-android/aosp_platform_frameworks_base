@@ -137,7 +137,6 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.plugins.statusbar.StatusBarStateController.StateListener;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.power.shared.model.WakefulnessModel;
-import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.settings.brightness.data.repository.BrightnessMirrorShowingRepository;
@@ -687,7 +686,9 @@ public final class NotificationPanelViewController implements
 
         mView.addOnLayoutChangeListener(new ShadeLayoutChangeListener());
         mView.setOnTouchListener(getTouchHandler());
-        mView.setOnConfigurationChangedListener(config -> loadDimens());
+        if (!ShadeWindowGoesAround.isEnabled()) {
+            mView.setOnConfigurationChangedListener(config -> loadDimens());
+        }
 
         mResources = mView.getResources();
         mKeyguardStateController = keyguardStateController;
@@ -886,12 +887,6 @@ public final class NotificationPanelViewController implements
         mShadeHeadsUpTracker.addTrackingHeadsUpListener(
                 mNotificationStackScrollLayoutController::setTrackingHeadsUp);
         mWakeUpCoordinator.setStackScroller(mNotificationStackScrollLayoutController);
-        mWakeUpCoordinator.addListener(new NotificationWakeUpCoordinator.WakeUpListener() {
-            @Override
-            public void onFullyHiddenChanged(boolean isFullyHidden) {
-                mKeyguardStatusBarViewController.updateForHeadsUp();
-            }
-        });
 
         mView.setRtlChangeListener(layoutDirection -> {
             if (layoutDirection != mOldLayoutDirection) {
@@ -936,12 +931,10 @@ public final class NotificationPanelViewController implements
                     }
                 },
                 mMainDispatcher);
-        if (QSComposeFragment.isEnabled()) {
-            collectFlow(mView,
-                    mBrightnessMirrorShowingRepository.isShowing(),
-                    this::onBrightnessMirrorShowingChanged
-            );
-        }
+        collectFlow(mView,
+                mBrightnessMirrorShowingRepository.isShowing(),
+                this::onBrightnessMirrorShowingChanged
+        );
     }
 
     private void onBrightnessMirrorShowingChanged(boolean isShowing) {
@@ -1026,8 +1019,10 @@ public final class NotificationPanelViewController implements
             mQsController.updateResources();
             mNotificationsQSContainerController.updateResources();
             updateKeyguardStatusViewAlignment();
-            mKeyguardMediaController.refreshMediaPosition(
-                    "NotificationPanelViewController.updateResources");
+            if (!SceneContainerFlag.isEnabled()) {
+                mKeyguardMediaController.refreshMediaPosition(
+                        "NotificationPanelViewController.updateResources");
+            }
 
             if (splitShadeChanged) {
                 if (isPanelVisibleBecauseOfHeadsUp()) {
@@ -1881,8 +1876,7 @@ public final class NotificationPanelViewController implements
                 || expandedHeight > mHeadsUpStartHeight);
         if (goingBetweenClosedShadeAndExpandedQs && qsShouldExpandWithHeadsUp) {
             float qsExpansionFraction;
-            if (mSplitShadeEnabled && (SceneContainerFlag.isEnabled()
-                    || !Flags.bouncerUiRevamp())) {
+            if (mSplitShadeEnabled) {
                 qsExpansionFraction = 1;
             } else if (isKeyguardShowing()) {
                 // On Keyguard, interpolate the QS expansion linearly to the panel expansion
@@ -2385,10 +2379,6 @@ public final class NotificationPanelViewController implements
 
     public boolean shouldHideStatusBarIconsWhenExpanded() {
         if (isLaunchingActivity()) {
-            return false;
-        }
-        if (mHeadsUpAppearanceController != null
-                && mHeadsUpAppearanceController.shouldHeadsUpStatusBarBeVisible()) {
             return false;
         }
         return !mShowIconsWhenExpanded;
@@ -3448,7 +3438,7 @@ public final class NotificationPanelViewController implements
     private final class NsslHeightChangedListener implements
             ExpandableView.OnHeightChangedListener {
         @Override
-        public void onHeightChanged(ExpandableView view, boolean needsAnimation) {
+        public void onHeightChanged(ExpandableView view, boolean needsAnimation, String caller) {
             // Block update if we are in QS and just the top padding changed (i.e. view == null).
             if (view == null && mQsController.getExpanded()) {
                 return;
@@ -3495,7 +3485,6 @@ public final class NotificationPanelViewController implements
             updateGestureExclusionRect();
             mHeadsUpPinnedMode = inPinnedMode;
             updateVisibility();
-            mKeyguardStatusBarViewController.updateForHeadsUp();
         }
 
         @Override
@@ -3536,6 +3525,9 @@ public final class NotificationPanelViewController implements
         @Override
         public void onDensityOrFontScaleChanged() {
             debugLog("onDensityOrFontScaleChanged");
+            if (ShadeWindowGoesAround.isEnabled()) {
+                loadDimens();
+            }
             reInflateViews();
         }
     }
@@ -3610,7 +3602,6 @@ public final class NotificationPanelViewController implements
                     mQsController.hideQsImmediately();
                 }
             }
-            mKeyguardStatusBarViewController.updateForHeadsUp();
             if (keyguardShowing) {
                 updateDozingVisibilities(false /* animate */);
             }
@@ -3633,12 +3624,6 @@ public final class NotificationPanelViewController implements
                 @Override
                 public float getPanelViewExpandedHeight() {
                     return getExpandedHeight();
-                }
-
-                @Override
-                public boolean shouldHeadsUpBeVisible() {
-                    return mHeadsUpAppearanceController != null &&
-                            mHeadsUpAppearanceController.shouldHeadsUpStatusBarBeVisible();
                 }
 
                 @Override
@@ -3974,8 +3959,13 @@ public final class NotificationPanelViewController implements
         @Override
         public boolean onTouchEvent(MotionEvent event) {
             if (!mUseExternalTouch) {
-                mShadeLog.d("onTouch: external touch handling disabled");
-                return false;
+                if (isLockedShadeHomeGestureEvent(event)) {
+                    mShadeLog.d("onTouch: down motion event in home gesture area");
+                } else {
+                    mShadeLog.d("onTouch: external touch handling disabled");
+                    // Consume touches below notifications on keyguard to allow for expansion
+                    return mStatusBarStateController.getState() == StatusBarState.KEYGUARD;
+                }
             }
 
             if (mAlternateBouncerInteractor.isVisibleState()) {
@@ -4071,6 +4061,11 @@ public final class NotificationPanelViewController implements
 
             handled |= handleTouch(event);
             return !mDozing || handled;
+        }
+
+        private boolean isLockedShadeHomeGestureEvent(MotionEvent event) {
+            return mBarState == SHADE_LOCKED && event.getActionMasked() == MotionEvent.ACTION_DOWN
+                    && isInGestureNavHomeHandleArea(event.getY());
         }
 
         private boolean handleTouch(MotionEvent event) {

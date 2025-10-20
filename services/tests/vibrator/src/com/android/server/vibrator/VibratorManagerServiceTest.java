@@ -139,7 +139,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -736,6 +735,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REMOVE_SEQUENTIAL_COMBINATION)
     public void setAlwaysOnEffect_withNonSyncedEffect_ignoresEffect() {
         mHalHelper.setVibratorIds(new int[]{1});
         mHalHelper.getVibratorHelper(1).setCapabilities(IVibrator.CAP_ALWAYS_ON_CONTROL);
@@ -1448,8 +1448,7 @@ public class VibratorManagerServiceTest {
         vibrate(service, effect, pipelineAttrs);
         // This vibration will be enqueued, but evicted by the EFFECT_CLICK.
         vibrate(service, VibrationEffect.startComposition()
-                .addOffDuration(Duration.ofSeconds(10))
-                .addPrimitive(PRIMITIVE_SLOW_RISE)
+                .addPrimitive(PRIMITIVE_SLOW_RISE, 1.0f, 10_000) // 10s delay
                 .compose(), pipelineAttrs);  // This will queue and be evicted for the click.
 
         vibrateAndWaitUntilFinished(service, VibrationEffect.get(EFFECT_CLICK), pipelineAttrs);
@@ -1465,8 +1464,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VIBRATION_PIPELINE_FIX_ENABLED)
-    public void vibrate_withPipelineFlagEnabledAndShortEffect_continuesOngoingEffect()
+    public void vibrate_withPipelineMaxDurationConfigAndShortEffect_continuesOngoingEffect()
             throws Exception {
         assumeTrue(mVibrationConfig.getVibrationPipelineMaxDurationMs() > 0);
 
@@ -1705,10 +1703,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({
-            android.view.flags.Flags.FLAG_SCROLL_FEEDBACK_API,
-            Flags.FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED,
-    })
+    @EnableFlags(android.view.flags.Flags.FLAG_SCROLL_FEEDBACK_API)
     public void performHapticFeedbackForInputDevice_doesNotRequireVibrateOrBypassPermissions()
             throws Exception {
         // Deny permissions that would have been required for regular vibrations, and check that
@@ -1881,10 +1876,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({
-            android.view.flags.Flags.FLAG_SCROLL_FEEDBACK_API,
-            Flags.FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED,
-    })
+    @EnableFlags(android.view.flags.Flags.FLAG_SCROLL_FEEDBACK_API)
     public void performHapticFeedbackForInputDevice_restrictedConstantsWithoutPermission_doesNotVibrate()
             throws Exception {
         // Deny permission to vibrate with restricted constants
@@ -1946,8 +1938,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED)
-    public void performHapticFeedbackForInputDevice_restrictedConstantsWithPermission_playsVibration()
+    public void performHapticFeedbackForInputDevice_internalConstantsWithPermission_playsVibration()
             throws Exception {
         // Grant permission to vibrate with restricted constants
         grantPermission(android.Manifest.permission.VIBRATE_SYSTEM_CONSTANTS);
@@ -1977,10 +1968,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({
-            android.view.flags.Flags.FLAG_SCROLL_FEEDBACK_API,
-            Flags.FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED,
-    })
+    @EnableFlags(android.view.flags.Flags.FLAG_SCROLL_FEEDBACK_API)
     public void performHapticFeedback_doesNotVibrateWhenVibratorInfoNotReady() throws Exception {
         denyPermission(android.Manifest.permission.VIBRATE);
         mHapticFeedbackVibrationMap.put(
@@ -2013,10 +2001,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({
-            android.view.flags.Flags.FLAG_SCROLL_FEEDBACK_API,
-            Flags.FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED,
-    })
+    @EnableFlags(android.view.flags.Flags.FLAG_SCROLL_FEEDBACK_API)
     public void performHapticFeedback_doesNotVibrateForInvalidConstant() throws Exception {
         denyPermission(android.Manifest.permission.VIBRATE);
         mHalHelper.setVibratorIds(new int[]{1});
@@ -2123,8 +2108,8 @@ public class VibratorManagerServiceTest {
                 .addPrimitive(PRIMITIVE_TICK, 0.5f)
                 .compose(), HAPTIC_FEEDBACK_ATTRS);
 
-        vibrateAndWaitUntilFinished(service, CombinedVibration.startSequential()
-                .addNext(1, VibrationEffect.createOneShot(100, 125))
+        vibrateAndWaitUntilFinished(service, CombinedVibration.startParallel()
+                .addVibrator(1, VibrationEffect.createOneShot(100, 125))
                 .combine(), NOTIFICATION_ATTRS);
 
         vibrateAndWaitUntilFinished(service, VibrationEffect.startComposition()
@@ -2152,7 +2137,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED)
     public void vibrate_withAdaptiveHaptics_appliesCorrectAdaptiveScales() throws Exception {
         // Keep user settings the same as device default so only adaptive scale is applied.
         setUserSetting(Settings.System.ALARM_VIBRATION_INTENSITY,
@@ -2195,10 +2179,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({
-            Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED,
-            Flags.FLAG_VENDOR_VIBRATION_EFFECTS,
-    })
+    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrate_withIntensitySettingsAndAdaptiveHaptics_appliesSettingsToVendorEffects()
             throws Exception {
         // Grant permission to vibrate with vendor effects
@@ -2730,7 +2711,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED)
     public void onExternalVibration_withAdaptiveHaptics_returnsCorrectAdaptiveScales() {
         mHalHelper.setVibratorIds(new int[]{1});
         mHalHelper.getVibratorHelper(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL,
@@ -2771,39 +2751,6 @@ public class VibratorManagerServiceTest {
 
         assertEquals(scale.adaptiveHapticsScale, 1f, 0);
         verify(mVibratorFrameworkStatsLoggerMock).logVibrationAdaptiveHapticScale(UID, 1f);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED)
-    public void onExternalVibration_withAdaptiveHapticsFlagDisabled_alwaysReturnScaleNone() {
-        mHalHelper.setVibratorIds(new int[]{1});
-        mHalHelper.getVibratorHelper(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL,
-                IVibrator.CAP_AMPLITUDE_CONTROL);
-        createSystemReadyService();
-
-        SparseArray<Float> vibrationScales = new SparseArray<>();
-        vibrationScales.put(ScaleParam.TYPE_ALARM, 0.7f);
-        vibrationScales.put(ScaleParam.TYPE_NOTIFICATION, 0.4f);
-
-        mVibratorControlService.setVibrationParams(
-                VibrationParamGenerator.generateVibrationParams(vibrationScales),
-                mFakeVibratorController);
-        ExternalVibration externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                AUDIO_ALARM_ATTRS, mock(IExternalVibrationController.class));
-        ExternalVibrationScale scale =
-                mExternalVibratorService.onExternalVibrationStart(externalVibration);
-        mExternalVibratorService.onExternalVibrationStop(externalVibration);
-
-        assertEquals(scale.adaptiveHapticsScale, 1f, 0);
-
-        externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                AUDIO_NOTIFICATION_ATTRS, mock(IExternalVibrationController.class));
-        scale = mExternalVibratorService.onExternalVibrationStart(externalVibration);
-        mExternalVibratorService.onExternalVibrationStop(externalVibration);
-
-        assertEquals(scale.adaptiveHapticsScale, 1f, 0);
-        verify(mVibratorFrameworkStatsLoggerMock, times(2))
-                .logVibrationAdaptiveHapticScale(UID, 1f);
     }
 
     @Test

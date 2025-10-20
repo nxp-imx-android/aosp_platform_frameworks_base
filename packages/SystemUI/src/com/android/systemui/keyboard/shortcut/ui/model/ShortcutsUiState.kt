@@ -24,7 +24,6 @@ sealed interface ShortcutsUiState {
         val searchQuery: String,
         val shortcutCategories: List<ShortcutCategoryUi>,
         val defaultSelectedCategory: ShortcutCategoryType?,
-        val isShortcutCustomizerFlagEnabled: Boolean = false,
         val isExtendedAppCategoryFlagEnabled: Boolean = false,
         val shouldShowResetButton: Boolean = false,
         val isCustomizationModeEnabled: Boolean = false,

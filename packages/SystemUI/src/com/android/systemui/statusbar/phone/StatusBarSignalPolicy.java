@@ -150,7 +150,7 @@ public class StatusBarSignalPolicy
         if (ethernetIcon != null) {
             mIconController.setIcon(
                     mSlotEthernet,
-                    ethernetIcon.getRes(),
+                    ethernetIcon.getResId(),
                     loadContentDescription(ethernetIcon.getContentDescription(), mContext));
             mIconController.setIconVisibility(mSlotEthernet, true);
         } else {

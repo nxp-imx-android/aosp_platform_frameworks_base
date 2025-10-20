@@ -101,24 +101,13 @@ class UnarchiveRepository(private val context: Context) {
             return UnarchiveAborted(UnarchiveAborted.ABORT_REASON_GENERIC_ERROR)
         }
 
-        var installerTitle: String
-        try {
-            installerTitle = getAppTitle(installingPackageName, 0)
-        } catch (e: NameNotFoundException) {
-            Log.e(LOG_TAG, "Could not find installer", e)
+        val label = PackageUtil.getApplicationLabel(context, installingPackageName)
+        if (label == null) {
+            Log.e(LOG_TAG, "Could not find installer")
             return UnarchiveAborted(UnarchiveAborted.ABORT_REASON_GENERIC_ERROR)
         }
 
-        return UnarchiveUserActionRequired(appSnippet, installerTitle)
-    }
-
-    @Throws(NameNotFoundException::class)
-    private fun getAppTitle(packageName: String, flags: Long): String {
-        val appInfo = packageManager.getApplicationInfo(
-            packageName,
-            PackageManager.ApplicationInfoFlags.of(flags)
-        )
-        return appInfo.loadLabel(packageManager).toString()
+        return UnarchiveUserActionRequired(appSnippet, installingPackageName)
     }
 
     @SuppressLint("MissingPermission")

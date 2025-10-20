@@ -950,11 +950,21 @@ public class UsbManager {
 
         private final ParcelFileDescriptor mPfd;
         private final UsbAccessory mAccessory;
+        private final boolean mIsAccessoryFfsEnabled;
+
+        AccessoryAutoCloseInputStream(
+                UsbAccessory accessory, ParcelFileDescriptor pfd, boolean isAccessoryFfsEnabled) {
+            super(pfd.getFileDescriptor());
+            this.mAccessory = accessory;
+            this.mPfd = pfd;
+            this.mIsAccessoryFfsEnabled = isAccessoryFfsEnabled;
+        }
 
         AccessoryAutoCloseInputStream(UsbAccessory accessory, ParcelFileDescriptor pfd) {
             super(pfd.getFileDescriptor());
             this.mAccessory = accessory;
             this.mPfd = pfd;
+            this.mIsAccessoryFfsEnabled = false;
         }
 
         @Override
@@ -962,7 +972,7 @@ public class UsbManager {
             /* TODO(b/377850642) : Ensure the stream is closed even if client does not
             explicitly close the stream to avoid corrupt FDs*/
             super.close();
-            if (!android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+            if (!mIsAccessoryFfsEnabled) {
                 closeHandleForAccessory(mAccessory, true);
             }
         }
@@ -977,13 +987,18 @@ public class UsbManager {
         private final UsbAccessory mAccessory;
         private final int mMaxPacketSize;
         private final ParcelFileDescriptor mPfd;
+        private final boolean mIsAccessoryFfsEnabled;
 
         AccessoryAutoCloseOutputStream(
-                UsbAccessory accessory, ParcelFileDescriptor pfd, int maxPacketSize) {
+                UsbAccessory accessory,
+                ParcelFileDescriptor pfd,
+                int maxPacketSize,
+                boolean isAccessoryFfsEnabled) {
             super(pfd.getFileDescriptor());
             mMaxPacketSize = maxPacketSize;
             mAccessory = accessory;
             mPfd = pfd;
+            mIsAccessoryFfsEnabled = isAccessoryFfsEnabled;
         }
 
         AccessoryAutoCloseOutputStream(UsbAccessory accessory, ParcelFileDescriptor pfd) {
@@ -991,13 +1006,14 @@ public class UsbManager {
             mMaxPacketSize = -1;
             mAccessory = accessory;
             mPfd = pfd;
+            mIsAccessoryFfsEnabled = false;
         }
 
         @Override
         public void write(byte[] b, int off, int len) throws IOException {
             super.write(b, off, len);
 
-            if (!android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+            if (!mIsAccessoryFfsEnabled) {
                 return;
             }
             // Check if a ZLP is needed for this specific write operation
@@ -1011,7 +1027,7 @@ public class UsbManager {
             /* TODO(b/377850642) : Ensure the stream is closed even if client does not
             explicitly close the stream to avoid corrupt FDs*/
             super.close();
-            if (!android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+            if (!mIsAccessoryFfsEnabled) {
                 closeHandleForAccessory(mAccessory, false);
             }
         }
@@ -1197,9 +1213,12 @@ public class UsbManager {
     @RequiresFeature(PackageManager.FEATURE_USB_ACCESSORY)
     public @NonNull InputStream openAccessoryInputStream(@NonNull UsbAccessory accessory) {
         try {
-            if (android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+            boolean isAccessoryFfsEnabled = mService.isAccessoryFfsEnabled();
+            if (isAccessoryFfsEnabled) {
                 return new AccessoryAutoCloseInputStream(
-                        accessory, mService.openAccessoryForInputStream(accessory));
+                        accessory,
+                        mService.openAccessoryForInputStream(accessory),
+                        isAccessoryFfsEnabled);
             }
             return new AccessoryAutoCloseInputStream(
                     accessory, openHandleForAccessory(accessory, true).getPfd());
@@ -1221,11 +1240,13 @@ public class UsbManager {
     @RequiresFeature(PackageManager.FEATURE_USB_ACCESSORY)
     public @NonNull OutputStream openAccessoryOutputStream(@NonNull UsbAccessory accessory) {
         try {
-            if (android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+            boolean isAccessoryFfsEnabled = mService.isAccessoryFfsEnabled();
+            if (isAccessoryFfsEnabled) {
                 return new AccessoryAutoCloseOutputStream(
                         accessory,
                         mService.openAccessoryForOutputStream(accessory),
-                        mService.getMaxPacketSize(accessory));
+                        mService.getMaxPacketSize(accessory),
+                        isAccessoryFfsEnabled);
             }
             return new AccessoryAutoCloseOutputStream(accessory,
                     openHandleForAccessory(accessory, false).getPfd());

@@ -90,6 +90,16 @@ interface SceneTransitionsBuilder {
         reversePreview: (TransitionBuilder.() -> Unit)? = null,
         builder: TransitionBuilder.() -> Unit = {},
     )
+
+    /**
+     * Define the default transformations to use when there is no more specific ones defined for a
+     * given transition. This can be for instance used when the set of scenes is dynamic and not
+     * known in advance.
+     */
+    fun default(
+        preview: (TransitionBuilder.() -> Unit)? = null,
+        builder: TransitionBuilder.() -> Unit = {},
+    )
 }
 
 interface BaseTransitionBuilder : PropertyTransformationBuilder {

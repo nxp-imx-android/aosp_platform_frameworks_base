@@ -50,11 +50,11 @@ import com.android.systemui.dump.DumpManager;
 import com.android.systemui.flags.FeatureFlagsClassic;
 import com.android.systemui.flags.Flags;
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController;
+import com.android.systemui.keyguard.domain.interactor.DozeTouchInteractor;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
 import com.android.systemui.keyguard.shared.model.Edge;
 import com.android.systemui.keyguard.shared.model.TransitionState;
 import com.android.systemui.keyguard.shared.model.TransitionStep;
-import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.scene.ui.view.WindowRootViewKeyEventHandler;
@@ -84,12 +84,15 @@ import com.android.systemui.statusbar.phone.PhoneStatusBarViewController;
 import com.android.systemui.statusbar.window.StatusBarWindowStateController;
 import com.android.systemui.unfold.SysUIUnfoldComponent;
 import com.android.systemui.unfold.UnfoldTransitionProgressProvider;
+import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.time.SystemClock;
 import com.android.systemui.window.ui.WindowRootViewBinder;
 import com.android.systemui.window.ui.viewmodel.WindowRootViewModel;
 
 import kotlinx.coroutines.CoroutineDispatcher;
 import kotlinx.coroutines.flow.Flow;
+import kotlinx.coroutines.flow.StateFlow;
+import kotlinx.coroutines.flow.StateFlowKt;
 
 import java.io.PrintWriter;
 import java.util.Optional;
@@ -127,7 +130,6 @@ public class NotificationShadeWindowViewController implements Dumpable {
     private final GlanceableHubContainerController
             mGlanceableHubContainerController;
     private GestureDetector mPulsingWakeupGestureHandler;
-    private View mBrightnessMirror;
     private boolean mTouchActive;
     private boolean mTouchCancelled;
     private MotionEvent mDownEvent;
@@ -171,6 +173,7 @@ public class NotificationShadeWindowViewController implements Dumpable {
      * True if drag down helper intercepted and we're in the dragging process.
      */
     private boolean mUseDragDownHelperForTouch = false;
+    private StateFlow<Boolean> mAodInterceptingTouches = StateFlowKt.MutableStateFlow(false);
 
     private boolean mIsTrackingBarGesture = false;
     private boolean mIsOcclusionTransitionRunning = false;
@@ -224,7 +227,9 @@ public class NotificationShadeWindowViewController implements Dumpable {
             @ShadeDisplayAware Provider<ConfigurationForwarder> configurationForwarder,
             BrightnessMirrorShowingInteractor brightnessMirrorShowingInteractor,
             @Main CoroutineDispatcher mainDispatcher,
-            ShadeStatusBarComponentsInteractor shadeStatusBarComponentsInteractor) {
+            ShadeStatusBarComponentsInteractor shadeStatusBarComponentsInteractor,
+            DozeTouchInteractor dozeTouchInteractor,
+            JavaAdapter javaAdapter) {
         mLockscreenShadeTransitionController = transitionController;
         mFalsingCollector = falsingCollector;
         mStatusBarStateController = statusBarStateController;
@@ -254,8 +259,6 @@ public class NotificationShadeWindowViewController implements Dumpable {
         mMainDispatcher = mainDispatcher;
         mShadeStatusBarComponentsInteractor = shadeStatusBarComponentsInteractor;
 
-        // This view is not part of the newly inflated expanded status bar.
-        mBrightnessMirror = mView.findViewById(R.id.brightness_mirror_container);
         mDisableSubpixelTextTransitionListener = new DisableSubpixelTextTransitionListener(mView);
         bindBouncer(bouncerViewBinder);
 
@@ -272,11 +275,9 @@ public class NotificationShadeWindowViewController implements Dumpable {
                 mView,
                 isLaunchAnimationRunning,
                 this::setExpandAnimationRunning);
-        if (QSComposeFragment.isEnabled()) {
-            collectFlow(mView,
-                    brightnessMirrorShowingInteractor.isShowing(),
-                    this::setBrightnessMirrorShowingForDepth);
-        }
+        collectFlow(mView,
+                brightnessMirrorShowingInteractor.isShowing(),
+                this::setBrightnessMirrorShowingForDepth);
 
         var keyguardUnfoldTransition = unfoldComponent.map(
                 SysUIUnfoldComponent::getKeyguardUnfoldTransition);
@@ -297,6 +298,12 @@ public class NotificationShadeWindowViewController implements Dumpable {
             mView.setConfigurationForwarder(configurationForwarder.get());
         }
         bindWindowRootView(blurUtils, windowRootViewModelFactory, choreographer);
+        if (com.android.systemui.Flags.allowDozeTouchesForLockIcon()) {
+            mAodInterceptingTouches = javaAdapter.stateInApp(
+                    dozeTouchInteractor.getShouldInterceptTouches(),
+                    false);
+        }
+
         dumpManager.registerDumpable(this);
     }
 
@@ -461,15 +468,6 @@ public class NotificationShadeWindowViewController implements Dumpable {
                     return logDownOrFalseResultDispatch(ev,
                             "dispatched to glanceable hub container", true);
                 }
-                if (mBrightnessMirror != null
-                        && mBrightnessMirror.getVisibility() == View.VISIBLE) {
-                    // Disallow new pointers while the brightness mirror is visible. This is so that
-                    // you can't touch anything other than the brightness slider while the mirror is
-                    // showing and the rest of the panel is transparent.
-                    if (ev.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
-                        return logDownOrFalseResultDispatch(ev, "disallowed new pointer", false);
-                    }
-                }
                 if (!SceneContainerFlag.isEnabled() && isDown) {
                     mNotificationStackScrollLayoutController.closeControlsIfOutsideTouch(ev);
                 }
@@ -554,16 +552,35 @@ public class NotificationShadeWindowViewController implements Dumpable {
                 // a higher refresh rate and to delay visual changes (ie: display blink) when
                 // changing the display state. We'll call this specific state the
                 // "aodDefermentState". In this state we:
-                //     - don't want touches to get sent to underlying views, except the lock icon
+                //     - don't want touches to get sent to underlying views, except the lockIcon
                 //     - handle the tap to wake gesture via the PulsingGestureListener
-                if (mStatusBarStateController.isDozing()
-                        && !mDozeServiceHost.isPulsing()
-                        && !mDockManager.isDocked()
-                ) {
-                    if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-                        mShadeLogger.d("NSWVC: capture all touch events in always-on");
+                if (com.android.systemui.Flags.allowDozeTouchesForLockIcon()) {
+                    if (mAodInterceptingTouches.getValue()) {
+                        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+                            mShadeLogger.d("NSWVC: capture all touch events in always-on"
+                                    + " excluding aodDeferment with interactive lock icon");
+
+                        }
+                        return true;
+                    } else if (mStatusBarStateController.isDozing()
+                            && !mDozeServiceHost.isPulsing()
+                            && !mDockManager.isDocked()
+                            && ev.getAction() == MotionEvent.ACTION_DOWN
+                    ) {
+                        mShadeLogger.d("NSWVC: skip capturing this touch event in"
+                                + " always-on; mAodInterceptingTouches=false");
                     }
-                    return true;
+                } else {
+                    if (mStatusBarStateController.isDozing()
+                            && !mDozeServiceHost.isPulsing()
+                            && !mDockManager.isDocked()
+                    ) {
+                        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+                            mShadeLogger.d("NSWVC: capture all touch events in always-on");
+
+                        }
+                        return true;
+                    }
                 }
 
                 boolean bouncerShowing = mPrimaryBouncerInteractor.isBouncerShowing()
@@ -636,19 +653,6 @@ public class NotificationShadeWindowViewController implements Dumpable {
                 if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
                     mService.setInteracting(StatusBarManager.WINDOW_STATUS_BAR, false);
                 }
-            }
-        });
-
-        mView.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
-            @Override
-            public void onChildViewAdded(View parent, View child) {
-                if (child.getId() == R.id.brightness_mirror_container) {
-                    mBrightnessMirror = child;
-                }
-            }
-
-            @Override
-            public void onChildViewRemoved(View parent, View child) {
             }
         });
 

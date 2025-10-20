@@ -56,7 +56,6 @@ import com.android.systemui.statusbar.notification.row.NotifInflationErrorManage
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
-import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.lang.annotation.Retention;
@@ -175,9 +174,7 @@ public class PreparationCoordinator implements Coordinator {
                 () -> mNotifInflatingFilter.invalidateList("adjustmentProviderChanged"));
 
         pipeline.addCollectionListener(mNotifCollectionListener);
-        if (android.app.Flags.notificationsRedesignAppIcons()) {
-            pipeline.addOnBeforeTransformGroupsListener(this::purgeCaches);
-        }
+        pipeline.addOnBeforeTransformGroupsListener(this::purgeCaches);
         // Inflate after grouping/sorting since that affects what views to inflate.
         pipeline.addOnBeforeFinalizeFilterListener(this::inflateAllRequiredViews);
         pipeline.addFinalizeFilter(mNotifInflationErrorFilter);
@@ -379,7 +376,7 @@ public class PreparationCoordinator implements Coordinator {
         inflateRequiredNotifViews(summary);
         for (int j = 0; j < children.size(); j++) {
             NotificationEntry child = children.get(j);
-            if (AsyncHybridViewInflation.isEnabled()) child.markAsGroupChild();
+            child.markAsGroupChild();
             boolean childShouldBeBound = j < mChildBindCutoff;
             if (childShouldBeBound) {
                 inflateRequiredNotifViews(child);

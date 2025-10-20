@@ -246,6 +246,27 @@ public class WallpaperCropperTest {
     }
 
     /**
+     * Test that {@link WallpaperCropper#noParallax} will not get out of the bitmap.
+     * This test is designed to fail with a previous implementation where `weightToRemove` was
+     * calculated to be negative, eventually causing the default crops to be larger than the bitmap
+     * itself.
+     */
+    @Test
+    public void testNoParallax_cropWillNotGetBeyondBitmapSize() {
+        Point displaySize = new Point(1340, 800);
+        Point bitmapSize = new Point(1000, 2000);
+        Rect crop = new Rect(0, 701, 1000, 1299);
+        Rect cropWithoutParallax =
+                WallpaperCropper.noParallax(crop, displaySize, bitmapSize, /* rtl= */ false);
+
+        // Check that the crop without parallax is within the bitmap bounds.
+        assertThat(cropWithoutParallax.left).isAtLeast(0);
+        assertThat(cropWithoutParallax.top).isAtLeast(0);
+        assertThat(cropWithoutParallax.right).isAtMost(bitmapSize.x);
+        assertThat(cropWithoutParallax.bottom).isAtMost(bitmapSize.y);
+    }
+
+    /**
      * Test that {@link WallpaperCropper#noParallax} correctly takes zooming into account.
      */
     @Test

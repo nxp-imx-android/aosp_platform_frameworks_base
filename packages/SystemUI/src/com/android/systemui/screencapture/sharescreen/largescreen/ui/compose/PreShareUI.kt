@@ -16,13 +16,40 @@
 
 package com.android.systemui.screencapture.sharescreen.largescreen.ui.compose
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.PreShareViewModel
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.PreShareToolbarViewModel
 
 /** Main component for the screen share UI. */
 @Composable
-fun PreShareUI(viewModel: PreShareViewModel) {
-    PreShareToolbar(viewModel = viewModel, expanded = true, onCloseClick = {})
+fun PreShareUI(preShareToolbarViewModel: PreShareToolbarViewModel) {
+    Box(
+        contentAlignment = Alignment.TopCenter,
+        modifier = Modifier.fillMaxSize().padding(top = 16.dp),
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.width(560.dp),
+        ) {
+            val targetsViewModel by preShareToolbarViewModel.currentTargetsModel
 
-    // TODO: Add PreShareSelector here.
+            PreShareToolbar(
+                preShareToolbarViewModel = preShareToolbarViewModel,
+                expanded = true,
+                onCloseClick = { preShareToolbarViewModel.onCloseClicked() },
+                shareButtonEnabled = targetsViewModel.selectedTarget.value != null,
+            )
+            ShareContentSelector(targetsViewModel)
+        }
+    }
 }

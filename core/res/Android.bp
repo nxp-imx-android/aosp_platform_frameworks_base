@@ -176,6 +176,7 @@ android_app {
         "android.os.vibrator.flags-aconfig",
         "android.media.tv.flags-aconfig",
         "android.security.flags-aconfig",
+        "android.view.inputmethod.flags-aconfig",
         "device_policy_aconfig_flags",
         "devicelock-aconfig-flags",
         "android.xr.flags-aconfig",
@@ -189,8 +190,12 @@ android_app {
         "appsearch_aconfig_flags",
         "aconfig_trade_in_mode_flags",
         "com.android.media.flags.projection-aconfig",
+        "android.service.personalcontext.flags-aconfig",
         "surfaceflinger_flags",
         "power_flags",
+        "display_flags",
+        "android.os.profiling.anomaly.flags-aconfig",
+        "com.android.media.flags.mediasession-aconfig",
     ],
 }
 

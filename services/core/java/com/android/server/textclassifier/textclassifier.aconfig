@@ -1,0 +1,9 @@
+package: "com.android.server.textclassifier"
+container: "system"
+
+flag {
+    name: "textclassifier_pending_request_timeout_enabled"
+    namespace: "textclassifier"
+    description: "Enable timeout for pending TextClassifier service requests."
+    bug: "441722807"
+}

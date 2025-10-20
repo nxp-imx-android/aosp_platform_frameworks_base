@@ -17,9 +17,17 @@
 package com.android.systemui.screencapture.record.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.screencapture.record.domain.interactor.screenCaptureRecordParametersInteractor
 
-val Kosmos.screenCaptureRecordParametersViewModel by
-    Kosmos.Fixture {
-        ScreenCaptureRecordParametersViewModel(interactor = screenCaptureRecordParametersInteractor)
+val Kosmos.screenCaptureRecordParametersViewModel by Fixture {
+    ScreenCaptureRecordParametersViewModel(interactor = screenCaptureRecordParametersInteractor)
+}
+
+val Kosmos.screenCaptureRecordParametersViewModelFactory by Fixture {
+    object : ScreenCaptureRecordParametersViewModel.Factory {
+        override fun create(): ScreenCaptureRecordParametersViewModel {
+            return screenCaptureRecordParametersViewModel
+        }
     }
+}

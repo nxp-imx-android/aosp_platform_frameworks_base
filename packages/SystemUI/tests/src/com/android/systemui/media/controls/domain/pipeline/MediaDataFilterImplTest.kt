@@ -23,13 +23,11 @@ import com.android.internal.logging.InstanceId
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.media.controls.MediaTestUtils
-import com.android.systemui.media.controls.data.repository.MediaFilterRepository
-import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.shared.mockMediaLogger
-import com.android.systemui.media.controls.shared.model.MediaCommonModel
 import com.android.systemui.media.controls.shared.model.MediaData
-import com.android.systemui.media.controls.shared.model.MediaDataLoadingModel
 import com.android.systemui.media.controls.ui.controller.MediaPlayerData
+import com.android.systemui.media.remedia.data.repository.MediaPipelineRepository
+import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.testKosmos
@@ -79,7 +77,7 @@ class MediaDataFilterImplTest : SysuiTestCase() {
     private lateinit var dataMain: MediaData
     private lateinit var dataGuest: MediaData
     private lateinit var dataPrivateProfile: MediaData
-    private val repository: MediaFilterRepository = with(kosmos) { mediaFilterRepository }
+    private val repository: MediaPipelineRepository = with(kosmos) { mediaPipelineRepository }
     private val mediaLogger = kosmos.mockMediaLogger
 
     @Before
@@ -131,81 +129,58 @@ class MediaDataFilterImplTest : SysuiTestCase() {
     }
 
     @Test
-    fun onDataLoadedForCurrentUser_updatesLoadedStates() =
+    fun onDataLoadedForCurrentUser_callsListener() =
         testScope.runTest {
-            val currentMedia by collectLastValue(repository.currentMedia)
-            val mediaCommonModel =
-                MediaCommonModel(MediaDataLoadingModel.Loaded(dataMain.instanceId))
-
             mediaDataFilter.onMediaDataLoaded(KEY, null, dataMain)
 
             verify(listener).onMediaDataLoaded(eq(KEY), eq(null), eq(dataMain), eq(true))
             verify(mediaLogger)
                 .logMediaLoaded(eq(dataMain.instanceId), eq(dataMain.active), anyString())
-            assertThat(currentMedia).containsExactly(mediaCommonModel)
         }
 
     @Test
-    fun onDataLoadedForGuest_doesNotUpdateLoadedStates() =
+    fun onDataLoadedForGuest_doesNotCallListener() =
         testScope.runTest {
-            val currentMedia by collectLastValue(repository.currentMedia)
-            val mediaCommonModel =
-                MediaCommonModel(MediaDataLoadingModel.Loaded(dataMain.instanceId))
-
             mediaDataFilter.onMediaDataLoaded(KEY, null, dataGuest)
 
             verify(listener, never()).onMediaDataLoaded(any(), any(), any(), anyBoolean())
             verify(mediaLogger, never()).logMediaLoaded(any(), anyBoolean(), anyString())
-            assertThat(currentMedia).doesNotContain(mediaCommonModel)
         }
 
     @Test
-    fun onRemovedForCurrent_updatesLoadedStates() =
+    fun onRemovedForCurrent_callsListener() =
         testScope.runTest {
-            val currentMedia by collectLastValue(repository.currentMedia)
-            val mediaCommonModel =
-                MediaCommonModel(MediaDataLoadingModel.Loaded(dataMain.instanceId))
-
             // GIVEN a media was removed for main user
             mediaDataFilter.onMediaDataLoaded(KEY, null, dataMain)
 
             verify(mediaLogger)
                 .logMediaLoaded(eq(dataMain.instanceId), eq(dataMain.active), anyString())
-            assertThat(currentMedia).containsExactly(mediaCommonModel)
 
             mediaDataFilter.onMediaDataRemoved(KEY, false)
 
             verify(listener).onMediaDataRemoved(eq(KEY), eq(false))
             verify(mediaLogger).logMediaRemoved(eq(dataMain.instanceId), anyString())
-            assertThat(currentMedia).doesNotContain(mediaCommonModel)
         }
 
     @Test
-    fun onRemovedForGuest_doesNotUpdateLoadedStates() =
+    fun onRemovedForGuest_doesNotCallListener() =
         testScope.runTest {
-            val currentMedia by collectLastValue(repository.currentMedia)
-
             // GIVEN a media was removed for guest user
             mediaDataFilter.onMediaDataLoaded(KEY, null, dataGuest)
             mediaDataFilter.onMediaDataRemoved(KEY, false)
 
             verify(listener, never()).onMediaDataRemoved(eq(KEY), eq(false))
             verify(mediaLogger, never()).logMediaRemoved(eq(dataGuest.instanceId), anyString())
-            assertThat(currentMedia).isEmpty()
         }
 
     @Test
     fun onUserSwitched_removesOldUserControls() =
         testScope.runTest {
-            val currentMedia by collectLastValue(repository.currentMedia)
-            val mediaLoaded = MediaDataLoadingModel.Loaded(dataMain.instanceId)
-
             // GIVEN that we have a media loaded for main user
             mediaDataFilter.onMediaDataLoaded(KEY, null, dataMain)
 
             verify(mediaLogger)
                 .logMediaLoaded(eq(dataMain.instanceId), eq(dataMain.active), anyString())
-            assertThat(currentMedia).containsExactly(MediaCommonModel(mediaLoaded))
 
             // and we switch to guest user
             setUser(USER_GUEST)
@@ -213,16 +188,11 @@ class MediaDataFilterImplTest : SysuiTestCase() {
             // THEN we should remove the main user's media
             verify(listener).onMediaDataRemoved(eq(KEY), eq(false))
             verify(mediaLogger).logMediaRemoved(eq(dataMain.instanceId), anyString())
-            assertThat(currentMedia).isEmpty()
         }
 
     @Test
     fun onUserSwitched_addsNewUserControls() =
         testScope.runTest {
-            val currentMedia by collectLastValue(repository.currentMedia)
-            val guestLoadedStatesModel = MediaDataLoadingModel.Loaded(dataGuest.instanceId)
-            val mainLoadedStatesModel = MediaDataLoadingModel.Loaded(dataMain.instanceId)
-
             // GIVEN that we had some media for both users
             mediaDataFilter.onMediaDataLoaded(KEY, null, dataMain)
             mediaDataFilter.onMediaDataLoaded(KEY_ALT, null, dataGuest)
@@ -241,15 +211,11 @@ class MediaDataFilterImplTest : SysuiTestCase() {
             verify(listener, never()).onMediaDataLoaded(eq(KEY), any(), eq(dataMain), anyBoolean())
             verify(mediaLogger, never())
                 .logMediaLoaded(eq(dataMain.instanceId), anyBoolean(), anyString())
-            assertThat(currentMedia).containsExactly(MediaCommonModel(guestLoadedStatesModel))
-            assertThat(currentMedia).doesNotContain(MediaCommonModel(mainLoadedStatesModel))
         }
 
     @Test
-    fun onProfileChanged_profileUnavailable_updateStates() =
+    fun onProfileChanged_profileUnavailable_loadControls() =
         testScope.runTest {
-            val currentMedia by collectLastValue(repository.currentMedia)
-
             // GIVEN that we had some media for both profiles
             mediaDataFilter.onMediaDataLoaded(KEY, null, dataMain)
             mediaDataFilter.onMediaDataLoaded(KEY_ALT, null, dataPrivateProfile)
@@ -257,11 +223,9 @@ class MediaDataFilterImplTest : SysuiTestCase() {
             // and we change profile status
             setPrivateProfileUnavailable()
 
-            val mediaLoadedStatesModel = MediaDataLoadingModel.Loaded(dataMain.instanceId)
             // THEN we should remove the private profile media
             verify(listener).onMediaDataRemoved(eq(KEY_ALT), eq(false))
             verify(mediaLogger).logMediaRemoved(eq(dataGuest.instanceId), anyString())
-            assertThat(currentMedia).containsExactly(MediaCommonModel(mediaLoadedStatesModel))
         }
 
     @Test

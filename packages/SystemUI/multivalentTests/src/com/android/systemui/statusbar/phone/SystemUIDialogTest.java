@@ -52,6 +52,7 @@ import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.display.data.repository.FakeDisplayRepository;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.model.SysUiState;
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
 
 import org.junit.After;
 import org.junit.Before;
@@ -84,6 +85,7 @@ public class SystemUIDialogTest extends SysuiTestCase {
     private FakeDisplayRepository mDisplayRepository;
     private SysUiState mConnectedDisplaySysUiState;
     private FakePerDisplayRepository<SysUiState> mStateRepository;
+    private WindowRootViewBlurInteractor mBlurInteractor;
     private VirtualDisplay mConnectedDisplay;
     private int mConnectedDisplayId;
 
@@ -100,6 +102,7 @@ public class SystemUIDialogTest extends SysuiTestCase {
         mSysUiState = kosmos.getSysuiState();
         mDisplayRepository = kosmos.getDisplayRepository();
         mStateRepository = kosmos.getFakeSysUIStatePerDisplayRepository();
+        mBlurInteractor = kosmos.getWindowRootViewBlurInteractor();
 
         mConnectedDisplay = mContext.getSystemService(DisplayManager.class).createVirtualDisplay(
                 SystemUIDialogTest.class.getSimpleName(), DEFAULT_WIDTH, DEFAULT_HEIGHT,
@@ -159,7 +162,7 @@ public class SystemUIDialogTest extends SysuiTestCase {
     @Test
     public void testRegisterReceiverWithoutAcsd() {
         SystemUIDialog dialog = createDialogWithDelegate(mContext, mDelegate,
-                false /* shouldAcsdDismissDialog */);
+                false /* shouldAcsdDismissDialog */, mBlurInteractor);
         final ArgumentCaptor<BroadcastReceiver> broadcastReceiverCaptor =
                 ArgumentCaptor.forClass(BroadcastReceiver.class);
         final ArgumentCaptor<IntentFilter> intentFilterCaptor =
@@ -216,9 +219,11 @@ public class SystemUIDialogTest extends SysuiTestCase {
     @Test
     public void sysuiStateUpdated() {
         SystemUIDialog dialog1 =
-                createDialogWithDelegate(mContext, mDelegate, /* shouldAcsDismissDialog */ true);
+                createDialogWithDelegate(mContext, mDelegate, /* shouldAcsDismissDialog */ true,
+                        mBlurInteractor);
         SystemUIDialog dialog2 =
-                createDialogWithDelegate(mContext, mDelegate, /* shouldAcsDismissDialog */ true);
+                createDialogWithDelegate(mContext, mDelegate, /* shouldAcsDismissDialog */ true,
+                        mBlurInteractor);
 
         dialog1.show();
         assertThat((mSysUiState.getFlags() & SYSUI_STATE_DIALOG_SHOWING) != 0).isTrue();
@@ -239,9 +244,10 @@ public class SystemUIDialogTest extends SysuiTestCase {
     public void perDisplaySysuiStateUpdated() {
         SystemUIDialog connectedDisplayDialog = createDialogWithDelegate(
                 mContext.createDisplayContext(mConnectedDisplay.getDisplay()),
-                mDelegate, /* shouldAcsDismissDialog */ true);
+                mDelegate, /* shouldAcsDismissDialog */ true, mBlurInteractor);
         SystemUIDialog primaryDisplayDialog =
-                createDialogWithDelegate(mContext, mDelegate, /* shouldAcsDismissDialog */ true);
+                createDialogWithDelegate(mContext, mDelegate, /* shouldAcsDismissDialog */ true,
+                        mBlurInteractor);
 
         primaryDisplayDialog.show();
         assertThat((mSysUiState.getFlags() & SYSUI_STATE_DIALOG_SHOWING) != 0).isTrue();
@@ -269,7 +275,7 @@ public class SystemUIDialogTest extends SysuiTestCase {
         Configuration configuration = new Configuration();
         InOrder inOrder = Mockito.inOrder(mDelegate);
         SystemUIDialog dialog = createDialogWithDelegate(mContext, mDelegate,
-                true /* shouldAcsdDismissDialog */);
+                true /* shouldAcsdDismissDialog */, mBlurInteractor);
 
         dialog.show();
         dialog.onWindowFocusChanged(/* hasFocus= */ true);
@@ -285,12 +291,14 @@ public class SystemUIDialogTest extends SysuiTestCase {
     }
 
     private static SystemUIDialog createDialogWithDelegate(Context context,
-            SystemUIDialog.Delegate delegate, boolean shouldAcsdDismissDialog) {
+            SystemUIDialog.Delegate delegate, boolean shouldAcsdDismissDialog,
+            WindowRootViewBlurInteractor blurInteractor) {
         SystemUIDialog.Factory factory = new SystemUIDialog.Factory(
                 context,
                 Dependency.get(SystemUIDialogManager.class),
                 Dependency.get(BroadcastDispatcher.class),
-                Dependency.get(DialogTransitionAnimator.class)
+                Dependency.get(DialogTransitionAnimator.class),
+                blurInteractor
         );
         return factory.create(delegate, context, shouldAcsdDismissDialog);
     }

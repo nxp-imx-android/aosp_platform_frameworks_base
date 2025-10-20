@@ -25,10 +25,11 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.compatui.api.CompatUIComponent
+import com.android.wm.shell.compatui.api.CompatUIComponentRepository
 import com.android.wm.shell.compatui.api.CompatUIComponentState
 import com.android.wm.shell.compatui.api.CompatUIInfo
 import com.android.wm.shell.compatui.api.CompatUIState
-import junit.framework.Assert.assertEquals
+import kotlin.test.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -38,8 +39,7 @@ import org.mockito.kotlin.mock
 /**
  * Tests for {@link CompatUIComponent}.
  *
- * Build/Install/Run:
- *  atest WMShellUnitTests:CompatUIComponentTest
+ * Build/Install/Run: atest WMShellUnitTests:CompatUIComponentTest
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
@@ -49,6 +49,7 @@ class CompatUIComponentTest : ShellTestCase() {
     private lateinit var layout: FakeCompatUILayout
     private lateinit var spec: FakeCompatUISpec
     private lateinit var state: CompatUIState
+    private lateinit var componentUIComponentRepository: CompatUIComponentRepository
     private lateinit var info: CompatUIInfo
     private lateinit var syncQueue: SyncTransactionQueue
     private lateinit var displayLayout: DisplayLayout
@@ -56,13 +57,12 @@ class CompatUIComponentTest : ShellTestCase() {
     private lateinit var position: Point
     private lateinit var componentState: CompatUIComponentState
 
-    @JvmField
-    @Rule
-    val compatUIHandlerRule: CompatUIHandlerRule = CompatUIHandlerRule()
+    @JvmField @Rule val compatUIHandlerRule: CompatUIHandlerRule = CompatUIHandlerRule()
 
     @Before
     fun setUp() {
         state = CompatUIState()
+        componentUIComponentRepository = CompatUIComponentRepository()
         view = View(mContext)
         position = Point(123, 456)
         layout = FakeCompatUILayout(viewBuilderReturn = view, positionBuilderReturn = position)
@@ -71,22 +71,23 @@ class CompatUIComponentTest : ShellTestCase() {
         syncQueue = mock<SyncTransactionQueue>()
         displayLayout = mock<DisplayLayout>()
         component =
-            CompatUIComponent(spec.getSpec(),
+            CompatUIComponent(
+                spec.getSpec(),
                 "compId",
                 mContext,
                 state,
+                componentUIComponentRepository,
                 info,
                 syncQueue,
-                displayLayout)
+                displayLayout,
+            )
         componentState = object : CompatUIComponentState {}
-        state.registerUIComponent("compId", component, componentState)
+        componentUIComponentRepository.registerUIComponent("compId", component, componentState)
     }
 
     @Test
     fun `when initLayout is invoked spec fields are used`() {
-        compatUIHandlerRule.postBlocking {
-            component.initLayout(info)
-        }
+        compatUIHandlerRule.postBlocking { component.initLayout(info) }
         with(layout) {
             assertViewBuilderInvocation(1)
             assertEquals(info, lastViewBuilderCompatUIInfo)

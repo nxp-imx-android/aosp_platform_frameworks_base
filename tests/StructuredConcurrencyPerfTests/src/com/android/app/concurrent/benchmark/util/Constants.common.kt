@@ -17,6 +17,8 @@ package com.android.app.concurrent.benchmark.util
 
 private const val MAIN_THREAD_NAME = "BenchmarkRunner"
 
+const val VLOG_TAG = "Benchmark"
+
 // This name should match the one used in the Perfetto SQL
 const val BG_THREAD_NAME_PREFIX = "Bg:"
 
@@ -31,7 +33,7 @@ private const val metric_name = "${'$'}metric_name"
 
 // For each measurement (of which there are 50 by default), compute the average runtime of the
 // main thread ("BenchmarkRunner") and the background thread ("BgThread"). Then, return the minimum,
-// p10, and p50 (median) of those averages.
+// median (p50), and standard deviation of those averages.
 const val PERFETTO_SQL_QUERY_FORMAT_STR =
     """
 -- For debugging, replace selected value with 'BenchmarkRunner';

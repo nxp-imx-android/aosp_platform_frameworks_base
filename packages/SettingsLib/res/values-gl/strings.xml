@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Conectando..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Conectado a <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Vinculando..."</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Non se puido realizar a vinculación"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"Non se puido establecer a conexión"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Conectado a <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (sen teléfono)"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Conectado a <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (sen audio multimedia)"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"Conectado a <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g> (sen tel./audio multimedia)"</string>
@@ -103,9 +105,9 @@
     <string name="bluetooth_battery_level_untethered" msgid="1616774716076301755">"Esquerdo: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g> de batería. Dereito: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> de batería."</string>
     <string name="bluetooth_battery_level_untethered_left" msgid="5725764679536058365">"Esquerdo: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de batería."</string>
     <string name="bluetooth_battery_level_untethered_right" msgid="8377995536997790142">"Dereito: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de batería."</string>
-    <string name="bluetooth_battery_level_untethered_case" msgid="6783758530890124772">"Caixa: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de batería"</string>
-    <string name="bluetooth_battery_level_untethered_left_case" msgid="7676759299091682229">"Esquerdo: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, caixa: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> de batería"</string>
-    <string name="bluetooth_battery_level_untethered_right_case" msgid="1299184574560442389">"Dereito: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, caixa: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> de batería"</string>
+    <string name="bluetooth_battery_level_untethered_case" msgid="6783758530890124772">"Estoxo: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de batería"</string>
+    <string name="bluetooth_battery_level_untethered_left_case" msgid="7676759299091682229">"Esquerdo: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, estoxo: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> de batería"</string>
+    <string name="bluetooth_battery_level_untethered_right_case" msgid="1299184574560442389">"Dereito: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, estoxo: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> de batería"</string>
     <string name="bluetooth_battery_level_untethered_left_right" msgid="6953449613092012043">"Esquerdo: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, dereito: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> de batería"</string>
     <string name="bluetooth_battery_level_untethered_left_case_right" msgid="5434524614259536880">"E: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, C: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>, D: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_2">%3$s</xliff:g> de batería"</string>
     <string name="tv_bluetooth_battery_level_untethered_left" msgid="337629670583744410">"Esquerdo: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
@@ -116,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"Activo (só o dereito)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"Activos (o esquerdo e o dereito)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"Non se puido actualizar o ambiente"</string>
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"Non se puido actualizar a configuración predeterminada"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"Seleccionado"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"Activo (só contido multimedia). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de batería."</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"Activo (só contido multimedia). Esquerdo: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g> de batería. Dereito: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> de batería."</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"Dispositivo convidado. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de batería."</string>
@@ -345,7 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Cando este modo está activado, o enderezo MAC pode cambiar cada vez que este dispositivo se conecte a unha rede que teña activada a orde aleatoria de enderezos MAC"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Rede sen tarifa plana"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Rede con tarifa plana"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"Tamaño dos búfers do rexistrador"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Tamaño do búfer do rexistrador"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Seleccionar tamaño do rexistrador por búfer"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Queres borrar o almacenamento persistente do rexistrador?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Cando xa non se supervisa a actividade co rexistrador de forma persistente, debemos borrar os datos do rexistrador almacenados no dispositivo."</string>

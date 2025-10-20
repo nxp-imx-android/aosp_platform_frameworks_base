@@ -799,8 +799,6 @@ public class DragDropControllerTests extends WindowTestsBase {
 
     @Test
     public void testUnhandledDragNotCalledForNormalDrags() throws RemoteException {
-        assumeTrue(com.android.window.flags.Flags.delegateUnhandledDrags());
-
         final IGlobalDragListener listener = mock(IGlobalDragListener.class);
         doReturn(mock(Binder.class)).when(listener).asBinder();
         mTarget.setGlobalDragListener(listener);
@@ -810,8 +808,6 @@ public class DragDropControllerTests extends WindowTestsBase {
 
     @Test
     public void testUnhandledDragReceivesUnhandledDropOverWindow() {
-        assumeTrue(com.android.window.flags.Flags.delegateUnhandledDrags());
-
         final IGlobalDragListener listener = mock(IGlobalDragListener.class);
         doReturn(mock(Binder.class)).when(listener).asBinder();
         mTarget.setGlobalDragListener(listener);
@@ -848,8 +844,6 @@ public class DragDropControllerTests extends WindowTestsBase {
 
     @Test
     public void testUnhandledDragReceivesUnhandledDropOverNoValidWindow() {
-        assumeTrue(com.android.window.flags.Flags.delegateUnhandledDrags());
-
         final IGlobalDragListener listener = mock(IGlobalDragListener.class);
         doReturn(mock(Binder.class)).when(listener).asBinder();
         mTarget.setGlobalDragListener(listener);
@@ -872,8 +866,6 @@ public class DragDropControllerTests extends WindowTestsBase {
 
     @Test
     public void testUnhandledDragDoesNotReceiveUnhandledDropWithoutDragFlag() {
-        assumeTrue(com.android.window.flags.Flags.delegateUnhandledDrags());
-
         final IGlobalDragListener listener = mock(IGlobalDragListener.class);
         doReturn(mock(Binder.class)).when(listener).asBinder();
         mTarget.setGlobalDragListener(listener);
@@ -894,8 +886,6 @@ public class DragDropControllerTests extends WindowTestsBase {
 
     @Test
     public void testUnhandledDragCallbackTimeout() {
-        assumeTrue(com.android.window.flags.Flags.delegateUnhandledDrags());
-
         final IGlobalDragListener listener = mock(IGlobalDragListener.class);
         doReturn(mock(Binder.class)).when(listener).asBinder();
         mTarget.setGlobalDragListener(listener);

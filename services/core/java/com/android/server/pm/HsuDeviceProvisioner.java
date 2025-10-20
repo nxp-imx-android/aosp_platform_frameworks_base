@@ -15,17 +15,20 @@
  */
 package com.android.server.pm;
 
+import android.annotation.UserIdInt;
 import android.content.ContentResolver;
 import android.database.ContentObserver;
 import android.os.Handler;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Log;
 
 import com.android.server.utils.Slogf;
+import com.android.server.utils.TimingsTraceAndSlog;
 
 /**
  * Class responsible for device provisioning related activities for when the device boots in
- * headless system user mode.
+ * headless system user mode. This class is not thread safe.
  */
 final class HsuDeviceProvisioner extends ContentObserver {
 
@@ -33,6 +36,7 @@ final class HsuDeviceProvisioner extends ContentObserver {
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
     private final ContentResolver mContentResolver;
+    private @UserIdInt int mBootUserId = UserHandle.USER_NULL;
 
     public HsuDeviceProvisioner(Handler handler, ContentResolver contentResolver) {
         super(handler);
@@ -58,12 +62,14 @@ final class HsuDeviceProvisioner extends ContentObserver {
         if (DEBUG) {
             Slogf.d(TAG, "onChange(%b): isDeviceProvisioned=%b", selfChange, isDeviceProvisioned());
         }
-        // Set USER_SETUP_COMPLETE for the (headless) system user only when the device
-        // has been set up at least once.
         if (isDeviceProvisioned()) {
+            // Set USER_SETUP_COMPLETE for the (headless) system user only when the device
+            // has been set up at least once.
             Slogf.i(TAG, "Marking USER_SETUP_COMPLETE for system user");
             Settings.Secure.putInt(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 1);
             mContentResolver.unregisterContentObserver(this);
+            // Copy settings from the Real user to the system user.
+            copySecureSettings();
         }
     }
 
@@ -79,5 +85,42 @@ final class HsuDeviceProvisioner extends ContentObserver {
                 e);
             return false;
         }
+    }
+
+    private void copySecureSettings() {
+        copySecureSettingFromBootUser(Settings.Secure.BUGREPORT_IN_POWER_MENU,
+                /* defaultValue= */ 0);
+    }
+
+    private void copySecureSettingFromBootUser(String settingName, int defaultValue) {
+        if (mBootUserId == UserHandle.USER_NULL) {
+            Slogf.w(TAG, "copySecureSettingFromBootUser called before boot user was set");
+            return;
+        }
+        if (mBootUserId == UserHandle.USER_SYSTEM) {
+            if (DEBUG) {
+                Slogf.d(TAG, "Skipping copySecureSettingFromBootUser for %s: "
+                        + "boot user is system user", settingName);
+            }
+            return;
+        }
+        int settingValue =
+                Settings.Secure.getIntForUser(
+                        mContentResolver, settingName, defaultValue, mBootUserId);
+        Slogf.i(TAG, "copySecureSettingFromBootUser (userId=%d): %s, value=%d", mBootUserId,
+                settingName, settingValue);
+        Settings.Secure.putIntForUser(
+                mContentResolver, settingName, settingValue, UserHandle.USER_SYSTEM);
+    }
+
+    /**
+     * Sets the user ID of the user that was booted. This is used to copy settings from the boot
+     * user to the system user.
+     *
+     * @param userId The user ID of the boot user.
+     */
+    void setBootUser(@UserIdInt int userId) {
+        mBootUserId = userId;
+        Slogf.i(TAG, "Boot User set %d", mBootUserId);
     }
 }

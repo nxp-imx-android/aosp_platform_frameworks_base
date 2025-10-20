@@ -52,7 +52,13 @@ class StatusBannerPreference @JvmOverloads constructor(
             updateIconTint(value)
             notifyChanged()
         }
+    var applyIconTint: Boolean = true
     var buttonLevel: BannerStatus = BannerStatus.GENERIC
+        set(value) {
+            field = value
+            notifyChanged()
+        }
+    var isButtonEnabled: Boolean = true
         set(value) {
             field = value
             notifyChanged()
@@ -151,6 +157,7 @@ class StatusBannerPreference @JvmOverloads constructor(
             text = buttonText
             setOnClickListener(listener)
             visibility = if (listener != null) View.VISIBLE else View.GONE
+            isEnabled = isButtonEnabled
         }
     }
 
@@ -259,6 +266,9 @@ class StatusBannerPreference @JvmOverloads constructor(
      * no-op.
      */
     private fun updateIconTint(iconLevel: BannerStatus) {
+        if (!applyIconTint) {
+            return
+        }
         icon?.setTintList(ColorStateList.valueOf(getBackgroundColor(iconLevel)))
     }
 }

@@ -219,6 +219,11 @@
     <!-- Permission required for processes that don't own the focused window to switch
          touch mode state -->
     <uses-permission android:name="android.permission.MODIFY_TOUCH_MODE_STATE" />
+    <!-- Permission required for CTS tests -->
+    <uses-permission android:name="android.permission.COPY_ACCOUNTS"
+        android:featureFlag="android.permission.flags.device_policy_management_role_split_create_managed_profile_enabled" />
+    <uses-permission android:name="android.permission.REMOVE_ACCOUNTS"
+        android:featureFlag="android.permission.flags.device_policy_management_role_split_create_managed_profile_enabled" />
     <!-- Permission required to test onPermissionsChangedListener -->
     <uses-permission android:name="android.permission.OBSERVE_GRANT_REVOKE_PERMISSIONS" />
     <uses-permission android:name="android.permission.SET_KEYBOARD_LAYOUT" />
@@ -357,11 +362,14 @@
     <uses-permission android:name="android.permission.REQUEST_COMPANION_PROFILE_VIRTUAL_DEVICE" />
     <uses-permission android:name="android.permission.REQUEST_COMPANION_PROFILE_WATCH" />
     <uses-permission android:name="android.permission.REQUEST_COMPANION_PROFILE_GLASSES" />
+    <uses-permission android:name="android.permission.REQUEST_COMPANION_PROFILE_MEDICAL" />
     <uses-permission android:name="android.permission.REQUEST_COMPANION_SELF_MANAGED" />
     <uses-permission android:name="android.permission.USE_COMPANION_TRANSPORTS" />
     <uses-permission android:name="android.permission.REQUEST_OBSERVE_DEVICE_UUID_PRESENCE" />
     <uses-permission android:name="android.permission.DELIVER_COMPANION_MESSAGES" />
     <uses-permission android:name="android.permission.ACCESS_COMPANION_INFO" />
+    <uses-permission android:name="android.permission.READ_REMOTE_TASKS" />
+    <uses-permission android:name="android.permission.REQUEST_TASK_HANDOFF" />
 
     <uses-permission android:name="android.permission.MANAGE_APPOPS" />
     <uses-permission android:name="android.permission.WATCH_APPOPS" />
@@ -619,6 +627,7 @@
     <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" />
     <uses-permission android:name="android.permission.MANAGE_WIFI_INTERFACES" />
     <uses-permission android:name="android.permission.OVERRIDE_WIFI_CONFIG" />
+    <uses-permission android:name="android.permission.WIFI_SET_DEVICE_MOBILITY_STATE" />
     <!-- Permission needed for CTS test - ConcurrencyTest#testP2pExternalApprover
          P2P external approver API sets require MANAGE_WIFI_NETWORK_SELECTION permission. -->
     <uses-permission android:name="android.permission.MANAGE_WIFI_NETWORK_SELECTION" />
@@ -708,6 +717,10 @@
     <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL" />
     <uses-permission android:name="android.permission.MEDIA_ROUTING_CONTROL" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_ROUTING" />
+
+    <!-- Permission required for CTS test - MediaSessionTest -->
+    <uses-permission android:name="android.permission.OVERRIDE_MEDIA_SESSION_OWNER"
+        android:featureFlag="com.android.media.mediasession.flags.override_media_session_owner" />
 
     <!-- Permission required for CTS test - SoundDoseHelperTest -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED" />
@@ -875,6 +888,9 @@
     <!-- Permission required for CTS test - CtsHardwareTestCases -->
     <uses-permission android:name="android.permission.REMAP_MODIFIER_KEYS" />
 
+    <!-- Permission required for CTS test - CtsHardwareTestCases -->
+    <uses-permission android:name="android.permission.CONTROLLER_REMAPPING" />
+
     <!-- Permission required for CTS test - ApplicationExemptionsTests -->
     <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_APP_EXEMPTIONS" />
 
@@ -1006,12 +1022,9 @@
     <uses-permission android:name="android.permission.WRITE_SYSTEM_PREFERENCES" />
 
     <!-- Permissions required for CTS test - ActivityManagerForegroundServiceTypeTest -->
-    <uses-permission android:name="android.permission.health.READ_HEART_RATE"
-        android:featureFlag="android.permission.flags.replace_body_sensor_permission_enabled"/>
-    <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION"
-        android:featureFlag="android.permission.flags.replace_body_sensor_permission_enabled"/>
-    <uses-permission android:name="android.permission.health.READ_SKIN_TEMPERATURE"
-        android:featureFlag="android.permission.flags.replace_body_sensor_permission_enabled"/>
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
+    <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION"/>
+    <uses-permission android:name="android.permission.health.READ_SKIN_TEMPERATURE"/>
 
     <!-- Permissions required for CTS test - CtsHealthFitnessDeviceTestCases-->
     <uses-permission android:name="android.permission.BACKUP_HEALTH_CONNECT_DATA_AND_SETTINGS"
@@ -1049,6 +1062,9 @@
 
     <!-- Permission required for CTS test - CtsMediaProjectionTestCases -->
     <uses-permission android:name="android.permission.MANAGE_MEDIA_PROJECTION" />
+
+    <!-- Permission required for CTS test - CtsAnomalyDetectorTests -->
+    <uses-permission android:name="android.permission.CONFIGURE_ANOMALY_DETECTOR" />
 
     <application
         android:label="@string/app_label"

@@ -21,7 +21,6 @@ import android.content.Context
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
 import android.view.WindowInsets
 import android.view.accessibility.AccessibilityEvent
 import androidx.compose.ui.util.lerp
@@ -38,6 +37,7 @@ import com.android.systemui.common.ui.view.updateMargin
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.res.R
 import com.android.systemui.util.kotlin.awaitCancellationThenDispose
+import com.android.systemui.util.view.listenToComputeInternalInsets
 import com.android.systemui.volume.dialog.captions.ui.viewmodel.VolumeDialogCaptionsButtonViewModel
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialog
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogScope
@@ -55,7 +55,6 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.scan
-import kotlinx.coroutines.suspendCancellableCoroutine
 
 private const val SPRING_STIFFNESS = 700f
 private const val SPRING_DAMPING_RATIO = 0.9f
@@ -120,7 +119,9 @@ constructor(
             .launchInTraced("VDVB#isHalfOpened", this)
 
         launchTraced("VDVB#viewTreeObserver") {
-            root.viewTreeObserver.listenToComputeInternalInsets()
+            root.viewTreeObserver.listenToComputeInternalInsets {
+                viewModel.fillTouchableBounds(this)
+            }
         }
 
         launchTraced("VDVB#insets") {
@@ -213,16 +214,6 @@ constructor(
         alpha = ceil(fraction)
         translationX = lerp(width, 0, fraction).toFloat()
     }
-
-    private suspend fun ViewTreeObserver.listenToComputeInternalInsets() =
-        suspendCancellableCoroutine<Unit> { continuation ->
-            val listener =
-                ViewTreeObserver.OnComputeInternalInsetsListener { inoutInfo ->
-                    viewModel.fillTouchableBounds(inoutInfo)
-                }
-            addOnComputeInternalInsetsListener(listener)
-            continuation.invokeOnCancellation { removeOnComputeInternalInsetsListener(listener) }
-        }
 
     private suspend fun View.applyVerticalOffset(offsetPx: Float, shouldAnimate: Boolean) {
         if (!shouldAnimate) {

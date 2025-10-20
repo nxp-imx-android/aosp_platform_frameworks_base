@@ -191,7 +191,7 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
                 (((latest as OngoingActivityChipModel.Active).icon)
                         as OngoingActivityChipModel.ChipIcon.SingleColorIcon)
                     .impl as Icon.Resource
-            assertThat(icon.res).isEqualTo(R.drawable.ic_screenrecord)
+            assertThat(icon.resId).isEqualTo(R.drawable.ic_screenrecord)
             assertThat(icon.contentDescription).isNotNull()
         }
 
@@ -255,6 +255,26 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
             assertThat((latest as OngoingActivityChipModel.Active).colors)
                 .isEqualTo(ColorsModel.Red)
+        }
+
+    @Test
+    fun chip_startingState_nullNotificationKey() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            screenRecordRepo.screenRecordState.value = ScreenRecordModel.Starting(2000L)
+
+            assertThat((latest as OngoingActivityChipModel.Active).notificationKey).isNull()
+        }
+
+    @Test
+    fun chip_recordingState_nullNotificationKey() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            screenRecordRepo.screenRecordState.value = ScreenRecordModel.Recording
+
+            assertThat((latest as OngoingActivityChipModel.Active).notificationKey).isNull()
         }
 
     @Test

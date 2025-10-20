@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.domain.interactor
 
+import android.graphics.Rect
 import com.android.app.tracing.FlowTracing.traceAsCounter
 import com.android.compose.animation.scene.TransitionKey
 import com.android.systemui.dagger.SysUISingleton
@@ -23,6 +24,8 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.data.repository.KeyguardRepository
 import com.android.systemui.keyguard.shared.model.StatusBarState
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.shade.ShadeOverlayBoundsListener
+import com.android.systemui.shade.data.repository.ShadeConfigRepository
 import com.android.systemui.shade.data.repository.ShadeRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -45,7 +48,8 @@ class ShadeInteractorLegacyImpl
 constructor(
     @Application val scope: CoroutineScope,
     keyguardRepository: KeyguardRepository,
-    repository: ShadeRepository,
+    private val repository: ShadeRepository,
+    shadeConfigRepository: ShadeConfigRepository,
 ) : BaseShadeInteractor {
     init {
         SceneContainerFlag.assertInLegacyMode()
@@ -61,7 +65,7 @@ constructor(
                 keyguardRepository.statusBarState,
                 repository.legacyShadeExpansion,
                 repository.qsExpansion,
-                repository.legacyUseSplitShade,
+                shadeConfigRepository.legacyUseSplitShade,
             ) {
                 lockscreenShadeExpansion,
                 statusBarState,
@@ -159,6 +163,17 @@ constructor(
             "collapseEitherShade() is not supported in legacy shade"
         )
     }
+
+    override fun setShadeOverlayBounds(bounds: Rect?) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
+            return
+        }
+        repository.setShadeOverlayBounds(bounds)
+    }
+
+    override fun addShadeOverlayBoundsListener(listener: ShadeOverlayBoundsListener) {}
+
+    override fun removeShadeOverlayBoundsListener(listener: ShadeOverlayBoundsListener) {}
 
     /**
      * Return a flow for whether a user is interacting with an expandable shade component using

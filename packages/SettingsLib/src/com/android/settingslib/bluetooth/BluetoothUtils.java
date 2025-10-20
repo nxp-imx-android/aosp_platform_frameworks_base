@@ -34,6 +34,7 @@ import android.media.AudioDeviceAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.provider.DeviceConfig;
 import android.provider.MediaStore;
 import android.provider.Settings;
@@ -79,6 +80,11 @@ public class BluetoothUtils {
     public static final String BT_ADVANCED_HEADER_ENABLED = "bt_advanced_header_enabled";
     public static final String DEVELOPER_OPTION_PREVIEW_KEY =
             "bluetooth_le_audio_sharing_ui_preview_enabled";
+    public static final String CONNECTION_FAILURE_TIME_KEY = "connection_failure_time";
+
+    public static final int CAN_NOT_PAIR_TIME_OUT_MILLS = 60000;
+    public static final int CAN_NOT_CONNECT_TIME_OUT_MILLS = 60000;
+
     private static final int METADATA_FAST_PAIR_CUSTOMIZED_FIELDS = 25;
     private static final String KEY_HEARABLE_CONTROL_SLICE = "HEARABLE_CONTROL_SLICE_WITH_WIDTH";
     private static final String KEY_BATTERY_ALL_THE_TIME = "BATT";
@@ -92,6 +98,8 @@ public class BluetoothUtils {
 
     private static final String TEMP_BOND_TYPE = "TEMP_BOND_TYPE";
     private static final String TEMP_BOND_DEVICE_METADATA_VALUE = "le_audio_sharing";
+    private static final String BLUETOOTH_DIAGNOSIS_KEY = "cs_bt_diagnostics_enabled";
+
 
     private static ErrorListener sErrorListener;
 
@@ -1410,5 +1418,26 @@ public class BluetoothUtils {
         }
 
         return !assistantProfile.getAllConnectedDevices().isEmpty();
+    }
+
+    /** Checks if Bluetooth Diagnosis is available by reading from Settings Secure. */
+    public static boolean isBluetoothDiagnosisAvailable(@NonNull Context context) {
+        return Flags.enableBluetoothDiagnosis()
+                && Settings.Secure.getInt(context.getContentResolver(), BLUETOOTH_DIAGNOSIS_KEY, -1)
+                        > 0;
+    }
+
+    /** Checks if the device should show as pairing failure. */
+    public static boolean showPairingFailure(@NonNull CachedBluetoothDevice device) {
+        return device.getBondFailureTimeMillis() > 0
+                && SystemClock.elapsedRealtime() - device.getBondFailureTimeMillis()
+                        <= CAN_NOT_PAIR_TIME_OUT_MILLS;
+    }
+
+    /** Checks if the device should show as connection failure. */
+    public static boolean showConnectionFailure(@NonNull CachedBluetoothDevice device) {
+        return device.getConnectionFailureTimeMillis() > 0
+                && SystemClock.elapsedRealtime() - device.getConnectionFailureTimeMillis()
+                        <= CAN_NOT_CONNECT_TIME_OUT_MILLS;
     }
 }

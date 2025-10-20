@@ -21,6 +21,7 @@ import android.tracing.perfetto.DataSourceInstance;
 import android.tracing.perfetto.FlushCallbackArguments;
 import android.tracing.perfetto.StartCallbackArguments;
 import android.tracing.perfetto.StopCallbackArguments;
+import android.util.Log;
 import android.util.proto.ProtoInputStream;
 
 /**
@@ -28,6 +29,7 @@ import android.util.proto.ProtoInputStream;
  */
 public class TransitionDataSource
         extends DataSource<DataSourceInstance, Void, Void> {
+    public static final String TAG = "TransitionDataSource";
     public static String DATA_SOURCE_NAME = "com.android.wm.shell.transition";
 
     private final Runnable mOnStartStaticCallback;
@@ -46,16 +48,19 @@ public class TransitionDataSource
         return new DataSourceInstance(this, instanceIndex) {
             @Override
             protected void onStart(StartCallbackArguments args) {
+                Log.d(TAG, "Starting transition tracing instance");
                 mOnStartStaticCallback.run();
             }
 
             @Override
             protected void onFlush(FlushCallbackArguments args) {
+                Log.d(TAG, "Flushing transition tracing instance");
                 mOnFlushStaticCallback.run();
             }
 
             @Override
             protected void onStop(StopCallbackArguments args) {
+                Log.d(TAG, "Stopping transition tracing instance");
                 mOnStopStaticCallback.run();
             }
         };

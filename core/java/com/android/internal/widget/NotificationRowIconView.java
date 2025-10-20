@@ -17,7 +17,6 @@
 package com.android.internal.widget;
 
 import android.annotation.Nullable;
-import android.app.Flags;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -82,51 +81,44 @@ public class NotificationRowIconView extends CachingIconView {
     @RemotableViewMethod(asyncImpl = "setImageIconAsync")
     @Override
     public void setImageIcon(Icon icon) {
-        if (Flags.notificationsRedesignAppIcons()) {
-            if (mAppIcon != null) {
-                // We already know that we should be using the app icon, and we already loaded it.
-                // We assume that cannot change throughout the lifetime of a notification, so
-                // there's nothing to do here.
-                return;
-            }
-            mAppIcon = loadAppIcon();
-            if (mAppIcon != null) {
-                setImageDrawable(mAppIcon);
-                adjustViewForAppIcon();
-            } else {
-                super.setImageIcon(icon);
-                restoreViewForSmallIcon();
-            }
+        if (mAppIcon != null) {
+            // We already know that we should be using the app icon, and we already loaded it.
+            // We assume that cannot change throughout the lifetime of a notification, so
+            // there's nothing to do here.
             return;
         }
-        super.setImageIcon(icon);
+        mAppIcon = loadAppIcon();
+        if (mAppIcon != null) {
+            setImageDrawable(mAppIcon);
+            adjustViewForAppIcon();
+        } else {
+            super.setImageIcon(icon);
+            restoreViewForSmallIcon();
+        }
     }
 
     @RemotableViewMethod
     @Override
     public Runnable setImageIconAsync(Icon icon) {
-        if (Flags.notificationsRedesignAppIcons()) {
-            if (mAppIcon != null) {
-                // We already know that we should be using the app icon, and we already loaded it.
-                // We assume that cannot change throughout the lifetime of a notification, so
-                // there's nothing to do here.
-                return () -> {
-                };
-            }
-            mAppIcon = loadAppIcon();
-            if (mAppIcon != null) {
-                return () -> {
-                    setImageDrawable(mAppIcon);
-                    adjustViewForAppIcon();
-                };
-            } else {
-                return () -> {
-                    super.setImageIcon(icon);
-                    restoreViewForSmallIcon();
-                };
-            }
+        if (mAppIcon != null) {
+            // We already know that we should be using the app icon, and we already loaded it.
+            // We assume that cannot change throughout the lifetime of a notification, so
+            // there's nothing to do here.
+            return () -> {
+            };
         }
-        return super.setImageIconAsync(icon);
+        mAppIcon = loadAppIcon();
+        if (mAppIcon != null) {
+            return () -> {
+                setImageDrawable(mAppIcon);
+                adjustViewForAppIcon();
+            };
+        } else {
+            return () -> {
+                super.setImageIcon(icon);
+                restoreViewForSmallIcon();
+            };
+        }
     }
 
     /**

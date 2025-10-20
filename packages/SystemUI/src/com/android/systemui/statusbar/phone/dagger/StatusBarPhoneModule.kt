@@ -22,7 +22,7 @@ import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Default
-import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent
+import com.android.systemui.display.dagger.ReferenceSysUIDisplaySubcomponent
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.core.CommandQueueInitializer
 import com.android.systemui.statusbar.core.MultiDisplayStatusBarInitializerStore
@@ -36,7 +36,6 @@ import com.android.systemui.statusbar.core.StatusBarInitializerStore
 import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.data.repository.PrivacyDotViewControllerStoreModule
 import com.android.systemui.statusbar.data.repository.PrivacyDotWindowControllerStoreModule
-import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerStore
 import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshPerDisplayInstanceProvider
@@ -112,14 +111,12 @@ interface StatusBarPhoneModule {
             implFactory: StatusBarInitializerImpl.Factory,
             statusBarWindowControllerStore: StatusBarWindowControllerStore,
             statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
-            statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
-            displayComponentRepo: PerDisplayRepository<SystemUIPhoneDisplaySubcomponent>,
+            displayComponentRepo: PerDisplayRepository<ReferenceSysUIDisplaySubcomponent>,
         ): StatusBarInitializerImpl {
             val systemUIDisplaySubcomponent = displayComponentRepo[Display.DEFAULT_DISPLAY]!!
             return implFactory.create(
                 statusBarWindowControllerStore.defaultDisplay,
                 statusBarModeRepositoryStore.defaultDisplay,
-                statusBarConfigurationControllerStore.defaultDisplay,
                 systemUIDisplaySubcomponent.statusBarFragmentProvider,
                 systemUIDisplaySubcomponent.statusBarRootFactory,
                 systemUIDisplaySubcomponent.homeStatusBarComponentFactory,

@@ -35,7 +35,9 @@ import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArraySet;
 
+import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.server.backup.Flags;
 
@@ -46,6 +48,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -63,13 +66,15 @@ public class BackupAgentTest {
 
     @Mock IBackupManager mIBackupManager;
     @Mock FullBackup.BackupScheme mBackupScheme;
-    @Mock Context mContext;
+
+    private Context mContext;
 
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        mContext = InstrumentationRegistry.getInstrumentation().getContext();
     }
 
     @Test
@@ -172,8 +177,97 @@ public class BackupAgentTest {
                 /* mode= */ 0666,
                 /* mtime= */ 12345,
                 /* token= */ 6789,
-                mIBackupManager);
+                mIBackupManager,
+                /* appVersionCode= */ 0,
+                /* transportFlags= */ 0,
+                /* contentVersion= */ "");
 
+        try (FileInputStream in = new FileInputStream(pipes[0].getFileDescriptor())) {
+            assertThat(in.available()).isEqualTo(0);
+        } finally {
+            pipes[0].close();
+            pipes[1].close();
+        }
+    }
+
+    @Test
+    @DisableFlags({Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER})
+    public void doRestoreFile_flagOff_doesNotSetExtraParams() throws Exception {
+        TestWhichOnRestoreFileCalledBackupAgent agent =
+                new TestWhichOnRestoreFileCalledBackupAgent();
+        agent.attach(mContext);
+        agent.onCreate(USER_HANDLE, BackupDestination.DEVICE_TRANSFER, OperationType.RESTORE);
+        IBackupAgent agentBinder = (IBackupAgent) agent.onBind();
+        long appVersionCode = 1;
+        int transportFlags = BackupAgent.FLAG_DEVICE_TO_DEVICE_TRANSFER;
+        String contentVersion = "1.0";
+
+        ParcelFileDescriptor[] pipes = ParcelFileDescriptor.createPipe();
+        FileOutputStream writeSide = new FileOutputStream(pipes[1].getFileDescriptor());
+        writeSide.write("Hello".getBytes(StandardCharsets.UTF_8));
+
+        agentBinder.doRestoreFile(
+                pipes[0],
+                /* length= */ 5,
+                BackupAgent.TYPE_FILE,
+                FullBackup.FILES_TREE_TOKEN,
+                /* path= */ "hello_file",
+                /* mode= */ 0666,
+                /* mtime= */ 12345,
+                /* token= */ 6789,
+                mIBackupManager,
+                appVersionCode,
+                transportFlags,
+                contentVersion);
+
+        assertThat(agent.mOldOnRestoreFileCalled).isTrue();
+        assertThat(agent.mNewOnRestoreFileCalled).isFalse();
+        assertThat(agent.mAppVersionCodeReceived).isEqualTo(0);
+        assertThat(agent.mTransportFlagsReceived).isEqualTo(0);
+        assertThat(agent.mContentVersionReceived).isEqualTo("");
+        try (FileInputStream in = new FileInputStream(pipes[0].getFileDescriptor())) {
+            assertThat(in.available()).isEqualTo(0);
+        } finally {
+            pipes[0].close();
+            pipes[1].close();
+        }
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER})
+    public void doRestoreFile_flagOn_setsExtraParams() throws Exception {
+        TestWhichOnRestoreFileCalledBackupAgent agent =
+                new TestWhichOnRestoreFileCalledBackupAgent();
+        agent.attach(mContext);
+        agent.onCreate(USER_HANDLE, BackupDestination.DEVICE_TRANSFER, OperationType.RESTORE);
+        IBackupAgent agentBinder = (IBackupAgent) agent.onBind();
+        long appVersionCode = 1;
+        int transportFlags = BackupAgent.FLAG_DEVICE_TO_DEVICE_TRANSFER;
+        String contentVersion = "1.0";
+
+        ParcelFileDescriptor[] pipes = ParcelFileDescriptor.createPipe();
+        FileOutputStream writeSide = new FileOutputStream(pipes[1].getFileDescriptor());
+        writeSide.write("Hello".getBytes(StandardCharsets.UTF_8));
+
+        agentBinder.doRestoreFile(
+                pipes[0],
+                /* length= */ 5,
+                BackupAgent.TYPE_FILE,
+                FullBackup.FILES_TREE_TOKEN,
+                /* path= */ "hello_file",
+                /* mode= */ 0666,
+                /* mtime= */ 12345,
+                /* token= */ 6789,
+                mIBackupManager,
+                appVersionCode,
+                transportFlags,
+                contentVersion);
+
+        assertThat(agent.mOldOnRestoreFileCalled).isFalse();
+        assertThat(agent.mNewOnRestoreFileCalled).isTrue();
+        assertThat(agent.mAppVersionCodeReceived).isEqualTo(appVersionCode);
+        assertThat(agent.mTransportFlagsReceived).isEqualTo(transportFlags);
+        assertThat(agent.mContentVersionReceived).isEqualTo(contentVersion);
         try (FileInputStream in = new FileInputStream(pipes[0].getFileDescriptor())) {
             assertThat(in.available()).isEqualTo(0);
         } finally {
@@ -257,7 +351,6 @@ public class BackupAgentTest {
     }
 
     private static class TestRestoreIgnoringFullBackupAgent extends TestFullBackupAgent {
-
         @Override
         protected void onRestoreFile(
                 ParcelFileDescriptor data,
@@ -266,9 +359,48 @@ public class BackupAgentTest {
                 String domain,
                 String path,
                 long mode,
-                long mtime)
+                long mtime,
+                long appVersionCode,
+                int transportFlags,
+                String contentVersion)
                 throws IOException {
             // Ignore the file and don't consume any data.
+        }
+    }
+
+    private static class TestWhichOnRestoreFileCalledBackupAgent extends TestFullBackupAgent {
+        boolean mOldOnRestoreFileCalled = false;
+        boolean mNewOnRestoreFileCalled = false;
+        long mAppVersionCodeReceived = 0;
+        int mTransportFlagsReceived = 0;
+        String mContentVersionReceived = "";
+
+        @Override
+        public void onRestoreFile(
+                ParcelFileDescriptor data,
+                long size,
+                File destination,
+                int type,
+                long mode,
+                long mtime)
+                throws IOException {
+            mOldOnRestoreFileCalled = true;
+            FullBackup.restoreFile(data, size, type, mode, mtime, null);
+        }
+
+        @Override
+        public void onRestoreFile(@NonNull FullRestoreDataInput data) throws IOException {
+            mNewOnRestoreFileCalled = true;
+            mAppVersionCodeReceived = data.getAppVersionCode();
+            mTransportFlagsReceived = data.getTransportFlags();
+            mContentVersionReceived = data.getContentVersion();
+            FullBackup.restoreFile(
+                    data.getData(),
+                    data.getSize(),
+                    data.getType(),
+                    data.getMode(),
+                    data.getModificationTimeSeconds(),
+                    null);
         }
     }
 

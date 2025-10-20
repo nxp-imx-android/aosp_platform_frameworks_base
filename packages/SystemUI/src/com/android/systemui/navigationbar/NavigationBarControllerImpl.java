@@ -18,7 +18,6 @@ package com.android.systemui.navigationbar;
 
 import static com.android.systemui.navigationbar.gestural.EdgeBackGestureHandler.DEBUG_MISSING_GESTURE_TAG;
 import static com.android.systemui.shared.recents.utilities.Utilities.isLargeScreen;
-import static com.android.wm.shell.Flags.enableTaskbarNavbarUnification;
 import static com.android.wm.shell.Flags.enableTaskbarOnPhones;
 
 import android.content.Context;
@@ -292,7 +291,7 @@ public class NavigationBarControllerImpl implements
         // Enable for tablets, unfolded state on a foldable device, (non handheld AND flag is set),
         // or handheld when enableTaskbarOnPhones() returns true.
         boolean foldedOrPhone = !mIsPhone || enableTaskbarOnPhones();
-        return mIsLargeScreen || (foldedOrPhone && enableTaskbarNavbarUnification());
+        return mIsLargeScreen || foldedOrPhone;
     }
 
     // TODO: b/408503553 - Remove system decor callbacks once the flag is cleaned up.
@@ -416,17 +415,20 @@ public class NavigationBarControllerImpl implements
             return;
         }
 
-        // We may show TaskBar on the default display for large screen device. Don't need to create
-        // navigation bar for this case.
-        if (isOnDefaultDisplay && initializeTaskbarIfNecessary()) {
+        // Taskbar on connected displays will be created by TaskbarManager through display
+        // decoration callback.
+        if (!isOnDefaultDisplay) {
             return;
         }
 
-        final Context context = isOnDefaultDisplay
-                ? mContext
-                : mContext.createDisplayContext(display);
+        // We may show TaskBar on the default display for large screen device. Don't need to create
+        // navigation bar for this case.
+        if (initializeTaskbarIfNecessary()) {
+            return;
+        }
+
         NavigationBarComponent component = mNavigationBarComponentFactory.create(
-                context, savedState);
+                mContext, savedState);
         NavigationBar navBar = component.getNavigationBar();
         navBar.init();
         mNavigationBars.put(displayId, navBar);

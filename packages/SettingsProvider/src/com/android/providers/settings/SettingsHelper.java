@@ -103,7 +103,7 @@ public class SettingsHelper {
      * @see Secure#SETTINGS_TO_BACKUP
      * @see Global#SETTINGS_TO_BACKUP
      *
-     * {@hide}
+     * @hide
      */
     private static final ArraySet<String> sBroadcastOnRestore;
     private static final ArraySet<String> sBroadcastOnRestoreSystemUI;

@@ -39,13 +39,14 @@ import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.bubbles.Bubble
+import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.bubbles.BubbleExpandedViewManager
-import com.android.wm.shell.bubbles.BubbleLogger
 import com.android.wm.shell.bubbles.BubbleOverflow
 import com.android.wm.shell.bubbles.BubblePositioner
 import com.android.wm.shell.bubbles.BubbleTaskView
 import com.android.wm.shell.bubbles.FakeBubbleExpandedViewManager
 import com.android.wm.shell.bubbles.FakeBubbleFactory
+import com.android.wm.shell.bubbles.logging.BubbleLogger
 import com.android.wm.shell.common.TestShellExecutor
 import com.android.wm.shell.shared.bubbles.DeviceConfig
 import com.android.wm.shell.taskview.TaskView
@@ -77,6 +78,14 @@ class BubbleBarAnimationHelperTest {
     companion object {
         const val SCREEN_WIDTH = 2000
         const val SCREEN_HEIGHT = 1000
+        val isRobolectricTest by lazy {
+            try {
+                Class.forName("org.robolectric.Robolectric")
+                true
+            } catch (e: ClassNotFoundException) {
+                false
+            }
+        }
     }
 
     private val context = ApplicationProvider.getApplicationContext<Context>()
@@ -114,7 +123,7 @@ class BubbleBarAnimationHelperTest {
         mainExecutor = TestShellExecutor()
         bgExecutor = TestShellExecutor()
 
-        animationHelper = BubbleBarAnimationHelper(context, bubblePositioner)
+        animationHelper = BubbleBarAnimationHelper(context, bubblePositioner, mainExecutor)
     }
 
     @After
@@ -132,7 +141,8 @@ class BubbleBarAnimationHelperTest {
         val after = Runnable { semaphore.release() }
 
         activityScenario.onActivity {
-            animationHelper.animateSwitch(fromBubble, toBubble, after)
+            animationHelper.animateSwitch(fromBubble, toBubble, /* shouldApplyAsJumpcut= */ false,
+                after)
             animatorTestRule.advanceTimeBy(1000)
         }
         getInstrumentation().waitForIdleSync()
@@ -148,6 +158,61 @@ class BubbleBarAnimationHelperTest {
     }
 
     @Test
+    fun animateSwitch_bubbleToBubble_oldHiddenNewShown_applyAsJumpcut() {
+        val fromBubble = createBubble(key = "from").initialize(container)
+        val toBubble = createBubble(key = "to").initialize(container)
+
+        val semaphore = Semaphore(0)
+        val after = Runnable { semaphore.release() }
+
+        activityScenario.onActivity {
+            animationHelper.animateSwitch(fromBubble, toBubble, /* shouldApplyAsJumpcut= */ true,
+                after)
+        }
+        getInstrumentation().waitForIdleSync()
+
+        if (!isRobolectricTest) {
+            // The endRunnable is on TransactionCommittedListener, which won't be trigger with the
+            // shadow implementation of SurfaceControl.
+
+            // Wait for surface transaction applied.
+            getInstrumentation().getUiAutomation().syncInputTransactions()
+            mainExecutor.flushAll()
+
+            assertThat(semaphore.tryAcquire()).isTrue()
+        }
+
+        assertThat(fromBubble.bubbleBarExpandedView?.visibility).isEqualTo(View.INVISIBLE)
+        assertThat(fromBubble.bubbleBarExpandedView?.alpha).isEqualTo(0f)
+        assertThat(fromBubble.bubbleBarExpandedView?.isSurfaceZOrderedOnTop).isFalse()
+
+        assertThat(toBubble.bubbleBarExpandedView?.visibility).isEqualTo(View.VISIBLE)
+        assertThat(toBubble.bubbleBarExpandedView?.alpha).isEqualTo(1f)
+        assertThat(toBubble.bubbleBarExpandedView?.isSurfaceZOrderedOnTop).isFalse()
+    }
+
+    @Test
+    fun animateSwitch_quickSwitch_newlySelectedIsVisible() {
+        val bubbleA = createBubble(key = "A").initialize(container)
+        val bubbleB = createBubble(key = "B").initialize(container)
+
+        activityScenario.onActivity {
+            // Start an animation from A to B
+            animationHelper.animateSwitch(
+                    bubbleA, bubbleB, /* shouldApplyAsJumpcut= */ false, /* endRunnable= */ null)
+            // This simulates Bubble B has finished animating out
+            bubbleB.bubbleBarExpandedView!!.visibility = View.INVISIBLE
+            // Let it run for a bit, but not finish
+            animatorTestRule.advanceTimeBy(100)
+        }
+        getInstrumentation().waitForIdleSync()
+
+        // Assert that even though we manually set it to INVISIBLE, the animation start
+        // callback has corrected it to VISIBLE.
+        assertThat(bubbleB.bubbleBarExpandedView?.visibility).isEqualTo(View.VISIBLE)
+    }
+
+    @Test
     fun animateSwitch_bubbleToBubble_handleColorTransferred() {
         val fromBubble = createBubble(key = "from").initialize(container)
         val uiMode =
@@ -159,7 +224,8 @@ class BubbleBarAnimationHelperTest {
         val toBubble = createBubble(key = "to").initialize(container)
 
         activityScenario.onActivity {
-            animationHelper.animateSwitch(fromBubble, toBubble, /* afterAnimation= */ null)
+            animationHelper.animateSwitch(fromBubble, toBubble, /* shouldApplyAsJumpcut= */ false,
+                /* afterAnimation= */ null)
             animatorTestRule.advanceTimeBy(1000)
         }
         getInstrumentation().waitForIdleSync()
@@ -177,7 +243,7 @@ class BubbleBarAnimationHelperTest {
             container)
 
         activityScenario.onActivity {
-            animationHelper.animateSwitch(fromBubble, toBubble) {}
+            animationHelper.animateSwitch(fromBubble, toBubble, /* shouldApplyAsJumpcut= */ false) {}
             // Start the animation, but don't finish
             animatorTestRule.advanceTimeBy(100)
         }
@@ -199,7 +265,8 @@ class BubbleBarAnimationHelperTest {
         val after = Runnable { semaphore.release() }
 
         activityScenario.onActivity {
-            animationHelper.animateSwitch(fromBubble, overflow, after)
+            animationHelper.animateSwitch(fromBubble, overflow, /* shouldApplyAsJumpcut= */ false,
+                after)
             animatorTestRule.advanceTimeBy(1000)
         }
         getInstrumentation().waitForIdleSync()
@@ -222,7 +289,8 @@ class BubbleBarAnimationHelperTest {
         val after = Runnable { semaphore.release() }
 
         activityScenario.onActivity {
-            animationHelper.animateSwitch(overflow, toBubble, after)
+            animationHelper.animateSwitch(overflow, toBubble, /* shouldApplyAsJumpcut= */ false,
+                after)
             animatorTestRule.advanceTimeBy(1000)
         }
         getInstrumentation().waitForIdleSync()
@@ -400,12 +468,13 @@ class BubbleBarAnimationHelperTest {
         key: String,
         taskViewController: TaskViewController = mock<TaskViewController>(),
         taskViewTaskController: TaskViewTaskController = mock<TaskViewTaskController>(),
+        bubbleController: BubbleController = mock<BubbleController>(),
     ): Bubble {
         val taskView = TaskView(context, taskViewController, taskViewTaskController)
         val taskInfo = mock<ActivityManager.RunningTaskInfo>()
         whenever(taskViewTaskController.taskInfo).thenReturn(taskInfo)
         val bubble = FakeBubbleFactory.createChatBubble(context, key)
-        val bubbleTaskView = BubbleTaskView(taskView, mainExecutor)
+        val bubbleTaskView = BubbleTaskView(taskView, mainExecutor, bubbleController)
         bubbleTaskView.listener.onTaskCreated(/* taskId= */ 1, ComponentName("package", "class"))
 
         FakeBubbleFactory.createExpandedView(

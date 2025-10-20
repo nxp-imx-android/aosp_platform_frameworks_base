@@ -48,6 +48,9 @@ public class DeviceStateCacheImpl extends DeviceStateCache {
     @GuardedBy("mLock")
     private boolean mIsDeviceProvisioned = false;
 
+    @GuardedBy("mLock")
+    private boolean mIsDeviceManaged = false;
+
     @Override
     public boolean isDeviceProvisioned() {
         return mIsDeviceProvisioned;
@@ -57,6 +60,18 @@ public class DeviceStateCacheImpl extends DeviceStateCache {
     public void setDeviceProvisioned(boolean provisioned) {
         synchronized (mLock) {
             mIsDeviceProvisioned = provisioned;
+        }
+    }
+
+    @Override
+    public boolean isDeviceManaged() {
+        return mIsDeviceManaged;
+    }
+
+    /** Update the device managed flag */
+    public void setDeviceManaged(boolean managed) {
+        synchronized (mLock) {
+            mIsDeviceManaged = managed;
         }
     }
 

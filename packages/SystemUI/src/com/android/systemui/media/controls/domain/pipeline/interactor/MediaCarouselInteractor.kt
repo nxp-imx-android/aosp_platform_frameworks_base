@@ -21,11 +21,14 @@ import android.media.MediaDescription
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.service.notification.StatusBarNotification
-import com.android.internal.logging.InstanceId
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.media.controls.data.repository.MediaFilterRepository
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
+import com.android.systemui.keyguard.shared.model.Edge
+import com.android.systemui.keyguard.shared.model.KeyguardState.DOZING
+import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
 import com.android.systemui.media.controls.domain.pipeline.MediaDataCombineLatest
 import com.android.systemui.media.controls.domain.pipeline.MediaDataFilterImpl
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
@@ -37,12 +40,14 @@ import com.android.systemui.media.controls.domain.resume.MediaResumeListener
 import com.android.systemui.media.remedia.data.repository.MediaPipelineRepository
 import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Scenes
 import java.io.PrintWriter
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -60,6 +65,8 @@ constructor(
     private val mediaDataCombineLatest: MediaDataCombineLatest,
     private val mediaDataFilter: MediaDataFilterImpl,
     private val mediaPipelineRepository: MediaPipelineRepository,
+    keyguardTransitionInteractor: KeyguardTransitionInteractor,
+    deviceEntryInteractor: DeviceEntryInteractor,
 ) : MediaDataManager, CoreStartable {
 
     /** Are there any media notifications active? */
@@ -82,13 +89,25 @@ constructor(
                 initialValue = false,
             )
 
-    /** The current list for user media instances */
-    val currentMedia =
-        if (!MediaControlsInComposeFlag.isEnabled) {
-            (mediaPipelineRepository as MediaFilterRepository).currentMedia
-        } else {
-            // TODO(b/397989775) remove, not used with media_controls_in_compose
-            MutableStateFlow(mutableListOf())
+    val allowMediaOnLockscreen: StateFlow<Boolean> =
+        mediaPipelineRepository.allowMediaPlayerOnLockscreen
+
+    internal val isOnLockscreen: Flow<Boolean> =
+        combine(
+            @Suppress("DEPRECATION") keyguardTransitionInteractor.isFinishedIn(Scenes.Gone, GONE),
+            keyguardTransitionInteractor.isInTransition(Edge.create(to = DOZING)),
+            deviceEntryInteractor.isDeviceEntered,
+        ) { isGone, isGoingToDozing, deviceEntered ->
+            if (SceneContainerFlag.isEnabled) {
+                !deviceEntered
+            } else {
+                !isGone || isGoingToDozing
+            }
+        }
+
+    val isLockedAndHidden =
+        combine(allowMediaOnLockscreen, isOnLockscreen) { allowMedia, onLockscreen ->
+            !allowMedia && onLockscreen
         }
 
     override fun start() {
@@ -174,10 +193,6 @@ constructor(
         return mediaDataProcessor.dismissMediaData(key, delay, userInitiated)
     }
 
-    fun removeMediaControl(instanceId: InstanceId, delay: Long) {
-        mediaDataProcessor.dismissMediaData(instanceId, delay, userInitiated = false)
-    }
-
     override fun onNotificationRemoved(key: String) {
         mediaDataProcessor.onNotificationRemoved(key)
     }
@@ -194,12 +209,6 @@ constructor(
 
     override fun hasAnyMedia() = mediaPipelineRepository.hasAnyMedia()
 
-    fun reorderMedia() {
-        if (!MediaControlsInComposeFlag.isEnabled) {
-            (mediaPipelineRepository as MediaFilterRepository).setOrderedMedia()
-        }
-    }
-
     /** Add a listener for internal events. */
     private fun addInternalListener(listener: MediaDataManager.Listener) =
         mediaDataProcessor.addInternalListener(listener)
@@ -212,8 +221,7 @@ constructor(
         val unsupported: Nothing
             get() =
                 error(
-                    "Code path not supported when ${SceneContainerFlag.DESCRIPTION} or " +
-                        "media_controls_in_compose is enabled"
+                    "Code path not supported when ${SceneContainerFlag.DESCRIPTION} or media_controls_in_compose is enabled"
                 )
     }
 }

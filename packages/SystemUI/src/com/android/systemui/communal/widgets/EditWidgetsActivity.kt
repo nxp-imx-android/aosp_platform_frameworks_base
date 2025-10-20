@@ -49,8 +49,8 @@ import com.android.systemui.communal.ui.compose.TransitionDuration
 import com.android.systemui.communal.ui.view.layout.sections.CommunalAppWidgetSection
 import com.android.systemui.communal.ui.viewmodel.CommunalEditModeViewModel
 import com.android.systemui.communal.util.WidgetPickerIntentUtils.getWidgetExtraFromIntent
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
-import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.CommunalLog
@@ -59,6 +59,7 @@ import com.android.systemui.settings.UserTracker
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 
@@ -66,6 +67,7 @@ import kotlinx.coroutines.flow.first
 class EditWidgetsActivity
 @Inject
 constructor(
+    @Application private val applicationScope: CoroutineScope,
     private val communalViewModel: CommunalEditModeViewModel,
     private val keyguardInteractor: KeyguardInteractor,
     private var windowManagerService: IWindowManager? = null,
@@ -256,7 +258,6 @@ constructor(
                     scene = CommunalScenes.Blank,
                     loggingReason = "edit mode opening",
                     transitionKey = CommunalTransitionKeys.ToEditMode,
-                    keyguardState = KeyguardState.GONE,
                 )
 
                 // Wait for scene change to BLANK.
@@ -298,7 +299,10 @@ constructor(
     }
 
     private fun onEditDone() {
-        lifecycleScope.launch {
+        // The following is run on the application scope instead of the lifecycle scope because the
+        // activity becomes paused after scene change, and the coroutine may get suspended before it
+        // finishes.
+        applicationScope.launch {
             communalViewModel.onEditDone()
 
             if (!Flags.hubEditModeTransition()) {

@@ -189,7 +189,7 @@ public class KeyguardSimPinViewController
         if (mCheckSimPinThread == null) {
             mCheckSimPinThread = new CheckSimPin(mPasswordEntry.getText(), mSubId) {
                 @Override
-                void onSimCheckResponse(final PinResult result) {
+                void onSimCheckResponse(final PinResult result, int subId) {
                     mView.post(() -> {
                         mRemainingAttempts = result.getAttemptsRemaining();
                         if (mSimUnlockProgressDialog != null) {
@@ -199,7 +199,7 @@ public class KeyguardSimPinViewController
                                 /* announce */
                                 result.getResult() != PinResult.PIN_RESULT_TYPE_SUCCESS);
                         if (result.getResult() == PinResult.PIN_RESULT_TYPE_SUCCESS) {
-                            mKeyguardUpdateMonitor.reportSimUnlocked(mSubId);
+                            mKeyguardUpdateMonitor.reportSimUnlocked(subId);
                             mRemainingAttempts = -1;
                             mShowDefaultMessage = true;
                             getKeyguardSecurityCallback().dismiss(
@@ -299,8 +299,8 @@ public class KeyguardSimPinViewController
 
         // Sending empty PIN here to query the number of remaining PIN attempts
         new CheckSimPin("", mSubId) {
-            void onSimCheckResponse(final PinResult result) {
-                Log.d(LOG_TAG, "onSimCheckResponse " + " empty One result "
+            void onSimCheckResponse(final PinResult result, int subId) {
+                Log.d(LOG_TAG, "onSimCheckResponse (" + subId + ") empty One result "
                         + result.toString());
                 if (result.getAttemptsRemaining() >= 0) {
                     mRemainingAttempts = result.getAttemptsRemaining();
@@ -323,7 +323,7 @@ public class KeyguardSimPinViewController
             mSubId = subId;
         }
 
-        abstract void onSimCheckResponse(@NonNull PinResult result);
+        abstract void onSimCheckResponse(@NonNull PinResult result, int subId);
 
         @Override
         public void run() {
@@ -336,7 +336,7 @@ public class KeyguardSimPinViewController
             }
             final PinResult result = telephonyManager.supplyIccLockPin(mPin);
             Log.v(TAG, "supplyIccLockPin returned: " + result.toString());
-            mView.post(() -> onSimCheckResponse(result));
+            mView.post(() -> onSimCheckResponse(result, mSubId));
         }
     }
 

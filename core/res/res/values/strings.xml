@@ -1001,9 +1001,9 @@
     <string name="managed_profile_app_label">Switch to work <xliff:g id="app_name" example="Gmail">%1$s</xliff:g></string>
 
     <!-- Title of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. -->
-    <string name="permgrouplab_contacts">Contacts</string>
+    <string name="permgrouplab_contacts">Contacts and accounts</string>
     <!-- Description of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. -->
-    <string name="permgroupdesc_contacts">access your contacts</string>
+    <string name="permgroupdesc_contacts">access your contacts and see the list of your accounts that can save contacts on this device</string>
 
     <!-- Title of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. -->
     <string name="permgrouplab_location">Location</string>
@@ -1087,9 +1087,9 @@
     <string name="permgroupdesc_xr_tracking">track eyes, face, body, and scan area</string>
 
     <!-- Title of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=40]-->
-    <string name="permgrouplab_xr_tracking_sensitive">Precise head movement and area data</string>
+    <string name="permgrouplab_xr_tracking_sensitive">Precise movement and area data</string>
     <!-- Description of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=NONE]-->
-    <string name="permgroupdesc_xr_tracking_sensitive">precisely track head and scan area</string>
+    <string name="permgroupdesc_xr_tracking_sensitive">precisely scan area and track head</string>
 
     <!-- Title for the capability of an accessibility service to retrieve window content. -->
     <string name="capability_title_canRetrieveWindowContent">Retrieve window content</string>
@@ -1876,6 +1876,11 @@
     <string name="permdesc_nearby_wifi_devices">Allows the app to advertise, connect, and determine the relative position of nearby Wi\u2011Fi devices</string>
 
     <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=50]-->
+    <string name="permlab_access_local_network">access local network devices</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=120]-->
+    <string name="permdesc_access_local_network">Allows the app to access local network devices</string>
+
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=50]-->
     <string name="permlab_ranging">determine relative position between nearby devices</string>
     <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=120]-->
     <string name="permdesc_ranging">Allow the app to determine relative position between nearby devices</string>
@@ -1995,7 +2000,7 @@
     <string name="permdesc_scene_understanding_fine">Allows the app to precisely scan your surroundings.</string>
 
     <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
-    <string name="permlab_xr_tracking_in_background">track XR data in the background</string>
+    <string name="permlab_xr_tracking_in_background">access XR tracking in the background</string>
     <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
     <string name="permdesc_xr_tracking_in_background">Allows the app to access XR data in the background.</string>
 
@@ -2794,7 +2799,7 @@
     <!-- On the keyguard screen, when pattern lock is disabled, only tell them to press menu to unlock.  This is shown in small font at the bottom. -->
     <string name="lockscreen_instructions_when_pattern_disabled">Press Menu to unlock.</string>
 
-    <!-- On the unlock pattern screen, shown at the top of the unlock screen to tell the user what to do. Below this text is the place for theu ser to draw the pattern. -->
+    <!-- On the unlock pattern screen, shown at the top of the unlock screen to tell the user what to do. Below this text is the place for the user to draw the pattern. -->
     <string name="lockscreen_pattern_instructions">Draw pattern to unlock</string>
     <!-- Button at the bottom of the unlock screen to make an emergency call or access other emergency assistance functions. -->
     <string name="lockscreen_emergency_call">Emergency</string>
@@ -2807,7 +2812,14 @@
     <!-- On the unlock password screen, shown when the user enters the wrong lock password and must try again. -->
     <string name="lockscreen_password_wrong">Try again</string>
 
-    <!-- On the keyguard screen, this string explains that some features or data may not be available until the device is unlocked. [CHAR LIMIT=48] -->
+    <!-- On the keyguard screen, this string explains that the user can click anywhere to go to the
+         bouncer and, ultimately, unlock the device. [CHAR LIMIT=48] -->
+    <string name="lockscreen_click_to_unlock_hint">Click to unlock</string>
+    <!-- On the keyguard screen, this string explains that the user can press any key to go to the
+         bouncer and, ultimately, unlock the device. [CHAR LIMIT=48] -->
+    <string name="lockscreen_key_to_unlock_hint">Press any key to unlock</string>
+    <!-- On the keyguard screen, this string explains that some features or data may not be
+         available until the device is unlocked. [CHAR LIMIT=48] -->
     <string name="lockscreen_storage_locked">Unlock for all features and data</string>
 
     <!-- Shown when face unlock failed multiple times so we're just using the backup -->
@@ -3482,9 +3494,11 @@
     <string name="ok">OK</string>
     <!-- Preference framework strings. -->
     <string name="cancel">Cancel</string>
-    <!-- Preference framework strings. {@deprecated Do not use. Incorrectly matches android.R.string.ok rather than "yes".} -->
+    <!-- Preference framework strings.
+         @deprecated Do not use. Incorrectly matches android.R.string.ok rather than "yes". -->
     <string name="yes">OK</string>
-    <!-- Preference framework strings. {@deprecated Do not use. Incorrectly matches android.R.string.cancel rather than "no".} -->
+    <!-- Preference framework strings.
+         @deprecated Do not use. Incorrectly matches android.R.string.cancel rather than "no". -->
     <string name="no">Cancel</string>
     <!-- This is the generic "attention" string to be used in attention dialogs.  Typically
          combined with setIconAttribute(android.R.attr.alertDialogIcon)
@@ -4432,6 +4446,15 @@
          information. -->
     <string name="gpsVerifNo">No</string>
 
+    <!-- Title for a notification that is shown when a user's location is shared for an emergency. -->
+    <string name="emergency_location_notification_title">Location shared for emergency</string>
+    <!-- Detailed message for a notification that is shown when a user's location is shared for an emergency. -->
+    <string name="emergency_location_notification_message">Emergency services received your location from your carrier</string>
+    <!-- Notification action when a user's location is shared for an emergency, that takes the user to a help center article. -->
+    <string name="emergency_location_notification_learn_more">Learn more</string>
+    <!-- DO NOT TRANSLATE. URL for the "Learn more" link on the emergency location notification. -->
+    <string name="emergency_location_notification_learn_more_url" translatable="false">https://support.google.com/android/answer/9319337?sjid=9024468350750903013-NC#send_location_automatically&amp;zippy=%2Csend-your-location-automatically</string>
+
     <!-- Error message when the sync tried to delete too many things -->
     <string name="sync_too_many_deletes">Delete limit exceeded</string>
     <!-- Dialog message for when there are too many deletes that would take place and we want user confirmation -->
@@ -4946,10 +4969,10 @@
     <string name="accessibility_shortcut_off">Don’t turn on</string>
 
     <!-- Text for a feature status that is enabled. [CHAR LIMIT=20] -->
-    <string name="accessibility_shortcut_menu_item_status_on">ON</string>
+    <string name="accessibility_shortcut_menu_item_status_on">On</string>
 
     <!-- Text for a feature status that is disabled. [CHAR LIMIT=20] -->
-    <string name="accessibility_shortcut_menu_item_status_off">OFF</string>
+    <string name="accessibility_shortcut_menu_item_status_off">Off</string>
 
     <!-- Title for a warning about security implications of enabling an accessibility
     service. [CHAR LIMIT=NONE] -->
@@ -5005,6 +5028,24 @@
     <string name="accessibility_edit_shortcut_menu_volume_title">Choose features to use with the
         volume keys shortcut
     </string>
+
+    <!-- Label for accessibility button shortcut. [CHAR LIMIT=100] -->
+    <string name="accessibility_shortcut_label_button">accessibility button</string>
+
+    <!-- Label for volume keys shortcut. [CHAR LIMIT=100] -->
+    <string name="accessibility_shortcut_label_volume_keys">volume keys</string>
+
+    <!-- Label for gesture shortcut. [CHAR LIMIT=100] -->
+    <string name="accessibility_shortcut_label_gesture">gesture</string>
+
+    <!-- Label for quick settings shortcut. [CHAR LIMIT=100] -->
+    <string name="accessibility_shortcut_label_quick_settings">quick settings</string>
+
+    <!-- Label for triple tap shortcut. [CHAR LIMIT=100] -->
+    <string name="accessibility_shortcut_label_triple_tap">triple tap</string>
+
+    <!-- DO NOT TRANSLATE -->
+    <string name="accessibility_shortcut_label_top_row_key">top row key</string>
 
     <!-- Text for showing the warning to user when uncheck the legacy app item in the accessibility
     shortcut menu, user can aware the service to be disabled. [CHAR LIMIT=100] -->
@@ -5460,11 +5501,11 @@
     <!-- [CHAR LIMIT=25] String for confirmation button to enable a feature gated by the battery saver warning-->
     <string name="confirm_battery_saver">OK</string>
 
-    <!-- [CHAR_LIMIT=NONE] Battery saver: Feature description, with a "learn more" link. -->
-    <string name="battery_saver_description_with_learn_more">Battery Saver turns on Dark theme and limits or turns off background activity, some visual effects, certain features, and some network connections.</string>
+    <!-- [CHAR_LIMIT=NONE] [BACKUP_MESSAGE_ID: 5444908404021316250] Battery saver: Feature description, with a "learn more" link. -->
+    <string name="battery_saver_description_with_learn_more">Battery Saver turns on dark theme and limits or turns off background activity, some visual effects, certain features, and some network connections.</string>
 
-    <!-- [CHAR_LIMIT=NONE] Battery saver: Feature description, without a "learn more" link. -->
-    <string name="battery_saver_description">Battery Saver turns on Dark theme and limits or turns off background activity, some visual effects, certain features, and some network connections.</string>
+    <!-- [CHAR_LIMIT=NONE] [BACKUP_MESSAGE_ID: 8518809702138617167] Battery saver: Feature description, without a "learn more" link. -->
+    <string name="battery_saver_description">Battery Saver turns on dark theme and limits or turns off background activity, some visual effects, certain features, and some network connections.</string>
 
     <!-- [CHAR_LIMIT=NONE] Data saver: Feature description -->
     <string name="data_saver_description">To help reduce data usage, Data Saver prevents some apps from sending or receiving data in the background. An app you’re currently using can access data, but may do so less frequently. This may mean, for example, that images don’t display until you tap them.</string>
@@ -6434,11 +6475,9 @@
     <!-- Status message displayed on SIM Network Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS">Requesting SIM network unlock\u2026</string>
     <!-- Status message displayed on SIM Network Subset Depersonalization panel [CHAR LIMIT=none] -->
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS">Requesting SIM network subset unlock
-\u2026</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS">Requesting SIM network subset unlock\u2026</string>
     <!-- Status message displayed on SIM Service Provider Depersonalization panel [CHAR LIMIT=none] -->
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS">Requesting SIM service provider un
-lock\u2026</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS">Requesting SIM service provider unlock\u2026</string>
     <!-- Status message displayed on SIM Corporate Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS">Requesting SIM corporate unlock\u2026</string>
     <!-- Status message displayed on PUK Depersonalization panel [CHAR LIMIT=none] -->
@@ -6460,8 +6499,7 @@ lock\u2026</string>
     <!-- Status message displayed on RUIM Hrpd Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_RUIM_HRPD_IN_PROGRESS">Requesting RUIM hrpd unlock\u2026</string>
     <!-- Status message displayed on RUIM Service Provider Depersonalization panel [CHAR LIMIT=none] -->
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_IN_PROGRESS">Requesting RUIM service provider
-unlock\u2026</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_IN_PROGRESS">Requesting RUIM service provider unlock\u2026</string>
     <!-- Status message displayed on RUIM Corporate Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_IN_PROGRESS">Requesting RUIM corporate unlock\u2026</string>
 
@@ -6493,11 +6531,9 @@ unlock\u2026</string>
     <!-- Error message displayed on SIM Network Depersonalization panel  [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR">SIM Network unlock request unsuccessful.</string>
     <!-- Error message displayed on SIM Network Subset Depersonalization panel  [CHAR LIMIT=none] -->
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR">SIM Network Subset unlock request unsucces
-sful.</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR">SIM Network Subset unlock request unsuccessful.</string>
     <!-- Error message displayed on SIM Service Provider Depersonalization panel  [CHAR LIMIT=none] -->
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR">SIM Service Provider unlock request unsu
-ccessful.</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR">SIM Service Provider unlock request unsuccessful.</string>
     <!-- Error message displayed on SIM Corporate Depersonalization panel  [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR">SIM Corporate unlock request unsuccessful.</string>
     <!-- Error message displayed on SIM SIM Depersonalization panel  [CHAR LIMIT=none] -->
@@ -6511,8 +6547,7 @@ ccessful.</string>
     <!-- Error message displayed on RUIM Corporate Depersonalization panel  [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR">RUIM Corporate unlock request unsuccessful.</string>
     <!-- Error message displayed on RUIM Service Provider Depersonalization panel  [CHAR LIMIT=none] -->
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR">RUIM Service Provider unlock request un
-successful.</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR">RUIM Service Provider unlock request unsuccessful.</string>
     <!-- Error message displayed on RUIM RUIM Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR">RUIM unlock request unsuccessful.</string>
     <!-- Error message displayed on PUK Depersonalization panel [CHAR LIMIT=none] -->
@@ -6548,14 +6583,12 @@ successful.</string>
     <string name="PERSOSUBSTATE_SIM_IMPI_ERROR">IMPI unlock request unsuccessful.</string>
     <!--  Error message displayed on SIM NS_SP Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR">Network subset service provider unlock request unsuccessful.</string>
-
     <!-- Success message displayed on SIM Network Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS">SIM Network unlock successful.</string>
     <!-- Success message displayed on SIM Network Subset Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS">SIM Network Subset unlock successful.</string>
     <!-- Success message displayed on SIM Service Provider Depersonalization panel [CHAR LIMIT=none] -->
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS">SIM Service Provider unlock successful
-.</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS">SIM Service Provider unlock successful.</string>
     <!-- Success message displayed on SIM Corporate Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS">SIM Corporate unlock successful.</string>
     <!-- Success message displayed on SIM SIM Depersonalization panel [CHAR LIMIT=none] -->
@@ -6567,8 +6600,7 @@ successful.</string>
     <!-- Success message displayed on RUIM Hrpd Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS">RUIM Hrpd unlock successful.</string>
     <!-- Success message displayed on RUIM Service Provider Depersonalization panel [CHAR LIMIT=none] -->
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS">RUIM Service Provider unlock successf
-ul.</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS">RUIM Service Provider unlock successful.</string>
     <!-- Success message displayed on RUIM Corporate Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS">RUIM Corporate unlock successful.</string>
     <!-- Success message displayed on RUIM RUIM Depersonalization panel [CHAR LIMIT=none] -->

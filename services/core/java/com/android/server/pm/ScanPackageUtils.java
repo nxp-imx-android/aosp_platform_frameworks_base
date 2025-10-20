@@ -36,7 +36,6 @@ import static com.android.server.pm.PackageManagerService.SCAN_AS_SYSTEM;
 import static com.android.server.pm.PackageManagerService.SCAN_AS_SYSTEM_EXT;
 import static com.android.server.pm.PackageManagerService.SCAN_AS_VENDOR;
 import static com.android.server.pm.PackageManagerService.SCAN_AS_VIRTUAL_PRELOAD;
-import static com.android.server.pm.PackageManagerService.SCAN_BOOTING;
 import static com.android.server.pm.PackageManagerService.SCAN_DONT_KILL_APP;
 import static com.android.server.pm.PackageManagerService.SCAN_FIRST_BOOT_OR_UPGRADE;
 import static com.android.server.pm.PackageManagerService.SCAN_MOVE;
@@ -425,52 +424,40 @@ final class ScanPackageUtils {
 
         boolean is16KbDevice = Os.sysconf(OsConstants._SC_PAGESIZE) == PAGE_SIZE_16KB;
 
-        // Run 16 KB alignment checks on 4 KB device if evaluated as true for new installations.
-        boolean enable4kbChecks =  false;
-        if ((Build.SUPPORTED_64_BIT_ABIS.length > 0)
-                && !isSystemApp
-                && !isApex
-                && !isPlatformPackage
-                && (scanFlags & SCAN_NEW_INSTALL) != 0
-        ) {
-            enable4kbChecks = enableAlignmentChecks(parsedPackage, injector.getContext(),
-                pkgSetting.getInstallSource().mInitiatingPackageName);
-        }
-
         // If package is upgrading, mPageSizeCompatFlags in PackageSetting should be populated
         // according to the upgraded package.
         if (!createNewPackage) {
             pkgSetting.clearPageSizeAppCompatFlags();
         }
 
-        if (Flags.appCompatOption16kb() && (is16KbDevice || enable4kbChecks)) {
+        if (Flags.appCompatOption16kb() && (is16KbDevice || request.mEnableAlignmentChecks)) {
             // Alignment checks are used decide whether this app should run in compat mode when
             // nothing was specified in manifest. Manifest should always take precedence over
             // something decided by platform.
             if (parsedPackage.getPageSizeAppCompatFlags()
                     > ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_UNDEFINED) {
                 pkgSetting.setPageSizeAppCompatFlags(parsedPackage.getPageSizeAppCompatFlags());
-            } else {
-                // 16 KB is only support for 64 bit ABIs and for apps which are being installed
-                // Check alignment. System, Apex and Platform packages should be page-agnostic now
-                if ((Build.SUPPORTED_64_BIT_ABIS.length > 0)
-                        && !isSystemApp
-                        && !isApex
-                        && !isPlatformPackage) {
-                    NativeLibraryHelper.AlignmentResult res =
-                            packageAbiHelper.checkPackageAlignment(
-                                    parsedPackage,
-                                    pkgSetting.getLegacyNativeLibraryPath(),
-                                    parsedPackage.isNativeLibraryRootRequiresIsa(),
-                                    pkgSetting.getCpuAbiOverride());
-                    if (res != null && res.unalignedLibraries != null
-                            && res.flags >= ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_UNDEFINED) {
-                        pkgSetting.setPageSizeAppCompatFlags(res.flags);
-                        pkgSetting.setLibraryAlignmentInfo(res.unalignedLibraries);
-                    } else {
-                        Slog.e(TAG, "Error occurred while checking alignment of package : "
-                                + parsedPackage.getPackageName());
-                    }
+            }
+
+            // 16 KB is only support for 64 bit ABIs and for apps which are being installed
+            // Check alignment. System, Apex and Platform packages should be page-agnostic now
+            if ((Build.SUPPORTED_64_BIT_ABIS.length > 0)
+                    && !isSystemApp
+                    && !isApex
+                    && !isPlatformPackage) {
+                NativeLibraryHelper.AlignmentResult res =
+                        packageAbiHelper.checkPackageAlignment(
+                                parsedPackage,
+                                pkgSetting.getLegacyNativeLibraryPath(),
+                                parsedPackage.isNativeLibraryRootRequiresIsa(),
+                                pkgSetting.getCpuAbiOverride());
+                if (res != null && res.unalignedLibraries != null
+                        && res.flags >= ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_UNDEFINED) {
+                    pkgSetting.setPageSizeAppCompatFlags(res.flags);
+                    pkgSetting.setLibraryAlignmentInfo(res.unalignedLibraries);
+                } else {
+                    Slog.e(TAG, "Error occurred while checking alignment of package : "
+                            + parsedPackage.getPackageName());
                 }
             }
         }
@@ -1107,10 +1094,21 @@ final class ScanPackageUtils {
         }
     }
 
-    private static boolean enableAlignmentChecks(@NonNull ParsedPackage parsedPackage,
-            Context context, String initiatingPackage) {
+    static boolean enableAlignmentChecks(@NonNull ParsedPackage parsedPackage,
+            Context context, String initiatingPackage, boolean isSystemApp,
+            boolean isPlatformPackage, int scanFlags) {
         // Run alignment checks when feature flag is enabled
         if (!Flags.appCompatWarnings16kb()) {
+            return false;
+        }
+
+        final boolean isApex = (scanFlags & SCAN_AS_APEX) != 0;
+        final boolean isNewInstall = (scanFlags & SCAN_NEW_INSTALL) != 0;
+        if ((Build.SUPPORTED_64_BIT_ABIS.length == 0)
+                || isSystemApp
+                || isApex
+                || isPlatformPackage
+                || !isNewInstall) {
             return false;
         }
 
@@ -1125,12 +1123,17 @@ final class ScanPackageUtils {
             return false;
         }
 
-        boolean isDebuggable = parsedPackage.isDebuggable();
-        boolean isDeveloperMode = android.provider.Settings.Global.getInt(resolver,
-                android.provider.Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, 0) != 0;
+        final boolean isDebuggable = parsedPackage.isDebuggable();
+        if (!isDebuggable) {
+            return false;
+        }
         boolean isInstalledByAdb = PackageManagerServiceUtils.isInstalledByAdb(initiatingPackage);
-
-        return isDebuggable && isDeveloperMode && isInstalledByAdb;
+        if (!isInstalledByAdb) {
+            return false;
+        }
+        final boolean isDeveloperMode = android.provider.Settings.Global.getInt(resolver,
+                android.provider.Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, 0) != 0;
+        return isDeveloperMode;
     }
 
     /** Directory where installed application's 32-bit native libraries are copied. */

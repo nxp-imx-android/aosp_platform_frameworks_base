@@ -26,6 +26,7 @@ import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.pm.ServiceInfo;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.BadParcelableException;
 import android.os.Build;
@@ -193,6 +194,82 @@ public final class Call {
     public @interface AudioProcessingUseCase {}
 
     /**
+     * @hide
+     */
+    @IntDef(prefix = "CRS_MEDIA_TYPE_", value = {
+            CRS_MEDIA_TYPE_NONE,
+            CRS_MEDIA_TYPE_AUDIO,
+            CRS_MEDIA_TYPE_VIDEO
+    })
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
+    public @interface CrsMediaType {
+    }
+
+    /** Indicates not a CRS call */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
+    public static final int CRS_MEDIA_TYPE_NONE = 0;
+    /** Indicates CRS contains audio */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
+    public static final int CRS_MEDIA_TYPE_AUDIO = 1 << 0;
+    /** Indicates CRS contains video */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
+    public static final int CRS_MEDIA_TYPE_VIDEO = 1 << 1;
+
+    /**
+     * Extra key to indicate the type of media a Customized Ringing Signal (CRS) call contains.
+     * The CRS is an operator-specific feature that allows a subscriber to customize the media
+     * played to the called party during the establishment of an incoming call. When the MT call is
+     * received, the device will present the CRS media instead of its standard ringtone. This CRS
+     * media can consist of audio, video, still images, or any combination thereof.
+     * <p>
+     * The value associated with this key should be an integer bitmask of the following values:
+     * <ul>
+     *   <li>{@link Call#CRS_MEDIA_TYPE_AUDIO}</li>
+     *   <li>{@link Call#CRS_MEDIA_TYPE_VIDEO}</li>
+     * </ul>
+     * {@link Connection#setExtras(Bundle)} or
+     * {@link Connection#putExtras(Bundle)} should be used to notify Telecom that this extra has
+     * been set.
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
+    public static final String EXTRA_CRS_MEDIA_TYPE = "android.telecom.extra.CRS_MEDIA_TYPE";
+
+    /**
+     * API to indicate the CRS (Customized Ringing Signal) mode. This defines the audio
+     * mode to be used when playing the CRS media.
+     *
+     * @hide
+     */
+    @IntDef(prefix = "CRS_MODE_", value = {CRS_MODE_RINGTONE, CRS_MODE_IN_CALL})
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
+    public @interface CrsMode {
+    }
+
+    /** Indicates CRS contains audio */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
+    public static final int CRS_MODE_RINGTONE = AudioManager.MODE_RINGTONE;
+    /** Indicates CRS contains video */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
+    public static final int CRS_MODE_IN_CALL = AudioManager.MODE_IN_CALL;
+
+    /**
+     * Extra key to indicate the audio mode that should be set for playing the network-provided
+     * Customized Ringing Signal (CRS).
+     * <p>
+     * The value associated with this key should be one of the following constants from
+     * {@link android.media.AudioManager}:
+     * <ul>
+     *   <li>{@link android.media.AudioManager#MODE_RINGTONE}</li>
+     *   <li>{@link android.media.AudioManager#MODE_IN_CALL}</li>
+     * </ul>
+     * {@link Connection#setExtras(Bundle)} or
+     * {@link Connection#putExtras(Bundle)} should be used to notify
+     * Telecom this extra has been set.
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
+    public static final String EXTRA_CRS_AUDIO_MODE = "android.telecom.extra.CRS_AUDIO_MODE";
+
+    /**
      * The key to retrieve the optional {@code PhoneAccount}s Telecom can bundle with its Call
      * extras. Used to pass the phone accounts to display on the front end to the user in order to
      * select phone accounts to (for example) place a call.
@@ -239,6 +316,15 @@ public final class Call {
      */
     public static final String EXTRA_SILENT_RINGING_REQUESTED =
             "android.telecom.extra.SILENT_RINGING_REQUESTED";
+
+    /**
+     * Connection event used to notify InCallService of phoneaccount changes.
+     * Dialer uses phone account capability to decide whether to enable
+     * some options like RTT. This event will be used for such cases.
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_PHONE_ACCOUNT_CHANGED)
+    public static final String EVENT_PHONE_ACCOUNT_CHANGED =
+            "android.telecom.event.PHONE_ACCOUNT_CHANGED";
 
     /**
      * Event reported from the Telecom stack to report an in-call diagnostic message which the
@@ -328,7 +414,17 @@ public final class Call {
      */
     @FlaggedApi(Flags.FLAG_IS_USING_VIDEO_RINGBACK)
     public static final String EXTRA_IS_USING_VIDEO_RINGBACK =
-                      "android.telecom.extra.IS_USING_VIDEO_RINGBACK";
+            "android.telecom.extra.IS_USING_VIDEO_RINGBACK";
+
+    /**
+     * Boolean indicating that the call is a unidirectional
+     * video service call. {@link Connection#setExtras(Bundle)} or
+     * {@link Connection#putExtras(Bundle)} should be used to notify
+     * Telecom this extra has been set.
+     */
+    @FlaggedApi(Flags.FLAG_IS_USING_UNIDIRECTIONAL_VIDEO_SERVICE)
+    public static final String EXTRA_IS_USING_UNIDIRECTIONAL_VIDEO_SERVICE =
+            "android.telecom.extra.IS_USING_UNIDIRECTIONAL_VIDEO_SERVICE";
 
     /**
      * Reject reason used with {@link #reject(int)} to indicate that the user is rejecting this
@@ -804,6 +900,12 @@ public final class Call {
             if (can(capabilities, CAPABILITY_SUPPORTS_VT_REMOTE_BIDIRECTIONAL)) {
                 builder.append(" CAPABILITY_SUPPORTS_VT_REMOTE_BIDIRECTIONAL");
             }
+            if (can(capabilities, CAPABILITY_SEPARATE_FROM_CONFERENCE)) {
+                builder.append(" CAPABILITY_SEPARATE_FROM_CONFERENCE");
+            }
+            if (can(capabilities, CAPABILITY_DISCONNECT_FROM_CONFERENCE)) {
+                builder.append(" CAPABILITY_DISCONNECT_FROM_CONFERENCE");
+            }
             if (can(capabilities, CAPABILITY_SPEED_UP_MT_AUDIO)) {
                 builder.append(" CAPABILITY_SPEED_UP_MT_AUDIO");
             }
@@ -928,7 +1030,7 @@ public final class Call {
         @FlaggedApi(Flags.FLAG_CALL_DETAILS_ID_CHANGES)
         public @NonNull String getId() { return mTelecomCallId; }
 
-        /** {@hide} */
+        /** @hide */
         @TestApi
         public String getTelecomCallId() {
             return mTelecomCallId;
@@ -1202,7 +1304,7 @@ public final class Call {
                     mAssociatedUser);
         }
 
-        /** {@hide} */
+        /** @hide */
         public Details(
                 @CallState int state,
                 String telecomCallId,
@@ -1250,7 +1352,7 @@ public final class Call {
             mAssociatedUser = originatingUser;
         }
 
-        /** {@hide} */
+        /** @hide */
         public static Details createFromParcelableCall(ParcelableCall parcelableCall) {
             return new Details(
                     parcelableCall.getState(),
@@ -1800,11 +1902,11 @@ public final class Call {
      * Instructs this {@code Call} to be transferred to another number.
      *
      * @param targetNumber The address to which the call will be transferred.
-     * @param isConfirmationRequired if {@code true} it will initiate a confirmed transfer,
-     * if {@code false}, it will initiate an unconfirmed transfer.
-     *
-     * @hide
+     * @param isConfirmationRequired if {@code true} it will initiate a confirmed(assured) transfer,
+     * if {@code false}, it will initiate an unconfirmed(blind) transfer.
+     * See 3GPP TS 24.629 for more details.
      */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_EXPLICIT_CALL_TRANSFER)
     public void transfer(@NonNull Uri targetNumber, boolean isConfirmationRequired) {
         mInCallAdapter.transferCall(mTelecomCallId, targetNumber, isConfirmationRequired);
     }
@@ -1813,9 +1915,9 @@ public final class Call {
      * Instructs this {@code Call} to be transferred to another ongoing call.
      * This will initiate CONSULTATIVE transfer.
      * @param toCall The other ongoing {@code Call} to which this call will be transferred.
-     *
-     * @hide
+     * See 3GPP TS 24.629 for more details.
      */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_EXPLICIT_CALL_TRANSFER)
     public void transfer(@NonNull android.telecom.Call toCall) {
         mInCallAdapter.transferCall(mTelecomCallId, toCall.mTelecomCallId);
     }
@@ -2546,7 +2648,7 @@ public final class Call {
         unregisterCallback(listener);
     }
 
-    /** {@hide} */
+    /** @hide */
     Call(Phone phone, String telecomCallId, InCallAdapter inCallAdapter, String callingPackage,
          int targetSdkVersion) {
         mPhone = phone;
@@ -2560,7 +2662,7 @@ public final class Call {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     Call(Phone phone, String telecomCallId, InCallAdapter inCallAdapter, int state,
             String callingPackage, int targetSdkVersion) {
         mPhone = phone;
@@ -2574,12 +2676,12 @@ public final class Call {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     final String internalGetCallId() {
         return mTelecomCallId;
     }
 
-    /** {@hide} */
+    /** @hide */
     final void internalUpdate(ParcelableCall parcelableCall, Map<String, Call> callIdMap) {
 
         // First, we update the internal state as far as possible before firing any updates.
@@ -2732,13 +2834,13 @@ public final class Call {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     final void internalSetPostDialWait(String remaining) {
         mRemainingPostDialSequence = remaining;
         firePostDialWait(mRemainingPostDialSequence);
     }
 
-    /** {@hide} */
+    /** @hide */
     final void internalSetDisconnected() {
         if (mState != Call.STATE_DISCONNECTED) {
             mState = Call.STATE_DISCONNECTED;
@@ -2773,12 +2875,12 @@ public final class Call {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     final void internalOnConnectionEvent(String event, Bundle extras) {
         fireOnConnectionEvent(event, extras);
     }
 
-    /** {@hide} */
+    /** @hide */
     final void internalOnRttUpgradeRequest(final int requestId) {
         for (CallbackRecord<Callback> record : mCallbackRecords) {
             final Call call = this;
@@ -2796,7 +2898,7 @@ public final class Call {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     final void internalOnHandoverFailed(int error) {
         for (CallbackRecord<Callback> record : mCallbackRecords) {
             final Call call = this;
@@ -2805,7 +2907,7 @@ public final class Call {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     final void internalOnHandoverComplete() {
         for (CallbackRecord<Callback> record : mCallbackRecords) {
             final Call call = this;

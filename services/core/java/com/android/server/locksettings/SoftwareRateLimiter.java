@@ -84,10 +84,10 @@ class SoftwareRateLimiter {
     @VisibleForTesting static final Duration SAVED_WRONG_GUESS_TIMEOUT = Duration.ofMinutes(5);
 
     /**
-     * A table that maps the number of (real) failures to the delay that is enforced after that
+     * A table that maps the number of (real) failures to the timeout that is enforced after that
      * number of (real) failures. Out-of-bounds indices default to not allowed.
      */
-    private static final Duration[] DELAY_TABLE =
+    private static final Duration[] TIMEOUT_TABLE =
             new Duration[] {
                 /* 0 */ Duration.ZERO,
                 /* 1 */ Duration.ZERO,
@@ -99,23 +99,23 @@ class SoftwareRateLimiter {
                 /* 7 */ Duration.ofMinutes(15),
                 /* 8 */ Duration.ofMinutes(30),
                 /* 9 */ Duration.ofMinutes(90),
-                /* 10 */ Duration.ofMinutes(243), // This and the rest are 3^(n-5) minutes.
-                /* 11 */ Duration.ofMinutes(729),
-                /* 12 */ Duration.ofMinutes(2187),
-                /* 13 */ Duration.ofMinutes(6561),
-                /* 14 */ Duration.ofMinutes(19683),
-                /* 15 */ Duration.ofMinutes(59049),
-                /* 16 */ Duration.ofMinutes(177147),
-                /* 17 */ Duration.ofMinutes(531441),
-                /* 18 */ Duration.ofMinutes(1594323),
-                /* 19 */ Duration.ofMinutes(4782969),
+                /* 10 */ Duration.ofHours(4),
+                /* 11 */ Duration.ofHours(12),
+                /* 12 */ Duration.ofHours(36),
+                /* 13 */ Duration.ofDays(4),
+                /* 14 */ Duration.ofDays(13),
+                /* 15 */ Duration.ofDays(41),
+                /* 16 */ Duration.ofDays(123),
+                /* 17 */ Duration.ofDays(365),
+                /* 18 */ Duration.ofDays(365 * 3),
+                /* 19 */ Duration.ofDays(365 * 9),
             };
 
     private final Injector mInjector;
 
     /**
      * Whether the software rate-limiter is actually in enforcing mode. In non-enforcing mode all
-     * delays are considered to be zero, and "duplicate wrong guess" results are not returned.
+     * timeouts are considered to be zero, and "duplicate wrong guess" results are not returned.
      */
     private final boolean mEnforcing;
 
@@ -129,7 +129,7 @@ class SoftwareRateLimiter {
         /**
          * The number of failed attempts since the last successful attempt, not counting attempts
          * that never reached the real credential check for a reason such as detection of a
-         * duplicate wrong guess, credential too short, delay still remaining, etc.
+         * duplicate wrong guess, credential too short, timeout still remaining, etc.
          */
         public int numFailures;
 
@@ -141,8 +141,12 @@ class SoftwareRateLimiter {
          */
         public int numDuplicateWrongGuesses;
 
-        /** The type of the LSKF, as a value of the stats CredentialType enum */
-        public final int statsCredentialType;
+        /**
+         * The type of the LSKF, as a value of the stats CredentialType enum. Updates after the
+         * first guess.
+         */
+        public int statsCredentialType =
+                FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__CREDENTIAL_TYPE__UNKNOWN_TYPE;
 
         /**
          * The time since boot at which the failure counter was last incremented, or zero if the
@@ -151,15 +155,21 @@ class SoftwareRateLimiter {
         public Duration timeSinceBootOfLastFailure = Duration.ZERO;
 
         /**
+         * The time since boot at which the lockout ends and another guess can be made, or {@link
+         * Duration#ZERO} if there is not currently a lockout. Lockouts can be imposed by software
+         * or externally, e.g. Weaver.
+         */
+        public Duration lockoutEndTime = Duration.ZERO;
+
+        /**
          * The list of wrong guesses that were recently tried already in the current boot, ordered
          * from newest to oldest. The used portion is followed by nulls in any unused space.
          */
         public final LockscreenCredential[] savedWrongGuesses =
                 new LockscreenCredential[MAX_SAVED_WRONG_GUESSES];
 
-        RateLimiterState(int numFailures, LockscreenCredential firstGuess) {
+        RateLimiterState(int numFailures) {
             this.numFailures = numFailures;
-            this.statsCredentialType = getStatsCredentialType(firstGuess);
         }
     }
 
@@ -170,6 +180,10 @@ class SoftwareRateLimiter {
     SoftwareRateLimiter(Injector injector, boolean enforcing) {
         mInjector = injector;
         mEnforcing = enforcing;
+        if (android.security.Flags.manageLockoutEndTimeInService()) {
+            // The cache doesn't work until it's initialized.
+            mInjector.invalidateLockoutEndTimeCache();
+        }
     }
 
     /**
@@ -196,48 +210,26 @@ class SoftwareRateLimiter {
             return SoftwareRateLimiterResult.credentialTooShort();
         }
 
-        final RateLimiterState state =
-                mState.computeIfAbsent(
-                        id,
-                        key -> {
-                            // The state isn't cached yet. Create it.
-                            //
-                            // For LSKF-based synthetic password protectors the only persistent
-                            // software rate-limiter state is the failure counter.
-                            // timeSinceBootOfLastFailure is just set to zero, so effectively the
-                            // delay resets to its original value (for the current failure count)
-                            // upon reboot. That matches what typical hardware rate-limiter
-                            // implementations do; they typically do not have access to a trusted
-                            // real-time clock that runs without the device being powered on.
-                            //
-                            // Likewise, rebooting causes any saved wrong guesses to be forgotten.
-                            return new RateLimiterState(readFailureCounter(id), guess);
-                        });
-
-        // Check for remaining delay. Note that the case of a positive remaining delay normally
-        // won't be reached, since reportFailure() will have returned the delay when the last guess
-        // was made, causing the lock screen to block inputs for that amount of time. But checking
-        // for it is still needed to cover any cases where a guess gets made anyway, for example
-        // following a reboot which causes the lock screen to "forget" the delay.
-        final Duration delay;
-        if (mEnforcing) {
-            if (state.numFailures >= DELAY_TABLE.length || state.numFailures < 0) {
-                Slogf.e(TAG, "No more guesses allowed; numFailures=%d", state.numFailures);
-                return SoftwareRateLimiterResult.noMoreGuesses();
-            }
-            delay = DELAY_TABLE[state.numFailures];
-        } else {
-            delay = Duration.ZERO;
-        }
         final Duration now = mInjector.getTimeSinceBoot();
-        final Duration remainingDelay = state.timeSinceBootOfLastFailure.plus(delay).minus(now);
-        if (remainingDelay.isPositive()) {
-            Slogf.e(
-                    TAG,
-                    "Rate-limited; numFailures=%d, remainingDelay=%s",
-                    state.numFailures,
-                    remainingDelay);
-            return SoftwareRateLimiterResult.rateLimited(remainingDelay);
+        final RateLimiterState state = getOrComputeState(id, now);
+        if (state.statsCredentialType
+                == FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__CREDENTIAL_TYPE__UNKNOWN_TYPE) {
+            state.statsCredentialType = getStatsCredentialType(guess);
+        }
+
+        // Check for remaining timeout. Note that the case of a positive remaining timeout normally
+        // won't be reached, since reportFailure() will have returned the timeout when the last
+        // guess was made, causing the lock screen to block inputs for that amount of time. But
+        // checking for it is still needed to cover any cases where a guess gets made anyway, for
+        // example following a reboot which causes the lock screen to "forget" the timeout.
+        if (mEnforcing && (state.numFailures >= TIMEOUT_TABLE.length || state.numFailures < 0)) {
+            Slogf.e(TAG, "No more guesses allowed; numFailures=%d", state.numFailures);
+            return SoftwareRateLimiterResult.noMoreGuesses();
+        }
+        final Duration timeout = computeRemainingTimeout(state, now);
+        if (timeout.isPositive()) {
+            Slogf.e(TAG, "Rate-limited; numFailures=%d, timeout=%s", state.numFailures, timeout);
+            return SoftwareRateLimiterResult.rateLimited(timeout);
         }
 
         // Check for duplicate wrong guess.
@@ -263,6 +255,95 @@ class SoftwareRateLimiter {
         return SoftwareRateLimiterResult.continueToHardware();
     }
 
+    @GuardedBy("this")
+    private RateLimiterState getOrComputeState(LskfIdentifier id, Duration now) {
+        return mState.computeIfAbsent(
+                id,
+                key -> {
+                    // The state isn't cached yet. Create it.
+                    //
+                    // For LSKF-based synthetic password protectors the only persistent
+                    // software rate-limiter state is the failure counter.
+                    // timeSinceBootOfLastFailure is just set to zero, so effectively the
+                    // timeout resets to its original value (for the current failure count)
+                    // upon reboot. That matches what typical hardware rate-limiter
+                    // implementations do; they typically do not have access to a trusted
+                    // real-time clock that runs without the device being powered on.
+                    //
+                    // Likewise, rebooting causes any saved wrong guesses to be forgotten.
+                    RateLimiterState state = new RateLimiterState(readFailureCounter(id));
+                    evaluateSoftwareRateLimit(state, now);
+                    return state;
+                });
+    }
+
+    @GuardedBy("this")
+    private Duration computeRemainingTimeout(RateLimiterState state, Duration now) {
+        final Duration remainingTimeout = state.lockoutEndTime.minus(now);
+        return remainingTimeout.isPositive() ? remainingTimeout : Duration.ZERO;
+    }
+
+    /**
+     * Computes the software enforced lockout and updates the stored lockout end time. Invalidates
+     * the lockout end time cache as needed.
+     */
+    @GuardedBy("this")
+    private void evaluateSoftwareRateLimit(RateLimiterState state, Duration now) {
+        final Duration originalTimeout = getOriginalTimeout(state.numFailures);
+        final Duration softwareLockoutEndTime =
+                state.timeSinceBootOfLastFailure.plus(originalTimeout);
+        updateLockoutEndTime(state, now, softwareLockoutEndTime);
+    }
+
+    /**
+     * Returns the tracked lockout end time for the given LSKF. If no attempts have been made for
+     * this LSKF, no timeouts have happened across attempts, or the existing lockout end time is in
+     * the past, returns {@link Duration#ZERO}.
+     */
+    synchronized Duration getLockoutEndTime(LskfIdentifier id) {
+        Duration now = mInjector.getTimeSinceBoot();
+        RateLimiterState state = getOrComputeState(id, now);
+        Duration lockoutEndTime = state.lockoutEndTime;
+        // TODO: b/322014085 - Get rid of this clear once LSS clients are not depending on
+        //  "lockoutEndTime == 0 iff more LSKF guesses can be made" semantics.
+        if (!lockoutEndTime.isZero() && lockoutEndTime.compareTo(now) < 0) {
+            clearLockoutEndTime(state);
+            return Duration.ZERO;
+        }
+        return lockoutEndTime;
+    }
+
+    /**
+     * Updates state.lockoutEndTime to be the later of lockoutEndTime and state.lockoutEndTime, or
+     * zero if that time has already been reached. If it changed, invalidate the cache.
+     */
+    @GuardedBy("this")
+    private void updateLockoutEndTime(
+            RateLimiterState state, Duration now, Duration lockoutEndTime) {
+        if (state.lockoutEndTime.compareTo(lockoutEndTime) > 0) {
+            lockoutEndTime = state.lockoutEndTime; // state.lockoutEndTime is later
+        }
+        if (now.compareTo(lockoutEndTime) >= 0) {
+            lockoutEndTime = Duration.ZERO; // end time has already been reached
+        }
+        if (!lockoutEndTime.equals(state.lockoutEndTime)) {
+            state.lockoutEndTime = lockoutEndTime;
+            if (android.security.Flags.manageLockoutEndTimeInService()) {
+                mInjector.invalidateLockoutEndTimeCache();
+            }
+        }
+    }
+
+    @GuardedBy("this")
+    private void clearLockoutEndTime(RateLimiterState state) {
+        if (!state.lockoutEndTime.isZero()) {
+            state.lockoutEndTime = Duration.ZERO;
+            if (android.security.Flags.manageLockoutEndTimeInService()) {
+                mInjector.invalidateLockoutEndTimeCache();
+            }
+        }
+    }
+
     /**
      * Reports a successful guess to the software rate-limiter. This causes the failure counter and
      * saved wrong guesses to be cleared.
@@ -278,6 +359,7 @@ class SoftwareRateLimiter {
             state.numDuplicateWrongGuesses = 0;
             writeFailureCounter(id, state);
             forgetSavedWrongGuesses(state);
+            clearLockoutEndTime(state);
         }
     }
 
@@ -309,28 +391,43 @@ class SoftwareRateLimiter {
      * @param guess the LSKF that was attempted
      * @param isCertainlyWrongGuess true if it's certain that the failure was caused by the guess
      *     being wrong, as opposed to e.g. a transient hardware glitch
-     * @return the delay until when the next guess will be allowed
+     * @param hwTimeout an externally-imposed timeout from the current time since boot
+     * @return the remaining timeout until when the next guess will be allowed
      */
     synchronized Duration reportFailure(
-            LskfIdentifier id, LockscreenCredential guess, boolean isCertainlyWrongGuess) {
+            LskfIdentifier id,
+            LockscreenCredential guess,
+            boolean isCertainlyWrongGuess,
+            Duration hwTimeout) {
         RateLimiterState state = getExistingState(id);
+
+        Duration now = mInjector.getTimeSinceBoot();
+        if (android.security.Flags.manageLockoutEndTimeInService() && hwTimeout.isPositive()) {
+            // Always track any hardware timeouts, including when not enforcing.
+            updateLockoutEndTime(state, now, now.plus(hwTimeout));
+        }
 
         // In non-enforcing mode, ignore duplicate wrong guesses here since they were already
         // counted by apply(), including having stats written for them. In enforcing mode, this
         // method isn't passed duplicate wrong guesses.
         if (!mEnforcing && ArrayUtils.contains(state.savedWrongGuesses, guess)) {
-            return Duration.ZERO;
+            return android.security.Flags.manageLockoutEndTimeInService()
+                    ? computeRemainingTimeout(state, now)
+                    : Duration.ZERO;
         }
 
         // Increment the failure counter regardless of whether the failure is a certainly wrong
         // guess or not. A generic failure might still be caused by a wrong guess. Gatekeeper only
         // ever returns generic failures, and some Weaver implementations prefer THROTTLE to
-        // INCORRECT_KEY once the delay becomes nonzero. Instead of making the software rate-limiter
-        // ineffective on all such devices, still apply it. This does mean that correct guesses that
-        // encountered an error will be rate-limited. However, by design the rate-limiter kicks in
-        // gradually anyway, so there will be a chance for the user to try again.
+        // INCORRECT_KEY once the timeout becomes nonzero. Instead of making the software
+        // rate-limiter ineffective on all such devices, still apply it. This does mean that correct
+        // guesses that encountered an error will be rate-limited. However, by design the
+        // rate-limiter kicks in gradually anyway, so there will be a chance for the user to try
+        // again.
         state.numFailures++;
-        state.timeSinceBootOfLastFailure = mInjector.getTimeSinceBoot();
+        state.timeSinceBootOfLastFailure = now;
+
+        evaluateSoftwareRateLimit(state, now);
 
         // Update the counter on-disk. It is important that this be done before the failure is
         // reported to the UI, and that it be done synchronously e.g. by fsync()-ing the file and
@@ -361,15 +458,19 @@ class SoftwareRateLimiter {
                     SAVED_WRONG_GUESS_TIMEOUT.toMillis());
         }
 
+        return computeRemainingTimeout(state, now);
+    }
+
+    private Duration getOriginalTimeout(int numFailures) {
         if (!mEnforcing) {
             return Duration.ZERO;
         }
-        if (state.numFailures >= DELAY_TABLE.length || state.numFailures < 0) {
+        if (numFailures >= TIMEOUT_TABLE.length || numFailures < 0) {
             // In this case actually no more guesses are allowed, but currently there is no way to
-            // convey that information. For now just report the final delay again.
-            return DELAY_TABLE[DELAY_TABLE.length - 1];
+            // convey that information. For now just report the final timeout again.
+            return TIMEOUT_TABLE[TIMEOUT_TABLE.length - 1];
         }
-        return DELAY_TABLE[state.numFailures];
+        return TIMEOUT_TABLE[numFailures];
     }
 
     private static int getStatsCredentialType(LockscreenCredential firstGuess) {
@@ -438,8 +539,7 @@ class SoftwareRateLimiter {
     synchronized void clearLskfState(LskfIdentifier id) {
         int index = mState.indexOfKey(id);
         if (index >= 0) {
-            forgetSavedWrongGuesses(mState.valueAt(index));
-            mState.removeAt(index);
+            clearLskfStateAtIndex(index);
         }
     }
 
@@ -452,10 +552,19 @@ class SoftwareRateLimiter {
         for (int index = mState.size() - 1; index >= 0; index--) {
             LskfIdentifier id = mState.keyAt(index);
             if (id.userId == userId) {
-                forgetSavedWrongGuesses(mState.valueAt(index));
-                mState.removeAt(index);
+                clearLskfStateAtIndex(index);
             }
         }
+    }
+
+    @GuardedBy("this")
+    private void clearLskfStateAtIndex(int index) {
+        final RateLimiterState state = mState.valueAt(index);
+        forgetSavedWrongGuesses(state);
+        if (android.security.Flags.manageLockoutEndTimeInService()) {
+            clearLockoutEndTime(state);
+        }
+        mState.removeAt(index);
     }
 
     private int readFailureCounter(LskfIdentifier id) {
@@ -478,8 +587,8 @@ class SoftwareRateLimiter {
 
     // Only for unit tests.
     @VisibleForTesting
-    Duration[] getDelayTable() {
-        return DELAY_TABLE;
+    Duration[] getTimeoutTable() {
+        return TIMEOUT_TABLE;
     }
 
     synchronized void dump(IndentingPrintWriter pw) {
@@ -495,6 +604,7 @@ class SoftwareRateLimiter {
             pw.println("numDuplicateWrongGuesses=" + state.numDuplicateWrongGuesses);
             pw.println("statsCredentialType=" + state.statsCredentialType);
             pw.println("timeSinceBootOfLastFailure=" + state.timeSinceBootOfLastFailure);
+            pw.println("lockoutEndTime=" + state.lockoutEndTime);
             pw.println(
                     "numSavedWrongGuesses="
                             + Arrays.stream(state.savedWrongGuesses)
@@ -516,5 +626,7 @@ class SoftwareRateLimiter {
         void postDelayed(Runnable runnable, Object token, long delayMillis);
 
         int getHardwareRateLimiter(LskfIdentifier id);
+
+        void invalidateLockoutEndTimeCache();
     }
 }

@@ -18,6 +18,7 @@ package com.android.packageinstaller.v2.model
 
 import android.app.Activity
 import android.app.PendingIntent
+import android.content.Context
 import android.graphics.drawable.Drawable
 
 sealed class UnarchiveStage(val stageCode: Int) {
@@ -45,7 +46,7 @@ class UnarchiveReady() : UnarchiveStage(STAGE_READY)
 
 data class UnarchiveUserActionRequired(
     val appSnippet: PackageUtil.AppSnippet? = null,
-    val installerTitle: String
+    val installerPackageName: String
 ) :
     UnarchiveStage(STAGE_USER_ACTION_REQUIRED) {
     val appIcon: Drawable?
@@ -53,6 +54,12 @@ data class UnarchiveUserActionRequired(
 
     val appLabel: String?
         get() = appSnippet?.let { appSnippet.label as String? }
+
+    fun getInstallerTitle(context: Context): String? {
+        return installerPackageName.let {
+            PackageUtil.getApplicationLabel(context, it) as String?
+        }
+    }
 }
 
 data class UnarchiveError(

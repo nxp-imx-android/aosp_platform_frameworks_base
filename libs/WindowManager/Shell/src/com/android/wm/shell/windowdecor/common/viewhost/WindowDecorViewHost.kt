@@ -30,6 +30,9 @@ interface WindowDecorViewHost {
     /** The surface where the underlying [View] hierarchy is being rendered. */
     val surfaceControl: SurfaceControl
 
+    /** The displayId this viewHost is associated with */
+    val displayId: Int
+
     /** Synchronously update the view hierarchy of this view host. */
     fun updateView(
         view: View,

@@ -25,6 +25,7 @@ import static android.app.AppOpsManager.OP_CAMERA;
 import static android.app.AppOpsManager.OP_COARSE_LOCATION;
 import static android.app.AppOpsManager.OP_EMERGENCY_LOCATION;
 import static android.app.AppOpsManager.OP_FINE_LOCATION;
+import static android.app.AppOpsManager.OP_FLAGS_ALL;
 import static android.app.AppOpsManager.OP_FLAG_SELF;
 import static android.app.AppOpsManager.OP_FLAG_TRUSTED_PROXIED;
 import static android.app.AppOpsManager.OP_FLAG_TRUSTED_PROXY;
@@ -40,6 +41,10 @@ import static android.app.AppOpsManager.OP_READ_SKIN_TEMPERATURE;
 import static android.app.AppOpsManager.OP_RECEIVE_AMBIENT_TRIGGER_AUDIO;
 import static android.app.AppOpsManager.OP_RECEIVE_SANDBOX_TRIGGER_AUDIO;
 import static android.app.AppOpsManager.OP_RECORD_AUDIO;
+import static android.app.AppOpsManager.OP_READ_BLOOD_PRESSURE;
+import static android.app.AppOpsManager.OP_READ_HEART_RATE_VARIABILITY;
+import static android.app.AppOpsManager.OP_READ_RESPIRATORY_RATE;
+import static android.app.AppOpsManager.OP_READ_VO2_MAX;
 import static android.app.AppOpsManager.OP_RESERVED_FOR_TESTING;
 import static android.app.AppOpsManager.OP_RUN_IN_BACKGROUND;
 
@@ -73,8 +78,11 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.function.Predicate;
 
 
 /**
@@ -157,6 +165,10 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
             OP_READ_HEART_RATE,
             OP_READ_OXYGEN_SATURATION,
             OP_READ_SKIN_TEMPERATURE,
+            OP_READ_BLOOD_PRESSURE,
+            OP_READ_HEART_RATE_VARIABILITY,
+            OP_READ_RESPIRATORY_RATE,
+            OP_READ_VO2_MAX,
             OP_RESERVED_FOR_TESTING
     };
     // These app ops are deemed important for detecting a malicious app, and are recorded
@@ -238,7 +250,9 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
         // migrate discrete ops from xml or sqlite to unified-schema sqlite database.
         if (DiscreteOpsXmlRegistry.getDiscreteOpsDir().exists()) {
             Slog.i(TAG, "migrate discrete ops from xml to unified sqlite.");
-            DiscreteOpsXmlRegistry xmlRegistry = new DiscreteOpsXmlRegistry(mContext);
+            // We don't really need to use AppOpsService lock here as this is a one time migration.
+            Object lock = new Object();
+            DiscreteOpsXmlRegistry xmlRegistry = new DiscreteOpsXmlRegistry(lock);
             DiscreteOpsMigrationHelper.migrateFromXmlToUnifiedSchemaSqlite(
                     xmlRegistry, mShortIntervalHistoryHelper);
         } else if (DiscreteOpsDbHelper.getDatabaseFile().exists()) {
@@ -627,6 +641,39 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
         }
+    }
+
+    @Override
+    @NonNull
+    public ArraySet<String> getRecentlyUsedPackageNames(@NonNull String[] opNames, int historyFlags,
+            int filter, long beginTimeMillis, long endTimeMillis, int opFlags) {
+        ArraySet<String> packageNames = new ArraySet<>();
+
+        if ((historyFlags & AppOpsManager.HISTORY_FLAG_DISCRETE) != 0) {
+            String[] shortIntervalOps = filterOpNames(opNames,
+                    op -> isOpCapturedInShortIntervalDatabase(AppOpsManager.strOpToOp(op),
+                            OP_FLAGS_ALL));
+            packageNames.addAll(mShortIntervalHistoryHelper.getRecentlyUsedPackageNames(
+                    shortIntervalOps, filter, beginTimeMillis, endTimeMillis, opFlags));
+        }
+        if ((historyFlags & HISTORY_FLAG_AGGREGATE) != 0) {
+            String[] longIntervalOps = filterOpNames(opNames,
+                    op -> !isOpCapturedInShortIntervalDatabase(AppOpsManager.strOpToOp(op),
+                            OP_FLAGS_ALL));
+            packageNames.addAll(mLongIntervalHistoryHelper.getRecentlyUsedPackageNames(
+                    longIntervalOps, filter, beginTimeMillis, endTimeMillis, opFlags));
+        }
+        return packageNames;
+    }
+
+    private String[] filterOpNames(@NonNull String[] opNames, @NonNull Predicate<String> filter) {
+        List<String> filteredOpNames = new ArrayList<>();
+        for (String op : opNames) {
+            if (filter.test(op)) {
+                filteredOpNames.add(op);
+            }
+        }
+        return filteredOpNames.toArray(new String[0]);
     }
 
     @Override

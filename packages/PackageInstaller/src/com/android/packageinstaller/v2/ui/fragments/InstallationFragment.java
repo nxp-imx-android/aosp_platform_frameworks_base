@@ -30,8 +30,10 @@ import android.content.pm.ResolveInfo;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -49,6 +51,7 @@ import com.android.packageinstaller.v2.model.InstallInstalling;
 import com.android.packageinstaller.v2.model.InstallStage;
 import com.android.packageinstaller.v2.model.InstallSuccess;
 import com.android.packageinstaller.v2.model.InstallUserActionRequired;
+import com.android.packageinstaller.v2.model.InstallVerificationFailure;
 import com.android.packageinstaller.v2.ui.InstallActionListener;
 import com.android.packageinstaller.v2.ui.UiUtil;
 import com.android.packageinstaller.v2.viewmodel.InstallViewModel;
@@ -92,7 +95,6 @@ public class InstallationFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         final InstallStage installStage = getCurrentInstallStage();
-        Log.i(LOG_TAG, "Creating " + LOG_TAG + "\n" + installStage);
 
         // There is no root view here. Ok to pass null view root
         @SuppressWarnings("InflateParams")
@@ -105,6 +107,7 @@ public class InstallationFragment extends DialogFragment {
         mIndeterminateProgressBar = dialogView.requireViewById(R.id.indeterminate_progress_bar);
         mProgressBar = dialogView.requireViewById(R.id.progress_bar);
         mCustomMessageTextView = dialogView.requireViewById(R.id.custom_message);
+        mCustomMessageTextView.setTextDirection(View.TEXT_DIRECTION_LOCALE);
         mMoreDetailsClickableLayout = dialogView.requireViewById(
                 R.id.more_details_clickable_layout);
         mMoreDetailsExpandedLayout = dialogView.requireViewById(
@@ -173,6 +176,8 @@ public class InstallationFragment extends DialogFragment {
 
         // Get the current install stage
         final InstallStage installStage = getCurrentInstallStage();
+        Log.i(LOG_TAG, "updateUI " + LOG_TAG + "\n" + installStage.getStageCode());
+
         this.setCancelable(true);
 
         // When A11y is enabled, if there are no buttons in some cases E.g. installing,
@@ -201,6 +206,9 @@ public class InstallationFragment extends DialogFragment {
         mCustomViewPanel.setPadding(paddingHorizontal, paddingTop,
                 paddingHorizontal, paddingBottom);
 
+        // Reset the movement method to avoid unexpected issue
+        mCustomMessageTextView.setMovementMethod(null);
+
         switch (installStage.getStageCode()) {
             case InstallStage.STAGE_ABORTED -> {
                 updateInstallAbortedUI(mDialog, (InstallAborted) installStage);
@@ -219,6 +227,9 @@ public class InstallationFragment extends DialogFragment {
             }
             case InstallStage.STAGE_USER_ACTION_REQUIRED -> {
                 updateUserActionRequiredUI(mDialog, (InstallUserActionRequired) installStage);
+            }
+            case InstallStage.STAGE_VERIFICATION_FAILURE -> {
+                updateVerificationFailureUI(mDialog, (InstallVerificationFailure) installStage);
             }
         }
 
@@ -272,6 +283,11 @@ public class InstallationFragment extends DialogFragment {
         // Set the app icon and label
         mAppIcon.setImageDrawable(installStage.getAppIcon());
         mAppLabelTextView.setText(installStage.getAppLabel());
+
+        // Sometimes the A11y focus is on the button E.g. ADI. We should align the other cases.
+        // Request the A11y focus on the app label.
+        mAppLabelTextView.post(() -> mAppLabelTextView.performAccessibilityAction(
+                    AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null));
 
         int titleResId = R.string.title_install_failed_not_installed;
         String positiveButtonText = null;
@@ -608,15 +624,18 @@ public class InstallationFragment extends DialogFragment {
         int positiveBtnTextRes = 0;
         boolean isUpdateOwnerShip = false;
         if (installStage.isAppUpdating()) {
-            if (installStage.getExistingUpdateOwnerLabel() != null
-                    && installStage.getRequestedUpdateOwnerLabel() != null) {
+            final String existingUpdateOwnerLabel =
+                    installStage.getExistingUpdateOwnerLabel(requireContext());
+            final String requestedUpdateOwnerLabel =
+                    installStage.getRequestedUpdateOwnerLabel(requireContext());
+            if (existingUpdateOwnerLabel != null && requestedUpdateOwnerLabel != null) {
                 isUpdateOwnerShip = true;
                 title = getString(R.string.title_update_ownership_change,
-                        installStage.getRequestedUpdateOwnerLabel());
+                        requestedUpdateOwnerLabel);
                 positiveBtnTextRes = R.string.button_update_anyway;
                 mCustomMessageTextView.setVisibility(View.VISIBLE);
                 String updateOwnerString = getString(R.string.message_update_owner_change,
-                        installStage.getExistingUpdateOwnerLabel());
+                        existingUpdateOwnerLabel);
                 mCustomMessageTextView.setText(
                         Html.fromHtml(updateOwnerString, Html.FROM_HTML_MODE_LEGACY));
             } else {
@@ -677,6 +696,52 @@ public class InstallationFragment extends DialogFragment {
         }
     }
 
+    private void updateVerificationFailureUI(Dialog dialog,
+            InstallVerificationFailure installStage) {
+        mAppSnippet.setVisibility(View.GONE);
+        mCustomMessageTextView.setVisibility(View.VISIBLE);
+        mIndeterminateProgressBar.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
+        // Disable clicking outside of the dialog
+        this.setCancelable(false);
+
+        final int verificationUserActionNeededReason = installStage.getFailureReason();
+        // For failure case, use strings for policy DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED
+        final int verificationPolicy = DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
+
+        // Set title and main message
+        int titleResId = getVerificationConfirmationTitleResourceId(
+                verificationUserActionNeededReason);
+        int msgResId = getVerificationConfirmationMessageResourceId(
+                verificationUserActionNeededReason, verificationPolicy,
+                installStage.isAppUpdating());
+        dialog.setTitle(titleResId);
+        mCustomMessageTextView.setText(
+                Html.fromHtml(getString(msgResId), Html.FROM_HTML_MODE_LEGACY));
+        mCustomMessageTextView.setMovementMethod(LinkMovementMethod.getInstance());
+
+        // Set negative button
+        Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
+        if (negativeButton != null) {
+            negativeButton.setVisibility(View.VISIBLE);
+            negativeButton.setText(R.string.ok);
+            negativeButton.setFilterTouchesWhenObscured(true);
+            UiUtil.applyOutlinedButtonStyle(requireContext(), negativeButton);
+            negativeButton.setOnClickListener(view -> {
+                // Set clickable of the button to false to avoid the user clicks it
+                // more than once quickly
+                view.setClickable(false);
+                mInstallActionListener.onNegativeResponse(installStage.getStageCode());
+            });
+        }
+
+        // Hide the positive button
+        Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
+        if (positiveButton != null) {
+            positiveButton.setVisibility(View.GONE);
+        }
+    }
+
     private void updateVerificationConfirmationUI(Dialog dialog,
             InstallUserActionRequired installStage) {
         mAppSnippet.setVisibility(View.VISIBLE);
@@ -704,6 +769,7 @@ public class InstallationFragment extends DialogFragment {
         dialog.setTitle(titleResId);
         mCustomMessageTextView.setText(
                 Html.fromHtml(getString(msgResId), Html.FROM_HTML_MODE_LEGACY));
+        mCustomMessageTextView.setMovementMethod(LinkMovementMethod.getInstance());
 
         // Set negative button
         Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);

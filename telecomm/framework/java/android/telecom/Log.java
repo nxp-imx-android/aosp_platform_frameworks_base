@@ -27,9 +27,9 @@ import android.telecom.Logging.Session;
 import android.telecom.Logging.SessionManager;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
+import android.util.IndentingPrintWriter;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.util.IndentingPrintWriter;
 
 import java.util.Arrays;
 import java.util.IllegalFormatException;

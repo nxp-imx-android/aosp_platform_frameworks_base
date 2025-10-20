@@ -209,7 +209,7 @@ public final class SQLiteDatabase extends SQLiteClosable {
      */
     public static final int CONFLICT_NONE = 0;
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public static final String[] CONFLICT_VALUES = new String[]
             {"", " OR ROLLBACK ", " OR ABORT ", " OR FAIL ", " OR IGNORE ", " OR REPLACE "};
@@ -2209,7 +2209,7 @@ public final class SQLiteDatabase extends SQLiteClosable {
         executeSql(sql, bindArgs);
     }
 
-    /** {@hide} */
+    /** @hide */
     public int executeSql(@NonNull String sql, @NonNull Object[] bindArgs)
             throws SQLException {
         acquireReference();
@@ -2723,22 +2723,6 @@ public final class SQLiteDatabase extends SQLiteClosable {
             }
         }
         return connectionPools;
-    }
-
-    /** @hide */
-    @NeverCompile
-    public int getTotalPreparedStatements() {
-        throwIfNotOpenLocked();
-
-        return mConnectionPoolLocked.mTotalPrepareStatements;
-    }
-
-    /** @hide */
-    @NeverCompile
-    public int getTotalStatementCacheMisses() {
-        throwIfNotOpenLocked();
-
-        return mConnectionPoolLocked.mTotalPrepareStatementCacheMiss;
     }
 
     /**

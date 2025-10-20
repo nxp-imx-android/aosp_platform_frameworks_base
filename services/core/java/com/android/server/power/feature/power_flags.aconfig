@@ -12,22 +12,10 @@ flag {
 }
 
 flag {
-    name: "enable_screen_timeout_policy_listener_api"
-    namespace: "power"
-    description: "Enables APIs that allow to listen to screen timeout policy changes"
-    bug: "363174979"
-    is_fixed_read_only: true
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "wakelock_attribution_via_workchain"
-    namespace: "power"
-    description: "Enables the attribution of wakelocks via WorkChain for updateWakelockUids"
-    bug: "331304805"
-    is_fixed_read_only: true
+    name: "separate_timeouts_flicker"
+    namespace: "lse_desktop_experience"
+    description: "Prevent timeout flicker when timing out"
+    bug: "425275163"
     metadata {
       purpose: PURPOSE_BUGFIX
     }
@@ -103,6 +91,16 @@ flag {
 }
 
 flag {
+    name: "lock_on_power_group_disconnect"
+    namespace: "lse_desktop_experience"
+    description: "Fixes device locking when all remaining power groups are disconnected"
+    bug: "449662568"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "partial_sleep_wakelocks"
     namespace: "power"
     description: "Enable new wakelock to keep device asleep - for the user, but ensure that the CPU remains awake."
@@ -111,11 +109,31 @@ flag {
 }
 
 flag {
-    name: "extra_logging_separate_timeout"
-    namespace: "power"
-    description: "Adds extra logs to triage some test flakiness"
+    name: "wake_adjacent_displays_on_wakeup_call"
+    namespace: "lse_desktop_experience"
+    description: "Wakes up the displays from default and default adjacent group"
     bug: "428848574"
     metadata {
       purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    namespace: "wear_frameworks"
+    name: "interactive_doze_experience"
+    description: "Enable active user interaction in doze power state."
+    bug: "331963926"
+    metadata {
+      purpose: PURPOSE_FEATURE
+    }
+}
+
+flag {
+    name: "wait_for_user_boot_complete"
+    namespace: "power"
+    description: "When enabled, holds the BootSuspendBlocker until after the ACTION_BOOT_COMPLETED broadcast is sent. This prevents the CPU from suspending prematurely during a quiescent reboot."
+    bug: "440425374"
+    metadata {
+          purpose: PURPOSE_BUGFIX
     }
 }

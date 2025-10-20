@@ -29,6 +29,7 @@ import static android.content.Context.BIND_AUTO_CREATE;
 import static android.content.Context.BIND_INCLUDE_CAPABILITIES;
 import static android.content.Context.BIND_WAIVE_PRIORITY;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED;
+import static android.os.Process.myUid;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.platform.test.flag.junit.SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT;
 
@@ -37,10 +38,10 @@ import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_OTHER;
 import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_NONE;
 import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_OTHER;
 import static com.android.server.am.ProcessCachedOptimizerRecord.SHOULD_NOT_FREEZE_REASON_NONE;
-import static com.android.server.am.ProcessList.CACHED_APP_MIN_ADJ;
-import static com.android.server.am.ProcessList.HOME_APP_ADJ;
-import static com.android.server.am.ProcessList.PERCEPTIBLE_APP_ADJ;
-import static com.android.server.am.ProcessList.SERVICE_ADJ;
+import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
+import static com.android.server.am.psc.Constants.HOME_APP_ADJ;
+import static com.android.server.am.psc.Constants.PERCEPTIBLE_APP_ADJ;
+import static com.android.server.am.psc.Constants.SERVICE_ADJ;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -181,9 +182,14 @@ public final class ServiceBindingOomAdjPolicyTest {
         realAtm.initialize(null, null, realAms.mProcessStateController, mContext.getMainLooper());
         realAms.mActivityTaskManager = spy(realAtm);
         realAms.mAtmInternal = spy(realAms.mActivityTaskManager.getAtmInternal());
+
+        final CachedAppOptimizer cachedAppOptimizer = spy(realAms.getCachedAppOptimizer());
+        doReturn(true).when(cachedAppOptimizer).useFreezer();
+        doNothing().when(cachedAppOptimizer).freezeAppAsyncAtEarliestLSP(any());
+        realAms.setCachedAppOptimizer(cachedAppOptimizer);
         realAms.mProcessStateController = spy(realAms.mProcessStateController);
         realAms.mOomAdjuster = spy(realAms.mOomAdjuster);
-        realAms.mOomAdjuster.mCachedAppOptimizer = spy(realAms.mOomAdjuster.mCachedAppOptimizer);
+
         realAms.mPackageManagerInt = mPackageManagerInt;
         realAms.mUsageStatsService = mUsageStatsManagerInt;
         realAms.mAppProfiler = spy(realAms.mAppProfiler);
@@ -192,12 +198,12 @@ public final class ServiceBindingOomAdjPolicyTest {
         realProcessList.mService = mAms;
 
         doReturn(false).when(mPackageManagerInt).filterAppAccess(anyString(), anyInt(), anyInt());
+        // Necessary for calling package to match caller uid
+        doReturn(myUid()).when(mPackageManagerInt).getPackageUid(
+                eq(TEST_APP1_NAME), anyLong(), anyInt());
         doReturn(true).when(mIntentFirewall).checkService(any(), any(), anyInt(), anyInt(), any(),
                 any());
         doReturn(false).when(mAms.mAtmInternal).hasSystemAlertWindowPermission(anyInt(), anyInt(),
-                any());
-        doReturn(true).when(mAms.mOomAdjuster.mCachedAppOptimizer).useFreezer();
-        doNothing().when(mAms.mOomAdjuster.mCachedAppOptimizer).freezeAppAsyncAtEarliestLSP(
                 any());
         doNothing().when(mAms.mAppProfiler).updateLowMemStateLSP(anyInt(), anyInt(),
                 anyInt(), anyLong());
@@ -696,19 +702,19 @@ public final class ServiceBindingOomAdjPolicyTest {
                 USER_SYSTEM            // userId
         ));
 
-        verify(mAms.mProcessStateController, bindMode).runPendingUpdate(anyInt());
+        verify(mAms.mProcessStateController, bindMode).runPendingUpdateImpl(anyInt());
         clearInvocations(mAms.mProcessStateController);
 
         if (clientApp.isFreezable()) {
-            verify(mAms.mOomAdjuster.mCachedAppOptimizer, times(1))
+            verify(mAms.getCachedAppOptimizer(), times(1))
                     .freezeAppAsyncAtEarliestLSP(eq(clientApp));
-            clearInvocations(mAms.mOomAdjuster.mCachedAppOptimizer);
+            clearInvocations(mAms.getCachedAppOptimizer());
         }
 
         // Unbind the service.
         mAms.unbindService(serviceConnection);
 
-        verify(mAms.mProcessStateController, unbindMode).runPendingUpdate(anyInt());
+        verify(mAms.mProcessStateController, unbindMode).runPendingUpdateImpl(anyInt());
         clearInvocations(mAms.mProcessStateController);
 
         removeProcessRecord(clientApp);

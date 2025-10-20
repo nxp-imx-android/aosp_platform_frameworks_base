@@ -18,7 +18,6 @@ package com.android.wm.shell.bubbles;
 
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 
-import static com.android.wm.shell.Flags.enableEnterSplitRemoveBubble;
 import static com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction;
 import static com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToSplit;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
@@ -75,7 +74,7 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction) {
         collapseBubbleIfNeeded(info);
-        if (enableEnterSplitRemoveBubble() && BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             if (TransitionUtil.isOpeningType(info.getType()) && mBubbleData.hasBubbles()) {
                 removeBubbleIfLaunchingToSplit(info);
             }
@@ -155,6 +154,14 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
                     + "task %d is our bubble so skip collapsing", taskId);
             return true;
         }
+
+        // If the opening tasks contains the bubble root task, skip collapsing.
+        if (mBubbleController.isAppBubbleRootTask(taskId)) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubblesTransitionObserver.onTransitionReady(): "
+                    + "task %d is the root task so skip collapsing", taskId);
+            return true;
+        }
+
         return false;
     }
 
@@ -172,7 +179,7 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
             final TaskViewTaskController controller = bubble.getTaskView().getController();
             final ShellTaskOrganizer taskOrganizer = controller.getTaskOrganizer();
             final WindowContainerTransaction wct = getExitBubbleTransaction(taskInfo.token,
-                    bubble.getTaskView().getCaptionInsetsOwner());
+                    bubble.getTaskView().getCaptionInsetsOwner(), false /* reparentToTda */);
 
             // Notify the task removal, but block all TaskViewTransitions during removal so we can
             // clear them without triggering

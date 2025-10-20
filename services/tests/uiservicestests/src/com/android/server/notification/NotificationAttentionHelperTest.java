@@ -64,6 +64,7 @@ import static org.mockito.Mockito.when;
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.ActivityTaskManager;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.Notification.Builder;
@@ -82,6 +83,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Icon;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Process;
@@ -113,6 +115,7 @@ import com.android.internal.logging.InstanceIdSequence;
 import com.android.internal.logging.InstanceIdSequenceFake;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.util.IntPair;
+import com.android.internal.util.VibrationStatsWriter;
 import com.android.server.UiServiceTestCase;
 import com.android.server.lights.LightsManager;
 import com.android.server.lights.LogicalLight;
@@ -156,9 +159,13 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
     private UserManager mUserManager;
     @Mock
     private PackageManager mPackageManager;
+    @Mock
+    private VibrationStatsWriter mVibrationStatsWriter;
     NotificationRecordLoggerFake mNotificationRecordLogger = new NotificationRecordLoggerFake();
     private InstanceIdSequence mNotificationInstanceIdSequence = new InstanceIdSequenceFake(
         1 << 30);
+    @Mock
+    private ActivityTaskManager mActivityTaskManager;
 
     private NotificationManagerService mService;
     private String mPkg = "com.android.server.notification";
@@ -202,6 +209,7 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
         MockitoAnnotations.initMocks(this);
         getContext().addMockSystemService(Vibrator.class, mVibrator);
         getContext().addMockSystemService(PackageManager.class, mPackageManager);
+        getContext().addMockSystemService(ActivityTaskManager.class, mActivityTaskManager);
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)).thenReturn(false);
         when(mPackageManager.checkPermission(eq(permission.RECEIVE_EMERGENCY_BROADCAST),
                 anyString())).thenReturn(PERMISSION_DENIED);
@@ -262,7 +270,7 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
         mAttentionHelper = new NotificationAttentionHelper(getContext(), new Object(),
                 mock(LightsManager.class),mAccessibilityManager, mPackageManager,
                 mUserManager, mUsageStats, mService.mNotificationManagerPrivate,
-                mock(ZenModeHelper.class), flagResolver);
+                mock(ZenModeHelper.class), flagResolver, mVibrationStatsWriter);
         mAttentionHelper.onSystemReady();
         mAttentionHelper.setVibratorHelper(spy(new VibratorHelper(getContext())));
         mAttentionHelper.setAudioManager(mAudioManager);
@@ -709,6 +717,31 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
         verify(mAccessibilityService, times(1)).sendAccessibilityEvent(any(), anyInt());
         assertTrue(r.isInterruptive());
         assertNotEquals(-1, r.getLastAudiblyAlertedMs());
+    }
+
+    @Test
+    public void testMuteAccessibilityWhenInLockTaskMode() throws Exception {
+        when(mActivityTaskManager.isInLockTaskMode()).thenReturn(true);
+        NotificationRecord r = getBeepyNotification();
+
+        mAttentionHelper.buzzBeepBlinkLocked(r, DEFAULT_SIGNALS);
+
+        verifyBeepUnlooped();
+        verify(mAccessibilityService, never()).sendAccessibilityEvent(any(), anyInt());
+    }
+
+    @Test
+    public void testMuteWhenUnprovisioned() throws Exception {
+        Settings.Global.putInt(getContext().getContentResolver(),
+                Settings.Global.DEVICE_PROVISIONED, 0);
+        initAttentionHelper(mTestFlagResolver);
+
+        NotificationRecord r = getBeepyNotification();
+
+        mAttentionHelper.buzzBeepBlinkLocked(r, DEFAULT_SIGNALS);
+
+        verifyNeverBeep();
+        verify(mAccessibilityService, never()).sendAccessibilityEvent(any(), anyInt());
     }
 
     @Test
@@ -3319,6 +3352,26 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
         mAttentionHelper.buzzBeepBlinkLocked(r, DEFAULT_SIGNALS);
 
         verify(mAccessibilityService, never()).sendAccessibilityEvent(any(), anyInt());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NOTIFICATION_VIBRATION_IN_SOUND_URI)
+    public void testVibrationStatsWriter_logWhenVibrate() {
+        mAttentionHelper = spy(mAttentionHelper);
+
+        NotificationChannel ringtoneChannel =
+                new NotificationChannel("ringtone", "", IMPORTANCE_HIGH);
+        ringtoneChannel.setSound(Settings.System.DEFAULT_NOTIFICATION_URI,
+                new AudioAttributes.Builder().setUsage(USAGE_NOTIFICATION_RINGTONE).build());
+        ringtoneChannel.enableVibration(true);
+        NotificationRecord ringtoneNotification = getCallRecord(1, ringtoneChannel, true);
+        mService.addNotification(ringtoneNotification);
+        mAttentionHelper.buzzBeepBlinkLocked(ringtoneNotification, DEFAULT_SIGNALS);
+        verifyDelayedVibrateLooped();
+
+        verify(mVibrationStatsWriter).logCustomVibrationPatternEventIfNeeded(
+                VibrationStatsWriter.VIBRATION_PATTERN_PLAYED,
+                RingtoneManager.TYPE_NOTIFICATION, ringtoneNotification.getSound());
     }
 
     static class VibrateRepeatMatcher implements ArgumentMatcher<VibrationEffect> {

@@ -26,6 +26,7 @@ import static android.service.autofill.FillRequest.FLAG_SUPPORTS_FILL_DIALOG;
 import static android.service.autofill.FillRequest.FLAG_VIEW_NOT_FOCUSED;
 import static android.service.autofill.FillRequest.FLAG_VIEW_REQUESTS_CREDMAN_SERVICE;
 import static android.service.autofill.Flags.FLAG_FILL_DIALOG_IMPROVEMENTS;
+import static android.service.autofill.Flags.getViewCoordinatesInUiThread;
 import static android.service.autofill.Flags.improveFillDialogAconfig;
 import static android.service.autofill.Flags.relayoutFix;
 import static android.view.ContentInfo.SOURCE_AUTOFILL;
@@ -42,6 +43,7 @@ import android.annotation.RequiresFeature;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
+import android.annotation.UiThread;
 import android.app.ActivityOptions;
 import android.app.assist.AssistStructure.ViewNode;
 import android.app.assist.AssistStructure.ViewNodeBuilder;
@@ -124,6 +126,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import sun.misc.Cleaner;
 
@@ -618,7 +621,7 @@ public final class AutofillManager {
 
     /**
      * There is currently no session running.
-     * {@hide}
+     * @hide
      */
     public static final int NO_SESSION = Integer.MAX_VALUE;
 
@@ -965,6 +968,10 @@ public final class AutofillManager {
      * @hide
      */
     public AutofillManager(Context context, IAutoFillManager service) {
+        if (sVerbose) {
+            Log.v(TAG,
+                    "Constructing AutofillManager instance: " + this + " with context: " + context);
+        }
         mContext = Objects.requireNonNull(context, "context cannot be null");
         mService = service;
         mOptions = context.getAutofillOptions();
@@ -1327,7 +1334,7 @@ public final class AutofillManager {
      *
      * @param savedInstanceState The state to be restored
      *
-     * {@hide}
+     * @hide
      */
     public void onCreate(Bundle savedInstanceState) {
         if (!hasAutofillFeature()) {
@@ -1388,7 +1395,7 @@ public final class AutofillManager {
      *
      * @see AutofillClient#autofillClientIsVisibleForAutofill()
      *
-     * {@hide}
+     * @hide
      */
     public void onVisibleForAutofill() {
         // This gets called when the client just got visible at which point the visibility
@@ -1412,7 +1419,7 @@ public final class AutofillManager {
      *
      * @param isExpiredResponse The response has expired or not
      *
-     * {@hide}
+     * @hide
      */
     public void onInvisibleForAutofill(boolean isExpiredResponse) {
         synchronized (mLock) {
@@ -1445,7 +1452,7 @@ public final class AutofillManager {
      *
      * @param outState Place to store the state
      *
-     * {@hide}
+     * @hide
      */
     public void onSaveInstanceState(Bundle outState) {
         if (!hasAutofillFeature()) {
@@ -2628,7 +2635,8 @@ public final class AutofillManager {
     /** @hide */
     public void onAuthenticationResult(int authenticationId, Intent data, View focusView) {
         if (sVerbose) {
-            Log.v(TAG, "onAuthenticationResult(): authId= " + authenticationId + ", data=" + data);
+            Log.v(TAG, "onAuthenticationResult(): authId= " + authenticationId + ", data="
+                    + data + ", autofill manager instance=" + this + ", context=" + mContext);
         }
         if (!hasAutofillFeature()) {
             if (sVerbose) {
@@ -2745,7 +2753,9 @@ public final class AutofillManager {
                     + ", compatMode=" + isCompatibilityModeEnabledLocked()
                     + ", augmentedOnly=" + mForAugmentedAutofillOnly
                     + ", enabledAugmentedOnly=" + mEnabledForAugmentedAutofillOnly
-                    + ", enteredIds=" + mEnteredIds);
+                    + ", enteredIds=" + mEnteredIds
+                    + ", autofill manager instance=" + this
+                    + ", context=" + mContext);
         }
         // We need to reset the augmented-only state when a manual request is made, as it's possible
         // that the service returned null for the first request and now the user is manually
@@ -5081,6 +5091,28 @@ public final class AutofillManager {
             final AutofillManager afm = mAfm.get();
             if (afm == null) return null;
 
+            if (!getViewCoordinatesInUiThread()) {
+                return getViewCoordinates(afm, id);
+            }
+
+            final AtomicReference<Rect> result = new AtomicReference<>();
+            final CountDownLatch latch = new CountDownLatch(1);
+            afm.post(() -> {
+                result.set(getViewCoordinates(afm, id));
+                latch.countDown();
+            });
+            try {
+                if (!latch.await(5000, TimeUnit.MILLISECONDS)) {
+                    Log.w(TAG, "getViewCoordinates timeout: " + id);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return result.get();
+        }
+
+        @UiThread // requires UI thread to avoid native crash when view.getLocationOnScreen
+        private Rect getViewCoordinates(@NonNull AutofillManager afm, @NonNull AutofillId id) {
             final View view = getView(afm, id);
             if (view == null) {
                 return null;

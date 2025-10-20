@@ -160,7 +160,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -441,7 +440,7 @@ public class BatteryStatsImpl extends BatteryStats {
                 }
             };
 
-    private class BluetoothStatsRetrieverImpl implements
+    private final class BluetoothStatsRetrieverImpl implements
             BluetoothPowerStatsCollector.BluetoothStatsRetriever {
         private final BluetoothManager mBluetoothManager;
 
@@ -575,7 +574,7 @@ public class BatteryStatsImpl extends BatteryStats {
      * implemented so that STATSD can capture those UID times before they are deleted.
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    protected final Queue<UidToRemove> mPendingRemovedUids;
+    protected final Queue<UidToRemove> mPendingRemovedUids = new ConcurrentLinkedQueue<>();
 
     @NonNull
     public BatteryStatsHistory getHistory() {
@@ -1194,7 +1193,7 @@ public class BatteryStatsImpl extends BatteryStats {
 
     boolean mPretendScreenOff;
 
-    private static class DisplayBatteryStats {
+    private static final class DisplayBatteryStats {
         /**
          * Per display screen state.
          */
@@ -1330,7 +1329,7 @@ public class BatteryStatsImpl extends BatteryStats {
     @RadioAccessTechnology
     int mActiveRat = RADIO_ACCESS_TECHNOLOGY_OTHER;
 
-    private static class RadioAccessTechnologyBatteryStats {
+    private static final class RadioAccessTechnologyBatteryStats {
         /**
          * This RAT is currently being used.
          */
@@ -2123,7 +2122,7 @@ public class BatteryStatsImpl extends BatteryStats {
         mTmpRailStats = new RailStats();
     }
 
-    private class PowerStatsCollectorInjector implements CpuPowerStatsCollector.Injector,
+    private final class PowerStatsCollectorInjector implements CpuPowerStatsCollector.Injector,
             ScreenPowerStatsCollector.Injector, MobileRadioPowerStatsCollector.Injector,
             WifiPowerStatsCollector.Injector, BluetoothPowerStatsCollector.Injector,
             EnergyConsumerPowerStatsCollector.Injector, WakelockPowerStatsCollector.Injector {
@@ -2504,7 +2503,7 @@ public class BatteryStatsImpl extends BatteryStats {
     /**
      * State for keeping track of counting information.
      */
-    public static class Counter extends BatteryStats.Counter implements TimeBaseObs {
+    public static final class Counter extends BatteryStats.Counter implements TimeBaseObs {
         final AtomicInteger mCount = new AtomicInteger();
         final TimeBase mTimeBase;
 
@@ -2582,7 +2581,8 @@ public class BatteryStatsImpl extends BatteryStats {
     }
 
     @VisibleForTesting
-    public static class LongSamplingCounterArray extends LongCounterArray implements TimeBaseObs {
+    public static final class LongSamplingCounterArray extends LongCounterArray
+            implements TimeBaseObs {
         final TimeBase mTimeBase;
         public long[] mCounts;
 
@@ -2708,7 +2708,7 @@ public class BatteryStatsImpl extends BatteryStats {
         }
     }
 
-    private static class TimeMultiStateCounter extends LongCounter implements TimeBaseObs {
+    private static final class TimeMultiStateCounter extends LongCounter implements TimeBaseObs {
         private final TimeBase mTimeBase;
         private final LongMultiStateCounter mCounter;
 
@@ -2804,7 +2804,7 @@ public class BatteryStatsImpl extends BatteryStats {
         }
     }
 
-    private static class TimeInFreqMultiStateCounter implements TimeBaseObs {
+    private static final class TimeInFreqMultiStateCounter implements TimeBaseObs {
         private final TimeBase mTimeBase;
         private final LongArrayMultiStateCounter mCounter;
 
@@ -2894,7 +2894,7 @@ public class BatteryStatsImpl extends BatteryStats {
     }
 
     @VisibleForTesting
-    public static class LongSamplingCounter extends LongCounter implements TimeBaseObs {
+    public static final class LongSamplingCounter extends LongCounter implements TimeBaseObs {
         final TimeBase mTimeBase;
         private long mCount;
 
@@ -3150,7 +3150,7 @@ public class BatteryStatsImpl extends BatteryStats {
      * between calls, the {@link #endSample()} is automatically called and the new value is
      * expected to increase monotonically from that point on.
      */
-    public static class SamplingTimer extends Timer {
+    public static final class SamplingTimer extends Timer {
 
         /**
          * The most recent reported count from /proc/wakelocks.
@@ -3353,7 +3353,7 @@ public class BatteryStatsImpl extends BatteryStats {
      * A timer that increments in batches.  It does not run for durations, but just jumps
      * for a pre-determined amount.
      */
-    public static class BatchTimer extends Timer {
+    public static final class BatchTimer extends Timer {
         final Uid mUid;
 
         /**
@@ -3931,7 +3931,7 @@ public class BatteryStatsImpl extends BatteryStats {
      * State for keeping track of two DurationTimers with different TimeBases, presumably where one
      * TimeBase is effectively a subset of the other.
      */
-    public static class DualTimer extends DurationTimer {
+    public static final class DualTimer extends DurationTimer {
         // This class both is a DurationTimer and also holds a second DurationTimer.
         // The main timer (this) typically tracks the total time. It may be pooled (but since it's a
         // durationTimer, it also has the unpooled getTotalDurationMsLocked() for
@@ -4203,7 +4203,7 @@ public class BatteryStatsImpl extends BatteryStats {
     }
 
     @SuppressWarnings("ParcelableCreator")
-    public static class ControllerActivityCounterImpl extends ControllerActivityCounter
+    public static final class ControllerActivityCounterImpl extends ControllerActivityCounter
             implements Parcelable {
         private final Clock mClock;
         private final TimeBase mTimeBase;
@@ -4604,13 +4604,8 @@ public class BatteryStatsImpl extends BatteryStats {
     private void onBeforeIsolatedUidRemoved(int isolatedUid, int parentUid) {
         final long realtime = mClock.elapsedRealtime();
         mPowerStatsUidResolver.retainIsolatedUid(isolatedUid);
-        if (Flags.concurrentQueueForPendingRemovedUids()) {
-            mPendingRemovedUids.add(new UidToRemove(isolatedUid, realtime));
-        } else {
-            synchronized (this) {
-                mPendingRemovedUids.add(new UidToRemove(isolatedUid, realtime));
-            }
-        }
+        mPendingRemovedUids.add(new UidToRemove(isolatedUid, realtime));
+
         if (mExternalSync != null) {
             mExternalSync.scheduleCpuSyncDueToRemovedUid(isolatedUid);
         }
@@ -10337,7 +10332,7 @@ public class BatteryStatsImpl extends BatteryStats {
             }
         }
 
-        private class ChildUid {
+        private final class ChildUid {
             public final TimeMultiStateCounter cpuActiveCounter;
             public final LongArrayMultiStateCounter cpuTimeInFreqCounter;
 
@@ -10788,12 +10783,6 @@ public class BatteryStatsImpl extends BatteryStats {
             @NonNull BatteryStatsHistory.EventLogger eventLogger) {
         mClock = clock;
         initKernelStatsReaders();
-
-        if (Flags.concurrentQueueForPendingRemovedUids()) {
-            mPendingRemovedUids = new ConcurrentLinkedQueue<>();
-        } else {
-            mPendingRemovedUids = new LinkedList<>();
-        }
 
         mBatteryStatsConfig = config;
         mMonotonicClock = monotonicClock;

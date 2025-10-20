@@ -28,8 +28,25 @@ import static android.media.RoutingSessionInfo.TRANSFER_REASON_FALLBACK;
 import static android.media.RoutingSessionInfo.TRANSFER_REASON_SYSTEM_REQUEST;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+import static com.android.server.media.MediaRouterMetricLogger.EVENT_TYPE_CREATE_SESSION;
+import static com.android.server.media.MediaRouterMetricLogger.EVENT_TYPE_CREATE_SYSTEM_ROUTING_SESSION;
+import static com.android.server.media.MediaRouterMetricLogger.EVENT_TYPE_DESELECT_ROUTE;
+import static com.android.server.media.MediaRouterMetricLogger.EVENT_TYPE_RELEASE_SESSION;
+import static com.android.server.media.MediaRouterMetricLogger.EVENT_TYPE_SCANNING_STARTED;
+import static com.android.server.media.MediaRouterMetricLogger.EVENT_TYPE_SCANNING_STOPPED;
+import static com.android.server.media.MediaRouterMetricLogger.EVENT_TYPE_SELECT_ROUTE;
+import static com.android.server.media.MediaRouterMetricLogger.EVENT_TYPE_TRANSFER_TO_ROUTE;
+import static com.android.server.media.MediaRouterMetricLogger.EVENT_TYPE_UNSPECIFIED;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SYSTEM_ROUTING_SESSION;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_DESELECT_ROUTE;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_RELEASE_SESSION;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STARTED;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STOPPED;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SELECT_ROUTE;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_TRANSFER_TO_ROUTE;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_UNSPECIFIED;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_FAILED_TO_REROUTE_SYSTEM_MEDIA;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_INVALID_COMMAND;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_NETWORK_ERROR;
@@ -84,6 +101,11 @@ public class MediaRouterMetricLoggerTest {
 
     private MediaRouterMetricLogger mLogger;
 
+    private final RoutingChangeInfo mRoutingChangeInfo =
+            new RoutingChangeInfo(
+                    RoutingChangeInfo.ENTRY_POINT_LOCAL_ROUTER_UNSPECIFIED,
+                    /* isSuggested= */ true);
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -93,9 +115,9 @@ public class MediaRouterMetricLoggerTest {
     @Test
     public void addRequestInfo_addsRequestInfoToCache() {
         long requestId = 123;
-        int eventType = MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION;
+        int eventType = EVENT_TYPE_CREATE_SESSION;
 
-        mLogger.addRequestInfo(requestId, eventType);
+        mLogger.addRequestInfo(requestId, eventType, mRoutingChangeInfo);
 
         assertThat(mLogger.getRequestCacheSize()).isEqualTo(1);
     }
@@ -103,8 +125,8 @@ public class MediaRouterMetricLoggerTest {
     @Test
     public void removeRequestInfo_removesRequestInfoFromCache() {
         long requestId = 123;
-        int eventType = MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION;
-        mLogger.addRequestInfo(requestId, eventType);
+        int eventType = EVENT_TYPE_CREATE_SESSION;
+        mLogger.addRequestInfo(requestId, eventType, mRoutingChangeInfo);
 
         mLogger.removeRequestInfo(requestId);
 
@@ -113,21 +135,25 @@ public class MediaRouterMetricLoggerTest {
 
     @Test
     public void logOperationFailure_logsOperationFailure() {
-        int eventType = MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION;
+        int eventType = EVENT_TYPE_CREATE_SESSION;
         int result = MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_REJECTED;
-        mLogger.logOperationFailure(eventType, result);
+        mLogger.logOperationFailure(eventType, result, mRoutingChangeInfo);
         verify(
                 () ->
                         MediaRouterStatsLog.write( // Use ExtendedMockito.verify and lambda
-                                MEDIA_ROUTER_EVENT_REPORTED, eventType, result));
+                                MEDIA_ROUTER_EVENT_REPORTED,
+                                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION,
+                                result,
+                                mRoutingChangeInfo.getEntryPoint(),
+                                mRoutingChangeInfo.isSuggested()));
     }
 
     @Test
     public void logRequestResult_logsRequestResult() {
         long requestId = 123;
-        int eventType = MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION;
+        int eventType = EVENT_TYPE_CREATE_SESSION;
         int result = MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_SUCCESS;
-        mLogger.addRequestInfo(requestId, eventType);
+        mLogger.addRequestInfo(requestId, eventType, mRoutingChangeInfo);
 
         mLogger.logRequestResult(requestId, result);
 
@@ -135,7 +161,11 @@ public class MediaRouterMetricLoggerTest {
         verify(
                 () ->
                         MediaRouterStatsLog.write( // Use ExtendedMockito.verify and lambda
-                                MEDIA_ROUTER_EVENT_REPORTED, eventType, result));
+                                MEDIA_ROUTER_EVENT_REPORTED,
+                                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION,
+                                result,
+                                mRoutingChangeInfo.getEntryPoint(),
+                                mRoutingChangeInfo.isSuggested()));
     }
 
     @Test
@@ -164,8 +194,7 @@ public class MediaRouterMetricLoggerTest {
     @Test
     public void getRequestCacheSize_returnsCorrectSize() {
         assertThat(mLogger.getRequestCacheSize()).isEqualTo(0);
-        mLogger.addRequestInfo(
-                123, MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION);
+        mLogger.addRequestInfo(123, EVENT_TYPE_CREATE_SESSION, mRoutingChangeInfo);
         assertThat(mLogger.getRequestCacheSize()).isEqualTo(1);
     }
 
@@ -177,14 +206,14 @@ public class MediaRouterMetricLoggerTest {
         int cacheCapacity = mLogger.getRequestInfoCacheCapacity();
         for (int i = 0; i < cacheCapacity; i++) {
             mLogger.addRequestInfo(
-                    /* uniqueRequestId= */ i,
-                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION);
+                    /* uniqueRequestId= */ i, EVENT_TYPE_CREATE_SESSION, mRoutingChangeInfo);
         }
 
         // Add one more request to trigger eviction.
         mLogger.addRequestInfo(
                 /* uniqueRequestId= */ cacheCapacity,
-                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION);
+                EVENT_TYPE_CREATE_SESSION,
+                mRoutingChangeInfo);
 
         // Verify cache size is correct and generic result gets logged.
         assertThat(mLogger.getRequestCacheSize()).isEqualTo(cacheCapacity);
@@ -193,7 +222,9 @@ public class MediaRouterMetricLoggerTest {
                         MediaRouterStatsLog.write(
                                 MEDIA_ROUTER_EVENT_REPORTED,
                                 MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION,
-                                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED));
+                                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED,
+                                mRoutingChangeInfo.getEntryPoint(),
+                                mRoutingChangeInfo.isSuggested()));
     }
 
     // Routing change tests.
@@ -371,7 +402,10 @@ public class MediaRouterMetricLoggerTest {
                                 anyBoolean(),
                                 anyInt(),
                                 anyBoolean(),
-                                anyLong()),
+                                anyLong(),
+                                anyBoolean(),
+                                anyBoolean(),
+                                anyBoolean()),
                 never());
     }
 
@@ -418,7 +452,49 @@ public class MediaRouterMetricLoggerTest {
                                 eq(
                                         ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_SYSTEM_REQUEST),
                                 eq(/* isSuggested= */ false),
-                                sessionLengthCaptor.capture()));
+                                sessionLengthCaptor.capture(),
+                                eq(/* isSuggestedByRlp= */ false),
+                                eq(/* isSuggestedByMediaApp= */ false),
+                                eq(/* isSuggestedByOtherApp= */ false)));
         assertThat(sessionLengthCaptor.getValue()).isEqualTo(sessionTimeInMillis);
+    }
+
+    @Test
+    public void convertEventTypeForLogging_returnsExpectedResult() {
+        assertThat(MediaRouterMetricLogger.convertEventTypeForLogging(EVENT_TYPE_UNSPECIFIED))
+                .isEqualTo(MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_UNSPECIFIED);
+        assertThat(MediaRouterMetricLogger.convertEventTypeForLogging(EVENT_TYPE_CREATE_SESSION))
+                .isEqualTo(MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION);
+        assertThat(
+                        MediaRouterMetricLogger.convertEventTypeForLogging(
+                                EVENT_TYPE_CREATE_SYSTEM_ROUTING_SESSION))
+                .isEqualTo(
+                        MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SYSTEM_ROUTING_SESSION);
+        assertThat(MediaRouterMetricLogger.convertEventTypeForLogging(EVENT_TYPE_RELEASE_SESSION))
+                .isEqualTo(MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_RELEASE_SESSION);
+        assertThat(MediaRouterMetricLogger.convertEventTypeForLogging(EVENT_TYPE_SELECT_ROUTE))
+                .isEqualTo(MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SELECT_ROUTE);
+        assertThat(MediaRouterMetricLogger.convertEventTypeForLogging(EVENT_TYPE_DESELECT_ROUTE))
+                .isEqualTo(MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_DESELECT_ROUTE);
+        assertThat(MediaRouterMetricLogger.convertEventTypeForLogging(EVENT_TYPE_TRANSFER_TO_ROUTE))
+                .isEqualTo(MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_TRANSFER_TO_ROUTE);
+        assertThat(MediaRouterMetricLogger.convertEventTypeForLogging(EVENT_TYPE_SCANNING_STARTED))
+                .isEqualTo(MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STARTED);
+        assertThat(MediaRouterMetricLogger.convertEventTypeForLogging(EVENT_TYPE_SCANNING_STOPPED))
+                .isEqualTo(MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STOPPED);
+    }
+
+    @Test
+    public void convertEntryPointForLogging_invalidInput_throwsException() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        MediaRouterMetricLogger.convertEntryPointForLogging(
+                                EVENT_TYPE_UNSPECIFIED - 1));
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        MediaRouterMetricLogger.convertEntryPointForLogging(
+                                EVENT_TYPE_SCANNING_STOPPED + 1));
     }
 }

@@ -37,6 +37,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Debug#startMethodTracing} or {@link Trace}.
  *
  * @hide
+ *
+ * TODO(b/449768154) We don't really use this class on Ravenwood. Figure out a cleaner way
+ * to disable this class, rather than the scattered @RavenwoodIgnore's.
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass(
         comment = "Most features are no-op on Ravenwood")
@@ -49,12 +52,23 @@ public final class PerfettoTrace {
     private static final int PERFETTO_TE_TYPE_INSTANT = 3;
     private static final int PERFETTO_TE_TYPE_COUNTER = 4;
 
-    private static final boolean IS_FLAG_ENABLED = android.os.Flags.perfettoSdkTracingV2();
+    private static final boolean IS_FLAG_ENABLED = isFlagEnabled();
+
+    @RavenwoodIgnore // Flag always false on Ravenwood
+    private static boolean isFlagEnabled() {
+        return android.os.Flags.perfettoSdkTracingV2();
+    }
 
     // To simplify migration to the newer API we use this flag both when invoke trace methods and
     // in this class to chose what API to initialize.
     public static final boolean IS_USE_SDK_TRACING_API_V3 =
-            IS_FLAG_ENABLED && android.os.Flags.perfettoSdkTracingV3();
+            IS_FLAG_ENABLED && isPerfettoSdkTracingV3();
+
+
+    @RavenwoodIgnore // Flag always false on Ravenwood
+    private static boolean isPerfettoSdkTracingV3() {
+        return android.os.Flags.perfettoSdkTracingV3();
+    }
 
     private static final AtomicBoolean sAttemptedSystemRegistration = new AtomicBoolean(false);
 
@@ -75,6 +89,32 @@ public final class PerfettoTrace {
         return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("mq");
     }
 
+    public static final PerfettoTrace.Category GFX_CATEGORY = new PerfettoTrace.Category("gfx");
+
+    // The same as a previous MQ_CATEGORY, but to be used with a V3 API.
+    public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
+            GFX_CATEGORY_V3 = getGfxCategoryV3();
+
+    @RavenwoodIgnore // Just use null on Ravenwood.
+    private static com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
+            getGfxCategoryV3() {
+        return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("gfx");
+    }
+
+    public static final PerfettoTrace.Category JOB_SCHEDULER_CATEGORY =
+            new PerfettoTrace.Category("jobscheduler");
+
+    // The same as a previous JOB_SCHEDULER_CATEGORY, but to be used with a V3 API.
+    public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
+            JOB_SCHEDULER_CATEGORY_V3 = getJobSchedulerCategoryV3();
+
+    @RavenwoodIgnore // Just use null on Ravenwood.
+    private static com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
+            getJobSchedulerCategoryV3() {
+        return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category(
+                "jobscheduler");
+    }
+
     /**
      * This is temporary wrapper to check if either new or old APIs "mq" category is enabled, should
      * be called only from the MessageQueue.java and Looper.java.
@@ -86,6 +126,19 @@ public final class PerfettoTrace {
             return PerfettoTrace.MQ_CATEGORY_V3.isEnabled();
         }
         return PerfettoTrace.MQ_CATEGORY.isEnabled();
+    }
+
+    /**
+     * This is temporary wrapper to check if either new or old APIs "jobscheduler" category is
+     * enabled, should be called only from the JobSchedulerService.java.
+     */
+    // Tracing currently completely disabled under Ravenwood, just return false.
+    @RavenwoodIgnore
+    public static boolean isJobSchedulerCategoryEnabled() {
+        if (PerfettoTrace.IS_USE_SDK_TRACING_API_V3) {
+            return PerfettoTrace.JOB_SCHEDULER_CATEGORY_V3.isEnabled();
+        }
+        return PerfettoTrace.JOB_SCHEDULER_CATEGORY.isEnabled();
     }
 
     /**
@@ -410,8 +463,12 @@ public final class PerfettoTrace {
     public static void registerCategories() {
         if (IS_USE_SDK_TRACING_API_V3) {
             MQ_CATEGORY_V3.register();
+            GFX_CATEGORY_V3.register();
+            JOB_SCHEDULER_CATEGORY_V3.register();
         } else {
             MQ_CATEGORY.register();
+            GFX_CATEGORY.register();
+            JOB_SCHEDULER_CATEGORY.register();
         }
     }
 

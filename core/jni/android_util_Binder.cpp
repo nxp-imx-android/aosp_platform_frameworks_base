@@ -950,6 +950,30 @@ struct BinderProxyNativeData {
     // JavaFrozenStateChangeCallback hold a weak reference that can be
     // temporarily promoted.
     sp<FrozenStateChangeCallbackList> mFrozenStateChangeCallbackList;
+
+private:
+    bool mOwnsObjectTag = false;
+
+public:
+    void tryTagObject() {
+        // Sometimes, you will have the case:
+        // BinderProxy created in map.
+        // BinderProxy is dropped in Java and only held by weak reference
+        //   but it is not GC'd yet, and finalize hasn't run, so the existing
+        //   BinderProxyNativeData is held in memory.
+        // getInstance can't promote the weak reference, so we create a new
+        //   BinderProxyNativeData.
+        // Tagging will fail for this second instance. It's okay though because
+        //   we can still catch bugs, and other times, we'll win the race, so
+        //   we'll catch the bug.
+        mOwnsObjectTag = mObject->getWeakRefs()->tryTag(RefBase::OBJECT_TAG_JAVA_PROXY);
+    }
+
+    ~BinderProxyNativeData() {
+        if (mOwnsObjectTag) {
+            mObject->getWeakRefs()->untag(RefBase::OBJECT_TAG_JAVA_PROXY);
+        }
+    }
 };
 
 BinderProxyNativeData* getBPNativeData(JNIEnv* env, jobject obj) {
@@ -973,7 +997,7 @@ jobject javaObjectForIBinder(JNIEnv* env, const sp<IBinder>& val)
         return object;
     }
 
-    BinderProxyNativeData* nativeData = new BinderProxyNativeData();
+    BinderProxyNativeData* nativeData = new BinderProxyNativeData;
     nativeData->mOrgue = sp<DeathRecipientList>::make();
     nativeData->mFrozenStateChangeCallbackList = sp<FrozenStateChangeCallbackList>::make();
     nativeData->mObject = val;
@@ -985,7 +1009,12 @@ jobject javaObjectForIBinder(JNIEnv* env, const sp<IBinder>& val)
         return NULL;
     }
     BinderProxyNativeData* actualNativeData = getBPNativeData(env, object);
-    if (actualNativeData != nativeData) {
+
+    const bool createdOwningObject = actualNativeData == nativeData;
+    if (createdOwningObject) {
+        nativeData->tryTagObject();
+    } else {
+        // another thread created the de facto native data object
         delete nativeData;
     }
 
@@ -1406,6 +1435,22 @@ static void android_os_BinderInternal_handleGc(JNIEnv* env, jobject clazz)
 static void android_os_BinderInternal_proxyLimitCallback(int uid)
 {
     JNIEnv *env = AndroidRuntime::getJNIEnv();
+    JavaVM* vm = AndroidRuntime::getJavaVM();
+    bool shouldDetach = false;
+
+    if (env == NULL) {
+        if (vm != NULL) {
+            jint result = vm->AttachCurrentThread(&env, NULL);
+            if (result == JNI_OK) {
+                shouldDetach = true;
+            } else {
+                ALOGE("Failed to attach thread for proxy limit callback (uid: %d)!", uid);
+                return;
+            }
+        } else {
+            LOG_ALWAYS_FATAL("No JavaVM instance available for proxy limit callback (uid: %d)!Aborting.", uid);
+        }
+    }
     env->CallStaticVoidMethod(gBinderInternalOffsets.mClass,
                               gBinderInternalOffsets.mProxyLimitCallback,
                               uid);
@@ -1415,11 +1460,31 @@ static void android_os_BinderInternal_proxyLimitCallback(int uid)
         binder_report_exception(env, excep.get(),
                                 "*** Uncaught exception in binderProxyLimitCallbackFromNative");
     }
+    if (shouldDetach) {
+        vm->DetachCurrentThread();
+    }
 }
 
 static void android_os_BinderInternal_proxyWarningCallback(int uid)
 {
     JNIEnv *env = AndroidRuntime::getJNIEnv();
+    JavaVM* vm = AndroidRuntime::getJavaVM();
+    bool shouldDetach = false;
+
+    if (env == NULL) {
+        if (vm != NULL) {
+            jint result = vm->AttachCurrentThread(&env, NULL);
+            if (result == JNI_OK) {
+                shouldDetach = true;
+            } else {
+                ALOGE("Failed to attach thread for proxy warn callback (uid: %d)!", uid);
+                return;
+            }
+        } else {
+            LOG_ALWAYS_FATAL("No JavaVM instance available for proxy warn callback (uid: %d)! Aborting.", uid);
+        }
+    }
+
     env->CallStaticVoidMethod(gBinderInternalOffsets.mClass,
                               gBinderInternalOffsets.mProxyWarningCallback,
                               uid);
@@ -1428,6 +1493,10 @@ static void android_os_BinderInternal_proxyWarningCallback(int uid)
         ScopedLocalRef<jthrowable> excep(env, env->ExceptionOccurred());
         binder_report_exception(env, excep.get(),
                                 "*** Uncaught exception in binderProxyWarningCallbackFromNative");
+    }
+
+    if (shouldDetach) {
+        vm->DetachCurrentThread();
     }
 }
 

@@ -17,17 +17,14 @@
 package com.android.systemui.statusbar.ui.viewmodel
 
 import com.android.systemui.Flags
-import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.scene.domain.interactor.SceneInteractor
-import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.domain.interactor.KeyguardStatusBarInteractor
-import com.android.systemui.statusbar.headsup.shared.StatusBarNoHunBehavior
-import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.statusbar.policy.BatteryController.BatteryStateChangeCallback
 import com.android.systemui.user.domain.interactor.UserLogoutInteractor
@@ -39,8 +36,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -51,40 +46,31 @@ import kotlinx.coroutines.flow.stateIn
  * [com.android.systemui.statusbar.pipeline.wifi.ui.viewmodel.WifiViewModel] or
  * [com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel].
  */
-@SysUISingleton
 class KeyguardStatusBarViewModel
 @Inject
 constructor(
     @Application scope: CoroutineScope,
-    headsUpNotificationInteractor: HeadsUpNotificationInteractor,
+    desktopInteractor: DesktopInteractor,
     sceneInteractor: SceneInteractor,
     private val keyguardInteractor: KeyguardInteractor,
     keyguardStatusBarInteractor: KeyguardStatusBarInteractor,
     private val userLogoutInteractor: UserLogoutInteractor,
     batteryController: BatteryController,
 ) : HydratedActivatable(enableEnqueuedActivations = true) {
-
-    private val showingHeadsUpStatusBar: Flow<Boolean> =
-        if (SceneContainerFlag.isEnabled && !StatusBarNoHunBehavior.isEnabled) {
-            headsUpNotificationInteractor.statusBarHeadsUpStatus.map { it.isPinned }
-        } else {
-            flowOf(false)
-        }
-
     /** True if this view should be visible and false otherwise. */
     val isVisible: StateFlow<Boolean> =
         combine(
+                desktopInteractor.useDesktopStatusBar,
                 sceneInteractor.currentScene,
                 sceneInteractor.currentOverlays,
                 keyguardInteractor.isDozing,
-                showingHeadsUpStatusBar,
-            ) { currentScene, currentOverlays, isDozing, showHeadsUpStatusBar ->
-                currentScene == Scenes.Lockscreen &&
+            ) { useDesktopStatusBar, currentScene, currentOverlays, isDozing ->
+                !useDesktopStatusBar &&
+                    (currentScene == Scenes.Lockscreen || currentScene == Scenes.Communal) &&
                     Overlays.NotificationsShade !in currentOverlays &&
                     Overlays.QuickSettingsShade !in currentOverlays &&
                     Overlays.Bouncer !in currentOverlays &&
-                    !isDozing &&
-                    !showHeadsUpStatusBar
+                    !isDozing
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 

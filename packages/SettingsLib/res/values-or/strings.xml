@@ -87,6 +87,8 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"କନେକ୍ଟ ହେଉଛି…"</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"ସଂଯୁକ୍ତ ହେଲା<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"ପେୟାର କରୁଛି…"</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"ପେୟାର କରାଯାଇପାରିବ ନାହିଁ"</string>
+    <string name="bluetooth_connection_failure" msgid="384203214661155324">"କନେକ୍ଟ କରାଯାଇପାରିବ ନାହିଁ"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"ସଂଯୁକ୍ତ ହେଲା (ଫୋନ୍ ନୁହେଁ)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"ସଂଯୁକ୍ତ ହେଲା (ମିଡିଆ ନୁହେଁ)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp" msgid="2893204819854215433">"ସଂଯୁକ୍ତ ହେଲା (ଫୋନ୍ କିମ୍ବା ମେଡିଆ ନୁହେଁ)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
@@ -116,6 +118,8 @@
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"ସକ୍ରିୟ (କେବଳ ଡାହାଣ)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"ସକ୍ରିୟ (ବାମ ଏବଂ ଡାହାଣ)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"ପରିପାର୍ଶ୍ୱକୁ ଅପଡେଟ କରାଯାଇପାରିଲା ନାହିଁ"</string>
+    <string name="bluetooth_hearing_aids_presets_error" msgid="4523942574698610976">"ପ୍ରିସେଟକୁ ଅପଡେଟ କରାଯାଇପାରିବ ନାହିଁ"</string>
+    <string name="hearing_device_spinner_item_selected" msgid="3884049360428514878">"ଚୟନ କରାଯାଇଛି"</string>
     <string name="bluetooth_active_media_only_battery_level" msgid="7772517511061834073">"ସକ୍ରିୟ (କେବଳ ମିଡିଆ)। <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> ବେଟେରୀ।"</string>
     <string name="bluetooth_active_media_only_battery_level_untethered" msgid="7444753133664620926">"ସକ୍ରିୟ (କେବଳ ମିଡିଆ)। ବାମ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, ଡାହାଣ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> ବେଟେରୀ।"</string>
     <string name="bluetooth_guest_battery_level" msgid="2820003593899467676">"ଅତିଥି ଡିଭାଇସ। <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> ବେଟେରୀ।"</string>
@@ -345,7 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"ଯେତେବେଳେ ଏହି ମୋଡକୁ ସକ୍ଷମ କରାଯାଏ, ପ୍ରତ୍ୟେକ ଥର MAC ରେଣ୍ଡମାଇଜେସନ ସକ୍ଷମ ଥିବା କୌଣସି ନେଟୱାର୍କ ସହ ଏହି ଡିଭାଇସ ସଂଯୋଗ ହେଲେ ଏହାର MAC ଠିକଣା ବଦଳିପାରେ।"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"ମପାଯାଉଥିବା"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"ମପାଯାଉନଥିବା"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"ଲଗର ବଫର ସାଇଜ"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"ଲଗର ବଫର ସାଇଜ"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"ଲଗ୍‌ ବଫର୍‌ ପିଛା ଲଗର୍‌ ଆକାରଗୁଡିକର ଚୟନ କରନ୍ତୁ"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"ଲଗର୍‌ ରୋଧି ଷ୍ଟୋରେଜ୍‌ ଖାଲି କରିବେ?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"ଯଦି ଆମେ ଦୃଢ ଲଗର୍‌ ସହିତ ଆଉ ତଦାରଖ କରୁନଥିବୁ, ତେବେ ଆମକୁ ଆପଣଙ୍କ ଡିଭାଇସ୍‌ରେ ଥିବା ଲଗର୍‌ ଡାଟାକୁ ଲିଭାଇବାକୁ ପଡ଼ିବ।"</string>
@@ -449,9 +453,9 @@
     <string name="show_all_anrs_summary" msgid="8562788834431971392">"ବ୍ୟାକ୍‌ଗ୍ରାଉଣ୍ଡ ଆପ୍‌ଗୁଡ଼ିକ ପାଇଁ \"ଆପ୍‌ ଉତ୍ତର ଦେଉନାହିଁ\" ଡାୟଲଗ୍‌ ଦେଖାନ୍ତୁ"</string>
     <string name="show_notification_channel_warnings" msgid="3448282400127597331">"ବିଜ୍ଞପ୍ତି ଚ୍ୟାନେଲ୍ ଚେତାବନୀ ଦେଖାନ୍ତୁ"</string>
     <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"ବୈଧ ଚେନେଲ ବିନା ଗୋଟିଏ ଆପ ଏକ ବିଜ୍ଞପ୍ତି ପୋଷ୍ଟ କଲେ ଅନ-ସ୍କ୍ରିନ ଚେତାବନୀ ଦେଖାଏ"</string>
-    <string name="force_allow_on_external" msgid="9187902444231637880">"ଆପ୍‌କୁ ଏକ୍ସଟର୍ନଲ୍ ମେମୋରୀରେ ଫୋର୍ସ୍ ଅନୁମତି ଦିଅନ୍ତୁ"</string>
+    <string name="force_allow_on_external" msgid="9187902444231637880">"ଏକ୍ସଟର୍ନାଲରେ ଆପ୍ସକୁ ଫୋର୍ସ ଅନୁମତି ଦିଅନ୍ତୁ"</string>
     <string name="force_allow_on_external_summary" msgid="8525425782530728238">"ଯେକୌଣସି ଆପ୍‌କୁ ଏକ୍ସଟର୍ନଲ୍ ଷ୍ଟୋରେଜ୍‌ରେ ଲେଖାଯୋଗ୍ୟ କରନ୍ତୁ, ମେନିଫେଷ୍ଟ ମୂଲ୍ୟ ଯାହା ହୋଇଥାଉ ନା କାହିଁକି"</string>
-    <string name="force_resizable_activities" msgid="7143612144399959606">"ୱିଣ୍ଡୋ ହିସାବରେ କାର୍ଯ୍ୟକଳାପର ଆକାର ବଦଳାନ୍ତୁ"</string>
+    <string name="force_resizable_activities" msgid="7143612144399959606">"କାର୍ଯ୍ୟକଳାପଗୁଡ଼ିକୁ ରିସାଇଜ କରିବାକୁ ଫୋର୍ସ କରନ୍ତୁ"</string>
     <string name="force_resizable_activities_summary" msgid="2490382056981583062">"ମାନିଫେଷ୍ଟ ମୂଲ୍ୟ ଯାହା ହୋଇଥାଉ ନା କାହିଁକି, ଏକାଧିକ-ୱିଣ୍ଡୋ ପାଇଁ ସମସ୍ତ କାର୍ଯ୍ୟକଳାପକୁ ରିସାଇଜ କରନ୍ତୁ।"</string>
     <string name="enable_freeform_support" msgid="7599125687603914253">"ଫ୍ରିଫର୍ମ ୱିଣ୍ଡୋକୁ ସକ୍ଷମ କରନ୍ତୁ"</string>
     <string name="local_backup_password_title" msgid="4631017948933578709">"ଡେସ୍କଟପ ବେକଅପ ପାସୱାର୍ଡ"</string>
@@ -574,7 +578,7 @@
     <string name="use_system_language_to_select_input_method_subtypes" msgid="4865195835541387040">"ସିଷ୍ଟମ୍‌ ଭାଷା ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="failed_to_open_app_settings_toast" msgid="764897252657692092">"<xliff:g id="SPELL_APPLICATION_NAME">%1$s</xliff:g> ପାଇଁ ସେଟିଂସ ଖୋଲିବାରେ ବିଫଳ"</string>
     <string name="ime_security_warning" msgid="6547562217880551450">"ଏହି ଇନ୍‌ପୁଟ୍‌ ପଦ୍ଧତି, ପାସ୍‌ୱର୍ଡ ଓ କ୍ରେଡିଟ୍‌ କାର୍ଡ ନମ୍ୱର୍‌ ଭଳି ବ୍ୟକ୍ତିଗତ ଡାଟା ସମେତ ଆପଣ ଟାଇପ୍‌ କରିଥିବା ସମସ୍ତ ଅକ୍ଷର ସଂଗହ କରିପାରେ।ଏହା, <xliff:g id="IME_APPLICATION_NAME">%1$s</xliff:g> ଆପ୍‌ରୁ ଆସିଛି| ଏହି ଇନ୍‌ପୁଟ୍‌ ପଦ୍ଧତି ବ୍ୟବହାର କରିବେ?"</string>
-    <string name="direct_boot_unaware_dialog_message" msgid="7845398276735021548">"ଧ୍ୟାନଦିଅନ୍ତୁ: ରିବୁଟ୍‌ କରିବା ପରେ, ଆପଣଙ୍କ ଫୋନ୍‌ ଅନଲକ୍‌ ନହେବା ପର୍ଯ୍ୟନ୍ତ ଏହି ଆପ୍‌ ଆରମ୍ଭ ହୋଇପାରିବ ନାହିଁ"</string>
+    <string name="direct_boot_unaware_dialog_message" msgid="7845398276735021548">"ଧ୍ୟାନ ଦିଅନ୍ତୁ: ରିବୁଟ କରିବା ପରେ, ଆପଣଙ୍କ ଫୋନକୁ ଆପଣ ଅନଲକ ନ କରିବା ପର୍ଯ୍ୟନ୍ତ ଏହି ଆପ ଆରମ୍ଭ ହୋଇପାରିବ ନାହିଁ"</string>
     <string name="ims_reg_title" msgid="8197592958123671062">"IMS ପଞ୍ଜିକରଣ ସ୍ଥିତି"</string>
     <string name="ims_reg_status_registered" msgid="884916398194885457">"ପଞ୍ଜିକୃତ"</string>
     <string name="ims_reg_status_not_registered" msgid="2989287366045704694">"ପଞ୍ଜିକୃତ ହୋଇନାହିଁ"</string>

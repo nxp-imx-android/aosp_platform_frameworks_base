@@ -17,6 +17,7 @@
 package com.android.wm.shell.bubbles
 
 import android.app.ActivityManager
+import android.app.Notification
 import android.app.TaskInfo
 import android.content.ComponentName
 import android.content.Context
@@ -34,6 +35,8 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.platform.test.flag.junit.SetFlagsRule
+import android.service.notification.NotificationListenerService
+import android.service.notification.StatusBarNotification
 import android.view.IWindowManager
 import android.view.InsetsSource
 import android.view.InsetsState
@@ -48,12 +51,12 @@ import androidx.core.content.getSystemService
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import com.android.internal.logging.InstanceIdSequence
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.internal.statusbar.IStatusBarService
 import com.android.window.flags.Flags.FLAG_ROOT_TASK_FOR_BUBBLE
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR
-import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR_TO_FLOATING_TRANSITION
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
@@ -61,6 +64,12 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.Bubbles.BubbleExpandListener
 import com.android.wm.shell.bubbles.Bubbles.DISMISS_USER_GESTURE
 import com.android.wm.shell.bubbles.Bubbles.SysuiProxy
+import com.android.wm.shell.bubbles.logging.BubbleLogger
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_CREATED_FROM_ALL_APPS_ICON_MENU
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_CREATED_FROM_NOTIF
+import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_CREATED_FROM_NOTIF_BUBBLE_BUTTON
+import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
+import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayImeController
@@ -77,6 +86,7 @@ import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.bubbles.DeviceConfig
+import com.android.wm.shell.shared.bubbles.logging.EntryPoint
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
@@ -89,6 +99,7 @@ import com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE
 import com.android.wm.shell.transition.Transitions.TransitionHandler
 import com.android.wm.shell.unfold.ShellUnfoldProgressProvider
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import com.google.common.util.concurrent.MoreExecutors.directExecutor
 import java.util.Optional
 import java.util.concurrent.Executor
@@ -147,6 +158,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     private lateinit var displayController: DisplayController
     private lateinit var imeListener: ImeListener
     private lateinit var bubbleTransitions: BubbleTransitions
+    private lateinit var sessionTracker: BubbleSessionTracker
 
     private var isStayAwakeOnFold = false
 
@@ -171,6 +183,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         ProtoLog.init()
 
         bubbleLogger = BubbleLogger(uiEventLoggerFake)
+        val instanceIdSequence = InstanceIdSequence(/* instanceIdMax= */ 10)
+        sessionTracker = BubbleSessionTrackerImpl(instanceIdSequence, bubbleLogger)
         eduController = BubbleEducationController(context)
 
         mainExecutor = TestShellExecutor()
@@ -391,6 +405,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 true, /* reorder */
                 false, /* syncHiddenWithVisibilityOnReorder */
                 false, /* nonBlockingIfPossible */
+                null, /* overrideTransaction */
             )
         } else {
             verify(baseTransitions).setTaskViewVisible(taskView, true /* visible */)
@@ -413,6 +428,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             any(), /* reorder */
             any(), /* syncHiddenWithVisibilityOnReorder */
             any(), /* nonBlockingIfPossible */
+            any(), /* overrideTransaction */
         )
     }
 
@@ -423,8 +439,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         getInstrumentation().runOnMainSync {
             bubbleData.notificationEntryUpdated(
                 bubble,
-                true /* suppressFlyout */,
-                true /* showInShade= */,
+                true, /* suppressFlyout */
+                true, /* showInShade= */
             )
         }
 
@@ -434,12 +450,12 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     @Test
     fun hasStableBubbleForTask_whenBubbleInTransition_returnsFalse() {
         val taskId = 777
-        val bubble = createBubble("key", taskId).apply { preparingTransition = mock() }
+        val bubble = createBubble("key", taskId).apply { currentTransition = mock() }
         getInstrumentation().runOnMainSync {
             bubbleData.notificationEntryUpdated(
                 bubble,
-                true /* suppressFlyout */,
-                true /* showInShade= */,
+                true, /* suppressFlyout */
+                true, /* showInShade= */
             )
         }
 
@@ -452,15 +468,15 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         getInstrumentation().runOnMainSync {
             bubbleData.notificationEntryUpdated(
                 bubble,
-                true /* suppressFlyout */,
-                true /* showInShade= */,
+                true, /* suppressFlyout */
+                true, /* showInShade= */
             )
         }
 
         assertThat(bubbleController.hasStableBubbleForTask(777)).isFalse()
     }
 
-    @EnableFlags(FLAG_ROOT_TASK_FOR_BUBBLE)
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ROOT_TASK_FOR_BUBBLE)
     @Test
     fun shouldBeAppBubble_parentTaskMatchesBubbleRootTask_returnsTrue() {
         val bubbleController = createBubbleControllerWithRootTask(bubbleRootTaskId = 777)
@@ -469,7 +485,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleController.shouldBeAppBubble(taskInfo)).isTrue()
     }
 
-    @EnableFlags(FLAG_ROOT_TASK_FOR_BUBBLE)
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ROOT_TASK_FOR_BUBBLE)
     @Test
     fun shouldBeAppBubble_parentTaskDoesNotMatchesBubbleRootTask_returnsFalse() {
         val bubbleController = createBubbleControllerWithRootTask(bubbleRootTaskId = 123)
@@ -527,8 +543,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         getInstrumentation().runOnMainSync {
             bubbleData.notificationEntryUpdated(
                 bubble,
-                true /* suppressFlyout */,
-                true /* showInShade= */,
+                true, /* suppressFlyout */
+                true, /* showInShade= */
             )
         }
 
@@ -674,7 +690,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleData.isExpanded).isTrue()
     }
 
-    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR, FLAG_ENABLE_BUBBLE_BAR_TO_FLOATING_TRANSITION)
+    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
     @Test
     fun expandBubbleBar_thenFold_stayAwakeOnFold_shouldKeepBubbleExpanded() {
         isStayAwakeOnFold = true
@@ -719,7 +735,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubble.taskView.alpha).isEqualTo(1)
     }
 
-    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR, FLAG_ENABLE_BUBBLE_BAR_TO_FLOATING_TRANSITION)
+    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
     @Test
     fun expandBubbleBar_thenFold_notStayAwakeOnFold_shouldCollapse() {
         isStayAwakeOnFold = false
@@ -859,6 +875,133 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleController.layerView!!.visibility).isEqualTo(View.INVISIBLE)
     }
 
+    @Test
+    fun testOnThemeChanged_skipInflationForOverflowBubbles() {
+        val taskInfo1 = ActivityManager.RunningTaskInfo().apply {
+            taskId = 123
+            baseActivity = COMPONENT
+        }
+        val bubble = createAppBubble(taskInfo1)
+        val taskInfo2 = ActivityManager.RunningTaskInfo().apply {
+            taskId = 124
+            baseActivity = COMPONENT
+        }
+        val overflowBubble = createAppBubble(taskInfo2)
+        getInstrumentation().runOnMainSync {
+            bubbleController.inflateAndAdd(
+                bubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true
+            )
+            bubbleController.inflateAndAdd(
+                overflowBubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true
+            )
+            bubbleController.dismissBubble(overflowBubble, DISMISS_USER_GESTURE)
+        }
+
+        assertThat(bubbleData.hasBubbles()).isTrue()
+        assertThat(bubbleData.hasOverflowBubbles()).isTrue()
+        assertWithMessage("Overflow bubble should not be inflated since it's dismissed")
+            .that(overflowBubble.isInflated).isFalse()
+
+        getInstrumentation().runOnMainSync {
+            bubbleController.onThemeChanged()
+        }
+
+        assertWithMessage("Overflow bubble should not be inflated even if #onThemeChanged")
+            .that(overflowBubble.isInflated).isFalse()
+    }
+
+    @Test
+    fun bubbleCreatedFromNotification_shouldLogEntryPoint() {
+        bubbleController.asBubbles().onEntryAdded(createBubbleEntry(pkgName = "package.name"))
+        mainExecutor.flushAll()
+
+        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
+        val log = uiEventLoggerFake.logs.first()
+        assertThat(log.packageName).isEqualTo("package.name")
+        assertThat(log.eventId).isEqualTo(BUBBLE_CREATED_FROM_NOTIF.id)
+    }
+
+    @Test
+    fun bubbleCreatedFromNotificationButton_shouldLogEntryPoint() {
+        bubbleController.asBubbles().onEntryUpdated(
+            createBubbleEntry(pkgName = "package.name"),
+            /* shouldBubbleUp= */ true,
+            /* fromSystem= */ true
+        )
+        mainExecutor.flushAll()
+
+        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
+        val log = uiEventLoggerFake.logs.first()
+        assertThat(log.packageName).isEqualTo("package.name")
+        assertThat(log.eventId).isEqualTo(BUBBLE_CREATED_FROM_NOTIF_BUBBLE_BUTTON.id)
+    }
+
+    @Test
+    fun bubbleNotificationUpdated_shouldNotLogEntryPoint() {
+        val bubble = createBubble("bubble-key")
+        getInstrumentation().runOnMainSync {
+            bubbleController.inflateAndAdd(
+                bubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true
+            )
+        }
+        bubbleController.asBubbles().onEntryUpdated(
+            createBubbleEntry(bubbleKey = "bubble-key", pkgName = "package.name"),
+            /* shouldBubbleUp= */ true,
+            /* fromSystem= */ true
+        )
+        mainExecutor.flushAll()
+
+        assertThat(uiEventLoggerFake.logs).isEmpty()
+    }
+
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    @Test
+    fun expandStackAndSelectBubble_shouldLogEntryPoint() {
+        val intent = Intent().apply {
+            setPackage("package.name")
+        }
+        getInstrumentation().runOnMainSync {
+            bubbleController.expandStackAndSelectBubble(
+                intent,
+                UserHandle.of(0),
+                EntryPoint.ALL_APPS_ICON_MENU,
+                /* bubbleBarLocation= */ null
+            )
+        }
+
+        assertThat(uiEventLoggerFake.logs).isNotEmpty()
+        val log = uiEventLoggerFake.logs.first()
+        assertThat(log.packageName).isEqualTo("package.name")
+        assertThat(log.eventId).isEqualTo(BUBBLE_CREATED_FROM_ALL_APPS_ICON_MENU.id)
+    }
+
+    private fun createBubbleEntry(bubbleKey: String = "key", pkgName: String): BubbleEntry {
+        val notif =
+            Notification.Builder(context)
+                .setBubbleMetadata(Notification.BubbleMetadata.Builder("shortcutId").build())
+                .setFlag(Notification.FLAG_BUBBLE, true)
+                .build()
+        val sbn = mock<StatusBarNotification>().stub {
+            on { key } doReturn bubbleKey
+            on { packageName } doReturn pkgName
+            on { notification } doReturn notif
+        }
+        return BubbleEntry(
+            sbn,
+            mock<NotificationListenerService.Ranking>(),
+            /* isDismissable= */ false,
+            /* shouldSuppressNotificationDot= */ true,
+            /* shouldSuppressNotificationList= */ true,
+            /* shouldSuppressPeek= */ true
+        )
+    }
+
     private fun createBubble(key: String, taskId: Int = 0): Bubble {
         val icon = Icon.createWithResource(context.resources, R.drawable.bubble_ic_overflow_button)
         val shortcutInfo = ShortcutInfo.Builder(context, "fakeId").setIcon(icon).build()
@@ -951,6 +1094,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 { Optional.of(splitScreenController) },
                 Optional.of(unfoldProgressProvider),
                 { isStayAwakeOnFold },
+                sessionTracker,
             )
         bubbleController.setInflateSynchronously(true)
         bubbleController.onInit()
@@ -979,7 +1123,10 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             captor.lastValue
         }
 
-        val bubbleRootTask = ActivityManager.RunningTaskInfo().apply { taskId = bubbleRootTaskId }
+        val bubbleRootTask = ActivityManager.RunningTaskInfo().apply {
+            taskId = bubbleRootTaskId
+            token = mock<WindowContainerToken>()
+        }
         rootTaskListener.onTaskAppeared(bubbleRootTask, null /* leash */)
 
         return bubbleController

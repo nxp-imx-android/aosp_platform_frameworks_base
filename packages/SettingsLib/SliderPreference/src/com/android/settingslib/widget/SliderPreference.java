@@ -19,7 +19,6 @@ package com.android.settingslib.widget;
 import static android.view.HapticFeedbackConstants.CLOCK_TICK;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Parcel;
@@ -35,6 +34,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
@@ -52,12 +52,8 @@ public class SliderPreference extends Preference {
     public static final int HAPTIC_FEEDBACK_MODE_ON_TICKS = 1;
     public static final int HAPTIC_FEEDBACK_MODE_ON_ENDS = 2;
 
-    private final int mTextStartId;
-    private final int mTextEndId;
-    private final ColorStateList mTrackActiveColor;
-    private final ColorStateList mTrackInactiveColor;
-    private final ColorStateList mThumbColor;
-    private final ColorStateList mHaloColor;
+    private int mTextStartId;
+    private int mTextEndId;
     private final int mTrackHeight;
     private final int mTrackInsideCornerSize;
     private final int mTrackStopIndicatorSize;
@@ -211,14 +207,6 @@ public class SliderPreference extends Preference {
                 /* defValue= */ 0);
         a.recycle();
 
-        mTrackActiveColor = context.getColorStateList(
-                R.color.settingslib_expressive_color_slider_track_active);
-        mTrackInactiveColor = context.getColorStateList(
-                R.color.settingslib_expressive_color_slider_track_inactive);
-        mThumbColor = context.getColorStateList(
-                R.color.settingslib_expressive_color_slider_thumb);
-        mHaloColor = context.getColorStateList(R.color.settingslib_expressive_color_slider_halo);
-
         Resources res = context.getResources();
         mTrackHeight = res.getDimensionPixelSize(
                 R.dimen.settingslib_expressive_slider_track_height);
@@ -317,10 +305,33 @@ public class SliderPreference extends Preference {
         }
     }
 
+
+    /**
+     * Sets the text for the start of the slider.
+     */
+    public void setTextStart(@StringRes int textStartId) {
+        if (mTextStartId != textStartId) {
+            mTextStartId = textStartId;
+            notifyChanged();
+        }
+    }
+
+    /**
+     * Sets the text for the end of the slider.
+     */
+    public void setTextEnd(@StringRes int textEndId) {
+        if (mTextEndId != textEndId) {
+            mTextEndId = textEndId;
+            notifyChanged();
+        }
+    }
+
     @Override
     public void onBindViewHolder(@NonNull PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
         holder.itemView.setOnKeyListener(mSliderKeyListener);
+        // SliderPreference is not clickable under normal conditions.
+        holder.itemView.setClickable(false);
         mSlider = (Slider) holder.findViewById(R.id.slider);
 
         if (mSlider == null) {
@@ -344,7 +355,7 @@ public class SliderPreference extends Preference {
         }
         final CharSequence title = getTitle();
         if (!TextUtils.isEmpty(mSliderContentDescription)) {
-            mSlider.setContentDescription(mSliderContentDescription);
+            holder.itemView.setContentDescription(mSliderContentDescription);
         } else if (!TextUtils.isEmpty(title)) {
             mSlider.setContentDescription(title);
         } else {
@@ -364,15 +375,6 @@ public class SliderPreference extends Preference {
         mSlider.addOnChangeListener(mChangeListener);
         mSlider.setEnabled(isEnabled());
         mSlider.setClickable(isSelectable());
-
-        // Set up slider color
-        mSlider.setTrackActiveTintList(mTrackActiveColor);
-        mSlider.setTrackInactiveTintList(mTrackInactiveColor);
-        mSlider.setThumbTintList(mThumbColor);
-        mSlider.setThumbStrokeColor(mThumbColor);
-        mSlider.setHaloTintList(mHaloColor);
-        mSlider.setTickActiveTintList(mTrackInactiveColor);
-        mSlider.setTickInactiveTintList(mTrackActiveColor);
 
         // Set up slider size
         if (SettingsThemeHelper.isExpressiveTheme(getContext())) {
@@ -569,8 +571,10 @@ public class SliderPreference extends Preference {
      * @see #getShowSliderValue()
      */
     public void setShowSliderValue(boolean showSliderValue) {
-        mShowSliderValue = showSliderValue;
-        notifyChanged();
+        if (showSliderValue != mShowSliderValue) {
+            mShowSliderValue = showSliderValue;
+            notifyChanged();
+        }
     }
 
     public void setLabelFormater(@Nullable LabelFormatter formater) {
@@ -602,9 +606,9 @@ public class SliderPreference extends Preference {
      * @param contentDescription The content description of the {@link Slider}
      */
     public void setSliderContentDescription(@Nullable CharSequence contentDescription) {
-        mSliderContentDescription = contentDescription;
-        if (mSlider != null) {
-            mSlider.setContentDescription(contentDescription);
+        if (!TextUtils.equals(contentDescription, mSliderContentDescription)) {
+            mSliderContentDescription = contentDescription;
+            notifyChanged();
         }
     }
 
@@ -734,13 +738,13 @@ public class SliderPreference extends Preference {
         }
 
         iconFrame.setOnClickListener((view) -> {
-            if (mSliderValue > 0) {
+            if (mSliderValue > mMin) {
                 setValue(mSliderValue - mSliderIncrement);
             }
         });
 
         iconFrame.setVisibility(View.VISIBLE);
-        setIconViewAndFrameEnabled(icon, iconFrame, mSliderValue > mMin);
+        setIconViewAndFrameEnabled(icon, iconFrame, isEnabled() && mSliderValue > mMin);
     }
 
     private void updateIconEndIfNeeded(ImageView icon) {
@@ -774,7 +778,7 @@ public class SliderPreference extends Preference {
         });
 
         iconFrame.setVisibility(View.VISIBLE);
-        setIconViewAndFrameEnabled(icon, iconFrame, mSliderValue < mMax);
+        setIconViewAndFrameEnabled(icon, iconFrame, isEnabled() && mSliderValue < mMax);
     }
 
     /**

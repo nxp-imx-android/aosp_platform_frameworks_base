@@ -37,7 +37,6 @@ import android.util.MathUtils;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.Spline;
-import android.view.DisplayAddress;
 import android.view.SurfaceControl;
 
 import com.android.internal.R;
@@ -672,18 +671,18 @@ public class DisplayDeviceConfig {
     public static final String DEFAULT_ID = "default";
 
     public static final int DEFAULT_LOW_REFRESH_RATE = 60;
+    public static final long STABLE_FLAG = 1L << 62;
 
     @VisibleForTesting
     static final float BRIGHTNESS_DEFAULT = 0.5f;
     private static final String ETC_DIR = "etc";
     private static final String DISPLAY_CONFIG_DIR = "displayconfig";
-    private static final String CONFIG_FILE_FORMAT = "display_%s.xml";
+    public static final String CONFIG_FILE_FORMAT = "display_%s.xml";
     private static final String DEFAULT_CONFIG_FILE = "default.xml";
     private static final String DEFAULT_CONFIG_FILE_WITH_UIMODE_FORMAT = "default_%s.xml";
-    private static final String PORT_SUFFIX_FORMAT = "port_%d";
-    private static final String STABLE_ID_SUFFIX_FORMAT = "id_%d";
+    public static final String PORT_SUFFIX_FORMAT = "port_%d";
+    public static final String STABLE_ID_SUFFIX_FORMAT = "id_%d";
     private static final String NO_SUFFIX_FORMAT = "%d";
-    private static final long STABLE_FLAG = 1L << 62;
 
     private static final int DEFAULT_HIGH_REFRESH_RATE = 0;
     private static final float[] DEFAULT_BRIGHTNESS_THRESHOLDS = new float[]{};
@@ -950,9 +949,9 @@ public class DisplayDeviceConfig {
      * @return A configuration instance for the specified display.
      */
     public static DisplayDeviceConfig create(Context context, long physicalDisplayId,
-            boolean isFirstDisplay, DisplayManagerFlags flags) {
+            int port, boolean isFirstDisplay, DisplayManagerFlags flags) {
         final DisplayDeviceConfig config = createWithoutDefaultValues(context, physicalDisplayId,
-                isFirstDisplay, flags);
+                port, isFirstDisplay, flags);
 
         config.copyUninitializedValuesFromSecondaryConfig(loadDefaultConfigurationXml(context));
         return config;
@@ -979,17 +978,24 @@ public class DisplayDeviceConfig {
     }
 
     private static DisplayDeviceConfig createWithoutDefaultValues(Context context,
-            long physicalDisplayId, boolean isFirstDisplay, DisplayManagerFlags flags) {
+            long physicalDisplayId, int port, boolean isFirstDisplay, DisplayManagerFlags flags) {
+        return createWithoutDefaultValues(Environment.getProductDirectory(),
+                Environment.getVendorDirectory(), context, physicalDisplayId, port, isFirstDisplay,
+                flags);
+    }
+
+    @VisibleForTesting
+    public static DisplayDeviceConfig createWithoutDefaultValues(File productDir, File vendorDir,
+            Context context, long physicalDisplayId, int port, boolean isFirstDisplay,
+            DisplayManagerFlags flags) {
         DisplayDeviceConfig config;
 
-        config = loadConfigFromDirectory(context, Environment.getProductDirectory(),
-                physicalDisplayId, flags);
+        config = loadConfigFromDirectory(context, productDir, physicalDisplayId, port, flags);
         if (config != null) {
             return config;
         }
 
-        config = loadConfigFromDirectory(context, Environment.getVendorDirectory(),
-                physicalDisplayId, flags);
+        config = loadConfigFromDirectory(context, vendorDir, physicalDisplayId, port, flags);
         if (config != null) {
             return config;
         }
@@ -1050,7 +1056,7 @@ public class DisplayDeviceConfig {
     }
 
     private static DisplayDeviceConfig loadConfigFromDirectory(Context context,
-            File baseDirectory, long physicalDisplayId, DisplayManagerFlags flags) {
+            File baseDirectory, long physicalDisplayId, int port, DisplayManagerFlags flags) {
         DisplayDeviceConfig config;
         // Create config using filename from physical ID (including "stable" bit).
         config = getConfigFromSuffix(context, baseDirectory, STABLE_ID_SUFFIX_FORMAT,
@@ -1068,9 +1074,6 @@ public class DisplayDeviceConfig {
         }
 
         // Create config using filename from port ID.
-        final DisplayAddress.Physical physicalAddress =
-                DisplayAddress.fromPhysicalDisplayId(physicalDisplayId);
-        int port = physicalAddress.getPort();
         config = getConfigFromSuffix(context, baseDirectory, PORT_SUFFIX_FORMAT, port, flags);
         return config;
     }

@@ -75,7 +75,6 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserManager;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArraySet;
@@ -87,7 +86,6 @@ import android.window.TaskSnapshot;
 import androidx.test.filters.MediumTest;
 
 import com.android.server.wm.RecentTasks.Callbacks;
-import com.android.window.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -440,7 +438,6 @@ public class RecentTasksTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_TASK_COMPATIBLE_MODES)
     public void testAddTaskCompatibleWindowingMode_withMultiWindowAndFullscreen_expectRemove() {
         verifyCompatibleWindowingModeWithFullscreen(WINDOWING_MODE_MULTI_WINDOW);
     }
@@ -668,6 +665,41 @@ public class RecentTasksTest extends WindowTestsBase {
 
         // Ensure that the last task was trimmed as an inactive task
         triggerTrimAndAssertTrimmed(mTasks.get(0));
+    }
+
+    @Test
+    public void testTrimToGlobalMaxNumRecents_withNonTrimmableTask_expectNotTrimmed() {
+        mRecentTasks.setGlobalMaxNumTasks(1);
+        Task nonTrimmableTask = mTasks.get(0);
+        nonTrimmableTask.mIsTrimmableFromRecents = false;
+        // Move home to front so the other task can satisfy the condition in
+        // RecentTasks#isTrimmable.
+        mRootWindowContainer.getDefaultTaskDisplayArea().getRootHomeTask().moveToFront("test");
+
+        mRecentTasks.add(nonTrimmableTask);
+        mRecentTasks.add(mTasks.get(1));
+
+        // The non-trimmable task is the oldest, so the newer (but trimmable) task should be
+        // removed instead to meet the size limit.
+        triggerTrimAndAssertTrimmed(mTasks.get(1));
+        assertRecentTasksOrder(nonTrimmableTask);
+    }
+
+    @Test
+    public void testTrimToGlobalMaxNumRecents_withHomeTask_expectNotTrimmed() {
+        mRecentTasks.setGlobalMaxNumTasks(1);
+
+        Task homeTask = createTaskBuilder(".HomeTask")
+                .setParentTask(mTaskContainer.getRootHomeTask())
+                .build();
+
+        mRecentTasks.add(mTasks.get(0));
+        mRecentTasks.add(homeTask);
+        mRecentTasks.add(mTasks.get(1));
+
+        // The home task should not be trimmed, so the other two tasks should be.
+        triggerTrimAndAssertTrimmed(mTasks.get(0), mTasks.get(1));
+        assertRecentTasksOrder(homeTask);
     }
 
     @Test

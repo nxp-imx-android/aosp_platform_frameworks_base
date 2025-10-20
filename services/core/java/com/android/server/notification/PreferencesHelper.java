@@ -37,7 +37,6 @@ import static android.app.NotificationManager.IMPORTANCE_NONE;
 import static android.app.NotificationManager.IMPORTANCE_UNSPECIFIED;
 import static android.os.Process.INVALID_UID;
 import static android.os.UserHandle.USER_SYSTEM;
-import static android.service.notification.Flags.notificationClassification;
 
 import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_CHANNEL_GROUP_PREFERENCES;
 import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_CHANNEL_PREFERENCES;
@@ -461,16 +460,12 @@ public class PreferencesHelper implements RankingConfig {
             PackagePreferences r) {
         try {
             String id = parser.getAttributeValue(null, ATT_ID);
-            if (!notificationClassification() && SYSTEM_RESERVED_IDS.contains(id)) {
-                // delete bundle channels if flag is rolled back
-                return;
-            }
             String channelName = parser.getAttributeValue(null, ATT_NAME);
             int channelImportance = parser.getAttributeInt(
                     null, ATT_IMPORTANCE, DEFAULT_IMPORTANCE);
             if (!TextUtils.isEmpty(id) && !TextUtils.isEmpty(channelName)) {
                 // Force IMPORTANCE_LOW for reserved channels
-                if (notificationClassification() && SYSTEM_RESERVED_IDS.contains(id)) {
+                if (SYSTEM_RESERVED_IDS.contains(id)) {
                     channelImportance = IMPORTANCE_LOW;
                 }
                 NotificationChannel channel = new NotificationChannel(
@@ -547,10 +542,8 @@ public class PreferencesHelper implements RankingConfig {
     @NonNull
     private PackagePreferences getOrCreatePackagePreferencesLocked(String pkg, int uid) {
         Objects.requireNonNull(pkg);
-        if (Flags.preferencesThrowsOnInvalidUid()) {
-            Preconditions.checkArgument(uid != INVALID_UID,
-                    "Valid uid required to get settings of %s", pkg);
-        }
+        Preconditions.checkArgument(uid != INVALID_UID,
+                "Valid uid required to get settings of %s", pkg);
 
         // TODO (b/194833441): use permissionhelper instead of DEFAULT_IMPORTANCE
         return getOrCreatePackagePreferencesSupportingInvalidUidLocked(pkg,
@@ -906,7 +899,6 @@ public class PreferencesHelper implements RankingConfig {
         }
     }
 
-    @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
     public boolean canBePromoted(String packageName, int uid) {
         if (android.app.Flags.uiRichOngoing()) {
             Log.e(TAG, "Should not be checking here if uiRichOngoingPermission flag enabled");
@@ -918,7 +910,6 @@ public class PreferencesHelper implements RankingConfig {
         }
     }
 
-    @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
     public boolean setCanBePromoted(String packageName, int uid, boolean promote,
             boolean fromUser) {
 
@@ -1143,8 +1134,7 @@ public class PreferencesHelper implements RankingConfig {
                 throw new IllegalArgumentException("Reserved id");
             }
             // Only the user can update bundle channel settings
-            if (notificationClassification() && !fromSystemOrSystemUi
-                    && SYSTEM_RESERVED_IDS.contains(channel.getId())) {
+            if (!fromSystemOrSystemUi && SYSTEM_RESERVED_IDS.contains(channel.getId())) {
                 return false;
             }
             NotificationChannel existing = r.channels.get(channel.getId());
@@ -1481,12 +1471,8 @@ public class PreferencesHelper implements RankingConfig {
         }
     }
 
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public NotificationChannel getReservedChannel(String pkg, int uid,
             @Adjustment.Types int type) {
-        if (!notificationClassification()) {
-            return null;
-        }
         Objects.requireNonNull(pkg);
         if (uid == INVALID_UID) {
             return null;
@@ -1500,12 +1486,8 @@ public class PreferencesHelper implements RankingConfig {
         return channel;
     }
 
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public NotificationChannel createReservedChannel(String pkg, int uid,
             @Adjustment.Types int type) {
-        if (!notificationClassification()) {
-            return null;
-        }
         Objects.requireNonNull(pkg);
         synchronized (mLock) {
             PackagePreferences r = getOrCreatePackagePreferencesLocked(pkg, uid);
@@ -1651,12 +1633,8 @@ public class PreferencesHelper implements RankingConfig {
 
     // Update all reserved channels for the given adjustment type(s) when enabled or disabled.
     // If disabled, all relevant channels are marked as deleted until the type is re-enabled.
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     void updateReservedChannels(List<Integer> userIds, List<Integer> changedTypes,
             boolean enabled) {
-        if (!notificationClassification()) {
-            return;
-        }
         boolean shouldBeDeleted = !enabled;  // just for ease of reading boolean logic
         boolean updated = false;
         synchronized (mLock) {
@@ -1927,8 +1905,10 @@ public class PreferencesHelper implements RankingConfig {
                     conversation.setPkg(r.pkg);
                     conversation.setUid(r.uid);
                     conversation.setNotificationChannel(nc);
-                    conversation.setParentChannelLabel(
-                            r.channels.get(nc.getParentChannelId()).getName());
+                    NotificationChannel parent = r.channels.get(nc.getParentChannelId());
+                    conversation.setParentChannelLabel(parent == null
+                            ? null
+                            : parent.getName());
                     boolean blockedByGroup = false;
                     if (nc.getGroup() != null) {
                         NotificationChannelGroup group = r.groups.get(nc.getGroup());
@@ -2116,18 +2096,16 @@ public class PreferencesHelper implements RankingConfig {
                 if (r.channels.size() == 1) {
                     return true;
                 }
-                if (notificationClassification()) {
-                    if (r.channels.size() <= 5) {
-                        for (NotificationChannel c : r.channels.values()) {
-                            if (!SYSTEM_RESERVED_IDS.contains(c.getId()) &&
-                                    !DEFAULT_CHANNEL_ID.equals(c.getId())) {
-                                return false;
-                            }
-                            return true;
+                if (r.channels.size() <= 5) {
+                    for (NotificationChannel c : r.channels.values()) {
+                        if (!SYSTEM_RESERVED_IDS.contains(c.getId()) &&
+                                !DEFAULT_CHANNEL_ID.equals(c.getId())) {
+                            return false;
                         }
-                    } else {
-                        return false;
+                        return true;
                     }
+                } else {
+                    return false;
                 }
             }
             return false;
@@ -2633,7 +2611,8 @@ public class PreferencesHelper implements RankingConfig {
                 }
 
                 final boolean requestedFSIPermission = mPermissionHelper.hasRequestedPermission(
-                        android.Manifest.permission.USE_FULL_SCREEN_INTENT, r.pkg, r.uid);
+                        android.Manifest.permission.USE_FULL_SCREEN_INTENT, r.pkg,
+                        UserHandle.getUserId(r.uid));
 
                 final int fsiState = getFsiState(r.pkg, r.uid, requestedFSIPermission);
 

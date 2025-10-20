@@ -46,8 +46,9 @@ public class AppLaunchInfo implements Parcelable {
     }
 
     protected AppLaunchInfo(Parcel in) {
-        mComponentName = in.readParcelable(ComponentName.class.getClassLoader());
-        mLaunchIntent = in.readParcelable(Intent.class.getClassLoader());
+        mComponentName = in.readParcelable(ComponentName.class.getClassLoader(),
+                ComponentName.class);
+        mLaunchIntent = in.readParcelable(Intent.class.getClassLoader(), Intent.class);
     }
 
     @Override

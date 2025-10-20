@@ -406,11 +406,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     private int mLocaleConfigRes;
     private boolean mAllowCrossUidActivitySwitchFromBelow;
 
-    @Nullable
-    private int[] mAlternateLauncherIconResIds;
-    @Nullable
-    private int[] mAlternateLauncherLabelResIds;
-
     private List<AndroidPackageSplit> mSplits;
 
     @NonNull
@@ -539,7 +534,10 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     public PackageImpl addImplicitPermission(String permission) {
         addUsesPermission(
                 new ParsedUsesPermissionImpl(
-                        permission, /* usesPermissionFlags= */ 0, /* purposes= */ emptySet()));
+                        permission,
+                        /* usesPermissionFlags= */ 0,
+                        /* purposes= */ emptySet(),
+                        /* generalPurposes= */ emptySet()));
         this.implicitPermissions = CollectionUtils.add(this.implicitPermissions,
                 TextUtils.safeIntern(permission));
         return this;
@@ -873,18 +871,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     @Override
     public List<String> getAdoptPermissions() {
         return adoptPermissions;
-    }
-
-    @Nullable
-    @Override
-    public int[] getAlternateLauncherIconResIds() {
-        return mAlternateLauncherIconResIds;
-    }
-
-    @Nullable
-    @Override
-    public int[] getAlternateLauncherLabelResIds() {
-        return mAlternateLauncherLabelResIds;
     }
 
     @NonNull
@@ -1872,6 +1858,11 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         return getBoolean(Booleans.VM_SAFE_MODE);
     }
 
+    @Override
+    public boolean hasPccComponents() {
+        return getBoolean2(Booleans2.HAS_PCC_COMPONENTS);
+    }
+
     @Override public PackageImpl removeUsesOptionalNativeLibrary(String libraryName) {
         this.usesOptionalNativeLibraries = CollectionUtils.remove(this.usesOptionalNativeLibraries,
                 libraryName);
@@ -1901,19 +1892,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     @Override
     public PackageImpl setAllowNativeHeapPointerTagging(boolean value) {
         return setBoolean(Booleans.ALLOW_NATIVE_HEAP_POINTER_TAGGING, value);
-    }
-
-    @Override
-    public PackageImpl setAlternateLauncherIconResIds(@Nullable int[] alternateLauncherIconResIds) {
-        this.mAlternateLauncherIconResIds = alternateLauncherIconResIds;
-        return this;
-    }
-
-    @Override
-    public PackageImpl setAlternateLauncherLabelResIds(
-            @Nullable int[] alternateLauncherLabelResIds) {
-        this.mAlternateLauncherLabelResIds = alternateLauncherLabelResIds;
-        return this;
     }
 
     @Override
@@ -3307,8 +3285,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         dest.writeLong(this.mBooleans2);
         dest.writeBoolean(this.mAllowCrossUidActivitySwitchFromBelow);
         dest.writeInt(this.mIntentMatchingFlags);
-        dest.writeIntArray(this.mAlternateLauncherIconResIds);
-        dest.writeIntArray(this.mAlternateLauncherLabelResIds);
         dest.writeInt(this.mPageSizeAppCompatFlags);
     }
 
@@ -3509,8 +3485,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         this.mBooleans2 = in.readLong();
         this.mAllowCrossUidActivitySwitchFromBelow = in.readBoolean();
         this.mIntentMatchingFlags = in.readInt();
-        this.mAlternateLauncherIconResIds = in.createIntArray();
-        this.mAlternateLauncherLabelResIds = in.createIntArray();
         this.mPageSizeAppCompatFlags = in.readInt();
 
         assignDerivedFields();
@@ -3768,6 +3742,12 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     }
 
     @Override
+    public ParsingPackage setHasPccComponents(boolean hasPccComponents) {
+        setBoolean2(Booleans2.HAS_PCC_COMPONENTS, hasPccComponents);
+        return this;
+    }
+
+    @Override
     public int getIntentMatchingFlags() {
         return mIntentMatchingFlags;
     }
@@ -3936,11 +3916,13 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
                 STUB,
                 APEX,
                 UPDATABLE_SYSTEM,
+                HAS_PCC_COMPONENTS,
         })
         public @interface Flags {}
 
         private static final long STUB = 1L;
         private static final long APEX = 1L << 1;
         private static final long UPDATABLE_SYSTEM = 1L << 2;
+        private static final long HAS_PCC_COMPONENTS = 1L << 3;
     }
 }

@@ -63,7 +63,8 @@ public interface Bubbles {
             DISMISS_USER_CHANGED, DISMISS_GROUP_CANCELLED, DISMISS_INVALID_INTENT,
             DISMISS_OVERFLOW_MAX_REACHED, DISMISS_SHORTCUT_REMOVED, DISMISS_PACKAGE_REMOVED,
             DISMISS_NO_BUBBLE_UP, DISMISS_RELOAD_FROM_DISK, DISMISS_USER_ACCOUNT_REMOVED,
-            DISMISS_SWITCH_TO_STACK, DISMISS_USER_GESTURE_FROM_LAUNCHER})
+            DISMISS_SWITCH_TO_STACK, DISMISS_USER_GESTURE_FROM_LAUNCHER,
+            DISMISS_JUMPCUT_BUBBLE_SWITCH, DISMISS_REPLACE_BY_EXISTING})
     @Target({FIELD, LOCAL_VARIABLE, PARAMETER})
     @interface DismissReason {
     }
@@ -86,6 +87,8 @@ public interface Bubbles {
     int DISMISS_USER_ACCOUNT_REMOVED = 16;
     int DISMISS_SWITCH_TO_STACK = 17;
     int DISMISS_USER_GESTURE_FROM_LAUNCHER = 18;
+    int DISMISS_JUMPCUT_BUBBLE_SWITCH = 19;
+    int DISMISS_REPLACE_BY_EXISTING = 20;
 
     /** Returns a binder that can be passed to an external process to manipulate Bubbles. */
     default IBubbles createExternalInterface() {
@@ -334,6 +337,8 @@ public interface Bubbles {
             case DISMISS_USER_ACCOUNT_REMOVED: return "USER_ACCOUNT_REMOVED";
             case DISMISS_SWITCH_TO_STACK: return "SWITCH_TO_STACK";
             case DISMISS_USER_GESTURE_FROM_LAUNCHER: return "USER_GESTURE_FROM_LAUNCHER";
+            case DISMISS_JUMPCUT_BUBBLE_SWITCH: return "JUMPCUT_BUBBLE_SWITCH";
+            case DISMISS_REPLACE_BY_EXISTING: return "REPLACE_BY_EXISTING";
             default: return "UNKNOWN";
         }
     }

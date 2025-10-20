@@ -38,11 +38,22 @@ class MenuPreference @JvmOverloads constructor(
     override var menuItemClickListener: MenuHandler.OnMenuItemClickListener? = null
     override var menuButton: MaterialButton? = null
     override var preference: Preference? = this
+    override var onPostInflateListener: MenuHandler.OnPostInflateListener? = null
     override var showIconsInPopupMenu: Boolean = false
+
+    override var menuButtonContentDescription: String? = null
+        set(value) {
+            field = value
+            notifyChanged()
+        }
 
     init {
         layoutResource =
-            com.android.settingslib.widget.theme.R.layout.settingslib_expressive_preference
+            if (SettingsThemeHelper.isExpressiveTheme(context)) {
+                com.android.settingslib.widget.theme.R.layout.settingslib_expressive_preference
+            } else {
+                com.android.settingslib.widget.theme.R.layout.settingslib_preference
+            }
         widgetLayoutResource = R.layout.settingslib_expressive_button_menu
         if (attrs != null) {
             context.withStyledAttributes(attrs, R.styleable.MenuPreference) {
@@ -59,6 +70,9 @@ class MenuPreference @JvmOverloads constructor(
         holder.isDividerAllowedAbove = false
 
         menuButton = holder.findViewById(R.id.settingslib_menu_button) as MaterialButton
+        if (menuButtonContentDescription != null) {
+            menuButton?.contentDescription = menuButtonContentDescription
+        }
 
         // setup the onClickListener
         setupMenuButton(context)

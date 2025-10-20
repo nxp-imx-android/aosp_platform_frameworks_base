@@ -17,9 +17,6 @@
 #ifndef _COM_ANDROID_INTERNAL_OS_ZYGOTE_H
 #define _COM_ANDROID_INTERNAL_OS_ZYGOTE_H
 
-#define LOG_TAG "Zygote"
-#define ATRACE_TAG ATRACE_TAG_DALVIK
-
 /*
  * All functions that lead to ForkCommon must be marked with the
  * no_stack_protector attributed.  Because ForkCommon changes the stack
@@ -69,6 +66,9 @@ void ZygoteFailure(JNIEnv* env,
                    const char* process_name,
                    jstring managed_process_name,
                    const std::string& msg);
+
+jlong CalculateCapabilities(JNIEnv* env, jint uid, jint gid, jintArray gids, bool is_child_zygote);
+jlong CalculateBoundingCapabilities(JNIEnv* env, jint uid, jint gid, jintArray gids);
 
 }  // namespace zygote
 }  // namespace android

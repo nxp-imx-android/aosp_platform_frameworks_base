@@ -60,14 +60,17 @@ abstract class MoveToNextDisplayAndFocus() : TestScenarioBase() {
 
     @Before
     fun setup() {
-        connectedDisplayRule.setupTestDisplay()
-        testAppInMainDisplay.launchViaIntent(wmHelper)
+        val displayId = connectedDisplayRule.setupTestDisplay()
+        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(displayId).waitForAndVerify()
+        testAppInMainDisplay.enterDesktopMode(wmHelper, device)
+        testAppInExternalDisplay.launchViaIntent(wmHelper)
+        wmHelper.StateSyncBuilder().withAppTransitionIdle()
+                .withTopVisibleApps(testAppInExternalDisplay, testAppInMainDisplay)
+                .waitForAndVerify()
     }
 
     @Test
     open fun moveToNextDisplayAndFocus() {
-        // TODO(b/434576513): Move launchViaIntent to setup()
-        testAppInExternalDisplay.launchViaIntent(wmHelper)
         testAppInExternalDisplay.moveToNextDisplayViaKeyboard(
             wmHelper,
             connectedDisplayRule.addedDisplays.first()

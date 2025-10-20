@@ -1,0 +1,125 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package android.app.appfunctions;
+
+import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS;
+
+import static java.util.Objects.requireNonNull;
+
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+import android.app.appsearch.GenericDocument;
+
+import com.android.internal.annotations.VisibleForTesting;
+
+import java.util.List;
+import java.util.Objects;
+
+/** Represents metadata about a package providing app functions. */
+@FlaggedApi(FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS)
+public class AppFunctionPackageMetadata implements AbstractAppFunctionMetadata {
+    /**
+     * The property name for the list of GenericDocuments comprising package-level documents
+     * in the database, excluding app functions.
+     *
+     * <p>Used as the key to fetch the metadata list from {@link #getMetadataDocument}.
+     */
+    public static final String PROPERTY_TOP_LEVEL_DOCUMENTS = "topLevelMetadataDocuments";
+    /**
+     * The property name for the app function's package name.
+     *
+     * <p>Used as the key to fetch the package name from {@link #getMetadataDocument}.
+     */
+    static final String PROPERTY_PACKAGE_NAME =
+            AppFunctionStaticMetadataHelper.PROPERTY_PACKAGE_NAME;
+
+    @NonNull
+    private final String mPackageName;
+    @NonNull
+    private final GenericDocument mMetadataDocument;
+
+    private AppFunctionPackageMetadata(@NonNull String packageName,
+            @NonNull GenericDocument metadataDocument) {
+        this.mPackageName = requireNonNull(packageName);
+        this.mMetadataDocument = requireNonNull(metadataDocument);
+    }
+
+    /**
+     * @param packageName               The name of the package.
+     * @param topLevelMetadataDocuments The list of GenericDocuments comprising package-level
+     *                                  documents in the database, excluding app functions.
+     * @hide
+     */
+    @VisibleForTesting
+    public static AppFunctionPackageMetadata create(
+            @NonNull String packageName, @NonNull List<GenericDocument> topLevelMetadataDocuments) {
+        requireNonNull(packageName);
+        requireNonNull(topLevelMetadataDocuments);
+        return new AppFunctionPackageMetadata(
+                packageName,
+                new GenericDocument.Builder<>("", "", "")
+                        .setPropertyString(PROPERTY_PACKAGE_NAME, packageName)
+                        .setPropertyDocument(PROPERTY_TOP_LEVEL_DOCUMENTS,
+                                topLevelMetadataDocuments.toArray(new GenericDocument[0]))
+                        .build()
+        );
+    }
+
+    /** The name of the package. */
+    @NonNull
+    public String getPackageName() {
+        return mPackageName;
+    }
+
+    /**
+     * Returns the full package metadata as a {@link GenericDocument}.
+     *
+     * <p>Client-defined properties can be retrieved using the {@link GenericDocument}
+     * property getters.
+     *
+     * <p>Properties that are not defined in this class (see {@code PROPERTY_*} constants) are
+     * not guaranteed to be available or consistent across versions.
+     */
+    @NonNull
+    @Override
+    public GenericDocument getMetadataDocument() {
+        return mMetadataDocument;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AppFunctionPackageMetadata that)) return false;
+
+        return mMetadataDocument.equals(that.mMetadataDocument);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mMetadataDocument);
+    }
+
+    @Override
+    public String toString() {
+        return "AppFunctionPackageMetadata("
+                + "packageName="
+                + getPackageName()
+                + ", "
+                + "metadataDocument"
+                + mMetadataDocument
+                + ")";
+    }
+}

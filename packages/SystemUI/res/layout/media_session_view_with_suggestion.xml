@@ -94,7 +94,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:orientation="vertical"
-        app:layout_constraintGuide_end="@dimen/qs_media_session_collapsed_legacy_guideline" />
+        app:layout_constraintGuide_end="@dimen/qs_media_session_collapsed_guideline" />
 
     <!-- Carousel pagination -->
     <ImageButton
@@ -157,18 +157,21 @@
             android:minHeight="@dimen/qs_seamless_height"
             android:maxHeight="@dimen/min_clickable_item_size"
             android:background="@drawable/qs_media_bordered_button"
+            android:backgroundTint="@null"
             android:orientation="horizontal"
-            android:visibility="gone"
-            android:contentDescription="@string/quick_settings_media_device_label">
+            android:visibility="gone">
 
             <ImageView
                 android:id="@+id/device_suggestion_icon"
+                android:importantForAccessibility="no"
                 android:layout_width="@dimen/qs_seamless_icon_size"
                 android:layout_height="@dimen/qs_seamless_icon_size"
                 android:layout_gravity="center_vertical"
-                android:src="@*android:drawable/ic_media_seamless" />
+                android:src="@*android:drawable/ic_media_seamless"
+                android:tint="@color/media_on_background" />
              <ProgressBar
                 android:id="@+id/device_suggestion_progressbar"
+                android:indeterminateTint="@color/media_on_background"
                 android:layout_width="@dimen/qs_seamless_icon_size"
                 android:layout_height="@dimen/qs_seamless_icon_size"
                 android:layout_gravity="center_vertical" />
@@ -181,6 +184,7 @@
                 android:fontFamily="@*android:string/config_headlineFontFamilyMedium"
                 android:singleLine="true"
                 android:textDirection="locale"
+                android:textColor="@color/media_on_background"
                 android:textSize="12sp"
                 android:lineHeight="16sp" />
             </LinearLayout>
@@ -276,7 +280,7 @@
     <ImageButton
         android:id="@+id/actionPlayPause"
         style="@style/MediaPlayer.SessionAction.Primary"
-        android:layout_width="48dp"
+        android:layout_width="@dimen/qs_media_action_play_pause_width"
         android:layout_height="48dp"
         android:layout_marginStart="@dimen/qs_media_padding"
         android:layout_marginEnd="@dimen/qs_media_padding" />

@@ -81,17 +81,6 @@ flag {
 }
 
 flag {
-    name: "add_schandle_to_vri_surface"
-    namespace: "window_surfaces"
-    description: "Add surface control handle to VRI Surface"
-    bug: "320706287"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "disable_draw_wake_lock"
     namespace: "wear_frameworks"
     description: "Disable Draw Wakelock starting U."
@@ -134,14 +123,6 @@ flag {
 }
 
 flag {
-    name: "buffer_stuffing_recovery"
-    namespace: "window_surfaces"
-    description: "Recover from buffer stuffing when SurfaceFlinger misses a frame"
-    bug: "294922229"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "root_view_changed_listener"
     namespace: "windowing_sdk"
     description: "Implement listener pattern for WindowInspector#getGlobalWindowViews."
@@ -157,4 +138,12 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "buffer_stuffing_multi_recovery"
+    namespace: "window_surfaces"
+    description: "Recover from buffer stuffing multiple times within the same animation"
+    bug: "441566552"
+    is_fixed_read_only: false
 }

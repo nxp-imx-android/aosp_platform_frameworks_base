@@ -16,7 +16,6 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
-
 import static com.google.common.truth.Truth.assertThat;
 import static org.testng.Assert.expectThrows;
 
@@ -39,7 +38,7 @@ public class RemoteTaskAddedMessageTest {
 
     @Test
     public void testConstructor_fromObjects() {
-        RemoteTaskInfo expected = new RemoteTaskInfo(1, "label", 0, new byte[0]);
+        RemoteTaskInfo expected = new RemoteTaskInfo(1, "label", 0, new byte[0], true);
 
         RemoteTaskAddedMessage remoteTaskAddedMessage = new RemoteTaskAddedMessage(expected);
 
@@ -48,8 +47,8 @@ public class RemoteTaskAddedMessageTest {
 
     @Test
     public void testWriteAndReadFromProto_roundTrip_works() throws IOException {
-        RemoteTaskAddedMessage expected
-            = new RemoteTaskAddedMessage(new RemoteTaskInfo(1, "label", 0, new byte[0]));
+        RemoteTaskAddedMessage expected =
+                new RemoteTaskAddedMessage(new RemoteTaskInfo(1, "label", 0, new byte[0], true));
 
         final ProtoOutputStream pos = new ProtoOutputStream();
         expected.writeToProto(pos);
@@ -63,10 +62,10 @@ public class RemoteTaskAddedMessageTest {
 
     @Test
     public void testGetFieldNumber_returnsCorrectValue() {
-        RemoteTaskAddedMessage remoteTaskAddedMessage
-            = new RemoteTaskAddedMessage(new RemoteTaskInfo(1, "label", 0, new byte[0]));
+        RemoteTaskAddedMessage remoteTaskAddedMessage =
+                new RemoteTaskAddedMessage(new RemoteTaskInfo(1, "label", 0, new byte[0], true));
 
         assertThat(remoteTaskAddedMessage.getFieldNumber())
-            .isEqualTo(android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED);
+                .isEqualTo(android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED);
     }
 }

@@ -935,8 +935,7 @@ final class AccessibilityController {
                                 MyHandler.MESSAGE_NOTIFY_MAGNIFICATION_REGION_CHANGED, args)
                         .sendToTarget();
             }
-            if (com.android.server.accessibility.Flags.enableMagnificationMagnifyNavBarAndIme()
-                    && !mOldImeRegion.equals(mImeRegion)) {
+            if (!mOldImeRegion.equals(mImeRegion)) {
                 mOldImeRegion.set(mImeRegion);
                 final SomeArgs args = SomeArgs.obtain();
                 args.arg1 = Region.obtain(mImeRegion);

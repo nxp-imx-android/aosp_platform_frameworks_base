@@ -170,13 +170,13 @@ class WindowToken extends WindowContainer<WindowState> {
     };
 
     protected WindowToken(WindowManagerService service, IBinder _token, int type,
-            boolean persistOnEmpty, DisplayContent dc, boolean ownerCanManageAppTokens) {
-        this(service, _token, type, persistOnEmpty, dc, ownerCanManageAppTokens,
+            boolean persistOnEmpty, boolean ownerCanManageAppTokens) {
+        this(service, _token, type, persistOnEmpty, ownerCanManageAppTokens,
                 false /* roundedCornerOverlay */, false /* fromClientToken */, null /* options */);
     }
 
     protected WindowToken(WindowManagerService service, IBinder _token, int type,
-            boolean persistOnEmpty, DisplayContent dc, boolean ownerCanManageAppTokens,
+            boolean persistOnEmpty, boolean ownerCanManageAppTokens,
             boolean roundedCornerOverlay, boolean fromClientToken, @Nullable Bundle options) {
         super(service);
         token = _token;
@@ -186,9 +186,6 @@ class WindowToken extends WindowContainer<WindowState> {
         mOwnerCanManageAppTokens = ownerCanManageAppTokens;
         mRoundedCornerOverlay = roundedCornerOverlay;
         mFromClientToken = fromClientToken;
-        if (dc != null) {
-            dc.addWindowToken(token, this);
-        }
     }
 
     void removeAllWindowsIfPossible() {
@@ -813,7 +810,6 @@ class WindowToken extends WindowContainer<WindowState> {
         private final int mType;
 
         private boolean mPersistOnEmpty;
-        private DisplayContent mDisplayContent;
         private boolean mOwnerCanManageAppTokens;
         private boolean mRoundedCornerOverlay;
         private boolean mFromClientToken;
@@ -829,12 +825,6 @@ class WindowToken extends WindowContainer<WindowState> {
         /** @see WindowToken#mPersistOnEmpty */
         Builder setPersistOnEmpty(boolean persistOnEmpty) {
             mPersistOnEmpty = persistOnEmpty;
-            return this;
-        }
-
-        /** Sets the {@link DisplayContent} to be associated. */
-        Builder setDisplayContent(DisplayContent dc) {
-            mDisplayContent = dc;
             return this;
         }
 
@@ -862,8 +852,9 @@ class WindowToken extends WindowContainer<WindowState> {
             return this;
         }
 
+        @NonNull
         WindowToken build() {
-            return new WindowToken(mService, mToken, mType, mPersistOnEmpty, mDisplayContent,
+            return new WindowToken(mService, mToken, mType, mPersistOnEmpty,
                     mOwnerCanManageAppTokens, mRoundedCornerOverlay, mFromClientToken, mOptions);
         }
     }

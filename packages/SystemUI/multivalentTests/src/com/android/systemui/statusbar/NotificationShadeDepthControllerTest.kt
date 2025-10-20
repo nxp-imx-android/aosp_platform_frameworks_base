@@ -46,6 +46,7 @@ import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.android.wm.shell.appzoomout.AppZoomOut
+import com.android.wm.shell.desktopmode.DesktopMode
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
 import java.util.function.Consumer
@@ -86,7 +87,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     @Mock private lateinit var wallpaperController: WallpaperController
     @Mock private lateinit var wallpaperInteractor: WallpaperInteractor
     @Mock private lateinit var notificationShadeWindowController: NotificationShadeWindowController
-    private lateinit var windowRootViewBlurInteractor : WindowRootViewBlurInteractor
+    private lateinit var windowRootViewBlurInteractor: WindowRootViewBlurInteractor
     @Mock private lateinit var shadeModeInteractor: ShadeModeInteractor
     @Mock private lateinit var dumpManager: DumpManager
     @Mock private lateinit var appZoomOutOptional: Optional<AppZoomOut>
@@ -98,6 +99,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     @Mock private lateinit var brightnessSpring: NotificationShadeDepthController.DepthAnimation
     @Mock private lateinit var listener: NotificationShadeDepthController.DepthListener
     @Mock private lateinit var dozeParameters: DozeParameters
+    @Mock private lateinit var desktopMode: DesktopMode
     @Captor private lateinit var scrimVisibilityCaptor: ArgumentCaptor<Consumer<Int>>
     @JvmField @Rule val mockitoRule = MockitoJUnit.rule()
 
@@ -105,6 +107,8 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     private var statusBarState = StatusBarState.SHADE
     private val maxBlur = 150
     private lateinit var notificationShadeDepthController: NotificationShadeDepthController
+
+    private val dreamingFlow = MutableStateFlow(false)
 
     @Before
     fun setup() {
@@ -130,6 +134,8 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
         `when`(blurUtils.maxBlurRadius).thenReturn(maxBlur.toFloat())
         `when`(windowRootViewBlurInteractor.isBlurCurrentlySupported)
             .thenReturn(MutableStateFlow(true))
+        `when`(keyguardInteractor.isDreaming).thenReturn(dreamingFlow)
+        `when`(desktopMode.isDisplayInDesktopMode(anyInt())).thenReturn(false)
 
         notificationShadeDepthController =
             NotificationShadeDepthController(
@@ -149,6 +155,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
                 { shadeDisplayRepository },
                 focusedDisplayRepository,
                 applicationScope,
+                Optional.of(desktopMode),
                 dumpManager,
             )
         notificationShadeDepthController.shadeAnimation = shadeAnimation
@@ -250,6 +257,22 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_NO_SHADE_BLUR_ON_DREAM_START)
+    fun onStateChanged_noBlurEvaluation_ifShadeAndDreaming() {
+        onPanelExpansionChanged_apliesBlur_ifShade()
+        clearInvocations(choreographer)
+        statusBarState = StatusBarState.KEYGUARD
+        statusBarStateListener.onStateChanged(statusBarState)
+        verify(shadeAnimation).animateTo(eq(0))
+
+        clearInvocations(shadeAnimation)
+        statusBarState = StatusBarState.SHADE
+        dreamingFlow.value = true
+        statusBarStateListener.onStateChanged(statusBarState)
+        verify(shadeAnimation, never()).animateTo(anyInt())
+    }
+
+    @Test
     fun setQsPanelExpansion_appliesBlur() {
         statusBarState = StatusBarState.KEYGUARD
         notificationShadeDepthController.qsPanelExpansion = 1f
@@ -271,6 +294,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_CHECK_DESKTOP_MODE_FOR_SPACIAL_MODEL_APP_PUSHBACK)
     fun expandPanel_inSplitShade_setsZoomToZero() {
         enableSplitShade()
 
@@ -281,6 +305,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_CHECK_DESKTOP_MODE_FOR_SPACIAL_MODEL_APP_PUSHBACK)
     fun expandPanel_notInSplitShade_setsZoomValue() {
         disableSplitShade()
 
@@ -305,6 +330,43 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
 
         enableSplitShade()
         notificationShadeDepthController.onPanelExpansionChanged(event)
+        notificationShadeDepthController.updateBlurCallback.doFrame(0)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_CHECK_DESKTOP_MODE_FOR_SPACIAL_MODEL_APP_PUSHBACK)
+    fun expandPanel_inSplitShade_notInDesktopMode_setsZoomValue() {
+        enableSplitShade()
+
+        notificationShadeDepthController.onPanelExpansionChanged(
+            ShadeExpansionChangeEvent(fraction = 1f, expanded = true, tracking = false)
+        )
+        notificationShadeDepthController.updateBlurCallback.doFrame(0)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_CHECK_DESKTOP_MODE_FOR_SPACIAL_MODEL_APP_PUSHBACK)
+    fun expandPanel_inSplitShade_inDesktopMode_setsZoomToZero() {
+        enableSplitShade()
+        `when`(desktopMode.isDisplayInDesktopMode(anyInt())).thenReturn(true)
+
+        notificationShadeDepthController.onPanelExpansionChanged(
+            ShadeExpansionChangeEvent(fraction = 1f, expanded = true, tracking = false)
+        )
+        notificationShadeDepthController.updateBlurCallback.doFrame(0)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_CHECK_DESKTOP_MODE_FOR_SPACIAL_MODEL_APP_PUSHBACK)
+    fun expandPanel_notInSplitShade_inDesktopMode_setsZoomToZero() {
+        disableSplitShade()
+
+        notificationShadeDepthController.onPanelExpansionChanged(
+            ShadeExpansionChangeEvent(fraction = 1f, expanded = true, tracking = false)
+        )
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
     }
 
@@ -414,7 +476,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_BOUNCER_UI_REVAMP, Flags.FLAG_GLANCEABLE_HUB_BLURRED_BACKGROUND)
     fun ignoreShadeBlurUntilHidden_schedulesFrame() {
         notificationShadeDepthController.blursDisabledForAppLaunch = true
-        verify(blurUtils).prepareBlur(any(), anyInt())
+        verify(blurUtils).prepareBlur(anyInt())
         verify(choreographer)
             .postFrameCallback(eq(notificationShadeDepthController.updateBlurCallback))
     }
@@ -474,7 +536,6 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_BOUNCER_UI_REVAMP, Flags.FLAG_GLANCEABLE_HUB_BLURRED_BACKGROUND)
-    @EnableFlags(Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK)
     fun brightnessMirror_hidesShadeBlur_withAppPushback() {
         // Brightness mirror is fully visible
         `when`(brightnessSpring.ratio).thenReturn(1f)
@@ -486,20 +547,18 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
 
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
         verify(notificationShadeWindowController).setBackgroundBlurRadius(eq(0))
-        verify(blurUtils).prepareBlur(any(), eq(0))
-        verify(blurUtils).applyBlur(
-            eq(viewRootImpl),
-            eq(0),
-            eq(false),
-            eq(notificationShadeDepthController.zoomOutAsScale(0f))
-        )
+        verify(blurUtils).prepareBlur(eq(0))
+        verify(blurUtils)
+            .applyBlur(
+                eq(viewRootImpl),
+                eq(0),
+                eq(false),
+                eq(notificationShadeDepthController.zoomOutAsScale(0f)),
+            )
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_BOUNCER_UI_REVAMP,
-        Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK,
-    )
+    @EnableFlags(Flags.FLAG_BOUNCER_UI_REVAMP)
     fun brightnessMirror_hidesShadeBlur_withWindowBlurFlagAndAppPushback() {
         // Brightness mirror is fully visible
         `when`(brightnessSpring.ratio).thenReturn(1f)
@@ -511,10 +570,8 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
 
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
         verify(notificationShadeWindowController).setBackgroundBlurRadius(eq(0))
-        verify(windowRootViewBlurInteractor).requestBlurForShade(
-            eq(0),
-            eq(notificationShadeDepthController.zoomOutAsScale(0f))
-        )
+        verify(windowRootViewBlurInteractor)
+            .requestBlurForShade(eq(0), eq(notificationShadeDepthController.zoomOutAsScale(0f)))
     }
 
     @Test

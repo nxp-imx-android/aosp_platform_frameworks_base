@@ -47,8 +47,10 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.testKosmos
+import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
@@ -148,7 +150,12 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
     @Test
     fun authMethodsToTest_returnsCompleteSampleOfAllAuthMethodTypes() {
         assertThat(authMethodsToTest().map { it::class }.toSet())
-            .isEqualTo(AuthenticationMethodModel::class.sealedSubclasses.toSet())
+            .isEqualTo(
+                AuthenticationMethodModel::class
+                    .sealedSubclasses
+                    .filter { it != AuthenticationMethodModel.Biometric::class }
+                    .toSet()
+            )
     }
 
     @Test
@@ -168,8 +175,8 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
             }
             assertThat(isInputEnabled).isFalse()
 
-            val lockoutEndMs = kosmos.authenticationInteractor.lockoutEndTimestamp ?: 0
-            advanceTimeBy(lockoutEndMs - testScope.currentTime)
+            val lockoutEndTime = kosmos.authenticationInteractor.lockoutEndTime ?: 0.milliseconds
+            advanceTimeBy(lockoutEndTime - testScope.currentTime.milliseconds)
             assertThat(isInputEnabled).isTrue()
         }
 
@@ -251,6 +258,20 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
             underTest.navigateBack()
             runCurrent()
             assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
+        }
+
+    @Test
+    fun backgroundColor_changesBasedOnWhetherBlurIsSupported() =
+        kosmos.runTest {
+            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = false
+            runCurrent()
+
+            assertThat(underTest.backgroundColor.alpha).isEqualTo(1.0f)
+
+            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+            runCurrent()
+
+            assertThat(underTest.backgroundColor.alpha).isLessThan(1.0f)
         }
 
     private fun authMethodsToTest(): List<AuthenticationMethodModel> {

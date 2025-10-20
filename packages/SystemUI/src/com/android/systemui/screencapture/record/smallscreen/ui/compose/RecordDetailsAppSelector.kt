@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.android.systemui.screencapture.record.smallscreen.ui.compose
 
 import androidx.compose.animation.AnimatedContent
@@ -25,44 +23,47 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.SnapPosition
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.carousel.CarouselDefaults
-import androidx.compose.material3.carousel.CarouselItemScope
-import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
-import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformIconButton
+import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
+import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.RecordDetailsAppSelectorViewModel
-import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.RecordDetailsAppViewModel
 
 @Composable
 fun RecordDetailsAppSelector(
     viewModel: RecordDetailsAppSelectorViewModel,
     onBackPressed: () -> Unit,
+    onTaskSelected: (ScreenCaptureRecentTask) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -89,56 +90,89 @@ fun RecordDetailsAppSelector(
                 color = MaterialTheme.colorScheme.onSurface,
             )
         }
-
-        val carouselState = rememberCarouselState { viewModel.apps.size }
-        HorizontalUncontainedCarousel(
-            state = carouselState,
-            itemWidth = 168.dp,
-            itemSpacing = 24.dp,
-            contentPadding = PaddingValues(horizontal = 32.dp),
-            flingBehavior = CarouselDefaults.singleAdvanceFlingBehavior(carouselState),
-            modifier = Modifier,
+        val tasks = viewModel.recentTasks
+        val pagerState = rememberPagerState { tasks?.size ?: 1 }
+        HorizontalPager(
+            state = pagerState,
+            pageSpacing = 22.dp,
+            snapPosition = SnapPosition.Center,
+            contentPadding = PaddingValues(horizontal = 68.dp),
+            modifier = Modifier.fillMaxWidth(),
         ) { index ->
-            val appViewModel = viewModel.apps[index]
-            AppPreview(viewModel = appViewModel, modifier = Modifier)
+            val task = tasks?.getOrNull(index)
+            val taskViewModel =
+                task?.let {
+                    rememberViewModel("RecordDetailsAppSelector#taskViewModel_$index") {
+                        viewModel.createTaskViewModel(task)
+                    }
+                }
+            AppPreview(
+                viewModel = taskViewModel,
+                onClick = { if (task != null) onTaskSelected(task) },
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }
 
 @Composable
-private fun CarouselItemScope.AppPreview(
-    viewModel: RecordDetailsAppViewModel,
+private fun AppPreview(
+    viewModel: RecentTaskViewModel?,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    cornersRadius: Dp = 16.dp,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier =
-            modifier
-                .maskClip(RoundedCornerShape(cornersRadius))
-                .clickable(onClick = viewModel.onSelect),
+        modifier = modifier,
     ) {
-        Icon(
-            bitmap = viewModel.icon.asImageBitmap(),
-            contentDescription = null,
-            modifier = Modifier.size(18.dp),
-        )
+        val icon = viewModel?.icon?.getOrNull()
+        if (icon == null) {
+            Spacer(Modifier.size(18.dp))
+        } else {
+            Image(
+                bitmap = icon.asImageBitmap(),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+        }
 
-        AnimatedContent(
-            targetState = viewModel.thumbnail,
-            contentAlignment = Alignment.Center,
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
-            modifier =
-                Modifier.clip(RoundedCornerShape(cornersRadius)).aspectRatio(9 / 16f).fillMaxSize(),
-        ) { thumbnail ->
-            if (thumbnail == null) {
-                Spacer(
-                    modifier =
-                        Modifier.background(color = MaterialTheme.colorScheme.surfaceContainerHigh)
-                )
+        val shape = RoundedCornerShape(20.dp)
+        val shadowColor =
+            if (isSystemInDarkTheme()) {
+                Color.White
             } else {
-                Image(bitmap = thumbnail.asImageBitmap(), contentDescription = null)
+                Color.Black
+            }
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier =
+                Modifier.aspectRatio(
+                    with(LocalResources.current.displayMetrics) {
+                        widthPixels / heightPixels.toFloat()
+                    }
+                ),
+        ) {
+            AnimatedContent(
+                targetState = viewModel?.thumbnail?.getOrNull(),
+                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                contentAlignment = Alignment.Center,
+                modifier =
+                    Modifier.shadow(
+                            elevation = 4.dp,
+                            shape = shape,
+                            spotColor = shadowColor,
+                            ambientColor = shadowColor,
+                        )
+                        .clip(shape)
+                        .clickable(onClick = onClick)
+                        .background(MaterialTheme.colorScheme.surfaceContainer),
+            ) { thumbnail ->
+                if (thumbnail == null) {
+                    Spacer(modifier = Modifier)
+                } else {
+                    Image(bitmap = thumbnail.asImageBitmap(), contentDescription = null)
+                }
             }
         }
     }

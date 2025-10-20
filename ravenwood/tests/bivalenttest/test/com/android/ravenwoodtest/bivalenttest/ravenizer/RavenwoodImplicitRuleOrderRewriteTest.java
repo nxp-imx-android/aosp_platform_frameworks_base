@@ -40,11 +40,13 @@ public class RavenwoodImplicitRuleOrderRewriteTest {
     private static final TestRule sEmptyRule = (statement, description) -> statement;
 
     // We have two sets of 9 rules below, for class rules and instance rules.
-    // - Ravenizer will inject 2 more rules of each kind.
-    // - Ravenizer will adjust their order, so even though we'll add two sets of class and instance
-    //  rules with a MIN / MAX order, there will still be no duplicate in the order.
+    private static final int EXPECTED_RULE_COUNT = 9;
 
-    private static final int EXPECTED_RULE_COUNT = 9 + 2;
+    // Ravenizer will inject 1 instance rule.
+    private static final int EXTRA_INSTANCE_RULE_COUNT = 1;
+
+    // Ravenizer will not inject static rules.
+    private static final int EXTRA_STATIC_RULE_COUNT = 0;
 
     @ClassRule(order = Integer.MIN_VALUE)
     public static final TestRule sRule01 = sEmptyRule;
@@ -100,7 +102,7 @@ public class RavenwoodImplicitRuleOrderRewriteTest {
     @Rule(order = Integer.MAX_VALUE)
     public final TestRule mRule09 = sEmptyRule;
 
-    private void checkRules(boolean classRule) {
+    private void checkRules(boolean classRule, int extraRuleCount) {
         final var anotClass = classRule ? ClassRule.class : Rule.class;
 
         final HashMap<Integer, Integer> ordersUsed = new HashMap<>();
@@ -117,20 +119,20 @@ public class RavenwoodImplicitRuleOrderRewriteTest {
             }
             ordersUsed.put(order, 1);
         }
-        assertEquals(EXPECTED_RULE_COUNT, ordersUsed.size());
+        assertEquals(EXPECTED_RULE_COUNT + extraRuleCount, ordersUsed.size());
     }
 
     @Test
     public void testClassRules() {
         Assume.assumeTrue(RavenwoodRule.isOnRavenwood());
 
-        checkRules(true);
+        checkRules(true, EXTRA_STATIC_RULE_COUNT);
     }
 
     @Test
     public void testInstanceRules() {
         Assume.assumeTrue(RavenwoodRule.isOnRavenwood());
 
-        checkRules(false);
+        checkRules(false, EXTRA_INSTANCE_RULE_COUNT);
     }
 }

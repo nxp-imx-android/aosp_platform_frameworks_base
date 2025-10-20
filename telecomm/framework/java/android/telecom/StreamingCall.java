@@ -67,9 +67,10 @@ public final class StreamingCall implements Parcelable {
      * @hide
      */
     private StreamingCall(@NonNull Parcel in) {
-        mComponentName = in.readParcelable(ComponentName.class.getClassLoader());
+        mComponentName = in.readParcelable(ComponentName.class.getClassLoader(),
+                ComponentName.class);
         mDisplayName = in.readCharSequence();
-        mAddress = in.readParcelable(Uri.class.getClassLoader());
+        mAddress = in.readParcelable(Uri.class.getClassLoader(), android.net.Uri.class);
         mExtras = in.readBundle();
         mState = in.readInt();
     }

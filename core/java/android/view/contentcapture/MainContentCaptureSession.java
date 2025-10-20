@@ -495,23 +495,31 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
         boolean addEvent = true;
 
         if (eventType == TYPE_VIEW_TEXT_CHANGED) {
+            final CharSequence text = event.getText();
+            ContentCaptureEvent lastEvent = null;
+            for (int index = mEvents.size() - 1; index >= 0; index--) {
+                final ContentCaptureEvent tmpEvent = mEvents.get(index);
+                if (event.getId().equals(tmpEvent.getId())) {
+                    lastEvent = tmpEvent;
+                    break;
+                }
+            }
+
+            if (lastEvent != null) {
+                final CharSequence lastText = lastEvent.getText();
+                if (Flags.flushOnNonEmptyText()
+                        && TextUtils.isEmpty(lastText) && !TextUtils.isEmpty(text)) {
+                    forceFlush = true;
+                }
+            }
             // We determine whether to add or merge the current event by following criteria:
             // 1. Don't have composing span: always add.
             // 2. Have composing span:
             //    2.1 either last or current text is empty: add.
             //    2.2 last event doesn't have composing span: add.
             // Otherwise, merge.
-            final CharSequence text = event.getText();
             final boolean hasComposingSpan = event.hasComposingSpan();
             if (hasComposingSpan) {
-                ContentCaptureEvent lastEvent = null;
-                for (int index = mEvents.size() - 1; index >= 0; index--) {
-                    final ContentCaptureEvent tmpEvent = mEvents.get(index);
-                    if (event.getId().equals(tmpEvent.getId())) {
-                        lastEvent = tmpEvent;
-                        break;
-                    }
-                }
                 if (lastEvent != null && lastEvent.hasComposingSpan()) {
                     final CharSequence lastText = lastEvent.getText();
                     final boolean bothNonEmpty = !TextUtils.isEmpty(lastText)
@@ -881,7 +889,14 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
         final boolean forceFlush = disableFlush ? !started : FORCE_FLUSH;
 
         final ContentCaptureEvent event = new ContentCaptureEvent(sessionId, type);
-        enqueueEvent(event, forceFlush);
+
+        if (Flags.reduceBinderTransactionEnabled()) {
+            // Don't force a flush for view tree events. A dedicated flush event will be sent
+            // after the entire view tree is processed, reducing binder transactions.
+            enqueueEvent(event);
+        } else {
+            enqueueEvent(event, forceFlush);
+        }
     }
 
     @Override
@@ -1074,9 +1089,7 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
                     }
                 }
                 internalNotifyViewTreeEvent(sessionId, /* started= */ false);
-                if (Flags.flushAfterEachFrame()) {
-                    internalNotifySessionFlushEvent(sessionId);
-                }
+                internalNotifySessionFlushEvent(sessionId);
             }
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_VIEW);

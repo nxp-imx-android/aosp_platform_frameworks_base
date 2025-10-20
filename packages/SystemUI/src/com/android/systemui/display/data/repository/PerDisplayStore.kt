@@ -84,6 +84,10 @@ abstract class PerDisplayStoreImpl<T>(
                     "<${instanceClass.simpleName}> returning null because createInstanceForDisplay($displayId) returned null.",
                 )
             } else {
+                Log.d(
+                    TAG,
+                    "<${instanceClass.simpleName}> new instance created for displayId=$displayId",
+                )
                 perDisplayInstances[displayId] = newInstance
             }
             return newInstance
@@ -97,9 +101,19 @@ abstract class PerDisplayStoreImpl<T>(
         backgroundApplicationScope.launch("PerDisplayStore#<$instanceType>start") {
             displayRepository.displayRemovalEvent.collect { removedDisplayId ->
                 val removedInstance = perDisplayInstances.remove(removedDisplayId)
-                removedInstance?.let { onDisplayRemovalAction(it) }
+                removedInstance?.let {
+                    logRemovalAction(removedDisplayId)
+                    onDisplayRemovalAction(it)
+                }
             }
         }
+    }
+
+    protected fun logRemovalAction(displayId: Int) {
+        Log.d(
+            TAG,
+            "<${instanceClass.simpleName}> removing instance created for displayId=$displayId",
+        )
     }
 
     abstract val instanceClass: Class<T>

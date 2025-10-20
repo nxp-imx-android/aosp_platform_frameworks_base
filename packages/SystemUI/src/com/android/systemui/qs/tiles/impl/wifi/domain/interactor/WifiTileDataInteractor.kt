@@ -20,11 +20,11 @@ import android.annotation.StringRes
 import android.content.Context
 import android.os.UserHandle
 import android.text.Html
-import com.android.systemui.Flags as AconfigFlags
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
 import com.android.systemui.common.shared.model.Text
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.qs.flags.QsSplitInternetTile
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileDataInteractor
 import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.wifi.domain.model.WifiTileModel
@@ -72,7 +72,7 @@ constructor(
                 val secondary = removeDoubleQuotes(it.ssid)
                 flowOf(
                     WifiTileModel.Active(
-                        icon = WifiTileIconModel(wifiIcon.icon.res),
+                        icon = WifiTileIconModel(wifiIcon.icon.resId),
                         secondaryLabel = secondary,
                     )
                 )
@@ -267,7 +267,7 @@ constructor(
 
     override fun availability(user: UserHandle): Flow<Boolean> = flowOf(isAvailable())
 
-    fun isAvailable(): Boolean = AconfigFlags.qsSplitInternetTile()
+    fun isAvailable(): Boolean = QsSplitInternetTile.isEnabled
 
     private companion object {
         fun removeDoubleQuotes(string: String?): String? {

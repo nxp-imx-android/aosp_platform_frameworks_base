@@ -69,7 +69,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -250,6 +252,17 @@ public final class JobStore {
      */
     void runWorkAsync(@NonNull Runnable r) {
         mIoHandler.post(r);
+    }
+
+    /**
+     * Returns a string representation of the top 5 jobs for the given uid.
+     *
+     * @param uid The uid to get the top jobs for.
+     * @return A string representation of the top 5 jobs for the given uid. Example:
+     *         "TestJobName1:6,TestJobName2:5,TestJobName3:4,TestJobName4:3,TestJobName5:2"
+     */
+    String getTopJobsDebugStringForUid(int uid) {
+        return mJobSet.getTopJobsDebugStringForUid(uid);
     }
 
     /**
@@ -1792,6 +1805,8 @@ public final class JobStore {
     /** Set of all tracked jobs. */
     @VisibleForTesting
     public static final class JobSet {
+        private static final int MAX_JOBS_TO_REPORT_IN_DEBUG_STRING = 5;
+
         @VisibleForTesting // Key is the getUid() originator of the jobs in each sheaf
         final SparseArray<ArraySet<JobStatus>> mJobs;
 
@@ -2001,6 +2016,53 @@ public final class JobStore {
                     functor.accept(jobs.valueAt(i));
                 }
             }
+        }
+
+        /**
+         * Returns a string representation of the top jobs for the given uid, intended for debugging
+         * purposes when an app exceeds its scheduling limit. The string will be in the format
+         * "jobName1:count1,jobName2:count2,...".
+         *
+         * @param uid The uid to get the top jobs for.
+         * @return A string representation of the top jobs for the given uid.
+         */
+        String getTopJobsDebugStringForUid(int uid) {
+            ArraySet<JobStatus> jobs = mJobs.get(uid);
+            if (jobs == null || jobs.isEmpty()) {
+                return "";
+            }
+
+            Map<String, Integer> counts = new HashMap<>();
+            for (int i = jobs.size() - 1; i >= 0; i--) {
+                JobStatus job = jobs.valueAt(i);
+                // Only count jobs that this uid has scheduled on its own behalf, not those that the
+                // app has scheduled on someone else's behalf.
+                if (job.getSourceUid() != uid) {
+                    continue;
+                }
+                String jobName = job.getBatteryName();
+
+                counts.put(jobName, counts.getOrDefault(jobName, 0) + 1);
+            }
+
+            if (counts.isEmpty()) {
+                return "";
+            }
+
+            List<Map.Entry<String, Integer>> list = new ArrayList<>(counts.entrySet());
+            list.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue()));
+
+            StringBuilder sb = new StringBuilder();
+            final int limit = Math.min(list.size(), MAX_JOBS_TO_REPORT_IN_DEBUG_STRING);
+            for (int i = 0; i < limit; i++) {
+                Map.Entry<String, Integer> entry = list.get(i);
+                if (i > 0) {
+                    sb.append(",");
+                }
+                sb.append(entry.getKey()).append(":").append(entry.getValue());
+            }
+
+            return sb.toString();
         }
     }
 }

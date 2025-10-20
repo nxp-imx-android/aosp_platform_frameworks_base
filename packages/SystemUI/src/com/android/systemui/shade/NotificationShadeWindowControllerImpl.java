@@ -48,7 +48,6 @@ import android.window.WindowContext;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.systemui.Dumpable;
-import com.android.systemui.Flags;
 import com.android.systemui.biometrics.AuthController;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
 import com.android.systemui.communal.domain.interactor.CommunalInteractor;
@@ -58,12 +57,14 @@ import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.dump.DumpsysTableLogger;
 import com.android.systemui.keyguard.KeyguardViewMediator;
+import com.android.systemui.keyguard.domain.interactor.KeyguardSurfaceBehindInteractor;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.plugins.statusbar.StatusBarStateController.StateListener;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.scene.ui.view.WindowRootViewComponent;
 import com.android.systemui.settings.UserTracker;
+import com.android.systemui.shade.display.EnsureWallpaperDrawnOnDisplaySwitch;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.shade.ui.viewmodel.NotificationShadeWindowModel;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
@@ -78,6 +79,7 @@ import com.android.systemui.statusbar.policy.ConfigurationController.Configurati
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.topui.TopUiController;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
+import com.android.systemui.util.kotlin.JavaAdapter;
 
 import dagger.Lazy;
 
@@ -105,7 +107,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
 
     private final Context mContext;
     private final WindowRootViewComponent.Factory mWindowRootViewComponentFactory;
-    private WindowManager mWindowManager;
+    private final WindowManager mWindowManager;
     private final IActivityManager mActivityManager;
     private final DozeParameters mDozeParameters;
     private final KeyguardStateController mKeyguardStateController;
@@ -147,6 +149,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
             new NotificationShadeWindowState.Buffer(MAX_STATE_CHANGES_BUFFER_SIZE);
 
     private final TopUiController mTopUiController;
+    private final KeyguardSurfaceBehindInteractor mKeyguardSurfaceBehindInteractor;
 
     @Inject
     public NotificationShadeWindowControllerImpl(
@@ -172,7 +175,9 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
             NotificationShadeWindowModel notificationShadeWindowModel,
             Lazy<CommunalInteractor> communalInteractor,
             @ShadeDisplayAware LayoutParams shadeWindowLayoutParams,
-            TopUiController topUiController) {
+            TopUiController topUiController,
+            KeyguardSurfaceBehindInteractor keyguardSurfaceBehindInteractor,
+            JavaAdapter javaAdapter) {
         mContext = context;
         mWindowRootViewComponentFactory = windowRootViewComponentFactory;
         mWindowManager = windowManager;
@@ -224,6 +229,16 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
         mKeyguardMaxRefreshRate = context.getResources()
                 .getInteger(R.integer.config_keyguardMaxRefreshRate);
         mTopUiController = topUiController;
+        mKeyguardSurfaceBehindInteractor = keyguardSurfaceBehindInteractor;
+
+        if (SceneContainerFlag.isEnabled()) {
+            javaAdapter.alwaysCollectFlow(
+                    mKeyguardSurfaceBehindInteractor.isAnimatingSurface(),
+                    (animating) -> {
+                        mCurrentState.isAnimatingSurfaceBehind = animating;
+                        applyKeyguardFlags(mCurrentState);
+                    });
+        }
     }
 
     /**
@@ -300,15 +315,14 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
             windowContext.attachWindow(mWindowRootView);
         }
         mWindowManager.addView(mWindowRootView, mLp);
-        // After the notification shade window is attached, override the window type to attached
-        // dialog, which makes the following added windows will be attached dialogs regardless of
-        // the window type of attached dialogs.
+        // After the notification shade window is attached, set the fallback window type to attached
+        // dialog, which override the window type if the attached window is not a sub-window.
         // Note that while the window type override won't affect the attached windows, such as
         // the shade window we just attached, we should make sure the override window type is reset
         // (via windowContext.setWindowTypeOverride(INVALID_WINDOW_TYPE)) before adding the shade
         // window to prevent its type is overridden unexpectedly.
         if (windowContext != null) {
-            windowContext.setWindowTypeOverride(TYPE_APPLICATION_ATTACHED_DIALOG);
+            windowContext.setFallbackWindowType(TYPE_APPLICATION_ATTACHED_DIALOG);
         }
 
 
@@ -352,6 +366,11 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
                 mWindowRootView,
                 mCommunalInteractor.get().isCommunalVisible(),
                 this::onCommunalVisibleChanged
+        );
+        collectFlow(
+                mWindowRootView,
+                mNotificationShadeWindowModel.isAnimatingGoneToAod(),
+                this::setIsAnimatingGoneToAod
         );
         if (dreamsV2() && mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_alwaysAllowDreamRotation)) {
@@ -402,7 +421,11 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
         final boolean keyguardOrAod = state.keyguardShowing
                 || (state.dozing && mDozeParameters.getAlwaysOn());
         if ((keyguardOrAod && !state.mediaBackdropShowing && !state.lightRevealScrimOpaque)
-                || mKeyguardViewMediator.isAnimatingBetweenKeyguardAndSurfaceBehind()) {
+                || (!SceneContainerFlag.isEnabled()
+                    && mKeyguardViewMediator.isAnimatingBetweenKeyguardAndSurfaceBehind())
+                || (SceneContainerFlag.isEnabled() && state.isAnimatingSurfaceBehind)
+                || (EnsureWallpaperDrawnOnDisplaySwitch.isEnabled() && state.pendingDisplayChange)
+        ) {
             // Show the wallpaper if we're on keyguard/AOD and the wallpaper is not occluded by a
             // solid backdrop. Also, show it if we are currently animating between the
             // keyguard and the surface behind the keyguard - we want to use the wallpaper as a
@@ -464,9 +487,9 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     }
 
     private void adjustScreenOrientation(NotificationShadeWindowState state) {
-        boolean dreamShowingAndRotationAllowed = dreamsV2() ? mContext.getResources().getBoolean(
+        boolean dreamShowingAndRotationAllowed = dreamsV2() && mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_alwaysAllowDreamRotation)
-                && state.isOnOrGoingToDream : false;
+                && state.isOnOrGoingToDream;
         if (state.bouncerShowing || (state.isKeyguardShowingAndNotOccluded()
                 && !dreamShowingAndRotationAllowed) || state.dozing) {
             if (mKeyguardStateController.isKeyguardScreenRotationAllowed()) {
@@ -534,13 +557,12 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     }
 
     private boolean isExpanded(NotificationShadeWindowState state) {
-        boolean areScrimsNotTransparent = state.scrimsVisibility != ScrimController.TRANSPARENT;
-        boolean shouldScrimVisibilityKeepWindowVisible = !Flags.scrimFix();
+        boolean keyguardFadingAway = !SceneContainerFlag.isEnabled() && state.keyguardFadingAway;
         boolean isExpanded = !state.forceWindowCollapsed && (state.isKeyguardShowingAndNotOccluded()
-                || state.panelVisible || state.keyguardFadingAway || state.bouncerShowing
-                || state.headsUpNotificationShowing
-                || (shouldScrimVisibilityKeepWindowVisible && areScrimsNotTransparent))
-                || state.launchingActivityFromNotification;
+                || state.panelVisible || keyguardFadingAway || state.bouncerShowing
+                || state.headsUpNotificationShowing)
+                || state.launchingActivityFromNotification
+                || state.isAnimatingGoneToAod;
 
         if (state.launchingActivityFromNotification && state.forceHideAfterActivityLaunch) {
             // If we're at the end of a launch animation, we must force the window to be hidden to
@@ -550,9 +572,10 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
 
         mLogger.logIsExpanded(isExpanded, state.forceWindowCollapsed,
                 state.isKeyguardShowingAndNotOccluded(), state.panelVisible,
-                state.keyguardFadingAway, state.bouncerShowing, state.headsUpNotificationShowing,
+                keyguardFadingAway, state.bouncerShowing, state.headsUpNotificationShowing,
                 state.scrimsVisibility != ScrimController.TRANSPARENT,
-                state.launchingActivityFromNotification, state.forceHideAfterActivityLaunch);
+                state.launchingActivityFromNotification, state.forceHideAfterActivityLaunch,
+                state.isAnimatingGoneToAod);
         return isExpanded;
     }
 
@@ -655,6 +678,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
                 state.qsExpanded,
                 state.headsUpNotificationShowing,
                 state.lightRevealScrimOpaque,
+                state.pendingDisplayChange,
                 state.isSwitchingUsers,
                 state.forceWindowCollapsed,
                 state.forceDozeBrightness,
@@ -670,7 +694,9 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
                 state.scrimsVisibility,
                 state.backgroundBlurRadius,
                 state.communalVisible,
-                state.isOnOrGoingToDream
+                state.isOnOrGoingToDream,
+                state.isAnimatingSurfaceBehind,
+                state.isAnimatingGoneToAod
         );
     }
 
@@ -843,6 +869,11 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
         apply(mCurrentState);
     }
 
+    void setIsAnimatingGoneToAod(boolean isAnimating) {
+        mCurrentState.isAnimatingGoneToAod = isAnimating;
+        apply(mCurrentState);
+    }
+
     @Override
     public void setForceHideAfterActivityLaunch(boolean forceHideAfterActivityLaunch) {
         mCurrentState.forceHideAfterActivityLaunch = forceHideAfterActivityLaunch;
@@ -893,6 +924,16 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
             return;
         }
         mCurrentState.lightRevealScrimOpaque = opaque;
+        apply(mCurrentState);
+    }
+
+    @Override
+    public void setPendingDisplayChange(boolean pendingDisplayChange) {
+        if (EnsureWallpaperDrawnOnDisplaySwitch.isUnexpectedlyInLegacyMode()
+                || mCurrentState.pendingDisplayChange == pendingDisplayChange) {
+            return;
+        }
+        mCurrentState.pendingDisplayChange = pendingDisplayChange;
         apply(mCurrentState);
     }
 

@@ -35,7 +35,7 @@ import static android.window.DisplayAreaOrganizer.FEATURE_FULLSCREEN_MAGNIFICATI
 import static android.window.DisplayAreaOrganizer.FEATURE_HIDE_DISPLAY_CUTOUT;
 import static android.window.DisplayAreaOrganizer.FEATURE_IME_PLACEHOLDER;
 import static android.window.DisplayAreaOrganizer.FEATURE_ONE_HANDED;
-import static android.window.DisplayAreaOrganizer.FEATURE_WINDOWED_MAGNIFICATION;
+import static android.window.DisplayAreaOrganizer.FEATURE_TOP_LEVEL_ZOOM;
 
 import static com.android.server.wm.DisplayAreaPolicyBuilder.Feature;
 import static com.android.server.wm.DisplayAreaPolicyBuilder.HierarchyBuilder;
@@ -116,7 +116,7 @@ public abstract class DisplayAreaPolicy {
         @Override
         public DisplayAreaPolicy instantiate(WindowManagerService wmService,
                 DisplayContent content, RootDisplayArea root,
-                DisplayArea.Tokens imeContainer) {
+                ImeContainer imeContainer) {
             final TaskDisplayArea defaultTaskDisplayArea = new TaskDisplayArea(wmService,
                     "DefaultTaskDisplayArea", FEATURE_DEFAULT_TASK_CONTAINER,
                     false /* createdByOrganizer */, true /* canHostHomeTask */);
@@ -144,7 +144,7 @@ public abstract class DisplayAreaPolicy {
             // WindowedMagnification should be on the top so that there is only one surface
             // to be magnified.
             rootHierarchy.addFeature(new Feature.Builder(wmService.mPolicy, "WindowedMagnification",
-                    FEATURE_WINDOWED_MAGNIFICATION)
+                    FEATURE_TOP_LEVEL_ZOOM)
                     .upTo(TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY)
                     .except(TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY)
                     // Make the DA dimmable so that the magnify window also mirrors the dim layer.
@@ -207,7 +207,7 @@ public abstract class DisplayAreaPolicy {
          * @see DisplayAreaPolicy#DisplayAreaPolicy
          */
         DisplayAreaPolicy instantiate(WindowManagerService wmService, DisplayContent content,
-                RootDisplayArea root, DisplayArea.Tokens imeContainer);
+                RootDisplayArea root, ImeContainer imeContainer);
 
         /**
          * Instantiates the device-specific {@link Provider}.

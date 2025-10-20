@@ -145,6 +145,7 @@ public class AppZygote {
             pkgDataInfoMap,
             @Nullable Map<String, Pair<String, Long>>
             allowlistedDataInfoList,
+            long startSeq,
             @Nullable String[] zygoteArgs) {
         try {
             return getProcess().start(processClass,
@@ -153,7 +154,7 @@ public class AppZygote {
                     appDataDir, null, packageName,
                     /*zygotePolicyFlags=*/ ZYGOTE_POLICY_FLAG_EMPTY, isTopApp,
                     disabledCompatChanges, pkgDataInfoMap, allowlistedDataInfoList,
-                    false, false, false,
+                    false, false, false, startSeq,
                     zygoteArgs);
         } catch (RuntimeException e) {
             final boolean zygote_dead = getProcess().isDead();
@@ -170,7 +171,7 @@ public class AppZygote {
                 appDataDir, null, packageName,
                 /*zygotePolicyFlags=*/ ZYGOTE_POLICY_FLAG_EMPTY, isTopApp,
                 disabledCompatChanges, pkgDataInfoMap, allowlistedDataInfoList,
-                false, false, false,
+                false, false, false, startSeq,
                 zygoteArgs);
     }
 

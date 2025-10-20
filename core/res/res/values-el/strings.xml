@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Εναλλαγή σε προφίλ εργασίας"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Μετάβαση στο προσωπικό προφίλ <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Μετάβαση στο προφίλ εργασίας <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"Επαφές"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"πρόσβαση στις επαφές σας"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Επαφές και λογαριασμοί"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"πρόσβαση στις επαφές σας και προβολή της λίστας των λογαριασμών σας που μπορούν να αποθηκεύσουν επαφές σε αυτή τη συσκευή"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Τοποθεσία"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"έχει πρόσβαση στην τοποθεσία της συσκευής"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Ημερολόγιο"</string>
@@ -370,8 +370,8 @@
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"παρακολούθηση κίνησης των ματιών με ακρίβεια"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Δεδομένα κίνησης και περιοχής"</string>
     <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"παρακολούθηση ματιών, προσώπου, σώματος και σάρωση περιοχής"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Ακριβή δεδομ. κίν. κεφαλιού και περιοχής"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"παρακολούθηση κεφαλιού και σάρωση περιοχής με ακρίβεια"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="6574264227123545314">"Ακριβή δεδομένα κίνησης και περιοχής"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="2480835734248509848">"σάρωση περιοχής και παρακολούθηση κεφαλιού με ακρίβεια"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Ανάκτηση του περιεχομένου του παραθύρου"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Έλεγχος του περιεχομένου ενός παραθύρου με το οποίο αλληλεπιδράτε."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Ενεργοποίηση της \"Εξερεύνησης με άγγιγμα\""</string>
@@ -639,6 +639,8 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Επιτρέψτε στην εφαρμογή να προσδιορίζει τη σχετική θέση μεταξύ κοντινών συσκευών Ultra-Wideband"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"αλληλεπίδραση με κοντινές συσκευές Wi‑Fi"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Επιτρέπει στην εφαρμογή: προβολή διαφημίσεων, σύνδεση και καθορισμό της σχετικής τοποθεσίας των κοντινών συσκευών Wi‑Fi"</string>
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"πρόσβαση σε συσκευές τοπικού δικτύου"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Επιτρέπει στην εφαρμογή να αποκτήσει πρόσβαση σε συσκευές τοπικού δικτύου"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"προσδιορ. σχετ. θέσης μεταξύ συσκ. σε κοντ. απόστ."</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Επιτρέψτε στην εφαρμογή να προσδιορίζει τη σχετική θέση μεταξύ συσκευών σε κοντινή απόσταση"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Πληροφορίες προτιμώμενης υπηρεσίας πληρωμών NFC"</string>
@@ -683,7 +685,7 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Επιτρέπει στην εφαρμογή να σαρώνει τον περιβάλλοντα χώρο."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"σάρωση της γύρω περιοχής με ακρίβεια"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Επιτρέπει στην εφαρμογή να σαρώνει με ακρίβεια τον περιβάλλοντα χώρο."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"παρακολούθηση δεδομένων XR στο παρασκήνιο"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="1714941204255185460">"πρόσβαση στην παρακολούθηση XR στο παρασκήνιο"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Επιτρέπει στην εφαρμογή να έχει πρόσβαση σε δεδομένα XR στο παρασκήνιο."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"καταγραφή πλήκτρων"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Επιτρέπει στην εφαρμογή να καταγράφει τα πλήκτρα προτού το σύστημα μπορέσει να επεξεργαστεί τις συντομεύσεις και τις ενέργειες συστήματος."</string>
@@ -1052,6 +1054,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Σωστό!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Προσπαθήστε ξανά"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Προσπαθήστε ξανά"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Ξεκλείδωμα για όλες τις λειτουργίες και δεδομένα"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Έγινε υπέρβαση του μέγιστου αριθμού προσπαθειών για Ξεκλείδωμα με το πρόσωπο"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Δεν υπάρχει SIM"</string>
@@ -1621,6 +1627,9 @@
     <string name="gpsNotifMessage" msgid="7346649122793758032">"Ζητήθηκε από <xliff:g id="NAME">%1$s</xliff:g> (<xliff:g id="SERVICE">%2$s</xliff:g>)"</string>
     <string name="gpsVerifYes" msgid="3719843080744112940">"Ναι"</string>
     <string name="gpsVerifNo" msgid="1671201856091564741">"Όχι"</string>
+    <string name="emergency_location_notification_title" msgid="917557758257778958">"Η τοποθεσία κοινοποιήθηκε για έκτακτη ανάγκη"</string>
+    <string name="emergency_location_notification_message" msgid="1877038822515882885">"Οι υπηρεσίες έκτακτης ανάγκης έλαβαν την τοποθεσία σας από την εταιρεία κινητής τηλεφωνίας"</string>
+    <string name="emergency_location_notification_learn_more" msgid="8718634939217070481">"Μάθετε περισσότερα"</string>
     <string name="sync_too_many_deletes" msgid="6999440774578705300">"Έγινε υπέρβαση του ορίου διαγραφής"</string>
     <string name="sync_too_many_deletes_desc" msgid="7409327940303504440">"Υπάρχουν <xliff:g id="NUMBER_OF_DELETED_ITEMS">%1$d</xliff:g> διαγραμμένα στοιχεία για τον συγχρονισμό <xliff:g id="TYPE_OF_SYNC">%2$s</xliff:g>, στον λογαριασμό <xliff:g id="ACCOUNT_NAME">%3$s</xliff:g>. Τι θέλετε να κάνετε;"</string>
     <string name="sync_really_delete" msgid="5657871730315579051">"Διαγραφή των στοιχείων"</string>
@@ -1791,8 +1800,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Μπορείτε να ενεργοποιήσετε τη λειτουργία <xliff:g id="SERVICE">%1$s</xliff:g>, η οποία είναι μία από τις λειτουργίες προσβασιμότητας, πατώντας παρατεταμένα ταυτόχρονα τα δύο πλήκτρα έντασης ήχου για μερικά δευτερόλεπτα. Αυτό ενδέχεται να αλλάξει τον τρόπο λειτουργίας της συσκευής σας.\n\nΜπορείτε να αλλάξετε αυτή τη συντόμευση σε μια άλλη λειτουργία στις Ρυθμίσεις &gt; Προσβασιμότητα."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Ενεργοποίηση"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Να μην ενεργοποιηθούν"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"ΕΝΕΡΓΟ"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"ΑΝΕΝΕΡΓΟ"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Να επιτρέπεται στην υπηρεσία <xliff:g id="SERVICE">%1$s</xliff:g> να έχει τον πλήρη έλεγχο της συσκευής σας;"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Ο πλήρης έλεγχος είναι κατάλληλος για εφαρμογές που εξυπηρετούν τις ανάγκες προσβασιμότητάς σας, αλλά όχι για όλες τις εφαρμογές."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Προβολή και έλεγχος οθόνης"</string>
@@ -1806,6 +1817,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Πατήστε μια λειτουργία για να ξεκινήσετε να τη χρησιμοποιείτε:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Επιλέξτε τις λειτουργίες που θέλετε να χρησιμοποιείτε με το κουμπί προσβασιμότητας."</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Επιλέξτε τις λειτουργίες που θέλετε να χρησιμοποιείτε με τη συντόμευση κουμπιών έντασης ήχου"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Η υπηρεσία <xliff:g id="SERVICE_NAME">%s</xliff:g> έχει απενεργοποιηθεί."</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Επεξεργασία συντομεύσεων"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Τέλος"</string>
@@ -1984,8 +2005,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Ενημερώθηκε από τον διαχειριστή σας.\nΜεταβείτε στις ρυθμίσεις για να δείτε τις άδειες που έχουν εκχωρηθεί"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Διαγράφηκε από τον διαχειριστή σας"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Η Εξοικονόμηση μπαταρίας ενεργοποιεί το Σκούρο θέμα και περιορίζει ή απενεργοποιεί τη δραστηριότητα στο παρασκήνιο, ορισμένα οπτικά εφέ, συγκεκριμένες λειτουργίες και κάποιες συνδέσεις δικτύου."</string>
-    <string name="battery_saver_description" msgid="8518809702138617167">"Η Εξοικονόμηση μπαταρίας ενεργοποιεί το Σκούρο θέμα και περιορίζει ή απενεργοποιεί τη δραστηριότητα στο παρασκήνιο, ορισμένα οπτικά εφέ, συγκεκριμένες λειτουργίες και ορισμένες συνδέσεις δικτύου."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"Η Εξοικονόμηση μπαταρίας ενεργοποιεί το Σκούρο θέμα και περιορίζει ή απενεργοποιεί τη δραστηριότητα στο παρασκήνιο, ορισμένα οπτικά εφέ, συγκεκριμένες λειτουργίες και ορισμένες συνδέσεις δικτύου."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"Η Εξοικονόμηση μπαταρίας ενεργοποιεί το Σκούρο θέμα και περιορίζει ή απενεργοποιεί τη δραστηριότητα στο παρασκήνιο, ορισμένα οπτικά εφέ, συγκεκριμένες λειτουργίες και ορισμένες συνδέσεις δικτύου."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Προκειμένου να μειωθεί η χρήση δεδομένων, η Εξοικονόμηση δεδομένων αποτρέπει την αποστολή ή λήψη δεδομένων από ορισμένες εφαρμογές στο παρασκήνιο. Μια εφαρμογή που χρησιμοποιείτε αυτή τη στιγμή μπορεί να χρησιμοποιήσει δεδομένα αλλά με μικρότερη συχνότητα. Για παράδειγμα, οι εικόνες μπορεί να μην εμφανίζονται μέχρι να τις πατήσετε."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Ενεργ. Εξοικονόμησης δεδομένων;"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Ενεργοποίηση"</string>
@@ -2047,12 +2068,9 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"Μεγιστοποίηση"</string>
     <string name="close_button_text" msgid="10603510034455258">"Κλείσιμο"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
-    <skip />
+    <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
+    <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
+    <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"Απάντηση"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"Βίντεο"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"Απόρριψη"</string>
@@ -2363,8 +2381,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"PIN ξεκλειδώματος IMPI"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"PIN ξεκλειδώματος παρόχου υπηρεσιών υποσυνόλου δικτύου"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"Υποβολή αιτήματος ξεκλειδώματος δικτύου κάρτας SIM…"</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="6742563947637715645">"Υποβολή αιτήματος ξεκλειδώματος υποσυνόλου δικτύου κάρτας SIM…"</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="2033399698172403560">"Υποβολή αιτήματος ξεκλειδώματος παρόχου υπηρεσιών κάρτας SIM…"</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"Υποβολή αιτήματος ξεκλειδώματος υποσυνόλου δικτύου κάρτας SIM…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"Υποβολή αιτήματος ξεκλειδώματος παρόχου υπηρεσιών κάρτας SIM…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"Υποβολή αιτήματος ξεκλειδώματος εταιρικής SIM…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"Υποβολή αιτήματος ξεκλειδώματος με κωδικό PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"Υποβολή αιτήματος ξεκλειδώματος με κωδικό PUK…"</string>
@@ -2390,15 +2408,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"Υποβολή αιτήματος ξεκλειδώματος με κωδικό PUK…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"Υποβολή αιτήματος ξεκλειδώματος με κωδικό PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"Αποτυχία αιτήματος ξεκλειδώματος δικτύου κάρτας SIM."</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="3372797822292089708">"Αποτυχία αιτήματος ξεκλειδώματος υποσυνόλου δικτύου κάρτας SIM."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="1878443146720411381">"Αποτυχία ξεκλειδώματος παρόχου υπηρεσιών κάρτας SIM."</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"Αποτυχία αιτήματος ξεκλειδώματος υποσυνόλου δικτύου κάρτας SIM."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"Αποτυχία αιτήματος ξεκλειδώματος παρόχου υπηρεσιών κάρτας SIM."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"Αποτυχία αιτήματος ξεκλειδώματος εταιρικής SIM."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"Αποτυχία αιτήματος ξεκλειδώματος κάρτας SIM."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"Αποτυχία αιτήματος ξεκλειδώματος RUIM δικτύου 1."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"Αποτυχία αιτήματος ξεκλειδώματος του RUIM δικτύου 2."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"Αποτυχία αιτήματος ξεκλειδώματος RUIM hrpd."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"Αποτυχία αιτήματος ξεκλειδώματος RUIM για εταιρείες."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="3801002648649640407">"Αποτυχία ξεκλειδώματος παρόχου υπηρεσιών RUIM."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"Αποτυχία αιτήματος ξεκλειδώματος παρόχου υπηρεσιών RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"Αποτυχία αιτήματος ξεκλειδώματος RUIM."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"Αποτυχία ξεκλειδώματος με τον κωδικό PUK."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"Αποτυχία ξεκλειδώματος με τον κωδικό PUK."</string>
@@ -2418,13 +2436,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"Αποτυχία αιτήματος ξεκλειδώματος παρόχου υπηρεσιών υποσυνόλου δικτύου."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"Επιτυχία ξεκλειδώματος δικτύου κάρτας SIM."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"Επιτυχία ξεκλειδώματος υποσυνόλου δικτύου κάρτας SIM."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="8249342930499801740">"Επιτυχία ξεκλειδώματος παρόχου υπηρεσιών κάρτας SIM."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"Επιτυχία ξεκλειδώματος παρόχου υπηρεσιών κάρτας SIM."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"Επιτυχία ξεκλειδώματος εταιρικής SIM."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"Επιτυχία ξεκλειδώματος κάρτας SIM."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"Επιτυχία ξεκλειδώματος RUIM δικτύου 1."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"Επιτυχία ξεκλειδώματος RUIM δικτύου 2."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"Επιτυχία ξεκλειδώματος RUIM Hrpd."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6020936629725666932">"Επιτυχία ξεκλειδώματος παρόχου υπηρεσιών RUIM."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"Επιτυχία ξεκλειδώματος παρόχου υπηρεσιών RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"Επιτυχία ξεκλειδώματος RUIM για εταιρείες."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"Επιτυχία ξεκλειδώματος RUIM."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"Επιτυχία ξεκλειδώματος με κωδικό PUK."</string>
@@ -2580,27 +2598,22 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Εφαρμογές"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Δεν είναι δυνατή πλέον η αναγνώριση των δακτυλικών αποτυπωμάτων σας. Ρυθμίστε ξανά τη λειτουργία Ξεκλείδωμα με δακτυλικό αποτύπωμα."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Ασφάλεια και απόρρητο"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"Ξεκλείδωμα οθόνης και επανασύνδεση USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"Ξεκλείδωμα οθόνης για σύνδεση USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"Η Ενισχυμένη προστασία απαιτεί το ξεκλείδωμα της οθόνης για την ενεργοποίηση της συνδεσιμότητας USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"Η Ενισχυμένη προστασία απαιτεί το ξεκλείδωμα της οθόνης για την ενεργοποίηση της συνδεσιμότητας USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"Η Ενισχυμένη προστασία απαιτεί το ξεκλείδωμα της οθόνης για πιο γρήγορη φόρτιση"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"Για πιο γρήγορη φόρτιση ή για την ενεργοποίηση της συνδεσιμότητας USB, η Ενισχυμένη προστασία απαιτεί το ξεκλείδωμα της οθόνης"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Σίγαση"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Οι ειδοποιήσεις τέθηκαν σε σίγαση"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"Δεν θα λαμβάνετε ειδοποιήσεις USB για την Ενισχυμένη προστασία μέχρι να επανεκκινήσετε τη συσκευή σας"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Ύποπτη δραστηριότητα USB"</string>
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
-    <skip />
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"Το σήμα δεδομένων USB έχει απενεργοποιηθεί"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Αντιμετωπίζετε προβλήματα με τη λειτουργία Ξεκλείδωμα με δακτυλικό αποτύπωμα;"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Πατήστε για να ελέγξετε συμβουλές για τη βελτίωση της εμπειρίας ξεκλειδώματος"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Να μην αναβοσβήνει"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Πατήστε παρατεταμένα το κουμπί λειτουργίας για απενεργοποίηση της τηλεόρασης"</string>
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Ειδοποιήσεις σχετικά με τους πόρους συστήματος"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Υπερβολική χρήση πόρων"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Η εφαρμογή <xliff:g id="APP_NAME">%1$s</xliff:g> χρησιμοποιεί πάρα πολλούς πόρους."</string>
 </resources>

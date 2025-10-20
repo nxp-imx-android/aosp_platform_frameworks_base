@@ -63,13 +63,6 @@ flag {
 }
 
 flag {
-    name: "enable_retrievable_bubbles"
-    namespace: "multitasking"
-    description: "Allow opening bubbles overflow UI without bubbles being visible"
-    bug: "340337839"
-}
-
-flag {
     name: "enable_bubble_stashing"
     namespace: "multitasking"
     description: "Allow the floating bubble stack to stash on the edge of the screen"
@@ -118,16 +111,6 @@ flag {
 }
 
 flag {
-    name: "enable_recents_bookend_transition"
-    namespace: "multitasking"
-    description: "Use a finish-transition to clean up recents instead of the finish-WCT"
-    bug: "346588978"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "enable_bubble_to_fullscreen"
    namespace: "multitasking"
    description: "Enable an option to move bubbles to fullscreen"
@@ -149,13 +132,6 @@ flag {
 }
 
 flag {
-    name: "task_view_repository"
-    namespace: "multitasking"
-    description: "Factor task-view state tracking out of taskviewtransitions"
-    bug: "384976265"
-}
-
-flag {
     name: "fix_missing_user_change_callbacks"
     namespace: "multitasking"
     description: "Fix a race condition that could make Shell miss a user change callback."
@@ -170,16 +146,6 @@ flag {
     namespace: "multitasking"
     description: "Try out bubble bar on phones"
     bug: "394869612"
-}
-
-flag {
-    name: "enable_bubble_task_view_listener"
-    namespace: "multitasking"
-    description: "Use the same taskview listener for bubble bar and floating"
-    bug: "272102927"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -200,13 +166,6 @@ flag {
 }
 
 flag {
-    name: "enable_dynamic_insets_for_app_launch"
-    namespace: "multitasking"
-    description: "Enables dynamic insets for app launch so the window is properly cropped"
-    bug: "336511494"
-}
-
-flag {
     name: "task_view_transitions_refactor"
     namespace: "windowing_frontend"
     description: "Refactor TaskViewTransitions.startAnimation"
@@ -224,36 +183,6 @@ flag {
 }
 
 flag {
-    name: "enable_enter_split_remove_bubble"
-    namespace: "multitasking"
-    description: "Enable removing a task from bubbles when it is entering split screen"
-    bug: "396315875"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_bubble_bar_to_floating_transition"
-    namespace: "multitasking"
-    description: "Enable transitioning from bubble bar to floating when folding"
-    bug: "380105874"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "fix_bubbles_to_recents"
-    namespace: "multitasking"
-    description: "Fixes a bug with entering recents via 3 button when bubbles are open"
-    bug: "418760100"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "bug_rotation_button_cover_bubble"
     namespace: "multitasking"
     description: "Fixes a bug where clicking the rotation button would open the bubble."
@@ -264,10 +193,10 @@ flag {
 }
 
 flag {
-    name: "split_disable_child_task_bounds"
+    name: "fix_task_view_rotation_animation"
     namespace: "multitasking"
-    description: "Fixes a bug where split task can keep bounds from previous multitasking mode."
-    bug: "427245857"
+    description: "Fixes jump-cut animation and un-synced bounds (including bubbles) when rotating."
+    bug: "351813733"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -284,11 +213,99 @@ flag {
 }
 
 flag {
-    name: "fix_bubbles_cancel_animation"
+    name: "fix_bubbles_add_same_bubble_being_removed"
     namespace: "multitasking"
-    description: "Fixes a bug where state was incorrect if the expandedView animation was canceled."
+    description: "Fixes a race condition where a bubble gets an update while being animated out"
     bug: "420487074"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_bubbles_ime_focus_flicker"
+    namespace: "multitasking"
+    description: "Fixes an ime flicker due to non-bubbled activity gaining focus when switching bubbles"
+    bug: "416347012"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "dismiss_pip_from_lockscreen"
+    namespace: "multitasking"
+    description: "Fixes a bug where tapping on a notification for a PiP-ed app while on Lockscreen does not launch it in fullscreen."
+    bug: "373314569"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "fix_exit_split_on_enter_bubble"
+    namespace: "multitasking"
+    description: "Fixes a bug where split screen remains active if one of the tasks moves to bubble via a trampoline task."
+    bug: "440647718"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_shell_restart_bubble_cleanup"
+    namespace: "multitasking"
+    description: "Convert bubbled tasks back to fullscreen when WMShell restarts."
+    bug: "425496840"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "fix_bubble_stack_view_expanded_when_added"
+    namespace: "multitasking"
+    description: "Set BubbleStackView as collapsed if it's expanded when trying to be added"
+    bug: "417447385"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_bubble_event_history_logs"
+    namespace: "multitasking"
+    description: "Enable bubble event history logs"
+    bug: "436320481"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+     name: "enable_2x1_split"
+     namespace: "multitasking"
+     description: "Enables the 2x1 split implementation"
+     bug: "439992109"
+}
+
+flag {
+    name: "split_to_full_set_window_mode"
+    namespace: "multitasking"
+    description: "Set the launch windowing mode when split screen launches app in fullscreen."
+    bug: "427103183"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "bug_dont_remove_task_bubble"
+    namespace: "multitasking"
+    description: "Fixes a bug where tasks are being destroyed when a bubble is overflowed."
+    bug: "427302529"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+

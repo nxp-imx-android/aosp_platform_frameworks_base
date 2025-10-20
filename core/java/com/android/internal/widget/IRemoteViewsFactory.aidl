@@ -19,7 +19,7 @@ package com.android.internal.widget;
 import android.content.Intent;
 import android.widget.RemoteViews;
 
-/** {@hide} */
+/** @hide */
 interface IRemoteViewsFactory {
     @UnsupportedAppUsage(maxTargetSdk = 30, trackingBug = 170729553)
     void onDataSetChanged();

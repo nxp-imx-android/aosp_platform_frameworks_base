@@ -47,6 +47,7 @@ import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.wrapper.LockPatternCheckerWrapper
 import com.google.common.truth.Truth.assertThat
+import java.time.Duration
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -278,7 +279,7 @@ class KeyguardPinViewControllerTest : SysuiTestCase() {
     fun handleLockout_readsNumberOfErrorAttempts() {
         constructPinViewController(mockKeyguardPinView)
 
-        underTest?.handleAttemptLockout(0)
+        underTest?.handleAttemptLockout(Duration.ZERO)
 
         verify(lockPatternUtils).getCurrentFailedPasswordAttempts(anyInt())
     }

@@ -23,11 +23,15 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.TestApi;
+import android.app.compat.CompatChanges;
 import android.app.ActivityThread;
+import android.app.Instrumentation;
+import android.compat.annotation.ChangeId;
+import android.compat.annotation.Disabled;
+import android.compat.annotation.EnabledAfter;
+import android.compat.annotation.Overridable;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
-import android.ravenwood.annotation.RavenwoodRedirect;
-import android.ravenwood.annotation.RavenwoodRedirectionClass;
 import android.ravenwood.annotation.RavenwoodThrow;
 import android.util.Log;
 import android.util.Printer;
@@ -60,12 +64,20 @@ import java.util.concurrent.locks.ReentrantLock;
  * {@link Looper#myQueue() Looper.myQueue()}.
  */
 @RavenwoodKeepWholeClass
-@RavenwoodRedirectionClass("MessageQueue_ravenwood")
 public final class MessageQueue {
     private static final String TAG = "MessageQueue";
     private static final String TAG_L = "LegacyMessageQueue";
     private static final String TAG_C = "ConcurrentMessageQueue";
     private static final boolean DEBUG = false;
+
+    /**
+     * Enables concurrent message queue implementation in all applications.
+     *
+     * @hide
+     */
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = android.os.Build.VERSION_CODES.BAKLAVA)
+    public static final long USE_NEW_MESSAGEQUEUE = 421623328L;
 
     // True if the message queue can be quit.
     @UnsupportedAppUsage
@@ -133,21 +145,14 @@ public final class MessageQueue {
      */
     private static Boolean sIsProcessAllowedToUseConcurrent = null;
 
-    @RavenwoodRedirect
     private native static long nativeInit();
-    @RavenwoodRedirect
     private native static void nativeDestroy(long ptr);
     @UnsupportedAppUsage
-    @RavenwoodRedirect
     private native void nativePollOnce(long ptr, int timeoutMillis); /*non-static for callbacks*/
 
-    @RavenwoodRedirect
     private native static void nativeWake(long ptr);
-    @RavenwoodRedirect
     private native static boolean nativeIsPolling(long ptr);
-    @RavenwoodRedirect
     private native static void nativeSetFileDescriptorEvents(long ptr, int fd, int events);
-    @RavenwoodRedirect
     private native static void nativeSetSkipEpollWaitForZeroTimeout(long ptr);
 
     MessageQueue(boolean quitAllowed) {
@@ -173,15 +178,14 @@ public final class MessageQueue {
     }
 
     private static boolean computeUseConcurrent() {
-        if (Flags.useConcurrentMessageQueueInApps()) {
-            // b/379472827: Robolectric tests use reflection to access MessageQueue.mMessages.
-            // This is a hack to allow Robolectric tests to use the legacy implementation.
+        if (CompatChanges.isChangeEnabled(USE_NEW_MESSAGEQUEUE)
+                || Flags.useConcurrentMessageQueueInApps()) {
+            // b/447778739: Some Robolectric tests still use legacy LooperMode.
             try {
                 Class.forName("org.robolectric.Robolectric");
                 // This is a Robolectric test. Concurrent MessageQueue is not supported yet.
                 return false;
             } catch (ClassNotFoundException e) {
-                // This is not a Robolectric test.
                 return true;
             }
         }
@@ -196,24 +200,8 @@ public final class MessageQueue {
         // used by tests.
         // For now, we limit it to system processes to avoid breaking apps and their tests.
         if (UserHandle.isCore(Process.myUid())) {
-            // Some platform tests run in core UIDs.
-            // Use this awful heuristic to detect them.
-            if (processName.contains("test") || processName.contains("Test")) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        // Also explicitly allow SystemUI processes.
-        // SystemUI doesn't run in a core UID, but we want to give it the performance boost,
-        // and we know that it's safe to use the concurrent implementation in SystemUI.
-        if (processName.equals("com.android.systemui")
-                || processName.startsWith("com.android.systemui:")) {
             return true;
         }
-        // On Android distributions where SystemUI has a different process name,
-        // the above condition may need to be adjusted accordingly.
 
         // We can lift these restrictions in the future after we've made it possible for test
         // authors to test Looper and MessageQueue without resorting to reflection.
@@ -1101,6 +1089,120 @@ public final class MessageQueue {
         } else {
             return nextLegacy();
         }
+    }
+
+    /**
+     * Returns the last message in the queue in execution order.
+     *
+     * Caller must ensure that this doesn't race 'next' from the Looper thread.
+     * @hide
+     */
+    public @Nullable Message peekLastMessageForTest() {
+        ActivityThread.throwIfNotInstrumenting();
+        if (sUseConcurrent) {
+            return peekLastMessageConcurrent();
+        } else {
+            return peekLastMessageLegacy();
+        }
+    }
+
+    /**
+     * Matches no messages, but stores the message with the latest execution time.
+     */
+    static final class FindLastMessage extends MessageCompare {
+        Message lastMsg;
+        @Override
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
+                long when) {
+            if (m.target != null && (lastMsg == null || lastMsg.when <= m.when)) {
+                lastMsg = m;
+            }
+            return false;
+        }
+    }
+
+    private Message peekLastMessageConcurrent() {
+        final FindLastMessage findLastMessage = new FindLastMessage();
+        findOrRemoveMessages(null, 0, null, null, 0, findLastMessage, false);
+        return findLastMessage.lastMsg;
+    }
+
+    private Message peekLastMessageLegacy() {
+        synchronized (this) {
+            Message lastMsg = null;
+
+            Message current = mMessages;
+            while (current != null) {
+                if (current.target != null && (lastMsg == null || lastMsg.when <= current.when)) {
+                    lastMsg = current;
+                }
+                current = current.next;
+            }
+
+            return lastMsg;
+        }
+    }
+
+    /**
+     * Resets this queue's state and allows it to continue being used.
+     *
+     * @hide
+     */
+    public void resetForTest() {
+        ActivityThread.throwIfNotInstrumenting();
+        if (sUseConcurrent) {
+            resetConcurrent();
+        } else {
+            resetLegacy();
+        }
+    }
+
+    private void resetConcurrent() {
+        // This queue is already quitting, so we can't reset its state and continue using it.
+        if (getQuitting()) {
+            return;
+        }
+        synchronized (mIdleHandlersLock) {
+            mIdleHandlers.clear();
+        }
+        synchronized (mFileDescriptorRecordsLock) {
+            removeAllFdRecords();
+        }
+        removeAllMessages();
+
+        // We reset the sync barrier tokens to reflect the queue's state reset. This helps ensure
+        // that the queue's behavior is deterministic in both individual tests and in a test suite.
+        resetSyncBarrierTokens();
+    }
+
+    private void resetLegacy() {
+        synchronized (this) {
+            // This queue is already quitting, so we can't reset its state and continue using it.
+            if (mQuitting) {
+                return;
+            }
+            mIdleHandlers.clear();
+            removeAllFdRecords();
+            removeAllMessagesLocked();
+            // We reset the sync barrier tokens to reflect the queue's state reset. This helps
+            // ensure that the queue's behavior is deterministic in both individual tests and in a
+            // test suite.
+            resetSyncBarrierTokens();
+            nativeWake(mPtr);
+        }
+    }
+
+    private void removeAllFdRecords() {
+        if (mFileDescriptorRecords != null) {
+            while (mFileDescriptorRecords.size() > 0) {
+                removeOnFileDescriptorEventListener(mFileDescriptorRecords.valueAt(0).mDescriptor);
+            }
+        }
+    }
+
+    private void resetSyncBarrierTokens() {
+        mNextBarrierTokenAtomic.set(1);
+        mNextBarrierToken = 0;
     }
 
     void quit(boolean safe) {

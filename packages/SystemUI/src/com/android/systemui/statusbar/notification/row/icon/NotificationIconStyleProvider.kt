@@ -17,12 +17,10 @@
 package com.android.systemui.statusbar.notification.row.icon
 
 import android.annotation.WorkerThread
-import android.app.Flags
+import android.app.Notification
 import android.content.Context
 import android.content.pm.ApplicationInfo
-import android.os.UserManager
 import android.service.notification.StatusBarNotification
-import android.util.Log
 import com.android.systemui.Dumpable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
@@ -30,11 +28,8 @@ import com.android.systemui.statusbar.notification.collection.NotifCollectionCac
 import com.android.systemui.util.asIndenting
 import com.android.systemui.util.time.SystemClock
 import com.android.systemui.util.withIncreasedIndent
-import dagger.Module
-import dagger.Provides
 import java.io.PrintWriter
 import javax.inject.Inject
-import javax.inject.Provider
 
 /**
  * A provider used to cache and fetch information about which icon should be displayed by
@@ -59,11 +54,8 @@ interface NotificationIconStyleProvider {
 @SysUISingleton
 class NotificationIconStyleProviderImpl
 @Inject
-constructor(
-    private val userManager: UserManager,
-    dumpManager: DumpManager,
-    systemClock: SystemClock,
-) : NotificationIconStyleProvider, Dumpable {
+constructor(dumpManager: DumpManager, systemClock: SystemClock) :
+    NotificationIconStyleProvider, Dumpable {
     init {
         dumpManager.registerNormalDumpable(TAG, this)
     }
@@ -71,6 +63,15 @@ constructor(
     private val cache = NotifCollectionCache<Boolean>(systemClock = systemClock)
 
     override fun shouldShowAppIcon(notification: StatusBarNotification, context: Context): Boolean {
+        return !prefersSmallIcon(notification.notification) &&
+            packageHasAppIcon(notification, context)
+    }
+
+    private fun prefersSmallIcon(notification: Notification): Boolean {
+        return notification.extras.getBoolean(Notification.EXTRA_PREFER_SMALL_ICON)
+    }
+
+    private fun packageHasAppIcon(notification: StatusBarNotification, context: Context): Boolean {
         return cache.getOrFetch(notification.packageName) {
             val packageContext = notification.getPackageContext(context)
             !belongsToHeadlessSystemApp(packageContext)
@@ -115,33 +116,4 @@ constructor(
     companion object {
         const val TAG = "NotificationIconStyleProviderImpl"
     }
-}
-
-class NoOpIconStyleProvider : NotificationIconStyleProvider {
-    companion object {
-        const val TAG = "NoOpIconStyleProvider"
-    }
-
-    override fun shouldShowAppIcon(notification: StatusBarNotification, context: Context): Boolean {
-        Log.wtf(TAG, "NoOpIconStyleProvider should not be used anywhere.")
-        return true
-    }
-
-    override fun purgeCache(wantedPackages: Collection<String>) {
-        Log.wtf(TAG, "NoOpIconStyleProvider should not be used anywhere.")
-    }
-}
-
-@Module
-class NotificationIconStyleProviderModule {
-    @Provides
-    @SysUISingleton
-    fun provideImpl(
-        realImpl: Provider<NotificationIconStyleProviderImpl>
-    ): NotificationIconStyleProvider =
-        if (Flags.notificationsRedesignAppIcons()) {
-            realImpl.get()
-        } else {
-            NoOpIconStyleProvider()
-        }
 }

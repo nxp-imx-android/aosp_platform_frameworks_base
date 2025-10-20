@@ -215,9 +215,9 @@ public class DisplayPolicy {
     private boolean mCanSystemBarsBeShownByUser;
 
     /**
-     * Let remote insets controller control system bars regardless of other settings.
+     * Let remote insets controller control system bars when appropriate.
      */
-    private boolean mRemoteInsetsControllerControlsSystemBars;
+    private boolean mAllowsSystemBarRemoteInsetsController;
 
     @Nullable
     StatusBarManagerInternal getStatusBarManagerInternal() {
@@ -884,14 +884,14 @@ public class DisplayPolicy {
     }
 
 
-    boolean isRemoteInsetsControllerControllingSystemBars() {
-        return mRemoteInsetsControllerControlsSystemBars;
+    boolean isSystemBarRemoteInsetsControllerAllowed() {
+        return mAllowsSystemBarRemoteInsetsController;
     }
 
     @VisibleForTesting
-    void setRemoteInsetsControllerControlsSystemBars(
-            boolean remoteInsetsControllerControlsSystemBars) {
-        mRemoteInsetsControllerControlsSystemBars = remoteInsetsControllerControlsSystemBars;
+    void setSystemBarRemoteInsetsControllerAllowed(
+            boolean allowsSystemBarRemoteInsetsController) {
+        mAllowsSystemBarRemoteInsetsController = allowsSystemBarRemoteInsetsController;
     }
 
     /** Prepares to turn on screen. The given listener is used to notify that it is ready. */
@@ -1621,11 +1621,15 @@ public class DisplayPolicy {
             // controlling system bars until the second app window is ready.
             final boolean exitingStartingWindow =
                     attrs.type == TYPE_APPLICATION_STARTING && win.mAnimatingExit;
+            // The top window always needs to be sent to System UI regardless of filling
+            // display when the remote insets controller is controlling system bars.
+            final boolean isRemoteControlling =
+                    getInsetsPolicy().remoteInsetsControllerControlsSystemBars(win);
 
             // Record the top-fullscreen-app-window which will be used to determine the system UI
             // controlling window.
             if (mTopFullscreenOpaqueWindowState == null && !exitingStartingWindow
-                    && fillsDisplayWindowingMode(win)) {
+                    && (isRemoteControlling || fillsDisplayWindowingMode(win))) {
                 mTopFullscreenOpaqueWindowState = win;
             }
 
@@ -1873,7 +1877,7 @@ public class DisplayPolicy {
         mRightGestureInset = mGestureNavigationSettingsObserver.getRightSensitivity(res);
         mNavigationBarAlwaysShowOnSideGesture =
                 res.getBoolean(R.bool.config_navBarAlwaysShowOnSideEdgeGesture);
-        mRemoteInsetsControllerControlsSystemBars = res.getBoolean(
+        mAllowsSystemBarRemoteInsetsController = res.getBoolean(
                 R.bool.config_remoteInsetsControllerControlsSystemBars);
 
         updateConfigurationAndScreenSizeDependentBehaviors();
@@ -2043,49 +2047,28 @@ public class DisplayPolicy {
                 | WindowInsets.Type.navigationBars();
 
         static class Info {
-            // TODO(b/409608996):
-            //  Remove mNonDecorInsets, mConfigInsets -> always empty
-            //  Remove mNonDecorFrame, mConfigFrame -> always the same as display frame
             /**
-             * The insets for the areas that could never be removed, i.e. display cutout and
-             * navigation bar. Note that its meaning is actually "decor insets". The "non" is just
-             * because it is used to calculate {@link #mNonDecorFrame}.
-             */
-            final Rect mNonDecorInsets = new Rect();
-
-            /**
-             * The stable insets that can affect configuration. The sources are usually from
-             * display cutout, navigation bar, and status bar.
-             */
-            final Rect mConfigInsets = new Rect();
-
-            /**
-             * Override value of mConfigInsets for app compatibility purpose.
+             * Override value of stable insets (display cutout, navigation bar, and status bar)
+             * that can affect configuration for app compatibility purpose.
              */
             final Rect mOverrideConfigInsets = new Rect();
 
             /**
-             * Override value of mNonDecorInsets for app compatibility purpose.
+             * Override value of decor insets (display cutout and navigation bar) for
+             * app compatibility purpose.
              */
             final Rect mOverrideNonDecorInsets = new Rect();
 
-            /** The display frame available after excluding {@link #mNonDecorInsets}. */
-            final Rect mNonDecorFrame = new Rect();
-
             /**
-             * The available (stable) screen size that we should report for the configuration.
-             * This must be no larger than {@link #mNonDecorFrame}; it may be smaller than that
-             * to account for more transient decoration like a status bar.
-             */
-            final Rect mConfigFrame = new Rect();
-
-            /**
-             * Override value of mConfigFrame for app compatibility purpose.
+             * Override available (stable) screen size for app compatibility purpose.
+             * This must be no larger than {@link #mOverrideNonDecorFrame}; it may be smaller than
+             * that to account for more transient decoration like a status bar.
              */
             final Rect mOverrideConfigFrame = new Rect();
 
             /**
-             * Override value of mNonDecorFrame for app compatibility purpose.
+             * Override display frame which excludes {@link #mOverrideNonDecorInsets} for app
+             * compatibility purpose.
              */
             final Rect mOverrideNonDecorFrame = new Rect();
 
@@ -2107,8 +2090,6 @@ public class DisplayPolicy {
                         overrideConfigInsets.right, overrideConfigInsets.bottom);
                 mOverrideNonDecorInsets.set(overrideDecorInsets.left, overrideDecorInsets.top,
                         overrideDecorInsets.right, overrideDecorInsets.bottom);
-                mNonDecorFrame.set(displayFrame);
-                mConfigFrame.set(displayFrame);
                 mOverrideConfigFrame.set(displayFrame);
                 mOverrideConfigFrame.inset(mOverrideConfigInsets);
                 mOverrideNonDecorFrame.set(displayFrame);
@@ -2117,12 +2098,8 @@ public class DisplayPolicy {
             }
 
             void set(Info other) {
-                mNonDecorInsets.set(other.mNonDecorInsets);
-                mConfigInsets.set(other.mConfigInsets);
                 mOverrideConfigInsets.set(other.mOverrideConfigInsets);
                 mOverrideNonDecorInsets.set(other.mOverrideNonDecorInsets);
-                mNonDecorFrame.set(other.mNonDecorFrame);
-                mConfigFrame.set(other.mConfigFrame);
                 mOverrideConfigFrame.set(other.mOverrideConfigFrame);
                 mOverrideNonDecorFrame.set(other.mOverrideNonDecorFrame);
                 mNeedUpdate = false;
@@ -2131,13 +2108,9 @@ public class DisplayPolicy {
             @Override
             public String toString() {
                 final StringBuilder tmpSb = new StringBuilder(32);
-                return "{nonDecorInsets=" + mNonDecorInsets.toShortString(tmpSb)
-                        + ", overrideNonDecorInsets=" + mOverrideNonDecorInsets.toShortString(tmpSb)
-                        + ", configInsets=" + mConfigInsets.toShortString(tmpSb)
+                return "{overrideNonDecorInsets=" + mOverrideNonDecorInsets.toShortString(tmpSb)
                         + ", overrideConfigInsets=" + mOverrideConfigInsets.toShortString(tmpSb)
-                        + ", nonDecorFrame=" + mNonDecorFrame.toShortString(tmpSb)
                         + ", overrideNonDecorFrame=" + mOverrideNonDecorFrame.toShortString(tmpSb)
-                        + ", configFrame=" + mConfigFrame.toShortString(tmpSb)
                         + ", overrideConfigFrame=" + mOverrideConfigFrame.toShortString(tmpSb)
                         + '}';
             }
@@ -2240,9 +2213,7 @@ public class DisplayPolicy {
         final DecorInsets.Info newInfo = mDecorInsets.mTmpInfo;
         newInfo.update(mDisplayContent, rotation, dw, dh);
         final DecorInsets.Info currentInfo = getDecorInsetsInfo(rotation, dw, dh);
-        final boolean sameConfigFrame = newInfo.mConfigFrame.equals(currentInfo.mConfigFrame);
-        if (sameConfigFrame
-                && newInfo.mOverrideConfigFrame.equals(currentInfo.mOverrideConfigFrame)) {
+        if (newInfo.mOverrideConfigFrame.equals(currentInfo.mOverrideConfigFrame)) {
             return false;
         }
         if (mCachedDecorInsets != null && !mCachedDecorInsets.canPreserve() && mScreenOnFully) {
@@ -2255,7 +2226,7 @@ public class DisplayPolicy {
             // clients receive the new states earlier.
             return true;
         }
-        return !sameConfigFrame;
+        return false;
     }
 
     DecorInsets.Info getDecorInsetsInfo(int rotation, int w, int h) {
@@ -2327,9 +2298,11 @@ public class DisplayPolicy {
         final ArrayList<InsetsSource> preservedSources = mCachedDecorInsets.mPreservedInsets;
         final InsetsState state = copyState ? new InsetsState(originalState) : originalState;
         for (int i = preservedSources.size() - 1; i >= 0; i--) {
-            final InsetsSource cacheSource = preservedSources.get(i);
-            if (state.peekSource(cacheSource.getId()) != null) {
-                state.addSource(new InsetsSource(cacheSource));
+            final InsetsSource cachedSource = preservedSources.get(i);
+            final InsetsSource originalSource = state.peekSource(cachedSource.getId());
+            if (originalSource != null) {
+                state.addSource(new InsetsSource(cachedSource)
+                        .setVisible(originalSource.isVisible()));
             }
         }
         return state;
@@ -2602,12 +2575,15 @@ public class DisplayPolicy {
     }
 
     void updateSystemBarAttributes() {
+        // The focused window always needs to be sent to System UI regardless of filling
+        // display when the remote insets controller is controlling system bars.
+        final boolean isRemoteControlling =
+                getInsetsPolicy().remoteInsetsControllerControlsSystemBars(mFocusedWindow);
         // If there is no window focused, there will be nobody to handle the events
         // anyway, so just hang on in whatever state we're in until things settle down.
         WindowState winCandidate =
-                mFocusedWindow != null && fillsDisplayWindowingMode(mFocusedWindow)
-                        ? mFocusedWindow
-                        : mTopFullscreenOpaqueWindowState;
+                mFocusedWindow != null && (isRemoteControlling || fillsDisplayWindowingMode(
+                        mFocusedWindow)) ? mFocusedWindow : mTopFullscreenOpaqueWindowState;
 
         // Immersive mode confirmation should never affect the system bar visibility, otherwise
         // it will unhide the navigation bar and hide itself.
@@ -2617,7 +2593,7 @@ public class DisplayPolicy {
                 // Let notification shade control the system bar visibility.
                 winCandidate = mNotificationShade;
             } else if (mLastFocusedWindow != null && mLastFocusedWindow.canReceiveKeys()
-                    && fillsDisplayWindowingMode(mLastFocusedWindow)) {
+                    && (isRemoteControlling || fillsDisplayWindowingMode(mLastFocusedWindow))) {
                 // Immersive mode confirmation took the focus from mLastFocusedWindow which was
                 // controlling the system bar visibility. Let it keep controlling the visibility.
                 winCandidate = mLastFocusedWindow;
@@ -2627,7 +2603,8 @@ public class DisplayPolicy {
         }
         if (winCandidate == null) {
             final ActivityRecord focusedApp = mDisplayContent.mFocusedApp;
-            if (focusedApp == null || fillsDisplayWindowingMode(focusedApp)) {
+            if (focusedApp == null
+                    || (isRemoteControlling || fillsDisplayWindowingMode(focusedApp))) {
                 // Don't change the system UI controlling window when the new one is not ready.
                 return;
             }
@@ -3201,8 +3178,8 @@ public class DisplayPolicy {
         pw.print(prefix); pw.print("mForceShowNavigationBarEnabled=");
         pw.print(mForceShowNavigationBarEnabled);
         pw.print(" mAllowLockscreenWhenOn="); pw.println(mAllowLockscreenWhenOn);
-        pw.print(prefix); pw.print("mRemoteInsetsControllerControlsSystemBars=");
-        pw.println(mRemoteInsetsControllerControlsSystemBars);
+        pw.print(prefix); pw.print("mAllowsSystemBarRemoteInsetsController=");
+        pw.println(mAllowsSystemBarRemoteInsetsController);
         pw.print(prefix); pw.println("mDecorInsetsInfo:");
         mDecorInsets.dump(prefixInner, pw);
         if (mCachedDecorInsets != null) {

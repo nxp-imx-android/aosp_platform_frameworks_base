@@ -16,17 +16,18 @@
 
 package com.android.systemui.screencapture.common.domain.interactor
 
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureRecentTaskRepository
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 
-@ScreenCaptureScope
+@ScreenCaptureUiScope
 class ScreenCaptureRecentTaskInteractor
 @Inject
 constructor(repository: ScreenCaptureRecentTaskRepository) {
-    val recentTasks: Flow<List<ScreenCaptureRecentTask>?> =
-        repository.recentTasks.map { it?.map(::ScreenCaptureRecentTask) }
+    val recentTasks: Flow<List<ScreenCaptureRecentTask>> =
+        repository.recentTasks.mapNotNull { it?.map(::ScreenCaptureRecentTask) }
 }

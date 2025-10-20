@@ -21,13 +21,14 @@ import android.annotation.Nullable;
 import android.app.ActivityTaskManager;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.content.pm.PackageManager;
-import android.content.Context;
 import android.content.Intent;
 import android.util.Slog;
 
+import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.tasks.PackageMetadata;
 import com.android.server.companion.datatransfer.continuity.tasks.PackageMetadataCache;
+import com.android.server.wm.ActivityTaskManagerInternal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,34 +43,45 @@ public class RunningTaskFetcher {
 
     private static final String TAG = "RunningTaskFetcher";
 
+    private final int mUserId;
     private final ActivityTaskManager mActivityTaskManager;
+    private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final PackageManager mPackageManager;
     private final PackageMetadataCache mPackageMetadataCache;
 
-    public RunningTaskFetcher(@NonNull Context context) {
+    public RunningTaskFetcher(
+            int userId,
+            @NonNull ActivityTaskManager activityTaskManager,
+            @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
+            @NonNull PackageManager packageManager) {
         this(
-            Objects.requireNonNull(context).getSystemService(ActivityTaskManager.class),
-            Objects.requireNonNull(context).getPackageManager(),
-            new PackageMetadataCache(Objects.requireNonNull(context).getPackageManager()));
+                userId,
+                Objects.requireNonNull(activityTaskManager),
+                Objects.requireNonNull(activityTaskManagerInternal),
+                Objects.requireNonNull(packageManager),
+                new PackageMetadataCache(Objects.requireNonNull(packageManager)));
     }
 
     public RunningTaskFetcher(
-        @NonNull ActivityTaskManager activityTaskManager,
-        @NonNull PackageManager packageManager,
-        @NonNull PackageMetadataCache packageMetadataCache) {
-
+            int userId,
+            @NonNull ActivityTaskManager activityTaskManager,
+            @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
+            @NonNull PackageManager packageManager,
+            @NonNull PackageMetadataCache packageMetadataCache) {
+        mUserId = userId;
         mActivityTaskManager = Objects.requireNonNull(activityTaskManager);
+        mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
         mPackageManager = Objects.requireNonNull(packageManager);
         mPackageMetadataCache = Objects.requireNonNull(packageMetadataCache);
     }
 
     @Nullable
     public RemoteTaskInfo getRunningTaskById(int taskId) {
-        RemoteTaskInfo taskInfo = getRunningTasks()
-            .stream()
-            .filter(info -> info.id() == taskId)
-            .findFirst()
-            .orElse(null);
+        RemoteTaskInfo taskInfo =
+                getRunningTasks().stream()
+                        .filter(info -> info.id() == taskId)
+                        .findFirst()
+                        .orElse(null);
 
         if (taskInfo == null) {
             Slog.w(TAG, "Could not find RunningTaskInfo for taskId: " + taskId);
@@ -81,12 +93,11 @@ public class RunningTaskFetcher {
 
     @NonNull
     public List<RemoteTaskInfo> getRunningTasks() {
-        return getRunningTaskInfos()
-            .stream()
-            .filter(this::shouldTaskBeSynced)
-            .map(this::createRemoteTaskInfo)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+        return getRunningTaskInfos().stream()
+                .filter(this::shouldTaskBeSynced)
+                .map(this::createRemoteTaskInfo)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     @Nullable
@@ -107,17 +118,21 @@ public class RunningTaskFetcher {
             return null;
         }
 
+        boolean isHandoffEnabled =
+                mActivityTaskManagerInternal.isHandoffEnabledForTask(taskInfo.taskId);
+
         return new RemoteTaskInfo(
-            taskInfo.taskId,
-            packageMetadata.label(),
-            taskInfo.lastActiveTime,
-            packageMetadata.icon());
+                taskInfo.taskId,
+                packageMetadata.label(),
+                taskInfo.lastActiveTime,
+                packageMetadata.icon(),
+                isHandoffEnabled);
     }
 
     @NonNull
     private List<RunningTaskInfo> getRunningTaskInfos() {
-        List<RunningTaskInfo> runningTaskInfos
-            = mActivityTaskManager.getTasks(Integer.MAX_VALUE, true);
+        List<RunningTaskInfo> runningTaskInfos =
+                mActivityTaskManager.getTasks(Integer.MAX_VALUE, true);
         if (runningTaskInfos == null) {
             return new ArrayList<>();
         }
@@ -130,12 +145,17 @@ public class RunningTaskFetcher {
             return false;
         }
 
+        if (taskInfo.userId != mUserId) {
+            Slog.v(TAG, "Task " + taskInfo.taskId + " is not in user " + mUserId);
+            return false;
+        }
+
         Intent intent = new Intent("android.intent.action.MAIN");
         intent.addCategory("android.intent.category.HOME");
-        String defaultLauncherPackage = mPackageManager
-            .resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-            .activityInfo
-            .packageName;
+        String defaultLauncherPackage =
+                mPackageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+                        .activityInfo
+                        .packageName;
         if (defaultLauncherPackage == null) {
             Slog.w(TAG, "Could not get default launcher package");
             return true;

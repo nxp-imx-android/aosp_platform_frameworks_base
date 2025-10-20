@@ -36,6 +36,7 @@ import android.app.admin.IAuditLogEventsCallback;
 import android.app.admin.ManagedProfileProvisioningParams;
 import android.app.admin.FullyManagedDeviceProvisioningParams;
 import android.app.admin.ManagedSubscriptionsPolicy;
+import android.app.admin.MultiUserDeviceProvisioningParamsTransport;
 import android.app.admin.WifiSsidPolicy;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -57,12 +58,13 @@ import android.telephony.data.ApnSetting;
 import com.android.internal.infra.AndroidFuture;
 import android.app.admin.DevicePolicyState;
 import android.app.admin.EnforcingAdmin;
+import android.app.admin.PolicyValueTransport;
 
 import java.util.List;
 
 /**
  * Internal IPC interface to the device policy service.
- * {@hide}
+ * @hide
  */
 interface IDevicePolicyManager {
     void setPasswordQuality(in ComponentName who, int quality, boolean parent);
@@ -170,6 +172,8 @@ interface IDevicePolicyManager {
     void getRemoveWarning(in ComponentName policyReceiver, in RemoteCallback result, int userHandle);
     void removeActiveAdmin(in ComponentName policyReceiver, int userHandle);
     void forceRemoveActiveAdmin(in ComponentName policyReceiver, int userHandle);
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS)")
+    void clearMultiUserDeviceManagement(in ComponentName admin);
     boolean hasGrantedPolicy(in ComponentName policyReceiver, int usesPolicy, int userHandle);
 
     void reportPasswordChanged(in PasswordMetrics metrics, int userId);
@@ -187,6 +191,7 @@ interface IDevicePolicyManager {
     String getDeviceOwnerName();
     void clearDeviceOwner(String packageName);
     int getDeviceOwnerUserId();
+    boolean isDeviceManaged();
 
     boolean setProfileOwner(in ComponentName who, int userHandle);
     ComponentName getProfileOwnerAsUser(int userHandle);
@@ -579,6 +584,8 @@ interface IDevicePolicyManager {
     UserHandle createManagedProfile(in ManagedProfileProvisioningParams provisioningParams, in String callerPackage);
     void finalizeCreateManagedProfile(in ManagedProfileProvisioningParams provisioningParams, in UserHandle managedProfileUser);
     void provisionFullyManagedDevice(in FullyManagedDeviceProvisioningParams provisioningParams, in String callerPackage);
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS)")
+    void provisionMultiUserDevice(in MultiUserDeviceProvisioningParamsTransport provisioningParamsTransport, in String callerPackage);
 
     void finalizeWorkProfileProvisioning(in UserHandle managedProfileUser, in Account migratedAccount);
 
@@ -654,4 +661,6 @@ interface IDevicePolicyManager {
 
     void setAppFunctionsPolicy(String callerPackageName, int policy);
     int getAppFunctionsPolicy(String callerPackageName, int userId);
+
+    void setPolicy(in String callerPackageName, in String policy, in int scope, in PolicyValueTransport value);
 }

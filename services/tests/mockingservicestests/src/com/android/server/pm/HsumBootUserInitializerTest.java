@@ -73,6 +73,9 @@ public final class HsumBootUserInitializerTest {
     @Captor
     private ArgumentCaptor<ContentObserver> mCaptorContentObserver;
 
+    // NOTE: not used, hence always false
+    private final boolean mIsManagedDevice = false;
+
     // NOTE: not mocking yet, but need a real one because of resources
     private final Context mRealContext =
             InstrumentationRegistry.getInstrumentation().getTargetContext();
@@ -83,7 +86,9 @@ public final class HsumBootUserInitializerTest {
     public void setFixtures() {
         mFixture = new HsumBootUserInitializer(mMockUms, mMockAms, mMockPms, mMockContentResolver,
                 // value of args below don't matter
-                /* shouldDesignateMainUser= */ false, /* shouldCreateInitialUser= */ false);
+                /* shouldDesignateMainUser= */ false,
+                /* shouldCreateInitialUser= */ false,
+                mIsManagedDevice);
     }
 
     @Test
@@ -91,7 +96,7 @@ public final class HsumBootUserInitializerTest {
         mockIsHsum(true);
 
         var instance = HsumBootUserInitializer.createInstance(mMockUms, mMockAms, mMockPms,
-                mMockContentResolver, mRealContext);
+                mIsManagedDevice, mMockContentResolver, mRealContext);
 
         expect.withMessage("result of createInstance()").that(instance).isNotNull();
     }
@@ -100,7 +105,7 @@ public final class HsumBootUserInitializerTest {
         mockIsHsum(false);
 
         var instance = HsumBootUserInitializer.createInstance(mMockUms, mMockAms, mMockPms,
-                mMockContentResolver, mRealContext);
+                mIsManagedDevice, mMockContentResolver, mRealContext);
 
         expect.withMessage("result of createInstance()").that(instance).isNull();
     }

@@ -34,7 +34,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.Objects;
@@ -348,6 +347,10 @@ public class TestableLooper {
 
     private boolean processSingleMessage(Runnable barrierRunnable) {
         try {
+            if (mQueueWrapper.peekWhen() == null) {
+                // No messages, don't continue parsing
+                return false;
+            }
             Message result = mQueueWrapper.next();
             if (result != null) {
                 // This is a break message.
