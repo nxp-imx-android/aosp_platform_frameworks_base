@@ -2628,4 +2628,73 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
         fail(receiver + "not found in " + r);
         return -1;
     }
+
+    @Test
+    public void testSkipReceiver_getReceiverIntentReturnsNull_coldStart() throws Exception {
+        // Scenario: A broadcast is sent to a receiver in a non-running process (cold start).
+        // BroadcastRecord.getReceiverIntent() is mocked to return null.
+
+        // Create a broadcast record with a manifest receiver.
+        final Intent intent = new Intent(Intent.ACTION_TIME_TICK);
+        final Object receiver = makeManifestReceiver(PACKAGE_GREEN, CLASS_GREEN);
+        final ProcessRecord app = new ActiveProcBuilder(PACKAGE_ORANGE).build();
+        final BroadcastRecord record = makeBroadcastRecord(intent, app, List.of(receiver));
+
+        // Spy on the record to mock getReceiverIntent().
+        final BroadcastRecord recordSpy = spy(record);
+        doReturn(null).when(recordSpy).getReceiverIntent(eq(receiver));
+
+        // Verify that the process is not running initially for a cold start scenario.
+        assertNull(mAms.getProcessRecordLocked(PACKAGE_GREEN, getUidForPackage(PACKAGE_GREEN)));
+
+        // Enqueue the broadcast.
+        mQueue.enqueueBroadcastLocked(recordSpy);
+
+        // Let the queue process the broadcast.
+        waitForIdle();
+
+        // Verification: The receiver should be skipped because getReceiverIntent() returned null.
+        // The delivery state should be DELIVERY_SKIPPED.
+        assertEquals("Receiver should be skipped when getReceiverIntent is null",
+                BroadcastRecord.DELIVERY_SKIPPED, recordSpy.getDeliveryState(0));
+
+        // We can also verify that startProcessLocked was not called, as skipping happens before
+        // that.
+        verify(mAms, times(0)).startProcessLocked(eq(PACKAGE_GREEN), any(), anyBoolean(), anyInt(),
+                any(), anyInt(), anyBoolean(), anyBoolean());
+    }
+
+    @Test
+    public void testSkipReceiver_getReceiverIntentReturnsNull_warmStart() throws Exception {
+        // Scenario: A broadcast is sent to a receiver in a running process (warm start).
+        // BroadcastRecord.getReceiverIntent() is mocked to return null.
+
+        // Ensure the process is running for a warm start scenario.
+        final ProcessRecord app = new ActiveProcBuilder(PACKAGE_GREEN).build();
+        final IApplicationThread thread = app.getThread();
+
+        // Create a broadcast record with a manifest receiver.
+        final Intent intent = new Intent(Intent.ACTION_TIME_TICK);
+        final Object receiver = makeManifestReceiver(PACKAGE_GREEN, CLASS_GREEN);
+        final BroadcastRecord record = makeBroadcastRecord(intent, app, List.of(receiver));
+
+        // Spy on the record to mock getReceiverIntent().
+        final BroadcastRecord recordSpy = spy(record);
+        doReturn(null).when(recordSpy).getReceiverIntent(eq(receiver));
+
+        // Enqueue the broadcast.
+        enqueueBroadcast(recordSpy);
+
+        // Let the queue process the broadcast.
+        waitForIdle();
+
+        // Verification: The receiver should be skipped because getReceiverIntent() returned null.
+        // The delivery state should be DELIVERY_SKIPPED.
+        assertEquals("Receiver should be skipped when getReceiverIntent is null",
+                BroadcastRecord.DELIVERY_SKIPPED, recordSpy.getDeliveryState(0));
+
+        // We can also verify that the receiver was not scheduled on the app thread.
+        verify(thread, times(0)).scheduleReceiver(any(), any(), any(), anyInt(),
+                any(), any(), anyBoolean(), anyBoolean(), anyInt(), anyInt(), anyInt(), any());
+    }
 }
