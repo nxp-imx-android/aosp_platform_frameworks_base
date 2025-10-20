@@ -671,11 +671,13 @@ public class OomAdjusterImpl extends OomAdjuster {
         mPendingProcessSet.clear();
 
         mLastReason = oomAdjReason;
-        Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, oomAdjReasonToString(oomAdjReason));
+        try {
+            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, oomAdjReasonToString(oomAdjReason));
 
-        fullUpdateLSP(oomAdjReason);
-
-        Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+            fullUpdateLSP(oomAdjReason);
+        } finally {
+            Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+        }
     }
 
     @GuardedBy({"mService", "mProcLock"})
@@ -692,14 +694,16 @@ public class OomAdjusterImpl extends OomAdjuster {
     protected void performUpdateOomAdjPendingTargetsLocked(@OomAdjReason int oomAdjReason) {
         mLastReason = oomAdjReason;
         mProcessStateCurTop = enqueuePendingTopAppIfNecessaryLSP();
-        Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, oomAdjReasonToString(oomAdjReason));
+        try {
+            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, oomAdjReasonToString(oomAdjReason));
 
-        synchronized (mProcLock) {
-            partialUpdateLSP(oomAdjReason, mPendingProcessSet);
+            synchronized (mProcLock) {
+                partialUpdateLSP(oomAdjReason, mPendingProcessSet);
+            }
+            mPendingProcessSet.clear();
+        } finally {
+            Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
         }
-        mPendingProcessSet.clear();
-
-        Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
     }
 
     /**
