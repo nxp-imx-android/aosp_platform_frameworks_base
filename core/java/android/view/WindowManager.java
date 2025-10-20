@@ -47,6 +47,7 @@ import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutPa
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.FIT_INSETS_SIDES;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.FIT_INSETS_TYPES;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.FLAGS;
+import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.FORCIBLY_SHOWN_TYPES;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.FORMAT;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.GRAVITY;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.HAS_SYSTEM_UI_LISTENERS;
@@ -6016,6 +6017,7 @@ public interface WindowManager extends ViewManager {
             proto.write(FIT_INSETS_TYPES, mFitInsetsTypes);
             proto.write(FIT_INSETS_SIDES, mFitInsetsSides);
             proto.write(FIT_IGNORE_VISIBILITY, mFitInsetsIgnoringVisibility);
+            proto.write(FORCIBLY_SHOWN_TYPES, forciblyShownTypes);
             proto.end(token);
         }
 
