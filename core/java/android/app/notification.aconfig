@@ -293,14 +293,6 @@ flag {
 }
 
 flag {
-  name: "ui_rich_ongoing"
-  is_exported: true
-  namespace: "systemui"
-  description: "[RONs] Guards new promotion logic and UI, including AOD notification and Colorization"
-  bug: "367705002"
-}
-
-flag {
   name: "rich_ongoing_improvements"
   namespace: "systemui"
   description: "[RONs] Visual Improvements for Live Updates, for glanceability"
