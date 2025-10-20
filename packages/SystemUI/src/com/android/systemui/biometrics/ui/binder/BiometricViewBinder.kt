@@ -28,6 +28,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO
+import android.view.ViewStub
 import android.view.accessibility.AccessibilityManager
 import android.widget.Button
 import android.widget.ImageView
@@ -114,10 +115,6 @@ object BiometricViewBinder {
         val descriptionView = view.requireViewById<TextView>(R.id.description)
         val customizedViewContainer =
             view.requireViewById<LinearLayout>(R.id.customized_view_container)
-        val udfpsGuidanceView =
-            view.requireViewById<UdfpsAccessibilityOverlay>(
-                R.id.biometric_prompt_udfps_accessibility_overlay
-            )
 
         // set selected to enable marquee unless a screen reader is enabled
         titleView.isSelected =
@@ -212,10 +209,14 @@ object BiometricViewBinder {
             descriptionView.text = viewModel.description.first()
 
             if (modalities.hasUdfps) {
-                UdfpsAccessibilityOverlayBinder.bind(
-                    udfpsGuidanceView,
-                    viewModel.udfpsAccessibilityOverlayViewModel,
-                )
+                val udfpsGuidanceViewStub =
+                    view.findViewById<ViewStub>(R.id.biometric_prompt_udfps_accessibility_overlay)
+                if (udfpsGuidanceViewStub != null) {
+                    UdfpsAccessibilityOverlayBinder.bind(
+                        udfpsGuidanceViewStub.inflate() as UdfpsAccessibilityOverlay,
+                        viewModel.udfpsAccessibilityOverlayViewModel,
+                    )
+                }
             }
 
             BiometricCustomizedViewBinder.bind(
