@@ -45,7 +45,7 @@ var core_libraries_modules = []string{art, conscrypt, i18n}
 // APIs.
 // In addition, the modules in this list are allowed to contribute to test APIs
 // stubs.
-var non_updatable_modules = []string{virtualization, location, networkSecurityConfig, platformCrashrecovery, ondeviceintelligence, platformTelephony}
+var non_updatable_modules = []string{virtualization, location, platformCrashrecovery, ondeviceintelligence, platformTelephony}
 
 // Map of RELEASE_ flags and the module associated with the flag.
 type moduleFlagInfo struct {
@@ -58,10 +58,16 @@ type moduleFlagInfo struct {
 
 var releaseFlagToModule = map[string]moduleFlagInfo{
 	"RELEASE_TELECOM_MAINLINE_MODULE": {
-	    // Do NOT include telecom as a non updatable module if the release flag is enabled for
-	    // mainline.
-		include: false,
+		// Do NOT include telecom as a non updatable module if the release flag is enabled for
+		// mainline.
+		include:    false,
 		moduleName: telecom,
+	},
+	"RELEASE_CONSCRYPT_NSC": {
+		// Do NOT include network-security-config as a non updatable module if the release flag
+		//  is enabled for	 mainline.
+		include:    false,
+		moduleName: networkSecurityConfig,
 	},
 }
 
