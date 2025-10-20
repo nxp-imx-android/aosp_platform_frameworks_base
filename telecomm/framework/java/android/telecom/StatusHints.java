@@ -38,6 +38,9 @@ import java.util.Objects;
  */
 public final class StatusHints implements Parcelable {
 
+    /** An undefined user id from UserHandle.USER_NULL */
+    private static final int USER_NULL = -10000;
+
     private final CharSequence mLabel;
     private Icon mIcon;
     private final Bundle mExtras;
@@ -179,7 +182,7 @@ public final class StatusHints implements Parcelable {
             return Integer.parseInt(userIdString);
         } catch (NumberFormatException e) {
             Log.w(TAG, "Error parsing userId." + e);
-            return UserHandle.USER_NULL;
+            return USER_NULL;
         }
     }
 
