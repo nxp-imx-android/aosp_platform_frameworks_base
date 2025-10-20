@@ -20,6 +20,7 @@ import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL_IMPLICIT;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_BFSL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_CPU_TIME;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
 import static android.app.ActivityManager.PROCESS_STATE_BOUND_FOREGROUND_SERVICE;
@@ -2043,6 +2044,17 @@ public abstract class OomAdjuster {
         app.addCurCpuTimeReasons(cpuReasons);
         app.addCurImplicitCpuTimeReasons(implicitCpuReasons);
         return clientCpuCaps;
+    }
+
+    /**
+     * @return the audio capability from a client (of a service binding or provider).
+     */
+    protected int getAudioCapabilitiesFromClient(ProcessRecordInternal client) {
+        // Similar to bfsl/cpu, there isn't a compelling reason to prevent the capability
+        // to control/play audio from propagating through binds: if the client has the
+        // capability, we generally want the service it binds to to hold the capability as well
+        // (e.g. TTS).
+        return client.getCurCapability() & PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
     }
 
     /** Inform the oomadj observer of changes to oomadj. Used by tests. */
