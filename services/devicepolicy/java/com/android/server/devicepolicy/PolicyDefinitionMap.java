@@ -69,7 +69,7 @@ public class PolicyDefinitionMap {
     static final String TAG = "PolicyDefinitionMap";
 
     private static final Map<String, PolicyDefinition<?>> POLICY_DEFINITIONS = new HashMap<>();
-    private static Map<String, Integer> USER_RESTRICTION_FLAGS = new HashMap<>();
+    private static final Map<String, Integer> USER_RESTRICTION_FLAGS = new HashMap<>();
 
     private static final Set<PolicyDefinition<?>> GENERIC_POLICY_DEFINITIONS = new HashSet<>();
 
