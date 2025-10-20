@@ -26,7 +26,7 @@ sealed class DeviceUnlockSource(val dismissesLockscreen: Boolean) {
 
     data object Fingerprint : DeviceUnlockSource(true)
 
-    data object FaceWithBypass : DeviceUnlockSource(dismissesLockscreen = true)
+    data object FaceWithBypassOrUnlockIntent : DeviceUnlockSource(dismissesLockscreen = true)
 
     data object FaceWithoutBypass : DeviceUnlockSource(dismissesLockscreen = false)
 

@@ -33,10 +33,10 @@ import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteract
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.parameterizeSceneContainerFlag
-import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
+import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
+import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.keyguard.shared.model.KeyguardState
-import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -53,6 +53,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.assertEquals
@@ -278,8 +279,9 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             val alternateBouncerIsVisible by collectLastValue(alternateBouncerInteractor.isVisible)
 
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Password)
-            fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             assertThat(deviceUnlockStatus!!.isUnlocked).isTrue()
 
@@ -373,8 +375,9 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val deviceUnlockStatus by collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus)
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Password)
-            fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
             assertThat(deviceUnlockStatus!!.isUnlocked).isTrue()
@@ -418,8 +421,9 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             val deviceUnlockStatus by collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus)
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Password)
-            fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
             assertThat(deviceUnlockStatus!!.isUnlocked).isTrue()

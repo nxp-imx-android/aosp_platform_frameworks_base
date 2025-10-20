@@ -28,10 +28,10 @@ import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
+import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
+import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.keyguard.shared.model.KeyguardState
-import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -53,6 +53,7 @@ import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
+import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -150,8 +151,9 @@ class SceneInteractorTest : SysuiTestCase() {
             val currentScene by collectLastValue(underTest.currentScene)
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
 
-            fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
             underTest.changeScene(Scenes.Gone, "reason")
@@ -278,8 +280,9 @@ class SceneInteractorTest : SysuiTestCase() {
             val currentScene by collectLastValue(underTest.currentScene)
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
 
-            fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
             underTest.snapToScene(Scenes.Gone, loggingReason = "reason")
@@ -822,8 +825,9 @@ class SceneInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             val currentScene by collectLastValue(underTest.currentScene)
             // Unlock so transitioning to the Gone scene becomes possible.
-            fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             underTest.changeScene(toScene = Scenes.Gone, loggingReason = "")
             assertThat(currentScene).isEqualTo(Scenes.Gone)
@@ -900,8 +904,9 @@ class SceneInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             val topmostContent by collectLastValue(underTest.topmostContent)
 
-            fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
             underTest.snapToScene(Scenes.Lockscreen, loggingReason = "reason")
@@ -921,8 +926,9 @@ class SceneInteractorTest : SysuiTestCase() {
 
             val topmostContent by collectLastValue(underTest.topmostContent)
 
-            fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
             underTest.snapToScene(Scenes.Lockscreen, loggingReason = "reason")
@@ -943,8 +949,9 @@ class SceneInteractorTest : SysuiTestCase() {
 
             val topmostContent by collectLastValue(underTest.topmostContent)
 
-            fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
             underTest.snapToScene(Scenes.Lockscreen, loggingReason = "reason")
@@ -965,8 +972,9 @@ class SceneInteractorTest : SysuiTestCase() {
 
             val topmostContent by collectLastValue(underTest.topmostContent)
 
-            fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
             underTest.snapToScene(Scenes.Lockscreen, loggingReason = "reason")
