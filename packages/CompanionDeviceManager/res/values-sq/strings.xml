@@ -31,7 +31,7 @@
     <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"gjurmuesi i fitnesit"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Të lejohet që &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; të menaxhojë &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"pajisje"</string>
-    <string name="summary_glasses" msgid="5469208629679579157">"Këtij aplikacioni do t\'i lejohet qasja te këto leje te <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <string name="summary_glasses" msgid="5469208629679579157">"Këtij aplikacioni do t\'i lejohet qasja te këto leje në pajisjen tënde: <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="profile_name_medical" msgid="5617160509499466400">"pajisje mjekësore"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Të lejohet që &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; të transmetojë aplikacionet dhe veçoritë e sistemit mes <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> dhe &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> do të marrë lejet e mëposhtme:"</string>
