@@ -39,6 +39,7 @@ import android.util.Log;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -111,32 +112,50 @@ public final class AdvancedProtectionManager {
     @SystemApi
     public static final int FEATURE_ID_ENABLE_MTE = 4;
 
+    /**
+     * Feature identifier for disallowing autojoin to insecure Wi-Fi networks (open, WEP, OWE)
+     *
+     * @hide */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_AAPM_FEATURE_DISABLE_INSECURE_WIFI_AUTOJOIN)
+    public static final int FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN = 5;
+
     /** @hide */
     @IntDef(prefix = { "FEATURE_ID_" }, value = {
             FEATURE_ID_DISALLOW_CELLULAR_2G,
             FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES,
             FEATURE_ID_DISALLOW_USB,
             FEATURE_ID_ENABLE_MTE,
+            FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface FeatureId {}
 
     /** @hide */
     public static String featureIdToString(@FeatureId int featureId) {
-        return switch(featureId) {
+        return switch (featureId) {
             case FEATURE_ID_DISALLOW_CELLULAR_2G -> "DISALLOW_CELLULAR_2G";
             case FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES -> "DISALLOW_INSTALL_UNKNOWN_SOURCES";
             case FEATURE_ID_DISALLOW_USB -> "DISALLOW_USB";
             case FEATURE_ID_ENABLE_MTE -> "ENABLE_MTE";
+            case FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN -> "DISALLOW_INSECURE_WIFI_AUTOJOIN";
             default -> "UNKNOWN";
         };
     }
 
-    private static final Set<Integer> ALL_FEATURE_IDS = Set.of(
-            FEATURE_ID_DISALLOW_CELLULAR_2G,
-            FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES,
-            FEATURE_ID_DISALLOW_USB,
-            FEATURE_ID_ENABLE_MTE);
+    private static final Set<Integer> ALL_FEATURE_IDS = buildAllFeatureIds();
+
+    private static Set<Integer> buildAllFeatureIds() {
+        final Set<Integer> allFeatureIds = new HashSet<>();
+        allFeatureIds.add(FEATURE_ID_DISALLOW_CELLULAR_2G);
+        allFeatureIds.add(FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES);
+        allFeatureIds.add(FEATURE_ID_DISALLOW_USB);
+        allFeatureIds.add(FEATURE_ID_ENABLE_MTE);
+        if (Flags.aapmFeatureDisableInsecureWifiAutojoin()) {
+            allFeatureIds.add(FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN);
+        }
+        return allFeatureIds;
+    }
 
     /**
      * Activity Action: Show a dialog with disabled by advanced protection message.

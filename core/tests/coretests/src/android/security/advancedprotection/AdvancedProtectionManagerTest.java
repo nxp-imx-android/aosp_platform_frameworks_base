@@ -23,15 +23,21 @@ import static android.security.advancedprotection.AdvancedProtectionManager.EXTR
 import static android.security.advancedprotection.AdvancedProtectionManager.EXTRA_SUPPORT_DIALOG_TYPE;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_CELLULAR_2G;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES;
+import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_ENABLE_MTE;
 import static android.security.advancedprotection.AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_BLOCKED_INTERACTION;
 import static android.security.advancedprotection.AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_DISABLED_SETTING;
 import static android.security.advancedprotection.AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_UNKNOWN;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import android.content.Intent;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
+import android.security.Flags;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -140,5 +146,26 @@ public class AdvancedProtectionManagerTest {
                 EXTRA_SUPPORT_DIALOG_FEATURE, FEATURE_ID_INVALID));
         assertEquals(SUPPORT_DIALOG_TYPE_UNKNOWN, intent.getIntExtra(
                 EXTRA_SUPPORT_DIALOG_TYPE, SUPPORT_DIALOG_TYPE_INVALID));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_AAPM_FEATURE_DISABLE_INSECURE_WIFI_AUTOJOIN)
+    public void testCreateSupportIntent_insecureWifiAutojoinFlagEnabled_createsIntent() {
+        Intent intent = AdvancedProtectionManager.createSupportIntent(
+                FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN, SUPPORT_DIALOG_TYPE_UNKNOWN);
+
+        assertEquals(ACTION_SHOW_ADVANCED_PROTECTION_SUPPORT_DIALOG, intent.getAction());
+        assertEquals(FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN, intent.getIntExtra(
+                EXTRA_SUPPORT_DIALOG_FEATURE, FEATURE_ID_INVALID));
+        assertEquals(SUPPORT_DIALOG_TYPE_UNKNOWN, intent.getIntExtra(EXTRA_SUPPORT_DIALOG_TYPE,
+                SUPPORT_DIALOG_TYPE_INVALID));
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_AAPM_FEATURE_DISABLE_INSECURE_WIFI_AUTOJOIN)
+    public void testCreateSupportIntent_insecureWifiAutojoinFlagDisabled_throwsIllegalArgument() {
+        assertThrows(IllegalArgumentException.class, () ->
+                AdvancedProtectionManager.createSupportIntent(
+                        FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN, SUPPORT_DIALOG_TYPE_UNKNOWN));
     }
 }

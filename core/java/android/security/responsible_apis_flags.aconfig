@@ -22,7 +22,9 @@ flag {
     name: "aapm_feature_disable_insecure_wifi_autojoin"
     namespace: "responsible_apis"
     description: "Android Advanced Protection Mode Feature: Disable Insecure Wifi Autojoin"
+    is_exported: true
     bug: "424512082"
+    is_fixed_read_only: true
 }
 
 flag {
