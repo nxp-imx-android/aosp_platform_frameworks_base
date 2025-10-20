@@ -12117,7 +12117,8 @@ public class Notification implements Parcelable
                     .text(null)
                     .hideAppName(true).hideSubText(true).hideTime(true)
                     .hideProgress(true)
-                    .hideRightIcon(true);
+                    .hideRightIcon(true)
+                    .needsExtraTextMargin(false);
             final TemplateBindResult result = new TemplateBindResult();
             final RemoteViews contentView = getStandardView(
                     mBuilder.getCompactHeadsUpMetricLayoutResource(), p, result);
