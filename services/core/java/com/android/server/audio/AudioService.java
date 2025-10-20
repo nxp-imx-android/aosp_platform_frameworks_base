@@ -399,6 +399,9 @@ public class AudioService extends IAudioService.Stub
      */
     private static final int FLAG_ADJUST_VOLUME = 1;
 
+    /** Suffix used to persist mute states. */
+    private static final String MUTE_SETTING_SUFFIX = "_mute";
+
     final Context mContext;
     private final ContentResolver mContentResolver;
     private final AppOpsManager mAppOps;
@@ -510,6 +513,8 @@ public class AudioService extends IAudioService.Stub
     private static final int MSG_CONFIGURATION_CHANGED = 54;
     private static final int MSG_BROADCAST_MASTER_MUTE = 55;
     private static final int MSG_UPDATE_CONTEXTUAL_VOLUMES = 56;
+    private static final int MSG_PERSIST_VOLUME_MUTE = 57;
+    private static final int MSG_PERSIST_VOLUME_GROUP_MUTE = 58;
 
     /**
      * Messages handled by the {@link SoundDoseHelper}, do not exceed
@@ -9631,6 +9636,13 @@ public class AudioService extends IAudioService.Stub
             // As for VSS, mute shall apply minIndex to all devices found in IndexMap and default.
             if (changed) {
                 mIsMuted = muted;
+                sendMsg(mAudioHandler,
+                        MSG_PERSIST_VOLUME_GROUP_MUTE,
+                        SENDMSG_QUEUE,
+                        0,
+                        0,
+                        this,
+                        PERSIST_DELAY);
                 applyAllVolumes(false /*userSwitch*/);
             }
             return changed;
@@ -9668,7 +9680,6 @@ public class AudioService extends IAudioService.Stub
                         case AudioManager.ADJUST_MUTE:
                             // May be already muted by setvolume 0, prevent from setting same value
                             if (previousIndex != 0) {
-                                // bypass persist
                                 mute(true);
                             }
                             mIsMuted = true;
@@ -9910,6 +9921,10 @@ public class AudioService extends IAudioService.Stub
         }
 
         private void persistVolumeGroup(int device) {
+            persistVolumeGroup(device, /*onlyMute=*/false);
+        }
+
+        private void persistVolumeGroup(int device, boolean onlyMute) {
             // No need to persist the index if the volume group is backed up
             // by a public stream type as this is redundant
             if (mUseFixedVolume || mHasValidStreamType) {
@@ -9924,9 +9939,16 @@ public class AudioService extends IAudioService.Stub
                             + " mSettingName: " + mSettingName);
                 }
 
-                boolean success = mSettings.putSystemIntForUser(mContentResolver,
-                        getSettingNameForDevice(device),
-                        getIndex(device),
+                boolean success = true;
+                if (!onlyMute) {
+                    success &= mSettings.putSystemIntForUser(mContentResolver,
+                            getSettingNameForDevice(device),
+                            getIndex(device),
+                            getVolumePersistenceUserId());
+                }
+                success &= mSettings.putSystemIntForUser(mContentResolver,
+                        getSettingMuteName(),
+                        isMuted() ? 1 : 0,
                         getVolumePersistenceUserId());
                 if (!success) {
                     Log.e(TAG, "persistVolumeGroup failed for group " +  mAudioVolumeGroup.name());
@@ -9949,9 +9971,11 @@ public class AudioService extends IAudioService.Stub
                             ? AudioSystem.DEFAULT_STREAM_VOLUME[mPublicStreamType] : -1;
                     int index;
                     String name = getSettingNameForDevice(device);
-                    index = mSettings.getSystemIntForUser(
-                            mContentResolver, name, defaultIndex,
+                    String muteName = getSettingMuteName();
+                    index = mSettings.getSystemIntForUser(mContentResolver, name, defaultIndex,
                             getVolumePersistenceUserId());
+                    boolean isMuted = mSettings.getSystemIntForUser(mContentResolver, muteName,
+                            /*def=*/0, getVolumePersistenceUserId()) != 0;
                     if (index == -1) {
                         continue;
                     }
@@ -9965,6 +9989,7 @@ public class AudioService extends IAudioService.Stub
                                  + ", User=" + getCurrentUserId());
                     }
                     mIndexMap.put(device, getValidIndex(index));
+                    mIsMuted = isMuted;
                 }
             }
         }
@@ -9985,6 +10010,10 @@ public class AudioService extends IAudioService.Stub
                 return mSettingName;
             }
             return mSettingName + "_" + AudioSystem.getOutputDeviceName(device);
+        }
+
+        public @NonNull String getSettingMuteName() {
+            return mSettingName + MUTE_SETTING_SUFFIX;
         }
 
         void setSettingName(String settingName) {
@@ -10317,6 +10346,14 @@ public class AudioService extends IAudioService.Stub
             return mVolumeIndexSettingName + "_" + suffix;
         }
 
+        public @Nullable String getSettingMuteName() {
+            if (!hasValidSettingsName()) {
+                return null;
+            }
+
+            return mVolumeIndexSettingName + MUTE_SETTING_SUFFIX;
+        }
+
         private boolean hasValidSettingsName() {
             return (mVolumeIndexSettingName != null && !mVolumeIndexSettingName.isEmpty());
         }
@@ -10360,12 +10397,16 @@ public class AudioService extends IAudioService.Stub
                     int defaultIndex = (device == AudioSystem.DEVICE_OUT_DEFAULT) ?
                             AudioSystem.DEFAULT_STREAM_VOLUME[mStreamType] : -1;
                     int index;
+                    boolean isMuted = false;
                     if (!hasValidSettingsName()) {
                         index = defaultIndex;
                     } else {
-                        String name = getSettingNameForDevice(device);
                         index = mSettings.getSystemIntForUser(
-                                mContentResolver, name, defaultIndex, getVolumePersistenceUserId());
+                                mContentResolver, getSettingNameForDevice(device), defaultIndex,
+                                getVolumePersistenceUserId());
+                        isMuted = mSettings.getSystemIntForUser(
+                                mContentResolver, getSettingMuteName(), /*def=*/0,
+                                getVolumePersistenceUserId()) != 0;
                     }
                     if (index == -1) {
                         continue;
@@ -10373,6 +10414,7 @@ public class AudioService extends IAudioService.Stub
 
                     mIndexMap.put(device, getValidIndex(10 * index,
                             true /*hasModifyAudioSettings*/));
+                    mIsMuted = isMuted;
                 }
             }
         }
@@ -10850,6 +10892,13 @@ public class AudioService extends IAudioService.Stub
                     Log.d(TAG, "Clear volume cache after changing mute state");
                 }
                 AudioManager.clearVolumeCache(AudioManager.VOLUME_CACHING_API);
+                sendMsg(mAudioHandler,
+                        MSG_PERSIST_VOLUME_MUTE,
+                        SENDMSG_QUEUE,
+                        0,
+                        0,
+                        this,
+                        PERSIST_DELAY);
             }
 
             return changed;
@@ -11126,6 +11175,10 @@ public class AudioService extends IAudioService.Stub
         }
 
         private void persistVolume(VolumeStreamState streamState, int device) {
+            persistVolume(streamState, device, /*onlyMute=*/false);
+        }
+
+        private void persistVolume(VolumeStreamState streamState, int device, boolean onlyMute) {
             if (mUseFixedVolume) {
                 return;
             }
@@ -11141,9 +11194,15 @@ public class AudioService extends IAudioService.Stub
                 return;
             }
             if (streamState.hasValidSettingsName()) {
+                if (!onlyMute) {
+                    mSettings.putSystemIntForUser(mContentResolver,
+                            streamState.getSettingNameForDevice(device),
+                            (streamState.getIndex(device) + 5) / 10,
+                            streamState.getVolumePersistenceUserId());
+                }
                 mSettings.putSystemIntForUser(mContentResolver,
-                        streamState.getSettingNameForDevice(device),
-                        (streamState.getIndex(device) + 5) / 10,
+                        streamState.getSettingMuteName(),
+                        streamState.mIsMuted ? 1 : 0,
                         streamState.getVolumePersistenceUserId());
             }
         }
@@ -11180,9 +11239,18 @@ public class AudioService extends IAudioService.Stub
                     persistVolume((VolumeStreamState) msg.obj, msg.arg1);
                     break;
 
+                case MSG_PERSIST_VOLUME_MUTE:
+                    persistVolume((VolumeStreamState) msg.obj, msg.arg1, /*onlyMute=*/true);
+                    break;
+
                 case MSG_PERSIST_VOLUME_GROUP:
                     final VolumeGroupState vgs = (VolumeGroupState) msg.obj;
                     vgs.persistVolumeGroup(msg.arg1);
+                    break;
+
+                case MSG_PERSIST_VOLUME_GROUP_MUTE:
+                    final VolumeGroupState vgsMute = (VolumeGroupState) msg.obj;
+                    vgsMute.persistVolumeGroup(msg.arg1, /*onlyMute=*/true);
                     break;
 
                 case MSG_APPLY_INPUT_GAIN_INDEX:
