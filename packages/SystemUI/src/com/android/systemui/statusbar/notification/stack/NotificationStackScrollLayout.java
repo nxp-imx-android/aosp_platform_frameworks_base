@@ -5902,16 +5902,10 @@ public class NotificationStackScrollLayout
             println(pw, "visibility", visibilityString(getVisibility()));
             println(pw, "alpha", getAlpha());
             println(pw, "suppressChildrenMeasureLayout", mSuppressChildrenMeasureAndLayout);
-            println(pw, "scrollY", mAmbientState.getScrollY());
-            println(pw, "showShelfOnly", mShouldShowShelfOnly);
             println(pw, "hideAmount", mAmbientState.getHideAmount());
-            println(pw, "ambientStateSwipingUp", mAmbientState.isSwipingUp());
             println(pw, "maxDisplayedNotifications", mMaxDisplayedNotifications);
-            println(pw, "intrinsicPadding", mIntrinsicPadding);
             println(pw, "bottomPadding", mBottomPadding);
             dumpRoundedRectClipping(pw);
-            println(pw, "requestedClipBounds", mRequestedClipBounds);
-            println(pw, "isClipped", mIsClipped);
             println(pw, "translationX", getTranslationX());
             println(pw, "translationY", getTranslationY());
             println(pw, "translationZ", getTranslationZ());
@@ -5940,6 +5934,12 @@ public class NotificationStackScrollLayout
                 println(pw, "topPadding", getTopPadding());
                 println(pw, "maxTopPadding", getMaxTopPadding());
                 println(pw, "qsExpandFraction", getQsExpansionFraction());
+                println(pw, "scrollY", mAmbientState.getScrollY());
+                println(pw, "showShelfOnly", mShouldShowShelfOnly);
+                println(pw, "ambientStateSwipingUp", mAmbientState.isSwipingUp());
+                println(pw, "intrinsicPadding", mIntrinsicPadding);
+                println(pw, "requestedClipBounds", mRequestedClipBounds);
+                println(pw, "isClipped", mIsClipped);
             }
         });
         pw.println();

@@ -885,16 +885,31 @@ public class AmbientState implements Dumpable {
     public void dump(PrintWriter pw, String[] args) {
         if (SceneContainerFlag.isEnabled()) {
             pw.println("mStackTop=" + mStackTop);
-            pw.print("mDrawBounds=" + mDrawBounds);
+            pw.println("mDrawBounds=" + mDrawBounds);
             pw.println("mHeadsUpTop=" + mHeadsUpTop);
+        } else {
+            // fields which will be removed with SceneContainer
+            pw.println("mTopPadding=" + mTopPadding);
+            pw.println("mStackTopMargin=" + mStackTopMargin);
+            pw.println("mStackTranslation=" + mStackTranslation);
+            pw.println("mLayoutMinHeight=" + mLayoutMinHeight);
+            pw.println("mLayoutMaxHeight=" + mLayoutMaxHeight);
+            pw.println("mContentHeight=" + mContentHeight);
+            pw.println("mAppearFraction=" + mAppearFraction);
+            pw.println("mExpandingVelocity=" + mExpandingVelocity);
+            pw.println("mOverScrollTopAmount=" + mOverScrollTopAmount);
+            pw.println("mOverScrollBottomAmount=" + mOverScrollBottomAmount);
+            pw.println("mOverExpansion=" + mOverExpansion);
+            pw.println("mStackY=" + mStackY);
+            pw.println("mScrollY=" + mScrollY);
+            pw.println("mCurrentScrollVelocity=" + mCurrentScrollVelocity);
+            pw.println("mIsSwipingUp=" + mIsSwipingUp);
+            pw.println("mPanelTracking=" + mPanelTracking);
+            pw.println("mIsFlinging=" + mIsFlinging);
+            pw.println("mIsFlingRequiredAfterLockScreenSwipeUp="
+                    + mIsFlingRequiredAfterLockScreenSwipeUp);
         }
-        pw.println("mTopPadding=" + mTopPadding);
-        pw.println("mStackTopMargin=" + mStackTopMargin);
-        pw.println("mStackTranslation=" + mStackTranslation);
-        pw.println("mLayoutMinHeight=" + mLayoutMinHeight);
-        pw.println("mLayoutMaxHeight=" + mLayoutMaxHeight);
         pw.println("mLayoutHeight=" + mLayoutHeight);
-        pw.println("mContentHeight=" + mContentHeight);
         pw.println("mHideSensitive=" + mHideSensitive);
         pw.println("mShadeExpanded=" + mShadeExpanded);
         pw.println("mClearAllInProgress=" + mClearAllInProgress);
@@ -909,23 +924,10 @@ public class AmbientState implements Dumpable {
         pw.println("mDozing=" + mDozing);
         pw.println("mFractionToShade=" + mFractionToShade);
         pw.println("mHideAmount=" + mHideAmount);
-        pw.println("mAppearFraction=" + mAppearFraction);
         pw.println("mExpansionFraction=" + mExpansionFraction);
         pw.println("mQsExpansionFraction=" + mQsExpansionFraction);
-        pw.println("mExpandingVelocity=" + mExpandingVelocity);
-        pw.println("mOverScrollTopAmount=" + mOverScrollTopAmount);
-        pw.println("mOverScrollBottomAmount=" + mOverScrollBottomAmount);
-        pw.println("mOverExpansion=" + mOverExpansion);
         pw.println("mStackHeight=" + mStackHeight);
         pw.println("mStackEndHeight=" + mStackEndHeight);
-        pw.println("mStackY=" + mStackY);
-        pw.println("mScrollY=" + mScrollY);
-        pw.println("mCurrentScrollVelocity=" + mCurrentScrollVelocity);
-        pw.println("mIsSwipingUp=" + mIsSwipingUp);
-        pw.println("mPanelTracking=" + mPanelTracking);
-        pw.println("mIsFlinging=" + mIsFlinging);
-        pw.println("mIsFlingRequiredAfterLockScreenSwipeUp="
-                + mIsFlingRequiredAfterLockScreenSwipeUp);
         pw.println("mZDistanceBetweenElements=" + mZDistanceBetweenElements);
         pw.println("mBaseZHeight=" + mBaseZHeight);
         pw.println("mIsClosing=" + mIsClosing);
