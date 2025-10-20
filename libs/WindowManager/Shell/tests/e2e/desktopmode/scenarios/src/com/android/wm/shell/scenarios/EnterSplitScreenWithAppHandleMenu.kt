@@ -27,6 +27,7 @@ import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.KeyEventHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
+import com.android.wm.shell.flicker.utils.SplitScreenUtils
 import org.junit.After
 import org.junit.Ignore
 import org.junit.Test
@@ -50,9 +51,8 @@ abstract class EnterSplitScreenWithAppHandleMenu(val rotation: Rotation = Rotati
         testApp.enterSplitScreenFromAppHandleMenu(wmHelper, device)
         // Open allApps via keyboard shortcut
         keyEventHelper.press(KEYCODE_META_RIGHT)
-        tapl.allApps
-            .getAppIcon(calculatorApp.appName)
-            .launch(calculatorApp.packageName)
+        tapl.allApps.getAppIcon(calculatorApp.appName).launch(calculatorApp.packageName)
+        SplitScreenUtils.waitForSplitComplete(wmHelper, testApp, calculatorApp)
     }
 
     @After
