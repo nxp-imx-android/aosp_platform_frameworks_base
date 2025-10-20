@@ -1,0 +1,153 @@
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.wm.shell.scenarios
+
+import android.app.Instrumentation
+import android.hardware.display.DisplayManager
+import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
+import android.platform.test.rule.ScreenRecordRule
+import android.platform.uiautomatorhelpers.DeviceHelpers.waitForObj
+import android.platform.uiautomatorhelpers.DurationUtils.platformAdjust
+import android.tools.NavBar
+import android.tools.Rotation
+import android.tools.device.apphelpers.SettingsHelper
+import android.tools.traces.parsers.WindowManagerStateHelper
+import android.view.Display.DEFAULT_DISPLAY
+import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.UiDevice
+import com.android.launcher3.tapl.LauncherInstrumentation
+import com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT
+import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
+import com.android.settings.flags.Flags.FLAG_SHOW_TABBED_CONNECTED_DISPLAY_SETTING
+import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
+import com.android.wm.shell.Utils
+import com.android.wm.shell.shared.desktopmode.DesktopState
+import java.time.Duration
+import org.junit.After
+import org.junit.Assume.assumeTrue
+import org.junit.Before
+import org.junit.Ignore
+import org.junit.Rule
+import platform.test.desktop.SimulatedConnectedDisplayTestRule
+
+/** Base test class for connected display settings CUJ. */
+@Ignore("Base Test Class")
+@RequiresFlagsEnabled(
+    FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
+    FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+    FLAG_SHOW_TABBED_CONNECTED_DISPLAY_SETTING,
+)
+abstract class SettingsConnectedDisplayTestBase {
+
+    val instrumentation: Instrumentation = getInstrumentation()
+    val tapl = LauncherInstrumentation()
+    val wmHelper = WindowManagerStateHelper(instrumentation)
+    val device = UiDevice.getInstance(instrumentation)
+    val settingsApp = DesktopModeAppHelper(SettingsHelper(instrumentation))
+    val displayManager = instrumentation.context.getSystemService(DisplayManager::class.java)
+
+    @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
+    @get:Rule(order = 1)
+    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
+    @get:Rule(order = 2) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
+    @get:Rule(order = 3)
+    val screenRecordRule = ScreenRecordRule(/* keepTestLevelRecordingOnSuccess= */ false)
+
+    @Before
+    fun baseSetup() {
+        val desktopState = DesktopState.fromContext(instrumentation.context)
+        assumeTrue(desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY))
+
+        val displayId = connectedDisplayRule.setupTestDisplay()
+        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(displayId).waitForAndVerify()
+        settingsApp.enterDesktopMode(wmHelper, device)
+        // Window should be maximized to ensure all components are visible
+        maximizeAppWindow()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+
+        openExternalDisplayPage()
+    }
+
+    @After
+    fun baseTeardown() {
+        settingsApp.exit(wmHelper)
+    }
+
+    /**
+     * Display settings are split per-display which can be navigated by clicking on toolbar (named
+     * based on displayName)
+     */
+    fun navigateToolbarToSelectedDisplaySettings(displayId: Int) {
+        val displayName =
+            if (displayId == DEFAULT_DISPLAY) {
+                BUILTIN_DISPLAY_NAME
+            } else {
+                displayManager.getDisplay(displayId).name
+            }
+        waitForObj(By.text(displayName), UIAUTOMATOR_TIMEOUT) {
+                "Can't find the toolbar for display#$displayId ($displayName)"
+            }
+            .click()
+    }
+
+    fun getRotationPreference() =
+        waitForObj(
+            By.clazz("android.widget.RelativeLayout").hasDescendant(By.text(ROTATION_TEXT))
+        ) {
+            "Could not find the 'Rotation' preference, have " +
+                "`navigateToolbarToSelectedDisplaySettings(displayId)` been called and " +
+                "display is external display?"
+        }
+
+    fun getMirroringPreference() =
+        waitForObj(By.res(MIRROR_BUILT_IN_DISPLAY_SWITCH_ID)) {
+            "Could not find the 'Mirroring' preference, have " +
+                "`navigateToolbarToSelectedDisplaySettings(displayId)` been called and " +
+                "display is DEFAULT_DISPLAY?"
+        }
+
+    private fun openExternalDisplayPage() {
+        waitForObj(By.text(CONNECTED_DEVICES_TEXT), UIAUTOMATOR_TIMEOUT) {
+                "Can't find 'Connected devices' setting"
+            }
+            .click()
+        waitForObj(By.text(EXTERNAL_DISPLAY_TEXT), UIAUTOMATOR_TIMEOUT) {
+                "Can't find 'External displays' setting"
+            }
+            .click()
+    }
+
+    private fun maximizeAppWindow() {
+        waitForObj(By.res(SETTINGS_MAXIMIZE_BUTTON_ID), UIAUTOMATOR_TIMEOUT) {
+                "Could not find maximize button"
+            }
+            .click()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+    }
+
+    companion object {
+        const val BUILTIN_DISPLAY_NAME = "Built-in display"
+        const val CONNECTED_DEVICES_TEXT = "Connected devices"
+        const val EXTERNAL_DISPLAY_TEXT = "External displays"
+        const val ROTATION_TEXT = "Rotation"
+        const val SETTINGS_MAXIMIZE_BUTTON_ID = "com.android.systemui:id/maximize_window"
+        const val MIRROR_BUILT_IN_DISPLAY_SWITCH_ID = "com.android.settings:id/switchWidget"
+        val UIAUTOMATOR_TIMEOUT = Duration.ofSeconds(10).platformAdjust()
+    }
+}
