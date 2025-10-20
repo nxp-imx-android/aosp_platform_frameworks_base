@@ -164,16 +164,26 @@ public class PersonalContextManagerService extends SystemService {
         @Override
         public void publishTriggeringHint(List<ContextHintWrapper> hints, RenderToken renderToken) {
             // TODO(b/450547433): Add security checks.
-            getService().startRefinerWorkflow(
-                    ContextHintWrapper.unwrapInto(hints, new HashSet<>()), renderToken);
+            final long identity = BinderService.clearCallingIdentity();
+            try {
+                getService().startRefinerWorkflow(
+                        ContextHintWrapper.unwrapInto(hints, new HashSet<>()), renderToken);
+            } finally {
+                restoreCallingIdentity(identity);
+            }
         }
 
         @PermissionManuallyEnforced
         @Override
         public void publishInsight(List<ContextInsightWrapper> insights) {
             // TODO(b/450547433): Add security checks.
-            getService().startInsightWorkflow(
-                    ContextInsightWrapper.unwrapInto(insights, new HashSet<>()));
+            final long identity = BinderService.clearCallingIdentity();
+            try {
+                getService().startInsightWorkflow(
+                        ContextInsightWrapper.unwrapInto(insights, new HashSet<>()));
+            } finally {
+                restoreCallingIdentity(identity);
+            }
         }
 
         @PermissionManuallyEnforced
