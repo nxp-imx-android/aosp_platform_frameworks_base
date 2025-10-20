@@ -228,10 +228,10 @@
     <string name="kg_primary_auth_duplicate_guess_pin">Already tried that PIN. Try another.</string>
 
     <!-- Message shown when duplicate primary auth attempt is detected [CHAR LIMIT=70]  -->
-    <string name="kg_primary_auth_duplicate_guess_pattern">Already tried that password. Try another.</string>
+    <string name="kg_primary_auth_duplicate_guess_pattern">Already tried that pattern. Try another.</string>
 
     <!-- Message shown when duplicate primary auth attempt is detected [CHAR LIMIT=70]  -->
-    <string name="kg_primary_auth_duplicate_guess_password">Already tried that pattern. Try another.</string>
+    <string name="kg_primary_auth_duplicate_guess_password">Already tried that password. Try another.</string>
 
     <!-- Message shown when primary auth is locked out after too many attempts [CHAR LIMIT=70]  -->
     <string name="kg_primary_auth_locked_out_pattern">Too many attempts with incorrect pattern</string>
