@@ -32,6 +32,8 @@ import android.util.AtomicFile;
 import android.util.Base64;
 import android.util.Slog;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.File;
@@ -267,12 +269,22 @@ final class UpdatableFontDir {
         }
     }
 
-    /**
-     * Applies multiple {@link FontUpdateRequest}s in transaction.
-     * If one of the request fails, the fonts and config are rolled back to the previous state
-     * before this method is called.
-     */
-    public void update(List<FontUpdateRequest> requests) throws SystemFontException {
+    private static class UpdateBackup {
+        final ArrayMap<String, FontFileInfo> mBackupMap;
+        final PersistentSystemFontConfig.Config mCurConfig;
+        final long mBackupLastModifiedDate;
+
+        UpdateBackup(ArrayMap<String, FontFileInfo> backupMap,
+                PersistentSystemFontConfig.Config curConfig,
+                long backupLastModifiedDate) {
+            this.mBackupMap = backupMap;
+            this.mCurConfig = curConfig;
+            this.mBackupLastModifiedDate = backupLastModifiedDate;
+        }
+    }
+
+    private UpdateBackup validateRequestsAndBackup(List<FontUpdateRequest> requests)
+            throws SystemFontException {
         for (FontUpdateRequest request : requests) {
             switch (request.getType()) {
                 case FontUpdateRequest.TYPE_UPDATE_FONT_FILE:
@@ -288,13 +300,27 @@ final class UpdatableFontDir {
         // Backup the mapping for rollback.
         ArrayMap<String, FontFileInfo> backupMap = new ArrayMap<>(mFontFileInfoMap);
         PersistentSystemFontConfig.Config curConfig = readPersistentConfig();
+        long backupLastModifiedDate = mLastModifiedMillis;
+        return new UpdateBackup(backupMap, curConfig, backupLastModifiedDate);
+    }
+
+    /**
+     * Applies multiple {@link FontUpdateRequest}s in transaction.
+     * If one of the request fails, the fonts and config are rolled back to the previous state
+     * before this method is called.
+     */
+    public void update(List<FontUpdateRequest> requests) throws SystemFontException {
+        UpdateBackup backup = validateRequestsAndBackup(requests);
+        ArrayMap<String, FontFileInfo> backupMap = backup.mBackupMap;
+        PersistentSystemFontConfig.Config curConfig = backup.mCurConfig;
+        long backupLastModifiedDate = backup.mBackupLastModifiedDate;
+
         Map<String, FontUpdateRequest.Family> familyMap = new HashMap<>();
         for (int i = 0; i < curConfig.fontFamilies.size(); ++i) {
             FontUpdateRequest.Family family = curConfig.fontFamilies.get(i);
             familyMap.put(family.getName(), family);
         }
 
-        long backupLastModifiedDate = mLastModifiedMillis;
         boolean success = false;
         try {
             for (FontUpdateRequest request : requests) {
@@ -367,8 +393,81 @@ final class UpdatableFontDir {
      *    "serif");
      *
      */
-    public void insert(List<FontUpdateRequest> requests, String fontFamilyNameToInsertBefore) {
-        // TODO: Implement this.
+    public void insert(List<FontUpdateRequest> requests, String fontFamilyNameToInsertBefore)
+            throws SystemFontException {
+        UpdateBackup backup = validateRequestsAndBackup(requests);
+        ArrayMap<String, FontFileInfo> backupMap = backup.mBackupMap;
+        PersistentSystemFontConfig.Config curConfig = backup.mCurConfig;
+        long backupLastModifiedDate = backup.mBackupLastModifiedDate;
+
+        List<FontUpdateRequest.Family> newFamilies = new ArrayList<>();
+        boolean success = false;
+        try {
+            for (FontUpdateRequest request : requests) {
+                switch (request.getType()) {
+                    case FontUpdateRequest.TYPE_UPDATE_FONT_FILE:
+                        installFontFile(
+                                request.getFd().getFileDescriptor(), request.getSignature());
+                        break;
+                    case FontUpdateRequest.TYPE_UPDATE_FONT_FAMILY:
+                        newFamilies.add(request.getFontFamily());
+                        break;
+                }
+            }
+
+            // Before processing font family update, check all family points the available fonts.
+            for (FontUpdateRequest.Family family : newFamilies) {
+                if (resolveFontFilesForNamedFamily(family) == null) {
+                    throw new SystemFontException(
+                            FontManager.RESULT_ERROR_FONT_NOT_FOUND,
+                            "Required fonts are not available");
+                }
+            }
+
+            // Write config file.
+            mLastModifiedMillis = mCurrentTimeSupplier.get();
+
+            PersistentSystemFontConfig.Config newConfig = new PersistentSystemFontConfig.Config();
+            newConfig.lastModifiedMillis = mLastModifiedMillis;
+            for (FontFileInfo info : mFontFileInfoMap.values()) {
+                newConfig.updatedFontDirs.add(info.getRandomizedFontDir().getName());
+            }
+
+            List<FontUpdateRequest.Family> families = curConfig.fontFamilies;
+            int insertBefore = -1;
+            for (int i = 0; i < families.size(); i++) {
+                if (families.get(i).getName().equals(fontFamilyNameToInsertBefore)) {
+                    insertBefore = i;
+                    break;
+                }
+            }
+
+            if (insertBefore != -1) {
+                for (int i = 0; i < insertBefore; i++) {
+                    newConfig.fontFamilies.add(families.get(i));
+                }
+            } else {
+                throw new SystemFontException(
+                        FontManager.RESULT_ERROR_INVALID_FONT_FAMILY_NAME_TO_INSERT_BEFORE,
+                        "The font family name to insert before is invalid.");
+            }
+
+            newConfig.fontFamilies.addAll(newFamilies);
+
+            for (int i = insertBefore; i < families.size(); i++) {
+                newConfig.fontFamilies.add(families.get(i));
+            }
+
+            writePersistentConfig(newConfig);
+            mConfigVersion++;
+            success = true;
+        } finally {
+            if (!success) {
+                mFontFileInfoMap.clear();
+                mFontFileInfoMap.putAll(backupMap);
+                mLastModifiedMillis = backupLastModifiedDate;
+            }
+        }
     }
 
     /**
@@ -684,7 +783,8 @@ final class UpdatableFontDir {
                 config.getLocaleFallbackCustomizations(), mLastModifiedMillis, mConfigVersion);
     }
 
-    private PersistentSystemFontConfig.Config readPersistentConfig() {
+    @VisibleForTesting
+    PersistentSystemFontConfig.Config readPersistentConfig() {
         PersistentSystemFontConfig.Config config = new PersistentSystemFontConfig.Config();
         try (FileInputStream fis = mConfigFile.openRead()) {
             PersistentSystemFontConfig.loadFromXml(fis, config);
