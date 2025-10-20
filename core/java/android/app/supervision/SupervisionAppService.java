@@ -68,7 +68,9 @@ public class SupervisionAppService extends Service {
 
                 @Override
                 public void onPolicyChanged(Policy policy) {
-                    // TODO (b/446219213): Implement listener
+                    if (Flags.enableSupervisionManagerPolicyApis()) {
+                        SupervisionAppService.this.onPolicyChanged(policy);
+                    }
                 }
             };
 
@@ -95,4 +97,12 @@ public class SupervisionAppService extends Service {
     @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
     public void onSupervisionDisabled() {}
+
+    /**
+     * Called when a policy is changed.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    public void onPolicyChanged(Policy policy) {}
 }

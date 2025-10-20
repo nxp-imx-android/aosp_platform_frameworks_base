@@ -25,7 +25,6 @@ import android.app.role.OnRoleHoldersChangedListener
 import android.app.role.RoleManager
 import android.app.supervision.ISupervisionListener
 import android.app.supervision.PackagePolicy
-import android.app.supervision.Policy
 import android.app.supervision.SupervisionManager
 import android.app.supervision.SupervisionRecoveryInfo
 import android.app.supervision.SupervisionRecoveryInfo.STATE_PENDING
@@ -66,6 +65,7 @@ import com.android.internal.R
 import com.android.server.LocalServices
 import com.android.server.ServiceThread
 import com.android.server.SystemService.TargetUser
+import com.android.server.appbinding.AppBindingConstants
 import com.android.server.appbinding.AppBindingService
 import com.android.server.appbinding.AppServiceConnection
 import com.android.server.appbinding.finders.SupervisionAppServiceFinder
@@ -89,6 +89,7 @@ import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -887,27 +888,72 @@ class SupervisionServiceTest {
     }
 
     private fun verifySetPackagePolicy(enabled: Boolean) {
-        val policy = PackagePolicy(
-            /*version=*/ 1,
-            /*packageName=*/ PACKAGE_NAME,
-            /*restrictionType=*/ PackagePolicy.RESTRICTION_TYPE_BLOCKED,
-            enabled
-        )
+        val policy =
+            PackagePolicy(
+                /*version=*/ 1,
+                /*packageName=*/ PACKAGE_NAME,
+                /*restrictionType=*/ PackagePolicy.RESTRICTION_TYPE_BLOCKED,
+                enabled,
+            )
 
         service.setPolicy(USER_ID, policy)
         injector.awaitServiceThreadIdle()
 
-        verify(mockDpmInternal).setApplicationHiddenBySystem(
-            eq(SupervisionManager.SUPERVISION_SYSTEM_ENTITY),
-            eq(PACKAGE_NAME),
-            eq(USER_ID),
-            eq(enabled)
-        )
-        verify(mockAppBindingService, times(1)).dispatchAppServiceEvent(
-            eq(SupervisionAppServiceFinder::class.java),
-            eq(USER_ID),
-            any()
-        )
+        verify(mockDpmInternal)
+            .setApplicationHiddenBySystem(
+                eq(SupervisionManager.SUPERVISION_SYSTEM_ENTITY),
+                eq(PACKAGE_NAME),
+                eq(USER_ID),
+                eq(enabled),
+            )
+        verifySupervisionAppServiceEvent(USER_ID) {
+            // Supervision apps are notified of the policy change.
+            verify(it).onPolicyChanged(eq(policy))
+        }
+    }
+
+    private fun verifySupervisionAppServiceEvent(
+        userId: Int,
+        verifyListener: (ISupervisionListener) -> Unit,
+    ) {
+        val mockAppServiceFinder = mock<SupervisionAppServiceFinder>()
+        val mockSupervisionListener = mock<ISupervisionListener>()
+        val mockBinder = mock<IBinder>()
+        // Associate the listener with the binder.
+        whenever(mockSupervisionListener.asBinder()).thenReturn(mockBinder)
+        // The finder returns the listener when asked for the interface.
+        whenever(mockAppServiceFinder.asInterface(mockBinder)).thenReturn(mockSupervisionListener)
+        val fakeComponentName = ComponentName(PACKAGE_NAME, "FooClass")
+        val fakeServiceConnection =
+            AppServiceConnection(
+                /* context= */ context,
+                /* userId= */ userId,
+                /* constants= */ AppBindingConstants.initializeFromString(""),
+                /* handler= */ serviceThreadRule.serviceThread.threadHandler,
+                /* finder= */ mockAppServiceFinder,
+                /* packageName= */ PACKAGE_NAME,
+                /* componentName= */ fakeComponentName,
+            )
+        // Simulate the service connection being bound.
+        fakeServiceConnection.bind()
+        // Simulate the service connection callback, making the listener available.
+        fakeServiceConnection
+            .getServiceConnectionForTest()
+            .onServiceConnected(fakeComponentName, mockBinder)
+
+        // Verify the app binding service was called correctly.
+        val consumerCaptor = argumentCaptor<Consumer<AppServiceConnection>>()
+        verify(mockAppBindingService)
+            .dispatchAppServiceEvent(
+                eq(SupervisionAppServiceFinder::class.java),
+                eq(userId),
+                consumerCaptor.capture(),
+            )
+        // Simulate the app binding service callback.
+        consumerCaptor.firstValue.accept(fakeServiceConnection)
+
+        // Verify the listener was called correctly.
+        verifyListener(mockSupervisionListener)
     }
 
     @Test
