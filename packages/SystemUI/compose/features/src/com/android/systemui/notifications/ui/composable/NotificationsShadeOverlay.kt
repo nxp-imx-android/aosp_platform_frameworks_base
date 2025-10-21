@@ -18,9 +18,12 @@ package com.android.systemui.notifications.ui.composable
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -32,6 +35,7 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.UserAction
@@ -145,14 +149,19 @@ constructor(
 
             Column(modifier = Modifier.focusRequester(focusRequester).focusable()) {
                 if (isFullWidth) {
-                    with(lockscreenElements) {
-                        LockscreenElement(
-                            LockscreenElementKeys.Clock.Small,
-                            Modifier.padding(
-                                start = notificationStackPadding,
-                                end = notificationStackPadding,
-                            ),
+                    Box(
+                        Modifier.padding(
+                            start = notificationStackPadding,
+                            end = notificationStackPadding,
+                            bottom = 8.dp,
                         )
+                    ) {
+                        with(lockscreenElements) {
+                            LockscreenElement(
+                                LockscreenElementKeys.Clock.Small,
+                                Modifier.wrapContentWidth().height(88.dp),
+                            )
+                        }
                     }
                 }
 

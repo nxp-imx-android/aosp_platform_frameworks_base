@@ -90,7 +90,10 @@ constructor(
                         LockscreenElement(
                             Clock.Small,
                             Modifier.widthIn(min = clockBounds.width.toDp())
-                                .heightIn(min = clockBounds.height.toDp()),
+                                .heightIn(
+                                    min = clockBounds.height.toDp(),
+                                    max = dimensionResource(clocksR.dimen.small_clock_height),
+                                ),
                         )
                     }
 

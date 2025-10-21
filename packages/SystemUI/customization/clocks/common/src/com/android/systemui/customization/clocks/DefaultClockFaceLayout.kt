@@ -21,11 +21,12 @@ import android.util.DisplayMetrics
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.compose.foundation.layout.height
+import android.widget.TextView
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.constraintlayout.widget.ConstraintSet.BOTTOM
@@ -68,9 +69,17 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
 
         @Composable
         override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {
+            if (view is TextView) {
+                // Compose gives us AT_MOST values that are too tight when STL is animating these
+                // elements. To prevent this from causing our TextLayouts from becoming multi-line,
+                // we enable single line enforcement on the text view.
+                view.setSingleLine()
+            }
+
             ClockView(
                 view,
-                Modifier.height(dimensionResource(clocksR.dimen.small_clock_height))
+                Modifier.wrapContentWidth()
+                    .fillMaxHeight()
                     .then(contentScope.smallClockModifier())
                     .then(context.burnInModifier)
                     .then(context.nonAuthUIModifier),
