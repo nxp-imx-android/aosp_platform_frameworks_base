@@ -27,7 +27,6 @@ import android.util.MathUtils.lerp
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
-import android.view.View.MeasureSpec.EXACTLY
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.animation.Interpolator
@@ -51,7 +50,9 @@ import com.android.systemui.customization.clocks.TextStyle
 import com.android.systemui.customization.clocks.utils.CanvasUtils.translate
 import com.android.systemui.customization.clocks.utils.PaintUtils.getTextBounds
 import com.android.systemui.customization.clocks.utils.ViewUtils.measuredSize
-import com.android.systemui.plugins.keyguard.VPoint
+import com.android.systemui.customization.clocks.utils.ViewUtils.measuredSizeAndState
+import com.android.systemui.plugins.keyguard.VMeasurePoint
+import com.android.systemui.plugins.keyguard.VMeasureSpec
 import com.android.systemui.plugins.keyguard.VPointF
 import com.android.systemui.plugins.keyguard.VPointF.Companion.max
 import com.android.systemui.plugins.keyguard.VRectF
@@ -276,8 +277,9 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        logger.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        val measureSpec = VMeasurePoint.fromSpecs(widthMeasureSpec, heightMeasureSpec)
+        logger.onMeasure(measureSpec)
+        super.onMeasure(measureSpec.width.spec, measureSpec.height.spec)
 
         val layout = this.layout
         if (layout != null) {
@@ -298,8 +300,8 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
         }
 
         val bounds = getInterpolatedTextBounds()
-        val size = computeMeasuredSize(bounds, widthMeasureSpec, heightMeasureSpec)
-        setInterpolatedSize(size, widthMeasureSpec, heightMeasureSpec)
+        val size = computeMeasuredSize(bounds, measureSpec)
+        setInterpolatedSize(size, measureSpec)
     }
 
     private var drawnProgress: Float? = null
@@ -494,22 +496,15 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
 
     private fun computeMeasuredSize(
         interpBounds: VRectF,
-        widthMeasureSpec: Int = measuredWidthAndState,
-        heightMeasureSpec: Int = measuredHeightAndState,
+        spec: VMeasurePoint = measuredSizeAndState,
     ): VPointF {
-        val mode =
-            VPoint(
-                x = MeasureSpec.getMode(widthMeasureSpec),
-                y = MeasureSpec.getMode(heightMeasureSpec),
-            )
-
         return VPointF(
                 when {
-                    mode.x == EXACTLY -> MeasureSpec.getSize(widthMeasureSpec).toFloat()
+                    spec.width.mode == VMeasureSpec.Mode.EXACTLY -> spec.width.size.toFloat()
                     else -> interpBounds.width + 2 * lockscreenPaint.strokeWidth
                 },
                 when {
-                    mode.y == EXACTLY -> MeasureSpec.getSize(heightMeasureSpec).toFloat()
+                    spec.height.mode == VMeasureSpec.Mode.EXACTLY -> spec.height.size.toFloat()
                     else -> interpBounds.height + 2 * lockscreenPaint.strokeWidth
                 },
             )
@@ -519,25 +514,19 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
     /** Set the measured size of the view to match the interpolated text bounds */
     private fun setInterpolatedSize(
         measureBounds: VPointF,
-        widthMeasureSpec: Int = measuredWidthAndState,
-        heightMeasureSpec: Int = measuredHeightAndState,
+        measureSpec: VMeasurePoint = measuredSizeAndState,
     ) {
-        val mode =
-            VPoint(MeasureSpec.getMode(widthMeasureSpec), MeasureSpec.getMode(heightMeasureSpec))
-                .let { mode -> if (isVertical) mode.swap() else mode }
+        val mode = if (isVertical) measureSpec.mode.swap() else measureSpec.mode
+        val targetSpec =
+            VMeasurePoint(
+                VMeasureSpec(ceil(measureBounds.x).toInt(), mode.x),
+                VMeasureSpec(ceil(measureBounds.y).toInt(), mode.y),
+            )
 
-        setMeasuredDimension(
-            MeasureSpec.makeMeasureSpec(ceil(measureBounds.x).toInt(), mode.x),
-            MeasureSpec.makeMeasureSpec(ceil(measureBounds.y).toInt(), mode.y),
-        )
+        setMeasuredDimension(targetSpec.width.spec, targetSpec.height.spec)
 
-        logger.d({
-            val unpackedSize = VPointF.fromLong(long1)
-            val unpackedMode = VPoint.fromLong(long2)
-            "setInterpolatedSize(size=$unpackedSize, mode=$unpackedMode)"
-        }) {
-            long1 = measureBounds.toLong()
-            long2 = mode.toLong()
+        logger.d({ "setInterpolatedSize(${VMeasurePoint.fromLong(long1)})" }) {
+            long1 = targetSpec.toLong()
         }
     }
 

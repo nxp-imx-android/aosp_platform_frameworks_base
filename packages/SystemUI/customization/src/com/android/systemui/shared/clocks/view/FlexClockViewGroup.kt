@@ -32,6 +32,7 @@ import com.android.systemui.customization.clocks.utils.CanvasUtils.translate
 import com.android.systemui.customization.clocks.utils.ViewUtils.measuredSize
 import com.android.systemui.customization.clocks.utils.ViewUtils.position
 import com.android.systemui.customization.clocks.view.DigitalClockViewGroup
+import com.android.systemui.plugins.keyguard.VMeasurePoint
 import com.android.systemui.plugins.keyguard.VPointF
 import com.android.systemui.plugins.keyguard.VRectF
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockAxisStyle
@@ -59,7 +60,7 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
         updateLocale(Locale.getDefault())
     }
 
-    override fun calculateSize(widthMeasureSpec: Int, heightMeasureSpec: Int): VPointF {
+    override fun calculateSize(measureSpec: VMeasurePoint): VPointF {
         val xScale = if (children.count() < 4) 1f else 2f
         val yBuffer = context.resources.getDimensionPixelSize(R.dimen.clock_vertical_digit_buffer)
         return maxChildSize * VPointF(xScale, 2f) + VPointF(0f, yBuffer)
