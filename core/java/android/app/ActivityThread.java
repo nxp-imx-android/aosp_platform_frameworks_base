@@ -7155,7 +7155,11 @@ public final class ActivityThread extends ClientTransactionHandler
         synchronized (mProviderMap) {
             final int numContentProviders = mLocalProviders.size();
             for (int i = 0; i < numContentProviders; i++) {
-                nonUIContexts.add(mLocalProviders.valueAt(i).mLocalProvider.getContext());
+                final Context providerContext = mLocalProviders.valueAt(i).mLocalProvider
+                        .getContext();
+                if (providerContext != null) {
+                    nonUIContexts.add(providerContext);
+                }
             }
         }
 
@@ -7167,6 +7171,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 // and the passed deviceId is no longer valid.
                 // TODO(b/263355088): check for validity of deviceId before updating
                 // instead of catching this exception once VDM add an API to validate ids.
+                Slog.e(TAG, "Exception updating context with deviceId: " + deviceId, e);
             }
         }
     }
