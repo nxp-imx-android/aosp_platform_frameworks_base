@@ -813,6 +813,9 @@ class BroadcastQueueImpl extends BroadcastQueue {
                                 ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE,
                                 ApplicationExitInfo.SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT,
                                 true /* noisy */);
+                        forEachMatchingBroadcast(QUEUE_PREDICATE_ANY,
+                                (testRecord, testIndex) -> r.callingUid == testRecord.callingUid,
+                                mBroadcastConsumerSkipDueToExcessiveCount, true);
                         return;
                     }
                 }
@@ -1730,6 +1733,12 @@ class BroadcastQueueImpl extends BroadcastQueue {
 
     @GuardedBy("mService")
     final BroadcastRecordConsumer mBroadcastRecordConsumerEnqueue = this::enqueueBroadcastLocked;
+
+    @GuardedBy("mService")
+    private final BroadcastConsumer mBroadcastConsumerSkipDueToExcessiveCount = (r, i) -> {
+        setDeliveryState(null, null, r, i, r.receivers.get(i), BroadcastRecord.DELIVERY_SKIPPED,
+                "mBroadcastConsumerSkipDueToExcessiveCount");
+    };
 
     /**
      * Verify that all known {@link #mProcessQueues} are in the state tested by
