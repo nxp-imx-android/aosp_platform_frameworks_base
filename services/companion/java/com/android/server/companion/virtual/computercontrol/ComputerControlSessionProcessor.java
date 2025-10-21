@@ -57,7 +57,6 @@ import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
 
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Handles creation and lifecycle of {@link ComputerControlSession}s.
@@ -202,15 +201,7 @@ public class ComputerControlSessionProcessor {
      * Returns whether the virtual device with the given ID represents a computer control session.
      */
     public boolean isComputerControlSession(int deviceId) {
-        synchronized (mSessions) {
-            for (int i = 0; i < mSessions.size(); i++) {
-                ComputerControlSessionImpl session = mSessions.valueAt(i);
-                if (session.getDeviceId() == deviceId) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return findSession(deviceId) != null;
     }
 
     private void startHandlerThreadIfNeeded() {
@@ -261,17 +252,25 @@ public class ComputerControlSessionProcessor {
 
     /** Closes the session with the given ID. */
     public void closeSessionByUserIntent(int deviceId) {
+        final var session = findSession(deviceId);
+        if (session == null) {
+            Slog.w(TAG, "Failed to close ComputerControlSession for unknown deviceId " + deviceId);
+            return;
+        }
+        session.close(CLOSE_REASON_USER_INITIATED);
+    }
+
+    @Nullable
+    private ComputerControlSessionImpl findSession(int deviceId) {
         synchronized (mSessions) {
             for (int i = 0; i < mSessions.size(); i++) {
-                ComputerControlSessionImpl session = mSessions.valueAt(i);
-                if (session.getDeviceId() != deviceId) {
-                    continue;
+                final var session = mSessions.valueAt(i);
+                if (session.getDeviceId() == deviceId) {
+                    return session;
                 }
-                session.close(CLOSE_REASON_USER_INITIATED);
-                return;
             }
         }
-        Slog.w(TAG, "Failed to close ComputerControlSession for unknown deviceId " + deviceId);
+        return null;
     }
 
     @GuardedBy("mSessions")
