@@ -30,6 +30,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraExtensionCharacteristics;
 import android.hardware.camera2.CameraExtensionSession;
+import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
@@ -107,6 +108,7 @@ public final class CameraAdvancedExtensionSessionImpl extends CameraExtensionSes
     private ISessionProcessorImpl mSessionProcessor = null;
     private final InitializeSessionHandler mInitializeHandler;
     private final ExtensionSessionStatsAggregator mStatsAggregator;
+    private final CaptureRequest mSessionParameters;
 
     private boolean mInitialized;
     private boolean mSessionClosed;
@@ -250,10 +252,19 @@ public final class CameraAdvancedExtensionSessionImpl extends CameraExtensionSes
                 config.getExtension());
         extender.init(cameraId, characteristicsMapNative);
 
+        CaptureRequest sessionParams = null;
+        if (Flags.vendorDefinedCameraExtensions()) {
+            sessionParams = config.getSessionParameters();
+        }
+        if (sessionParams == null) {
+            sessionParams = cameraDevice.createCaptureRequest(
+                    CameraDevice.TEMPLATE_PREVIEW).build();
+        }
         CameraAdvancedExtensionSessionImpl ret = new CameraAdvancedExtensionSessionImpl(ctx,
                 extender, cameraDevice, characteristicsMapNative, repeatingRequestOutputConfig,
-                burstCaptureOutputConfig, postviewOutputConfig, config.getStateCallback(),
-                config.getExecutor(), sessionId, token, config.getExtension());
+                burstCaptureOutputConfig, postviewOutputConfig, sessionParams,
+                config.getStateCallback(), config.getExecutor(), sessionId, token,
+                config.getExtension());
 
         if (Flags.analytics24q3()) {
             ret.mStatsAggregator.setCaptureFormat(captureFormat);
@@ -273,6 +284,7 @@ public final class CameraAdvancedExtensionSessionImpl extends CameraExtensionSes
             @Nullable OutputConfiguration repeatingRequestOutputConfig,
             @Nullable OutputConfiguration burstCaptureOutputConfig,
             @Nullable OutputConfiguration postviewOutputConfig,
+            @Nullable CaptureRequest sessionParams,
             @NonNull StateCallback callback, @NonNull Executor executor,
             int sessionId,
             @NonNull IBinder token,
@@ -305,6 +317,7 @@ public final class CameraAdvancedExtensionSessionImpl extends CameraExtensionSes
         mToken = token;
         mInterfaceLock = cameraDevice.mInterfaceLock;
         mExtensionType = extension;
+        mSessionParameters = sessionParams;
 
         mStatsAggregator = new ExtensionSessionStatsAggregator(mCameraDevice.getId(),
                 /*isAdvanced=*/true);
@@ -325,8 +338,8 @@ public final class CameraAdvancedExtensionSessionImpl extends CameraExtensionSes
 
         mSessionProcessor = mAdvancedExtender.getSessionProcessor();
         CameraSessionConfig sessionConfig = mSessionProcessor.initSession(mToken,
-                mCameraDevice.getId(),
-                mCharacteristicsMap, previewSurface, captureSurface, postviewSurface);
+                mCameraDevice.getId(), mCharacteristicsMap, previewSurface, captureSurface,
+                postviewSurface, mSessionParameters);
         List<CameraOutputConfig> outputConfigs = sessionConfig.outputConfigs;
         ArrayList<OutputConfiguration> outputList = new ArrayList<>();
         for (CameraOutputConfig output : outputConfigs) {

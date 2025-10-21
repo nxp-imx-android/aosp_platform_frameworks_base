@@ -20284,6 +20284,7 @@ package android.hardware.camera2 {
     method @NonNull public java.util.List<android.util.Size> getPostviewSupportedSizes(int, @NonNull android.util.Size, int);
     method @NonNull public java.util.List<java.lang.Integer> getSupportedExtensions();
     method public boolean isCaptureProcessProgressAvailable(int);
+    method @FlaggedApi("com.android.internal.camera.flags.vendor_defined_camera_extensions") public boolean isExtensionSupported(int);
     method public boolean isPostviewAvailable(int);
     field public static final int EXTENSION_AUTOMATIC = 0; // 0x0
     field @Deprecated public static final int EXTENSION_BEAUTY = 1; // 0x1
@@ -20997,9 +20998,11 @@ package android.hardware.camera2.params {
     method public int getExtension();
     method @NonNull public java.util.List<android.hardware.camera2.params.OutputConfiguration> getOutputConfigurations();
     method @Nullable public android.hardware.camera2.params.OutputConfiguration getPostviewOutputConfiguration();
+    method @FlaggedApi("com.android.internal.camera.flags.vendor_defined_camera_extensions") @Nullable public android.hardware.camera2.CaptureRequest getSessionParameters();
     method @NonNull public android.hardware.camera2.CameraExtensionSession.StateCallback getStateCallback();
     method public void setColorSpace(@NonNull android.graphics.ColorSpace.Named);
     method public void setPostviewOutputConfiguration(@Nullable android.hardware.camera2.params.OutputConfiguration);
+    method @FlaggedApi("com.android.internal.camera.flags.vendor_defined_camera_extensions") public void setSessionParameters(@NonNull android.hardware.camera2.CaptureRequest);
   }
 
   public final class Face {
