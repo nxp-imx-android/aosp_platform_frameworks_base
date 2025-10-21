@@ -38,10 +38,10 @@ class PolicyProcessorTest {
     private companion object {
         const val RESOURCE_ROOT = "test/resources/android/processor/devicepolicy/test"
 
-        const val POLICY_IDENTIFIER = "$RESOURCE_ROOT/PolicyIdentifier"
-        const val POLICY_IDENTIFIER_JAVA = "$POLICY_IDENTIFIER.java"
-        const val POLICY_IDENTIFIER_TEXTPROTO = "$POLICY_IDENTIFIER.textproto"
-        const val POLICY_METADATA_CODEGEN = "$RESOURCE_ROOT/Policies.java"
+        const val POLICY_IDENTIFIER_JAVA = "$RESOURCE_ROOT/TestPolicyIdentifier.java"
+        const val POLICY_IDENTIFIER_LOCATION = "android/app/admin/PolicyIdentifier"
+        const val POLICY_IDENTIFIER_TEXTPROTO = "$RESOURCE_ROOT/ExpectedPolicyIdentifier.textproto"
+        const val POLICY_METADATA_CODEGEN = "$RESOURCE_ROOT/ExpectedPolicies.java"
 
         // Can be used by tests that do not care about the allowedDpcTypes field.
         const val ALLOWED_DPC_TYPES_SNIPPET = """
@@ -143,7 +143,10 @@ class PolicyProcessorTest {
 
         val compilation: Compilation =
             mCompiler.compile(
-                JavaFileObjects.forResource(POLICY_IDENTIFIER_JAVA),
+                JavaFileObjects.forSourceString(
+                    POLICY_IDENTIFIER_LOCATION,
+                    loadTextResource(POLICY_IDENTIFIER_JAVA)
+                ),
                 JavaFileObjects.forResource(INT_DEF_JAVA),
                 *metadataSources
             )
@@ -186,7 +189,10 @@ class PolicyProcessorTest {
                         new PolicyIdentifier<>("LOST_POLICY");
                 }
             """.trimIndent())
-        val policyIdentifier = JavaFileObjects.forResource(POLICY_IDENTIFIER_JAVA)
+        val policyIdentifier = JavaFileObjects.forSourceString(
+            POLICY_IDENTIFIER_LOCATION,
+            loadTextResource(POLICY_IDENTIFIER_JAVA)
+        )
 
         val compilation: Compilation = mCompiler.compile(otherClass, policyIdentifier)
 
