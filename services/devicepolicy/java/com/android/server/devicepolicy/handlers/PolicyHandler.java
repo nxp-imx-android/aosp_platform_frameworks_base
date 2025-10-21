@@ -256,7 +256,9 @@ public class PolicyHandler<T> {
     protected void checkPermissions(CallerIdentity caller, @PolicyScope int scope) {
         var permissionChecker = getPermissionChecker();
 
-        permissionChecker.enforce(getPolicyMetadata().getRequiredPermission(), caller);
+        if (!isPolicyAllowedForDpc(mDelegate.getDpcType(caller))) {
+            permissionChecker.enforce(getPolicyMetadata().getRequiredPermission(), caller);
+        }
 
         if (scope != POLICY_SCOPE_USER) {
             permissionChecker.enforce(getPolicyMetadata().getRequiredCrossUserPermission(), caller);
@@ -338,6 +340,14 @@ public class PolicyHandler<T> {
 
     protected final IPermissionChecker getPermissionChecker() {
         return getDelegate().getPermissionChecker();
+    }
+
+    // Returns if the policy is automatically allowed by a DPC of the given type.
+    // If this is the case, then the DPC does not need the permission.
+    // Note that the DPC would still need the cross-user permission if the policy is set on
+    // a scope other than USER.
+    protected final boolean isPolicyAllowedForDpc(@DpcType int dpcType) {
+        return getPolicyMetadata().getAllowedDpcTypes().contains(dpcType);
     }
 
     protected final <StoredType> void storePolicy(
