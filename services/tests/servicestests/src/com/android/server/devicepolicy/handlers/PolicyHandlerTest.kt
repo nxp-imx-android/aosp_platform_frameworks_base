@@ -16,10 +16,13 @@
 
 package com.android.server.devicepolicy.handlers
 
+import android.app.admin.DevicePolicyManager.DEFAULT_DEVICE_OWNER
+import android.app.admin.DevicePolicyManager.FINANCED_DEVICE_OWNER
 import android.app.admin.DevicePolicyManager.NOT_A_DPC
 import android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE
 import android.app.admin.DevicePolicyManager.POLICY_SCOPE_PARENT_USER
 import android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER
+import android.app.admin.DevicePolicyManager.PROFILE_OWNER
 import android.app.admin.DevicePolicyManager.RESOURCE_PER_USER
 import android.app.admin.IntegerPolicyValue
 import android.app.admin.NoArgsPolicyKey
@@ -44,6 +47,9 @@ import kotlin.test.assertFailsWith
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 
@@ -307,6 +313,40 @@ class PolicyHandlerTest {
 
         verify(mockPermissionChecker).enforce("permission", theCaller)
         verify(mockPermissionChecker).enforce("crossUserPermission", theCaller)
+        verifyNoMoreInteractions(mockPermissionChecker)
+    }
+
+    @Test
+    fun setPolicy_acceptedDpcTypes_shouldNotCheckPermissionIfDpcTypeIsAccepted() {
+        val metadata =
+            copyOf(
+                EnumPolicy.metadata,
+                requiredPermission = "thePermissionThatShallNotBeChecked",
+                allowedDpcTypes = setOf(DEFAULT_DEVICE_OWNER, PROFILE_OWNER)
+            )
+        val handler = createEnumHandler(metadata = metadata, delegate = delegate)
+        delegate.callerDpcType = DEFAULT_DEVICE_OWNER
+
+        handler.setPolicy(anyCaller, anyScope, EnumPolicy.anyTransportValue)
+
+        verify(mockPermissionChecker, never()).enforce(any(), any())
+        verifyNoMoreInteractions(mockPermissionChecker)
+    }
+
+    @Test
+    fun setPolicy_acceptedDpcTypes_shouldCheckPermissionIfDpcTypeIsNotAccepted() {
+        val metadata =
+            copyOf(
+                EnumPolicy.metadata,
+                requiredPermission = "thePermissionThatShallBeChecked",
+                allowedDpcTypes = setOf(DEFAULT_DEVICE_OWNER, PROFILE_OWNER)
+            )
+        val handler = createEnumHandler(metadata = metadata, delegate = delegate)
+        delegate.callerDpcType = FINANCED_DEVICE_OWNER
+
+        handler.setPolicy(anyCaller, anyScope, EnumPolicy.anyTransportValue)
+
+        verify(mockPermissionChecker).enforce(eq("thePermissionThatShallBeChecked"), any())
         verifyNoMoreInteractions(mockPermissionChecker)
     }
 
