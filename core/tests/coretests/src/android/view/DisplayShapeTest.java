@@ -20,6 +20,7 @@ import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -87,12 +88,31 @@ public class DisplayShapeTest {
     @Test
     public void testDefaultShape_cache() {
         final DisplayShape shapeA = DisplayShape.createDefaultDisplayShape(100, 100, true);
-        // This should be a new instance and not update the cache.
+        // This should be a new instance and update the cache.
         DisplayShape.createDefaultDisplayShape(200, 200, false);
-        // This should be the same instance as shapeA.
+        // This should be a new instance because the cache was updated.
         final DisplayShape shapeC = DisplayShape.createDefaultDisplayShape(100, 100, true);
+        // This should be the same instance as shapeC.
+        final DisplayShape shapeD = DisplayShape.createDefaultDisplayShape(100, 100, true);
 
-        assertThat(shapeC, sameInstance(shapeA));
+        assertThat(shapeC, not(sameInstance(shapeA)));
+        assertThat(shapeD, sameInstance(shapeC));
+    }
+
+    @Test
+    public void testFromResources_cache() {
+        final DisplayShape shapeA = DisplayShape.fromResources("local:1", 100, 200, 100, 200);
+        // This should be a new instance with different logical dimensions.
+        final DisplayShape shapeB = DisplayShape.fromResources("local:1", 100, 200, 200, 100);
+        // This should be a new instance because the cache was updated by shapeB.
+        final DisplayShape shapeC = DisplayShape.fromResources("local:1", 100, 200, 100, 200);
+        // This should be the same instance as shapeC.
+        final DisplayShape shapeD = DisplayShape.fromResources("local:1", 100, 200, 100, 200);
+
+
+        assertThat(shapeA, not(sameInstance(shapeB)));
+        assertThat(shapeC, not(sameInstance(shapeA)));
+        assertThat(shapeD, sameInstance(shapeC));
     }
 
     @Test
