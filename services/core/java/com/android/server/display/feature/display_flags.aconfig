@@ -381,16 +381,6 @@ flag {
 }
 
 flag {
-    name: "enable_single_app_event_for_mode_and_frame_rate_override"
-    namespace: "display_manager"
-    description: "Enable single app event for mode and frame rate override changed event."
-    bug: "415850294"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_display_mirror_in_lock_task_mode"
     namespace: "lse_desktop_experience"
     description: "Starts mirroring on the connected display if the device is in lock task mode."

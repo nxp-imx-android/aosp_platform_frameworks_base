@@ -905,7 +905,6 @@ public class LocalDisplayAdapterTest {
     @Test
     @EnableFlags(com.android.graphics.surfaceflinger.flags.Flags.FLAG_SUPPORTED_REFRESH_RATE_UPDATE)
     public void testOnModeAndFrameRateOverridesChanged() throws Exception {
-        doReturn(true).when(mFlags).isSingleAppEventForModeAndFrameRateOverrideEnabled();
         long appVsyncOffsetNanosMode1 = 100;
         long presentationDeadlineNanosMode1 = 200;
         long appVsyncOffsetNanosMode2 = 101;

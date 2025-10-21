@@ -215,11 +215,6 @@ public class DisplayManagerFlags {
             Flags::enableSyntheticModesV2
     );
 
-    private final FlagState mIsSingleAppEventForModeAndFrameRateOverrideEnabled = new FlagState(
-            Flags.FLAG_ENABLE_SINGLE_APP_EVENT_FOR_MODE_AND_FRAME_RATE_OVERRIDE,
-            Flags::enableSingleAppEventForModeAndFrameRateOverride
-    );
-
     private final FlagState mIsDisplayMirrorInLockTaskModeEnabled = new FlagState(
             Flags.FLAG_ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE,
             DesktopExperienceFlags.ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE::isTrue
@@ -430,10 +425,6 @@ public class DisplayManagerFlags {
         return mSyntheticModesV2.isEnabled();
     }
 
-    public boolean isSingleAppEventForModeAndFrameRateOverrideEnabled() {
-        return mIsSingleAppEventForModeAndFrameRateOverrideEnabled.isEnabled();
-    }
-
     public boolean isDisplayMirrorInLockTaskModeEnabled() {
         return mIsDisplayMirrorInLockTaskModeEnabled.isEnabled();
     }
@@ -485,7 +476,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mIsLoggingForDisplayEventsEnabled);
         pw.println(" " + mIsMinmodeCapBrightnessEnabled);
         pw.println(" " + mSyntheticModesV2);
-        pw.println(" " + mIsSingleAppEventForModeAndFrameRateOverrideEnabled);
         pw.println(" " + mIsDisplayMirrorInLockTaskModeEnabled);
         pw.println(" " + mIsSizeOverrideForExternalDisplaysEnabled);
     }
