@@ -30,7 +30,7 @@ java_library_host {
 
 java_plugin {
     name: "DevicePolicyAnnotationProcessor",
-    processor_class: "android.processor.devicepolicy.PolicyProcessor",
+    processor_class: "android.processor.devicepolicy.DevicePolicyAnnotationProcessor",
     static_libs: ["DevicePolicyAnnotationProcessorHostLibrary"],
 }
 
