@@ -56,18 +56,23 @@ public abstract class ContextInsight {
 
     /**
      * Enumeration of insight types.
+     *
      * @hide
      */
-    @IntDef(prefix = {"INSIGHT_TYPE_"}, value = {INSIGHT_TYPE_ERROR, INSIGHT_TYPE_BUNDLE})
+    @IntDef(
+            prefix = {"INSIGHT_TYPE_"},
+            value = {INSIGHT_TYPE_ERROR, INSIGHT_TYPE_BUNDLE, INSIGHT_TYPE_ACTIONABLE})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface InsightType {
-    }
+    public @interface InsightType {}
 
     /** Type identifier for an error insight (to return when there is an unparceling error). */
     public static final int INSIGHT_TYPE_ERROR = -1;
 
     /** Type identifier for {@link BundleInsight}. */
     public static final int INSIGHT_TYPE_BUNDLE = 1;
+
+    /** Type identifier for {@link ActionableInsight}. */
+    public static final int INSIGHT_TYPE_ACTIONABLE = 2;
 
     /**
      * Object returned when there is an unparcelling error.
@@ -155,8 +160,23 @@ public abstract class ContextInsight {
         return b;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ContextInsight)) return false;
+
+        final ContextInsight other = (ContextInsight) o;
+        return Objects.equals(mId, other.mId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mId);
+    }
+
     /**
      * Unbundles an insight into the correct subclass of insight based on the insight type.
+     *
      * @hide
      */
     @TestApi
@@ -165,10 +185,11 @@ public abstract class ContextInsight {
         if (bundle == null) {
             return ERROR_INSIGHT;
         }
-        int type = bundle.getInt(KEY_INSIGHT_TYPE, INSIGHT_TYPE_ERROR);
+        final int type = bundle.getInt(KEY_INSIGHT_TYPE, INSIGHT_TYPE_ERROR);
         try {
             return switch (type) {
                 case INSIGHT_TYPE_BUNDLE -> new BundleInsight(bundle);
+                case INSIGHT_TYPE_ACTIONABLE -> new ActionableInsight(bundle);
                 default -> ERROR_INSIGHT;
             };
         } catch (Exception e) {

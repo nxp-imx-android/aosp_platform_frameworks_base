@@ -43180,6 +43180,18 @@ package android.service.personalcontext.hint {
 
 package android.service.personalcontext.insight {
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ActionableInsight extends android.service.personalcontext.insight.ContextInsight {
+    method @NonNull public android.content.Intent createActionIntent();
+    method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails getDisplayDetails();
+    method public int getInsightType();
+  }
+
+  public static final class ActionableInsight.Builder {
+    ctor public ActionableInsight.Builder(@NonNull android.content.Intent, @NonNull android.service.personalcontext.insight.InsightDisplayDetails);
+    method @NonNull public android.service.personalcontext.insight.ActionableInsight build();
+    method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder setOriginHints(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class BundleInsight extends android.service.personalcontext.insight.ContextInsight {
     method @NonNull public android.os.Bundle getDataBundle();
     method public int getInsightType();
@@ -43196,8 +43208,26 @@ package android.service.personalcontext.insight {
     method @NonNull public final java.util.UUID getInsightId();
     method public abstract int getInsightType();
     method @NonNull public final java.util.List<android.service.personalcontext.hint.ContextHint> getOriginHints();
+    field public static final int INSIGHT_TYPE_ACTIONABLE = 2; // 0x2
     field public static final int INSIGHT_TYPE_BUNDLE = 1; // 0x1
     field public static final int INSIGHT_TYPE_ERROR = -1; // 0xffffffff
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightDisplayDetails implements android.os.Parcelable {
+    method public int describeContents();
+    method @Nullable public CharSequence getContentDescription();
+    method @Nullable public android.graphics.drawable.Icon getIcon();
+    method @Nullable public CharSequence getTitle();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.InsightDisplayDetails> CREATOR;
+  }
+
+  public static final class InsightDisplayDetails.Builder {
+    ctor public InsightDisplayDetails.Builder(@NonNull CharSequence);
+    ctor public InsightDisplayDetails.Builder(@NonNull android.graphics.drawable.Icon);
+    ctor public InsightDisplayDetails.Builder(@NonNull CharSequence, @NonNull android.graphics.drawable.Icon);
+    method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails build();
+    method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails.Builder setContentDescription(@Nullable CharSequence);
   }
 
 }
