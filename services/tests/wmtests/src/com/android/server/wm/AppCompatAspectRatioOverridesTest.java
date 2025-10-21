@@ -445,6 +445,8 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
                 a.setDisplayId(DEFAULT_DISPLAY + 2);
                 a.setOnLargeScreen();
                 a.createActivityWithComponentInNewTask();
+                // wait for display WAKE transition
+                waitHandlerIdle(mAtm.mH);
                 a.top().mVisibleRequested = true;
                 a.top().setSavedState(null);
                 a.configureTopActivity(/* minAspect */ -1f, /* maxAspect */-1f,

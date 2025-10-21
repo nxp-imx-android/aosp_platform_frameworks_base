@@ -112,8 +112,10 @@ import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.WindowManager.REMOVE_CONTENT_MODE_DESTROY;
 import static android.view.WindowManager.TRANSIT_CHANGE;
+import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_OCCLUDING;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
+import static android.view.WindowManager.TRANSIT_WAKE;
 import static android.view.inputmethod.ImeTracker.DEBUG_IME_VISIBILITY;
 import static android.window.DesktopExperienceFlags.ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS;
 import static android.window.DisplayAreaOrganizer.FEATURE_ROOT;
@@ -754,7 +756,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     /** All tokens used to put activities on this display to sleep (including mOffToken) */
     final ArrayList<RootWindowContainer.SleepToken> mAllSleepTokens = new ArrayList<>();
 
-    private boolean mSleeping;
+    private boolean mSleeping = true;
 
     /** We started the process of removing the display from the system. */
     private boolean mRemoving;
@@ -6494,7 +6496,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         if (!mAllSleepTokens.isEmpty()) {
             mAllSleepTokens.clear();
-            mAtmService.updateSleepIfNeededLocked();
+            // If the removed display was awake, then we may need to sleep if no other display is.
+            mAtmService.mRootWindowContainer.forAllDisplays(DisplayContent::sleepIfNeeded);
         }
     }
 
@@ -6550,7 +6553,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     void addSleepToken(String tag) {
         if (!addSleepTokenOnly(tag)) return;
-        mAtmService.updateSleepIfNeededLocked();
+        sleepIfNeeded();
     }
 
     void removeSleepToken(String tag) {
@@ -6566,8 +6569,68 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
         mAllSleepTokens.remove(idx);
         if (mAllSleepTokens.isEmpty()) {
-            mAtmService.updateSleepIfNeededLocked();
+            wakeIfNeeded();
         }
+    }
+
+    void wakeIfNeeded() {
+        if (shouldSleep() || !isSleeping()) return;
+        mAtmService.wakeIfNeededLocked();
+        final ActionChain chain = mAtmService.mChainTracker.startTransit("sleepTokens");
+        Transition newWakeTransition = null;
+        setIsSleeping(false);
+
+        // Prepare transition before resume top activity, so it can be collected.
+        if (mTransitionController.isShellTransitionsEnabled() && !chain.isCollecting()) {
+            Task startTask = null;
+            int flags = 0;
+            if (isKeyguardOccluded()) {
+                startTask = getTaskOccludingKeyguard();
+                flags = TRANSIT_FLAG_KEYGUARD_OCCLUDING;
+            }
+            chain.attachTransition(
+                    mTransitionController.createTransition(TRANSIT_WAKE, flags));
+            newWakeTransition = chain.getTransition();
+            mTransitionController.requestStartTransition(chain.getTransition(),
+                    startTask, null /* remoteTransition */, null /* displayChange */);
+        }
+        // Set the sleeping state of the root tasks on the display.
+        forAllRootTasks(rootTask -> {
+            rootTask.forAllLeafTasksAndLeafTaskFragments(
+                    taskFragment -> taskFragment.awakeFromSleeping(),
+                    true /* traverseTopToBottom */);
+            if (rootTask.isFocusedRootTaskOnDisplay()
+                    && !mAtmService.mTaskSupervisor.getKeyguardController()
+                    .isKeyguardOrAodShowing(mDisplayId)) {
+                // If the keyguard is unlocked - resume immediately.
+                // It is possible that the display will not be awake at the time we
+                // process the keyguard going away, which can happen before the sleep
+                // token is released. As a result, it is important we resume the
+                // activity here.
+                rootTask.resumeTopActivityUncheckedLocked();
+            }
+            // The visibility update must not be called before resuming the top, so the
+            // display orientation can be updated first if needed. Otherwise there may
+            // have redundant configuration changes due to apply outdated display
+            // orientation (from keyguard) to activity.
+            rootTask.ensureActivitiesVisible(null /* starting */);
+        });
+        if (newWakeTransition != null) {
+            newWakeTransition.setAllReady();
+        }
+        mAtmService.mChainTracker.endPartial();
+    }
+
+    void sleepIfNeeded() {
+        if (!shouldSleep() || isSleeping()) return;
+        setIsSleeping(true);
+        forAllRootTasks(rootTask -> {
+            rootTask.goToSleepIfPossible(false /* shuttingDown */);
+        });
+        if (isScreenSleeping()) {
+            mAtmService.mRootWindowContainer.scheduleSleepTransition();
+        }
+        mAtmService.sleepIfNeededLocked();
     }
 
     boolean shouldSleep() {

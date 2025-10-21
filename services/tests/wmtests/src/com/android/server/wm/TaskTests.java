@@ -779,6 +779,8 @@ public class TaskTests extends WindowTestsBase {
 
         final Task rootTask = new TaskBuilder(mSupervisor).setCreateActivity(true)
                 .setWindowingMode(WINDOWING_MODE_FULLSCREEN).setDisplay(display).build();
+        // Finish WAKE transition (adding task to empty display wakes it up)
+        waitHandlerIdle(mAtm.mH);
         final Task task = rootTask.getBottomMostTask();
         final ActivityRecord root = task.getTopNonFinishingActivity();
 

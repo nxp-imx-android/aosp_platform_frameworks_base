@@ -114,7 +114,8 @@ public class RootWindowContainerTests extends WindowTestsBase {
 
     @Before
     public void setUp() throws Exception {
-        doNothing().when(mAtm).updateSleepIfNeededLocked();
+        doNothing().when(mAtm).sleepIfNeededLocked();
+        doNothing().when(mAtm).wakeIfNeededLocked();
     }
 
     @Test
@@ -696,7 +697,11 @@ public class RootWindowContainerTests extends WindowTestsBase {
         doReturn(isFocusedTask ? task : null).when(display).getFocusedRootTask();
         TaskDisplayArea defaultTaskDisplayArea = display.getDefaultTaskDisplayArea();
         doReturn(isFocusedTask ? task : null).when(defaultTaskDisplayArea).getFocusedRootTask();
-        mRootWindowContainer.applySleepTokens(mAtm.mChainTracker.startTransit("test"));
+        if (displayShouldSleep) {
+            display.sleepIfNeeded();
+        } else {
+            display.wakeIfNeeded();
+        }
         verify(task, times(expectWakeFromSleep ? 1 : 0)).awakeFromSleeping();
         verify(task, times(expectResumeTopActivity ? 1 : 0)).resumeTopActivityUncheckedLocked(
                 isNull() /* target */, isNull() /* targetOptions */, eq(false) /* deferPause */);
@@ -725,7 +730,7 @@ public class RootWindowContainerTests extends WindowTestsBase {
         doReturn(false).when(display).shouldSleep();
         // Allow to resume when awaking.
         setBooted(mAtm);
-        mRootWindowContainer.applySleepTokens(ActionChain.test());
+        display.wakeIfNeeded();
 
         // The display orientation should be changed by the activity so there is no relaunch.
         verify(activity, never()).relaunchActivityLocked(anyBoolean(), anyInt());

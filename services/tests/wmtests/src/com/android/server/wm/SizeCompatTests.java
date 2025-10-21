@@ -191,6 +191,8 @@ public class SizeCompatTests extends WindowTestsBase {
         final ActivityBuilder appBuilder = aBuilder != null ? aBuilder : new ActivityBuilder(mAtm);
         mActivity = appBuilder.setTask(mTask).setComponent(componentName).build();
         doReturn(false).when(mActivity).isImmersiveMode(any());
+        // adding task to empty display may wakes it up, so finish that transition
+        waitHandlerIdle(mAtm.mH);
         return mActivity;
     }
 
