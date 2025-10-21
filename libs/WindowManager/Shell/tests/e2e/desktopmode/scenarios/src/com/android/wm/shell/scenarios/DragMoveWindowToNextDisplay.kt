@@ -28,7 +28,9 @@ import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.DisplayInfo
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.Until
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.ImmersiveAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
@@ -36,6 +38,7 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.Utils
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.google.common.truth.Truth.assertThat
+import java.time.Duration
 import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -107,6 +110,7 @@ abstract class DragMoveWindowToNextDisplay {
             options = ActivityOptions.makeBasic().setLaunchDisplayId(connectedDisplayId),
         )
         immersiveApp.enterImmersiveMode(wmHelper, device)
+        dismissImmersiveModeClingIfNeeded()
         val initialBounds =
             checkNotNull(testApp.getCaptionForTheApp(wmHelper, device)?.visibleBounds)
 
@@ -154,5 +158,28 @@ abstract class DragMoveWindowToNextDisplay {
         )
         desktopMouseRule.stopDrag()
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+    }
+
+    private fun dismissImmersiveModeClingIfNeeded() {
+        if (
+            device.wait(
+                Until.hasObject(By.res(SYSTEMUI_PACKAGE_NAME, VIEW_FULL_SCREEN_ID)),
+                UI_RESPONSE_TIMEOUT_MS,
+            )
+        ) {
+            device
+                .wait(
+                    Until.findObject(By.res(SYSTEMUI_PACKAGE_NAME, GOT_IT_ID)),
+                    UI_RESPONSE_TIMEOUT_MS,
+                )
+                ?.click()
+        }
+    }
+
+    companion object {
+        private const val VIEW_FULL_SCREEN_ID = "immersive_cling_title"
+        private const val SYSTEMUI_PACKAGE_NAME = "com.android.systemui"
+        private const val GOT_IT_ID = "ok"
+        private val UI_RESPONSE_TIMEOUT_MS = Duration.ofSeconds(5).toMillis()
     }
 }
