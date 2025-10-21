@@ -38,8 +38,11 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Flags;
 import android.os.SystemProperties;
 import android.os.VintfRuntimeInfo;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
@@ -65,6 +68,9 @@ import java.util.regex.Matcher;
 public class SecurityStateTest {
     @Rule
     public MockitoRule mockitoRule = MockitoJUnit.rule();
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Mock
     private Context mMockContext;
@@ -108,6 +114,7 @@ public class SecurityStateTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_SUPPLEMENTAL_SECURITY_PATCHES)
     public void testGetGlobalSecurityState_returnsBundle() {
         SecurityStateManagerService securityState =
                 new SecurityStateManagerService(mMockContext, TEST_CONFIG_FILE_PATH);
