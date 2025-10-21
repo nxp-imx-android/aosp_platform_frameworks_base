@@ -54,6 +54,8 @@ import android.util.Size;
 import android.view.Display;
 import android.view.Surface;
 
+import androidx.annotation.NonNull;
+
 import com.android.internal.R;
 import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget;
 
@@ -216,9 +218,9 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
      * If possible this will return the same values as given, but values may be smaller on some
      * devices.
      *
-     * @param screenWidth Actual pixel width of screen
+     * @param screenWidth  Actual pixel width of screen
      * @param screenHeight Actual pixel height of screen
-     * @param refreshRate Desired refresh rate
+     * @param refreshRate  Desired refresh rate
      * @return array with supported width, height, and refresh rate
      */
     private int[] getSupportedSize(final int screenWidth, final int screenHeight, int refreshRate)
@@ -283,8 +285,8 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
     }
 
     /**
-    * Start screen recording
-    */
+     * Start screen recording
+     */
     public void start() throws IOException, RemoteException, RuntimeException {
         Log.d(TAG, "start recording");
         prepare();
@@ -340,16 +342,21 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         }
     }
 
-    private  void recordInternalAudio() throws IllegalStateException {
+    private void recordInternalAudio() throws IllegalStateException {
         if (mAudioSource == INTERNAL || mAudioSource == MIC_AND_INTERNAL) {
             mAudio.start();
         }
     }
 
+    public SavedRecording save() throws IOException, IllegalStateException {
+        return save(null);
+    }
+
     /**
      * Store recorded video
      */
-    public SavedRecording save() throws IOException, IllegalStateException {
+    public SavedRecording save(@Nullable UriReadyCallback onUriReady)
+            throws IOException, IllegalStateException {
         String saveDate = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
         String fileName = mStartTimeMillis > 0L
                 ? String.format("screen-%s-%d.mp4", saveDate, mStartTimeMillis)
@@ -365,6 +372,9 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         Uri collectionUri = MediaStore.Video.Media.getContentUri(
                 MediaStore.VOLUME_EXTERNAL_PRIMARY);
         Uri itemUri = resolver.insert(collectionUri, values);
+        if (onUriReady != null) {
+            onUriReady.onUriReady(itemUri);
+        }
 
         Log.d(TAG, itemUri.toString());
         if (mAudioSource == MIC_AND_INTERNAL || mAudioSource == INTERNAL) {
@@ -423,25 +433,35 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         }
     }
 
+    public interface UriReadyCallback {
+
+        void onUriReady(Uri uri);
+    }
+
     /**
-    * Object representing the recording
-    */
+     * Object representing the recording
+     */
     public class SavedRecording {
 
-        private Uri mUri;
-        private Icon mThumbnailIcon;
+        @NonNull
+        private final Uri mUri;
+        @Nullable
+        private final Icon mThumbnailIcon;
 
-        public SavedRecording(Uri uri, File file, Size thumbnailSize) {
+        public SavedRecording(@NonNull Uri uri, File file, Size thumbnailSize) {
             mUri = uri;
+            Icon thumbnailIcon = null;
             try {
                 Bitmap thumbnailBitmap = ThumbnailUtils.createVideoThumbnail(
                         file, thumbnailSize, null);
-                mThumbnailIcon = Icon.createWithBitmap(thumbnailBitmap);
+                thumbnailIcon = Icon.createWithBitmap(thumbnailBitmap);
             } catch (IOException e) {
                 Log.e(TAG, "Error creating thumbnail", e);
             }
+            mThumbnailIcon = thumbnailIcon;
         }
 
+        @NonNull
         public Uri getUri() {
             return mUri;
         }

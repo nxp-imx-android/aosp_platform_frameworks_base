@@ -43,11 +43,18 @@ class FakeScreenRecordingServiceCallbackWrapper(private val real: IScreenRecordi
         real.onRecordingSaved(recordingUri, thumbnail)
     }
 
+    override fun onSavingRecording(recordingUri: Uri) {
+        _status.value = RecordingStatus.Saving(recordingUri)
+        real.onSavingRecording(recordingUri)
+    }
+
     sealed interface RecordingStatus {
 
         data object Initial : RecordingStatus
 
         data object Started : RecordingStatus
+
+        data class Saving(val recordingUri: Uri) : RecordingStatus
 
         data class Saved(val recordingUri: Uri, val thumbnail: Icon) : RecordingStatus
 

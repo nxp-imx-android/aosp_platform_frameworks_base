@@ -21,7 +21,10 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.content.applicationContext
 import android.content.mockedContext
+import android.graphics.Bitmap
+import android.graphics.drawable.Icon
 import android.media.projection.StopReason
+import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -35,6 +38,7 @@ import com.android.systemui.screenrecord.data.repository.screenRecordingServiceR
 import com.android.systemui.screenrecord.service.FakeScreenRecordingService
 import com.android.systemui.screenrecord.service.FakeScreenRecordingServiceCallbackWrapper
 import com.android.systemui.screenrecord.service.callbackStatus
+import com.android.systemui.screenrecord.shared.model.ScreenRecording
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
 import com.android.systemui.testKosmosNew
@@ -130,7 +134,7 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
                     FakeScreenRecordingServiceCallbackWrapper.RecordingStatus.Interrupted::class
                         .java
                 )
-            assertThat(service.currentCallback).isNull()
+            assertThat(service.currentCallback).isNotNull()
         }
 
     @Test
@@ -238,6 +242,24 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
             assertThat(serviceStatus).isInstanceOf(ScreenRecordingStatus.Stopped::class.java)
             assertThat(callbackStatus).isNull()
             assertThat(service.currentCallback).isNull()
+        }
+
+    @Test
+    fun testSavingRecording_emitsValues() =
+        kosmos.runTest {
+            val recordingStatus: List<ScreenRecording> by collectValues(underTest.screenRecording)
+            underTest.startRecording()
+            underTest.stopRecording(StopReason.STOP_HOST_APP)
+
+            val uri = Uri.parse("content://test")
+            val thumbnail = Icon.createWithBitmap(Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565))
+            with(service.currentCallback!!) {
+                onSavingRecording(uri)
+                onRecordingSaved(uri, thumbnail)
+            }
+
+            assertThat(recordingStatus)
+                .containsExactly(ScreenRecording.Saving(uri), ScreenRecording.Saved(uri, thumbnail))
         }
 }
 

@@ -159,7 +159,9 @@ protected constructor(
             )
             val savedRecording: SavedRecording =
                 withContext(backgroundContext) {
-                    recorder.save().apply { callback?.onRecordingSaved(uri, thumbnail) }
+                    recorder
+                        .save { uri -> callback?.onSavingRecording(uri) }
+                        .apply { callback?.onRecordingSaved(uri, thumbnail) }
                 }
             onRecordingSaved(this, savedRecording)
         } catch (e: Exception) {
