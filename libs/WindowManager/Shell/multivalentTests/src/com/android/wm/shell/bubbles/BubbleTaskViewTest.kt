@@ -26,6 +26,7 @@ import android.platform.test.flag.junit.FlagsParameterization
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.filters.SmallTest
+import com.android.wm.shell.Flags
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.splitscreen.SplitScreenController
@@ -97,6 +98,7 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
         assertThat(actualComponentName).isEqualTo(componentName)
     }
 
+    @DisableFlags(Flags.FLAG_BUG_DONT_REMOVE_TASK_BUBBLE)
     @Test
     fun cleanup_noTaskCreated_removesTask() {
         bubbleTaskView.cleanup()
@@ -105,7 +107,16 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
         verify(taskView).removeTask()
     }
 
-    @DisableFlags(com.android.wm.shell.Flags.FLAG_BUG_DONT_REMOVE_TASK_BUBBLE)
+    @EnableFlags(Flags.FLAG_BUG_DONT_REMOVE_TASK_BUBBLE)
+    @Test
+    fun cleanup_noTaskCreated_unregistersTask() {
+        bubbleTaskView.cleanup()
+
+        verify(taskView, never()).removeTask()
+        verify(taskView).unregisterTask()
+    }
+
+    @DisableFlags(Flags.FLAG_BUG_DONT_REMOVE_TASK_BUBBLE)
     @Test
     fun cleanup_regularBubbleTask_removesTask() {
         bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
@@ -116,7 +127,7 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
         verify(taskView).removeTask()
     }
 
-    @EnableFlags(com.android.wm.shell.Flags.FLAG_BUG_DONT_REMOVE_TASK_BUBBLE)
+    @EnableFlags(Flags.FLAG_BUG_DONT_REMOVE_TASK_BUBBLE)
     @Test
     fun cleanup_regularBubbleTask_unregistersTask() {
         bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
@@ -154,7 +165,7 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
 
         bubbleTaskView.cleanup()
 
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble() || Flags.bugDontRemoveTaskBubble()) {
             verify(taskView).unregisterTask()
             verify(taskView, never()).removeTask()
         } else {
