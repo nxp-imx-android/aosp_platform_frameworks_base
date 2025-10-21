@@ -128,6 +128,8 @@ import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvision
 import com.android.systemui.statusbar.policy.domain.interactor.deviceProvisioningInteractor
 import com.android.systemui.statusbar.policy.keyguardStateController
 import com.android.systemui.topui.topUiController
+import com.android.systemui.user.data.repository.fakeUserRepository
+import com.android.systemui.user.data.repository.userRepository
 import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.util.time.systemClock
 import com.android.systemui.volume.dialog.captions.domain.volumeDialogCaptionsButtonInteractor
@@ -266,6 +268,8 @@ class KosmosJavaAdapter() {
     val displayRepository by lazy { kosmos.displayRepository }
     val shadeStatusBarComponentsInteractor by lazy { kosmos.shadeStatusBarComponentsInteractor }
     val keyguardSurfaceBehindInteractor by lazy { kosmos.keyguardSurfaceBehindInteractor }
+    val fakeUserRepository by lazy { kosmos.fakeUserRepository }
+    val userRepository by lazy { kosmos.userRepository }
 
     /** Use if you need a unique or mutate-able row */
     fun createRow(): ExpandableNotificationRow {

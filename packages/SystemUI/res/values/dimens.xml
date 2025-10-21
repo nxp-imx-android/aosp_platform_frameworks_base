@@ -2261,6 +2261,8 @@
     <dimen name="tile_details_entry_title_size">13sp</dimen>
     <!-- tile_details_entry_title_top_paddings used only when both the title and the subtitle exist -->
     <dimen name="tile_details_entry_title_top_paddings">15dp</dimen>
+    <!-- Spacing between end icons -->
+    <dimen name="tile_details_end_icon_margin">12dp</dimen>
     <!-- Tile Details entry end -->
 
     <!-- Bouncer containerization on large screens -->
