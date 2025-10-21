@@ -48,6 +48,7 @@ rust_bindgen {
     source_stem: "native_service_bindings",
     header_libs: [
         "libandroid_headers_private",
+        "native_headers",
     ],
     shared_libs: [
         "libandroid",
