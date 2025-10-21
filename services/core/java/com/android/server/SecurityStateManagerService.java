@@ -26,6 +26,7 @@ import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Flags;
 import android.os.ISecurityStateManager;
 import android.os.SystemProperties;
 import android.os.VintfRuntimeInfo;
@@ -72,7 +73,9 @@ public class SecurityStateManagerService extends ISecurityStateManager.Stub {
     SecurityStateManagerService(Context context, String configFilePath) {
         mContext = context;
         mPackageManager = context.getPackageManager();
-        loadCvePatches(configFilePath);
+        if (Flags.supplementalSecurityPatches()) {
+            loadCvePatches(configFilePath);
+        }
     }
 
     private void loadCvePatches(String configFilePath) {
@@ -122,7 +125,9 @@ public class SecurityStateManagerService extends ISecurityStateManager.Stub {
     private Bundle getGlobalSecurityStateInternal() {
         Bundle globalSecurityState = new Bundle();
 
-        globalSecurityState.putStringArray(KEY_SUPPLEMENTAL_PATCHES, getPatchedCveIds());
+        if (Flags.supplementalSecurityPatches()) {
+            globalSecurityState.putStringArray(KEY_SUPPLEMENTAL_PATCHES, getPatchedCveIds());
+        }
         globalSecurityState.putString(KEY_SYSTEM_SPL, Build.VERSION.SECURITY_PATCH);
         globalSecurityState.putString(KEY_VENDOR_SPL,
                 SystemProperties.get(VENDOR_SECURITY_PATCH_PROPERTY_KEY, ""));
