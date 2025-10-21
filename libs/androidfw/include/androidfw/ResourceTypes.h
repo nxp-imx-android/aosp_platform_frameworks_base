@@ -50,7 +50,7 @@ namespace android {
 constexpr const bool kDeviceEndiannessSame = dtohs(0x1001) == 0x1001;
 
 constexpr const uint32_t kIdmapMagic = 0x504D4449u;
-constexpr const uint32_t kIdmapCurrentVersion = 0x0000000Bu;
+constexpr const uint32_t kIdmapCurrentVersion = 0x0000000Cu;
 
 // This must never change.
 constexpr const uint32_t kFabricatedOverlayMagic = 0x4f525246; // FRRO (big endian)

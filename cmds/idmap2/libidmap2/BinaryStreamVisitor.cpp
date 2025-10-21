@@ -72,11 +72,22 @@ void BinaryStreamVisitor::visit(const IdmapConstraints& constraints) {
 }
 
 void BinaryStreamVisitor::visit(const IdmapData& data) {
-  for (const auto& target_entry : data.GetTargetEntries()) {
-    Write32(target_entry.target_id);
+  for (const auto& section : data.GetTargetEntrySections()) {
+    Write32(section.flag_name_index);
+    Write8(section.flag_negated);
+    uint8_t padding = CalculatePadding(sizeof(bool));
+    for (uint8_t p = 0; p < padding; p++) {
+      Write8(0);
+    }
+    Write32(section.target_entries.size());
   }
-  for (const auto& target_entry : data.GetTargetEntries()) {
-    Write32(target_entry.overlay_id);
+  for (const auto& section : data.GetTargetEntrySections()) {
+    for (const auto& target_entry : section.target_entries) {
+      Write32(target_entry.target_id);
+    }
+    for (const auto& target_entry : section.target_entries) {
+      Write32(target_entry.overlay_id);
+    }
   }
 
   uint32_t current_inline_entry_values_count = 0;
@@ -132,7 +143,7 @@ void BinaryStreamVisitor::visit(const IdmapData& data) {
 }
 
 void BinaryStreamVisitor::visit(const IdmapData::Header& header) {
-  Write32(header.GetTargetEntryCount());
+  Write32(header.GetTargetEntrySectionCount());
   Write32(header.GetTargetInlineEntryCount());
   Write32(header.GetTargetInlineEntryValueCount());
   Write32(header.GetConfigCount());

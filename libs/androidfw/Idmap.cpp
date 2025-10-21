@@ -18,6 +18,8 @@
 
 #include "androidfw/Idmap.h"
 
+#include <utility>
+
 #include "android-base/file.h"
 #include "android-base/logging.h"
 #include "android-base/stringprintf.h"
@@ -57,7 +59,7 @@ struct Idmap_header {
 };
 
 struct Idmap_data_header {
-  uint32_t target_entry_count;
+  uint32_t target_entry_section_count;
   uint32_t target_inline_entry_count;
   uint32_t target_inline_entry_value_count;
   uint32_t configuration_count;
@@ -142,13 +144,14 @@ status_t OverlayDynamicRefTable::lookupResourceIdNoRewrite(uint32_t* resId) cons
 }
 
 IdmapResMap::IdmapResMap(const Idmap_data_header* data_header, const Idmap_constraints& constraints,
-                         Idmap_target_entries entries, Idmap_target_inline_entries inline_entries,
+                         Idmap_target_entry_sections entry_sections,
+                         Idmap_target_inline_entries inline_entries,
                          const Idmap_target_entry_inline_value* inline_entry_values,
                          const ConfigDescription* configs, uint8_t target_assigned_package_id,
                          const OverlayDynamicRefTable* overlay_ref_table)
     : data_header_(data_header),
       constraints_(constraints),
-      entries_(entries),
+      entry_sections_(std::move(entry_sections)),
       inline_entries_(inline_entries),
       inline_entry_values_(inline_entry_values),
       configurations_(configs),
@@ -166,20 +169,22 @@ IdmapResMap::Result IdmapResMap::Lookup(uint32_t target_res_id) const {
   // package id when determining if the resource in the target package is overlaid.
   target_res_id &= 0x00FFFFFFU;
 
-  // Check if the target resource is mapped to an overlay resource.
-  const auto target_end = entries_.target_id + dtohl(data_header_->target_entry_count);
-  auto target_it = std::lower_bound(entries_.target_id, target_end, target_res_id,
-                                    [](uint32_t dev_target_id, uint32_t target_id) {
-                                      return convert_dev_target_id(dev_target_id) < target_id;
-                                    });
+  for (const Idmap_target_entries& entries : entry_sections_.enabled_sections) {
+    // Check if the target resource is mapped to an overlay resource.
+    const auto target_end = entries.target_id + dtohl(entries.entry_count);
+    auto target_it = std::lower_bound(entries.target_id, target_end, target_res_id,
+                                      [](uint32_t dev_target_id, uint32_t target_id) {
+                                        return convert_dev_target_id(dev_target_id) < target_id;
+                                      });
 
-  if (target_it != target_end && convert_dev_target_id(*target_it) == target_res_id) {
-    const auto index = target_it - entries_.target_id;
-    uint32_t overlay_resource_id = dtohl(entries_.overlay_id[index]);
-    // Lookup the resource without rewriting the overlay resource id back to the target resource id
-    // being looked up.
-    overlay_ref_table_->lookupResourceIdNoRewrite(&overlay_resource_id);
-    return Result(overlay_resource_id);
+    if (target_it != target_end && convert_dev_target_id(*target_it) == target_res_id) {
+      const auto index = target_it - entries.target_id;
+      uint32_t overlay_resource_id = dtohl(entries.overlay_id[index]);
+      // Lookup the resource without rewriting the overlay resource id back to the target resource
+      // id being looked up.
+      overlay_ref_table_->lookupResourceIdNoRewrite(&overlay_resource_id);
+      return Result(overlay_resource_id);
+    }
   }
 
   // Check if the target resources is mapped to an inline table entry.
@@ -257,7 +262,7 @@ std::optional<std::string_view> ReadString(const uint8_t** in_out_data_ptr, size
 
 LoadedIdmap::LoadedIdmap(const std::string& idmap_path, const Idmap_header* header,
                          const Idmap_data_header* data_header, const Idmap_constraints& constraints,
-                         Idmap_target_entries target_entries,
+                         Idmap_target_entry_sections target_entry_sections,
                          Idmap_target_inline_entries target_inline_entries,
                          const Idmap_target_entry_inline_value* inline_entry_values,
                          const ConfigDescription* configs, Idmap_overlay_entries overlay_entries,
@@ -266,7 +271,7 @@ LoadedIdmap::LoadedIdmap(const std::string& idmap_path, const Idmap_header* head
     : header_(header),
       data_header_(data_header),
       constraints_(constraints),
-      target_entries_(target_entries),
+      target_entry_sections_(std::move(target_entry_sections)),
       target_inline_entries_(target_inline_entries),
       inline_entry_values_(inline_entry_values),
       configurations_(configs),
@@ -283,6 +288,13 @@ LoadedIdmap::LoadedIdmap(const std::string& idmap_path, const Idmap_header* head
     idmap_last_mod_time_ = getFileModDate(idmap_fd_);
   }
 }
+
+struct Idmap_target_entry_section_header {
+  uint32_t flag_name_index;
+  bool flag_negated;
+  uint8_t padding[3];
+  uint32_t entry_count;
+};
 
 std::unique_ptr<LoadedIdmap> LoadedIdmap::Load(StringPiece idmap_path, StringPiece idmap_data) {
   ATRACE_CALL();
@@ -339,14 +351,31 @@ std::unique_ptr<LoadedIdmap> LoadedIdmap::Load(StringPiece idmap_path, StringPie
   if (data_header == nullptr) {
     return {};
   }
-  Idmap_target_entries target_entries{
-      .target_id = ReadType<uint32_t>(&data_ptr, &data_size, "entries.target_id",
-                                      dtohl(data_header->target_entry_count)),
-      .overlay_id = ReadType<uint32_t>(&data_ptr, &data_size, "entries.overlay_id",
-                                       dtohl(data_header->target_entry_count)),
-  };
-  if (!target_entries.target_id || !target_entries.overlay_id) {
-    return {};
+
+  Idmap_target_entry_sections target_entry_sections;
+
+  const auto* section_headers =
+      ReadType<Idmap_target_entry_section_header>(&data_ptr, &data_size, "target_entry_section",
+                         dtohl(data_header->target_entry_section_count));
+
+  for (int i = 0; i < data_header->target_entry_section_count; i++) {
+    Idmap_target_entries target_entries{
+        .target_id = ReadType<uint32_t>(&data_ptr, &data_size, "entries.target_id",
+                                        dtohl(section_headers[i].entry_count)),
+        .overlay_id = ReadType<uint32_t>(&data_ptr, &data_size, "entries.overlay_id",
+                                         dtohl(section_headers[i].entry_count)),
+        .entry_count = dtohl(section_headers[i].entry_count)
+    };
+    if (!target_entries.target_id || !target_entries.overlay_id) {
+      return {};
+    }
+    if (section_headers[i].flag_name_index != 0) {
+      // ignore sections with flag names for now
+      LOG(WARNING) << "Ignoring idmap target entry section with flag name index: "
+                   << section_headers[i].flag_name_index;
+    } else {
+      target_entry_sections.enabled_sections.push_back(target_entries);
+    }
   }
   Idmap_target_inline_entries target_inline_entries{
       .target_id = ReadType<uint32_t>(&data_ptr, &data_size, "target inline.target_id",
@@ -400,9 +429,10 @@ std::unique_ptr<LoadedIdmap> LoadedIdmap::Load(StringPiece idmap_path, StringPie
 
   // Can't use make_unique because LoadedIdmap constructor is private.
   return std::unique_ptr<LoadedIdmap>(
-      new LoadedIdmap(std::string(idmap_path), header, data_header, constraints, target_entries,
-                      target_inline_entries, target_inline_entry_values, configurations,
-                      overlay_entries, std::move(idmap_string_pool), *overlay_path, *target_path));
+      new LoadedIdmap(std::string(idmap_path), header, data_header, constraints,
+                      target_entry_sections, target_inline_entries, target_inline_entry_values,
+                      configurations, overlay_entries, std::move(idmap_string_pool), *overlay_path,
+                      *target_path));
 }
 
 UpToDate LoadedIdmap::IsUpToDate() const {

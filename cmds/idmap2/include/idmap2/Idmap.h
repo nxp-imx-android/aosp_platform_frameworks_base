@@ -22,11 +22,13 @@
  *                               enforce_overlayable target_path overlay_path overlay_name
  *                               debug_info
  * constraints                := constraint_type constraint_value
- * data                       := data_header target_entries target_inline_entries
+ * data                       := data_header target_entry_sections
+ *                               target_entries target_inline_entries
                                  target_inline_entry_value* config* overlay_entries string_pool
- * data_header                := target_entry_count target_inline_entry_count
+ * data_header                := target_entry_section_count target_inline_entry_count
                                  target_inline_entry_value_count config_count overlay_entry_count
  *                               string_pool_index
+ * target_entry_section       := flag_name_index flag_negated target_entry_count
  * target_entries             := target_id* overlay_id*
  * target_inline_entries      := target_id* target_inline_value_header*
  * target_inline_value_header := start_value_index value_count
@@ -55,6 +57,7 @@
  * string_pool_index                := <uint32_t>
  * string_pool_length               := <uint32_t>
  * target_crc                       := <uint32_t>
+ * target_entry_section_count       := <uint32_t>
  * target_entry_count               := <uint32_t>
  * target_inline_entry_count        := <uint32_t>
  * target_inline_entry_value_count  := <uint32_t>
@@ -62,6 +65,8 @@
  * config_index                     := <uint32_t>
  * start_value_index                := <uint32_t>
  * value_count                      := <uint32_t>
+ * flag_name_index                  := <uint32_t>
+ * flag_negated                     := <uint8_t>
  * target_id                        := <uint32_t>
  * target_package_id                := <uint8_t>
  * target_path                      := string
@@ -78,6 +83,7 @@
 
 #include <istream>
 #include <memory>
+#include <stdint.h>
 #include <string>
 #include <string_view>
 #include <unordered_set>
@@ -209,8 +215,8 @@ class IdmapData {
    public:
     static std::unique_ptr<const Header> FromBinaryStream(std::istream& stream);
 
-    [[nodiscard]] inline uint32_t GetTargetEntryCount() const {
-      return target_entry_count;
+    [[nodiscard]] inline uint32_t GetTargetEntrySectionCount() const {
+      return target_entry_section_count;
     }
 
     [[nodiscard]] inline uint32_t GetTargetInlineEntryCount() const {
@@ -236,7 +242,7 @@ class IdmapData {
     void accept(Visitor* v) const;
 
    private:
-    uint32_t target_entry_count;
+    uint32_t target_entry_section_count;
     uint32_t target_entry_inline_count;
     uint32_t target_entry_inline_value_count;
     uint32_t config_count;
@@ -252,6 +258,13 @@ class IdmapData {
   struct TargetEntry {
     ResourceId target_id;
     ResourceId overlay_id;
+  };
+
+  struct TargetEntrySection {
+    // An index into the associated string pool of the name of the flag, or 0 if no flag name
+    uint32_t flag_name_index;
+    bool flag_negated;
+    std::vector<TargetEntry> target_entries;
   };
 
   struct TargetInlineEntry {
@@ -273,8 +286,8 @@ class IdmapData {
     return header_;
   }
 
-  const std::vector<TargetEntry>& GetTargetEntries() const {
-    return target_entries_;
+  const std::vector<TargetEntrySection>& GetTargetEntrySections() const {
+    return target_entry_sections_;
   }
 
   const std::vector<TargetInlineEntry>& GetTargetInlineEntries() const {
@@ -295,7 +308,7 @@ class IdmapData {
   IdmapData() = default;
 
   std::unique_ptr<const Header> header_;
-  std::vector<TargetEntry> target_entries_;
+  std::vector<TargetEntrySection> target_entry_sections_;
   std::vector<TargetInlineEntry> target_inline_entries_;
   std::vector<OverlayEntry> overlay_entries_;
   std::string string_pool_data_;

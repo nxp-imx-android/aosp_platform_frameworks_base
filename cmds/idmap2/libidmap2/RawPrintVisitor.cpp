@@ -64,25 +64,30 @@ void RawPrintVisitor::visit(const IdmapConstraints &idmapConstraints) {
 }
 
 void RawPrintVisitor::visit(const IdmapData& data ATTRIBUTE_UNUSED) {
-  for (auto& target_entry : data.GetTargetEntries()) {
-    Result<std::string> target_name(Error(""));
-    if (target_ != nullptr) {
-      target_name = target_->GetResourceName(target_entry.target_id);
-    }
-    if (target_name) {
-      print(target_entry.target_id, "target id: %s", target_name->c_str());
-    } else {
-      print(target_entry.target_id, "target id");
-    }
+  for (auto& section : data.GetTargetEntrySections()) {
+    print(section.flag_name_index, "flag name index");
+    print(static_cast<uint8_t>(section.flag_negated), "flag negated");
+    print(static_cast<uint32_t>(section.target_entries.size()), "entry count");
+    for (auto& target_entry : section.target_entries) {
+      Result<std::string> target_name(Error(""));
+      if (target_ != nullptr) {
+        target_name = target_->GetResourceName(target_entry.target_id);
+      }
+      if (target_name) {
+        print(target_entry.target_id, "target id: %s", target_name->c_str());
+      } else {
+        print(target_entry.target_id, "target id");
+      }
 
-    Result<std::string> overlay_name(Error(""));
-    if (overlay_ != nullptr) {
-      overlay_name = overlay_->GetResourceName(target_entry.overlay_id);
-    }
-    if (overlay_name) {
-      print(target_entry.overlay_id, "overlay id: %s", overlay_name->c_str());
-    } else {
-      print(target_entry.overlay_id, "overlay id");
+      Result<std::string> overlay_name(Error(""));
+      if (overlay_ != nullptr) {
+        overlay_name = overlay_->GetResourceName(target_entry.overlay_id);
+      }
+      if (overlay_name) {
+        print(target_entry.overlay_id, "overlay id: %s", overlay_name->c_str());
+      } else {
+        print(target_entry.overlay_id, "overlay id");
+      }
     }
   }
 
@@ -152,7 +157,7 @@ void RawPrintVisitor::visit(const IdmapData& data ATTRIBUTE_UNUSED) {
 }
 
 void RawPrintVisitor::visit(const IdmapData::Header& header) {
-  print(header.GetTargetEntryCount(), "target entry count");
+  print(header.GetTargetEntrySectionCount(), "target entry section count");
   print(header.GetTargetInlineEntryCount(), "target inline entry count");
   print(header.GetTargetInlineEntryValueCount(), "target inline entry value count");
   print(header.GetConfigCount(), "config count");

@@ -70,17 +70,33 @@ TEST(BinaryStreamVisitorTests, CreateBinaryStreamViaBinaryStreamVisitor) {
   const std::unique_ptr<const IdmapData>& data2 = data_blocks2[0];
   ASSERT_THAT(data2, NotNull());
 
-  const auto& target_entries1 = data1->GetTargetEntries();
-  const auto& target_entries2 = data2->GetTargetEntries();
-  ASSERT_EQ(target_entries1.size(), target_entries2.size());
-  ASSERT_EQ(target_entries1[0].target_id, target_entries2[0].target_id);
-  ASSERT_EQ(target_entries1[0].overlay_id, target_entries2[0].overlay_id);
+  const auto& target_entry_sections1 = data1->GetTargetEntrySections();
+  ASSERT_EQ(target_entry_sections1.size(), 2U);
+  ASSERT_EQ(target_entry_sections1[0].flag_name_index, 0U);
+  ASSERT_EQ(target_entry_sections1[1].flag_name_index, 1U);
+  const auto& target_entries1_0 = target_entry_sections1[0].target_entries;
+  const auto& target_entries1_1 = target_entry_sections1[1].target_entries;
 
-  ASSERT_EQ(target_entries1[1].target_id, target_entries2[1].target_id);
-  ASSERT_EQ(target_entries1[1].overlay_id, target_entries2[1].overlay_id);
+  const auto& target_entry_sections2 = data2->GetTargetEntrySections();
+  ASSERT_EQ(target_entry_sections2.size(), 2U);
+  ASSERT_EQ(target_entry_sections2[0].flag_name_index, 0U);
+  ASSERT_EQ(target_entry_sections2[1].flag_name_index, 1U);
+  const auto& target_entries2_0 = target_entry_sections2[0].target_entries;
+  const auto& target_entries2_1 = target_entry_sections2[1].target_entries;
 
-  ASSERT_EQ(target_entries1[2].target_id, target_entries2[2].target_id);
-  ASSERT_EQ(target_entries1[2].overlay_id, target_entries2[2].overlay_id);
+  ASSERT_EQ(target_entries1_0.size(), target_entries2_0.size());
+  ASSERT_EQ(target_entries1_0[0].target_id, target_entries2_0[0].target_id);
+  ASSERT_EQ(target_entries1_0[0].overlay_id, target_entries2_0[0].overlay_id);
+
+  ASSERT_EQ(target_entries1_0[1].target_id, target_entries2_0[1].target_id);
+  ASSERT_EQ(target_entries1_0[1].overlay_id, target_entries2_0[1].overlay_id);
+
+  ASSERT_EQ(target_entries1_0[2].target_id, target_entries2_0[2].target_id);
+  ASSERT_EQ(target_entries1_0[2].overlay_id, target_entries2_0[2].overlay_id);
+
+  ASSERT_EQ(target_entries1_1.size(), target_entries2_1.size());
+  ASSERT_EQ(target_entries1_1[0].target_id, target_entries2_1[0].target_id);
+  ASSERT_EQ(target_entries1_1[0].overlay_id, target_entries2_1[0].overlay_id);
 
   const auto& target_inline_entries1 = data1->GetTargetInlineEntries();
   const auto& target_inline_entries2 = data2->GetTargetInlineEntries();
