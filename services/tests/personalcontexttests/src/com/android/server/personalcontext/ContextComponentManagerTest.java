@@ -51,7 +51,7 @@ public class ContextComponentManagerTest {
 
     @Test
     public void testRegistrationEmptyAtStart() {
-        ContextComponentManager manager = new ContextComponentManager(mock(Context.class));
+        final ContextComponentManager manager = new ContextComponentManager(mock(Context.class));
 
         assertThat(manager.getRefiners()).isEmpty();
         assertThat(manager.getTransformers()).isEmpty();
@@ -60,10 +60,10 @@ public class ContextComponentManagerTest {
 
     @Test
     public void testRegisterRefiner() {
-        Refiner refiner = mock(Refiner.class);
+        final Refiner refiner = mock(Refiner.class);
         when(refiner.getComponentId()).thenReturn(UUID.randomUUID());
 
-        ContextComponentManager manager = new ContextComponentManager(mock(Context.class));
+        final ContextComponentManager manager = new ContextComponentManager(mock(Context.class));
         manager.register(refiner);
 
         assertThat(manager.getRefiners()).containsExactly(refiner);
@@ -71,10 +71,10 @@ public class ContextComponentManagerTest {
 
     @Test
     public void testRegisterTransformer() {
-        Transformer transformer = mock(Transformer.class);
+        final Transformer transformer = mock(Transformer.class);
         when(transformer.getComponentId()).thenReturn(UUID.randomUUID());
 
-        ContextComponentManager manager = new ContextComponentManager(mock(Context.class));
+        final ContextComponentManager manager = new ContextComponentManager(mock(Context.class));
         manager.register(transformer);
 
         assertThat(manager.getTransformers()).containsExactly(transformer);
@@ -82,10 +82,10 @@ public class ContextComponentManagerTest {
 
     @Test
     public void testRegisterRenderer() {
-        Renderer renderer = mock(Renderer.class);
+        final Renderer renderer = mock(Renderer.class);
         when(renderer.getComponentId()).thenReturn(UUID.randomUUID());
 
-        ContextComponentManager manager = new ContextComponentManager(mock(Context.class));
+        final ContextComponentManager manager = new ContextComponentManager(mock(Context.class));
         manager.register(renderer);
 
         assertThat(manager.getRenderers()).containsExactly(renderer);
@@ -93,15 +93,15 @@ public class ContextComponentManagerTest {
 
     @Test
     public void testRegisterAllComponentsIntent() {
-        Context context = mock(Context.class);
-        PackageManager pm = mock(PackageManager.class);
+        final Context context = mock(Context.class);
+        final PackageManager pm = mock(PackageManager.class);
 
         when(context.getPackageManager()).thenReturn(pm);
 
         new ContextComponentManager(context)
                 .registerComponentsForAllPackages();
 
-        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        final ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
         verify(pm, atLeastOnce()).queryIntentServices(intentCaptor.capture(), anyInt());
 
         assertThat(intentCaptor.getValue().getPackage()).isNull();
@@ -109,16 +109,16 @@ public class ContextComponentManagerTest {
 
     @Test
     public void testRegisterPackageComponentsIntent() {
-        String packageName = "com.whatever";
-        Context context = mock(Context.class);
-        PackageManager pm = mock(PackageManager.class);
+        final String packageName = "com.whatever";
+        final Context context = mock(Context.class);
+        final PackageManager pm = mock(PackageManager.class);
 
         when(context.getPackageManager()).thenReturn(pm);
 
         new ContextComponentManager(context)
                 .registerComponentsForPackage(packageName);
 
-        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        final ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
         verify(pm, atLeastOnce()).queryIntentServices(intentCaptor.capture(), anyInt());
 
         assertThat(intentCaptor.getValue().getPackage()).isEqualTo(packageName);
@@ -126,10 +126,10 @@ public class ContextComponentManagerTest {
 
     @Test
     public void testRegisterAndUnregisterPackageComponentsIntent() {
-        String packageName = "com.whatever";
-        Context context = mock(Context.class);
-        PackageManager pm = mock(PackageManager.class);
-        ResolveInfo resolve = new ResolveInfo();
+        final String packageName = "com.whatever";
+        final Context context = mock(Context.class);
+        final PackageManager pm = mock(PackageManager.class);
+        final ResolveInfo resolve = new ResolveInfo();
         resolve.serviceInfo = new ServiceInfo();
         resolve.serviceInfo.packageName = packageName;
         resolve.serviceInfo.name = "WhateverService";
@@ -137,7 +137,7 @@ public class ContextComponentManagerTest {
         when(context.getPackageManager()).thenReturn(pm);
         when(pm.queryIntentServices(any(), anyInt())).thenReturn(List.of(resolve));
 
-        ContextComponentManager manager = new ContextComponentManager(context);
+        final ContextComponentManager manager = new ContextComponentManager(context);
         manager.registerComponentsForAllPackages();
 
         // The above code reports the same service for all requested service types. Because
