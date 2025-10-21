@@ -19,13 +19,13 @@ package com.android.wm.shell.bubbles.fold
 import com.android.wm.shell.bubbles.Bubble
 import com.android.wm.shell.bubbles.BubbleData
 import com.android.wm.shell.unfold.ShellUnfoldProgressProvider
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 
 /**
  * An implementation of [ShellUnfoldProgressProvider.UnfoldListener] that notifies when we should
  * start transitioning an expanded bubble to floating.
  */
 class BubblesUnfoldListener(
+    private val supportsBubbleNonResizableMultiWindow: Boolean,
     private val bubbleData: BubbleData,
     private val foldLockSettingsObserver: BubblesFoldLockSettingsObserver,
     private val onStartBarToFloatingOrFullscreenTransition: (Bubble, Boolean) -> Unit
@@ -41,7 +41,7 @@ class BubblesUnfoldListener(
             && foldLockSettingsObserver.isStayAwakeOnFold()
         ) {
             val moveToFullscreen: Boolean =
-                if (BubbleAnythingFlagHelper.allowMultiWindowNonResizableActivities()) {
+                if (supportsBubbleNonResizableMultiWindow) {
                     false
                 } else {
                     selectedBubble.isTopActivityFixedOrientationLandscape
