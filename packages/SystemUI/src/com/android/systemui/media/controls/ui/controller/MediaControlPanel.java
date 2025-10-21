@@ -573,32 +573,21 @@ public class MediaControlPanel {
                         createTurbulenceNoiseConfig();
             }
 
-            if (Flags.shaderlibLoadingEffectRefactor()) {
-                if (mLoadingEffect == null) {
-                    mLoadingEffect = new LoadingEffect(
-                            Type.SIMPLEX_NOISE,
-                            mTurbulenceNoiseAnimationConfig,
-                            mNoiseDrawCallback,
-                            mStateChangedCallback
-                    );
-                    mColorSchemeTransition.setLoadingEffect(mLoadingEffect);
-                }
-
-                mLoadingEffect.play();
-                mMainExecutor.executeDelayed(
-                        mLoadingEffect::finish,
-                        TURBULENCE_NOISE_PLAY_DURATION
-                );
-            } else {
-                mTurbulenceNoiseController.play(
+            if (mLoadingEffect == null) {
+                mLoadingEffect = new LoadingEffect(
                         Type.SIMPLEX_NOISE,
-                        mTurbulenceNoiseAnimationConfig
+                        mTurbulenceNoiseAnimationConfig,
+                        mNoiseDrawCallback,
+                        mStateChangedCallback
                 );
-                mMainExecutor.executeDelayed(
-                        mTurbulenceNoiseController::finish,
-                        TURBULENCE_NOISE_PLAY_DURATION
-                );
+                mColorSchemeTransition.setLoadingEffect(mLoadingEffect);
             }
+
+            mLoadingEffect.play();
+            mMainExecutor.executeDelayed(
+                    mLoadingEffect::finish,
+                    TURBULENCE_NOISE_PLAY_DURATION
+            );
         }
 
         mButtonClicked = false;
@@ -1263,9 +1252,7 @@ public class MediaControlPanel {
     }
 
     private TurbulenceNoiseAnimationConfig createTurbulenceNoiseConfig() {
-        View targetView = Flags.shaderlibLoadingEffectRefactor()
-                ? mMediaViewHolder.getLoadingEffectView() :
-                mMediaViewHolder.getTurbulenceNoiseView();
+        View targetView = mMediaViewHolder.getLoadingEffectView();
         int width = targetView.getWidth();
         int height = targetView.getHeight();
         Random random = new Random();
