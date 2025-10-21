@@ -244,7 +244,6 @@ public class LocalDisplayAdapterTest {
         when(mMockDisplayDeviceConfig.isEvenDimmerAvailable()).thenReturn(true);
 
         doReturn(true).when(mFlags).isDisplayOffloadEnabled();
-        doReturn(true).when(mFlags).isEvenDimmerEnabled();
         doReturn(true).when(mFlags).isDisplayContentModeManagementEnabled();
         initDisplayOffloadSession();
     }
