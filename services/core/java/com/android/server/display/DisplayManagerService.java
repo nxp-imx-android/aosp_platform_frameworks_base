@@ -4718,7 +4718,8 @@ public final class DisplayManagerService extends SystemService {
          * @return the event mask that was sent to the client. Returns 0 if the notification was
          * not sent e.g. because client is not registered for any of the events.
          */
-        private int notifyDisplayEventAsync(int displayId, int oldEventMask) {
+        @VisibleForTesting
+        int notifyDisplayEventAsync(int displayId, int oldEventMask) {
             int eventMask = calculateEventsToSend(oldEventMask);
             if (eventMask == 0) {
                 if (extraLogging(mPackageName)) {
@@ -4762,13 +4763,31 @@ public final class DisplayManagerService extends SystemService {
 
             if (!shouldReceiveRefreshRateWithChangeUpdate(eventMask)) {
                 // The client is not visible to the user and is not a system service, so do nothing.
-                if (extraLogging(mPackageName)) {
-                    Slog.i(TAG,
-                            "Not sending displayEvent: " + eventsToString(eventMask)
-                                    + " due to mask:" + mInternalEventFlagsMask + " uid " + mUid
-                                    + " pid " + mPid + " is in the background");
+                if (Flags.sendNonRrCallbacksWhenInBackground()) {
+                    if ((eventMask & DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED)
+                            != 0) {
+                        eventMask =
+                                eventMask ^ DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED;
+                    }
+                    if (extraLogging(mPackageName)) {
+                        Slog.i(TAG,
+                                "Not sending refresh rate event because the pid is not in "
+                                        + "the foreground. New eventMask " + eventMask
+                                        + ", mInternalEventFlagsMask:" + mInternalEventFlagsMask
+                                        + " uid " + mUid + " pid " + mPid);
+                    }
+                    if (eventMask == 0) {
+                        return 0;
+                    }
+                } else {
+                    if (extraLogging(mPackageName)) {
+                        Slog.i(TAG,
+                                "Not sending displayEvent: " + eventsToString(eventMask)
+                                        + " due to mask:" + mInternalEventFlagsMask + " uid " + mUid
+                                        + " pid " + mPid + " is in the background");
+                    }
+                    return 0;
                 }
-                return 0;
             }
 
             try {
