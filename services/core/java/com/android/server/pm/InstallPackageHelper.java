@@ -593,6 +593,15 @@ final class InstallPackageHelper {
         // writer
         Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "updateSettings");
 
+        if (oldPkgSetting != null && !oldPkgSetting.getPath().equals(pkgSetting.getPath())) {
+            Slog.i(PackageManagerService.TAG,
+                    "Update" + (pkgSetting.isSystem() ? " system" : "")
+                            + " package " + pkgName
+                            + " code path from " + pkgSetting.getPathString()
+                            + " to " + pkgSetting.getPathString()
+                            + "; Retain data and using new");
+        }
+
         synchronized (mPm.mLock) {
             // We don't expect installation to fail beyond this point
             // Add the new setting to mSettings

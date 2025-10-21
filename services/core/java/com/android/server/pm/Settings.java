@@ -1282,12 +1282,6 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
 
         if (!oldCodePath.equals(codePath)) {
             final boolean isSystem = pkgSetting.isSystem();
-            Slog.i(PackageManagerService.TAG,
-                    "Update" + (isSystem ? " system" : "")
-                    + " package " + pkgName
-                    + " code path from " + pkgSetting.getPathString()
-                    + " to " + codePath.toString()
-                    + "; Retain data and using new");
             if (!isSystem) {
                 // The package isn't considered as installed if the application was
                 // first installed by another user. Update the installed flag when the
