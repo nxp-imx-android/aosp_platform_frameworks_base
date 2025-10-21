@@ -23,6 +23,7 @@ import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.KeyEvent
+import android.view.KeyEvent.KEYCODE_META_RIGHT
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import androidx.test.uiautomator.UiDevice
 import com.android.launcher3.tapl.LauncherInstrumentation
@@ -69,15 +70,15 @@ abstract class CloseSplitScreenTaskViaKeyboardShortcut {
 
     @Test
     open fun closeTaskViaKeyboardShortcut() {
-        secondaryApp.enterDesktopMode(wmHelper, device)
         primaryApp.enterDesktopMode(wmHelper, device)
-        tapl.showTaskbarIfHidden()
 
         // Enter split screen
         primaryApp.exitDesktopModeToSplitScreenWithAppHeader(wmHelper)
-        tapl.launchedAppState.taskbar
+        // Open allApps via keyboard shortcut
+        keyEventHelper.press(KEYCODE_META_RIGHT)
+        tapl.allApps
             .getAppIcon(immersiveAppHelper.appName)
-            .launch(secondaryApp.packageName)
+            .launch(immersiveAppHelper.packageName)
         SplitScreenUtils.waitForSplitComplete(wmHelper, primaryApp, secondaryApp)
 
         // Focus on the primary app.
