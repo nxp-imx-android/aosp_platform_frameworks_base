@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.compose.animation.scene.ObservableTransitionState.Transition
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
@@ -29,7 +30,10 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
+import com.android.systemui.scene.shared.model.Overlays
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.settings.brightness.domain.interactor.brightnessMirrorShowingInteractor
 import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
@@ -45,6 +49,7 @@ import com.android.systemui.util.state.SynchronouslyObservableState
 import com.android.systemui.util.state.observableStateOf
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -208,6 +213,34 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
 
             // THEN the notification stack is interactive
             assertThat(interactive).isTrue()
+        }
+
+    @Test
+    fun allowScrimClipping_toNotifOverlay_false() =
+        kosmos.runTest {
+            val allowScrimClipping by collectLastValue(underTest.allowScrimClipping)
+
+            // GIVEN a transition to NotificationsShade overlay
+            sceneContainerRepository.setTransitionState(
+                flowOf(
+                    Transition.ShowOrHideOverlay(
+                        overlay = Overlays.NotificationsShade,
+                        fromContent = Scenes.Gone,
+                        toContent = Overlays.NotificationsShade,
+                        currentScene = Scenes.Gone,
+                        currentOverlays = flowOf(emptySet()),
+                        progress = flowOf(0.5f),
+                        isInitiatedByUserInput = true,
+                        isUserInputOngoing = flowOf(true),
+                        previewProgress = flowOf(0f),
+                        isInPreviewStage = flowOf(false),
+                    )
+                )
+            )
+            runCurrent()
+
+            // THEN allowScrimClipping is false
+            assertThat(allowScrimClipping).isFalse()
         }
 
     private fun Kosmos.setBlur(isBlurred: Boolean) {
