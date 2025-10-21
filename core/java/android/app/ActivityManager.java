@@ -212,6 +212,11 @@ public class ActivityManager {
      * @hide
      */
     public static final int INSTR_FLAG_INSTRUMENT_SDK_IN_SANDBOX = 1 << 6;
+    /**
+     * Run the target process in pcc sandbox.
+     * @hide
+     */
+    public static final int INSTR_FLAG_RUN_IN_PCC = 1 << 7;
 
     static final class MyUidObserver extends UidObserver {
         final OnUidImportanceListener mListener;
