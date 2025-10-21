@@ -675,4 +675,25 @@ public class BackgroundActivityStartControllerTests {
                         + "realCallerStartMode: MODE_BACKGROUND_ACTIVITY_START_SYSTEM_DEFINED; "
                         + "balDontBringExistingBackgroundTaskStackToFg: true]");
     }
+
+    @Test
+    public void testAbortLaunch_noRealCaller_doesNotCrash() {
+        // This test verifies the fix for a potential NPE in abortLaunch.
+        // GIVEN a blocked activity start with no real caller (not a PendingIntent).
+        // In this case, mResultForRealCaller will be null inside abortLaunch.
+        mController.setCallerVerdict(BalVerdict.BLOCK);
+
+        // WHEN checking the background activity start for a non-PendingIntent
+        BalVerdict verdict = mController.checkBackgroundActivityStart(
+                REGULAR_UID_1, REGULAR_PID_1, REGULAR_PACKAGE_1,
+                -1 /* realCallingUid */, -1 /* realCallingPid */,
+                mCallerApp, null /* originatingPendingIntent */,
+                false /* allowBalExemptionForSystemProcess */,
+                null /* resultRecord */, TEST_INTENT, ActivityOptions.makeBasic());
+
+        // THEN the launch is blocked and no crash occurs.
+        assertThat(verdict.getCode()).isEqualTo(BAL_BLOCK);
+        // AND no toast is shown because mResultForCaller does not allow the start.
+        assertThat(mShownToasts).isEmpty();
+    }
 }
