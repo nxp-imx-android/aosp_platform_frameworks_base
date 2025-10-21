@@ -250,7 +250,8 @@ class HandleMenuTest : ShellTestCase() {
 
         val handleMenuView =
             checkNotNull(handleMenu.handleMenuView) { "Expected non-null handle menu view" }
-        val splitButton = handleMenuView.rootView.findViewById<View>(R.id.split_screen_button)
+        val splitButton =
+            handleMenuView.windowingPillView.findViewById<View>(R.id.split_screen_button)
         assertThat(splitButton.visibility).isEqualTo(View.VISIBLE)
     }
 
@@ -262,7 +263,8 @@ class HandleMenuTest : ShellTestCase() {
 
         val handleMenuView =
             checkNotNull(handleMenu.handleMenuView) { "Expected non-null handle menu view" }
-        val splitButton = handleMenuView.rootView.findViewById<View>(R.id.split_screen_button)
+        val splitButton =
+            handleMenuView.windowingPillView.findViewById<View>(R.id.split_screen_button)
         assertThat(splitButton.visibility).isEqualTo(View.GONE)
     }
 
@@ -274,7 +276,8 @@ class HandleMenuTest : ShellTestCase() {
 
         val handleMenuView =
             checkNotNull(handleMenu.handleMenuView) { "Expected non-null handle menu view" }
-        val splitButton = handleMenuView.rootView.findViewById<View>(R.id.split_screen_button)
+        val splitButton =
+            handleMenuView.windowingPillView.findViewById<View>(R.id.split_screen_button)
         assertThat(splitButton.visibility).isEqualTo(View.VISIBLE)
     }
 
@@ -286,14 +289,15 @@ class HandleMenuTest : ShellTestCase() {
 
         val handleMenuView =
             checkNotNull(handleMenu.handleMenuView) { "Expected non-null handle menu view" }
-        val splitButton = handleMenuView.rootView.findViewById<View>(R.id.split_screen_button)
+        val splitButton =
+            handleMenuView.windowingPillView.findViewById<View>(R.id.split_screen_button)
         assertThat(splitButton.visibility).isEqualTo(View.VISIBLE)
     }
 
     private suspend fun createTaskInfo(
         windowingMode: Int,
         splitPosition: Int? = null,
-        displayId: Int = DEFAULT_DISPLAY
+        displayId: Int = DEFAULT_DISPLAY,
     ) {
         val taskDescriptionBuilder =
             ActivityManager.TaskDescription.Builder().setBackgroundColor(Color.YELLOW)
