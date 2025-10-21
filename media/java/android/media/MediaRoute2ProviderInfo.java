@@ -22,6 +22,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.ArrayMap;
+import com.android.media.flags.Flags;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,6 +49,10 @@ public final class MediaRoute2ProviderInfo implements Parcelable {
 
     @Nullable
     final String mUniqueId;
+    @Nullable
+    final String mPackageName;
+    @Nullable
+    final Boolean mIsSystem;
     @NonNull
     final ArrayMap<String, MediaRoute2Info> mRoutes;
 
@@ -56,12 +61,26 @@ public final class MediaRoute2ProviderInfo implements Parcelable {
 
         mUniqueId = builder.mUniqueId;
         mRoutes = builder.mRoutes;
+        if (Flags.enableMediaRoute2ProviderInfoBuilderCaching()) {
+            mPackageName = builder.mPackageName;
+            mIsSystem = builder.mIsSystem;
+        } else {
+            mPackageName = null;
+            mIsSystem = null;
+        }
     }
 
     MediaRoute2ProviderInfo(@NonNull Parcel src) {
         mUniqueId = src.readString();
         ArrayMap<String, MediaRoute2Info> routes = src.createTypedArrayMap(MediaRoute2Info.CREATOR);
         mRoutes = (routes == null) ? ArrayMap.EMPTY : routes;
+        if (Flags.enableMediaRoute2ProviderInfoBuilderCaching()) {
+            mPackageName = src.readString8();
+            mIsSystem = src.readBoolean();
+        } else {
+            mPackageName = null;
+            mIsSystem = null;
+        }
     }
 
     /**
@@ -119,6 +138,10 @@ public final class MediaRoute2ProviderInfo implements Parcelable {
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeString(mUniqueId);
         dest.writeTypedArrayMap(mRoutes, flags);
+        if (Flags.enableMediaRoute2ProviderInfoBuilderCaching()) {
+            dest.writeString8(mPackageName);
+            dest.writeBoolean(mIsSystem);
+        }
     }
 
     @Override
@@ -138,6 +161,8 @@ public final class MediaRoute2ProviderInfo implements Parcelable {
         @NonNull
         final ArrayMap<String, MediaRoute2Info> mRoutes;
         String mUniqueId;
+        String mPackageName;
+        Boolean mIsSystem;
 
         public Builder() {
             mRoutes = new ArrayMap<>();
@@ -152,6 +177,13 @@ public final class MediaRoute2ProviderInfo implements Parcelable {
             Objects.requireNonNull(descriptor, "descriptor must not be null");
 
             mUniqueId = descriptor.mUniqueId;
+            if (Flags.enableMediaRoute2ProviderInfoBuilderCaching()) {
+                mPackageName = descriptor.mPackageName;
+                mIsSystem = descriptor.mIsSystem;
+            } else {
+                mPackageName = null;
+                mIsSystem = null;
+            }
             mRoutes = new ArrayMap<>(routes);
         }
 
@@ -170,6 +202,9 @@ public final class MediaRoute2ProviderInfo implements Parcelable {
                 return this;
             }
             mUniqueId = uniqueId;
+            if (Flags.enableMediaRoute2ProviderInfoBuilderCaching()) {
+                mPackageName = packageName;
+            }
 
             final ArrayMap<String, MediaRoute2Info> newRoutes = new ArrayMap<>();
             for (Map.Entry<String, MediaRoute2Info> entry : mRoutes.entrySet()) {
@@ -191,6 +226,9 @@ public final class MediaRoute2ProviderInfo implements Parcelable {
          */
         @NonNull
         public Builder setSystemRouteProvider(boolean isSystem) {
+            if (Flags.enableMediaRoute2ProviderInfoBuilderCaching()) {
+                mIsSystem = isSystem;
+            }
             int count = mRoutes.size();
             for (int i = 0; i < count; i++) {
                 MediaRoute2Info route = mRoutes.valueAt(i);
@@ -213,11 +251,25 @@ public final class MediaRoute2ProviderInfo implements Parcelable {
             if (mRoutes.containsKey(route.getOriginalId())) {
                 throw new IllegalArgumentException("A route with the same id is already added");
             }
-            if (mUniqueId != null) {
-                mRoutes.put(route.getOriginalId(),
-                        new MediaRoute2Info.Builder(route).setProviderId(mUniqueId).build());
+            if (Flags.enableMediaRoute2ProviderInfoBuilderCaching()) {
+                MediaRoute2Info.Builder routeBuilder = new MediaRoute2Info.Builder(route);
+                if (mUniqueId != null) {
+                    routeBuilder.setProviderId(mUniqueId);
+                }
+                if (mPackageName != null) {
+                    routeBuilder.setProviderPackageName(mPackageName);
+                }
+                if (mIsSystem != null) {
+                    routeBuilder.setSystemRoute(mIsSystem);
+                }
+                mRoutes.put(route.getOriginalId(), routeBuilder.build());
             } else {
-                mRoutes.put(route.getOriginalId(), route);
+                if (mUniqueId != null) {
+                    mRoutes.put(route.getOriginalId(),
+                            new MediaRoute2Info.Builder(route).setProviderId(mUniqueId).build());
+                } else {
+                    mRoutes.put(route.getOriginalId(), route);
+                }
             }
             return this;
         }
