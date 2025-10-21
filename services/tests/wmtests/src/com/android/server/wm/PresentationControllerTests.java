@@ -30,6 +30,8 @@ import static android.view.WindowManager.LayoutParams.TYPE_PRESENTATION;
 import static android.view.WindowManager.LayoutParams.TYPE_PRIVATE_PRESENTATION;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 import static com.android.window.flags.Flags.FLAG_ENABLE_PRESENTATION_DISALLOWED_ON_UNFOCUSED_HOST_TASK;
 import static com.android.window.flags.Flags.FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS;
 
@@ -37,6 +39,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.eq;
 
 import android.annotation.NonNull;
@@ -131,6 +134,8 @@ public class PresentationControllerTests extends WindowTestsBase {
     @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testPresentationCannotCoverFocusedHostTask() {
+        forceAllowPresentationsOnDefaultDisplay();
+
         int uid = Binder.getCallingUid();
         final DisplayContent presentationDisplay = createPresentationDisplay();
         final Task task = createTask(presentationDisplay);
@@ -223,6 +228,8 @@ public class PresentationControllerTests extends WindowTestsBase {
     @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testPresentationCannotLaunchOnAllDisplays() {
+        forceAllowPresentationsOnDefaultDisplay();
+
         final int uid = Binder.getCallingUid();
         final DisplayContent presentationDisplay = createPresentationDisplay();
         final Task task = createTask(presentationDisplay);
@@ -297,6 +304,8 @@ public class PresentationControllerTests extends WindowTestsBase {
     @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testPresentationCannotLaunchOnInternalDisplayWithoutHostHavingGlobalFocus() {
+        forceAllowPresentationsOnDefaultDisplay();
+
         final int uid = Binder.getCallingUid();
         // Adding a presentation window on an internal display requires a host task
         // with global focus on another display.
@@ -354,6 +363,8 @@ public class PresentationControllerTests extends WindowTestsBase {
     @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testNewPresentationCannotShowOnPresentingDesk() {
+        forceAllowPresentationsOnDefaultDisplay();
+
         int uid = Binder.getCallingUid();
         final DisplayContent presentationDisplay = createPresentationDisplay();
 
@@ -374,6 +385,18 @@ public class PresentationControllerTests extends WindowTestsBase {
 
         // Adding another presentation window over the presentation must fail.
         assertAddPresentationWindowFails(uid, DEFAULT_DISPLAY);
+    }
+
+    @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
+    @Test
+    public void testDisallowPresentationOnNonPresentationDisplay() {
+        assumeTrue(!mDefaultDisplay.mDisplay.isPublicPresentation());
+
+        final DisplayContent dc = createPresentationDisplay();
+        final ActivityRecord activity = createActivityRecord(createTask(dc));
+        assertTrue(activity.isVisible());
+
+        assertAddPresentationWindowFails(100000, mDefaultDisplay.getDisplayId());
     }
 
     private WindowState addPresentationWindow(int uid, int displayId) {
@@ -458,5 +481,10 @@ public class PresentationControllerTests extends WindowTestsBase {
             transition.onTransactionReady(transition.getSyncId(), mTransaction);
         }
         transition.finishTransition(chain);
+    }
+
+    private void forceAllowPresentationsOnDefaultDisplay() {
+        spyOn(mDefaultDisplay.getDisplay());
+        when(mDefaultDisplay.getDisplay().isPublicPresentation()).thenReturn(true);
     }
 }
