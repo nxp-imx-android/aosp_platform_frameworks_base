@@ -384,8 +384,10 @@ public class ContextualSearchManagerService extends SystemService {
                         activityTokens,
                         /* fetchData */ true,
                         /* fetchScreenshot */ false,
+                        /* fetchAssistStructureContent */ true,
                         /* allowFetchData */ true,
                         /* allowFetchScreenshot */ false,
+                        /* allowFetchAssistStructureContent */ true,
                         csUid,
                         csPackage,
                         null);

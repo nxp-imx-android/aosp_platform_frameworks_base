@@ -27,10 +27,11 @@ import static android.view.Display.DEFAULT_DISPLAY;
 
 import static com.android.server.policy.PhoneWindowManager.SYSTEM_DIALOG_REASON_ASSIST;
 
-import android.annotation.IntDef;
 import android.Manifest;
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
 import android.app.AppGlobals;
@@ -89,6 +90,7 @@ import com.android.internal.app.IVoiceInteractionSessionShowCallback;
 import com.android.internal.app.IVoiceInteractor;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.LocalServices;
+import com.android.server.compat.PlatformCompat;
 import com.android.server.wm.ActivityAssistInfo;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal.ActivityTokens;
@@ -148,6 +150,7 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
     final IWindowManager mIWindowManager;
     final ComponentName mHotwordDetectionComponentName;
     final ComponentName mVisualQueryDetectionComponentName;
+    final PlatformCompat mPlatformCompat;
     boolean mEnableAssistStructure = true;
     boolean mBound = false;
     IVoiceInteractionService mService;
@@ -252,6 +255,7 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
         mAtm = ActivityTaskManager.getService();
         mPackageManagerInternal =
                 Objects.requireNonNull(LocalServices.getService(PackageManagerInternal.class));
+        mPlatformCompat = new PlatformCompat(context);
         VoiceInteractionServiceInfo info;
         try {
             info = new VoiceInteractionServiceInfo(context.getPackageManager(), service, mUser);
@@ -310,6 +314,11 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
                 /* direct= */ true);
     }
 
+    @RequiresPermission(
+            allOf = {
+                Manifest.permission.LOG_COMPAT_CHANGE,
+                Manifest.permission.READ_COMPAT_CHANGE_CONFIG
+            })
     public boolean showSessionLocked(
             @Nullable Bundle args,
             int flags,
@@ -330,6 +339,12 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
         }
 
         if (mActiveSession == null) {
+
+            final boolean shouldRestrictAssistStructureScreenContent =
+                    mPlatformCompat.isChangeEnabled(
+                            VoiceInteractionManagerService.ENABLE_RESTRICT_ASSIST_STRUCTURE,
+                            getApplicationInfo());
+
             mActiveSession =
                     new VoiceInteractionSessionConnection(
                             mServiceStub,
@@ -339,7 +354,9 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
                             this,
                             mInfo.getServiceInfo().applicationInfo.uid,
                             mHandler,
-                            mEnableAssistStructure);
+                            mEnableAssistStructure,
+                            shouldRestrictAssistStructureScreenContent
+            );
         }
         if (!mActiveSession.mBound) {
             try {

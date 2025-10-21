@@ -89,6 +89,25 @@ public class AssistStructure implements Parcelable {
     private static final int VALIDATE_WINDOW_TOKEN = 0x11111111;
     private static final int VALIDATE_VIEW_TOKEN = 0x22222222;
 
+    /**
+     * A flag indicating that the {@link AssistStructure} should be populated with only
+     * information about the window state, and exclude any screen content.
+     *
+     * <p>When this flag is set, the structure will contain metadata about the windows on
+     * the screen, but the {@link ViewNode} hierarchy within each window will be empty.
+     * This prevents the collection of any view-specific data, such as text, content
+     * descriptions, or other screen content.
+     *
+     * <p>This flag is set by the system when the requesting Voice Interaction Service
+     * does not declare {@code usesAssistStructureScreenContent } in its {@code
+     * <voice-interaction-service> } manifest block.
+     *
+     * It is an internal-only flag and is not part of the public SDK.
+     *
+     * @hide
+     */
+    public static final int FLAG_OMIT_SCREEN_CONTENT = 0x80000000;
+
     private boolean mHaveData;
 
     // The task id and component of the activity which this assist structure is for
@@ -534,7 +553,17 @@ public class AssistStructure implements Parcelable {
             mDisplayId = root.getDisplayId();
             mRoot = new ViewNode();
 
+
             ViewNodeBuilder builder = new ViewNodeBuilder(assist, mRoot, false);
+
+            // Determine if screen content should be omitted based on the flag.
+            if ((flags & FLAG_OMIT_SCREEN_CONTENT) != 0) {
+                Slog.d(TAG, "omitScreenContent was set, skipping view traversal");
+                // If the flag is set, do not proceed with the view hierarchy traversal.
+                // This effectively omits all view-specific information.
+                return; // Skip the traversal.
+            }
+
             if ((root.getWindowFlags() & WindowManager.LayoutParams.FLAG_SECURE) != 0) {
                 if (forAutoFill) {
                     final int viewFlags = resolveViewAutofillFlags(view.getContext(), flags);
