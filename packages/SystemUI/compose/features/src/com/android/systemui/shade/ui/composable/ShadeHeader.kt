@@ -72,6 +72,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
+import com.android.compose.animation.scene.SceneTransitionLayoutState
 import com.android.compose.animation.scene.ValueKey
 import com.android.compose.animation.scene.animateElementFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
@@ -174,8 +175,7 @@ fun ContentScope.CollapsedShadeHeader(
     val useExpandedTextFormat by
         remember(cutoutLocation) {
             derivedStateOf {
-                cutoutLocation != CutoutLocation.CENTER ||
-                    shouldUseExpandedFormat(layoutState.transitionState)
+                cutoutLocation != CutoutLocation.CENTER || shouldUseExpandedFormat(layoutState)
             }
         }
 
@@ -254,9 +254,7 @@ fun ContentScope.ExpandedShadeHeader(
     viewModel: ShadeHeaderViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val useExpandedFormat by remember {
-        derivedStateOf { shouldUseExpandedFormat(layoutState.transitionState) }
-    }
+    val useExpandedFormat by remember { derivedStateOf { shouldUseExpandedFormat(layoutState) } }
 
     val textColor = ShadeHeader.Colors.textColor
 
@@ -778,12 +776,9 @@ private fun Modifier.bouncy(
     }
 }
 
-private fun shouldUseExpandedFormat(state: TransitionState): Boolean {
-    return when (state) {
-        is TransitionState.Idle -> state.currentScene == Scenes.QuickSettings
-        is TransitionState.Transition -> {
-            (state.isTransitioning(to = Scenes.QuickSettings) && state.progress >= 0.5) ||
-                (state.isTransitioning(from = Scenes.QuickSettings) && state.progress <= 0.5)
-        }
-    }
+private fun shouldUseExpandedFormat(state: SceneTransitionLayoutState): Boolean {
+    return state.isIdle(Scenes.QuickSettings) ||
+        (state is TransitionState.Transition &&
+            ((state.isTransitioning(to = Scenes.QuickSettings) && state.progress >= 0.5) ||
+                (state.isTransitioning(from = Scenes.QuickSettings) && state.progress <= 0.5)))
 }
