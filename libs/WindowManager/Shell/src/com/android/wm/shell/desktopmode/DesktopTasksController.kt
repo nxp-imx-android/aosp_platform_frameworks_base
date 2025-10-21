@@ -3538,6 +3538,7 @@ class DesktopTasksController(
         userId: Int,
         willExitDesktop: Boolean,
         removingLastTaskId: Int?,
+        forceRemoveDesk: Boolean = false,
         shouldEndUpAtHome: Boolean = true,
         skipWallpaperAndHomeOrdering: Boolean = false,
         skipUpdatingExitDesktopListener: Boolean = false,
@@ -3585,9 +3586,10 @@ class DesktopTasksController(
             }
         }
         val shouldRemoveDesk =
-            DesktopExperienceFlags.ENABLE_REMOVE_DESK_ON_LAST_TASK_REMOVAL.isTrue &&
-                removingLastTaskId != null &&
-                !rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId)
+            forceRemoveDesk ||
+                (DesktopExperienceFlags.ENABLE_REMOVE_DESK_ON_LAST_TASK_REMOVAL.isTrue &&
+                    removingLastTaskId != null &&
+                    !rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId))
         return if (shouldRemoveDesk) {
             addDeskRemovalChanges(
                 wct = wct,
@@ -5798,7 +5800,14 @@ class DesktopTasksController(
         exitReason: ExitReason,
     ) {
         val deskId = getOrCreateDefaultDeskId(displayId, userId) ?: return
-        removeDesk(displayId = displayId, deskId = deskId, userId = userId, exitReason = exitReason)
+        removeDesk(
+            displayId = displayId,
+            deskId = deskId,
+            userId = userId,
+            exitReason = exitReason,
+            skipWallpaperAndHomeOrdering = true,
+            shouldEndUpAtHome = false,
+        )
     }
 
     /**
@@ -5845,6 +5854,8 @@ class DesktopTasksController(
         deskId: Int,
         userId: Int = shellController.currentUserId,
         exitReason: ExitReason,
+        shouldEndUpAtHome: Boolean = false,
+        skipWallpaperAndHomeOrdering: Boolean = false,
     ) {
         val repository = userRepositories.getProfile(userId)
         if (!repository.getAllDeskIds().contains(deskId)) {
@@ -5852,17 +5863,67 @@ class DesktopTasksController(
             return
         }
         val displayId = repository.getDisplayForDesk(deskId)
-        removeDesk(displayId = displayId, deskId = deskId, userId = userId, exitReason = exitReason)
+        removeDesk(
+            displayId = displayId,
+            deskId = deskId,
+            userId = userId,
+            exitReason = exitReason,
+            shouldEndUpAtHome = shouldEndUpAtHome,
+            skipWallpaperAndHomeOrdering = skipWallpaperAndHomeOrdering,
+        )
     }
 
     /** Removes all the available desks on all displays. */
-    fun removeAllDesks(userId: Int = shellController.currentUserId, exitReason: ExitReason) {
+    fun removeAllDesks(
+        userId: Int = shellController.currentUserId,
+        exitReason: ExitReason,
+        shouldEndUpAtHome: Boolean = false,
+        skipWallpaperAndHomeOrdering: Boolean = false,
+    ) {
         val repository = userRepositories.getProfile(userId)
         val deskIds = repository.getAllDeskIds()
-        logV("removeAllDesks userId=%d reason=%s deskIds=%s", userId, exitReason, deskIds)
+        val activeDesks =
+            repository.getAllDeskIds().filter { deskId ->
+                val display = repository.getDisplayForDesk(deskId)
+                repository.getActiveDeskId(display) == deskId
+            }
+        val inactiveDesks = deskIds.subtract(activeDesks)
+        logV(
+            "removeAllDesks userId=%d reason=%s deskIds=%s active=%s inactive=%s " +
+                "shouldEndUpAtHome=%b skipWallpaperAndHomeOrdering=%b",
+            userId,
+            exitReason,
+            deskIds,
+            activeDesks,
+            inactiveDesks,
+            shouldEndUpAtHome,
+            skipWallpaperAndHomeOrdering,
+        )
+
         val wct = WindowContainerTransaction()
-        val runOnTransitStartList =
-            deskIds.mapNotNull { deskId ->
+        val runOnTransitStartList = mutableListOf<RunOnTransitStart>()
+        // Active desks need to go through clean up so that they get deactivated and Home/wallpaper
+        // are brought to front.
+        activeDesks
+            .mapNotNull { deskId ->
+                val displayId = repository.getDisplayForDesk(deskId)
+                performDesktopExitCleanUp(
+                    wct = wct,
+                    deskId = deskId,
+                    displayId = displayId,
+                    userId = userId,
+                    willExitDesktop = true,
+                    removingLastTaskId = null,
+                    forceRemoveDesk = true,
+                    shouldEndUpAtHome = shouldEndUpAtHome,
+                    skipWallpaperAndHomeOrdering = skipWallpaperAndHomeOrdering,
+                    exitReason = exitReason,
+                )
+            }
+            .toCollection(runOnTransitStartList)
+        // Inactive desks just need to be removed.
+        inactiveDesks
+            .mapNotNull { deskId ->
                 val displayId = repository.getDisplayForDesk(deskId)
                 addDeskRemovalChanges(
                     wct = wct,
@@ -5872,23 +5933,58 @@ class DesktopTasksController(
                     exitReason = exitReason,
                 )
             }
+            .toCollection(runOnTransitStartList)
+
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue && wct.isEmpty) return
         val transition = transitions.startTransition(TRANSIT_CLOSE, wct, /* handler= */ null)
         runOnTransitStartList.forEach { runOnTransitStart -> runOnTransitStart(transition) }
     }
 
-    private fun removeDesk(displayId: Int, deskId: Int, userId: Int, exitReason: ExitReason) {
+    private fun removeDesk(
+        displayId: Int,
+        deskId: Int,
+        userId: Int,
+        exitReason: ExitReason,
+        shouldEndUpAtHome: Boolean = false,
+        skipWallpaperAndHomeOrdering: Boolean = false,
+    ) {
         if (!DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION.isTrue) return
-        logV("removeDesk deskId=%d from displayId=%d of userId=%d", deskId, displayId, userId)
+        logV(
+            "removeDesk deskId=%d from displayId=%d of userId=%d " +
+                "shouldEndUpAtHome=%b skipWallpaperAndHomeOrdering=%b",
+            deskId,
+            displayId,
+            userId,
+            shouldEndUpAtHome,
+            skipWallpaperAndHomeOrdering,
+        )
+        val repository = userRepositories.getProfile(userId)
+
         val wct = WindowContainerTransaction()
         val runOnTransitStart =
-            addDeskRemovalChanges(
-                wct = wct,
-                deskId = deskId,
-                displayId = displayId,
-                userId = userId,
-                exitReason = exitReason,
-            )
+            if (repository.isDeskActive(deskId)) {
+                performDesktopExitCleanUp(
+                    wct = wct,
+                    deskId = deskId,
+                    displayId = displayId,
+                    userId = userId,
+                    willExitDesktop = true,
+                    removingLastTaskId = null,
+                    forceRemoveDesk = true,
+                    shouldEndUpAtHome = shouldEndUpAtHome,
+                    skipWallpaperAndHomeOrdering = skipWallpaperAndHomeOrdering,
+                    exitReason = exitReason,
+                )
+            } else {
+                addDeskRemovalChanges(
+                    wct = wct,
+                    deskId = deskId,
+                    displayId = displayId,
+                    userId = userId,
+                    exitReason = exitReason,
+                )
+            }
+
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue && wct.isEmpty) return
         val transition = transitions.startTransition(TRANSIT_CLOSE, wct, /* handler= */ null)
         runOnTransitStart?.invoke(transition)
@@ -6909,13 +7005,22 @@ class DesktopTasksController(
 
         override fun removeDesk(deskId: Int, transitionSource: DesktopModeTransitionSource) {
             executeRemoteCallWithTaskPermission(controller, "removeDesk") { c ->
-                c.removeDesk(deskId, exitReason = transitionSource.getExitReason())
+                c.removeDesk(
+                    deskId = deskId,
+                    exitReason = transitionSource.getExitReason(),
+                    shouldEndUpAtHome = false,
+                    skipWallpaperAndHomeOrdering = true,
+                )
             }
         }
 
         override fun removeAllDesks(transitionSource: DesktopModeTransitionSource) {
             executeRemoteCallWithTaskPermission(controller, "removeAllDesks") { c ->
-                c.removeAllDesks(exitReason = transitionSource.getExitReason())
+                c.removeAllDesks(
+                    exitReason = transitionSource.getExitReason(),
+                    shouldEndUpAtHome = false,
+                    skipWallpaperAndHomeOrdering = true,
+                )
             }
         }
 

@@ -157,7 +157,13 @@ class DesksTransitionObserver(
                     desktopModeEventLogger.logPendingSessionExit(deskId, deskTransition.exitReason)
                 }
                 repository.removeDesk(deskTransition.deskId)
-                deskTransition.onDeskRemovedListener?.onDeskRemoved(displayId, deskId)
+                val removedOnlyDeskInDisplay = repository.getNumberOfDesks(displayId) == 0
+                deskTransition.onDeskRemovedListener?.onDeskRemoved(
+                    displayId,
+                    deskId,
+                    deskTransition.userId,
+                    removedOnlyDeskInDisplay,
+                )
             }
             is DeskTransition.ActivateDesk -> {
                 val activateDeskChange =

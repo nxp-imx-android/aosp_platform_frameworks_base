@@ -183,17 +183,10 @@ class DesksTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onTransitionReady_removeDesk_invokesOnRemoveListener() {
-        class FakeOnDeskRemovedListener : OnDeskRemovedListener {
-            var lastDeskRemoved: Int? = null
-
-            override fun onDeskRemoved(lastDisplayId: Int, deskId: Int) {
-                lastDeskRemoved = deskId
-            }
-        }
+    fun onTransitionReady_removeLastDeskInDisplay_invokesOnRemoveListener() {
 
         val transition = Binder()
-        val removeListener = FakeOnDeskRemovedListener()
+        val removeListener = TestOnDeskRemovedListener()
         val deskId = 5
         val removeTransition =
             DeskTransition.RemoveDesk(
@@ -214,6 +207,65 @@ class DesksTransitionObserverTest : ShellTestCase() {
         )
 
         assertThat(removeListener.lastDeskRemoved).isEqualTo(deskId)
+        assertThat(removeListener.lastDeskRemovedWasOnlyDeskInDisplay).isTrue()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_removeDeskInDisplayWithOthersRemaining_invokesOnRemoveListener() {
+
+        val transition = Binder()
+        val removeListener = TestOnDeskRemovedListener()
+        val deskId = 5
+        val removeTransition =
+            DeskTransition.RemoveDesk(
+                transition,
+                userId = USER_ID_1,
+                displayId = DEFAULT_DISPLAY,
+                deskId = deskId,
+                tasks = setOf(10, 11),
+                exitReason = ExitReason.DISPLAY_DISCONNECTED,
+                onDeskRemovedListener = removeListener,
+            )
+        // Add another desk first so the removed one isn't the last desk in this display.
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 4)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = deskId)
+
+        observer.addPendingTransition(removeTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info = TransitionInfo(TRANSIT_CLOSE, /* flags= */ 0),
+        )
+
+        assertThat(removeListener.lastDeskRemoved).isEqualTo(deskId)
+        assertThat(removeListener.lastDeskRemovedWasOnlyDeskInDisplay).isFalse()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_removeInactiveDeskInDisplay_doesNotLogSessionExit() {
+        val transition = Binder()
+        val removeListener = TestOnDeskRemovedListener()
+        val deskId = 5
+        val removeTransition =
+            DeskTransition.RemoveDesk(
+                transition,
+                userId = USER_ID_1,
+                displayId = DEFAULT_DISPLAY,
+                deskId = deskId,
+                tasks = setOf(10, 11),
+                exitReason = ExitReason.DISPLAY_DISCONNECTED,
+                onDeskRemovedListener = removeListener,
+            )
+        repository.addDesk(DEFAULT_DISPLAY, deskId = deskId)
+        repository.setDeskInactive(deskId)
+
+        observer.addPendingTransition(removeTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info = TransitionInfo(TRANSIT_CLOSE, /* flags= */ 0),
+        )
+
         verify(mockDesktopModeEventLogger, never())
             .logPendingSessionExit(eq(deskId), eq(ExitReason.DISPLAY_DISCONNECTED))
     }
@@ -1318,7 +1370,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 Change(null /* container */, mock()).apply {
                     this.mode = TRANSIT_TO_FRONT
                     this.taskInfo =
-                            createFullscreenTask(displayId).apply { this.userId = USER_ID_1 }
+                        createFullscreenTask(displayId).apply { this.userId = USER_ID_1 }
                     setDisplayId(displayId, displayId)
                 }
             // Ensure the wallpaper token provider returns null for this display
@@ -1326,7 +1378,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
 
             observer.onTransitionReady(
                 transition = Binder(),
-                info = buildTransitionInfo().apply { addChange(nullContainerChange) }
+                info = buildTransitionInfo().apply { addChange(nullContainerChange) },
             )
             runCurrent()
 
@@ -1628,6 +1680,24 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 }
         )
         return this
+    }
+
+    private class TestOnDeskRemovedListener : OnDeskRemovedListener {
+        var lastDeskRemoved: Int? = null
+            private set
+
+        var lastDeskRemovedWasOnlyDeskInDisplay: Boolean = false
+            private set
+
+        override fun onDeskRemoved(
+            lastDisplayId: Int,
+            deskId: Int,
+            userId: Int,
+            onlyDeskInDisplay: Boolean,
+        ) {
+            lastDeskRemoved = deskId
+            lastDeskRemovedWasOnlyDeskInDisplay = onlyDeskInDisplay
+        }
     }
 
     companion object {

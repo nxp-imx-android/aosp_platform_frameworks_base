@@ -387,10 +387,23 @@ class DesktopDisplayEventHandler(
         return true
     }
 
-    override fun onDeskRemoved(lastDisplayId: Int, deskId: Int) {
+    override fun onDeskRemoved(
+        lastDisplayId: Int,
+        deskId: Int,
+        userId: Int,
+        onlyDeskInDisplay: Boolean,
+    ) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
-        logV("onDeskRemoved deskId=%d displayId=%d", deskId, lastDisplayId)
-        createDefaultDesksIfNeeded(listOf(lastDisplayId), userId = null)
+        logV(
+            "onDeskRemoved deskId=%d displayId=%d userId=%d onlyDeskInDisplay=%b",
+            deskId,
+            lastDisplayId,
+            userId,
+            onlyDeskInDisplay,
+        )
+        if (onlyDeskInDisplay) {
+            createDefaultDesksIfNeeded(listOf(lastDisplayId), userId = userId)
+        }
     }
 
     private fun createDefaultDesksIfNeeded(displayIds: Collection<Int>, userId: Int?) {

@@ -24,7 +24,6 @@ import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.Rotation
 import android.tools.flicker.rules.ChangeDisplayOrientationRule
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.UiDevice
 import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.wm.shell.Utils
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -39,7 +38,6 @@ abstract class TestScenarioBase(
     private val navigationMode: NavBar = NavBar.MODE_GESTURAL,
 ) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-    private val device = UiDevice.getInstance(instrumentation)
 
     @get:Rule val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
@@ -59,8 +57,5 @@ abstract class TestScenarioBase(
         tapl.setExpectedRotation(rotation.value)
         ChangeDisplayOrientationRule.setRotation(rotation)
         tapl.enableTransientTaskbar(false)
-        device.executeShellCommand(
-            "dumpsys activity service SystemUIService WMShell desktopmode removeAllDesks"
-        )
     }
 }

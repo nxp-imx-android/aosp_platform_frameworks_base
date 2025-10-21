@@ -8209,10 +8209,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
 
         val wct = getLatestWct(TRANSIT_CLOSE)
-        assertThat(wct.hierarchyOps).hasSize(3)
-        wct.assertRemoveAt(index = 0, task1.token)
-        wct.assertRemoveAt(index = 1, task2.token)
-        wct.assertRemoveAt(index = 2, task3.token)
+        wct.assertRemove(task1.token)
+        wct.assertRemove(task2.token)
+        wct.assertRemove(task3.token)
     }
 
     @Test
@@ -8231,9 +8230,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
 
         val wct = getLatestWct(TRANSIT_CLOSE)
-        assertThat(wct.hierarchyOps).hasSize(2)
-        wct.assertRemoveAt(index = 0, task1.token)
-        wct.assertRemoveAt(index = 1, task2.token)
+        wct.assertRemove(task1.token)
+        wct.assertRemove(task2.token)
         verify(recentTasksController).removeBackgroundTask(task3.taskId)
     }
 
@@ -8347,6 +8345,45 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         this.deskId == 5
                 }
             )
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun removeAllDesks_endUpAtHome_hasActiveDesk_deskRemovedAndHomeBroughtToFront() {
+        val transition = Binder()
+        whenever(transitions.startTransition(eq(TRANSIT_CLOSE), any(), anyOrNull()))
+            .thenReturn(transition)
+        taskRepository.addDesk(DEFAULT_DISPLAY, deskId = 4)
+        taskRepository.addDesk(DEFAULT_DISPLAY, deskId = 5)
+        taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = 5)
+
+        controller.removeAllDesks(
+            userId = taskRepository.userId,
+            exitReason = ExitReason.UNKNOWN_EXIT,
+            shouldEndUpAtHome = true,
+        )
+
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat {
+                    this is DeskTransition.RemoveDesk &&
+                        this.token == transition &&
+                        this.deskId == 4
+                }
+            )
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat {
+                    this is DeskTransition.RemoveDesk &&
+                        this.token == transition &&
+                        this.deskId == 5
+                }
+            )
+        val wct = getLatestWct(type = TRANSIT_CLOSE)
+        wct.assertPendingIntent(launchHomeIntent(DEFAULT_DISPLAY))
     }
 
     @Test

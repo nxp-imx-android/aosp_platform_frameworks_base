@@ -331,6 +331,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
                     userId = taskInfo.userId,
                     willExitDesktop = true,
                     removingLastTaskId = taskInfo.taskId,
+                    forceRemoveDesk = false,
                     exitReason = ExitReason.ENTER_PIP,
                 )
         } else {
@@ -342,6 +343,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
                     userId = any(),
                     willExitDesktop = any(),
                     removingLastTaskId = anyOrNull(),
+                    forceRemoveDesk = any(),
                     shouldEndUpAtHome = any(),
                     skipWallpaperAndHomeOrdering = any(),
                     skipUpdatingExitDesktopListener = any(),
