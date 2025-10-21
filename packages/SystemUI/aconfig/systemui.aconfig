@@ -2089,3 +2089,10 @@ flag {
        purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "split_show_passwords_to_touch_and_physical"
+    namespace: "systemui"
+    description: "Splits the 'Show passwords' setting into two new settings: one for touch inputs and one for physical inputs."
+    bug: "417951523"
+}
