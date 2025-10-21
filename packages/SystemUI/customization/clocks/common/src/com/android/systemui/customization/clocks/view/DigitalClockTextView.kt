@@ -51,6 +51,7 @@ import com.android.systemui.customization.clocks.utils.CanvasUtils.translate
 import com.android.systemui.customization.clocks.utils.PaintUtils.getTextBounds
 import com.android.systemui.customization.clocks.utils.ViewUtils.measuredSize
 import com.android.systemui.customization.clocks.utils.ViewUtils.measuredSizeAndState
+import com.android.systemui.customization.clocks.utils.ViewUtils.setLeftTopRightBottom
 import com.android.systemui.plugins.keyguard.VMeasurePoint
 import com.android.systemui.plugins.keyguard.VMeasureSpec
 import com.android.systemui.plugins.keyguard.VPointF
@@ -551,12 +552,7 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
             )
 
         val targetRect = VRectF.fromTopLeft(pos, measureSize)
-        setFrame(
-            targetRect.left.roundToInt(),
-            targetRect.top.roundToInt(),
-            targetRect.right.roundToInt(),
-            targetRect.bottom.roundToInt(),
-        )
+        setLeftTopRightBottom(targetRect)
         onViewBoundsChanged?.let { it(targetRect) }
         logger.d({ "setInterpolatedLocation(${VRectF.fromLong(long1)})" }) {
             long1 = targetRect.toLong()
