@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.ObservableTransitionState.Transition
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
@@ -213,6 +214,30 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
 
             // THEN the notification stack is interactive
             assertThat(interactive).isTrue()
+        }
+
+    @Test
+    fun allowScrimClipping_toShadeScene_true() =
+        kosmos.runTest {
+            val allowScrimClipping by collectLastValue(underTest.allowScrimClipping)
+
+            // GIVEN a transition to Shade scene
+            sceneContainerRepository.setTransitionState(
+                flowOf(
+                    Transition(
+                        fromScene = Scenes.Gone,
+                        toScene = Scenes.Shade,
+                        currentScene = flowOf(Scenes.Gone),
+                        progress = MutableStateFlow(0.5f),
+                        isInitiatedByUserInput = true,
+                        isUserInputOngoing = flowOf(true),
+                    )
+                )
+            )
+            runCurrent()
+
+            // THEN allowScrimClipping is true
+            assertThat(allowScrimClipping).isTrue()
         }
 
     @Test
