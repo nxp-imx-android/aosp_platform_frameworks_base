@@ -62,3 +62,10 @@ flag {
     description: "Feature flag to flush text changed event when text is non-empty"
     bug: "451804320"
 }
+
+flag {
+    name: "notify_correct_view_events"
+    namespace: "ailabs"
+    description: "Feature flag to fix content capture event data in chat apps."
+    bug: "453529467"
+}
