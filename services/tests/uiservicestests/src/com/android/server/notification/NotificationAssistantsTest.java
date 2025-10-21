@@ -1180,6 +1180,17 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         assertThat(mAssistants.getDynamicBundles(0)).containsExactly(expected, expected2);
     }
 
+    @EnableFlags(Flags.FLAG_NM_CONTEXTUAL_DISPLAY)
+    @Test
+    public void testDynamicBundles_getNameFromId() {
+        DynamicBundle expected = new DynamicBundle(111, "sports spoilers");
+        mAssistants.createDynamicBundle(
+                0, expected.getDynamicBundleType(), expected.getBundleName());
+
+        assertThat(mAssistants.getDynamicBundleName(0, 0)).isNull();
+        assertThat(mAssistants.getDynamicBundleName(0, 111)).isEqualTo(expected.getBundleName());
+    }
+
     // Helper function for getting the NotificationAdjustmentPreferences pulled atom data from a
     // given Atom object that's expected to have this extension.
     private NotificationAdjustmentPreferences parsePulledAtom(AtomsProto.Atom atom)

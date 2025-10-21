@@ -19307,7 +19307,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     public void testAppCannotUseReservedBundleChannels() throws Exception {
-        mService.mPreferencesHelper.createReservedChannel(mPkg, mUid, TYPE_NEWS);
+        mService.mPreferencesHelper.createReservedChannel(mPkg, mUid, TYPE_NEWS, "news");
         NotificationChannel news = mBinderService.getNotificationChannel(
                 mPkg, mContext.getUserId(), mPkg, NEWS_ID);
         assertThat(news).isNotNull();
