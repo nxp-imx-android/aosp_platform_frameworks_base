@@ -18,8 +18,8 @@
 package com.android.systemui.user.data.model
 
 /** Encapsulates the state of settings related to user switching. */
-data class UserSwitcherSettingsModel(
-    val isSimpleUserSwitcher: Boolean = false,
-    val isAddUsersFromLockscreen: Boolean = false,
-    val isUserSwitcherEnabled: Boolean = false,
+public data class UserSwitcherSettingsModel(
+    public val isSimpleUserSwitcher: Boolean = false,
+    public val isAddUsersFromLockscreen: Boolean = false,
+    public val isUserSwitcherEnabled: Boolean = false,
 )
