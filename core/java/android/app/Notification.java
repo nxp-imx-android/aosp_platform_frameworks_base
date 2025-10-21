@@ -12117,7 +12117,8 @@ public class Notification implements Parcelable
                     .text(null)
                     .hideAppName(true).hideSubText(true).hideTime(true)
                     .hideProgress(true)
-                    .hideRightIcon(true);
+                    .hideRightIcon(true)
+                    .needsExtraTextMargin(false);
             final TemplateBindResult result = new TemplateBindResult();
             final RemoteViews contentView = getStandardView(
                     mBuilder.getCompactHeadsUpMetricLayoutResource(), p, result);
@@ -12140,6 +12141,9 @@ public class Notification implements Parcelable
             final TemplateBindResult result = new TemplateBindResult();
             final RemoteViews contentView = getStandardView(
                     mBuilder.getHeadsUpMetricLayoutResource(), p, result);
+            // notification_main_column needs to have expander space.
+            // Otherwise,metric content and expander will overlap
+            result.mHeadingFullMarginSet.applyToView(contentView, R.id.notification_main_column);
             return bindMetricStyleMetrics(contentView, p, mMetrics, /* isExpandedView = */false);
         }
 
