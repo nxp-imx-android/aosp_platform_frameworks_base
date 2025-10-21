@@ -60,7 +60,7 @@ class DevicePolicyEngineTest {
     private val packageManager = mock<PackageManagerInternal>()
     private val usageStatsManagerInternal = mock<UsageStatsManagerInternal>()
     private val policyPathProvider = mock<PolicyPathProvider>()
-    private val policyDefinitionMap = PolicyDefinitionMap()
+    private var policyDefinitionMap = PolicyDefinitionMap()
 
     private val lock = Any()
     private lateinit var devicePolicyEngine: DevicePolicyEngine
@@ -103,6 +103,14 @@ class DevicePolicyEngineTest {
                 policyDefinitionMap,
             )
         devicePolicyEngine.load()
+    }
+
+    private fun usePolicyMap(
+        testingPolicyDefinitionMap: PolicyDefinitionMap = policyDefinitionMap
+    ) {
+        policyDefinitionMap = testingPolicyDefinitionMap
+
+        resetDevicePolicyEngine()
     }
 
     // Helper functions for test setup.
@@ -471,18 +479,25 @@ class DevicePolicyEngineTest {
         StringPolicySerializer()
     )
 
-    init {
-        policyDefinitionMap
-            .addGenericPolicyDefinitionForTesting(
-                stringPolicyDefinition.policyKey.identifier,
-                stringPolicyDefinition
-            )
-    }
+    private val stringListPolicyDefinition = PolicyDefinition<MutableList<String>>(
+        NoArgsPolicyKey("testStringListPolicy"),
+        MostRecent<MutableList<String>>(),
+        PolicyEnforcerCallbacks::noOp,
+        ListOfStringPolicySerializer()
+    )
+
+    val testingPolicyMap = PolicyDefinitionMap(
+        mapOf(
+            stringPolicyDefinition.policyKey.identifier to stringPolicyDefinition,
+            stringListPolicyDefinition.policyKey.identifier to stringListPolicyDefinition,
+        )
+    )
 
     @Test
     fun persistentPolicyStorage_shouldPersistEmptyString() {
         val emptyString = StringPolicyValue("")
 
+        usePolicyMap(testingPolicyMap)
 
         ensurePolicyIsSetLocally(
             stringPolicyDefinition,
@@ -501,6 +516,8 @@ class DevicePolicyEngineTest {
     fun persistentPolicyStorage_shouldPersistString() {
         val stringValue = StringPolicyValue("testValue")
 
+        usePolicyMap(testingPolicyMap)
+
         ensurePolicyIsSetLocally(
             stringPolicyDefinition,
             stringValue
@@ -514,24 +531,11 @@ class DevicePolicyEngineTest {
         assertThat(resolvedPolicy).isEqualTo(stringValue.value)
     }
 
-    private val stringListPolicyDefinition = PolicyDefinition<MutableList<String>>(
-        NoArgsPolicyKey("testStringListPolicy"),
-        MostRecent<MutableList<String>>(),
-        PolicyEnforcerCallbacks::noOp,
-        ListOfStringPolicySerializer()
-    )
-
-    init {
-        policyDefinitionMap
-            .addGenericPolicyDefinitionForTesting(
-                stringListPolicyDefinition.policyKey.identifier,
-                stringListPolicyDefinition
-            )
-    }
-
     @Test
     fun persistentPolicyStorage_shouldPersistEmptyList() {
         val emptyList = ListOfStringPolicyValue(listOf())
+
+        usePolicyMap(testingPolicyMap)
 
         ensurePolicyIsSetLocally(
             stringListPolicyDefinition,
@@ -552,6 +556,8 @@ class DevicePolicyEngineTest {
             "testValue1",
             "testValue2",
         ))
+
+        usePolicyMap(testingPolicyMap)
 
         ensurePolicyIsSetLocally(
             stringListPolicyDefinition,
@@ -575,6 +581,8 @@ class DevicePolicyEngineTest {
             "test\nNewline",
             "test=Equals",
         ))
+
+        usePolicyMap(testingPolicyMap)
 
         ensurePolicyIsSetLocally(
             stringListPolicyDefinition,
