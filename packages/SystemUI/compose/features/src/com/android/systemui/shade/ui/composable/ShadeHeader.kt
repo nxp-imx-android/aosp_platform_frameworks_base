@@ -17,6 +17,7 @@
 
 package com.android.systemui.shade.ui.composable
 
+import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.View
@@ -57,6 +58,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -238,7 +240,10 @@ fun ContentScope.CollapsedShadeHeader(
                             viewModel = viewModel,
                             showIcon = true,
                             useExpandedFormat = useExpandedTextFormat,
-                            modifier = Modifier.padding(vertical = 8.dp),
+                            modifier =
+                                if (LocalConfiguration.current.equals(ORIENTATION_PORTRAIT))
+                                    Modifier.padding(vertical = 8.dp)
+                                else Modifier,
                             textColor = textColor,
                         )
                     }
