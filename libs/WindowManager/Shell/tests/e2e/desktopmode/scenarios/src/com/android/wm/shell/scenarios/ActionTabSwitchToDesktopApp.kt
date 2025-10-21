@@ -35,7 +35,7 @@ import org.junit.Test
 @Ignore("Base Test Class")
 abstract class ActionTabSwitchToDesktopApp(
     val navigationMode: NavBar = NavBar.MODE_GESTURAL,
-    val rotation: Rotation = Rotation.ROTATION_0
+    val rotation: Rotation = Rotation.ROTATION_0,
 ) : TestScenarioBase(rotation, navigationMode) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
@@ -57,7 +57,8 @@ abstract class ActionTabSwitchToDesktopApp(
         wmHelper.StateSyncBuilder().withRecentsActivityVisible().waitForAndVerify()
         keyEventHelper.press(KeyEvent.KEYCODE_DPAD_RIGHT)
         keyEventHelper.press(KeyEvent.KEYCODE_TAB, KeyEvent.META_META_ON)
-        wmHelper.StateSyncBuilder()
+        wmHelper
+            .StateSyncBuilder()
             .withAppTransitionIdle()
             .withFreeformApp(desktopApp)
             .waitForAndVerify()

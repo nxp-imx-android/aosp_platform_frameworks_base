@@ -19,17 +19,17 @@ package com.android.wm.shell.flicker.keyboardshortcuts
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
-import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.FlickerBuilder
 import android.tools.flicker.FlickerTest
 import android.tools.flicker.FlickerTestFactory
+import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.DesktopModeBaseTest
 import com.android.wm.shell.flicker.utils.appWindowInsideDisplayBoundsAtEnd
 import com.android.wm.shell.flicker.utils.appWindowOnTopAtEnd
-import com.android.wm.shell.flicker.utils.layerBecomesVisible
 import com.android.wm.shell.flicker.utils.cascadingEffectAppliedAtEnd
+import com.android.wm.shell.flicker.utils.layerBecomesVisible
 import com.android.wm.shell.scenarios.OpenAppFromAllAppsUsingKeyboard
 import org.junit.Rule
 import org.junit.Test
@@ -45,8 +45,10 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @Postsubmit
-class OpenAppFromAllAppsUsingKeyboardFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {
-    inner class OpenAppFromAllAppsUsingKeyboardScenario : OpenAppFromAllAppsUsingKeyboard(rotation = flicker.scenario.startRotation)
+class OpenAppFromAllAppsUsingKeyboardFlickerTest(flicker: FlickerTest) :
+    DesktopModeBaseTest(flicker) {
+    inner class OpenAppFromAllAppsUsingKeyboardScenario :
+        OpenAppFromAllAppsUsingKeyboard(rotation = flicker.scenario.startRotation)
 
     @Rule
     @JvmField
@@ -57,29 +59,20 @@ class OpenAppFromAllAppsUsingKeyboardFlickerTest(flicker: FlickerTest) : Desktop
 
     override val transition: FlickerBuilder.() -> Unit
         get() = {
-            setup {
-                scenario.setup()
-            }
-            transitions {
-                scenario.openAppFromAllAppsUsingKeyboard()
-            }
-            teardown {
-                scenario.teardown()
-            }
+            setup { scenario.setup() }
+            transitions { scenario.openAppFromAllAppsUsingKeyboard() }
+            teardown { scenario.teardown() }
         }
 
     @Test
     fun appWindowInsideDisplayBoundsAtEnd() =
         flicker.appWindowInsideDisplayBoundsAtEnd(calculatorApp)
 
-    @Test
-    fun appWindowOnTopAtEnd() = flicker.appWindowOnTopAtEnd(calculatorApp)
+    @Test fun appWindowOnTopAtEnd() = flicker.appWindowOnTopAtEnd(calculatorApp)
 
-    @Test
-    fun layerBecomesVisible() = flicker.layerBecomesVisible(calculatorApp)
+    @Test fun layerBecomesVisible() = flicker.layerBecomesVisible(calculatorApp)
 
-    @Test
-    fun cascadingEffectAppliedAtEnd() = flicker.cascadingEffectAppliedAtEnd(calculatorApp)
+    @Test fun cascadingEffectAppliedAtEnd() = flicker.cascadingEffectAppliedAtEnd(calculatorApp)
 
     companion object {
         @Parameterized.Parameters(name = "{0}")

@@ -33,9 +33,8 @@ import org.junit.Ignore
 import org.junit.Test
 
 @Ignore("Test Base Class")
-abstract class OpenAppFromAllAppsUsingKeyboard(val rotation: Rotation = Rotation.ROTATION_0) : TestScenarioBase(
-    rotation
-) {
+abstract class OpenAppFromAllAppsUsingKeyboard(val rotation: Rotation = Rotation.ROTATION_0) :
+    TestScenarioBase(rotation) {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
@@ -60,7 +59,8 @@ abstract class OpenAppFromAllAppsUsingKeyboard(val rotation: Rotation = Rotation
             .searchForInput(calculatorApp.appName)
         keyEventHelper.press(KeyEvent.KEYCODE_DPAD_DOWN)
         keyEventHelper.press(KeyEvent.KEYCODE_ENTER)
-        wmHelper.StateSyncBuilder()
+        wmHelper
+            .StateSyncBuilder()
             .withFreeformApp(calculatorApp)
             .withAppTransitionIdle()
             .waitForAndVerify()

@@ -57,11 +57,10 @@ abstract class ChromeNewTabAtWindowLimit(val rotation: Rotation = Rotation.ROTAT
 
     @Test
     open fun openNewTab() {
-        tapl.launchedAppState.taskbar
-            .getAppIcon(browserAppHelper.appName)
-            .openDeepShortcutMenu()
+        tapl.launchedAppState.taskbar.getAppIcon(browserAppHelper.appName).openDeepShortcutMenu()
         browserAppHelper.clickNewTabInTaskbarContextMenu()
-        wmHelper.StateSyncBuilder()
+        wmHelper
+            .StateSyncBuilder()
             .withAppTransitionIdle()
             .withLayerVisible(browserAppHelper.componentMatcher)
             .withLayerVisible(mailAppHelper.componentMatcher)

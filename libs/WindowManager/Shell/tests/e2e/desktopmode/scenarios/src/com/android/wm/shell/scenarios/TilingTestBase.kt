@@ -32,9 +32,8 @@ import org.junit.Ignore
 import org.junit.Test
 
 @Ignore("Test Base Class")
-abstract class TilingTestBase(
-    private val rotation: Rotation = Rotation.ROTATION_0
-) : TestScenarioBase(rotation) {
+abstract class TilingTestBase(private val rotation: Rotation = Rotation.ROTATION_0) :
+    TestScenarioBase(rotation) {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
@@ -83,8 +82,8 @@ abstract class TilingTestBase(
 
     @Test
     open fun tilingBrokenWhenDraggingHeaderTest() {
-       snapTileAppsWithDrag()
-       dragLeftAppHeaderToRight()
+        snapTileAppsWithDrag()
+        dragLeftAppHeaderToRight()
     }
 
     @Test

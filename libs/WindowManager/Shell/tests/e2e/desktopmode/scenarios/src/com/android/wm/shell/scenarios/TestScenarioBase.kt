@@ -44,8 +44,7 @@ abstract class TestScenarioBase(
     @get:Rule val screenRecordRule = ScreenRecordRule(/* keepTestLevelRecordingOnSuccess= */ false)
     private val tapl = LauncherInstrumentation()
 
-    @Rule
-    @JvmField val testSetupRule = Utils.testSetupRuleFunctional(navigationMode, rotation)
+    @Rule @JvmField val testSetupRule = Utils.testSetupRuleFunctional(navigationMode, rotation)
 
     @Before
     fun baseSetup() {

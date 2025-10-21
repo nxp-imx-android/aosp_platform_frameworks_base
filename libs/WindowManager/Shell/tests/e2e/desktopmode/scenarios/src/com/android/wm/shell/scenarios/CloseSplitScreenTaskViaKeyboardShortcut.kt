@@ -40,9 +40,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-/**
- * Base scenario test for closing a split screen task via the keyboard shortcut.
- */
+/** Base scenario test for closing a split screen task via the keyboard shortcut. */
 @RequiresFlagsEnabled(
     Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
     Flags.FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT,
@@ -57,7 +55,8 @@ abstract class CloseSplitScreenTaskViaKeyboardShortcut {
     private val keyEventHelper = KeyEventHelper(getInstrumentation())
 
     @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-    @get:Rule(order = 1) val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
+    @get:Rule(order = 1)
+    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
 
     @Before
     fun setup() {
@@ -83,26 +82,14 @@ abstract class CloseSplitScreenTaskViaKeyboardShortcut {
         // Focus on the primary app.
         primaryApp.bringToFront(wmHelper, device)
 
-        keyEventHelper.press(
-            KeyEvent.KEYCODE_W,
-            KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON
-        )
-        wmHelper
-            .StateSyncBuilder()
-            .withWindowSurfaceDisappeared(primaryApp)
-            .waitForAndVerify()
+        keyEventHelper.press(KeyEvent.KEYCODE_W, KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON)
+        wmHelper.StateSyncBuilder().withWindowSurfaceDisappeared(primaryApp).waitForAndVerify()
 
         // Focus on the secondary app.
         secondaryApp.bringToFront(wmHelper, device)
 
-        keyEventHelper.press(
-            KeyEvent.KEYCODE_W,
-            KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON
-        )
-        wmHelper
-            .StateSyncBuilder()
-            .withWindowSurfaceDisappeared(secondaryApp)
-            .waitForAndVerify()
+        keyEventHelper.press(KeyEvent.KEYCODE_W, KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON)
+        wmHelper.StateSyncBuilder().withWindowSurfaceDisappeared(secondaryApp).waitForAndVerify()
     }
 
     @After

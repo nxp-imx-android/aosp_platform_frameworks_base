@@ -37,18 +37,19 @@ import org.junit.Test
 abstract class SnapResizeAppWindowWithKeyboardShortcuts(
     private val toLeft: Boolean = true,
     isResizable: Boolean = true,
-    val rotation: Rotation = Rotation.ROTATION_0
+    val rotation: Rotation = Rotation.ROTATION_0,
 ) : TestScenarioBase(rotation) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val keyEventHelper = KeyEventHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
-    val testApp = if (isResizable) {
-        DesktopModeAppHelper(SimpleAppHelper(instrumentation))
-    } else {
-        DesktopModeAppHelper(NonResizeableAppHelper(instrumentation))
-    }
+    val testApp =
+        if (isResizable) {
+            DesktopModeAppHelper(SimpleAppHelper(instrumentation))
+        } else {
+            DesktopModeAppHelper(NonResizeableAppHelper(instrumentation))
+        }
 
     @Before
     fun setup() {
@@ -58,12 +59,7 @@ abstract class SnapResizeAppWindowWithKeyboardShortcuts(
 
     @Test
     open fun snapResizeAppWindowWithKeyboardShortcuts() {
-        testApp.snapResizeWithKeyboard(
-            wmHelper,
-            instrumentation.context,
-            keyEventHelper,
-            toLeft,
-        )
+        testApp.snapResizeWithKeyboard(wmHelper, instrumentation.context, keyEventHelper, toLeft)
     }
 
     @After

@@ -35,7 +35,7 @@ abstract class ResizeAppWithCornerResize(
     val rotation: Rotation = Rotation.ROTATION_0,
     val horizontalChange: Int = 200,
     val verticalChange: Int = -200,
-    val appProperty: AppProperty = AppProperty.STANDARD
+    val appProperty: AppProperty = AppProperty.STANDARD,
 ) : TestScenarioBase(rotation) {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
@@ -61,7 +61,7 @@ abstract class ResizeAppWithCornerResize(
             device,
             DesktopModeAppHelper.Corners.RIGHT_TOP,
             horizontalChange,
-            verticalChange
+            verticalChange,
         )
     }
 

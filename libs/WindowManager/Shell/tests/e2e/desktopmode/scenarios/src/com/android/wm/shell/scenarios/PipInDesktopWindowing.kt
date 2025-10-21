@@ -35,9 +35,8 @@ import org.junit.Test
 
 /** Base scenario tests for PiP in Desktop Windowing */
 @Ignore("Test Base Class")
-abstract class PipInDesktopWindowing(
-    val rotation: Rotation = Rotation.ROTATION_0
-) : TestScenarioBase(rotation) {
+abstract class PipInDesktopWindowing(val rotation: Rotation = Rotation.ROTATION_0) :
+    TestScenarioBase(rotation) {
     private val instrumentation: Instrumentation = getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)

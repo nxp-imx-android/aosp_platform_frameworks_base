@@ -31,9 +31,8 @@ import org.junit.Ignore
 import org.junit.Test
 
 @Ignore("Base Test Class")
-abstract class CloseAllAppsWithAppHeaderExit (
-    val rotation: Rotation = Rotation.ROTATION_0
-) : TestScenarioBase(rotation) {
+abstract class CloseAllAppsWithAppHeaderExit(val rotation: Rotation = Rotation.ROTATION_0) :
+    TestScenarioBase(rotation) {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
@@ -50,7 +49,7 @@ abstract class CloseAllAppsWithAppHeaderExit (
         appsInZOrder.add(testApp)
 
         mailApp.launchViaIntent(wmHelper)
-        appsInZOrder.add( mailApp)
+        appsInZOrder.add(mailApp)
 
         nonResizeableApp.launchViaIntent(wmHelper)
         appsInZOrder.add(nonResizeableApp)
@@ -61,7 +60,8 @@ abstract class CloseAllAppsWithAppHeaderExit (
         nonResizeableApp.closeDesktopApp(wmHelper, device)
         mailApp.closeDesktopApp(wmHelper, device)
         testApp.closeDesktopApp(wmHelper, device)
-        wmHelper.StateSyncBuilder()
+        wmHelper
+            .StateSyncBuilder()
             .withAppTransitionIdle()
             .withHomeActivityVisible()
             .waitForAndVerify()

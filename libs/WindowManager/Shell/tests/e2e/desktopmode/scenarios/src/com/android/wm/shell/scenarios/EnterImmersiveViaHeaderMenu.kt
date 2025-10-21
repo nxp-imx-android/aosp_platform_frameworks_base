@@ -23,8 +23,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.ImmersiveAppHelper
-import org.junit.Before
 import org.junit.After
+import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 
@@ -39,7 +39,7 @@ abstract class EnterImmersiveViaHeaderMenu(val rotation: Rotation = Rotation.ROT
     val immersiveApp = DesktopModeAppHelper(immersiveAppHelper)
 
     @Before
-    fun setup(){
+    fun setup() {
         immersiveAppHelper.launchViaIntent(wmHelper)
         immersiveApp.enterDesktopModeFromAppHandleMenu(wmHelper, device, true)
     }
