@@ -465,8 +465,9 @@ private fun CutoutAwareShadeHeader(
         check(measurables[1].size == 1)
 
         val screenWidth = constraints.maxWidth
+        val width = max((screenWidth - cutoutWidth) / 2, 0)
         val height = max(cutoutHeight + (cutoutTop * 2), statusBarHeight.roundToPx())
-        val childConstraints = Constraints.fixed((screenWidth - cutoutWidth) / 2, height)
+        val childConstraints = Constraints.fixed(width, height)
 
         val startMeasurable = measurables[0][0]
         val endMeasurable = measurables[1][0]
