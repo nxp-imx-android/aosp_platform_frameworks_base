@@ -66,9 +66,9 @@ flag {
 }
 
 flag {
-    name: "enable_task_continuity"
+    name: "task_continuity"
     is_exported: true
-    namespace: "desktop_better_together"
+    namespace: "companion"
     description: "Enable task continuity API"
     bug: "400970610"
 }

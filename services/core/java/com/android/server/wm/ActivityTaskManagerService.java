@@ -4001,7 +4001,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     @VisibleForTesting
     public void requestHandoffTaskData(int taskId, IHandoffTaskDataReceiver receiver) {
         synchronized (mGlobalLock) {
-            if (!android.companion.Flags.enableTaskContinuity()) {
+            if (!android.companion.Flags.taskContinuity()) {
                 Slog.w(TAG, "Handoff is not supported on this device.");
                 mH.post(() -> {
                     notifyHandoffTaskDataRequestFailed(
@@ -4938,7 +4938,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     }
 
     void notifyHandoffEnablementChanged(ActivityRecord activity, boolean isHandoffEnabled) {
-        if (!android.companion.Flags.enableTaskContinuity()) {
+        if (!android.companion.Flags.taskContinuity()) {
             return;
         }
 
@@ -6699,7 +6699,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
         @Override
         public boolean isHandoffEnabledForTask(int taskId) {
-            if (!android.companion.Flags.enableTaskContinuity()) {
+            if (!android.companion.Flags.taskContinuity()) {
                 return false;
             }
             synchronized (mGlobalLock) {
@@ -6715,7 +6715,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
         @Override
         public void registerHandoffEnablementListener(@NonNull HandoffEnablementListener listener) {
-            if (!android.companion.Flags.enableTaskContinuity()) {
+            if (!android.companion.Flags.taskContinuity()) {
                 return;
             }
 
@@ -6726,7 +6726,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         public void unregisterHandoffEnablementListener(
             @NonNull HandoffEnablementListener listener) {
 
-            if (!android.companion.Flags.enableTaskContinuity()) {
+            if (!android.companion.Flags.taskContinuity()) {
                 return;
             }
 

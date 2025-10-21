@@ -275,7 +275,7 @@ package android {
     field public static final String MODIFY_AUDIO_SETTINGS_PRIVILEGED = "android.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED";
     field public static final String MODIFY_CELL_BROADCASTS = "android.permission.MODIFY_CELL_BROADCASTS";
     field public static final String MODIFY_DAY_NIGHT_MODE = "android.permission.MODIFY_DAY_NIGHT_MODE";
-    field @FlaggedApi("android.companion.enable_task_continuity") public static final String MODIFY_HANDOFF_SETTINGS = "android.permission.MODIFY_HANDOFF_SETTINGS";
+    field @FlaggedApi("android.companion.task_continuity") public static final String MODIFY_HANDOFF_SETTINGS = "android.permission.MODIFY_HANDOFF_SETTINGS";
     field @Deprecated public static final String MODIFY_NETWORK_ACCOUNTING = "android.permission.MODIFY_NETWORK_ACCOUNTING";
     field public static final String MODIFY_PARENTAL_CONTROLS = "android.permission.MODIFY_PARENTAL_CONTROLS";
     field public static final String MODIFY_QUIET_MODE = "android.permission.MODIFY_QUIET_MODE";
@@ -333,7 +333,7 @@ package android {
     field public static final String READ_DREAM_STATE = "android.permission.READ_DREAM_STATE";
     field @FlaggedApi("com.android.graphics.surfaceflinger.flags.readback_screenshot") public static final String READ_FRAME_BUFFER = "android.permission.READ_FRAME_BUFFER";
     field public static final String READ_GLOBAL_APP_SEARCH_DATA = "android.permission.READ_GLOBAL_APP_SEARCH_DATA";
-    field @FlaggedApi("android.companion.enable_task_continuity") public static final String READ_HANDOFF_SETTINGS = "android.permission.READ_HANDOFF_SETTINGS";
+    field @FlaggedApi("android.companion.task_continuity") public static final String READ_HANDOFF_SETTINGS = "android.permission.READ_HANDOFF_SETTINGS";
     field @FlaggedApi("android.content.pm.get_resolved_apk_path") public static final String READ_INSTALLED_SESSION_PATHS = "android.permission.READ_INSTALLED_SESSION_PATHS";
     field public static final String READ_INSTALL_SESSIONS = "android.permission.READ_INSTALL_SESSIONS";
     field @FlaggedApi("android.security.afl_api") public static final String READ_INTRUSION_DETECTION_STATE = "android.permission.READ_INTRUSION_DETECTION_STATE";
@@ -345,7 +345,7 @@ package android {
     field public static final String READ_PRINT_SERVICE_RECOMMENDATIONS = "android.permission.READ_PRINT_SERVICE_RECOMMENDATIONS";
     field public static final String READ_PRIVILEGED_PHONE_STATE = "android.permission.READ_PRIVILEGED_PHONE_STATE";
     field public static final String READ_PROJECTION_STATE = "android.permission.READ_PROJECTION_STATE";
-    field @FlaggedApi("android.companion.enable_task_continuity") public static final String READ_REMOTE_TASKS = "android.permission.READ_REMOTE_TASKS";
+    field @FlaggedApi("android.companion.task_continuity") public static final String READ_REMOTE_TASKS = "android.permission.READ_REMOTE_TASKS";
     field public static final String READ_RESTRICTED_STATS = "android.permission.READ_RESTRICTED_STATS";
     field public static final String READ_RUNTIME_PROFILES = "android.permission.READ_RUNTIME_PROFILES";
     field public static final String READ_SAFETY_CENTER_STATUS = "android.permission.READ_SAFETY_CENTER_STATUS";
@@ -379,7 +379,7 @@ package android {
     field public static final String REPORT_USAGE_STATS = "android.permission.REPORT_USAGE_STATS";
     field @Deprecated public static final String REQUEST_NETWORK_SCORES = "android.permission.REQUEST_NETWORK_SCORES";
     field public static final String REQUEST_NOTIFICATION_ASSISTANT_SERVICE = "android.permission.REQUEST_NOTIFICATION_ASSISTANT_SERVICE";
-    field @FlaggedApi("android.companion.enable_task_continuity") public static final String REQUEST_TASK_HANDOFF = "android.permission.REQUEST_TASK_HANDOFF";
+    field @FlaggedApi("android.companion.task_continuity") public static final String REQUEST_TASK_HANDOFF = "android.permission.REQUEST_TASK_HANDOFF";
     field public static final String RESET_PASSWORD = "android.permission.RESET_PASSWORD";
     field @FlaggedApi("android.content.pm.uid_based_provider_lookup") public static final String RESOLVE_COMPONENT_FOR_UID = "android.permission.RESOLVE_COMPONENT_FOR_UID";
     field public static final String RESTART_WIFI_SUBSYSTEM = "android.permission.RESTART_WIFI_SUBSYSTEM";
@@ -3586,7 +3586,7 @@ package android.companion {
 
 package android.companion.datatransfer.continuity {
 
-  @FlaggedApi("android.companion.enable_task_continuity") public final class RemoteTask implements android.os.Parcelable {
+  @FlaggedApi("android.companion.task_continuity") public final class RemoteTask implements android.os.Parcelable {
     method public int describeContents();
     method public int getDeviceId();
     method @Nullable public android.graphics.drawable.Icon getIcon();
@@ -3610,7 +3610,7 @@ package android.companion.datatransfer.continuity {
     method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setSourceDeviceName(@NonNull String);
   }
 
-  @FlaggedApi("android.companion.enable_task_continuity") public class TaskContinuityManager {
+  @FlaggedApi("android.companion.task_continuity") public class TaskContinuityManager {
     method @RequiresPermission(android.Manifest.permission.MODIFY_HANDOFF_SETTINGS) public void enableHandoffForDevice(boolean);
     method @RequiresPermission(android.Manifest.permission.READ_HANDOFF_SETTINGS) public void registerHandoffFeatureStateListener(@NonNull java.util.concurrent.Executor, @NonNull android.companion.datatransfer.continuity.TaskContinuityManager.HandoffFeatureStateListener);
     method @RequiresPermission(android.Manifest.permission.READ_REMOTE_TASKS) public void registerRemoteTaskListener(@NonNull java.util.concurrent.Executor, @NonNull android.companion.datatransfer.continuity.TaskContinuityManager.RemoteTaskListener);

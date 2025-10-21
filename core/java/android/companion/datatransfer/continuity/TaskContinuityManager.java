@@ -51,7 +51,7 @@ import java.util.Objects;
  *
  * @hide
  */
-@FlaggedApi(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+@FlaggedApi(android.companion.Flags.FLAG_TASK_CONTINUITY)
 @SystemService(Context.TASK_CONTINUITY_SERVICE)
 @SystemApi
 public class TaskContinuityManager {

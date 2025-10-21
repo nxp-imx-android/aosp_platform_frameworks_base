@@ -4562,7 +4562,7 @@ package android.app {
     method @Deprecated public final boolean isChild();
     method public boolean isDestroyed();
     method public boolean isFinishing();
-    method @FlaggedApi("android.companion.enable_task_continuity") public final boolean isHandoffEnabled();
+    method @FlaggedApi("android.companion.task_continuity") public final boolean isHandoffEnabled();
     method public boolean isImmersive();
     method public boolean isInMultiWindowMode();
     method public boolean isInPictureInPictureMode();
@@ -4606,7 +4606,7 @@ package android.app {
     method public void onEnterAnimationComplete();
     method public boolean onGenericMotionEvent(android.view.MotionEvent);
     method public void onGetDirectActions(@NonNull android.os.CancellationSignal, @NonNull java.util.function.Consumer<java.util.List<android.app.DirectAction>>);
-    method @FlaggedApi("android.companion.enable_task_continuity") @Nullable public android.app.HandoffActivityData onHandoffActivityDataRequested(@NonNull android.app.HandoffActivityDataRequestInfo);
+    method @FlaggedApi("android.companion.task_continuity") @Nullable public android.app.HandoffActivityData onHandoffActivityDataRequested(@NonNull android.app.HandoffActivityDataRequestInfo);
     method public boolean onKeyDown(int, android.view.KeyEvent);
     method public boolean onKeyLongPress(int, android.view.KeyEvent);
     method public boolean onKeyMultiple(int, int, android.view.KeyEvent);
@@ -4708,7 +4708,7 @@ package android.app {
     method public final void setFeatureDrawableResource(int, @DrawableRes int);
     method public final void setFeatureDrawableUri(int, android.net.Uri);
     method public void setFinishOnTouchOutside(boolean);
-    method @FlaggedApi("android.companion.enable_task_continuity") public final void setHandoffEnabled(boolean);
+    method @FlaggedApi("android.companion.task_continuity") public final void setHandoffEnabled(boolean);
     method public void setImmersive(boolean);
     method public void setInheritShowWhenLocked(boolean);
     method public void setIntent(android.content.Intent);
@@ -6205,7 +6205,7 @@ package android.app {
     method public void setRequestedApplicationGrammaticalGender(int);
   }
 
-  @FlaggedApi("android.companion.enable_task_continuity") public final class HandoffActivityData implements android.os.Parcelable {
+  @FlaggedApi("android.companion.task_continuity") public final class HandoffActivityData implements android.os.Parcelable {
     method @NonNull public static android.app.HandoffActivityData createWebHandoff(@NonNull android.net.Uri);
     method public int describeContents();
     method @Nullable public android.content.ComponentName getComponentName();
@@ -6215,14 +6215,14 @@ package android.app {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.HandoffActivityData> CREATOR;
   }
 
-  @FlaggedApi("android.companion.enable_task_continuity") public static final class HandoffActivityData.Builder {
+  @FlaggedApi("android.companion.task_continuity") public static final class HandoffActivityData.Builder {
     ctor public HandoffActivityData.Builder(@NonNull android.content.ComponentName);
     method @NonNull public android.app.HandoffActivityData build();
     method @NonNull public android.app.HandoffActivityData.Builder setExtras(@NonNull android.os.PersistableBundle);
     method @NonNull public android.app.HandoffActivityData.Builder setFallbackUri(@Nullable android.net.Uri);
   }
 
-  @FlaggedApi("android.companion.enable_task_continuity") public final class HandoffActivityDataRequestInfo {
+  @FlaggedApi("android.companion.task_continuity") public final class HandoffActivityDataRequestInfo {
     ctor public HandoffActivityDataRequestInfo(boolean);
     method public boolean isActiveRequest();
   }
@@ -10466,7 +10466,7 @@ package android.companion {
     field public static final String EXTRA_ASSOCIATION = "android.companion.extra.ASSOCIATION";
     field @Deprecated public static final String EXTRA_DEVICE = "android.companion.extra.DEVICE";
     field public static final int FLAG_CALL_METADATA = 1; // 0x1
-    field @FlaggedApi("android.companion.enable_task_continuity") public static final int FLAG_TASK_CONTINUITY = 2; // 0x2
+    field @FlaggedApi("android.companion.task_continuity") public static final int FLAG_TASK_CONTINUITY = 2; // 0x2
     field public static final int RESULT_CANCELED = 0; // 0x0
     field public static final int RESULT_DISCOVERY_TIMEOUT = 2; // 0x2
     field public static final int RESULT_INTERNAL_ERROR = 3; // 0x3

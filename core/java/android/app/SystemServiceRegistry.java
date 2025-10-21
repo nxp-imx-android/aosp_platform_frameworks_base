@@ -1508,7 +1508,7 @@ public final class SystemServiceRegistry {
             }
         });
 
-        if (android.companion.Flags.enableTaskContinuity()) {
+        if (android.companion.Flags.taskContinuity()) {
             registerService(Context.TASK_CONTINUITY_SERVICE, TaskContinuityManager.class,
                     new CachedServiceFetcher<TaskContinuityManager>() {
                         @Override

@@ -7734,7 +7734,7 @@ public class Activity extends ContextThemeWrapper
      *
      * @return Whether Handoff is enabled for the Activity
      */
-    @FlaggedApi(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @FlaggedApi(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public final boolean isHandoffEnabled() {
         return ActivityClient.getInstance().isHandoffEnabled(mToken);
     }
@@ -7749,7 +7749,7 @@ public class Activity extends ContextThemeWrapper
      *
      * @param handoffEnabled Whether Handoff should be enabled for this Activity.
      */
-    @FlaggedApi(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @FlaggedApi(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public final void setHandoffEnabled(boolean handoffEnabled) {
         // TODO (b/400970610): Implement Full Task Recreation for Handoff.
         ActivityClient.getInstance().setHandoffEnabled(
@@ -10180,7 +10180,7 @@ public class Activity extends ContextThemeWrapper
      * @param requestInfo the request info for the activity data.
      * @return the activity data for handoff.
      */
-    @FlaggedApi(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @FlaggedApi(android.companion.Flags.FLAG_TASK_CONTINUITY)
     @Nullable
     public HandoffActivityData onHandoffActivityDataRequested(
         @NonNull HandoffActivityDataRequestInfo requestInfo) {
