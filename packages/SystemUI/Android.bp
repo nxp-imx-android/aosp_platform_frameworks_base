@@ -413,7 +413,6 @@ filegroup {
 android_library {
     name: "SystemUI-res",
     use_resource_processor: true,
-    enable_ksp: true,
     resource_dirs: [
         "res-product",
         "res-keyguard",
@@ -597,9 +596,8 @@ android_library {
         "displaylib",
         "aconfig_settings_flags_lib",
     ],
-    enable_ksp: true,
-    annotation_processor_flags: [
-        "room.schemaLocation=frameworks/base/packages/SystemUI/schemas",
+    javacflags: [
+        "-Aroom.schemaLocation=frameworks/base/packages/SystemUI/schemas",
     ],
 }
 
@@ -623,12 +621,11 @@ android_library {
         "com.android.systemui.pods-api-aosp-handheld",
         "com.android.systemui.pods-impl-aosp-handheld",
     ],
-    enable_ksp: true,
-    annotation_processor_flags: [
-        "dagger.fastInit=enabled",
-        "dagger.explicitBindingConflictsWithInject=ERROR",
-        "dagger.strictMultibindingValidation=enabled",
-        "dagger.useBindingGraphFix=ENABLED",
+    javacflags: [
+        "-Adagger.fastInit=enabled",
+        "-Adagger.explicitBindingConflictsWithInject=ERROR",
+        "-Adagger.strictMultibindingValidation=enabled",
+        "-Adagger.useBindingGraphFix=ENABLED",
     ],
     manifest: "AndroidManifest.xml",
 }
@@ -1117,7 +1114,6 @@ android_app {
         "SystemUI-application",
     ],
     resource_dirs: [],
-    enable_ksp: true,
 
     use_resource_processor: true,
     platform_apis: true,
