@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <native_service.h>
+#include <android/native_service.h>
 #include <native_service_private.h>
 
 void ANativeService_setOnBindCallback(ANativeService* service,

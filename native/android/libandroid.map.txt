@@ -431,17 +431,13 @@ LIBANDROID {
     ASessionCreationConfig_setGraphicsPipeline; # introduced=36
     ASessionCreationConfig_setNativeSurfaces; # introduced=36
     ASessionCreationConfig_setUseAutoTiming; # introduced=36
+    ANativeService_setOnBindCallback; # introduced=37
+    ANativeService_setOnUnbindCallback; # introduced=37
+    ANativeService_setOnRebindCallback; # introduced=37
+    ANativeService_setOnDestroyCallback; # introduced=37
+    ANativeService_setOnTrimMemoryCallback; # introduced=37
   local:
     *;
-};
-
-LIBANDROID_DRAFT { # draft
-  global:
-    ANativeService_setOnBindCallback;
-    ANativeService_setOnUnbindCallback;
-    ANativeService_setOnRebindCallback;
-    ANativeService_setOnDestroyCallback;
-    ANativeService_setOnTrimMemoryCallback;
 };
 
 LIBANDROID_PLATFORM {
