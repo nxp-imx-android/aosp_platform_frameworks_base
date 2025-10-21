@@ -80,7 +80,6 @@ import com.android.wm.shell.util.StubTransaction
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.DefaultWindowDecorationActions
 import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.assertFalse
-import junit.framework.Assert.assertNotNull
 import junit.framework.Assert.assertTrue
 import junit.framework.Assert.fail
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -269,15 +268,38 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 windowingMode = WINDOWING_MODE_FREEFORM,
                 onCaptionButtonClickListener = onClickListenerCaptor,
             )
+        val taskInfo = decor.taskInfo
 
         val view = mock<View> { on { id } doReturn R.id.close_window }
-        whenever(mockDesktopTasksController.closeTask(decor.taskInfo))
+        whenever(mockDesktopTasksController.closeTask(taskInfo))
             .thenReturn(DesktopTasksController.CloseTaskResult.CLOSED_DESKTOP)
 
         onClickListenerCaptor.firstValue.onClick(view)
 
-        verify(mockDesktopTasksController).getNextFocusedTask(decor.taskInfo)
-        verify(mockDesktopTasksController).closeTask(decor.taskInfo)
+        verify(mockDesktopTasksController)
+            .getTopTask(taskInfo.displayId, taskInfo.userId, taskInfo.taskId)
+        verify(mockDesktopTasksController).closeTask(taskInfo)
+    }
+
+    @Test
+    fun testCloseButtonInFreeformPinned_closePinnedWindow() {
+        val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
+        val decor =
+            createOpenTaskDecoration(
+                windowingMode = WINDOWING_MODE_FREEFORM,
+                onCaptionButtonClickListener = onClickListenerCaptor,
+            )
+        val taskInfo = decor.taskInfo
+
+        val view = mock<View> { on { id } doReturn R.id.close_window }
+        whenever(mockDesktopTasksController.closeTask(taskInfo))
+            .thenReturn(DesktopTasksController.CloseTaskResult.NOT_CLOSED_UNKNOWN_TASK)
+        whenever(mockPinnedLayerController.closeTask(taskInfo)).thenReturn(true)
+
+        onClickListenerCaptor.firstValue.onClick(view)
+
+        verify(mockDesktopTasksController).getTopTask(taskInfo.displayId, taskInfo.userId)
+        verify(mockPinnedLayerController).closeTask(decor.taskInfo)
     }
 
     @Test
@@ -289,14 +311,15 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 windowingMode = WINDOWING_MODE_FREEFORM,
                 onCaptionButtonClickListener = onClickListenerCaptor,
             )
+        val taskInfo = decor.taskInfo
 
         val view = mock<View> { on { id } doReturn R.id.minimize_window }
 
         onClickListenerCaptor.firstValue.onClick(view)
 
-        verify(mockDesktopTasksController).getNextFocusedTask(decor.taskInfo)
         verify(mockDesktopTasksController)
-            .minimizeTask(decor.taskInfo, MinimizeReason.MINIMIZE_BUTTON)
+            .getTopTask(taskInfo.displayId, taskInfo.userId, taskInfo.taskId)
+        verify(mockDesktopTasksController).minimizeTask(taskInfo, MinimizeReason.MINIMIZE_BUTTON)
     }
 
     @Test

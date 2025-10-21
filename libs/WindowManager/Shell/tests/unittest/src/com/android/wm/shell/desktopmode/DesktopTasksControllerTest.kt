@@ -696,27 +696,75 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    fun getNextFocusedTask_onlyClosingTask_returnInvalidId() {
-        val closingTask = setUpFreeformTask()
-        assertThat(controller.getNextFocusedTask(closingTask)).isEqualTo(INVALID_TASK_ID)
+    fun getTopTask_oneTask_excludingTaskId_returnInvalidId() {
+        val displayId = 7
+        val deskId = displayId
+        val userId = taskRepository.userId
+        taskRepository.addDesk(displayId, deskId)
+
+        val task = setUpFreeformTask(displayId = displayId, deskId = deskId)
+        taskRepository.setActiveDesk(displayId, deskId)
+
+        assertThat(controller.getTopTask(displayId, userId, task.taskId)).isEqualTo(INVALID_TASK_ID)
     }
 
     @Test
-    fun getNextFocusedTask_oneNonClosingTask_returnNextFocusedTask() {
-        val otherTask = setUpFreeformTask()
-        val closingTask = setUpFreeformTask()
-        assertThat(controller.getNextFocusedTask(closingTask)).isEqualTo(otherTask.taskId)
+    fun getTopTask_twoTasks_returnTopTask() {
+        val displayId = 7
+        val deskId = displayId
+        val userId = taskRepository.userId
+        taskRepository.addDesk(displayId, deskId)
+
+        val otherTask = setUpFreeformTask(displayId = displayId, deskId = deskId)
+        val task = setUpFreeformTask(displayId = displayId, deskId = deskId)
+        taskRepository.setActiveDesk(displayId, deskId)
+
+        assertThat(controller.getTopTask(displayId, userId, task.taskId))
+            .isEqualTo(otherTask.taskId)
+        assertThat(controller.getTopTask(displayId, userId)).isEqualTo(task.taskId)
     }
 
     @Test
-    fun getNextFocusedTask_multipleNonClosingTask_returnNextFocusedTask() {
-        val otherTask = setUpFreeformTask()
-        val otherTask2 = setUpFreeformTask()
-        val otherTask3 = setUpFreeformTask()
-        val closingTask = setUpFreeformTask()
-        assertThat(controller.getNextFocusedTask(closingTask)).isNotEqualTo(otherTask.taskId)
-        assertThat(controller.getNextFocusedTask(closingTask)).isNotEqualTo(otherTask2.taskId)
-        assertThat(controller.getNextFocusedTask(closingTask)).isEqualTo(otherTask3.taskId)
+    fun getTopTask_multipleTasks_returnTopTask() {
+        val displayId = 7
+        val deskId = displayId
+        val userId = taskRepository.userId
+        taskRepository.addDesk(displayId, deskId)
+
+        val otherTask = setUpFreeformTask(displayId = displayId, deskId = deskId)
+        val otherTask2 = setUpFreeformTask(displayId = displayId, deskId = deskId)
+        val otherTask3 = setUpFreeformTask(displayId = displayId, deskId = deskId)
+        val task = setUpFreeformTask(displayId = displayId, deskId = deskId)
+        taskRepository.setActiveDesk(displayId, deskId)
+
+        assertThat(controller.getTopTask(displayId, userId, task.taskId))
+            .isNotEqualTo(otherTask.taskId)
+        assertThat(controller.getTopTask(displayId, userId, task.taskId))
+            .isNotEqualTo(otherTask2.taskId)
+        assertThat(controller.getTopTask(displayId, userId, task.taskId)).isNotEqualTo(task.taskId)
+        assertThat(controller.getTopTask(displayId, userId, task.taskId))
+            .isEqualTo(otherTask3.taskId)
+
+        assertThat(controller.getTopTask(displayId, userId)).isNotEqualTo(otherTask.taskId)
+        assertThat(controller.getTopTask(displayId, userId)).isNotEqualTo(otherTask2.taskId)
+        assertThat(controller.getTopTask(displayId, userId)).isNotEqualTo(otherTask3.taskId)
+        assertThat(controller.getTopTask(displayId, userId)).isEqualTo(task.taskId)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun getTopTask_tasksOnInactiveDesk_noActiveDeskOnDisplay_returnInvalidId() {
+        val displayId = 7
+        val userId = taskRepository.userId
+        val inactiveDeskId = 19
+        taskRepository.addDesk(displayId, inactiveDeskId)
+
+        val otherTask = setUpFreeformTask(displayId = displayId, deskId = inactiveDeskId)
+        val task = setUpFreeformTask(displayId = displayId, deskId = inactiveDeskId)
+        taskRepository.setDeskInactive(inactiveDeskId)
+
+        assertThat(controller.getTopTask(displayId, userId, task.taskId)).isEqualTo(INVALID_TASK_ID)
+        assertThat(controller.getTopTask(displayId, userId)).isEqualTo(INVALID_TASK_ID)
     }
 
     @Test
