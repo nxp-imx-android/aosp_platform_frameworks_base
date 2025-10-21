@@ -32,7 +32,6 @@ import static android.view.WindowManager.fixScale;
 import static android.window.TransitionInfo.FLAGS_IS_NON_APP_WINDOW;
 import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
 import static android.window.TransitionInfo.FLAG_IS_BEHIND_STARTING_WINDOW;
-import static android.window.TransitionInfo.FLAG_IS_DISPLAY;
 import static android.window.TransitionInfo.FLAG_IS_OCCLUDED;
 import static android.window.TransitionInfo.FLAG_IS_WALLPAPER;
 import static android.window.TransitionInfo.FLAG_NO_ANIMATION;
@@ -41,8 +40,8 @@ import static android.window.TransitionInfo.FLAG_STARTING_WINDOW_TRANSFER_RECIPI
 import static com.android.window.flags.Flags.unifyShellBinders;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TRANSITIONS;
 import static com.android.wm.shell.shared.TransitionUtil.FLAG_IS_DESKTOP_WALLPAPER_ACTIVITY;
-import static com.android.wm.shell.shared.TransitionUtil.isClosingType;
 import static com.android.wm.shell.shared.TransitionUtil.isOpeningType;
+import static com.android.wm.shell.shared.TransitionUtil.setUpSurface;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -96,7 +95,6 @@ import com.android.wm.shell.shared.IHomeTransitionListener;
 import com.android.wm.shell.shared.IShellTransitions;
 import com.android.wm.shell.shared.ShellTransitions;
 import com.android.wm.shell.shared.TransactionPool;
-import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.shared.annotations.ExternalThread;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
@@ -621,82 +619,19 @@ public class Transitions implements RemoteCallable<Transitions>,
         }
     }
 
-    static int calculateAnimLayer(@NonNull TransitionInfo.Change change, int i,
-            int numChanges, @WindowManager.TransitionType int transitType) {
-        // Put animating stuff above this line and put static stuff below it.
-        final int zSplitLine = numChanges + 1;
-        final boolean isOpening = isOpeningType(transitType);
-        final boolean isClosing = isClosingType(transitType);
-        final int mode = change.getMode();
-        // Put all the OPEN/SHOW on top
-        if (mode == TRANSIT_OPEN || mode == TRANSIT_TO_FRONT) {
-            if (isOpening) {
-                // put on top
-                return zSplitLine + numChanges - i;
-            } else if (isClosing) {
-                // put on bottom
-                return zSplitLine - i;
-            } else {
-                // maintain relative ordering (put all changes in the animating layer)
-                return zSplitLine + numChanges - i;
-            }
-        } else if (mode == TRANSIT_CLOSE || mode == TRANSIT_TO_BACK) {
-            if (isOpening || (change.hasFlags(FLAG_IS_WALLPAPER)
-                    && com.android.window.flags.Flags.polishCloseWallpaperIncludesOpenChange())) {
-                // put on bottom and leave visible
-                return zSplitLine - i;
-            } else {
-                // put on top
-                return zSplitLine + numChanges - i;
-            }
-        } else { // CHANGE or other
-            if (isClosing || TransitionUtil.isOrderOnly(change)) {
-                // Put below CLOSE mode (in the "static" section).
-                return zSplitLine - i;
-            } else {
-                // Put above CLOSE mode.
-                return zSplitLine + numChanges - i;
-            }
-        }
-    }
-
     /**
      * Reparents all participants into a shared parent and orders them based on: the global transit
      * type, their transit mode, and their destination z-order.
      */
     private static void setupAnimHierarchy(@NonNull TransitionInfo info,
-            @NonNull SurfaceControl.Transaction t, @NonNull SurfaceControl.Transaction finishT) {
-        final int type = info.getType();
+            @NonNull SurfaceControl.Transaction t) {
         for (int i = 0; i < info.getRootCount(); ++i) {
             t.show(info.getRoot(i).getLeash());
         }
-        final int numChanges = info.getChanges().size();
+
         // changes should be ordered top-to-bottom in z
-        for (int i = numChanges - 1; i >= 0; --i) {
-            final TransitionInfo.Change change = info.getChanges().get(i);
-            final SurfaceControl leash = change.getLeash();
-
-            // Don't reparent anything that isn't independent within its parents
-            if (!TransitionInfo.isIndependent(change, info)) {
-                continue;
-            }
-            // Don't reparent display level if only changing order (since root will be inside it).
-            if (change.hasFlags(FLAG_IS_DISPLAY) && TransitionUtil.isOrderOnly(change)
-                    && change.getStartRotation() == change.getEndRotation()) {
-                continue;
-            }
-
-            boolean hasParent = change.getParent() != null;
-
-            final TransitionInfo.Root root = TransitionUtil.getRootFor(change, info);
-            if (!hasParent) {
-                t.reparent(leash, root.getLeash());
-                t.setPosition(leash,
-                        change.getStartAbsBounds().left - root.getOffset().x,
-                        change.getStartAbsBounds().top - root.getOffset().y);
-            }
-            final int layer = calculateAnimLayer(change, i, numChanges, type);
-            t.setLayer(leash, layer);
+        for (int i = info.getChanges().size() - 1; i >= 0; --i) {
+            setUpSurface(info.getChanges().get(i), info, i, t);
         }
     }
 
@@ -1029,7 +964,7 @@ public class Transitions implements RemoteCallable<Transitions>,
             mObservers.get(i).onTransitionStarting(token);
         }
 
-        setupAnimHierarchy(active.mInfo, active.mStartT, active.mFinishT);
+        setupAnimHierarchy(active.mInfo, active.mStartT);
 
         // If a handler already chose to run this animation, try delegating to it first.
         if (active.mHandler != null) {

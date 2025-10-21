@@ -230,6 +230,82 @@ public class TransitionUtil {
     }
 
     /**
+     * Reparents a transition participant into its transition root, and orders it based on: the
+     * global transit type, their transit mode, and their destination z-order.
+     */
+    public static void setUpSurface(@NonNull TransitionInfo.Change change,
+            @NonNull TransitionInfo info, int order, @NonNull SurfaceControl.Transaction t) {
+        final SurfaceControl leash = change.getLeash();
+
+        // Don't reparent anything that isn't independent within its parents
+        if (!TransitionInfo.isIndependent(change, info)) {
+            return;
+        }
+        // Don't reparent display level if only changing order (since root will be inside it).
+        if (change.hasFlags(FLAG_IS_DISPLAY) && TransitionUtil.isOrderOnly(change)
+                && change.getStartRotation() == change.getEndRotation()) {
+            return;
+        }
+
+        boolean hasParent = change.getParent() != null;
+
+        final TransitionInfo.Root root = TransitionUtil.getRootFor(change, info);
+        if (!hasParent) {
+            t.reparent(leash, root.getLeash());
+            t.setPosition(leash,
+                    change.getStartAbsBounds().left - root.getOffset().x,
+                    change.getStartAbsBounds().top - root.getOffset().y);
+        }
+        final int layer =
+                calculateAnimLayer(change, order, info.getChanges().size(), info.getType());
+        t.setLayer(leash, layer);
+    }
+
+    /**
+     * Calculates the appropriate layer for a given transition participant based on the transition
+     * type, mode, and destination z-order.
+     * TODO(b/452329563): consolidate with the similar logic in {@link TransitionUtil#setupLeash}.
+     */
+    public static int calculateAnimLayer(@NonNull TransitionInfo.Change change, int order,
+            int numChanges, @WindowManager.TransitionType int transitType) {
+        // Put animating stuff above this line and put static stuff below it.
+        final int zSplitLine = numChanges + 1;
+        final boolean isOpening = isOpeningType(transitType);
+        final boolean isClosing = isClosingType(transitType);
+        final int mode = change.getMode();
+        // Put all the OPEN/SHOW on top
+        if (mode == TRANSIT_OPEN || mode == TRANSIT_TO_FRONT) {
+            if (isOpening) {
+                // put on top
+                return zSplitLine + numChanges - order;
+            } else if (isClosing) {
+                // put on bottom
+                return zSplitLine - order;
+            } else {
+                // maintain relative ordering (put all changes in the animating layer)
+                return zSplitLine + numChanges - order;
+            }
+        } else if (mode == TRANSIT_CLOSE || mode == TRANSIT_TO_BACK) {
+            if (isOpening || (change.hasFlags(FLAG_IS_WALLPAPER)
+                    && com.android.window.flags.Flags.polishCloseWallpaperIncludesOpenChange())) {
+                // put on bottom and leave visible
+                return zSplitLine - order;
+            } else {
+                // put on top
+                return zSplitLine + numChanges - order;
+            }
+        } else { // CHANGE or other
+            if (isClosing || TransitionUtil.isOrderOnly(change)) {
+                // Put below CLOSE mode (in the "static" section).
+                return zSplitLine - order;
+            } else {
+                // Put above CLOSE mode.
+                return zSplitLine + numChanges - order;
+            }
+        }
+    }
+
+    /**
      * Very similar to Transitions#setupAnimHierarchy but specialized for leashes.
      */
     @SuppressLint("NewApi")
