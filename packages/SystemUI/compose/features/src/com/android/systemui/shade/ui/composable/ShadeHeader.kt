@@ -156,7 +156,6 @@ object ShadeHeader {
     object TestTags {
         const val Root = "shade_header_root"
         const val BatteryTestTag = "battery_meter_composable_view"
-        const val BatteryTestTagLegacy = "battery_percentage_view"
     }
 }
 
