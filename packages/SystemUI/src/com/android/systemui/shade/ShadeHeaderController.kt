@@ -43,7 +43,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.core.view.doOnLayout
-import androidx.core.view.isVisible
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.app.animation.Interpolators
 import com.android.app.displaylib.PerDisplayRepository
@@ -53,9 +52,7 @@ import com.android.systemui.Dumpable
 import com.android.systemui.Flags
 import com.android.systemui.Flags.notificationShadeBlur
 import com.android.systemui.animation.ShadeInterpolation
-import com.android.systemui.battery.BatteryMeterView
 import com.android.systemui.battery.BatteryMeterView.MODE_ESTIMATE
-import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.demomode.DemoMode
 import com.android.systemui.demomode.DemoModeController
@@ -75,7 +72,6 @@ import com.android.systemui.shade.carrier.ShadeCarrierGroup
 import com.android.systemui.shade.carrier.ShadeCarrierGroupController
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
-import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.core.RudimentaryBattery
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
@@ -123,7 +119,6 @@ constructor(
     @ShadeDisplayAware private val context: Context,
     private val shadeDisplaysRepositoryLazy: Lazy<ShadeDisplaysRepository>,
     private val variableDateViewControllerFactory: VariableDateViewController.Factory,
-    @Named(SHADE_HEADER) private val batteryMeterViewController: BatteryMeterViewController,
     private val unifiedBatteryViewModelFactory: BatteryViewModel.AlwaysShowPercent.Factory,
     private val tandemBatteryViewModelFactory: BatteryNextToPercentViewModel.Factory,
     private val dumpManager: DumpManager,
@@ -179,7 +174,6 @@ constructor(
     private lateinit var carrierIconSlots: List<String>
     private lateinit var mShadeCarrierGroupController: ShadeCarrierGroupController
 
-    private val batteryIcon: BatteryMeterView = header.requireViewById(R.id.batteryRemainingIcon)
     private val clock: Clock = header.requireViewById(R.id.clock)
     private val date: TextView = header.requireViewById(R.id.date)
     private val iconContainer: StatusIconContainer = header.requireViewById(R.id.statusIcons)
@@ -380,28 +374,14 @@ constructor(
         iconManager = tintedIconManagerFactory.create(iconContainer, StatusBarLocation.QS)
         iconManager.setTint(fgColor, bgColor)
 
-        if (!NewStatusBarIcons.isEnabled) {
-            batteryMeterViewController.init()
+        // Configure the correct margins for the system icon container
+        val statusIcons = mView.requireViewById<AlphaOptimizedLinearLayout>(R.id.statusIcons)
+        SystemStatusIconsLayoutHelper.configurePaddingForNewStatusBarIcons(statusIcons)
 
-            // battery settings same as in QS icons
-            batteryMeterViewController.ignoreTunerUpdates()
-
-            batteryIcon.isVisible = true
-            batteryIcon.updateColors(
-                fgColor, /* foreground */
-                bgColor, /* background */
-                fgColor, /* single tone (current default) */
-            )
-        } else {
-            // Configure the correct margins for the system icon container
-            val statusIcons = mView.requireViewById<AlphaOptimizedLinearLayout>(R.id.statusIcons)
-            SystemStatusIconsLayoutHelper.configurePaddingForNewStatusBarIcons(statusIcons)
-
-            // Configure the compose battery view
-            val batteryComposeView = createBatteryComposeView()
-            mView.requireViewById<ViewGroup>(R.id.hover_system_icons_container).apply {
-                addView(batteryComposeView, -1)
-            }
+        // Configure the compose battery view
+        val batteryComposeView = createBatteryComposeView()
+        mView.requireViewById<ViewGroup>(R.id.hover_system_icons_container).apply {
+            addView(batteryComposeView, -1)
         }
 
         carrierIconSlots =
@@ -606,11 +586,7 @@ constructor(
 
     private fun updateBatteryMode() {
         qsBatteryModeController.getBatteryMode(cutout, qsExpandedFraction)?.let {
-            if (NewStatusBarIcons.isEnabled) {
-                showBatteryEstimate.value = it == MODE_ESTIMATE
-            } else {
-                batteryIcon.setPercentShowMode(it)
-            }
+            showBatteryEstimate.value = it == MODE_ESTIMATE
         }
     }
 

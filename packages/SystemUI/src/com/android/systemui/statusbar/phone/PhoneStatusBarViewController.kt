@@ -26,7 +26,6 @@ import android.view.View
 import android.view.ViewConfiguration
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.Gefingerpoken
-import com.android.systemui.battery.BatteryMeterView
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
@@ -92,7 +91,6 @@ private constructor(
     private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
 ) : ViewController<PhoneStatusBarView>(view) {
 
-    private lateinit var battery: BatteryMeterView
     private lateinit var clock: Clock
     private lateinit var startSideContainer: View
     private lateinit var endSideContainer: View
@@ -191,7 +189,6 @@ private constructor(
 
     override fun onViewAttached() {
         clock = mView.requireViewById(R.id.clock)
-        battery = mView.requireViewById(R.id.battery)
 
         addDarkReceivers()
 
@@ -334,12 +331,10 @@ private constructor(
     }
 
     private fun addDarkReceivers() {
-        darkIconDispatcher.addDarkReceiver(battery)
         darkIconDispatcher.addDarkReceiver(clock)
     }
 
     private fun removeDarkReceivers() {
-        darkIconDispatcher.removeDarkReceiver(battery)
         darkIconDispatcher.removeDarkReceiver(clock)
     }
 

@@ -2006,7 +2006,6 @@ public final class NotificationPanelViewController implements
     }
 
     private void setListening(boolean listening) {
-        mKeyguardStatusBarViewController.setBatteryListening(listening);
         mQsController.setListening(listening);
     }
 

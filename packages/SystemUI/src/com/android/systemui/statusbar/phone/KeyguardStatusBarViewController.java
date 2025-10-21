@@ -52,7 +52,6 @@ import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.keyguard.logging.KeyguardLogger;
 import com.android.systemui.Flags;
-import com.android.systemui.battery.BatteryMeterViewController;
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Default;
@@ -93,7 +92,6 @@ import com.android.systemui.statusbar.pipeline.battery.ui.composable.ShowPercent
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryNextToPercentViewModel;
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel;
 import com.android.systemui.statusbar.pipeline.shared.ui.view.SystemStatusIconsLayoutHelper;
-import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.UserInfoController;
@@ -140,11 +138,9 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     private final CarrierTextController mCarrierTextController;
     private final ConfigurationController mConfigurationController;
     private SystemStatusAnimationScheduler mAnimationScheduler;
-    private final BatteryController mBatteryController;
     private final UserInfoController mUserInfoController;
     private final StatusBarIconController mStatusBarIconController;
     private final TintedIconManager.Factory mTintedIconManagerFactory;
-    private final BatteryMeterViewController mBatteryMeterViewController;
     private final BatteryNextToPercentViewModel.Factory mTandemBatteryViewModelFactory;
     private final BatteryViewModel.ShowPercentWhenChargingOrSetting.Factory mBatteryViewModel;
     private final ShadeViewStateProvider mShadeViewStateProvider;
@@ -218,14 +214,6 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
                 @Override
                 public Animator onSystemEventAnimationBegin() {
                     return mSystemEventAnimator.onSystemEventAnimationBegin();
-                }
-            };
-
-    private final BatteryController.BatteryStateChangeCallback mBatteryStateChangeCallback =
-            new BatteryController.BatteryStateChangeCallback() {
-                @Override
-                public void onBatteryLevelChanged(int level, boolean pluggedIn, boolean charging) {
-                    mView.onBatteryChargingChanged(charging);
                 }
             };
 
@@ -324,7 +312,6 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     private final List<String> mBlockedIcons = new ArrayList<>();
     private final int mNotificationsHeaderCollideDistance;
 
-    private boolean mBatteryListening;
     private TintedIconManager mTintedIconManager;
 
     private float mKeyguardStatusBarAnimateAlpha = 1f;
@@ -373,11 +360,9 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
             @ShadeDisplayAware
                     Lazy<ConfigurationController> displayAwareConfigurationControllerLazy,
             @Default Lazy<SystemStatusAnimationScheduler> animationSchedulerLazy,
-            BatteryController batteryController,
             UserInfoController userInfoController,
             StatusBarIconController statusBarIconController,
             TintedIconManager.Factory tintedIconManagerFactory,
-            BatteryMeterViewController batteryMeterViewController,
             BatteryNextToPercentViewModel.Factory tandemBatteryViewModelFactory,
             BatteryViewModel.ShowPercentWhenChargingOrSetting.Factory batteryViewModel,
             ShadeViewStateProvider shadeViewStateProvider,
@@ -416,11 +401,9 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
             mConfigurationController = defaultConfigurationControllerLazy.get();
             mAnimationScheduler = animationSchedulerLazy.get();
         }
-        mBatteryController = batteryController;
         mUserInfoController = userInfoController;
         mStatusBarIconController = statusBarIconController;
         mTintedIconManagerFactory = tintedIconManagerFactory;
-        mBatteryMeterViewController = batteryMeterViewController;
         mTandemBatteryViewModelFactory = tandemBatteryViewModelFactory;
         mBatteryViewModel = batteryViewModel;
         mShadeViewStateProvider = shadeViewStateProvider;
@@ -487,9 +470,6 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     protected void onInit() {
         super.onInit();
         mCarrierTextController.init();
-        if (!NewStatusBarIcons.isEnabled()) {
-            mBatteryMeterViewController.init();
-        }
         if (isMigrationEnabled()) {
             KeyguardStatusBarViewBinder.bind(mView, mKeyguardStatusBarViewModel);
         }
@@ -620,23 +600,6 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
             return;
         }
         mView.setKeyguardUserSwitcherEnabled(enabled);
-    }
-
-    /** Sets whether this controller should listen to battery updates. */
-    public void setBatteryListening(boolean listening) {
-        if (isMigrationEnabled()) {
-            return;
-        }
-
-        if (listening == mBatteryListening) {
-            return;
-        }
-        mBatteryListening = listening;
-        if (mBatteryListening) {
-            mBatteryController.addCallback(mBatteryStateChangeCallback);
-        } else {
-            mBatteryController.removeCallback(mBatteryStateChangeCallback);
-        }
     }
 
     /** Set the view to have no top clipping. */
@@ -855,7 +818,6 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     /** */
     public void dump(PrintWriter pw, String[] args) {
         pw.println("KeyguardStatusBarView:");
-        pw.println("  mBatteryListening: " + mBatteryListening);
         pw.println("  mExplicitAlpha: " + mExplicitAlpha);
         pw.println("  alpha: " + mView.getAlpha());
         pw.println("  visibility: " + mView.getVisibility());
