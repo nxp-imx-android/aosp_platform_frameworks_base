@@ -159,7 +159,8 @@ public class NavigationBarControllerImpl implements
                 navBarHelper, navigationModeController, sysUiFlagsContainer,
                 dumpManager, autoHideControllerStore.forDisplay(mContext.getDisplayId()),
                 lightBarController, pipOptional, backAnimation.orElse(null),
-                taskStackChangeListeners, displayTracker);
+                taskStackChangeListeners, displayTracker, displaysWithDecorationsRepositoryCompat,
+                mainCoroutineDispatcher);
         mIsLargeScreen = isLargeScreen(mContext);
         mIsPhone = determineIfPhone(mContext, deviceStateManager);
         dumpManager.registerDumpable(this);
