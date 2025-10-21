@@ -69,6 +69,13 @@ flag {
 }
 
 flag {
+    name: "launch_accessibility_quick_access_dialog_permission"
+    namespace: "accessibility"
+    description: "Adds a permission to allow applications to launch the accessibility quick access dialog."
+    bug: "446014706"
+}
+
+flag {
     name: "privacy_dot_live_region"
     namespace: "accessibility"
     description: "Exposes the status bar privacy dot as a live region so it is announced when it appears."
