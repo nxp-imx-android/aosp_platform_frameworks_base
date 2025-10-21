@@ -1956,16 +1956,6 @@ flag {
 }
 
 flag {
-   name: "update_keyguard_on_wake_and_unlock_earlier"
-   namespace: "systemui"
-   description: "Call updateIsKeyguard earlier than on the dozing callback."
-   bug: "441261701"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
     name: "check_desktop_mode_for_spacial_model_app_pushback"
     namespace: "systemui"
     description: "Checks desktop mode for disabling spacial model as opposed to just checking if the screen is large"
