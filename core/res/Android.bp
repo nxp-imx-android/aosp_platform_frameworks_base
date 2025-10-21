@@ -224,6 +224,26 @@ genrule {
     tools: ["xmllint"],
 }
 
+// This genrule invokes a custom build tool to generate the permission-versions.xml file with
+// appropriate metadata extracted from the platform manfiest to power Studio lint rules associated
+// with permission purpose declarations.
+// NOTE: This module depends on fetching the state of all non updatable aconfig flags. Thus,
+// depending on this module can lead to worse incremental build time.
+genrule {
+    name: "permission-versions",
+    out: ["permission-versions.xml"],
+    srcs: ["AndroidManifest.xml"],
+    device_common_srcs: [":framework-minus-apex-aconfig-declarations{.combined_proto}"],
+    cmd: "$(location permission_versions_generator) $(location AndroidManifest.xml) $(location :framework-minus-apex-aconfig-declarations{.combined_proto}) $(out)",
+    tools: ["permission_versions_generator"],
+}
+
+prebuilt_etc_host {
+    name: "permission-versions.xml",
+    src: ":permission-versions",
+    filename_from_src: true,
+}
+
 filegroup {
     name: "frameworks-base-core-AndroidManifest.xml",
     srcs: ["AndroidManifest.xml"],
