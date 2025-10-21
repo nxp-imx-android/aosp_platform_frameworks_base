@@ -18,6 +18,8 @@ package android.app.contentrestriction;
 
 import android.annotation.FlaggedApi;
 import android.annotation.Nullable;
+import android.annotation.SdkConstant;
+import android.annotation.SdkConstant.SdkConstantType;
 import android.annotation.SystemApi;
 import android.app.Service;
 import android.app.contentrestriction.flags.Flags;
@@ -26,13 +28,23 @@ import android.os.IBinder;
 
 /**
  * Base class for a service that the
- * {@code android.app.role.RoleManager.ROLE_SYSTEM_CONTENT_RESTRICTION} role holder must implement.
+ * {@code android.app.role.RoleManager.ROLE_CONTENT_RESTRICTION} role holder must implement.
  *
  * @hide
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
 public class ContentRestrictionAppService extends Service {
+    /**
+     * Service action: Action for a service that the {@code
+     * android.app.role.RoleManager.ROLE_CONTENT_RESTRICTION} role holder must implement.
+     *
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.SERVICE_ACTION)
+    public static final String ACTION_BIND_CONTENT_RESTRICTION_APP_SERVICE =
+            "android.app.action.BIND_CONTENT_RESTRICTION_APP_SERVICE";
+
     private final IContentRestrictionAppService mBinder = new IContentRestrictionAppService.Stub() {
     };
 
