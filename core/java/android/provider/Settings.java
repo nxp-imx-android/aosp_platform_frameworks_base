@@ -2979,6 +2979,7 @@ public final class Settings {
      *
      * @hide
      */
+    @SystemApi
     @FlaggedApi(FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
     @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String MANAGE_SUPERVISION_APP_SETTINGS =
