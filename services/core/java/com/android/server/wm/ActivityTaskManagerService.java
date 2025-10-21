@@ -308,7 +308,6 @@ import com.android.server.sdksandbox.SdkSandboxManagerLocal;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.uri.NeededUriGrants;
 import com.android.server.uri.UriGrantsManagerInternal;
-import com.android.server.wm.ActivityTaskManagerInternal.HandoffEnablementListener;
 import com.android.server.wm.utils.WindowStyleCache;
 import com.android.wm.shell.Flags;
 
@@ -6950,11 +6949,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
 
         @Override
-        public boolean isRecentsComponentHomeActivity(int userId) {
-            return getRecentTasks().isRecentsComponentHomeActivity(userId);
-        }
-
-        @Override
         public boolean checkCanCloseSystemDialogs(int pid, int uid, @Nullable String packageName) {
             return ActivityTaskManagerService.this.checkCanCloseSystemDialogs(pid, uid,
                     packageName);
@@ -7062,6 +7056,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 if (proc == mHomeProcess) {
                     mHomeProcess = null;
                     mActivityStateUpdater.setHomeProcessAsync(null);
+                    mRecentTasks.invalidateIsHomeRecents();
                 }
                 if (proc == mPreviousProcess) {
                     mPreviousProcess = null;
@@ -7865,6 +7860,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         @Override
         public boolean switchUser(int userId, UserState userState) {
             synchronized (mGlobalLock) {
+                mRecentTasks.invalidateIsHomeRecents();
                 return mRootWindowContainer.switchUser(userId, userState);
             }
         }

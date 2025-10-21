@@ -1147,6 +1147,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             scheduleStartHome("homeChanged");
             mService.mHomeProcess = app;
             mService.mActivityStateUpdater.setHomeProcessAsync(app);
+            mRecentTasks.invalidateIsHomeRecents();
         }
     }
 
@@ -2349,7 +2350,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         pw.println(prefix + "mUserRootTaskInFront=" + mRootWindowContainer.mUserRootTaskInFront);
         pw.println(prefix + "mVisibilityTransactionDepth=" + mVisibilityTransactionDepth);
         pw.print(prefix); pw.print("isHomeRecentsComponent=");
-        pw.println(mRecentTasks.isRecentsComponentHomeActivity(mRootWindowContainer.mCurrentUser));
+        pw.println(mRecentTasks.isRecentsComponentHomeActivity());
         if (!mWaitingActivityLaunched.isEmpty()) {
             pw.println(prefix + "mWaitingActivityLaunched=");
             for (int i = mWaitingActivityLaunched.size() - 1; i >= 0; i--) {

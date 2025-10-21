@@ -1080,7 +1080,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
         mTaskSupervisor.getKeyguardController().dumpDebug(proto, KEYGUARD_CONTROLLER);
         proto.write(IS_HOME_RECENTS_COMPONENT,
-                mTaskSupervisor.mRecentTasks.isRecentsComponentHomeActivity(mCurrentUser));
+                mTaskSupervisor.mRecentTasks.isRecentsComponentHomeActivity());
         proto.end(token);
     }
 
