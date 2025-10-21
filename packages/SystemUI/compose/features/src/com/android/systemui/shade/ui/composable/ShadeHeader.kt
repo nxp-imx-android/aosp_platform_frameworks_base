@@ -585,6 +585,8 @@ private fun ShadeCarrierGroup(viewModel: ShadeHeaderViewModel, modifier: Modifie
         return
     }
 
+    val textColor = ShadeHeader.Colors.textColor
+    val inverseTextColor = ShadeHeader.Colors.inverseTextColor
     Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
         for (subId in viewModel.mobileSubIds) {
             AndroidView(
@@ -600,7 +602,14 @@ private fun ShadeCarrierGroup(viewModel: ShadeHeaderViewModel, modifier: Modifie
                                 ) as ShadeCarrierGroupMobileIconViewModel),
                         )
                         .also { it.setOnClickListener { viewModel.onShadeCarrierGroupClicked() } }
-                }
+                },
+                update = { view ->
+                    view.setStyleAndTint(
+                        R.style.TextAppearance_QS_Status,
+                        textColor.toArgb(),
+                        inverseTextColor.toArgb(),
+                    )
+                },
             )
         }
     }
