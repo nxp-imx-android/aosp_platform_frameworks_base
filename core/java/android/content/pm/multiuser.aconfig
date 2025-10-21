@@ -505,3 +505,10 @@ flag {
      description: "Expose some multi-user related methods as @TestApi / @SystemApi"
      bug: "444663119"
 }
+
+flag {
+     name: "onetime_initializer_package_singleton"
+     namespace: "multiuser"
+     description: "Flag to enable the OneTimeInitializer package singleton refactoring"
+     bug: "453792165"
+}
