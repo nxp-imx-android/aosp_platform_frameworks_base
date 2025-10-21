@@ -10005,7 +10005,7 @@ package android.app.permissionui {
   }
 
   @FlaggedApi("android.permission.flags.location_button_enabled") public interface LocationButtonProvider {
-    method public void openSession(@NonNull android.os.IBinder, int, @NonNull android.app.permissionui.LocationButtonRequest, @NonNull java.util.concurrent.Executor, @NonNull android.app.permissionui.LocationButtonClient);
+    method public void openSession(@NonNull android.app.Activity, @NonNull android.os.IBinder, int, @NonNull android.app.permissionui.LocationButtonRequest, @NonNull java.util.concurrent.Executor, @NonNull android.app.permissionui.LocationButtonClient);
   }
 
   @FlaggedApi("android.permission.flags.location_button_enabled") public class LocationButtonProviderFactory {

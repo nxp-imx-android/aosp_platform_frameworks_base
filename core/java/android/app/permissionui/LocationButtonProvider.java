@@ -17,6 +17,7 @@ package android.app.permissionui;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.app.Activity;
 import android.os.IBinder;
 import android.permission.flags.Flags;
 
@@ -48,6 +49,7 @@ public interface LocationButtonProvider {
      * <p>The outcome of this request, including the created {@link LocationButtonSession} or any
      * errors, is delivered asynchronously to the provided {@link LocationButtonClient}.
      *
+     * @param activity Host app activity which launch permission activity in its task.
      * @param hostToken A token for the host window.
      * @param displayId The ID of the display where the button will appear.
      * @param request A {@link LocationButtonRequest} defining the button's appearance.
@@ -55,6 +57,7 @@ public interface LocationButtonProvider {
      * @param client The {@link LocationButtonClient} to receive session events and results.
      */
     void openSession(
+            @NonNull Activity activity,
             @NonNull IBinder hostToken,
             int displayId,
             @NonNull LocationButtonRequest request,

@@ -19,6 +19,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -66,8 +67,7 @@ public class LocationButtonProviderFactory {
         return new LocationButtonProviderImpl(context);
     }
 
-    static final class LocationButtonProviderImpl extends LocationButtonProviderFactory implements
-            LocationButtonProvider {
+    static final class LocationButtonProviderImpl implements LocationButtonProvider {
         // Retry attempts when binding is successful but the service is not able to open a session.
         private static final int OPEN_SESSION_ATTEMPTS_LIMIT = 5;
         private static final boolean DEBUG = false;
@@ -95,28 +95,29 @@ public class LocationButtonProviderFactory {
         }
 
         @Override
-        public void openSession(@NonNull IBinder hostToken, int displayId,
-                @NonNull LocationButtonRequest request, @NonNull Executor clientExecutor,
-                @NonNull LocationButtonClient client
+        public void openSession(@NonNull Activity activity, @NonNull IBinder hostToken,
+                int displayId, @NonNull LocationButtonRequest request,
+                @NonNull Executor clientExecutor, @NonNull LocationButtonClient client
         ) {
             if (DEBUG) {
                 Log.d(TAG, "openSession received for client " + client);
             }
+            requireNonNull(activity, "activity must not be null");
             requireNonNull(hostToken, "hostToken must not be null");
             requireNonNull(request, "request must not be null");
             requireNonNull(clientExecutor, "clientExecutor must not be null");
             requireNonNull(client, "client must not be null");
 
             mSerialExecutor.execute(
-                    () -> openSessionSerialized(hostToken, displayId, request, clientExecutor,
-                            client));
+                    () -> openSessionSerialized(activity, hostToken, displayId, request,
+                            clientExecutor, client));
         }
 
-        private void openSessionSerialized(@NonNull IBinder hostToken, int displayId,
-                @NonNull LocationButtonRequest request, @NonNull Executor clientExecutor,
-                @NonNull LocationButtonClient client) {
-            LocationButtonClientWrapper clientWrapper = new LocationButtonClientWrapper(this,
-                    client, new SerialExecutor(clientExecutor));
+        private void openSessionSerialized(@NonNull Activity activity, @NonNull IBinder hostToken,
+                int displayId, @NonNull LocationButtonRequest request,
+                @NonNull Executor clientExecutor, @NonNull LocationButtonClient client) {
+            LocationButtonClientWrapper clientWrapper = new LocationButtonClientWrapper(activity,
+                    this, client, new SerialExecutor(clientExecutor));
             OpenSessionRequest sessionRequest = new OpenSessionRequest(hostToken, displayId,
                     request, client, clientWrapper, clientExecutor);
             if (DEBUG) {

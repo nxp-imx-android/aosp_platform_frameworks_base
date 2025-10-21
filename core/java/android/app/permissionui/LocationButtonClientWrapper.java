@@ -19,7 +19,13 @@ package android.app.permissionui;
 import static android.app.permissionui.LocationButtonProviderFactory.LocationButtonProviderImpl;
 import static android.app.permissionui.LocationButtonProviderFactory.LocationButtonSessionRecord;
 
+import android.annotation.NonNull;
+import android.app.Activity;
+import android.app.ActivityOptions;
+import android.app.PendingIntent;
+import android.content.IntentSender;
 import android.os.ParcelableException;
+import android.util.Log;
 
 import java.util.concurrent.Executor;
 
@@ -35,19 +41,24 @@ import java.util.concurrent.Executor;
  * @see LocationButtonClient
  */
 public class LocationButtonClientWrapper extends ILocationButtonClient.Stub {
+    private static final String LOG_TAG = "LocationButtonClientWrapper";
     private final LocationButtonProviderImpl mProvider;
     private final LocationButtonClient mClient;
     private final Executor mClientExecutor;
+    private final Activity mActivity;
 
     /**
      * Constructs a wrapper that links the remote service to the application's client.
      *
-     * @param provider       The provider instance that initiated the session.
-     * @param client         App's implementation of the {@link LocationButtonClient} interface.
+     * @param activity Host app activity to launch permission consent activity.
+     * @param provider The provider instance that initiated the session.
+     * @param client App's implementation of the {@link LocationButtonClient} interface.
      * @param clientExecutor The executor on which client callbacks will be delivered.
      */
-    LocationButtonClientWrapper(LocationButtonProviderImpl provider, LocationButtonClient client,
-            Executor clientExecutor) {
+    LocationButtonClientWrapper(@NonNull Activity activity,
+            @NonNull LocationButtonProviderImpl provider, @NonNull LocationButtonClient client,
+            @NonNull Executor clientExecutor) {
+        mActivity = activity;
         mProvider = provider;
         mClient = client;
         mClientExecutor = clientExecutor;
@@ -59,7 +70,7 @@ public class LocationButtonClientWrapper extends ILocationButtonClient.Stub {
      * {@link LocationButtonClient#onSessionOpened} callback to the client's executor.
      */
     @Override
-    public void onSessionOpened(LocationButtonSessionResponse response) {
+    public void onSessionOpened(@NonNull LocationButtonSessionResponse response) {
         mClientExecutor.execute(() -> mClient.onSessionOpened(
                 new LocationButtonSessionWrapper(mProvider, response, mClient, this)));
         mProvider.addActiveSessionRecord(mClient,
@@ -83,8 +94,28 @@ public class LocationButtonClientWrapper extends ILocationButtonClient.Stub {
      * callback with the underlying cause to the client's executor.
      */
     @Override
-    public void onSessionError(ParcelableException e) {
+    public void onSessionError(@NonNull ParcelableException e) {
         mProvider.onSessionClosed(mClient);
         mClientExecutor.execute(() -> mClient.onSessionError(e.getCause()));
+    }
+
+    /**
+     * Called when the user clicks the location button. The client should show permission
+     * consent dialog by launching the provided {@link PendingIntent}.
+     *
+     * @param pendingIntent The pending intent to launch the consent dialog.
+     */
+    @Override
+    public void onRequestPermissions(@NonNull PendingIntent pendingIntent) {
+        IntentSender intentSender = pendingIntent.getIntentSender();
+        ActivityOptions activityOptions = ActivityOptions.makeBasic();
+        activityOptions.setPendingIntentBackgroundActivityStartMode(
+                ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE);
+        try {
+            mActivity.startIntentSender(intentSender, null, 0, 0, 0, activityOptions.toBundle());
+        } catch (IntentSender.SendIntentException e) {
+            Log.e(LOG_TAG, "Couldn't open location button request dialog.", e);
+            mClientExecutor.execute(() -> mClient.onSessionError(e.getCause()));
+        }
     }
 }

@@ -15,6 +15,7 @@
  */
 package android.app.permissionui;
 
+import android.app.PendingIntent;
 import android.app.permissionui.LocationButtonSessionResponse;
 import android.os.ParcelableException;
 
@@ -32,4 +33,5 @@ oneway interface ILocationButtonClient {
     void onSessionOpened(in LocationButtonSessionResponse response);
     void onPermissionsResult(boolean isPermissionGranted);
     void onSessionError(in ParcelableException e);
+    void onRequestPermissions(in PendingIntent pendingIntent);
 }

@@ -15,15 +15,22 @@
  */
 package com.android.systemui.locationbutton.ui.session
 
+import android.Manifest
+import android.app.PendingIntent
 import android.app.permissionui.ILocationButtonClient
 import android.app.permissionui.ILocationButtonSession
+import android.app.permissionui.LocationButtonClient
 import android.app.permissionui.LocationButtonRequest
 import android.app.permissionui.LocationButtonSession.TextType
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.hardware.display.DisplayManager
 import android.os.IBinder
 import android.os.ParcelableException
+import android.os.Process
+import android.os.RemoteCallback
 import android.os.RemoteException
 import android.util.Slog
 import android.view.SurfaceControlViewHost
@@ -74,7 +81,8 @@ class LocationButtonSession(
     val context: Context,
     hostToken: IBinder,
     displayId: Int,
-    packageName: String,
+    val packageName: String,
+    val packageUid: Int,
     request: LocationButtonRequest,
     val locationButtonClient: ILocationButtonClient,
     val executor: Executor,
@@ -139,8 +147,37 @@ class LocationButtonSession(
             Slog.w(TAG, "Location button click received, but not trusted.")
             return
         }
-        Slog.w(TAG, "Location button click received, and is in trusted state.")
-        // TODO validations and actions next CL
+        if (
+            context.checkPermission(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Process.INVALID_PID,
+                packageUid,
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            locationButtonClient.onPermissionsResult(true)
+            return
+        }
+
+        val remoteCallback = RemoteCallback { bundle ->
+            val isPermissionGranted =
+                bundle?.getBoolean(LocationButtonClient.EXTRA_PERMISSION_RESULT) ?: false
+            locationButtonClient.onPermissionsResult(isPermissionGranted)
+        }
+
+        val intent =
+            Intent(LocationButtonClient.ACTION_REQUEST_LOCATION_BUTTON_PERMISSIONS).apply {
+                setPackage(context.packageManager.permissionControllerPackageName)
+                putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
+                putExtra(Intent.EXTRA_REMOTE_CALLBACK, remoteCallback)
+            }
+        val flags = PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
+        val pendingIntent = PendingIntent.getActivity(context, /* requestCode */ 0, intent, flags)
+        try {
+            locationButtonClient.onRequestPermissions(pendingIntent)
+        } catch (e: RemoteException) {
+            Slog.e(TAG, "Client died or failed to respond on button click, close session.", e)
+            close()
+        }
     }
 
     private fun registerTrustedPresentationListener() {
