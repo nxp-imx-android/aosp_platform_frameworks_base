@@ -129,14 +129,6 @@ public class AnrTimer<V> implements AutoCloseable {
     }
 
     /**
-     * Return true if tracing is feature-enabled.  This has no effect unless tracing is configured.
-     * Note that this does not represent any per-process overrides via an Injector.
-     */
-    public static boolean traceFeatureEnabled() {
-        return Flags.anrTimerTrace();
-    }
-
-    /**
      * This class allows test code to provide instance-specific overrides.
      */
     @VisibleForTesting
@@ -155,11 +147,6 @@ public class AnrTimer<V> implements AutoCloseable {
         boolean setNativeTimersInTestMode() {
             return false;
         }
-
-        boolean traceEnabled() {
-            return AnrTimer.traceFeatureEnabled();
-        }
-
     }
 
     /** The default injector. */
@@ -1070,18 +1057,6 @@ public class AnrTimer<V> implements AutoCloseable {
     }
 
     /**
-     * Set a trace specification.  The input is a set of strings.  On success, the function pushes
-     * the trace specification to all timers, and then returns a response message.  On failure,
-     * the function throws IllegalArgumentException and tracing is disabled.
-     *
-     * An empty specification has no effect other than returning the current trace specification.
-     */
-    @Nullable
-    public static String traceTimers(@Nullable String[] spec) {
-        return nativeAnrTimerTrace(spec);
-    }
-
-    /**
      * Return true if the native timers are supported.  Native timers are supported if the method
      * nativeAnrTimerSupported() can be executed and it returns true.
      */
@@ -1131,15 +1106,6 @@ public class AnrTimer<V> implements AutoCloseable {
 
     /** Discard an expired timer by ID.  Return true if the timer was found.  */
     private static native boolean nativeAnrTimerDiscard(long service, int timerId);
-
-    /**
-     * Configure tracing.  The input array is a set of words pulled from the command line.  All
-     * parsing happens inside the native layer.  The function returns a string which is either an
-     * error message (so nothing happened) or the current configuration after applying the config.
-     * Passing an null array or an empty array simply returns the current configuration.
-     * The function returns null if the native layer is not implemented.
-     */
-    private static native @Nullable String nativeAnrTimerTrace(@Nullable String[] config);
 
     /** Retrieve runtime dump information from the native layer. */
     private static native String[] nativeAnrTimerDump(long service);
