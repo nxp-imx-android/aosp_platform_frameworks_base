@@ -1489,6 +1489,8 @@ public final class VirtualDeviceManager {
          * @param userId The user ID associated with the activity whose launch is requested.
          * @hide
          */
+        @TestApi
+        @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
         default void onActivityLaunchRequested(int displayId, @NonNull ComponentName componentName,
                 @UserIdInt int userId) {}
     }
