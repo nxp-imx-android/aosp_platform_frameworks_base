@@ -22,9 +22,15 @@ import android.annotation.NonNull;
 import android.content.Context;
 import android.content.theming.IThemeManager;
 import android.content.theming.IThemeSettingsCallback;
+import android.content.theming.ThemeInfo;
 import android.content.theming.ThemeSettings;
 import android.os.Binder;
+import android.os.FabricatedOverlayInternal;
+import android.os.RemoteException;
 import android.os.UserHandle;
+
+import java.io.FileDescriptor;
+import java.io.PrintWriter;
 
 /**
  * Public implementation of {@link IThemeManager}.
@@ -43,6 +49,16 @@ public class ThemeBinderService extends IThemeManager.Stub {
     public ThemeBinderService(Context context, ThemeManagerInternal localService) {
         mContext = context;
         mLocalService = localService;
+    }
+
+    @Override
+    public FabricatedOverlayInternal generateDynamicColorOverlay(ThemeInfo options) {
+        return mLocalService.generateDynamicColorOverlay(getCallingUserId(), options);
+    }
+
+    @Override
+    public ThemeInfo getUserThemeInfo() throws RemoteException {
+        return mLocalService.getUserThemeInfo(getCallingUserId());
     }
 
     @Override
@@ -74,5 +90,11 @@ public class ThemeBinderService extends IThemeManager.Stub {
 
     private int getCallingUserId() {
         return UserHandle.getUserId(Binder.getCallingUid());
+    }
+
+    @Override
+    public void dump(@NonNull FileDescriptor fd, @NonNull PrintWriter pw, String[] args) {
+        super.dump(fd, pw, args);
+        mLocalService.dump(pw);
     }
 }

@@ -17,6 +17,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
      package="com.android.frameworks.servicestests">
 
+    <uses-permission android:name="android.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE" />
     <uses-permission android:name="android.permission.READ_LOGS"/>
     <uses-permission android:name="android.permission.ACCESS_VR_MANAGER"/>
     <uses-permission android:name="android.permission.ACCOUNT_MANAGER"/>

@@ -43,6 +43,8 @@ import java.util.Set;
  * @param style         The theme style, e.g., TONAL_SPOT, VIBRANT.
  * @param childProfiles A set of user IDs for associated profiles.
  * @param timeStamp     A timestamp also used to force updates.
+ *
+ * @hide
  */
 record ThemeState(
         int userId,

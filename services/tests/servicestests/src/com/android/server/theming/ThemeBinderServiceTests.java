@@ -22,6 +22,9 @@ import static android.content.theming.FieldColorSource.VALUE_PRESET;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
 import android.content.theming.IThemeSettingsCallback;
 import android.content.theming.ThemeSettings;
 import android.content.theming.ThemeStyle;
@@ -37,6 +40,9 @@ import androidx.annotation.Nullable;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.server.LocalServices;
+import com.android.server.om.OverlayManagerInternal;
+import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 
 import org.junit.Before;
@@ -60,10 +66,22 @@ public class ThemeBinderServiceTests {
 
     @Mock
     private WallpaperManagerInternal mMockWmi;
+    @Mock
+    private UserManagerInternal mUserManager;
+    @Mock
+    private OverlayManagerInternal mOverlayManager;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
+
+        LocalServices.removeServiceForTest(OverlayManagerInternal.class);
+        LocalServices.removeServiceForTest(UserManagerInternal.class);
+        LocalServices.removeServiceForTest(WallpaperManagerInternal.class);
+
+        LocalServices.addService(OverlayManagerInternal.class, mOverlayManager);
+        LocalServices.addService(UserManagerInternal.class, mUserManager);
+        LocalServices.addService(WallpaperManagerInternal.class, mMockWmi);
 
         TestableContext context = new TestableContext(InstrumentationRegistry.getTargetContext(),
                 null);
@@ -76,6 +94,8 @@ public class ThemeBinderServiceTests {
         TestablePermissions perms = context.getTestablePermissions();
         perms.setPermission(android.Manifest.permission.INTERACT_ACROSS_USERS, PERMISSION_GRANTED);
 
+        when(mUserManager.getProfileParentId(eq(mUserId))).thenReturn(mUserId);
+
         ThemeSettingsManager themeSettingsManager = new ThemeSettingsManager(mMockWmi);
         SystemPropertiesReader systemPropertiesReader = new SystemPropertiesReader() {
             @NonNull
@@ -84,8 +104,10 @@ public class ThemeBinderServiceTests {
                 return "";
             }
         };
+        ThemeStateManager stateManager = new ThemeStateManager(context,
+                new FakeScheduledExecutorService());
         mInternal = new ThemeManagerInternal(context, themeSettingsManager,
-                systemPropertiesReader);
+                systemPropertiesReader, stateManager);
         mUnderTest = new ThemeBinderService(context, mInternal);
         mDefaultSettings = themeSettingsManager.createDefaultThemeSettings(context.getResources(),
                 systemPropertiesReader, mUserId);
