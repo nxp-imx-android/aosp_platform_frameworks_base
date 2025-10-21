@@ -45,7 +45,6 @@ import static com.android.server.am.BroadcastRecord.getReceiverProcessName;
 import static com.android.server.am.BroadcastRecord.getReceiverUid;
 import static com.android.server.am.BroadcastRecord.isDeliveryStateTerminal;
 import static com.android.server.am.psc.Constants.SCHED_GROUP_UNDEFINED;
-import static com.android.window.flags.Flags.balCheckBroadcastWhenDispatched;
 
 import android.annotation.CheckResult;
 import android.annotation.NonNull;
@@ -1171,7 +1170,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
         }
 
         if (r.mBackgroundStartPrivileges.allowsAny()
-                && (r.realCallingUid != app.uid || !balCheckBroadcastWhenDispatched())) {
+                && (r.realCallingUid != app.uid)) {
             // allow the broadcast receiver potential privileges if it is not sent to itself
             app.addOrUpdateBackgroundStartPrivileges(r, r.mBackgroundStartPrivileges);
 
