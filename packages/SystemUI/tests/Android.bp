@@ -84,5 +84,7 @@ test_module_config {
     exclude_annotations: [
         "android.platform.test.annotations.Ignore",
         "android.platform.test.annotations.FlakyTest",
+        "androidx.test.filters.FlakyTest",
+        "org.junit.Ignore",
     ],
 }
