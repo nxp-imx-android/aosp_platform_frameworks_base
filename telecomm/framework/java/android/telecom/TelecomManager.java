@@ -15,7 +15,6 @@
 package android.telecom;
 
 import static android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE;
-import static android.content.Intent.LOCAL_FLAG_FROM_SYSTEM;
 
 import android.Manifest;
 import android.annotation.CallbackExecutor;
@@ -217,6 +216,11 @@ public class TelecomManager {
     @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS)
     @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_CALL_BACK = "android.telecom.action.CALL_BACK";
+
+    private static final String ACTION_MANAGE_BLOCKED_NUMBERS =
+            "android.telecom.action.MANAGE_BLOCKED_NUMBERS";
+
+    private static final String TELECOM_PACKAGE = "com.android.server.telecom";
 
     /**
      * Extra value used to provide the package name for {@link #ACTION_CHANGE_DEFAULT_DIALER}.
@@ -2759,19 +2763,8 @@ public class TelecomManager {
      * {@code true} for the current user.
      */
     public Intent createManageBlockedNumbersIntent() {
-        ITelecomService service = getTelecomService();
-        Intent result = null;
-        if (service != null) {
-            try {
-                result = service.createManageBlockedNumbersIntent(mContext.getPackageName());
-                if (result != null) {
-                    result.prepareToEnterProcess(LOCAL_FLAG_FROM_SYSTEM,
-                            mContext.getAttributionSource());
-                }
-            } catch (RemoteException e) {
-                Log.e(TAG, "Error calling ITelecomService#createManageBlockedNumbersIntent", e);
-            }
-        }
+        Intent result = new Intent(ACTION_MANAGE_BLOCKED_NUMBERS);
+        result.setPackage(TELECOM_PACKAGE);
         return result;
     }
 
@@ -2787,24 +2780,21 @@ public class TelecomManager {
     @NonNull
     public Intent createLaunchEmergencyDialerIntent(@Nullable String number) {
         ITelecomService service = getTelecomService();
+        Intent intent = new Intent(Intent.ACTION_DIAL_EMERGENCY);
         if (service != null) {
             try {
-                Intent result = service.createLaunchEmergencyDialerIntent(number);
-                if (result != null) {
-                    result.prepareToEnterProcess(LOCAL_FLAG_FROM_SYSTEM,
-                            mContext.getAttributionSource());
+                String packageName = service.getPackageForCreateLaunchEmergencyDialerIntent();
+                // Telecom service knows the package name of the expected emergency dialer package;
+                // if it is not available, then fallback to not targeting a specific package.
+                if (!TextUtils.isEmpty(packageName)) {
+                    intent.setPackage(packageName);
                 }
-                return result;
             } catch (RemoteException e) {
                 Log.e(TAG, "Error createLaunchEmergencyDialerIntent", e);
             }
         } else {
             Log.w(TAG, "createLaunchEmergencyDialerIntent - Telecom service not available.");
         }
-
-        // Telecom service knows the package name of the expected emergency dialer package; if it
-        // is not available, then fallback to not targeting a specific package.
-        Intent intent = new Intent(Intent.ACTION_DIAL_EMERGENCY);
         if (!TextUtils.isEmpty(number) && TextUtils.isDigitsOnly(number)) {
             intent.setData(Uri.fromParts(PhoneAccount.SCHEME_TEL, number, null));
         }
