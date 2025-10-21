@@ -55,11 +55,13 @@ final class SessionLifecycle {
         @Nullable
         LifecycleState.Closed mClosed = null;
 
-        /** True if any blocked activity is running on the display. */
-        boolean mBlockedActivityVisible = false;
+        /** Package name of the blocking activity is running on the display, if any. */
+        @Nullable
+        String mBlockingActivityPackage = null;
 
-        /** True if there is a FLAG_SECURE window on the display. */
-        boolean mSecureWindowVisible = false;
+        /** Package name of the app showing a FLAG_SECURE window on the display, if any. */
+        @Nullable
+        String mSecureWindowPackage = null;
 
         @NonNull
         private LifecycleState computeState(
@@ -68,15 +70,13 @@ final class SessionLifecycle {
                 return mClosed;
             }
             if (Flags.computerControlBlockedState()
-                    && (mBlockedActivityVisible || mSecureWindowVisible)) {
-                final int reason = mBlockedActivityVisible
-                        ? ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH
-                        : ComputerControlSession.BLOCK_REASON_SECURE_CONTENT;
-                if (previousState instanceof Blocked
-                        && reason == ((Blocked) previousState).reason) {
-                    return previousState;
-                }
-                return new Blocked(reason);
+                    && (mBlockingActivityPackage != null || mSecureWindowPackage != null)) {
+                return mBlockingActivityPackage != null
+                        ? new Blocked(
+                                ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH,
+                                mBlockingActivityPackage)
+                        : new Blocked(ComputerControlSession.BLOCK_REASON_SECURE_CONTENT,
+                                mSecureWindowPackage);
             }
             return LifecycleState.ACTIVE;
         }
@@ -106,7 +106,7 @@ final class SessionLifecycle {
                 case LifecycleState.Active ignored ->
                         mLifecycle.onActive();
                 case Blocked blocked ->
-                        mLifecycle.onBlocked(blocked.reason);
+                        mLifecycle.onBlocked(blocked.reason, blocked.blockingPackage);
                 case LifecycleState.Closed closed ->
                         mLifecycle.onClosed(closed.reason);
             }
@@ -150,9 +150,10 @@ final class SessionLifecycle {
 
                 @Override
                 public void onBlocked(
-                        @ComputerControlSession.SessionBlockReason int initialBlockReason) {
+                        @ComputerControlSession.SessionBlockReason int reason,
+                        @Nullable String blockingPackage) {
                     try {
-                        callback.onBlocked(initialBlockReason);
+                        callback.onBlocked(reason, blockingPackage);
                     } catch (RemoteException e) {
                         // Ignore
                     }

@@ -75,6 +75,11 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
             "android.companion.virtual.computercontrol.extra.AUTOMATING_PACKAGE_NAME";
 
     /**
+     * Unknown session creation error.
+     */
+    public static final int ERROR_UNKNOWN = 0;
+
+    /**
      * Error code indicating that a new session cannot be created because the maximum number of
      * allowed concurrent sessions has been reached.
      *
@@ -100,12 +105,18 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "ERROR_", value = {
+            ERROR_UNKNOWN,
             ERROR_SESSION_LIMIT_REACHED,
             ERROR_DEVICE_LOCKED,
             ERROR_PERMISSION_DENIED})
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     public @interface SessionCreationError {
     }
+
+    /**
+     * Unknown session close reason.
+     */
+    public static final int CLOSE_REASON_UNKNOWN = 0;
 
     /**
      * Close reason indicating the session was closed by the caller.
@@ -128,12 +139,18 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "CLOSE_REASON_", value = {
+            CLOSE_REASON_UNKNOWN,
             CLOSE_REASON_CALLER_INITIATED,
             CLOSE_REASON_USER_INITIATED,
             CLOSE_REASON_SESSION_TIMED_OUT})
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     public @interface SessionCloseReason {
     }
+
+    /**
+     * Unknown session block reason.
+     */
+    public static final int BLOCK_REASON_UNKNOWN = 0;
 
     /**
      * Reason indicating that the session was blocked due to secure content being present.
@@ -149,6 +166,7 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "BLOCK_REASON_", value = {
+            BLOCK_REASON_UNKNOWN,
             BLOCK_REASON_SECURE_CONTENT,
             BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH})
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
@@ -454,9 +472,11 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
                 }
 
                 @Override
-                public void onBlocked(@SessionBlockReason int reason) {
+                public void onBlocked(@SessionBlockReason int reason,
+                        @Nullable String blockingPackage) {
                     Binder.withCleanCallingIdentity(
-                            () -> executor.execute(() -> callback.onBlocked(reason)));
+                            () -> executor.execute(
+                                    () -> callback.onBlocked(reason, blockingPackage)));
                 }
 
                 @Override
@@ -493,9 +513,9 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     }
 
     @Override
-    public void onBlocked(@SessionBlockReason int reason) {
+    public void onBlocked(@SessionBlockReason int reason, @Nullable String blockingPackage) {
         synchronized (mLifecycle) {
-            mLifecycle.onBlocked(reason);
+            mLifecycle.onBlocked(reason, blockingPackage);
         }
     }
 
@@ -661,8 +681,10 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
          *
          * @param reason the reason that the session initially entered the blocked
          *               state.
+         * @param blockingPackage the package name of the application that blocked the session,
+         *                        or null if the blocking package is not known.
          */
-        void onBlocked(@SessionBlockReason int reason);
+        void onBlocked(@SessionBlockReason int reason, @Nullable String blockingPackage);
 
         /**
          * Called when the computer control session is closed. This marks the end of the session's

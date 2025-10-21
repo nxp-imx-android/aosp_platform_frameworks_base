@@ -201,7 +201,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 }
 
                 @Override
-                public void onBlocked(@ComputerControlSession.SessionCloseReason int reason) {
+                public void onBlocked(@ComputerControlSession.SessionCloseReason int reason,
+                        @Nullable String blockingPackage) {
                     cancelOngoingKeyGestures();
                     cancelOngoingTouchGestures();
 
@@ -845,7 +846,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             // active state.
             if (isActivityLaunchAllowed(topActivity, userId)) {
                 mLifecycle.updateLifecycleState((config) -> {
-                    config.mBlockedActivityVisible = false;
+                    config.mBlockingActivityPackage = null;
                 });
             }
         }
@@ -854,8 +855,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         public void onDisplayEmpty(int displayId) {
             Slog.v(TAG, "Display empty");
             mLifecycle.updateLifecycleState((config) -> {
-                config.mBlockedActivityVisible = false;
-                config.mSecureWindowVisible = false;
+                config.mBlockingActivityPackage = null;
+                config.mSecureWindowPackage = null;
             });
         }
 
@@ -871,7 +872,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             }
 
             final var changedState = mLifecycle.updateLifecycleState(
-                    (config) -> config.mBlockedActivityVisible = true);
+                    (config) -> config.mBlockingActivityPackage =
+                            Objects.requireNonNull(componentName.getPackageName()));
             if (Flags.computerControlBlockedState()) {
                 if (!(changedState instanceof LifecycleState.Blocked)) {
                     return;
@@ -891,13 +893,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         public void onSecureWindowShown(int displayId, @NonNull ComponentName componentName,
                 @NonNull UserHandle user) {
             Slog.v(TAG, "Secure window shown for " + componentName);
-            mLifecycle.updateLifecycleState((config) -> config.mSecureWindowVisible = true);
+            mLifecycle.updateLifecycleState((config) -> config.mSecureWindowPackage =
+                    Objects.requireNonNull(componentName.getPackageName()));
         }
 
         @Override
         public void onSecureWindowHidden(int displayId) {
             Slog.v(TAG, "Secure window hidden");
-            mLifecycle.updateLifecycleState((config) -> config.mSecureWindowVisible = false);
+            mLifecycle.updateLifecycleState((config) -> config.mSecureWindowPackage = null);
         }
 
         @Override
@@ -913,7 +916,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             // blocked state.
             if (!isActivityLaunchAllowed(componentName, userId)) {
                 mLifecycle.updateLifecycleState(
-                        (config) -> config.mBlockedActivityVisible = true);
+                        (config) -> config.mBlockingActivityPackage =
+                                Objects.requireNonNull(componentName.getPackageName()));
             }
         }
     }

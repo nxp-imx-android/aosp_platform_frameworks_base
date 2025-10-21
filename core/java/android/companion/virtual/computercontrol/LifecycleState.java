@@ -16,6 +16,10 @@
 
 package android.companion.virtual.computercontrol;
 
+import android.annotation.Nullable;
+
+import java.util.Objects;
+
 /**
  * State definitions for {@link LifecycleStateTracker}.
  * @hide
@@ -39,25 +43,30 @@ public sealed interface LifecycleState {
     /** The blocked state, where the agent cannot see nor interact with the session contents. */
     final class Blocked implements LifecycleState {
         public final @ComputerControlSession.SessionBlockReason int reason;
+        @Nullable
+        public final String blockingPackage;
 
-        public Blocked(@ComputerControlSession.SessionBlockReason int reason) {
+        public Blocked(@ComputerControlSession.SessionBlockReason int reason,
+                @Nullable String blockingPackage) {
             this.reason = reason;
+            this.blockingPackage = blockingPackage;
         }
 
         @Override
         public boolean equals(Object o) {
             if (!(o instanceof Blocked blocked)) return false;
-            return reason == blocked.reason;
+            return reason == blocked.reason && Objects.equals(blockingPackage,
+                    blocked.blockingPackage);
         }
 
         @Override
         public int hashCode() {
-            return reason;
+            return Objects.hash(reason, blockingPackage);
         }
 
         @Override
         public String toString() {
-            return "Blocked(reason=" + reason + ")";
+            return "Blocked(reason=" + reason + ", blockingPackage=" + blockingPackage + ")";
         }
     }
 

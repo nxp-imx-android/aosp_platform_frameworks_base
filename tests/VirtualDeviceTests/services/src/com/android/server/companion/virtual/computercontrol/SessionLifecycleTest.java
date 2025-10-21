@@ -16,6 +16,10 @@
 
 package com.android.server.companion.virtual.computercontrol;
 
+import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH;
+import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_SECURE_CONTENT;
+import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
@@ -46,6 +50,8 @@ import org.mockito.MockitoAnnotations;
 @RunWith(AndroidJUnit4.class)
 public class SessionLifecycleTest {
 
+    private static final String TEST_PKG = "com.test.pkg";
+
     @Rule
     public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     @Mock
@@ -73,8 +79,7 @@ public class SessionLifecycleTest {
 
         verify(mRemoteCallback).onActive();
         verify(mLocalCallback).onActive();
-        assertThat(mLifecycle.getCurrentState()).isInstanceOf(
-                Active.class);
+        assertThat(mLifecycle.getCurrentState()).isInstanceOf(Active.class);
     }
 
     @Test
@@ -90,11 +95,9 @@ public class SessionLifecycleTest {
         initializeCallbacksAndReset();
 
         final var state = mLifecycle.updateLifecycleState(
-                (config) -> config.mClosed =
-                        new Closed(ComputerControlSession.CLOSE_REASON_CALLER_INITIATED));
+                (config) -> config.mClosed = new Closed(CLOSE_REASON_CALLER_INITIATED));
         assertThat(state).isInstanceOf(Closed.class);
-        assertThat(((Closed) state).reason).isEqualTo(
-                ComputerControlSession.CLOSE_REASON_CALLER_INITIATED);
+        assertThat(((Closed) state).reason).isEqualTo(CLOSE_REASON_CALLER_INITIATED);
     }
 
     @Test
@@ -111,16 +114,14 @@ public class SessionLifecycleTest {
         initializeCallbacksAndReset();
 
         var state = mLifecycle.updateLifecycleState(
-                (config) -> config.mSecureWindowVisible = true);
+                (config) -> config.mSecureWindowPackage = TEST_PKG);
 
         assertThat(state).isInstanceOf(Blocked.class);
-        assertThat(((Blocked) state).reason)
-                .isEqualTo(ComputerControlSession.BLOCK_REASON_SECURE_CONTENT);
-        verify(mLocalCallback).onBlocked(ComputerControlSession.BLOCK_REASON_SECURE_CONTENT);
-        verify(mRemoteCallback).onBlocked(ComputerControlSession.BLOCK_REASON_SECURE_CONTENT);
+        assertThat(((Blocked) state).reason).isEqualTo(BLOCK_REASON_SECURE_CONTENT);
+        verify(mLocalCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT, TEST_PKG);
+        verify(mRemoteCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT, TEST_PKG);
 
-        state = mLifecycle.updateLifecycleState(
-                (config) -> config.mSecureWindowVisible = false);
+        state = mLifecycle.updateLifecycleState((config) -> config.mSecureWindowPackage = null);
         assertThat(state).isInstanceOf(Active.class);
         verify(mLocalCallback).onActive();
         verify(mRemoteCallback).onActive();
@@ -132,18 +133,14 @@ public class SessionLifecycleTest {
         initializeCallbacksAndReset();
 
         var state = mLifecycle.updateLifecycleState(
-                (config) -> config.mBlockedActivityVisible = true);
+                (config) -> config.mBlockingActivityPackage = TEST_PKG);
 
         assertThat(state).isInstanceOf(Blocked.class);
-        assertThat(((Blocked) state).reason)
-                .isEqualTo(ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
-        verify(mLocalCallback).onBlocked(
-                ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
-        verify(mRemoteCallback).onBlocked(
-                ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+        assertThat(((Blocked) state).reason).isEqualTo(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+        verify(mLocalCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH, TEST_PKG);
+        verify(mRemoteCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH, TEST_PKG);
 
-        state = mLifecycle.updateLifecycleState(
-                (config) -> config.mBlockedActivityVisible = false);
+        state = mLifecycle.updateLifecycleState((config) -> config.mBlockingActivityPackage = null);
 
         assertThat(state).isInstanceOf(Active.class);
         verify(mLocalCallback).onActive();
@@ -156,20 +153,16 @@ public class SessionLifecycleTest {
             throws Exception {
         initializeCallbacksAndReset();
 
-        var state = mLifecycle.updateLifecycleState(
-                (config) -> {
-                    config.mBlockedActivityVisible = true;
-                    config.mSecureWindowVisible = true;
-                });
+        var state = mLifecycle.updateLifecycleState((config) -> {
+            config.mBlockingActivityPackage = TEST_PKG;
+            config.mSecureWindowPackage = TEST_PKG;
+        });
 
         // The disallowed activity block reason overrides the secure content block reason.
         assertThat(state).isInstanceOf(Blocked.class);
-        assertThat(((Blocked) state).reason)
-                .isEqualTo(ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
-        verify(mLocalCallback).onBlocked(
-                ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
-        verify(mRemoteCallback).onBlocked(
-                ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+        assertThat(((Blocked) state).reason).isEqualTo(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+        verify(mLocalCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH, TEST_PKG);
+        verify(mRemoteCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH, TEST_PKG);
     }
 
     @Test
@@ -177,33 +170,25 @@ public class SessionLifecycleTest {
     public void updateLifecycle_blockReasonCanChange() throws Exception {
         initializeCallbacksAndReset();
 
-        var state = mLifecycle.updateLifecycleState(
-                (config) -> {
-                    config.mBlockedActivityVisible = true;
-                    config.mSecureWindowVisible = false;
-                });
+        var state = mLifecycle.updateLifecycleState((config) -> {
+            config.mBlockingActivityPackage = TEST_PKG;
+            config.mSecureWindowPackage = null;
+        });
 
         assertThat(state).isInstanceOf(Blocked.class);
-        assertThat(((Blocked) state).reason)
-                .isEqualTo(ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
-        verify(mLocalCallback).onBlocked(
-                ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
-        verify(mRemoteCallback).onBlocked(
-                ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+        assertThat(((Blocked) state).reason).isEqualTo(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+        verify(mLocalCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH, TEST_PKG);
+        verify(mRemoteCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH, TEST_PKG);
 
-        state = mLifecycle.updateLifecycleState(
-                (config) -> {
-                    config.mBlockedActivityVisible = false;
-                    config.mSecureWindowVisible = true;
-                });
+        state = mLifecycle.updateLifecycleState((config) -> {
+            config.mBlockingActivityPackage = null;
+            config.mSecureWindowPackage = TEST_PKG;
+        });
 
         assertThat(state).isInstanceOf(Blocked.class);
-        assertThat(((Blocked) state).reason)
-                .isEqualTo(ComputerControlSession.BLOCK_REASON_SECURE_CONTENT);
-        verify(mLocalCallback).onBlocked(
-                ComputerControlSession.BLOCK_REASON_SECURE_CONTENT);
-        verify(mRemoteCallback).onBlocked(
-                ComputerControlSession.BLOCK_REASON_SECURE_CONTENT);
+        assertThat(((Blocked) state).reason).isEqualTo(BLOCK_REASON_SECURE_CONTENT);
+        verify(mLocalCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT, TEST_PKG);
+        verify(mRemoteCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT, TEST_PKG);
     }
 
     private void initializeCallbacksAndReset() {
