@@ -3130,6 +3130,89 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    public void testUpdateOverrideGroupKey_childUpdatedAfterUnAutogroupped() throws Exception {
+        final String originalGroupName = "originalGroup";
+
+        // Add enough singleton groups to trigger forced grouping
+        ArrayList<NotificationRecord> originalSummaries = new ArrayList<>();
+        for (int i = 0; i < NotificationManagerService.AUTOGROUP_SPARSE_GROUPS_AT_COUNT; i++) {
+            // Add a "singleton group"
+            final String groupName = originalGroupName + i;
+            final NotificationRecord nr0 =
+                    generateNotificationRecord(mTestNotificationChannel, 0, "tag" + i, groupName,
+                        false);
+            mService.addEnqueuedNotification(nr0);
+            NotificationManagerService.PostNotificationRunnable runnable =
+                    mService.new PostNotificationRunnable(nr0.getKey(),
+                        nr0.getSbn().getPackageName(),
+                        nr0.getUid(), mPostNotificationTrackerFactory.newTracker(null));
+            runnable.run();
+            waitForIdle();
+
+            final NotificationRecord summary =
+                    generateNotificationRecord(mTestNotificationChannel, 2, groupName, true);
+            mService.addEnqueuedNotification(summary);
+            originalSummaries.add(summary);
+            runnable = mService.new PostNotificationRunnable(summary.getKey(),
+                    summary.getSbn().getPackageName(), summary.getUid(),
+                    mPostNotificationTrackerFactory.newTracker(null));
+            runnable.run();
+            waitForIdle();
+            mService.mSummaryByGroupKey.put(summary.getGroupKey(), summary);
+
+            moveTimeForwardAndWaitForIdle(DELAY_FORCE_REGROUP_TIME);
+        }
+
+        // Check that the original summaries were canceled and
+        // Check that the aggregate group summary was created
+        assertThat(mService.mSummaryByGroupKey).hasSize(1);
+        NotificationRecord aggregateSummary = mService.mSummaryByGroupKey.valueAt(0);
+        assertThat(aggregateSummary).isNotNull();
+        assertThat(GroupHelper.isAggregatedGroup(aggregateSummary)).isTrue();
+
+        // Post new summary + update existing child notification to new group
+        final String newGroupName = "newGroup";
+        final NotificationRecord summary =
+                generateNotificationRecord(mTestNotificationChannel, 2, newGroupName, true);
+        mService.addEnqueuedNotification(summary);
+
+        final NotificationRecord nr0 =
+                generateNotificationRecord(mTestNotificationChannel, 0, "tag0", newGroupName,
+                    false);
+        nr0.setOverrideGroupKey(aggregateSummary.getGroupKey());
+        mService.addEnqueuedNotification(nr0);
+
+        // Cancel the original summary for the regrouped child
+        NotificationRecord originalSummary = originalSummaries.get(0);
+        mBinderService.cancelNotificationWithTag(originalSummary.getSbn().getPackageName(),
+                originalSummary.getSbn().getPackageName(), originalSummary.getSbn().getTag(),
+                originalSummary.getSbn().getId(), originalSummary.getSbn().getUserId());
+        waitForIdle();
+
+        // Actually post the summary & child update
+        NotificationManagerService.PostNotificationRunnable runnable =
+                mService.new PostNotificationRunnable(summary.getKey(),
+                    summary.getSbn().getPackageName(), summary.getUid(),
+                    mPostNotificationTrackerFactory.newTracker(null));
+        runnable.run();
+        waitForIdle();
+        mService.mSummaryByGroupKey.put(summary.getGroupKey(), summary);
+
+        runnable = mService.new PostNotificationRunnable(nr0.getKey(),
+                nr0.getSbn().getPackageName(),
+                nr0.getUid(), mPostNotificationTrackerFactory.newTracker(null));
+        runnable.run();
+        waitForIdle();
+
+        moveTimeForwardAndWaitForIdle(DELAY_FORCE_REGROUP_TIME);
+
+        // Check that the new summary & child are in a valid state
+        assertThat(mService.mSummaryByGroupKey).hasSize(2);
+        assertThat(nr0.getGroupKey()).isEqualTo(summary.getGroupKey());
+    }
+
+    @Test
     public void testCancelGroupChildrenAfterBundling_summaryCanceled() throws Exception {
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
@@ -3213,6 +3296,126 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         // Check that all notifications were canceled
         assertThat(mService.mNotificationList).isEmpty();
+    }
+
+    @Test
+    public void testUpdateGroupNameAfterBundling_summaryCanceled() throws Exception {
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
+                anyString())).thenReturn(true);
+
+        // Add some ungrouped notifications to trigger autogrouping
+        final int numNotif = 3;
+        for (int i = 0; i < numNotif; i++) {
+            final NotificationRecord nr0 = generateNotificationRecord(mTestNotificationChannel, i,
+                    mUserId);
+            mService.addEnqueuedNotification(nr0);
+            NotificationManagerService.PostNotificationRunnable runnable =
+                    mService.new PostNotificationRunnable(nr0.getKey(),
+                        nr0.getSbn().getPackageName(),
+                        nr0.getUid(), mPostNotificationTrackerFactory.newTracker(null));
+            runnable.run();
+            waitForIdle();
+        }
+
+        moveTimeForwardAndWaitForIdle(DELAY_FORCE_REGROUP_TIME);
+
+        // Check that the aggregate group summary was created
+        assertThat(mService.mSummaryByGroupKey).hasSize(1);
+        NotificationRecord aggregateSummary = mService.mSummaryByGroupKey.valueAt(0);
+        assertThat(aggregateSummary).isNotNull();
+        assertThat(GroupHelper.isAggregatedGroup(aggregateSummary)).isTrue();
+
+        // Post grouped notifications
+        final String originalGroupName = "originalGroup";
+        final int summaryId = 0;
+        final NotificationRecord r1 = generateNotificationRecord(mTestNotificationChannel,
+                summaryId + 1, "tag0", originalGroupName, false);
+        mService.addEnqueuedNotification(r1);
+
+        // Test an adjustment for an enqueued notification
+        Bundle signals = new Bundle();
+        signals.putInt(Adjustment.KEY_TYPE, Adjustment.TYPE_NEWS);
+        Adjustment adjustment1 = new Adjustment(
+                r1.getSbn().getPackageName(), r1.getKey(), signals, "",
+                r1.getUser().getIdentifier());
+        mBinderService.applyEnqueuedAdjustmentFromAssistant(null, adjustment1);
+
+        final NotificationRecord summary = generateNotificationRecord(mTestNotificationChannel,
+                summaryId, "tagSummary", originalGroupName, true);
+        mService.addEnqueuedNotification(summary);
+
+        // Actually post the summary & child update
+        NotificationManagerService.PostNotificationRunnable runnable =
+                mService.new PostNotificationRunnable(r1.getKey(),
+                    r1.getSbn().getPackageName(), r1.getUid(),
+                    mPostNotificationTrackerFactory.newTracker(null));
+        runnable.run();
+        waitForIdle();
+
+        runnable = mService.new PostNotificationRunnable(summary.getKey(),
+                summary.getSbn().getPackageName(), summary.getUid(),
+                mPostNotificationTrackerFactory.newTracker(null));
+        final String originalGroupKey = summary.getGroupKey();
+        mService.mSummaryByGroupKey.put(summary.getGroupKey(), summary);
+        runnable.run();
+        waitForIdle();
+
+        mTestableLooper.moveTimeForward(DELAY_FORCE_REGROUP_TIME);
+        waitForIdle();
+
+        // Check that the notification was bundled and a group summary was created
+        assertThat(mService.mSummaryByGroupKey).hasSize(2);
+        assertThat(r1.getChannel().getId()).isEqualTo(NEWS_ID);
+        assertThat(r1.getBundleType()).isEqualTo(Adjustment.TYPE_NEWS);
+        assertThat(r1.getGroupKey()).isNotEqualTo(originalGroupKey);
+        final NotificationRecord bundleSummary = mService.mSummaryByGroupKey.get(r1.getGroupKey());
+        assertThat(bundleSummary).isNotNull();
+        assertThat(GroupHelper.isAggregatedGroup(bundleSummary)).isTrue();
+        assertThat(mService.mNotificationList).doesNotContain(summary);
+
+        // Update summary + notification
+        reset(mWorkerHandler);
+        final String newGroupName = "newGroupName";
+        final NotificationRecord rUpdate = generateNotificationRecord(mTestNotificationChannel,
+                summaryId + 1, "tag0", newGroupName, false);
+        rUpdate.setOverrideGroupKey(bundleSummary.getGroupKey());
+        mService.addEnqueuedNotification(rUpdate);
+
+        // Test an adjustment for an enqueued notification
+        signals = new Bundle();
+        signals.putInt(Adjustment.KEY_TYPE, Adjustment.TYPE_NEWS);
+        adjustment1 = new Adjustment(
+                rUpdate.getSbn().getPackageName(), rUpdate.getKey(), signals, "",
+                rUpdate.getUser().getIdentifier());
+        mBinderService.applyEnqueuedAdjustmentFromAssistant(null, adjustment1);
+
+        final NotificationRecord summaryUpdate = generateNotificationRecord(
+                mTestNotificationChannel,
+                summaryId, "tagSummary", newGroupName, true);
+        mService.addEnqueuedNotification(summaryUpdate);
+
+        // Actually post the summary & child update
+        runnable = mService.new PostNotificationRunnable(rUpdate.getKey(),
+                rUpdate.getSbn().getPackageName(), rUpdate.getUid(),
+                mPostNotificationTrackerFactory.newTracker(null));
+        runnable.run();
+        waitForIdle();
+        runnable = mService.new PostNotificationRunnable(summaryUpdate.getKey(),
+                summaryUpdate.getSbn().getPackageName(), summaryUpdate.getUid(),
+                mPostNotificationTrackerFactory.newTracker(null));
+        mService.mSummaryByGroupKey.put(summaryUpdate.getGroupKey(), summaryUpdate);
+        runnable.run();
+        waitForIdle();
+
+        mTestableLooper.moveTimeForward(DELAY_FORCE_REGROUP_TIME);
+        waitForIdle();
+
+        verify(mWorkerHandler, times(1)).scheduleCancelNotification(any(), eq(summaryId));
+        assertThat(mService.mSummaryByGroupKey).hasSize(2);
+        assertThat(mService.mNotificationList).doesNotContain(summaryUpdate);
     }
 
     @Test

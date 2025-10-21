@@ -630,6 +630,16 @@ public class GroupHelper {
                 }
                 mCallback.removeAutoGroupSummary(userId, pkgName, fullAggregateGroupKey.toString());
                 mAggregatedNotifications.remove(fullAggregateGroupKey);
+            } else if (record.getGroupKey().equals(fullAggregateGroupKey.toString())
+                    && !isAggregatedGroup(record)) {
+                // Notification was un-autogrouped between enqueue and post
+                if (DEBUG) {
+                    Slog.i(TAG,
+                            "Record has aggregate override group key, but is not aggregated"
+                            + " (bad state). Removing override key: "
+                            + record + " " + fullAggregateGroupKey);
+                }
+                record.setOverrideGroupKey(null);
             }
         }
         return wasUnAggregated;
@@ -697,10 +707,7 @@ public class GroupHelper {
                             + record);
                 }
 
-                boolean aggregated =
-                        addToUngroupedAndMaybeAggregate(record, fullAggregateGroupKey, sectioner);
-                if (!aggregated && isSummaryWithAllChildrenBundled(record, notificationList,
-                        new ArrayList<>())) {
+                if (isSummaryWithAllChildrenBundled(record, notificationList, new ArrayList<>())) {
                     // Cancel the summary and cache it if does not get aggregated
                     // in order to avoid empty summaries
                     if (DEBUG) {
@@ -709,6 +716,8 @@ public class GroupHelper {
                     }
                     mCallback.removeAppProvidedSummary(record.getKey());
                     cacheCanceledSummary(record);
+                } else {
+                    addToUngroupedAndMaybeAggregate(record, fullAggregateGroupKey, sectioner);
                 }
 
                 return;
