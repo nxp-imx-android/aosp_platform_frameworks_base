@@ -27,7 +27,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import android.app.ActivityManagerInternal.FrozenProcessListener;
 import android.content.ComponentName;
@@ -36,6 +39,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManagerInternal;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.IMmd;
 import android.os.MessageQueue;
 import android.os.Process;
 import android.platform.test.annotations.DisableFlags;
@@ -97,6 +101,9 @@ public final class CachedAppOptimizerTest {
     @Mock
     private PackageManagerInternal mPackageManagerInt;
 
+    @Mock
+    private IMmd mIMmd;
+
     // Control whether the freezer mock reports that freezing is enabled or not.
     private boolean mUseFreezer;
 
@@ -137,6 +144,7 @@ public final class CachedAppOptimizerTest {
                 }, mProcessDependencies);
         LocalServices.removeServiceForTest(PackageManagerInternal.class);
         LocalServices.addService(PackageManagerInternal.class, mPackageManagerInt);
+        mCachedAppOptimizerUnderTest.setMmd(mIMmd);
 
         mCachedAppOptimizerUnderTest.init();
         mCachedAppOptimizerUnderTest.mCompactStatsManager.reinit();
@@ -741,6 +749,71 @@ public final class CachedAppOptimizerTest {
         assertThat(mCountDown.await(5, TimeUnit.SECONDS)).isTrue();
         assertThat(mCachedAppOptimizerUnderTest.mProcStateThrottle)
                 .containsExactlyElementsIn(expected);
+    }
+
+    @EnableFlags(com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK)
+    @Test
+    public void zramWritebackInitiated() throws Exception {
+        long[] rssAfter =
+                new long[]{/*totalRSS*/ 9000, /*fileRSS*/ 9000, /*anonRSS*/ 11000, /*swap*/9000};
+        verifyZramWriteback(rssAfter, /*hasActivities*/ true, /*supportsZramOps*/ true,
+                /*shouldBeCalled*/ true);
+    }
+
+    @EnableFlags(com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK)
+    @Test
+    public void zramWritebackNotInitiatedDueToSwapSize() throws Exception {
+        // 200MB swap size
+        long[] rssAfter =
+                new long[]{/*totalRSS*/ 9000, /*fileRSS*/ 9000, /*anonRSS*/ 11000, /*swap*/
+                        204800};
+        verifyZramWriteback(rssAfter, /*hasActivities*/ true, /*supportsZramOps*/ true,
+                /*shouldBeCalled*/ false);
+    }
+
+    @EnableFlags(com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK)
+    @Test
+    public void zramWritebackNotInitiatedNoActivities() throws Exception {
+        long[] rssAfter =
+                new long[]{/*totalRSS*/ 9000, /*fileRSS*/ 9000, /*anonRSS*/ 11000, /*swap*/9000};
+        verifyZramWriteback(rssAfter, /*hasActivities*/ false, /*supportsZramOps*/ true,
+                /*shouldBeCalled*/ false);
+    }
+
+    @EnableFlags(com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK)
+    @Test
+    public void zramWritebackNotInitiatedNoZramOpsSupport() throws Exception {
+        long[] rssAfter =
+                new long[]{/*totalRSS*/ 9000, /*fileRSS*/ 9000, /*anonRSS*/ 11000, /*swap*/9000};
+        verifyZramWriteback(rssAfter, /*hasActivities*/ true, /*supportsZramOps*/ false,
+                /*shouldBeCalled*/ false);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    private void verifyZramWriteback(long[] rssAfter, boolean hasActivities,
+            boolean supportsZramOps, boolean shouldBeCalled) throws Exception {
+        setFlag(CachedAppOptimizer.KEY_USE_COMPACTION, "true", true);
+        setFlag(CachedAppOptimizer.KEY_COMPACT_FULL_DELTA_RSS_THROTTLE_KB, "12000", false);
+        initActivityManagerService();
+        long[] rssBefore =
+                new long[]{/*totalRSS*/ 10000, /*fileRSS*/ 10000, /*anonRSS*/ 12000, /*swap*/
+                        10000};
+        int pid = 1;
+        ProcessRecord processRecord = spy(makeProcessRecord(pid, 2, 3, "p1", "app1"));
+        doReturn(hasActivities).when(processRecord).hasActivities();
+        doReturn(supportsZramOps).when(mIMmd).supportsProcessMemoryZramOps();
+
+        mProcessDependencies.setRss(rssBefore);
+        mProcessDependencies.setRssAfterCompaction(rssAfter);
+        mCachedAppOptimizerUnderTest.compactApp(processRecord,
+                CachedAppOptimizer.CompactProfile.FULL, CachedAppOptimizer.CompactSource.APP,
+                false);
+        waitForHandler();
+        if (shouldBeCalled) {
+            verify(mIMmd).asyncWritebackProcessZramMemory(any(), any());
+        } else {
+            verify(mIMmd, never()).asyncWritebackProcessZramMemory(any(), any());
+        }
     }
 
     @SuppressWarnings("GuardedBy")
