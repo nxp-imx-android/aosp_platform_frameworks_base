@@ -36,6 +36,7 @@ import android.os.RemoteException;
 import android.service.autofill.Dataset;
 import android.service.autofill.FillEventHistory;
 import android.service.autofill.FillResponse;
+import android.service.autofill.Flags;
 import android.service.autofill.SaveInfo;
 import android.service.autofill.ValueFinder;
 import android.text.TextUtils;
@@ -347,9 +348,10 @@ public final class AutoFillUI {
             @NonNull AutoFillUiCallback callback, @NonNull Context context,
             @NonNull PendingUi pendingSaveUi, boolean isUpdate, boolean compatMode,
             boolean showServiceIcon, @Nullable SaveEventLogger mSaveEventLogger) {
+        Context saveContext = Flags.expressiveSaveDialog() ? mContext : context;
         if (sVerbose) {
             Slogf.v(TAG, "showSaveUi(update=%b) for %s and display %d: %s", isUpdate,
-                    componentName.toShortString(), context.getDisplayId(), info);
+                    componentName.toShortString(), saveContext.getDisplayId(), info);
         }
         int numIds = 0;
         numIds += info.getRequiredIds() == null ? 0 : info.getRequiredIds().length;
@@ -369,57 +371,57 @@ public final class AutoFillUI {
             }
             hideAllUiThread(callback);
             mSaveUiCallback = callback;
-            mSaveUi = new SaveUi(context, pendingSaveUi, serviceLabel, serviceIcon,
+            mSaveUi = new SaveUi(saveContext, pendingSaveUi, serviceLabel, serviceIcon,
                     servicePackageName, componentName, info, valueFinder, mOverlayControl,
                     new SaveUi.OnSaveListener() {
-                @Override
-                public void onSave() {
-                    log.setType(MetricsEvent.TYPE_ACTION);
-                    if (mSaveEventLogger != null) {
-                        mSaveEventLogger.maybeSetSaveButtonClicked(true);
-                    }
-                    hideSaveUiUiThread(callback);
-                    callback.save();
-                    destroySaveUiUiThread(pendingSaveUi, true);
-                }
-
-                @Override
-                public void onCancel(IntentSender listener) {
-                    log.setType(MetricsEvent.TYPE_DISMISS);
-                    if (mSaveEventLogger != null) {
-                        mSaveEventLogger.maybeSetCancelButtonClicked(true);
-                    }
-                    hideSaveUiUiThread(callback);
-                    if (listener != null) {
-                        try {
-                            listener.sendIntent(mContext, 0, null, null, null);
-                        } catch (IntentSender.SendIntentException e) {
-                            Slog.e(TAG, "Error starting negative action listener: "
-                                    + listener, e);
+                        @Override
+                        public void onSave() {
+                            log.setType(MetricsEvent.TYPE_ACTION);
+                            if (mSaveEventLogger != null) {
+                                mSaveEventLogger.maybeSetSaveButtonClicked(true);
+                            }
+                            hideSaveUiUiThread(callback);
+                            callback.save();
+                            destroySaveUiUiThread(pendingSaveUi, true);
                         }
-                    }
-                    callback.cancelSave();
-                    destroySaveUiUiThread(pendingSaveUi, true);
-                }
 
-                @Override
-                public void onDestroy() {
-                    if (log.getType() == MetricsEvent.TYPE_UNKNOWN) {
-                        log.setType(MetricsEvent.TYPE_CLOSE);
+                        @Override
+                        public void onCancel(IntentSender listener) {
+                            log.setType(MetricsEvent.TYPE_DISMISS);
+                            if (mSaveEventLogger != null) {
+                                mSaveEventLogger.maybeSetCancelButtonClicked(true);
+                            }
+                            hideSaveUiUiThread(callback);
+                            if (listener != null) {
+                                try {
+                                    listener.sendIntent(mContext, 0, null, null, null);
+                                } catch (IntentSender.SendIntentException e) {
+                                    Slog.e(TAG, "Error starting negative action listener: "
+                                            + listener, e);
+                                }
+                            }
+                            callback.cancelSave();
+                            destroySaveUiUiThread(pendingSaveUi, true);
+                        }
 
-                        callback.cancelSave();
-                    }
-                    mMetricsLogger.write(log);
-                    if (mSaveEventLogger != null) {
-                        mSaveEventLogger.maybeSetDialogDismissed(true);
-                    }
-                }
+                        @Override
+                        public void onDestroy() {
+                            if (log.getType() == MetricsEvent.TYPE_UNKNOWN) {
+                                log.setType(MetricsEvent.TYPE_CLOSE);
 
-                @Override
-                public void startIntentSender(IntentSender intentSender, Intent intent) {
-                    callback.startIntentSender(intentSender, intent);
-                }
-            }, mUiModeMgr.isNightMode(context.getDisplayId()), isUpdate, compatMode,
+                                callback.cancelSave();
+                            }
+                            mMetricsLogger.write(log);
+                            if (mSaveEventLogger != null) {
+                                mSaveEventLogger.maybeSetDialogDismissed(true);
+                            }
+                        }
+
+                        @Override
+                        public void startIntentSender(IntentSender intentSender, Intent intent) {
+                            callback.startIntentSender(intentSender, intent);
+                        }
+                    }, mUiModeMgr.isNightMode(saveContext.getDisplayId()), isUpdate, compatMode,
                     showServiceIcon);
 
             mSaveEventLogger.maybeSetLatencySaveUiDisplayMillis();
