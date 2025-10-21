@@ -20,6 +20,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
+import android.annotation.TestApi;
 import android.app.ActivityThread;
 import android.app.Application;
 import android.compat.annotation.UnsupportedAppUsage;
@@ -44,8 +45,11 @@ import java.lang.reflect.InvocationTargetException;
 @SystemApi
 public final class WebViewDelegate {
 
+    /** @hide */
+    @TestApi
     @UnsupportedAppUsage
-    /* package */ WebViewDelegate() { }
+    @FlaggedApi(Flags.FLAG_SELECTION_ACTION_MENU_CLIENT)
+    public WebViewDelegate() { }
 
     /**
      * Listener that gets notified whenever tracing has been enabled/disabled.

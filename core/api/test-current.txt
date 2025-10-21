@@ -4338,6 +4338,14 @@ package android.view.textservice {
 
 }
 
+package android.webkit {
+
+  public final class WebViewDelegate {
+    ctor @FlaggedApi("android.webkit.selection_action_menu_client") public WebViewDelegate();
+  }
+
+}
+
 package android.widget {
 
   public abstract class AbsListView extends android.widget.AdapterView<android.widget.ListAdapter> implements android.widget.Filter.FilterListener android.text.TextWatcher android.view.ViewTreeObserver.OnGlobalLayoutListener android.view.ViewTreeObserver.OnTouchModeChangeListener {
