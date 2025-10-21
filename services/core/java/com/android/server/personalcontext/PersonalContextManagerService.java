@@ -27,6 +27,7 @@ import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.RenderToken.RenderTokenBuilder;
 import android.service.personalcontext.hint.ContextHint;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.NotificationEvent;
 import android.service.personalcontext.hint.NotificationHint;
@@ -49,12 +50,14 @@ import com.android.server.personalcontext.notifications.NotificationActionRender
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
+import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * The system service that manages personal context components and workflows.
@@ -68,6 +71,15 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public class PersonalContextManagerService extends SystemService {
     private static final String TAG = "PersonalContext";
+
+    private static final SecretKeySpec HINT_SIGNING_KEY;
+
+    static {
+        // Generate a new random signing key on each system start.
+        final byte[] key = new byte[64];
+        new SecureRandom().nextBytes(key);
+        HINT_SIGNING_KEY = new SecretKeySpec(key, ContextHintWithSignature.HMAC_ALGORITHM);
+    }
 
     /** Encapsulates all state associated with a specific user. */
     private record UserState(
@@ -231,7 +243,12 @@ public class PersonalContextManagerService extends SystemService {
         }
 
         RefinerWorkflow.start(
-                componentManager, hints, renderToken, /* eventListener= */ null, mExecutor);
+                componentManager,
+                hints,
+                renderToken,
+                HINT_SIGNING_KEY,
+                /* eventListener= */ null,
+                mExecutor);
     }
 
     private void startInsightWorkflow(@UserIdInt int userId, Set<ContextInsight> insights) {

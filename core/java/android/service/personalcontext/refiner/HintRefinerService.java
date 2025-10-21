@@ -26,6 +26,7 @@ import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.hint.ContextHint;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.util.Log;
 
@@ -125,10 +126,10 @@ public abstract class HintRefinerService extends Service {
         }
 
         @Override
-        public void refine(List<ContextHintWrapper> inputHints, IRefineCallback callback)
+        public void refine(List<ContextHintWithSignature> inputHints, IRefineCallback callback)
                 throws RemoteException {
             getServiceOrThrow().onRefine(
-                    ContextHintWrapper.unwrapList(inputHints),
+                    ContextHintWithSignature.unwrapList(inputHints),
                     hints -> {
                         try {
                             callback.onHintsRefined(ContextHintWrapper.wrapList(hints));

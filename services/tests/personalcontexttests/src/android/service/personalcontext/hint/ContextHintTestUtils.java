@@ -20,10 +20,15 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Parcel;
 
+import java.util.Random;
+
+import javax.crypto.spec.SecretKeySpec;
+
 /** Utility methods for testing {@link ContextHint} implementation parceling. */
 public final class ContextHintTestUtils {
 
-    private ContextHintTestUtils() {}
+    private ContextHintTestUtils() {
+    }
 
     /**
      * Parcels and unparcels the given {@link ContextHint} and asserts the same amount of data was
@@ -48,5 +53,12 @@ public final class ContextHintTestUtils {
         } finally {
             parcel.recycle();
         }
+    }
+
+    /** Generates a key to use when signing hints. */
+    public static SecretKeySpec generateSignedHintKey() {
+        final byte[] key = new byte[64];
+        new Random().nextBytes(key);
+        return new SecretKeySpec(key, ContextHintWithSignature.HMAC_ALGORITHM);
     }
 }

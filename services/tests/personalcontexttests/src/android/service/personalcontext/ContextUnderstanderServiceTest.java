@@ -24,8 +24,8 @@ import static org.mockito.Mockito.verify;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.hint.BundleHint;
-import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.hint.ContextHintWrapper;
+import android.service.personalcontext.hint.ContextHintTestUtils;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.refiner.IRefineCallback;
 import android.service.personalcontext.refiner.IRefiner;
 import android.service.personalcontext.understander.ContextUnderstanderService;
@@ -39,6 +39,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 
+import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -64,15 +65,23 @@ public class ContextUnderstanderServiceTest {
     }
 
     @Test
-    public void testOnUnderstandList() throws RemoteException {
-        final List<ContextHint> hints = Arrays.asList(new BundleHint(), new BundleHint());
+    public void testOnUnderstandList() throws RemoteException, GeneralSecurityException {
+        final ContextHintWithSignature hint1 =
+                new ContextHintWithSignature.Builder(
+                        new BundleHint(), ContextHintTestUtils.generateSignedHintKey()).build();
+        final ContextHintWithSignature hint2 =
+                new ContextHintWithSignature.Builder(
+                        new BundleHint(), ContextHintTestUtils.generateSignedHintKey()).build();
+
+        final List<ContextHintWithSignature> hints = Arrays.asList(hint1, hint2);
         IRefineCallback callback = mock(IRefineCallback.Stub.class);
 
-        mBinder.refine(ContextHintWrapper.wrapList(hints), callback);
+        mBinder.refine(hints, callback);
 
         ArgumentCaptor<List> hintCaptor = ArgumentCaptor.forClass(List.class);
         verify(mService).onUnderstand(hintCaptor.capture());
 
-        assertThat(hintCaptor.getValue()).containsExactlyElementsIn(hints);
+        assertThat(hintCaptor.getValue())
+                .containsExactlyElementsIn(ContextHintWithSignature.unwrapList(hints));
     }
 }

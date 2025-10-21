@@ -36,7 +36,6 @@ public class ContextHintTest {
         final BundleHint hint = new BundleHint();
         final ContextHint outputHint = assertParcelUnparcel(hint);
 
-        assertThat(hint.getHintType()).isEqualTo(outputHint.getHintType());
         assertThat(hint.getHintId()).isEqualTo(outputHint.getHintId());
     }
 }

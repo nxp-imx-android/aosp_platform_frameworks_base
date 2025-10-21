@@ -18,6 +18,7 @@ package com.android.server.personalcontext;
 
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.hint.ContextHint;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Slog;
@@ -25,6 +26,7 @@ import android.util.Slog;
 import com.android.server.personalcontext.component.Refiner;
 import com.android.server.personalcontext.util.FragileReference;
 
+import java.security.GeneralSecurityException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +38,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Workflow for taking hints that have been passed in to the system and distributing them to all
@@ -53,11 +57,12 @@ public final class RefinerWorkflow {
             ComponentProvider provider,
             Set<ContextHint> initialHints,
             RenderToken renderToken,
+            SecretKeySpec secretKey,
             EventListener eventListener,
             ScheduledExecutorService executor) {
         // Build a new workflow instance.
         final RefinerWorkflow workflow = new RefinerWorkflow(
-                provider, renderToken, eventListener, executor);
+                provider, renderToken, secretKey, eventListener, executor);
 
         // Seed it with the first round of hints.
         workflow.addHints(
@@ -67,11 +72,12 @@ public final class RefinerWorkflow {
     }
 
     private final long mFlowId = FLOW_COUNTER.incrementAndGet();
-    private final Set<ContextHint> mAllHints = new HashSet<>();
+    private final Set<ContextHintWithSignature> mAllHints = new HashSet<>();
     private final Map<Refiner, Set<UUID>> mSeenHintIds = new HashMap<>();
     private final Set<RefinerCallback> mPendingRefinerCallbacks = new HashSet<>();
     private final ComponentProvider mProvider;
     private final RenderToken mRenderToken;
+    private final SecretKeySpec mSecretKey;
     private final EventListener mEventListener;
     private final ScheduledExecutorService mExecutor;
     private final FragileReference<RefinerWorkflow> mFragileSelf = new FragileReference<>(this);
@@ -79,10 +85,12 @@ public final class RefinerWorkflow {
     private RefinerWorkflow(
             ComponentProvider provider,
             RenderToken renderToken,
+            SecretKeySpec secretKey,
             EventListener eventListener,
             ScheduledExecutorService executor) {
         mProvider = provider;
         mRenderToken = renderToken;
+        mSecretKey = secretKey;
         mEventListener = eventListener != null ? eventListener : new EventListener() {};
         mExecutor = executor;
 
@@ -111,12 +119,31 @@ public final class RefinerWorkflow {
 
     private void addHints(
             Set<ContextHint> newHints,
-            Set<ContextHint> attributionHints,
+            Set<ContextHintWithSignature> attributionHints,
             Refiner source,
             RefinerCallback callback) {
         mExecutor.execute(() -> {
             try {
                 // Log interesting stuff.
+                if (Log.isLoggable(TAG, Log.DEBUG)) {
+                    Slog.d(TAG, TextUtils.formatSimple(
+                            "Adding %s new hints to workflow %s from %s",
+                            newHints == null ? 0 : newHints.size(),
+                            mFlowId,
+                            source != null ? source.getComponentId() : null));
+
+                    if (newHints != null) {
+                        for (ContextHint hint : newHints) {
+                            Slog.d(TAG, "  Hint: " + hint);
+                        }
+                    }
+                }
+
+                // Keep track of the fact that we don't need a response from this callback any more.
+                if (callback != null) {
+                    mPendingRefinerCallbacks.remove(callback);
+                }
+
                 if (Log.isLoggable(TAG, Log.DEBUG)) {
                     Slog.d(TAG, TextUtils.formatSimple(
                             "Adding %s new hints to workflow %s from %s",
@@ -143,20 +170,22 @@ public final class RefinerWorkflow {
 
                 // If we don't have any new hints, then there's no point in doing a bunch of work.
                 if (newHints != null && !newHints.isEmpty()) {
+                    // Sign the hints.
+                    final Set<ContextHintWithSignature> signedHints =
+                            signHints(newHints, attributionHints, source);
+
                     // Report this to the listener.
                     if (source == null) {
-                        mEventListener.onRefinerWorkflowStarted(mFlowId, newHints);
+                        mEventListener.onRefinerWorkflowStarted(mFlowId, signedHints);
                     } else {
-                        mEventListener.onHintsReceivedFromRefiner(mFlowId, newHints, source);
+                        mEventListener.onHintsReceivedFromRefiner(mFlowId, signedHints, source);
                     }
 
                     // Mark this source as having seen these hints. No point in sending them back.
                     markHintsAsSeen(source, newHints);
 
-                    // TODO(b/452425700): Add attribution and renderToken to hints.
-
                     // Stage new hints in the collection of pending hints.
-                    mAllHints.addAll(newHints);
+                    mAllHints.addAll(signedHints);
 
                     // Run a full pass for each refiner available.
                     for (Refiner refiner : mProvider.getRefiners()) {
@@ -198,6 +227,21 @@ public final class RefinerWorkflow {
         }
     }
 
+    private Set<ContextHintWithSignature> signHints(
+            Collection<ContextHint> newHints,
+            Collection<ContextHintWithSignature> attributionHints,
+            Refiner source) throws GeneralSecurityException {
+        final Set<ContextHintWithSignature> result = new HashSet<>();
+        for (ContextHint hint : newHints) {
+            result.add(new ContextHintWithSignature.Builder(hint, mSecretKey)
+                    .setOriginatingComponent(source != null ? source.getComponentName() : null)
+                    .setRenderToken(mRenderToken)
+                    .addAttributionHints(attributionHints)
+                    .build());
+        }
+        return result;
+    }
+
     private void runPassOnSingleRefiner(Refiner refiner) {
         // If we don't have a set yet, then the refiner hasn't been run yet for this session.
         final boolean isFirstRun = !mSeenHintIds.containsKey(refiner);
@@ -207,7 +251,7 @@ public final class RefinerWorkflow {
 
         // Ask the refiner's filter for the clusters of hints that the refiner wants as input.
         // If this is null then we skip the refiner.
-        final Set<Set<ContextHint>> interestedHintClusters =
+        final Set<Set<ContextHintWithSignature>> interestedHintClusters =
                 refiner.getInterestedHintClusters(mAllHints, seenIds, isFirstRun);
 
         if (Log.isLoggable(TAG, Log.DEBUG)) {
@@ -231,19 +275,19 @@ public final class RefinerWorkflow {
 
         // Add all of the interesting hints' IDs to the set of IDs this refiner has seen.
         synchronized (mSeenHintIds) {
-            for (Set<ContextHint> hintCluster : interestedHintClusters) {
-                for (ContextHint hint : hintCluster) {
-                    seenIds.add(hint.getHintId());
+            for (Set<ContextHintWithSignature> hintCluster : interestedHintClusters) {
+                for (ContextHintWithSignature hint : hintCluster) {
+                    seenIds.add(hint.getContextHint().getHintId());
                 }
             }
         }
 
         // Actually run the refiner on each cluster of hints.
-        for (Set<ContextHint> hintCluster : interestedHintClusters) {
+        for (Set<ContextHintWithSignature> hintCluster : interestedHintClusters) {
             if (Log.isLoggable(TAG, Log.DEBUG)) {
                 Slog.d(TAG, TextUtils.formatSimple(
                         "    Sending cluster of %s hints", hintCluster.size()));
-                for (ContextHint hint : hintCluster) {
+                for (ContextHintWithSignature hint : hintCluster) {
                     Slog.d(TAG, "      Hint: " + hint);
                 }
             }
@@ -277,32 +321,36 @@ public final class RefinerWorkflow {
      */
     public interface EventListener {
         /** Called when a workflow is started. */
-        default void onRefinerWorkflowStarted(long flowId, Collection<ContextHint> hints) { }
+        default void onRefinerWorkflowStarted(
+                long flowId, Collection<ContextHintWithSignature> hints) { }
 
         /** Called when a set of hints is sent to a refiner. */
         default void onHintsSentToRefiner(
-                long flowId, Collection<ContextHint> hints, Refiner refiner) { }
+                long flowId, Collection<ContextHintWithSignature> hints, Refiner refiner) { }
 
         /** Called when a set of hints is received from a refiner. */
         default void onHintsReceivedFromRefiner(
-                long flowId, Collection<ContextHint> hints, Refiner refiner) { }
+                long flowId, Collection<ContextHintWithSignature> hints, Refiner refiner) { }
 
         /** Called when a workflow stops. */
         default void onRefinerWorkflowFinished(long flowId) { }
+
+        /** Called when a workflow has an unexpected error. */
+        default void onRefinerWorkflowError(long flowId, Throwable t) { }
     }
 
     /** Explicit class for this callback so we don't hold a strong reference to the workflow. */
     private static final class RefinerCallback implements Consumer<Set<ContextHint>> {
         private FragileReference<RefinerWorkflow> mWorkflow;
         private final long mWorkflowId;
-        private final Set<ContextHint> mAttributionHints;
+        private final Set<ContextHintWithSignature> mAttributionHints;
         private final Refiner mRefiner;
         private final ScheduledExecutorService mExecutor;
 
         RefinerCallback(
                 FragileReference<RefinerWorkflow> workflow,
                 long workflowId,
-                Set<ContextHint> attributionHints,
+                Set<ContextHintWithSignature> attributionHints,
                 Refiner refiner,
                 ScheduledExecutorService executor) {
             mWorkflow = workflow;
