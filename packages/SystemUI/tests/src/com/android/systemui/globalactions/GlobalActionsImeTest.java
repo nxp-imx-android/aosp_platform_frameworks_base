@@ -53,6 +53,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
@@ -65,16 +66,36 @@ public class GlobalActionsImeTest extends SysuiTestCase {
     public ActivityTestRule<TestActivity> mActivityTestRule = new ActivityTestRule<>(
             TestActivity.class, false, false);
 
-    private int mOriginalShowImeWithHardKeyboard;
-    private int mOriginalPowerButtonLongPress;
+    private Optional<Integer> mOriginalShowImeWithHardKeyboard;
+    private Optional<Integer> mOriginalPowerButtonLongPress;
+
+    private Optional<Integer> getOptionalIntSecureSetting(
+            ContentResolver contentResolver,
+            String name) {
+        try {
+            return Optional.of(Settings.Secure.getInt(contentResolver, name));
+        } catch (Settings.SettingNotFoundException e) {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<Integer> getOptionalIntGlobalSetting(
+            ContentResolver contentResolver,
+            String name) {
+        try {
+            return Optional.of(Settings.Global.getInt(contentResolver, name));
+        } catch (Settings.SettingNotFoundException e) {
+            return Optional.empty();
+        }
+    }
 
     @Before
     public void setUp() {
         final ContentResolver contentResolver = mContext.getContentResolver();
-        mOriginalShowImeWithHardKeyboard = Settings.Secure.getInt(
-                contentResolver, SHOW_IME_WITH_HARD_KEYBOARD, 0);
-        mOriginalPowerButtonLongPress = Settings.Global.getInt(
-                contentResolver, POWER_BUTTON_LONG_PRESS, 0);
+        mOriginalShowImeWithHardKeyboard = getOptionalIntSecureSetting(
+                contentResolver, SHOW_IME_WITH_HARD_KEYBOARD);
+        mOriginalPowerButtonLongPress = getOptionalIntGlobalSetting(
+                contentResolver, POWER_BUTTON_LONG_PRESS);
         // Forcibly shows IME even when hardware keyboard is connected and show the power menu on
         // long press for ease of testing.
         // To change USER_SYSTEM settings, we have to use settings shell command.
@@ -88,10 +109,18 @@ public class GlobalActionsImeTest extends SysuiTestCase {
         executeShellCommand("input keyevent --longpress POWER");
         executeShellCommand("input keyevent HOME");
         // To restore USER_SYSTEM settings, we have to use settings shell command.
-        executeShellCommand("settings put secure "
-                + SHOW_IME_WITH_HARD_KEYBOARD + " " + mOriginalShowImeWithHardKeyboard);
-        executeShellCommand("settings put global "
-                + POWER_BUTTON_LONG_PRESS + " " + mOriginalPowerButtonLongPress);
+        if (mOriginalShowImeWithHardKeyboard.isPresent()) {
+            executeShellCommand("settings put secure "
+                    + SHOW_IME_WITH_HARD_KEYBOARD + " " + mOriginalShowImeWithHardKeyboard.get());
+        } else {
+            executeShellCommand("settings reset secure " + SHOW_IME_WITH_HARD_KEYBOARD);
+        }
+        if (mOriginalPowerButtonLongPress.isPresent()) {
+            executeShellCommand("settings put global "
+                    + POWER_BUTTON_LONG_PRESS + " " + mOriginalPowerButtonLongPress.get());
+        } else {
+            executeShellCommand("settings reset global " + POWER_BUTTON_LONG_PRESS);
+        }
     }
 
     /**
