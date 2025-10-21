@@ -17,6 +17,8 @@ package com.android.wm.shell.scenarios
 
 import android.platform.test.annotations.EnableFlags
 import android.tools.traces.parsers.WindowManagerStateHelper
+import android.tools.traces.ConditionsFactory
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.KeyEvent.KEYCODE_MINUS
 import android.view.KeyEvent.META_META_ON
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
@@ -62,9 +64,22 @@ abstract class ClickAndFocus() : TestScenarioBase() {
 
     @Test
     open fun clickAndFocus() {
+        val externalDisplayId = connectedDisplayRule.addedDisplays.first()
         testAppInExternalDisplay.clickCaption(wmHelper, device)
+
+        wmHelper.StateSyncBuilder().withAppTransitionIdle()
+            .add(ConditionsFactory.isWindowVisible(testAppInMainDisplay, DEFAULT_DISPLAY))
+            .add(ConditionsFactory.isWindowVisible(testAppInExternalDisplay, externalDisplayId))
+            .waitForAndVerify()
+
         // Send minimize via keyboard and observe window to check display focus.
         keyEventHelper.press(KEYCODE_MINUS, META_META_ON)
+
+        wmHelper.StateSyncBuilder().withAppTransitionIdle()
+            .add(ConditionsFactory.isWindowVisible(testAppInMainDisplay, DEFAULT_DISPLAY))
+            .add(ConditionsFactory.isWindowVisible(testAppInExternalDisplay, externalDisplayId)
+                     .negate())
+            .waitForAndVerify()
     }
 
     @After
