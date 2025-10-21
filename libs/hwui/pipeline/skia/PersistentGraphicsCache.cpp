@@ -110,9 +110,6 @@ sk_sp<SkData> PersistentGraphicsCache::load(const SkData& key) {
     }
 
     if (mPipelineCache == nullptr) {
-        LOG_ALWAYS_FATAL(
-                "PersistentGraphicsCache::load: pipeline cache path was not initialized, aborting "
-                "load");
         return nullptr;
     }
 
@@ -132,9 +129,6 @@ void PersistentGraphicsCache::store(const SkData& key, const SkData& data,
     }
 
     if (mPipelineCache == nullptr) {
-        LOG_ALWAYS_FATAL(
-                "PersistentGraphicsCache::store: pipeline cache path was not initialized, aborting "
-                "store");
         return;
     }
 
@@ -149,6 +143,17 @@ void PersistentGraphicsCache::store(const SkData& key, const SkData& data,
     }
 
     ShaderCache::get().store(key, data, description);
+}
+
+PersistentGraphicsCache::PipelineCacheStats PersistentGraphicsCache::getPipelineCacheStats() const {
+    if (mPipelineCache == nullptr) {
+        return PipelineCacheStats{};
+    }
+
+    return PipelineCacheStats{
+            .inUse = true,
+            .sizeBytes = mPipelineCache->getLastSizeBytes(),
+    };
 }
 
 }  // namespace skiapipeline

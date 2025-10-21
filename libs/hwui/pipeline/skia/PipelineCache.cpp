@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <utils/Trace.h>
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -211,6 +212,8 @@ void PipelineCacheStore::runThread() {
             }
 
             ATRACE_INT64("HWUI pipeline cache size", written);
+
+            mLastSizeBytes.store(static_cast<size_t>(written), std::memory_order_relaxed);
         }
     }
 }
@@ -227,6 +230,10 @@ void PipelineCacheStore::store(std::string path, std::vector<uint8_t> data) {
     }
 
     mConditionVariable.notify_one();
+}
+
+size_t PipelineCacheStore::getLastSizeBytes() const {
+    return mLastSizeBytes.load(std::memory_order_relaxed);
 }
 
 PipelineCache::PipelineCache(std::string storePath, useconds_t writeThrottleInterval)
@@ -296,4 +303,8 @@ void PipelineCache::store(const SkData& key, const SkData& data) {
     memcpy(ptr, data.data(), data.size());
 
     mPipelineCacheStore.store(mStorePath, std::move(pendingData));
+}
+
+size_t PipelineCache::getLastSizeBytes() const {
+    return mPipelineCacheStore.getLastSizeBytes();
 }
