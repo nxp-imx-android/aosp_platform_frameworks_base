@@ -954,6 +954,10 @@ package android.companion.virtual {
     method public void playSoundEffect(int, int);
   }
 
+  public static interface VirtualDeviceManager.ActivityListener {
+    method public default void onActivityLaunchRequested(int, @NonNull android.content.ComponentName, int);
+  }
+
   public final class VirtualDeviceParams implements android.os.Parcelable {
     field public static final int DEVICE_POLICY_INVALID = -1; // 0xffffffff
   }
