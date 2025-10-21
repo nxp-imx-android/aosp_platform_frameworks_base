@@ -60,6 +60,8 @@ import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBar
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewModelFactory
 import com.android.systemui.statusbar.policy.statusBarConfigurationController
+import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractor
+import com.android.systemui.statusbar.quickactions.av.domain.interactor.avControlsChipInteractor
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.statusbar.ui.systemBarUtilsState
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
@@ -83,6 +85,7 @@ fun Kosmos.createFakeDisplaySubcomponent(
     },
     homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel =
         this.homeStatusBarViewModelFactory,
+    avControlsChipInteractor: () -> AvControlsChipInteractor = { this.avControlsChipInteractor },
     homeStatusBarViewBinder: () -> HomeStatusBarViewBinder = { this.homeStatusBarViewBinder },
     statusBarRootFactory: () -> StatusBarRootFactory = { this.statusBarRootFactory },
     ongoingActivityChipsViewModel: () -> OngoingActivityChipsViewModel = {
@@ -180,6 +183,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val statusBarRootFactory: StatusBarRootFactory
             get() = statusBarRootFactory()
+
+        override val avControlsChipInteractor: AvControlsChipInteractor
+            get() = avControlsChipInteractor()
     }
 }
 

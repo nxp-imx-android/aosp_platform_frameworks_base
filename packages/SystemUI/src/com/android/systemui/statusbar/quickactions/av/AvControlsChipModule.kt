@@ -16,14 +16,17 @@
 
 package com.android.systemui.statusbar.quickactions.av
 
+import android.view.Display
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractorImpl
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.NoOpAvControlsChipInteractor
 import dagger.Module
 import dagger.Provides
 import javax.inject.Provider
+import kotlinx.coroutines.CoroutineScope
 
 /** Module providing dependencies for Audio/Video controls feature pod. */
 @Module
@@ -33,11 +36,12 @@ class AvControlsChipModule {
     @Provides
     @SysUISingleton
     fun provideAvControlsChipInteractor(
-        avControlsChipSupported: Provider<AvControlsChipInteractorImpl>,
+        @Background backgroundScope: CoroutineScope,
+        avControlsChipSupportedFactory: Provider<AvControlsChipInteractorImpl.Factory>,
         avControlsChipNotSupported: Provider<NoOpAvControlsChipInteractor>,
     ): AvControlsChipInteractor {
         return if (Flags.expandedPrivacyIndicatorsOnLargeScreen()) {
-            avControlsChipSupported.get()
+            avControlsChipSupportedFactory.get().create(backgroundScope, Display.DEFAULT_DISPLAY)
         } else {
             avControlsChipNotSupported.get()
         }
