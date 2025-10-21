@@ -144,7 +144,7 @@ interface KairosBuilder : KairosActivatable {
 @ExperimentalKairosApi fun kairosBuilder(): KairosBuilder = KairosBuilderImpl()
 
 @OptIn(ExperimentalKairosApi::class)
-class KairosBuilderImpl @Inject constructor() : KairosBuilder {
+private class KairosBuilderImpl @Inject constructor() : KairosBuilder {
 
     private var _builds: MutableList<KairosActivatable>? = mutableListOf()
     private var _startables: MutableList<KairosActivatable>? = mutableListOf()
