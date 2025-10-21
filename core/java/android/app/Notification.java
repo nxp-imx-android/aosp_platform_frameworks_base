@@ -8343,6 +8343,9 @@ public class Notification implements Parcelable
         private int getExpandedSingleMetricLayoutResource() {
             return R.layout.notification_2025_template_expanded_single_metric;
         }
+        private int getPromotedSingleMetricLayoutResource() {
+            return R.layout.notification_2025_template_promoted_single_metric;
+        }
 
         private int getCollapsedMediaLayoutResource() {
             if (Flags.notificationsRedesignTemplates()) {
@@ -12157,6 +12160,7 @@ public class Notification implements Parcelable
                     .text(null)
                     .titleViewId(R.id.alt_title)
                     .hideRightIcon(true);
+
             if (Flags.richOngoingImprovements() && mBuilder.mN.isPromotedOngoing()) {
                 // Use the minimal header style when promoted, but keep the subtext in the top line
                 // (even if it may be cramped).
@@ -12164,13 +12168,21 @@ public class Notification implements Parcelable
             }
             final TemplateBindResult result = new TemplateBindResult();
             final int expandedLayoutRes;
+            boolean showActionsContainer = true;
             if (mMetrics.size() == 1) {
-                expandedLayoutRes = mBuilder.getExpandedSingleMetricLayoutResource();
+                if (mBuilder.mN.isPromotedOngoing()) {
+                    expandedLayoutRes =  mBuilder.getPromotedSingleMetricLayoutResource();
+                    showActionsContainer = !mBuilder.getNonContextualActions().isEmpty();
+                } else {
+                    expandedLayoutRes = mBuilder.getExpandedSingleMetricLayoutResource();
+                }
             } else {
                 expandedLayoutRes = mBuilder.getExpandedMetricLayoutResource();
             }
 
             final RemoteViews contentView = getStandardView(expandedLayoutRes, p, result);
+            contentView.setViewVisibility(R.id.actions_container,
+                    showActionsContainer ? View.VISIBLE : View.GONE);
             return bindMetricStyleMetrics(contentView, p, mMetrics, /* isExpandedView = */true);
         }
 
@@ -12210,7 +12222,6 @@ public class Notification implements Parcelable
                         contentView.setViewVisibility(metricView.chronometerId(), View.VISIBLE);
                         mBuilder.setTextViewColorSecondary(contentView, metricView.chronometerId(),
                                 p);
-
                         contentView.setChronometerCountDown(
                                 metricView.chronometerId(), timeDifference.isTimer());
                         contentView.setBoolean(metricView.chronometerId(),

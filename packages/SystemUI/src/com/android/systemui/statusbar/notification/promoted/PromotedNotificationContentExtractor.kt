@@ -299,7 +299,7 @@ constructor(
                 Style.CollapsedCall -> R.layout.notification_2025_template_collapsed_call
                 Style.Progress -> R.layout.notification_2025_template_expanded_progress
                 Style.Metric -> R.layout.notification_2025_template_expanded_metric
-                Style.MetricSingle -> R.layout.notification_2025_template_expanded_single_metric
+                Style.MetricSingle -> R.layout.notification_2025_template_promoted_single_metric
                 Style.Ineligible -> null
             }
         } else {
@@ -311,7 +311,7 @@ constructor(
                 Style.CollapsedCall -> R.layout.notification_template_material_call
                 Style.Progress -> R.layout.notification_template_material_progress
                 Style.Metric -> R.layout.notification_2025_template_expanded_metric
-                Style.MetricSingle -> R.layout.notification_2025_template_expanded_single_metric
+                Style.MetricSingle -> R.layout.notification_2025_template_promoted_single_metric
                 Style.Ineligible -> null
             }
         }
