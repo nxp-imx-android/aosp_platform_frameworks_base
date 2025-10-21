@@ -306,6 +306,13 @@ flag {
 }
 
 flag {
+    name: "enable_consolidated_window_options"
+    namespace: "lse_desktop_experience"
+    description: "Whether to consolidate window options into MaximizeMenu"
+    bug: "411680007"
+}
+
+flag {
     name: "enable_cross_displays_app_launch_transition"
     namespace: "lse_desktop_experience"
     description: "Enables a transition for launching an already opened app on another display."
