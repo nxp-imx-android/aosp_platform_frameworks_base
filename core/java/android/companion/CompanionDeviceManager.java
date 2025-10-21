@@ -391,6 +391,7 @@ public final class CompanionDeviceManager {
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_ONEWAY_CROSS_DEVICE_SYNC = 0x43676883; // +CDS
 
     /**
