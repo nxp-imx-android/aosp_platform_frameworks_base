@@ -18,10 +18,12 @@ package com.android.server.personalcontext;
 
 import android.annotation.PermissionManuallyEnforced;
 import android.content.Context;
+import android.os.Binder;
 import android.os.UserHandle;
 import android.service.personalcontext.IPersonalContextManager;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.RenderToken;
+import android.service.personalcontext.RenderToken.RenderTokenBuilder;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.NotificationEvent;
@@ -36,8 +38,10 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService;
+import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.personalcontext.component.Refiner;
 import com.android.server.personalcontext.component.Renderer;
+import com.android.server.personalcontext.notifications.NotificationActionRenderer;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -46,9 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * @hide
- */
+/** @hide */
 public class PersonalContextManagerService extends SystemService {
     private static final String TAG = "PersonalContext";
 
@@ -57,14 +59,25 @@ public class PersonalContextManagerService extends SystemService {
     private final ContextComponentMonitor mMonitor = new ContextComponentMonitor(mComponentManager);
 
     private boolean mInitialRegistrationStarted = false;
+    private NotificationActionRenderer mNotificationActionRenderer;
+
 
     private final PersonalContextManagerInternal mInternalService =
             new PersonalContextManagerInternal() {
                 @Override
                 public void onNotificationEvent(@NonNull NotificationEvent event) {
-                    final List<ContextHint> hints =
-                            List.of(new NotificationHint.NotificationHintBuilder(event).build());
-                    // TODO(b/434644900): Start refiner workflow with the hints.
+                    final Set<ContextHint> hints =
+                            Set.of(new NotificationHint.NotificationHintBuilder(event).build());
+                    if (mNotificationActionRenderer == null) {
+                        Slog.e(TAG, "Notification action renderer not available");
+                        return;
+                    }
+                    final RenderToken renderToken =
+                            new RenderTokenBuilder()
+                                    .setRendererComponentId(
+                                            mNotificationActionRenderer.getComponentId())
+                                    .build();
+                    startRefinerWorkflow(hints, renderToken);
                 }
             };
 
@@ -75,9 +88,14 @@ public class PersonalContextManagerService extends SystemService {
     @Override
     public void onStart() {
         publishBinderService(
-                PersonalContextManager.PERSONAL_CONTEXT_SERVICE,
-                new BinderService(this));
+                PersonalContextManager.PERSONAL_CONTEXT_SERVICE, new BinderService(this));
         publishLocalService(PersonalContextManagerInternal.class, mInternalService);
+
+        mNotificationActionRenderer =
+                new NotificationActionRenderer(
+                        getContext(),
+                        getLocalService(NotificationManagerInternal.class),
+                        getContext().getPackageManager());
 
         Slog.i(TAG, "Personal Context Service started");
     }
@@ -92,6 +110,7 @@ public class PersonalContextManagerService extends SystemService {
 
         if (Log.isLoggable(TAG, Log.DEBUG)) Slog.d(TAG, "Registering internal components");
         // Register in-process components with mComponentManager.register() here.
+        mComponentManager.register(mNotificationActionRenderer);
 
         if (Log.isLoggable(TAG, Log.DEBUG)) Slog.d(TAG, "Registering external components");
         mComponentManager.registerComponentsForAllPackages();
@@ -143,7 +162,6 @@ public class PersonalContextManagerService extends SystemService {
         }
     }
 
-
     private static final class BinderService extends IPersonalContextManager.Stub {
         private final WeakReference<PersonalContextManagerService> mService;
 
@@ -189,9 +207,7 @@ public class PersonalContextManagerService extends SystemService {
         @PermissionManuallyEnforced
         @Override
         protected void dump(
-                @NonNull FileDescriptor fd,
-                @NonNull PrintWriter fout,
-                @Nullable String[] args) {
+                @NonNull FileDescriptor fd, @NonNull PrintWriter fout, @Nullable String[] args) {
             final PersonalContextManagerService service = getService();
             if (!DumpUtils.checkDumpPermission(service.getContext(), TAG, fout)) {
                 return;
