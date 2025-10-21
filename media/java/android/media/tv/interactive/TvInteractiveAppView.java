@@ -283,8 +283,10 @@ public class TvInteractiveAppView extends ViewGroup {
     @FlaggedApi(Flags.FLAG_TIAF_V_APIS)
     public void setZOrderMediaOverlay(boolean isMediaOverlay) {
         if (mSurfaceView != null) {
+            removeView(mSurfaceView);
             mSurfaceView.setZOrderOnTop(false);
             mSurfaceView.setZOrderMediaOverlay(isMediaOverlay);
+            addView(mSurfaceView);
         }
     }
 
