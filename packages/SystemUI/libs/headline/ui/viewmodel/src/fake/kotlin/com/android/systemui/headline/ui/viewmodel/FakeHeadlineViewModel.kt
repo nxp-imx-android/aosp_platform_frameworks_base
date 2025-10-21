@@ -16,5 +16,52 @@
 
 package com.android.systemui.headline.ui.viewmodel
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.android.compose.animation.scene.HoistedSceneTransitionLayoutState
+
 /** A fake implementation of [HeadlineViewModel]. */
-class FakeHeadlineViewModel(override val text: String = "Hello, World") : HeadlineViewModel
+class FakeHeadlineViewModel(
+    override val items: List<HeadlineItem> = fakeHeadlineItems(),
+    currentItem: HeadlineItem? = items.first(),
+) : HeadlineViewModel {
+    override val state: HoistedSceneTransitionLayoutState =
+        HoistedSceneTransitionLayoutState(
+            currentItem?.key?.toSceneKey() ?: HeadlineViewModel.GoneScene
+        )
+}
+
+fun fakeHeadlineItems(): List<FakeHeadlineItem> {
+    return listOf(
+        FakeHeadlineItem("timer", Icons.Default.Timer, "4:42"),
+        FakeHeadlineItem("spotify", Icons.Default.MusicNote, "Espresso"),
+        FakeHeadlineItem("car", Icons.Default.DirectionsCar, "3 min"),
+        FakeHeadlineItem("phone", Icons.Default.Phone, "incoming call"),
+    )
+}
+
+class FakeHeadlineItem(
+    key: Any = "spotify",
+    override val startContents: List<HeadlineItemContent>,
+    override val endContents: List<HeadlineItemContent>,
+) : HeadlineItem {
+    constructor(
+        key: Any = "spotify",
+        icon: ImageVector = Icons.Default.MusicNote,
+        text: String = "Espresso",
+    ) : this(
+        key,
+        listOf(HeadlineItemContent.Icon(icon, null)),
+        listOf(HeadlineItemContent.Text(text)),
+    )
+
+    override val key: HeadlineItemKey = HeadlineItemKey(key)
+
+    override fun toString(): String {
+        return "FakeHeadlineItem(key=$key)"
+    }
+}
