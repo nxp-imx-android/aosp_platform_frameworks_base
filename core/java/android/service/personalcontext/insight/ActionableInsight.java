@@ -16,18 +16,18 @@
 
 package android.service.personalcontext.insight;
 
-import static android.service.personalcontext.insight.ContextInsight.INSIGHT_TYPE_ACTIONABLE;
-
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.content.Intent;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.hint.ContextHint;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 
 import com.android.internal.util.Preconditions;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,7 +42,7 @@ public final class ActionableInsight extends ContextInsight {
 
     /** Private constructor used by the builder. */
     private ActionableInsight(
-            @NonNull List<ContextHint> originHints,
+            @NonNull List<ContextHintWithSignature> originHints,
             @NonNull Intent actionIntent,
             @NonNull InsightDisplayDetails displayDetails) {
         super(originHints);
@@ -129,13 +129,12 @@ public final class ActionableInsight extends ContextInsight {
 
     /** Builder for {@link ActionableInsight}. */
     public static final class Builder {
-        List<ContextHint> mOriginHints = new ArrayList<>();
+        private final List<ContextHintWithSignature> mOriginHints = new ArrayList<>();
         private final Intent mActionIntent;
         private final InsightDisplayDetails mDisplayDetails;
 
         /**
-         * Creates a new builder for an actionable insight. By default, no hints are present. They
-         * can be added using {@link #setOriginHints(List)}.
+         * Creates a new builder for an actionable insight.
          *
          * @param actionIntent the intent to be invoked when the actionable insight is clicked.
          * @param displayDetails the display details of the actionable insight.
@@ -150,9 +149,25 @@ public final class ActionableInsight extends ContextInsight {
             mDisplayDetails = displayDetails;
         }
 
+        /**
+         * Adds an origin {@link ContextHint} to the resulting {@link BundleInsight}.
+         *
+         * @param hint the origin {@link ContextHint} to add.
+         */
         @NonNull
-        public Builder setOriginHints(@NonNull List<ContextHint> originHint) {
-            mOriginHints = List.copyOf(originHint);
+        public Builder addOriginHint(@NonNull ContextHintWithSignature hint) {
+            mOriginHints.add(hint);
+            return this;
+        }
+
+        /**
+         * Adds origin {@link ContextHint}s to the resulting {@link BundleInsight}.
+         *
+         * @param hints the origin {@link ContextHint}s to add.
+         */
+        @NonNull
+        public Builder addOriginHints(@NonNull Collection<ContextHintWithSignature> hints) {
+            mOriginHints.addAll(hints);
             return this;
         }
 

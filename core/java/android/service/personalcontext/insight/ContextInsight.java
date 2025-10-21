@@ -22,7 +22,7 @@ import android.annotation.TestApi;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.hint.ContextHintWrapper;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -32,6 +32,7 @@ import com.android.internal.annotations.VisibleForTesting;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -88,7 +89,7 @@ public abstract class ContextInsight {
      * @hide
      */
     @NonNull
-    private static final ContextInsight ERROR_INSIGHT = new ContextInsight(List.of()) {
+    private static final ContextInsight ERROR_INSIGHT = new ContextInsight() {
         @Override
         @InsightType public int getInsightType() {
             return INSIGHT_TYPE_ERROR;
@@ -102,7 +103,7 @@ public abstract class ContextInsight {
     };
 
     private final UUID mId;
-    private final List<ContextHint> mOriginHints;
+    private final List<ContextHintWithSignature> mOriginHints;
 
     /**
      * Internal constructor only for use by {@link #createInsightFromBundle(Bundle)}. This should be
@@ -112,11 +113,10 @@ public abstract class ContextInsight {
      * @hide
      */
     ContextInsight(@NonNull Bundle b) {
-        mId = UUID.fromString(b.getString(KEY_INSIGHT_ID));
+        mId = UUID.fromString(Objects.requireNonNull(b.getString(KEY_INSIGHT_ID)));
         mOriginHints = Collections.unmodifiableList(
-                ContextHintWrapper.unwrapList(
-                        Objects.requireNonNull(b.getParcelableArrayList(
-                                KEY_ORIGIN_HINTS, ContextHintWrapper.class))));
+                Objects.requireNonNull(b.getParcelableArrayList(
+                        KEY_ORIGIN_HINTS, ContextHintWithSignature.class)));
     }
 
     /**
@@ -125,9 +125,15 @@ public abstract class ContextInsight {
      *
      * @hide
      */
-    ContextInsight(List<ContextHint> originHints) {
+    ContextInsight(@NonNull List<ContextHintWithSignature> originHints) {
         mId = UUID.randomUUID();
-        mOriginHints = Collections.unmodifiableList(originHints);
+        mOriginHints = Collections.unmodifiableList(Objects.requireNonNull(originHints));
+    }
+
+    /** Internal constructor for error insights. */
+    private ContextInsight() {
+        mId = UUID.randomUUID();
+        mOriginHints = Collections.emptyList();
     }
 
     /**
@@ -150,7 +156,7 @@ public abstract class ContextInsight {
      * Returns the list of {@link ContextHint}s that were used to generate this insight.
      */
     @NonNull
-    public final List<ContextHint> getOriginHints() {
+    public final List<ContextHintWithSignature> getOriginHints() {
         return mOriginHints;
     }
 
@@ -166,7 +172,7 @@ public abstract class ContextInsight {
         final Bundle b = new Bundle();
         b.putInt(KEY_INSIGHT_TYPE, getInsightType());
         b.putString(KEY_INSIGHT_ID, mId.toString());
-        b.putParcelableList(KEY_ORIGIN_HINTS, ContextHintWrapper.wrapList(mOriginHints));
+        b.putParcelableArrayList(KEY_ORIGIN_HINTS, new ArrayList<>(mOriginHints));
         b.putBundle(KEY_INSIGHT_DATA, toBundleImpl());
         return b;
     }

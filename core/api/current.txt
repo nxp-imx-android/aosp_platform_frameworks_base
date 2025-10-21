@@ -43279,6 +43279,16 @@ package android.service.personalcontext.hint {
     method @NonNull public final java.util.UUID getHintId();
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContextHintWithSignature implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public java.util.List<android.service.personalcontext.hint.ContextHintWithSignature> getAttributionHints();
+    method @NonNull public android.service.personalcontext.hint.ContextHint getContextHint();
+    method @Nullable public String getOriginatingPackage();
+    method @Nullable public android.service.personalcontext.RenderToken getRenderToken();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.ContextHintWithSignature> CREATOR;
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class NotificationEvent {
     method public abstract int getEventType();
     field public static final int EVENT_TYPE_ENQUEUED = 1; // 0x1
@@ -43331,8 +43341,9 @@ package android.service.personalcontext.insight {
 
   public static final class ActionableInsight.Builder {
     ctor public ActionableInsight.Builder(@NonNull android.content.Intent, @NonNull android.service.personalcontext.insight.InsightDisplayDetails);
+    method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder addOriginHint(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
+    method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder addOriginHints(@NonNull java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignature>);
     method @NonNull public android.service.personalcontext.insight.ActionableInsight build();
-    method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder setOriginHints(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class BundleInsight extends android.service.personalcontext.insight.ContextInsight {
@@ -43341,14 +43352,15 @@ package android.service.personalcontext.insight {
 
   public static final class BundleInsight.Builder {
     ctor public BundleInsight.Builder();
-    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder addOriginHint(@NonNull android.service.personalcontext.hint.ContextHint);
+    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder addOriginHint(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
+    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder addOriginHints(@NonNull java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignature>);
     method @NonNull public android.service.personalcontext.insight.BundleInsight build();
     method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder setDataBundle(@NonNull android.os.Bundle);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
     method @NonNull public final java.util.UUID getInsightId();
-    method @NonNull public final java.util.List<android.service.personalcontext.hint.ContextHint> getOriginHints();
+    method @NonNull public final java.util.List<android.service.personalcontext.hint.ContextHintWithSignature> getOriginHints();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightDisplayDetails implements android.os.Parcelable {

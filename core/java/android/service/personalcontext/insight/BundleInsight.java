@@ -21,8 +21,10 @@ import android.annotation.NonNull;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.hint.ContextHint;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -34,9 +36,11 @@ public final class BundleInsight extends ContextInsight {
     private final Bundle mDataBundle;
 
     /** Private constructor used by the builder. */
-    private BundleInsight(@NonNull List<ContextHint> originHints, @NonNull Bundle dataBundle) {
+    private BundleInsight(
+            @NonNull List<ContextHintWithSignature> originHints,
+            @NonNull Bundle bundle) {
         super(originHints);
-        mDataBundle = dataBundle;
+        mDataBundle = bundle;
     }
 
     /**
@@ -69,7 +73,7 @@ public final class BundleInsight extends ContextInsight {
 
     /** Builder for {@link BundleInsight}. */
     public static final class Builder {
-        private final List<ContextHint> mOriginHints = new ArrayList<>();
+        private final List<ContextHintWithSignature> mOriginHints = new ArrayList<>();
         private final Bundle mDataBundle = new Bundle();
 
         /** Construct a new empty builder. */
@@ -77,13 +81,24 @@ public final class BundleInsight extends ContextInsight {
         }
 
         /**
-         * Adds an origin {@link ContextHint}s to the resulting {@link BundleInsight}.
+         * Adds an origin {@link ContextHint} to the resulting {@link BundleInsight}.
          *
          * @param hint the origin {@link ContextHint} to add.
          */
         @NonNull
-        public Builder addOriginHint(@NonNull ContextHint hint) {
+        public Builder addOriginHint(@NonNull ContextHintWithSignature hint) {
             mOriginHints.add(hint);
+            return this;
+        }
+
+        /**
+         * Adds origin {@link ContextHint}s to the resulting {@link BundleInsight}.
+         *
+         * @param hints the origin {@link ContextHint}s to add.
+         */
+        @NonNull
+        public Builder addOriginHints(@NonNull Collection<ContextHintWithSignature> hints) {
+            mOriginHints.addAll(hints);
             return this;
         }
 

@@ -39,6 +39,8 @@ import android.graphics.drawable.Icon;
 import android.service.notification.Adjustment;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.service.personalcontext.hint.ContextHintTestUtils;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.NotificationEvent.NotificationEnqueuedEvent;
 import android.service.personalcontext.hint.NotificationHint;
 import android.service.personalcontext.insight.ActionableInsight;
@@ -59,6 +61,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -129,7 +132,8 @@ public class NotificationActionRendererTest {
     }
 
     @Test
-    public void testRender_actionableInsightWithNotificationHint_requestsAdjustment() {
+    public void testRender_actionableInsightWithNotificationHint_requestsAdjustment()
+            throws GeneralSecurityException {
         mockPackageManagerResolvesIntent();
         ActionableInsight insight = createActionableInsight("Test Title", FAKE_ICON);
         Notification.Action action = renderAndGetAction(insight);
@@ -141,7 +145,7 @@ public class NotificationActionRendererTest {
     }
 
     @Test
-    public void testRender_noTitleInsight_usesDefaultTitle() {
+    public void testRender_noTitleInsight_usesDefaultTitle() throws GeneralSecurityException {
         mockPackageManagerResolvesIntent();
         ActionableInsight insight = createActionableInsight(null, FAKE_ICON);
         Notification.Action action = renderAndGetAction(insight);
@@ -152,7 +156,7 @@ public class NotificationActionRendererTest {
     }
 
     @Test
-    public void testRender_noIconInsight_usesDefaultIcon() {
+    public void testRender_noIconInsight_usesDefaultIcon() throws GeneralSecurityException {
         mockPackageManagerResolvesIntent();
         ActionableInsight insight = createActionableInsight("Test Title", null);
         Notification.Action action = renderAndGetAction(insight);
@@ -162,18 +166,20 @@ public class NotificationActionRendererTest {
     }
 
     @Test
-    public void testRender_cannotResolveIntent_noAction() {
+    public void testRender_cannotResolveIntent_noAction() throws GeneralSecurityException {
         NotificationHint hint =
                 new NotificationHint.Builder(
                                 new NotificationEnqueuedEvent(
                                         mNotification, NOTIFICATION_CHANNEL, RANKING_MAP))
                         .build();
+        ContextHintWithSignature signedHint = new ContextHintWithSignature.Builder(
+                hint, ContextHintTestUtils.generateSignedHintKey()).build();
         Intent actionIntent = new Intent("ACTION");
         InsightDisplayDetails displayDetails =
                 new InsightDisplayDetails.Builder("Test Title", FAKE_ICON).build();
         ActionableInsight insight =
                 new ActionableInsight.Builder(actionIntent, displayDetails)
-                        .setOriginHints(List.of(hint))
+                        .addOriginHint(signedHint)
                         .build();
         when(mPackageManager.queryIntentActivitiesAsUser(any(), anyInt(), anyInt()))
                 .thenReturn(Collections.emptyList());
@@ -183,12 +189,15 @@ public class NotificationActionRendererTest {
         verify(mNotificationManagerInternal, never()).requestSystemAdjustments(any());
     }
 
-    private ActionableInsight createActionableInsight(@Nullable String title, @Nullable Icon icon) {
+    private ActionableInsight createActionableInsight(@Nullable String title, @Nullable Icon icon)
+            throws GeneralSecurityException {
         NotificationHint hint =
                 new NotificationHint.Builder(
                                 new NotificationEnqueuedEvent(
                                         mNotification, NOTIFICATION_CHANNEL, RANKING_MAP))
                         .build();
+        ContextHintWithSignature signedHint = new ContextHintWithSignature.Builder(
+                hint, ContextHintTestUtils.generateSignedHintKey()).build();
         Intent actionIntent = new Intent("ACTION");
         InsightDisplayDetails.Builder displayDetailsBuilder;
         if (title != null && icon != null) {
@@ -200,7 +209,7 @@ public class NotificationActionRendererTest {
         }
         InsightDisplayDetails displayDetails = displayDetailsBuilder.build();
         return new ActionableInsight.Builder(actionIntent, displayDetails)
-                .setOriginHints(List.of(hint))
+                .addOriginHint(signedHint)
                 .build();
     }
 

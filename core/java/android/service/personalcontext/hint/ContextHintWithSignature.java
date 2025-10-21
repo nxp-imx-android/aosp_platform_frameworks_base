@@ -19,12 +19,13 @@ package android.service.personalcontext.hint;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.SystemApi;
+import android.annotation.TestApi;
 import android.content.ComponentName;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.RenderToken;
+import android.service.personalcontext.insight.ContextInsight;
 
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
@@ -37,13 +38,15 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * Wrapper for a {@link ContextHint} that includes verified information about provenance.
- * @hide
+ * Wrapper for a {@link ContextHint} that includes verified information about provenance. Instances
+ * will be provided to {@link android.service.personalcontext.refiner.HintRefinerService}, and
+ * {@link android.service.personalcontext.understander.ContextUnderstanderService} service
+ * implementations. Instances will also be available from {@link ContextInsight#getOriginHints()}.
  */
-@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class ContextHintWithSignature implements Parcelable {
     /** @hide */
+    @TestApi
     public static final String HMAC_ALGORITHM = "HmacSHA256";
 
     private final @NonNull byte[] mRawData;
@@ -128,6 +131,7 @@ public final class ContextHintWithSignature implements Parcelable {
      * Checks that the data hasn't been tampered with.
      * @hide
      */
+    @TestApi
     public boolean isSignatureValid(@NonNull SecretKeySpec secretKey)
             throws GeneralSecurityException {
         final Mac mac = Mac.getInstance(HMAC_ALGORITHM);
@@ -172,6 +176,8 @@ public final class ContextHintWithSignature implements Parcelable {
     /**
      * Utility method to unwrap a collection of {@link ContextHintWithSignature} into a list of
      * {@link ContextHint}.
+     *
+     * @hide
      */
     @NonNull
     public static List<ContextHint> unwrapList(
@@ -182,6 +188,8 @@ public final class ContextHintWithSignature implements Parcelable {
     /**
      * Utility method to unwrap a collection of {@link ContextHintWithSignature} into a collection
      * of {@link ContextHint}.
+     *
+     * @hide
      */
     @NonNull
     public static <T extends Collection<ContextHint>> T unwrapInto(
@@ -206,7 +214,11 @@ public final class ContextHintWithSignature implements Parcelable {
                 }
             };
 
-    /** @hide */
+    /**
+     * Builder for {@link ContextHintWithSignature}.
+     * @hide
+     */
+    @TestApi
     public static final class Builder {
         private final @NonNull ContextHintWrapper mContextHintWrapper;
         private final @NonNull List<ContextHintWithSignature> mAttributionHints = new ArrayList<>();
@@ -214,17 +226,20 @@ public final class ContextHintWithSignature implements Parcelable {
         private @Nullable ComponentName mOriginatingComponent;
         private @Nullable RenderToken mRenderToken = null;
 
+        /** @hide */
         public Builder(
                 @NonNull ContextHintWrapper contextHintWrapper, @NonNull SecretKeySpec secretKey) {
             mContextHintWrapper = contextHintWrapper;
             mSecretKey = secretKey;
         }
 
+        /** Used by CTS tests to create an instance of {@link ContextHintWithSignature}. */
         public Builder(@NonNull ContextHint contextHint, @NonNull SecretKeySpec secretKey) {
             this(new ContextHintWrapper(contextHint), secretKey);
         }
 
         /** Sets the originating component of the ContextHint. */
+        @SuppressWarnings("MissingGetterMatchingBuilder")
         @NonNull
         public Builder setOriginatingComponent(@Nullable ComponentName originatingComponent) {
             mOriginatingComponent = originatingComponent;

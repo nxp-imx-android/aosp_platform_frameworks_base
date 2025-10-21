@@ -16,9 +16,11 @@
 
 package android.service.personalcontext.hint;
 
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.service.personalcontext.Flags;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,6 +31,7 @@ import java.util.List;
  *
  * @hide
  */
+@FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class ContextHintWrapper implements Parcelable {
     private final ContextHint mContextHint;
 
