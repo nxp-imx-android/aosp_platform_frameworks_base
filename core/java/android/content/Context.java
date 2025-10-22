@@ -4669,7 +4669,6 @@ public abstract class Context {
                 ADVANCED_PROTECTION_SERVICE,
                 ANOMALY_DETECTOR_SERVICE,
                 TASK_CONTINUITY_SERVICE,
-                NPU_SERVICE,
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ServiceName {}
@@ -7073,15 +7072,6 @@ public abstract class Context {
      * @see CredentialManager
      */
     public static final String CREDENTIAL_SERVICE = "credential";
-
-    /**
-     * Use with {@link #getSystemService(String)} to retrieve a
-     * {@link android.npumanager.NpuManager}.
-     *
-     * @see #getSystemService(String)
-     */
-    @FlaggedApi(com.android.npumanager.Flags.FLAG_NPUMANAGER_ENABLED)
-    public static final String NPU_SERVICE = "npu";
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
