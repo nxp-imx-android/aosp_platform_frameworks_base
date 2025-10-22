@@ -66,6 +66,9 @@ interface DigitalClockViewAdapter {
     val maxSize: VPointF
     var dozeFraction: Float
 
+    var onViewBoundsChanged: ((VRectF) -> Unit)?
+    var onViewMaxSizeChanged: ((VPointF) -> Unit)?
+
     fun invalidate()
 
     fun requestLayout()
@@ -116,8 +119,8 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
         get() = "${super.getText()}"
         set(value) = super.setText(value)
 
-    var onViewBoundsChanged: ((VRectF) -> Unit)? = null
-    var onViewMaxSizeChanged: ((VPointF) -> Unit)? = null
+    override var onViewBoundsChanged: ((VRectF) -> Unit)? = null
+    override var onViewMaxSizeChanged: ((VPointF) -> Unit)? = null
     var digitTranslateAnimator: DigitTranslateAnimator? = null
     private var aodFontSizePx = -1f
     var isVertical: Boolean = false
