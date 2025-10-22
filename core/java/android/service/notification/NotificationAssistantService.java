@@ -356,9 +356,8 @@ public abstract class NotificationAssistantService extends NotificationListenerS
 
     /**
      * Implement this method to receive suggested adjustments from the system, merge them with any
-     * other internal adjustments, and notify the system of the merged adjustments via {@link
-     * #adjustNotifications(List)} or {@link #adjustNotification(Adjustment)}. By default, system
-     * adjustments are ignored.
+     * other internal adjustments, and notify the system of the merged adjustments via
+     * {@link #adjustNotification(Adjustment)}. By default, system adjustments are ignored.
      *
      * @param adjustments the adjustments suggested by the system
      */
