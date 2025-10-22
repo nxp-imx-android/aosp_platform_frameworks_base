@@ -110,7 +110,7 @@ public class UnfoldTransitionHandler implements TransitionHandler, UnfoldListene
     public UnfoldTransitionHandler(ShellInit shellInit,
             ShellUnfoldProgressProvider unfoldProgressProvider,
             FullscreenUnfoldTaskAnimator fullscreenUnfoldAnimator,
-            SplitTaskUnfoldAnimator splitUnfoldTaskAnimator,
+            Optional<SplitTaskUnfoldAnimator> splitUnfoldTaskAnimator,
             TransactionPool transactionPool,
             Executor executor,
             Handler handler,
@@ -123,7 +123,7 @@ public class UnfoldTransitionHandler implements TransitionHandler, UnfoldListene
         mHandler = handler;
         mBubbleTaskUnfoldTransitionMerger = bubbleTaskUnfoldTransitionMerger;
 
-        mAnimators.add(splitUnfoldTaskAnimator);
+        splitUnfoldTaskAnimator.ifPresent(mAnimators::add);
         mAnimators.add(fullscreenUnfoldAnimator);
         // TODO(b/238217847): Temporarily add this check here until we can remove the dynamic
         //                    override for this controller from the base module

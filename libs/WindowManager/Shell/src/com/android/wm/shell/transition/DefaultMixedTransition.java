@@ -217,7 +217,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction,
             @NonNull Transitions.TransitionFinishCallback finishCallback,
-            @NonNull StageCoordinator splitHandler) {
+            @Nullable StageCoordinator splitHandler) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, "Mixed transition for opening an intent"
                 + " with a remote transition and PIP or Desktop #%d", info.getDebugId());
         boolean handledToPipOrDesktop = tryAnimateOpenIntentWithRemoteAndPipOrDesktop(
@@ -239,7 +239,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction,
             @NonNull Transitions.TransitionFinishCallback finishCallback,
-            @NonNull StageCoordinator splitHandler) {
+            @Nullable StageCoordinator splitHandler) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
                 "tryAnimateOpenIntentWithRemoteAndPipOrDesktop");
 
@@ -248,7 +248,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
         // fullscreen, the StageCoordinator does not have enough info at transition-request time to
         // decide whether to handle the transition and never gets a chance to clean up the split
         // state. So we check here to see if that happened, and clean up if so.
-        if (splitHandler.transitionImpliesSplitToFullscreen(info)) {
+        if (splitHandler != null && splitHandler.transitionImpliesSplitToFullscreen(info)) {
             splitHandler.dismissSplitInBackground(EXIT_REASON_FULLSCREEN_REQUEST);
         }
 
