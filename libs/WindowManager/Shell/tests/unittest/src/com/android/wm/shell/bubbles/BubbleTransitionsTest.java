@@ -1098,6 +1098,36 @@ public class BubbleTransitionsTest extends ShellTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_ROOT_TASK_FOR_BUBBLE)
+    public void testLaunchOrConvert_withRootTaskForBubble_setsAlphaToZero() {
+        final ActivityManager.RunningTaskInfo taskInfo = setupAppBubble();
+        doReturn(mPendingIntent).when(mBubble).getPendingIntent();
+        final BubbleTransitions.LaunchOrConvertToBubble bt =
+                (BubbleTransitions.LaunchOrConvertToBubble) mBubbleTransitions
+                        .startLaunchIntoOrConvertToBubble(
+                                mBubble, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
+                                mStackView, mLayerView, mIconFactory, false /* inflateSync */,
+                                BubbleBarLocation.RIGHT);
+        bt.onInflated(mBubble);
+        assertThat(bt.mLaunchCookie).isNotNull();
+
+        // Prepare for startAnimation call
+        final SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
+        final TransitionInfo info = setupConvertTransition(taskInfo, taskLeash,
+                null /* snapshot */, bt.mLaunchCookie.binder);
+        final IBinder transitionToken = mock(IBinder.class);
+        bt.mPlayingTransition = transitionToken;
+        final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+
+        // Start playing the transition
+        bt.startAnimation(transitionToken, info, startT,
+                mock(SurfaceControl.Transaction.class), wct -> {});
+
+        // Verify that the alpha is set to 0 for the launched task's leash
+        verify(startT).setAlpha(taskLeash, 0f);
+    }
+
+    @Test
     public void launchNewTaskBubbleForExistingTransition_startTransitionBeforeBubbleInflated() {
         final ActivityManager.RunningTaskInfo taskInfo = setupAppBubble();
 
