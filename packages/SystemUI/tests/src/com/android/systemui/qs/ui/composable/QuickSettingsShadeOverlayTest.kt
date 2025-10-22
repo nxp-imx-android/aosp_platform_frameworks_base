@@ -17,6 +17,7 @@
 package com.android.systemui.qs.ui.composable
 
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.annotations.WithDesktopTest
 import android.testing.TestableLooper
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertHeightIsEqualTo
@@ -72,6 +73,7 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
     }
 
     @Test
+    @WithDesktopTest
     fun testCommonTileSize() = kosmos.runTest {
         currentTilesInteractor.setTiles(
             listOf(
@@ -100,6 +102,7 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
     }
 
     @Test
+    @WithDesktopTest
     @EnableFlags(FLAG_QS_TILE_DETAILED_VIEW, FLAG_EXPANDED_AUDIO_DETAILED_VIEW)
     fun testVolumeSlider() = kosmos.runTest {
         composeTestRule.setContent {
