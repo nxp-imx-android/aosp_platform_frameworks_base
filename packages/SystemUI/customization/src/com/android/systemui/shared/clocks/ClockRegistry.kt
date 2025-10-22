@@ -134,6 +134,7 @@ open class ClockRegistry(
             ): Boolean {
                 if (keepAllLoaded) {
                     // Always load new plugins if requested
+                    logger.d({ "Loading clock package: $str1" }) { str1 = manager.packageName }
                     return true
                 }
 
