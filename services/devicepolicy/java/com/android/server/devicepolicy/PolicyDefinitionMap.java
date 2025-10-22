@@ -68,13 +68,13 @@ import java.util.Set;
 public class PolicyDefinitionMap {
     static final String TAG = "PolicyDefinitionMap";
 
-    private static final Map<String, PolicyDefinition<?>> POLICY_DEFINITIONS = new HashMap<>();
-    private static final Map<String, Integer> USER_RESTRICTION_FLAGS = new HashMap<>();
+    private final Map<String, PolicyDefinition<?>> POLICY_DEFINITIONS = new HashMap<>();
+    private final Map<String, Integer> USER_RESTRICTION_FLAGS = new HashMap<>();
 
-    private static final Set<PolicyDefinition<?>> GENERIC_POLICY_DEFINITIONS = new HashSet<>();
+    private final Set<PolicyDefinition<?>> GENERIC_POLICY_DEFINITIONS = new HashSet<>();
 
     // TODO(b/277218360): Revisit policies that should be marked as global-only.
-    static {
+    {
         POLICY_DEFINITIONS.put(DevicePolicyIdentifiers.AUTO_TIMEZONE_POLICY, AUTO_TIME_ZONE);
         POLICY_DEFINITIONS.put(DevicePolicyIdentifiers.PERMISSION_GRANT_POLICY,
                 GENERIC_PERMISSION_GRANT);
@@ -263,7 +263,7 @@ public class PolicyDefinitionMap {
     }
 
     @SuppressWarnings("unchecked")
-    static PolicyDefinition<Boolean> getPolicyDefinitionForUserRestriction(
+    PolicyDefinition<Boolean> getPolicyDefinitionForUserRestriction(
             @UserManager.UserRestrictionKey String restriction) {
         String key = DevicePolicyIdentifiers.getIdentifierForUserRestriction(restriction);
 
@@ -275,11 +275,11 @@ public class PolicyDefinitionMap {
     }
 
     @Nullable
-    static PolicyDefinition<?> getPolicyDefinitionForIdentifier(@NonNull String identifier) {
+    PolicyDefinition<?> getPolicyDefinitionForIdentifier(@NonNull String identifier) {
         return POLICY_DEFINITIONS.get(identifier);
     }
 
-    private static void createAndAddUserRestrictionPolicyDefinition(
+    private void createAndAddUserRestrictionPolicyDefinition(
             String restriction, int flags) {
         String identifier = DevicePolicyIdentifiers.getIdentifierForUserRestriction(restriction);
         UserRestrictionPolicyKey key = new UserRestrictionPolicyKey(identifier, restriction);
@@ -294,7 +294,7 @@ public class PolicyDefinitionMap {
     }
 
     @Nullable
-    static <V> PolicyDefinition<V> readFromXml(TypedXmlPullParser parser)
+    <V> PolicyDefinition<V> readFromXml(TypedXmlPullParser parser)
             throws XmlPullParserException, IOException {
         // TODO: can we avoid casting?
         PolicyKey policyKey = readPolicyKeyFromXml(parser);
@@ -312,7 +312,7 @@ public class PolicyDefinitionMap {
     }
 
     @Nullable
-    static PolicyKey readPolicyKeyFromXml(TypedXmlPullParser parser)
+    PolicyKey readPolicyKeyFromXml(TypedXmlPullParser parser)
             throws XmlPullParserException, IOException {
         PolicyKey policyKey = PolicyKey.readGenericPolicyKeyFromXml(parser);
         if (policyKey == null) {
@@ -328,7 +328,7 @@ public class PolicyDefinitionMap {
         return genericPolicyDefinition.getPolicyKey().readFromXml(parser);
     }
 
-    static <V> boolean isGenericDefinition(PolicyDefinition<V> definition) {
+    <V> boolean isGenericDefinition(PolicyDefinition<V> definition) {
         return GENERIC_POLICY_DEFINITIONS.contains(definition);
     }
 
@@ -338,7 +338,7 @@ public class PolicyDefinitionMap {
      * using them is added, allow policy code to be tested earlier.
      * Do not use outside of unit tests.
      */
-    public static <T> void addGenericPolicyDefinitionForTesting(
+    public <T> void addGenericPolicyDefinitionForTesting(
             String key,
             PolicyDefinition<T> policy
     ) {

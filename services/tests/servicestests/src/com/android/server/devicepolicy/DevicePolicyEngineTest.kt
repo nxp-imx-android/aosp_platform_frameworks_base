@@ -60,6 +60,7 @@ class DevicePolicyEngineTest {
     private val packageManager = mock<PackageManagerInternal>()
     private val usageStatsManagerInternal = mock<UsageStatsManagerInternal>()
     private val policyPathProvider = mock<PolicyPathProvider>()
+    private val policyDefinitionMap = PolicyDefinitionMap()
 
     private val lock = Any()
     private lateinit var devicePolicyEngine: DevicePolicyEngine
@@ -94,7 +95,13 @@ class DevicePolicyEngineTest {
 
     private fun resetDevicePolicyEngine() {
         devicePolicyEngine =
-            DevicePolicyEngine(context, deviceAdminServiceController, lock, policyPathProvider)
+            DevicePolicyEngine(
+                context,
+                deviceAdminServiceController,
+                lock,
+                policyPathProvider,
+                policyDefinitionMap,
+            )
         devicePolicyEngine.load()
     }
 
@@ -465,7 +472,7 @@ class DevicePolicyEngineTest {
     )
 
     init {
-        PolicyDefinitionMap
+        policyDefinitionMap
             .addGenericPolicyDefinitionForTesting(
                 stringPolicyDefinition.policyKey.identifier,
                 stringPolicyDefinition
@@ -515,7 +522,7 @@ class DevicePolicyEngineTest {
     )
 
     init {
-        PolicyDefinitionMap
+        policyDefinitionMap
             .addGenericPolicyDefinitionForTesting(
                 stringListPolicyDefinition.policyKey.identifier,
                 stringListPolicyDefinition
