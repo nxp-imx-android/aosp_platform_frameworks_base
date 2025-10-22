@@ -156,7 +156,7 @@ constructor(
         when (target) {
             is ScreenCaptureTarget.Fullscreen -> {
                 val shouldShowTaps = recordDetailsParametersViewModel.shouldShowTaps ?: return
-                screenRecordingServiceInteractor.startRecording(
+                screenRecordingServiceInteractor.startRecordingDelayed(
                     ScreenRecordingParameters(
                         captureTarget = null,
                         displayId = target.displayId,
@@ -188,7 +188,7 @@ constructor(
                         target.displayId
                     }
 
-                screenRecordingServiceInteractor.startRecording(
+                screenRecordingServiceInteractor.startRecordingDelayed(
                     ScreenRecordingParameters(
                         captureTarget =
                             MediaProjectionCaptureTarget(

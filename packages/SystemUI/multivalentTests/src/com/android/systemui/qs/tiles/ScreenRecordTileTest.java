@@ -26,6 +26,7 @@ import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -61,6 +62,8 @@ import com.android.systemui.qs.logging.QSLogger;
 import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor;
 import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.res.R;
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType;
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState;
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractorKosmosKt;
 import com.android.systemui.screenrecord.ScreenRecordUxController;
 import com.android.systemui.settings.UserContextProvider;
@@ -139,6 +142,11 @@ public class ScreenRecordTileTest extends SysuiTestCase {
 
         when(mUserContextProvider.getUserContext()).thenReturn(mContext);
         when(mHost.getContext()).thenReturn(mContext);
+        doAnswer(invocation -> {
+            ((Runnable) invocation.getArgument(0)).run();
+            return null;
+        }).when(mActivityStarter).executeRunnableDismissingKeyguard(any(), any(), anyBoolean(),
+                anyBoolean(), anyBoolean());
 
         mTile = new ScreenRecordTile(
                 mHost,
@@ -174,6 +182,7 @@ public class ScreenRecordTileTest extends SysuiTestCase {
     // Test that the tile is inactive and labeled correctly when the controller is neither starting
     // or recording, and that clicking on the tile in this state brings up the record prompt
     @Test
+    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     public void testNotActive() {
         when(mController.isStarting()).thenReturn(false);
         when(mController.isRecording()).thenReturn(false);
@@ -213,6 +222,7 @@ public class ScreenRecordTileTest extends SysuiTestCase {
 
     // Test that the tile cancels countdown if it is clicked when the controller is starting
     @Test
+    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     public void testCancelRecording() {
         when(mController.isStarting()).thenReturn(true);
         when(mController.isRecording()).thenReturn(false);
@@ -220,6 +230,21 @@ public class ScreenRecordTileTest extends SysuiTestCase {
         mTile.handleClick(null /* view */);
 
         verify(mController, times(1)).cancelCountdown();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    public void testClickOpensNewToolbar() {
+        when(mController.isStarting()).thenReturn(false);
+        when(mController.isRecording()).thenReturn(false);
+
+        mTile.refreshState();
+        mTestableLooper.processAllMessages();
+
+        mTile.handleClick(null /* view */);
+        mTestableLooper.processAllMessages();
+        assertTrue(ScreenCaptureUiInteractorKosmosKt.getScreenCaptureUiInteractor(mKosmos).uiState(
+                ScreenCaptureType.RECORD).getValue() instanceof ScreenCaptureUiState.Visible);
     }
 
     // Test that clicking the tile is NOP if opened from large screen.
@@ -269,6 +294,7 @@ public class ScreenRecordTileTest extends SysuiTestCase {
 
     // Test that the tile stops the recording if it is clicked when the controller is recording
     @Test
+    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     public void testStopRecording() {
         when(mController.isStarting()).thenReturn(false);
         when(mController.isRecording()).thenReturn(true);
@@ -353,6 +379,7 @@ public class ScreenRecordTileTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     public void showingDialogPrompt_logsMediaProjectionPermissionRequested() {
         when(mController.isStarting()).thenReturn(false);
         when(mController.isRecording()).thenReturn(false);

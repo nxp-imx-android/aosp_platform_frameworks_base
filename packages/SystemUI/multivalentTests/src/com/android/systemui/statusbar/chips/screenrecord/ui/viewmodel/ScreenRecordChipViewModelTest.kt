@@ -18,11 +18,14 @@ package com.android.systemui.statusbar.chips.screenrecord.ui.viewmodel
 
 import android.content.Context
 import android.content.DialogInterface
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.view.View
 import android.view.ViewRootImpl
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.jank.Cuj
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
@@ -30,12 +33,18 @@ import com.android.systemui.animation.Expandable
 import com.android.systemui.animation.mockDialogTransitionAnimator
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.mediaprojection.data.model.MediaProjectionState
 import com.android.systemui.mediaprojection.data.repository.fakeMediaProjectionRepository
 import com.android.systemui.mediaprojection.taskswitcher.FakeActivityTaskManager
+import com.android.systemui.plugins.activityStarter
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
+import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.screenRecordRepository
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.setUpPackageManagerForMediaProjection
@@ -58,6 +67,7 @@ import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -196,6 +206,7 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     fun chip_recordingStoppedFromDialog_screenRecordAndShareToAppChipImmediatelyHidden() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -350,6 +361,7 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
     @Test
     @DisableChipsModernization
+    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     fun chip_notProjecting_clickListenerShowsDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -367,6 +379,7 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
     @Test
     @DisableChipsModernization
+    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     fun chip_projectingEntireScreen_clickListenerShowsDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -385,6 +398,7 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
     @Test
     @DisableChipsModernization
+    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     fun chip_projectingSingleTask_clickListenerShowsDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -407,6 +421,7 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
     @Test
     @DisableChipsModernization
+    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     fun chip_clickListenerHasCujLegacy() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -439,6 +454,7 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableChipsModernization
+    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     fun chip_notProjecting_expandActionBehaviorShowsDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -455,6 +471,7 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableChipsModernization
+    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     fun chip_projectingEntireScreen_expandActionBehaviorShowsDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -470,6 +487,7 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableChipsModernization
+    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     fun chip_projectingSingleTask_expandActionBehaviorShowsDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -487,5 +505,33 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
             expandAction.onClick(mockExpandable)
             verify(kosmos.mockDialogTransitionAnimator).show(any(), any(), anyBoolean())
+        }
+
+    @Test
+    @EnableChipsModernization
+    @EnableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    fun chip_recording_tapShowsScreenCaptureUi() =
+        kosmos.runTest {
+            whenever(
+                    activityStarter.executeRunnableDismissingKeyguard(
+                        any(),
+                        anyOrNull(),
+                        anyBoolean(),
+                        anyBoolean(),
+                        anyBoolean(),
+                    )
+                )
+                .then { (it.arguments[0] as Runnable).run() }
+            val latest by collectLastValue(underTest.chip)
+            val screenCaptureUi by
+                collectLastValue(screenCaptureUiInteractor.uiState(ScreenCaptureType.RECORD))
+            screenRecordRepo.screenRecordState.value = ScreenRecordModel.Recording
+
+            val expandAction =
+                (latest as OngoingActivityChipModel.Active).clickBehavior
+                    as OngoingActivityChipModel.ClickBehavior.ExpandAction
+            expandAction.onClick(mockExpandable)
+
+            assertThat(screenCaptureUi).isInstanceOf(ScreenCaptureUiState.Visible::class.java)
         }
 }
