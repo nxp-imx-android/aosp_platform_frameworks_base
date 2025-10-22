@@ -130,10 +130,12 @@ import java.util.function.Consumer;
  * <p class="note"><strong>Note:</strong> Starting in platform version
  * {@link android.os.Build.VERSION_CODES#UPSIDE_DOWN_CAKE}, SurfaceView will support arbitrary
  * alpha blending. Prior platform versions ignored alpha values on the SurfaceView if they were
- * between 0 and 1. If the SurfaceView is configured with Z-above, then the alpha is applied
- * directly to the Surface. If the SurfaceView is configured with Z-below, then the alpha is
- * applied to the hole punch directly. Note that when using Z-below, overlapping SurfaceViews
- * may not blend properly as a consequence of not applying alpha to the surface content directly.
+ * between 0 and 1. If the SurfaceView has a composition order greater than or equal to 0,
+ * (see {@link #setCompositionOrder(int)}), then the alpha is applied
+ * directly to the Surface. If the SurfaceView has a composition order less than 0, then the
+ * alpha is applied to the hole punch directly. Note that when the composition order is below
+ * the window overlapping SurfaceViews may not blend properly as a consequence of not applying
+ * alpha to the surface content directly.
  */
 public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCallback {
     /** @hide */
@@ -584,6 +586,24 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
         return;
     }
 
+    /**
+     * If the SurfaceView has a composition order greater than or equal to 0, (see {@link
+     * #setCompositionOrder(int)}), the alpha value set is applied directly to the Surface's
+     * content. This allows for proper alpha blending of the SurfaceView's content with whatever
+     * is behind it. If a  {@link SurfaceControlViewHost.SurfacePackage} is set, the alpha value
+     * is applied to the contents of the SurfacePackage as well.
+     *
+     * <p>When the SurfaceView composition order less than 0, the alpha value
+     * applied directly to the transparent region used to expose the SurfaceView's content. An alpha
+     * value of 0 means the "hole punch" region is completely transparent while an alpha value of 1
+     * means the region is completely opaque. The alpha value will not be applied to the
+     * SurfaceView's content directly or on the {@link SurfaceControlViewHost.SurfacePackage}.
+     * Note that when the composition order is below the window overlapping SurfaceViews may
+     * not blend properly as a consequence of not applying alpha to the surface content directly.
+     *
+     * @param alpha the alpha value to set on the SurfaceView
+     * @see {@link #getAlpha(int)}
+     */
     @Override
     public void setAlpha(float alpha) {
         if (DEBUG) {
