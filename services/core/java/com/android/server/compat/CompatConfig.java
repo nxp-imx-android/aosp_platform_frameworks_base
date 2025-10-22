@@ -189,6 +189,21 @@ final class CompatConfig {
     }
 
     /**
+     * Returns all the known compat-IDs. The result is sorted.
+     */
+    long[] getAllChangeIds() {
+        // mChanges is a ConcurrentHashMap, so it can change any time. So we go through
+        // LongArray to absorb possible concurrent changes.
+        LongArray list = new LongArray(mChanges.size());
+        for (CompatChange c : mChanges.values()) {
+            list.add(c.getId());
+        }
+        final long[] sortedChanges = list.toArray();
+        Arrays.sort(sortedChanges);
+        return sortedChanges;
+    }
+
+    /**
      * Whether the change indicated by the given changeId is targeting the latest SDK version.
      * @param c             the change for which to check the target SDK version
      * @param appSdkVersion the target sdk version of the app
