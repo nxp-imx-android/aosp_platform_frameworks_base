@@ -15337,6 +15337,10 @@ public class ActivityManagerService extends IActivityManager.Stub
                 final long cpuTimeUsed = curCpuTime - lastCpuTime;
                 if (checkExcessivePowerUsageLPr(uptimeSince, doCpuKills, cpuTimeUsed,
                             app.processName, app.toShortString(), cpuLimit, app)) {
+                    // Access app fields here because mProcLock is held.
+                    final int uid = app.uid;
+                    final String packageName = app.info != null ? app.info.packageName : null;
+
                     mHandler.post(() -> {
                         synchronized (ActivityManagerService.this) {
                             if (app.getThread() == null
@@ -15348,6 +15352,9 @@ public class ActivityManagerService extends IActivityManager.Stub
                                     ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE,
                                     ApplicationExitInfo.SUBREASON_EXCESSIVE_CPU,
                                     true);
+                        }
+                        if (packageName != null) {
+                            sendKillExcessiveCpuProfilingTrigger(uid, packageName);
                         }
                     });
                     profile.reportExcessiveCpu();
@@ -15366,6 +15373,10 @@ public class ActivityManagerService extends IActivityManager.Stub
                 final long cpuTimeUsed = r.mCurrentCputime - r.mLastCputime;
                 if (checkExcessivePowerUsageLPr(uptimeSince, doCpuKills, cpuTimeUsed,
                             app.processName, r.toString(), cpuLimit, app)) {
+                    // Access app fields here because mProcLock is held.
+                    final int uid = app.uid;
+                    final String packageName = app.info != null ? app.info.packageName : null;
+
                     mHandler.post(() -> {
                         synchronized (ActivityManagerService.this) {
                             if (app.getThread() == null
@@ -15377,6 +15388,9 @@ public class ActivityManagerService extends IActivityManager.Stub
                                     ApplicationExitInfo.SUBREASON_EXCESSIVE_CPU,
                                     "excessive cpu " + cpuTimeUsed + " during "
                                     + uptimeSince + " dur=" + checkDur + " limit=" + cpuLimit);
+                        }
+                        if (packageName != null) {
+                            sendKillExcessiveCpuProfilingTrigger(uid, packageName);
                         }
                     });
                     return false;
@@ -20112,6 +20126,20 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
             }
         });
+    }
+
+    /**
+     * Sends a {@code TRIGGER_TYPE_KILL_EXCESSIVE_CPU_USAGE} trigger to profiling service.
+     * @param uid The UID of the app which this trigger relates to.
+     * @param packageName The package name of the app which this trigger relates to.
+     */
+    public void sendKillExcessiveCpuProfilingTrigger(int uid, @NonNull String packageName) {
+        if (android.os.profiling.Flags.profilingTriggerKillExcessiveCpuUsage()) {
+            sendProfilingTrigger(
+                    uid,
+                    packageName,
+                    ProfilingTrigger.TRIGGER_TYPE_KILL_EXCESSIVE_CPU_USAGE);
+        }
     }
 
     @Override
