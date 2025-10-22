@@ -157,6 +157,7 @@ PipelineCacheStore::PipelineCacheStore(useconds_t writeThrottleInterval)
         , mMutex()
         , mConditionVariable()
         , mStoreRequest()
+        , mLastSizeBytes(0)
         , mExit(false)
         , mThread(&PipelineCacheStore::runThread, this) {}
 
