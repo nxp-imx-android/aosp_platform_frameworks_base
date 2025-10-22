@@ -284,7 +284,7 @@ constructor(
     shareToAppChipViewModel: ShareToAppChipViewModel,
     @DisplayAware private val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel,
     statusBarPopupChipsViewModelFactory: StatusBarPopupChipsViewModel.Factory,
-    animations: SystemStatusEventAnimationInteractor,
+    @DisplayAware animations: SystemStatusEventAnimationInteractor,
     statusBarContentInsetsViewModelStore: StatusBarContentInsetsViewModelStore,
     @DisplayAware bgDisplayScope: CoroutineScope,
     @Background bgDispatcher: CoroutineDispatcher,

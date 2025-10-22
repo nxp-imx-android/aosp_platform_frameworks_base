@@ -24,7 +24,6 @@ import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.AnimatorSet
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Flags.fixDotNotVisibleRace
-import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.AnimatingIn
@@ -36,8 +35,10 @@ import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationSt
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.util.Assert
 import com.android.systemui.util.time.SystemClock
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import java.io.PrintWriter
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -71,16 +72,25 @@ import kotlinx.coroutines.withTimeout
  */
 @OptIn(FlowPreview::class)
 open class SystemStatusAnimationSchedulerImpl
-@Inject
+@AssistedInject
 constructor(
     private val coordinator: SystemEventCoordinator,
     private val chipAnimationController: SystemEventChipAnimationController,
+    @Assisted private val displayId: Int,
     private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     dumpManager: DumpManager,
     private val systemClock: SystemClock,
-    @Application private val coroutineScope: CoroutineScope,
+    @Assisted private val coroutineScope: CoroutineScope,
     private val logger: SystemStatusAnimationSchedulerLogger?,
 ) : SystemStatusAnimationScheduler {
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            displayId: Int,
+            coroutineScope: CoroutineScope,
+        ): SystemStatusAnimationSchedulerImpl
+    }
 
     companion object {
         private const val PROPERTY_ENABLE_IMMERSIVE_INDICATOR = "enable_immersive_indicator"
@@ -312,10 +322,12 @@ constructor(
     private fun runChipAppearAnimation() {
         Assert.isMainThread()
         if (hasPersistentDot) {
-            statusBarWindowControllerStore.defaultDisplay.setForceStatusBarVisible(
-                true,
-                source = "SystemStatusAnimSchedule#runChipAppearAnimation",
-            )
+            statusBarWindowControllerStore
+                .forDisplay(displayId)
+                ?.setForceStatusBarVisible(
+                    true,
+                    source = "SystemStatusAnimSchedule#runChipAppearAnimation",
+                )
         }
         _animationState.value = AnimatingIn
 
@@ -349,10 +361,12 @@ constructor(
                             scheduledEvent.value != null -> AnimationQueued
                             else -> Idle
                         }
-                    statusBarWindowControllerStore.defaultDisplay.setForceStatusBarVisible(
-                        false,
-                        source = "SystemStatusAnimSchedule#runChipDisappearAnimation",
-                    )
+                    statusBarWindowControllerStore
+                        .forDisplay(displayId)
+                        ?.setForceStatusBarVisible(
+                            false,
+                            source = "SystemStatusAnimSchedule#runChipDisappearAnimation",
+                        )
                 }
             }
         )

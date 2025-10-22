@@ -247,7 +247,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
     public CollapsedStatusBarFragment(
             HomeStatusBarComponent.Factory homeStatusBarComponentFactory,
             OngoingCallController ongoingCallController,
-            SystemStatusAnimationScheduler animationScheduler,
+            @DisplayAware SystemStatusAnimationScheduler animationScheduler,
             ShadeExpansionStateManager shadeExpansionStateManager,
             StatusBarIconController statusBarIconController,
             DarkIconManager.Factory darkIconManagerFactory,

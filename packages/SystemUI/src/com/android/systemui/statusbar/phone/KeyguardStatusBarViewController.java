@@ -55,6 +55,7 @@ import com.android.systemui.Flags;
 import com.android.systemui.battery.BatteryMeterViewController;
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
 import com.android.systemui.dagger.qualifiers.Background;
+import com.android.systemui.dagger.qualifiers.Default;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
 import com.android.systemui.dreams.ui.viewmodel.DreamViewModel;
@@ -102,6 +103,8 @@ import com.android.systemui.user.ui.viewmodel.StatusBarUserChipViewModel;
 import com.android.systemui.util.ViewController;
 import com.android.systemui.util.settings.SecureSettings;
 
+import dagger.Lazy;
+
 import kotlin.Unit;
 
 import kotlinx.coroutines.CoroutineDispatcher;
@@ -136,7 +139,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     private final Context mContext;
     private final CarrierTextController mCarrierTextController;
     private final ConfigurationController mConfigurationController;
-    private final SystemStatusAnimationScheduler mAnimationScheduler;
+    private SystemStatusAnimationScheduler mAnimationScheduler;
     private final BatteryController mBatteryController;
     private final UserInfoController mUserInfoController;
     private final StatusBarIconController mStatusBarIconController;
@@ -191,6 +194,15 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
                 @Override
                 public void onConfigChanged(Configuration newConfig) {
                     updateUserSwitcher();
+                }
+
+                @Override
+                public void onMovedToDisplay(int newDisplayId, Configuration newConfiguration) {
+                    if (Flags.systemStatusAnimationPerDisplay()) {
+                        mAnimationScheduler.removeCallback(mAnimationCallback);
+                        mAnimationScheduler = getAnimationSchedulerForDisplay(newDisplayId);
+                        mAnimationScheduler.addCallback(mAnimationCallback);
+                    }
                 }
             };
 
@@ -357,8 +369,10 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
             @ShadeDisplayAware Context context,
             KeyguardStatusBarView view,
             CarrierTextController carrierTextController,
-            ConfigurationController configurationController,
-            SystemStatusAnimationScheduler animationScheduler,
+            Lazy<ConfigurationController> defaultConfigurationControllerLazy,
+            @ShadeDisplayAware
+                    Lazy<ConfigurationController> displayAwareConfigurationControllerLazy,
+            @Default Lazy<SystemStatusAnimationScheduler> animationSchedulerLazy,
             BatteryController batteryController,
             UserInfoController userInfoController,
             StatusBarIconController statusBarIconController,
@@ -390,14 +404,18 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
             GoneToGlanceableHubTransitionViewModel goneToGlanceableHubTransitionViewModel,
             OccludedToLockscreenTransitionViewModel occludedToLockscreenTransitionViewModel,
             DreamViewModel dreamViewModel,
-            KeyguardInteractor keyguardInteractor
-    ) {
+            KeyguardInteractor keyguardInteractor) {
         super(view);
         mCoroutineDispatcher = dispatcher;
         mContext = context;
         mCarrierTextController = carrierTextController;
-        mConfigurationController = configurationController;
-        mAnimationScheduler = animationScheduler;
+        if (Flags.systemStatusAnimationPerDisplay()) {
+            mConfigurationController = displayAwareConfigurationControllerLazy.get();
+            mAnimationScheduler = getAnimationSchedulerForDisplay(context.getDisplayId());
+        } else {
+            mConfigurationController = defaultConfigurationControllerLazy.get();
+            mAnimationScheduler = animationSchedulerLazy.get();
+        }
         mBatteryController = batteryController;
         mUserInfoController = userInfoController;
         mStatusBarIconController = statusBarIconController;
@@ -451,6 +469,13 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         if (NewStatusBarIcons.isEnabled() && SceneContainerFlag.isEnabled()) {
             mBatteryComposeView = createAndBindComposeBattery();
         }
+    }
+
+    @NonNull
+    private SystemStatusAnimationScheduler getAnimationSchedulerForDisplay(int displayId) {
+        return mPerDisplaySubcomponentRepo
+                .getOrDefault(displayId)
+                .getSystemStatusAnimationScheduler();
     }
 
     private StatusBarContentInsetsProvider insetsProvider() {
