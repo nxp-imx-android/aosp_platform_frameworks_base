@@ -174,7 +174,7 @@ constructor(
                     refreshState()
 
                     val listener = SupervisionStateListener()
-                    supervisionManager.registerSupervisionListener(listener)
+                    supervisionManager.registerSupervisionListenerForUser(userInfo.id, listener)
 
                     awaitClose { supervisionManager.unregisterSupervisionListener(listener) }
                 }

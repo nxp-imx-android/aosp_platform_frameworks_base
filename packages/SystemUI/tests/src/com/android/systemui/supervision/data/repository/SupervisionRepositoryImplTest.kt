@@ -23,6 +23,7 @@ import android.app.role.roleManager
 import android.app.supervision.SupervisionManager
 import android.app.supervision.flags.Flags
 import android.content.ComponentName
+import android.content.pm.UserInfo
 import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -57,6 +58,8 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
+import org.mockito.kotlin.reset
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
@@ -99,7 +102,10 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
 
             assertNotNull(currentSupervisionModel)
             verify(supervisionManager)
-                .registerSupervisionListener(supervisionListenerCaptor.capture())
+                .registerSupervisionListenerForUser(
+                    eq(USER_ID),
+                    supervisionListenerCaptor.capture(),
+                )
             verify(supervisionManager).isSupervisionEnabledForUser(eq(USER_ID))
 
             supervisionListenerCaptor.lastValue.onSupervisionDisabled(USER_ID)
@@ -115,7 +121,10 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
 
             assertNotNull(currentSupervisionModel)
             verify(supervisionManager)
-                .registerSupervisionListener(supervisionListenerCaptor.capture())
+                .registerSupervisionListenerForUser(
+                    eq(USER_ID),
+                    supervisionListenerCaptor.capture(),
+                )
             verify(supervisionManager).isSupervisionEnabledForUser(eq(USER_ID))
 
             supervisionListenerCaptor.lastValue.onSupervisionEnabled(USER_ID)
@@ -132,7 +141,10 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
 
             assertNotNull(currentSupervisionModel)
             verify(supervisionManager)
-                .registerSupervisionListener(supervisionListenerCaptor.capture())
+                .registerSupervisionListenerForUser(
+                    eq(USER_ID),
+                    supervisionListenerCaptor.capture(),
+                )
             verify(supervisionManager).isSupervisionEnabledForUser(eq(USER_ID))
 
             whenever(
@@ -179,7 +191,10 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
 
             assertNotNull(currentSupervisionModel)
             verify(supervisionManager)
-                .registerSupervisionListener(supervisionListenerCaptor.capture())
+                .registerSupervisionListenerForUser(
+                    eq(USER_ID),
+                    supervisionListenerCaptor.capture(),
+                )
             verify(supervisionManager).isSupervisionEnabledForUser(eq(USER_ID))
 
             whenever(
@@ -226,7 +241,10 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
 
             assertNotNull(currentSupervisionModel)
             verify(supervisionManager)
-                .registerSupervisionListener(supervisionListenerCaptor.capture())
+                .registerSupervisionListenerForUser(
+                    eq(USER_ID),
+                    supervisionListenerCaptor.capture(),
+                )
             verify(supervisionManager).isSupervisionEnabledForUser(eq(USER_ID))
 
             whenever(
@@ -281,7 +299,10 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
 
             assertNotNull(currentSupervisionModel)
             verify(supervisionManager)
-                .registerSupervisionListener(supervisionListenerCaptor.capture())
+                .registerSupervisionListenerForUser(
+                    eq(USER_ID),
+                    supervisionListenerCaptor.capture(),
+                )
             verify(supervisionManager).isSupervisionEnabledForUser(eq(USER_ID))
 
             supervisionListenerCaptor.lastValue.onSupervisionEnabled(USER_ID)
@@ -307,7 +328,10 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
 
             assertNotNull(currentSupervisionModel)
             verify(supervisionManager)
-                .registerSupervisionListener(supervisionListenerCaptor.capture())
+                .registerSupervisionListenerForUser(
+                    eq(USER_ID),
+                    supervisionListenerCaptor.capture(),
+                )
             verify(supervisionManager).isSupervisionEnabledForUser(eq(USER_ID))
 
             whenever(
@@ -332,6 +356,56 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
             assertNull(currentSupervisionModel!!.disclaimerText)
             assertNull(currentSupervisionModel!!.footerText)
         }
+
+    @Test
+    fun unregisterSupervisionListenerOnUserSwitch() =
+        testScope.runTest {
+            val userCount = 2
+            val userInfos = createUserInfos(userCount)
+            val primaryUserInfo = userInfos[0]
+            val secondaryUserInfo = userInfos[1]
+            userRepository.setUserInfos(userInfos)
+            reset(supervisionManager)
+
+            val currentSupervisionModel by collectLastValue(underTest.supervision)
+
+            verify(supervisionManager)
+                .registerSupervisionListenerForUser(
+                    eq(primaryUserInfo.id),
+                    supervisionListenerCaptor.capture(),
+                )
+            assertNotNull(currentSupervisionModel)
+            verify(supervisionManager).isSupervisionEnabledForUser(eq(primaryUserInfo.id))
+
+            userRepository.setSelectedUserInfo(secondaryUserInfo)
+            verify(supervisionManager)
+                .unregisterSupervisionListener(supervisionListenerCaptor.lastValue)
+            verify(supervisionManager)
+                .registerSupervisionListenerForUser(
+                    eq(secondaryUserInfo.id),
+                    supervisionListenerCaptor.capture(),
+                )
+            assertNotNull(currentSupervisionModel)
+            verify(supervisionManager).isSupervisionEnabledForUser(eq(secondaryUserInfo.id))
+        }
+
+    private fun createUserInfos(count: Int): List<UserInfo> {
+        return (0 until count).map { index ->
+            createUserInfo(id = index, name = "user_$index", isPrimary = index == 0)
+        }
+    }
+
+    private fun createUserInfo(id: Int, name: String, isPrimary: Boolean = false): UserInfo =
+        UserInfo(
+            id,
+            name,
+            /* iconPath= */ "",
+            /* flags= */ if (isPrimary) {
+                UserInfo.FLAG_MAIN or UserInfo.FLAG_ADMIN or UserInfo.FLAG_FULL
+            } else {
+                UserInfo.FLAG_FULL
+            },
+        )
 
     companion object {
         const val USER_ID = FakeUserRepository.DEFAULT_SELECTED_USER
