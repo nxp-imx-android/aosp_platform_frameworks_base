@@ -1131,6 +1131,17 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
     }
 
     /**
+     * An internal getter to check whether the back key should dismiss the software keyboard (IME)
+     * or not. Also see {@link #setDismissImeOnBackKeyPressed}.
+     *
+     * @hide
+     */
+    // TODO(b/454308783): remove this and use IMMS's listener once it is ready.
+    default boolean getDismissImeOnBackKeyPressed() {
+        return false;
+    }
+
+    /**
      * Show the recents task list app.
      * @hide
      */
