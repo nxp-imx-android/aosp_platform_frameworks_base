@@ -28,6 +28,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Slog;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.SystemService;
 
 import java.util.Collections;
@@ -51,21 +52,32 @@ public class LskfResetManagerService extends SystemService {
             mLskfResetKeyManager = new LskfResetKeyManager(getContext());
             mBinder = new LskfResetManagerImpl(getContext(), mLskfResetKeyManager);
             Slog.i(TAG, "Registering binder for " + Context.LSKF_RESET_SERVICE);
-            publishBinderService(Context.LSKF_RESET_SERVICE, mBinder);
+            try {
+                publishBinderService(Context.LSKF_RESET_SERVICE, mBinder);
+            } catch (Throwable t) {
+                Slog.e(TAG, "Could not start the LskfResetManagerService.", t);
+            }
         } else {
             Slog.i(TAG, "LskfResetManagerService not enabled");
         }
     }
 
+    @VisibleForTesting
+    ILskfResetManager getBinderService() {
+        return mBinder;
+    }
+
     private static class LskfResetManagerImpl extends ILskfResetManager.Stub {
         private static final String STUB_TAG = "LskfResetManagerImpl";
+
         @SuppressWarnings("unused")
         private final Context mContext;
+
         private final LskfResetKeyManager mLskfResetKeyManager;
 
         // Map to keep track of active sessions.
-        private final Map<IBinder, LskfResetSessionImpl> mActiveSessions = Collections
-                .synchronizedMap(new HashMap<>());
+        private final Map<IBinder, LskfResetSessionImpl> mActiveSessions =
+                Collections.synchronizedMap(new HashMap<>());
 
         LskfResetManagerImpl(Context context, LskfResetKeyManager keyManager) {
             mContext = context;
@@ -77,16 +89,21 @@ public class LskfResetManagerService extends SystemService {
         public ILskfResetSession createLskfResetSession(int userId) {
             Slog.d(STUB_TAG, "createLskfResetSession for user " + userId);
             // TODO: Permission checks for the caller
-            LskfResetSessionImpl session = new LskfResetSessionImpl(
-                    mContext, userId, mLskfResetKeyManager, this::removeSession);
+            LskfResetSessionImpl session =
+                    new LskfResetSessionImpl(
+                            mContext, userId, mLskfResetKeyManager, this::removeSession);
             IBinder sessionBinder = session.asBinder();
             mActiveSessions.put(sessionBinder, session);
 
             try {
-                sessionBinder.linkToDeath(() -> {
-                    Slog.w(STUB_TAG, "Client for session died, cleaning up for userId: " + userId);
-                    session.close(); // This will also call removeSession
-                }, 0);
+                sessionBinder.linkToDeath(
+                        () -> {
+                            Slog.w(
+                                    STUB_TAG,
+                                    "Client for session died, cleaning up for userId: " + userId);
+                            session.close(); // This will also call removeSession
+                        },
+                        0);
             } catch (RemoteException e) {
                 Slog.e(STUB_TAG, "Failed to link to death for session, cleaning up", e);
                 session.close();
@@ -108,12 +125,16 @@ public class LskfResetManagerService extends SystemService {
     // --- Implementation of ILskfResetSession ---
     private static class LskfResetSessionImpl extends ILskfResetSession.Stub {
         private static final String SESSION_TAG = "LskfResetSessionImpl";
+
         @SuppressWarnings("unused")
         private final int mUserId;
+
         @SuppressWarnings("unused")
         private final Context mContext;
+
         @SuppressWarnings("unused")
         private final LskfResetKeyManager mLskfResetKeyManager;
+
         private final String mSessionId;
         private final SessionRemover mSessionRemover;
 
@@ -121,8 +142,11 @@ public class LskfResetManagerService extends SystemService {
             void removeSession(IBinder binder);
         }
 
-        LskfResetSessionImpl(Context context, int userId,
-                LskfResetKeyManager keyManager, SessionRemover remover) {
+        LskfResetSessionImpl(
+                Context context,
+                int userId,
+                LskfResetKeyManager keyManager,
+                SessionRemover remover) {
             mContext = context;
             mUserId = userId;
             mLskfResetKeyManager = keyManager;

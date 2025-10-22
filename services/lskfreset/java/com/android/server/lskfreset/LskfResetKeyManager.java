@@ -71,7 +71,7 @@ public class LskfResetKeyManager {
     /**
      * Wrap LskfReset data
      *
-     * data: The data to be encrypted.
+     * @param data The data to be encrypted.
      */
     public byte[] wrapData(byte[] data) {
         Slog.d(TAG, "wrapData called (STUB)");
@@ -81,7 +81,7 @@ public class LskfResetKeyManager {
     /**
      * Unwrap LskfReset data
      *
-     * ivAndEncrypted: The data to be unencrypted.
+     * @param ivAndEncrypted The data to be unencrypted.
      */
     public byte[] unwrapData(byte[] ivAndEncrypted) {
         Slog.d(TAG, "unwrapData called (STUB)");
