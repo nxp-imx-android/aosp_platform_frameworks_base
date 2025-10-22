@@ -38968,7 +38968,7 @@ package android.provider {
     method public static android.net.Uri buildRootUri(String, String);
     method public static android.net.Uri buildRootsUri(String);
     method public static android.net.Uri buildSearchDocumentsUri(String, String, String);
-    method @FlaggedApi("android.provider.enable_documents_trash_api") @NonNull public static android.net.Uri buildTrashDocumentsUri(@NonNull String);
+    method @FlaggedApi("android.provider.enable_documents_trash_api") @NonNull public static android.net.Uri buildTrashDocumentsUri(@NonNull String, @NonNull String);
     method public static android.net.Uri buildTreeDocumentUri(String, String);
     method @Nullable public static android.net.Uri copyDocument(@NonNull android.content.ContentResolver, @NonNull android.net.Uri, @NonNull android.net.Uri) throws java.io.FileNotFoundException;
     method @Nullable public static android.net.Uri createDocument(@NonNull android.content.ContentResolver, @NonNull android.net.Uri, @NonNull String, @NonNull String) throws java.io.FileNotFoundException;
@@ -39020,6 +39020,7 @@ package android.provider {
     field public static final String COLUMN_ICON = "icon";
     field public static final String COLUMN_LAST_MODIFIED = "last_modified";
     field public static final String COLUMN_MIME_TYPE = "mime_type";
+    field @FlaggedApi("android.provider.enable_documents_trash_api") public static final String COLUMN_ORIGINAL_RELATIVE_PATH = "original_relative_path";
     field public static final String COLUMN_SIZE = "_size";
     field public static final String COLUMN_SUMMARY = "summary";
     field public static final int FLAG_DIR_BLOCKS_OPEN_DOCUMENT_TREE = 32768; // 0x8000
@@ -39074,6 +39075,7 @@ package android.provider {
     field public static final int FLAG_SUPPORTS_CREATE = 1; // 0x1
     field public static final int FLAG_SUPPORTS_EJECT = 32; // 0x20
     field public static final int FLAG_SUPPORTS_IS_CHILD = 16; // 0x10
+    field @FlaggedApi("android.provider.enable_documents_trash_api") public static final int FLAG_SUPPORTS_QUERY_TRASH = 1048576; // 0x100000
     field public static final int FLAG_SUPPORTS_RECENTS = 4; // 0x4
     field public static final int FLAG_SUPPORTS_SEARCH = 8; // 0x8
     field public static final String MIME_TYPE_ITEM = "vnd.android.document/root";
@@ -39115,7 +39117,7 @@ package android.provider {
     method public abstract android.database.Cursor queryRoots(String[]) throws java.io.FileNotFoundException;
     method public android.database.Cursor querySearchDocuments(String, String, String[]) throws java.io.FileNotFoundException;
     method @Nullable public android.database.Cursor querySearchDocuments(@NonNull String, @Nullable String[], @NonNull android.os.Bundle) throws java.io.FileNotFoundException;
-    method @FlaggedApi("android.provider.enable_documents_trash_api") @Nullable public android.database.Cursor queryTrashDocuments(@Nullable String[]) throws java.io.FileNotFoundException;
+    method @FlaggedApi("android.provider.enable_documents_trash_api") @Nullable public android.database.Cursor queryTrashDocuments(@NonNull String, @Nullable String[], @Nullable android.os.Bundle, @Nullable android.os.CancellationSignal) throws java.io.FileNotFoundException;
     method public void removeDocument(String, String) throws java.io.FileNotFoundException;
     method public String renameDocument(String, String) throws java.io.FileNotFoundException;
     method @FlaggedApi("android.provider.enable_documents_trash_api") @Nullable public String restoreDocumentFromTrash(@NonNull String, @Nullable String) throws java.io.FileNotFoundException;
