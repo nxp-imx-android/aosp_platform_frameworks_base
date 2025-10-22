@@ -20,7 +20,6 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertHeightIsEqualTo
-import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -43,10 +42,13 @@ import com.android.systemui.res.R
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
+import com.android.systemui.util.FixedActivitySizeComposeTestRule
+import kotlin.test.Test
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.runner.RunWith
-import kotlin.test.Test
+import platform.test.screenshot.DeviceEmulationSpec
+import platform.test.screenshot.Displays
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -54,7 +56,15 @@ import kotlin.test.Test
 @EnableSceneContainer
 class QuickSettingsShadeOverlayTest : SysuiTestCase() {
     @get:Rule
-    val composeTestRule = createComposeRule()
+    val rule = FixedActivitySizeComposeTestRule(
+        DeviceEmulationSpec(
+            // Use a large display size intentionally to verify the dimens tuned for large screens.
+            Displays.External1080p120dpi,
+            isLandscape = true,
+        )
+    )
+
+    val composeTestRule = rule.composeTestRule
 
     private val kosmos = testKosmos().apply {
         useUnconfinedTestDispatcher()

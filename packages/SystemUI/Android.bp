@@ -838,6 +838,7 @@ android_library {
         "com.android.systemui.pods-api-aosp-handheld",
         "com.android.systemui.pods-impl-aosp-handheld",
         "SystemUI-tests-base",
+        "androidx.compose.ui_ui-test-junit4",
         "androidx.test.uiautomator_uiautomator",
         "androidx.core_core-animation-testing",
         "androidx.lifecycle_lifecycle-runtime-testing",
@@ -965,6 +966,7 @@ android_robolectric_test {
     static_libs: [
         "RoboTestLibraries",
         "androidx.compose.runtime_runtime",
+        "androidx.compose.ui_ui-test-junit4",
     ],
     libs: [
         "android.test.runner.impl",
