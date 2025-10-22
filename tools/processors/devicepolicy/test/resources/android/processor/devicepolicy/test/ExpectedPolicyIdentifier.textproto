@@ -146,7 +146,7 @@ policy_metadata {
 }
 policy_metadata {
   identifier {
-    field_name: "TEST_PROFILE_OWNER_ON_USER_0_ALLOWED"
+    field_name: "TEST_PROFILE_OWNER_ON_USER0_ALLOWED"
     class_name: "PolicyIdentifier"
     package_name: "android.app.admin"
   }
@@ -154,14 +154,14 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Test policy verifying processing of PROFILE_OWNER_ON_USER_0 allowed. "
+  documentation: "Test policy verifying processing of PROFILE_OWNER_ON_USER0 allowed. "
   type_specific_metadata {
     integer_metadata {
     }
   }
   allowed_scopes: POLICY_SCOPE_USER
   affected_resource: RESOURCE_DEVICE_WIDE
-  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_ON_USER_0
+  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_ON_USER0
 }
 policy_metadata {
   identifier {

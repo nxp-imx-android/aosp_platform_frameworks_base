@@ -273,7 +273,7 @@ public final class PolicyIdentifier<T> {
                     new PolicyIdentifier<>(
                             "TEST_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_ALLOWED");
 
-    /** Test policy verifying processing of PROFILE_OWNER_ON_USER_0 allowed. */
+    /** Test policy verifying processing of PROFILE_OWNER_ON_USER0 allowed. */
     @IntegerPolicyDefinition(
             base =
                     @PolicyDefinition(
@@ -292,8 +292,8 @@ public final class PolicyIdentifier<T> {
                                             profileOwner = DISALLOWED,
                                             profileOwnerOnUser = DISALLOWED,
                                             affiliatedProfileOwnerOnUser = DISALLOWED)))
-    public static final PolicyIdentifier<Integer> TEST_PROFILE_OWNER_ON_USER_0_ALLOWED =
-            new PolicyIdentifier<>("TEST_PROFILE_OWNER_ON_USER_0_ALLOWED");
+    public static final PolicyIdentifier<Integer> TEST_PROFILE_OWNER_ON_USER0_ALLOWED =
+            new PolicyIdentifier<>("TEST_PROFILE_OWNER_ON_USER0_ALLOWED");
 
     /** Test policy verifying processing of PROFILE_OWNER allowed. */
     @IntegerPolicyDefinition(

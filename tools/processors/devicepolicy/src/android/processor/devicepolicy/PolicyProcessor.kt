@@ -394,7 +394,7 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
             )
         }
         if (input.profileOwnerOnUser0 == AllowedDpcTypes.ALLOWED) {
-            result.add(PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_ON_USER_0)
+            result.add(PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_ON_USER0)
         }
         if (input.profileOwner == AllowedDpcTypes.ALLOWED) {
             result.add(PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER)

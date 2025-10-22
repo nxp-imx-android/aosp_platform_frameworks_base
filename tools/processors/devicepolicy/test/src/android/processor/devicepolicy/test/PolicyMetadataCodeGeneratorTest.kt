@@ -497,7 +497,7 @@ class PolicyMetadataCodeGeneratorTest {
         assertThat(javaFileToString(javaFile)).isEqualTo(
             fillInFile(
               staticImports = listOf("test.package.MY_TEST_POLICY"),
-               code =  """
+               code = """
                 policies.add(new EnumPolicyMetadata(
                     /* id= */ MY_TEST_POLICY,
                     /* allowedScopes= */ Set.of(
@@ -532,7 +532,7 @@ class PolicyMetadataCodeGeneratorTest {
                         PolicyMetadata.DpcType.DPC_TYPE_DEFAULT_DEVICE_OWNER,
                         PolicyMetadata.DpcType.DPC_TYPE_FINANCED_DEVICE_OWNER,
                         PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE,
-                        PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_ON_USER_0,
+                        PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_ON_USER0,
                         PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER,
                         PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_ON_USER,
                         PolicyMetadata.DpcType.DPC_TYPE_AFFILIATED_PROFILE_OWNER_ON_USER,
@@ -545,7 +545,7 @@ class PolicyMetadataCodeGeneratorTest {
         assertThat(javaFileToString(javaFile)).isEqualTo(
             fillInFile(
               staticImports = listOf("test.package.MY_TEST_POLICY"),
-               code =  """
+               code = """
                 policies.add(new EnumPolicyMetadata(
                     /* id= */ MY_TEST_POLICY,
                     /* allowedScopes= */ Set.of(
@@ -558,7 +558,7 @@ class PolicyMetadataCodeGeneratorTest {
                         1, // DEFAULT_DEVICE_OWNER
                         2, // FINANCED_DEVICE_OWNER
                         3, // PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
-                        4, // PROFILE_OWNER_ON_USER_0
+                        4, // PROFILE_OWNER_ON_USER0
                         5, // PROFILE_OWNER
                         6, // PROFILE_OWNER_ON_USER
                         7  // AFFILIATED_PROFILE_OWNER_ON_USER
