@@ -47,7 +47,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
@@ -999,6 +1001,7 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
                 mock<DumpManager>(),
                 mock<CommandRegistry>(),
                 mock<SysUICutoutProvider>(),
+                Display.DEFAULT_DISPLAY,
             )
 
         configuration.windowConfiguration.setMaxBounds(Rect(0, 0, 1080, 2160))
@@ -1024,6 +1027,7 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
                 mock<DumpManager>(),
                 mock<CommandRegistry>(),
                 mock<SysUICutoutProvider>(),
+                Display.DEFAULT_DISPLAY,
             )
 
         configuration.windowConfiguration.setMaxBounds(Rect(0, 0, 1080, 2160))
@@ -1055,6 +1059,7 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
                 mock<DumpManager>(),
                 mock<CommandRegistry>(),
                 mock<SysUICutoutProvider>(),
+                Display.DEFAULT_DISPLAY,
             )
         val listener =
             object : StatusBarContentInsetsChangedListener {
@@ -1088,6 +1093,7 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
                 mock<DumpManager>(),
                 mock<CommandRegistry>(),
                 mock<SysUICutoutProvider>(),
+                Display.DEFAULT_DISPLAY,
             )
         val listener =
             object : StatusBarContentInsetsChangedListener {
@@ -1121,6 +1127,7 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
                 mock<DumpManager>(),
                 mock<CommandRegistry>(),
                 mock<SysUICutoutProvider>(),
+                Display.DEFAULT_DISPLAY,
             )
         val listener =
             object : StatusBarContentInsetsChangedListener {
@@ -1152,6 +1159,7 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
                 mock<DumpManager>(),
                 mock<CommandRegistry>(),
                 mock<SysUICutoutProvider>(),
+                Display.DEFAULT_DISPLAY,
             )
         val listener =
             object : StatusBarContentInsetsChangedListener {
@@ -1182,6 +1190,7 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
                 mock<DumpManager>(),
                 mock<CommandRegistry>(),
                 mock<SysUICutoutProvider>(),
+                Display.DEFAULT_DISPLAY,
             )
         val listener =
             object : StatusBarContentInsetsChangedListener {
@@ -1211,6 +1220,7 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
                 mock<DumpManager>(),
                 mock<CommandRegistry>(),
                 mock<SysUICutoutProvider>(),
+                Display.DEFAULT_DISPLAY,
             )
         val listener =
             object : StatusBarContentInsetsChangedListener {
@@ -1240,6 +1250,7 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
                 mock<DumpManager>(),
                 mock<CommandRegistry>(),
                 mock<SysUICutoutProvider>(),
+                Display.DEFAULT_DISPLAY,
             )
         val listener =
             object : StatusBarContentInsetsChangedListener {
@@ -1268,6 +1279,7 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
                 mock<DumpManager>(),
                 mock<CommandRegistry>(),
                 mock<SysUICutoutProvider>(),
+                Display.DEFAULT_DISPLAY,
             )
         val listener =
             object : StatusBarContentInsetsChangedListener {
@@ -1294,6 +1306,7 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
                 mock<DumpManager>(),
                 mock<CommandRegistry>(),
                 mock<SysUICutoutProvider>(),
+                Display.DEFAULT_DISPLAY,
             )
         val listener =
             object : StatusBarContentInsetsChangedListener {
@@ -1308,6 +1321,27 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
         configurationController.notifyThemeChanged()
 
         assertThat(listener.triggered).isTrue()
+    }
+
+    @Test
+    fun start_contextReturningWrongDisplayId_stillRegistersWithProvidedDisplayId() {
+        val dumpManager = mock<DumpManager>()
+        val realDisplayId = 42
+        whenever(contextMock.displayId).thenReturn(1)
+
+        val provider =
+            StatusBarContentInsetsProviderImpl(
+                contextMock,
+                configurationController,
+                dumpManager,
+                mock<CommandRegistry>(),
+                mock<SysUICutoutProvider>(),
+                realDisplayId,
+            )
+        provider.start()
+
+        verify(dumpManager)
+            .registerNormalDumpable(eq("StatusBarInsetsProvider$realDisplayId"), any())
     }
 
     private fun assertRects(
