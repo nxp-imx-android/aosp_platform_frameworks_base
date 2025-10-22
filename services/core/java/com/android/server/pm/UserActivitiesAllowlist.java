@@ -21,10 +21,8 @@ import android.content.ComponentName;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
 
-import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
-import com.android.internal.util.NamedLock;
 import com.android.server.utils.Slogf;
 
 import java.io.PrintWriter;
@@ -34,7 +32,9 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Class responsible for managing allowlists associated with a {@code UserType}.
@@ -48,8 +48,6 @@ final class UserActivitiesAllowlist {
     @VisibleForTesting
     static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
-    private final Object mLock = NamedLock.create(UserActivitiesAllowlist.class.getSimpleName());
-
     // List of activities that are permanently allowed (i.e., they survive reboots).
     // If empty, allowlist is disabled (and all activities are allowed).
     // NOTE: for now it's an array as they're just read from config, but should change to Set
@@ -59,11 +57,8 @@ final class UserActivitiesAllowlist {
     // List of activities that are temporarily allowed (i.e., until reboot or set back to null)
     // When set (i.e., not null), it will override the value of mPermanentActivitiesAllowlist.
     // If empty, allowlist is disabled (and all activities are allowed).
-    // NOTE: using LinkedHashSet to preserve order in test; this list is small enough (and not used
-    // on critical path, so we don't need to optimize and use a ArraySet)
     @Nullable
-    @GuardedBy("mLock")
-    private String[] mTemporaryAllowlist;
+    private volatile CopyOnWriteArrayList<String> mTemporaryActivitiesAllowlist;
 
     UserActivitiesAllowlist(String[] permanentActivities) {
         mPermanentAllowlist = getValidComponentNames(permanentActivities);
@@ -73,12 +68,11 @@ final class UserActivitiesAllowlist {
     // incremental actions, like add or remove an activity) and unit tests, so we don't have to
     // worry about performance (like caching the result or not using streams)
     List<ComponentName> getEffectiveAllowlist() {
-        synchronized (mLock) {
-            return Arrays
-                    .stream(mTemporaryAllowlist != null ? mTemporaryAllowlist : mPermanentAllowlist)
-                    .map(ComponentName::unflattenFromString)
-                    .collect(Collectors.toCollection(ArrayList::new));
-        }
+        Stream<String> stream = mTemporaryActivitiesAllowlist != null
+                ? mTemporaryActivitiesAllowlist.stream()
+                : Arrays.stream(mPermanentAllowlist);
+        return stream.map(ComponentName::unflattenFromString)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -93,22 +87,21 @@ final class UserActivitiesAllowlist {
         String normalizedName = activity.flattenToShortString();
 
         // Checks the temporary list first...
-        synchronized (mLock) {
-            if (mTemporaryAllowlist != null) {
-                if (mTemporaryAllowlist.length == 0) {
-                    if (DEBUG) {
-                        Slogf.d(TAG, "isActivityAllowed(%s): returning true because temporary "
-                                + "allowlist overrides permanent allowlist and is empty, so any "
-                                + "activity is allowed", normalizedName);
-                    }
-                    return true;
-                }
+        CopyOnWriteArrayList<String> temporaryList = mTemporaryActivitiesAllowlist;
+        if (temporaryList != null) {
+            if (temporaryList.isEmpty()) {
                 if (DEBUG) {
-                    Slogf.d(TAG, "isActivityAllowed(%s): checking temporary list (%s)",
-                            normalizedName, Arrays.toString(mTemporaryAllowlist));
+                    Slogf.d(TAG, "isActivityAllowed(%s): returning true because temporary "
+                            + "allowlist overrides permanent allowlist and is empty, so any "
+                            + "activity is allowed", normalizedName);
                 }
-                return ArrayUtils.contains(mTemporaryAllowlist, normalizedName);
+                return true;
             }
+            if (DEBUG) {
+                Slogf.d(TAG, "isActivityAllowed(%s): checking temporary list (%s)",
+                        normalizedName, temporaryList);
+            }
+            return temporaryList.contains(normalizedName);
         }
 
         // ...then the permanent one.
@@ -131,20 +124,18 @@ final class UserActivitiesAllowlist {
         if (DEBUG) {
             Slogf.d(TAG, "setTemporaryAllowList(%s)", componentNames);
         }
-        synchronized (mLock) {
-            if (componentNames == null) {
-                mTemporaryAllowlist = null;
-                return;
-            }
-            mTemporaryAllowlist = new String[componentNames.size()];
-            int i = 0;
-            for (var component : componentNames) {
-                mTemporaryAllowlist[i++] = component.flattenToShortString();
-            }
-            if (DEBUG) {
-                Slogf.d(TAG, "setTemporaryAllowList(): set as %s",
-                        Arrays.toString(mTemporaryAllowlist));
-            }
+        if (componentNames == null) {
+            mTemporaryActivitiesAllowlist = null;
+            return;
+        }
+        List<String> tempList = new ArrayList<>(componentNames.size());
+        for (var component : componentNames) {
+            tempList.add(component.flattenToShortString());
+        }
+        mTemporaryActivitiesAllowlist = new CopyOnWriteArrayList<>(tempList);
+
+        if (DEBUG) {
+            Slogf.d(TAG, "setTemporaryAllowList(): set as %s", mTemporaryActivitiesAllowlist);
         }
     }
 
@@ -159,26 +150,22 @@ final class UserActivitiesAllowlist {
         writer.printf("DEBUG: %b\n", DEBUG);
 
         dumpAllowlistStatus(writer);
-
-        dumpAllowlist(writer, "permanent", mPermanentAllowlist);
-        synchronized (mLock) {
-            dumpAllowlist(writer, "temporary", mTemporaryAllowlist);
-        }
+        dumpPermanentActivitiesAllowlist(writer);
+        dumpTemporaryActivitiesAllowlist(writer);
 
         writer.decreaseIndent();
     }
 
     private void dumpAllowlistStatus(IndentingPrintWriter writer) {
         writer.print("activities allowlist status: ");
-        synchronized (mLock) {
-            if (mTemporaryAllowlist != null) {
-                if (mTemporaryAllowlist.length == 0) {
-                    writer.println("allowlisting disabled");
-                } else {
-                    writer.println("using temporary allowlist");
-                }
-                return;
+        CopyOnWriteArrayList<String> temporaryList = mTemporaryActivitiesAllowlist;
+        if (temporaryList != null) {
+            if (temporaryList.isEmpty()) {
+                writer.println("allowlisting disabled");
+            } else {
+                writer.println("using temporary allowlist");
             }
+            return;
         }
         if (mPermanentAllowlist.length == 0) {
             writer.println("allowlisting disabled");
@@ -187,26 +174,47 @@ final class UserActivitiesAllowlist {
         }
     }
 
-    private void dumpAllowlist(IndentingPrintWriter writer, String name, @Nullable String[] list) {
-        if (list == null) {
-            writer.printf("%s activities allowlist is not set.\n", name);
+    private void dumpPermanentActivitiesAllowlist(IndentingPrintWriter writer) {
+        int size = mPermanentAllowlist.length;
+
+        // Header / number of activities
+        dumpActivitiesAllowlistSize(writer, "permanent", size);
+
+        // Body / activity components
+        writer.increaseIndent();
+        for (String item : mPermanentAllowlist) {
+            writer.println(item);
+        }
+        writer.decreaseIndent();
+    }
+
+    private void dumpTemporaryActivitiesAllowlist(IndentingPrintWriter writer) {
+        CopyOnWriteArrayList<String> temporaryList = mTemporaryActivitiesAllowlist;
+
+        // Header / number of activities
+        if (temporaryList == null) {
+            writer.println("temporary activities allowlist is not set.");
             return;
         }
-        // Header / number of activities
-        int size = list.length;
+        int size = temporaryList.size();
+        dumpActivitiesAllowlistSize(writer, "temporary", size);
+
+        // Body / activity components
+        writer.increaseIndent();
+        for (int i = 0; i < size; i++) {
+            writer.println(temporaryList.get(i));
+        }
+        writer.decreaseIndent();
+    }
+
+    private static void dumpActivitiesAllowlistSize(IndentingPrintWriter writer, String name,
+            int size) {
         if (size == 0) {
             writer.printf("%s activities allowlist is empty.\n", name);
             return;
         }
         String suffix = size > 1 ? "ies" : "y";
         writer.printf("%s activities allowlist has %d activit%s:\n", name, size, suffix);
-
-        // Body / activity components
-        writer.increaseIndent();
-        for (int i = 0; i < list.length; i++) {
-            writer.println(list[i]);
-        }
-        writer.decreaseIndent();
     }
 
     private static String[] getValidComponentNames(String[] componentNames) {
