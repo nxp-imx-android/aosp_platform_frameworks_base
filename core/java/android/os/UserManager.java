@@ -2396,7 +2396,7 @@ public class UserManager {
      * @hide
      */
     @TestApi
-    @FlaggedApi(android.multiuser.Flags.FLAG_USER_REMOVAL_MINOR_APIS_2026)
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
     public static final int REMOVE_RESULT_USER_IS_REMOVABLE = 3;
 
     /**
@@ -6546,7 +6546,7 @@ public class UserManager {
      * @hide
      */
     @TestApi
-    @FlaggedApi(android.multiuser.Flags.FLAG_USER_REMOVAL_MINOR_APIS_2026)
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
     @RequiresPermission(anyOf = {
             Manifest.permission.CREATE_USERS,
             Manifest.permission.QUERY_USERS})
