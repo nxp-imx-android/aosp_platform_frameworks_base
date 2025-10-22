@@ -42,7 +42,7 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.Notificati
  * @param modifier The [Modifier] to be applied to this placeholder.
  */
 @Composable
-internal fun ContentScope.NotificationPlaceholder(
+internal fun ContentScope.StackPlaceholder(
     stackScrollView: NotificationScrollView,
     useStackBounds: () -> Boolean,
     viewModel: NotificationsPlaceholderViewModel,
@@ -51,7 +51,7 @@ internal fun ContentScope.NotificationPlaceholder(
     Box(
         modifier =
             modifier
-                .element(Notifications.Elements.NotificationStackPlaceholder)
+                .element(Notifications.Elements.StackPlaceholder)
                 .debugBackground(viewModel, DEBUG_STACK_COLOR)
                 .onSizeChanged { size -> debugLog(viewModel) { "STACK onSizeChanged: size=$size" } }
                 .onGloballyPositioned { coordinates: LayoutCoordinates ->
