@@ -267,6 +267,24 @@ public class TestableLooper {
         }
     }
 
+    private Long peekWhenWithNullReturn() {
+        if (isAtLeastBaklava()) {
+            return mQueueWrapper.peekWhen();
+        } else {
+            try {
+                Message msg = (Message) MESSAGE_QUEUE_MESSAGES_FIELD.get(mLooper.getQueue());
+                if (msg != null) {
+                    return msg.getWhen();
+                } else {
+                    return null;
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(
+                    "Access failed in TestableLooper: set - Message.when", e);
+            }
+        }
+    }
+
     public void moveTimeForward(long milliSeconds) {
         if (isAtLeastBaklava()) {
             moveTimeForwardBaklava(milliSeconds);
@@ -347,7 +365,7 @@ public class TestableLooper {
 
     private boolean processSingleMessage(Runnable barrierRunnable) {
         try {
-            if (peekWhen() == 0) {
+            if (peekWhenWithNullReturn() == null) {
                 // No messages, don't continue parsing
                 return false;
             }
