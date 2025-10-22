@@ -64,6 +64,7 @@ import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.widget.LockPatternUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -646,6 +647,33 @@ public class RestrictedLockUtilsInternal extends RestrictedLockUtils {
             return null;
         }
         return getProfileOrDeviceOwner(context, getUserHandleOf(userId));
+    }
+
+    /**
+     * Check if account management for a specific type of account is disabled by admin.
+     * Only a profile or device owner can disable account management. So, we check if account
+     * management is disabled and return profile or device owner on the calling user.
+     *
+     * @return EnforcingAdmin Object containing the enforcing admin component and admin user
+     * details or {@code null} if the account management is not disabled.
+     */
+    public static @Nullable EnforcingAdmin checkIfAccountManagementDisabledByAdmin(Context context,
+            String accountType, int userId) {
+        if (accountType == null) {
+            return null;
+        }
+        DevicePolicyManager dpm = context.getSystemService(DevicePolicyManager.class);
+        PackageManager pm = context.getPackageManager();
+        if (!pm.hasSystemFeature(PackageManager.FEATURE_DEVICE_ADMIN) || dpm == null) {
+            return null;
+        }
+        String[] disabledTypes = dpm.getAccountTypesWithManagementDisabledAsUser(userId);
+        boolean isAccountTypeDisabled = disabledTypes != null && Arrays.asList(
+                disabledTypes).contains(accountType);
+        if (!isAccountTypeDisabled) {
+            return null;
+        }
+        return getProfileOrDeviceOwnerAdmin(context, getUserHandleOf(userId));
     }
 
     /**
