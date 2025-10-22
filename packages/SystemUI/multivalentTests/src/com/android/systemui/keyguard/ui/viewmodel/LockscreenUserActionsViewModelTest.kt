@@ -295,9 +295,12 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                     )
                 )
 
-            if (downFromEdge || downWithTwoPointers || !isShadeTouchable) {
-                // Top edge is not applicable in dual shade, as well as two-finger swipe.
+            if (downFromEdge || !isShadeTouchable) {
+                // Top edge is not applicable in dual shade.
                 assertThat(downDestination).isNull()
+            } else if (downWithTwoPointers) {
+                assertThat(downDestination).isEqualTo(ShowOverlay(Overlays.QuickSettingsShade))
+                assertThat(downDestination?.transitionKey).isNull()
             } else {
                 assertThat(downDestination).isEqualTo(ShowOverlay(Overlays.NotificationsShade))
                 assertThat(downDestination?.transitionKey).isNull()
@@ -307,7 +310,11 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                 userActions?.get(Swipe.Down(pointerCount = if (downWithTwoPointers) 2 else 1))
             when {
                 !isShadeTouchable -> assertThat(downFromBelowEdge).isNull()
-                downWithTwoPointers -> assertThat(downFromBelowEdge).isNull()
+                downWithTwoPointers -> {
+                    assertThat(downFromBelowEdge)
+                        .isEqualTo(ShowOverlay(Overlays.QuickSettingsShade))
+                    assertThat(downFromBelowEdge?.transitionKey).isNull()
+                }
                 else -> {
                     assertThat(downFromBelowEdge)
                         .isEqualTo(ShowOverlay(Overlays.NotificationsShade))
