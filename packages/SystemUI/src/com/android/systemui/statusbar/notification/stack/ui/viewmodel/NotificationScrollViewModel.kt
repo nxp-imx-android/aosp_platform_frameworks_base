@@ -311,7 +311,7 @@ constructor(
     /** The alpha of the Notification Stack for lockscreen fade-in */
     val alphaForLockscreenFadeIn = stackAppearanceInteractor.alphaForLockscreenFadeIn
 
-    private val allowScrimClipping: Flow<Boolean> =
+    val allowScrimClipping: Flow<Boolean> =
         combine(
                 shadeModeInteractor.shadeMode,
                 shadeInteractor.qsExpansion,
@@ -323,7 +323,6 @@ constructor(
                         // Don't clip notifications while we are opening the DualShade panel to
                         // enable the shared element transition.
                         !transition.isTransitioning(
-                            from = Scenes.Lockscreen,
                             to = Overlays.NotificationsShade,
                         )
                     is ShadeMode.Split -> true
