@@ -703,8 +703,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS,
-            Flags.FLAG_IGNORE_OVERRIDE_TASK_BOUNDS_IF_INCOMPATIBLE_WITH_DISPLAY})
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
     public void testRespectOverrideTaskBoundsIfValid() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -723,8 +722,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS,
-            Flags.FLAG_IGNORE_OVERRIDE_TASK_BOUNDS_IF_INCOMPATIBLE_WITH_DISPLAY})
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
     public void testDontRespectOverrideTaskBoundsIfNotValid() {
         setupDesktopModeLaunchParamsModifier();
 
