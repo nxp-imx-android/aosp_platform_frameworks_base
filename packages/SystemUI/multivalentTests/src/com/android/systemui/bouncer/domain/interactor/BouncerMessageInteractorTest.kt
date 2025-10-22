@@ -35,7 +35,6 @@ import com.android.keyguard.KeyguardSecurityModel.SecurityMode.SecureLockDeviceB
 import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.keyguard.keyguardSecurityModel
 import com.android.keyguard.keyguardUpdateMonitor
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.data.repository.fakeFacePropertyRepository
 import com.android.systemui.biometrics.data.repository.fakeFingerprintPropertyRepository
@@ -124,7 +123,6 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
         secureLockDeviceBiometricAuthActive: Boolean? = null,
     ) {
         kosmos.fakeUserRepository.setSelectedUserInfo(PRIMARY_USER)
-        mSetFlagsRule.enableFlags(Flags.FLAG_REVAMPED_BOUNCER_MESSAGES)
         underTest = kosmos.bouncerMessageInteractor
 
         kosmos.fakeDeviceEntryFingerprintAuthRepository.setLockedOut(false)
@@ -548,7 +546,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             underTest.onPrimaryAuthLockedOut(3)
 
             verify(countDownTimerUtil)
-                .startNewTimer(eq(3000L), eq(1000L), countDownTimerCallback.capture())
+                .startTimer(eq(3000L), eq(1000L), countDownTimerCallback.capture())
 
             countDownTimerCallback.value.onTick(2000L)
 
@@ -573,7 +571,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             underTest.onPrimaryAuthLockedOut(3)
 
             verify(countDownTimerUtil)
-                .startNewTimer(eq(3000L), eq(1000L), countDownTimerCallback.capture())
+                .startTimer(eq(3000L), eq(1000L), countDownTimerCallback.capture())
 
             countDownTimerCallback.value.onTick(2000L)
 
@@ -603,7 +601,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             underTest.onPrimaryAuthLockedOut(120L)
 
             verify(countDownTimerUtil)
-                .startNewTimer(eq(120000L), eq(1000L), countDownTimerCallback.capture())
+                .startTimer(eq(120000L), eq(1000L), countDownTimerCallback.capture())
 
             countDownTimerCallback.value.onTick(2000L)
 
@@ -630,7 +628,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             underTest.onPrimaryAuthLockedOut(3)
 
             verify(countDownTimerUtil)
-                .startNewTimer(eq(3000L), eq(1000L), countDownTimerCallback.capture())
+                .startTimer(eq(3000L), eq(1000L), countDownTimerCallback.capture())
 
             countDownTimerCallback.value.onTick(2000L)
 
@@ -663,7 +661,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
                 underTest.onPrimaryAuthLockedOut(timeout.inWholeSeconds)
 
                 verify(countDownTimerUtil)
-                    .startNewTimer(
+                    .startTimer(
                         eq(timeout.inWholeMilliseconds),
                         eq(1000L),
                         countDownTimerCallback.capture(),
@@ -732,7 +730,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             underTest.onPrimaryAuthLockedOut(3)
 
             verify(countDownTimerUtil)
-                .startNewTimer(eq(3000L), eq(1000L), countDownTimerCallback.capture())
+                .startTimer(eq(3000L), eq(1000L), countDownTimerCallback.capture())
 
             countDownTimerCallback.value.onFinish()
 
