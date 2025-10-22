@@ -21486,6 +21486,22 @@ public final class Settings {
             public static final int STATUS_TRAY_CONFIGURATION_SYSTEM_HIDDEN = 1;
 
             /**
+             * Indicates that all elements of the system status tray should be rendered by the home
+             * application.
+             *
+             * @hide
+             */
+            public static final int STATUS_TRAY_CONFIGURATION_HOME_HOSTED = 2;
+
+            /**
+             * Indicates that all elements of the system status tray should be shown within system
+             * UI.
+             *
+             * @hide
+             */
+            public static final int STATUS_TRAY_CONFIGURATION_SYSTEM_UI_HOSTED = 3;
+
+            /**
              * Configuration of system status tray in wear.
              *
              * @hide
