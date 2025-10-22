@@ -28,7 +28,6 @@ import android.os.OutcomeReceiver;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
-import android.text.TextUtils;
 
 import com.android.internal.telecom.ICallControl;
 import com.android.server.telecom.flags.Flags;
@@ -423,7 +422,7 @@ public final class CallControl {
         final int code = disconnectCause.getCode();
         if (code != DisconnectCause.LOCAL && code != DisconnectCause.REMOTE
                 && code != DisconnectCause.MISSED && code != DisconnectCause.REJECTED) {
-            throw new IllegalArgumentException(TextUtils.formatSimple(
+            throw new IllegalArgumentException(String.format(
                     "The DisconnectCause code provided, %d , is not a valid Disconnect code. Valid "
                             + "DisconnectCause codes are limited to [DisconnectCause.LOCAL, "
                             + "DisconnectCause.REMOTE, DisconnectCause.MISSED, or "
@@ -434,7 +433,7 @@ public final class CallControl {
     /** @hide */
     private void validateCallType(@android.telecom.CallAttributes.CallType int callType) {
         if (callType != CallAttributes.AUDIO_CALL && callType != CallAttributes.VIDEO_CALL) {
-            throw new IllegalArgumentException(TextUtils.formatSimple(
+            throw new IllegalArgumentException(String.format(
                     "The VideoState argument passed in, %d , is not a valid VideoState. The "
                             + "VideoState choices are limited to CallAttributes.AUDIO_CALL or"
                             + "CallAttributes.VIDEO_CALL", callType));

@@ -30,6 +30,7 @@ import android.os.UserHandle;
 import android.util.Log;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.telecom.ParcelUtils;
 
 import java.util.Objects;
 
@@ -188,7 +189,7 @@ public final class StatusHints implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel out, int flags) {
-        out.writeCharSequence(mLabel);
+        ParcelUtils.writeCharSequence(out, mLabel);
         out.writeParcelable(mIcon, 0);
         out.writeParcelable(mExtras, 0);
     }
@@ -205,7 +206,7 @@ public final class StatusHints implements Parcelable {
     };
 
     private StatusHints(Parcel in) {
-        mLabel = in.readCharSequence();
+        mLabel = ParcelUtils.readCharSequence(in);
         mIcon = in.readParcelable(getClass().getClassLoader(), android.graphics.drawable.Icon.class);
         mExtras = in.readParcelable(getClass().getClassLoader(), android.os.Bundle.class);
     }

@@ -34,6 +34,7 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.ArraySet;
 
+import com.android.internal.telecom.ParcelUtils;
 import com.android.internal.telephony.flags.Flags;
 
 import java.time.Duration;
@@ -1283,8 +1284,8 @@ public final class PhoneAccount implements Parcelable {
         }
         out.writeInt(mCapabilities);
         out.writeInt(mHighlightColor);
-        out.writeCharSequence(mLabel);
-        out.writeCharSequence(mShortDescription);
+        ParcelUtils.writeCharSequence(out, mLabel);
+        ParcelUtils.writeCharSequence(out, mShortDescription);
         out.writeStringList(mSupportedUriSchemes);
 
         if (mIcon == null) {
@@ -1336,8 +1337,8 @@ public final class PhoneAccount implements Parcelable {
         }
         mCapabilities = in.readInt();
         mHighlightColor = in.readInt();
-        mLabel = in.readCharSequence();
-        mShortDescription = in.readCharSequence();
+        mLabel = ParcelUtils.readCharSequence(in);
+        mShortDescription = ParcelUtils.readCharSequence(in);
         mSupportedUriSchemes = Collections.unmodifiableList(in.createStringArrayList());
         if (in.readInt() > 0) {
             mIcon = Icon.CREATOR.createFromParcel(in);
