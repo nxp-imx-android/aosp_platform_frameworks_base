@@ -511,7 +511,7 @@ constructor(
      * [onSceneContainerUserInputStarted] and [onRemoteUserInputStarted]) has finished.
      */
     fun onUserInputFinished() {
-        logger.logUserInputFinished()
+        logger.logUserInputFinished(transitionState.value)
         repository.isSceneContainerUserInputOngoing.value = false
         repository.isRemoteUserInputOngoing.value = false
     }
