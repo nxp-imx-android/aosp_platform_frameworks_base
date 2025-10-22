@@ -18,7 +18,10 @@ package android.app.appfunctions;
 
 import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS;
+import static android.app.appfunctions.AppFunctionException.ERROR_DISABLED;
 import static android.app.appfunctions.AppFunctionException.ERROR_SYSTEM_ERROR;
+import static android.app.appfunctions.AppFunctionManagerHelper.buildCancellationSignal;
+import static android.app.appfunctions.AppFunctionManagerHelper.executionExceptionToErrorCode;
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER;
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS;
 import static android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_UI_ENABLED;
@@ -1134,9 +1137,28 @@ public final class AppFunctionManager {
                 new IAppFunctionExecutor.Stub() {
                     @Override
                     public void execute(
-                            ExecuteAppFunctionRequest request, IExecuteAppFunctionCallback callback)
-                            throws RemoteException {}
-                    // TODO( b/447140281) : implement execution flow
+                            ExecuteAppFunctionRequest request,
+                            ICancellationCallback cancellationCallback,
+                            IExecuteAppFunctionCallback callback)
+                            throws RemoteException {
+                        AppFunctionRegistrationImpl registration;
+                        synchronized (mLock) {
+                            registration = mRegistrations.get(request.getFunctionIdentifier());
+                        }
+                        if (registration == null) {
+                            callback.onError(
+                                    new AppFunctionException(
+                                            ERROR_DISABLED,
+                                            "Function with id "
+                                                    + request.getFunctionIdentifier()
+                                                    + " is not registered"));
+                        } else {
+                            registration.onExecuteFunction(
+                                    request,
+                                    buildCancellationSignal(cancellationCallback),
+                                    callback);
+                        }
+                    }
                 };
 
         AppFunctionRegistrationImpl register(
@@ -1194,6 +1216,41 @@ public final class AppFunctionManager {
         @Override
         public void unregister() {
             mRegistry.unregister(mFunctionId, this);
+        }
+
+        void onExecuteFunction(
+                ExecuteAppFunctionRequest request,
+                CancellationSignal cancelSignal,
+                IExecuteAppFunctionCallback callback) {
+            SafeOneTimeExecuteAppFunctionCallback safeCallback =
+                    new SafeOneTimeExecuteAppFunctionCallback(callback);
+            mExecutor.execute(
+                    () -> {
+                        try {
+                            mFunction.onExecuteAppFunction(
+                                    request,
+                                    cancelSignal,
+                                    new OutcomeReceiver<
+                                            ExecuteAppFunctionResponse, AppFunctionException>() {
+                                        @Override
+                                        public void onResult(ExecuteAppFunctionResponse result) {
+                                            safeCallback.onResult(result);
+                                        }
+
+                                        @Override
+                                        public void onError(
+                                                @NonNull AppFunctionException exception) {
+                                            safeCallback.onError(exception);
+                                        }
+                                    });
+                        } catch (Exception ex) {
+                            safeCallback.onError(
+                                    new AppFunctionException(
+                                            executionExceptionToErrorCode(ex), ex.getMessage()
+                                    )
+                            );
+                        }
+                    });
         }
     }
 

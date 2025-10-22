@@ -117,6 +117,27 @@ public class SafeOneTimeExecuteAppFunctionCallback {
     }
 
     /**
+     * Creates an {@link IExecuteAppFunctionCallback} that delegates its calls to the {@link
+     * #onResult(ExecuteAppFunctionResponse)} and {@link #onError(AppFunctionException)} methods of
+     * this {@code SafeOneTimeExecuteAppFunctionCallback} instance.
+     *
+     * @return A new {@link IExecuteAppFunctionCallback} instance that wraps this callback.
+     */
+    public IExecuteAppFunctionCallback wrapToExecutionCallback() {
+        return new IExecuteAppFunctionCallback.Stub() {
+            @Override
+            public void onSuccess(ExecuteAppFunctionResponse response) throws RemoteException {
+                SafeOneTimeExecuteAppFunctionCallback.this.onResult(response);
+            }
+
+            @Override
+            public void onError(AppFunctionException error) throws RemoteException {
+                SafeOneTimeExecuteAppFunctionCallback.this.onError(error);
+            }
+        };
+    }
+
+    /**
      * Provides a hook to execute additional actions after the {@link IExecuteAppFunctionCallback}
      * has been invoked.
      */

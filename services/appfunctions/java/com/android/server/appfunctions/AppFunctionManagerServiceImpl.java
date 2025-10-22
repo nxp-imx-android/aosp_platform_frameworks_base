@@ -24,6 +24,7 @@ import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_R
 import static com.android.server.appfunctions.AppFunctionExecutors.THREAD_POOL_EXECUTOR;
 import static com.android.server.appfunctions.CallerValidator.CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION;
 import static com.android.server.appfunctions.CallerValidator.CAN_EXECUTE_APP_FUNCTIONS_DENIED;
+import static com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.isDynamicAppFunction;
 
 import android.Manifest;
 import android.annotation.EnforcePermission;
@@ -89,7 +90,6 @@ import android.permission.flags.Flags;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -149,16 +149,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     private final MultiUserAppFunctionAccessHistory mMultiUserAppFunctionAccessHistory;
 
+    private final MultiUserDynamicAppFunctionRegistry mDynamicAppFunctionRegistry;
+
     private final Object mAgentAllowlistLock = new Object();
-
-    private final Object mAppFunctionRegistrationLock = new Object();
-
-    @GuardedBy("mAppFunctionRegistrationLock")
-    private ArrayMap<String, IAppFunctionExecutor> mAppFunctionCallbacksRegistrations =
-            new ArrayMap<>();
-
-    // TODO (b/438413084) unregister when caller died
-    // TODO (b/438413084) support multiuser
 
     // Any agents hardcoded by the system
     private static final List<SignedPackage> sSystemAllowlist =
@@ -201,6 +194,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull AppFunctionsLoggerWrapper loggerWrapper,
             @NonNull AppFunctionAgentAllowlistStorage agentAllowlistStorage,
             @NonNull MultiUserAppFunctionAccessHistory multiUserAppFunctionAccessHistory,
+            @NonNull MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
             @NonNull Executor backgroundExecutor) {
         this(
                 context,
@@ -220,6 +214,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 new DeviceSettingHelperImpl(context),
                 agentAllowlistStorage,
                 multiUserAppFunctionAccessHistory,
+                dynamicAppFunctionRegistry,
                 backgroundExecutor);
     }
 
@@ -237,6 +232,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             DeviceSettingHelper deviceSettingHelper,
             AppFunctionAgentAllowlistStorage agentAllowlistStorage,
             MultiUserAppFunctionAccessHistory multiUserAppFunctionAccessHistory,
+            MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
             Executor backgroundExecutor) {
         mContext = Objects.requireNonNull(context);
         mRemoteServiceCaller = Objects.requireNonNull(remoteServiceCaller);
@@ -255,6 +251,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mAgentAllowlistStorage = Objects.requireNonNull(agentAllowlistStorage);
         mMultiUserAppFunctionAccessHistory =
                 Objects.requireNonNull(multiUserAppFunctionAccessHistory);
+        mDynamicAppFunctionRegistry = Objects.requireNonNull(dynamicAppFunctionRegistry);
         mBackgroundExecutor = Objects.requireNonNull(backgroundExecutor);
     }
 
@@ -268,6 +265,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mPackageMonitors.append(user.getUserIdentifier(), pkgMonitorForUser);
         if (accessCheckFlagsEnabled()) {
             mMultiUserAppFunctionAccessHistory.onUserUnlocked(user);
+        }
+
+        if (android.app.appfunctions.flags.Flags.enableContextualAppFunctions()) {
+            mDynamicAppFunctionRegistry.onUserUnlocked(user);
         }
     }
 
@@ -289,6 +290,14 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         }
         if (accessCheckFlagsEnabled()) {
             mMultiUserAppFunctionAccessHistory.onUserStopping(user);
+        }
+    }
+
+    /** Called when the user stopped. */
+    public void onUserStopped(@NonNull TargetUser user) {
+        if (android.app.appfunctions.flags.Flags.enableContextualAppFunctions()) {
+            Objects.requireNonNull(user);
+            mDynamicAppFunctionRegistry.onUserStopped(user);
         }
     }
 
@@ -447,6 +456,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                                     .getTargetPackageName(),
                                             getAppSearchManagerAsUser(
                                                     requestInternal.getUserHandle()),
+                                            requestInternal.getUserHandle(),
                                             THREAD_POOL_EXECUTOR)
                                     .thenApply(
                                             isEnabled -> {
@@ -459,51 +469,25 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         })
                 .thenAccept(
                         canExecuteResult -> {
-                            int bindFlags = Context.BIND_AUTO_CREATE;
-                            if (canExecuteResult
-                                    == CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION) {
-                                // If the caller doesn't have the permission, do not use
-                                // BIND_FOREGROUND_SERVICE to avoid it raising its process state
-                                // by calling its own AppFunctions.
-                                bindFlags |= Context.BIND_FOREGROUND_SERVICE;
-                            }
-                            Intent serviceIntent =
-                                    mInternalServiceHelper.resolveAppFunctionService(
-                                            targetPackageName, targetUser);
-                            if (serviceIntent == null) {
-                                safeExecuteAppFunctionCallback.onError(
-                                        new AppFunctionException(
-                                                AppFunctionException.ERROR_SYSTEM_ERROR,
-                                                "Cannot find the target service."));
-                                return;
-                            }
-                            // Grant target app implicit visibility to the caller
-                            final int grantRecipientUserId = targetUser.getIdentifier();
-                            final int grantRecipientAppId =
-                                    UserHandle.getAppId(
-                                            mPackageManagerInternal.getPackageUid(
-                                                    requestInternal
-                                                            .getClientRequest()
-                                                            .getTargetPackageName(),
-                                                    /* flags= */ 0,
-                                                    /* userId= */ grantRecipientUserId));
-                            if (grantRecipientAppId > 0) {
-                                mPackageManagerInternal.grantImplicitAccess(
-                                        grantRecipientUserId,
-                                        serviceIntent,
-                                        grantRecipientAppId,
+                            if (android.app.appfunctions.flags.Flags.enableContextualAppFunctions()
+                                    && isDynamicAppFunction(
+                                            requestInternal
+                                                    .getClientRequest()
+                                                    .getFunctionIdentifier())) {
+                                mDynamicAppFunctionRegistry.executeAppFunction(
+                                        requestInternal,
+                                        safeExecuteAppFunctionCallback,
+                                        localCancelTransport);
+                            } else {
+                                executeServiceAppFunctionInternal(
+                                        requestInternal,
                                         callingUid,
-                                        /* direct= */ true);
+                                        localCancelTransport,
+                                        safeExecuteAppFunctionCallback,
+                                        callerBinder,
+                                        canExecuteResult,
+                                        targetPackageName);
                             }
-                            bindAppFunctionServiceUnchecked(
-                                    requestInternal,
-                                    serviceIntent,
-                                    targetUser,
-                                    localCancelTransport,
-                                    safeExecuteAppFunctionCallback,
-                                    bindFlags,
-                                    callerBinder,
-                                    callingUid);
                         })
                 .exceptionally(
                         ex -> {
@@ -513,12 +497,75 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         });
     }
 
-    private static AndroidFuture<Boolean> isAppFunctionEnabled(
+    private void executeServiceAppFunctionInternal(
+            @NonNull ExecuteAppFunctionAidlRequest requestInternal,
+            int callingUid,
+            @NonNull ICancellationSignal localCancelTransport,
+            @NonNull SafeOneTimeExecuteAppFunctionCallback safeExecuteAppFunctionCallback,
+            @NonNull IBinder callerBinder,
+            Integer canExecuteResult,
+            String targetPackageName) {
+        int bindFlags = Context.BIND_AUTO_CREATE;
+        UserHandle targetUser = requestInternal.getUserHandle();
+        if (canExecuteResult == CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION) {
+            // If the caller doesn't have the permission, do not use
+            // BIND_FOREGROUND_SERVICE to avoid it raising its process state
+            // by calling its own AppFunctions.
+            bindFlags |= Context.BIND_FOREGROUND_SERVICE;
+        }
+        Intent serviceIntent =
+                mInternalServiceHelper.resolveAppFunctionService(
+                        targetPackageName, requestInternal.getUserHandle());
+        if (serviceIntent == null) {
+            safeExecuteAppFunctionCallback.onError(
+                    new AppFunctionException(
+                            AppFunctionException.ERROR_SYSTEM_ERROR,
+                            "Cannot find the target service."));
+            return;
+        }
+        // Grant target app implicit visibility to the caller
+        final int grantRecipientUserId = targetUser.getIdentifier();
+        final int grantRecipientAppId =
+                UserHandle.getAppId(
+                        mPackageManagerInternal.getPackageUid(
+                                requestInternal.getClientRequest().getTargetPackageName(),
+                                /* flags= */ 0,
+                                /* userId= */ grantRecipientUserId));
+        if (grantRecipientAppId > 0) {
+            mPackageManagerInternal.grantImplicitAccess(
+                    grantRecipientUserId,
+                    serviceIntent,
+                    grantRecipientAppId,
+                    callingUid,
+                    /* direct= */ true);
+        }
+        bindAppFunctionServiceUnchecked(
+                requestInternal,
+                serviceIntent,
+                targetUser,
+                localCancelTransport,
+                safeExecuteAppFunctionCallback,
+                bindFlags,
+                callerBinder,
+                callingUid);
+    }
+
+    private AndroidFuture<Boolean> isAppFunctionEnabled(
             @NonNull String functionIdentifier,
             @NonNull String targetPackage,
             @NonNull AppSearchManager appSearchManager,
+            @NonNull UserHandle targetUserHandle,
             @NonNull Executor executor) {
         AndroidFuture<Boolean> future = new AndroidFuture<>();
+
+        if (android.app.appfunctions.flags.Flags.enableContextualAppFunctions()
+                && isDynamicAppFunction(functionIdentifier)) {
+            future.complete(
+                    mDynamicAppFunctionRegistry.isAppFunctionEnabled(
+                            targetPackage, functionIdentifier, targetUserHandle));
+            return future;
+        }
+
         AppFunctionManagerHelper.isAppFunctionEnabled(
                 functionIdentifier,
                 targetPackage,
@@ -545,6 +592,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull UserHandle userHandle,
             @AppFunctionManager.EnabledState int enabledState,
             @NonNull IAppFunctionEnabledCallback callback) {
+        // TODO(b/438413084): handle dynamic appfunctions
         try {
             // Skip validation for shell to allow changing enabled state via shell.
             if (Binder.getCallingUid() != Process.SHELL_UID) {
@@ -608,36 +656,17 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     @Override
     public void registerAppFunction(
             String packageName, String functionIdentifier, IAppFunctionExecutor session) {
-        String documentId =
-                AppFunctionRuntimeMetadata.getDocumentIdForAppFunction(
-                        packageName, functionIdentifier);
         mCallerValidator.validateCallingPackage(packageName);
-
-        synchronized (mAppFunctionRegistrationLock) {
-            if (mAppFunctionCallbacksRegistrations.containsKey(documentId)) {
-                throw new IllegalStateException("App function already registered");
-            }
-            mAppFunctionCallbacksRegistrations.put(documentId, session);
-        }
+        mDynamicAppFunctionRegistry.registerAppFunction(
+                packageName, functionIdentifier, session, Binder.getCallingUserHandle());
     }
 
     @Override
     public void unregisterAppFunction(
             String packageName, String functionIdentifier, IAppFunctionExecutor session) {
         mCallerValidator.validateCallingPackage(packageName);
-
-        String documentId =
-                AppFunctionRuntimeMetadata.getDocumentIdForAppFunction(
-                        packageName, functionIdentifier);
-        synchronized (mAppFunctionRegistrationLock) {
-            if (mAppFunctionCallbacksRegistrations.containsKey(documentId)) {
-                IAppFunctionExecutor registeredExecutor =
-                        Objects.requireNonNull(mAppFunctionCallbacksRegistrations.get(documentId));
-                if (registeredExecutor.asBinder().equals(session.asBinder())) {
-                    mAppFunctionCallbacksRegistrations.remove(documentId);
-                }
-            }
-        }
+        mDynamicAppFunctionRegistry.unregisterAppFunction(
+                packageName, functionIdentifier, session, Binder.getCallingUserHandle());
     }
 
     @Override

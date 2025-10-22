@@ -18,8 +18,9 @@ package android.app.appfunctions;
 
 import android.app.appfunctions.ExecuteAppFunctionRequest;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
+import android.app.appfunctions.ICancellationCallback;
 
 /** @hide */
 oneway interface IAppFunctionExecutor {
-    void execute(in ExecuteAppFunctionRequest request, in IExecuteAppFunctionCallback callback);
+    void execute(in ExecuteAppFunctionRequest request, in ICancellationCallback cancellationCallback, in IExecuteAppFunctionCallback callback);
 }

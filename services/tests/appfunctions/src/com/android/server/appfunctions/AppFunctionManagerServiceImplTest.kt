@@ -79,6 +79,8 @@ class AppFunctionManagerServiceImplTest {
     private val appFunctionAccessService = mock<AppFunctionAccessServiceInterface>()
     private val agentAllowlistStorage = mock<AppFunctionAgentAllowlistStorage>()
     private val multiUserAccessHistory = mock<MultiUserAppFunctionAccessHistory>()
+
+    private val dynamicRegistry = mock<MultiUserDynamicAppFunctionRegistry>()
     private val agentAllowlistCaptor = argumentCaptor<Set<SignedPackage>>()
     private var allowlistWasEnabled: Boolean = true
 
@@ -94,6 +96,7 @@ class AppFunctionManagerServiceImplTest {
             mock<AppFunctionsLoggerWrapper>(),
             agentAllowlistStorage,
             multiUserAccessHistory,
+            dynamicRegistry,
             MoreExecutors.directExecutor(),
         )
 
