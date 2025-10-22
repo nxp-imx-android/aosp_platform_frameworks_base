@@ -146,6 +146,7 @@ constructor(
     val dumpManager: DumpManager,
     val commandRegistry: CommandRegistry,
     @DisplayAware val sysUICutoutProvider: SysUICutoutProvider,
+    @DisplayAware val displayId: Int,
 ) :
     StatusBarContentInsetsProvider,
     ConfigurationController.ConfigurationListener,
@@ -161,8 +162,7 @@ constructor(
             context.resources.getBoolean(R.bool.config_enablePrivacyDot)
         }
 
-    private val nameSuffix =
-        if (context.displayId == DEFAULT_DISPLAY) "" else context.displayId.toString()
+    private val nameSuffix = if (displayId == DEFAULT_DISPLAY) "" else displayId.toString()
     private val dumpableName = TAG + nameSuffix
     private val commandName = StatusBarInsetsCommand.NAME + nameSuffix
 
@@ -323,7 +323,7 @@ constructor(
         val currentRotation = getExactRotation(context)
 
         val roundedCornerPadding =
-            if (context.displayId == DEFAULT_DISPLAY || !StatusBarConnectedDisplays.isEnabled) {
+            if (displayId == DEFAULT_DISPLAY || !StatusBarConnectedDisplays.isEnabled) {
                 rotatedResources.getDimensionPixelSize(R.dimen.rounded_corner_content_padding)
             } else {
                 // Currently the padding is hardcoded for each device default display, and there is
