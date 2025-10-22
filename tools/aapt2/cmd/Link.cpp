@@ -1381,8 +1381,8 @@ class Linker {
       return true;
     }
 
-    std::unique_ptr<ClassDefinition> manifest_class =
-        GenerateManifestClass(context_->GetDiagnostics(), manifest_xml);
+    std::unique_ptr<ClassDefinition> manifest_class = GenerateManifestClass(
+        context_->GetDiagnostics(), manifest_xml, options_.feature_flag_values);
 
     if (!manifest_class) {
       // Something bad happened, but we already logged it, so exit.
