@@ -92,16 +92,15 @@ class DisplayDisconnectTransitionHandler(
                 }
             }
             if (reparentDisplay == INVALID_DISPLAY) return null
+            // This is a disconnect transition; flag it so we handle animation here later.
+            // We need to do this here to prevent default handler from attempting to animate
+            // disconnect transitions as this potentially crashes.
+            addPendingTransition(transition)
             if (desktopTasksController.isPresent) {
                 return desktopTasksController
                     .get()
                     .onDisplayDisconnect(displayChange.displayId, reparentDisplay, transition)
             }
-            // Fallback method; if no other handler takes the transition, we still need to tell
-            // this one to handle the animation later. Currently this is possible on a device
-            // that supports multi-display but does not support desktop mode, as
-            // DesktopTasksController will not handle the disconnect request.
-            addPendingTransition(transition)
         }
         // Return null since another handler may want to make specific task changes.
         return null
