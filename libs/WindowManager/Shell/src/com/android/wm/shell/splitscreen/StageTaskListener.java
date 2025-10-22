@@ -26,7 +26,6 @@ import static android.view.RemoteAnimationTarget.MODE_OPENING;
 
 import static com.android.window.flags.Flags.enableDesktopFirstLaunchAdjacentBugfix;
 import static com.android.wm.shell.Flags.enableFlexibleSplit;
-import static com.android.wm.shell.Flags.fixExitSplitOnEnterBubble;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.CONTROLLED_ACTIVITY_TYPES;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.CONTROLLED_WINDOWING_MODES;
@@ -343,8 +342,7 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
         } else if (mChildrenTaskInfo.contains(taskId)) {
             mChildrenTaskInfo.remove(taskId);
             mChildrenLeashes.remove(taskId);
-            if (fixExitSplitOnEnterBubble()
-                    && mBubbleController.map(c -> c.shouldBeAppBubble(taskInfo)).orElse(false)) {
+            if (mBubbleController.map(c -> c.shouldBeAppBubble(taskInfo)).orElse(false)) {
                 mCallbacks.onChildTaskMovedToBubble(this, taskId);
             } else {
                 mCallbacks.onChildTaskStatusChanged(this, taskId, false /* present */,

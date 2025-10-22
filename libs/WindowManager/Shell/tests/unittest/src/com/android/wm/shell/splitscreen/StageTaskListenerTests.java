@@ -33,7 +33,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
-import android.platform.test.annotations.EnableFlags;
 import android.view.SurfaceControl;
 import android.window.WindowContainerTransaction;
 
@@ -42,7 +41,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.launcher3.icons.IconProvider;
-import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestRunningTaskInfoBuilder;
@@ -271,7 +269,6 @@ public final class StageTaskListenerTests extends ShellTestCase {
                 /* present= */ false, /* visible= */ true);
     }
 
-    @EnableFlags(Flags.FLAG_FIX_EXIT_SPLIT_ON_ENTER_BUBBLE)
     @Test
     public void testTaskVanished_bubbleTask_notifyChildTaskMovedToBubble() {
         final ActivityManager.RunningTaskInfo task =
