@@ -101,9 +101,6 @@ public class SpellCheckerSession {
      **/
     public static final String SERVICE_META_DATA = "android.view.textservice.scs";
 
-    private static final int MSG_ON_GET_SUGGESTION_MULTIPLE = 1;
-    private static final int MSG_ON_GET_SUGGESTION_MULTIPLE_FOR_SENTENCE = 2;
-
     private final InternalListener mInternalListener;
     private final TextServicesManager mTextServicesManager;
     private final SpellCheckerInfo mSpellCheckerInfo;
