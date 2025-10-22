@@ -252,14 +252,35 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             assertThat(info!!.title).isEqualTo("Turn on TalkBack keyboard shortcut?")
             val contentText = info.contentText
             assertThat(hasExpectedAnnotation(contentText)).isTrue()
-            // The intro should be the string below instead of the intro from
-            // AccessibilityServiceInfo.
             assertThat(contentText.toString())
                 .isEqualTo(
                     "Action icon + Alt + T is the keyboard shortcut to use TalkBack. TalkBack is a" +
                         " screen reader that allows you to hear items spoken aloud. It can be" +
                         " helpful for people who have difficulty seeing the screen. This may" +
                         " change how your device works."
+                )
+            assertThat(info.contentSections).hasSize(4)
+            assertThat(info.contentSections[0].heading)
+                .isEqualTo(
+                    "By turning on the keyboard shortcut, you will allow TalkBack to have full control of your device."
+                )
+            assertThat(info.contentSections[0].message).isNull()
+            assertThat(info.contentSections[1].heading).isNull()
+            assertThat(info.contentSections[1].message)
+                .isEqualTo(
+                    "Full control is appropriate for apps that help you with accessibility needs," +
+                        " but not for most apps."
+                )
+            assertThat(info.contentSections[2].heading).isEqualTo("View and control screen")
+            assertThat(info.contentSections[2].message)
+                .isEqualTo(
+                    "It can read all content on the screen and display content over other apps."
+                )
+            assertThat(info.contentSections[3].heading).isEqualTo("View and perform actions")
+            assertThat(info.contentSections[3].message)
+                .isEqualTo(
+                    "It can track your interactions with an app or a hardware sensor, and" +
+                        " interact with apps on your behalf."
                 )
         }
     }

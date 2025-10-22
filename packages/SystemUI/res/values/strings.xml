@@ -2978,6 +2978,18 @@
 
     <!-- Text for showing inside the screen reader dialog. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_screen_reader_dialog_content">Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="T">^2</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="TalkBack">^3</xliff:g>. <xliff:g name="feature_name" example="TalkBack">^3</xliff:g> is a screen reader that allows you to hear items spoken aloud. It can be helpful for people who have difficulty seeing the screen. This may change how your device works.</string>
+    <!-- Warning for screen reader dialog [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading">By turning on the keyboard shortcut, you will allow TalkBack to have full control of your device.</string>
+    <!-- Warning description for screen reader dialog [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message">Full control is appropriate for apps that help you with accessibility needs, but not for most apps.</string>
+    <!-- Title for view/control screen warning section in screen reader dialog [CHAR LIMIT=60] -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading">View and control screen</string>
+    <!-- Description for view/control screen warning section in screen reader dialog [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message">It can read all content on the screen and display content over other apps.</string>
+    <!-- Title for view/perform actions section in screen reader dialog [CHAR LIMIT=60] -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading">View and perform actions</string>
+    <!-- Description for view/perform actions section in screen reader dialog [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message">It can track your interactions with an app or a hardware sensor, and interact with apps on your behalf.</string>
 
     <!-- Text for showing inside the Voice Access dialog. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_voice_access_dialog_content">Pressing Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="V">^2</xliff:g> turns on <xliff:g name="feature_name" example="Voice Access">^3</xliff:g>, an accessibility feature. This lets you control your device hands-free.</string>

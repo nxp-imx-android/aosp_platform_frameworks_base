@@ -72,6 +72,7 @@ class FakeAccessibilityShortcutsRepository(
                     keyGestureType,
                     "$featureNameForTest fakeTitle",
                     "$featureNameForTest fakeContentText",
+                    emptyList(),
                     targetName,
                     0,
                     DEFAULT_DISPLAY,
