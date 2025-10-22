@@ -29,7 +29,7 @@ import javax.lang.model.type.TypeMirror
  * contains type-specific checks.
  */
 class ListOfStringProcessor(processingEnv: ProcessingEnvironment) :
-    Processor<ListOfStringPolicyDefinition>(processingEnv) {
+    PolicyProcessor<ListOfStringPolicyDefinition>(processingEnv) {
     private companion object {
         const val SIMPLE_TYPE_STRING = "java.lang.String"
         const val LIST_TYPE = "java.util.List"

@@ -101,7 +101,7 @@ class DevicePolicyAnnotationProcessor : AbstractProcessor() {
     }
 
     private fun <T : Annotation> runProcessor(
-        roundEnvironment: RoundEnvironment, processor: Processor<T>
+        roundEnvironment: RoundEnvironment, processor: PolicyProcessor<T>
     ): List<PolicyMetadata> {
         return roundEnvironment.getElementsAnnotatedWith(processor.annotationClass()).mapNotNull {
             processor.process(it)

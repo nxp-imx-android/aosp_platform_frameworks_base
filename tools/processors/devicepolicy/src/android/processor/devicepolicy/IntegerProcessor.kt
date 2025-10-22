@@ -27,7 +27,7 @@ import javax.lang.model.type.TypeMirror
  * Since this annotation holds no data and we don't export any type-specific information, this only
  * contains type-specific checks.
  */
-class IntegerProcessor(processingEnv: ProcessingEnvironment) : Processor<IntegerPolicyDefinition>(processingEnv) {
+class IntegerProcessor(processingEnv: ProcessingEnvironment) : PolicyProcessor<IntegerPolicyDefinition>(processingEnv) {
     private companion object {
         const val SIMPLE_TYPE_INTEGER = "java.lang.Integer"
     }
