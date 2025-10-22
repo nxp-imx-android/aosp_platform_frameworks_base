@@ -286,3 +286,10 @@ flag {
     description: "Enable zram writeback after app compaction."
     bug: "450670546"
 }
+
+flag {
+    name: "log_zram_writeback_events"
+    namespace: "system_performance"
+    description: "Whether to log zram writeback events, regardless of whether the writeback is enabled."
+    bug: "450670546"
+}
