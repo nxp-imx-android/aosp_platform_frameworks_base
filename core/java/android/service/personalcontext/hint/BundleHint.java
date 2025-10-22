@@ -49,6 +49,7 @@ public final class BundleHint extends ContextHint {
         mDataBundle = bundle.getBundle(KEY_HINT_DATA);
     }
 
+    /** @hide */
     @Override
     @HintType
     public int getHintType() {
