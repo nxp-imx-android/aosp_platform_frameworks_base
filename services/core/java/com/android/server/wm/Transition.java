@@ -2948,6 +2948,10 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             } else {
                 parentChange.mFlags |= ChangeInfo.FLAG_CHANGE_YES_ANIMATION;
             }
+            if (Flags.promoteExistenceChangedStateToParent() && targetChange.mExistenceChanged
+                    && parentChange.mContainer.getChildCount() == 1) {
+                parentChange.mExistenceChanged = true;
+            }
         }
     }
 
