@@ -16,6 +16,7 @@
 
 package com.android.server.autofill.ui;
 
+import static com.android.server.autofill.AutofillManagerService.sSupportMultiUserMultiDisplay;
 import static com.android.server.autofill.Helper.sDebug;
 import static com.android.server.autofill.Helper.sVerbose;
 
@@ -36,10 +37,8 @@ import android.metrics.LogMaker;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.UserHandle;
-import android.os.UserManager;
 import android.service.autofill.BatchUpdates;
 import android.service.autofill.CustomDescription;
-import android.service.autofill.Flags;
 import android.service.autofill.InternalOnClickAction;
 import android.service.autofill.InternalTransformation;
 import android.service.autofill.InternalValidator;
@@ -198,7 +197,9 @@ final class SaveUi {
         mCompatMode = compatMode;
 
         final UserHandle userHandle = context.getUser();
-        context = new ContextThemeWrapper(context, mThemeId) {
+        context = new ContextThemeWrapper(
+                sSupportMultiUserMultiDisplay ? context : Helper.getUserContext(context),
+                mThemeId) {
             @Override
             public void startActivity(Intent intent) {
                 if (resolveActivity(intent) == null) {
@@ -209,8 +210,7 @@ final class SaveUi {
                 }
                 intent.putExtra(AutofillManager.EXTRA_RESTORE_CROSS_ACTIVITY, true);
 
-                final UserHandle targetUser = Flags.supportMultiUserMultiDisplay()
-                        && UserManager.isVisibleBackgroundUsersEnabled()
+                final UserHandle targetUser = sSupportMultiUserMultiDisplay
                         ? userHandle
                         : UserHandle.CURRENT;
                 PendingIntent p = PendingIntent.getActivityAsUser(this, /* requestCode= */ 0,

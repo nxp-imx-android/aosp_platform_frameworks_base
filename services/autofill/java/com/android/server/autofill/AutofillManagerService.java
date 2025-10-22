@@ -149,7 +149,7 @@ public final class AutofillManagerService
     @GuardedBy("sLock")
     private static int sVisibleDatasetsMaxCount = 0;
 
-    static boolean sSupportMultiUserMultiDisplay = Flags.supportMultiUserMultiDisplay()
+    public static boolean sSupportMultiUserMultiDisplay = Flags.supportMultiUserMultiDisplay()
             && isVisibleBackgroundUsersEnabled();
 
     /**

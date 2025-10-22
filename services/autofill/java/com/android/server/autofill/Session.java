@@ -1758,8 +1758,8 @@ final class Session
                 LocalServices.getService(ActivityTaskManagerInternal.class)
                         .getDisplayId(activityToken);
         mContext = sSupportMultiUserMultiDisplay
-                ? Helper.getDisplayContext(context, displayId)
-                : context;
+                ? context
+                : Helper.getDisplayContext(context, displayId);
         mComponentName = componentName;
         mCompatMode = compatMode;
         mSessionState = STATE_ACTIVE;
