@@ -16,7 +16,10 @@
 
 package com.android.systemui.statusbar.chips.notification.ui.viewmodel
 
+import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -26,6 +29,8 @@ import com.android.systemui.Flags.FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.activity.data.repository.activityManagerRepository
 import com.android.systemui.activity.data.repository.fake
+import com.android.systemui.animation.ActivityTransitionAnimator
+import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
 import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
@@ -34,6 +39,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.StatusBarIconView
+import com.android.systemui.statusbar.chips.StatusBarChipsReturnAnimations
 import com.android.systemui.statusbar.chips.call.ui.viewmodel.CallChipViewModelTest.Companion.createStatusBarIconViewOrNull
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
@@ -44,6 +50,7 @@ import com.android.systemui.statusbar.notification.data.repository.ActiveNotific
 import com.android.systemui.statusbar.notification.data.repository.UnconfinedFakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.addNotif
+import com.android.systemui.statusbar.notification.data.repository.removeNotif
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
@@ -59,11 +66,23 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
+import org.junit.Rule
 import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.junit.MockitoJUnit
+import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class NotifChipsViewModelTest : SysuiTestCase() {
+    @get:Rule val mockito: MockitoRule = MockitoJUnit.rule()
+
+    @Mock private lateinit var pendingIntent: PendingIntent
+
     private val kosmos =
         testKosmos().useUnconfinedTestDispatcher().apply {
             // Don't be in lockscreen so that HUNs are allowed
@@ -77,6 +96,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
     @Before
     fun setUp() {
         kosmos.statusBarNotificationChipsInteractor.start()
+
+        whenever(pendingIntent.intent).thenReturn(Intent.makeMainActivity(COMPONENT))
     }
 
     @Test
@@ -91,7 +112,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun chips_onePromotedNotif_keyAndNotificationKeyFilledIn() =
+    fun chips_onePromotedNotif_keysAndIntentFilledIn() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
 
@@ -234,6 +255,68 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
             assertThat(latest).hasSize(1)
             assertThat(latest!![0].colors).isEqualTo(ColorsModel.SystemThemed)
+        }
+
+    @Test
+    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
+    @EnableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
+    fun chips_onePromotedNotif_returnAnimFlagEnabled_hasTransitionManager() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val promotedContentBuilder =
+                PromotedNotificationContentBuilder("notif").applyToShared {
+                    this.colors =
+                        PromotedNotificationContentModel.Colors(
+                            backgroundColor = 56,
+                            primaryTextColor = 89,
+                        )
+                }
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        contentIntent = pendingIntent,
+                        promotedContent = promotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0].transitionManager).isNotNull()
+        }
+
+    @Test
+    @DisableFlags(
+        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
+        StatusBarChipsReturnAnimations.FLAG_NAME,
+    )
+    fun chips_onePromotedNotif_returnAnimFlagDisabled_noTransitionManager() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val promotedContentBuilder =
+                PromotedNotificationContentBuilder("notif").applyToShared {
+                    this.colors =
+                        PromotedNotificationContentModel.Colors(
+                            backgroundColor = 56,
+                            primaryTextColor = 89,
+                        )
+                }
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        contentIntent = pendingIntent,
+                        promotedContent = promotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0].transitionManager).isNull()
         }
 
     @Test
@@ -1704,6 +1787,153 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                 )
         }
 
+    @Test
+    @EnableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
+    fun chipWithReturnAnimation_updatesCorrectly_withStateAndTransitionState() =
+        kosmos.runTest {
+            val notifKey = "notif"
+            val uid = 20
+            val expandable = mock<Expandable>()
+            val activityController = mock<ActivityTransitionAnimator.Controller>()
+            whenever(
+                    expandable.activityTransitionController(
+                        anyOrNull(),
+                        anyOrNull(),
+                        any(),
+                        anyOrNull(),
+                        any(),
+                    )
+                )
+                .thenReturn(activityController)
+
+            val latest by collectLastValue(underTest.chips)
+
+            // Start off with no notifs.
+            assertThat(latest).isEmpty()
+
+            // Notif appears [isAppVisible=true, NoTransition].
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = notifKey,
+                    packageName = notifKey,
+                    uid = uid,
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    contentIntent = pendingIntent,
+                    promotedContent = PromotedNotificationContentBuilder(notifKey).build(),
+                )
+            )
+            activityManagerRepository.fake.setIsAppVisible(uid, isAppVisible = true)
+            assertThat(latest!!).hasSize(1)
+            assertThat((latest!![0]).isHidden).isTrue()
+            assertThat(latest!![0].transitionManager!!.hideChipForTransition).isFalse()
+            val factory = latest!![0].transitionManager!!.controllerFactory
+            assertThat(factory!!.component).isEqualTo(COMPONENT)
+
+            // Request a return transition [isAppVisible=true, NoTransition -> ReturnRequested].
+            factory.onCompose(expandable)
+            var controller = factory.createController(forLaunch = false)
+            assertThat(latest!!).hasSize(1)
+            assertThat((latest!![0]).isHidden).isFalse()
+            assertThat(latest!![0].transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!![0].transitionManager!!.hideChipForTransition).isTrue()
+
+            // Start the return transition [isAppVisible=true, ReturnRequested -> Returning].
+            controller.onTransitionAnimationStart(isExpandingFullyAbove = false)
+            assertThat(latest!!).hasSize(1)
+            assertThat((latest!![0]).isHidden).isFalse()
+            assertThat(latest!![0].transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!![0].transitionManager!!.hideChipForTransition).isFalse()
+
+            // End the return transition [isAppVisible=true, Returning -> NoTransition].
+            controller.onTransitionAnimationEnd(isExpandingFullyAbove = false)
+            assertThat(latest!!).hasSize(1)
+            assertThat((latest!![0]).isHidden).isFalse()
+            assertThat(latest!![0].transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!![0].transitionManager!!.hideChipForTransition).isFalse()
+
+            // Settle the return transition [isAppVisible=true -> isAppVisible=false, NoTransition].
+            kosmos.activityManagerRepository.fake.setIsAppVisible(uid, false)
+            assertThat(latest!!).hasSize(1)
+            assertThat((latest!![0]).isHidden).isFalse()
+            assertThat(latest!![0].transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!![0].transitionManager!!.hideChipForTransition).isFalse()
+
+            // End the call [isAppVisible=false -> no notif, NoTransition].
+            activeNotificationListRepository.removeNotif(notifKey)
+            assertThat(latest).isEmpty()
+
+            // End the call with app visible [isAppVisible=true -> no notif, NoTransition].
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = notifKey,
+                    packageName = notifKey,
+                    uid = uid,
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    contentIntent = pendingIntent,
+                    promotedContent = PromotedNotificationContentBuilder(notifKey).build(),
+                )
+            )
+            kosmos.activityManagerRepository.fake.setIsAppVisible(uid, true)
+            activeNotificationListRepository.removeNotif(notifKey)
+            assertThat(latest).isEmpty()
+        }
+
+    @Test
+    @EnableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
+    fun chipWithReturnAnimation_updatesCorrectly_whenAppIsLaunchedAndClosedWithoutAnimation() =
+        kosmos.runTest {
+            val notifKey = "notif"
+            val uid = 20
+            val expandable = mock<Expandable>()
+            val activityController = mock<ActivityTransitionAnimator.Controller>()
+            whenever(
+                    expandable.activityTransitionController(
+                        anyOrNull(),
+                        anyOrNull(),
+                        any(),
+                        anyOrNull(),
+                        any(),
+                    )
+                )
+                .thenReturn(activityController)
+
+            val latest by collectLastValue(underTest.chips)
+
+            // Start off with one notif with visible app.
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = notifKey,
+                    packageName = notifKey,
+                    uid = uid,
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    contentIntent = pendingIntent,
+                    promotedContent = PromotedNotificationContentBuilder(notifKey).build(),
+                )
+            )
+            activityManagerRepository.fake.setIsAppVisible(uid, isAppVisible = true)
+            assertThat(latest!!).hasSize(1)
+            assertThat(latest!![0].isHidden).isTrue()
+            assertThat(latest!![0].transitionManager!!.hideChipForTransition).isFalse()
+            val factory = latest!![0].transitionManager!!.controllerFactory
+            assertThat(factory!!.component).isEqualTo(COMPONENT)
+
+            // Close the app without a return transition (e.g. swap to a different app)
+            // [isAppVisible=true -> isAppVisible=false, NoTransition].
+            kosmos.activityManagerRepository.fake.setIsAppVisible(uid, false)
+            assertThat(latest!!).hasSize(1)
+            assertThat(latest!![0].isHidden).isFalse()
+            assertThat(latest!![0].transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!![0].transitionManager!!.hideChipForTransition).isFalse()
+
+            // Launch the app from another source (e.g. the app icon) [isAppVisible=true ->
+            // isAppVisible=false, NoTransition].
+            kosmos.activityManagerRepository.fake.setIsAppVisible(uid, true)
+            assertThat(latest!!).hasSize(1)
+            assertThat(latest!![0].isHidden).isTrue()
+            assertThat(latest!![0].transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!![0].transitionManager!!.hideChipForTransition).isFalse()
+        }
+
     private fun setNotifs(notifs: List<ActiveNotificationModel>) {
         activeNotificationListRepository.activeNotifications.value =
             ActiveNotificationsStore.Builder()
@@ -1712,6 +1942,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
     }
 
     companion object {
+        private val COMPONENT = ComponentName("package", "class")
+
         fun assertIsNotifChip(
             latest: OngoingActivityChipModel?,
             context: Context,
