@@ -1759,6 +1759,9 @@ std::pair<const char*, const char*> build_version_constants[] = {
 static void ReloadBuildJavaConstant(JNIEnv* env, jclass build_class, const char* field_name,
                                     const char* field_signature, const char* sysprop_name) {
   const prop_info* prop_info = __system_property_find(sysprop_name);
+  if (prop_info == nullptr) {
+    return;
+  }
   std::string new_value;
   __system_property_read_callback(
           prop_info,
