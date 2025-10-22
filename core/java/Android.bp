@@ -23,6 +23,7 @@ filegroup {
         ":messagequeue-gen",
         ":ranging_stack_mock_initializer",
         ":anomaly_detector_mock_initializer",
+        ":npumanager_mock_initializer",
         ":systemfeatures-gen-srcs",
         ":framework-network-security-config-sources",
     ],
@@ -36,6 +37,7 @@ filegroup {
         "android/os/IProcessInfoService.aidl",
         "android/ranging/**/*.java",
         "android/os/mock/*.java",
+        "android/npumanager/mock/**/*.java",
     ],
     visibility: ["//frameworks/base"],
 }
@@ -116,6 +118,43 @@ anomaly_detector_framework_mock_init {
                 srcs: ["android/os/mock/AnomalyDetectorFrameworkInitializer.java"],
                 cmd: "mkdir -p android/os/; cp $(in) $(out);",
                 out: ["android/os/AnomalyDetectorFrameworkInitializer.java"],
+            },
+        },
+    },
+}
+
+// Mock to allow service registry for NPU Manager.
+// TODO(b/416283422): Remove this after RELEASE_NPUMANAGER_MODULE is ramped up to next.
+soong_config_module_type {
+    name: "npumanager_framework_mock_init",
+    module_type: "genrule",
+    config_namespace: "bootclasspath",
+    bool_variables: [
+        "release_npumanager_module",
+    ],
+    properties: [
+        "cmd",
+        "out",
+        "srcs",
+    ],
+}
+
+// The actual NpuManagerFrameworkInitializer is present in
+// packages/modules/NpuManager/framework.
+// Mock NpuManagerFrameworkInitializer does nothing and allows to successfully build
+// SystemServiceRegistry after registering for system service in SystemServiceRegistry both with
+// and without build flag RELEASE_NPUMANAGER_MODULE enabled.
+npumanager_framework_mock_init {
+    name: "npumanager_mock_initializer",
+    soong_config_variables: {
+        release_npumanager_module: {
+            cmd: "touch $(out)",
+            // Adding an empty file as out is mandatory.
+            out: ["android/npumanager/empty_npumanager_fw.txt"],
+            conditions_default: {
+                srcs: ["android/npumanager/mock/NpuManagerFrameworkInitializer.java"],
+                cmd: "mkdir -p android/npumanager/; cp $(in) $(out);",
+                out: ["android/npumanager/NpuManagerFrameworkInitializer.java"],
             },
         },
     },
