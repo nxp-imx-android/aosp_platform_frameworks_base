@@ -495,13 +495,6 @@ flag {
 }
 
 flag {
-   name: "confine_notification_touch_to_view_width"
-   namespace: "systemui"
-   description: "Use notification view width when detecting gestures."
-   bug: "335828150"
-}
-
-flag {
   name: "enable_layout_tracing"
   namespace: "systemui"
   description: "Enables detailed traversal slices during measure and layout in perfetto traces"
