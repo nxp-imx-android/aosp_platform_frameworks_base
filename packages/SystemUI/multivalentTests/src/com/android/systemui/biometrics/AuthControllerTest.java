@@ -128,7 +128,7 @@ import java.util.Optional;
 import java.util.Random;
 
 @RunWith(AndroidJUnit4.class)
-@RunWithLooper
+@RunWithLooper(setAsMainLooper = true)
 @SmallTest
 public class AuthControllerTest extends SysuiTestCase {
 
@@ -377,7 +377,7 @@ public class AuthControllerTest extends SysuiTestCase {
 
         mFaceAuthenticatorsRegisteredCaptor.getValue().onAllAuthenticatorsRegistered(
                 mFaceManager.getSensorPropertiesInternal());
-        mTestableLooper.processAllMessages();
+        waitForIdleSync();
 
         verify(mFaceManager).registerBiometricStateListener(
                 mBiometricStateCaptor.capture());
@@ -389,7 +389,7 @@ public class AuthControllerTest extends SysuiTestCase {
             listener.onEnrollmentsChanged(userId,
                     2 /* sensorId */, true /* hasEnrollments */);
         }
-        mTestableLooper.processAllMessages();
+        waitForIdleSync();
 
         assertTrue(mAuthController.isFaceAuthEnrolled(userId));
     }
