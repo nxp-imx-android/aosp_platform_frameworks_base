@@ -279,3 +279,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_zram_writeback"
+    namespace: "system_performance"
+    description: "Enable zram writeback after app compaction."
+    bug: "450670546"
+}
