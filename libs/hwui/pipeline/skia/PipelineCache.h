@@ -92,10 +92,10 @@ private:
     };
     std::optional<StoreRequest> mStoreRequest;
 
+    std::atomic_size_t mLastSizeBytes;
+
     std::atomic_bool mExit;
     std::thread mThread;
-
-    std::atomic_size_t mLastSizeBytes;
 };
 
 class PipelineCache {
