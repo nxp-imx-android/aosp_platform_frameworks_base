@@ -1576,13 +1576,12 @@ public final class DisplayManagerService extends SystemService {
 
     private boolean doesInternalMaskRequiresPermissionCheck(
             int callingPid, @InternalEventFlag long internalEventFlagsMask) {
+        if ((internalEventFlagsMask
+                & DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_CONNECTION_CHANGED) == 0) {
+            // No need to check permission because protected event flag is not set
+            return false;
+        }
         synchronized (mSyncRoot) {
-            if ((internalEventFlagsMask
-                    & DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_CONNECTION_CHANGED) == 0) {
-                // No need to check permission because protected event flag is not set
-                return false;
-            }
-
             CallbackRecord record = mCallbacks.get(callingPid);
             // Need to check permissions if there is no callback registered yet
             // Or the current callback mask does not have protected flag yet
