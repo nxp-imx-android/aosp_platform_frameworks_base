@@ -12,31 +12,33 @@ Follow these steps to run the tests on a physical device connected to your cloud
 
 3. **Link the device** to your cloudtop using [pontis](http://go/pontis).
 
-4. Source the build environment and select the target:
+4. Source the build environment and select a target (example below):
 
 ```
 source build/envsetup.sh
 lunch panther-trunk_staging-userdebug
 ```
 
-5. Navigate to the test directory:
+5. Navigate to vendor/google_testing/integration/tests/scenarios/tests/configs (local test run through crystal ball)
 
 ```
-cd frameworks/base/tests/AppMemoryTest/
+cd vendor/google_testing/integration/tests/scenarios/tests/configs
 ```
 
 6. Execute the test suite:
 
 ```
-atest AppMemoryTestCases
+atest appmemorytest
 ```
 
-7. **Find the test artifacts** in the output directory specified in the logs. For example:
-
-/tmp/atest_result_yourusernamehere/20250903_180921_clbph7a3/log/invocation_946579573326099876/inv_13336902944655844617/AppMemoryTestCases
+7. **Test results** will be displayed as a [ab/](go/ab)
 
 
 ## Running on Forrest/ABTD
+
+Example ABTD run [here](https://android-build.corp.google.com/builds/abtd/run/L81600030030985934).
+
+Users can rerun this test to get a mostly prefilled ABTD test that is ready to execute.
 
 Follow these steps to execute the tests using the Forrest/ABTD web interface.
 
@@ -48,68 +50,19 @@ Follow these steps to execute the tests using the Forrest/ABTD web interface.
 
 4. Select the branch **git_main**.
 
-5. Input `AppMemoryTestCases` as the **atest module**.
+5. Select ATP
 
-6. Check the **Advanced** settings checkbox.
+6. Input 'v2/android-crystalball-eng/health/appmemorytest/appmemorytest' as test
 
-7. Set the product to a physical device, e.g., **raven**.
+7. Optionally configure any advanced settings
 
 8. Click **Run** to start the test.
 
 
-## Analyzing Perfetto Traces
+## Adding PerfettoSQL metrics
 
-After a test run, a Perfetto trace file can be found as a test artifact. Here are two useful queries which can be run in Perfetto UI
+To add metrics as PerfettoSQL queries to be run on the perfetto trace artifact of appmemorytest:
 
-###  Get native heap allocation dumps
+1. Add a .textproto file in the `metrics/` folder
 
-```sql
-WITH AggregatedDumps AS (
-  SELECT
-    a.ts,
-    p.name AS track_name,
-    SUM(a.size) AS dump_size_bytes_for_ts
-  FROM
-    heap_profile_allocation AS a
-  JOIN
-    process AS p ON a.upid = p.upid
-  GROUP BY
-    a.ts, p.name
-)
-SELECT
-  ts,
-  track_name,
-  SUM(dump_size_bytes_for_ts) OVER (PARTITION BY track_name ORDER BY ts) AS cumulative_dump_size_bytes,
-  SUM(dump_size_bytes_for_ts) OVER (PARTITION BY track_name ORDER BY ts) / (1024.0 * 1024.0) AS cumulative_dump_size_mib
-FROM
-  AggregatedDumps
-ORDER BY
-  ts, track_name;
-```
-
-### Get binder transactions in time range of app startup
-
-```sql
-INCLUDE PERFETTO MODULE android.binder;
-WITH
-  testhelper_startup AS (
-    SELECT
-      ts,
-      (ts + dur) AS ts_end
-    FROM
-      android_startups
-    WHERE
-      package = 'android.app.memory.testhelper'
-    LIMIT 1
-  )
-SELECT
-  *
-FROM
-  android_binder_txns AS abt
-  LEFT JOIN process AS p ON (p.upid = abt.client_upid)
-  LEFT JOIN thread AS t ON (t.utid = abt.client_utid)
-  JOIN testhelper_startup
-    ON (abt.client_ts >= testhelper_startup.ts AND abt.client_ts < testhelper_startup.ts_end)
-WHERE
-  abt.client_process = 'android.app.memory.testhelper'
-```
+2. Add the file and metric id in vendor/google_testing/integration/tests/scenarios/tests/configs/appmemorytest.xml
