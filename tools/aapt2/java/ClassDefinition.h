@@ -27,6 +27,7 @@
 #include "Resource.h"
 #include "java/AnnotationProcessor.h"
 #include "text/Printer.h"
+#include "util/Util.h"
 
 namespace aapt {
 
@@ -249,10 +250,9 @@ class ClassDefinition : public ClassMember {
   enum class Result {
     kAdded,
     kOverridden,
-    kAlreadyExists,
   };
 
-  Result AddMember(std::unique_ptr<ClassMember> member, bool can_overwrite = true);
+  Result AddMember(std::unique_ptr<ClassMember> member);
 
   bool empty() const override;
 

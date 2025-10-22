@@ -18,15 +18,13 @@
 #define AAPT_JAVA_MANIFESTCLASSGENERATOR_H
 
 #include "androidfw/IDiagnostics.h"
-#include "cmd/Util.h"
 #include "java/ClassDefinition.h"
 #include "xml/XmlDom.h"
 
 namespace aapt {
 
-std::unique_ptr<ClassDefinition> GenerateManifestClass(
-    android::IDiagnostics* diag, xml::XmlResource* res,
-    const FeatureFlagValues& feature_flag_values);
+std::unique_ptr<ClassDefinition> GenerateManifestClass(android::IDiagnostics* diag,
+                                                       xml::XmlResource* res);
 
 }  // namespace aapt
 
