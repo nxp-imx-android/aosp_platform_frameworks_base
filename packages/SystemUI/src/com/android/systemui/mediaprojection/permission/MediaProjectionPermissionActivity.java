@@ -27,6 +27,7 @@ import static android.os.UserHandle.USER_SYSTEM;
 import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
 
 import static com.android.systemui.mediaprojection.permission.ScreenShareOptionKt.ENTIRE_SCREEN;
+import static com.android.systemui.mediaprojection.permission.ScreenShareOptionKt.ENTIRE_SCREEN_EXTERNAL;
 import static com.android.systemui.mediaprojection.permission.ScreenShareOptionKt.SINGLE_APP;
 
 import android.annotation.Nullable;
@@ -390,7 +391,7 @@ public class MediaProjectionPermissionActivity extends Activity {
             IMediaProjection projection =
                     MediaProjectionServiceHelper.createOrReuseProjection(
                             mUid, mPackageName, mReviewGrantedConsentRequired, displayId);
-            if (screenShareMode == ENTIRE_SCREEN) {
+            if (screenShareMode == ENTIRE_SCREEN || screenShareMode == ENTIRE_SCREEN_EXTERNAL) {
                 final Intent intent = new Intent();
                 setCommonIntentExtras(intent, hasCastingCapabilities, projection);
                 setResult(RESULT_OK, intent);

@@ -34,7 +34,7 @@ object MediaProjectionPermissionUtils {
             Display.TYPE_WIFI,
         )
     private val filterDeviceTypeFlag: Boolean =
-        com.android.media.projection.flags.Flags.mediaProjectionConnectedDisplayNoVirtualDevice()
+        Flags.mediaProjectionConnectedDisplayNoVirtualDevice()
 
     fun getSingleAppDisabledText(
         context: Context,
@@ -74,7 +74,10 @@ object MediaProjectionPermissionUtils {
     }
 
     fun getConnectedDisplays(displayManager: DisplayManager?): List<Display> {
-        if (!com.android.media.projection.flags.Flags.mediaProjectionConnectedDisplay()) {
+        if (!Flags.mediaProjectionConnectedDisplay()) {
+            return emptyList()
+        }
+        if (!Flags.mediaProjectionConnectedDisplayScreenSharing()) {
             return emptyList()
         }
         if (displayManager == null) {
