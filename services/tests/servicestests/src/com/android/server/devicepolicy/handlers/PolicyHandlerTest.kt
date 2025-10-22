@@ -351,6 +351,27 @@ class PolicyHandlerTest {
     }
 
     @Test
+    fun setPolicy_acceptedDpcTypes_shouldStillCheckCrossUserPermissionIfDpcTypeIsAccepted() {
+        val metadata =
+            copyOf(
+                EnumPolicy.metadata,
+                allowedScopes = setOf(POLICY_SCOPE_DEVICE),
+                requiredPermission = "thePermissionThatShallNotBeChecked",
+                requiredCrossUserPermission = "theCrossUserPermissionThatShallBeChecked",
+                allowedDpcTypes = setOf(DEFAULT_DEVICE_OWNER)
+            )
+        val handler = createEnumHandler(metadata = metadata, delegate = delegate)
+        delegate.callerDpcType = DEFAULT_DEVICE_OWNER
+        val theCaller = anyCaller
+
+        handler.setPolicy(theCaller, POLICY_SCOPE_DEVICE, EnumPolicy.anyTransportValue)
+
+        verify(mockPermissionChecker, never()).enforce(eq("thePermissionThatShallNotBeChecked"), any())
+        verify(mockPermissionChecker).enforce("theCrossUserPermissionThatShallBeChecked", theCaller)
+        verifyNoMoreInteractions(mockPermissionChecker)
+    }
+
+    @Test
     fun setPolicy_enum_shouldHandleValidValues() {
         val enumValues = setOf(123, 456, 789)
         val metadata = copyOf(EnumPolicy.metadata, allowedValues = enumValues)
