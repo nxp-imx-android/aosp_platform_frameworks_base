@@ -429,7 +429,7 @@ class AppHeaderController(
     }
 
     /** Close the maximize menu window if open. */
-    private fun closeMaximizeMenu() {
+    override fun closeMaximizeMenu() {
         maximizeMenu?.close {
             // Request the accessibility service to refocus on the maximize button after closing
             // the menu.
