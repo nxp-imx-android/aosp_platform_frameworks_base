@@ -162,6 +162,10 @@ public class WindowManagerShellCommand extends ShellCommand {
                     return runSetDisplayWindowingMode(pw);
                 case "get-display-windowing-mode":
                     return runGetDisplayWindowingMode(pw);
+                case "set-display-engagement-mode":
+                    return runSetDisplayEngagementMode(pw);
+                case "get-display-engagement-mode":
+                    return runGetDisplayEngagementMode(pw);
                 case "shell":
                     return runWmShellCommand(pw);
                 default:
@@ -1506,6 +1510,33 @@ public class WindowManagerShellCommand extends ShellCommand {
         return 0;
     }
 
+    private int runSetDisplayEngagementMode(PrintWriter pw) throws RemoteException {
+        int displayId = Display.DEFAULT_DISPLAY;
+        String arg = getNextArgRequired();
+        if ("-d".equals(arg)) {
+            displayId = Integer.parseInt(getNextArgRequired());
+            arg = getNextArgRequired();
+        }
+
+        final int engagementMode = Integer.parseInt(arg);
+        mInterface.setDisplayEngagementMode(displayId, engagementMode);
+
+        return 0;
+    }
+
+    private int runGetDisplayEngagementMode(PrintWriter pw) throws RemoteException {
+        int displayId = Display.DEFAULT_DISPLAY;
+        final String arg = getNextArg();
+        if ("-d".equals(arg)) {
+            displayId = Integer.parseInt(getNextArgRequired());
+        }
+
+        final int engagementMode = mInterface.getDisplayEngagementMode(displayId);
+        pw.println("display engagement mode=" + engagementMode + " for displayId=" + displayId);
+
+        return 0;
+    }
+
     private int runWmShellCommand(PrintWriter pw) {
         final String[] args = peekRemainingArgs();
         ArrayList<String> sbArgs = new ArrayList<>();
@@ -1552,6 +1583,9 @@ public class WindowManagerShellCommand extends ShellCommand {
 
         // set-display-windowing-mode
         mInternal.setWindowingMode(displayId, WINDOWING_MODE_UNDEFINED);
+
+        // set-display-engagement-mode
+        mInternal.setDisplayEngagementMode(displayId, DisplayContent.DEFAULT_ENGAGEMENT_MODE);
 
         pw.println("Reset all settings for displayId=" + displayId);
         return 0;
@@ -1601,6 +1635,9 @@ public class WindowManagerShellCommand extends ShellCommand {
                 + WINDOWING_MODE_FREEFORM + " for freeform, " + WINDOWING_MODE_FULLSCREEN + " for"
                 + " fullscreen");
         pw.println("  get-display-windowing-mode [-d DISPLAY_ID]");
+        pw.println("  set-display-engagement-mode [-d DISPLAY_ID] [mode]");
+        pw.println("    Sets the engagement mode (integer bitmask of flags) for a display.");
+        pw.println("  get-display-engagement-mode [-d DISPLAY_ID]");
 
         pw.println("  reset [-d DISPLAY_ID]");
         pw.println("    Reset all override settings.");

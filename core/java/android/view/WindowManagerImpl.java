@@ -37,7 +37,10 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.StrictMode;
+import android.util.ArrayMap;
 import android.util.Log;
+import android.util.SparseIntArray;
+import android.window.IDisplayEngagementModeCallback;
 import android.window.ITaskFpsCallback;
 import android.window.InputTransferToken;
 import android.window.TaskFpsCallback;
@@ -53,6 +56,7 @@ import com.android.internal.os.IResultReceiver;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -117,6 +121,15 @@ public final class WindowManagerImpl implements WindowManager {
     @GuardedBy("mOnFpsCallbackListenerProxies")
     private final ArrayList<OnFpsCallbackListenerProxy> mOnFpsCallbackListenerProxies =
             new ArrayList<>();
+
+    private final Object mDisplayEngagementModeLock = new Object();
+    @GuardedBy("mDisplayEngagementModeLock")
+    private DisplayEngagementModeCallbackImpl mDisplayEngagementModeCallback;
+    @GuardedBy("mDisplayEngagementModeLock")
+    private final ArrayMap<Consumer<DisplayEngagementModeState>, Executor>
+            mDisplayEngagementModeCallbacks = new ArrayMap<>();
+    @GuardedBy("mDisplayEngagementModeLock")
+    private final SparseIntArray mLastReportedEngagementModes = new SparseIntArray();
 
     /** A controller to handle {@link WindowMetrics} related APIs */
     @NonNull
@@ -500,6 +513,27 @@ public final class WindowManagerImpl implements WindowManager {
         }
     }
 
+    private class DisplayEngagementModeCallbackImpl extends IDisplayEngagementModeCallback.Stub {
+        @Override
+        public void onEngagementModeChanged(
+                int displayId, @EngagementModeFlags int engagementMode) {
+            Map<Consumer<DisplayEngagementModeState>, Executor> callbacks;
+            synchronized (mDisplayEngagementModeLock) {
+                mLastReportedEngagementModes.put(displayId, engagementMode);
+                callbacks = new ArrayMap<>(mDisplayEngagementModeCallbacks);
+            }
+
+            for (Map.Entry<Consumer<DisplayEngagementModeState>, Executor> entry
+                    : callbacks.entrySet()) {
+                Executor executor = entry.getValue();
+                Consumer<DisplayEngagementModeState> callback = entry.getKey();
+                executor.execute(() -> {
+                    callback.accept(new DisplayEngagementModeState(displayId, engagementMode));
+                });
+            }
+        }
+    }
+
     @Override
     public Bitmap snapshotTaskForRecents(int taskId) {
         try {
@@ -649,6 +683,91 @@ public final class WindowManagerImpl implements WindowManager {
         if (screenRecordingCallbacks()) {
             Objects.requireNonNull(callback, "callback must not be null");
             ScreenRecordingCallbacks.getInstance().removeCallback(callback);
+        }
+    }
+
+    @Override
+    public void setDisplayEngagementMode(
+            int displayId, @EngagementModeFlags int engagementModeFlags) {
+        try {
+            WindowManagerGlobal.getWindowManagerService().setDisplayEngagementMode(
+                    displayId, engagementModeFlags);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @Override
+    public @EngagementModeFlags int getDisplayEngagementMode(int displayId) {
+        try {
+            return WindowManagerGlobal.getWindowManagerService().getDisplayEngagementMode(
+                    displayId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @Override
+    public void registerDisplayEngagementModeCallback(@NonNull @CallbackExecutor Executor executor,
+            @NonNull Consumer<DisplayEngagementModeState> callback) {
+        synchronized (mDisplayEngagementModeLock) {
+            // Ignore registration if this exact callback instance is already registered.
+            if (mDisplayEngagementModeCallbacks.containsKey(callback)) {
+                Log.w(TAG, "Attempted to register DisplayEngagementModeState callback"
+                        + " that is already registered: " + callback);
+                return;
+            }
+
+            if (mDisplayEngagementModeCallbacks.isEmpty()) {
+                // First listener, register the single proxy with WMS.
+                if (mDisplayEngagementModeCallback == null) {
+                    mDisplayEngagementModeCallback = new DisplayEngagementModeCallbackImpl();
+                }
+                // Clear cache before registering, as registration will send initial state.
+                mLastReportedEngagementModes.clear();
+                try {
+                    WindowManagerGlobal.getWindowManagerService()
+                            .registerDisplayEngagementModeCallback(mDisplayEngagementModeCallback);
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+            }
+
+            // Add the local callback and its executor to internal map.
+            mDisplayEngagementModeCallbacks.put(callback, executor);
+
+            // Immediately notify the new callback of all current states. For the first listener,
+            // this will be empty. For subsequent listeners, this provides the current state.
+            for (int i = 0; i < mLastReportedEngagementModes.size(); i++) {
+                final int displayId = mLastReportedEngagementModes.keyAt(i);
+                final int engagementMode = mLastReportedEngagementModes.valueAt(i);
+                executor.execute(() -> {
+                    callback.accept(new DisplayEngagementModeState(displayId, engagementMode));
+                });
+            }
+        }
+    }
+
+    @Override
+    public void unregisterDisplayEngagementModeCallback(
+            @NonNull Consumer<DisplayEngagementModeState> callback) {
+        synchronized (mDisplayEngagementModeLock) {
+            // Remove the local callback from internal map
+            mDisplayEngagementModeCallbacks.remove(callback);
+
+            // Last listener removed, unregister the single proxy from WMS.
+            if (mDisplayEngagementModeCallbacks.isEmpty()
+                    && mDisplayEngagementModeCallback != null) {
+                try {
+                    WindowManagerGlobal
+                            .getWindowManagerService().unregisterDisplayEngagementModeCallback(
+                                    mDisplayEngagementModeCallback);
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+                // Clear cache now that we are no longer listening for updates.
+                mLastReportedEngagementModes.clear();
+            }
         }
     }
 }

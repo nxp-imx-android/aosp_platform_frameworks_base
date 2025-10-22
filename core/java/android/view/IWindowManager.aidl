@@ -76,6 +76,7 @@ import android.window.IScreenCaptureCallback;
 import android.window.IScreenRecordingCallback;
 import android.window.ISurfaceSyncGroupCompletedListener;
 import android.window.ITaskFpsCallback;
+import android.window.IDisplayEngagementModeCallback;
 import android.window.ITrustedPresentationListener;
 import android.window.InputTransferToken;
 import android.window.ScreenCapture;
@@ -1181,6 +1182,31 @@ interface IWindowManager
 
     @EnforcePermission("DETECT_SCREEN_RECORDING")
     void unregisterScreenRecordingCallback(IScreenRecordingCallback callback);
+
+    /**
+     * Sets the user engagement mode for a specific display.
+     * @see android.view.WindowManager#setDisplayEngagementMode
+     */
+    @EnforcePermission("MANAGE_DISPLAYS")
+    void setDisplayEngagementMode(int displayId, int engagementModeFlags);
+
+    /**
+     * Gets the user engagement mode for a specific display.
+     * @see android.view.WindowManager#getDisplayEngagementMode
+     */
+    int getDisplayEngagementMode(int displayId);
+
+    /**
+     * Registers a callback for display engagement mode changes.
+     * @see android.view.WindowManager#registerDisplayEngagementModeCallback
+     */
+    void registerDisplayEngagementModeCallback(in IDisplayEngagementModeCallback callback);
+
+    /**
+     * Unregisters a callback for display engagement mode changes.
+     * @see android.view.WindowManager#unregisterDisplayEngagementModeCallback
+     */
+    void unregisterDisplayEngagementModeCallback(in IDisplayEngagementModeCallback callback);
 
     /**
      * Sets the listener to be called back when a cross-window drag and drop operation happens.
