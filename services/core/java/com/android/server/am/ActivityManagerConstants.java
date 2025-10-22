@@ -1690,6 +1690,7 @@ final class ActivityManagerConstants extends ContentObserver {
     private void updateForceEnablePssProfiling() {
         mForceEnablePssProfiling = Settings.Global.getInt(mResolver,
                 Settings.Global.FORCE_ENABLE_PSS_PROFILING, 0) == 1;
+        mService.mProcessStateController.setForceEnablePssProfiling(mForceEnablePssProfiling);
     }
 
     private void updateBackgroundActivityStarts() {
@@ -2329,6 +2330,8 @@ final class ActivityManagerConstants extends ContentObserver {
         PSS_TO_RSS_THRESHOLD_MODIFIER = DeviceConfig.getFloat(
                 DeviceConfig.NAMESPACE_ACTIVITY_MANAGER, KEY_PSS_TO_RSS_THRESHOLD_MODIFIER,
                 mDefaultPssToRssThresholdModifier);
+        mService.mProcessStateController.setPssToRssThresholdModifier(
+                PSS_TO_RSS_THRESHOLD_MODIFIER);
     }
 
     private void updateEnableBatchingOomAdj() {
@@ -2349,6 +2352,9 @@ final class ActivityManagerConstants extends ContentObserver {
         oomConstants.mCurMaxEmptyProcesses = CUR_MAX_EMPTY_PROCESSES;
         oomConstants.mCurTrimEmptyProcesses = CUR_TRIM_EMPTY_PROCESSES;
         oomConstants.mProcStateDebugUids = mProcStateDebugUids;
+        oomConstants.mForceEnablePssProfiling = mForceEnablePssProfiling;
+        oomConstants.mPssToRssThresholdModifier = PSS_TO_RSS_THRESHOLD_MODIFIER;
+
         return oomConstants;
     }
 

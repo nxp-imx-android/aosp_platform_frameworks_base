@@ -533,6 +533,17 @@ public abstract class OomAdjuster {
         public volatile int mCurTrimEmptyProcesses;
         /** A sparse array of UIDs for which detailed process state change logging is enabled. */
         public volatile SparseBooleanArray mProcStateDebugUids = new SparseBooleanArray(0);
+        /**
+         * Indicates whether PSS profiling is force-enabled, overriding the default RSS-based
+         * profiling.
+         */
+        public volatile boolean mForceEnablePssProfiling;
+        /**
+         * A modifier for PSS-based thresholds when RSS is used for memory measurement. Since RSS
+         * values are generally larger than PSS, this factor is used to scale thresholds to ensure
+         * comparable behavior.
+         */
+        public volatile float mPssToRssThresholdModifier;
     }
 
     // TODO(b/346822474): hook up global state usage.
