@@ -1740,6 +1740,13 @@ flag {
 }
 
 flag {
+    name: "new_screen_record_toolbar_markup"
+    namespace: "systemui"
+    description: "Enables the markup functionality in the new screen record"
+    bug: "427481098"
+}
+
+flag {
     name: "large_screen_sharing"
     namespace: "systemui"
     description: "Enables the new large screen window and tab sharing experience."
