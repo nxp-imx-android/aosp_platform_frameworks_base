@@ -31,7 +31,7 @@ enum class NoteTaskEntryPoint {
     WIDGET_PICKER_SHORTCUT,
 
     /** @see [LaunchNoteTaskActivity] */
-    WIDGET_PICKER_SHORTCUT_IN_MULTI_WINDOW_MODE,
+    WIDGET_PICKER_SHORTCUT_LAUNCH_IN_ACTIVITY,
 
     /** @see [NoteTaskQuickAffordanceConfig] */
     QUICK_AFFORDANCE,
