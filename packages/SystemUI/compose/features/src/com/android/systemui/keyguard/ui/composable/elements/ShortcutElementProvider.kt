@@ -50,7 +50,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerType
@@ -64,11 +63,11 @@ import com.android.compose.animation.Expandable
 import com.android.compose.animation.rememberExpandableController
 import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.animation.scene.ElementKey
+import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.keyguard.logging.KeyguardQuickAffordancesLogger
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
 import com.android.systemui.common.shared.model.Icon as SysUiIcon
-import com.android.systemui.common.shared.model.asImageBitmap
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.binder.KeyguardBottomAreaVibrations
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordanceHapticViewModel
@@ -291,7 +290,7 @@ constructor(
     private fun painterResource(icon: SysUiIcon, atEnd: Boolean): Painter? {
         return when (icon) {
             is SysUiIcon.Loaded -> {
-                BitmapPainter(icon.asImageBitmap().apply { prepareToDraw() })
+                rememberDrawablePainter(icon.drawable)
             }
             is SysUiIcon.Resource -> {
                 val res = icon.resId
