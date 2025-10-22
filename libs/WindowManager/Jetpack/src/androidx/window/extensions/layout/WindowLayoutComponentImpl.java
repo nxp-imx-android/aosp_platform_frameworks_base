@@ -44,6 +44,7 @@ import android.util.ArrayMap;
 import android.util.Log;
 import android.view.DisplayInfo;
 import android.view.Surface;
+import android.view.WindowManager;
 
 import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
@@ -72,6 +73,8 @@ public class WindowLayoutComponentImpl implements WindowLayoutComponent {
     private static final String TAG = WindowLayoutComponentImpl.class.getSimpleName();
 
     private final Object mLock = new Object();
+
+    private final Context mContext;
 
     @GuardedBy("mLock")
     private final Map<Context, DeduplicateConsumer<WindowLayoutInfo>> mWindowLayoutChangeListeners =
@@ -104,23 +107,17 @@ public class WindowLayoutComponentImpl implements WindowLayoutComponent {
 
     private final DisplayStateProvider mDisplayStateProvider;
 
-    private final EngagementModeClient mEngagementModeClient;
+    private final EngagementModeUpdateListener mEngagementModeListener;
 
-    // TODO(b/444335819): The initial engagement mode is fetched asynchronously. This means the
-    // first layout will use the default value, and a second "double pass" layout may happen
-    // when the real value arrives. The long-term fix is to migrate to a new system API, which would
-    // allow for a synchronous, non-blocking read on startup.
     @GuardedBy("mLock")
-    private int mLastReportedEngagementMode;
+    private final ArrayMap<Integer, Integer> mLastReportedEngagementModes = new ArrayMap<>();
+
+    // TODO(b/444335819): Always use the EngagementModeClient's default for now. This should be
+    // updated to use a generic default or the System API's default if available.
+    private final int mDefaultEngagementMode = EngagementModeClient.DEFAULT_ENGAGEMENT_MODE;
 
     public WindowLayoutComponentImpl(@NonNull Context context,
             @NonNull DeviceStateManagerFoldingFeatureProducer foldingFeatureProducer) {
-        this(context, foldingFeatureProducer, createEngagementModeClient(context));
-    }
-
-    WindowLayoutComponentImpl(@NonNull Context context,
-            @NonNull DeviceStateManagerFoldingFeatureProducer foldingFeatureProducer,
-            @NonNull EngagementModeClient engagementModeClient) {
         this(context, foldingFeatureProducer, new DisplayStateProvider() {
             @Override
             public int getDisplayRotation(@NonNull WindowConfiguration windowConfiguration) {
@@ -132,14 +129,14 @@ public class WindowLayoutComponentImpl implements WindowLayoutComponent {
             public DisplayInfo getDisplayInfo(int displayId) {
                 return DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
             }
-        }, engagementModeClient);
+        });
     }
 
     @VisibleForTesting
     WindowLayoutComponentImpl(@NonNull Context context,
             @NonNull DeviceStateManagerFoldingFeatureProducer foldingFeatureProducer,
-            @NonNull DisplayStateProvider displayStateProvider,
-            @NonNull EngagementModeClient engagementModeClient) {
+            @NonNull DisplayStateProvider displayStateProvider) {
+        mContext = context;
         mDisplayStateProvider = displayStateProvider;
         ((Application) context.getApplicationContext())
                 .registerActivityLifecycleCallbacks(new NotifyOnConfigurationChanged());
@@ -148,33 +145,12 @@ public class WindowLayoutComponentImpl implements WindowLayoutComponent {
         final List<DisplayFoldFeature> displayFoldFeatures = ListUtil.map(
                 mFoldingFeatureProducer.getDisplayFeatures(), DisplayFoldFeatureUtil::translate);
         mSupportedWindowFeatures = new SupportedWindowFeatures.Builder(displayFoldFeatures).build();
-        mEngagementModeClient = engagementModeClient;
-        mLastReportedEngagementMode = mEngagementModeClient.getEngagementModeFlags();
-    }
 
-    @NonNull
-    private static EngagementModeClient createEngagementModeClient(@NonNull Context context) {
         if (com.android.window.flags.Flags.deviceEngagementMode()) {
-            return new EngagementModeClientImpl(context, new Handler(Looper.getMainLooper()));
+            mEngagementModeListener = new SystemApiEngagementModeListener(mContext);
         } else {
-            return new NoOpEngagementModeClient();
+            mEngagementModeListener = new SideChannelEngagementModeListener(mContext);
         }
-    }
-
-    /**
-     * Called by EngagementModeClient whenever the engagement state changes.
-     * This triggers a dispatch of the new WindowLayoutInfo to all listeners.
-     */
-    private void onEngagementModeChanged(int newEngagementMode) {
-        List<CommonFoldingFeature> currentFeatures;
-        synchronized (mLock) {
-            if (mLastReportedEngagementMode == newEngagementMode) {
-                return;
-            }
-            mLastReportedEngagementMode = newEngagementMode;
-            currentFeatures = new ArrayList<>(mLastReportedFoldingFeatures);
-        }
-        dispatchNewLayoutInfo(currentFeatures, newEngagementMode);
     }
 
     /**
@@ -220,16 +196,19 @@ public class WindowLayoutComponentImpl implements WindowLayoutComponent {
                     + dumpAllBaseContextToString(context));
             boolean wasEmpty = mWindowLayoutChangeListeners.isEmpty();
             mWindowLayoutChangeListeners.put(context, new DeduplicateConsumer<>(consumer));
+
+            final int displayId = context.getAssociatedDisplayId();
             if (wasEmpty) {
-                // This is the first listener, start listening to the client.
-                mEngagementModeClient.addUpdateCallback(
-                        Runnable::run, this::onEngagementModeChanged);
+                // If this is the first listener, register/add callbacks.
+                mEngagementModeListener.register(displayId);
             }
+
             mFoldingFeatureProducer.getData((features) -> {
                 final WindowLayoutInfo newWindowLayout;
                 int currentEngagementMode;
                 synchronized (mLock) {
-                    currentEngagementMode = mLastReportedEngagementMode;
+                    currentEngagementMode = mLastReportedEngagementModes.getOrDefault(
+                            displayId, mDefaultEngagementMode);
                 }
                 newWindowLayout =
                         getWindowLayoutInfo(context, features, currentEngagementMode);
@@ -301,11 +280,11 @@ public class WindowLayoutComponentImpl implements WindowLayoutComponent {
                 }
             }
             if (mWindowLayoutChangeListeners.isEmpty()) {
-                // This was the last listener, stop listening to the client.
-                mEngagementModeClient.removeUpdateCallback(this::onEngagementModeChanged);
-                // Reset to the default state. This prevents new listeners from getting a stale
-                // value when they first register.
-                mLastReportedEngagementMode = EngagementModeClient.DEFAULT_ENGAGEMENT_MODE;
+                // If this was the last listener, unregister any active callbacks.
+                mEngagementModeListener.unregister();
+                // Clear the last reported engagement modes. This prevents new listeners from
+                // getting a stale value when they first register.
+                mLastReportedEngagementModes.clear();
             }
         }
     }
@@ -369,38 +348,83 @@ public class WindowLayoutComponentImpl implements WindowLayoutComponent {
         }
     }
 
-    @VisibleForTesting
-    void onDisplayFeaturesChanged(List<CommonFoldingFeature> features) {
-        int currentEngagementMode;
+    /**
+     * Central handler for engagement mode updates from any source (SystemAPI or side-channel).
+     * Dispatches new layout info to all listeners on a specific display on engagement mode changed.
+     * This method is thread-safe. It creates a defensive copy of the listeners under a lock,
+     * then iterates and calls them outside the lock to prevent potential deadlocks if a
+     * listener tried to acquire its own lock.
+     */
+    private void onEngagementModeChanged(int displayId, int newEngagementMode) {
+        // Create a safe copy of the listener entries and display features inside lock.
+        final List<Map.Entry<Context, DeduplicateConsumer<WindowLayoutInfo>>> listenerEntries;
+        final List<CommonFoldingFeature> currentDisplayFeatures;
         synchronized (mLock) {
-            mLastReportedFoldingFeatures.clear();
-            mLastReportedFoldingFeatures.addAll(features);
-            currentEngagementMode = mLastReportedEngagementMode;
+            if (mLastReportedEngagementModes.getOrDefault(
+                    displayId, mDefaultEngagementMode) == newEngagementMode) {
+                return;
+            }
+            mLastReportedEngagementModes.put(displayId, newEngagementMode);
+            listenerEntries = new ArrayList<>(mWindowLayoutChangeListeners.entrySet());
+            currentDisplayFeatures = new ArrayList<>(mLastReportedFoldingFeatures);
         }
-        dispatchNewLayoutInfo(features, currentEngagementMode);
+        dispatchNewLayoutInfoOnEngagementModeChanged(
+                listenerEntries, displayId, newEngagementMode, currentDisplayFeatures);
     }
 
-    /**
-     * Dispatches the new layout state to all registered listeners. This method is thread-safe.
-     * It creates a defensive copy of the listeners under a lock, then iterates and calls them
-     * outside the lock to prevent potential deadlocks if a listener tried to acquire its own lock.
-     */
-    private void dispatchNewLayoutInfo(List<CommonFoldingFeature> features, int engagementMode) {
-        // Create a safe copy of the listener entries inside lock
-        final List<Map.Entry<Context, DeduplicateConsumer<WindowLayoutInfo>>> listenerEntries;
-        synchronized (mLock) {
-            // Copy the entrySet, which contains both the Context and the Consumer
-            listenerEntries = new ArrayList<>(mWindowLayoutChangeListeners.entrySet());
-        }
-        for (final Map.Entry<Context, DeduplicateConsumer<WindowLayoutInfo>> entry :
-                listenerEntries) {
-            // Get the WindowLayoutInfo from the activity and pass the value to the
-            // layoutConsumer.
+    private void dispatchNewLayoutInfoOnEngagementModeChanged(
+            @NonNull List<Map.Entry<Context, DeduplicateConsumer<WindowLayoutInfo>>> listeners,
+            int displayId, int engagementMode,
+            @NonNull List<CommonFoldingFeature> currentDisplayFeatures) {
+        for (final Map.Entry<Context, DeduplicateConsumer<WindowLayoutInfo>> entry : listeners) {
             final Context context = entry.getKey();
+            if (context.getAssociatedDisplayId() != displayId) {
+                continue;
+            }
             final DeduplicateConsumer<WindowLayoutInfo> layoutConsumer = entry.getValue();
 
             final WindowLayoutInfo newWindowLayout =
-                    getWindowLayoutInfo(context, features, engagementMode);
+                    getWindowLayoutInfo(context, currentDisplayFeatures, engagementMode);
+            layoutConsumer.accept(newWindowLayout);
+        }
+    }
+
+    /**
+     * Dispatches the new layout state to all registered listeners on display features changed.
+     * This method is thread-safe. It creates a defensive copy of the listeners under a lock,
+     * then iterates and calls them outside the lock to prevent potential deadlocks if a
+     * listener tried to acquire its own lock.
+     */
+    @VisibleForTesting
+    void onDisplayFeaturesChanged(@NonNull List<CommonFoldingFeature> features) {
+        // Create a safe copy of the listener entries and engagement modes inside lock.
+        final List<Map.Entry<Context, DeduplicateConsumer<WindowLayoutInfo>>> listenerEntries;
+        final Map<Integer, Integer> currentDisplayEngagementModes;
+        synchronized (mLock) {
+            mLastReportedFoldingFeatures.clear();
+            mLastReportedFoldingFeatures.addAll(features);
+            listenerEntries = new ArrayList<>(mWindowLayoutChangeListeners.entrySet());
+            currentDisplayEngagementModes = new ArrayMap<>(mLastReportedEngagementModes);
+        }
+        dispatchNewLayoutInfoOnDisplayFeaturesChanged(
+                listenerEntries, features, currentDisplayEngagementModes);
+    }
+
+    private void dispatchNewLayoutInfoOnDisplayFeaturesChanged(
+            @NonNull List<Map.Entry<Context, DeduplicateConsumer<WindowLayoutInfo>>> listeners,
+            @NonNull List<CommonFoldingFeature> displayFeatures,
+            Map<Integer, Integer> currentDisplayEngagementModes) {
+        for (final Map.Entry<Context, DeduplicateConsumer<WindowLayoutInfo>> entry : listeners) {
+            // Get the WindowLayoutInfo from the activity and pass the value to the
+            // layoutConsumer.
+            final Context context = entry.getKey();
+            final int displayId = context.getAssociatedDisplayId();
+            final DeduplicateConsumer<WindowLayoutInfo> layoutConsumer = entry.getValue();
+
+            final int currentEngagementMode = currentDisplayEngagementModes.getOrDefault(
+                    displayId, mDefaultEngagementMode);
+            final WindowLayoutInfo newWindowLayout =
+                    getWindowLayoutInfo(context, displayFeatures, currentEngagementMode);
             layoutConsumer.accept(newWindowLayout);
         }
     }
@@ -433,8 +457,10 @@ public class WindowLayoutComponentImpl implements WindowLayoutComponent {
     public WindowLayoutInfo getCurrentWindowLayoutInfo(int displayId,
             @NonNull WindowConfiguration windowConfiguration) {
         synchronized (mLock) {
+            final int currentEngagementMode = mLastReportedEngagementModes.getOrDefault(
+                    displayId, mDefaultEngagementMode);
             return getWindowLayoutInfo(displayId, windowConfiguration,
-                    mLastReportedFoldingFeatures, mLastReportedEngagementMode);
+                    mLastReportedFoldingFeatures, currentEngagementMode);
         }
     }
 
@@ -442,9 +468,12 @@ public class WindowLayoutComponentImpl implements WindowLayoutComponent {
     @NonNull
     public WindowLayoutInfo getCurrentWindowLayoutInfo(@NonNull @UiContext Context context) {
         assertUiContext(context);
+        final int displayId = context.getAssociatedDisplayId();
         synchronized (mLock) {
-            return getWindowLayoutInfo(context,
-                    mLastReportedFoldingFeatures, mLastReportedEngagementMode);
+            final int currentEngagementMode = mLastReportedEngagementModes.getOrDefault(
+                    displayId, mDefaultEngagementMode);
+            return getWindowLayoutInfo(
+                    context, mLastReportedFoldingFeatures, currentEngagementMode);
         }
     }
 
@@ -656,6 +685,67 @@ public class WindowLayoutComponentImpl implements WindowLayoutComponent {
 
         @Override
         public void onLowMemory() {
+        }
+    }
+
+    private interface EngagementModeUpdateListener {
+        void register(int displayId);
+        void unregister();
+    }
+
+    private class SystemApiEngagementModeListener implements EngagementModeUpdateListener {
+        private final WindowManager mWindowManager;
+        private final java.util.function.Consumer<WindowManager.DisplayEngagementModeState>
+                mCallback;
+
+        SystemApiEngagementModeListener(Context context) {
+            mWindowManager = context.getSystemService(WindowManager.class);
+            mCallback = state -> onEngagementModeChanged(state.getDisplayId(),
+                    state.getEngagementModeFlags());
+        }
+
+        @Override
+        public void register(int displayId) {
+            mWindowManager.registerDisplayEngagementModeCallback(Runnable::run, mCallback);
+            synchronized (mLock) {
+                mLastReportedEngagementModes.put(displayId,
+                        mWindowManager.getDisplayEngagementMode(displayId));
+            }
+        }
+
+        @Override
+        public void unregister() {
+            mWindowManager.unregisterDisplayEngagementModeCallback(mCallback);
+        }
+    }
+
+    private class SideChannelEngagementModeListener implements EngagementModeUpdateListener {
+        private final EngagementModeClient mClient;
+        private java.util.function.Consumer<Integer> mCallback;
+
+        SideChannelEngagementModeListener(Context context) {
+            if (com.android.window.flags.Flags.deviceEngagementMode()) {
+                mClient = new EngagementModeClientImpl(
+                        context, new Handler(Looper.getMainLooper()));
+            } else {
+                mClient = new NoOpEngagementModeClient();
+            }
+        }
+
+        @Override
+        public void register(int displayId) {
+            mCallback = mode -> onEngagementModeChanged(displayId, mode);
+            mClient.addUpdateCallback(Runnable::run, mCallback);
+            synchronized (mLock) {
+                mLastReportedEngagementModes.put(displayId, mClient.getEngagementModeFlags());
+            }
+        }
+
+        @Override
+        public void unregister() {
+            if (mCallback != null) {
+                mClient.removeUpdateCallback(mCallback);
+            }
         }
     }
 
