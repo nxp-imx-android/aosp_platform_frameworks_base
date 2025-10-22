@@ -318,15 +318,10 @@ interface ITelecomService {
      */
     void stopBlockSuppression();
 
-    /**
-    * @see TelecomServiceImpl#createManageBlockedNumbersIntent
-    **/
-    Intent createManageBlockedNumbersIntent(String callingPackage);
-
    /**
-    * @see TelecomServiceImpl#createLaunchEmergencyDialerIntent
+    * @see TelecomServiceImpl#getPackageForCreateLaunchEmergencyDialerIntent
     */
-    Intent createLaunchEmergencyDialerIntent(in String number);
+    String getPackageForCreateLaunchEmergencyDialerIntent();
 
     /**
      * @see TelecomServiceImpl#isIncomingCallPermitted
