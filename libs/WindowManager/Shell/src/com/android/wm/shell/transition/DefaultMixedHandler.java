@@ -20,6 +20,7 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_RECENTS;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
@@ -446,10 +447,24 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 // launch contains an appBubble task as well
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Got a Bubble-enter request "
                         + "from an app bubble or for an existing bubble");
+                WindowContainerTransaction out = new WindowContainerTransaction();
+                if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+                    if (task != null && mBubbleTransitions.shouldBeAppBubble(task)) {
+                        int currentWindowingMode = task.getWindowingMode();
+                        if (currentWindowingMode != WINDOWING_MODE_MULTI_WINDOW) {
+                            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                                    " Task windowingMode=%d when launching in bubble, update to %d",
+                                    currentWindowingMode, WINDOWING_MODE_MULTI_WINDOW);
+                            // Make sure the task launching in a bubble is uses multi-window
+                            out.setWindowingMode(task.token, WINDOWING_MODE_MULTI_WINDOW);
+                        }
+                    }
+                }
+
                 mActiveTransitions.add(createDefaultMixedTransition(
                         MixedTransition.TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE,
                         transition));
-                return new WindowContainerTransaction();
+                return out;
             }
         }
 
