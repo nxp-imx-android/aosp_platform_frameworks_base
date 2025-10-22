@@ -2645,6 +2645,24 @@ class DesktopTasksController(
         displayId: Int,
         userId: Int = shellController.currentUserId,
     ) {
+        if (lockTaskChangeListener.isTaskLocked) {
+            if (isAnyDeskActive(displayId)) {
+                error("Device is in locked task mode, but a desk is active on displayId=$displayId")
+            }
+            val wct = WindowContainerTransaction()
+            val ops =
+                ActivityOptions.fromBundle(options).apply {
+                    pendingIntentBackgroundActivityStartMode =
+                        ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
+                    launchWindowingMode = WINDOWING_MODE_FULLSCREEN
+                    launchDisplayId = displayId
+                }
+
+            wct.sendPendingIntent(pendingIntent, null, ops.toBundle())
+            transitions.startTransition(TRANSIT_OPEN, wct, null)
+            return
+        }
+
         val repository = userRepositories.getProfile(userId)
         val wct = WindowContainerTransaction()
         val displayLayout = displayController.getDisplayLayout(displayId) ?: return
@@ -6362,7 +6380,8 @@ class DesktopTasksController(
                             destDisplayLayout,
                             taskInfo.isResizeable,
                             inputCoordinate.x,
-                            captionInsets)
+                            captionInsets,
+                        )
 
                     moveToDisplay(
                         taskInfo,
