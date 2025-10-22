@@ -41,12 +41,15 @@ class FakeAccessibilityShortcutsRepository(
             KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK to "Select to Speak",
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS to "Voice Access",
         )
+    private var selectedTargetsList: List<AccessibilityTargetModel> = emptyList()
 
     var areShortcutsEnabled: Boolean = false
     var isMagnificationAndZoomInEnabled: Boolean = false
     var ttsPrompt: TtsPrompt? = null
     var ttsText: CharSequence = ""
     var shortcutTypeAssigned: Int = 0
+    var enabledShortcutTargetName = ""
+    var performedShortcutTargetName = ""
 
     override suspend fun getKeyGestureConfirmInfo(
         keyGestureType: Int,
@@ -90,6 +93,7 @@ class FakeAccessibilityShortcutsRepository(
     ) {
         areShortcutsEnabled = enable
         shortcutTypeAssigned = shortcutType
+        enabledShortcutTargetName = targetName
     }
 
     override fun enableMagnificationAndZoomIn(displayId: Int) {
@@ -107,6 +111,7 @@ class FakeAccessibilityShortcutsRepository(
         targetName: String,
     ) {
         shortcutTypeAssigned = shortcutType
+        performedShortcutTargetName = targetName
     }
 
     override fun getAllAccessibilityTargetsInfo(
@@ -153,6 +158,10 @@ class FakeAccessibilityShortcutsRepository(
     ): List<AccessibilityTargetModel> {
         shortcutTypeAssigned = shortcutType
 
-        return emptyList()
+        return selectedTargetsList
+    }
+
+    fun setSelectedAccessibilityTargetsList(list: List<AccessibilityTargetModel>) {
+        selectedTargetsList = list.toList()
     }
 }

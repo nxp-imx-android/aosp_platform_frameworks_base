@@ -45,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -91,12 +92,18 @@ fun ShortcutPickerDialogContent(
                 }
             },
             negativeButton = {
-                PlatformOutlinedButton(onClick = onEditClick) {
+                PlatformOutlinedButton(
+                    onClick = onEditClick,
+                    modifier = Modifier.testTag("edit_button"),
+                ) {
                     Text(stringResource(R.string.accessibility_shortcutchooser_edit_button))
                 }
             },
             positiveButton = {
-                PlatformOutlinedButton(onClick = onDoneClick) {
+                PlatformOutlinedButton(
+                    onClick = onDoneClick,
+                    modifier = Modifier.testTag("done_button"),
+                ) {
                     Text(stringResource(R.string.accessibility_shortcutchooser_done_button))
                 }
             },
@@ -113,6 +120,7 @@ private fun ShortcutPickerRow(info: AccessibilityTargetModel, onClick: () -> Uni
             Modifier.fillMaxWidth()
                 .height(56.dp)
                 .clip(RoundedCornerShape(8.dp))
+                .testTag(info.targetName)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = ripple(),
