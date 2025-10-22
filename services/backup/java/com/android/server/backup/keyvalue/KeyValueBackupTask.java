@@ -226,7 +226,7 @@ public class KeyValueBackupTask implements BackupRestoreTask, Runnable {
             boolean nonIncremental,
             BackupEligibilityRules backupEligibilityRules) {
         KeyValueBackupReporter reporter = null;
-        if (monitor != null) {
+        if (!Flags.enableKvBackupLogsFromTransportWithProperFlowId()) {
             reporter =
                 new KeyValueBackupReporter(backupManagerService, observer,
                         new BackupManagerMonitorEventSender(monitor));
