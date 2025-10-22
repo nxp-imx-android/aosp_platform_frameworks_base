@@ -77,14 +77,9 @@ class BubblesUnfoldListenerTest {
                 backgroundExecutor
             )
         foldLockSettingsObserver = BubblesFoldLockSettingsObserver { isStayAwakeOnFold }
-        unfoldListener = BubblesUnfoldListener(
-            bubbleData, foldLockSettingsObserver) { bubble, moveToFullscreen ->
-            if (moveToFullscreen) {
-                barToFullscreenTransitionStarted = true
-            } else {
-                barToFloatingTransitionStarted = true
-            }
-        }
+        unfoldListener = createUnfoldListener(
+            supportsBubbleNonResizableMultiWindow = false
+        )
     }
 
     @Test
@@ -169,5 +164,38 @@ class BubblesUnfoldListenerTest {
         unfoldListener.onFoldStateChanged(isFolded = true)
         assertThat(barToFloatingTransitionStarted).isFalse()
         assertThat(barToFullscreenTransitionStarted).isTrue()
+    }
+
+    @Test
+    fun fold_expandedNonResizableBubble_staysAwakeOnFold_shouldStartFloatingTransition() {
+        var supportsNonResizableUnfoldListener = createUnfoldListener(
+            supportsBubbleNonResizableMultiWindow = true
+        )
+        isStayAwakeOnFold = true
+        val bubble = FakeBubbleFactory.createChatBubble(context)
+        bubbleData.notificationEntryUpdated(bubble, true, false)
+        assertThat(bubbleData.hasBubbles()).isTrue()
+        bubbleData.setSelectedBubbleAndExpandStack(bubble)
+        assertThat(bubbleData.isExpanded).isTrue()
+
+        supportsNonResizableUnfoldListener.onFoldStateChanged(isFolded = true)
+        assertThat(barToFloatingTransitionStarted).isTrue()
+        assertThat(barToFullscreenTransitionStarted).isFalse()
+    }
+
+    private fun createUnfoldListener(
+        supportsBubbleNonResizableMultiWindow: Boolean
+    ): BubblesUnfoldListener {
+        return BubblesUnfoldListener(
+            supportsBubbleNonResizableMultiWindow,
+            bubbleData,
+            foldLockSettingsObserver
+        ) { bubble, moveToFullscreen ->
+            if (moveToFullscreen) {
+                barToFullscreenTransitionStarted = true
+            } else {
+                barToFloatingTransitionStarted = true
+            }
+        }
     }
 }
