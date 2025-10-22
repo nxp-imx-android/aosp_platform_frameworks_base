@@ -109,6 +109,11 @@ constructor(
     override suspend fun onActivated() {
         coroutineScope {
             launchTraced(
+                "ScreenCaptureRecordSmallScreenViewModel#recordDetailsAppSelectorViewModel"
+            ) {
+                recordDetailsAppSelectorViewModel.activate()
+            }
+            launchTraced(
                 "ScreenCaptureRecordSmallScreenViewModel#recordDetailsParametersViewModel"
             ) {
                 recordDetailsParametersViewModel.activate()
