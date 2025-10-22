@@ -830,7 +830,8 @@ public class AudioService extends IAudioService.Stub
                     AudioSystem.DEVICE_OUT_BLE_SPEAKER, AudioSystem.STREAM_MUSIC,
                     AudioSystem.DEVICE_OUT_BLE_BROADCAST, AudioSystem.STREAM_MUSIC,
                     AudioSystem.DEVICE_OUT_HEARING_AID, AudioSystem.STREAM_MUSIC,
-                    AudioSystem.DEVICE_OUT_BLUETOOTH_SCO, AudioSystem.STREAM_VOICE_CALL
+                    AudioSystem.DEVICE_OUT_BLUETOOTH_SCO, AudioSystem.STREAM_VOICE_CALL,
+                    AudioSystem.DEVICE_OUT_BLUETOOTH_SCO_HEADSET, AudioSystem.STREAM_VOICE_CALL
             ));
 
     /**
@@ -5656,7 +5657,8 @@ public class AudioService extends IAudioService.Stub
                 // the absolute volume
                 // TODO(b/430617085): Handle SCO stream type outside of lambda and remove following
                 //   check since it might be obsolete
-                if (absDev == AudioSystem.DEVICE_OUT_BLUETOOTH_SCO
+                if ((absDev == AudioSystem.DEVICE_OUT_BLUETOOTH_SCO
+                        || absDev == AudioSystem.DEVICE_IN_BLUETOOTH_SCO_HEADSET)
                         && mMode.get() != MODE_ASSISTANT_CONVERSATION) {
                     newStreamType = AudioManager.STREAM_VOICE_CALL;
                 }
