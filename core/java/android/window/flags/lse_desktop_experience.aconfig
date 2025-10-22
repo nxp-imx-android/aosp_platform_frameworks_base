@@ -20,6 +20,16 @@ flag {
 }
 
 flag {
+    name: "close_split_task_instead_of_moving_to_back"
+    namespace: "lse_desktop_experience"
+    description: "Closing a task in split screen via its window decor, instead of moving it to the background."
+    bug: "442283534"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "default_desk_without_warmup_migration"
     namespace: "lse_desktop_experience"
     description: "Moves desk creation to coroutines to guarantee non-null default desk"
