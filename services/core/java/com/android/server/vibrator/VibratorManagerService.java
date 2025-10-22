@@ -279,33 +279,6 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
     private static native int nativeVibratorComposePwleV2EffectWithCallback(long nativePtr,
             int vibratorId, long vibrationId, long stepId, Parcel effect);
 
-    /**Calls {@link IVibratorManager#startHapticGeneratorSession}. */
-    // TODO(434631745):Add HapticGeneratorSession.Config param
-    private static native boolean nativeStartHapticGeneratorSessionWithCallback(long nativePtr,
-            long sessionId, int vibratorId);
-
-    /** Closes a native haptic generator session. */
-    private static native boolean nativeCloseHapticGeneratorSession(long nativePtr, long sessionId);
-
-    /**
-     * Destroys native objects created for this session. This will be triggered when haptic
-     * generator session is completed by the HAL.
-     */
-    private static native void nativeClearHapticGeneratorSession(long nativeServicePtr,
-            long sessionId);
-
-    /** Starts a new haptic generator stream for a given session. */
-    private static native boolean nativeStartHapticGeneratorStream(long nativeServicePtr,
-            long sessionId, int vibratorId, Parcel effect);
-
-    /** Reads PCM data from a haptic generator stream. */
-    private static native int nativeReadHapticGeneratorStream(long nativeServicePtr,
-            long sessionId, int vibratorId, byte[] buffer);
-
-    /** Stops a haptic generator stream. */
-    private static native boolean nativeStopHapticGeneratorStream(long nativeServicePtr,
-            long sessionId, int vibratorId);
-
     // TODO(b/409002423): remove native methods below once remove_hidl_support flag removed
     static native long nativeInit(HalVibratorManager.Callbacks callback);
 
