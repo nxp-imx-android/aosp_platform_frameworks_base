@@ -158,6 +158,7 @@ import android.app.AppGlobals;
 import android.app.AppOpsManager;
 import android.app.Dialog;
 import android.app.HandoffActivityData;
+import android.app.HandoffActivityParams;
 import android.app.IActivityClientController;
 import android.app.IActivityController;
 import android.app.IActivityTaskManager;
@@ -6699,6 +6700,22 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
                 final ActivityRecord activity = task.getTopNonFinishingActivity();
                 return activity != null && activity.isHandoffEnabled();
+            }
+        }
+
+        @Override
+        public HandoffActivityParams getHandoffActivityParamsForTask(int taskId) {
+            if (!android.companion.Flags.taskContinuity()) {
+                return null;
+            }
+            synchronized (mGlobalLock) {
+                final Task task = mRootWindowContainer.anyTaskForId(taskId);
+                if (task == null) {
+                    return null;
+                }
+
+                final ActivityRecord activity = task.getTopNonFinishingActivity();
+                return activity != null ? activity.getHandoffActivityParams() : null;
             }
         }
 

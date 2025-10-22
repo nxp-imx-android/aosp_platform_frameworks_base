@@ -22,6 +22,7 @@ import static android.os.UserHandle.getCallingUserId;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.app.HandoffActivityData;
+import android.app.HandoffActivityParams;
 import android.content.ComponentName;
 import android.content.ContentProvider;
 import android.content.Intent;
@@ -383,9 +384,10 @@ public class ActivityClient {
         }
     }
 
-    boolean isHandoffFullTaskRecreationAllowed(IBinder token) {
+    @Nullable
+    HandoffActivityParams getHandoffActivityParams(IBinder token) {
         try {
-            return getActivityClientController().isHandoffFullTaskRecreationAllowed(token);
+            return getActivityClientController().getHandoffActivityParams(token);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -394,12 +396,12 @@ public class ActivityClient {
     void setHandoffEnabled(
             IBinder token,
             boolean handoffEnabled,
-            boolean allowFullTaskRecreation) {
+            @Nullable HandoffActivityParams handoffActivityParams) {
         try {
             getActivityClientController().setHandoffEnabled(
                     token,
                     handoffEnabled,
-                    allowFullTaskRecreation);
+                    handoffActivityParams);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

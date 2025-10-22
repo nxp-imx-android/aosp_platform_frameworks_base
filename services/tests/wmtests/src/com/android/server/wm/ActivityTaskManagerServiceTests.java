@@ -67,6 +67,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.TaskDescription;
 import android.app.HandoffActivityData;
+import android.app.HandoffActivityParams;
 import android.app.HandoffFailureCode;
 import android.app.IApplicationThread;
 import android.app.IHandoffTaskDataReceiver;
@@ -267,10 +268,10 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
         final ActivityRecord activity = task.getTopNonFinishingActivity();
         mAtm.getAtmInternal().registerHandoffEnablementListener(handoffEnablementListener);
-        setHandoffEnabled(activity, true);
+        setHandoffEnabled(activity, true, null);
         verify(handoffEnablementListener, never())
             .onHandoffEnabledChanged(activity.getRootTaskId(), true);
-        setHandoffEnabled(activity, false);
+        setHandoffEnabled(activity, false, null);
         verify(handoffEnablementListener, never())
             .onHandoffEnabledChanged(activity.getRootTaskId(), false);
     }
@@ -283,10 +284,10 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
         final ActivityRecord activity = task.getTopNonFinishingActivity();
         mAtm.getAtmInternal().registerHandoffEnablementListener(handoffEnablementListener);
-        setHandoffEnabled(activity, true);
+        setHandoffEnabled(activity, true, null);
         verify(handoffEnablementListener)
             .onHandoffEnabledChanged(anyInt(), anyBoolean());
-        setHandoffEnabled(activity, false);
+        setHandoffEnabled(activity, false, null);
         verify(handoffEnablementListener)
             .onHandoffEnabledChanged(activity.getRootTaskId(), false);
     }
@@ -300,10 +301,10 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         final ActivityRecord activity = task.getTopNonFinishingActivity();
         mAtm.getAtmInternal().registerHandoffEnablementListener(handoffEnablementListener);
         mAtm.getAtmInternal().unregisterHandoffEnablementListener(handoffEnablementListener);
-        setHandoffEnabled(activity, true);
+        setHandoffEnabled(activity, true, null);
         verify(handoffEnablementListener, never())
             .onHandoffEnabledChanged(activity.getRootTaskId(), true);
-        setHandoffEnabled(activity, false);
+        setHandoffEnabled(activity, false, null);
         verify(handoffEnablementListener, never())
             .onHandoffEnabledChanged(activity.getRootTaskId(), false);
     }
@@ -321,14 +322,15 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     public void testIsHandoffEnabledForTask_returnsTrueIfHandoffEnabled() {
         final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
         final ActivityRecord activity = task.getTopNonFinishingActivity();
-        setHandoffEnabled(activity, true);
+        setHandoffEnabled(activity, true, null);
         assertTrue(mAtm.getAtmInternal().isHandoffEnabledForTask(task.getRootTaskId()));
-        setHandoffEnabled(activity, false);
+        setHandoffEnabled(activity, false, null);
         assertFalse(mAtm.getAtmInternal().isHandoffEnabledForTask(task.getRootTaskId()));
     }
 
-    private void setHandoffEnabled(ActivityRecord r, boolean enabled) {
-        r.setHandoffEnabled(enabled, true /* allowFullTaskRecreation */);
+    private void setHandoffEnabled(
+        ActivityRecord r, boolean enabled, HandoffActivityParams handoffActivityParams) {
+        r.setHandoffEnabled(enabled, handoffActivityParams);
         // HandoffEnablementListener#onHandoffEnabledChanged runs on handler.
         waitHandlerIdle(mAtm.mH);
     }
@@ -337,6 +339,64 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public void testIsHandoffEnabledForTask_returnsFalseIfNoSuchTask() {
         assertFalse(mAtm.getAtmInternal().isHandoffEnabledForTask(1000));
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
+    public void testGetHandoffActivityParamsForTask_returnsNullIfNoSuchTask() {
+        assertNull(mAtm.getAtmInternal().getHandoffActivityParamsForTask(1000));
+    }
+
+    @Test
+    public void testGetHandoffActivityParamsForTask_returnsNullIfFlagDisabled() {
+        HandoffActivityParams handoffActivityParams =
+        new HandoffActivityParams.Builder()
+                .build();
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        setHandoffActivityParams(activity, handoffActivityParams);
+
+        HandoffActivityParams result = mAtm
+            .getAtmInternal()
+            .getHandoffActivityParamsForTask(task.getRootTaskId());
+        assertNull(result);
+    }
+
+    @Test
+    public void testGetHandoffActivityParamsForTask_returnsNullIfHandoffDisabled() {
+        HandoffActivityParams params = new HandoffActivityParams.Builder().build();
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        activity.setHandoffEnabled(false, params);
+        // HandoffEnablementListener#onHandoffEnabledChanged runs on handler.
+        waitHandlerIdle(mAtm.mH);
+
+        HandoffActivityParams result = mAtm
+            .getAtmInternal()
+            .getHandoffActivityParamsForTask(task.getRootTaskId());
+        assertNull(result);
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
+    public void testGetHandoffActivityParamsForTask_returnsSpecifiedOptions() {
+        HandoffActivityParams params = new HandoffActivityParams.Builder().build();
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        setHandoffActivityParams(activity, params);
+
+        assertEquals(
+            params,
+            mAtm.getAtmInternal().getHandoffActivityParamsForTask(
+                task.getRootTaskId()));
+    }
+
+    private void setHandoffActivityParams(
+            ActivityRecord r,
+            HandoffActivityParams handoffActivityParams) {
+        r.setHandoffEnabled(true, handoffActivityParams);
+        // HandoffEnablementListener#onHandoffEnabledChanged runs on handler.
+        waitHandlerIdle(mAtm.mH);
     }
 
     @Test

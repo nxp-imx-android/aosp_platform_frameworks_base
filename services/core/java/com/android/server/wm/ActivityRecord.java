@@ -239,6 +239,7 @@ import android.app.Activity;
 import android.app.ActivityManager.TaskDescription;
 import android.app.ActivityOptions;
 import android.app.HandoffActivityData;
+import android.app.HandoffActivityParams;
 import android.app.IApplicationThread;
 import android.app.IScreenCaptureObserver;
 import android.app.PendingIntent;
@@ -502,9 +503,10 @@ final class ActivityRecord extends WindowToken {
     private State mState;    // current state we are in
     private Bundle mIcicle;         // last saved activity state
     private HandoffActivityData mHandoffActivityData; // last saved handoff activity data
-    private boolean mHandoffEnabled = false; // if Handoff is enabled for this activity
-    private boolean mAllowFullTaskRecreation = false; // if the entire task stack can be recreated
-                                                      // during handoff of this activity.
+    private boolean mHandoffEnabled; // If Handoff is enabled for this activity.
+    private HandoffActivityParams mHandoffActivityParams = null; // Configuration params for
+                                                                 // Handoff. This will be null if
+                                                                 // Handoff is disabled.
     private PersistableBundle mPersistentState; // last persistently saved activity state
     private boolean mHaveState = true; // Indicates whether the last saved state of activity is
                                        // preserved. This starts out 'true', since the initial state
@@ -1279,12 +1281,21 @@ final class ActivityRecord extends WindowToken {
     }
 
     /** Update if handoff is enabled for this activity. */
-    void setHandoffEnabled(boolean handoffEnabled, boolean allowFullTaskRecreation) {
-        final boolean didChange = mHandoffEnabled != handoffEnabled;
+    void setHandoffEnabled(
+        boolean handoffEnabled,
+        @Nullable HandoffActivityParams handoffActivityParams) {
+
+        final boolean didChange
+            = mHandoffEnabled != handoffEnabled || !Objects.equals(
+                    mHandoffActivityParams,
+                    handoffActivityParams);
+
         mHandoffEnabled = handoffEnabled;
-        mAllowFullTaskRecreation = allowFullTaskRecreation;
         if (!mHandoffEnabled) {
             mHandoffActivityData = null;
+            mHandoffActivityParams = null;
+        } else {
+            mHandoffActivityParams = handoffActivityParams;
         }
 
         if (didChange) {
@@ -1302,17 +1313,12 @@ final class ActivityRecord extends WindowToken {
     }
 
     /**
-     * Get if the entire task will be recreated when handing off this activity.
-     * @see #setHandoffEnabled() to change this parameter. If Handoff is disabled for this
-     * activity, this will return false.
-     * @return if the entire task will be recreated when handing off this activity.
+     * Get configuration parameters for Handoff
+     * @return Handoff configuration parameters.
      */
-    boolean isHandoffFullTaskRecreationAllowed() {
-        if (!isHandoffEnabled()) {
-            return false;
-        }
-
-        return mAllowFullTaskRecreation;
+    @Nullable
+    HandoffActivityParams getHandoffActivityParams() {
+        return mHandoffActivityParams;
     }
 
     /**
