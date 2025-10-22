@@ -6750,7 +6750,7 @@ public interface WindowManager extends ViewManager {
      */
     @FlaggedApi(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
     @SystemApi
-    class DisplayEngagementModeState {
+    final class DisplayEngagementModeState {
         private final int mDisplayId;
         private final @EngagementModeFlags int mEngagementModeFlags;
 
