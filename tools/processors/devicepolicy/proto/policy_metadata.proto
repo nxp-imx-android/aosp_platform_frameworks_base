@@ -4,6 +4,7 @@ package android.processor.devicepolicy;
 
 option java_package = "android.processor.devicepolicy.protos";
 option java_multiple_files = true;
+option java_outer_classname = "PolicyMetadataProto";
 
 // Fully qualified name for a class with package and class name split out.
 // The split is critical when inner classes are involved, for example `className` can be
