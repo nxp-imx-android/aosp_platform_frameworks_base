@@ -25,7 +25,7 @@ import android.companion.datatransfer.continuity.RemoteTask;
  * Interface for communication with the task continuity service.
  * @hide
  */
-oneway interface ITaskContinuityManager {
+interface ITaskContinuityManager {
     @EnforcePermission("READ_REMOTE_TASKS")
     void registerRemoteTaskListener(in int userId, IRemoteTaskListener listener);
 

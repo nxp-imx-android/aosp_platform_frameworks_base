@@ -21,6 +21,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
 import android.platform.test.annotations.Presubmit;
+import android.companion.datatransfer.continuity.TaskContinuityManager;
+import android.companion.datatransfer.continuity.IHandoffFeatureStateListener;
 import android.testing.AndroidTestingRunner;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
@@ -33,6 +35,19 @@ import org.mockito.Mock;
 @RunWith(AndroidTestingRunner.class)
 public class HandoffSettingsManagerTest {
     private static final int USER_ID = 1;
+
+    private class FakeHandoffEnabledListener extends IHandoffFeatureStateListener.Stub {
+        int mCallCount = 0;
+        int mAvailability;
+        boolean mEnabled;
+
+        @Override
+        public void onHandoffFeatureStateChanged(int availability, boolean enabled) {
+            mCallCount++;
+            mAvailability = availability;
+            mEnabled = enabled;
+        }
+    }
 
     @Mock private HandoffPreferenceStore mHandoffPreferenceStore;
     @Mock private HandoffPolicyManager mHandoffPolicyManager;
@@ -56,9 +71,16 @@ public class HandoffSettingsManagerTest {
     }
 
     @Test
-    public void setHandoffEnabledForUser_callsPreferenceStore() {
+    public void setHandoffEnabledForUser_callsPreferenceStoreAndNotifiesListeners() {
+        when(mHandoffPolicyManager.isHandoffAllowedForUser(USER_ID)).thenReturn(true);
+        FakeHandoffEnabledListener listener = new FakeHandoffEnabledListener();
+        mHandoffSettingsManager.registerHandoffFeatureStateListener(USER_ID, listener);
         mHandoffSettingsManager.setHandoffEnabledForUser(USER_ID, false);
         verify(mHandoffPreferenceStore).setHandoffEnabledForUser(USER_ID, false);
+        assertThat(listener.mCallCount).isEqualTo(2);
+        assertThat(listener.mAvailability)
+                .isEqualTo(TaskContinuityManager.HANDOFF_AVAILABILITY_STATUS_AVAILABLE);
+        assertThat(listener.mEnabled).isFalse();
     }
 
     @Test
@@ -69,10 +91,17 @@ public class HandoffSettingsManagerTest {
     }
 
     @Test
-    public void setHandoffEnabledForUser_disabledByPolicy_doesNotActivateHandoff() {
+    public void
+            setHandoffEnabledForUser_disabledByPolicy_doesNotActivateHandoffButNotifiesListeners() {
+        FakeHandoffEnabledListener listener = new FakeHandoffEnabledListener();
+        mHandoffSettingsManager.registerHandoffFeatureStateListener(USER_ID, listener);
         when(mHandoffPolicyManager.isHandoffAllowedForUser(USER_ID)).thenReturn(false);
         when(mHandoffPreferenceStore.isHandoffEnabledForUser(USER_ID)).thenReturn(false);
         mHandoffSettingsManager.setHandoffEnabledForUser(USER_ID, true);
         assertThat(mHandoffSettingsManager.isHandoffActiveForUser(USER_ID)).isFalse();
+        assertThat(listener.mCallCount).isEqualTo(2);
+        assertThat(listener.mAvailability)
+                .isEqualTo(TaskContinuityManager.HANDOFF_AVAILABILITY_STATUS_DISABLED_BY_POLICY);
+        assertThat(listener.mEnabled).isFalse();
     }
 }

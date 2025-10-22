@@ -38,6 +38,9 @@ import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncContro
 import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncControllerCache;
 import com.android.server.companion.datatransfer.continuity.handoff.HandoffController;
 import com.android.server.companion.datatransfer.continuity.handoff.HandoffControllerCache;
+import com.android.server.companion.datatransfer.continuity.settings.HandoffSettingsManager;
+import com.android.server.companion.datatransfer.continuity.settings.HandoffPreferenceStore;
+import com.android.server.companion.datatransfer.continuity.settings.HandoffPolicyManager;
 
 import com.android.server.SystemService;
 
@@ -55,12 +58,19 @@ public final class TaskContinuityManagerService extends SystemService {
 
     private final MultiUserResourceCache<TaskSyncController> mTaskSyncControllerCache;
     private final MultiUserResourceCache<HandoffController> mHandoffControllerCache;
+    private HandoffPreferenceStore mHandoffPreferenceStore;
+    private HandoffPolicyManager mHandoffPolicyManager;
+    private HandoffSettingsManager mHandoffSettingsManager;
     private TaskContinuityManagerServiceImpl mTaskContinuityManagerService;
     private TaskContinuityMessenger mTaskContinuityMessenger;
 
     public TaskContinuityManagerService(Context context) {
         super(context);
 
+        mHandoffPreferenceStore = new HandoffPreferenceStore();
+        mHandoffPolicyManager = new HandoffPolicyManager();
+        mHandoffSettingsManager =
+                new HandoffSettingsManager(mHandoffPreferenceStore, mHandoffPolicyManager);
         mTaskContinuityMessenger = new TaskContinuityMessenger(context);
         mTaskSyncControllerCache = new TaskSyncControllerCache(context, mTaskContinuityMessenger);
         mHandoffControllerCache =
@@ -70,9 +80,7 @@ public final class TaskContinuityManagerService extends SystemService {
 
     @Override
     public void onUserUnlocked(TargetUser user) {
-        int userId = user.getUserIdentifier();
-        mTaskSyncControllerCache.getOrCreateResource(userId).enable();
-        mHandoffControllerCache.getOrCreateResource(userId).enable();
+        updateHandoffEnablementForUser(user.getUserIdentifier());
     }
 
     @Override
@@ -131,7 +139,13 @@ public final class TaskContinuityManagerService extends SystemService {
             enableHandoffForDevice_enforcePermission();
             enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
 
-            // TODO: Implement this method.
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                mHandoffSettingsManager.setHandoffEnabledForUser(userId, enabled);
+                updateHandoffEnablementForUser(userId);
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
         }
 
         @Override
@@ -141,7 +155,13 @@ public final class TaskContinuityManagerService extends SystemService {
             registerHandoffFeatureStateListener_enforcePermission();
             enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
 
-            // TODO: Implement this method.
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                mHandoffSettingsManager.registerHandoffFeatureStateListener(
+                        userId, Objects.requireNonNull(listener));
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
         }
 
         @Override
@@ -151,7 +171,23 @@ public final class TaskContinuityManagerService extends SystemService {
             unregisterHandoffFeatureStateListener_enforcePermission();
             enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
 
-            // TODO: Implement this method.
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                mHandoffSettingsManager.unregisterHandoffFeatureStateListener(
+                        userId, Objects.requireNonNull(listener));
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
+        }
+    }
+
+    private void updateHandoffEnablementForUser(int userId) {
+        if (mHandoffSettingsManager.isHandoffActiveForUser(userId)) {
+            mTaskSyncControllerCache.getOrCreateResource(userId).enable();
+            mHandoffControllerCache.getOrCreateResource(userId).enable();
+        } else {
+            mTaskSyncControllerCache.getOrCreateResource(userId).disable();
+            mHandoffControllerCache.getOrCreateResource(userId).disable();
         }
     }
 }

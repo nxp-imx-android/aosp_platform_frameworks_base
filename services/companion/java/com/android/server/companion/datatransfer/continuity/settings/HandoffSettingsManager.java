@@ -17,7 +17,13 @@
 package com.android.server.companion.datatransfer.continuity.settings;
 
 import android.annotation.NonNull;
+import android.companion.datatransfer.continuity.IHandoffFeatureStateListener;
 import android.companion.datatransfer.continuity.TaskContinuityManager;
+import android.os.RemoteCallbackList;
+import android.os.RemoteException;
+import android.util.Slog;
+
+import com.android.internal.annotations.GuardedBy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,8 +34,14 @@ import java.util.Objects;
 /** Manages settings for Handoff across all users on a device. */
 public class HandoffSettingsManager {
 
+    private static final String TAG = HandoffSettingsManager.class.getSimpleName();
+
     private final HandoffPreferenceStore mHandoffPreferenceStore;
     private final HandoffPolicyManager mHandoffPolicyManager;
+
+    @GuardedBy("mHandoffFeatureStateListeners")
+    private final RemoteCallbackList<IHandoffFeatureStateListener> mHandoffFeatureStateListeners =
+            new RemoteCallbackList<>();
 
     public HandoffSettingsManager(
             @NonNull HandoffPreferenceStore handoffPreferenceStore,
@@ -61,6 +73,28 @@ public class HandoffSettingsManager {
      */
     public void setHandoffEnabledForUser(int userId, boolean enabled) {
         mHandoffPreferenceStore.setHandoffEnabledForUser(userId, enabled);
+        notifyHandoffFeatureStateChanged(userId);
+    }
+
+    public void registerHandoffFeatureStateListener(
+            int userId, @NonNull IHandoffFeatureStateListener listener) {
+        synchronized (mHandoffFeatureStateListeners) {
+            mHandoffFeatureStateListeners.register(Objects.requireNonNull(listener), userId);
+            try {
+                listener.onHandoffFeatureStateChanged(
+                        getHandoffAvailabilityForUser(userId),
+                        mHandoffPreferenceStore.isHandoffEnabledForUser(userId));
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Failed to notify handoff feature state change", e);
+            }
+        }
+    }
+
+    public void unregisterHandoffFeatureStateListener(
+            int userId, @NonNull IHandoffFeatureStateListener listener) {
+        synchronized (mHandoffFeatureStateListeners) {
+            mHandoffFeatureStateListeners.unregister(Objects.requireNonNull(listener));
+        }
     }
 
     private int getHandoffAvailabilityForUser(int userId) {
@@ -69,5 +103,22 @@ public class HandoffSettingsManager {
         }
 
         return TaskContinuityManager.HANDOFF_AVAILABILITY_STATUS_AVAILABLE;
+    }
+
+    private void notifyHandoffFeatureStateChanged(int userId) {
+        synchronized (mHandoffFeatureStateListeners) {
+            mHandoffFeatureStateListeners.broadcast(
+                    (listener, token) -> {
+                        if ((int) token == userId) {
+                            try {
+                                listener.onHandoffFeatureStateChanged(
+                                        getHandoffAvailabilityForUser(userId),
+                                        mHandoffPreferenceStore.isHandoffEnabledForUser(userId));
+                            } catch (RemoteException e) {
+                                Slog.e(TAG, "Failed to notify handoff feature state change", e);
+                            }
+                        }
+                    });
+        }
     }
 }

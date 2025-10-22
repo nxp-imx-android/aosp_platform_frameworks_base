@@ -457,6 +457,8 @@ applications that come with the platform
         <permission name="android.permission.ACCESS_COMPANION_INFO" />
         <permission name="android.permission.READ_REMOTE_TASKS" />
         <permission name="android.permission.REQUEST_TASK_HANDOFF" />
+        <permission name="android.permission.READ_HANDOFF_SETTINGS" />
+        <permission name="android.permission.MODIFY_HANDOFF_SETTINGS" />
 
         <!-- Permission required for testing registering pull atom callbacks. -->
         <permission name="android.permission.REGISTER_STATS_PULL_ATOM"/>
