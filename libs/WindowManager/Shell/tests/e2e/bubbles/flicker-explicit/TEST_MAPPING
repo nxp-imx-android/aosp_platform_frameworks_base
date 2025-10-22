@@ -119,6 +119,10 @@
       "keywords": ["device"]
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-RelaunchSplitScreenToBubbleTrampolineTest",
+      "keywords": ["device"]
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-RelaunchBubbleIntoSplitScreenTest",
       "keywords": ["device"]
     }
