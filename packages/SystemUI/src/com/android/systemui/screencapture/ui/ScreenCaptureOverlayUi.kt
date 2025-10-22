@@ -22,7 +22,6 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.AndroidEmbeddedExternalSurface
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.TransformableState
 import androidx.compose.foundation.gestures.rememberTransformableState
@@ -40,14 +39,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.IntSize
+import androidx.ink.authoring.compose.InProgressStrokes
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.record.camera.ui.viewmodel.ScreenCaptureCameraViewModel
+import com.android.systemui.screencapture.record.markup.ui.viewmodel.ScreenCaptureMarkupOverlayViewModel
 import com.android.systemui.statusbar.phone.EdgeToEdgeDialogDelegate
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import com.android.systemui.statusbar.phone.create
@@ -62,6 +62,7 @@ constructor(
     @Application context: Context,
     dialogFactory: SystemUIDialogFactory,
     private val cameraViewModelFactory: ScreenCaptureCameraViewModel.Factory,
+    private val markupViewModelFactory: ScreenCaptureMarkupOverlayViewModel.Factory,
 ) {
 
     private val dialog =
@@ -71,8 +72,8 @@ constructor(
                 theme = R.style.Theme_SystemUI_Dialog_ScreenCapture,
                 dialogDelegate = EdgeToEdgeDialogDelegate(),
                 dismissOnDeviceLock = false,
-            ) { dialog ->
-                DialogContent(dialog.window!!)
+            ) {
+                DialogContent(it.window!!)
             }
             .apply {
                 setupWindow(window!!)
@@ -84,6 +85,7 @@ constructor(
         window.attributes =
             window.attributes.apply {
                 type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                title = "ScreenCaptureOverlayUi"
                 format = PixelFormat.TRANSLUCENT
                 layoutInDisplayCutoutMode =
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
@@ -97,8 +99,26 @@ constructor(
 
     @Composable
     private fun DialogContent(window: Window) {
-        Box(modifier = Modifier.fillMaxSize().background(Color.White.copy(alpha = 0.5f))) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            DrawingView(modifier = Modifier)
             Camera(modifier = Modifier)
+        }
+    }
+
+    @Composable
+    private fun DrawingView(modifier: Modifier = Modifier) {
+        val viewModel =
+            rememberViewModel("ScreenCaptureMarkupOverlayViewModel") {
+                markupViewModelFactory.create()
+            }
+        AnimatedVisibility(
+            visible = viewModel.shouldShowMarkup,
+            modifier = modifier.fillMaxSize(),
+        ) {
+            InProgressStrokes(
+                defaultBrush = viewModel.brush,
+                onStrokesFinished = { /* do nothing */ },
+            )
         }
     }
 
@@ -112,30 +132,25 @@ constructor(
         if (shouldShowCamera != null && surfaceSize != null) {
             AnimatedVisibility(shouldShowCamera) {
                 var scale by remember { mutableFloatStateOf(1f) }
-                var rotation by remember { mutableFloatStateOf(0f) }
                 var offset by remember { mutableStateOf(Offset.Zero) }
                 val state: TransformableState =
                     rememberTransformableState { zoomChange, offsetChange, rotationChange ->
                         scale *= zoomChange
-                        rotation += rotationChange
                         offset += offsetChange
                     }
-                Box(
-                    contentAlignment = Alignment.BottomCenter,
-                    modifier = modifier.fillMaxSize().transformable(state = state),
-                ) {
+                Box(contentAlignment = Alignment.BottomCenter, modifier = modifier.fillMaxSize()) {
                     AndroidEmbeddedExternalSurface(
                         surfaceSize = surfaceSize,
                         modifier =
                             Modifier.fillMaxWidth()
                                 .aspectRatio(surfaceSize.width.toFloat() / surfaceSize.height)
                                 .graphicsLayer {
-                                    translationX = offset.x
-                                    translationY = offset.y
                                     scaleX = scale
                                     scaleY = scale
-                                    rotationZ = rotation
+                                    translationX = offset.x
+                                    translationY = offset.y
                                 }
+                                .transformable(state)
                                 .clickable { viewModel.onSurfaceClicked() },
                     ) {
                         onSurface { surface, width, height ->
