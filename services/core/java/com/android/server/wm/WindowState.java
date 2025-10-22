@@ -34,6 +34,7 @@ import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierPr
 import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.USER_ID;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerChildProto.WINDOW;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.ANIMATING_EXIT;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.ANIMATING_TYPES;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.ANIMATOR;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.ATTRIBUTES;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.BUFFER_SEQ_ID;
@@ -4081,6 +4082,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         proto.write(HAS_COMPAT_SCALE, hasCompatScale());
         proto.write(GLOBAL_SCALE, mGlobalScale);
         proto.write(REQUESTED_VISIBLE_TYPES, mRequestedVisibleTypes);
+        proto.write(ANIMATING_TYPES, mAnimatingTypes);
         for (Rect r : mKeepClearAreas) {
             r.dumpDebug(proto, KEEP_CLEAR_AREAS);
         }
