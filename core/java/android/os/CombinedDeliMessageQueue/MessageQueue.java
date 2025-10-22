@@ -181,7 +181,14 @@ public final class MessageQueue {
     private static boolean computeUseDeliQueue() {
         if (CompatChanges.isChangeEnabled(USE_NEW_MESSAGEQUEUE)
                 || Flags.useConcurrentMessageQueueInApps()) {
-            return true;
+            // b/447778739: Some Robolectric tests still use legacy LooperMode.
+            try {
+                Class.forName("org.robolectric.Robolectric");
+                // This is a Robolectric test. Concurrent MessageQueue is not supported yet.
+                return false;
+            } catch (ClassNotFoundException e) {
+                return true;
+            }
         }
 
         final String processName = Process.myProcessName();
