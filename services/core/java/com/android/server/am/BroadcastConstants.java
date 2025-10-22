@@ -20,6 +20,7 @@ import static android.provider.DeviceConfig.NAMESPACE_ACTIVITY_MANAGER_NATIVE_BO
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
@@ -478,6 +479,41 @@ public class BroadcastConstants {
 
         // TODO: migrate BroadcastRecord to accept a BroadcastConstants
         BroadcastRecord.CORE_DEFER_UNTIL_ACTIVE = CORE_DEFER_UNTIL_ACTIVE;
+    }
+
+    @Nullable
+    Object getValue(@NonNull String key) {
+        // TODO: b/452064005 - Simplify the structuring of these constants to avoid having to map
+        // these in multiple places.
+        return switch (key) {
+            case KEY_TIMEOUT -> TIMEOUT;
+            case KEY_ALLOW_BG_ACTIVITY_START_TIMEOUT -> ALLOW_BG_ACTIVITY_START_TIMEOUT;
+            case KEY_MAX_RUNNING_PROCESS_QUEUES -> MAX_RUNNING_PROCESS_QUEUES;
+            case KEY_EXTRA_RUNNING_URGENT_PROCESS_QUEUES ->EXTRA_RUNNING_URGENT_PROCESS_QUEUES;
+            case KEY_MAX_CONSECUTIVE_URGENT_DISPATCHES -> MAX_CONSECUTIVE_URGENT_DISPATCHES;
+            case KEY_MAX_CONSECUTIVE_NORMAL_DISPATCHES -> MAX_CONSECUTIVE_NORMAL_DISPATCHES;
+            case KEY_MAX_RUNNING_ACTIVE_BROADCASTS -> MAX_RUNNING_ACTIVE_BROADCASTS;
+            case KEY_CORE_MAX_RUNNING_BLOCKING_BROADCASTS -> MAX_CORE_RUNNING_BLOCKING_BROADCASTS;
+            case KEY_CORE_MAX_RUNNING_NON_BLOCKING_BROADCASTS ->
+                    MAX_CORE_RUNNING_NON_BLOCKING_BROADCASTS;
+            case KEY_MAX_PENDING_BROADCASTS -> MAX_PENDING_BROADCASTS;
+            case KEY_MAX_PENDING_BROADCASTS_PER_SENDER_UID -> MAX_PENDING_BROADCASTS_PER_SENDER_UID;
+            case KEY_DELAY_NORMAL_MILLIS -> DELAY_NORMAL_MILLIS;
+            case KEY_DELAY_CACHED_MILLIS -> DELAY_CACHED_MILLIS;
+            case KEY_DELAY_URGENT_MILLIS -> DELAY_URGENT_MILLIS;
+            case KEY_DELAY_FOREGROUND_PROC_MILLIS -> DELAY_FOREGROUND_PROC_MILLIS;
+            case KEY_DELAY_PERSISTENT_PROC_MILLIS -> DELAY_PERSISTENT_PROC_MILLIS;
+            case KEY_MAX_HISTORY_COMPLETE_SIZE -> MAX_HISTORY_COMPLETE_SIZE;
+            case KEY_MAX_HISTORY_SUMMARY_SIZE -> MAX_HISTORY_SUMMARY_SIZE;
+            case KEY_CORE_DEFER_UNTIL_ACTIVE -> CORE_DEFER_UNTIL_ACTIVE;
+            case KEY_PENDING_COLD_START_CHECK_INTERVAL_MILLIS ->
+                    PENDING_COLD_START_CHECK_INTERVAL_MILLIS;
+            case KEY_MAX_FROZEN_OUTGOING_BROADCASTS -> MAX_FROZEN_OUTGOING_BROADCASTS;
+            case KEY_PENDING_COLD_START_ABANDON_TIMEOUT_MILLIS ->
+                    PENDING_COLD_START_ABANDON_TIMEOUT_MILLIS;
+            case KEY_EXCESSIVE_PENDING_BROADCASTS -> EXCESSIVE_PENDING_BROADCASTS;
+            default -> null;
+        };
     }
 
     /**
