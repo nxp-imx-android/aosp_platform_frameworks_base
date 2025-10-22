@@ -95,6 +95,7 @@ public class PersonalContextManagerService extends SystemService {
     // TODO(b/454430085): Inject these fields.
     private final ScheduledExecutorService mExecutor = Executors.newSingleThreadScheduledExecutor();
     private final SparseArray<UserState> mUserStates = new SparseArray<>();
+    private final ContextLogger mLogger = new ContextLogger();
 
     private final PersonalContextManagerInternal mInternalService =
             new PersonalContextManagerInternal() {
@@ -247,7 +248,7 @@ public class PersonalContextManagerService extends SystemService {
                 hints,
                 renderToken,
                 HINT_SIGNING_KEY,
-                /* eventListener= */ null,
+                mLogger,
                 mExecutor);
     }
 
@@ -373,6 +374,8 @@ public class PersonalContextManagerService extends SystemService {
                     userState.componentManager().dump(fout);
                 }
             }
+
+            service.mLogger.dump(fout);
         }
     }
 }
