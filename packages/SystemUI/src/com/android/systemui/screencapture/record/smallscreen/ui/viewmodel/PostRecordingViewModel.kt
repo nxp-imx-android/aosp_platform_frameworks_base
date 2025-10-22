@@ -19,15 +19,20 @@ package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
+import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
+import com.android.systemui.screenrecord.shared.model.ScreenRecording
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 
 private const val MIME_TYPE = "video/mp4"
 
@@ -39,7 +44,14 @@ constructor(
     private val activityStarter: ActivityStarter,
     private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
+    screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
+
+    val isVideoSaved: Boolean by
+        screenRecordingServiceInteractor.screenRecordings
+            .filter { it.uri == videoUri }
+            .map { it is ScreenRecording.Saved }
+            .hydratedStateOf("PostRecordingViewModel#screenRecording", false)
 
     fun retake() {
         screenCaptureUiInteractor.show(ScreenCaptureUiParameters.Record())

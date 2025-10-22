@@ -20,11 +20,13 @@ import android.media.projection.StopReason
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.data.repository.ScreenRecordingServiceRepository
+import com.android.systemui.screenrecord.shared.model.ScreenRecording
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 private val defaultRecordingRelay: Duration = 3.seconds
@@ -35,6 +37,7 @@ class ScreenRecordingServiceInteractor
 constructor(private val repository: ScreenRecordingServiceRepository) {
 
     val status: StateFlow<ScreenRecordingStatus> = repository.status
+    val screenRecordings: Flow<ScreenRecording> = repository.screenRecordings
 
     /** Starts the recording after the [delay]. */
     fun startRecordingDelayed(

@@ -36,6 +36,7 @@ import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.service.IScreenRecordingService
 import com.android.systemui.screenrecord.service.IScreenRecordingServiceCallback
 import com.android.systemui.screenrecord.service.ScreenRecordingService
+import com.android.systemui.screenrecord.shared.model.ScreenRecording
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus.Started
@@ -59,6 +60,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -83,6 +85,11 @@ constructor(
     private val isServiceBound = MutableStateFlow(false)
     private val service: Flow<RecordingService?> =
         isServiceBound
+            .onEach { currentIsServiceBound ->
+                if (!currentIsServiceBound) {
+                    stopRecording(StopReason.STOP_ERROR)
+                }
+            }
             .flatMapLatest { currentIsServiceBound ->
                 if (currentIsServiceBound) bindService() else flowOf(null)
             }
@@ -138,10 +145,18 @@ constructor(
             }
         }
 
+    private val _screenRecording = MutableStateFlow<ScreenRecording?>(null)
+    val screenRecordings: Flow<ScreenRecording> = _screenRecording.filterNotNull()
+
     init {
-        combine(status.onEach { isServiceBound.value = it is Started }, service) {
-                currentStatus,
-                currentService ->
+        combine(
+                status.onEach { currentStatus ->
+                    if (currentStatus is Started) {
+                        isServiceBound.value = true
+                    }
+                },
+                service,
+            ) { currentStatus, currentService ->
                 RecordingContext(status = currentStatus, service = currentService)
             }
             .onEach { recordingContext ->
@@ -255,7 +270,14 @@ constructor(
             stopRecording(reason)
         }
 
-        override fun onRecordingSaved(recordingUri: Uri?, thumbnail: Icon?) {}
+        override fun onSavingRecording(recordingUri: Uri) {
+            _screenRecording.value = ScreenRecording.Saving(uri = recordingUri)
+        }
+
+        override fun onRecordingSaved(recordingUri: Uri, thumbnail: Icon) {
+            _screenRecording.value =
+                ScreenRecording.Saved(uri = recordingUri, thumbnail = thumbnail)
+        }
     }
 
     private data class RecordingService(private val service: IScreenRecordingService?) {

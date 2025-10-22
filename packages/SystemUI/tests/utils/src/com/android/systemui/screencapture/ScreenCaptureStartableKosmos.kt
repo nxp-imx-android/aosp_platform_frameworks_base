@@ -16,20 +16,26 @@
 
 package com.android.systemui.screencapture
 
+import android.content.applicationContext
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.plugins.activityStarter
 import com.android.systemui.screencapture.domain.interactor.screenCaptureComponentInteractor
 import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
+import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
 import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 
 val Kosmos.screenCaptureStartable: ScreenCaptureStartable by
     Kosmos.Fixture {
         ScreenCaptureStartable(
             applicationCoroutineScope,
+            applicationContext,
             screenCaptureComponentInteractor,
             screenCaptureUiInteractor,
             fakeFocusedDisplayRepository,
             displayRepository,
+            screenRecordingServiceInteractor,
+            activityStarter,
         )
     }
