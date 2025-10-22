@@ -6480,23 +6480,21 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             final PackageStateInternal packageState = snapshot
                     .getPackageStateForInstalledAndFiltered(packageName, callingUid, userId);
             if (packageState == null) {
-                if (com.android.window.flags.Flags.restoreUserAspectRatioSettingsUsingService()) {
-                    Slog.d(TAG, "Package: " + packageName + " not yet installed. "
-                            + "Scheduling aspect ratio update upon install, for aspect ratio: "
-                            + aspectRatio);
-                    // Pass along the request to `AppWindowLayoutSettingsService`, which will retry
-                    // to set the user aspect ratio after the package has been installed.
-                    final AppWindowLayoutSettingsService appWindowLayoutSettingsService =
-                            LocalServices.getService(AppWindowLayoutSettingsService.class);
-                    if (appWindowLayoutSettingsService == null) {
-                        Slog.w(TAG, "Could not find AppWindowLayoutSettingsService.");
-                        return;
-                    }
-                    // TODO(b/414381398): expose this API to the Settings app to call directly, so
-                    //  that `setUserMinAspectRatio()` becomes a no-op when app is not installed.
-                    appWindowLayoutSettingsService.awaitPackageInstallForAspectRatio(packageName,
-                            userId, aspectRatio);
+                Slog.d(TAG, "Package: " + packageName + " not yet installed. "
+                        + "Scheduling aspect ratio update upon install, for aspect ratio: "
+                        + aspectRatio);
+                // Pass along the request to `AppWindowLayoutSettingsService`, which will retry
+                // to set the user aspect ratio after the package has been installed.
+                final AppWindowLayoutSettingsService appWindowLayoutSettingsService =
+                        LocalServices.getService(AppWindowLayoutSettingsService.class);
+                if (appWindowLayoutSettingsService == null) {
+                    Slog.w(TAG, "Could not find AppWindowLayoutSettingsService.");
+                    return;
                 }
+                // TODO(b/414381398): expose this API to the Settings app to call directly, so
+                //  that `setUserMinAspectRatio()` becomes a no-op when app is not installed.
+                appWindowLayoutSettingsService.awaitPackageInstallForAspectRatio(packageName,
+                        userId, aspectRatio);
                 return;
             }
 

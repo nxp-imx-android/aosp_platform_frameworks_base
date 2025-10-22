@@ -1954,15 +1954,13 @@ public final class SystemServer implements Dumpable {
         }
         t.traceEnd();
 
-        if (com.android.window.flags.Flags.restoreUserAspectRatioSettingsUsingService()) {
-            t.traceBegin("StartUAppWindowLayoutSettingsService");
-            try {
-                mSystemServiceManager.startService(AppWindowLayoutSettingsService.class);
-            } catch (Throwable e) {
-                reportWtf("starting AppWindowLayoutSettingsService service", e);
-            }
-            t.traceEnd();
+        t.traceBegin("StartUAppWindowLayoutSettingsService");
+        try {
+            mSystemServiceManager.startService(AppWindowLayoutSettingsService.class);
+        } catch (Throwable e) {
+            reportWtf("starting AppWindowLayoutSettingsService service", e);
         }
+        t.traceEnd();
 
         t.traceBegin("StartGrammarInflectionService");
         try {
