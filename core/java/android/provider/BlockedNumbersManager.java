@@ -39,9 +39,12 @@ import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.telecom.Annotation;
-import android.telecom.Log;
+import android.telephony.PhoneNumberUtils;
+import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.server.telecom.flags.Flags;
 
@@ -57,6 +60,11 @@ import com.android.server.telecom.flags.Flags;
 @FlaggedApi(Flags.FLAG_TELECOM_MAINLINE_BLOCKED_NUMBERS_MANAGER)
 public final class BlockedNumbersManager {
     private static final String LOG_TAG = BlockedNumbersManager.class.getSimpleName();
+    /**
+     * When generating a bug report, include the last X dialable digits when logging phone numbers.
+     */
+    private static final int NUM_DIALABLE_DIGITS_TO_LOG = Build.IS_USER ? 0 : 2;
+
     private Context mContext;
 
     /**
@@ -148,7 +156,8 @@ public final class BlockedNumbersManager {
     public void notifyEmergencyContact() {
         verifyBlockedNumbersPermission();
         try {
-            Log.i(LOG_TAG, "notifyEmergencyContact; caller=%s", mContext.getOpPackageName());
+            Log.i(LOG_TAG, TextUtils.formatSimple("notifyEmergencyContact; caller=%s",
+                    mContext.getOpPackageName()));
             mContext.getContentResolver().call(AUTHORITY_URI, METHOD_NOTIFY_EMERGENCY_CONTACT,
                     null, null);
         } catch (NullPointerException | IllegalArgumentException ex) {
@@ -172,7 +181,7 @@ public final class BlockedNumbersManager {
     public void endBlockSuppression() {
         verifyBlockedNumbersPermission();
         String caller = mContext.getOpPackageName();
-        Log.i(LOG_TAG, "endBlockSuppression: caller=%s", caller);
+        Log.i(LOG_TAG, TextUtils.formatSimple("endBlockSuppression: caller=%s", caller));
         mContext.getContentResolver().call(AUTHORITY_URI, METHOD_END_BLOCK_SUPPRESSION, null, null);
     }
 
@@ -212,9 +221,10 @@ public final class BlockedNumbersManager {
                     METHOD_SHOULD_SYSTEM_BLOCK_NUMBER, phoneNumber, extras);
             int blockResult = res != null ? res.getInt(RES_BLOCK_STATUS, STATUS_NOT_BLOCKED) :
                     BlockedNumberContract.STATUS_NOT_BLOCKED;
-            Log.d(LOG_TAG, "shouldSystemBlockNumber: number=%s, caller=%s, result=%s",
-                    Log.piiHandle(phoneNumber), caller,
-                    BlockedNumberContract.SystemContract.blockStatusToString(blockResult));
+            Log.d(LOG_TAG, TextUtils.formatSimple(
+                    "shouldSystemBlockNumber: number=%s, caller=%s, result=%s",
+                    obfuscatePhoneNumber(phoneNumber), caller,
+                    BlockedNumberContract.SystemContract.blockStatusToString(blockResult)));
             return blockResult;
         } catch (NullPointerException | IllegalArgumentException ex) {
             // The content resolver can throw an NPE or IAE; we don't want to crash Telecom if
@@ -241,8 +251,8 @@ public final class BlockedNumbersManager {
         BlockSuppressionStatus blockSuppressionStatus = new BlockSuppressionStatus(
                 res.getBoolean(RES_IS_BLOCKING_SUPPRESSED, false),
                 res.getLong(RES_BLOCKING_SUPPRESSED_UNTIL_TIMESTAMP, 0));
-        Log.d(LOG_TAG, "getBlockSuppressionStatus: caller=%s, status=%s",
-                mContext.getOpPackageName(), blockSuppressionStatus);
+        Log.d(LOG_TAG, TextUtils.formatSimple("getBlockSuppressionStatus: caller=%s, status=%s",
+                mContext.getOpPackageName(), blockSuppressionStatus));
         return blockSuppressionStatus;
     }
 
@@ -382,6 +392,36 @@ public final class BlockedNumbersManager {
         public long getUntilTimestampMillis() {
             return mUntilTimestampMillis;
         }
+    }
+
+    private static String obfuscatePhoneNumber(String phoneNumber) {
+        StringBuilder sb = new StringBuilder();
+        int numDigitsToObfuscate = getDialableCount(phoneNumber)
+                - NUM_DIALABLE_DIGITS_TO_LOG;
+        for (int i = 0; i < phoneNumber.length(); i++) {
+            char c = phoneNumber.charAt(i);
+            boolean isDialable = PhoneNumberUtils.isDialable(c);
+            if (isDialable) {
+                numDigitsToObfuscate--;
+            }
+            sb.append(isDialable && numDigitsToObfuscate >= 0 ? "*" : c);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Determines the number of dialable characters in a string.
+     * @param toCount The string to count dialable characters in.
+     * @return The count of dialable characters.
+     */
+    private static int getDialableCount(String toCount) {
+        int numDialable = 0;
+        for (char c : toCount.toCharArray()) {
+            if (PhoneNumberUtils.isDialable(c)) {
+                numDialable++;
+            }
+        }
+        return numDialable;
     }
 
     /**
