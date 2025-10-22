@@ -9771,11 +9771,34 @@ public class CarrierConfigManager {
      * from the lowest 0 to the highest 100. The long-lived network shall have the lowest priority.
      * This allows other short-lived requests like MMS requests to be established. Emergency request
      * always has the highest priority.
-     *
+     * <p>
+     * The possible values for capabilities are {@code "MMS"}, {@code "SUPL"}, {@code "DUN"},
+     * {@code "FOTA"}, {@code "IMS"}, {@code "CBS"}, {@code "XCAP"}, {@code "EIMS"},
+     * {@code "INTERNET"}, {@code "MCX"}, {@code "VSIM"}, {@code "BIP"}, {@code "ENTERPRISE"},
+     * {@code "PRIORITIZE_BANDWIDTH"}, {@code "PRIORITIZE_LATENCY"}, {@code "RCS"},
+     * {@code "PRIORITIZE_UNIFIED_COMMUNICATIONS"}, {@code "OEM_PAID"}, {@code "OEM_PRIVATE"}
      * @hide
      */
     public static final String KEY_TELEPHONY_NETWORK_CAPABILITY_PRIORITIES_STRING_ARRAY =
             "telephony_network_capability_priorities_string_array";
+
+    /**
+     * Defines the network network capabilities that carrier does not support. Note that for
+     * device-wide settings, should still use the resource overlay
+     * {@code config_unsupported_network_capabilities}.
+     *
+     * The possible values are {@code "MMS"}, {@code "SUPL"}, {@code "DUN"}, {@code "FOTA"},
+     * {@code "IMS"}, {@code "CBS"}, {@code "XCAP"}, {@code "EIMS"}, {@code "INTERNET"},
+     * {@code "MCX"}, {@code "VSIM"}, {@code "BIP"}, {@code "ENTERPRISE"},
+     * {@code "PRIORITIZE_BANDWIDTH"}, {@code "PRIORITIZE_LATENCY"}, {@code "RCS"},
+     * {@code "PRIORITIZE_UNIFIED_COMMUNICATIONS"}, {@code "OEM_PAID"}, {@code "OEM_PRIVATE"}
+     *
+     * @see NetworkCapabilities
+     *
+     * @hide
+     */
+    public static final String KEY_TELEPHONY_UNSUPPORTED_NETWORK_CAPABILITY_STRING_ARRAY =
+            "telephony_unsupported_network_capability_string_array";
 
     /**
      * Defines the rules for data setup retry.
@@ -9797,16 +9820,22 @@ public class CarrierConfigManager {
      *    is specified for retrying the next available APN.
      * "permanent_fail_causes=8|27|28|29|30|32|33|35|50|51|111|-5|-6|65537|65538|-3|65543|65547|
      *     2252|2253|2254, retry_interval=2500"
-     *
+     * <p>
      * For example,
      * "capabilities=eims, retry_interval=1000, maximum_retries=20" means if the attached
      * network request is emergency, then retry data network setup every 1 second for up to 20
      * times.
-     *
+     * <p>
      * "capabilities=internet|enterprise|dun|ims|fota, retry_interval=2500|3000|"
      * "5000|10000|15000|20000|40000|60000|120000|240000|600000|1200000|1800000"
      * "1800000, maximum_retries=20" means for those capabilities, retry happens in 2.5s, 3s, 5s,
      * 10s, 15s, 20s, 40s, 1m, 2m, 4m, 10m, 20m, 30m, 30m, 30m, until reaching 20 retries.
+     *
+     * The possible values for capabilities are {@code "MMS"}, {@code "SUPL"}, {@code "DUN"},
+     * {@code "FOTA"}, {@code "IMS"}, {@code "CBS"}, {@code "XCAP"}, {@code "EIMS"},
+     * {@code "INTERNET"}, {@code "MCX"}, {@code "VSIM"}, {@code "BIP"}, {@code "ENTERPRISE"},
+     * {@code "PRIORITIZE_BANDWIDTH"}, {@code "PRIORITIZE_LATENCY"}, {@code "RCS"},
+     * {@code "PRIORITIZE_UNIFIED_COMMUNICATIONS"}, {@code "OEM_PAID"}, {@code "OEM_PRIVATE"}
      *
      * @hide
      */
@@ -10815,10 +10844,16 @@ public class CarrierConfigManager {
      *     <item value="source=GERAN|UTRAN|EUTRAN|NGRAN|IWLAN|UNKNOWN,
      *         target=GERAN|UTRAN|EUTRAN|NGRAN|IWLAN, type=allowed"/>
      * </string-array>
-     *
+     * <p>
      * When handover is not allowed, frameworks will tear down the data network on source transport,
      * and then setup a new one on the target transport when Qualified Network Service changes the
      * preferred access networks for particular APN types.
+     *
+     * The possible values for capabilities are {@code "MMS"}, {@code "SUPL"}, {@code "DUN"},
+     * {@code "FOTA"}, {@code "IMS"}, {@code "CBS"}, {@code "XCAP"}, {@code "EIMS"},
+     * {@code "INTERNET"}, {@code "MCX"}, {@code "VSIM"}, {@code "BIP"}, {@code "ENTERPRISE"},
+     * {@code "PRIORITIZE_BANDWIDTH"}, {@code "PRIORITIZE_LATENCY"}, {@code "RCS"},
+     * {@code "PRIORITIZE_UNIFIED_COMMUNICATIONS"}, {@code "OEM_PAID"}, {@code "OEM_PRIVATE"}
      *
      * @hide
      */
@@ -11753,6 +11788,7 @@ public class CarrierConfigManager {
                 KEY_TELEPHONY_DATA_HANDOVER_RETRY_RULES_STRING_ARRAY, new String[] {
                         "retry_interval=1000|2000|4000|8000|16000, maximum_retries=5"
                 });
+        sDefaults.putStringArray(KEY_TELEPHONY_UNSUPPORTED_NETWORK_CAPABILITY_STRING_ARRAY, null);
         sDefaults.putBoolean(KEY_DELAY_IMS_TEAR_DOWN_UNTIL_CALL_END_BOOL, false);
         sDefaults.putStringArray(KEY_MISSED_INCOMING_CALL_SMS_PATTERN_STRING_ARRAY, new String[0]);
         sDefaults.putPersistableBundle(
