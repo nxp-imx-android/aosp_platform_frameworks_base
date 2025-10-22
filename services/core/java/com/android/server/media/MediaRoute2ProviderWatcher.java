@@ -152,6 +152,11 @@ final class MediaRoute2ProviderWatcher {
                                             Manifest.permission.MODIFY_AUDIO_ROUTING,
                                             serviceInfo.packageName)
                                     == PERMISSION_GRANTED;
+                    supportsSystemMediaRouting &=
+                            mPackageManager.checkPermission(
+                                            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED,
+                                            serviceInfo.packageName)
+                                    == PERMISSION_GRANTED;
                     MediaRoute2ProviderServiceProxy proxy =
                             new MediaRoute2ProviderServiceProxy(
                                     mContext,

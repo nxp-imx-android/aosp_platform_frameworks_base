@@ -98,6 +98,10 @@ public abstract class MediaRoute2ProviderService extends Service {
      * <p>Providers must include this action if they intend to publish routes that support the
      * system media, as described by {@link MediaRoute2Info#getSupportedRoutingTypes()}.
      *
+     * <p>System media routing requires both {@link Manifest.permission#MODIFY_AUDIO_ROUTING} and
+     * {@link Manifest.permission#MODIFY_AUDIO_SETTINGS_PRIVILEGED}. This category is ignored if the
+     * declaring app doesn't hold either of these two permissions.
+     *
      * @see #onCreateSystemRoutingSession
      */
     @FlaggedApi(Flags.FLAG_ENABLE_MIRRORING_IN_MEDIA_ROUTER_2)
@@ -369,7 +373,11 @@ public abstract class MediaRoute2ProviderService extends Service {
      *     previous call to {@link #onCreateSystemRoutingSession}.
      */
     @FlaggedApi(Flags.FLAG_ENABLE_MIRRORING_IN_MEDIA_ROUTER_2)
-    @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
+    @RequiresPermission(
+            allOf = {
+                Manifest.permission.MODIFY_AUDIO_ROUTING,
+                Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+            })
     @Nullable
     public final MediaStreams notifySystemRoutingSessionCreated(
             long requestId,

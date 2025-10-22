@@ -25543,7 +25543,7 @@ package android.media {
     method public final void notifySessionCreated(long, @NonNull android.media.RoutingSessionInfo);
     method public final void notifySessionReleased(@NonNull String);
     method public final void notifySessionUpdated(@NonNull android.media.RoutingSessionInfo);
-    method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") @Nullable @RequiresPermission("android.permission.MODIFY_AUDIO_ROUTING") public final android.media.MediaRoute2ProviderService.MediaStreams notifySystemRoutingSessionCreated(long, @NonNull android.media.RoutingSessionInfo, @NonNull android.media.MediaRoute2ProviderService.MediaStreamsFormats);
+    method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") @Nullable @RequiresPermission(allOf={"android.permission.MODIFY_AUDIO_ROUTING", "android.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED"}) public final android.media.MediaRoute2ProviderService.MediaStreams notifySystemRoutingSessionCreated(long, @NonNull android.media.RoutingSessionInfo, @NonNull android.media.MediaRoute2ProviderService.MediaStreamsFormats);
     method @CallSuper @Nullable public android.os.IBinder onBind(@NonNull android.content.Intent);
     method public abstract void onCreateSession(long, @NonNull String, @NonNull String, @Nullable android.os.Bundle);
     method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public void onCreateSystemRoutingSession(long, @NonNull String, @NonNull android.media.MediaRoute2ProviderService.SystemRoutingSessionParams);
