@@ -88,8 +88,8 @@ abstract class DigitalClockViewGroup<TChild>(clockCtx: ClockContext) :
     final override var maxSize = VPointF(-1f)
         protected set
 
-    var onViewBoundsChanged: ((VRectF) -> Unit)? = null
-    var onViewMaxSizeChanged: ((VPointF) -> Unit)? = null
+    override var onViewBoundsChanged: ((VRectF) -> Unit)? = null
+    override var onViewMaxSizeChanged: ((VPointF) -> Unit)? = null
 
     override fun onViewAdded(child: View?) {
         if (child == null) return
