@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.settingslib.volume.domain.interactor.AudioModeInteractor
+import com.android.systemui.Flags
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
@@ -147,18 +148,28 @@ constructor(
                             INTERACTION_JANK_TAG,
                         )
                     )
+
+                var showDialog = true
                 controller?.let {
-                    dialogTransitionAnimator.show(dialog, it, animateBackgroundBoundsChange = true)
+                    showDialog =
+                        dialogTransitionAnimator.show(
+                            dialog,
+                            it,
+                            animateBackgroundBoundsChange = true,
+                        )
                 } ?: dialog.show()
-                // contentManager is created after dialog.show
-                contentManager = dialogDelegate.contentManager
-                contentManager.bind(
-                    contentView = dialog.requireViewById(R.id.root),
-                    dialog = dialog,
-                    coroutineScope = this,
-                    detailsUIState = detailsUIState,
-                )
-                updateDetailsUIState(dialog.context, detailsUIState, dialog)
+
+                // contentManager is created after dialog.show and dialog is shown
+                if (showDialog || !Flags.fixDialogAnimCollapseFlicker()) {
+                    contentManager = dialogDelegate.contentManager
+                    contentManager.bind(
+                        contentView = dialog.requireViewById(R.id.root),
+                        dialog = dialog,
+                        coroutineScope = this,
+                        detailsUIState = detailsUIState,
+                    )
+                    updateDetailsUIState(dialog.context, detailsUIState, dialog)
+                }
             }
     }
 
