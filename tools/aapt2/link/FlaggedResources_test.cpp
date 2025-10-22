@@ -170,7 +170,7 @@ TEST_F(FlaggedResourcesTest, EnabledXmlElementAttributeRemoved) {
   auto loaded_apk = LoadedApk::LoadApkFromPath(apk_path, &noop_diag);
 
   std::string output;
-  DumpXmlTreeToString(loaded_apk.get(), "res/layout-v36/layout1.xml", &output);
+  DumpXmlTreeToString(loaded_apk.get(), "res/layout-v36.1/layout1.xml", &output);
   ASSERT_TRUE(output.contains("FIND_ME"));
 }
 
