@@ -37,6 +37,7 @@ import android.service.personalcontext.hint.NotificationEvent.NotificationEnqueu
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ActionableInsight;
 import android.service.personalcontext.insight.InsightDisplayDetails;
+import android.util.Log;
 import android.util.Slog;
 
 import com.android.server.notification.NotificationManagerInternal;
@@ -57,7 +58,9 @@ import java.util.UUID;
  * @hide
  */
 public class NotificationActionRenderer implements Renderer {
-    private static final String TAG = "NotificationActionRenderer";
+    private static final String TAG = "NotifActionRenderer";
+
+    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
     /** Explanations are not used by the system, therefore we do not provide one. */
     private static final String NO_EXPLANATION = "";
@@ -89,6 +92,9 @@ public class NotificationActionRenderer implements Renderer {
     @Override
     public void render(@NonNull ContextInsight insight, boolean alreadyRendered) {
         if (!(insight instanceof ActionableInsight actionableInsight)) {
+            if (DEBUG) {
+                Slog.d(TAG, "Insight is not an ActionableInsight");
+            }
             return;
         }
 
@@ -116,6 +122,11 @@ public class NotificationActionRenderer implements Renderer {
             return;
         }
         final Adjustment adjustment = createAdjustment(sbn, notificationAction);
+        if (DEBUG) {
+            Slog.d(
+                    TAG,
+                    "Creating adjustment: " + adjustment + " for insight: " + actionableInsight);
+        }
         mNotificationManagerInternal.requestSystemAdjustments(List.of(adjustment));
     }
 
