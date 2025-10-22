@@ -46,45 +46,51 @@ public class PwleSegmentTest {
     @Test
     @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void testCreation() {
-        PwleSegment segment = new PwleSegment(0.1f, 0.2f, 50f, 100f, 10);
+        PwleSegment segment = new PwleSegment(0.1f, 0.2f, 50f, 100f, 10, true);
         assertThat(segment.getStartAmplitude()).isEqualTo(0.1f);
         assertThat(segment.getEndAmplitude()).isEqualTo(0.2f);
         assertThat(segment.getStartFrequencyHz()).isEqualTo(50f);
         assertThat(segment.getEndFrequencyHz()).isEqualTo(100f);
         assertThat(segment.getDuration()).isEqualTo(10);
+        assertThat(segment.isFirstSegmentOfEnvelope()).isTrue();
+
+        segment = new PwleSegment(0.1f, 0.2f, 50f, 100f, 10, false);
+        assertThat(segment.isFirstSegmentOfEnvelope()).isFalse();
     }
 
     @Test
     @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void testValidate() {
-        new PwleSegment(0, 1, 1, 200, 1).validate();
+        new PwleSegment(0, 1, 1, 200, 1, true).validate();
+        new PwleSegment(0, 1, 1, 200, 1, false).validate();
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new PwleSegment(-0.1f, 1, 50, 100, 10).validate());
+                () -> new PwleSegment(-0.1f, 1, 50, 100, 10, true).validate());
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new PwleSegment(0, 1.1f, 50, 100, 10).validate());
-        assertThrows(
-                IllegalArgumentException.class, () -> new PwleSegment(0, 1, 0, 100, 10).validate());
+                () -> new PwleSegment(0, 1.1f, 50, 100, 10, true).validate());
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new PwleSegment(0, 1, 50, -10, 10).validate());
+                () -> new PwleSegment(0, 1, 0, 100, 10, true).validate());
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new PwleSegment(0, 1, 50, 100, -1).validate());
+                () -> new PwleSegment(0, 1, 50, -10, 10, true).validate());
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new PwleSegment(0, 1, 50, 100, -1, true).validate());
     }
 
     @Test
     @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void testGetDuration() {
-        PwleSegment segment = new PwleSegment(0, 1, 50, 100, 10);
+        PwleSegment segment = new PwleSegment(0, 1, 50, 100, 10, true);
         assertThat(segment.getDuration()).isEqualTo(10);
     }
 
     @Test
     @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void testSerialization() {
-        PwleSegment original = new PwleSegment(0.1f, 0.9f, 60f, 180f, 20);
+        PwleSegment original = new PwleSegment(0.1f, 0.9f, 60f, 180f, 20, true);
         Parcel parcel = Parcel.obtain();
         original.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
@@ -107,20 +113,20 @@ public class PwleSegmentTest {
                         .setFrequencyProfile(TEST_FREQUENCY_PROFILE)
                         .build();
         VibratorInfo infoWithoutPwle = new VibratorInfo.Builder(0).build();
-        PwleSegment segment = new PwleSegment(0, 1, 50, 200, 10);
+        PwleSegment segment = new PwleSegment(0, 1, 50, 200, 10, true);
         assertThat(segment.areVibrationFeaturesSupported(infoWithPwle)).isTrue();
         assertThat(segment.areVibrationFeaturesSupported(infoWithoutPwle)).isFalse();
         // Frequency out of range.
-        PwleSegment segmentHighFreq = new PwleSegment(0, 1, 50, 250, 10);
+        PwleSegment segmentHighFreq = new PwleSegment(0, 1, 50, 250, 10, true);
         assertThat(segmentHighFreq.areVibrationFeaturesSupported(infoWithPwle)).isFalse();
     }
 
     @Test
     @EnableFlags({Flags.FLAG_NORMALIZED_PWLE_EFFECTS})
     public void testScale() {
-        PwleSegment segment = new PwleSegment(0.2f, 0.8f, 50, 150, 20);
+        PwleSegment segment = new PwleSegment(0.2f, 0.8f, 50, 150, 20, true);
         assertThat(segment.scaleLinearly(0.5f))
-                .isEqualTo(new PwleSegment(0.1f, 0.4f, 50, 150, 20));
+                .isEqualTo(new PwleSegment(0.1f, 0.4f, 50, 150, 20, true));
         assertThat(segment.scale(1f)).isSameInstanceAs(segment);
     }
 }
