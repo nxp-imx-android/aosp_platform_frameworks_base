@@ -120,6 +120,7 @@ import static org.mockito.Mockito.never;
 import android.app.ActivityOptions;
 import android.app.AppOpsManager;
 import android.app.HandoffActivityData;
+import android.app.HandoffActivityParams;
 import android.app.PictureInPictureParams;
 import android.app.servertransaction.ActivityConfigurationChangeItem;
 import android.app.servertransaction.ClientTransaction;
@@ -881,38 +882,52 @@ public class ActivityRecordTests extends WindowTestsBase {
     public void testSetHandoffEnabled() {
         ActivityTaskManagerInternal.HandoffEnablementListener handoffEnablementListener =
                 mock(ActivityTaskManagerInternal.HandoffEnablementListener.class);
+
+        // Verify that Handoff is disabled by default on the ActivityRecord.
         mAtm.getAtmInternal().registerHandoffEnablementListener(handoffEnablementListener);
         final ActivityRecord activity = createActivityWithTask();
         assertFalse(activity.isHandoffEnabled());
-        assertFalse(activity.isHandoffFullTaskRecreationAllowed());
-        activity.setHandoffEnabled(true, true);
+        assertNull(activity.getHandoffActivityParams());
+
+        // Set params for Handoff, verify this is recorded on the ActivityRecord.
+        HandoffActivityParams handoffEnabledParams =
+                new HandoffActivityParams.Builder()
+                        .setAllowHandoffWithoutPackageInstalled(true)
+                        .build();
+        activity.setHandoffEnabled(true, handoffEnabledParams);
         verify(handoffEnablementListener).onHandoffEnabledChanged(activity.getRootTaskId(), true);
         assertTrue(activity.isHandoffEnabled());
-        assertTrue(activity.isHandoffFullTaskRecreationAllowed());
-        activity.setHandoffEnabled(false, false);
+        assertEquals(handoffEnabledParams, activity.getHandoffActivityParams());
+
+        // Disable Handoff, verify params are null.
+        activity.setHandoffEnabled(false, handoffEnabledParams);
         verify(handoffEnablementListener).onHandoffEnabledChanged(activity.getRootTaskId(), false);
         assertFalse(activity.isHandoffEnabled());
-        assertFalse(activity.isHandoffFullTaskRecreationAllowed());
+        assertNull(activity.getHandoffActivityParams());
     }
 
     @Test
     @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public void testClientControllerCanModifyHandoffStatus() {
+        // Create a new task, verify Handoff is disabled by default.
         final ActivityRecord activity = createActivityWithTask();
-        assertFalse(mAtm
-                        .mActivityClientController
-                        .isHandoffEnabled(activity.token));
-        assertFalse(mAtm.mActivityClientController
-                        .isHandoffFullTaskRecreationAllowed(activity.token));
+        assertFalse(mAtm.mActivityClientController.isHandoffEnabled(activity.token));
+        HandoffActivityParams params =
+                mAtm.mActivityClientController.getHandoffActivityParams(activity.token);
+        assertNull(params);
+
+        // Enable Handoff, verify the params are set.
+        HandoffActivityParams handoffEnabledParams = new HandoffActivityParams.Builder()
+                .setAllowHandoffWithoutPackageInstalled(true)
+                .build();
         mAtm
             .mActivityClientController
-            .setHandoffEnabled(activity.token, true, true);
-        assertTrue(mAtm
-                       .mActivityClientController
-                       .isHandoffEnabled(activity.token));
-        assertTrue(mAtm
-                       .mActivityClientController
-                       .isHandoffFullTaskRecreationAllowed(activity.token));
+            .setHandoffEnabled(activity.token, true, handoffEnabledParams);
+        assertTrue(mAtm.mActivityClientController.isHandoffEnabled(activity.token));
+        assertEquals(
+                handoffEnabledParams,
+                mAtm.mActivityClientController.getHandoffActivityParams(
+                        activity.token));
     }
 
     @Test
@@ -983,10 +998,10 @@ public class ActivityRecordTests extends WindowTestsBase {
         final ActivityRecord activity = createActivityWithTask();
         final HandoffActivityData handoffActivityData = new HandoffActivityData.Builder(
                 new ComponentName("pkg", "cls")).build();
-        activity.setHandoffEnabled(true, false);
+        activity.setHandoffEnabled(true, null);
         activity.setHandoffActivityData(handoffActivityData);
         assertEquals(handoffActivityData, activity.getHandoffActivityData());
-        activity.setHandoffEnabled(false, false);
+        activity.setHandoffEnabled(false, null);
         assertNull(activity.getHandoffActivityData());
     }
 
@@ -996,9 +1011,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         final HandoffActivityData handoffActivityData = new HandoffActivityData.Builder(
                 new ComponentName("pkg", "cls")).build();
         activity.setHandoffActivityData(handoffActivityData);
-        activity.setHandoffEnabled(
-            false /* handoffEnabled */,
-            false /* allowFullTaskRecreation */);
+        activity.setHandoffEnabled(false, null);
         assertNull(activity.getHandoffActivityData());
     }
 
@@ -1012,9 +1025,7 @@ public class ActivityRecordTests extends WindowTestsBase {
                 new ComponentName("pkg", "cls")).build();
         final PersistableBundle persistentSavedState = new PersistableBundle();
         persistentSavedState.putString("persist", "string");
-        activity.setHandoffEnabled(
-            true /* handoffEnabled */,
-            false /* allowFullTaskRecreation */);
+        activity.setHandoffEnabled(true, null);
 
         // Set state to STOPPING, or ActivityRecord#activityStoppedLocked() call will be ignored.
         activity.setState(STOPPING, "test");

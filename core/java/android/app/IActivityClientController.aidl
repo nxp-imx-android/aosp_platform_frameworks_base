@@ -18,6 +18,7 @@ package android.app;
 
 import android.app.ActivityManager;
 import android.app.HandoffActivityData;
+import android.app.HandoffActivityParams;
 import android.app.IRequestFinishCallback;
 import android.app.PictureInPictureParams;
 import android.content.ComponentName;
@@ -111,11 +112,11 @@ interface IActivityClientController {
     void setImmersive(in IBinder token, boolean immersive);
 
     boolean isHandoffEnabled(in IBinder token);
-    boolean isHandoffFullTaskRecreationAllowed(in IBinder token);
+    HandoffActivityParams getHandoffActivityParams(in IBinder token);
     void setHandoffEnabled(
         in IBinder token,
         boolean handoffEnabled,
-        boolean allowFullTaskRecreation);
+        in HandoffActivityParams handoffActivityParams);
 
     boolean enterPictureInPictureMode(in IBinder token, in PictureInPictureParams params);
     void setPictureInPictureParams(in IBinder token, in PictureInPictureParams params);

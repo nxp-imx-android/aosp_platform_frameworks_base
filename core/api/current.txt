@@ -4709,7 +4709,7 @@ package android.app {
     method public final void setFeatureDrawableResource(int, @DrawableRes int);
     method public final void setFeatureDrawableUri(int, android.net.Uri);
     method public void setFinishOnTouchOutside(boolean);
-    method @FlaggedApi("android.companion.task_continuity") public final void setHandoffEnabled(boolean);
+    method @FlaggedApi("android.companion.task_continuity") public final void setHandoffEnabled(boolean, @Nullable android.app.HandoffActivityParams);
     method public void setImmersive(boolean);
     method public void setInheritShowWhenLocked(boolean);
     method public void setIntent(android.content.Intent);
@@ -6226,6 +6226,19 @@ package android.app {
   @FlaggedApi("android.companion.task_continuity") public final class HandoffActivityDataRequestInfo {
     ctor public HandoffActivityDataRequestInfo(boolean);
     method public boolean isActiveRequest();
+  }
+
+  @FlaggedApi("android.companion.task_continuity") public final class HandoffActivityParams implements android.os.Parcelable {
+    method public int describeContents();
+    method public boolean isAllowHandoffWithoutPackageInstalled();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.HandoffActivityParams> CREATOR;
+  }
+
+  @FlaggedApi("android.companion.task_continuity") public static final class HandoffActivityParams.Builder {
+    ctor public HandoffActivityParams.Builder();
+    method @NonNull public android.app.HandoffActivityParams build();
+    method @NonNull public android.app.HandoffActivityParams.Builder setAllowHandoffWithoutPackageInstalled(boolean);
   }
 
   public class Instrumentation {

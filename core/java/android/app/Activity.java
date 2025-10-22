@@ -7747,13 +7747,17 @@ public class Activity extends ContextThemeWrapper
      * If Handoff is enabled, this Activity will only be eligible to be handed off to other devices
      * if it is the topmost Activity in its Task.
      *
-     * @param handoffEnabled Whether Handoff should be enabled for this Activity.
+     * Callers may specify optional parameters to specify when Handoff is appropriate for the
+     * current activity. See {@link HandoffActivityParams} for more details.
+     *
+     * @param handoffActivityParams Configuration parameters for Handoff.
      */
     @FlaggedApi(android.companion.Flags.FLAG_TASK_CONTINUITY)
-    public final void setHandoffEnabled(boolean handoffEnabled) {
-        // TODO (b/400970610): Implement Full Task Recreation for Handoff.
+    public final void setHandoffEnabled(
+        boolean handoffEnabled,
+        @Nullable HandoffActivityParams handoffActivityParams) {
         ActivityClient.getInstance().setHandoffEnabled(
-                mToken, handoffEnabled, /* allowFullTaskRecreation= */ false);
+                mToken, handoffEnabled, handoffActivityParams);
     }
 
     /**
