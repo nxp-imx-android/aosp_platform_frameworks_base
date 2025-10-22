@@ -2408,7 +2408,8 @@ public class CachedAppOptimizer {
      * exit.
      */
     @Keep
-    private boolean handleBinderReport(int error, int toPid, boolean large, boolean oneway) {
+    private boolean handleBinderReport(int error, int fromPid, int toPid, boolean large,
+            boolean oneway) {
         switch (error) {
             case BR_REPORT_FAILED:
                 Slog.e(TAG_AM, "failed to retrieve binder report");
