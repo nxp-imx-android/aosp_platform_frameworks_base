@@ -151,6 +151,7 @@ fun ContentScope.ConstrainedNotificationStack(
                 }
     ) {
         StackPlaceholder(
+            tag = "Constrained",
             stackScrollView = stackScrollView,
             viewModel = viewModel,
             useStackBounds = { shouldUseLockscreenStackBounds(layoutState) },
@@ -457,7 +458,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
                 .onGloballyPositioned { coordinates ->
                     val boundsInWindow = coordinates.boundsInWindow()
                     debugLog(viewModel) {
-                        "SCRIM onGloballyPositioned:" +
+                        "$tag.SCRIM onGloballyPositioned:" +
                             " size=${coordinates.size}" +
                             " bounds=$boundsInWindow"
                     }
@@ -518,6 +519,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
                         }
             ) {
                 StackPlaceholder(
+                    tag = "NestedScroll",
                     stackScrollView = stackScrollView,
                     viewModel = viewModel,
                     useStackBounds = { !shouldUseLockscreenStackBounds(layoutState) },

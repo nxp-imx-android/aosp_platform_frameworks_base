@@ -97,7 +97,7 @@ fun ContentScope.HeadsUpNotificationPlaceholder(
                         val positionInWindow = coordinates.positionInWindow()
                         val boundsInWindow = coordinates.boundsInWindow()
                         debugLog(viewModel) {
-                            "HUNS onGloballyPositioned:" +
+                            "$tag.HUNS onGloballyPositioned:" +
                                 " size=${coordinates.size}" +
                                 " bounds=$boundsInWindow"
                         }
