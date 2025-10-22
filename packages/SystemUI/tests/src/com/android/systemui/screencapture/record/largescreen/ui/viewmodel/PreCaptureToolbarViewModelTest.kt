@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
 import android.graphics.Rect
+import android.net.Uri
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -28,6 +29,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.screencapture.ScreenCaptureEvent
+import com.android.systemui.screencapture.record.largescreen.domain.interactor.largeScreenCaptureParametersInteractor
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
@@ -131,6 +133,102 @@ class PreCaptureToolbarViewModelTest : SysuiTestCase() {
     @Test
     fun isCustomSaveLocationActive_initialValue_isFalse() =
         kosmos.runTest { assertThat(viewModel.isCustomSaveLocationActive).isFalse() }
+
+    @Test
+    fun isCustomSaveLocationActive_isFalse_whenInteractorIsFalse() =
+        kosmos.runTest {
+            largeScreenCaptureParametersInteractor.setIsCustomSaveLocationActive(false)
+
+            assertThat(viewModel.isCustomSaveLocationActive).isFalse()
+        }
+
+    @Test
+    fun isCustomSaveLocationActive_isTrue_whenInteractorIsTrue() =
+        kosmos.runTest {
+            largeScreenCaptureParametersInteractor.setIsCustomSaveLocationActive(true)
+
+            assertThat(viewModel.isCustomSaveLocationActive).isTrue()
+        }
+
+    @Test
+    fun setCustomSaveLocationActiveStatus_updatesValueToTrue() =
+        kosmos.runTest {
+            largeScreenCaptureParametersInteractor.setIsCustomSaveLocationActive(false)
+
+            viewModel.setCustomSaveLocationActiveStatus(true)
+
+            assertThat(viewModel.isCustomSaveLocationActive).isTrue()
+        }
+
+    @Test
+    fun setCustomSaveLocationActiveStatus_updatesValueToFalse() =
+        kosmos.runTest {
+            largeScreenCaptureParametersInteractor.setIsCustomSaveLocationActive(true)
+
+            viewModel.setCustomSaveLocationActiveStatus(false)
+
+            assertThat(viewModel.isCustomSaveLocationActive).isFalse()
+        }
+
+    @Test
+    fun customSaveLocationDisplayName_whenNullUri_holdsCorrectName() =
+        kosmos.runTest { assertThat(viewModel.customSaveLocationDisplayName).isNull() }
+
+    @Test
+    fun customSaveLocationDisplayName_whenSimpleUri_holdsCorrectName() =
+        kosmos.runTest {
+            largeScreenCaptureParametersInteractor.setCustomSaveLocation(
+                Uri.parse("content://com.android.externalstorage.documents/tree/primary%3ATest")
+            )
+            assertThat(viewModel.customSaveLocationDisplayName).isEqualTo("Test")
+        }
+
+    @Test
+    fun customSaveLocationDisplayName_whenComplexUri_holdsCorrectName() =
+        kosmos.runTest {
+            largeScreenCaptureParametersInteractor.setCustomSaveLocation(
+                Uri.parse(
+                    "content://com.android.externalstorage.documents/tree/primary%3ATest%2FTestSubfolder123"
+                )
+            )
+            assertThat(viewModel.customSaveLocationDisplayName).isEqualTo("TestSubfolder123")
+        }
+
+    @Test
+    fun currentSaveLocation_initialValue_returnsDefaultScreenshotsFolderName() =
+        kosmos.runTest { assertThat(viewModel.currentSaveLocation).isEqualTo("Screenshots") }
+
+    @Test
+    fun currentSaveLocation_whenCustomUriIsNotActive_returnsDefaultScreenshotsFolderName() =
+        kosmos.runTest {
+            largeScreenCaptureParametersInteractor.setCustomSaveLocation(
+                Uri.parse("content://com.android.externalstorage.documents/tree/primary%3ATest")
+            )
+            viewModel.setCustomSaveLocationActiveStatus(false)
+
+            assertThat(viewModel.currentSaveLocation).isEqualTo("Screenshots")
+        }
+
+    @Test
+    fun currentSaveLocation_customUriActive_returnsCorrectCustomFolderName() {
+        kosmos.runTest {
+            largeScreenCaptureParametersInteractor.setCustomSaveLocation(
+                Uri.parse("content://com.android.externalstorage.documents/tree/primary%3ATest")
+            )
+            viewModel.setCustomSaveLocationActiveStatus(true)
+
+            assertThat(viewModel.currentSaveLocation).isEqualTo("Test")
+        }
+    }
+
+    @Test
+    fun currentSaveLocation_customUriActiveButNoUri_returnsDefaultScreenshotsFolderName() {
+        kosmos.runTest {
+            viewModel.setCustomSaveLocationActiveStatus(true)
+
+            assertThat(viewModel.currentSaveLocation).isEqualTo("Screenshots")
+        }
+    }
 
     @Test
     fun recordParametersViewModel_updatesAudioSourceState() =

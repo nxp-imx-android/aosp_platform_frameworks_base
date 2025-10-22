@@ -42,6 +42,10 @@ data class ScreenCaptureIcons(
     val deviceAudio: Icon,
     val microphone: Icon,
     val frontCamera: Icon,
+    val downArrow: Icon,
+    val checkMark: Icon,
+    val folder: Icon,
+    val newFolder: Icon,
 )
 
 class ScreenCaptureIconProvider
@@ -72,6 +76,10 @@ constructor(
                         deviceAudio = loadIcon(SystemRes.drawable.ic_speaker_rounded),
                         microphone = loadIcon(SystemRes.drawable.ic_mic_expressive),
                         frontCamera = loadIcon(SystemRes.drawable.ic_person_filled),
+                        downArrow = loadIcon(SystemRes.drawable.ic_arrow_down_24dp),
+                        checkMark = loadIcon(SystemRes.drawable.ic_check_expressive),
+                        folder = loadIcon(SystemRes.drawable.ic_screen_capture_folder),
+                        newFolder = loadIcon(SystemRes.drawable.ic_screen_capture_create_new_folder),
                     )
                 )
             }
