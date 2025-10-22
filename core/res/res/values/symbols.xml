@@ -885,6 +885,7 @@
   <java-symbol type="string" name="number_picker_increment_scroll_mode" />
   <java-symbol type="string" name="old_app_action" />
   <java-symbol type="string" name="older" />
+  <java-symbol type="string" name="open_app_name" />
   <java-symbol type="string" name="orgTypeCustom" />
   <java-symbol type="string" name="orgTypeOther" />
   <java-symbol type="string" name="orgTypeWork" />
