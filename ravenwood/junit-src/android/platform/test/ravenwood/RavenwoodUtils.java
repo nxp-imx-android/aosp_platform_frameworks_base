@@ -123,11 +123,6 @@ public class RavenwoodUtils {
     }
 
     /**
-     * Set by {@link RavenwoodDriver} to run code before {@link #waitForLooperDone(Looper)}.
-     */
-    static volatile Runnable sPendingExceptionThrower = () -> {};
-
-    /**
      * Wait for a looper to be idle.
      *
      * When running on Ravenwood, this will also throw the pending exception, if any.
@@ -139,8 +134,6 @@ public class RavenwoodUtils {
         getHandler(looper).post(() -> {});
 
         idler.waitForIdle();
-
-        sPendingExceptionThrower.run();
     }
 
     /**

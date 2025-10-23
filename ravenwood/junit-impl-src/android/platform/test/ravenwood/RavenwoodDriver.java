@@ -242,9 +242,6 @@ public class RavenwoodDriver {
 
         assertMockitoVersion();
 
-        RavenwoodUtils.sPendingExceptionThrower =
-                RavenwoodErrorHandler::maybeThrowPendingRecoverableUncaughtExceptionNoClear;
-
         ServiceManager_ravenwood.init();
         LocalServices.removeAllServicesForTest();
         ActivityManager_ravenwood.init(SYSTEM.getIdentifier());
