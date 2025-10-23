@@ -168,7 +168,7 @@
     }
   ],
 
-  "sysui-unit-test-desktop": [
+  "desktop-presubmit": [
     {
       "name": "SystemUIGoogleScreenshotTests_desktop"
     },
