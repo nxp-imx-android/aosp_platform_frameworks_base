@@ -64,7 +64,7 @@ static android::NoOpDiagnostics noop_diag;
 // $ cd $ANDROID_BUILD_TOP
 // $ m aapt2
 // $ out/soong/.intermediates/frameworks/base/tools/aapt2/aapt2/linux_glibc_x86_64/unversioned/aapt2 apkinfo frameworks/base/tools/aapt2/integration-tests/DumpTest/components.apk  -o frameworks/base/tools/aapt2/integration-tests/DumpTest/components_expected_proto.binpb
-// $ out/soong/.intermediates/frameworks/base/tools/aapt2/aapt2/linux_glibc_x86_64/unversioned/aapt2 apkinfo --include-resource-table --include-xml AndroidManifest.xml --include-xml res/oy.xml frameworks/base/tools/aapt2/integration-tests/DumpTest/components.apk  -o frameworks/base/tools/aapt2/integration-tests/DumpTest/components_full_proto.binbp
+// $ out/soong/.intermediates/frameworks/base/tools/aapt2/aapt2/linux_glibc_x86_64/unversioned/aapt2 apkinfo --include-resource-table --include-xml AndroidManifest.xml --include-xml res/oy.xml frameworks/base/tools/aapt2/integration-tests/DumpTest/components.apk  -o frameworks/base/tools/aapt2/integration-tests/DumpTest/components_full_proto.binpb
 
 TEST_F(ApkInfoTest, ApkInfoWithBadging) {
   auto apk_path = file::BuildPath(
