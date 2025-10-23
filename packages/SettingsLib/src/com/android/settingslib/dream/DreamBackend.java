@@ -63,6 +63,7 @@ public class DreamBackend {
         public Drawable previewImage;
         public boolean supportsComplications = false;
         public int dreamCategory;
+        public boolean userSelectable = true;
 
         @Override
         public String toString() {
@@ -232,6 +233,7 @@ public class DreamBackend {
                 dreamInfo.previewImage = dreamMetadata.previewImage;
                 dreamInfo.supportsComplications = dreamMetadata.showComplications;
                 dreamInfo.dreamCategory = dreamMetadata.dreamCategory;
+                dreamInfo.userSelectable = dreamMetadata.userSelectable;
             }
             dreamInfos.add(dreamInfo);
         }

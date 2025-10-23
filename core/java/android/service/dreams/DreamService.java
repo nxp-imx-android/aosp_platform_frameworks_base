@@ -16,10 +16,12 @@
 
 package android.service.dreams;
 
+import static android.service.dreams.Flags.FLAG_USER_SELECTABLE_METADATA;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.service.dreams.Flags.allowDreamAttachFailure;
 import static android.service.dreams.Flags.dreamHandlesBeingObscured;
 import static android.service.dreams.Flags.dreamHandlesConfirmKeys;
+import static android.service.dreams.Flags.userSelectableMetadata;
 import static android.service.dreams.Flags.startAndStopDozingInBackground;
 
 import android.annotation.FlaggedApi;
@@ -236,6 +238,13 @@ public class DreamService extends Service implements Window.Callback {
      * @hide
      */
     public static final int DREAM_CATEGORY_HOME_PANEL = 1 << 1;
+
+    /**
+     * The default value for whether the dream is user selectable.
+     *
+     * @hide
+     */
+    public static final boolean DEFAULT_USER_SELECTABLE = true;
 
     /** @hide */
     @IntDef(flag = true, prefix = {"DREAM_CATEGORY"}, value = {
@@ -1500,7 +1509,9 @@ public class DreamService extends Service implements Window.Callback {
                                 com.android.internal.R.styleable.Dream_previewImage),
                         rawMetadata.getBoolean(R.styleable.Dream_showClockAndComplications,
                                 DEFAULT_SHOW_COMPLICATIONS),
-                        rawMetadata.getInt(R.styleable.Dream_dreamCategory, DREAM_CATEGORY_DEFAULT)
+                        rawMetadata.getInt(R.styleable.Dream_dreamCategory, DREAM_CATEGORY_DEFAULT),
+                        rawMetadata.getBoolean(R.styleable.Dream_userSelectable,
+                                DEFAULT_USER_SELECTABLE)
                 );
             } catch (Exception exception) {
                 Log.e(TAG, "Failed to create read metadata", exception);
@@ -1996,18 +2007,37 @@ public class DreamService extends Service implements Window.Callback {
     @VisibleForTesting
     @TestApi
     public static final class DreamMetadata {
+        /**
+         * Optional component for an activity which can be started by the system to configure the
+         * dream.
+         */
         @Nullable
         public final ComponentName settingsActivity;
 
+        /**
+         * A preview image for this screensaver.
+         */
         @Nullable
         public final Drawable previewImage;
 
+        /**
+         * Indicates whether the dream supports complications.
+         */
         @NonNull
         public final boolean showComplications;
 
+        /**
+         * The category assigned to the dream.
+         */
         @NonNull
         @FlaggedApi(Flags.FLAG_HOME_PANEL_DREAM)
         public final int dreamCategory;
+
+        /**
+         * Indicates whether the dream is user-selectable.
+         */
+        @FlaggedApi(FLAG_USER_SELECTABLE_METADATA)
+        public final boolean userSelectable;
 
         /**
          * @hide
@@ -2017,7 +2047,8 @@ public class DreamService extends Service implements Window.Callback {
                 ComponentName settingsActivity,
                 Drawable previewImage,
                 boolean showComplications,
-                int dreamCategory) {
+                int dreamCategory,
+                boolean userSelectable) {
             this.settingsActivity = settingsActivity;
             this.previewImage = previewImage;
             this.showComplications = showComplications;
@@ -2025,6 +2056,11 @@ public class DreamService extends Service implements Window.Callback {
                 this.dreamCategory = dreamCategory;
             } else {
                 this.dreamCategory = DREAM_CATEGORY_DEFAULT;
+            }
+            if (userSelectableMetadata()) {
+                this.userSelectable = userSelectable;
+            } else {
+                this.userSelectable = DEFAULT_USER_SELECTABLE;
             }
         }
     }

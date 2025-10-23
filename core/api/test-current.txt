@@ -3390,6 +3390,7 @@ package android.service.dreams {
     field @Nullable public final android.graphics.drawable.Drawable previewImage;
     field @Nullable public final android.content.ComponentName settingsActivity;
     field @NonNull public final boolean showComplications;
+    field @FlaggedApi("android.service.dreams.user_selectable_metadata") public final boolean userSelectable;
   }
 
 }
