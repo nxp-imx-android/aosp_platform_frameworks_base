@@ -109,6 +109,7 @@ static const int TEXT_MISSING_VALUE = INT_MIN;
 static const char EXIT_PROP_NAME[] = "service.bootanim.exit";
 static const char PROGRESS_PROP_NAME[] = "service.bootanim.progress";
 static const char CLOCK_ENABLED_PROP_NAME[] = "persist.sys.bootanim.clock.enabled";
+static const char DECODE_RGB565_PROP_NAME[] = "persist.sys.bootanim.decode.rgb565";
 static const int ANIM_ENTRY_NAME_MAX = ANIM_PATH_MAX + 1;
 static const int MAX_CHECK_EXIT_INTERVAL_US = 50000;
 static constexpr size_t TEXT_POS_LEN_MAX = 16;
@@ -259,7 +260,7 @@ void BootAnimation::binderDied(const wp<IBinder>&) {
 }
 
 static void* decodeImage(const void* encodedData, size_t dataLength, AndroidBitmapInfo* outInfo,
-    bool premultiplyAlpha) {
+    bool premultiplyAlpha, bool decodeOpaque565) {
     ATRACE_CALL();
     AImageDecoder* decoder = nullptr;
     AImageDecoder_createFromBuffer(encodedData, dataLength, &decoder);
@@ -271,6 +272,11 @@ static void* decodeImage(const void* encodedData, size_t dataLength, AndroidBitm
     outInfo->width = AImageDecoderHeaderInfo_getWidth(info);
     outInfo->height = AImageDecoderHeaderInfo_getHeight(info);
     outInfo->format = AImageDecoderHeaderInfo_getAndroidBitmapFormat(info);
+    if (decodeOpaque565
+        && AImageDecoderHeaderInfo_getAlphaFlags(info) == ANDROID_BITMAP_FLAGS_ALPHA_OPAQUE) {
+        AImageDecoder_setAndroidBitmapFormat(decoder, ANDROID_BITMAP_FORMAT_RGB_565);
+        outInfo->format = ANDROID_BITMAP_FORMAT_RGB_565;
+    }
     outInfo->stride = AImageDecoder_getMinimumStride(decoder);
     outInfo->flags = 0;
 
@@ -299,7 +305,7 @@ status_t BootAnimation::initTexture(Texture* texture, AssetManager& assets,
 
     AndroidBitmapInfo bitmapInfo;
     void* pixels = decodeImage(asset->getBuffer(false), asset->getLength(), &bitmapInfo,
-        premultiplyAlpha);
+        premultiplyAlpha, mDecodeOpaqueImageTo565);
     auto pixelDeleter = std::unique_ptr<void, decltype(free)*>{ pixels, free };
 
     asset->close();
@@ -352,7 +358,7 @@ status_t BootAnimation::initTexture(FileMap* map, int* width, int* height,
     ATRACE_CALL();
     AndroidBitmapInfo bitmapInfo;
     void* pixels = decodeImage(map->getDataPtr(), map->getDataLength(), &bitmapInfo,
-        premultiplyAlpha);
+        premultiplyAlpha, mDecodeOpaqueImageTo565);
     auto pixelDeleter = std::unique_ptr<void, decltype(free)*>{ pixels, free };
 
     // FileMap memory is never released until application exit.
@@ -1418,6 +1424,10 @@ bool BootAnimation::movie() {
             (gl_extensions.find("GL_OES_texture_npot") != -1)) {
             mUseNpotTextures = true;
         }
+    }
+
+    if (com::android::graphics::bootanimation::flags::rgb565()) {
+        mDecodeOpaqueImageTo565 = android::base::GetBoolProperty(DECODE_RGB565_PROP_NAME, false);
     }
 
     // Blend required to draw time on top of animation frames.

@@ -9,4 +9,11 @@ flag {
   is_fixed_read_only: true
 }
 
+flag {
+  name: "rgb565"
+  namespace: "bootanimation"
+  description: "Enable boot animation images to be decoded to RGB565"
+  bug: "443909249"
+  is_fixed_read_only: true
+}
 
