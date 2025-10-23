@@ -562,6 +562,38 @@ public abstract class OomAdjuster {
          * comparable behavior.
          */
         public volatile float mPssToRssThresholdModifier;
+        /**
+         * The maximum time in milliseconds an empty process can exist before it is considered for
+         * trimming due to age.
+         */
+        public volatile long mMaxEmptyTimeMillis;
+        /**
+         * The grace period in milliseconds for an app that transitions from the TOP state to
+         * having a foreground service, during which it retains a higher oom_adj score.
+         */
+        public volatile long mTopToFgsGraceDuration;
+        /**
+         * The grace period in milliseconds for an app that has just left the TOP state but still
+         * has an "almost perceptible" service running. During this period, the app retains a
+         * higher oom_adj score.
+         */
+        public volatile long mTopToAlmostPerceptibleGraceDuration;
+        /**
+         * The maximum duration in milliseconds a process can remain in the 'previous' oom_adj
+         * state before being demoted to a cached state.
+         */
+        public volatile long mMaxPreviousTime;
+        /**
+         * The maximum time in milliseconds that a service can remain inactive (with no new
+         * activity) before its process is considered non-essential and can be moved to the LRU
+         * background list.
+         */
+        public volatile long mMaxServiceInactivity;
+        /**
+         * The duration in milliseconds to retain a process hosting a content provider in the
+         * "last activity" state before allowing it to be demoted to the regular cached LRU list.
+         */
+        public volatile long mContentProviderRetainTime;
     }
 
     // TODO(b/346822474): hook up global state usage.

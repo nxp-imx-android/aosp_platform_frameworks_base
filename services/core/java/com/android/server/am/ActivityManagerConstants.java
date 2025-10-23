@@ -509,7 +509,7 @@ final class ActivityManagerConstants extends ContentObserver {
     // How long we will retain processes hosting content providers in the "last activity"
     // state before allowing them to drop down to the regular cached LRU list.  This is
     // to avoid thrashing of provider processes under low memory situations.
-    long CONTENT_PROVIDER_RETAIN_TIME = DEFAULT_CONTENT_PROVIDER_RETAIN_TIME;
+    private long mContentProviderRetainTime = DEFAULT_CONTENT_PROVIDER_RETAIN_TIME;
 
     // How long to wait after going idle before forcing apps to GC.
     long GC_TIMEOUT = DEFAULT_GC_TIMEOUT;
@@ -599,7 +599,7 @@ final class ActivityManagerConstants extends ContentObserver {
     // Maximum amount of time for there to be no activity on a service before
     // we consider it non-essential and allow its process to go on the
     // LRU background list.
-    public long MAX_SERVICE_INACTIVITY = DEFAULT_MAX_SERVICE_INACTIVITY;
+    private long mMaxServiceInactivity = DEFAULT_MAX_SERVICE_INACTIVITY;
 
     // How long we wait for a background started service to stop itself before
     // allowing the next pending start to run.
@@ -624,17 +624,17 @@ final class ActivityManagerConstants extends ContentObserver {
 
     // Allow app just moving from TOP to FOREGROUND_SERVICE to stay in a higher adj value for
     // this long.
-    public volatile long TOP_TO_FGS_GRACE_DURATION = DEFAULT_TOP_TO_FGS_GRACE_DURATION;
+    private volatile long mTopToFgsGraceDuration = DEFAULT_TOP_TO_FGS_GRACE_DURATION;
 
     /**
      * Allow app just leaving TOP with an already running ALMOST_PERCEPTIBLE service to stay in
      * a higher adj value for this long.
      */
-    public long TOP_TO_ALMOST_PERCEPTIBLE_GRACE_DURATION =
+    private long mTopToAlmostPerceptibleGraceDuration =
             DEFAULT_TOP_TO_ALMOST_PERCEPTIBLE_GRACE_DURATION;
 
     // How long a process can remain at previous oom_adj before dropping to cached
-    public static long MAX_PREVIOUS_TIME = DEFAULT_MAX_PREVIOUS_TIME;
+    private long mMaxPreviousTime = DEFAULT_MAX_PREVIOUS_TIME;
 
     /**
      * The minimum time we allow between crashes, for us to consider this
@@ -950,7 +950,7 @@ final class ActivityManagerConstants extends ContentObserver {
 
     private static final long DEFAULT_MAX_EMPTY_TIME_MILLIS = 1000L * 60L * 60L * 1000L;
 
-    volatile long mMaxEmptyTimeMillis = DEFAULT_MAX_EMPTY_TIME_MILLIS;
+    private volatile long mMaxEmptyTimeMillis = DEFAULT_MAX_EMPTY_TIME_MILLIS;
 
     /**
      * Packages that can't be killed even if it's requested to be killed on imperceptible.
@@ -1601,8 +1601,10 @@ final class ActivityManagerConstants extends ContentObserver {
                     DEFAULT_FGSERVICE_SCREEN_ON_AFTER_TIME);
             FGS_BOOT_COMPLETED_ALLOWLIST = mParser.getInt(KEY_FGS_BOOT_COMPLETED_ALLOWLIST,
                     DEFAULT_FGS_BOOT_COMPLETED_ALLOWLIST);
-            CONTENT_PROVIDER_RETAIN_TIME = mParser.getLong(KEY_CONTENT_PROVIDER_RETAIN_TIME,
+            mContentProviderRetainTime = mParser.getLong(KEY_CONTENT_PROVIDER_RETAIN_TIME,
                     DEFAULT_CONTENT_PROVIDER_RETAIN_TIME);
+            mService.mProcessStateController.setContentProviderRetainTime(
+                    mContentProviderRetainTime);
             GC_TIMEOUT = mParser.getLong(KEY_GC_TIMEOUT,
                     DEFAULT_GC_TIMEOUT);
             GC_MIN_INTERVAL = mParser.getLong(KEY_GC_MIN_INTERVAL,
@@ -1641,8 +1643,9 @@ final class ActivityManagerConstants extends ContentObserver {
                     DEFAULT_SERVICE_RESTART_DURATION_FACTOR);
             SERVICE_MIN_RESTART_TIME_BETWEEN = mParser.getLong(KEY_SERVICE_MIN_RESTART_TIME_BETWEEN,
                     DEFAULT_SERVICE_MIN_RESTART_TIME_BETWEEN);
-            MAX_SERVICE_INACTIVITY = mParser.getLong(KEY_MAX_SERVICE_INACTIVITY,
+            mMaxServiceInactivity = mParser.getLong(KEY_MAX_SERVICE_INACTIVITY,
                     DEFAULT_MAX_SERVICE_INACTIVITY);
+            mService.mProcessStateController.setMaxServiceInactivity(mMaxServiceInactivity);
             BG_START_TIMEOUT = mParser.getLong(KEY_BG_START_TIMEOUT,
                     DEFAULT_BG_START_TIMEOUT);
             SERVICE_BG_ACTIVITY_START_TIMEOUT = mParser.getLong(
@@ -1657,9 +1660,11 @@ final class ActivityManagerConstants extends ContentObserver {
                     DEFAULT_PROCESS_START_ASYNC);
             MEMORY_INFO_THROTTLE_TIME = mParser.getLong(KEY_MEMORY_INFO_THROTTLE_TIME,
                     DEFAULT_MEMORY_INFO_THROTTLE_TIME);
-            TOP_TO_ALMOST_PERCEPTIBLE_GRACE_DURATION = mParser.getDurationMillis(
+            mTopToAlmostPerceptibleGraceDuration = mParser.getDurationMillis(
                     KEY_TOP_TO_ALMOST_PERCEPTIBLE_GRACE_DURATION,
                     DEFAULT_TOP_TO_ALMOST_PERCEPTIBLE_GRACE_DURATION);
+            mService.mProcessStateController.setTopToAlmostPerceptibleGraceDuration(
+                    mTopToAlmostPerceptibleGraceDuration);
             MIN_CRASH_INTERVAL = mParser.getInt(KEY_MIN_CRASH_INTERVAL,
                     DEFAULT_MIN_CRASH_INTERVAL);
             PENDINGINTENT_WARNING_THRESHOLD = mParser.getInt(KEY_PENDINGINTENT_WARNING_THRESHOLD,
@@ -1951,6 +1956,7 @@ final class ActivityManagerConstants extends ContentObserver {
                 DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
                 KEY_MAX_EMPTY_TIME_MILLIS,
                 DEFAULT_MAX_EMPTY_TIME_MILLIS);
+        mService.mProcessStateController.setMaxEmptyTimeMillis(mMaxEmptyTimeMillis);
     }
 
     private void updateNetworkAccessTimeoutMs() {
@@ -2106,17 +2112,19 @@ final class ActivityManagerConstants extends ContentObserver {
 
 
     private void updateTopToFgsGraceDuration() {
-        TOP_TO_FGS_GRACE_DURATION = DeviceConfig.getLong(
+        mTopToFgsGraceDuration = DeviceConfig.getLong(
                 DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
                 KEY_TOP_TO_FGS_GRACE_DURATION,
                 DEFAULT_TOP_TO_FGS_GRACE_DURATION);
+        mService.mProcessStateController.setTopToFgsGraceDuration(mTopToFgsGraceDuration);
     }
 
     private void updateMaxPreviousTime() {
-        MAX_PREVIOUS_TIME = DeviceConfig.getLong(
+        mMaxPreviousTime = DeviceConfig.getLong(
                 DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
                 KEY_MAX_PREVIOUS_TIME,
                 DEFAULT_MAX_PREVIOUS_TIME);
+        mService.mProcessStateController.setMaxPreviousTime(mMaxPreviousTime);
     }
 
     private void updateProcStateDebugUids() {
@@ -2354,6 +2362,12 @@ final class ActivityManagerConstants extends ContentObserver {
         oomConstants.mProcStateDebugUids = mProcStateDebugUids;
         oomConstants.mForceEnablePssProfiling = mForceEnablePssProfiling;
         oomConstants.mPssToRssThresholdModifier = PSS_TO_RSS_THRESHOLD_MODIFIER;
+        oomConstants.mMaxEmptyTimeMillis = mMaxEmptyTimeMillis;
+        oomConstants.mTopToFgsGraceDuration = mTopToFgsGraceDuration;
+        oomConstants.mTopToAlmostPerceptibleGraceDuration = mTopToAlmostPerceptibleGraceDuration;
+        oomConstants.mMaxPreviousTime = mMaxPreviousTime;
+        oomConstants.mMaxServiceInactivity = mMaxServiceInactivity;
+        oomConstants.mContentProviderRetainTime = mContentProviderRetainTime;
 
         return oomConstants;
     }
@@ -2378,7 +2392,7 @@ final class ActivityManagerConstants extends ContentObserver {
         pw.print("  "); pw.print(KEY_FGS_BOOT_COMPLETED_ALLOWLIST); pw.print("=");
         pw.println(FGS_BOOT_COMPLETED_ALLOWLIST);
         pw.print("  "); pw.print(KEY_CONTENT_PROVIDER_RETAIN_TIME); pw.print("=");
-        pw.println(CONTENT_PROVIDER_RETAIN_TIME);
+        pw.println(mContentProviderRetainTime);
         pw.print("  "); pw.print(KEY_GC_TIMEOUT); pw.print("=");
         pw.println(GC_TIMEOUT);
         pw.print("  "); pw.print(KEY_GC_MIN_INTERVAL); pw.print("=");
@@ -2416,7 +2430,7 @@ final class ActivityManagerConstants extends ContentObserver {
         pw.print("  "); pw.print(KEY_SERVICE_MIN_RESTART_TIME_BETWEEN); pw.print("=");
         pw.println(SERVICE_MIN_RESTART_TIME_BETWEEN);
         pw.print("  "); pw.print(KEY_MAX_SERVICE_INACTIVITY); pw.print("=");
-        pw.println(MAX_SERVICE_INACTIVITY);
+        pw.println(mMaxServiceInactivity);
         pw.print("  "); pw.print(KEY_BG_START_TIMEOUT); pw.print("=");
         pw.println(BG_START_TIMEOUT);
         pw.print("  "); pw.print(KEY_SERVICE_BG_ACTIVITY_START_TIMEOUT); pw.print("=");
@@ -2430,9 +2444,9 @@ final class ActivityManagerConstants extends ContentObserver {
         pw.print("  "); pw.print(KEY_MEMORY_INFO_THROTTLE_TIME); pw.print("=");
         pw.println(MEMORY_INFO_THROTTLE_TIME);
         pw.print("  "); pw.print(KEY_TOP_TO_FGS_GRACE_DURATION); pw.print("=");
-        pw.println(TOP_TO_FGS_GRACE_DURATION);
+        pw.println(mTopToFgsGraceDuration);
         pw.print("  "); pw.print(KEY_TOP_TO_ALMOST_PERCEPTIBLE_GRACE_DURATION); pw.print("=");
-        pw.println(TOP_TO_ALMOST_PERCEPTIBLE_GRACE_DURATION);
+        pw.println(mTopToAlmostPerceptibleGraceDuration);
         pw.print("  "); pw.print(KEY_MIN_CRASH_INTERVAL); pw.print("=");
         pw.println(MIN_CRASH_INTERVAL);
         pw.print("  "); pw.print(KEY_PROCESS_CRASH_COUNT_RESET_INTERVAL); pw.print("=");
@@ -2564,7 +2578,7 @@ final class ActivityManagerConstants extends ContentObserver {
         pw.print("="); pw.println(PSS_TO_RSS_THRESHOLD_MODIFIER);
 
         pw.print("  "); pw.print(KEY_MAX_PREVIOUS_TIME);
-        pw.print("="); pw.println(MAX_PREVIOUS_TIME);
+        pw.print("="); pw.println(mMaxPreviousTime);
 
         pw.print("  "); pw.print(KEY_ENABLE_BATCHING_OOM_ADJ);
         pw.print("="); pw.println(ENABLE_BATCHING_OOM_ADJ);

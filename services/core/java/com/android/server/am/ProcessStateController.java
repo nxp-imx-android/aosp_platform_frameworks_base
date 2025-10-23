@@ -149,6 +149,30 @@ public class ProcessStateController {
         mOomConstants.mPssToRssThresholdModifier = value;
     }
 
+    public void setMaxEmptyTimeMillis(long value) {
+        mOomConstants.mMaxEmptyTimeMillis = value;
+    }
+
+    public void setTopToFgsGraceDuration(long value) {
+        mOomConstants.mTopToFgsGraceDuration = value;
+    }
+
+    public void setTopToAlmostPerceptibleGraceDuration(long value) {
+        mOomConstants.mTopToAlmostPerceptibleGraceDuration = value;
+    }
+
+    public void setMaxPreviousTime(long value) {
+        mOomConstants.mMaxPreviousTime = value;
+    }
+
+    public void setMaxServiceInactivity(long value) {
+        mOomConstants.mMaxServiceInactivity = value;
+    }
+
+    public void setContentProviderRetainTime(long value) {
+        mOomConstants.mContentProviderRetainTime = value;
+    }
+
     /**
      * Start a batch session for specifically service state changes. ProcessStateController updates
      * will not be triggered until until the returned SyncBatchSession is closed.
