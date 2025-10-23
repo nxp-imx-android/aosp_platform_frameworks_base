@@ -228,10 +228,7 @@ public class DefaultDialerManager {
 
         for (ResolveInfo resolveInfo : resolveInfoList) {
             final ActivityInfo activityInfo = resolveInfo.activityInfo;
-            if (activityInfo != null
-                    && !packageNames.contains(activityInfo.packageName)
-                    // ignore cross profile intent handler
-                    && resolveInfo.targetUserId == UserHandle.USER_CURRENT) {
+            if (activityInfo != null && !packageNames.contains(activityInfo.packageName)) {
                 packageNames.add(activityInfo.packageName);
             }
         }
