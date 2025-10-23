@@ -22,6 +22,7 @@ import static android.app.ITaskStackListener.FORCED_RESIZEABLE_REASON_SECONDARY_
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
+import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doCallRealMethod;
@@ -51,6 +52,7 @@ import static org.mockito.Mockito.timeout;
 
 import android.annotation.NonNull;
 import android.app.ActivityOptions;
+import android.app.TaskInfo;
 import android.app.WaitResult;
 import android.app.WindowConfiguration;
 import android.content.ComponentName;
@@ -701,5 +703,96 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
         tf.setWindowingMode(windowingMode);
         tf.setBounds(filling ? new Rect() : new Rect(100, 100, 200, 200));
         return tf;
+    }
+
+    @Test
+    @RequiresFlagsDisabled(Flags.FLAG_ROOT_TASK_FOR_BUBBLE)
+    public void testTaskInfoHelper_fillAndReturnTop_flagDisabled_cookieAddedForOrganizedTask() {
+        // Setup a task created by an organizer with an activity that has a launch cookie.
+        final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(true).build();
+        final TaskFragment childTask = createChildTaskFragment(rootTask,
+                WINDOWING_MODE_UNDEFINED, /* opaque */ true, /* filling */ true);
+        final ActivityRecord activity = childTask.getTopMostActivity();
+        final IBinder launchCookie = new Binder();
+        activity.mLaunchCookie = launchCookie;
+
+        final ActivityTaskSupervisor.TaskInfoHelper helper =
+                new ActivityTaskSupervisor.TaskInfoHelper();
+        final TaskInfo taskInfo = new TaskBuilder(mSupervisor).build().getTaskInfo();
+        taskInfo.launchCookies.clear();
+
+        // Execute the method to be tested.
+        helper.fillAndReturnTop(rootTask, taskInfo);
+
+        // When the flag is disabled, the cookie should be added even if the task is created by an
+        // organizer.
+        assertThat(taskInfo.launchCookies).containsExactly(launchCookie);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ROOT_TASK_FOR_BUBBLE)
+    public void testTaskInfoHelper_fillAndReturnTop_flagEnabled_notByOrganizer_cookieAdded() {
+        // Setup a task NOT created by an organizer with an activity that has a launch cookie.
+        final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(false).build();
+        final TaskFragment childTask = createChildTaskFragment(rootTask,
+                WINDOWING_MODE_UNDEFINED, /* opaque */ true, /* filling */ true);
+        final ActivityRecord activity = childTask.getTopMostActivity();
+        final IBinder launchCookie = new Binder();
+        activity.mLaunchCookie = launchCookie;
+
+        final ActivityTaskSupervisor.TaskInfoHelper helper =
+                new ActivityTaskSupervisor.TaskInfoHelper();
+        final TaskInfo taskInfo = new TaskBuilder(mSupervisor).build().getTaskInfo();
+        taskInfo.launchCookies.clear();
+
+        // Execute the method to be tested.
+        helper.fillAndReturnTop(rootTask, taskInfo);
+
+        // When the flag is enabled, the cookie should be added if the task is not created by an
+        // organizer.
+        assertThat(taskInfo.launchCookies).containsExactly(launchCookie);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ROOT_TASK_FOR_BUBBLE)
+    public void testTaskInfoHelper_fillAndReturnTop_flagEnabled_byOrganizer_cookieNotAdded() {
+        // Setup a task created by an organizer with an activity that has a launch cookie.
+        final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(true).build();
+        final TaskFragment childTask = createChildTaskFragment(rootTask,
+                WINDOWING_MODE_UNDEFINED, /* opaque */ true, /* filling */ true);
+        final ActivityRecord activity = childTask.getTopMostActivity();
+        final IBinder launchCookie = new Binder();
+        activity.mLaunchCookie = launchCookie;
+
+        final ActivityTaskSupervisor.TaskInfoHelper helper =
+                new ActivityTaskSupervisor.TaskInfoHelper();
+        final TaskInfo taskInfo = new TaskBuilder(mSupervisor).build().getTaskInfo();
+        taskInfo.launchCookies.clear();
+
+        // Execute the method to be tested.
+        helper.fillAndReturnTop(rootTask, taskInfo);
+
+        // When the flag is enabled, the cookie should NOT be added if the task is created by an
+        // organizer.
+        assertThat(taskInfo.launchCookies).isEmpty();
+    }
+
+    @Test
+    public void testTaskInfoHelper_fillAndReturnTop_noCookie_isEmpty() {
+        // Setup a task with an activity that does not have a launch cookie.
+        final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(true).build();
+        final TaskFragment childTask = createChildTaskFragment(rootTask,
+                WINDOWING_MODE_UNDEFINED, /* opaque */ true, /* filling */ true);
+
+        final ActivityTaskSupervisor.TaskInfoHelper helper =
+                new ActivityTaskSupervisor.TaskInfoHelper();
+        final TaskInfo taskInfo = new TaskBuilder(mSupervisor).build().getTaskInfo();
+        taskInfo.launchCookies.clear();
+
+        // Execute the method to be tested.
+        helper.fillAndReturnTop(rootTask, taskInfo);
+
+        // If there's no cookie, the list should be empty.
+        assertThat(taskInfo.launchCookies).isEmpty();
     }
 }
