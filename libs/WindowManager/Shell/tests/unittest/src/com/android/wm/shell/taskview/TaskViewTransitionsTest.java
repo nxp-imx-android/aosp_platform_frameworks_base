@@ -135,7 +135,9 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         verify(mTransitions).startTransition(anyInt(), wctCaptor.capture(), any());
         WindowContainerTransaction.Change chg =
                 wctCaptor.getValue().getChanges().get(mToken.asBinder());
-        assertThat(chg.getInterceptBackPressed()).isFalse();
+        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            assertThat(chg.getInterceptBackPressed()).isFalse();
+        }
     }
 
     @EnableFlags({
