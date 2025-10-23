@@ -898,7 +898,6 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         // Reset gesture states.
         mThresholdCrossed = false;
         mPointersPilfered = false;
-        mBackAnimationTriggered = false;
         mBackGestureStarted = false;
         activeTouchTracker.setState(BackTouchTracker.TouchTrackerState.FINISHED);
         mTransitionIdleRunner.mRequestCount = 0;
@@ -1070,6 +1069,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         mOnBackStartDispatched = false;
         mThresholdCrossed = false;
         mPointersPilfered = false;
+        mBackAnimationTriggered = false;
         mShellBackAnimationRegistry.resetDefaultCrossActivity();
         cancelLatencyTracking();
         mReceivedNullNavigationInfo = false;
