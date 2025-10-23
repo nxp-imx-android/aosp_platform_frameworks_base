@@ -10180,6 +10180,11 @@
                  android:permission="android.permission.BIND_JOB_SERVICE">
         </service>
 
+        <service android:name="com.android.server.appsearch.AppSearchMaintenanceService"
+                 android:featureFlag="com.android.appsearch.flags.enable_schedule_maintenance_job"
+                 android:permission="android.permission.BIND_JOB_SERVICE">
+        </service>
+
         <service android:name="com.android.server.appsearch.contactsindexer.ContactsIndexerMaintenanceService"
                  android:permission="android.permission.BIND_JOB_SERVICE">
         </service>
