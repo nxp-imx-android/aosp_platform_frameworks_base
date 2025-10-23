@@ -28,8 +28,6 @@ import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.MediaProjectionStopDialogModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
-import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModelLegacy
-import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
@@ -58,9 +56,6 @@ class FakeHomeStatusBarViewModel(
 
     override val transitionFromLockscreenToDreamStartedEvent = MutableSharedFlow<Unit>()
 
-    override val primaryOngoingActivityChip: MutableStateFlow<OngoingActivityChipModel> =
-        MutableStateFlow(OngoingActivityChipModel.Inactive())
-
     override val ongoingActivityChips =
         ChipsVisibilityModel(MultipleOngoingActivityChipsModel(), areChipsAllowed = false)
 
@@ -71,9 +66,6 @@ class FakeHomeStatusBarViewModel(
     override fun onNotificationIconChipClicked() {}
 
     override fun onShadeExpansionIntent(eventX: Float, statusBarWidth: Int) {}
-
-    override val ongoingActivityChipsLegacy =
-        MutableStateFlow(MultipleOngoingActivityChipsModelLegacy())
 
     override val popupChips = emptyList<PopupChipModel.Shown>()
 

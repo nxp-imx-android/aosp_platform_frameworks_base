@@ -30,11 +30,8 @@ import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createDialogLaunchOnClickCallback
-import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createDialogLaunchOnClickListener
 import com.android.systemui.statusbar.chips.uievents.statusBarChipsUiEventLogger
 import com.android.systemui.statusbar.phone.SystemUIDialog
-import com.android.systemui.statusbar.phone.ongoingcall.DisableChipsModernization
-import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.testKosmos
 import kotlin.test.Test
 import org.junit.runner.RunWith
@@ -71,28 +68,6 @@ class OngoingActivityChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableChipsModernization
-    fun createDialogLaunchOnClickListener_showsDialogOnClick() {
-        val cuj = DialogCuj(Cuj.CUJ_STATUS_BAR_LAUNCH_DIALOG_FROM_CHIP, tag = "Test")
-        val clickListener =
-            createDialogLaunchOnClickListener(
-                { _ -> dialogDelegate },
-                dialogTransitionAnimator,
-                cuj,
-                key = "key",
-                instanceId = InstanceId.fakeInstanceId(0),
-                uiEventLogger = kosmos.statusBarChipsUiEventLogger,
-                logger = logcatLogBuffer("OngoingActivityChipViewModelTest"),
-                tag = "tag",
-            )
-
-        clickListener.onClick(chipView)
-        verify(dialogTransitionAnimator)
-            .showFromView(eq(mockSystemUIDialog), eq(chipBackgroundView), eq(cuj), anyBoolean())
-    }
-
-    @Test
-    @EnableChipsModernization
     fun createDialogLaunchOnClickCallback_showsDialogOnClick() {
         val cuj = DialogCuj(Cuj.CUJ_STATUS_BAR_LAUNCH_DIALOG_FROM_CHIP, tag = "Test")
         val clickCallback =

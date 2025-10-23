@@ -37,9 +37,7 @@ import com.android.systemui.statusbar.phone.AutoHideController
 import com.android.systemui.statusbar.phone.AutoHideControllerImpl
 import com.android.systemui.statusbar.phone.LightBarController
 import com.android.systemui.statusbar.phone.StatusBarSignalPolicy
-import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallController
 import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallLog
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.domain.interactor.OngoingCallInteractor
 import com.android.systemui.statusbar.phone.ongoingcall.shared.PerDisplayOngoingCallStatusBarVisibility
 import com.android.systemui.statusbar.ui.StatusBarUiLayerModule
@@ -97,23 +95,9 @@ interface StatusBarModule {
         @Provides
         @SysUISingleton
         @IntoMap
-        @ClassKey(OngoingCallController::class)
-        fun ongoingCallController(controller: OngoingCallController): CoreStartable =
-            if (StatusBarChipsModernization.isEnabled) {
-                CoreStartable.NOP
-            } else {
-                controller
-            }
-
-        @Provides
-        @SysUISingleton
-        @IntoMap
         @ClassKey(OngoingCallInteractor::class)
         fun ongoingCallInteractor(interactor: OngoingCallInteractor): CoreStartable =
-            if (
-                StatusBarChipsModernization.isEnabled &&
-                    !PerDisplayOngoingCallStatusBarVisibility.isEnabled
-            ) {
+            if (!PerDisplayOngoingCallStatusBarVisibility.isEnabled) {
                 interactor
             } else {
                 CoreStartable.NOP

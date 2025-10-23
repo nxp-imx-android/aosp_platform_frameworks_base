@@ -31,8 +31,6 @@ import com.android.systemui.statusbar.notification.promoted.shared.model.Promote
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.shared.CallType
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
-import com.android.systemui.statusbar.phone.ongoingcall.data.repository.ongoingCallRepository
 import org.mockito.kotlin.mock
 
 /** Helper for building [OngoingCallModel.InCall] instances in tests. */
@@ -63,22 +61,16 @@ fun inCallModel(
 
 object OngoingCallTestHelper {
     /**
-     * Removes any ongoing call state and removes any call notification associated with [key]. Does
-     * it correctly based on whether [StatusBarChipsModernization] is enabled or not.
+     * Removes any ongoing call state and removes any call notification associated with [key].
      *
      * @param key the notification key associated with the call notification.
      */
     fun Kosmos.removeOngoingCallState(key: String) {
-        if (StatusBarChipsModernization.isEnabled) {
-            activeNotificationListRepository.removeNotif(key)
-        } else {
-            ongoingCallRepository.setOngoingCallState(OngoingCallModel.NoCall)
-        }
+        activeNotificationListRepository.removeNotif(key)
     }
 
     /**
-     * Sets SysUI to have an ongoing call state. Does it correctly based on whether
-     * [StatusBarChipsModernization] is enabled or not.
+     * Sets SysUI to have an ongoing call state.
      *
      * @param key the notification key to be associated with the call notification
      */
@@ -103,39 +95,22 @@ object OngoingCallTestHelper {
                     promotedContent.value
                 }
             }
-        if (StatusBarChipsModernization.isEnabled) {
-            activityManagerRepository.fake.startingIsAppVisibleValue = isAppVisible
-            activeNotificationListRepository.addNotif(
-                activeNotificationModel(
-                    key = key,
-                    whenTime = startTimeMs,
-                    callType = CallType.Ongoing,
-                    statusBarChipIcon = statusBarChipIconView,
-                    contentIntent = contentIntent,
-                    requestedPromotion = requestedPromotion,
-                    promotedContent = actualPromotedContent,
-                    uid = uid,
-                    appName = appName,
-                    instanceId = instanceId,
-                    packageName = packageName,
-                )
+        activityManagerRepository.fake.startingIsAppVisibleValue = isAppVisible
+        activeNotificationListRepository.addNotif(
+            activeNotificationModel(
+                key = key,
+                whenTime = startTimeMs,
+                callType = CallType.Ongoing,
+                statusBarChipIcon = statusBarChipIconView,
+                contentIntent = contentIntent,
+                requestedPromotion = requestedPromotion,
+                promotedContent = actualPromotedContent,
+                uid = uid,
+                appName = appName,
+                instanceId = instanceId,
+                packageName = packageName,
             )
-        } else {
-            ongoingCallRepository.setOngoingCallState(
-                inCallModel(
-                    startTimeMs = startTimeMs,
-                    notificationIcon = statusBarChipIconView,
-                    intent = contentIntent,
-                    notificationKey = key,
-                    appName = appName,
-                    requestedPromotion = requestedPromotion,
-                    promotedContent = actualPromotedContent,
-                    isAppVisible = isAppVisible,
-                    instanceId = instanceId,
-                    packageName = packageName,
-                )
-            )
-        }
+        )
     }
 
     sealed interface PromotedContentInput {

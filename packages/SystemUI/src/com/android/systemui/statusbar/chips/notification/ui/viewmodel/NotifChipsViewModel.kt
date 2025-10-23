@@ -34,7 +34,6 @@ import com.android.systemui.statusbar.chips.notification.domain.model.Notificati
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createNotificationToggleClickBehavior
-import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createNotificationToggleClickListenerLegacy
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.isShowingHeadsUpFromChipTap
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
@@ -158,13 +157,6 @@ constructor(
         val isHidden = this.isAppVisible
 
         val isShowingHeadsUpFromChipTap = headsUpState.isShowingHeadsUpFromChipTap(this.key)
-        val onClickListenerLegacy =
-            createNotificationToggleClickListenerLegacy(
-                applicationScope = applicationScope,
-                notifChipsInteractor = notifChipsInteractor,
-                logger = logger,
-                notificationKey = this.key,
-            )
         val clickBehavior =
             createNotificationToggleClickBehavior(
                 applicationScope = applicationScope,
@@ -217,7 +209,6 @@ constructor(
             icon = icon,
             content = content,
             colors = colors,
-            onClickListenerLegacy = onClickListenerLegacy,
             clickBehavior = clickBehavior,
             isHidden = isHidden,
             instanceId = instanceId,

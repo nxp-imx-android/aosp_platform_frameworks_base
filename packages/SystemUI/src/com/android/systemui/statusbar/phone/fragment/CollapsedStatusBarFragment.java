@@ -67,9 +67,7 @@ import com.android.systemui.statusbar.phone.StatusBarHideIconsForBouncerManager;
 import com.android.systemui.statusbar.phone.StatusBarLocation;
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent;
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent.Startable;
-import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallController;
 import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallListener;
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization;
 import com.android.systemui.statusbar.phone.ui.DarkIconManager;
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController;
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder;
@@ -143,7 +141,6 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
     private final CommandQueue mCommandQueue;
     private final CollapsedStatusBarFragmentLogger mCollapsedStatusBarFragmentLogger;
     private final OperatorNameViewController.Factory mOperatorNameViewControllerFactory;
-    private final OngoingCallController mOngoingCallController;
     private final SystemStatusAnimationScheduler mAnimationScheduler;
     private final ShadeExpansionStateManager mShadeExpansionStateManager;
     private final StatusBarIconController mStatusBarIconController;
@@ -246,7 +243,6 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
     @Inject
     public CollapsedStatusBarFragment(
             HomeStatusBarComponent.Factory homeStatusBarComponentFactory,
-            OngoingCallController ongoingCallController,
             @DisplayAware SystemStatusAnimationScheduler animationScheduler,
             ShadeExpansionStateManager shadeExpansionStateManager,
             StatusBarIconController statusBarIconController,
@@ -270,7 +266,6 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
             DemoModeController demoModeController,
             StatusBarWindowControllerStore statusBarWindowControllerStore) {
         mHomeStatusBarComponentFactory = homeStatusBarComponentFactory;
-        mOngoingCallController = ongoingCallController;
         mAnimationScheduler = animationScheduler;
         mShadeExpansionStateManager = shadeExpansionStateManager;
         mStatusBarIconController = statusBarIconController;
@@ -473,7 +468,6 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
         }
         mCommandQueue.addCallback(this);
         mStatusBarStateController.addCallback(this);
-        initOngoingCallChip();
         mAnimationScheduler.addCallback(this);
 
         mSecureSettings.registerContentObserverForUserSync(
@@ -491,9 +485,6 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
         }
         mCommandQueue.removeCallback(this);
         mStatusBarStateController.removeCallback(this);
-        if (!StatusBarRootModernization.isEnabled()) {
-            mOngoingCallController.removeCallback(mOngoingCallListener);
-        }
         mAnimationScheduler.removeCallback(this);
         mSecureSettings.unregisterContentObserverSync(mVolumeSettingObserver);
     }
@@ -953,16 +944,6 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
                     hideOperatorName(false);
                 }
             }
-        }
-    }
-
-    private void initOngoingCallChip() {
-        if (!StatusBarRootModernization.isEnabled()) {
-            mOngoingCallController.addCallback(mOngoingCallListener);
-        }
-        // TODO(b/364653005): Do we also need to set the secondary activity chip?
-        if (!StatusBarChipsModernization.isEnabled()) {
-            mOngoingCallController.setChipView(mPrimaryOngoingActivityChip);
         }
     }
 

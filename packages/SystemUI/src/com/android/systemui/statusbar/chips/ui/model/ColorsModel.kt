@@ -46,9 +46,6 @@ sealed interface ColorsModel {
     }
 
     /** The chip should match the system theme main color. */
-    // Note: When StatusBarChipsModernization is disabled, the chip's color doesn't get
-    // updated when the user switches theme. It only gets updated when a different
-    // configuration change happens, like a rotation.
     data object SystemThemed : ColorsModel {
         override fun background(context: Context): ColorStateList =
             ColorStateList.valueOf(

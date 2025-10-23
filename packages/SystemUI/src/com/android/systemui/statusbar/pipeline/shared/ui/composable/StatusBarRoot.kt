@@ -108,8 +108,6 @@ import com.android.systemui.statusbar.phone.PhoneStatusBarView
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
-import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallController
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ui.DarkIconManager
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
@@ -146,7 +144,6 @@ constructor(
     private val darkIconManagerFactory: DarkIconManager.Factory,
     private val tintedIconManagerFactory: TintedIconManager.Factory,
     private val iconController: StatusBarIconController,
-    private val ongoingCallController: OngoingCallController,
     @DisplayAware private val eventAnimationInteractor: SystemStatusEventAnimationInteractor,
     private val mediaHierarchyManager: MediaHierarchyManager,
     @Named(MediaModule.POPUP) private val mediaHost: MediaHost,
@@ -173,7 +170,6 @@ constructor(
                         darkIconManagerFactory = darkIconManagerFactory,
                         tintedIconManagerFactory = tintedIconManagerFactory,
                         iconController = iconController,
-                        ongoingCallController = ongoingCallController,
                         darkIconDispatcher = darkIconDispatcher,
                         eventAnimationInteractor = eventAnimationInteractor,
                         mediaHierarchyManager = mediaHierarchyManager,
@@ -214,7 +210,6 @@ fun StatusBarRoot(
     darkIconManagerFactory: DarkIconManager.Factory,
     tintedIconManagerFactory: TintedIconManager.Factory,
     iconController: StatusBarIconController,
-    ongoingCallController: OngoingCallController,
     darkIconDispatcher: DarkIconDispatcher,
     eventAnimationInteractor: SystemStatusEventAnimationInteractor,
     mediaHierarchyManager: MediaHierarchyManager,
@@ -284,16 +279,14 @@ fun StatusBarRoot(
                 val phoneStatusBarView =
                     inflater.inflate(R.layout.status_bar, parent, false) as PhoneStatusBarView
 
-                if (StatusBarChipsModernization.isEnabled) {
-                    addStartSideComposable(
-                        phoneStatusBarView = phoneStatusBarView,
-                        clockViewModelFactory = clockViewModelFactory,
-                        statusBarViewModel = statusBarViewModel,
-                        iconViewStore = iconViewStore,
-                        appHandlesViewModel = appHandlesViewModel,
-                        context = context,
-                    )
-                }
+                addStartSideComposable(
+                    phoneStatusBarView = phoneStatusBarView,
+                    clockViewModelFactory = clockViewModelFactory,
+                    statusBarViewModel = statusBarViewModel,
+                    iconViewStore = iconViewStore,
+                    appHandlesViewModel = appHandlesViewModel,
+                    context = context,
+                )
 
                 touchableExclusionRegionDisposableHandle =
                     HomeStatusBarTouchExclusionRegionBinder.bind(
@@ -301,18 +294,10 @@ fun StatusBarRoot(
                         appHandlesViewModel,
                     )
 
-                if (StatusBarChipsModernization.isEnabled) {
-                    // Make sure the primary chip is hidden when StatusBarChipsModernization is
-                    // enabled. OngoingActivityChips will be shown in a composable container
-                    // when this flag is enabled.
-                    phoneStatusBarView
-                        .requireViewById<View>(R.id.ongoing_activity_chip_primary)
-                        .visibility = View.GONE
-                } else {
-                    ongoingCallController.setChipView(
-                        phoneStatusBarView.requireViewById(R.id.ongoing_activity_chip_primary)
-                    )
-                }
+                // Make sure the legacy AndroidView primary chip is hidden.
+                phoneStatusBarView
+                    .requireViewById<View>(R.id.ongoing_activity_chip_primary)
+                    .visibility = View.GONE
 
                 // For notifications, first inflate the [NotificationIconContainer]
                 val notificationIconArea =

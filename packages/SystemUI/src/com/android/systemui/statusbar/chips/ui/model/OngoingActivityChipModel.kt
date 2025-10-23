@@ -20,7 +20,6 @@ import android.annotation.CurrentTimeMillisLong
 import android.annotation.ElapsedRealtimeLong
 import android.annotation.StringRes
 import android.os.SystemClock
-import android.view.View
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import com.android.internal.logging.InstanceId
@@ -82,11 +81,6 @@ sealed class OngoingActivityChipModel {
         val content: Content,
         /** What colors to use for the chip. */
         val colors: ColorsModel,
-        /**
-         * Listener method to invoke when this chip is clicked. If null, the chip won't be
-         * clickable. Will be deprecated after [StatusBarChipsModernization] is enabled.
-         */
-        val onClickListenerLegacy: View.OnClickListener?,
         /** Data class that determines how clicks on the chip should be handled. */
         val clickBehavior: ClickBehavior,
         override val transitionManager: TransitionManager? = null,
@@ -111,7 +105,6 @@ sealed class OngoingActivityChipModel {
             }
             if (content is Content.Countdown) {
                 require(icon == null)
-                require(onClickListenerLegacy == null)
                 require(clickBehavior is ClickBehavior.None)
             }
         }

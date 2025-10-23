@@ -48,7 +48,6 @@ import com.android.systemui.statusbar.notification.collection.makeClassifiedConv
 import com.android.systemui.statusbar.notification.collection.notifPipeline
 import com.android.systemui.statusbar.notification.domain.interactor.renderNotificationListInteractor
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.promotedNotificationsInteractor
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.withArgCaptor
 import com.google.common.truth.Truth.assertThat
@@ -57,8 +56,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.any
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 
 @SmallTest
@@ -189,9 +186,7 @@ class ColorizedFgsCoordinatorTest : SysuiTestCase() {
             val orderedChipNotificationKeys by
                 collectLastValue(promotedNotificationsInteractor.orderedChipNotificationKeys)
 
-            assertThat(orderedChipNotificationKeys)
-                .containsExactly(screenRecordEntry.key)
-                .inOrder()
+            assertThat(orderedChipNotificationKeys).containsExactly(screenRecordEntry.key).inOrder()
 
             // THEN the entry is in the fgs section
             assertTrue(sectioner.isInSection(screenRecordEntry))
@@ -217,9 +212,7 @@ class ColorizedFgsCoordinatorTest : SysuiTestCase() {
             val orderedChipNotificationKeys by
                 collectLastValue(promotedNotificationsInteractor.orderedChipNotificationKeys)
 
-            assertThat(orderedChipNotificationKeys)
-                .containsExactly(screenRecordEntry.key)
-                .inOrder()
+            assertThat(orderedChipNotificationKeys).containsExactly(screenRecordEntry.key).inOrder()
 
             // THEN the entry is NOT in the fgs section
             assertFalse(sectioner.isInSection(screenRecordEntry))
@@ -248,10 +241,7 @@ class ColorizedFgsCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        StatusBarChipsModernization.FLAG_NAME,
-        StatusBarRootModernization.FLAG_NAME,
-    )
+    @EnableFlags(StatusBarRootModernization.FLAG_NAME)
     fun comparatorPutsCallBeforeOther() =
         kosmos.runTest {
             // GIVEN a call and a promoted ongoing notification
@@ -267,11 +257,7 @@ class ColorizedFgsCoordinatorTest : SysuiTestCase() {
                 collectLastValue(kosmos.promotedNotificationsInteractor.orderedChipNotificationKeys)
 
             // THEN the order of the notification keys should be the call then the RON
-            assertThat(orderedChipNotificationKeys)
-                .containsExactly(
-                    callEntry.key,
-                    ronEntry.key,
-                )
+            assertThat(orderedChipNotificationKeys).containsExactly(callEntry.key, ronEntry.key)
 
             // VERIFY that the comparator puts the call before the ron
             assertThat(sectioner.comparator!!.compare(callEntry, ronEntry)).isLessThan(0)

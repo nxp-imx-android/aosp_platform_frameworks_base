@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.chips.call.ui.viewmodel
 import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
-import android.view.View
 import com.android.internal.jank.Cuj
 import com.android.internal.logging.InstanceId
 import com.android.systemui.animation.ActivityTransitionAnimator
@@ -41,16 +40,13 @@ import com.android.systemui.statusbar.chips.call.domain.interactor.CallChipInter
 import com.android.systemui.statusbar.chips.notification.domain.interactor.StatusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
-import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createNotificationToggleClickBehavior
-import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createNotificationToggleClickListenerLegacy
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.isShowingHeadsUpFromChipTap
 import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.domain.model.TopPinnedState
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
@@ -230,7 +226,6 @@ constructor(
         val intent = state.intent
         val instanceId = state.notificationInstanceId
 
-        // This block mimics OngoingCallController#updateChip.
         val content =
             when {
                 state.startTimeMs <= 0L -> {
@@ -261,7 +256,6 @@ constructor(
             managingPackageName = state.packageName,
             content = content,
             colors = colors,
-            onClickListenerLegacy = getOnClickListener(intent, instanceId, state.notificationKey),
             clickBehavior =
                 getClickBehavior(
                     intent = intent,
@@ -272,19 +266,6 @@ constructor(
             isHidden = isHidden,
             transitionManager = getTransitionManager(state, transitionState),
             instanceId = instanceId,
-        )
-    }
-
-    private fun getOnClickListener(
-        intent: PendingIntent?,
-        instanceId: InstanceId?,
-        notificationKey: String,
-    ): View.OnClickListener? {
-        return createNotificationToggleClickListenerLegacy(
-            applicationScope = scope,
-            notifChipsInteractor = notifChipsInteractor,
-            logger = logger,
-            notificationKey = notificationKey,
         )
     }
 
@@ -299,8 +280,7 @@ constructor(
             notifChipsInteractor = notifChipsInteractor,
             logger = logger,
             notificationKey = notificationKey,
-            isShowingHeadsUpFromChipTap =
-                headsUpState.isShowingHeadsUpFromChipTap(notificationKey),
+            isShowingHeadsUpFromChipTap = headsUpState.isShowingHeadsUpFromChipTap(notificationKey),
         )
     }
 

@@ -56,7 +56,6 @@ class ChipTransitionHelperTest : SysuiTestCase() {
                     icon = createIcon(R.drawable.ic_cake),
                     content = OngoingActivityChipModel.Content.Timer(startTimeMs = 100L),
                     colors = ColorsModel.AccentThemed,
-                    onClickListenerLegacy = null,
                     clickBehavior = OngoingActivityChipModel.ClickBehavior.None,
                 )
 
@@ -70,7 +69,6 @@ class ChipTransitionHelperTest : SysuiTestCase() {
                     icon = createIcon(R.drawable.ic_hotspot),
                     content = OngoingActivityChipModel.Content.IconOnly,
                     colors = ColorsModel.AccentThemed,
-                    onClickListenerLegacy = null,
                     clickBehavior = OngoingActivityChipModel.ClickBehavior.None,
                 )
 
@@ -93,7 +91,6 @@ class ChipTransitionHelperTest : SysuiTestCase() {
                     icon = createIcon(R.drawable.ic_cake),
                     content = OngoingActivityChipModel.Content.Timer(startTimeMs = 100L),
                     colors = ColorsModel.AccentThemed,
-                    onClickListenerLegacy = null,
                     clickBehavior = OngoingActivityChipModel.ClickBehavior.None,
                 )
 
@@ -135,7 +132,6 @@ class ChipTransitionHelperTest : SysuiTestCase() {
                     icon = createIcon(R.drawable.ic_cake),
                     content = OngoingActivityChipModel.Content.Timer(startTimeMs = 100L),
                     colors = ColorsModel.AccentThemed,
-                    onClickListenerLegacy = null,
                     clickBehavior = OngoingActivityChipModel.ClickBehavior.None,
                 )
 

@@ -32,7 +32,6 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModeRepository
 import com.android.systemui.statusbar.gesture.swipeStatusBarAwayGestureHandler
-import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.PerDisplayOngoingCallStatusBarVisibility
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
@@ -50,7 +49,6 @@ import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableChipsModernization
 @EnableFlags(PerDisplayOngoingCallStatusBarVisibility.FLAG_NAME)
 class OngoingCallStatusBarInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
