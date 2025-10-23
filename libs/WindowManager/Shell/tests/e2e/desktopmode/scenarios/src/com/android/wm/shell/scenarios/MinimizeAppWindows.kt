@@ -41,7 +41,7 @@ import org.junit.Test
 abstract class MinimizeAppWindows
 constructor(
     private val rotation: Rotation = Rotation.ROTATION_0,
-    private val usingKeyboard: Boolean = false
+    private val usingKeyboard: Boolean = false,
 ) : TestScenarioBase(rotation) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)

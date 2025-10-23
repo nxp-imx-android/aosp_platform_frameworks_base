@@ -29,4 +29,5 @@ import org.junit.runners.BlockJUnit4ClassRunner
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class EnterDesktopFromSplitScreenWithAppHandleMenuTest : EnterDesktopFromSplitScreenWithAppHandleMenu()
+class EnterDesktopFromSplitScreenWithAppHandleMenuTest :
+    EnterDesktopFromSplitScreenWithAppHandleMenu()

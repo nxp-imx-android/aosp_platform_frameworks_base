@@ -33,20 +33,14 @@ import org.junit.Rule
 import org.junit.Test
 import platform.test.desktop.SimulatedConnectedDisplayTestRule
 
-
-/**
- * Base scenario test to test if newly opened window gets focus.
- */
+/** Base scenario test to test if newly opened window gets focus. */
 @Ignore("Test Base Class")
-@EnableFlags(
-    Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS,
-)
+@EnableFlags(Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS)
 abstract class OpenAndFocus() : TestScenarioBase() {
     private val wmHelper = WindowManagerStateHelper(getInstrumentation())
 
     private val testAppInMainDisplay = DesktopModeAppHelper(SimpleAppHelper(getInstrumentation()))
-    private val testAppInExternalDisplay =
-            DesktopModeAppHelper(MailAppHelper(getInstrumentation()))
+    private val testAppInExternalDisplay = DesktopModeAppHelper(MailAppHelper(getInstrumentation()))
     private val keyEventHelper = KeyEventHelper(getInstrumentation())
 
     @get:Rule(order = 0) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()

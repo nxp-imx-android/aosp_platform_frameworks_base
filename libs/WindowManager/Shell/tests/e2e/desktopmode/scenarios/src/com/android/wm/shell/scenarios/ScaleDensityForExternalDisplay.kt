@@ -39,9 +39,7 @@ import org.junit.Test
 import platform.test.desktop.SimulatedConnectedDisplayTestRule
 
 @Ignore("Test Base Class")
-@RequiresFlagsEnabled(
-    Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-)
+@RequiresFlagsEnabled(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
 abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
@@ -50,7 +48,8 @@ abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
     private val displayManager = context.getSystemService(DisplayManager::class.java)
-    private val activityManager: ActivityManager? = instrumentation.context.getSystemService(ActivityManager::class.java)
+    private val activityManager: ActivityManager? =
+        instrumentation.context.getSystemService(ActivityManager::class.java)
 
     private val settingsResources =
         instrumentation.context.packageManager.getResourcesForApplication(SETTINGS_PACKAGE_NAME)
@@ -68,12 +67,11 @@ abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
         wm.clearForcedDisplayDensityForUser(connectedDisplayId, UserHandle.myUserId())
         val initialDensity = wm.getBaseDisplayDensity(connectedDisplayId)
 
-        instrumentation.context
-            .startActivity(
-                Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
-                    .addCategory(Intent.CATEGORY_DEFAULT)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            )
+        instrumentation.context.startActivity(
+            Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
+                .addCategory(Intent.CATEGORY_DEFAULT)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        )
 
         waitFindObject(text(externalDisplaySettings)).click()
         waitFindObject(text(displayName)).click()
@@ -93,12 +91,11 @@ abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
         wm.clearForcedDisplayDensityForUser(connectedDisplayId, UserHandle.myUserId())
         val initialDensity = wm.getBaseDisplayDensity(connectedDisplayId)
 
-        instrumentation.context
-            .startActivity(
-                Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
-                    .addCategory(Intent.CATEGORY_DEFAULT)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            )
+        instrumentation.context.startActivity(
+            Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
+                .addCategory(Intent.CATEGORY_DEFAULT)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        )
         waitFindObject(text(externalDisplaySettings)).click()
         waitFindObject(text(displayName)).click()
         waitFindObject(desc(decreaseDensityDescription)).click()
@@ -116,12 +113,11 @@ abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
         device.waitForIdle()
         wm.clearForcedDisplayDensityForUser(connectedDisplayId, UserHandle.myUserId())
 
-        instrumentation.context
-            .startActivity(
-                Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
-                    .addCategory(Intent.CATEGORY_DEFAULT)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            )
+        instrumentation.context.startActivity(
+            Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
+                .addCategory(Intent.CATEGORY_DEFAULT)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        )
 
         waitFindObject(text(externalDisplaySettings)).click()
         waitFindObject(text(displayName)).click()

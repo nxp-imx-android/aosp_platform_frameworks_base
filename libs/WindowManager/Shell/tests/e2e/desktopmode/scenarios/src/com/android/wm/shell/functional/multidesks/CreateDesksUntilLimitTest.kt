@@ -23,7 +23,6 @@ import com.android.wm.shell.scenarios.CreateDesksUntilLimit
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-
 /* Functional test for [CreateDesksUntilLimit]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice

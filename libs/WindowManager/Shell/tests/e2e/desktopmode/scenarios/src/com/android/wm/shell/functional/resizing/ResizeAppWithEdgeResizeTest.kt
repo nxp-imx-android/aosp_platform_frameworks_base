@@ -29,5 +29,4 @@ import org.junit.runners.BlockJUnit4ClassRunner
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class ResizeAppWithEdgeResizeTest :
-  ResizeAppWithEdgeResize(MotionEventHelper.InputMethod.TOUCHPAD)
+class ResizeAppWithEdgeResizeTest : ResizeAppWithEdgeResize(MotionEventHelper.InputMethod.TOUCHPAD)

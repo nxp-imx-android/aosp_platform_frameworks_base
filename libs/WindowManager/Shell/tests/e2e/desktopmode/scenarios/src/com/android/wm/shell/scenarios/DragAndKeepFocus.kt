@@ -40,21 +40,15 @@ import platform.test.desktop.DesktopMouseTestRule
 import platform.test.desktop.LogicalDisplayPointPx
 import platform.test.desktop.SimulatedConnectedDisplayTestRule
 
-
-/**
- * Base scenario test to test if the window dragged to other display still keeps the focus.
- */
+/** Base scenario test to test if the window dragged to other display still keeps the focus. */
 @Ignore("Test Base Class")
-@EnableFlags(
-    Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS,
-)
+@EnableFlags(Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS)
 abstract class DragAndKeepFocus() : TestScenarioBase() {
     private val wmHelper = WindowManagerStateHelper(getInstrumentation())
     private val device = UiDevice.getInstance(getInstrumentation())
 
     private val testAppInMainDisplay = DesktopModeAppHelper(SimpleAppHelper(getInstrumentation()))
-    private val testAppInExternalDisplay =
-            DesktopModeAppHelper(MailAppHelper(getInstrumentation()))
+    private val testAppInExternalDisplay = DesktopModeAppHelper(MailAppHelper(getInstrumentation()))
     private val displayManager =
         getInstrumentation().targetContext.getSystemService(DisplayManager::class.java)
     private val keyEventHelper = KeyEventHelper(getInstrumentation())
@@ -83,11 +77,12 @@ abstract class DragAndKeepFocus() : TestScenarioBase() {
 
         // Start drag and move
         desktopMouseRule.startDrag()
-        val displayInfo = DisplayInfo().also {
-            displayManager.getDisplay(
-                connectedDisplayRule.addedDisplays.first()
-            ).getDisplayInfo(it)
-        }
+        val displayInfo =
+            DisplayInfo().also {
+                displayManager
+                    .getDisplay(connectedDisplayRule.addedDisplays.first())
+                    .getDisplayInfo(it)
+            }
         desktopMouseRule.move(
             LogicalDisplayPointPx(
                 connectedDisplayRule.addedDisplays.first(),
@@ -96,7 +91,8 @@ abstract class DragAndKeepFocus() : TestScenarioBase() {
             )
         )
         desktopMouseRule.stopDrag()
-        wmHelper.StateSyncBuilder()
+        wmHelper
+            .StateSyncBuilder()
             .withAppTransitionIdle(connectedDisplayRule.addedDisplays.first())
             .waitForAndVerify()
 

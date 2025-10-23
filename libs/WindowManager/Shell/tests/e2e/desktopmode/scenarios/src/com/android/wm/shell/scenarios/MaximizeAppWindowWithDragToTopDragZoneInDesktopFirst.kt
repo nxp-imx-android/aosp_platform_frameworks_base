@@ -43,7 +43,7 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
     Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DRAG_TO_MAXIMIZE,
 )
 abstract class MaximizeAppWindowWithDragToTopDragZoneInDesktopFirst(
-    rotation: Rotation = Rotation.ROTATION_0,
+    rotation: Rotation = Rotation.ROTATION_0
 ) : TestScenarioBase(rotation) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)

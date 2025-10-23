@@ -18,8 +18,8 @@ package com.android.wm.shell.scenarios
 
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.RequiresFlagsEnabled
-import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.traces.ConditionsFactory
+import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.KeyEvent.KEYCODE_MINUS
 import android.view.KeyEvent.META_META_ON
@@ -37,25 +37,19 @@ import org.junit.Rule
 import org.junit.Test
 import platform.test.desktop.SimulatedConnectedDisplayTestRule
 
-
-/**
- * Base scenario test to test if the window moved to next display via keyboard keeps the focus.
- */
+/** Base scenario test to test if the window moved to next display via keyboard keeps the focus. */
 @Ignore("Test Base Class")
 @RequiresFlagsEnabled(
     Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-    Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT
+    Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,
 )
-@EnableFlags(
-    Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS,
-)
+@EnableFlags(Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS)
 abstract class MoveToNextDisplayAndFocus() : TestScenarioBase() {
     private val wmHelper = WindowManagerStateHelper(getInstrumentation())
     private val device = UiDevice.getInstance(getInstrumentation())
 
     private val testAppInMainDisplay = DesktopModeAppHelper(SimpleAppHelper(getInstrumentation()))
-    private val testAppInExternalDisplay =
-            DesktopModeAppHelper(MailAppHelper(getInstrumentation()))
+    private val testAppInExternalDisplay = DesktopModeAppHelper(MailAppHelper(getInstrumentation()))
     private val keyEventHelper = KeyEventHelper(getInstrumentation())
 
     @get:Rule(order = 0) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
@@ -66,20 +60,21 @@ abstract class MoveToNextDisplayAndFocus() : TestScenarioBase() {
         wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(displayId).waitForAndVerify()
         testAppInMainDisplay.enterDesktopMode(wmHelper, device)
         testAppInExternalDisplay.launchViaIntent(wmHelper)
-        wmHelper.StateSyncBuilder().withAppTransitionIdle()
-                .withTopVisibleApps(testAppInExternalDisplay, testAppInMainDisplay)
-                .waitForAndVerify()
+        wmHelper
+            .StateSyncBuilder()
+            .withAppTransitionIdle()
+            .withTopVisibleApps(testAppInExternalDisplay, testAppInMainDisplay)
+            .waitForAndVerify()
     }
 
     @Test
     open fun moveToNextDisplayAndFocus() {
         val externalDisplayId = connectedDisplayRule.addedDisplays.first()
-        testAppInExternalDisplay.moveToNextDisplayViaKeyboard(
-            wmHelper,
-            externalDisplayId,
-        )
+        testAppInExternalDisplay.moveToNextDisplayViaKeyboard(wmHelper, externalDisplayId)
 
-        wmHelper.StateSyncBuilder().withAppTransitionIdle()
+        wmHelper
+            .StateSyncBuilder()
+            .withAppTransitionIdle()
             .add(ConditionsFactory.isWindowVisible(testAppInMainDisplay, DEFAULT_DISPLAY))
             .add(ConditionsFactory.isWindowVisible(testAppInExternalDisplay, externalDisplayId))
             .waitForAndVerify()
@@ -87,10 +82,14 @@ abstract class MoveToNextDisplayAndFocus() : TestScenarioBase() {
         // Send minimize via keyboard and observe window to check display focus.
         keyEventHelper.press(KEYCODE_MINUS, META_META_ON)
 
-        wmHelper.StateSyncBuilder().withAppTransitionIdle()
+        wmHelper
+            .StateSyncBuilder()
+            .withAppTransitionIdle()
             .add(ConditionsFactory.isWindowVisible(testAppInMainDisplay, DEFAULT_DISPLAY))
-            .add(ConditionsFactory.isWindowVisible(testAppInExternalDisplay, externalDisplayId)
-                     .negate())
+            .add(
+                ConditionsFactory.isWindowVisible(testAppInExternalDisplay, externalDisplayId)
+                    .negate()
+            )
             .waitForAndVerify()
     }
 

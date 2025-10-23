@@ -48,9 +48,7 @@ abstract class CreateDesksUntilLimit : TestScenarioBase() {
         // for the possibility of 0 or 1 desks existing here before creating up to the limit.
         val numOfDesks = overview.desktopTasksCount
         val remainingDesks = DESK_LIMIT - numOfDesks
-        repeat(remainingDesks) {
-            overview = overview.createDeskViaClickAddDesktopButton()
-        }
+        repeat(remainingDesks) { overview = overview.createDeskViaClickAddDesktopButton() }
         // Fling to the 1st (right-most) task to check the "add desk" button is now gone.
         overview.flingToFirstTask()
     }
