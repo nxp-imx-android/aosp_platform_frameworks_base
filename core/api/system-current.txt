@@ -19224,7 +19224,7 @@ package android.view {
     field @FlaggedApi("com.android.window.flags.device_engagement_mode") public static final int ENGAGEMENT_MODE_FLAG_VISUALS_ON = 1; // 0x1
   }
 
-  @FlaggedApi("com.android.window.flags.device_engagement_mode") public static class WindowManager.DisplayEngagementModeState {
+  @FlaggedApi("com.android.window.flags.device_engagement_mode") public static final class WindowManager.DisplayEngagementModeState {
     method public int getDisplayId();
     method public int getEngagementModeFlags();
   }
