@@ -1948,16 +1948,6 @@ flag {
 }
 
 flag {
-    name: "shortcut_helper_multi_display_support"
-    namespace: "systemui"
-    description: "Shortcut helper is triggered on the current display"
-    bug: "406740115"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "ambient_cue_plugin"
     namespace: "ailabs"
     description: "Enable plugin for ambient cue project"

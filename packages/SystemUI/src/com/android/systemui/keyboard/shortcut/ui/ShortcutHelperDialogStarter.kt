@@ -31,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.modifiers.thenIf
-import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.LifecycleListener
@@ -94,9 +93,7 @@ constructor(
                     }
                 ShortcutHelper(
                     modifier =
-                        Modifier.width(getWidth()).thenIf(
-                            hasExpandedWindowHeight() && Flags.shortcutHelperMultiDisplaySupport()
-                        ) {
+                        Modifier.width(getWidth()).thenIf(hasExpandedWindowHeight()) {
                             Modifier.fillMaxHeight(0.72f)
                         },
                     shortcutsUiState = shortcutsUiState,
