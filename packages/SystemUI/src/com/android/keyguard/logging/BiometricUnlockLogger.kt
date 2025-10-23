@@ -40,7 +40,9 @@ private const val TAG = "BiometricUnlockLogger"
 @SysUISingleton
 class BiometricUnlockLogger @Inject constructor(@BiometricLog private val logBuffer: LogBuffer) {
     fun i(@CompileTimeConstant msg: String) = log(msg, INFO)
+
     fun d(@CompileTimeConstant msg: String) = log(msg, DEBUG)
+
     fun log(@CompileTimeConstant msg: String, level: LogLevel) = logBuffer.log(TAG, level, msg)
 
     fun logStartWakeAndUnlock(mode: Int) {
@@ -48,7 +50,7 @@ class BiometricUnlockLogger @Inject constructor(@BiometricLog private val logBuf
             TAG,
             DEBUG,
             { int1 = mode },
-            { "startWakeAndUnlock(${wakeAndUnlockModeToString(int1)})" }
+            { "startWakeAndUnlock(${wakeAndUnlockModeToString(int1)})" },
         )
     }
 
@@ -57,14 +59,14 @@ class BiometricUnlockLogger @Inject constructor(@BiometricLog private val logBuf
             TAG,
             DEBUG,
             { int1 = consecutiveFailedAttempts },
-            { "udfpsAttemptThresholdMet consecutiveFailedAttempts=$int1" }
+            { "udfpsAttemptThresholdMet consecutiveFailedAttempts=$int1" },
         )
     }
 
     fun logCalculateModeForFingerprintUnlockingAllowed(
         deviceInteractive: Boolean,
         keyguardShowing: Boolean,
-        deviceDreaming: Boolean
+        deviceDreaming: Boolean,
     ) {
         logBuffer.log(
             TAG,
@@ -78,7 +80,7 @@ class BiometricUnlockLogger @Inject constructor(@BiometricLog private val logBuf
                 "calculateModeForFingerprint unlockingAllowed=true" +
                     " deviceInteractive=$bool1 isKeyguardShowing=$bool2" +
                     " deviceDreaming=$bool3"
-            }
+            },
         )
     }
 
@@ -87,7 +89,7 @@ class BiometricUnlockLogger @Inject constructor(@BiometricLog private val logBuf
         strongAuthFlags: Int,
         nonStrongBiometricAllowed: Boolean,
         deviceInteractive: Boolean,
-        keyguardShowing: Boolean
+        keyguardShowing: Boolean,
     ) {
         logBuffer.log(
             TAG,
@@ -104,7 +106,7 @@ class BiometricUnlockLogger @Inject constructor(@BiometricLog private val logBuf
                     " strongBiometric=$bool1 strongAuthFlags=$int1" +
                     " nonStrongBiometricAllowed=$bool2" +
                     " deviceInteractive=$bool3 isKeyguardShowing=$bool4"
-            }
+            },
         )
     }
 
@@ -112,7 +114,7 @@ class BiometricUnlockLogger @Inject constructor(@BiometricLog private val logBuf
         deviceInteractive: Boolean,
         keyguardShowing: Boolean,
         deviceDreaming: Boolean,
-        bypass: Boolean
+        bypass: Boolean,
     ) {
         logBuffer.log(
             TAG,
@@ -127,7 +129,7 @@ class BiometricUnlockLogger @Inject constructor(@BiometricLog private val logBuf
                 "calculateModeForPassiveAuth unlockingAllowed=true" +
                     " deviceInteractive=$bool1 isKeyguardShowing=$bool2" +
                     " deviceDreaming=$bool3 bypass=$bool4"
-            }
+            },
         )
     }
 
@@ -137,7 +139,7 @@ class BiometricUnlockLogger @Inject constructor(@BiometricLog private val logBuf
         nonStrongBiometricAllowed: Boolean,
         deviceInteractive: Boolean,
         keyguardShowing: Boolean,
-        bypass: Boolean
+        bypass: Boolean,
     ) {
         logBuffer.log(
             TAG,
@@ -155,14 +157,14 @@ class BiometricUnlockLogger @Inject constructor(@BiometricLog private val logBuf
                     " strongBiometric=${int1 == 1}" +
                     " strongAuthFlags=$int2 nonStrongBiometricAllowed=$bool1" +
                     " deviceInteractive=$bool2 isKeyguardShowing=$bool3 bypass=$bool4"
-            }
+            },
         )
     }
 
     fun deferringAuthenticationDueToSleep(
         userId: Int,
         biometricSourceType: BiometricSourceType,
-        alreadyPendingAuth: Boolean
+        alreadyPendingAuth: Boolean,
     ) {
         logBuffer.log(
             TAG,
@@ -177,7 +179,7 @@ class BiometricUnlockLogger @Inject constructor(@BiometricLog private val logBuf
                     "biometricSourceType: $str1, " +
                     "goingToSleep: true, " +
                     "mPendingAuthentication != null: $bool2"
-            }
+            },
         )
     }
 
@@ -185,7 +187,7 @@ class BiometricUnlockLogger @Inject constructor(@BiometricLog private val logBuf
         logBuffer.log(
             TAG,
             LogLevel.DEBUG,
-            "onFinishedGoingToSleep with pendingAuthenticated != null"
+            "onFinishedGoingToSleep with pendingAuthenticated != null",
         )
     }
 }
