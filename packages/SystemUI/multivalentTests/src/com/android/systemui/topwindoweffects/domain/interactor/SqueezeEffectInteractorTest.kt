@@ -27,7 +27,6 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.shared.Flags
 import com.android.systemui.testKosmos
-import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepository
 import com.android.systemui.topwindoweffects.data.repository.fakeSqueezeEffectRepository
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -126,46 +125,5 @@ class SqueezeEffectInteractorTest : SysuiTestCase() {
             val powerButtonSemantics by collectLastValue(underTest.powerButtonSemantics)
 
             assertThat(powerButtonSemantics).isEqualTo(PowerButtonSemantics.CANCEL_SQUEEZE)
-        }
-
-    @Test
-    fun gestureProgress_emitsFromRepository() =
-        kosmos.runTest {
-            val gestureProgress by collectLastValue(underTest.gestureProgress)
-            val expected =
-                SqueezeEffectRepository.GestureProgress(
-                    0.5f,
-                    SqueezeEffectRepository.GestureStatus.PARTIAL,
-                )
-            fakeSqueezeEffectRepository.gestureProgress.value = expected
-
-            assertThat(gestureProgress).isEqualTo(expected)
-        }
-
-    @Test
-    fun getGestureInvocationEffectInAnimationDurationMillis_returnsRepositoryValue() =
-        kosmos.runTest {
-            val expected = 123L
-            fakeSqueezeEffectRepository.gestureInvocationEffectInAnimationDurationMillisValue =
-                expected
-            assertThat(underTest.getGestureInvocationEffectInAnimationDurationMillis())
-                .isEqualTo(expected)
-        }
-
-    @Test
-    fun getLppInvocationEffectInAnimationDurationMillis_returnsRepositoryValue() =
-        kosmos.runTest {
-            val expected = 456L
-            fakeSqueezeEffectRepository.invocationEffectInwardsAnimationDurationMs = expected
-            assertThat(underTest.getLppInvocationEffectInAnimationDurationMillis())
-                .isEqualTo(expected)
-        }
-
-    @Test
-    fun getLppInvocationEffectInitialDelayMillis_returnsRepositoryValue() =
-        kosmos.runTest {
-            val expected = 789L
-            fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expected
-            assertThat(underTest.getLppInvocationEffectInitialDelayMillis()).isEqualTo(expected)
         }
 }
