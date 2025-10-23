@@ -1726,14 +1726,14 @@ public final class InputManagerGlobal {
             Manifest.permission.INJECT_EVENTS
     })
     public VirtualKeyboard createVirtualKeyboard(@NonNull VirtualKeyboardConfig config) {
-        IVirtualInputDevice virtualInputDevice;
+        IVirtualKeyboard virtualKeyboard;
         try {
             // Pass a token to the server so that the server can be notified when the calling
             // process has died and therefore clean up the virtual device.
             final IBinder token = new Binder(
                     "android.hardware.input.VirtualKeyboard:" + config.getInputDeviceName());
-            virtualInputDevice = mIm.createVirtualKeyboard(token, config);
-            return new VirtualKeyboard(config, virtualInputDevice);
+            virtualKeyboard = mIm.createVirtualKeyboard(token, config);
+            return new VirtualKeyboard(config, virtualKeyboard);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
