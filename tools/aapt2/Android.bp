@@ -65,7 +65,6 @@ cc_defaults {
     },
     header_libs: [
         "jni_headers",
-        "native_headers",
     ],
     static_libs: [
         "android.content.res.flags-aconfig-cc-host-ro",

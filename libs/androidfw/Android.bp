@@ -44,9 +44,6 @@ cc_defaults {
         "-Werror",
         "-Wunreachable-code",
     ],
-    header_libs: [
-        "native_headers",
-    ],
     target: {
         windows: {
             // The Windows compiler warns incorrectly for value initialization with {}.
