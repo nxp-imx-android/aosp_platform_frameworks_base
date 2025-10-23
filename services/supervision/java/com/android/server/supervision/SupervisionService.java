@@ -368,6 +368,22 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 });
     }
 
+    /**
+     * Returns true if the user has a verified recovery email or if there exist alternative
+     * recovery methods.
+     */
+    @Override
+    public boolean hasValidRecoveryMethod(int userId) {
+        if (!Flags.enableSupervisionSettingsUiUpdates()) {
+            return false;
+        }
+        List<ResolveInfo> activities = querySupervisionApprovalActivities(userId);
+        SupervisionRecoveryInfo recoveryInfo = getSupervisionRecoveryInfo();
+        return !activities.isEmpty()
+                || (recoveryInfo != null
+                        && (recoveryInfo.getState() == SupervisionRecoveryInfo.STATE_VERIFIED));
+    }
+
     private void clearAllPolicies(@UserIdInt int userId) {
         if (!Flags.enableSupervisionManagerPolicyApis()) {
             return;
