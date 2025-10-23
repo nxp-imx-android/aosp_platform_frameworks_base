@@ -106,6 +106,7 @@ per-file RemoteAnimation*.aidl = file:/services/core/java/com/android/server/wm/
 per-file ScreenRecordingCallbacks.java = file:/services/core/java/com/android/server/wm/OWNERS
 per-file *SurfaceControl*.java = file:/services/core/java/com/android/server/wm/OWNERS
 per-file SurfaceControl*.aidl = file:/services/core/java/com/android/server/wm/OWNERS
+per-file SurfaceControl*.md = file:/services/core/java/com/android/server/wm/OWNERS
 per-file SurfaceSession.java = file:/services/core/java/com/android/server/wm/OWNERS
 per-file SyncRtSurfaceTransactionApplier.java = file:/services/core/java/com/android/server/wm/OWNERS
 per-file Window*.java = file:/services/core/java/com/android/server/wm/OWNERS
