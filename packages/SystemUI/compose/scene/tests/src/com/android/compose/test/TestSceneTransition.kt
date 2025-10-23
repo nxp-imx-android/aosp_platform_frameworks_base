@@ -55,7 +55,7 @@ fun transition(
     isUserInputOngoing: Boolean = false,
     onFreezeAndAnimate: ((TestSceneTransition) -> Unit)? = null,
     replacedTransition: Transition? = null,
-    gestureContext: GestureContext? = null,
+    gestureContext: (GestureContext?) -> GestureContext? = { it }, // This keep the superclass value
 ): TestSceneTransition {
     return object : TestSceneTransition(from, to, replacedTransition) {
         override val currentScene: SceneKey
@@ -78,7 +78,8 @@ fun transition(
 
         override val isInitiatedByUserInput: Boolean = isInitiatedByUserInput
         override val isUserInputOngoing: Boolean = isUserInputOngoing
-        override val gestureContext: GestureContext? = gestureContext
+        override val gestureContext: GestureContext?
+            get() = gestureContext(super.gestureContext)
 
         override fun freezeAndAnimateToCurrentState() {
             if (onFreezeAndAnimate != null) {

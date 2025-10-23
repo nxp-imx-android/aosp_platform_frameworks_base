@@ -137,6 +137,7 @@ private class SceneTransitionsBuilderImpl : SceneTransitionsBuilder {
         return TransformationSpecImpl(
             progressSpec = impl.spec,
             distance = impl.distance,
+            intrinsicDirection = impl.intrinsicDirection,
             transformationMatchers = impl.transformationMatchers,
         )
     }
@@ -147,6 +148,7 @@ internal abstract class BaseTransitionBuilderImpl : BaseTransitionBuilder {
     protected var range: TransformationRange? = null
     protected var reversed = false
     override var distance: UserActionDistance? = null
+    var intrinsicDirection: SwipeDirection? = null
 
     override fun fractionRange(
         start: Float?,
