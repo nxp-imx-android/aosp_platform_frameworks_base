@@ -65,6 +65,10 @@ android_library {
     ],
 
     static_libs: [
+        "androidx.compose.animation_animation-core",
+        "androidx.compose.foundation_foundation",
+        "androidx.compose.runtime_runtime",
+        "androidx.compose.ui_ui",
         "androidx.core_core-animation",
         "androidx.core_core-ktx",
         "androidx.annotation_annotation",
