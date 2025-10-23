@@ -35,8 +35,8 @@ filegroup {
         "android/os/*MessageQueue/**/*.java",
         "android/os/DeliQueue/**/*.java",
         "android/os/IProcessInfoService.aidl",
+        "android/os/profiling/anomaly/mock/*.java",
         "android/ranging/**/*.java",
-        "android/os/mock/*.java",
         "android/npumanager/mock/**/*.java",
     ],
     visibility: ["//frameworks/base"],
@@ -113,11 +113,11 @@ anomaly_detector_framework_mock_init {
         release_anomaly_detector: {
             cmd: "touch $(out)",
             // Adding an empty file as out is mandatory.
-            out: ["android/os/empty_anomaly_detector.txt"],
+            out: ["android/os/profiling/anomaly/empty_anomaly_detector.txt"],
             conditions_default: {
-                srcs: ["android/os/mock/AnomalyDetectorFrameworkInitializer.java"],
+                srcs: ["android/os/profiling/anomaly/mock/AnomalyDetectorFrameworkInitializer.java"],
                 cmd: "mkdir -p android/os/; cp $(in) $(out);",
-                out: ["android/os/AnomalyDetectorFrameworkInitializer.java"],
+                out: ["android/os/profiling/anomaly/AnomalyDetectorFrameworkInitializer.java"],
             },
         },
     },

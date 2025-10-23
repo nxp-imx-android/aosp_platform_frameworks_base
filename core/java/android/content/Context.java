@@ -7278,7 +7278,7 @@ public abstract class Context {
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve an
-     * {@link android.os.AnomalyDetectorManager}.
+     * {@link android.os.profiling.anomaly.AnomalyDetectorManager}.
      *
      * @see #getSystemService(String)
      *
