@@ -319,3 +319,12 @@ flag {
     }
 }
 
+flag {
+    name: "fix_bubble_swipe_up_gesture"
+    namespace: "multitasking"
+    description: "Fixes the swipe up gesture getting broken due to bubbles."
+    bug: "444859270"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
