@@ -44,7 +44,6 @@ import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds.MINUTE_DIGIT
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds.MINUTE_FIRST_DIGIT
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds.MINUTE_SECOND_DIGIT
 import kotlin.math.ceil
-import kotlin.math.roundToInt
 
 interface DigitalClockViewGroupAdapter : DigitalClockViewAdapter {
     fun animateFidget(pt: VPointF, enforceBounds: Boolean): Boolean
@@ -176,12 +175,7 @@ abstract class DigitalClockViewGroup<TChild>(clockCtx: ClockContext) :
 
     override fun updateLocation() {
         val bounds = VRectF.fromCenter(layoutBounds.center, this.measuredSize)
-        setFrame(
-            bounds.left.roundToInt(),
-            bounds.top.roundToInt(),
-            bounds.right.roundToInt(),
-            bounds.bottom.roundToInt(),
-        )
+        setLeftTopRightBottom(bounds)
         updateChildFrames(isLayout = false)
         onViewBoundsChanged?.let { it(bounds) }
     }
