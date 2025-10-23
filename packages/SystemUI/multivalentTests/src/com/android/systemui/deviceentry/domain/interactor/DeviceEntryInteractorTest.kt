@@ -466,6 +466,33 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun isDeviceEntered_goneToCommunal_emitsFalse() =
+        kosmos.runTest {
+            val isDeviceEntered by collectLastValue(underTest.isDeviceEntered)
+            val isDeviceEnteredDirectly by collectLastValue(underTest.isDeviceEnteredDirectly)
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            assertThat(isDeviceEntered).isFalse()
+            assertThat(isDeviceEnteredDirectly).isFalse()
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+
+            // Navigate to communal
+            switchToScene(Scenes.Communal)
+            assertThat(currentScene).isEqualTo(Scenes.Communal)
+
+            // Unlock and verify device entered
+            authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
+            switchToScene(Scenes.Gone)
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
+            assertThat(isDeviceEntered).isTrue()
+            assertThat(isDeviceEnteredDirectly).isTrue()
+
+            // Return to communal and verify device not entered
+            switchToScene(Scenes.Communal)
+            assertThat(isDeviceEntered).isFalse()
+            assertThat(isDeviceEnteredDirectly).isFalse()
+        }
+
+    @Test
     fun lockNow_authMethodSecure_locksAndSwitchesToLockscreen() =
         kosmos.runTest {
             val isUnlocked by collectLastValue(underTest.isUnlocked)

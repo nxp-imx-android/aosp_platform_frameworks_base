@@ -96,7 +96,7 @@ constructor(
 
     /**
      * Emits `true` when the current scene switches to [Scenes.Gone] for the first time after having
-     * been on [Scenes.Lockscreen].
+     * been on [Scenes.Lockscreen] or [Scenes.Communal].
      *
      * Different from [isDeviceEntered] such that the current scene must actually go through
      * [Scenes.Gone] to produce a `true`. [isDeviceEntered] also takes into account the navigation
@@ -109,7 +109,9 @@ constructor(
             .get()
             .currentScene
             .filter { currentScene ->
-                currentScene == Scenes.Gone || currentScene == Scenes.Lockscreen
+                currentScene == Scenes.Gone ||
+                    currentScene == Scenes.Lockscreen ||
+                    currentScene == Scenes.Communal
             }
             .mapLatestConflated { scene ->
                 if (scene == Scenes.Gone) {
