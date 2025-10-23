@@ -16,6 +16,8 @@
 
 package com.android.internal.pm.pkg.component;
 
+import static android.content.pm.PermissionInfo.NO_TARGET_SDK_VERSION;
+
 import static com.android.internal.pm.pkg.parsing.ParsingPackageUtils.PARSE_APK_IN_APEX;
 import static com.android.internal.pm.pkg.parsing.ParsingUtils.NOT_SET;
 
@@ -227,7 +229,7 @@ public class ParsedPermissionUtils {
         final int requiresGeneralPurposeTargetSdkVersion =
                 array.getInt(
                         R.styleable.AndroidManifestPermission_requiresGeneralPurposeTargetSdkVersion,
-                        /* defValue= */ 0);
+                        /* defValue= */ NO_TARGET_SDK_VERSION);
         // Android C is the first platform version that supports purpose enforcement.
         if (requiresGeneralPurposeTargetSdkVersion <= Build.VERSION_CODES.BAKLAVA) {
             return input.error(
