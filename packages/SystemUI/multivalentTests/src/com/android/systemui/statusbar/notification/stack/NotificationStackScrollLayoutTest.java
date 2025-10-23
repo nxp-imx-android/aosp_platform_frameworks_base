@@ -42,7 +42,9 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -322,6 +324,25 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         assertThat(mAmbientState.getInterpolatedStackHeight()).isEqualTo(expected);
     }
 
+    @Test
+    @EnableSceneContainer
+    public void updateSuppressHeightUpdate_shouldUpdateStackEndHeight() {
+        final float expansionFraction = 1.0f;
+
+        mStackScroller.setMaxDisplayedNotifications(-1);
+        reset(mStackScroller);
+
+        // Set stack expand fraction while height update is suppressed
+        mStackScroller.setQsExpandFraction(0f);
+        mStackScroller.suppressHeightUpdates(true);
+        mStackScroller.setExpandFraction(expansionFraction);
+        verify(mStackScroller, never()).updateStackEndHeightAndStackHeight(anyFloat());
+
+        // Check that the height update is triggered when the suppression is disabled
+        reset(mStackScroller);
+        mStackScroller.suppressHeightUpdates(false);
+        verify(mStackScroller, times(1)).updateStackEndHeightAndStackHeight(eq(expansionFraction));
+    }
 
     @Test
     @EnableSceneContainer

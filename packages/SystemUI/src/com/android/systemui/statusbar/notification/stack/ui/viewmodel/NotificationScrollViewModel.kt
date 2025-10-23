@@ -147,7 +147,10 @@ constructor(
     ): Float {
         return if (currentScene == Scenes.Lockscreen) {
             1f
-        } else if (transition.isTransitioningFromOrTo(Overlays.NotificationsShade)) {
+        } else if (
+            transition.isTransitioningFromOrTo(Overlays.NotificationsShade) ||
+                transition.isTransitioningFromOrTo(Scenes.Shade)
+        ) {
             shadeExpansion
         } else if (Overlays.NotificationsShade in currentOverlays) {
             1f
@@ -165,7 +168,7 @@ constructor(
             .map { state: ObservableTransitionState ->
                 when (state) {
                     is Idle -> {
-                        state.currentScene == Scenes.QuickSettings
+                        false
                     }
                     is Transition -> {
                         state.isTransitioningBetween(Scenes.Shade, Scenes.QuickSettings) ||
