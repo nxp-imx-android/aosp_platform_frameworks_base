@@ -621,6 +621,8 @@ private fun ShadeCarrierGroupKairos(
     viewModel: ShadeHeaderViewModel,
     modifier: Modifier = Modifier,
 ) {
+    val textColor = ShadeHeader.Colors.textColor
+    val inverseTextColor = ShadeHeader.Colors.inverseTextColor
     Row(modifier = modifier) {
         ActivatedKairosSpec(
             buildSpec = viewModel.mobileIconsViewModelKairos.get().composeWrapper(),
@@ -650,7 +652,14 @@ private fun ShadeCarrierGroupKairos(
                             .also {
                                 it.setOnClickListener { viewModel.onShadeCarrierGroupClicked() }
                             }
-                    }
+                    },
+                    update = { view ->
+                        view.setStyleAndTint(
+                            R.style.TextAppearance_QS_Status,
+                            textColor.toArgb(),
+                            inverseTextColor.toArgb(),
+                        )
+                    },
                 )
             }
         }
