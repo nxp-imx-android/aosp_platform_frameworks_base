@@ -88,8 +88,10 @@
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"عامل معتبر دردسترس نیست"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"تلاش‌های بسیار زیادی با پین اشتباه انجام شده است"</string>
     <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"قبلاً این پین را امتحان کرده‌اید. مورد دیگری را امتحان کنید."</string>
-    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"قبلاً این گذرواژه را امتحان کرده‌اید. مورد دیگری را امتحان کنید."</string>
-    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"قبلاً این الگو را امتحان کرده‌اید. مورد دیگری را امتحان کنید."</string>
+    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
+    <skip />
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"تلاش‌های بسیار زیاد با الگوی اشتباه"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"تلاش‌های بسیار زیاد با گذرواژه اشتباه"</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"تلاش‌های بسیار زیادی با پین اشتباه داشته‌اید\nدر <xliff:g id="SHORTLINK">{shortlink}</xliff:g> بیشتر بدانید"</string>

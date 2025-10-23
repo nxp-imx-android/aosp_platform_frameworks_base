@@ -88,8 +88,10 @@
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"ميزة \"الوكيل المعتمد\" غير متاحة."</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"أجريت محاولات كثيرة جدًا باستخدام رقم تعريف شخصي خاطئ"</string>
     <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"يُرجى إدخال رقم تعريف شخصي آخر لأنّك جرّبته من قبل."</string>
-    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"يُرجى إدخال كلمة مرور أخرى لأنّك جرّبتها من قبل."</string>
-    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"يُرجى إدخال نقش آخر لأنّك جرّبته من قبل."</string>
+    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
+    <skip />
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"أجريت محاولات كثيرة جدًا باستخدام نقش خاطئ"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"أجريت محاولات كثيرة جدًا باستخدام كلمة مرور خاطئة"</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"لقد أجريت محاولات عديدة باستخدام رقم تعريف شخصي خاطئ\nمزيد من المعلومات على <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>

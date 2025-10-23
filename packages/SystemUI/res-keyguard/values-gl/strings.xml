@@ -88,8 +88,10 @@
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"O axente de confianza non está dispoñible"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"Puxeches un PIN incorrecto demasiadas veces"</string>
     <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"Xa probaches ese PIN. Téntao con outro."</string>
-    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"Xa probaches ese contrasinal. Téntao con outro."</string>
-    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"Xa probaches ese padrón. Téntao con outro."</string>
+    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
+    <skip />
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Debuxaches un padrón incorrecto demasiadas veces"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Puxeches un contrasinal incorrecto demasiadas veces"</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"Tentaches usar un PIN incorrecto demasiadas veces\nTes máis información en <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
