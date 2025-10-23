@@ -77,7 +77,7 @@ class PluginActionManagerTest : SysuiTestCase() {
                 VersionCheckerImpl(),
                 this::class.java.classLoader!!,
                 PluginManager.Config(),
-                BuildInfo(BuildVariant.User, isDebuggable = false),
+                PluginEnvironment(BuildVariant.User, isDebuggable = false),
             ) {
             @Suppress("UNCHECKED_CAST")
             override fun <T : Plugin> create(
@@ -110,6 +110,7 @@ class PluginActionManagerTest : SysuiTestCase() {
                 PluginManager.Config(),
                 mPluginInstanceFactory,
                 mMockPluginPrefs,
+                PluginEnvironment(),
             )
 
         mPluginActionManager =
@@ -205,6 +206,7 @@ class PluginActionManagerTest : SysuiTestCase() {
                 PluginManager.Config(listOf(PRIVILEGED_PACKAGE)),
                 mPluginInstanceFactory,
                 mMockPluginPrefs,
+                PluginEnvironment(),
             )
         mPluginActionManager =
             factory.create("myAction", mMockListener, TestPlugin::class.java, allowMultiple = true)
@@ -260,6 +262,7 @@ class PluginActionManagerTest : SysuiTestCase() {
                 PluginManager.Config(listOf(PRIVILEGED_PACKAGE)),
                 mPluginInstanceFactory,
                 mMockPluginPrefs,
+                PluginEnvironment(),
             )
         mPluginActionManager =
             factory.create("myAction", mMockListener, TestPlugin::class.java, allowMultiple = true)

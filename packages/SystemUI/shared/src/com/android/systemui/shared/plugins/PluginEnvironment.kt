@@ -32,10 +32,13 @@ enum class BuildVariant {
     }
 }
 
-data class BuildInfo(val variant: BuildVariant, val isDebuggable: Boolean) {
-    val isEng = variant == BuildVariant.Eng
-
-    companion object {
-        val CURRENT = BuildInfo(BuildVariant.CURRENT, Build.IS_DEBUGGABLE)
-    }
+data class PluginEnvironment(
+    val variant: BuildVariant = BuildVariant.CURRENT,
+    val isDebuggable: Boolean = Build.IS_DEBUGGABLE,
+    private val isTestHarness: Boolean = false,
+    private val isDebugPropSet: Boolean = false,
+) {
+    val isEng: Boolean = variant == BuildVariant.Eng
+    val isTestMode: Boolean
+        get() = isTestHarness || (isDebuggable && isDebugPropSet)
 }

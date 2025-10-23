@@ -59,7 +59,7 @@ private constructor(
     private val allowMultiple: Boolean,
     private val mainExecutor: Executor,
     private val bgExecutor: Executor,
-    private val buildInfo: BuildInfo,
+    private val env: PluginEnvironment,
     private val notificationManager: NotificationManager,
     private val pluginEnabler: PluginEnabler,
     private val config: PluginManager.Config,
@@ -207,9 +207,7 @@ private constructor(
                 logLevel = LogLevel.ERROR
             }
 
-            if (buildInfo.isDebuggable) {
-                append(" (debuggable)")
-            }
+            append(" ($env)")
 
             for (info in result) {
                 val name = ComponentName(info.serviceInfo.packageName, info.serviceInfo.name)
@@ -231,7 +229,7 @@ private constructor(
 
     private fun loadPluginComponent(component: ComponentName): PluginInstance<T>? {
         // Do not load non-privileged plugins in production builds.
-        if (!buildInfo.isDebuggable && !config.isPrivileged(component)) {
+        if (!env.isDebuggable && !config.isPrivileged(component)) {
             logger.e({ "Plugin cannot be loaded in production: $str1" }) { str1 = "$component" }
             return null
         }
@@ -318,42 +316,20 @@ private constructor(
 
     /** Construct a [PluginActionManager] */
     @Singleton
-    class Factory(
-        private val hostContext: Context,
+    class Factory
+    @Inject
+    constructor(
+        @Application private val hostContext: Context,
         private val packageManager: PackageManager,
-        private val mainExecutor: Executor,
-        private val bgExecutor: Executor,
+        @Main private val mainExecutor: Executor,
+        @Named(PluginManagerImpl.PLUGIN_THREAD) private val bgExecutor: Executor,
         private val notificationManager: NotificationManager,
         private val pluginEnabler: PluginEnabler,
         private val config: PluginManager.Config,
         private val pluginInstanceFactory: PluginInstance.Factory,
         private val pluginPrefs: PluginPrefs,
-        private val buildInfo: BuildInfo = BuildInfo.CURRENT,
+        private val env: PluginEnvironment,
     ) {
-        @Inject
-        constructor(
-            @Application hostContext: Context,
-            packageManager: PackageManager,
-            @Main mainExecutor: Executor,
-            @Named(PluginManagerImpl.PLUGIN_THREAD) pluginExecutor: Executor,
-            notificationManager: NotificationManager,
-            pluginEnabler: PluginEnabler,
-            pluginConfig: PluginManager.Config,
-            pluginInstanceFactory: PluginInstance.Factory,
-            pluginPrefs: PluginPrefs,
-        ) : this(
-            hostContext,
-            packageManager,
-            mainExecutor,
-            pluginExecutor,
-            notificationManager,
-            pluginEnabler,
-            pluginConfig,
-            pluginInstanceFactory,
-            pluginPrefs,
-            BuildInfo.CURRENT,
-        )
-
         fun <T : Plugin> create(
             action: String,
             listener: PluginListener<T>,
@@ -369,7 +345,7 @@ private constructor(
                 allowMultiple,
                 mainExecutor,
                 bgExecutor,
-                buildInfo,
+                env,
                 notificationManager,
                 pluginEnabler,
                 config,

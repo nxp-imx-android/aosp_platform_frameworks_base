@@ -78,6 +78,7 @@ class PluginManagerTest : SysuiTestCase() {
                 mMockPluginEnabler,
                 mMockPluginPrefs,
                 PluginManager.Config(),
+                PluginEnvironment(),
             )
         captureExceptionHandler()
     }
@@ -108,6 +109,7 @@ class PluginManagerTest : SysuiTestCase() {
                 mMockPluginEnabler,
                 mMockPluginPrefs,
                 PluginManager.Config(),
+                PluginEnvironment(),
             )
         captureExceptionHandler()
 
@@ -133,6 +135,7 @@ class PluginManagerTest : SysuiTestCase() {
                 mMockPluginEnabler,
                 mMockPluginPrefs,
                 PluginManager.Config(listOf(PRIVILEGED_PACKAGE)),
+                PluginEnvironment(),
             )
         captureExceptionHandler()
 
