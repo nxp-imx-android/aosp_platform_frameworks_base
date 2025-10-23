@@ -881,6 +881,65 @@ class SupervisionServiceTest {
     }
 
     @Test
+    fun canLaunchPinRecovery_noEmailAndAlternativeRecoveryMethods_returnsFalse() {
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf(),
+        )
+        assertThat(service.canLaunchPinRecovery(USER_ID)).isFalse()
+    }
+
+    @Test
+    fun canLaunchPinRecovery_hasPendingEmailButNoAlternativeRecoveryMethods_returnsTrue() {
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf(),
+        )
+        setSupervisionRecoveryInfo(state = STATE_PENDING)
+        assertThat(service.canLaunchPinRecovery(USER_ID)).isTrue()
+    }
+
+    @Test
+    fun canLaunchPinRecovery_hasVerifiedEmailButNoAlternativeRecoveryMethods_returnsTrue() {
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf(),
+        )
+        setSupervisionRecoveryInfo(state = STATE_VERIFIED)
+        assertThat(service.canLaunchPinRecovery(USER_ID)).isTrue()
+    }
+
+    @Test
+    fun canLaunchPinRecovery_noEmailButHasAlternativeRecoveryMethods_returnsTrue() {
+        val supervisionPackage = "com.example.supervisionapp"
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf(supervisionPackage),
+        )
+        val activityInfo =
+            ActivityInfo().apply {
+                packageName = supervisionPackage
+                name = "Activity"
+            }
+        val resolveInfo = ResolveInfo().apply { this.activityInfo = activityInfo }
+        whenever(
+                mockPackageManager.queryIntentActivities(
+                    argThat { intent: Intent ->
+                        intent.action == SupervisionManager.ACTION_CONFIRM_SUPERVISION_APPROVAL &&
+                            intent.`package` == supervisionPackage
+                    },
+                    any<Int>(),
+                )
+            )
+            .thenReturn(listOf(resolveInfo))
+        assertThat(service.canLaunchPinRecovery(USER_ID)).isTrue()
+    }
+
+    @Test
     fun setPolicy_packagePolicyTypeBlockedEnabled_callsSetApplicationHiddenForUserTrue() {
         verifySetPackagePolicy(true)
     }

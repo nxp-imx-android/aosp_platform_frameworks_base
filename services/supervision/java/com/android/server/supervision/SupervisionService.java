@@ -334,6 +334,20 @@ public class SupervisionService extends ISupervisionManager.Stub {
         }
     }
 
+    /**
+     * Returns true if the user has at least one supervision credential recovery method available.
+     */
+    @Override
+    public boolean canLaunchPinRecovery(int userId) {
+        if (!Flags.enableSupervisionSettingsUiUpdates()) {
+            return false;
+        }
+        List<ResolveInfo> activities = querySupervisionApprovalActivities(userId);
+        SupervisionRecoveryInfo recoveryInfo = getSupervisionRecoveryInfo();
+        return !activities.isEmpty()
+                || (recoveryInfo != null && !recoveryInfo.getAccountName().isEmpty());
+    }
+
     @Override
     public List<Policy> getPolicies(@UserIdInt int userId) {
         return (List<Policy>) mSupervisionSettings.getUserData(userId).policies.values();
