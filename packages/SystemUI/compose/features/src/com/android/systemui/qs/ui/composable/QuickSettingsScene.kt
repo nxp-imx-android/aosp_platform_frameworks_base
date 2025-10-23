@@ -367,7 +367,11 @@ private fun ContentScope.QuickSettingsContent(
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    QuickSettingsContent(viewModel.qsContainerViewModel, mediaInRow)
+                    QuickSettingsContent(
+                        viewModel.qsContainerViewModel,
+                        mediaInRow,
+                        Modifier.padding(horizontal = shadeHorizontalPadding),
+                    )
                 }
             }
 
