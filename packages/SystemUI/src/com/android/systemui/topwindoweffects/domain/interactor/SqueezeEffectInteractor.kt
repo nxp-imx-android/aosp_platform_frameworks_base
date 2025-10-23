@@ -34,8 +34,6 @@ constructor(private val squeezeEffectRepository: SqueezeEffectRepository) {
 
     val isPowerButtonLongPressed = squeezeEffectRepository.isPowerButtonLongPressed
 
-    val gestureProgress = squeezeEffectRepository.gestureProgress
-
     val powerButtonSemantics: Flow<PowerButtonSemantics> =
         combine(
                 squeezeEffectRepository.isEffectEnabled,
@@ -57,16 +55,12 @@ constructor(private val squeezeEffectRepository: SqueezeEffectRepository) {
             .filterNotNull()
             .distinctUntilChanged()
 
-    fun getLppInvocationEffectInitialDelayMillis(): Long {
-        return squeezeEffectRepository.getLppInvocationEffectInitialDelayMillis()
+    fun getInvocationEffectInitialDelayMillis(): Long {
+        return squeezeEffectRepository.getInvocationEffectInitialDelayMillis()
     }
 
-    fun getLppInvocationEffectInAnimationDurationMillis(): Long {
-        return squeezeEffectRepository.getLppInvocationEffectInAnimationDurationMillis()
-    }
-
-    fun getGestureInvocationEffectInAnimationDurationMillis(): Long {
-        return squeezeEffectRepository.getGestureInvocationEffectInAnimationDurationMillis()
+    fun getInvocationEffectInAnimationDurationMillis(): Long {
+        return squeezeEffectRepository.getInvocationEffectInAnimationDurationMillis()
     }
 
     fun getInvocationEffectOutAnimationDurationMillis(): Long {

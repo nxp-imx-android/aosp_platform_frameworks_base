@@ -26,7 +26,6 @@ import androidx.slice.Clock;
 import com.android.internal.app.AssistUtils;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectEnabler;
-import com.android.systemui.topwindoweffects.data.repository.InvocationEffectGestureController;
 
 import dagger.BindsOptionalOf;
 import dagger.Module;
@@ -66,7 +65,4 @@ public abstract class AssistModule {
 
     @BindsOptionalOf
     abstract InvocationEffectEnabler optionalInvocationEffectEnabler();
-
-    @BindsOptionalOf
-    abstract InvocationEffectGestureController optionalInvocationEffectGestureController();
 }

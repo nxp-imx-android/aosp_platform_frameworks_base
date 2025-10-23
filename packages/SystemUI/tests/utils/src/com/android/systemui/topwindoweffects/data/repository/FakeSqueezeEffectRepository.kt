@@ -17,8 +17,6 @@
 package com.android.systemui.topwindoweffects.data.repository
 
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION_MS
-import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepository.GestureProgress
-import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepository.GestureStatus
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_INWARD_EFFECT_DURATION_MILLIS
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
 import java.io.PrintWriter
@@ -28,7 +26,6 @@ class FakeSqueezeEffectRepository : SqueezeEffectRepository {
     var invocationEffectInitialDelayMs = DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
     var invocationEffectInwardsAnimationDurationMs = DEFAULT_INWARD_EFFECT_DURATION_MILLIS
     var invocationEffectOutwardsAnimationDurationMs = DEFAULT_OUTWARD_EFFECT_DURATION_MS
-    var gestureInvocationEffectInAnimationDurationMillisValue = 0L
 
     override var isSqueezeEffectHapticEnabled = false
 
@@ -38,18 +35,13 @@ class FakeSqueezeEffectRepository : SqueezeEffectRepository {
 
     override val isPowerButtonLongPressed = MutableStateFlow(false)
 
-    override val gestureProgress = MutableStateFlow(GestureProgress(0f, GestureStatus.HIDDEN))
+    override fun getInvocationEffectInitialDelayMillis() = invocationEffectInitialDelayMs
 
-    override fun getLppInvocationEffectInitialDelayMillis() = invocationEffectInitialDelayMs
-
-    override fun getLppInvocationEffectInAnimationDurationMillis() =
+    override fun getInvocationEffectInAnimationDurationMillis() =
         invocationEffectInwardsAnimationDurationMs
 
     override fun getInvocationEffectOutAnimationDurationMillis() =
         invocationEffectOutwardsAnimationDurationMs
-
-    override fun getGestureInvocationEffectInAnimationDurationMillis() =
-        gestureInvocationEffectInAnimationDurationMillisValue
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {
         // empty

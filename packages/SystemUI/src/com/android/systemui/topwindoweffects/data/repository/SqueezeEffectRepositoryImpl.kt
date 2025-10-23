@@ -35,10 +35,6 @@ import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPre
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT
-import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepository.GestureProgress
-import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepository.GestureStatus.COMPLETED
-import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepository.GestureStatus.HIDDEN
-import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepository.GestureStatus.PARTIAL
 import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import java.io.PrintWriter
@@ -64,11 +60,7 @@ constructor(
     @Background coroutineContext: CoroutineContext,
     @Background executor: Executor,
     private val preferences: InvocationEffectPreferences,
-) :
-    SqueezeEffectRepository,
-    InvocationEffectSetUiHintsHandler,
-    InvocationEffectEnabler,
-    InvocationEffectGestureController {
+) : SqueezeEffectRepository, InvocationEffectSetUiHintsHandler, InvocationEffectEnabler {
 
     override val isSqueezeEffectHapticEnabled = Flags.enableLppAssistInvocationHapticEffect()
 
@@ -82,7 +74,7 @@ constructor(
             )
             .toLong()
 
-    override fun getLppInvocationEffectInitialDelayMillis(): Long {
+    override fun getInvocationEffectInitialDelayMillis(): Long {
         return DEFAULT_INITIAL_DELAY_MILLIS +
             max(
                 0,
@@ -90,13 +82,9 @@ constructor(
             )
     }
 
-    override fun getLppInvocationEffectInAnimationDurationMillis(): Long {
+    override fun getInvocationEffectInAnimationDurationMillis(): Long {
         return preferences.getInwardAnimationPaddingDurationMillis() +
-            getLongPressPowerDurationFromSettings() - getLppInvocationEffectInitialDelayMillis()
-    }
-
-    override fun getGestureInvocationEffectInAnimationDurationMillis(): Long {
-        return preferences.getInwardAnimationPaddingDurationMillis()
+            getLongPressPowerDurationFromSettings() - getInvocationEffectInitialDelayMillis()
     }
 
     override fun getInvocationEffectOutAnimationDurationMillis(): Long {
@@ -173,38 +161,10 @@ constructor(
         setInvocationEffectPreferences(isEnabled = enabled)
     }
 
-    override fun onGestureProgress(progress: Float) {
-        if (!isGestureEffectEnabled()) return
-
-        _gestureProgress.value = GestureProgress(progress, PARTIAL)
-    }
-
-    override fun onGestureCompletion() {
-        if (!isGestureEffectEnabled()) return
-
-        _gestureProgress.value = GestureProgress(0f, COMPLETED)
-    }
-
-    override fun hideGestureEffect() {
-        if (!isGestureEffectEnabled()) return
-
-        _gestureProgress.value = GestureProgress(0f, HIDDEN)
-    }
-
-    override fun isGestureEffectEnabled(): Boolean {
-        // The gesture effect requires the lpp effect to be enabled as well
-        return preferences.isInvocationEffectEnabledByAssistant.value &&
-            Flags.enableLppAssistInvocationEffect() &&
-            Flags.enableGestureAssistInvocationEffect()
-    }
-
     private val _isPowerButtonLongPressed = MutableStateFlow(false)
     override val isPowerButtonLongPressed = _isPowerButtonLongPressed.asStateFlow()
 
     private var isPowerButtonDownAndPowerKeySingleGestureActive = false
-
-    private val _gestureProgress = MutableStateFlow(GestureProgress(0f, PARTIAL))
-    override val gestureProgress = _gestureProgress.asStateFlow()
 
     override val isEffectEnabled: Flow<Boolean> =
         preferences.isInvocationEffectEnabledByAssistant
@@ -259,10 +219,10 @@ constructor(
             "  longPressPowerDurationFromSettings=${getLongPressPowerDurationFromSettings()}"
         )
         pw.println(
-            "  invocationEffectInitialDelayMillis=${getLppInvocationEffectInitialDelayMillis()}"
+            "  invocationEffectInitialDelayMillis=${getInvocationEffectInitialDelayMillis()}"
         )
         pw.println(
-            "  invocationEffectInAnimationDurationMillis=${getLppInvocationEffectInAnimationDurationMillis()}"
+            "  invocationEffectInAnimationDurationMillis=${getInvocationEffectInAnimationDurationMillis()}"
         )
         pw.println(
             "  invocationEffectOutAnimationDurationMillis=${getInvocationEffectOutAnimationDurationMillis()}"
