@@ -765,7 +765,9 @@ public class WindowConfiguration implements Parcelable, Comparable<WindowConfigu
             while (proto.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
                 switch (proto.getFieldNumber()) {
                     case (int) APP_BOUNDS:
-                        mAppBounds = new Rect();
+                        if (mAppBounds == null) {
+                            mAppBounds = new Rect();
+                        }
                         mAppBounds.readFromProto(proto, APP_BOUNDS);
                         break;
                     case (int) BOUNDS:
