@@ -172,4 +172,8 @@
     <string name="open_by_default_dialog_in_browser_text" msgid="8042769465958497081">"ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ"</string>
     <string name="open_by_default_dialog_dismiss_button_text" msgid="3487238795534582291">"ਠੀਕ ਹੈ"</string>
     <string name="desktop_windowing_app_to_web_education_text" msgid="1599668769538703570">"ਇੱਥੇ ਆਪਣੇ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਤੇਜ਼ੀ ਨਾਲ ਐਪਾਂ ਖੋਲ੍ਹੋ"</string>
+    <string name="open_by_default_splash_dialog_title_text" msgid="2645214455870859991">"ਤੁਸੀਂ &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; ਲਿੰਕਾਂ ਨੂੰ ਕਿਵੇਂ ਖੋਲ੍ਹਣਾ ਚਾਹੁੰਦੇ ਹੋ?"</string>
+    <string name="open_by_default_splash_dialog_checkbox_text" msgid="7367791478473586694">"ਮੇਰੀ ਚੋਣ ਯਾਦ ਰੱਖੋ"</string>
+    <string name="open_by_default_splash_dialog_browser_text" msgid="4439951040200685938">"ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਖੋਲ੍ਹੋ"</string>
+    <string name="open_by_default_splash_dialog_app_text" msgid="2680408983754147907">"ਐਪ ਵਿੱਚ ਬਣੇ ਰਹੋ"</string>
 </resources>
