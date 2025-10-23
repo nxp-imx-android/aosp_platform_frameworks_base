@@ -64,8 +64,7 @@ final class SessionLifecycle {
         String mSecureWindowPackage = null;
 
         @NonNull
-        private LifecycleState computeState(
-                LifecycleState previousState) {
+        private LifecycleState computeState() {
             if (mClosed != null) {
                 return mClosed;
             }
@@ -82,7 +81,7 @@ final class SessionLifecycle {
         }
     }
 
-    SessionLifecycle(ComputerControlSession.LifecycleCallback localCallback) {
+    SessionLifecycle(@NonNull ComputerControlSession.LifecycleCallback localCallback) {
         mLifecycle.addCallback(localCallback);
     }
 
@@ -94,11 +93,11 @@ final class SessionLifecycle {
      * @return The lifecycle state after the update.
      */
     @NonNull
-    LifecycleState updateLifecycleState(Consumer<LifecycleConfig> update) {
+    LifecycleState updateLifecycleState(@NonNull Consumer<LifecycleConfig> update) {
         synchronized (mLifecycle) {
             final var previousState = mCurrentState;
             update.accept(mLifecycleConfig);
-            mCurrentState = mLifecycleConfig.computeState(previousState);
+            mCurrentState = mLifecycleConfig.computeState();
             if (Objects.equals(mCurrentState, previousState)) {
                 return mCurrentState;
             }
@@ -144,7 +143,7 @@ final class SessionLifecycle {
                     try {
                         callback.onActive();
                     } catch (RemoteException e) {
-                        // Ignore
+                        Slog.e(TAG, "Failed to notify remote callback about active state");
                     }
                 }
 
@@ -155,7 +154,7 @@ final class SessionLifecycle {
                     try {
                         callback.onBlocked(reason, blockingPackage);
                     } catch (RemoteException e) {
-                        // Ignore
+                        Slog.e(TAG, "Failed to notify remote callback about blocked state");
                     }
                 }
 
@@ -164,7 +163,7 @@ final class SessionLifecycle {
                     try {
                         callback.onClosed(reason);
                     } catch (RemoteException e) {
-                        // Ignore
+                        Slog.e(TAG, "Failed to notify remote callback about closed state");
                     }
                 }
             });

@@ -100,7 +100,7 @@ public final class LifecycleStateTracker implements ComputerControlSession.Lifec
         mIsNotifyingCallbacks.set(false);
     }
 
-    private void notifyCallback(ComputerControlSession.LifecycleCallback callback) {
+    private void notifyCallback(@NonNull ComputerControlSession.LifecycleCallback callback) {
         switch (mState) {
             case Active active -> callback.onActive();
             case Blocked blocked -> callback.onBlocked(blocked.reason, blocked.blockingPackage);
@@ -127,7 +127,7 @@ public final class LifecycleStateTracker implements ComputerControlSession.Lifec
         transitionTo(new Closed(reason));
     }
 
-    private void transitionTo(LifecycleState state) {
+    private void transitionTo(@NonNull LifecycleState state) {
         if (mState instanceof Closed) {
             throw new IllegalStateException("Cannot change state: Session is closed");
         }
