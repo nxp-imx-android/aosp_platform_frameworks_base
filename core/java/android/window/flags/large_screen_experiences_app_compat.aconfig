@@ -202,6 +202,14 @@ flag {
 }
 
 flag {
+  name: "change_min_aspect_ratio_permission"
+  namespace: "large_screen_experiences_app_compat"
+  description: "Whether callers need CHANGE_MIN_ASPECT_RATIO permission to set min aspect ratio."
+  bug: "414381398"
+  is_fixed_read_only: true
+}
+
+flag {
   name: "add_surface_insets_for_crop"
   namespace: "large_screen_experiences_app_compat"
   description: "Accounts for surface insets when applying window crop for rounded corners."
