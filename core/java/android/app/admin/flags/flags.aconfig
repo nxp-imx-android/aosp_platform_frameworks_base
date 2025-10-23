@@ -570,3 +570,10 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "secure_adb_role_bypassing"
+  namespace: "enterprise"
+  description: "Making sure that the existing `adb shell cmd role set-bypassing-role-qualification` command is protected against abuse on MUM devices."
+  bug: "451571955"
+}

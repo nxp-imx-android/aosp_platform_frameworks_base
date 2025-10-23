@@ -23757,12 +23757,33 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     }
 
     private boolean shouldAllowBypassingDevicePolicyManagementRoleQualificationInternal() {
+        // Do not allow bypassing where there are NON TEST ONLY admins on the device.
+        if (android.app.admin.flags.Flags.secureAdbRoleBypassing()
+                && hasNonTestOnlyDeviceOwner()) {
+            return false;
+        }
+
         if (nonTestNonPrecreatedUsersExist()) {
             return false;
         }
 
-
         return !hasIncompatibleAccountsOnAnyUser();
+    }
+
+    /**
+     * Checks if the device owner, if exists, is NOT marked as TEST ONLY.
+     * @return true if there are NON TEST ONLY device owners. False otherwise.
+     */
+    private boolean hasNonTestOnlyDeviceOwner() {
+        synchronized (getLockObject()) {
+            final ComponentName deviceOwnerComponent = mOwners.getDeviceOwnerComponent();
+            if (deviceOwnerComponent != null
+                    && !isAdminTestOnlyLocked(deviceOwnerComponent, UserHandle.USER_SYSTEM)) {
+                Slogf.i(LOG_TAG, "Found non test-only Device Owner: %s", deviceOwnerComponent);
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean hasAccountsOnAnyUser() {
