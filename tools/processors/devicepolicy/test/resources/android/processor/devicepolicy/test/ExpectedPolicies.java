@@ -27,7 +27,7 @@ import static android.app.admin.PolicyIdentifier.TEST_FINANCED_DEVICE_OWNER_ALLO
 import static android.app.admin.PolicyIdentifier.TEST_MULTIPLE_DPC_TYPES_ALLOWED;
 import static android.app.admin.PolicyIdentifier.TEST_PROFILE_OWNER_ALLOWED;
 import static android.app.admin.PolicyIdentifier.TEST_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_ALLOWED;
-import static android.app.admin.PolicyIdentifier.TEST_PROFILE_OWNER_ON_USER_0_ALLOWED;
+import static android.app.admin.PolicyIdentifier.TEST_PROFILE_OWNER_ON_USER0_ALLOWED;
 import static android.app.admin.PolicyIdentifier.TEST_PROFILE_OWNER_ON_USER_ALLOWED;
 
 import android.app.admin.PolicyIdentifier;
@@ -119,7 +119,7 @@ public class Policies {
             )
         ));
         policies.add(new IntegerPolicyMetadata(
-            /* id= */ TEST_PROFILE_OWNER_ON_USER_0_ALLOWED,
+            /* id= */ TEST_PROFILE_OWNER_ON_USER0_ALLOWED,
             /* allowedScopes= */ Set.of(
                 1
             ),
@@ -127,7 +127,7 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(
-                4  // PROFILE_OWNER_ON_USER_0
+                4  // PROFILE_OWNER_ON_USER0
             )
         ));
         policies.add(new IntegerPolicyMetadata(
