@@ -16,6 +16,7 @@
 
 package com.android.systemui.media.remedia.data.repository
 
+import android.annotation.UserIdInt
 import android.app.WallpaperColors
 import android.content.Context
 import android.content.pm.PackageManager
@@ -275,7 +276,7 @@ constructor(
                 background = background,
                 title = song.toString(),
                 subtitle = artist.toString(),
-                colorScheme = getScheme(artwork, packageName),
+                colorScheme = getScheme(artwork, packageName, userId),
                 notificationActions = actions,
                 playbackStateActions = semanticActions,
                 outputDevice = device,
@@ -313,7 +314,7 @@ constructor(
                 } else {
                     appIcon?.loadDrawable(applicationContext)?.let { drawable ->
                         Icon.Loaded(drawable, contentDescription = ContentDescription.Loaded(app))
-                    } ?: getAltIcon(packageName)
+                    } ?: getAltIcon(packageName, currentData.userId)
                 }
             val background =
                 if (currentModel != null && updateModel?.isBackgroundUpdated == false) {
@@ -330,12 +331,13 @@ constructor(
     private suspend fun getScheme(
         artwork: android.graphics.drawable.Icon?,
         packageName: String,
+        @UserIdInt userId: Int,
     ): MediaColorScheme? {
         val wallpaperColors = getWallpaperColor(applicationContext, backgroundDispatcher, artwork)
         val colorScheme =
             wallpaperColors?.let { ColorScheme(it, false, ThemeStyle.CONTENT) }
                 ?: let {
-                    val launcherIcon = getAltIcon(packageName)
+                    val launcherIcon = getAltIcon(packageName, userId)
                     if (launcherIcon is Icon.Loaded) {
                         getColorScheme(launcherIcon.drawable)
                     } else {
@@ -351,12 +353,19 @@ constructor(
         }
     }
 
-    private suspend fun getAltIcon(packageName: String): Icon {
+    private suspend fun getAltIcon(packageName: String, @UserIdInt userId: Int): Icon {
         return withContext(backgroundDispatcher) {
             try {
-                val icon = applicationContext.packageManager.getApplicationIcon(packageName)
+                val appInfo =
+                    applicationContext.packageManager.getApplicationInfoAsUser(
+                        packageName,
+                        0,
+                        userId,
+                    )
+                val icon = applicationContext.packageManager.getApplicationIcon(appInfo)
                 Icon.Loaded(icon, null)
             } catch (exception: PackageManager.NameNotFoundException) {
+                Log.w(TAG, "Cannot find icon for package $packageName", exception)
                 Icon.Resource(R.drawable.ic_music_note, null)
             }
         }

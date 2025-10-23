@@ -634,7 +634,7 @@ class MediaDataProcessor(
         if (!mediaFlags.areMediaSessionActionsEnabled(packageName, user)) {
             return null
         }
-        return createActionsFromState(context, packageName, controller)
+        return createActionsFromState(context, packageName, controller, user.identifier)
     }
 
     private fun getResumeMediaAction(action: Runnable): MediaAction {

@@ -16,6 +16,7 @@
 
 package com.android.systemui.media.controls.domain.pipeline
 
+import android.annotation.UserIdInt
 import android.annotation.WorkerThread
 import android.app.ActivityOptions
 import android.app.BroadcastOptions
@@ -56,6 +57,7 @@ fun createActionsFromState(
     context: Context,
     packageName: String,
     controller: MediaController,
+    @UserIdInt userId: Int,
 ): MediaButton? {
     val state = controller.playbackState ?: return null
     // First, check for standard actions
@@ -88,7 +90,7 @@ fun createActionsFromState(
         state.customActions
             .asSequence()
             .filterNotNull()
-            .map { getCustomAction(context, packageName, controller, it) }
+            .map { getCustomAction(context, packageName, controller, it, userId) }
             .iterator()
     fun nextCustomAction() = if (customActions.hasNext()) customActions.next() else null
 
@@ -197,9 +199,10 @@ private fun getCustomAction(
     packageName: String,
     controller: MediaController,
     customAction: PlaybackState.CustomAction,
+    @UserIdInt userId: Int,
 ): MediaAction {
     return MediaAction(
-        Icon.createWithResource(packageName, customAction.icon).loadDrawable(context),
+        Icon.createWithResource(packageName, customAction.icon).loadDrawableAsUser(context, userId),
         { controller.transportControls.sendCustomAction(customAction, customAction.extras) },
         customAction.name,
         null,
@@ -266,7 +269,7 @@ fun createActionsFromNotification(
                         else -> action.getIcon()
                     }
                     .setTint(themeText)
-                    .loadDrawable(context)
+                    .loadDrawableAsUser(context, sbn.user.identifier)
 
             val mediaAction =
                 MediaNotificationAction(
