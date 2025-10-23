@@ -149,9 +149,9 @@
     <string name="desktop_mode_talkback_state_focused" msgid="6287982923335568236">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> (کانونی‌شده)"</string>
     <string name="desktop_mode_talkback_state_not_focused" msgid="4640618691603218929">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> (کانونی‌نشده)"</string>
     <string name="desktop_mode_maximize_menu_immersive_button_text" msgid="559492223133829481">"فراگیر"</string>
-    <string name="desktop_mode_maximize_menu_immersive_restore_button_text" msgid="4900114367354709257">"بازیابی"</string>
+    <string name="desktop_mode_maximize_menu_immersive_restore_button_text" msgid="4900114367354709257">"بازگرداندن"</string>
     <string name="desktop_mode_maximize_menu_maximize_button_text" msgid="3090199175564175845">"بزرگ کردن"</string>
-    <string name="desktop_mode_maximize_menu_restore_button_text" msgid="4234449220944704387">"بازیابی کردن"</string>
+    <string name="desktop_mode_maximize_menu_restore_button_text" msgid="4234449220944704387">"بازگرداندن"</string>
     <string name="desktop_mode_maximize_menu_snap_left_button_text" msgid="8077452201179893424">"کشیدن به‌چپ"</string>
     <string name="desktop_mode_maximize_menu_snap_right_button_text" msgid="7117751068945657304">"کشیدن به‌راست"</string>
     <string name="desktop_mode_a11y_action_snap_left" msgid="2932955411661734668">"تغییر اندازه پنجره برنامه در چپ"</string>
@@ -172,4 +172,12 @@
     <string name="open_by_default_dialog_in_browser_text" msgid="8042769465958497081">"در مرورگر"</string>
     <string name="open_by_default_dialog_dismiss_button_text" msgid="3487238795534582291">"تأیید"</string>
     <string name="desktop_windowing_app_to_web_education_text" msgid="1599668769538703570">"در اینجا سریع برنامه‌ها را در مرورگرتان باز کنید"</string>
+    <!-- no translation found for open_by_default_splash_dialog_title_text (2645214455870859991) -->
+    <skip />
+    <!-- no translation found for open_by_default_splash_dialog_checkbox_text (7367791478473586694) -->
+    <skip />
+    <!-- no translation found for open_by_default_splash_dialog_browser_text (4439951040200685938) -->
+    <skip />
+    <!-- no translation found for open_by_default_splash_dialog_app_text (2680408983754147907) -->
+    <skip />
 </resources>

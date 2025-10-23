@@ -172,4 +172,12 @@
     <string name="open_by_default_dialog_in_browser_text" msgid="8042769465958497081">"Al navegador"</string>
     <string name="open_by_default_dialog_dismiss_button_text" msgid="3487238795534582291">"D\'acord"</string>
     <string name="desktop_windowing_app_to_web_education_text" msgid="1599668769538703570">"Obre ràpidament aplicacions al navegador aquí"</string>
+    <!-- no translation found for open_by_default_splash_dialog_title_text (2645214455870859991) -->
+    <skip />
+    <!-- no translation found for open_by_default_splash_dialog_checkbox_text (7367791478473586694) -->
+    <skip />
+    <!-- no translation found for open_by_default_splash_dialog_browser_text (4439951040200685938) -->
+    <skip />
+    <!-- no translation found for open_by_default_splash_dialog_app_text (2680408983754147907) -->
+    <skip />
 </resources>
