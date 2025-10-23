@@ -367,6 +367,8 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Çaktivizimi i sensorëve aktiv"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Pastro të gjitha njoftimet."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Njoftimet"</string>
+    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# njoftim tjetër në brendësi.}other{# njoftime të tjera në brendësi.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Ekrani është i kyçur në orientimin horizontal."</string>
@@ -1159,6 +1161,18 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Çaktivizo shkurtoren"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Mbaje të aktivizuar"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Veprimi "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> është shkurtorja e tastierës për të përdorur \"<xliff:g id="ID_3">^3</xliff:g>\". <xliff:g id="ID_4">^3</xliff:g> është një lexues ekrani që të lejon t\'i dëgjosh artikujt të lexuar me zë. Kjo mund të jetë e dobishme për njerëzit që kanë vështirësi në shikimin e ekranit. Kjo mund të ndryshojë mënyrën se si funksionon pajisja jote."</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Shtypja e "<annotation id="action_key_icon">"ikonës"</annotation>" së veprimit + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> aktivizon <xliff:g id="ID_3">^3</xliff:g>, një veçori të qasshmërisë. Kjo të lejon ta kontrollosh pajisjen tënde pa përdorur duart."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ekrani i kyçjes"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Po fiket…"</string>
@@ -1472,17 +1486,12 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"Për të përmirësuar përvojën e pajisjes, aplikacionet dhe shërbimet mund të vazhdojnë të skanojnë për rrjete Wi-Fi në çdo kohë, edhe kur Wi-Fi është joaktiv. Mund ta ndryshosh këtë te cilësimet e skanimit të Wi-Fi. "<annotation id="link">"Ndrysho"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Çaktivizo modalitetin e aeroplanit"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g> dëshiron të shtojë pllakëzën e mëposhtme te \"Cilësimet e shpejta\""</string>
-    <!-- no translation found for qs_tile_request_dialog_text_with_size (732578771040573291) -->
-    <skip />
+    <string name="qs_tile_request_dialog_text_with_size" msgid="732578771040573291">"<xliff:g id="APPNAME">%1$s</xliff:g> dëshiron të shtojë një pllakëz te \"Cilësimet e shpejta\". Zgjidh një madhësi pllakëze për të vazhduar."</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Shto një pllakëz"</string>
-    <!-- no translation found for qs_tile_request_dialog_not_add (8375425041428574394) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_title (5654666862347548966) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_small_format_content_description (5429197059724172135) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_large_format_content_description (67983044110405787) -->
-    <skip />
+    <string name="qs_tile_request_dialog_not_add" msgid="8375425041428574394">"Mos e shto pllakëzën"</string>
+    <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Shto pllakëzën te \"Cilësimet e shpejta\""</string>
+    <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Format i vogël"</string>
+    <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Format i madh"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Zgjidh përdoruesin"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# aplikacion është aktiv}other{# aplikacione janë aktive}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Informacion i ri"</string>

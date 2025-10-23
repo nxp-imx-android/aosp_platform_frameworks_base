@@ -367,6 +367,8 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"’சென்சார்கள் ஆஃப்’ செயலில் உள்ளது"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"எல்லா அறிவிப்புகளையும் அழி."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"அறிவிப்புகள்"</string>
+    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{குழுவில் மேலும் # அறிவிப்பு உள்ளது.}other{குழுவில் மேலும் # அறிவிப்புகள் உள்ளன.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"நிலத்தோற்ற திசையமைப்பில் திரைப் பூட்டப்பட்டுள்ளது."</string>
@@ -1159,6 +1161,18 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ஷார்ட்கட்டை ஆஃப் செய்"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ஆனிலேயே வைத்திரு"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"ஆக்‌ஷன் "<annotation id="action_key_icon">"ஐகான்"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> என்பது <xliff:g id="ID_3">^3</xliff:g> ஐப் பயன்படுத்துவதற்கான கீபோர்டு ஷார்ட்கட்டாகும். <xliff:g id="ID_4">^3</xliff:g> என்பது ஒரு ஸ்கிரீன் ரீடர் ஆகும். இதன் மூலம் திரையில் உள்ளவற்றைச் சத்தமாக வாசிக்கச் செய்து கேட்கலாம். திரையைப் பார்க்க சிரமப்படும் பயனர்களுக்கு இது உதவியாக இருக்கும். இது உங்கள் சாதனம் செயல்படும் முறையை மாற்றக்கூடும்."</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"செயல் "<annotation id="action_key_icon">"ஐகான்"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ஆகியவற்றை அழுத்தினால் மாற்றுத்திறன் அம்சமான <xliff:g id="ID_3">^3</xliff:g> ஆன் செய்யப்படும். இதன்மூலம் கைகளைப் பயன்படுத்தாமலேயே உங்கள் சாதனத்தைக் கட்டுப்படுத்தலாம்."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"லாக் ஸ்கிரீன்"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ஷட் டவுன் ஆகிறது…"</string>
@@ -1472,17 +1486,12 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"சாதன அனுபவத்தை மேம்படுத்த, வைஃபை ஆஃப் செய்யப்பட்டிருந்தாலும்கூட எந்த நேரத்திலும் ஆப்ஸும் சேவைகளும் வைஃபை நெட்வொர்க்குகளைத் தேடலாம். வைஃபை ஸ்கேனிங் அமைப்புகளில் இதை மாற்றிக் கொள்ளலாம். "<annotation id="link">"மாற்று"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"விமானப் பயன்முறையை முடக்கும்"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"விரைவு அமைப்புகளில் பின்வரும் கட்டத்தைச் சேர்க்க <xliff:g id="APPNAME">%1$s</xliff:g> ஆப்ஸ் விரும்புகிறது"</string>
-    <!-- no translation found for qs_tile_request_dialog_text_with_size (732578771040573291) -->
-    <skip />
+    <string name="qs_tile_request_dialog_text_with_size" msgid="732578771040573291">"விரைவு அமைப்புகளில் கட்டத்தைச் சேர்க்க <xliff:g id="APPNAME">%1$s</xliff:g> ஆப்ஸ் விரும்புகிறது. தொடர்வதற்கு, கட்டத்தின் அளவைத் தேர்ந்தெடுக்கவும்."</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"கட்டத்தைச் சேர்"</string>
-    <!-- no translation found for qs_tile_request_dialog_not_add (8375425041428574394) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_title (5654666862347548966) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_small_format_content_description (5429197059724172135) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_large_format_content_description (67983044110405787) -->
-    <skip />
+    <string name="qs_tile_request_dialog_not_add" msgid="8375425041428574394">"கட்டத்தை சேர்க்காதே"</string>
+    <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"விரைவு அமைப்புகளில் கட்டத்தைச் சேர்த்தல்"</string>
+    <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"சிறிய வடிவமைப்பு"</string>
+    <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"பெரிய வடிவமைப்பு"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"பயனரைத் தேர்வுசெய்க"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# ஆப்ஸ் செயலிலுள்ளது}other{# ஆப்ஸ் செயலிலுள்ளன}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"புதிய தகவல்கள்"</string>

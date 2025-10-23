@@ -367,6 +367,8 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"أجهزة الاستشعار غير مفعّلة"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"محو جميع الإشعارات."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"الإشعارات"</string>
+    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{إشعار واحد آخر بداخل المجموعة.}zero{# إشعار آخر بداخل المجموعة.}two{إشعاران آخران بداخل المجموعة.}few{# إشعارات أخرى بداخل المجموعة.}many{# إشعارًا آخر بداخل المجموعة.}other{# إشعار آخر بداخل المجموعة.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"تم قفل الشاشة في الاتجاه الأفقي."</string>
@@ -1159,6 +1161,18 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"إيقاف الاختصار"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"عدم الإيقاف"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"‏الإجراء "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> هو اختصار لوحة المفاتيح لاستخدام <xliff:g id="ID_3">^3</xliff:g>. ‫<xliff:g id="ID_4">^3</xliff:g> هو قارئ شاشة يقرأ العناصر المعروضة عليها بصوتٍ عالٍ، ما يجعله مفيدًا للأشخاص الذين يجدون صعوبة في النظر إلى الشاشة. وقد يؤدي ذلك إلى تغيير طريقة عمل جهازك."</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"‏يؤدي الضغط على الإجراء "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g>‏ + <xliff:g id="ID_2">^2</xliff:g> إلى تفعيل \"<xliff:g id="ID_3">^3</xliff:g>\"، وهي إحدى ميزات تسهيل الاستخدام التي تتيح لك التحكّم في جهازك بدون لمسه."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"شاشة القفل"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"جارٍ إيقاف التشغيل…"</string>
@@ -1472,17 +1486,12 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"‏لتحسين تجربتك على الجهاز، يظل بإمكان التطبيقات والخدمات البحث عن شبكات Wi‑Fi في أي وقت، حتى عند إيقاف شبكة Wi‑Fi. وبإمكانك تغيير هذا الخيار في إعدادات البحث عن شبكات Wi-Fi. "<annotation id="link">"تغيير"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"إيقاف وضع الطيران"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"يريد تطبيق <xliff:g id="APPNAME">%1$s</xliff:g> إضافة المربّع التالي إلى \"الإعدادات السريعة\""</string>
-    <!-- no translation found for qs_tile_request_dialog_text_with_size (732578771040573291) -->
-    <skip />
+    <string name="qs_tile_request_dialog_text_with_size" msgid="732578771040573291">"يريد \"<xliff:g id="APPNAME">%1$s</xliff:g>\" إضافة مربّع إلى \"الإعدادات السريعة\". يُرجى اختيار حجم المربّع للمتابعة."</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"إضافة المربّع"</string>
-    <!-- no translation found for qs_tile_request_dialog_not_add (8375425041428574394) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_title (5654666862347548966) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_small_format_content_description (5429197059724172135) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_large_format_content_description (67983044110405787) -->
-    <skip />
+    <string name="qs_tile_request_dialog_not_add" msgid="8375425041428574394">"عدم إضافة المربّع"</string>
+    <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"إضافة مربّع إلى \"الإعدادات السريعة\""</string>
+    <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"تنسيق صغير"</string>
+    <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"تنسيق كبير"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"اختيار المستخدم"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{تطبيق واحد نشط}zero{# تطبيق نشط}two{تطبيقَان نشطَان}few{# تطبيقات نشطة}many{# تطبيقًا نشطًا}other{# تطبيق نشط}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"معلومات جديدة"</string>
