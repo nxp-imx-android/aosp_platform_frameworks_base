@@ -2167,7 +2167,7 @@ public abstract class VibrationEffect implements Parcelable {
      *     .addTransition(Duration.ofMillis(40), targetAmplitude(0.8f))
      *     .addSustain(Duration.ofMillis(50))
      *     .addTransition(Duration.ofMillis(60), targetAmplitude(0.2f))
-     *     .build();
+     *     .build();}</pre>
      *
      * <p>The amplitude step waveforms that can be created via
      * {@link VibrationEffect#createWaveform(long[], int[], int)} can also be created with
