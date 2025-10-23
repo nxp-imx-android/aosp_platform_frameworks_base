@@ -1,0 +1,50 @@
+query {
+  id: "testhelper_startup_binder_txns"
+  sql: {
+    column_names: "aidl_name"
+    column_names: "aidl_name_including_nulls"
+    sql:
+      "
+INCLUDE PERFETTO MODULE android.binder;
+INCLUDE PERFETTO MODULE android.startup.startups;
+WITH
+  testhelper_startup AS (
+    SELECT
+      ts,
+      (ts + dur) AS ts_end
+    FROM
+      android_startups
+    WHERE
+      package = 'android.app.memory.testhelper'
+    LIMIT 1
+  )
+SELECT
+  abt.aidl_name,
+  COALESCE(abt.aidl_name, 'NULL') AS aidl_name_including_nulls
+FROM
+  android_binder_txns AS abt
+  JOIN testhelper_startup
+    ON (
+      abt.client_ts >= testhelper_startup.ts
+      AND abt.client_ts < testhelper_startup.ts_end
+    )
+WHERE
+  abt.client_process = 'android.app.memory.testhelper'
+      "
+  }
+}
+
+metric_spec: {
+  id: "appmemorytest_binder_transaction_count"
+  value: "transaction_count"
+  query: {
+    inner_query_id: "testhelper_startup_binder_txns"
+    group_by: {
+      aggregates: {
+        column_name: "aidl_name_including_nulls"
+        op: COUNT
+        result_column_name: "transaction_count"
+      }
+    }
+  }
+}
