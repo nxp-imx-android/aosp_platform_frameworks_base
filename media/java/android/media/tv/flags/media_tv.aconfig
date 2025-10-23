@@ -165,3 +165,10 @@ flag {
     description: "Feature flag to enable agentic AI for TV OS using AppFunctions"
     bug: "447154316"
 }
+
+flag {
+    name: "media_quality_fw_c"
+    namespace: "tv_os"
+    description: "Continue efforts for standardizing PQ/AQ Interfaces for Media Quality Framework in Android 17"
+    bug: "443329020"
+}
