@@ -1279,6 +1279,8 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Dokončit akci"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Otevřít v aplikaci"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Otevřít v aplikaci %1$s"</string>
+    <!-- no translation found for open_app_name (6114096770130122912) -->
+    <skip />
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Otevřít"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Odkazy <xliff:g id="HOST">%1$s</xliff:g> otevírat pomocí aplikace"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Odkazy otevírat pomocí aplikace"</string>

@@ -1277,6 +1277,8 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Abschließen"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Öffnen mit"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Mit %1$s öffnen"</string>
+    <!-- no translation found for open_app_name (6114096770130122912) -->
+    <skip />
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Öffnen"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Links von <xliff:g id="HOST">%1$s</xliff:g> öffnen mit"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Links öffnen mit"</string>
@@ -1813,7 +1815,7 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Zum Auswählen der gewünschten Funktion tippen:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Funktionen auswählen, die du mit der Schaltfläche \"Bedienungshilfen\" verwenden möchtest"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Funktionen für den Kurzbefehl für die Lautstärketasten auswählen"</string>
-    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"Schaltfläche „Bedienungshilfen“"</string>
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"Button „Bedienungshilfen“"</string>
     <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"Lautstärketasten"</string>
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"Touchgeste"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"Schnelleinstellungen"</string>

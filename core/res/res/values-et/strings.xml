@@ -1277,6 +1277,8 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Vii toiming lõpule"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Avamine:"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Avamine rakendusega %1$s"</string>
+    <!-- no translation found for open_app_name (6114096770130122912) -->
+    <skip />
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Ava"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Ava teenuse <xliff:g id="HOST">%1$s</xliff:g> lingid rakendusega"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Ava lingid rakendusega"</string>

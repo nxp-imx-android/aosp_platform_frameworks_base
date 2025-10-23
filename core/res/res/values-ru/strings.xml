@@ -1279,6 +1279,8 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Выполнить действие"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Открыть в приложении"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Открыть с помощью приложения \"%1$s\""</string>
+    <!-- no translation found for open_app_name (6114096770130122912) -->
+    <skip />
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Открыть"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Открывать ссылки <xliff:g id="HOST">%1$s</xliff:g> с помощью:"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Открывать ссылки с помощью:"</string>

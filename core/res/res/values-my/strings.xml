@@ -1277,6 +1277,8 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"လုပ်ဆောင်ချက်ကို အပြီးသတ်ပါ"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"...ဖြင့် ဖွင့်မည်"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"%1$s ဖြင့် ဖွင့်မည်"</string>
+    <!-- no translation found for open_app_name (6114096770130122912) -->
+    <skip />
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"ဖွင့်ရန်"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"<xliff:g id="HOST">%1$s</xliff:g> လင့်ခ်များကို အောက်ပါဖြင့် ဖွင့်ရန်−"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"လင့်ခ်များကို အောက်ပါဖြင့် ဖွင့်ရန်−"</string>

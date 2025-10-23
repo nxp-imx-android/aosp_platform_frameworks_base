@@ -1279,6 +1279,8 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Wykonaj działanie"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Otwórz w aplikacji"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Otwórz w aplikacji %1$s"</string>
+    <!-- no translation found for open_app_name (6114096770130122912) -->
+    <skip />
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Otwórz"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Otwieraj linki z <xliff:g id="HOST">%1$s</xliff:g> w"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Otwieraj linki w"</string>
