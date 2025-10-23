@@ -148,6 +148,13 @@ flag {
 }
 
 flag {
+  name: "ai_desks_platform"
+  namespace: "large_screen_experiences_app_compat"
+  description: "Whether the Ai support for AiDesks in platform is enabled"
+  bug: "454216513"
+}
+
+flag {
     name: "enable_compatui_sysui_launcher_fix"
     namespace: "large_screen_experiences_app_compat"
     description: "Enables sysui animation for user aspect ratio button"
