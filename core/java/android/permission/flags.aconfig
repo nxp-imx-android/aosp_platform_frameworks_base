@@ -676,3 +676,11 @@ flag {
     description: "This flag controls whether the SEND_SAFETY_CENTER_UPDATE permission is extended to signature level"
     bug: "403623944"
 }
+
+flag {
+    name: "assist_settings_privacy_improvements_enabled"
+    is_exported: true
+    namespace: "permissions"
+    description: "enable assistant settings privacy improvements"
+    bug: "437416500"
+}

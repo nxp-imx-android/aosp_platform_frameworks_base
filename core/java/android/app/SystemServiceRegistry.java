@@ -19,6 +19,7 @@ package android.app;
 import static android.app.appfunctions.flags.Flags.enableAppFunctionManager;
 import static android.app.lskfreset.flags.Flags.enableLskfResetManager;
 import static android.hardware.serial.flags.Flags.enableWiredSerialApi;
+import static android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled;
 import static android.provider.flags.Flags.newStoragePublicApi;
 import static android.server.Flags.removeGameManagerServiceFromWear;
 import static android.service.chooser.Flags.interactiveChooser;
@@ -69,6 +70,7 @@ import android.app.usage.IStorageStatsManager;
 import android.app.usage.IUsageStatsManager;
 import android.app.usage.StorageStatsManager;
 import android.app.usage.UsageStatsManager;
+import android.app.voiceinteraction.VoiceInteractionManager;
 import android.app.wallpapereffectsgeneration.IWallpaperEffectsGenerationManager;
 import android.app.wallpapereffectsgeneration.WallpaperEffectsGenerationManager;
 import android.app.wearable.IWearableSensingManager;
@@ -303,6 +305,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.app.ISoundTriggerService;
+import com.android.internal.app.IVoiceInteractionManagerService;
 import com.android.internal.appwidget.IAppWidgetService;
 import com.android.internal.graphics.fonts.IFontManager;
 import com.android.internal.net.INetworkWatchlistManager;
@@ -885,6 +888,22 @@ public final class SystemServiceRegistry {
             public Vibrator createService(ContextImpl ctx) {
                 return new SystemVibrator(ctx);
             }});
+
+        if (assistSettingsPrivacyImprovementsEnabled()) {
+            registerService(Context.VOICE_INTERACTION_MANAGER_SERVICE,
+                    VoiceInteractionManager.class,
+                    new CachedServiceFetcher<>() {
+                        @Override
+                        public VoiceInteractionManager createService(ContextImpl ctx)
+                                throws ServiceNotFoundException {
+                            IVoiceInteractionManagerService service;
+                            service = IVoiceInteractionManagerService.Stub.asInterface(
+                                    ServiceManager.getServiceOrThrow(
+                                            Context.VOICE_INTERACTION_MANAGER_SERVICE));
+                            return new VoiceInteractionManager(service, ctx);
+                        }
+                    });
+        }
 
         registerService(Context.THEME_SERVICE, ThemeManager.class,
             new CachedServiceFetcher<ThemeManager>() {
