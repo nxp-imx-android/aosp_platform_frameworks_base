@@ -61,12 +61,11 @@ constructor(
     private val secureSettings: SecureSettings,
 ) : AssistantRepository {
     override fun startAssistant() {
-        // TODO(b/440281094): use new invocation type.
         assistManager.startAssist(
             Bundle().apply {
                 putInt(
                     AssistManager.INVOCATION_TYPE_KEY,
-                    AssistManager.INVOCATION_TYPE_LAUNCHER_SYSTEM_SHORTCUT,
+                    AssistManager.INVOCATION_TYPE_STATUS_BAR_ICON,
                 )
             }
         )
