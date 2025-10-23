@@ -18,7 +18,6 @@ package com.android.server.am;
 
 import static android.app.ActivityManager.PROCESS_STATE_UNKNOWN;
 
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.internal.util.FrameworkStatsLog.BROADCAST_DELIVERY_EVENT_REPORTED;
@@ -63,7 +62,6 @@ import android.annotation.NonNull;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AppOpsManager;
-import android.app.ApplicationExitInfo;
 import android.app.BackgroundStartPrivileges;
 import android.app.BroadcastOptions;
 import android.appwidget.AppWidgetManager;
@@ -78,8 +76,6 @@ import android.os.DropBoxManager;
 import android.os.Process;
 import android.os.SystemClock;
 import android.os.UserHandle;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.util.IndentingPrintWriter;
 import android.util.Pair;
 
@@ -2031,71 +2027,6 @@ public final class BroadcastQueueImplTest extends BaseBroadcastQueueTest {
         mImpl.onProcessFreezableChangedLocked(greenProcess);
         waitForIdle();
         assertFalse(mImpl.isProcessFreezable(greenProcess));
-    }
-
-    @EnableFlags(Flags.FLAG_LIMIT_PENDING_BROADCASTS_PER_SENDER_UID)
-    @Test
-    public void testEnqueueBroadcast_killAppWithTooManyEnqueuedBroadcasts() {
-        doNothing().when(mProcess).killLocked(anyString(), anyInt(), anyInt(), anyBoolean());
-        for (int i = 0; i <= mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID; ++i) {
-            final BroadcastRecord timeTickRecord = new BroadcastRecordBuilder()
-                    .setIntentAction(Intent.ACTION_TIME_TICK)
-                    .setReceivers(List.of(makeManifestReceiver(PACKAGE_GREEN, CLASS_GREEN)))
-                    .setCallerApp(mProcess)
-                    .setCallingUid(mProcess.uid)
-                    .setCallerPackage(mProcess.info.packageName)
-                    .build();
-            timeTickRecord.enqueueTime = SystemClock.uptimeMillis();
-            mImpl.enqueueBroadcastLocked(timeTickRecord);
-        }
-        verify(mProcess).killLocked(anyString(),
-                eq(ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE),
-                eq(ApplicationExitInfo.SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT),
-                anyBoolean());
-    }
-
-    @DisableFlags(Flags.FLAG_LIMIT_PENDING_BROADCASTS_PER_SENDER_UID)
-    @Test
-    public void testEnqueueBroadcast_killAppWithTooManyEnqueuedBroadcasts_flagDisabled() {
-        doNothing().when(mProcess).killLocked(anyString(), anyInt(), anyInt(), anyBoolean());
-        for (int i = 0; i <= mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID; ++i) {
-            final BroadcastRecord timeTickRecord = new BroadcastRecordBuilder()
-                    .setIntentAction(Intent.ACTION_TIME_TICK)
-                    .setReceivers(List.of(makeManifestReceiver(PACKAGE_GREEN, CLASS_GREEN)))
-                    .setCallerApp(mProcess)
-                    .setCallingUid(mProcess.uid)
-                    .setCallerPackage(mProcess.info.packageName)
-                    .build();
-            timeTickRecord.enqueueTime = SystemClock.uptimeMillis();
-            mImpl.enqueueBroadcastLocked(timeTickRecord);
-        }
-        verify(mProcess, times(0)).killLocked(anyString(),
-                anyInt(),
-                anyInt(),
-                anyBoolean());
-    }
-
-    @Test
-    public void testEnqueueBroadcast_doNotKillCoreUidWithTooManyEnqueuedBroadcasts() {
-        doNothing().when(mProcess).killLocked(anyString(), anyInt(), anyInt(), anyBoolean());
-        final ApplicationInfo ai = makeApplicationInfo(PACKAGE_ANDROID);
-        final ProcessRecord systemProcess = spy(new ProcessRecord(
-                mAms, ai, ai.processName, ai.uid));
-        for (int i = 0; i <= mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID; ++i) {
-            final BroadcastRecord timeTickRecord = new BroadcastRecordBuilder()
-                    .setIntentAction(Intent.ACTION_TIME_TICK)
-                    .setReceivers(List.of(makeManifestReceiver(PACKAGE_GREEN, CLASS_GREEN)))
-                    .setCallerApp(systemProcess)
-                    .setCallingUid(systemProcess.uid)
-                    .setCallerPackage(systemProcess.info.packageName)
-                    .build();
-            timeTickRecord.enqueueTime = SystemClock.uptimeMillis();
-            mImpl.enqueueBroadcastLocked(timeTickRecord);
-        }
-        verify(mProcess, times(0)).killLocked(anyString(),
-                anyInt(),
-                anyInt(),
-                anyBoolean());
     }
 
     @SuppressWarnings("GuardedBy")
