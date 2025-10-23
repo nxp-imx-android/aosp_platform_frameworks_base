@@ -131,7 +131,7 @@ public class InsightRendererServiceTest {
         final IInsightRenderer renderer = IInsightRenderer.Stub.asInterface(binder);
 
         final UUID id = UUID.randomUUID();
-        renderer.configure(new ParcelUuid(UUID.randomUUID()));
+        renderer.configure(new ParcelUuid(id));
 
         final RenderToken token = renderer.mintRenderToken();
         assertThat(token.getRendererComponentId()).isEqualTo(id);
