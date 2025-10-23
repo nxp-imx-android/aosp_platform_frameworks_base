@@ -458,12 +458,8 @@ public class BubbleController implements ConfigurationChangeListener,
 
     private void addUnfoldProgressProviderListener(
             ShellUnfoldProgressProvider unfoldProgressProvider) {
-        final boolean supportsBubbleNonResizableMultiWindow =
-                BubbleAnythingFlagHelper.allowMultiWindowNonResizableActivities()
-                        && ContextUtils.getAlwaysSupportsNonResizableMultiWindow(mContext);
         BubblesUnfoldListener unfoldListener = new BubblesUnfoldListener(
-                supportsBubbleNonResizableMultiWindow, mBubbleData,
-                mFoldLockSettingsObserver, (bubble, moveToFullscreen) -> {
+                mBubbleData, mFoldLockSettingsObserver, (bubble, moveToFullscreen) -> {
                     if (moveToFullscreen) {
                         bubble.getTaskView().moveToFullscreen();
                         mSkipAddingBackBubbleOnMoveToFullScreen = true;

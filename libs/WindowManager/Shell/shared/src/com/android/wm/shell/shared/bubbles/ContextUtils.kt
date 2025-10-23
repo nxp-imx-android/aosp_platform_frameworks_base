@@ -37,10 +37,4 @@ object ContextUtils {
     @JvmStatic
     val Context.isRtl: Boolean
         get() = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
-
-    /** Returns whether non-resizable activities are always supported in multi-window. */
-    @JvmStatic
-    val Context.alwaysSupportsNonResizableMultiWindow: Boolean
-        get() = resources.getInteger(
-            com.android.internal.R.integer.config_supportsNonResizableMultiWindow) == 1
 }

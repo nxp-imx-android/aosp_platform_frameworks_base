@@ -77,9 +77,14 @@ class BubblesUnfoldListenerTest {
                 backgroundExecutor
             )
         foldLockSettingsObserver = BubblesFoldLockSettingsObserver { isStayAwakeOnFold }
-        unfoldListener = createUnfoldListener(
-            supportsBubbleNonResizableMultiWindow = false
-        )
+        unfoldListener = BubblesUnfoldListener(
+            bubbleData, foldLockSettingsObserver) { bubble, moveToFullscreen ->
+            if (moveToFullscreen) {
+                barToFullscreenTransitionStarted = true
+            } else {
+                barToFloatingTransitionStarted = true
+            }
+        }
     }
 
     @Test
@@ -152,10 +157,10 @@ class BubblesUnfoldListenerTest {
     }
 
     @Test
-    fun fold_expandedFixedLandscapeBubble_staysAwakeOnFold_shouldStartFullscreenTransition() {
+    fun fold_expandedTaskValidToBubble_staysAwakeOnFold_shouldStartFullscreenTransition() {
         isStayAwakeOnFold = true
         val bubble = FakeBubbleFactory.createChatBubble(context)
-        bubble.setIsTopActivityFixedOrientationLandscape(true)
+        bubble.setIsTaskValidToBubble(true)
         bubbleData.notificationEntryUpdated(bubble, true, false)
         assertThat(bubbleData.hasBubbles()).isTrue()
         bubbleData.setSelectedBubbleAndExpandStack(bubble)
@@ -167,35 +172,17 @@ class BubblesUnfoldListenerTest {
     }
 
     @Test
-    fun fold_expandedNonResizableBubble_staysAwakeOnFold_shouldStartFloatingTransition() {
-        var supportsNonResizableUnfoldListener = createUnfoldListener(
-            supportsBubbleNonResizableMultiWindow = true
-        )
+    fun fold_expandedTaskInValidToBubble_staysAwakeOnFold_shouldStartFloatingTransition() {
         isStayAwakeOnFold = true
         val bubble = FakeBubbleFactory.createChatBubble(context)
+        bubble.setIsTaskValidToBubble(false)
         bubbleData.notificationEntryUpdated(bubble, true, false)
         assertThat(bubbleData.hasBubbles()).isTrue()
         bubbleData.setSelectedBubbleAndExpandStack(bubble)
         assertThat(bubbleData.isExpanded).isTrue()
 
-        supportsNonResizableUnfoldListener.onFoldStateChanged(isFolded = true)
+        unfoldListener.onFoldStateChanged(isFolded = true)
         assertThat(barToFloatingTransitionStarted).isTrue()
         assertThat(barToFullscreenTransitionStarted).isFalse()
-    }
-
-    private fun createUnfoldListener(
-        supportsBubbleNonResizableMultiWindow: Boolean
-    ): BubblesUnfoldListener {
-        return BubblesUnfoldListener(
-            supportsBubbleNonResizableMultiWindow,
-            bubbleData,
-            foldLockSettingsObserver
-        ) { bubble, moveToFullscreen ->
-            if (moveToFullscreen) {
-                barToFullscreenTransitionStarted = true
-            } else {
-                barToFloatingTransitionStarted = true
-            }
-        }
     }
 }
