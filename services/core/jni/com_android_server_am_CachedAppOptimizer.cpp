@@ -639,7 +639,7 @@ static char const* binderErrorToString(int error_code) {
 
 static void com_android_server_am_CachedAppOptimizer_handleBinderReport(JNIEnv* env, jobject thiz) {
     jclass clazz = env->GetObjectClass(thiz);
-    jmethodID method = env->GetMethodID(clazz, "handleBinderReport", "(IIZZ)Z");
+    jmethodID method = env->GetMethodID(clazz, "handleBinderReport", "(IIIZZ)Z");
     if (!method) {
         jniThrowException(env, "java/lang/RuntimeException", "Failed to find handleBinderReport");
         return;
@@ -661,6 +661,7 @@ static void com_android_server_am_CachedAppOptimizer_handleBinderReport(JNIEnv* 
             int error = report.error;
             int ecode = binderErrorToJava(error);
             int toPid = report.toPid;
+            int fromPid = report.fromPid;
             int size = report.dataSize;
             bool large = size >= kTransactionTooLarge;
             bool oneway = report.flags & TF_ONE_WAY;
@@ -672,7 +673,8 @@ static void com_android_server_am_CachedAppOptimizer_handleBinderReport(JNIEnv* 
                 case BR_ONEWAY_SPAM_SUSPECT:
                 case BR_TRANSACTION_PENDING_FROZEN:
                     ATRACE_BEGIN(binderErrorToString(error));
-                    if (!env->CallBooleanMethod(thiz, method, ecode, toPid, large, oneway)) {
+                    if (!env->CallBooleanMethod(thiz, method, ecode, fromPid, toPid, large,
+                                                oneway)) {
                         // The Java layer has requested that the thread exit.
                         return;
                     }
