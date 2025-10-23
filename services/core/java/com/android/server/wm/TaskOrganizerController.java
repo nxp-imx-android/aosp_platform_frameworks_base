@@ -1170,9 +1170,6 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
     public void setExcludeLayersFromTaskSnapshot(WindowContainerToken token,
             SurfaceControl[] layers) throws RemoteException {
         enforceTaskPermission("setExcludeLayersFromTaskSnapshot()");
-        if (!Flags.excludingLayerFromTaskSnapshot()) {
-            return;
-        }
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
@@ -1196,9 +1193,6 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
     @Override
     public void clearExcludeLayersFromTaskSnapshot(WindowContainerToken token) {
         enforceTaskPermission("clearExcludeLayersFromTaskSnapshot()");
-        if (!Flags.excludingLayerFromTaskSnapshot()) {
-            return;
-        }
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
