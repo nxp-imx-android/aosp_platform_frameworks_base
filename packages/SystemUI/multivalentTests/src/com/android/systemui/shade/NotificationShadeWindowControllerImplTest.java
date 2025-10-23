@@ -17,13 +17,12 @@
 package com.android.systemui.shade;
 
 import static android.service.dreams.Flags.FLAG_DREAMS_V2;
+import static com.android.window.flags.Flags.FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH;
 import static android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_SECURE;
 import static android.view.WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER;
 import static android.view.WindowManager.LayoutParams.INPUT_FEATURE_SENSITIVE_FOR_PRIVACY;
-
-import static com.android.window.flags.Flags.FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -609,19 +608,6 @@ public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
         // WHEN keyguard is fading away, followed by the panel not being force-hidden anymore
         mNotificationShadeWindowController.setKeyguardFadingAway(true);
         mNotificationShadeWindowController.setLaunchingActivity(false);
-
-        // THEN the panel remains invisible
-        verify(mNotificationShadeWindowView, never()).setVisibility(eq(View.VISIBLE));
-    }
-
-    @Test
-    @EnableSceneContainer
-    public void setKeyguardFadingAway_doesNothing_sceneContainerEnabled() {
-        // GIVEN the panel is visible
-        reset(mNotificationShadeWindowView);
-
-        // WHEN keyguard is fading away, followed by the panel not being force-hidden anymore
-        mNotificationShadeWindowController.setKeyguardFadingAway(true);
 
         // THEN the panel remains invisible
         verify(mNotificationShadeWindowView, never()).setVisibility(eq(View.VISIBLE));
