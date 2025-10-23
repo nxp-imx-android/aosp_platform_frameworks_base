@@ -184,11 +184,9 @@ public class KeyCharacterMap implements Parcelable {
     private static final int ACCENT_APOSTROPHE = '\'';
     private static final int ACCENT_QUOTATION_MARK = '"';
 
-    /* Legacy dead key display characters used in previous versions of the API.
-     * We still support these characters by mapping them to their non-legacy version. */
-    private static final int ACCENT_GRAVE_LEGACY = '`';
-    private static final int ACCENT_CIRCUMFLEX_LEGACY = '^';
-    private static final int ACCENT_TILDE_LEGACY = '~';
+    private static final int ACCENT_GRAVE_FALLBACK = '`';
+    private static final int ACCENT_CIRCUMFLEX_FALLBACK = '^';
+    private static final int ACCENT_TILDE_FALLBACK = '~';
 
     private static final int CHAR_SPACE = ' ';
 
@@ -197,15 +195,17 @@ public class KeyCharacterMap implements Parcelable {
      */
     private static final SparseIntArray sCombiningToAccent = new SparseIntArray();
     private static final SparseIntArray sAccentToCombining = new SparseIntArray();
+    private static final SparseIntArray sAccentToFallback = new SparseIntArray();
     static {
-        addCombining('\u0300', ACCENT_GRAVE);
-        addCombining('\u0301', ACCENT_ACUTE);
-        addCombining('\u0302', ACCENT_CIRCUMFLEX);
-        addCombining('\u0303', ACCENT_TILDE);
+        // Combining, Accent, Fallback
+        addCombining('\u0300', ACCENT_GRAVE, ACCENT_GRAVE_FALLBACK);
+        addCombining('\u0301', ACCENT_ACUTE, ACCENT_APOSTROPHE);
+        addCombining('\u0302', ACCENT_CIRCUMFLEX, ACCENT_CIRCUMFLEX_FALLBACK);
+        addCombining('\u0303', ACCENT_TILDE, ACCENT_TILDE_FALLBACK);
         addCombining('\u0304', ACCENT_MACRON);
         addCombining('\u0306', ACCENT_BREVE);
         addCombining('\u0307', ACCENT_DOT_ABOVE);
-        addCombining('\u0308', ACCENT_UMLAUT);
+        addCombining('\u0308', ACCENT_UMLAUT, ACCENT_QUOTATION_MARK);
         addCombining('\u0309', ACCENT_HOOK_ABOVE);
         addCombining('\u030A', ACCENT_RING_ABOVE);
         addCombining('\u030B', ACCENT_DOUBLE_ACUTE);
@@ -236,10 +236,11 @@ public class KeyCharacterMap implements Parcelable {
         sCombiningToAccent.append('\u030D', ACCENT_APOSTROPHE);
         sCombiningToAccent.append('\u030E', ACCENT_QUOTATION_MARK);
 
-        // One-way legacy mappings to preserve compatibility with older applications.
-        sAccentToCombining.append(ACCENT_GRAVE_LEGACY, '\u0300');
-        sAccentToCombining.append(ACCENT_CIRCUMFLEX_LEGACY, '\u0302');
-        sAccentToCombining.append(ACCENT_TILDE_LEGACY, '\u0303');
+        // Legacy dead key display characters used in previous versions of the API.
+        // We still support these characters by mapping them to their non-legacy version.
+        sAccentToCombining.append(ACCENT_GRAVE_FALLBACK, '\u0300');
+        sAccentToCombining.append(ACCENT_CIRCUMFLEX_FALLBACK, '\u0302');
+        sAccentToCombining.append(ACCENT_TILDE_FALLBACK, '\u0303');
 
         // One-way mappings to use the preferred accent
         sAccentToCombining.append(ACCENT_APOSTROPHE, '\u0301');
@@ -247,8 +248,14 @@ public class KeyCharacterMap implements Parcelable {
     }
 
     private static void addCombining(int combining, int accent) {
+        // If there is no reasonable fallback, use the accent as fallback
+        addCombining(combining, accent, accent);
+    }
+
+    private static void addCombining(int combining, int accent, int fallback) {
         sCombiningToAccent.append(combining, accent);
         sAccentToCombining.append(accent, combining);
+        sAccentToFallback.append(accent, fallback);
     }
 
     /**
@@ -560,11 +567,10 @@ public class KeyCharacterMap implements Parcelable {
      * @return The combined character, or 0 if the characters cannot be combined.
      */
     public static int getDeadChar(int accent, int c) {
-        if (c == accent || CHAR_SPACE == c) {
+        if (c == accent || c == CHAR_SPACE) {
             // The same dead character typed twice or a dead character followed by a
-            // space should both produce the non-combining version of the combining char.
-            // In this case we don't even need to compute the combining character.
-            return accent;
+            // space should produce the fallback character.
+            return sAccentToFallback.get(accent, accent);
         }
 
         int combining = sAccentToCombining.get(accent);
