@@ -83,6 +83,7 @@ final class SplitPwleSegmentsAdapter implements VibrationSegmentsAdapter {
         float previousAmplitude = pwleSegment.getStartAmplitude();
         float previousFrequencyHz = startFrequencyHz;
         long accumulatedDuration = 0;
+        boolean originalSegmentWasFirst = pwleSegment.isFirstSegmentOfEnvelope();
 
         for (int i = 1; i < splits; i++) {
             accumulatedDuration += splitDuration;
@@ -94,7 +95,9 @@ final class SplitPwleSegmentsAdapter implements VibrationSegmentsAdapter {
             PwleSegment pwleSplit = new PwleSegment(
                     previousAmplitude, interpolatedAmplitude,
                     previousFrequencyHz, interpolatedFrequency,
-                    (int) splitDuration);
+                    (int) splitDuration,
+                    // Only the very first split segment can be the start of the envelope.
+                    originalSegmentWasFirst && pwleSegments.isEmpty());
             pwleSegments.add(pwleSplit);
             previousAmplitude = pwleSplit.getEndAmplitude();
             previousFrequencyHz = pwleSplit.getEndFrequencyHz();
@@ -103,7 +106,11 @@ final class SplitPwleSegmentsAdapter implements VibrationSegmentsAdapter {
         pwleSegments.add(
                 new PwleSegment(previousAmplitude, pwleSegment.getEndAmplitude(),
                         previousFrequencyHz, endFrequencyHz,
-                        (int) (pwleSegment.getDuration() - accumulatedDuration)));
+                        (int) (pwleSegment.getDuration() - accumulatedDuration),
+                        // This final segment is the first segment of the envelope only
+                        // if the original segment was the first, AND no other segments
+                        // were added in the loop (i.e., splits was 1).
+                        originalSegmentWasFirst && pwleSegments.isEmpty()));
 
         return pwleSegments;
     }
