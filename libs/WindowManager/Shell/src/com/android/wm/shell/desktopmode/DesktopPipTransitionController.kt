@@ -18,12 +18,14 @@ package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityTaskManager
+import android.app.TaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.graphics.Rect
 import android.os.IBinder
 import android.window.DesktopExperienceFlags
 import android.window.WindowContainerTransaction
+import androidx.annotation.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.pip.PipDesktopState
@@ -40,21 +42,53 @@ class DesktopPipTransitionController(
     private val pipDesktopState: PipDesktopState,
 ) {
     /**
-     * This is called by [PipScheduler#getExitPipViaExpandTransaction] before starting a PiP
-     * transition. In the case of multi-activity PiP, we might need to update the parent task's
-     * windowing mode and bounds based on whether we are in Desktop Windowing.
+     * This is called by [PipScheduler#scheduleExitPipViaExpand] before starting an expand PiP
+     * transition, and by [PipExpandHandler#handleRequest] when receiving an expand PiP request. In
+     * both cases, we want to update the wct to include necessary changes based on the current
+     * Desktop state.
+     *
+     * @param wct WindowContainerTransaction that will apply these changes
+     * @param pipTask PiP task info
+     * @return RunOnTransitStart callbacks to update Desk states after the transition starts
+     */
+    fun updateExpandWctForDesktop(
+        wct: WindowContainerTransaction?,
+        pipTask: TaskInfo,
+    ): RunOnTransitStart? {
+        if (wct == null) return null
+
+        // In multi-activity case, windowing mode change will reparent to original host task, so
+        // we have to update the parent windowing mode to what is expected.
+        val updateParentRunOnTransit =
+            maybeUpdateParentInWct(wct, pipTask.lastParentTaskIdBeforePip)
+        // In multi-desks case, we have to reparent the task to the root desk.
+        val reparentTaskRunOnTransit = maybeReparentTaskToDesk(wct, pipTask.taskId)
+        return RunOnTransitStart { transition ->
+            updateParentRunOnTransit?.invoke(transition)
+            reparentTaskRunOnTransit?.invoke(transition)
+        }
+    }
+
+    /**
+     * In the case of multi-activity PiP, we might need to update the parent task's windowing mode
+     * and bounds based on whether we are currently in Desktop Windowing.
      *
      * @param wct WindowContainerTransaction that will apply these changes
      * @param parentTaskId id taken from TaskInfo#lastParentTaskIdBeforePip
+     * @return RunOnTransitStart if addMoveToFullscreenChanges is needed
      */
-    fun maybeUpdateParentInWct(wct: WindowContainerTransaction, parentTaskId: Int) {
+    @VisibleForTesting
+    fun maybeUpdateParentInWct(
+        wct: WindowContainerTransaction,
+        parentTaskId: Int,
+    ): RunOnTransitStart? {
         if (!pipDesktopState.isDesktopWindowingPipEnabled()) {
-            return
+            return null
         }
 
         if (parentTaskId == ActivityTaskManager.INVALID_TASK_ID) {
             logD("maybeUpdateParentInWct: Task is not multi-activity PiP")
-            return
+            return null
         }
 
         val parentTask = shellTaskOrganizer.getRunningTaskInfo(parentTaskId)
@@ -63,7 +97,7 @@ class DesktopPipTransitionController(
                 "maybeUpdateParentInWct: Failed to find RunningTaskInfo for parentTaskId %d",
                 parentTaskId,
             )
-            return
+            return null
         }
 
         val defaultFreeformBounds =
@@ -88,8 +122,9 @@ class DesktopPipTransitionController(
             )
         }
         if (resolvedWinMode == WINDOWING_MODE_FULLSCREEN) {
-            maybeAddMoveToFullscreenChanges(wct, parentTask)
+            return maybeAddMoveToFullscreenChanges(wct, parentTask)
         }
+        return null
     }
 
     /**
@@ -99,18 +134,19 @@ class DesktopPipTransitionController(
      *
      * @param wct WindowContainerTransaction that will apply these changes
      * @param parentTask the multi-activity PiP parent
+     * @return RunOnTransitStart if addMoveToFullscreenChanges is needed
      */
     private fun maybeAddMoveToFullscreenChanges(
         wct: WindowContainerTransaction,
         parentTask: RunningTaskInfo,
-    ) {
+    ): RunOnTransitStart? {
         val desktopRepository = desktopUserRepositories.getProfile(parentTask.userId)
         if (!desktopRepository.isActiveTask(parentTask.taskId)) {
             logW(
                 "maybeAddMoveToFullscreenChanges: parentTask with id=%d is not active in any desk",
                 parentTask.taskId,
             )
-            return
+            return null
         }
 
         logD(
@@ -118,7 +154,7 @@ class DesktopPipTransitionController(
             parentTask.taskId,
             parentTask.displayId,
         )
-        desktopTasksController.addMoveToFullscreenChanges(
+        return desktopTasksController.addMoveToFullscreenChanges(
             wct = wct,
             taskInfo = parentTask,
             willExitDesktop = true,
@@ -126,16 +162,17 @@ class DesktopPipTransitionController(
     }
 
     /**
-     * This is called by [PipScheduler#getExitPipViaExpandTransaction] before starting an EXIT_PiP
-     * transition. If the ENABLE_MULTIPLE_DESKTOPS_BACKEND flag is enabled and the PiP task is going
-     * to freeform windowing mode, we need to reparent the task to the root desk. In addition, if we
-     * are expanding PiP at Home (as in with a Desktop-first display), we also need to activate the
+     * If the ENABLE_MULTIPLE_DESKTOPS_BACKEND flag is enabled and the PiP task is going to freeform
+     * windowing mode, we need to reparent the task to the root desk. In addition, if we are
+     * expanding PiP at Home (as in with a Desktop-first display), we also need to activate the
      * default desk.
      *
      * @param wct WindowContainerTransaction that will apply these changes
      * @param taskId of the task that is exiting PiP
+     * @return RunOnTransitStart if addDeskActivationChanges is needed
      */
-    fun maybeReparentTaskToDesk(wct: WindowContainerTransaction, taskId: Int) {
+    @VisibleForTesting
+    fun maybeReparentTaskToDesk(wct: WindowContainerTransaction, taskId: Int): RunOnTransitStart? {
         // Temporary workaround for b/409201669: We always expand to fullscreen if we're exiting PiP
         // in the middle of Recents animation from Desktop session, so don't reparent to the Desk.
         if (
@@ -143,24 +180,24 @@ class DesktopPipTransitionController(
                 pipDesktopState.isRecentsAnimating() ||
                 !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
         ) {
-            return
+            return null
         }
 
         val runningTaskInfo = shellTaskOrganizer.getRunningTaskInfo(taskId)
         if (runningTaskInfo == null) {
             logW("maybeReparentTaskToDesk: Failed to find RunningTaskInfo for taskId=%d", taskId)
-            return
+            return null
         }
 
         val desktopRepository = desktopUserRepositories.getProfile(runningTaskInfo.userId)
         val displayId = runningTaskInfo.displayId
         if (!pipDesktopState.isPipInDesktopMode()) {
             logD("maybeReparentTaskToDesk: PiP transition is not in Desktop session")
-            return
+            return null
         }
 
         val deskId = getDeskId(desktopRepository, displayId)
-        if (deskId == INVALID_DESK_ID) return
+        if (deskId == INVALID_DESK_ID) return null
 
         val parentTaskId = runningTaskInfo.lastParentTaskIdBeforePip
         var parentTask: RunningTaskInfo? = null
@@ -174,7 +211,7 @@ class DesktopPipTransitionController(
                     "maybeReparentTaskToDesk: Failed to find RunningTaskInfo for parentTaskId %d",
                     parentTaskId,
                 )
-                return
+                return null
             }
             if (desktopRepository.isActiveTask(parentTaskId)) {
                 logD(
@@ -183,7 +220,7 @@ class DesktopPipTransitionController(
                     parentTaskId,
                 )
                 moveParentTaskToFront(wct, parentTask, deskId)
-                return
+                return null
             } else {
                 logD(
                     "maybeReparentTaskToDesk: Multi-activity PiP with parent taskId=%d not " +
@@ -194,23 +231,24 @@ class DesktopPipTransitionController(
             }
         }
 
-        if (!desktopRepository.isDeskActive(deskId)) {
-            logD(
-                "maybeReparentTaskToDesk: addDeskActivationChanges, taskId=%d deskId=%d, " +
-                    "displayId=%d",
-                if (shouldAddParentToDesk) parentTaskId else runningTaskInfo.taskId,
-                deskId,
-                displayId,
-            )
-            desktopTasksController.addDeskActivationChanges(
-                deskId = deskId,
-                wct = wct,
-                newTask = if (shouldAddParentToDesk) parentTask!! else runningTaskInfo,
-                displayId = displayId,
-                userId = desktopRepository.userId,
-                enterReason = EnterReason.EXIT_PIP,
-            )
-        }
+        val runOnTransitStart =
+            if (!desktopRepository.isDeskActive(deskId)) {
+                logD(
+                    "maybeReparentTaskToDesk: addDeskActivationChanges, taskId=%d deskId=%d, " +
+                        "displayId=%d",
+                    if (shouldAddParentToDesk) parentTaskId else runningTaskInfo.taskId,
+                    deskId,
+                    displayId,
+                )
+                desktopTasksController.addDeskActivationChanges(
+                    deskId = deskId,
+                    wct = wct,
+                    newTask = if (shouldAddParentToDesk) parentTask!! else runningTaskInfo,
+                    displayId = displayId,
+                    userId = desktopRepository.userId,
+                    enterReason = EnterReason.EXIT_PIP,
+                )
+            } else null
 
         logD(
             "maybeReparentTaskToDesk: addMoveToDeskTaskChanges, taskId=%d deskId=%d",
@@ -222,6 +260,8 @@ class DesktopPipTransitionController(
             task = if (shouldAddParentToDesk) parentTask!! else runningTaskInfo,
             deskId = deskId,
         )
+
+        return runOnTransitStart
     }
 
     /**

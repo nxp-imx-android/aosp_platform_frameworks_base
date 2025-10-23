@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.SystemProperties;
 import android.os.Trace;
 import android.view.SurfaceControl;
@@ -44,6 +45,7 @@ import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.desktopmode.DesktopPipTransitionController;
+import com.android.wm.shell.desktopmode.RunOnTransitStart;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
@@ -137,17 +139,6 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         wct.setBounds(pipTaskToken, null);
         wct.setWindowingMode(pipTaskToken, mPipDesktopState.getOutPipWindowingMode());
         wct.setDensityDpi(pipTaskToken, Configuration.DENSITY_DPI_UNDEFINED);
-
-        final TaskInfo pipTaskInfo = mPipTransitionState.getPipTaskInfo();
-        mDesktopPipTransitionController.ifPresent(c -> {
-            // In multi-activity case, windowing mode change will reparent to original host task, so
-            // we have to update the parent windowing mode to what is expected.
-            c.maybeUpdateParentInWct(wct,
-                    pipTaskInfo.lastParentTaskIdBeforePip);
-            // In multi-desks case, we have to reparent the task to the root desk.
-            c.maybeReparentTaskToDesk(wct, pipTaskInfo.taskId);
-        });
-
         return wct;
     }
 
@@ -239,6 +230,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
             if (!mPipTransitionState.isInPip()) return;
             if (expandWct == null) return;
 
+            RunOnTransitStart desktopPipRunnable = augmentExitViaExpandWCT(expandWct);
             final WindowContainerTransaction wct = new WindowContainerTransaction();
             mSplitScreenControllerOptional.ifPresent(splitScreenController -> {
                 int lastParentTaskId = mPipTransitionState.getPipTaskInfo()
@@ -250,8 +242,25 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
             });
             boolean toSplit = !wct.isEmpty();
             wct.merge(expandWct, true /* transfer */);
-            mPipTransitionController.startExpandTransition(wct, toSplit, wasVisible);
+            final IBinder transition =
+                    mPipTransitionController.startExpandTransition(wct, toSplit, wasVisible);
+            if (desktopPipRunnable != null && transition != null) {
+                desktopPipRunnable.invoke(transition);
+            }
         });
+    }
+
+    /**
+     * Helper to add necessary changes for Desktop Windowing to exit-Pip-via-expand wct.
+     *
+     * @param wct wct for the expansion
+     */
+    public RunOnTransitStart augmentExitViaExpandWCT(WindowContainerTransaction wct) {
+        if (mDesktopPipTransitionController.isPresent()) {
+            return mDesktopPipTransitionController.get()
+                    .updateExpandWctForDesktop(wct, mPipTransitionState.getPipTaskInfo());
+        }
+        return null;
     }
 
     /** Schedules remove PiP transition. */
