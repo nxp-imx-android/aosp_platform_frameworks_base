@@ -94,6 +94,7 @@ import android.animation.ValueAnimator;
 import android.annotation.CallSuper;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.app.ActivityOptions;
 import android.app.IActivityTaskManager;
@@ -1828,7 +1829,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
     protected void exitStage(@SplitPosition int stageToClose) {
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "exitStage: stageToClose=%d", stageToClose);
         mSplitLayout.flingDividerToDismiss(stageToClose == SPLIT_POSITION_BOTTOM_OR_RIGHT,
-                EXIT_REASON_APP_FINISHED);
+                EXIT_REASON_APP_FINISHED, new WindowContainerTransaction());
     }
 
     /**
@@ -2752,7 +2753,8 @@ public class StageCoordinator extends StageCoordinatorAbstract {
     }
 
     @Override
-    public void onSnappedToDismiss(boolean closedBottomRightStage, @ExitReason int exitReason) {
+    public void onSnappedToDismiss(boolean closedBottomRightStage, @ExitReason int exitReason,
+            WindowContainerTransaction wct) {
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onSnappedToDismiss: bottomOrRight=%b reason=%s",
                 closedBottomRightStage, exitReasonToString(exitReason));
         boolean mainStageToTop =
@@ -2767,7 +2769,6 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                     false /*checkAllStagesIfNotActive*/);
             dismissTop = toTopStage.getId();
         }
-        final WindowContainerTransaction wct = new WindowContainerTransaction();
         toTopStage.resetBounds(wct);
         prepareExitSplitScreen(dismissTop, wct, EXIT_REASON_DRAG_DIVIDER);
         if (mSplitRootTaskInfo != null) {
@@ -4074,7 +4075,8 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         } else {
             toEnd = (mSideStagePosition == SPLIT_POSITION_TOP_OR_LEFT);
         }
-        mSplitLayout.flingDividerToDismiss(toEnd, EXIT_REASON_FULLSCREEN_SHORTCUT);
+        mSplitLayout.flingDividerToDismiss(toEnd, EXIT_REASON_FULLSCREEN_SHORTCUT,
+                new WindowContainerTransaction());
     }
 
     /** Move the specified task to fullscreen, regardless of focus state. */
@@ -4088,8 +4090,75 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         } else {
             return;
         }
-        mSplitLayout.flingDividerToDismiss(!leftOrTop, exitReason);
+        mSplitLayout.flingDividerToDismiss(!leftOrTop, exitReason,
+                new WindowContainerTransaction());
+    }
 
+    /**
+     * Closes the task in split screen.
+     * @param taskId ID of a task to be closed.
+     * @return Result of the close operation.
+     */
+    CloseTaskResult closeTask(int taskId) {
+        if (!isSplitActive()) {
+            ProtoLog.w(WM_SHELL_SPLIT_SCREEN, "closeTask: taskId=%d: %s", taskId,
+                    CloseTaskResult.NOT_ACTIVE);
+            return CloseTaskResult.NOT_ACTIVE;
+        }
+
+        if (mSplitLayout.isCurrentlyDividerFlinging()) {
+            ProtoLog.w(WM_SHELL_SPLIT_SCREEN, "closeTask: taskId=%d: %s", taskId,
+                    CloseTaskResult.DIVIDER_FLINGING);
+            return CloseTaskResult.DIVIDER_FLINGING;
+        }
+
+        if (mSplitTransitions.mPendingDismiss != null) {
+            ProtoLog.w(WM_SHELL_SPLIT_SCREEN, "closeTask: taskId=%d: %s", taskId,
+                    CloseTaskResult.PENDING_DISMISS);
+            return CloseTaskResult.PENDING_DISMISS;
+        }
+
+        final ActivityManager.RunningTaskInfo taskInfo = mTaskOrganizer.getRunningTaskInfo(taskId);
+        if (taskInfo == null) {
+            ProtoLog.w(WM_SHELL_SPLIT_SCREEN, "closeTask: taskId=%d: %s", taskId,
+                    CloseTaskResult.NO_TASK_INFO);
+            return CloseTaskResult.NO_TASK_INFO;
+        }
+
+        final StageTaskListener stage = getStageOfTask(taskInfo);
+        if (stage == null) {
+            ProtoLog.w(WM_SHELL_SPLIT_SCREEN, "closeTask: taskId=%d: %s", taskId,
+                    CloseTaskResult.NO_STAGE);
+            return CloseTaskResult.NO_STAGE;
+        }
+
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.removeTask(taskInfo.token);
+
+        if (stage.getChildCount() > 1) {
+            mTransitions.startTransition(TRANSIT_CLOSE, wct, null);
+            ProtoLog.i(WM_SHELL_SPLIT_SCREEN, "closeTask: taskId=%d: %s", taskId,
+                    CloseTaskResult.CLOSED_TASK_SPLIT_REMAINED);
+            return CloseTaskResult.CLOSED_TASK_SPLIT_REMAINED;
+        }
+
+        final int closingStagePosition;
+        if (mMainStage.containsTask(taskId)) {
+            closingStagePosition = getMainStagePosition();
+        } else if (mSideStage.containsTask(taskId)) {
+            closingStagePosition = getSideStagePosition();
+        } else {
+            ProtoLog.w(WM_SHELL_SPLIT_SCREEN, "closeTask: taskId=%d: %s", taskId,
+                    CloseTaskResult.STAGE_POSITION_UNKNOWN);
+            return CloseTaskResult.STAGE_POSITION_UNKNOWN;
+        }
+
+        mSplitLayout.flingDividerToDismiss(
+                /* toEnd= */ closingStagePosition == SPLIT_POSITION_BOTTOM_OR_RIGHT,
+                EXIT_REASON_APP_FINISHED, wct);
+        ProtoLog.i(WM_SHELL_SPLIT_SCREEN, "closeTask: taskId=%d: %s", taskId,
+                CloseTaskResult.CLOSED_TASK_SPLIT_DISMISSED);
+        return CloseTaskResult.CLOSED_TASK_SPLIT_DISMISSED;
     }
 
     /**

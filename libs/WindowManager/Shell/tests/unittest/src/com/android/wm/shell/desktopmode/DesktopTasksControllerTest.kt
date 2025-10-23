@@ -5594,7 +5594,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val result = controller.closeTask(task)
 
-        assertThat(result).isEqualTo(DesktopTasksController.CloseTaskResult.CLOSED_SPLIT_SCREEN)
+        assertThat(result)
+            .isEqualTo(DesktopTasksController.CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN)
         verify(splitScreenController)
             .moveTaskToFullscreen(
                 eq(otherTask.taskId),
