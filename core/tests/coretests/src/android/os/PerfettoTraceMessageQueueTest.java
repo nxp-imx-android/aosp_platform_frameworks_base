@@ -96,6 +96,9 @@ public class PerfettoTraceMessageQueueTest {
 
     private static final int MESSAGE = 1234567;
     private static final int MESSAGE_DELAYED = 7654321;
+    private static final int MESSAGE_DELETED = 8675309;
+    // Make this long enough that the message will never be delivered
+    private static final int MESSAGE_DELETED_DELAY = 100_000;
 
     private final Set<String> mCategoryNames = new ArraySet<>();
     private final Set<String> mEventNames = new ArraySet<>();
@@ -148,11 +151,14 @@ public class PerfettoTraceMessageQueueTest {
             session = new PerfettoTrace.Session(true, mqTraceConfig);
         }
 
-        final int eventsCount = 4;
+        final int expectedSendeventsCount = 5;
+        final int expectedReceivedEventsCount = 4;
 
         handler.sendEmptyMessage(MESSAGE);
         handler.sendEmptyMessageDelayed(MESSAGE_DELAYED, 10);
         handler.sendEmptyMessage(MESSAGE);
+        handler.sendEmptyMessageDelayed(MESSAGE_DELETED, MESSAGE_DELETED_DELAY);
+        handler.removeMessages(MESSAGE_DELETED);
         handler.postDelayed(
                 () -> {
                     latch.countDown();
@@ -173,6 +179,7 @@ public class PerfettoTraceMessageQueueTest {
 
         int counterCount = 0;
         int sliceEndEventCount = 0;
+        long lastCounterValue = -1;
 
         Long counterTrackUuid = null;
         ArrayList<AndroidMessageQueue> messageQueueSendEvents = new ArrayList<>();
@@ -219,6 +226,7 @@ public class PerfettoTraceMessageQueueTest {
                     sliceEndEventCount++;
                 } else if (event.getType() == TrackEventOuterClass.TrackEvent.Type.TYPE_COUNTER) {
                     if (counterTrackUuid != null && event.getTrackUuid() == counterTrackUuid) {
+                        lastCounterValue = event.getCounterValue();
                         counterCount++;
                     }
                 }
@@ -226,17 +234,19 @@ public class PerfettoTraceMessageQueueTest {
             collectInternedData(packet);
         }
 
+        assertThat(lastCounterValue).isEqualTo(0);
+
         assertThat(mCategoryNames).containsExactly("mq");
         assertThat(mEventNames).containsExactly("message_queue_send", "message_queue_receive");
         assertThat(counterTrackUuid).isNotNull();
-        assertThat(counterCount).isAtLeast(eventsCount);
-        assertThat(sliceEndEventCount).isAtLeast(eventsCount);
+        assertThat(counterCount).isAtLeast(expectedSendeventsCount);
+        assertThat(sliceEndEventCount).isAtLeast(expectedReceivedEventsCount);
 
-        assertThat(messageQueueSendEvents).hasSize(eventsCount);
-        assertThat(messageQueueSendFlowIds).hasSize(eventsCount);
+        assertThat(messageQueueSendEvents).hasSize(expectedSendeventsCount);
+        assertThat(messageQueueSendFlowIds).hasSize(expectedSendeventsCount);
 
-        assertThat(messageQueueReceiveEvents).hasSize(eventsCount);
-        assertThat(messageQueueReceiveTerminateFlowIds).hasSize(eventsCount);
+        assertThat(messageQueueReceiveEvents).hasSize(expectedReceivedEventsCount);
+        assertThat(messageQueueReceiveTerminateFlowIds).hasSize(expectedReceivedEventsCount);
 
         assertThat(messageQueueSendEvents.get(0).getMessageCode()).isEqualTo(MESSAGE);
         assertThat(messageQueueSendEvents.get(0).getMessageDelayMs()).isEqualTo(0);
@@ -253,9 +263,15 @@ public class PerfettoTraceMessageQueueTest {
         assertThat(messageQueueSendEvents.get(2).getReceivingThreadName())
                 .isEqualTo(mqReceiverThreadName);
 
-        assertThat(messageQueueSendEvents.get(3).getMessageCode()).isEqualTo(0);
-        assertThat(messageQueueSendEvents.get(3).getMessageDelayMs()).isAtMost(20);
+        assertThat(messageQueueSendEvents.get(3).getMessageCode()).isEqualTo(MESSAGE_DELETED);
+        assertThat(messageQueueSendEvents.get(3).getMessageDelayMs())
+                .isAtMost(MESSAGE_DELETED_DELAY);
         assertThat(messageQueueSendEvents.get(3).getReceivingThreadName())
+                .isEqualTo(mqReceiverThreadName);
+
+        assertThat(messageQueueSendEvents.get(4).getMessageCode()).isEqualTo(0);
+        assertThat(messageQueueSendEvents.get(4).getMessageDelayMs()).isAtMost(20);
+        assertThat(messageQueueSendEvents.get(4).getReceivingThreadName())
                 .isEqualTo(mqReceiverThreadName);
 
         assertThat(messageQueueReceiveEvents.get(0).getSendingThreadName())
@@ -277,7 +293,8 @@ public class PerfettoTraceMessageQueueTest {
                 .isEqualTo(messageQueueReceiveTerminateFlowIds.get(2));
         assertThat(messageQueueSendFlowIds.get(2))
                 .isEqualTo(messageQueueReceiveTerminateFlowIds.get(1));
-        assertThat(messageQueueSendFlowIds.get(3))
+        // Fourth message was deleted
+        assertThat(messageQueueSendFlowIds.get(4))
                 .isEqualTo(messageQueueReceiveTerminateFlowIds.get(3));
     }
 
