@@ -532,6 +532,11 @@ class Task extends TaskFragment {
     SurfaceControl[] mExcludeLayersFromTaskSnapshot;
 
     /**
+     * Whether the tasks bounds of a leaf task have been set from the activity options.
+     */
+    private boolean mLeafTaskBoundsFromOptions;
+
+    /**
      * If the window is allowed to be repositioned by {@link
      * android.app.ActivityManager.AppTask#moveTaskTo}.
      */
@@ -1248,12 +1253,14 @@ class Task extends TaskFragment {
     @Override
     void onResize() {
         super.onResize();
+        mLeafTaskBoundsFromOptions = false;
         onTaskBoundsChangedForFreeform();
     }
 
     @Override
     void onMovedByResize() {
         super.onMovedByResize();
+        mLeafTaskBoundsFromOptions = false;
         onTaskBoundsChangedForFreeform();
     }
 
@@ -2896,8 +2903,16 @@ class Task extends TaskFragment {
     /** Set the task bounds. Passing in null sets the bounds to fullscreen. */
     @Override
     public int setBounds(Rect bounds) {
+        return setBoundsWithSource(bounds, /* fromActivityOptions */ false);
+    }
+
+    public int setBoundsWithSource(Rect bounds, boolean fromActivityOptions) {
         if (isRootTask()) {
-            return setBounds(getRequestedOverrideBounds(), bounds);
+            final int boundsChange = setBounds(getRequestedOverrideBounds(), bounds);
+            if (boundsChange != BOUNDS_CHANGE_NONE) {
+                mLeafTaskBoundsFromOptions = fromActivityOptions && isLeafTask();
+            }
+            return boundsChange;
         }
 
         if (!isOverrideBoundsAllowed() && bounds != null && !bounds.isEmpty()) {
@@ -2906,6 +2921,9 @@ class Task extends TaskFragment {
         }
 
         final int boundsChange = super.setBounds(bounds);
+        if (boundsChange != BOUNDS_CHANGE_NONE) {
+            mLeafTaskBoundsFromOptions = fromActivityOptions && isLeafTask();
+        }
         updateSurfacePositionNonOrganized();
         return boundsChange;
     }
@@ -3429,6 +3447,7 @@ class Task extends TaskFragment {
         info.isTopActivityTransparent = top != null && !top.fillsParent();
         info.isActivityStackTransparent = !topTask.forAllActivities(r -> (r.occludesParent()));
         info.lastNonFullscreenBounds = topTask.mLastNonFullscreenBounds;
+        info.leafTaskBoundsFromOptions = mLeafTaskBoundsFromOptions;
         final WindowState windowState = top != null
                 ? top.findMainWindow(/* includeStartingApp= */ false) : null;
         info.requestedVisibleTypes =

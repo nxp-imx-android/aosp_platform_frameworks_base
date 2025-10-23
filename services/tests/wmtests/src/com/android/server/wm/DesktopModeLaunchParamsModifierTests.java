@@ -1578,6 +1578,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         assertEquals(RESULT_CONTINUE,
                 new CalculateRequestBuilder().setTask(task).setOptions(options).calculate());
+        assertTrue(mResult.mBoundsSetFromOptions);
         assertEquals(DISPLAY_BOUNDS.width(), mResult.mBounds.width());
         assertEquals(DISPLAY_BOUNDS.height(), mResult.mBounds.height());
     }

@@ -95,6 +95,7 @@ public final class DesktopModeBoundsCalculator {
 
         if (options != null && options.getLaunchBounds() != null
                 && !updateOptionBoundsSize) {
+            outParams.mBoundsSetFromOptions = true;
             outParams.mBounds.set(options.getLaunchBounds());
             logger.accept("inherit-from-options=" + outParams.mBounds);
         } else if (layout != null) {
