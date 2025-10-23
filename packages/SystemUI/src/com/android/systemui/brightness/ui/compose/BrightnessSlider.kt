@@ -40,7 +40,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderColors
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.derivedStateOf
@@ -80,6 +79,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.compose.lifecycle.DisposableEffectWithLifecycle
 import com.android.compose.modifiers.padding
 import com.android.compose.modifiers.sliderPercentage
 import com.android.compose.modifiers.thenIf
@@ -368,10 +368,14 @@ fun BrightnessSliderContainer(
             initialValue = PolicyRestriction.NoRestriction
         )
     val overriddenByAppState by viewModel.brightnessOverriddenByWindow.collectAsStateWithLifecycle()
-
-    DisposableEffect(Unit) { onDispose { viewModel.setIsDragging(false) } }
-
     var dragging by remember { mutableStateOf(false) }
+
+    DisposableEffectWithLifecycle(Unit) {
+        onDispose {
+            dragging = false
+            viewModel.setIsDragging(false)
+        }
+    }
 
     // Use dragging instead of viewModel.showMirror so the color starts changing as soon as the
     // dragging state changes. If not, we may be waiting for the background to finish fading in
@@ -415,7 +419,7 @@ fun BrightnessSliderContainer(
                     .sliderBackground(
                         DpSize(
                             InternalDimensions.SliderBackgroundFrameWidth,
-                            backgroundFrameHeight
+                            backgroundFrameHeight,
                         ),
                         containerColor,
                     )
@@ -452,15 +456,16 @@ data class BrightnessSliderDimensions(
     val thumbHeight: Dp,
     val thumbWidth: Dp,
     val trackHeight: Dp,
-    val verticalPadding: Dp
+    val verticalPadding: Dp,
 ) {
     companion object {
-        val Default = BrightnessSliderDimensions(
-            thumbHeight = 52.dp,
-            thumbWidth = 4.dp,
-            trackHeight = 40.dp,
-            verticalPadding = 6.dp
-        )
+        val Default =
+            BrightnessSliderDimensions(
+                thumbHeight = 52.dp,
+                thumbWidth = 4.dp,
+                trackHeight = 40.dp,
+                verticalPadding = 6.dp,
+            )
     }
 }
 
