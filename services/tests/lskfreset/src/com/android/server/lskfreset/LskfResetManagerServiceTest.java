@@ -16,12 +16,16 @@
 
 package com.android.server.lskfreset;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import android.app.lskfreset.ILskfResetManager;
 import android.app.lskfreset.ILskfResetSession;
 import android.app.lskfreset.flags.Flags;
 import android.content.Context;
+import android.os.UserHandle;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 
@@ -36,6 +40,9 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class LskfResetManagerServiceTest {
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
+    private static final UserHandle TEST_USER_0 = UserHandle.getUserHandleForUid(1000);
+    private static final UserHandle TEST_USER_1 = UserHandle.getUserHandleForUid(1001);
 
     private Context mContext;
     private LskfResetManagerService mService;
@@ -58,7 +65,35 @@ public class LskfResetManagerServiceTest {
     @EnableFlags(Flags.FLAG_ENABLE_LSKF_RESET_MANAGER)
     public void testCreateSession() throws Exception {
         ILskfResetManager manager = mService.getBinderService();
-        ILskfResetSession session = manager.createLskfResetSession(0);
+        ILskfResetSession session = manager.createLskfResetSession(TEST_USER_0);
         assertNotNull(session);
+        assertTrue(mService.isSessionActive(session));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_LSKF_RESET_MANAGER)
+    public void testCloseSession() throws Exception {
+        ILskfResetManager manager = mService.getBinderService();
+        ILskfResetSession session0 = manager.createLskfResetSession(TEST_USER_0);
+        ILskfResetSession session1 = manager.createLskfResetSession(TEST_USER_1);
+        assertTrue(mService.isSessionActive(session0));
+        assertTrue(mService.isSessionActive(session1));
+        session0.close();
+        assertFalse(mService.isSessionActive(session0));
+        assertTrue(mService.isSessionActive(session1));
+        session1.close();
+        assertFalse(mService.isSessionActive(session0));
+        assertFalse(mService.isSessionActive(session1));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_LSKF_RESET_MANAGER)
+    public void testDoubleCloseSessionFails() throws Exception {
+        ILskfResetManager manager = mService.getBinderService();
+        ILskfResetSession session = manager.createLskfResetSession(TEST_USER_0);
+        assertTrue(mService.isSessionActive(session));
+        session.close();
+        assertFalse(mService.isSessionActive(session));
+        assertThrows(IllegalStateException.class, () -> session.close());
     }
 }
