@@ -1118,9 +1118,24 @@ public class ContextHubClientBroker extends IContextHubClient.Stub
         info.packageName = mPackage;
         info.attributionTag = mAttributionTag;
         info.type = (mUid == Process.SYSTEM_UID)
-             ? HostEndpointInfo.Type.FRAMEWORK
-             : HostEndpointInfo.Type.APP;
-        mContextHubProxy.onHostEndpointConnected(info);
+                ? HostEndpointInfo.Type.FRAMEWORK
+                : HostEndpointInfo.Type.APP;
+        if (Flags.highNumberHostEndpointFix()) {
+            // Do not call onHostEndpointConnected() if the client is not registered, which can
+            // be a state caused by a race condition between client disconnection and CHRE / HAL
+            // disconnection.
+            // TODO(b/348958054) - Making IPC call while holding the lock is against best
+            //  practice. This should be refactored.
+            synchronized (this) {
+                if (mRegistered) {
+                    mContextHubProxy.onHostEndpointConnected(info);
+                }
+            }
+        } else {
+            mContextHubProxy.onHostEndpointConnected(info);
+        }
+
+
     }
 
     /**
