@@ -37,6 +37,7 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.ShadeCarrierG
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.ShadeCarrierGroupMobileIconViewModelKairos
 import com.android.systemui.util.AutoMarqueeTextView
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -141,7 +142,7 @@ class ModernShadeCarrierGroupMobileView(context: Context, attrs: AttributeSet?) 
                         }
                     }
             return view to
-                scope.launch {
+                scope.launch(start = CoroutineStart.UNDISPATCHED) {
                     val iconView =
                         view.requireViewById<ModernStatusBarMobileView>(R.id.mobile_combo)
                     iconView.initView(slot) {
