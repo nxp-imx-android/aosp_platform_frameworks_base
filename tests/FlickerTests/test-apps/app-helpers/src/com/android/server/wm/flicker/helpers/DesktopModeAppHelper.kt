@@ -32,6 +32,7 @@ import android.tools.PlatformConsts
 import android.tools.device.apphelpers.IStandardAppHelper
 import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.helpers.SYSTEMUI_PACKAGE
+import android.tools.traces.component.IComponentMatcher
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.traces.wm.WindowingMode
 import android.view.Display.DEFAULT_DISPLAY
@@ -668,10 +669,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         waitForTransitionToFreeform(wmHelper)
     }
 
-    fun enterImmersiveMode(
-        wmHelper: WindowManagerStateHelper,
-        device: UiDevice
-    ) {
+    fun enterImmersiveMode(wmHelper: WindowManagerStateHelper, device: UiDevice) {
         val caption = getCaptionForTheApp(wmHelper, device)
         val maximizeButton = getMaximizeButtonForTheApp(caption)
         maximizeButton.longClick()
@@ -684,17 +682,23 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
             maximizeMenu
                 ?.wait(Until.findObject(By.res(SYSTEMUI_PACKAGE, buttonResId)), TIMEOUT.toMillis())
                 ?: error("Unable to find object with resource id $buttonResId")
+
         immersiveButton.click()
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
 
     /** Exits immersive mode to maximized in desktop window via META+= keyboard shortcut. */
-    fun exitImmersiveToDesktopWithKeyboard(
-        wmHelper: WindowManagerStateHelper
-    ) {
+    fun exitImmersiveToDesktopWithKeyboard(wmHelper: WindowManagerStateHelper, targetApp: IComponentMatcher) {
         val keyEventHelper = KeyEventHelper(getInstrumentation())
         keyEventHelper.press(KEYCODE_EQUALS, META_META_ON)
-        waitForTransitionToFreeform(wmHelper)
+        wmHelper
+            .StateSyncBuilder()
+            .withFreeformApp(targetApp)
+            .withAppTransitionIdle()
+            .withTopVisibleApp(targetApp)
+            .withStatusBarVisible()
+            .withNavOrTaskBarVisible()
+            .waitForAndVerify()
     }
 
     fun enterSplitScreenFromAppHandleMenu(
