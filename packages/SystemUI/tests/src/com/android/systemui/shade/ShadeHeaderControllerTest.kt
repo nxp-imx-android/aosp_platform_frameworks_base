@@ -40,8 +40,6 @@ import com.android.app.animation.Interpolators
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.ShadeInterpolation
-import com.android.systemui.battery.BatteryMeterView
-import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.demomode.DemoMode
 import com.android.systemui.demomode.DemoModeController
 import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
@@ -115,8 +113,6 @@ class ShadeHeaderControllerTest : SysuiTestCase() {
     @Mock private lateinit var clock: Clock
     @Mock private lateinit var date: VariableDateView
     @Mock private lateinit var carrierGroup: ShadeCarrierGroup
-    @Mock private lateinit var batteryMeterView: BatteryMeterView
-    @Mock private lateinit var batteryMeterViewController: BatteryMeterViewController
     @Mock private lateinit var privacyIconsController: HeaderPrivacyIconsController
     @Mock private lateinit var variableDateViewControllerFactory: VariableDateViewController.Factory
     @Mock private lateinit var variableDateViewController: VariableDateViewController
@@ -158,9 +154,6 @@ class ShadeHeaderControllerTest : SysuiTestCase() {
 
         whenever<ShadeCarrierGroup>(view.requireViewById(R.id.carrier_group))
             .thenReturn(carrierGroup)
-
-        whenever<BatteryMeterView>(view.requireViewById(R.id.batteryRemainingIcon))
-            .thenReturn(batteryMeterView)
 
         whenever<StatusIconContainer>(view.requireViewById(R.id.statusIcons))
             .thenReturn(statusIcons)
@@ -205,7 +198,6 @@ class ShadeHeaderControllerTest : SysuiTestCase() {
                 viewContext,
                 Lazy { kosmos.shadeDisplaysRepository },
                 variableDateViewControllerFactory,
-                batteryMeterViewController,
                 kosmos.batteryViewModelAlwaysShowPercentFactory,
                 kosmos.batteryWithPercentViewModelFactory,
                 dumpManager,

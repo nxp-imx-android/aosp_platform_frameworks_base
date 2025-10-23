@@ -41,13 +41,11 @@ import com.android.systemui.statusbar.domain.interactor.keyguardStatusBarInterac
 import com.android.systemui.statusbar.notification.data.repository.FakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
 import com.android.systemui.statusbar.policy.batteryController
-import com.android.systemui.statusbar.policy.fake
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.user.domain.interactor.userLogoutInteractor
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -217,34 +215,6 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
             keyguardRepository.setIsDozing(false)
 
             assertThat(latest).isTrue()
-        }
-
-    @Test
-    fun isBatteryCharging_matchesCallback() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.isBatteryCharging)
-            runCurrent()
-
-            batteryController.fake._level = 2
-            batteryController.fake._isPluggedIn = true
-
-            assertThat(latest).isTrue()
-
-            batteryController.fake._isPluggedIn = false
-
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    fun isBatteryCharging_unregistersWhenNotListening() =
-        testScope.runTest {
-            val job = underTest.isBatteryCharging.launchIn(this)
-            runCurrent()
-
-            job.cancel()
-            runCurrent()
-
-            assertThat(batteryController.fake.listeners).isEmpty()
         }
 
     @Test

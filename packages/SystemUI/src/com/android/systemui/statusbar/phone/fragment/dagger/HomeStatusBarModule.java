@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.phone.fragment.dagger;
 import android.view.View;
 import android.view.ViewStub;
 
-import com.android.systemui.battery.BatteryMeterView;
 import com.android.systemui.dagger.qualifiers.RootView;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.phone.PhoneStatusBarTransitions;
@@ -45,13 +44,6 @@ public interface HomeStatusBarModule {
     String OPERATOR_NAME_FRAME_VIEW = "operator_name_frame_view";
     String START_SIDE_CONTENT = "start_side_content";
     String END_SIDE_CONTENT = "end_side_content";
-
-    /** */
-    @Provides
-    @HomeStatusBarScope
-    static BatteryMeterView provideBatteryMeterView(@RootView PhoneStatusBarView view) {
-        return view.findViewById(R.id.battery);
-    }
 
     /** */
     @Provides

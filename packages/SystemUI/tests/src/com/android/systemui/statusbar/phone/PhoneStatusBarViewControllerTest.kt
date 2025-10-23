@@ -43,7 +43,6 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.SysuiTestableContext
-import com.android.systemui.battery.BatteryMeterView
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.andSceneContainer
@@ -144,9 +143,6 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     private val clockView: Clock
         get() = view.requireViewById(R.id.clock)
 
-    private val batteryView: BatteryMeterView
-        get() = view.requireViewById(R.id.battery)
-
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
@@ -194,9 +190,8 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
         controller = createAndInitController(view)
 
-        assertThat(fakeDarkIconDispatcher.receivers.size).isEqualTo(2)
+        assertThat(fakeDarkIconDispatcher.receivers.size).isEqualTo(1)
         assertThat(fakeDarkIconDispatcher.receivers).contains(clockView)
-        assertThat(fakeDarkIconDispatcher.receivers).contains(batteryView)
     }
 
     @Test

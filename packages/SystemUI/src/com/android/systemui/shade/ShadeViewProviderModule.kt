@@ -17,20 +17,15 @@
 package com.android.systemui.shade
 
 import android.annotation.SuppressLint
-import android.content.ContentResolver
-import android.os.Handler
 import android.view.Choreographer
 import android.view.LayoutInflater
 import android.view.ViewStub
 import androidx.constraintlayout.motion.widget.MotionLayout
 import com.android.compose.animation.scene.SceneKey
 import com.android.keyguard.logging.ScrimLogger
-import com.android.systemui.battery.BatteryMeterView
-import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.biometrics.AuthRippleView
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
-import com.android.systemui.flags.FeatureFlags
 import com.android.systemui.keyguard.ui.view.KeyguardRootView
 import com.android.systemui.privacy.OngoingPrivacyChip
 import com.android.systemui.res.R
@@ -44,20 +39,15 @@ import com.android.systemui.scene.ui.view.SceneWindowRootView
 import com.android.systemui.scene.ui.view.WindowRootView
 import com.android.systemui.scene.ui.view.WindowRootViewKeyEventHandler
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
-import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.BlurUtils
 import com.android.systemui.statusbar.LightRevealScrim
 import com.android.systemui.statusbar.NotificationInsetsController
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.view.SharedNotificationContainer
-import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
 import com.android.systemui.statusbar.phone.TapAgainView
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
-import com.android.systemui.statusbar.policy.BatteryController
-import com.android.systemui.statusbar.policy.ConfigurationController
-import com.android.systemui.tuner.TunerService
 import com.android.systemui.window.ui.WindowRootViewBinder
 import com.android.systemui.window.ui.viewmodel.WindowRootViewModel
 import dagger.Binds
@@ -235,40 +225,6 @@ abstract class ShadeViewProviderModule {
         @SysUISingleton
         fun providesCombinedShadeHeadersConstraintManager(): CombinedShadeHeadersConstraintManager {
             return CombinedShadeHeadersConstraintManagerImpl
-        }
-
-        // TODO(b/277762009): Only allow this view's controller to inject the view. See above.
-        @Provides
-        @SysUISingleton
-        @Named(SHADE_HEADER)
-        fun providesBatteryMeterView(@Named(SHADE_HEADER) view: MotionLayout): BatteryMeterView {
-            return view.requireViewById(R.id.batteryRemainingIcon)
-        }
-
-        @Provides
-        @SysUISingleton
-        @Named(SHADE_HEADER)
-        fun providesBatteryMeterViewController(
-            @Named(SHADE_HEADER) batteryMeterView: BatteryMeterView,
-            userTracker: UserTracker,
-            @ShadeDisplayAware configurationController: ConfigurationController,
-            tunerService: TunerService,
-            @Main mainHandler: Handler,
-            contentResolver: ContentResolver,
-            featureFlags: FeatureFlags,
-            batteryController: BatteryController,
-        ): BatteryMeterViewController {
-            return BatteryMeterViewController(
-                batteryMeterView,
-                StatusBarLocation.QS,
-                userTracker,
-                configurationController,
-                tunerService,
-                mainHandler,
-                contentResolver,
-                featureFlags,
-                batteryController,
-            )
         }
 
         @Provides
