@@ -127,6 +127,7 @@ import com.android.internal.inputmethod.StartInputReason;
 import com.android.internal.inputmethod.UnbindReason;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.protolog.ProtoLog;
+import com.android.internal.protolog.common.LogLevel;
 import com.android.internal.view.IInputMethodManager;
 
 import java.io.FileDescriptor;
@@ -2229,7 +2230,8 @@ public final class InputMethodManager {
             }
         }
         if (clearedView != null) {
-            if (android.tracing.Flags.imetrackerProtolog()) {
+            if (android.tracing.Flags.imetrackerProtolog()
+                        && ProtoLog.isEnabled(INPUT_METHOD_MANAGER_DEBUG, LogLevel.VERBOSE)) {
                 ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "FINISH INPUT: mServedView=%s",
                         InputMethodDebug.dumpViewInfo(clearedView));
             } else if (DEBUG) {
@@ -3459,7 +3461,8 @@ public final class InputMethodManager {
             view = getServedViewLocked();
 
             // Make sure we have a window token for the served view.
-            if (android.tracing.Flags.imetrackerProtolog()) {
+            if (android.tracing.Flags.imetrackerProtolog()
+                        && ProtoLog.isEnabled(INPUT_METHOD_MANAGER_DEBUG, LogLevel.VERBOSE)) {
                 ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "Starting input: view=%s reason=%s",
                         InputMethodDebug.dumpViewInfo(view),
                         InputMethodDebug.startInputReasonToString(startInputReason));
@@ -3539,7 +3542,8 @@ public final class InputMethodManager {
             final View servedView = getServedViewLocked();
             if (servedView != view || !mServedConnecting) {
                 // Something else happened, so abort.
-                if (android.tracing.Flags.imetrackerProtolog()) {
+                if (android.tracing.Flags.imetrackerProtolog()
+                        && ProtoLog.isEnabled(INPUT_METHOD_MANAGER_DEBUG, LogLevel.VERBOSE)) {
                     ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
                             "Starting input: finished by someone else. view=%s servedView=%s "
                                     + "mServedConnecting=%s",
@@ -3610,7 +3614,8 @@ public final class InputMethodManager {
 
             imeRequestedVisible = hasViewImeRequestedVisible(servedView);
 
-            if (android.tracing.Flags.imetrackerProtolog()) {
+            if (android.tracing.Flags.imetrackerProtolog()
+                        && ProtoLog.isEnabled(INPUT_METHOD_MANAGER_DEBUG, LogLevel.VERBOSE)) {
                 ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
                         "START INPUT: view=%s ic=%s editorInfo=%s startInputFlags=%s "
                                 + "imeRequestedVisible=%s",
@@ -3883,7 +3888,8 @@ public final class InputMethodManager {
             if (!view.hasImeFocus() || !view.hasWindowFocus()) {
                 return;
             }
-            if (android.tracing.Flags.imetrackerProtolog()) {
+            if (android.tracing.Flags.imetrackerProtolog()
+                        && ProtoLog.isEnabled(INPUT_METHOD_MANAGER_DEBUG, LogLevel.DEBUG)) {
                 ProtoLog.d(INPUT_METHOD_MANAGER_DEBUG, "onViewFocusChangedInternal, view=%s",
                         InputMethodDebug.dumpViewInfo(view));
             } else if (DEBUG) {
