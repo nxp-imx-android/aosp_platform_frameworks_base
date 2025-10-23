@@ -64,9 +64,17 @@ constructor(
     private val devicePolicyManager: DevicePolicyManager,
     private val lockscreenUserManager: NotificationLockscreenUserManager,
 ) {
+
+    private val TAG = "CameraGestureHelper"
+
     /** Whether the camera application can be launched for the camera launch gesture. */
     fun canCameraGestureBeLaunched(statusBarState: Int): Boolean {
         if (!isCameraAllowedByAdmin()) {
+            return false
+        }
+
+        if (statusBarKeyguardViewManager.needsFullscreenBouncer()) {
+            Log.i(TAG, "Cannot launch camera when SIM bouncer is needed")
             return false
         }
 

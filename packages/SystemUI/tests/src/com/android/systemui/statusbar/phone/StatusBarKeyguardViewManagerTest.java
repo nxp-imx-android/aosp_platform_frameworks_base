@@ -873,6 +873,17 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
 
     @Test
     @DisableSceneContainer
+    public void testShowsBouncerOnWakeUpWhenFullscreenBouncerIsNeeded() {
+        when(mPrimaryBouncerInteractor.isFullyShowing()).thenReturn(false);
+        when(mKeyguardSecurityModel.getSecurityMode(anyInt())).thenReturn(
+                KeyguardSecurityModel.SecurityMode.SimPin);
+        mStatusBarKeyguardViewManager.onStartedWakingUp();
+
+        verify(mPrimaryBouncerInteractor).show(true, "onStartedWakingUp");
+    }
+
+    @Test
+    @DisableSceneContainer
     public void testShowBouncerOrKeyguard_showsKeyguardIfSleeping() {
         when(mKeyguardTransitionInteractor.getTransitionState().getValue().getTo())
                 .thenReturn(KeyguardState.LOCKSCREEN);

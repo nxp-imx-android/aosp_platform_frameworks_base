@@ -231,6 +231,14 @@ class CameraGestureHelperTest : SysuiTestCase() {
     }
 
     @Test
+    fun canCameraGestureBeLaunched_fullscreenBouncerNeeded_returnsFalse() {
+        prepare()
+        whenever(statusBarKeyguardViewManager.needsFullscreenBouncer()).thenReturn(true)
+
+        assertThat(underTest.canCameraGestureBeLaunched(StatusBarState.KEYGUARD)).isFalse()
+    }
+
+    @Test
     fun launchCamera_onlyOneCameraAppInstalled_usingSecureScreenLockOption() {
         val source = 1337
 
