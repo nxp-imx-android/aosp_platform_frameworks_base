@@ -373,6 +373,8 @@ constructor(
                                             lastSleepReason == WakeSleepReason.SLEEP_BUTTON
                                         ) {
                                             LockImmediately("locked instantly from sleep button")
+                                        } else if (lastSleepReason == WakeSleepReason.FOLD) {
+                                            LockImmediately("locked instantly from fold")
                                         } else {
                                             LockWithDelay("entering sleep")
                                         }
