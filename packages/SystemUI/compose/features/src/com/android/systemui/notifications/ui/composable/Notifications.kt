@@ -119,10 +119,10 @@ object Notifications {
         val NotificationScrim = ElementKey("NotificationScrim")
         /**
          * The [ElementKey] identifying the space reserved for the main list of notifications. This
-         * key only links to an empty box sized to the height of Notifications (placeholder), so STL
+         * key only links to an empty box sized to the height of the Stack (placeholder), so STL
          * transitions are not fully supported here, except vertical positioning.
          */
-        val NotificationStackPlaceholder = ElementKey("NotificationStackPlaceholder")
+        val StackPlaceholder = ElementKey("StackPlaceholder")
         /**
          * The [ElementKey] identifying the space reserved for the top HUN. This key only links to
          * an empty box sized to the height of Notifications (placeholder), so STL transitions are
@@ -150,7 +150,8 @@ fun ContentScope.ConstrainedNotificationStack(
                     }
                 }
     ) {
-        NotificationPlaceholder(
+        StackPlaceholder(
+            tag = "Constrained",
             stackScrollView = stackScrollView,
             viewModel = viewModel,
             useStackBounds = { shouldUseLockscreenStackBounds(layoutState) },
@@ -453,7 +454,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
                 .onGloballyPositioned { coordinates ->
                     val boundsInWindow = coordinates.boundsInWindow()
                     debugLog(viewModel) {
-                        "SCRIM onGloballyPositioned:" +
+                        "$tag.SCRIM onGloballyPositioned:" +
                             " size=${coordinates.size}" +
                             " bounds=$boundsInWindow"
                     }
@@ -513,7 +514,8 @@ fun ContentScope.NestedScrollingNotificationPanel(
                             stackBoundsOnScreen.value = coordinates.boundsInWindow()
                         }
             ) {
-                NotificationPlaceholder(
+                StackPlaceholder(
+                    tag = "NestedScroll",
                     stackScrollView = stackScrollView,
                     viewModel = viewModel,
                     useStackBounds = { !shouldUseLockscreenStackBounds(layoutState) },

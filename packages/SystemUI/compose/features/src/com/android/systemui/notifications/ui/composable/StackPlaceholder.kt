@@ -42,7 +42,8 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.Notificati
  * @param modifier The [Modifier] to be applied to this placeholder.
  */
 @Composable
-internal fun ContentScope.NotificationPlaceholder(
+internal fun ContentScope.StackPlaceholder(
+    tag: String,
     stackScrollView: NotificationScrollView,
     useStackBounds: () -> Boolean,
     viewModel: NotificationsPlaceholderViewModel,
@@ -51,9 +52,9 @@ internal fun ContentScope.NotificationPlaceholder(
     Box(
         modifier =
             modifier
-                .element(Notifications.Elements.NotificationStackPlaceholder)
+                .element(Notifications.Elements.StackPlaceholder)
                 .debugBackground(viewModel, DEBUG_STACK_COLOR)
-                .onSizeChanged { size -> debugLog(viewModel) { "STACK onSizeChanged: size=$size" } }
+                .onSizeChanged { size -> debugLog(viewModel) { "$tag.STACK onSizeChanged: size=$size" } }
                 .onGloballyPositioned { coordinates: LayoutCoordinates ->
                     // This element is opted out of the shared element system, so there can be
                     // multiple instances of it during a transition. Thus we need to determine which
@@ -63,7 +64,7 @@ internal fun ContentScope.NotificationPlaceholder(
                         // NOTE: positionInWindow.y scrolls off screen, but boundsInWindow.top won't
                         val positionInWindow = coordinates.positionInWindow()
                         debugLog(viewModel) {
-                            "STACK onGloballyPositioned:" +
+                            "$tag.STACK onGloballyPositioned:" +
                                 " size=${coordinates.size}" +
                                 " position=$positionInWindow" +
                                 " bounds=${coordinates.boundsInWindow()}"
