@@ -524,6 +524,15 @@ public class UserManagerService extends IUserManager.Stub {
      */
     private final ArrayMap<String, UserTypeDetails> mUserTypes;
 
+    // TODO(b/412177078): make it non-nullable once flag is gone.
+    /**
+     * Map of {@link UserActivitiesAllowlist} per user type.
+     *
+     * <p>It can be {@code null} because it's guarded by the
+     * {@code android.multiuser.hsu_allowlist_activities} flag.
+     */
+    private final @Nullable ArrayMap<String, UserActivitiesAllowlist> mUserActivitiesAllowlist;
+
     /**
      * User restrictions set via UserManager.  This doesn't include restrictions set by
      * device owner / profile owners. Only non-empty restriction bundles are stored.
@@ -1162,6 +1171,7 @@ public class UserManagerService extends IUserManager.Stub {
             sInstance = this;
         }
         mSystemPackageInstaller = new UserSystemPackageInstaller(this, mUserTypes);
+        mUserActivitiesAllowlist = buildActivitiesAllowlist(context.getResources(), mUserTypes);
         LocalServices.addService(UserManagerInternal.class, mLocalService);
         mLockPatternUtils = new LockPatternUtils(mContext);
         mUserStates.put(UserHandle.USER_SYSTEM, UserState.STATE_BOOTING);
@@ -5177,13 +5187,41 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     @Nullable UserActivitiesAllowlist getActivitiesAllowlist(@NonNull String userType) {
-        final UserTypeDetails userDetails = mUserTypes.get(userType);
-        if (userDetails == null) {
-            Slogf.wtf(LOG_TAG, "getActivitiesAllowlist(%s): return null because type doesn't exist",
-                    userType);
+        return mUserActivitiesAllowlist == null ? null : mUserActivitiesAllowlist.get(userType);
+    }
+
+    /** This method is called in the constructor once (hence it's static) */
+    private static @Nullable ArrayMap<String, UserActivitiesAllowlist> buildActivitiesAllowlist(
+            Resources resources, ArrayMap<String, UserTypeDetails> userTypes) {
+        if (!android.multiuser.Flags.hsuAllowlistActivities()) {
             return null;
         }
-        return userDetails.getActivitiesAllowlist();
+
+        // Most likely only enabled for the Headless System User (at most), hence initial size is 1
+        final ArrayMap<String, UserActivitiesAllowlist> userActivitiesAllowlist = new ArrayMap<>(1);
+
+        for (int i = 0; i < userTypes.size(); i++) {
+            final UserTypeDetails utd = userTypes.valueAt(i);
+            final int allowlistResId = utd.getActivitiesAllowlist();
+            if (allowlistResId == Resources.ID_NULL) {
+                continue;
+            }
+            final String[] allowlistedActivities =  resources.getStringArray(allowlistResId);
+            final String userType = userTypes.keyAt(i);
+            if (DBG) {
+                Slogf.i(LOG_TAG, "Setting %d activities allowlist for type %s: %s",
+                        allowlistedActivities.length, userType,
+                        Arrays.toString(allowlistedActivities));
+
+            } else {
+                Slogf.i(LOG_TAG, "Setting %d activities allowlisted for type %s",
+                        allowlistedActivities.length, userType);
+
+            }
+            userActivitiesAllowlist.put(userType,
+                    new UserActivitiesAllowlist(allowlistedActivities));
+        }
+        return userActivitiesAllowlist;
     }
 
     private ResilientAtomicFile getUserListFile() {
@@ -8330,9 +8368,13 @@ public class UserManagerService extends IUserManager.Stub {
         final long now = System.currentTimeMillis();
         final long nowRealtime = SystemClock.elapsedRealtime();
         final StringBuilder sb = new StringBuilder();
+        boolean dumpAll = false;
 
         if (args != null && args.length > 0) {
             switch (args[0]) {
+                case "-a":
+                    dumpAll = true;
+                    break;
                 case "--user":
                     dumpUser(pw, UserHandle.parseUserArg(args[1]), sb, now, nowRealtime);
                     return;
@@ -8340,13 +8382,8 @@ public class UserManagerService extends IUserManager.Stub {
                     mUserVisibilityMediator.dump(pw, args);
                     return;
                 case "--activities-allowlist":
-                    for (int i = 0; i < mUserTypes.size(); i++) {
-                        UserActivitiesAllowlist allowlist = mUserTypes.valueAt(i)
-                                .getActivitiesAllowlist();
-                        if (allowlist != null) {
-                            String  header = mUserTypes.keyAt(i);
-                            allowlist.dump(pw, /* prefix= */ "", header);
-                        }
+                    try (IndentingPrintWriter ipw = new IndentingPrintWriter(pw)) {
+                        dumpActivitiesAllowlist(ipw);
                     }
                     return;
                 case "--non-compliance":
@@ -8501,6 +8538,12 @@ public class UserManagerService extends IUserManager.Stub {
         // proper indentation methods instead of explicit printing "  "; that would also solve the
         // pw closure as well.
         try (IndentingPrintWriter ipw = new IndentingPrintWriter(pw)) {
+            // TODO(b/453850625): should always dump, but currently it would break  bedstead's
+            // parser, so it's checking for dumpAll (which is passed on bugreport calls)
+            if (dumpAll) {
+                dumpActivitiesAllowlist(ipw);
+            }
+
             // Dump SystemPackageInstaller info
             ipw.println();
             mSystemPackageInstaller.dump(ipw);
@@ -8650,6 +8693,28 @@ public class UserManagerService extends IUserManager.Stub {
 
         pw.println("    Ignore errors preparing storage: "
                 + userData.getIgnorePrepareStorageErrors());
+    }
+
+    private void dumpActivitiesAllowlist(IndentingPrintWriter ipw) {
+        ipw.print("Activities allowlist:");
+        if (mUserActivitiesAllowlist == null) {
+            ipw.println(" not set");
+            return;
+        }
+        int size = mUserActivitiesAllowlist.size();
+        if (size == 0) {
+            ipw.println(" none");
+            return;
+        }
+        ipw.println();
+
+        for (int i = 0; i < size; i++) {
+            String userType = mUserActivitiesAllowlist.keyAt(i);
+            UserActivitiesAllowlist allowlist = mUserActivitiesAllowlist.valueAt(i);
+            ipw.increaseIndent();
+            allowlist.dump(ipw, userType);
+            ipw.decreaseIndent();
+        }
     }
 
     private static void dumpTimeAgo(PrintWriter pw, StringBuilder sb, long nowTime, long time) {
