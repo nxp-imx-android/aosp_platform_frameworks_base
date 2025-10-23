@@ -179,7 +179,7 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
                 true,
             )
 
-            assertThat(underTest.getInvocationEffectInAnimationDurationMillis()).isEqualTo(800)
+            assertThat(underTest.getLppInvocationEffectInAnimationDurationMillis()).isEqualTo(800)
         }
 
     @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
@@ -321,6 +321,109 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
                 .isEqualTo(DEFAULT_INWARD_EFFECT_PADDING_DURATION_MS)
             assertThat(fakeInvocationEffectPreferences.getOutwardAnimationDurationMillis())
                 .isEqualTo(DEFAULT_OUTWARD_EFFECT_DURATION_MS)
+        }
+
+    @EnableFlags(
+        Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT,
+        Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT,
+    )
+    @Test
+    fun testGestureEffectEnabled_flagEnabled_preferenceEnabled() =
+        kosmos.runTest {
+            fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(true)
+            assertThat(underTest.isGestureEffectEnabled()).isTrue()
+        }
+
+    @DisableFlags(Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT)
+    @Test
+    fun testGestureEffectEnabled_gestureFlagDisabled() =
+        kosmos.runTest {
+            fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(true)
+            assertThat(underTest.isGestureEffectEnabled()).isFalse()
+        }
+
+    @DisableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
+    @Test
+    fun testGestureEffectEnabled_lppFlagDisabled() =
+        kosmos.runTest {
+            fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(true)
+            assertThat(underTest.isGestureEffectEnabled()).isFalse()
+        }
+
+    @EnableFlags(
+        Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT,
+        Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT,
+    )
+    @Test
+    fun testGestureEffectEnabled_preferenceDisabled() =
+        kosmos.runTest {
+            fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(false)
+            assertThat(underTest.isGestureEffectEnabled()).isFalse()
+        }
+
+    @EnableFlags(
+        Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT,
+        Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT,
+    )
+    @Test
+    fun onGestureProgress_updatesGestureProgressStateFlow() =
+        kosmos.runTest {
+            val gestureProgress by collectLastValue(underTest.gestureProgress)
+            fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(true)
+
+            underTest.onGestureProgress(0.5f)
+
+            assertThat(gestureProgress?.status)
+                .isEqualTo(SqueezeEffectRepository.GestureStatus.PARTIAL)
+            assertThat(gestureProgress?.progress).isEqualTo(0.5f)
+        }
+
+    @EnableFlags(
+        Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT,
+        Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT,
+    )
+    @Test
+    fun onGestureCompletion_updatesGestureProgressStateFlow() =
+        kosmos.runTest {
+            val gestureProgress by collectLastValue(underTest.gestureProgress)
+            fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(true)
+
+            underTest.onGestureCompletion()
+
+            assertThat(gestureProgress?.status)
+                .isEqualTo(SqueezeEffectRepository.GestureStatus.COMPLETED)
+        }
+
+    @EnableFlags(
+        Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT,
+        Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT,
+    )
+    @Test
+    fun hideGestureEffect_updatesGestureProgressStateFlow() =
+        kosmos.runTest {
+            val gestureProgress by collectLastValue(underTest.gestureProgress)
+            fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(true)
+
+            underTest.hideGestureEffect()
+
+            assertThat(gestureProgress?.status)
+                .isEqualTo(SqueezeEffectRepository.GestureStatus.HIDDEN)
+        }
+
+    @Test
+    fun testGetGestureInvocationEffectInAnimationDurationMillis() =
+        kosmos.runTest {
+            fakeInvocationEffectPreferences.setInvocationEffectConfig(
+                InvocationEffectPreferences.Config(
+                    isEnabled = true,
+                    inwardsEffectDurationPadding = 450,
+                    outwardsEffectDuration = 400,
+                ),
+                true,
+            )
+
+            assertThat(underTest.getGestureInvocationEffectInAnimationDurationMillis())
+                .isEqualTo(450)
         }
 
     private fun createAssistantSettingBundle(

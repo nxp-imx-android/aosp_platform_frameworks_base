@@ -33,7 +33,9 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.notificationShadeWindowController
 import com.android.systemui.testKosmos
 import com.android.systemui.topui.mockTopUiController
+import com.android.systemui.topwindoweffects.TopLevelWindowEffects.Companion.GESTURE_MAX_EFFECT
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION_MS
+import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepository
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_INITIAL_DELAY_MILLIS
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_INWARD_EFFECT_DURATION_MILLIS
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
@@ -503,4 +505,123 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         fakeSqueezeEffectRepository.isEffectEnabled.value = enabled
         fakeSqueezeEffectRepository.isPowerButtonPressedAsSingleGesture.value = enabled
     }
+
+    @Test
+    fun gestureProgress_partial_updatesSqueezeProgress() =
+        kosmos.runTest {
+            underTest.start()
+            val progress = 0.5f
+            fakeSqueezeEffectRepository.gestureProgress.value =
+                SqueezeEffectRepository.GestureProgress(
+                    progress,
+                    SqueezeEffectRepository.GestureStatus.PARTIAL,
+                )
+            runCurrent()
+
+            assertThat(fakeAppZoomOut.lastTopLevelProgress).isGreaterThan(0f)
+            assertThat(fakeAppZoomOut.lastTopLevelProgress).isLessThan(GESTURE_MAX_EFFECT)
+        }
+
+    @Test
+    fun gestureProgress_partialAndProgressIsNonZero_topUiRequested() =
+        kosmos.runTest {
+            underTest.start()
+            fakeSqueezeEffectRepository.gestureProgress.value =
+                SqueezeEffectRepository.GestureProgress(
+                    0.5f,
+                    SqueezeEffectRepository.GestureStatus.PARTIAL,
+                )
+            runCurrent()
+
+            verifySetRequestTopUi(true)
+        }
+
+    @Test
+    fun gestureProgress_partialAndProgressIsZero_topUiCleared() =
+        kosmos.runTest {
+            underTest.start()
+            // First, send a non-zero progress to request TopUI
+            fakeSqueezeEffectRepository.gestureProgress.value =
+                SqueezeEffectRepository.GestureProgress(
+                    0.5f,
+                    SqueezeEffectRepository.GestureStatus.PARTIAL,
+                )
+            runCurrent()
+            reset(kosmos.mockTopUiController, kosmos.notificationShadeWindowController)
+
+            // Then, send a zero progress
+            fakeSqueezeEffectRepository.gestureProgress.value =
+                SqueezeEffectRepository.GestureProgress(
+                    0f,
+                    SqueezeEffectRepository.GestureStatus.PARTIAL,
+                )
+            runCurrent()
+
+            verifySetRequestTopUi(false)
+        }
+
+    @Test
+    fun gestureProgress_completed_startsSqueezeAnimation() =
+        kosmos.runTest {
+            underTest.start()
+            fakeSqueezeEffectRepository.gestureProgress.value =
+                SqueezeEffectRepository.GestureProgress(
+                    0f,
+                    SqueezeEffectRepository.GestureStatus.COMPLETED,
+                )
+            runCurrent()
+            animatorTestRule.advanceTimeBy(1L)
+            runCurrent()
+
+            assertThat(fakeAppZoomOut.lastTopLevelProgress).isGreaterThan(0f)
+        }
+
+    @Test
+    fun gestureProgress_hidden_finishesAnimation() =
+        kosmos.runTest {
+            underTest.start()
+            // Start some progress
+            fakeSqueezeEffectRepository.gestureProgress.value =
+                SqueezeEffectRepository.GestureProgress(
+                    0.5f,
+                    SqueezeEffectRepository.GestureStatus.PARTIAL,
+                )
+            runCurrent()
+            assertThat(fakeAppZoomOut.lastTopLevelProgress).isGreaterThan(0f)
+
+            // Then hide
+            fakeSqueezeEffectRepository.gestureProgress.value =
+                SqueezeEffectRepository.GestureProgress(
+                    0f,
+                    SqueezeEffectRepository.GestureStatus.HIDDEN,
+                )
+            runCurrent()
+
+            assertThat(fakeAppZoomOut.lastTopLevelProgress).isEqualTo(0f)
+        }
+
+    @Test
+    fun gestureProgress_ignoredWhenAnimationInProgress() =
+        kosmos.runTest {
+            val initialDelay = 50L
+            setInvocationEffectEnabled(true)
+            fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = initialDelay
+            underTest.start()
+            advanceTime((initialDelay + 1).milliseconds)
+            animatorTestRule.advanceTimeBy(10L)
+            runCurrent()
+            val progressBeforeGesture = fakeAppZoomOut.lastTopLevelProgress
+            assertThat(progressBeforeGesture).isGreaterThan(0f)
+
+            // Send a gesture event
+            fakeSqueezeEffectRepository.gestureProgress.value =
+                SqueezeEffectRepository.GestureProgress(
+                    0.5f,
+                    SqueezeEffectRepository.GestureStatus.PARTIAL,
+                )
+            runCurrent()
+
+            // Progress should not have changed
+            assertThat(fakeAppZoomOut.lastTopLevelProgress).isEqualTo(progressBeforeGesture)
+        }
 }
