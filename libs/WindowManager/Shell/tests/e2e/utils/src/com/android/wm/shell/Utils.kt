@@ -17,6 +17,7 @@
 package com.android.wm.shell
 
 import android.app.Instrumentation
+import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.content.Intent
 import android.platform.test.rule.EnsureDeviceSettingsRule
 import android.platform.test.rule.NavigationModeRule
@@ -30,6 +31,8 @@ import android.tools.flicker.rules.ArtifactSaverRule
 import android.tools.flicker.rules.ChangeDisplayOrientationRule
 import android.tools.flicker.rules.LaunchAppRule
 import android.tools.flicker.rules.RemoveAllTasksButHomeRule
+import android.tools.traces.component.ComponentNameMatcher
+import android.tools.traces.parsers.WindowManagerStateHelper
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By.res
@@ -133,6 +136,11 @@ object Utils {
         device.waitForWindowUpdate(SETTINGS_PACKAGE_NAME, SETTINGS_UPDATE_TIME_OUT)
         device.waitForIdle()
     }
+
+    fun isInDesktopFirstMode(wmHelper: WindowManagerStateHelper, displayId: Int): Boolean =
+        wmHelper.currentState.wmState.getDisplay(displayId)
+                ?.getTaskDisplayArea(ComponentNameMatcher.LAUNCHER)
+                ?.windowingMode == WINDOWING_MODE_FREEFORM
 
     private fun getSettingsString(resName: String): String {
         val identifier = settingsResources.getIdentifier(resName, "string",
