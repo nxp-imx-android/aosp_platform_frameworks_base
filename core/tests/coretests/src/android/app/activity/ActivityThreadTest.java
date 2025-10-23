@@ -96,6 +96,7 @@ import android.window.WindowContextInfo;
 import android.window.WindowTokenClientController;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.FlakyTest;
 import androidx.test.filters.MediumTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
@@ -674,6 +675,7 @@ public class ActivityThreadTest {
         assertEquals(ORIENTATION_PORTRAIT, activity.mConfig.orientation);
     }
 
+    @FlakyTest(bugId = 428903046)
     @Test
     public void testOrientationChanged_DoesntOverrideVirtualDisplayOrientation() {
         final TestActivity activity = mActivityTestRule.launchActivity(new Intent());
