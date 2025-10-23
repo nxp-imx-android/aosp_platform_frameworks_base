@@ -465,9 +465,6 @@ class UserController implements Handler.Callback {
     @GuardedBy("mLock")
     private @StopUserOnSwitch int mStopUserOnSwitch = STOP_USER_ON_SWITCH_DEFAULT;
 
-    /** @see #getLastUserUnlockingUptime */
-    private volatile long mLastUserUnlockingUptime = 0;
-
     /**
      * Pending user starts waiting for shutdown step to complete.
      */
@@ -915,7 +912,7 @@ class UserController implements Handler.Callback {
 
             uss.mUnlockProgress.setProgress(20);
 
-            mLastUserUnlockingUptime = SystemClock.uptimeMillis();
+            mInjector.setLastUserUnlockingUptime(SystemClock.uptimeMillis());
 
             // Dispatch unlocked to system services; when fully dispatched,
             // that calls through to the next "unlocked" phase
@@ -4101,7 +4098,7 @@ class UserController implements Handler.Callback {
                     + mIsBroadcastSentForSystemUserStarting);
             pw.println("  mSwitchingFromUserMessage:" + mSwitchingFromUserMessage);
             pw.println("  mSwitchingToUserMessage:" + mSwitchingToUserMessage);
-            pw.println("  mLastUserUnlockingUptime: " + mLastUserUnlockingUptime);
+            pw.println("  mLastUserUnlockingUptime: " + mInjector.getLastUserUnlockingUptime());
             pw.println("  mReady: " + mReady);
         }
     }
@@ -4356,14 +4353,6 @@ class UserController implements Handler.Callback {
     private static void asyncTraceEnd(String msg, int cookie) {
         Trace.asyncTraceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER, msg, cookie);
         Slogf.d(TAG, "%s - asyncTraceEnd(%d)", msg, cookie);
-    }
-
-    /**
-     * Uptime when any user was being unlocked most recently. 0 if no users have been unlocked
-     * yet. To avoid lock contention (since it's used by OomAdjuster), it's volatile internally.
-     */
-    public long getLastUserUnlockingUptime() {
-        return mLastUserUnlockingUptime;
     }
 
     private static class UserProgressListener extends IProgressListener.Stub {
@@ -4813,6 +4802,14 @@ class UserController implements Handler.Callback {
 
         boolean isCeStorageUnlocked(@UserIdInt int userId) {
             return StorageManager.isCeStorageUnlocked(userId);
+        }
+
+        protected void setLastUserUnlockingUptime(long now) {
+            mService.mProcessStateController.setLastUserUnlockingUptime(now);
+        }
+
+        protected long getLastUserUnlockingUptime() {
+            return mService.mProcessStateController.getLastUserUnlockingUptime();
         }
     }
 }

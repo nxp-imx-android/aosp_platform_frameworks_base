@@ -538,6 +538,9 @@ public abstract class OomAdjuster {
 
         /** Checks whether the debugging messages should be reported for the given process's UID. */
         boolean isDebugEnabled(ProcessRecordInternal app);
+
+        /** Returns the uptime timestamp when any user most recently started unlocking. */
+        long getLastUserUnlockingUptime();
     }
 
     boolean isChangeEnabled(@CachedCompatChangeId int cachedCompatChangeId,
@@ -1475,7 +1478,7 @@ public abstract class OomAdjuster {
      * Return true if we should kill excessive cached/empty processes.
      */
     private boolean shouldKillExcessiveProcesses(long nowUptime) {
-        final long lastUserUnlockingUptime = mService.mUserController.getLastUserUnlockingUptime();
+        final long lastUserUnlockingUptime = mGlobalState.getLastUserUnlockingUptime();
 
         if (lastUserUnlockingUptime == 0) {
             // No users have been unlocked.

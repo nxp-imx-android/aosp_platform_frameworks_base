@@ -2652,6 +2652,7 @@ public class UserControllerTest {
         private final AudioManagerInternal mAudioManagerInternal;
         private final KeyguardManager mKeyguardManagerMock;
         private final LockPatternUtils mLockPatternUtilsMock;
+        private long mLastUserUnlockingUptime = 0;
 
         private final UserJourneyLogger mUserJourneyLoggerMock;
 
@@ -2699,6 +2700,16 @@ public class UserControllerTest {
         @Override
         protected Handler getUiHandler(Handler.Callback callback) {
             return mUiHandler;
+        }
+
+        @Override
+        protected void setLastUserUnlockingUptime(long now) {
+            mLastUserUnlockingUptime = now;
+        }
+
+        @Override
+        protected long getLastUserUnlockingUptime() {
+            return mLastUserUnlockingUptime;
         }
 
         @Override
