@@ -378,16 +378,6 @@ flag {
 }
 
 flag {
-    name: "status_bar_always_schedule_auto_hide"
-    namespace: "systemui"
-    description: "Schedule the status bar auto-hide functionality more often for fullscreen mode"
-    bug: "428659575"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "status_bar_show_icons_in_secure_camera"
     namespace: "systemui"
     description: "Show status bar icons in secure camera if user swipes down from top of screen"

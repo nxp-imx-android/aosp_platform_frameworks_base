@@ -20,7 +20,6 @@ import android.view.Display
 import android.view.View
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Dumpable
-import com.android.systemui.Flags
 import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.demomode.DemoModeController
@@ -189,9 +188,7 @@ constructor(
                             updateBarMode(it.animate, it.barTransitions, it.statusBarMode)
                         }
                     }
-                    if (Flags.statusBarAlwaysScheduleAutoHide()) {
-                        launch { autoHideUpdate.collect { autoHideController.touchAutoHide() } }
-                    }
+                    launch { autoHideUpdate.collect { autoHideController.touchAutoHide() } }
                 }
         createAndAddWindow()
         setupPluginDependencies()
@@ -257,10 +254,6 @@ constructor(
     ) {
         if (!demoModeController.isInDemoMode) {
             barTransitions.transitionTo(barMode.toTransitionModeInt(), animate)
-        }
-
-        if (!Flags.statusBarAlwaysScheduleAutoHide()) {
-            autoHideController.touchAutoHide()
         }
     }
 
