@@ -28,7 +28,6 @@ import android.app.admin.IntegerPolicyValue
 import android.app.admin.NoArgsPolicyKey
 import android.app.admin.PolicyIdentifier
 import android.app.admin.PolicyKey
-import android.app.admin.PolicyValue
 import android.app.admin.PolicyValueTransport
 import android.app.admin.metadata.EnumPolicyMetadata
 import android.app.admin.metadata.PolicyMetadata
@@ -46,65 +45,49 @@ import java.util.concurrent.CompletableFuture
 import kotlin.test.assertFailsWith
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.stub
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 
-/**
- * A {@link PolicyHandler} that doesn't store the resulting policy value in the {@link
- * DevicePolicyEngine} but instead stores it locally in {@link resultValue}.
- */
-open class HandlerThatStoresValue<T>(
-    key: PolicyIdentifier<T>,
-    policyMetadata: PolicyMetadata<T>,
-    policyDefinition: PolicyDefinition<T>,
-    delegate: Delegate,
-) : PolicyHandler<T>(key, policyMetadata, policyDefinition, delegate) {
-    var resultValue: T? = null
-
-    override fun setPolicy(
-        caller: CallerIdentity,
-        scope: Int,
-        transportValue: PolicyValueTransport?,
-    ) {
-        resultValue = null
-        super.setPolicy(caller, scope, transportValue)
-    }
-
-    override fun storePolicyValue(caller: CallerIdentity, scope: Int, value: T?) {
-        resultValue = value
-    }
-}
-
 // Helper that can be used as a policy enforcer callback when creating a PolicyDefinition.
-private class NoOpPolicyEnforcerCallback<T> :
+class NoOpPolicyEnforcerCallback<T> :
     QuadFunction<T, Context, Int, PolicyKey, CompletableFuture<Boolean>> {
     override fun apply(v: T, c: Context, i: Int, p: PolicyKey): CompletableFuture<Boolean> {
         return AndroidFuture.completedFuture(true)
     }
 }
 
-@RunWith(AndroidJUnit4::class)
-class PolicyHandlerTest {
+val anyCaller = CallerIdentity(111, 222, "callerPackage", null)
+const val anyScope = POLICY_SCOPE_USER
+val allScopes = setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE, POLICY_SCOPE_PARENT_USER)
 
-    // A sample enum policy that can be used in the tests.
-    object EnumPolicy {
-        val name = "theEnumPolicy"
+// This class contains all `PolicyHandler` tests that are independent of the policy value type.
+// Type specific tests (for enum vs string vs int vs ...) should go in the correct
+// <Type>PolicyHandlerTest class.
+@RunWith(AndroidJUnit4::class)
+open class PolicyHandlerTest {
+
+    // A sample policy that can be used in the tests.
+    object Policy {
+        val name = "thePolicy"
         const val VALUE_1 = 1
-        const val VALUE_2 = 2
         val key = PolicyIdentifier<Int>(name)
+
         val metadata =
             EnumPolicyMetadata(
                 key,
-                /*allowedScopes=*/setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
-                /*affectedResource=*/RESOURCE_PER_USER,
-                /*requiredPermission=*/null,
-                /*requiredCrossUserPermission=*/null,
-                /*allowedDpcTypes=*/setOf(),
-                /*allowedValues=*/setOf(VALUE_1, VALUE_2),
+                /*allowedScopes=*/ setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
+                /*affectedResource=*/ RESOURCE_PER_USER,
+                /*requiredPermission=*/ null,
+                /*requiredCrossUserPermission=*/ null,
+                /*allowedDpcTypes=*/ setOf(),
+                /*allowedValues=*/ setOf(VALUE_1),
             )
         val anyTransportValue: PolicyValueTransport = PolicyValueTransport.integerField(VALUE_1)
 
@@ -118,58 +101,11 @@ class PolicyHandlerTest {
             )
     }
 
-    private val anyCaller = CallerIdentity(111, 222, "callerPackage", null)
-    private val anyScope = POLICY_SCOPE_USER
-    private val allScopes = setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE, POLICY_SCOPE_PARENT_USER)
-
-    private val mockPermissionChecker = Mockito.mock(IPermissionChecker::class.java)
-
-    /**
-     * Helper interface to mock calls to {@link PolicyHandler.Delegate} to store policies.
-     * Since the methods on the delegate are templated, accept the value as a <*>.
-     */
-    abstract class PolicyStorage {
-        abstract fun storePolicy(
-            caller: CallerIdentity,
-            key: PolicyDefinition<*>,
-            scope: Int,
-            value: PolicyValue<*>,
-        )
-
-        abstract fun clearPolicy(caller: CallerIdentity, key: PolicyDefinition<*>, scope: Int)
-    }
-
-    private val mockPolicyStorage = Mockito.mock(PolicyStorage::class.java)
-
-    private val delegate =
-        object : PolicyHandler.Delegate {
-            // The DPC type of the caller. Returned by getDpcType.
-            var callerDpcType = NOT_A_DPC
-
-            override fun getDpcType(caller: CallerIdentity): Int {
-                return callerDpcType
-            }
-
-            override fun getPermissionChecker(): IPermissionChecker? {
-                return mockPermissionChecker
-            }
-
-            override fun <T> storePolicy(
-                caller: CallerIdentity,
-                key: PolicyDefinition<T>,
-                scope: Int,
-                value: PolicyValue<T>,
-            ) {
-                mockPolicyStorage.storePolicy(caller, key, scope, value)
-            }
-
-            override fun <T> clearPolicy(
-                caller: CallerIdentity,
-                key: PolicyDefinition<T>,
-                scope: Int,
-            ) {
-                mockPolicyStorage.clearPolicy(caller, key, scope)
-            }
+    val mockPermissionChecker: IPermissionChecker = mock<IPermissionChecker> {}
+    val mockDelegate: PolicyHandler.Delegate =
+        mock<PolicyHandler.Delegate> {
+            on { getDpcType(any()) } doReturn NOT_A_DPC
+            on { getPermissionChecker() } doReturn mockPermissionChecker
         }
 
     fun copyOf(
@@ -180,24 +116,22 @@ class PolicyHandlerTest {
         requiredPermission: String? = null,
         requiredCrossUserPermission: String? = null,
         allowedDpcTypes: Set<Int>? = null,
-        allowedValues: Set<Int>? = null,
-    ): EnumPolicyMetadata {
-        return EnumPolicyMetadata(
+    ) =
+        EnumPolicyMetadata(
             id ?: source.id,
             allowedScopes ?: source.allowedScopes,
             affectedResource ?: source.affectedResource,
             requiredPermission ?: source.requiredPermission,
             requiredCrossUserPermission ?: source.requiredCrossUserPermission,
             allowedDpcTypes ?: source.allowedDpcTypes,
-            allowedValues ?: source.allowedValues,
+            source.allowedValues,
         )
-    }
 
-    fun createEnumHandler(
-        key: PolicyIdentifier<Int> = EnumPolicy.key,
-        metadata: EnumPolicyMetadata = EnumPolicy.metadata,
-        definition: PolicyDefinition<Int> = EnumPolicy.definition,
-        delegate: PolicyHandler.Delegate = this.delegate,
+    fun createHandler(
+        key: PolicyIdentifier<Int> = Policy.key,
+        metadata: PolicyMetadata<Int> = Policy.metadata,
+        definition: PolicyDefinition<Int> = Policy.definition,
+        delegate: PolicyHandler.Delegate = this.mockDelegate,
     ) = PolicyHandler<Int>(key, metadata, definition, delegate)
 
     @Test
@@ -205,18 +139,13 @@ class PolicyHandlerTest {
         val methodCalls = mutableListOf<String>()
         val handler =
             object :
-                PolicyHandler<Int>(
-                    EnumPolicy.key,
-                    EnumPolicy.metadata,
-                    EnumPolicy.definition,
-                    delegate,
-                ) {
+                PolicyHandler<Int>(Policy.key, Policy.metadata, Policy.definition, mockDelegate) {
                 override fun convertValue(
                     caller: CallerIdentity,
                     transportValue: PolicyValueTransport?,
                 ): Int? {
                     methodCalls.add("convertValue")
-                    return EnumPolicy.VALUE_2
+                    return 5
                 }
 
                 override fun checkPermissions(caller: CallerIdentity, scope: Int) {
@@ -232,7 +161,7 @@ class PolicyHandlerTest {
                 }
             }
 
-        handler.setPolicy(anyCaller, anyScope, EnumPolicy.anyTransportValue)
+        handler.setPolicy(anyCaller, anyScope, Policy.anyTransportValue)
 
         assertThat(methodCalls)
             .isEqualTo(
@@ -244,18 +173,18 @@ class PolicyHandlerTest {
     fun setPolicy_shouldValidateAllowedScope() {
         val allAllowedScopes = setOf(POLICY_SCOPE_DEVICE, POLICY_SCOPE_PARENT_USER)
         val someDisallowedScopes = setOf(POLICY_SCOPE_USER, 111, 666)
-        val metadata = copyOf(EnumPolicy.metadata, allowedScopes = allAllowedScopes)
-        val handler = createEnumHandler(metadata = metadata)
+        val metadata = copyOf(Policy.metadata, allowedScopes = allAllowedScopes)
+        val handler = createHandler(metadata = metadata)
 
         // This should not throw exceptions
         for (scope in allAllowedScopes) {
-            handler.setPolicy(anyCaller, scope, EnumPolicy.anyTransportValue)
+            handler.setPolicy(anyCaller, scope, Policy.anyTransportValue)
         }
 
         // This should throw exceptions
         for (scope in someDisallowedScopes) {
             assertFailsWith<IllegalArgumentException> {
-                handler.setPolicy(anyCaller, scope, EnumPolicy.anyTransportValue)
+                handler.setPolicy(anyCaller, scope, Policy.anyTransportValue)
             }
         }
     }
@@ -264,15 +193,15 @@ class PolicyHandlerTest {
     fun setPolicy_scopeUser_shouldCheckPermission() {
         val metadata =
             copyOf(
-                EnumPolicy.metadata,
+                Policy.metadata,
                 allowedScopes = setOf(POLICY_SCOPE_USER),
                 requiredPermission = "thePermission",
                 requiredCrossUserPermission = "shouldNotBeChecked",
             )
-        val handler = createEnumHandler(metadata = metadata)
+        val handler = createHandler(metadata = metadata)
         val theCaller = anyCaller
 
-        handler.setPolicy(theCaller, POLICY_SCOPE_USER, EnumPolicy.anyTransportValue)
+        handler.setPolicy(theCaller, POLICY_SCOPE_USER, Policy.anyTransportValue)
 
         verify(mockPermissionChecker).enforce("thePermission", theCaller)
         verifyNoMoreInteractions(mockPermissionChecker)
@@ -282,15 +211,15 @@ class PolicyHandlerTest {
     fun setPolicy_scopeGlobal_shouldCheckPermissionAndCrossUserPermission() {
         val metadata =
             copyOf(
-                EnumPolicy.metadata,
+                Policy.metadata,
                 allowedScopes = setOf(POLICY_SCOPE_DEVICE),
                 requiredPermission = "thePermission",
                 requiredCrossUserPermission = "theCrossUserPermission",
             )
-        val handler = createEnumHandler(metadata = metadata)
+        val handler = createHandler(metadata = metadata)
         val theCaller = anyCaller
 
-        handler.setPolicy(theCaller, POLICY_SCOPE_DEVICE, EnumPolicy.anyTransportValue)
+        handler.setPolicy(theCaller, POLICY_SCOPE_DEVICE, Policy.anyTransportValue)
 
         verify(mockPermissionChecker).enforce("thePermission", theCaller)
         verify(mockPermissionChecker).enforce("theCrossUserPermission", theCaller)
@@ -301,15 +230,15 @@ class PolicyHandlerTest {
     fun setPolicy_scopeParent_shouldCheckPermissionAndCrossUserPermission() {
         val metadata =
             copyOf(
-                EnumPolicy.metadata,
+                Policy.metadata,
                 allowedScopes = setOf(POLICY_SCOPE_PARENT_USER),
                 requiredPermission = "permission",
                 requiredCrossUserPermission = "crossUserPermission",
             )
-        val handler = createEnumHandler(metadata = metadata)
+        val handler = createHandler(metadata = metadata)
         val theCaller = anyCaller
 
-        handler.setPolicy(theCaller, POLICY_SCOPE_PARENT_USER, EnumPolicy.anyTransportValue)
+        handler.setPolicy(theCaller, POLICY_SCOPE_PARENT_USER, Policy.anyTransportValue)
 
         verify(mockPermissionChecker).enforce("permission", theCaller)
         verify(mockPermissionChecker).enforce("crossUserPermission", theCaller)
@@ -320,14 +249,15 @@ class PolicyHandlerTest {
     fun setPolicy_acceptedDpcTypes_shouldNotCheckPermissionIfDpcTypeIsAccepted() {
         val metadata =
             copyOf(
-                EnumPolicy.metadata,
+                Policy.metadata,
                 requiredPermission = "thePermissionThatShallNotBeChecked",
-                allowedDpcTypes = setOf(DEFAULT_DEVICE_OWNER, PROFILE_OWNER)
+                allowedDpcTypes = setOf(DEFAULT_DEVICE_OWNER, PROFILE_OWNER),
             )
-        val handler = createEnumHandler(metadata = metadata, delegate = delegate)
-        delegate.callerDpcType = DEFAULT_DEVICE_OWNER
+        val handler = createHandler(metadata = metadata)
 
-        handler.setPolicy(anyCaller, anyScope, EnumPolicy.anyTransportValue)
+        mockDelegate.stub { on { getDpcType(any()) } doReturn DEFAULT_DEVICE_OWNER }
+
+        handler.setPolicy(anyCaller, anyScope, Policy.anyTransportValue)
 
         verify(mockPermissionChecker, never()).enforce(any(), any())
         verifyNoMoreInteractions(mockPermissionChecker)
@@ -337,14 +267,15 @@ class PolicyHandlerTest {
     fun setPolicy_acceptedDpcTypes_shouldCheckPermissionIfDpcTypeIsNotAccepted() {
         val metadata =
             copyOf(
-                EnumPolicy.metadata,
+                Policy.metadata,
                 requiredPermission = "thePermissionThatShallBeChecked",
-                allowedDpcTypes = setOf(DEFAULT_DEVICE_OWNER, PROFILE_OWNER)
+                allowedDpcTypes = setOf(DEFAULT_DEVICE_OWNER, PROFILE_OWNER),
             )
-        val handler = createEnumHandler(metadata = metadata, delegate = delegate)
-        delegate.callerDpcType = FINANCED_DEVICE_OWNER
+        val handler = createHandler(metadata = metadata)
 
-        handler.setPolicy(anyCaller, anyScope, EnumPolicy.anyTransportValue)
+        mockDelegate.stub { on { getDpcType(any()) } doReturn FINANCED_DEVICE_OWNER }
+
+        handler.setPolicy(anyCaller, anyScope, Policy.anyTransportValue)
 
         verify(mockPermissionChecker).enforce(eq("thePermissionThatShallBeChecked"), any())
         verifyNoMoreInteractions(mockPermissionChecker)
@@ -354,106 +285,59 @@ class PolicyHandlerTest {
     fun setPolicy_acceptedDpcTypes_shouldStillCheckCrossUserPermissionIfDpcTypeIsAccepted() {
         val metadata =
             copyOf(
-                EnumPolicy.metadata,
+                Policy.metadata,
                 allowedScopes = setOf(POLICY_SCOPE_DEVICE),
                 requiredPermission = "thePermissionThatShallNotBeChecked",
                 requiredCrossUserPermission = "theCrossUserPermissionThatShallBeChecked",
-                allowedDpcTypes = setOf(DEFAULT_DEVICE_OWNER)
+                allowedDpcTypes = setOf(DEFAULT_DEVICE_OWNER),
             )
-        val handler = createEnumHandler(metadata = metadata, delegate = delegate)
-        delegate.callerDpcType = DEFAULT_DEVICE_OWNER
-        val theCaller = anyCaller
+        val handler = createHandler(metadata = metadata)
 
-        handler.setPolicy(theCaller, POLICY_SCOPE_DEVICE, EnumPolicy.anyTransportValue)
+        mockDelegate.stub { on { getDpcType(any()) } doReturn DEFAULT_DEVICE_OWNER }
 
-        verify(mockPermissionChecker, never()).enforce(eq("thePermissionThatShallNotBeChecked"), any())
-        verify(mockPermissionChecker).enforce("theCrossUserPermissionThatShallBeChecked", theCaller)
+        handler.setPolicy(anyCaller, POLICY_SCOPE_DEVICE, Policy.anyTransportValue)
+
+        verify(mockPermissionChecker, never())
+            .enforce(eq("thePermissionThatShallNotBeChecked"), any())
+        verify(mockPermissionChecker).enforce(eq("theCrossUserPermissionThatShallBeChecked"), any())
         verifyNoMoreInteractions(mockPermissionChecker)
     }
 
     @Test
-    fun setPolicy_enum_shouldHandleValidValues() {
-        val enumValues = setOf(123, 456, 789)
-        val metadata = copyOf(EnumPolicy.metadata, allowedValues = enumValues)
-        val handler =
-            HandlerThatStoresValue<Int>(EnumPolicy.key, metadata, EnumPolicy.definition, delegate)
-
-        for (enumValue in enumValues) {
-            handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.integerField(enumValue))
-
-            assertThat(handler.resultValue).isEqualTo(enumValue)
-        }
-    }
-
-    @Test
-    fun setPolicy_enum_shouldHandleNull() {
-        val handler =
-            HandlerThatStoresValue<Int>(
-                EnumPolicy.key,
-                EnumPolicy.metadata,
-                EnumPolicy.definition,
-                delegate,
-            )
-        handler.setPolicy(anyCaller, anyScope, null)
-        assertThat(handler.resultValue).isEqualTo(null)
-    }
-
-    @Test
-    fun setPolicy_enum_shouldThrowWhenValueIsOutOfRange() {
-        val validEnumValues = setOf(555, 666)
-        val metadata = copyOf(EnumPolicy.metadata, allowedValues = validEnumValues)
-        val handler = createEnumHandler(metadata = metadata)
-
-        val invalidEnumValues = setOf(0, 1, 554, 556, 665, 667, 1000)
-
-        for (enumValue in invalidEnumValues) {
-            assertFailsWith<IllegalArgumentException> {
-                handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.integerField(enumValue))
-            }
-        }
-    }
-
-    @Test
-    fun setPolicy_enum_shouldThrowWhenValueHasWrongType() {
-        val handler = createEnumHandler()
-
-        val exception = assertFailsWith<IllegalArgumentException> {
-            handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.booleanField(true))
-        }
-
-        assertThat(exception.message).contains("is not an integer")
-    }
-
-    @Test
-    fun setPolicy_enum_shouldStorePolicy() {
-        val handler =
-            createEnumHandler(metadata = copyOf(EnumPolicy.metadata, allowedScopes = allScopes))
+    fun setPolicy_shouldStorePolicy() {
+        val handler = createHandler(metadata = copyOf(Policy.metadata, allowedScopes = allScopes))
         val theCaller = anyCaller
-        val theValue = EnumPolicy.VALUE_2
-        val theKey = EnumPolicy.definition
+        val theValue = Policy.VALUE_1
+        val theKey = Policy.definition
 
         for (scope in allScopes) {
             handler.setPolicy(theCaller, scope, PolicyValueTransport.integerField(theValue))
 
-            verify(mockPolicyStorage)
+            verify(mockDelegate, times(1))
                 .storePolicy(theCaller, theKey, scope, IntegerPolicyValue(theValue))
-            verifyNoMoreInteractions(mockPolicyStorage)
         }
+
+        // There should be no calls to `clearPolicy`
+        verify(mockDelegate, never()).clearPolicy<Int>(any(), any(), any())
     }
 
     @Test
-    fun setPolicy_enum_shouldClearNullPolicy() {
+    fun setPolicy_shouldClearNullPolicy() {
         val handler =
-            createEnumHandler(metadata = copyOf(EnumPolicy.metadata, allowedScopes = allScopes))
+            createHandler(
+                metadata = copyOf(Policy.metadata, allowedScopes = allScopes),
+                delegate = mockDelegate,
+            )
         val theCaller = anyCaller
-        val theKey = EnumPolicy.definition
+        val theKey = Policy.definition
 
         for (scope in allScopes) {
             handler.setPolicy(theCaller, scope, null)
 
-            verify(mockPolicyStorage).clearPolicy(theCaller, theKey, scope)
-
-            verifyNoMoreInteractions(mockPolicyStorage)
+            verify(mockDelegate, times(1)).clearPolicy(theCaller, theKey, scope)
         }
+
+        // There should be no calls to `storePolicy`
+        verify(mockDelegate, never()).storePolicy<Int>(any(), any(), any(), any())
     }
 }
