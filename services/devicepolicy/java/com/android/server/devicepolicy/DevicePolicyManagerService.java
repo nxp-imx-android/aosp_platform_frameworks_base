@@ -23776,6 +23776,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             return false;
         }
 
+        // Do not allow bypassing when there are NON TEST ONLY profile owners on the device.
+        if (android.app.admin.flags.Flags.secureAdbRoleBypassing()
+                && hasNonTestOnlyProfileOwner()) {
+            return false;
+        }
+
         if (nonTestNonPrecreatedUsersExist()) {
             return false;
         }
@@ -23794,6 +23800,25 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     && !isAdminTestOnlyLocked(deviceOwnerComponent, UserHandle.USER_SYSTEM)) {
                 Slogf.i(LOG_TAG, "Found non test-only Device Owner: %s", deviceOwnerComponent);
                 return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if any profile owner is NOT marked as TEST ONLY.
+     * @return true if there are NON TEST ONLY profile owners. False, otherwise.
+     */
+    private boolean hasNonTestOnlyProfileOwner() {
+        synchronized (getLockObject()) {
+            for (int userId: mOwners.getProfileOwnerKeys()) {
+                ComponentName poComponent = mOwners.getProfileOwnerComponent(userId);
+                if (poComponent != null
+                        && !isAdminTestOnlyLocked(poComponent, userId)) {
+                    Slogf.i(LOG_TAG, "Found non test-only Profile Owner: %s for user %d",
+                            poComponent, userId);
+                    return true;
+                }
             }
         }
         return false;
