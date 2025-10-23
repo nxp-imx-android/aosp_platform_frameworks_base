@@ -36,10 +36,13 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ActivityInfo
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_DENIED
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.content.pm.PackageManagerInternal
+import android.content.pm.ResolveInfo
 import android.content.pm.UserInfo
 import android.content.pm.UserInfo.FLAG_FOR_TESTING
 import android.content.pm.UserInfo.FLAG_FULL
@@ -543,7 +546,7 @@ class SupervisionServiceTest {
 
         val intent =
             checkNotNull(service.createConfirmSupervisionCredentialsIntent(context.getUserId()))
-        assertThat(intent.action).isEqualTo(ACTION_CONFIRM_SUPERVISION_CREDENTIALS)
+        assertThat(intent.getAction()).isEqualTo(ACTION_CONFIRM_SUPERVISION_CREDENTIALS)
         assertThat(intent.getPackage()).isEqualTo("com.android.settings")
     }
 
@@ -966,6 +969,130 @@ class SupervisionServiceTest {
         setSupervisionEnabledForUser(USER_ID, false)
     }
 
+    @Test
+    fun querySupervisionApprovalActivities_returnsSortedEnabledActivities() {
+        val supervisionPackage = "com.example.supervisionapp"
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf(supervisionPackage),
+        )
+        val activityInfo1 =
+            ActivityInfo().apply {
+                packageName = supervisionPackage
+                name = "Activity1"
+                applicationInfo = ApplicationInfo()
+            }
+        val resolveInfo1 =
+            ResolveInfo().apply {
+                activityInfo = activityInfo1
+                nonLocalizedLabel = "Use supervision app"
+            }
+
+        val activityInfo2 =
+            ActivityInfo().apply {
+                packageName = supervisionPackage
+                name = "Activity2"
+                applicationInfo = ApplicationInfo()
+            }
+        val resolveInfo2 =
+            ResolveInfo().apply {
+                activityInfo = activityInfo2
+                nonLocalizedLabel = "Use another supervision app"
+            }
+        whenever(
+                mockPackageManager.queryIntentActivities(
+                    argThat { intent: Intent ->
+                        intent.action == SupervisionManager.ACTION_CONFIRM_SUPERVISION_APPROVAL &&
+                            intent.`package` == supervisionPackage
+                    },
+                    any<Int>(),
+                )
+            )
+            .thenReturn(listOf(resolveInfo1, resolveInfo2))
+
+        val result = service.querySupervisionApprovalActivities(USER_ID)
+
+        assertThat(result).hasSize(2)
+        assertThat(result.map { it.loadLabel(mockPackageManager).toString() })
+            .containsExactly("Use another supervision app", "Use supervision app")
+            .inOrder()
+    }
+
+    @Test
+    fun querySupervisionApprovalActivities_disabledComponent_enableFails_isSkipped() {
+        val supervisionPackage = "com.example.supervisionapp"
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf(supervisionPackage),
+        )
+        val disabledActivityInfo =
+            ActivityInfo().apply {
+                packageName = supervisionPackage
+                name = "DisabledActivity"
+                enabled = false
+            }
+        val disabledResolveInfo = ResolveInfo()
+        disabledResolveInfo.activityInfo = disabledActivityInfo
+        whenever(
+                mockPackageManager.queryIntentActivities(
+                    argThat { intent: Intent ->
+                        intent.getAction() ==
+                            SupervisionManager.ACTION_CONFIRM_SUPERVISION_APPROVAL &&
+                            intent.getPackage() == supervisionPackage
+                    },
+                    any<Int>(),
+                )
+            )
+            .thenReturn(listOf(disabledResolveInfo))
+        val disabledComponent = ComponentName(supervisionPackage, "DisabledActivity")
+        whenever(
+                mockPackageManager.setComponentEnabledSetting(
+                    eq(disabledComponent),
+                    any<Int>(),
+                    any<Int>(),
+                )
+            )
+            .thenThrow(SecurityException("Test exception"))
+
+        val result = service.querySupervisionApprovalActivities(USER_ID)
+
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun querySupervisionApprovalActivities_disabledComponent_isNotSkipped() {
+        val supervisionPackage = "com.example.supervisionapp"
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf(supervisionPackage),
+        )
+        val activityInfo =
+            ActivityInfo().apply {
+                packageName = supervisionPackage
+                name = "SomeActivity"
+                enabled = false
+            }
+        val resolveInfo = ResolveInfo()
+        resolveInfo.activityInfo = activityInfo
+        whenever(
+                mockPackageManager.queryIntentActivities(
+                    argThat { intent: Intent ->
+                        intent.getAction() ==
+                            SupervisionManager.ACTION_CONFIRM_SUPERVISION_APPROVAL &&
+                            intent.getPackage() == supervisionPackage
+                    },
+                    any<Int>(),
+                )
+            )
+            .thenReturn(listOf(resolveInfo))
+
+        val result = service.querySupervisionApprovalActivities(USER_ID)
+        assertThat(result).containsExactly(resolveInfo)
+    }
+
     private val systemSupervisionPackage: String
         get() = context.getResources().getString(R.string.config_systemSupervision)
 
@@ -1095,6 +1222,10 @@ private class SupervisionContextWrapper(
                 else -> super.getSystemService(name)
             }
         return ret
+    }
+
+    override fun createContextAsUser(userHandle: UserHandle, flags: Int): Context {
+        return this
     }
 
     override fun getPackageManager() = pkgManager
