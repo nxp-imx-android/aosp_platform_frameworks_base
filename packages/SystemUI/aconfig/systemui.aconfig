@@ -1803,6 +1803,16 @@ flag {
 }
 
 flag {
+    name: "low_light_dream_hysteresis"
+    namespace: "systemui"
+    description: "Enables hysteresis in the low light dream debounce algorithm to prevent rapid switching."
+    bug: "447857169"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "lowlight_clock_set_brightness"
     namespace: "systemui"
     description: "Sets brightness to minimum when using lowlight clock"
