@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package android.service.personalcontext;
+package android.service.personalcontext.hint;
 
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
-import static android.service.personalcontext.ContextHintTestUtils.assertParcelUnparcel;
+import static android.service.personalcontext.hint.ContextHintTestUtils.assertParcelUnparcel;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -26,11 +26,8 @@ import android.app.NotificationChannel;
 import android.os.UserHandle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
-import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.hint.NotificationEvent;
 import android.service.personalcontext.hint.NotificationEvent.NotificationEnqueuedEvent;
 import android.service.personalcontext.hint.NotificationEvent.NotificationRemovedEvent;
-import android.service.personalcontext.hint.NotificationHint;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;

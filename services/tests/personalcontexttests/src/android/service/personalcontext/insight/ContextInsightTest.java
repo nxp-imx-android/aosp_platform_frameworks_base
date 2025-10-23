@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package android.service.personalcontext;
+package android.service.personalcontext.insight;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Bundle;
 import android.os.Parcel;
 import android.service.personalcontext.hint.BundleHint;
-import android.service.personalcontext.insight.BundleInsight;
-import android.service.personalcontext.insight.ContextInsight;
-import android.service.personalcontext.insight.ContextInsightWrapper;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;

@@ -132,10 +132,9 @@ public abstract class ContextInsight {
 
     /**
      * Returns the {@link InsightType} of this hint.
-     * @hide
      */
     @InsightType
-    public abstract int getInsightType();
+    abstract int getInsightType();
 
     /**
      * Returns the unique identifier for this insight.

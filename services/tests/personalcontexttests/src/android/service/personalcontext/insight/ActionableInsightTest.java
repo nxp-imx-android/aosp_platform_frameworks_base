@@ -20,11 +20,9 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.service.personalcontext.ContextInsightTestUtils;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import java.util.ArrayList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

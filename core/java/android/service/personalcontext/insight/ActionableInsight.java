@@ -120,10 +120,9 @@ public final class ActionableInsight extends ContextInsight {
         return new Intent(mActionIntent);
     }
 
-    /** @hide */
     @Override
     @InsightType
-    public int getInsightType() {
+    int getInsightType() {
         return INSIGHT_TYPE_ACTIONABLE;
     }
 
