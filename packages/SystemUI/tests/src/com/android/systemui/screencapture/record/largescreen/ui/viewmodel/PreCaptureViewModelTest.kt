@@ -16,13 +16,16 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
+import android.app.ActivityManager
 import android.graphics.Bitmap
+import android.graphics.Point
 import android.graphics.Rect
 import android.view.WindowManager
 import android.view.WindowMetrics
 import android.view.windowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.app.activityTaskManager
 import com.android.internal.logging.uiEventLoggerFake
 import com.android.internal.util.ScreenshotRequest
 import com.android.internal.util.mockScreenshotHelper
@@ -66,6 +69,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
 
     @Mock private lateinit var mockBitmap: Bitmap
     @Mock private lateinit var mockWindowMetrics: WindowMetrics
+
     private val screenBounds = Rect(0, 0, 100, 100)
     private val displayId = 1234
     private lateinit var viewModel: PreCaptureViewModel
@@ -427,5 +431,44 @@ class PreCaptureViewModelTest : SysuiTestCase() {
 
             viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
             assertThat(toolbarViewModel.toolbarOpacity).isEqualTo(1f)
+        }
+
+    @Test
+    fun updateTaskSelectionFromHover_selectsCorrectTask() =
+        kosmos.runTest {
+            val task1 =
+                ActivityManager.RunningTaskInfo().apply {
+                    taskId = 1
+                    configuration.windowConfiguration.setBounds(Rect(0, 0, 50, 50))
+                }
+            val task2 =
+                ActivityManager.RunningTaskInfo().apply {
+                    taskId = 2
+                    configuration.windowConfiguration.setBounds(Rect(60, 60, 100, 100))
+                }
+            val runningTasks = listOf(task1, task2)
+            whenever(activityTaskManager.getTasks(any())).thenReturn(runningTasks)
+            setupViewModel()
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+
+            // Hover over task 1
+            viewModel.updateTaskSelectionFromHover(Point(25, 25))
+            assertThat(viewModel.topTask).isEqualTo(task1)
+
+            // Hover over task 2
+            viewModel.updateTaskSelectionFromHover(Point(75, 75))
+            assertThat(viewModel.topTask).isEqualTo(task2)
+
+            // Hover outside any task
+            viewModel.updateTaskSelectionFromHover(Point(55, 55))
+            assertThat(viewModel.topTask).isNull()
+
+            // Hover on the edge of task 1
+            viewModel.updateTaskSelectionFromHover(Point(0, 0))
+            assertThat(viewModel.topTask).isEqualTo(task1)
+
+            // Hover on the edge of task 2
+            viewModel.updateTaskSelectionFromHover(Point(99, 99))
+            assertThat(viewModel.topTask).isEqualTo(task2)
         }
 }
