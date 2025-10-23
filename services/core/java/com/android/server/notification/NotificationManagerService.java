@@ -11601,7 +11601,9 @@ public class NotificationManagerService extends SystemService {
         // Group the adjustments by notification record.
         final ArrayMap<NotificationRecord, List<Adjustment>> adjustmentsByRecord = new ArrayMap<>();
         for (Adjustment adjustment : adjustments) {
-            final NotificationRecord r = mNotificationsByKey.get(adjustment.getKey());
+            // Search both enqueued and posted notifications, as the adjustment could have come in
+            // before the notification was posted.
+            final NotificationRecord r = findNotificationByKeyLocked(adjustment.getKey());
             if (r == null) {
                 Slog.w(
                         TAG,

@@ -18349,6 +18349,27 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    public void testRequestSystemAdjustment_enqueuedNotification() throws Exception {
+        final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
+        mService.addEnqueuedNotification(r);
+        final StatusBarNotification sbn = r.getSbn();
+
+        Bundle signals = new Bundle();
+        signals.putInt(
+                Adjustment.KEY_USER_SENTIMENT,
+                NotificationListenerService.Ranking.USER_SENTIMENT_NEGATIVE);
+        List<Adjustment> adjustments =
+                List.of(
+                        new Adjustment(
+                                sbn.getPackageName(), sbn.getKey(), signals, "", sbn.getUserId()));
+
+        mInternalService.requestSystemAdjustments(adjustments);
+
+        verify(mAssistants).notifyAssistantOfSystemAdjustments(eq(r), eq(adjustments));
+    }
+
+    @Test
+    @EnableFlags(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public void testRequestSystemAdjustment_multipleNotifications() throws Exception {
         final NotificationRecord nr0 =
                 generateNotificationRecord(mTestNotificationChannel, 0, mUserId);
