@@ -88,11 +88,9 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Skrinşot çəkməyə tətbiq və ya təşkilat tərəfindən icazə verilmir"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Skrinşot çəkilməsi İT admininiz tərəfindən bloklanıb"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Redaktə edin"</string>
-    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
-    <skip />
+    <string name="screenshot_edit_description" msgid="7802378587672433507">"Skrinşotu redaktə edin düyməsi"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Paylaşın"</string>
-    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
-    <skip />
+    <string name="screenshot_share_description" msgid="2654362001720033972">"Skrinşotu paylaşın düyməsi"</string>
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Genişləndirin"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Ekran şəklini ötürün"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"İş profili mesajını qapadın"</string>
@@ -369,6 +367,8 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"\"Deaktiv sensorlar\" aktivdir"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Bütün bildirişləri sil."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Bildirişlər"</string>
+    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Daha # bildiriş daxildir.}other{Daha # bildiriş daxildir.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Ekran landşaft orientasiyasında kilidlənib."</string>
@@ -1026,8 +1026,7 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Tətbiq siyahısını açın"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Ayarları açın"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Rəqəmsal assistenti açın"</string>
-    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
-    <skip />
+    <string name="group_system_access_contextual_search" msgid="525635757621336007">"Kontekstual axtarış"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Kilid ekranı"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Qeyd götürün"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Çoxsaylı tapşırıq icrası"</string>
@@ -1162,6 +1161,18 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Qısayolu deaktiv edin"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Aktiv qalsın"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Əməliyyat "<annotation id="action_key_icon">"ikonu"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> <xliff:g id="ID_3">^3</xliff:g> funksiyasından istifadə etmək üçün klaviatura qısayoludur. <xliff:g id="ID_4">^3</xliff:g> ucadan söylənilən elementləri eşitməyə imkan verən ekran oxuyucusudur. Bu, ekranı görməkdə çətinlik çəkən insanlar üçün faydalı ola bilər. Bu, cihazınızın iş prinsipini dəyişə bilər."</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Fəaliyyət "<annotation id="action_key_icon">"ikonu"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> düyməsinə basdıqda əlçatanlıq funksiyası olan <xliff:g id="ID_3">^3</xliff:g> aktiv edilir. Bu, cihazınızı səsli idarəetmə ilə idarə etməyə imkan verir."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ekran kilidi"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Söndürülür…"</string>
@@ -1475,17 +1486,12 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"Cihaz təcrübəsini yaxşılaşdırmaq üçün Wi-Fi deaktiv olduqda belə, tətbiqlər və xidmətlər Wi-Fi şəbəkəsini axtara biləcək. Bunu Wi-Fi axtarışı ayarlarında dəyişə bilərsiniz. "<annotation id="link">"Dəyişin"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Təyyarə rejimini deaktiv edin"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g> aşağıdakı mozaiki Sürətli Ayarlara əlavə etmək istəyir"</string>
-    <!-- no translation found for qs_tile_request_dialog_text_with_size (732578771040573291) -->
-    <skip />
+    <string name="qs_tile_request_dialog_text_with_size" msgid="732578771040573291">"<xliff:g id="APPNAME">%1$s</xliff:g> Sürətli Ayarlara mozaik əlavə etmək istəyir. Davam etmək üçün mozaik ölçüsü seçin."</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Mozaik əlavə edin"</string>
-    <!-- no translation found for qs_tile_request_dialog_not_add (8375425041428574394) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_title (5654666862347548966) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_small_format_content_description (5429197059724172135) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_large_format_content_description (67983044110405787) -->
-    <skip />
+    <string name="qs_tile_request_dialog_not_add" msgid="8375425041428574394">"Mozaik əlavə etməyin"</string>
+    <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Sürətli Ayarlara mozaik əlavə edin"</string>
+    <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Kiçik format"</string>
+    <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Böyük format"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"İstifadəçi seçin"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# tətbiq aktivdir}other{# tətbiq aktivdir}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Yeni məlumat"</string>

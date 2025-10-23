@@ -88,11 +88,9 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"उक्त एप वा तपाईंको संगठनले स्क्रिनसटहरू लिन दिँदैन"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"तपाईंको IT एड्मिनले स्क्रिनसट लिने सुविधा ब्लक गर्नुभएको छ"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"सम्पादन गर्नुहोस्"</string>
-    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
-    <skip />
+    <string name="screenshot_edit_description" msgid="7802378587672433507">"स्क्रिनसट सम्पादन गर्ने बटन"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"सेयर गर्नुहोस्"</string>
-    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
-    <skip />
+    <string name="screenshot_share_description" msgid="2654362001720033972">"स्क्रिनसट सेयर गर्ने बटन"</string>
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"अन्य कुराहरू खिच्नुहोस्"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"स्क्रिनसट हटाउनुहोस्"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"वर्क प्रोफाइलमा प्राप्त भएको म्यासेज हटाउनुहोस्"</string>
@@ -369,6 +367,8 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"सेन्सर निष्क्रिय नामक सुविधा सक्रिय छ"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"सबै सूचनाहरू हटाउनुहोस्।"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"नोटिफिकेसनहरू"</string>
+    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{समूहभित्र थप # नोटिफिकेसन छ।}other{समूहभित्र थप # वटा नोटिफिकेसन छन्।}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"स्क्रिनलाई ल्यान्डस्केप अवस्थामा बन्द गरिएको छ।"</string>
@@ -1026,8 +1026,7 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"एपहरूको सूची खोल्नुहोस्"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"सेटिङ खोल्नुहोस्"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"डिजिटल एसिस्टेन्ट खोल्नुहोस्"</string>
-    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
-    <skip />
+    <string name="group_system_access_contextual_search" msgid="525635757621336007">"सान्दर्भिक खोज"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"स्क्रिन लक गर्नुहोस्"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"नोट लेख्नुहोस्"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"मल्टिटास्किङ"</string>
@@ -1162,6 +1161,18 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"सर्टकट अफ गर्नुहोस्"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"अन राखिरहनुहोस्"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"एक्सन "<annotation id="action_key_icon">"आइकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> भनेको <xliff:g id="ID_3">^3</xliff:g> प्रयोग गर्नका लागि किबोर्डको सर्टकट हो। <xliff:g id="ID_4">^3</xliff:g> भनेको वस्तुहरू ठुलो आवाजमा पढेर सुनाउने स्क्रिन रिडर हो। स्क्रिनमा भएको कुरा देख्न गाह्रो हुने मान्छेहरूका लागि यो सुविधा उपयोगी हुन सक्छ। यसले तपाईंको डिभाइसले काम गर्ने तरिका परिवर्तन गर्न सक्छ।"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"तपाईंले कारबाही "<annotation id="action_key_icon">"आइकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> थिच्नुभयो भने <xliff:g id="ID_3">^3</xliff:g> अन हुन्छ। यो सर्वसुलभता कायम गर्ने एउटा सुविधा हो। तपाईं यो सुविधा प्रयोग गरेर आफ्नो डिभाइस ह्यान्ड्सफ्री तरिकाले नियन्त्रण गर्न सक्नुहुन्छ।"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"लक स्क्रिन"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"सट डाउन गरिँदै छ..."</string>
@@ -1475,17 +1486,12 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"डिभाइस प्रयोगको अनुभवमा गुणस्तर सुधार गर्न, एप तथा सेवाहरूले अझै पनि जुनसुकै बेला (Wi‑Fi अफ भएका बेलामा पनि) Wi‑Fi नेटवर्क खोज्न सक्छन्। तपाईं यसलाई Wi‑Fi स्क्यानिङका सेटिङमा गई परिवर्तन गर्न सक्नुहुन्छ। "<annotation id="link">"बदल्नुहोस्"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"हवाइजहाज मोड अफ गर्नुहोस्"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g> द्रुत सेटिङमा निम्न टाइल हाल्न चाहन्छ"</string>
-    <!-- no translation found for qs_tile_request_dialog_text_with_size (732578771040573291) -->
-    <skip />
+    <string name="qs_tile_request_dialog_text_with_size" msgid="732578771040573291">"<xliff:g id="APPNAME">%1$s</xliff:g> द्रुत सेटिङमा कुनै टाइल हाल्न चाहन्छ। जारी राख्न टाइलको कुनै आकार चयन गर्नुहोस्।"</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"टाइल हाल्नुहोस्"</string>
-    <!-- no translation found for qs_tile_request_dialog_not_add (8375425041428574394) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_title (5654666862347548966) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_small_format_content_description (5429197059724172135) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_large_format_content_description (67983044110405787) -->
-    <skip />
+    <string name="qs_tile_request_dialog_not_add" msgid="8375425041428574394">"टाइल नहाल्नुहोस्"</string>
+    <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"द्रुत सेटिङमा टाइल हाल्नुहोस्"</string>
+    <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"सानो फर्म्याट"</string>
+    <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"ठुलो फर्म्याट"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"प्रयोगकर्ता चयन गर्नु…"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# एप सक्रिय छ}other{# वटा एप सक्रिय छन्}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"नयाँ जानकारी"</string>

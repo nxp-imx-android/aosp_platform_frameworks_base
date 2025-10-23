@@ -88,11 +88,9 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"앱이나 조직에서 스크린샷 촬영을 허용하지 않습니다."</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"IT 관리자가 스크린샷 촬영을 허용하지 않습니다."</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"수정"</string>
-    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
-    <skip />
+    <string name="screenshot_edit_description" msgid="7802378587672433507">"스크린샷 수정 버튼"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"공유"</string>
-    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
-    <skip />
+    <string name="screenshot_share_description" msgid="2654362001720033972">"스크린샷 공유 버튼"</string>
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"더 캡처하기"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"스크린샷 닫기"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"직장 프로필 메시지 닫기"</string>
@@ -369,6 +367,8 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"센서 끄기 활성화"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"모든 알림 지우기"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"알림"</string>
+    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g>개 더보기"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{그룹에 알림이 #개 더 있습니다.}other{그룹에 알림이 #개 더 있습니다.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"화면이 가로 방향으로 잠겨 있습니다."</string>
@@ -1026,8 +1026,7 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"앱 목록 열기"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"설정 열기"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"디지털 어시스턴트 열기"</string>
-    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
-    <skip />
+    <string name="group_system_access_contextual_search" msgid="525635757621336007">"문맥 검색"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"화면 잠금"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"메모 작성"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"멀티태스킹"</string>
@@ -1162,6 +1161,18 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"단축키 사용 중지"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"계속 사용"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"작업 "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 키는 <xliff:g id="ID_3">^3</xliff:g> 기능을 사용할 수 있는 단축키입니다. <xliff:g id="ID_4">^3</xliff:g> 기능은 항목을 소리 내어 읽어 주는 스크린 리더입니다. 이 기능은 화면을 보기 어려운 사용자에게 도움을 줄 수 있습니다. 이렇게 하면 기기 작동 방식이 달라질 수 있습니다."</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"작업 "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 키를 누르면 접근성 기능인 <xliff:g id="ID_3">^3</xliff:g> 기능이 사용 설정됩니다. 이를 통해 핸즈프리로 기기를 제어할 수 있습니다."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"잠금 화면"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"종료 중…"</string>
@@ -1475,17 +1486,12 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"기기 환경을 개선하기 위해 앱과 서비스에서 언제든지 Wi‑Fi 네트워크를 검색할 수 있습니다(Wi‑Fi가 꺼져 있을 때 포함). 이 설정은 Wi‑Fi 검색 설정에서 변경할 수 있습니다. "<annotation id="link">"변경"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"비행기 모드 사용 중지"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g>에서 빠른 설정에 다음 타일을 추가하려고 합니다."</string>
-    <!-- no translation found for qs_tile_request_dialog_text_with_size (732578771040573291) -->
-    <skip />
+    <string name="qs_tile_request_dialog_text_with_size" msgid="732578771040573291">"<xliff:g id="APPNAME">%1$s</xliff:g>에서 빠른 설정에 타일을 추가하려고 합니다. 계속하려면 타일 크기를 선택하세요."</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"타일 추가"</string>
-    <!-- no translation found for qs_tile_request_dialog_not_add (8375425041428574394) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_title (5654666862347548966) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_small_format_content_description (5429197059724172135) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_large_format_content_description (67983044110405787) -->
-    <skip />
+    <string name="qs_tile_request_dialog_not_add" msgid="8375425041428574394">"타일 추가 안 함"</string>
+    <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"빠른 설정에 타일 추가"</string>
+    <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"소형 형식"</string>
+    <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"대형 형식"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"사용자 선택"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{활성 상태인 앱 #개}other{활성 상태인 앱 #개}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"새로운 정보"</string>

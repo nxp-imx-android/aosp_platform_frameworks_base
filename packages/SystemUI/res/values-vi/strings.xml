@@ -88,11 +88,9 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Ứng dụng hoặc tổ chức của bạn không cho phép chụp ảnh màn hình"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Quản trị viên CNTT chặn tính năng chụp ảnh màn hình"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Chỉnh sửa"</string>
-    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
-    <skip />
+    <string name="screenshot_edit_description" msgid="7802378587672433507">"Nút Chỉnh sửa ảnh chụp màn hình"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Chia sẻ"</string>
-    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
-    <skip />
+    <string name="screenshot_share_description" msgid="2654362001720033972">"Nút Chia sẻ ảnh chụp màn hình"</string>
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Chụp thêm"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Đóng ảnh chụp màn hình"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Đóng thông báo về hồ sơ công việc"</string>
@@ -369,6 +367,8 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Tùy chọn tắt cảm biến đang hoạt động"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Xóa tất cả thông báo."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Thông báo"</string>
+    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# thông báo khác bên trong.}other{# thông báo khác bên trong.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Màn hình hiện bị khóa theo hướng ngang."</string>
@@ -1026,8 +1026,7 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Mở danh sách ứng dụng"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Mở phần cài đặt"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Mở trợ lý kỹ thuật số"</string>
-    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
-    <skip />
+    <string name="group_system_access_contextual_search" msgid="525635757621336007">"Tìm kiếm theo ngữ cảnh"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Màn hình khoá"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Tạo ghi chú"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Đa nhiệm"</string>
@@ -1162,6 +1161,18 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Tắt phím tắt"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Tiếp tục bật"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Thao tác "<annotation id="action_key_icon">"biểu tượng"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> là phím tắt để dùng <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> là một trình đọc màn hình cho phép bạn nghe các mục được đọc to. Ứng dụng này có thể giúp ích cho những người khó thấy nội dung màn hình. Việc này có thể thay đổi cách thiết bị của bạn hoạt động."</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Khi bạn nhấn tổ hợp phím Hành động "<annotation id="action_key_icon">"biểu tượng"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, tính năng hỗ trợ tiếp cận <xliff:g id="ID_3">^3</xliff:g> sẽ bật. Tính năng này giúp bạn điều khiển thiết bị mà không dùng tay."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Màn hình khóa"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Đang tắt…"</string>
@@ -1475,17 +1486,12 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"Để cải thiện trải nghiệm khi dùng thiết bị, các ứng dụng và dịch vụ vẫn có thể quét tìm mạng Wi‑Fi bất cứ lúc nào, ngay cả khi Wi‑Fi tắt. Bạn có thể thay đổi chế độ này trong phần cài đặt tính năng Quét tìm Wi‑Fi. "<annotation id="link">"Thay đổi"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Tắt chế độ trên máy bay"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g> muốn thêm ô bên dưới vào trình đơn Cài đặt nhanh"</string>
-    <!-- no translation found for qs_tile_request_dialog_text_with_size (732578771040573291) -->
-    <skip />
+    <string name="qs_tile_request_dialog_text_with_size" msgid="732578771040573291">"<xliff:g id="APPNAME">%1$s</xliff:g> muốn thêm một ô vào trình đơn Cài đặt nhanh. Hãy chọn một kích thước ô để tiếp tục."</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Thêm ô"</string>
-    <!-- no translation found for qs_tile_request_dialog_not_add (8375425041428574394) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_title (5654666862347548966) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_small_format_content_description (5429197059724172135) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_large_format_content_description (67983044110405787) -->
-    <skip />
+    <string name="qs_tile_request_dialog_not_add" msgid="8375425041428574394">"Không thêm ô"</string>
+    <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Thêm ô vào phần Cài đặt nhanh"</string>
+    <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Khổ nhỏ"</string>
+    <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Khổ lớn"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Chọn người dùng"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# ứng dụng đang hoạt động}other{# ứng dụng đang hoạt động}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Thông tin mới"</string>

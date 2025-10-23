@@ -88,11 +88,9 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Programu au shirika lako halikuruhusu kupiga picha za skrini"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Kupiga picha za skrini kumezuiwa na Msimamizi wako wa TEHAMA"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Badilisha"</string>
-    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
-    <skip />
+    <string name="screenshot_edit_description" msgid="7802378587672433507">"Kitufe cha kuhariri picha ya skrini"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Tuma"</string>
-    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
-    <skip />
+    <string name="screenshot_share_description" msgid="2654362001720033972">"Kitufe cha kutuma picha ya skrini"</string>
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Nasa zaidi"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Ondoa picha ya skrini"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Ondoa ujumbe wa wasifu wa kazini"</string>
@@ -369,6 +367,8 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Kipengele cha kuzima vitambuzi kimewashwa"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Futa arifa zote."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Arifa"</string>
+    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Kuna arifa # zaidi ndani ya kikundi.}other{Kuna arifa # zaidi ndani ya kikundi.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Skrini imefungwa sasa katika uelekezo wa mandhari."</string>
@@ -1026,8 +1026,7 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Fungua orodha ya programu"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Fungua mipangilio"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Fungua kiratibu dijitali"</string>
-    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
-    <skip />
+    <string name="group_system_access_contextual_search" msgid="525635757621336007">"Kutafuta katika Muktadha"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Funga skrini"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Andika dokezo"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Majukumu mengi"</string>
@@ -1162,6 +1161,18 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Zima kipengele cha njia ya mkato"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Usizime"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003"><annotation id="action_key_icon">"Aikoni"</annotation>" ya Kitendo + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ndio mikato ya kibodi unayopaswa kutumia <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> ni kisoma skrini kinachokuruhusu usikie vipengee vikitamkwa kwa sauti. Kinaweza kuwasaidia watu walio na matatizo ya kuona skrini. Huenda hatua hii ikabadilisha jinsi kifaa chako kinafanya kazi."</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Kubonyeza "<annotation id="action_key_icon">"Aikoni"</annotation>" ya kitendo + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> huwasha <xliff:g id="ID_3">^3</xliff:g>, kipengele cha ufikivu. Mipangilio hii hukuwezesha kudhibiti kifaa chako bila kugusa."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Skrini iliyofungwa"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Inazima…"</string>
@@ -1475,17 +1486,12 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"Ili kuboresha hali ya matumizi ya kifaa, programu na huduma bado zinaweza kutafuta mitandao ya Wi‑Fi wakati wowote, hata wakati umezima Wi‑Fi. Unaweza kubadilisha mipangilio hii katika mipangilio ya kutafuta Wi-Fi. "<annotation id="link">"Badilisha"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Zima hali ya ndegeni"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g> ingependa kuongeza kigae kifuatacho kwenye Mipangilio ya Haraka"</string>
-    <!-- no translation found for qs_tile_request_dialog_text_with_size (732578771040573291) -->
-    <skip />
+    <string name="qs_tile_request_dialog_text_with_size" msgid="732578771040573291">"<xliff:g id="APPNAME">%1$s</xliff:g> ingependa kuweka kigae kwenye Mipangilio ya Haraka. Chagua ukubwa wa kigae ili uendelee."</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Kiongeze"</string>
-    <!-- no translation found for qs_tile_request_dialog_not_add (8375425041428574394) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_title (5654666862347548966) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_small_format_content_description (5429197059724172135) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_large_format_content_description (67983044110405787) -->
-    <skip />
+    <string name="qs_tile_request_dialog_not_add" msgid="8375425041428574394">"Usiweke kigae"</string>
+    <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Kuweka kigae kwenye Mipangilio ya Haraka"</string>
+    <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Muundo mdogo"</string>
+    <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Muundo mkubwa"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Chagua mtumiaji"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{Programu # inatumika}other{Programu # zinatumika}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Maelezo mapya"</string>
