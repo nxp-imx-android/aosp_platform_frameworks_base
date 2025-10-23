@@ -24,6 +24,7 @@ import static android.os.VibrationAttributes.USAGE_UNKNOWN;
 import static android.os.VibrationEffect.VibrationParameter.targetAmplitude;
 import static android.os.VibrationEffect.VibrationParameter.targetFrequency;
 
+import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
@@ -67,6 +68,8 @@ import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.VibratorInfo;
 import android.os.vibrator.Flags;
+import android.os.vibrator.HapticGeneratorSession;
+import android.os.vibrator.IHapticGeneratorSessionCallback;
 import android.os.vibrator.IVibrationSession;
 import android.os.vibrator.IVibrationSessionCallback;
 import android.os.vibrator.PrebakedSegment;
@@ -178,6 +181,8 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             new ExternalVibrationCallbacks();
     private final VendorVibrationSessionCallbacks mVendorVibrationSessionCallbacks =
             new VendorVibrationSessionCallbacks();
+    private final HapticGeneratorSessionCallbacks mHapticGeneratorSessionCallbacks =
+            new HapticGeneratorSessionCallbacks();
     @GuardedBy("mLock")
     private final SparseArray<AlwaysOnVibration> mAlwaysOnEffects = new SparseArray<>();
     @GuardedBy("mLock")
@@ -279,8 +284,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
     private static native int nativeVibratorComposePwleV2EffectWithCallback(long nativePtr,
             int vibratorId, long vibrationId, long stepId, Parcel effect);
 
-    /**Calls {@link IVibratorManager#startHapticGeneratorSession}. */
-    // TODO(434631745):Add HapticGeneratorSession.Config param
+    /**Calls {@link IVibratorManager#startHapticGeneratorSession} with callback. */
     private static native boolean nativeStartHapticGeneratorSessionWithCallback(long nativePtr,
             long sessionId, int vibratorId);
 
@@ -963,6 +967,113 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         }
     }
 
+    @android.annotation.EnforcePermission(Manifest.permission.USE_VIBRATOR_HAPTIC_GENERATOR)
+    @Override // Binder call
+    public void startHapticGeneratorSession(int vibratorId,
+            android.os.vibrator.HapticGeneratorSession.Config config,
+            IHapticGeneratorSessionCallback callback) {
+        startHapticGeneratorSession_enforcePermission();
+
+        if (!Flags.hapticPcmGeneration()) {
+            throw new UnsupportedOperationException(
+                    "Haptic PCM generation is not enabled on this device.");
+        }
+
+        Trace.traceBegin(TRACE_TAG_VIBRATOR, "startHapticGeneratorSession_binder");
+
+        Objects.requireNonNull(callback, "haptic generator session callback must not be null");
+
+        try {
+            mHandler.post(() -> {
+                Trace.traceBegin(TRACE_TAG_VIBRATOR, "startHapticGeneratorSession_async");
+                try {
+                    com.android.server.vibrator.HapticGeneratorSession session = null;
+                    int errorCode = IHapticGeneratorSessionCallback.ERROR_CODE_UNKNOWN;
+
+                    if (!isHapticGeneratorConfigValid(config)) {
+                        if (DEBUG) {
+                            Slog.d(TAG,
+                                    "Failed to start haptic generator session with invalid "
+                                            + "config.");
+                        }
+                        errorCode = IHapticGeneratorSessionCallback.ERROR_CODE_ILLEGAL_ARGUMENT;
+                    } else if (!mVibratorManager.hasCapability(
+                            IVibratorManager.CAP_HAPTIC_GENERATOR)) {
+                        if (DEBUG) {
+                            Slog.d(TAG,
+                                    "Missing capability to start haptic generator sessions, "
+                                            + "ignoring request.");
+                        }
+                        errorCode = IHapticGeneratorSessionCallback.ERROR_CODE_UNSUPPORTED;
+                    } else {
+                        long sessionId =
+                                com.android.server.vibrator.HapticGeneratorSession
+                                        .getNextSessionId();
+
+                        if (mVibratorManager.startHapticGeneratorSession(
+                                sessionId, vibratorId, config)) {
+                            session = new com.android.server.vibrator.HapticGeneratorSession(
+                                    mHapticGeneratorSessionCallbacks, sessionId, vibratorId,
+                                    mDeviceAdapter, callback);
+
+                            if (!session.linkToDeath()) {
+                                Slog.e(TAG, "Failed to link to death for haptic generator session "
+                                        + sessionId);
+                                errorCode =
+                                        IHapticGeneratorSessionCallback.ERROR_CODE_ILLEGAL_STATE;
+                                session.close(); // This will also unlink to death.
+                                session = null;
+                            }
+                        } else {
+                            Slog.e(TAG, "Failed to start haptic generator session " + sessionId);
+                            errorCode = IHapticGeneratorSessionCallback.ERROR_CODE_UNSUPPORTED;
+                        }
+                    }
+
+                    try {
+                        if (session != null) {
+                            callback.onSessionStarted(session);
+                        } else {
+                            callback.onError(errorCode);
+                        }
+                    } catch (RemoteException e) {
+                        Slog.e(TAG,
+                                "Client died before start haptic generator session result could "
+                                        + "be reported");
+                        if (session != null) {
+                            // Make sure we close the session if we failed to send it back to the
+                            // client.
+                            session.close();
+                        }
+                    }
+                } finally {
+                    Trace.traceEnd(TRACE_TAG_VIBRATOR); // End startHapticGeneratorSession_async
+                }
+            });
+        } finally {
+            Trace.traceEnd(TRACE_TAG_VIBRATOR); // Ends startHapticGeneratorSession_binder
+        }
+    }
+
+    /**
+     * Validates the incoming {@link HapticGeneratorSession.Config}, returning true if it is valid.
+     */
+    private boolean isHapticGeneratorConfigValid(
+            @Nullable android.os.vibrator.HapticGeneratorSession.Config config) {
+        if (config == null) {
+            Slog.w(TAG, "Failed to start haptic generator session. Config cannot be null.");
+            return false;
+        }
+        try {
+            config.validate();
+            return true;
+        } catch (Exception e) {
+            // Catch generic Exception to be robust against any validation failure.
+            Slog.w(TAG, "Failed to start haptic generator session. Invalid config.", e);
+            return false;
+        }
+    }
+
     @Override
     protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
         if (!DumpUtils.checkDumpPermission(mContext, TAG, pw)) return;
@@ -1361,6 +1472,15 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 }
                 mCurrentSession.notifyVibratorCallback(vibratorId, vibrationId, stepId);
             }
+        }
+    }
+
+    private void onHapticGeneratorSessionComplete(long sessionId) {
+        synchronized (mLock) {
+            if (DEBUG) {
+                Slog.d(TAG, "Haptic generator session " + sessionId + " completed by HAL.");
+            }
+            mVibratorManager.clearHapticGeneratorSession(sessionId);
         }
     }
 
@@ -1998,6 +2118,43 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
     }
 
     /**
+     * Implementation of the
+     * {@link com.android.server.vibrator.HapticGeneratorSession.VibratorManagerHooks}
+     * interface that controls starting and closing haptic generator sessions, as well as starting,
+     * stopping, and reading from haptic generator streams.
+     */
+    private final class HapticGeneratorSessionCallbacks implements
+            com.android.server.vibrator.HapticGeneratorSession.VibratorManagerHooks {
+
+        @Override
+        public boolean startHapticGeneratorSession(long sessionId,
+                int vibratorId, HapticGeneratorSession.Config config) {
+            return mVibratorManager.startHapticGeneratorSession(sessionId, vibratorId, config);
+        }
+
+        @Override
+        public boolean closeHapticGeneratorSession(long sessionId) {
+            return mVibratorManager.closeHapticGeneratorSession(sessionId);
+        }
+
+        @Override
+        public boolean startHapticGeneratorStream(long sessionId, int vibratorId,
+                VibrationEffectSegment[] segments) {
+            return mVibratorManager.startHapticGeneratorStream(sessionId, vibratorId, segments);
+        }
+
+        @Override
+        public int readHapticGeneratorStream(long sessionId, int vibratorId, byte[] buffer) {
+            return mVibratorManager.readHapticGeneratorStream(sessionId, vibratorId, buffer);
+        }
+
+        @Override
+        public boolean stopHapticGeneratorStream(long sessionId, int vibratorId) {
+            return mVibratorManager.stopHapticGeneratorStream(sessionId, vibratorId);
+        }
+    }
+
+    /**
      * Implementation of {@link ExternalVibrationSession.VibratorManagerHooks} that controls
      * external vibrations and reports them when finished.
      */
@@ -2175,6 +2332,14 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 service.onVibrationComplete(vibratorId, vibrationId, stepId);
             }
         }
+
+        @Override
+        public void onHapticGeneratorSessionComplete(long sessionId) {
+            VibratorManagerService service = mServiceRef.get();
+            if (service != null) {
+                service.onHapticGeneratorSessionComplete(sessionId);
+            }
+        }
     }
 
     /**
@@ -2288,6 +2453,47 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         }
 
         @Override
+        public boolean startHapticGeneratorSession(long sessionId , int vibratorId,
+                @NonNull HapticGeneratorSession.Config config) {
+            return mNativeWrapper.startHapticGeneratorSession(sessionId, vibratorId, config);
+        }
+
+        @Override
+        public boolean closeHapticGeneratorSession(long sessionId) {
+            return mNativeWrapper.closeHapticGeneratorSession(sessionId);
+        }
+
+        @Override
+        public void clearHapticGeneratorSession(long sessionId) {
+            mNativeWrapper.clearHapticGeneratorSession(sessionId);
+        }
+
+        @Override
+        public boolean startHapticGeneratorStream(long sessionId, int vibratorId,
+                @NonNull VibrationEffectSegment[] segments) {
+
+            android.hardware.vibrator.VibrationEffectContent[] effect =
+                    VintfHalVibratorManager.toHalVibrationEffectContent(segments);
+            if (effect == null) {
+                return false;
+            }
+
+            return mNativeWrapper.startHapticGeneratorStream(sessionId, vibratorId,
+                    effect);
+        }
+
+        @Override
+        public int readHapticGeneratorStream(long sessionId, int vibratorId,
+                @NonNull byte[] buffer) {
+            return mNativeWrapper.readHapticGeneratorStream(sessionId, vibratorId, buffer);
+        }
+
+        @Override
+        public boolean stopHapticGeneratorStream(long sessionId, int vibratorId) {
+            return mNativeWrapper.stopHapticGeneratorStream(sessionId, vibratorId);
+        }
+
+        @Override
         public void dump(IndentingPrintWriter pw) {
             pw.println("Native HAL VibratorManager:");
             pw.increaseIndent();
@@ -2376,6 +2582,52 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         /** Clear vibration sessions. */
         public void clearSessions() {
             nativeClearSessions(mNativeServicePtr);
+        }
+
+        /** Starts a native haptic generator session. */
+        public boolean startHapticGeneratorSession(long sessionId, int vibratorId,
+                @NonNull HapticGeneratorSession.Config config) {
+            return nativeStartHapticGeneratorSessionWithCallback(mNativeServicePtr, sessionId,
+                    vibratorId);
+        }
+
+        /** Closes a haptic generator session. */
+        public boolean closeHapticGeneratorSession(long sessionId) {
+            return nativeCloseHapticGeneratorSession(mNativeServicePtr, sessionId);
+        }
+
+        /** Called when a haptic generator session is complete. */
+        public void clearHapticGeneratorSession(long sessionId) {
+            nativeClearHapticGeneratorSession(mNativeServicePtr, sessionId);
+        }
+
+        /** Starts a haptic generator stream. */
+        public boolean startHapticGeneratorStream(long sessionId, int vibratorId,
+                @NonNull android.hardware.vibrator.VibrationEffectContent[] effects) {
+            Parcel parcel = Parcel.obtain();
+            try {
+                parcel.writeInt(effects.length);
+                for (android.hardware.vibrator.VibrationEffectContent effect : effects) {
+                    effect.writeToParcel(parcel, /* flags= */ 0);
+                }
+                parcel.setDataPosition(0);
+                return nativeStartHapticGeneratorStream(mNativeServicePtr, sessionId, vibratorId,
+                        parcel);
+            } finally {
+                parcel.recycle();
+            }
+        }
+
+        /** Reads from a haptic generator stream. */
+        public int readHapticGeneratorStream(long sessionId, int vibratorId,
+                @NonNull byte[] buffer) {
+            return nativeReadHapticGeneratorStream(mNativeServicePtr, sessionId, vibratorId,
+                    buffer);
+        }
+
+        /** Stops a haptic generator stream. */
+        public boolean stopHapticGeneratorStream(long sessionId, int vibratorId) {
+            return nativeStopHapticGeneratorStream(mNativeServicePtr, sessionId, vibratorId);
         }
     }
 
@@ -2503,6 +2755,51 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 parcel.recycle();
                 Trace.traceEnd(TRACE_TAG_VIBRATOR);
             }
+        }
+
+        @Override
+        public boolean startHapticGeneratorSessionWithCallback(long sessionId, int vibratorId,
+                @NonNull HapticGeneratorSession.Config config) {
+            return nativeStartHapticGeneratorSessionWithCallback(mNativePtr, sessionId, vibratorId);
+        }
+
+        @Override
+        public boolean closeHapticGeneratorSession(long sessionId) {
+            return nativeCloseHapticGeneratorSession(mNativePtr, sessionId);
+        }
+
+        @Override
+        public void clearHapticGeneratorSession(long sessionId) {
+            nativeClearHapticGeneratorSession(mNativePtr, sessionId);
+        }
+
+        @Override
+        public boolean startHapticGeneratorStream(long sessionId, int vibratorId,
+                @NonNull android.hardware.vibrator.VibrationEffectContent[] effects) {
+            Parcel parcel = Parcel.obtain();
+            try {
+                parcel.writeInt(effects.length);
+                for (android.hardware.vibrator.VibrationEffectContent effect : effects) {
+                    effect.writeToParcel(parcel, /* flags= */ 0);
+                }
+                parcel.setDataPosition(0);
+                return nativeStartHapticGeneratorStream(mNativePtr, sessionId,
+                        vibratorId, parcel);
+            } finally {
+                parcel.recycle();
+            }
+
+        }
+
+        @Override
+        public int readHapticGeneratorStream(long sessionId, int vibratorId,
+                @NonNull byte[] buffer) {
+            return nativeReadHapticGeneratorStream(mNativePtr, sessionId, vibratorId, buffer);
+        }
+
+        @Override
+        public boolean stopHapticGeneratorStream(long sessionId, int vibratorId) {
+            return nativeStopHapticGeneratorStream(mNativePtr, sessionId, vibratorId);
         }
     }
 
