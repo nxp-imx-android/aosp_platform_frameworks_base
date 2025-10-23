@@ -5848,7 +5848,12 @@ public class NotificationStackScrollLayout
     @Override
     public void suppressHeightUpdates(boolean suppress) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+        boolean forceUpdate = (!suppress && mSuppressHeightUpdates);
         mSuppressHeightUpdates = suppress;
+
+        if (forceUpdate) {
+            setExpandFraction(mAmbientState.getExpansionFraction());
+        }
     }
 
     public void setHeadsUpGoingAwayAnimationsAllowed(boolean headsUpGoingAwayAnimationsAllowed) {
