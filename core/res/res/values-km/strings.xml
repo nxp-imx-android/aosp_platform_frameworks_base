@@ -1277,6 +1277,8 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"បញ្ចប់សកម្មភាព"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"បើក​ជា​មួយ"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"បើក​ជាមួយ %1$s"</string>
+    <!-- no translation found for open_app_name (6114096770130122912) -->
+    <skip />
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"បើក"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"បើក​តំណ <xliff:g id="HOST">%1$s</xliff:g> ដោយប្រើ"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"បើកតំណដោយប្រើ"</string>

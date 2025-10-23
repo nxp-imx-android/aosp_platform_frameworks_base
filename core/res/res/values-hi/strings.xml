@@ -1277,6 +1277,8 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"कार्रवाई पूरी करें"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"इसमें खोलें"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"%1$s में खोलें"</string>
+    <!-- no translation found for open_app_name (6114096770130122912) -->
+    <skip />
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"खोलें"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"इसे इस्तेमाल करके <xliff:g id="HOST">%1$s</xliff:g> लिंक खोलें"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"इसे इस्तेमाल करके लिंक खोलें"</string>

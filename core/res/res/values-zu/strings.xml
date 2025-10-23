@@ -1277,6 +1277,8 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Qedela isenzo"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Vula nge-"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Vula nge-%1$s"</string>
+    <!-- no translation found for open_app_name (6114096770130122912) -->
+    <skip />
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Kuvuliwe"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Vula izixhumanisi ze-<xliff:g id="HOST">%1$s</xliff:g> nge"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Vula izixhumanisi nge"</string>
