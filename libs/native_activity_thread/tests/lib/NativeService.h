@@ -19,7 +19,7 @@
 #include <aidl/android/nativeservice/BnNativeServiceWrapper.h>
 #include <android/binder_auto_utils.h>
 #include <android/binder_status.h>
-#include <native_service.h>
+#include <android/native_service.h>
 
 #include <map>
 #include <set>
