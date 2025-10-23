@@ -51,7 +51,8 @@ import java.util.UUID;
  * Manages the collection of personal context components.
  * @hide
  */
-class ContextComponentManager implements RefinerWorkflow.ComponentProvider {
+class ContextComponentManager
+        implements RefinerWorkflow.ComponentProvider, RendererWorkflow.ComponentProvider {
     // TODO(b/450089078): Move these actions to Intent.
     public static final String ACTION_REFINER_SERVICE =
             "android.service.personalcontext.RefinerService";
@@ -155,6 +156,7 @@ class ContextComponentManager implements RefinerWorkflow.ComponentProvider {
     }
 
     /** Gets currently registered refiners/understanders. */
+    @Override
     public Collection<Refiner> getRefiners() {
         return mRefiners.values();
     }
@@ -165,8 +167,15 @@ class ContextComponentManager implements RefinerWorkflow.ComponentProvider {
     }
 
     /** Gets currently registered renderers. */
+    @Override
     public Collection<Renderer> getRenderers() {
         return mRenderers.values();
+    }
+
+    @Nullable
+    @Override
+    public Renderer getRendererById(UUID id) {
+        return mRenderers.get(id);
     }
 
     private List<ServiceInfo> getServiceInfo(String action, @Nullable String packageName) {

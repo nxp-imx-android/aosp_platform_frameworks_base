@@ -55,7 +55,7 @@ public class ServiceClientRenderer
     }
 
     @Override
-    public boolean isInsightInteresting(ContextInsight insight) {
+    public boolean isInterestedInInsight(ContextInsight insight) {
         // TODO(b/452425147): Implement this to use a filter in the package's manifest.
         // For now this runs each insight through every renderer.
         return true;

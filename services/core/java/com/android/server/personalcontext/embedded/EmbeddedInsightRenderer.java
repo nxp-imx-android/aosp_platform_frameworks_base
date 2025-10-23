@@ -59,7 +59,9 @@ public class EmbeddedInsightRenderer implements Renderer {
     }
 
     @Override
-    public boolean isInsightInteresting(ContextInsight insight) {
+    public boolean isInterestedInInsight(ContextInsight insight) {
+        // Embedded insights should be rendered due to a RenderToken, which bypasses this filter.
+        // We don't want any other random insights.
         return false;
     }
 
