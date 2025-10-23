@@ -44,7 +44,18 @@ public class NativeZygoteProcess implements IZygoteProcess {
     public NativeZygoteProcess() {
         mSocketAddress = new LocalSocketAddress(Zygote.NATIVE_SOCKET_NAME,
                                                 LocalSocketAddress.Namespace.RESERVED);
-        mSocket = new LocalSocket(LocalSocket.SOCKET_SEQPACKET);
+    }
+
+    private void connectToZygote() throws IOException {
+        if (mSocket == null) {
+            mSocket = new LocalSocket(LocalSocket.SOCKET_SEQPACKET);
+            try {
+                mSocket.connect(mSocketAddress);
+            } catch (IOException e) {
+                mSocket = null;
+                throw e;
+            }
+        }
     }
 
     private static native int nativeStartNativeProcess(FileDescriptor fd, int uid, int gid,
@@ -76,15 +87,15 @@ public class NativeZygoteProcess implements IZygoteProcess {
                                                   long startSeq,
                                                   @Nullable String[] zygoteArgs) {
         try {
-            mSocket.connect(mSocketAddress);
+            connectToZygote();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to connect to socket.");
+            throw new RuntimeException("Failed to connect to socket");
         }
         int pid = nativeStartNativeProcess(mSocket.getFileDescriptor(), uid, gid, startSeq,
                 packageName, niceName, targetSdkVersion, /*startChildZygote=*/false, runtimeFlags,
                 seInfo);
         if (pid == -1) {
-            throw new RuntimeException("Failed to fork a native process.");
+            throw new RuntimeException("Failed to fork a native process");
         }
         Process.ProcessStartResult result = new Process.ProcessStartResult();
         result.pid = pid;
