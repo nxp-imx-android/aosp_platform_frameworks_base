@@ -34,5 +34,5 @@ data class AccessibilityTargetModel(
     val isAssigned: Boolean,
     val isToggleable: Boolean,
     /** This field is only relevant if [isToggleable] is true. */
-    val isToggleOn: Boolean? = null,
+    val isToggleOn: Boolean = false,
 )
