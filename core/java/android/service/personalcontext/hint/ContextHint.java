@@ -152,6 +152,11 @@ public abstract class ContextHint {
         return b;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{" + mId + "}";
+    }
+
     /**
      * Unbundles a hint into the correct subclass of hint based on the hint type.
      * @hide

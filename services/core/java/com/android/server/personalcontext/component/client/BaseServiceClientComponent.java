@@ -23,7 +23,9 @@ import android.content.ServiceConnection;
 import android.content.pm.ServiceInfo;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.text.TextUtils;
 import android.util.Log;
+import android.util.Slog;
 
 import com.android.server.personalcontext.component.Component;
 
@@ -46,7 +48,6 @@ public abstract class BaseServiceClientComponent<C> implements Component {
     private final UUID mComponentId;
     private final Intent mServiceIntent;
     private final ComponentName mComponentName;
-    private final Object mSynchronizer = new Object();
     private final List<RunWithBinderCallback<C>> mPendingCalls = new ArrayList<>();
     private boolean mServiceStarted = false;
     private C mClient;
@@ -54,19 +55,24 @@ public abstract class BaseServiceClientComponent<C> implements Component {
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder binder) {
-            Log.i(TAG, BaseServiceClientComponent.this + " is online");
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Slog.d(TAG, BaseServiceClientComponent.this + " is online");
+            }
 
             try {
                 C client = getServiceWrapper(binder);
                 initializeClient(client);
                 onStarted(client);
             } catch (Exception e) {
-                Log.w(TAG, BaseServiceClientComponent.this + " failed", e);
+                Slog.w(TAG, BaseServiceClientComponent.this + " failed", e);
             }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Slog.d(TAG, BaseServiceClientComponent.this + " is offline");
+            }
             mExecutor.execute(() -> {
                 mServiceStarted = false;
                 mClient = null;
@@ -88,12 +94,16 @@ public abstract class BaseServiceClientComponent<C> implements Component {
         return mComponentId;
     }
 
+    public ComponentName getComponentName() {
+        return mComponentName;
+    }
+
     @Override
     public String toString() {
-        return String.format(
-                "%s - %s -> %s",
-                mComponentId,
+        return TextUtils.formatSimple(
+                "%s{%s} -> %s",
                 getClass().getSimpleName(),
+                mComponentId,
                 mComponentName.flattenToShortString());
     }
 
@@ -115,7 +125,9 @@ public abstract class BaseServiceClientComponent<C> implements Component {
             mServiceStarted = true;
             mClient = null;
 
-            Log.d(TAG, this + " service is starting");
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Slog.d(TAG, this + " service is starting");
+            }
             mContext.bindService(mServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
         });
     }
@@ -125,7 +137,9 @@ public abstract class BaseServiceClientComponent<C> implements Component {
             if (!mServiceStarted) return;
             mClient = client;
 
-            Log.i(TAG, BaseServiceClientComponent.this + " is available");
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Slog.d(TAG, BaseServiceClientComponent.this + " is available");
+            }
 
             for (RunWithBinderCallback<C> callback : mPendingCalls) {
                 callback.run(client);
@@ -140,8 +154,10 @@ public abstract class BaseServiceClientComponent<C> implements Component {
             mServiceStarted = false;
             mClient = null;
 
-            Log.d(TAG, this + " service is stopping");
-            mContext.stopService(mServiceIntent);
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Slog.d(TAG, this + " service is stopping");
+            }
+            mContext.unbindService(mServiceConnection);
         });
     }
 

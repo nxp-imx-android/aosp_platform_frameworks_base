@@ -16,11 +16,13 @@
 
 package com.android.server.personalcontext.component;
 
+import android.annotation.Nullable;
 import android.service.personalcontext.hint.ContextHint;
 
 import androidx.annotation.NonNull;
 
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 /**
@@ -30,7 +32,11 @@ import java.util.function.Consumer;
  */
 public interface Refiner extends Component {
     /** Gets a grouping of hints the refiner is interested in. */
-    Set<Set<ContextHint>> getInterestingHintClusters(Set<ContextHint> unseenContextHints);
+    @Nullable
+    Set<Set<ContextHint>> getInterestedHintClusters(
+            @NonNull Set<ContextHint> allContextHints,
+            @NonNull Set<UUID> seenIDs,
+            boolean isFirstRun);
 
     /** Refines hints into more hints. */
     void refine(

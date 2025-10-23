@@ -1,0 +1,259 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.server.personalcontext;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import android.service.personalcontext.hint.BundleHint;
+import android.service.personalcontext.hint.ContextHint;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.SmallTest;
+
+import com.android.server.personalcontext.component.Refiner;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Consumer;
+
+@SmallTest
+@RunWith(AndroidJUnit4.class)
+public class RefinerWorkflowTest {
+    private static final ScheduledExecutorService INLINE_EXECUTOR;
+
+    static {
+        INLINE_EXECUTOR = mock(ScheduledExecutorService.class);
+        doAnswer(invocation -> {
+            invocation.getArgument(0, Runnable.class).run();
+            return null;
+        }).when(INLINE_EXECUTOR).execute(any());
+    }
+
+    private static Refiner buildMockSeriesRefiner() {
+        Refiner refiner = mock(Refiner.class);
+
+        doAnswer(invocation -> {
+            final Set<ContextHint> hints = invocation.getArgument(0, Set.class);
+            final Set<UUID> seenIds = invocation.getArgument(1, Set.class);
+            final Set<Set<ContextHint>> result = new HashSet<>();
+            for (ContextHint hint : hints) {
+                if (!seenIds.contains((hint).getHintId())) {
+                    result.add(Set.of(hint));
+                }
+            }
+            return result;
+        })
+                .when(refiner).getInterestedHintClusters(any(), any(), anyBoolean());
+
+        return refiner;
+    }
+
+    private static Refiner buildMockParallelRefiner() {
+        Refiner refiner = mock(Refiner.class);
+
+        doAnswer(invocation -> {
+            final Set<ContextHint> hints = invocation.getArgument(0, Set.class);
+            final Set<UUID> seenIds = invocation.getArgument(1, Set.class);
+            final Set<ContextHint> result = new HashSet<>();
+            for (ContextHint hint : hints) {
+                if (!seenIds.contains((hint).getHintId())) {
+                    result.add(hint);
+                }
+            }
+            if (result.isEmpty()) {
+                return Collections.emptySet();
+            } else {
+                return Set.of(result);
+            }
+        })
+                .when(refiner).getInterestedHintClusters(any(), any(), anyBoolean());
+
+        return refiner;
+    }
+
+    @Test
+    public void testWorkflowWithNoRefiners() {
+        final RefinerWorkflow.EventListener listener = mock(RefinerWorkflow.EventListener.class);
+        final RefinerWorkflow.ComponentProvider provider =
+                mock(RefinerWorkflow.ComponentProvider.class);
+
+        doReturn(Collections.emptySet()).when(provider).getRefiners();
+
+        RefinerWorkflow.start(
+                provider,
+                Set.of(new BundleHint(), new BundleHint()),
+                /* renderToken= */ null,
+                listener,
+                INLINE_EXECUTOR);
+
+        verify(listener).onRefinerWorkflowStarted(anyLong(), any());
+        verify(listener).onRefinerWorkflowFinished(anyLong());
+    }
+
+    @Test
+    public void testWorkflowWithSingleRefinerHintsInParallel() {
+        final RefinerWorkflow.EventListener listener = mock(RefinerWorkflow.EventListener.class);
+        final RefinerWorkflow.ComponentProvider provider =
+                mock(RefinerWorkflow.ComponentProvider.class);
+        final Refiner refiner = buildMockParallelRefiner();
+
+        doReturn(Set.of(refiner)).when(provider).getRefiners();
+        doAnswer(invocation -> {
+            invocation.getArgument(1, Consumer.class).accept(Collections.emptySet());
+            return null;
+        })
+                .when(refiner).refine(any(), any());
+
+        RefinerWorkflow.start(
+                provider,
+                Set.of(new BundleHint(), new BundleHint()),
+                /* renderToken= */ null,
+                listener,
+                INLINE_EXECUTOR);
+
+        verify(listener).onRefinerWorkflowStarted(anyLong(), any());
+        verify(listener).onHintsSentToRefiner(anyLong(), any(), eq(refiner));
+        verify(listener).onRefinerWorkflowFinished(anyLong());
+    }
+
+    @Test
+    public void testWorkflowWithSingleRefinerHintsInSeries() {
+        final RefinerWorkflow.EventListener listener = mock(RefinerWorkflow.EventListener.class);
+        final RefinerWorkflow.ComponentProvider provider =
+                mock(RefinerWorkflow.ComponentProvider.class);
+        final Refiner refiner = buildMockSeriesRefiner();
+
+        doReturn(Set.of(refiner)).when(provider).getRefiners();
+        doAnswer(invocation -> {
+            invocation.getArgument(1, Consumer.class).accept(Collections.emptySet());
+            return null;
+        })
+                .when(refiner).refine(any(), any());
+
+        RefinerWorkflow.start(
+                provider,
+                Set.of(new BundleHint(), new BundleHint()),
+                /* renderToken= */ null,
+                listener,
+                INLINE_EXECUTOR);
+
+        verify(listener).onRefinerWorkflowStarted(anyLong(), any());
+        verify(listener, times(2)).onHintsSentToRefiner(anyLong(), any(), eq(refiner));
+        verify(listener).onRefinerWorkflowFinished(anyLong());
+    }
+
+    @Test
+    public void testWorkflowWithSeriesRefiners() {
+        final BundleHint hint1 = new BundleHint();
+        final BundleHint hint2 = new BundleHint();
+
+        final RefinerWorkflow.EventListener listener = mock(RefinerWorkflow.EventListener.class);
+        final RefinerWorkflow.ComponentProvider provider =
+                mock(RefinerWorkflow.ComponentProvider.class);
+
+        final Refiner refiner1 = buildMockParallelRefiner();
+        final Refiner refiner2 = mock(Refiner.class);
+
+        doAnswer(invocation -> {
+            final Set<ContextHint> hints = invocation.getArgument(0, Set.class);
+            final Consumer<Set<ContextHint>> callback = invocation.getArgument(1, Consumer.class);
+            if (hints.contains(hint2)) {
+                callback.accept(Collections.emptySet());
+            } else if (hints.contains(hint1)) {
+                callback.accept(Set.of(hint2));
+            }
+            return null;
+        })
+                .when(refiner1).refine(any(), any());
+
+        doAnswer(invocation -> {
+            final Set<ContextHint> hints = invocation.getArgument(0, Set.class);
+            final Set<UUID> seenIds = invocation.getArgument(1, Set.class);
+            if (hints.size() == 2 && seenIds.isEmpty()) {
+                return Set.of(hints);
+            } else {
+                return null;
+            }
+        })
+                .when(refiner2).getInterestedHintClusters(any(), any(), anyBoolean());
+
+        doAnswer(invocation -> {
+            final Consumer<Set<ContextHint>> callback = invocation.getArgument(1, Consumer.class);
+            callback.accept(Collections.emptySet());
+            return null;
+        })
+                .when(refiner2).refine(any(), any());
+
+        doReturn(Set.of(refiner1, refiner2)).when(provider).getRefiners();
+
+        RefinerWorkflow.start(
+                provider,
+                Set.of(hint1),
+                /* renderToken= */ null,
+                listener,
+                INLINE_EXECUTOR);
+
+        verify(listener).onRefinerWorkflowStarted(anyLong(), any());
+        verify(listener).onHintsSentToRefiner(anyLong(), any(), eq(refiner1));
+        verify(listener).onHintsSentToRefiner(anyLong(), any(), eq(refiner2));
+        verify(listener).onHintsReceivedFromRefiner(anyLong(), any(), eq(refiner1));
+        verify(listener).onRefinerWorkflowFinished(anyLong());
+    }
+
+    @Test
+    public void testNoWorkExpireWaitsForSlowRefiner() {
+        final RefinerWorkflow.EventListener listener = mock(RefinerWorkflow.EventListener.class);
+        final RefinerWorkflow.ComponentProvider provider =
+                mock(RefinerWorkflow.ComponentProvider.class);
+        final Refiner refiner = buildMockParallelRefiner();
+
+        doReturn(Set.of(refiner)).when(provider).getRefiners();
+
+        // Refiner does not do anything in render() call to simulate a badly written refiner.
+
+        final RefinerWorkflow workflow = RefinerWorkflow.start(
+                provider,
+                Set.of(new BundleHint(), new BundleHint()),
+                /* renderToken= */ null,
+                listener,
+                INLINE_EXECUTOR);
+
+        verify(listener).onRefinerWorkflowStarted(anyLong(), any());
+        verify(listener).onHintsSentToRefiner(anyLong(), any(), eq(refiner));
+        verify(listener, never()).onHintsReceivedFromRefiner(anyLong(), any(), eq(refiner));
+        verify(listener, never()).onRefinerWorkflowFinished(anyLong());
+
+        // Now expire the workflow and make sure it's been marked as finished.
+        workflow.expire();
+        verify(listener).onRefinerWorkflowFinished(anyLong());
+    }
+}

@@ -18,7 +18,6 @@ package com.android.server.personalcontext;
 
 import android.annotation.PermissionManuallyEnforced;
 import android.content.Context;
-import android.os.Binder;
 import android.os.UserHandle;
 import android.service.personalcontext.IPersonalContextManager;
 import android.service.personalcontext.PersonalContextManager;
@@ -39,7 +38,6 @@ import androidx.annotation.Nullable;
 import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService;
 import com.android.server.notification.NotificationManagerInternal;
-import com.android.server.personalcontext.component.Refiner;
 import com.android.server.personalcontext.component.Renderer;
 import com.android.server.personalcontext.notifications.NotificationActionRenderer;
 
@@ -49,6 +47,8 @@ import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /** @hide */
 public class PersonalContextManagerService extends SystemService {
@@ -56,6 +56,9 @@ public class PersonalContextManagerService extends SystemService {
 
     private final ContextComponentManager mComponentManager =
             new ContextComponentManager(getContext());
+
+    // TODO(b/454430085): Inject these fields.
+    private final ScheduledExecutorService mExecutor = Executors.newSingleThreadScheduledExecutor();
     private final ContextComponentMonitor mMonitor = new ContextComponentMonitor(mComponentManager);
 
     private boolean mInitialRegistrationStarted = false;
@@ -124,24 +127,13 @@ public class PersonalContextManagerService extends SystemService {
     }
 
     private void startRefinerWorkflow(Set<ContextHint> hints, RenderToken renderToken) {
-        // This is just the worst.
-        try {
-            if (Log.isLoggable(TAG, Log.DEBUG)) Slog.d(TAG, "Refiner workflow started");
-
-            for (Refiner refiner : mComponentManager.getRefiners()) {
-                if (Log.isLoggable(TAG, Log.DEBUG)) Slog.d(TAG, "Sending to refiner: " + refiner);
-                refiner.refine(hints, newHints -> {});
-            }
-
-            if (Log.isLoggable(TAG, Log.DEBUG)) Slog.d(TAG, "Refiner workflow complete");
-        } catch (Exception e) {
-            Slog.e(TAG, "Refiner workflow failed", e);
-        }
+        RefinerWorkflow.start(
+                mComponentManager, hints, renderToken, /* eventListener= */ null, mExecutor);
     }
 
     private void startInsightWorkflow(Set<ContextInsight> insights) {
+        // TODO(b/452425186): Make this into a workflow like refiners.
         try {
-            // Please don't look at my shame.
             if (Log.isLoggable(TAG, Log.DEBUG)) Slog.d(TAG, "Insight workflow started");
 
             for (ContextInsight insight : insights) {
