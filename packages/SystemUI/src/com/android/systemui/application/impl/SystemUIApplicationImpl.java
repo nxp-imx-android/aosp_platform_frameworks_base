@@ -35,6 +35,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+import androidx.compose.ui.ComposeUiFlags;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.systemui.BootCompleteCacheImpl;
@@ -132,6 +133,7 @@ public class SystemUIApplicationImpl extends SystemUIApplication implements
         // This allows us to see Handler callbacks on traces.
         rootComponent.getMainLooper().setTraceTag(Trace.TRACE_TAG_APP);
         mProcessWrapper = rootComponent.getProcessWrapper();
+        ComposeUiFlags.areWindowInsetsRulersEnabled = false;
 
         // Set the application theme that is inherited by all services. Note that setting the
         // application theme in the manifest does only work for activities. Keep this in sync with
