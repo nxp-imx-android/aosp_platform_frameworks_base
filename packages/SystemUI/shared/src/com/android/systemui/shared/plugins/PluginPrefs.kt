@@ -26,6 +26,7 @@ class PluginPrefs(context: Context) {
     private val sharedPrefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
     private val pluginActions = sharedPrefs.getStringSet(PLUGIN_ACTIONS, null) ?: mutableSetOf()
 
+    @get:Synchronized
     val pluginList: Set<String>
         get() = pluginActions.toSet()
 

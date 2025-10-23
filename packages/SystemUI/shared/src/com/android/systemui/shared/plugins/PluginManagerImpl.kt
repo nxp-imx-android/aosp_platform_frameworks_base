@@ -45,7 +45,7 @@ constructor(
     preHandlerManager: UncaughtExceptionPreHandlerManager?,
     private val pluginEnabler: PluginEnabler,
     private val pluginPrefs: PluginPrefs,
-    private val config: PluginManager.Config,
+    private val packages: PackageConfig,
     private val env: PluginEnvironment,
 ) : BroadcastReceiver(), PluginManager, Dumpable {
     private val pluginMap = mutableMapOf<PluginListener<*>, PluginActionManager<*>>()
@@ -144,7 +144,7 @@ constructor(
                         ?: throw IllegalStateException("Received invalid URI: ${intent.data}")
 
                 // Don't disable privileged plugins as they are a part of the OS.
-                if (config.isPrivileged(component)) return
+                if (packages.isPrivileged(component)) return
 
                 pluginEnabler.setDisabled(component, DisableReason.DISABLED_INVALID_VERSION)
                 hostContext
@@ -261,13 +261,13 @@ constructor(
         ): PluginManagerImpl {
             val env = PluginEnvironment()
             val pluginPrefs = PluginPrefs(context)
-            val config = PluginManager.Config(privilegedPlugins)
+            val packages = PackageConfig(*privilegedPlugins.toTypedArray())
 
             val instanceFactory =
                 PluginInstance.Factory(
-                    VersionCheckerImpl(),
+                    VersionChecker.Impl(),
                     this::class.java.classLoader!!,
-                    config,
+                    packages,
                     env,
                 )
 
@@ -279,7 +279,7 @@ constructor(
                     bgExecutor,
                     context.getSystemService(NotificationManager::class.java),
                     pluginEnabler,
-                    config,
+                    packages,
                     instanceFactory,
                     pluginPrefs,
                     env,
@@ -291,7 +291,7 @@ constructor(
                 preHandlerManager,
                 pluginEnabler,
                 pluginPrefs,
-                config,
+                packages,
                 env,
             )
         }

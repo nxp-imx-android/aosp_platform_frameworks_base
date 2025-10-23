@@ -20,12 +20,12 @@ import android.os.SystemProperties
 import com.android.systemui.dagger.PluginModule
 import com.android.systemui.dagger.qualifiers.TestHarness
 import com.android.systemui.res.R
+import com.android.systemui.shared.plugins.PackageConfig
 import com.android.systemui.shared.plugins.PluginEnabler
 import com.android.systemui.shared.plugins.PluginEnvironment
 import com.android.systemui.shared.plugins.PluginManagerImpl
 import com.android.systemui.shared.plugins.PluginPrefs
 import com.android.systemui.shared.plugins.VersionChecker
-import com.android.systemui.shared.plugins.VersionCheckerImpl
 import com.android.systemui.util.concurrency.GlobalConcurrencyModule
 import com.android.systemui.util.concurrency.ThreadFactory
 import dagger.Binds
@@ -44,7 +44,7 @@ import javax.inject.Singleton
 abstract class PluginsModule {
     @Binds abstract fun bindsPluginEnablerImpl(impl: PluginEnablerImpl): PluginEnabler
 
-    @Binds abstract fun bindVersionCheckerImpl(impl: VersionCheckerImpl): VersionChecker
+    @Binds abstract fun bindVersionCheckerImpl(impl: VersionChecker.Impl): VersionChecker
 
     @Binds abstract fun providesPluginManager(impl: PluginManagerImpl): PluginManager
 
@@ -74,9 +74,9 @@ abstract class PluginsModule {
         }
 
         @Provides
-        fun providesPluginConfig(context: Context): PluginManager.Config {
+        fun providesPackageConfig(context: Context): PackageConfig {
             val privilegedPlugins = context.resources.getStringArray(R.array.config_pluginAllowlist)
-            return PluginManager.Config(listOf(*privilegedPlugins))
+            return PackageConfig(*privilegedPlugins)
         }
     }
 }

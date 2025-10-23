@@ -31,7 +31,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.SysuiTestableContext
 import com.android.systemui.plugins.Plugin
 import com.android.systemui.plugins.PluginListener
-import com.android.systemui.plugins.PluginManager
 import com.android.systemui.plugins.annotations.Requires
 import com.android.systemui.shared.plugins.PluginEnabler.DisableReason
 import com.android.systemui.util.concurrency.FakeExecutor
@@ -74,9 +73,9 @@ class PluginActionManagerTest : SysuiTestCase() {
     private val mPluginInstanceFactory: PluginInstance.Factory =
         object :
             PluginInstance.Factory(
-                VersionCheckerImpl(),
+                VersionChecker.Impl(),
                 this::class.java.classLoader!!,
-                PluginManager.Config(),
+                PackageConfig(),
                 PluginEnvironment(BuildVariant.User, isDebuggable = false),
             ) {
             @Suppress("UNCHECKED_CAST")
@@ -107,7 +106,7 @@ class PluginActionManagerTest : SysuiTestCase() {
                 mFakeExecutor,
                 mNotificationManager,
                 mMockEnabler,
-                PluginManager.Config(),
+                PackageConfig(),
                 mPluginInstanceFactory,
                 mMockPluginPrefs,
                 PluginEnvironment(),
@@ -203,7 +202,7 @@ class PluginActionManagerTest : SysuiTestCase() {
                 mFakeExecutor,
                 mNotificationManager,
                 mMockEnabler,
-                PluginManager.Config(listOf(PRIVILEGED_PACKAGE)),
+                PackageConfig(PRIVILEGED_PACKAGE),
                 mPluginInstanceFactory,
                 mMockPluginPrefs,
                 PluginEnvironment(),
@@ -259,7 +258,7 @@ class PluginActionManagerTest : SysuiTestCase() {
                 mFakeExecutor,
                 mNotificationManager,
                 mMockEnabler,
-                PluginManager.Config(listOf(PRIVILEGED_PACKAGE)),
+                PackageConfig(PRIVILEGED_PACKAGE),
                 mPluginInstanceFactory,
                 mMockPluginPrefs,
                 PluginEnvironment(),
