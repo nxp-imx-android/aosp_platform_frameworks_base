@@ -18,10 +18,10 @@ package com.android.app.concurrent.benchmark
 import androidx.benchmark.BlackHole
 import androidx.benchmark.ExperimentalBlackHoleApi
 import com.android.app.concurrent.benchmark.base.BaseSchedulerBenchmark
-import com.android.app.concurrent.benchmark.util.ExecutorServiceCoroutineScopeBuilder
-import com.android.app.concurrent.benchmark.util.HandlerThreadImmediateScopeBuilder
-import com.android.app.concurrent.benchmark.util.HandlerThreadScopeBuilder
-import com.android.app.concurrent.benchmark.util.ThreadFactory
+import com.android.app.concurrent.benchmark.util.ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder
+import com.android.app.concurrent.benchmark.util.LooperThreadWithHandlerDispatcherBuilder
+import com.android.app.concurrent.benchmark.util.LooperThreadWithImmediateHandlerDispatcherBuilder
+import com.android.app.concurrent.benchmark.util.ThreadBuilder
 import com.android.app.concurrent.benchmark.util.times
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -61,7 +61,7 @@ private fun <T1, T2> flowOpParam(
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class FlowOperatorBenchmark(
-    threadParam: ThreadFactory<Any, CoroutineScope>,
+    threadParam: ThreadBuilder<CoroutineScope>,
     val chainLength: Int,
     val intermediateOperator: (Flow<Int>, Int, CoroutineScope) -> Flow<Int>,
 ) : BaseSchedulerBenchmark<CoroutineScope>(threadParam) {
@@ -72,9 +72,9 @@ class FlowOperatorBenchmark(
         @JvmStatic
         fun getDispatchers() =
             listOf(
-                ExecutorServiceCoroutineScopeBuilder,
-                HandlerThreadScopeBuilder,
-                HandlerThreadImmediateScopeBuilder,
+                ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder,
+                LooperThreadWithHandlerDispatcherBuilder,
+                LooperThreadWithImmediateHandlerDispatcherBuilder,
             ) *
                 listOf(5, 10, 25) *
                 listOf(

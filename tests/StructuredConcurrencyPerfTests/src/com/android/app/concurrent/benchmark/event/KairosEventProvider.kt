@@ -17,7 +17,7 @@
 
 package com.android.app.concurrent.benchmark.event
 
-import com.android.app.concurrent.benchmark.util.ThreadFactory
+import com.android.app.concurrent.benchmark.util.ThreadBuilder
 import com.android.systemui.kairos.BuildScope
 import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.MutableState as KairosMutableState
@@ -129,7 +129,7 @@ class KairosWritableEventBuilder(val scope: CoroutineScope) :
     }
 }
 
-abstract class BaseKairosEventBenchmark(threadParam: ThreadFactory<Any, CoroutineScope>) :
+abstract class BaseKairosEventBenchmark(threadParam: ThreadBuilder<CoroutineScope>) :
     BaseEventBenchmark<CoroutineScope, KairosWritableEventBuilder>(
         threadParam,
         { KairosWritableEventBuilder(it) },

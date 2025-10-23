@@ -15,16 +15,11 @@
  */
 package com.android.app.concurrent.benchmark.event
 
-import com.android.app.concurrent.benchmark.util.ThreadFactory
+import com.android.app.concurrent.benchmark.util.ThreadBuilder
 import com.android.app.concurrent.benchmark.util.dbg
 import com.android.app.concurrent.benchmark.util.instanceName
-import java.util.concurrent.CancellationException
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 import org.junit.Assert.fail
 
 typealias SimpleEventBoxIn<T> = EventBox<T, SimpleEvent<*>>
@@ -240,60 +235,6 @@ fun <A, B, C> SimpleEvent<A>.sample(other: SimpleEvent<B>, transform: (A, B) -> 
     }
 }
 
-interface SimpleSuspendableObserver<T> {
-    suspend fun awaitNextValue(): T
-
-    fun cancel()
-}
-
-fun <T> SimpleEventImpl<T>.asSuspendableObserver(executor: Executor): SimpleSuspendableObserver<T> {
-    val activeContinuation = AtomicReference<Continuation<T>?>(null)
-    listen { newValue ->
-        executor.execute {
-            val awaitingCont = activeContinuation.getAndSet(null)
-            awaitingCont!!.resume(newValue)
-        }
-    }
-    return object : SimpleSuspendableObserver<T> {
-        override suspend fun awaitNextValue(): T {
-            return suspendCoroutine { c ->
-                if (!activeContinuation.compareAndSet(null, c)) {
-                    fail("Only one awaiter permitted at a time.")
-                }
-            }
-        }
-
-        override fun cancel() {
-            activeContinuation.getAndSet(null)?.resumeWithException(CancellationException())
-        }
-    }
-}
-
-// Similar concept to SynchronousQueue; can only pass one value at a time, and can only pass
-// values if actively being listened to
-class SimpleSynchronousState<T>() {
-    var nextInput: Continuation<T>? = null
-
-    fun putValueOrThrow(newValue: T) {
-        val c = nextInput
-        if (c != null) {
-            nextInput = null
-            c.resume(newValue)
-        } else {
-            fail("No one is awaiting. Can't send new value if there are no listeners.")
-        }
-    }
-
-    suspend fun awaitValue(): T {
-        return suspendCoroutine { continuation ->
-            if (nextInput != null) {
-                fail("Already awaiting. Can't override next continuation")
-            }
-            nextInput = continuation
-        }
-    }
-}
-
 class SimpleWritableEventBuilder(val executor: Executor) :
     EventContext,
     WritableEventFactory<SimpleState<*>>,
@@ -411,7 +352,7 @@ class SimpleEventWriteContext() : WriteContext<SimpleEvent<*>> {
     }
 }
 
-abstract class BaseSimpleEventBenchmark(threadParam: ThreadFactory<Any, Executor>) :
+abstract class BaseSimpleEventBenchmark(threadParam: ThreadBuilder<Executor>) :
     BaseEventBenchmark<Executor, SimpleWritableEventBuilder>(
         threadParam,
         { SimpleWritableEventBuilder(it) },

@@ -32,9 +32,9 @@ import com.android.app.concurrent.benchmark.event.SimpleWritableEventBuilder
 import com.android.app.concurrent.benchmark.event.SnapshotWritableEventCoroutineBuilder
 import com.android.app.concurrent.benchmark.event.SnapshotWritableEventExecutorBuilder
 import com.android.app.concurrent.benchmark.event.WritableEventFactory
-import com.android.app.concurrent.benchmark.util.ExecutorServiceCoroutineScopeBuilder
-import com.android.app.concurrent.benchmark.util.ExecutorThreadBuilder
-import com.android.app.concurrent.benchmark.util.ThreadFactory
+import com.android.app.concurrent.benchmark.util.ExecutorServiceThreadWithExecutorBuilder
+import com.android.app.concurrent.benchmark.util.ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder
+import com.android.app.concurrent.benchmark.util.ThreadBuilder
 import com.android.app.concurrent.benchmark.util.times
 import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.State as KairosState
@@ -116,7 +116,7 @@ private sealed interface ShallowEventBenchmark<T, E : Any>
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class FlowShallowEventBenchmark(
-    threadParam: ThreadFactory<Any, CoroutineScope>,
+    threadParam: ThreadBuilder<CoroutineScope>,
     override val producerCount: Int,
     override val consumerCount: Int,
 ) : BaseFlowEventBenchmark(threadParam), ShallowEventBenchmark<FlowWritableEventBuilder, Flow<*>> {
@@ -125,14 +125,16 @@ class FlowShallowEventBenchmark(
         @Parameters(name = "{0},{1},{2}")
         @JvmStatic
         fun getDispatchers() =
-            listOf(ExecutorServiceCoroutineScopeBuilder) * PRODUCER_LIST * CONSUMER_LIST
+            listOf(ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder) *
+                PRODUCER_LIST *
+                CONSUMER_LIST
     }
 }
 
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class SimpleEventShallowEventBenchmark(
-    threadParam: ThreadFactory<Any, Executor>,
+    threadParam: ThreadBuilder<Executor>,
     override val producerCount: Int,
     override val consumerCount: Int,
 ) :
@@ -142,7 +144,8 @@ class SimpleEventShallowEventBenchmark(
     companion object {
         @Parameters(name = "{0},{1},{2}")
         @JvmStatic
-        fun getDispatchers() = listOf(ExecutorThreadBuilder) * PRODUCER_LIST * CONSUMER_LIST
+        fun getDispatchers() =
+            listOf(ExecutorServiceThreadWithExecutorBuilder) * PRODUCER_LIST * CONSUMER_LIST
     }
 }
 
@@ -150,7 +153,7 @@ class SimpleEventShallowEventBenchmark(
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class ExecutorSnapshotShallowEventBenchmark(
-    threadParam: ThreadFactory<Any, Executor>,
+    threadParam: ThreadBuilder<Executor>,
     override val producerCount: Int,
     override val consumerCount: Int,
 ) :
@@ -160,7 +163,8 @@ class ExecutorSnapshotShallowEventBenchmark(
     companion object {
         @Parameters(name = "{0},{1},{2}")
         @JvmStatic
-        fun getDispatchers() = listOf(ExecutorThreadBuilder) * PRODUCER_LIST * CONSUMER_LIST
+        fun getDispatchers() =
+            listOf(ExecutorServiceThreadWithExecutorBuilder) * PRODUCER_LIST * CONSUMER_LIST
     }
 }
 
@@ -168,7 +172,7 @@ class ExecutorSnapshotShallowEventBenchmark(
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class CoroutineSnapshotShallowEventBenchmark(
-    threadParam: ThreadFactory<Any, CoroutineScope>,
+    threadParam: ThreadBuilder<CoroutineScope>,
     override val producerCount: Int,
     override val consumerCount: Int,
 ) :
@@ -179,7 +183,9 @@ class CoroutineSnapshotShallowEventBenchmark(
         @Parameters(name = "{0},{1},{2}")
         @JvmStatic
         fun getDispatchers() =
-            listOf(ExecutorServiceCoroutineScopeBuilder) * PRODUCER_LIST * CONSUMER_LIST
+            listOf(ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder) *
+                PRODUCER_LIST *
+                CONSUMER_LIST
     }
 }
 
@@ -187,7 +193,7 @@ class CoroutineSnapshotShallowEventBenchmark(
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class KairosShallowEventBenchmark(
-    threadParam: ThreadFactory<Any, CoroutineScope>,
+    threadParam: ThreadBuilder<CoroutineScope>,
     override val producerCount: Int,
     override val consumerCount: Int,
 ) :
@@ -198,6 +204,8 @@ class KairosShallowEventBenchmark(
         @Parameters(name = "{0},{1},{2}")
         @JvmStatic
         fun getDispatchers() =
-            listOf(ExecutorServiceCoroutineScopeBuilder) * PRODUCER_LIST * CONSUMER_LIST
+            listOf(ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder) *
+                PRODUCER_LIST *
+                CONSUMER_LIST
     }
 }
