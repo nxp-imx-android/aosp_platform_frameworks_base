@@ -3016,6 +3016,11 @@
     <!-- Text for the Edit button on the Toggle dialog. [CHAR LIMIT=NONE] -->
     <string name="accessibility_shortcutchooser_edit_button" translatable="false">Edit</string>
 
+    <!-- Title text for the accessibility quick access dialog that allows users to quickly toggle on accessibility features. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_quick_access_dialog_title">Accessibility</string>
+    <!-- Text for the primary button at the bottom of the accessibility quick access dialog that closes the dialog after the user is done toggling accessibility features. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_quick_access_dialog_done_button_text">Done</string>
+
     <!-- Plugin control section of the tuner. Non-translatable since it should
          not appear on production builds ever. -->
     <string name="plugins" translatable="false">Plugins</string>
