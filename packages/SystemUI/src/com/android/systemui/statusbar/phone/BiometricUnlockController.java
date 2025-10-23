@@ -96,10 +96,12 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
 
     @IntDef(prefix = { "MODE_" }, value = {
             MODE_NONE,
+            MODE_NONE_UNLOCKED,
             MODE_WAKE_AND_UNLOCK,
             MODE_WAKE_AND_UNLOCK_PULSING,
             MODE_SHOW_BOUNCER,
             MODE_ONLY_WAKE,
+            MODE_ONLY_WAKE_UNLOCKED,
             MODE_UNLOCK_COLLAPSING,
             MODE_DISMISS_BOUNCER,
             MODE_WAKE_AND_UNLOCK_FROM_DREAM
@@ -109,6 +111,7 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
 
     /**
      * Mode in which we don't need to wake up the device when we authenticate.
+     * Authentication was not successful.
      */
     public static final int MODE_NONE = 0;
 
@@ -132,6 +135,7 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
 
     /**
      * Mode in which we only wake up the device, and keyguard was not showing when we authenticated.
+     * Authentication was not successful.
      * */
     public static final int MODE_ONLY_WAKE = 4;
 
@@ -150,6 +154,17 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
      * When bouncer is visible and will be dismissed.
      */
     public static final int MODE_DISMISS_BOUNCER = 7;
+
+    /**
+     * Mode in which we don't need to wake up the device when we authenticate.
+     * Authentication was successful.
+     */
+    public static final int MODE_NONE_UNLOCKED = 8;
+    /**
+     * Mode in which we only wake up the device, and keyguard was not showing when we authenticated.
+     * Authentication was successful.
+     */
+    public static final int MODE_ONLY_WAKE_UNLOCKED = 9;
 
     /**
      * How much faster we collapse the lockscreen when authenticating with biometric.
@@ -523,8 +538,7 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
         };
 
         final boolean wakeInKeyguard = mMode == MODE_WAKE_AND_UNLOCK_FROM_DREAM
-                && mPowerManager.isInteractive() && mOrderUnlockAndWake
-                && mOrderUnlockAndWake;
+                && mPowerManager.isInteractive() && mOrderUnlockAndWake;
 
         switch (mMode) {
             case MODE_DISMISS_BOUNCER:
@@ -565,12 +579,14 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
                 Trace.endSection();
                 break;
             case MODE_ONLY_WAKE:
+            case MODE_ONLY_WAKE_UNLOCKED:
             case MODE_NONE:
+            case MODE_NONE_UNLOCKED:
                 break;
         }
         onModeChanged(mMode, biometricUnlockSource);
         // wake up after biometric unlock mode is sent to listeners
-        if (mMode != MODE_NONE && !wakeInKeyguard) {
+        if ((mMode != MODE_NONE && mMode != MODE_NONE_UNLOCKED) && !wakeInKeyguard) {
             wakeUp.run();
         }
 
@@ -690,10 +706,10 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
         logCalculateModeForPassiveAuth(unlockingAllowed, deviceInteractive, isKeyguardShowing,
                 deviceDreaming, bypass, isStrongBiometric);
         if (!deviceInteractive) {
-            if (!isKeyguardShowing) {
-                return bypass ? MODE_WAKE_AND_UNLOCK : MODE_ONLY_WAKE;
-            } else if (!unlockingAllowed) {
+            if (!unlockingAllowed) {
                 return bypass ? MODE_SHOW_BOUNCER : MODE_NONE;
+            } else if (!isKeyguardShowing) {
+                return bypass ? MODE_WAKE_AND_UNLOCK : MODE_ONLY_WAKE_UNLOCKED;
             } else if (mDozeScrimController.isPulsing()) {
                 return MODE_WAKE_AND_UNLOCK_PULSING; // always unlock from the pulsing state
             } else {
@@ -701,25 +717,29 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
                     // Wake-up fading out nicely
                     return MODE_WAKE_AND_UNLOCK_PULSING;
                 } else {
-                    // We could theoretically return MODE_NONE, but this means that the device
-                    // would be not interactive, unlocked, and the user would not see the device
-                    // state.
-                    return MODE_ONLY_WAKE;
+                    // We could theoretically return MODE_NONE_UNLOCKED, but this means that the
+                    // device would be not interactive, unlocked, and the user would not see the
+                    // device state.
+                    return MODE_ONLY_WAKE_UNLOCKED;
                 }
             }
         }
         if (unlockingAllowed && deviceDreaming) {
             final boolean wakeAndUnlock = bypass || (dreamsV2() && isBouncerShowing);
-            return wakeAndUnlock ? MODE_WAKE_AND_UNLOCK_FROM_DREAM : MODE_ONLY_WAKE;
+            return wakeAndUnlock ? MODE_WAKE_AND_UNLOCK_FROM_DREAM : MODE_ONLY_WAKE_UNLOCKED;
         }
         if (unlockingAllowed && mKeyguardStateController.isOccluded()) {
             return MODE_UNLOCK_COLLAPSING;
         }
         if (isKeyguardShowing) {
-            if (isBouncerShowing && unlockingAllowed) {
-                return MODE_DISMISS_BOUNCER;
-            } else if (unlockingAllowed && bypass) {
-                return MODE_UNLOCK_COLLAPSING;
+            if (unlockingAllowed) {
+                if (isBouncerShowing) {
+                    return MODE_DISMISS_BOUNCER;
+                } else if (bypass) {
+                    return MODE_UNLOCK_COLLAPSING;
+                } else {
+                    return MODE_NONE_UNLOCKED;
+                }
             } else {
                 return bypass ? MODE_SHOW_BOUNCER : MODE_NONE;
             }

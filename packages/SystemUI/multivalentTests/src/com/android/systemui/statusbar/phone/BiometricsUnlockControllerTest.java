@@ -294,7 +294,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
 
         verify(mStatusBarKeyguardViewManager, never()).notifyKeyguardAuthenticated(anyBoolean());
         assertThat(mBiometricUnlockController.getMode())
-                .isEqualTo(BiometricUnlockController.MODE_NONE);
+                .isEqualTo(BiometricUnlockController.MODE_NONE_UNLOCKED);
     }
 
     @Test
@@ -361,7 +361,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
 
         verify(mStatusBarKeyguardViewManager, never()).notifyKeyguardAuthenticated(anyBoolean());
         assertThat(mBiometricUnlockController.getMode())
-                .isEqualTo(BiometricUnlockController.MODE_ONLY_WAKE);
+                .isEqualTo(BiometricUnlockController.MODE_ONLY_WAKE_UNLOCKED);
     }
 
     @Test

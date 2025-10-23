@@ -233,12 +233,30 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             assertThat(canSwipeToEnter).isFalse()
 
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_NONE,
+                unlockStateInt = BiometricUnlockController.MODE_NONE_UNLOCKED,
                 biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
             )
             trustRepository.setCurrentUserTrusted(false)
 
             assertThat(canSwipeToEnter).isTrue()
+        }
+
+    @Test
+    fun canSwipeToEnter_whenNotAuthenticatedByFace_isFalse() =
+        kosmos.runTest {
+            val canSwipeToEnter by collectLastValue(underTest.canSwipeToEnter)
+            fakeAuthenticationRepository.setAuthenticationMethod(Password)
+            switchToScene(Scenes.Lockscreen)
+            assertThat(canSwipeToEnter).isFalse()
+
+            // MODE_ONLY_WAKE can occur if unlocking isn't allowed:
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_ONLY_WAKE,
+                biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
+            )
+            trustRepository.setCurrentUserTrusted(false)
+
+            assertThat(canSwipeToEnter).isFalse()
         }
 
     @Test
