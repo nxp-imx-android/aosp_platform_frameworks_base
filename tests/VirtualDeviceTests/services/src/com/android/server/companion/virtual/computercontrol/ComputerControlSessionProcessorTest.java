@@ -27,6 +27,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -91,6 +92,7 @@ public class ComputerControlSessionProcessorTest {
     private static final String TARGET_PACKAGE = "com.android.foo";
     private static final int CALLING_USER_ID = UserHandle.USER_SYSTEM;
     private static final int VIRTUAL_DISPLAY_ID = 123;
+    private static final int DEVICE_ID = 42;
     private static final String OWNER_PACKAGE_NAME = "com.package";
     private static final AttributionSource ATTRIBUTION_SOURCE = new AttributionSource(
             UserHandle.getUid(CALLING_USER_ID, 0), OWNER_PACKAGE_NAME, "tag");
@@ -182,6 +184,7 @@ public class ComputerControlSessionProcessorTest {
         when(mVirtualDevice.createVirtualDisplay(any(), any(), any())).thenReturn(mVirtualDisplay);
         when(mVirtualDisplay.getDisplay()).thenReturn(mDisplay);
         when(mDisplay.getDisplayId()).thenReturn(VIRTUAL_DISPLAY_ID);
+        when(mVirtualDevice.getDeviceId()).thenReturn(DEVICE_ID);
 
         when(mVirtualDevice.createVirtualAudioDevice(any(), any(), any())).thenReturn(
                 mVirtualAudioDevice);
@@ -409,6 +412,69 @@ public class ComputerControlSessionProcessorTest {
 
         assertFalse(mProcessor.isComputerControlNotification(notificationId, notificationTag,
                 OWNER_PACKAGE_NAME));
+    }
+
+    @Test
+    public void isComputerControlSession_returnsCorrectly() throws Exception {
+        // Pre-condition: No sessions exist.
+        assertFalse(mProcessor.isComputerControlSession(DEVICE_ID));
+
+        // Create a session.
+        mProcessor.processNewSessionRequest(
+                ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
+
+        // Assert session with correct device ID is found.
+        assertTrue(mProcessor.isComputerControlSession(DEVICE_ID));
+        // Assert session with incorrect device ID is not found.
+        assertFalse(mProcessor.isComputerControlSession(DEVICE_ID + 1));
+
+        // Close the session.
+        mSessionArgumentCaptor.getValue().close();
+
+        // Assert session is no longer found after closing.
+        assertFalse(mProcessor.isComputerControlSession(DEVICE_ID));
+    }
+
+    @Test
+    public void closeSessionByUserIntent_sessionExists_closesSession() throws Exception {
+        // Create a session.
+        mProcessor.processNewSessionRequest(
+                ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreated(anyInt(), any());
+
+        // Verify session exists before closing.
+        assertTrue(mProcessor.isComputerControlSession(DEVICE_ID));
+
+        // Close the session via the processor's public API.
+        mProcessor.closeSessionByUserIntent(DEVICE_ID);
+
+        // Verify the session is closed and removed.
+        assertFalse(mProcessor.isComputerControlSession(DEVICE_ID));
+        // Also verify the underlying virtual device is closed.
+        verify(mVirtualDevice).close();
+    }
+
+    @Test
+    public void closeSessionByUserIntent_sessionDoesNotExist_doesNothing() throws Exception {
+        // Create a session.
+        mProcessor.processNewSessionRequest(
+                ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreated(anyInt(), any());
+
+        // Verify session exists before trying to close a different one.
+        assertTrue(mProcessor.isComputerControlSession(DEVICE_ID));
+
+        // Attempt to close a session with an unknown device ID.
+        mProcessor.closeSessionByUserIntent(DEVICE_ID + 1);
+
+        // Verify the existing session was not closed.
+        assertTrue(mProcessor.isComputerControlSession(DEVICE_ID));
+        // And the underlying virtual device was not closed.
+        verify(mVirtualDevice, never()).close();
     }
 
     private ComputerControlSessionParams validParams() {
