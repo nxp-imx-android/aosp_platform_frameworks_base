@@ -1165,7 +1165,7 @@ public class TelecomManager {
      * {@link android.telecom.Call#STATE_ACTIVE}, the system should not generate any call connected
      * indication.
      * <p>
-     * Used with {@link #setCallConnectedIndicatorPreference and
+     * Used with {@link #setCallConnectedIndicatorPreference} and
      * {@link #getCallConnectedIndicatorPreference()}.
      * @hide
      */
@@ -1178,7 +1178,7 @@ public class TelecomManager {
      * {@link android.telecom.Call#STATE_ACTIVE}, the system should play a tone which indicates that
      * the call has connected.
      * <p>
-     * Used with {@link #setCallConnectedIndicatorPreference and
+     * Used with {@link #setCallConnectedIndicatorPreference} and
      * {@link #getCallConnectedIndicatorPreference()}.
      * @hide
      */
@@ -1191,7 +1191,7 @@ public class TelecomManager {
      * {@link android.telecom.Call#STATE_ACTIVE}, the system should make a haptic vibration which
      * indicates that the call has connected.
      * <p>
-     * Used with {@link #setCallConnectedIndicatorPreference and
+     * Used with {@link #setCallConnectedIndicatorPreference} and
      * {@link #getCallConnectedIndicatorPreference()}.
      * @hide
      */
