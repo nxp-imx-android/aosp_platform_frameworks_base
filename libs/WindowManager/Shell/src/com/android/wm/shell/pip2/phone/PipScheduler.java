@@ -296,6 +296,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
             wct.deferConfigToTransitionEnd(pipTaskToken);
         }
         wct.setBounds(pipTaskToken, toBounds);
+        wct.setCanDropDuringDisplayChange(true);
         mPipTransitionController.startPipBoundsChangeTransition(wct, duration);
     }
 

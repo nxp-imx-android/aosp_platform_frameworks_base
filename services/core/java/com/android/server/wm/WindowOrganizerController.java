@@ -382,7 +382,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                                     setAllReadyIfNeeded(nextTransition, wct);
                                 }
                                 mService.mChainTracker.end();
-                            }, true /* noopIfDuringDisplayChange */);
+                            }, canDropDuringDisplayChange(wct) /* noopIfDuringDisplayChange */);
                     return nextTransition.getToken();
                 }
                 // The transition already started collecting before sending a request to shell,
@@ -438,6 +438,11 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
+    }
+
+    private static boolean canDropDuringDisplayChange(@NonNull WindowContainerTransaction wct) {
+        return (wct.getFlags()
+                & WindowContainerTransaction.FLAG_DROP_DURING_DISPLAY_CHANGE) == 1;
     }
 
     private static boolean hasActivityLaunch(@NonNull WindowContainerTransaction wct) {
