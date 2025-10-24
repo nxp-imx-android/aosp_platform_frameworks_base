@@ -18,7 +18,7 @@ package com.android.providers.settings;
 
 import static android.os.Process.FIRST_APPLICATION_UID;
 
-import static com.android.aconfig_new_storage.Flags.enableAconfigStorageDaemon;
+import static com.android.aconfig_new_storage.Flags.stopLoadingFlagDefaultValue;
 
 import android.aconfig.Aconfig.flag_permission;
 import android.aconfig.Aconfig.flag_state;
@@ -369,23 +369,21 @@ public class SettingsState {
         synchronized (mLock) {
             readStateSyncLocked();
 
-            if (Flags.loadAconfigDefaults()) {
-                if (isConfigSettingsKey(mKey)) {
-                    loadAconfigDefaultValuesLocked(sAconfigTextProtoFilesOnDevice);
-                }
+            if (stopLoadingFlagDefaultValue()) {
+                return;
             }
 
-            if (Flags.loadApexAconfigProtobufs()) {
-                if (isConfigSettingsKey(mKey)) {
-                    List<String> apexProtoPaths = listApexProtoPaths();
-                    loadAconfigDefaultValuesLocked(apexProtoPaths);
-                }
+            if (isConfigSettingsKey(mKey)) {
+                loadAconfigDefaultValuesLocked(sAconfigTextProtoFilesOnDevice);
             }
 
-            if (enableAconfigStorageDaemon()) {
-                if (isConfigSettingsKey(mKey)) {
-                    getAllAconfigFlagsFromSettings(mAconfigDefaultFlags);
-                }
+            if (isConfigSettingsKey(mKey)) {
+                List<String> apexProtoPaths = listApexProtoPaths();
+                loadAconfigDefaultValuesLocked(apexProtoPaths);
+            }
+
+            if (isConfigSettingsKey(mKey)) {
+                getAllAconfigFlagsFromSettings(mAconfigDefaultFlags);
             }
         }
     }
