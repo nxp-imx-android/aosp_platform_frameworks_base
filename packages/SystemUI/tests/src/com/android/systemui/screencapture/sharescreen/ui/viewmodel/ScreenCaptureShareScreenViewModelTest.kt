@@ -33,6 +33,7 @@ import com.android.systemui.mediaprojection.appselector.data.RecentTask
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
+import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.recentTaskViewModelFactory
 import com.android.systemui.screencapture.common.ui.viewmodel.recentTasksViewModel
 import com.android.systemui.screencapture.sharescreen.domain.interactor.ShareScreenUiInteractor
@@ -80,8 +81,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
     fun initialState() =
         kosmos.runTest {
             // Assert that the initial values are as expected upon creation and activation.
-            assertThat(viewModel.selectedScreenCaptureTarget)
-                .isEqualTo(ScreenCaptureTarget.AppContent(contentId = 0))
+            assertThat(viewModel.currentTargetsModel).isInstanceOf(AppContentsViewModel::class.java)
 
             assertThat(viewModel.isUiVisible).isTrue()
         }
@@ -128,7 +128,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
                 }
 
             kosmos.recentTasksViewModel.setSelectedTarget(fakeRecentTaskViewModel)
-            viewModel.selectedScreenCaptureTarget = target
+            viewModel.setTargetViewModel(target)
 
             viewModel.onShareClicked()
 

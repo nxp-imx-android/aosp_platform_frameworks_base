@@ -33,6 +33,9 @@ import com.android.systemui.screencapture.common.ui.compose.RadioButtonGroup
 import com.android.systemui.screencapture.common.ui.compose.RadioButtonGroupItem
 import com.android.systemui.screencapture.common.ui.compose.Toolbar
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
+import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.DisplaysViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
 import com.android.systemui.screencapture.sharescreen.ui.viewmodel.ScreenCaptureShareScreenViewModel
 
 @Composable
@@ -66,31 +69,29 @@ fun PreShareToolbar(
         listOf(
             RadioButtonGroupItem(
                 icon = tabIcon,
-                isSelected =
-                    shareScreenViewModel.selectedScreenCaptureTarget
-                        is ScreenCaptureTarget.AppContent,
+                isSelected = shareScreenViewModel.currentTargetsModel is AppContentsViewModel,
                 onClick = {
-                    shareScreenViewModel.selectedScreenCaptureTarget =
-                        (ScreenCaptureTarget.AppContent(contentId = 0))
+                    shareScreenViewModel.setTargetViewModel(
+                        ScreenCaptureTarget.AppContent(contentId = 0)
+                    )
                 },
             ),
             RadioButtonGroupItem(
                 icon = windowIcon,
-                isSelected =
-                    shareScreenViewModel.selectedScreenCaptureTarget is ScreenCaptureTarget.App,
+                isSelected = shareScreenViewModel.currentTargetsModel is RecentTasksViewModel,
                 onClick = {
-                    shareScreenViewModel.selectedScreenCaptureTarget =
-                        (ScreenCaptureTarget.App(displayId = 0, taskId = 0))
+                    shareScreenViewModel.setTargetViewModel(
+                        ScreenCaptureTarget.App(displayId = 0, taskId = 0)
+                    )
                 },
             ),
             RadioButtonGroupItem(
                 icon = fullscreenIcon,
-                isSelected =
-                    shareScreenViewModel.selectedScreenCaptureTarget
-                        is ScreenCaptureTarget.Fullscreen,
+                isSelected = shareScreenViewModel.currentTargetsModel is DisplaysViewModel,
                 onClick = {
-                    shareScreenViewModel.selectedScreenCaptureTarget =
-                        (ScreenCaptureTarget.Fullscreen(displayId = 0))
+                    shareScreenViewModel.setTargetViewModel(
+                        ScreenCaptureTarget.Fullscreen(displayId = 0)
+                    )
                 },
             ),
         )
