@@ -95,8 +95,6 @@ public final class AppStartInfoTracker {
 
     private static final String MONITORING_MODE_EMPTY_TEXT = "No records";
 
-    @VisibleForTesting static final int APP_START_INFO_HISTORY_LIST_SIZE = 16;
-
     @VisibleForTesting
     static final long APP_START_INFO_HISTORY_LENGTH_MS = TimeUnit.DAYS.toMillis(14);
 
@@ -212,7 +210,8 @@ public final class AppStartInfoTracker {
         }
         mProcStartInfoFile = new File(mProcStartStoreDir, APP_START_INFO_FILE);
 
-        mAppStartInfoHistoryListSize = APP_START_INFO_HISTORY_LIST_SIZE;
+        mAppStartInfoHistoryListSize = service.mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_app_start_info_history_list_size);
     }
 
     void onSystemReady() {
@@ -647,7 +646,7 @@ public final class AppStartInfoTracker {
     void getStartInfo(String packageName, int filterUid, int filterPid,
             int maxNum, ArrayList<ApplicationStartInfo> results) {
         if (maxNum == 0) {
-            maxNum = APP_START_INFO_HISTORY_LIST_SIZE;
+            maxNum = mAppStartInfoHistoryListSize;
         }
         final long identity = Binder.clearCallingIdentity();
         try {
