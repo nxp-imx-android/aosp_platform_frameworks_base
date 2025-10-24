@@ -881,13 +881,6 @@ flag {
 }
 
 flag {
-    name: "keyboard_shortcut_helper_rewrite"
-    namespace: "systemui"
-    description: "A new implementation of the keyboards shortcuts helper sheet."
-    bug: "327364197"
-}
-
-flag {
     name: "keyboard_touchpad_contextual_education"
     namespace: "systemui"
     description: "Allow showing education for physical keyboard and touchpad"
