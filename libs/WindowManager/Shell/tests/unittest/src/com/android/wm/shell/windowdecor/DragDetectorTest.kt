@@ -17,10 +17,13 @@
 package com.android.wm.shell.windowdecor
 
 import android.os.SystemClock
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.InputDevice
 import android.view.MotionEvent
 import androidx.test.filters.SmallTest
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import org.junit.After
 import org.junit.Assert.assertFalse
@@ -63,7 +66,7 @@ class DragDetectorTest : ShellTestCase() {
     }
 
     @Test
-    fun testNoMove_passesDownAndUp() {
+    fun testNoMove_touch_passesDownAndUp() {
         val dragDetector = createDragDetector()
         assertTrue(dragDetector.onMotionEvent(createMotionEvent(MotionEvent.ACTION_DOWN)))
         verify(eventHandler)
@@ -171,7 +174,8 @@ class DragDetectorTest : ShellTestCase() {
     }
 
     @Test
-    fun testMoveInSlop_mouse_passesDownMoveAndUp() {
+    @DisableFlags(Flags.FLAG_HANDLE_NON_TOUCHSCREEN_EVENTS_IN_DRAG_DETECTOR)
+    fun testMoveInSlop_mouse_passesDownMoveAndUp_nonTouchscreenEventsUnhandled() {
         val dragDetector = createDragDetector()
         `when`(
                 eventHandler.handleMotionEvent(
@@ -230,7 +234,64 @@ class DragDetectorTest : ShellTestCase() {
     }
 
     @Test
-    fun testMoveBeyondSlop_passesDownMoveAndUp() {
+    @EnableFlags(Flags.FLAG_HANDLE_NON_TOUCHSCREEN_EVENTS_IN_DRAG_DETECTOR)
+    fun testMoveInSlop_mouse_passesDownAndUp() {
+        val dragDetector = createDragDetector()
+        `when`(
+                eventHandler.handleMotionEvent(
+                    any(),
+                    argThat { it.action == MotionEvent.ACTION_DOWN },
+                )
+            )
+            .thenReturn(false)
+
+        assertFalse(
+            dragDetector.onMotionEvent(createMotionEvent(MotionEvent.ACTION_DOWN, isTouch = false))
+        )
+        verify(eventHandler)
+            .handleMotionEvent(
+                any(),
+                argThat {
+                    return@argThat it.action == MotionEvent.ACTION_DOWN &&
+                        it.x == X &&
+                        it.y == Y &&
+                        it.source == InputDevice.SOURCE_MOUSE
+                },
+            )
+
+        val newX = X + SLOP - 1
+        assertFalse(
+            dragDetector.onMotionEvent(
+                createMotionEvent(MotionEvent.ACTION_MOVE, newX, Y, isTouch = false)
+            )
+        )
+        verify(eventHandler, never())
+            .handleMotionEvent(
+                any(),
+                argThat {
+                    return@argThat it.action == MotionEvent.ACTION_MOVE
+                },
+            )
+
+        assertTrue(
+            dragDetector.onMotionEvent(
+                createMotionEvent(MotionEvent.ACTION_UP, newX, Y, isTouch = false)
+            )
+        )
+        verify(eventHandler)
+            .handleMotionEvent(
+                any(),
+                argThat {
+                    return@argThat it.action == MotionEvent.ACTION_UP &&
+                        it.x == newX &&
+                        it.y == Y &&
+                        it.source == InputDevice.SOURCE_MOUSE
+                },
+            )
+    }
+
+    @Test
+    fun testMoveBeyondSlop_touch_passesDownMoveAndUp() {
         val dragDetector = createDragDetector()
         `when`(
                 eventHandler.handleMotionEvent(
@@ -274,6 +335,65 @@ class DragDetectorTest : ShellTestCase() {
                         it.x == newX &&
                         it.y == Y &&
                         it.source == InputDevice.SOURCE_TOUCHSCREEN
+                },
+            )
+    }
+
+    @Test
+    fun testMoveBeyondSlop_mouse_passesDownMoveAndUp() {
+        val dragDetector = createDragDetector()
+        `when`(
+                eventHandler.handleMotionEvent(
+                    any(),
+                    argThat { it.action == MotionEvent.ACTION_DOWN },
+                )
+            )
+            .thenReturn(false)
+
+        assertFalse(
+            dragDetector.onMotionEvent(createMotionEvent(MotionEvent.ACTION_DOWN, isTouch = false))
+        )
+        verify(eventHandler)
+            .handleMotionEvent(
+                any(),
+                argThat {
+                    return@argThat it.action == MotionEvent.ACTION_DOWN &&
+                        it.x == X &&
+                        it.y == Y &&
+                        it.source == InputDevice.SOURCE_MOUSE
+                },
+            )
+
+        val newX = X + SLOP + 1
+        assertTrue(
+            dragDetector.onMotionEvent(
+                createMotionEvent(MotionEvent.ACTION_MOVE, newX, Y, isTouch = false)
+            )
+        )
+        verify(eventHandler)
+            .handleMotionEvent(
+                any(),
+                argThat {
+                    return@argThat it.action == MotionEvent.ACTION_MOVE &&
+                        it.x == newX &&
+                        it.y == Y &&
+                        it.source == InputDevice.SOURCE_MOUSE
+                },
+            )
+
+        assertTrue(
+            dragDetector.onMotionEvent(
+                createMotionEvent(MotionEvent.ACTION_UP, newX, Y, isTouch = false)
+            )
+        )
+        verify(eventHandler)
+            .handleMotionEvent(
+                any(),
+                argThat {
+                    return@argThat it.action == MotionEvent.ACTION_UP &&
+                        it.x == newX &&
+                        it.y == Y &&
+                        it.source == InputDevice.SOURCE_MOUSE
                 },
             )
     }
@@ -651,6 +771,39 @@ class DragDetectorTest : ShellTestCase() {
         )
 
         // The |move| should be passed to the handler as no hold period was needed.
+        verify(eventHandler, times(1))
+            .handleMotionEvent(any(), argThat { ev -> ev.action == MotionEvent.ACTION_MOVE })
+    }
+
+    @Test
+    fun testHoldToDrag_mouse_passesMoveEvents() {
+        // Specify a positive hold period.
+        val dragDetector = createDragDetector(holdToDragMinDurationMs = 100, slop = 20)
+        val downTime = SystemClock.uptimeMillis()
+        dragDetector.onMotionEvent(
+            createMotionEvent(
+                action = MotionEvent.ACTION_DOWN,
+                x = 500f,
+                y = 10f,
+                isTouch = false,
+                downTime = downTime,
+                eventTime = downTime,
+            )
+        )
+
+        dragDetector.onMotionEvent(
+            createMotionEvent(
+                action = MotionEvent.ACTION_MOVE,
+                x = 500f + 50f, // beyond slop
+                y = 10f + 50f, // beyond slop
+                isTouch = false,
+                downTime = downTime,
+                eventTime = downTime + 1, // during hold period
+            )
+        )
+
+        // The |move| should be passed to the handler as the hold period is ignored for
+        // non-touchscreen events.
         verify(eventHandler, times(1))
             .handleMotionEvent(any(), argThat { ev -> ev.action == MotionEvent.ACTION_MOVE })
     }
