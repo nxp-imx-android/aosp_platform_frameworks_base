@@ -542,6 +542,13 @@ public class AdbDebuggingManager {
 
         private final AdbNetworkMonitor mAdbNetworkMonitor;
 
+        // True means that the NEXT adb wifi enable request will be an auto-enable request triggered
+        // by AdbWifiNetworkMonitor.
+        // False means that the NEXT adb wifi enable request will be a manual enable request from
+        // the user.
+        // Used to not show the adb wifi auth prompt during auto-enable.
+        private boolean mNextAdbWifiEnableIsAutoEnable = false;
+
         private static final String ADB_NOTIFICATION_CHANNEL_ID_TV = "usbdevicemanager.adb.tv";
 
         private final AdbdServicesManager mAdbdServicesManager;
@@ -639,6 +646,9 @@ public class AdbDebuggingManager {
         // Event sent when the framework device name was been changed by the user.
         static final int MSG_DEVICE_NAME_CHANGED = 31;
 
+        // Event sent when AdbWifiNetworkMonitor is going to auto-enable adb wifi.
+        static final int DECLARE_NEXT_ADB_WIFI_AUTO_ENABLE = 32;
+
         // === Messages we can send to adbd ===========
         static final String MSG_DISCONNECT_DEVICE = "DD";
         static final String MSG_START_ADB_WIFI = "W1";
@@ -674,7 +684,7 @@ public class AdbDebuggingManager {
             mThread = thread;
             if (com.android.server.adb.Flags.allowAdbWifiReconnect()) {
                 mAdbNetworkMonitor =
-                        new AdbWifiNetworkMonitor(mContext, mAdbKeyStore::isTrustedNetwork);
+                        new AdbWifiNetworkMonitor(mContext, mAdbKeyStore::isTrustedNetwork, this);
             } else {
                 mAdbNetworkMonitor = new AdbBroadcastReceiver(mContext, mAdbConnectionInfo);
             }
@@ -881,6 +891,9 @@ public class AdbDebuggingManager {
                     }
                 }
                 case MSG_ADBDWIFI_ENABLE -> {
+                    boolean isAdbWifiAutoEnable = mNextAdbWifiEnableIsAutoEnable;
+                    mNextAdbWifiEnableIsAutoEnable = false;
+
                     if (mAdbWifiEnabled) {
                         break;
                     }
@@ -892,7 +905,8 @@ public class AdbDebuggingManager {
                         break;
                     }
 
-                    if (!verifyWifiNetwork(currentInfo.getBSSID(), currentInfo.getSSID())) {
+                    if (!verifyWifiNetwork(
+                            currentInfo.getBSSID(), currentInfo.getSSID(), isAdbWifiAutoEnable)) {
                         // This means that the network is not in the list of trusted networks.
                         // We'll give user a prompt on whether to allow wireless debugging on
                         // the current wifi network.
@@ -1072,6 +1086,9 @@ public class AdbDebuggingManager {
                     }
                     mAdbdServicesManager.onAttributeChanged();
                 }
+                case DECLARE_NEXT_ADB_WIFI_AUTO_ENABLE -> {
+                    mNextAdbWifiEnableIsAutoEnable = true;
+                }
             }
         }
 
@@ -1221,7 +1238,7 @@ public class AdbDebuggingManager {
             return new AdbConnectionInfo(bssid, ssid);
         }
 
-        private boolean verifyWifiNetwork(String bssid, String ssid) {
+        private boolean verifyWifiNetwork(String bssid, String ssid, boolean isAdbWifiAutoEnable) {
             // Check against a list of user-trusted networks.
             if (mAdbKeyStore.isTrustedNetwork(bssid, ssid)) {
                 Slog.d(
@@ -1229,6 +1246,15 @@ public class AdbDebuggingManager {
                         TextUtils.formatSimple(
                                 "Network {bssid=%s, ssid=%s} is a trusted network", bssid, ssid));
                 return true;
+            }
+            if (isAdbWifiAutoEnable) {
+                Slog.d(
+                        TAG,
+                        TextUtils.formatSimple(
+                                "Network {bssid=%s, ssid=%s} isn't a trusted network. Adb wifi is"
+                                        + " in auto-enable mode. Not displaying authprompt",
+                                bssid, ssid));
+                return false;
             }
             Slog.d(
                     TAG,

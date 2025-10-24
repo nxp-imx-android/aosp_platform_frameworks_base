@@ -23,6 +23,7 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Slog;
@@ -31,6 +32,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.adb.AdbDebuggingManager.AdbDebuggingHandler;
 
 /**
  * Monitors Wi-Fi state changes to automatically enable ADB over Wi-Fi when the device connects to a
@@ -44,6 +46,7 @@ public class AdbWifiNetworkMonitor extends ConnectivityManager.NetworkCallback
     private final Context mContext;
     private final ContentResolver mContentResolver;
     private final IsTrustedNetworkChecker mIsTrustedNetworkChecker;
+    private final Handler mAdbDebuggingHandler;
 
     /**
      * Stores the SSID of the most recently processed network.
@@ -62,13 +65,16 @@ public class AdbWifiNetworkMonitor extends ConnectivityManager.NetworkCallback
     }
 
     AdbWifiNetworkMonitor(
-            @NonNull Context context, @NonNull IsTrustedNetworkChecker isTrustedNetworkChecker) {
+            @NonNull Context context,
+            @NonNull IsTrustedNetworkChecker isTrustedNetworkChecker,
+            @NonNull Handler adbDebuggingHandler) {
         // Flag is required to receive BSSID and SSID info in the callback.
         super(ConnectivityManager.NetworkCallback.FLAG_INCLUDE_LOCATION_INFO);
 
         mContext = context;
         mContentResolver = mContext.getContentResolver();
         mIsTrustedNetworkChecker = isTrustedNetworkChecker;
+        mAdbDebuggingHandler = adbDebuggingHandler;
         register();
     }
 
@@ -138,6 +144,9 @@ public class AdbWifiNetworkMonitor extends ConnectivityManager.NetworkCallback
         boolean isTrusted =
                 mIsTrustedNetworkChecker.isTrusted(wifiInfo.getBSSID(), wifiInfo.getSSID());
         if (isTrusted) {
+            // TODO: use the ADB_WIFI_ENABLED setting to communicate the auto-enable state.
+            mAdbDebuggingHandler.sendEmptyMessage(
+                    AdbDebuggingHandler.DECLARE_NEXT_ADB_WIFI_AUTO_ENABLE);
             setAdbWifiState(
                     true,
                     TextUtils.formatSimple(
