@@ -34,8 +34,7 @@ per-file **.bp,**.mk=file:platform/build/soong:main:/OWNERS
 per-file TestProtoLibraries.bp = file:platform/platform_testing:/libraries/health/OWNERS
 per-file TestProtoLibraries.bp = file:platform/tools/tradefederation:/OWNERS
 
-per-file *ravenwood* = file:ravenwood/OWNERS
-per-file *Ravenwood* = file:ravenwood/OWNERS
+per-file Ravenwood.bp, **_ravenwood.* = file:ravenwood/OWNERS
 
 per-file PREUPLOAD.cfg = file:/PREUPLOAD_OWNERS
 
