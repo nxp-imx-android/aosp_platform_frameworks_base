@@ -24,7 +24,6 @@ import android.view.View
 import android.view.ViewRootImpl
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.internal.jank.Cuj
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.DialogTransitionAnimator
@@ -65,7 +64,6 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -366,6 +364,7 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     fun chip_notProjecting_expandActionBehaviorShowsDialog() =
         testScope.runTest {
             val latest by collectLastValue(underTest.chip)
