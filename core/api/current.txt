@@ -9992,6 +9992,11 @@ package android.app.privatecompute {
     method public void writeToAuditLog(@NonNull android.os.PersistableBundle);
   }
 
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public abstract class PccService extends android.app.Service {
+    ctor public PccService();
+    method @NonNull public final android.os.IBinder onBind(@Nullable android.content.Intent);
+  }
+
 }
 
 package android.app.slice {
