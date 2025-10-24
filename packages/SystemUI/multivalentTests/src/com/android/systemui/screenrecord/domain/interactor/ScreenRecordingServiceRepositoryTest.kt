@@ -115,6 +115,33 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
         }
 
     @Test
+    fun testStartRecording_startsRecording_externalDisplay() =
+        kosmos.runTest {
+            val interactorStatus: ScreenRecordingStatus? by collectLastValue(underTest.status)
+            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
+            val callbackStatus: FakeScreenRecordingServiceCallbackWrapper.RecordingStatus? by
+                collectLastValue(service.callbackStatus)
+
+            val externalDisplayParams =
+                ScreenRecordingParameters(
+                    captureTarget = null,
+                    audioSource = ScreenRecordingAudioSource.NONE,
+                    displayId = 2,
+                    shouldShowTaps = false,
+                )
+            underTest.startRecording(externalDisplayParams)
+
+            assertThat(interactorStatus)
+                .isEqualTo(ScreenRecordingStatus.Started(externalDisplayParams))
+            assertThat(serviceStatus).isInstanceOf(ScreenRecordingStatus.Started::class.java)
+            assertThat(callbackStatus)
+                .isInstanceOf(
+                    FakeScreenRecordingServiceCallbackWrapper.RecordingStatus.Started::class.java
+                )
+            assertThat(service.currentCallback).isNotNull()
+        }
+
+    @Test
     fun testStopRecording_stopsRecording() =
         kosmos.runTest {
             val interactorStatus: ScreenRecordingStatus? by collectLastValue(underTest.status)
