@@ -372,6 +372,10 @@ public class DesktopModeTouchEventListener
             return false;
         }
         moveTaskToFront(decoration.getTaskInfo());
+        if (decoration.getIsDragging()) {
+            logD("onLongClick(%s) but is dragging, skip creating maximize menu", viewName);
+            return true;
+        }
         if (decoration.getMaximizeMenuController() != null
                 && !decoration.getMaximizeMenuController().isMaximizeMenuActive()) {
             logD("onLongClick(%s) creating maximize menu", viewName);

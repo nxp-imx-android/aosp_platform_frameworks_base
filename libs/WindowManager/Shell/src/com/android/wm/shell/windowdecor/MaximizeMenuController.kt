@@ -33,6 +33,9 @@ interface MaximizeMenuController {
     /** Creates the maximize menu if supported by caption. */
     fun createMaximizeMenu()
 
+    /** Closes the maximize menu. */
+    fun closeMaximizeMenu()
+
     /** Updates on whether the maximize button is being hovered over. */
     fun setAppHeaderMaximizeButtonHovered(hovered: Boolean)
 }

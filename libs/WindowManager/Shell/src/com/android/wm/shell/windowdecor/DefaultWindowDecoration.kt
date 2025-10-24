@@ -222,6 +222,13 @@ constructor(
 
     /** Declares whether the window decoration is being dragged. */
     var isDragging = false
+        set(value) {
+            field = value
+            // If we are dragging, close the maximize menu if it's open
+            if (value) {
+                maximizeMenuController?.closeMaximizeMenu()
+            }
+        }
 
     /**
      * Declares whether a Recents transition is currently active.

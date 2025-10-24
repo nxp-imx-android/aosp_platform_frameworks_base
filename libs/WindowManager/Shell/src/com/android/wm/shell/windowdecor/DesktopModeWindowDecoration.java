@@ -1584,8 +1584,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     /**
      * Close the maximize menu window
      */
-    @VisibleForTesting
-    void closeMaximizeMenu() {
+    @Override
+    public void closeMaximizeMenu() {
         if (!isMaximizeMenuActive()) return;
         mMaximizeMenu.close(() -> {
             // Request the accessibility service to refocus on the maximize button after closing
@@ -2102,6 +2102,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      */
     void setIsDragging(boolean isDragging) {
         mIsDragging = isDragging;
+    }
+
+    /** Returns whether the window decoration is being dragged. */
+    boolean getIsDragging() {
+        return mIsDragging;
     }
 
     /**

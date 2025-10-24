@@ -393,6 +393,20 @@ private constructor(
             else -> error("Expected Non-null default or desktop window decoration")
         }
 
+    /** Returns whether the task is being dragged. */
+    fun getIsDragging(): Boolean =
+        when {
+            defaultWindowDecor != null -> {
+                requireDefaultWindowDecor().isDragging
+            }
+
+            desktopWindowDecor != null -> {
+                requireDesktopWindowDecor().isDragging
+            }
+
+            else -> error("Expected Non-null default or desktop window decoration")
+        }
+
     /**
      * Check if touch event occurred in caption when caption is unable to receive touch events (i.e.
      * when caption is behind the status bar).
