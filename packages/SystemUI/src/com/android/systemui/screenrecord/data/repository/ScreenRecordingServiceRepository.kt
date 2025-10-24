@@ -285,6 +285,10 @@ constructor(
             _screenRecording.value =
                 ScreenRecording.Saved(uri = recordingUri, thumbnail = thumbnail)
         }
+
+        override fun onRecordingSaveError(recordingUri: Uri) {
+            _screenRecording.value = ScreenRecording.NotSaved(uri = recordingUri)
+        }
     }
 
     private data class RecordingService(private val service: IScreenRecordingService?) {

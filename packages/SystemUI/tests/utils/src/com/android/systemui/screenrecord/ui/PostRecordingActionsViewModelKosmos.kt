@@ -23,15 +23,14 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.parentUriInteractorKosmos
-import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingViewModel
-import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
+import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingActionsViewModel
 import com.android.systemui.settings.userTracker
 
-val Kosmos.postRecordingViewModelFactory by
+val Kosmos.postRecordingActionsViewModelFactory by
     Kosmos.Fixture {
-        object : PostRecordingViewModel.Factory {
-            override fun create(videoUri: Uri, displayId: Int): PostRecordingViewModel {
-                return PostRecordingViewModel(
+        object : PostRecordingActionsViewModel.Factory {
+            override fun create(videoUri: Uri, displayId: Int): PostRecordingActionsViewModel {
+                return PostRecordingActionsViewModel(
                     videoUri = videoUri,
                     displayId = displayId,
                     context = applicationContext,
@@ -40,7 +39,6 @@ val Kosmos.postRecordingViewModelFactory by
                     drawableLoaderViewModel = drawableLoaderViewModel,
                     screenCaptureUiInteractor = screenCaptureUiInteractor,
                     parentUriInteractor = parentUriInteractorKosmos,
-                    screenRecordingServiceInteractor = screenRecordingServiceInteractor,
                 )
             }
         }

@@ -32,22 +32,18 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiPar
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ParentUriInteractor
-import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
 import com.android.systemui.screenrecord.service.ActivityStartingReceiver
-import com.android.systemui.screenrecord.shared.model.ScreenRecording
 import com.android.systemui.settings.UserTracker
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
 
 private const val MIME_TYPE = "video/mp4"
 
-class PostRecordingViewModel
+class PostRecordingActionsViewModel
 @AssistedInject
 constructor(
-    @Assisted val videoUri: Uri,
+    @Assisted private val videoUri: Uri,
     @Assisted private val displayId: Int,
     private val context: Context,
     private val broadcastSender: BroadcastSender,
@@ -55,14 +51,7 @@ constructor(
     private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val parentUriInteractor: ParentUriInteractor,
-    screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
-
-    val isVideoSaved: Boolean by
-        screenRecordingServiceInteractor.screenRecordings
-            .filter { it.uri == videoUri }
-            .map { it is ScreenRecording.Saved }
-            .hydratedStateOf("PostRecordingViewModel#screenRecording", false)
 
     var parentUri: Uri? by mutableStateOf(null)
         private set
@@ -152,6 +141,6 @@ constructor(
     @AssistedFactory
     interface Factory {
 
-        fun create(videoUri: Uri, displayId: Int): PostRecordingViewModel
+        fun create(videoUri: Uri, displayId: Int): PostRecordingActionsViewModel
     }
 }
