@@ -560,6 +560,13 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-multidesks-CreateDesksUntilLimitTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-multiinstance-LaunchNewInstanceFromAppWindowMenuTest",
       "keywords": [
         "device",

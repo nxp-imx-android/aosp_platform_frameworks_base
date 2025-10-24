@@ -714,6 +714,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "FunctionalTestsDesktopMode-multidesks-CreateDesksUntilLimitTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.multidesks.CreateDesksUntilLimitTest"],
+}
+
+test_module_config {
     name: "FunctionalTestsDesktopMode-multiinstance-LaunchNewInstanceFromAppWindowMenuTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
