@@ -119,6 +119,7 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
     @EnableFlags(FLAG_DUAL_SHADE)
     fun defaultShadeMode_singleShadeOverridden_dualShade() =
         kosmos.runTest {
+            overrideResource(R.bool.config_dualShadeEnabledByDefault, true)
             enableSingleShade()
             val shadeMode by collectLastValue(underTest.shadeMode)
             assertThat(shadeMode).isEqualTo(ShadeMode.Single)
