@@ -54,7 +54,7 @@ public final class ParcelableConnection implements Parcelable {
     private final Bundle mExtras;
     private String mParentCallId;
     private @Call.Details.CallDirection int mCallDirection;
-    private @Connection.VerificationStatus int mCallerNumberVerificationStatus;
+    private @Annotation.VerificationStatus int mCallerNumberVerificationStatus;
 
     /** @hide */
     public ParcelableConnection(
@@ -79,7 +79,7 @@ public final class ParcelableConnection implements Parcelable {
             Bundle extras,
             String parentCallId,
             @Call.Details.CallDirection int callDirection,
-            @Connection.VerificationStatus int callerNumberVerificationStatus) {
+            @Annotation.VerificationStatus int callerNumberVerificationStatus) {
         this(phoneAccount, state, capabilities, properties, supportedAudioRoutes, address,
                 addressPresentation, callerDisplayName, callerDisplayNamePresentation,
                 videoProvider, videoState, ringbackRequested, isVoipAudioMode, connectTimeMillis,
@@ -110,7 +110,7 @@ public final class ParcelableConnection implements Parcelable {
             DisconnectCause disconnectCause,
             List<String> conferenceableConnectionIds,
             Bundle extras,
-            @Connection.VerificationStatus int callerNumberVerificationStatus) {
+            @Annotation.VerificationStatus int callerNumberVerificationStatus) {
         mPhoneAccount = phoneAccount;
         mState = state;
         mConnectionCapabilities = capabilities;
@@ -231,7 +231,7 @@ public final class ParcelableConnection implements Parcelable {
         return mCallDirection;
     }
 
-    public @Connection.VerificationStatus int getCallerNumberVerificationStatus() {
+    public @Annotation.VerificationStatus int getCallerNumberVerificationStatus() {
         return mCallerNumberVerificationStatus;
     }
 

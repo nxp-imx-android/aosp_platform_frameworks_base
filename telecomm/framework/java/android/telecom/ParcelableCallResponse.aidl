@@ -19,4 +19,4 @@ package android.telecom;
 /**
  * @hide
  */
-parcelable CallScreeningService.ParcelableCallResponse;
+parcelable ParcelableCallResponse;

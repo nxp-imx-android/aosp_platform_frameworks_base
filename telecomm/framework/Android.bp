@@ -24,7 +24,6 @@ filegroup {
     name: "framework-telecom-internal-sources",
     srcs: [
         "java/**/*.java",
-        "java/**/*.aidl",
     ],
     path: "java",
     exclude_srcs: [
@@ -37,6 +36,19 @@ filegroup {
 }
 
 filegroup {
+    name: "framework-telecom-aidl-internal-sources",
+    srcs: [
+        "java/**/*.aidl",
+    ],
+    path: "java",
+    visibility: [
+        "//frameworks/base:__subpackages__",
+        "//packages/modules/Telephony/telecom:__subpackages__",
+        "//packages/services/Telecomm",
+    ],
+}
+
+filegroup {
     name: "framework-telecom-aidl-export-sources",
     srcs: [
         "aidl-export/**/*.aidl",
@@ -45,5 +57,6 @@ filegroup {
     visibility: [
         "//cts/tests/tests:__subpackages__",
         "//packages/modules/Telephony/telecom:__subpackages__",
+        "//packages/services/Telecomm",
     ],
 }
