@@ -376,6 +376,8 @@ public:
     void setInputMethodConnectionIsActive(bool isActive);
     void setKeyRemapping(const std::map<int32_t, int32_t>& keyRemapping);
     void setKeyRemappingForDevice(int32_t deviceId, const std::map<int32_t, int32_t>& keyRemapping);
+    void setAxisRemappingForDevice(int32_t deviceId,
+                                   const std::unordered_map<int32_t, int32_t>& axisRemapping);
 
     /* --- InputReaderPolicyInterface implementation --- */
 
@@ -565,6 +567,12 @@ private:
         std::map<int32_t /* deviceId */,
                  std::map<int32_t /* fromKeyCode */, int32_t /* toKeyCode */>>
                 keyRemappingPerDevice{};
+
+        // Axes to be remapped for device.
+        std::unordered_map<
+                int32_t /* deviceId */,
+                std::unordered_map<int32_t /* fromAndroidAxisId */, int32_t /* toAndroidAxisId */>>
+                axisRemappingPerDevice{};
 
         // Displays which are non-interactive.
         std::set<ui::LogicalDisplayId> nonInteractiveDisplays;
@@ -841,6 +849,7 @@ void NativeInputManager::getReaderConfiguration(InputReaderConfiguration* outCon
 
         outConfig->keyRemapping = mLocked.keyRemapping;
         outConfig->keyRemappingPerDevice = mLocked.keyRemappingPerDevice;
+        outConfig->axisRemappingPerDevice = mLocked.axisRemappingPerDevice;
     } // release lock
 }
 
@@ -2244,6 +2253,37 @@ void NativeInputManager::setKeyRemappingForDevice(int32_t deviceId,
     }
 }
 
+void NativeInputManager::setAxisRemappingForDevice(
+        int32_t deviceId, const std::unordered_map<int32_t, int32_t>& axisRemapping) {
+    bool needsRefresh = false;
+    { // acquire lock
+        std::scoped_lock _l(mLock);
+        auto it = mLocked.axisRemappingPerDevice.find(deviceId);
+        if (it == mLocked.axisRemappingPerDevice.end()) {
+            // The key doesn't exist. If the new remapping is not empty, we need to add it.
+            if (!axisRemapping.empty()) {
+                mLocked.axisRemappingPerDevice.emplace(deviceId, axisRemapping);
+                needsRefresh = true;
+            }
+        } else {
+            // The key exists. Check if the value is different.
+            if (it->second != axisRemapping) {
+                if (axisRemapping.empty()) {
+                    mLocked.axisRemappingPerDevice.erase(it);
+                } else {
+                    it->second = axisRemapping;
+                }
+                needsRefresh = true;
+            }
+        }
+    } // release lock
+
+    if (needsRefresh) {
+        mInputManager->getReader().requestRefreshConfiguration(
+                InputReaderConfiguration::Change::AXIS_REMAPPING);
+    }
+}
+
 // ----------------------------------------------------------------------------
 
 static NativeInputManager* getNativeInputManager(JNIEnv* env, jobject clazz) {
@@ -2351,6 +2391,21 @@ static void nativeSetKeyRemappingForDevice(JNIEnv* env, jobject nativeImplObj, j
         keyRemapping.insert_or_assign(fromKeyCodes[i], toKeycodes[i]);
     }
     im->setKeyRemappingForDevice(deviceId, keyRemapping);
+}
+
+static void nativeSetAxisRemappingForDevice(JNIEnv* env, jobject nativeImplObj, jint deviceId,
+                                            jintArray fromAxisArr, jintArray toKAxisArr) {
+    const std::vector<int32_t> fromAxisVec = getIntArray(env, fromAxisArr);
+    const std::vector<int32_t> toAxisVec = getIntArray(env, toKAxisArr);
+    if (fromAxisVec.size() != toAxisVec.size()) {
+        jniThrowRuntimeException(env, "FromAxis and toAxis sizes don't match.");
+    }
+    NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
+    std::unordered_map<int32_t, int32_t> axisRemapping;
+    for (int i = 0; i < fromAxisVec.size(); i++) {
+        axisRemapping.insert_or_assign(fromAxisVec[i], toAxisVec[i]);
+    }
+    im->setAxisRemappingForDevice(deviceId, axisRemapping);
 }
 
 static jboolean nativeHasKeys(JNIEnv* env, jobject nativeImplObj, jint deviceId, jint sourceMask,
@@ -3429,6 +3484,7 @@ static const JNINativeMethod gInputManagerMethods[] = {
         {"getSwitchState", "(III)I", (void*)nativeGetSwitchState},
         {"setKeyRemapping", "([I[I)V", (void*)nativeSetKeyRemapping},
         {"setKeyRemappingForDevice", "(I[I[I)V", (void*)nativeSetKeyRemappingForDevice},
+        {"setAxisRemappingForDevice", "(I[I[I)V", (void*)nativeSetAxisRemappingForDevice},
         {"hasKeys", "(II[I[Z)Z", (void*)nativeHasKeys},
         {"getKeyCodeForKeyLocation", "(II)I", (void*)nativeGetKeyCodeForKeyLocation},
         {"createInputChannel", "(Ljava/lang/String;)Landroid/view/InputChannel;",

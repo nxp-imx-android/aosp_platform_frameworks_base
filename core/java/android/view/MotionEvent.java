@@ -1586,7 +1586,7 @@ public final class MotionEvent extends InputEvent implements Parcelable {
             AXIS_GESTURE_SWIPE_FINGER_COUNT,
     })
     @Retention(RetentionPolicy.SOURCE)
-    @interface Axis {}
+    public @interface Axis {}
 
     /**
      * Button constant: Primary button (left mouse button).

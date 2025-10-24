@@ -173,6 +173,28 @@ interface IInputManager {
             + "android.Manifest.permission.CONTROLLER_REMAPPING)")
     Map getControllerButtonRemapping(int userId, in InputDeviceIdentifier identifier);
 
+    @EnforcePermission("CONTROLLER_REMAPPING")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.CONTROLLER_REMAPPING)")
+    void remapControllerAxis(int userId, in InputDeviceIdentifier identifier, int fromAxis,
+            int toAxis);
+
+    @EnforcePermission("CONTROLLER_REMAPPING")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.CONTROLLER_REMAPPING)")
+    void removeControllerAxisRemapping(int userId, in InputDeviceIdentifier identifier,
+            int fromAxis);
+
+    @EnforcePermission("CONTROLLER_REMAPPING")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.CONTROLLER_REMAPPING)")
+    void clearAllControllerAxisRemappings(int userId, in InputDeviceIdentifier identifier);
+
+    @EnforcePermission("CONTROLLER_REMAPPING")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.CONTROLLER_REMAPPING)")
+    Map getControllerAxisRemappings(int userId, in InputDeviceIdentifier identifier);
+
     // Registers an input devices changed listener.
     void registerInputDevicesChangedListener(IInputDevicesChangedListener listener);
 

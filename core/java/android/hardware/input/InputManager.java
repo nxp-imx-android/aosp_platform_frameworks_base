@@ -814,6 +814,94 @@ public final class InputManager {
     }
 
     /**
+     * Remaps a controller axis.
+     *
+     * @param identifier The unique identifier for the device.
+     * @param fromAxis The controller axis getting remapped.
+     * @param toAxis The controller axis that it is mapped to.
+     *
+     * @throws IllegalArgumentException if the provided fromAxis or toAxis is not a valid axis
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(com.android.hardware.input.Flags.FLAG_CONTROLLER_REMAPPING)
+    @RequiresPermission(Manifest.permission.CONTROLLER_REMAPPING)
+    public void remapControllerAxis(@NonNull InputDeviceIdentifier identifier,
+            @MotionEvent.Axis int fromAxis, @MotionEvent.Axis int toAxis) {
+        Objects.requireNonNull(identifier, "Device identifier must not be null");
+        try {
+            mIm.remapControllerAxis(mContext.getUserId(), identifier, fromAxis, toAxis);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Removes a controller axis remapping.
+     *
+     * @param identifier The unique identifier for the device.
+     * @param fromAxis The controller axis getting remapped.
+     *
+     * @throws IllegalArgumentException if the provided fromAxis is not a valid axis
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(com.android.hardware.input.Flags.FLAG_CONTROLLER_REMAPPING)
+    @RequiresPermission(Manifest.permission.CONTROLLER_REMAPPING)
+    public void removeControllerAxisRemapping(@NonNull InputDeviceIdentifier identifier,
+            @MotionEvent.Axis int fromAxis) {
+        Objects.requireNonNull(identifier, "Device identifier must not be null");
+        try {
+            mIm.removeControllerAxisRemapping(mContext.getUserId(), identifier, fromAxis);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Clears all existing controller axis remappings for a given device.
+     *
+     * @param identifier The unique identifier for the device.
+     *
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(com.android.hardware.input.Flags.FLAG_CONTROLLER_REMAPPING)
+    @RequiresPermission(Manifest.permission.CONTROLLER_REMAPPING)
+    public void clearAllControllerAxisRemappings(@NonNull InputDeviceIdentifier identifier) {
+        Objects.requireNonNull(identifier, "Device identifier must not be null");
+        try {
+            mIm.clearAllControllerAxisRemappings(mContext.getUserId(), identifier);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Provides the current controller axis remappings for a given device.
+     *
+     * @param identifier The unique identifier for the device.
+     * @return a {fromAxis, toAxis} map that contains the existing controller axis remappings, where
+     * fromAxis and toAxis are {@link MotionEvent.Axis}.
+     *
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(com.android.hardware.input.Flags.FLAG_CONTROLLER_REMAPPING)
+    @NonNull
+    @SuppressWarnings("unchecked")
+    @RequiresPermission(Manifest.permission.CONTROLLER_REMAPPING)
+    public Map<Integer, Integer> getControllerAxisRemappings(
+            @NonNull InputDeviceIdentifier identifier) {
+        Objects.requireNonNull(identifier, "Device identifier must not be null");
+        try {
+            return mIm.getControllerAxisRemappings(mContext.getUserId(), identifier);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Gets the TouchCalibration applied to the specified input device's coordinates.
      *
      * @param inputDeviceDescriptor The input device descriptor.
