@@ -308,10 +308,11 @@ public abstract class WMShellModule {
             @NonNull TaskViewRepository repository,
             @NonNull BubbleData bubbleData,
             @NonNull @Bubbles TaskViewTransitions taskViewTransitions,
-            @NonNull BubbleAppInfoProvider appInfoProvider
+            @NonNull BubbleAppInfoProvider appInfoProvider,
+            @ShellBackgroundThread ShellExecutor bgExecutor
     ) {
         return new BubbleTransitions(context, transitions, organizer, repository,
-                bubbleData, taskViewTransitions, appInfoProvider);
+                bubbleData, taskViewTransitions, appInfoProvider, bgExecutor);
     }
 
     @WMSingleton

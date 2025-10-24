@@ -88,6 +88,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         mock(),
         mock(),
         mock(),
+        mock()
     ))
     private val pinnedLayerController = mock<PinnedLayerController>()
     private val pipScheduler = mock<PipScheduler>()

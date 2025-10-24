@@ -496,7 +496,7 @@ class BubbleControllerBubbleBarTest {
             baseActivity = ComponentName("com.example.app", "com.example.app.MainActivity")
         }
         val bubble =
-            Bubble.createTaskBubble(taskInfo, UserHandle.of(0), null, mainExecutor, bgExecutor)
+            Bubble.createTaskBubble(taskInfo, UserHandle.of(0), null)
         bubble.setInflateSynchronously(true)
         bubbleController.inflateAndAdd(
             bubble,

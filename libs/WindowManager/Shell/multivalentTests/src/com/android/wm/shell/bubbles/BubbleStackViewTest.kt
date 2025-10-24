@@ -1467,9 +1467,7 @@ class BubbleStackViewTest {
                 "title",
                 /* taskId= */ 0,
                 "locus",
-                /* isDismissable= */ true,
-                directExecutor(),
-                directExecutor()
+                /* isDismissable= */ true
             ) {}
         inflateBubble(bubble)
         return bubble
@@ -1479,7 +1477,7 @@ class BubbleStackViewTest {
         val intent = Intent(Intent.ACTION_VIEW).setPackage(context.packageName)
         val icon = Icon.createWithResource(context.resources, R.drawable.bubble_ic_overflow_button)
         val bubble =
-            Bubble.createAppBubble(intent, UserHandle(1), icon, directExecutor(), directExecutor())
+            Bubble.createAppBubble(intent, UserHandle(1), icon)
         inflateBubble(bubble)
         return bubble
     }
@@ -1501,7 +1499,9 @@ class BubbleStackViewTest {
             null,
             iconFactory,
             FakeBubbleAppInfoProvider(),
-            false
+            false,
+            directExecutor(),
+            directExecutor()
         )
 
         assertThat(semaphore.tryAcquire(5, TimeUnit.SECONDS)).isTrue()

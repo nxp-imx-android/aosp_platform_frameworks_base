@@ -103,9 +103,6 @@ import com.android.wm.shell.transition.Transitions.TransitionHandler
 import com.android.wm.shell.unfold.ShellUnfoldProgressProvider
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
-import com.google.common.util.concurrent.MoreExecutors.directExecutor
-import java.util.Optional
-import java.util.concurrent.Executor
 import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -124,6 +121,8 @@ import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
+import java.util.Optional
+import java.util.concurrent.Executor
 
 /** Tests for [BubbleController].
  *
@@ -236,7 +235,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 mock<TaskViewRepository>(),
                 bubbleData,
                 taskViewTransitions,
-                bubbleAppInfoProvider
+                bubbleAppInfoProvider,
+                TestSyncExecutor()
             )
 
         bubbleController =
@@ -1048,15 +1048,13 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 "title",
                 taskId,
                 "locus",
-                /* isDismissable= */ true,
-                directExecutor(),
-                directExecutor(),
+                /* isDismissable= */ true
             ) {}
         return bubble
     }
 
     private fun createAppBubble(taskInfo: TaskInfo): Bubble {
-        return Bubble.createTaskBubble(taskInfo, UserHandle.of(0), null, mainExecutor, bgExecutor)
+        return Bubble.createTaskBubble(taskInfo, UserHandle.of(0), null)
     }
 
     private fun createBubbleController(
