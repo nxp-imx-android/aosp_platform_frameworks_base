@@ -23,13 +23,14 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import android.testing.TestableLooper
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE
 import com.android.keyguard.KeyguardSecurityModel
+import com.android.keyguard.KeyguardSecurityModel.SecurityMode
 import com.android.keyguard.KeyguardSecurityModel.SecurityMode.PIN
+import com.android.keyguard.KeyguardSecurityModel.SecurityMode.Password
 import com.android.keyguard.KeyguardSecurityModel.SecurityMode.Pattern
 import com.android.keyguard.KeyguardSecurityModel.SecurityMode.SecureLockDeviceBiometricAuth
 import com.android.keyguard.KeyguardUpdateMonitorCallback
@@ -51,6 +52,10 @@ import com.android.systemui.keyguard.data.repository.fakeTrustRepository
 import com.android.systemui.keyguard.shared.model.AuthenticationFlags
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
+import com.android.systemui.res.R.string.kg_primary_auth_locked_out_password
+import com.android.systemui.res.R.string.kg_primary_auth_locked_out_password_shortlink
+import com.android.systemui.res.R.string.kg_primary_auth_locked_out_pattern
+import com.android.systemui.res.R.string.kg_primary_auth_locked_out_pattern_shortlink
 import com.android.systemui.res.R.string.kg_primary_auth_locked_out_pin
 import com.android.systemui.res.R.string.kg_primary_auth_locked_out_pin_shortlink
 import com.android.systemui.res.R.string.kg_too_many_failed_attempts_countdown
@@ -83,13 +88,80 @@ import org.mockito.Captor
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations
+import platform.test.runner.parameterized.Parameter
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 private const val SYS_BOOT_REASON_PROP = "sys.boot.reason.last"
 private const val REBOOT_MAINLINE_UPDATE = "reboot,mainline_update"
 
+data class Params(
+    val enterCredString: String,
+    val wrongCredString: String,
+    val fpOrCredString: String,
+    val duplicateCredString: String,
+    val lockedOutRes: Int,
+    val lockedOutShortlinkRes: Int,
+    val deviceUpdatedString: String,
+    val tooManyAttemptsString: String,
+    val afterRestartString: String,
+    val afterTimeoutString: String,
+    val afterLockoutString: String,
+    val unattendedUpdateString: String,
+)
+
+private val paramsByMode =
+    mapOf(
+        PIN to
+            Params(
+                enterCredString = "Enter PIN",
+                wrongCredString = "Wrong PIN. Try again.",
+                fpOrCredString = "Unlock with PIN or fingerprint",
+                duplicateCredString = "Already tried that PIN. Try another.",
+                lockedOutRes = kg_primary_auth_locked_out_pin,
+                lockedOutShortlinkRes = kg_primary_auth_locked_out_pin_shortlink,
+                deviceUpdatedString = "Device updated. Enter PIN to continue.",
+                tooManyAttemptsString = "PIN is required after too many attempts",
+                afterRestartString = "PIN is required after device restarts",
+                afterTimeoutString = "Added security required. PIN not used for a while.",
+                afterLockoutString = "PIN is required after lockdown",
+                unattendedUpdateString = "PIN required for additional security",
+            ),
+        Pattern to
+            Params(
+                enterCredString = "Draw pattern",
+                wrongCredString = "Wrong pattern. Try again.",
+                fpOrCredString = "Unlock with pattern or fingerprint",
+                duplicateCredString = "Already tried that pattern. Try another.",
+                lockedOutRes = kg_primary_auth_locked_out_pattern,
+                lockedOutShortlinkRes = kg_primary_auth_locked_out_pattern_shortlink,
+                deviceUpdatedString = "Device updated. Draw pattern to continue.",
+                tooManyAttemptsString = "Pattern is required after too many attempts",
+                afterRestartString = "Pattern is required after device restarts",
+                afterTimeoutString = "Added security required. Pattern not used for a while.",
+                afterLockoutString = "Pattern is required after lockdown",
+                unattendedUpdateString = "Pattern required for additional security",
+            ),
+        Password to
+            Params(
+                enterCredString = "Enter password",
+                wrongCredString = "Wrong password. Try again.",
+                fpOrCredString = "Unlock with password or fingerprint",
+                duplicateCredString = "Already tried that password. Try another.",
+                lockedOutRes = kg_primary_auth_locked_out_password,
+                lockedOutShortlinkRes = kg_primary_auth_locked_out_password_shortlink,
+                deviceUpdatedString = "Device updated. Enter password to continue.",
+                tooManyAttemptsString = "Password is required after too many attempts",
+                afterRestartString = "Password is required after device restarts",
+                afterTimeoutString = "Added security required. Password not used for a while.",
+                afterLockoutString = "Password is required after lockdown",
+                unattendedUpdateString = "Password required for additional security",
+            ),
+    )
+
 @SmallTest
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
-@RunWith(AndroidJUnit4::class)
+@RunWith(ParameterizedAndroidJunit4::class)
 class BouncerMessageInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val countDownTimerCallback = KotlinArgumentCaptor(CountDownTimerCallback::class.java)
@@ -103,12 +175,53 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
 
     private lateinit var underTest: BouncerMessageInteractor
 
+    @field:Parameter(0) lateinit var securityMode: SecurityMode
+
+    private val params
+        get() = paramsByMode[securityMode]!!
+
+    private val enterCredString
+        get() = params.enterCredString
+
+    private val wrongCredString
+        get() = params.wrongCredString
+
+    private val fpOrCredString
+        get() = params.fpOrCredString
+
+    private val duplicateCredString
+        get() = params.duplicateCredString
+
+    private val lockedOutRes
+        get() = params.lockedOutRes
+
+    private val lockedOutShortlinkRes
+        get() = params.lockedOutShortlinkRes
+
+    private val deviceUpdatedString
+        get() = params.deviceUpdatedString
+
+    private val tooManyAttemptsString
+        get() = params.tooManyAttemptsString
+
+    private val afterRestartString
+        get() = params.afterRestartString
+
+    private val afterTimeoutString
+        get() = params.afterTimeoutString
+
+    private val afterLockoutString
+        get() = params.afterLockoutString
+
+    private val unattendedUpdateString
+        get() = params.unattendedUpdateString
+
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
         kosmos.fakeUserRepository.setUserInfos(listOf(PRIMARY_USER))
         allowTestableLooperAsMainThread()
-        whenever(securityModel.getSecurityMode(eq(PRIMARY_USER_ID))).thenReturn(PIN)
+        whenever(securityModel.getSecurityMode(eq(PRIMARY_USER_ID))).thenReturn(securityMode)
         biometricSettingsRepository.setIsFingerprintAuthCurrentlyAllowed(true)
         overrideResource(kg_trust_agent_disabled, "Trust agent is unavailable")
     }
@@ -201,15 +314,13 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun initialMessage_pin() =
+    fun initialMessage_cred() =
         testScope.runTest {
             init(fingerprintAuthCurrentlyAllowed = false)
             val bouncerMessage by collectLastValue(underTest.bouncerMessage)
-            kosmos.fakeKeyguardBouncerRepository.setLastShownSecurityMode(
-                KeyguardSecurityModel.SecurityMode.PIN
-            )
+            kosmos.fakeKeyguardBouncerRepository.setLastShownSecurityMode(securityMode)
             assertThat(bouncerMessage).isNotNull()
-            assertThat(primaryResMessage(bouncerMessage)).isEqualTo("Enter PIN")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(enterCredString)
         }
 
     @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
@@ -226,9 +337,8 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             runCurrent()
 
             val expectedTitle = resString(R.string.kg_prompt_title_after_secure_lock_device)
-            val expectedSubtitle = resString(R.string.keyguard_enter_pin)
             assertThat(primaryResMessage(bouncerMessage)).isEqualTo(expectedTitle)
-            assertThat(secondaryResMessage(bouncerMessage)).isEqualTo(expectedSubtitle)
+            assertThat(secondaryResMessage(bouncerMessage)).isEqualTo(enterCredString)
         }
 
     @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
@@ -302,7 +412,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun onPrimaryAuthMethodChangeFromPinToPattern_initialMessageUpdates() =
+    fun onPrimaryAuthMethodChangeToPattern_initialMessageUpdates() =
         testScope.runTest {
             init(fingerprintAuthCurrentlyAllowed = false)
             val bouncerMessage by collectLastValue(underTest.bouncerMessage)
@@ -320,7 +430,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             underTest.onPrimaryAuthIncorrectAttempt(isDuplicate = false)
 
             assertThat(bouncerMessage).isNotNull()
-            assertThat(primaryResMessage(bouncerMessage)).isEqualTo("Wrong PIN. Try again.")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(wrongCredString)
         }
 
     @Test
@@ -331,8 +441,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             underTest.onPrimaryAuthIncorrectAttempt(isDuplicate = true)
 
             assertThat(bouncerMessage).isNotNull()
-            assertThat(primaryResMessage(bouncerMessage))
-                .isEqualTo("Already tried that PIN. Try another.")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(duplicateCredString)
         }
 
     @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
@@ -350,9 +459,8 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
 
             assertThat(bouncerMessage).isNotNull()
             val expectedTitle = resString(R.string.kg_prompt_title_after_secure_lock_device)
-            val expectedSubtitle = resString(R.string.kg_wrong_pin_try_again)
             assertThat(primaryResMessage(bouncerMessage)).isEqualTo(expectedTitle)
-            assertThat(secondaryResMessage(bouncerMessage)).isEqualTo(expectedSubtitle)
+            assertThat(secondaryResMessage(bouncerMessage)).isEqualTo(wrongCredString)
         }
 
     @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
@@ -370,9 +478,8 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
 
             assertThat(bouncerMessage).isNotNull()
             val expectedTitle = resString(R.string.kg_prompt_title_after_secure_lock_device)
-            val expectedSubtitle = resString(R.string.kg_primary_auth_duplicate_guess_pin)
             assertThat(primaryResMessage(bouncerMessage)).isEqualTo(expectedTitle)
-            assertThat(secondaryResMessage(bouncerMessage)).isEqualTo(expectedSubtitle)
+            assertThat(secondaryResMessage(bouncerMessage)).isEqualTo(duplicateCredString)
         }
 
     @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
@@ -425,12 +532,11 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             init()
             val bouncerMessage by collectLastValue(underTest.bouncerMessage)
             underTest.onPrimaryAuthIncorrectAttempt(isDuplicate = false)
-            assertThat(primaryResMessage(bouncerMessage)).isEqualTo("Wrong PIN. Try again.")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(wrongCredString)
 
             underTest.onPrimaryBouncerUserInput()
 
-            assertThat(primaryResMessage(bouncerMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(fpOrCredString)
         }
 
     @Test
@@ -441,13 +547,11 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
 
             underTest.setCustomMessage("not empty")
 
-            assertThat(primaryResMessage(bouncerMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(fpOrCredString)
             assertThat(bouncerMessage?.secondaryMessage?.message).isEqualTo("not empty")
 
             underTest.setCustomMessage(null)
-            assertThat(primaryResMessage(bouncerMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(fpOrCredString)
             assertThat(bouncerMessage?.secondaryMessage?.message).isNull()
         }
 
@@ -459,13 +563,11 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
 
             underTest.setFaceAcquisitionMessage("not empty")
 
-            assertThat(primaryResMessage(bouncerMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(fpOrCredString)
             assertThat(bouncerMessage?.secondaryMessage?.message).isEqualTo("not empty")
 
             underTest.setFaceAcquisitionMessage(null)
-            assertThat(primaryResMessage(bouncerMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(fpOrCredString)
             assertThat(bouncerMessage?.secondaryMessage?.message).isNull()
         }
 
@@ -478,8 +580,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
 
             underTest.setFaceAcquisitionMessage("not empty")
 
-            assertThat(primaryResMessage(bouncerMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(fpOrCredString)
             assertThat(bouncerMessage?.secondaryMessage?.message).isEqualTo("not empty")
 
             keyguardUpdateMonitorCaptor.value.onBiometricAcquired(
@@ -487,8 +588,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
                 BiometricFaceConstants.FACE_ACQUIRED_START,
             )
 
-            assertThat(primaryResMessage(bouncerMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(fpOrCredString)
             assertThat(bouncerMessage?.secondaryMessage?.message).isNull()
         }
 
@@ -501,8 +601,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
 
             underTest.setFingerprintAcquisitionMessage("not empty")
 
-            assertThat(primaryResMessage(bouncerMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(fpOrCredString)
             assertThat(bouncerMessage?.secondaryMessage?.message).isEqualTo("not empty")
 
             keyguardUpdateMonitorCaptor.value.onBiometricAcquired(
@@ -510,8 +609,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
                 BiometricFaceConstants.FACE_ACQUIRED_START,
             )
 
-            assertThat(primaryResMessage(bouncerMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(fpOrCredString)
             assertThat(bouncerMessage?.secondaryMessage?.message).isEqualTo("not empty")
         }
 
@@ -523,13 +621,11 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
 
             underTest.setFingerprintAcquisitionMessage("not empty")
 
-            assertThat(primaryResMessage(bouncerMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(fpOrCredString)
             assertThat(bouncerMessage?.secondaryMessage?.message).isEqualTo("not empty")
 
             underTest.setFingerprintAcquisitionMessage(null)
-            assertThat(primaryResMessage(bouncerMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(fpOrCredString)
             assertThat(bouncerMessage?.secondaryMessage?.message).isNull()
         }
 
@@ -556,7 +652,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             assertThat(primaryMessage.formatterArgs).isEqualTo(mapOf(Pair("count", 2L)))
 
             val secondaryMessage = bouncerMessage!!.secondaryMessage!!
-            assertThat(secondaryMessage.messageResId!!).isEqualTo(kg_primary_auth_locked_out_pin)
+            assertThat(secondaryMessage.messageResId!!).isEqualTo(lockedOutRes)
             assertThat(secondaryMessage.formatterArgs).isNull()
         }
 
@@ -581,8 +677,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             assertThat(primaryMessage.formatterArgs).isEqualTo(mapOf(Pair("count", 2L)))
 
             val secondaryMessage = bouncerMessage!!.secondaryMessage!!
-            assertThat(secondaryMessage.messageResId!!)
-                .isEqualTo(kg_primary_auth_locked_out_pin_shortlink)
+            assertThat(secondaryMessage.messageResId!!).isEqualTo(lockedOutShortlinkRes)
             val expectedShortlink =
                 resString(com.android.internal.R.string.config_lockscreenLockoutShortlink)
             assertThat(expectedShortlink).isNotEmpty()
@@ -611,7 +706,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             assertThat(primaryMessage.formatterArgs).isEqualTo(mapOf(Pair("count", 2L)))
 
             val secondaryMessage = bouncerMessage!!.secondaryMessage!!
-            assertThat(secondaryMessage.messageResId!!).isEqualTo(kg_primary_auth_locked_out_pin)
+            assertThat(secondaryMessage.messageResId!!).isEqualTo(lockedOutRes)
             assertThat(secondaryMessage.formatterArgs).isNull()
         }
 
@@ -638,8 +733,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             assertThat(primaryMessage.formatterArgs).isEqualTo(mapOf(Pair("count", 2L)))
 
             val secondaryMessage = bouncerMessage!!.secondaryMessage!!
-            assertThat(secondaryMessage.messageResId!!)
-                .isEqualTo(kg_primary_auth_locked_out_pin_shortlink)
+            assertThat(secondaryMessage.messageResId!!).isEqualTo(lockedOutShortlinkRes)
             val expectedShortlink =
                 resString(com.android.internal.R.string.config_lockscreenLockoutShortlink)
             assertThat(expectedShortlink).isNotEmpty()
@@ -734,8 +828,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
 
             countDownTimerCallback.value.onFinish()
 
-            assertThat(primaryResMessage(bouncerMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(fpOrCredString)
             assertThat(bouncerMessage?.secondaryMessage?.message).isNull()
         }
 
@@ -752,16 +845,14 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             kosmos.fakeDeviceEntryFaceAuthRepository.setLockedOut(true)
             runCurrent()
 
-            assertThat(primaryResMessage(lockoutMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(lockoutMessage)).isEqualTo(fpOrCredString)
             assertThat(secondaryResMessage(lockoutMessage))
                 .isEqualTo("Can’t unlock with face. Too many attempts.")
 
             kosmos.fakeDeviceEntryFaceAuthRepository.setLockedOut(false)
             runCurrent()
 
-            assertThat(primaryResMessage(lockoutMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(lockoutMessage)).isEqualTo(fpOrCredString)
             assertThat(lockoutMessage?.secondaryMessage?.message).isNull()
         }
 
@@ -778,8 +869,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             val bouncerMessage by collectLastValue(underTest.bouncerMessage)
             kosmos.fakeDeviceEntryFaceAuthRepository.setLockedOut(true)
             runCurrent()
-            assertThat(primaryResMessage(bouncerMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(fpOrCredString)
             assertThat(secondaryResMessage(bouncerMessage))
                 .isEqualTo("Can’t unlock with face. Too many attempts.")
 
@@ -787,8 +877,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             keyguardUpdateMonitorCaptor.value.onBiometricAuthFailed(BiometricSourceType.FACE)
 
             // THEN lockout message does NOT update to face failure message
-            assertThat(primaryResMessage(bouncerMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(fpOrCredString)
             assertThat(secondaryResMessage(bouncerMessage))
                 .isEqualTo("Can’t unlock with face. Too many attempts.")
         }
@@ -803,8 +892,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             kosmos.fakeDeviceEntryFaceAuthRepository.setLockedOut(true)
             runCurrent()
 
-            assertThat(primaryResMessage(lockoutMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(lockoutMessage)).isEqualTo(fpOrCredString)
             assertThat(lockoutMessage?.secondaryMessage?.message).isNull()
             assertThat(lockoutMessage?.secondaryMessage?.messageResId).isEqualTo(0)
         }
@@ -827,10 +915,9 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             kosmos.fakeDeviceEntryFaceAuthRepository.setLockedOut(true)
             runCurrent()
             val expectedTitle = resString(R.string.kg_prompt_title_after_secure_lock_device)
-            val expectedSubtitle = resString(R.string.kg_bio_too_many_attempts_pin)
 
             assertThat(primaryResMessage(bouncerMessage)).isEqualTo(expectedTitle)
-            assertThat(secondaryResMessage(bouncerMessage)).isEqualTo(expectedSubtitle)
+            assertThat(secondaryResMessage(bouncerMessage)).isEqualTo(tooManyAttemptsString)
         }
 
     @Test
@@ -847,15 +934,13 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             kosmos.fakeDeviceEntryFaceAuthRepository.setLockedOut(true)
             runCurrent()
 
-            assertThat(primaryResMessage(lockoutMessage)).isEqualTo("Enter PIN")
-            assertThat(secondaryResMessage(lockoutMessage))
-                .isEqualTo("PIN is required after too many attempts")
+            assertThat(primaryResMessage(lockoutMessage)).isEqualTo(enterCredString)
+            assertThat(secondaryResMessage(lockoutMessage)).isEqualTo(tooManyAttemptsString)
 
             kosmos.fakeDeviceEntryFaceAuthRepository.setLockedOut(false)
             runCurrent()
 
-            assertThat(primaryResMessage(lockoutMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(lockoutMessage)).isEqualTo(fpOrCredString)
             assertThat(lockoutMessage?.secondaryMessage?.message).isNull()
         }
 
@@ -868,15 +953,13 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             kosmos.fakeDeviceEntryFingerprintAuthRepository.setLockedOut(true)
             runCurrent()
 
-            assertThat(primaryResMessage(lockedOutMessage)).isEqualTo("Enter PIN")
-            assertThat(secondaryResMessage(lockedOutMessage))
-                .isEqualTo("PIN is required after too many attempts")
+            assertThat(primaryResMessage(lockedOutMessage)).isEqualTo(enterCredString)
+            assertThat(secondaryResMessage(lockedOutMessage)).isEqualTo(tooManyAttemptsString)
 
             kosmos.fakeDeviceEntryFingerprintAuthRepository.setLockedOut(false)
             runCurrent()
 
-            assertThat(primaryResMessage(lockedOutMessage))
-                .isEqualTo("Unlock with PIN or fingerprint")
+            assertThat(primaryResMessage(lockedOutMessage)).isEqualTo(fpOrCredString)
             assertThat(lockedOutMessage?.secondaryMessage?.message).isNull()
         }
 
@@ -897,10 +980,9 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             kosmos.fakeDeviceEntryFingerprintAuthRepository.setLockedOut(true)
             runCurrent()
             val expectedTitle = resString(R.string.kg_prompt_title_after_secure_lock_device)
-            val expectedSubtitle = resString(R.string.kg_bio_too_many_attempts_pin)
 
             assertThat(primaryResMessage(bouncerMessage)).isEqualTo(expectedTitle)
-            assertThat(secondaryResMessage(bouncerMessage)).isEqualTo(expectedSubtitle)
+            assertThat(secondaryResMessage(bouncerMessage)).isEqualTo(tooManyAttemptsString)
         }
 
     @Test
@@ -912,7 +994,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             kosmos.fakeDeviceEntryFingerprintAuthRepository.setLockedOut(true)
             runCurrent()
 
-            assertThat(primaryResMessage(lockoutMessage)).isEqualTo("Enter PIN")
+            assertThat(primaryResMessage(lockoutMessage)).isEqualTo(enterCredString)
             assertThat(lockoutMessage?.secondaryMessage?.message).isNull()
             assertThat(lockoutMessage?.secondaryMessage?.messageResId).isEqualTo(0)
         }
@@ -1080,7 +1162,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
 
             runCurrent()
 
-            assertThat(primaryResMessage(lockedOutMessage)).isEqualTo("Enter PIN")
+            assertThat(primaryResMessage(lockedOutMessage)).isEqualTo(enterCredString)
         }
 
     @Test
@@ -1091,7 +1173,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
 
             verifyMessagesForAuthFlag(
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_BOOT to
-                    Pair("Enter PIN", "Device updated. Enter PIN to continue.")
+                    Pair(enterCredString, deviceUpdatedString)
             )
         }
 
@@ -1108,7 +1190,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             kosmos.fakeTrustRepository.setTrustUsuallyManaged(false)
             runCurrent()
 
-            val defaultMessage = Pair("Enter PIN", null)
+            val defaultMessage = Pair(enterCredString, null)
 
             verifyMessagesForAuthFlag(
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_BOOT to
@@ -1128,7 +1210,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_FOR_UNATTENDED_UPDATE to
                     defaultMessage,
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_DPM_LOCK_NOW to
-                    Pair("Enter PIN", "For added security, device was locked by work policy"),
+                    Pair(enterCredString, "For added security, device was locked by work policy"),
             )
         }
 
@@ -1147,28 +1229,28 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             kosmos.fakeTrustRepository.setCurrentUserTrustManaged(true)
             kosmos.fakeTrustRepository.setTrustUsuallyManaged(true)
 
-            val defaultMessage = Pair("Enter PIN", null)
+            val defaultMessage = Pair(enterCredString, null)
 
             verifyMessagesForAuthFlag(
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_NOT_REQUIRED to defaultMessage,
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_BOOT to
-                    Pair("Enter PIN", "PIN is required after device restarts"),
+                    Pair(enterCredString, afterRestartString),
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_TIMEOUT to
-                    Pair("Enter PIN", "Added security required. PIN not used for a while."),
+                    Pair(enterCredString, afterTimeoutString),
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_DPM_LOCK_NOW to
-                    Pair("Enter PIN", "For added security, device was locked by work policy"),
+                    Pair(enterCredString, "For added security, device was locked by work policy"),
                 LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_USER_REQUEST to
-                    Pair("Enter PIN", "Trust agent is unavailable"),
+                    Pair(enterCredString, "Trust agent is unavailable"),
                 LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_TRUSTAGENT_EXPIRED to
-                    Pair("Enter PIN", "Trust agent is unavailable"),
+                    Pair(enterCredString, "Trust agent is unavailable"),
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN to
-                    Pair("Enter PIN", "PIN is required after lockdown"),
+                    Pair(enterCredString, afterLockoutString),
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_FOR_UNATTENDED_UPDATE to
-                    Pair("Enter PIN", "PIN required for additional security"),
+                    Pair(enterCredString, unattendedUpdateString),
                 LockPatternUtils.StrongAuthTracker
                     .STRONG_AUTH_REQUIRED_AFTER_NON_STRONG_BIOMETRICS_TIMEOUT to
                     Pair(
-                        "Enter PIN",
+                        enterCredString,
                         "Added security required. Device wasn’t unlocked for a while.",
                     ),
             )
@@ -1185,7 +1267,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             kosmos.fakeUserRepository.setSelectedUserInfo(PRIMARY_USER)
             kosmos.fakeTrustRepository.setTrustUsuallyManaged(false)
 
-            val defaultMessage = Pair("Enter PIN", null)
+            val defaultMessage = Pair(enterCredString, null)
 
             verifyMessagesForAuthFlag(
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_NOT_REQUIRED to defaultMessage,
@@ -1196,19 +1278,19 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
                 LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_TRUSTAGENT_EXPIRED to
                     defaultMessage,
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_BOOT to
-                    Pair("Enter PIN", "PIN is required after device restarts"),
+                    Pair(enterCredString, afterRestartString),
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_TIMEOUT to
-                    Pair("Enter PIN", "Added security required. PIN not used for a while."),
+                    Pair(enterCredString, afterTimeoutString),
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_DPM_LOCK_NOW to
-                    Pair("Enter PIN", "For added security, device was locked by work policy"),
+                    Pair(enterCredString, "For added security, device was locked by work policy"),
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN to
-                    Pair("Enter PIN", "PIN is required after lockdown"),
+                    Pair(enterCredString, afterLockoutString),
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_FOR_UNATTENDED_UPDATE to
-                    Pair("Enter PIN", "PIN required for additional security"),
+                    Pair(enterCredString, unattendedUpdateString),
                 LockPatternUtils.StrongAuthTracker
                     .STRONG_AUTH_REQUIRED_AFTER_NON_STRONG_BIOMETRICS_TIMEOUT to
                     Pair(
-                        "Enter PIN",
+                        enterCredString,
                         "Added security required. Device wasn’t unlocked for a while.",
                     ),
             )
@@ -1224,30 +1306,30 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
 
             verifyMessagesForAuthFlag(
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_NOT_REQUIRED to
-                    Pair("Unlock with PIN or fingerprint", null)
+                    Pair(fpOrCredString, null)
             )
             biometricSettingsRepository.setIsFingerprintAuthCurrentlyAllowed(false)
             runCurrent()
 
             verifyMessagesForAuthFlag(
                 LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_USER_REQUEST to
-                    Pair("Enter PIN", null),
+                    Pair(enterCredString, null),
                 LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_TRUSTAGENT_EXPIRED to
-                    Pair("Enter PIN", null),
+                    Pair(enterCredString, null),
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_BOOT to
-                    Pair("Enter PIN", "PIN is required after device restarts"),
+                    Pair(enterCredString, afterRestartString),
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_TIMEOUT to
-                    Pair("Enter PIN", "Added security required. PIN not used for a while."),
+                    Pair(enterCredString, afterTimeoutString),
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_DPM_LOCK_NOW to
-                    Pair("Enter PIN", "For added security, device was locked by work policy"),
+                    Pair(enterCredString, "For added security, device was locked by work policy"),
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN to
-                    Pair("Enter PIN", "PIN is required after lockdown"),
+                    Pair(enterCredString, afterLockoutString),
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_FOR_UNATTENDED_UPDATE to
-                    Pair("Enter PIN", "PIN required for additional security"),
+                    Pair(enterCredString, unattendedUpdateString),
                 LockPatternUtils.StrongAuthTracker
                     .STRONG_AUTH_REQUIRED_AFTER_NON_STRONG_BIOMETRICS_TIMEOUT to
                     Pair(
-                        "Enter PIN",
+                        enterCredString,
                         "Added security required. Device wasn’t unlocked for a while.",
                     ),
             )
@@ -1299,5 +1381,9 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
                 /* name= */ "primary user",
                 /* flags= */ UserInfo.FLAG_PRIMARY,
             )
+
+        @JvmStatic
+        @Parameters(name = "securityMode={0}")
+        fun data() = listOf(arrayOf(PIN), arrayOf(Pattern), arrayOf(Password))
     }
 }
