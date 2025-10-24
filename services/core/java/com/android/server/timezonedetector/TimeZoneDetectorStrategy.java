@@ -103,9 +103,9 @@ import java.lang.annotation.Target;
  * @hide
  */
 public interface TimeZoneDetectorStrategy extends Dumpable {
-    @IntDef({ ORIGIN_UNKNOWN, ORIGIN_MANUAL, ORIGIN_TELEPHONY, ORIGIN_LOCATION })
+    @IntDef({ORIGIN_UNKNOWN, ORIGIN_MANUAL, ORIGIN_TELEPHONY, ORIGIN_LOCATION, ORIGIN_FUSED})
     @Retention(RetentionPolicy.SOURCE)
-    @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+    @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @interface Origin {}
 
     /** Used when the origin of the time zone value cannot be inferred. */
@@ -119,6 +119,9 @@ public interface TimeZoneDetectorStrategy extends Dumpable {
 
     /** Used when a time zone value originated from a location signal. */
     @Origin int ORIGIN_LOCATION = 3;
+
+    /** Used when a time zone value originated from the fused time zone detector. */
+    @Origin int ORIGIN_FUSED = 4;
 
     /**
      * Adds a listener that will be triggered when something changes that could affect the result
