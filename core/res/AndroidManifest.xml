@@ -905,6 +905,19 @@
         android:description="@string/permdesc_writeContacts"
       android:protectionLevel="dangerous" />
 
+    <!--Allows privileged applications to get details about contact picker sessions,
+        including reading and writing sessions.
+        <p>This permission is only granted to system apps.
+        <p>Protection level: signature|privileged
+        @SystemApi
+        @hide
+        @FlaggedApi(android.content.flags.Flags.FLAG_ENABLE_SYSTEM_CONTACTS_PICKER)
+     -->
+    <permission
+        android:name="android.permission.MANAGE_CONTACTS_PICKER_SESSION"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.content.flags.enable_system_contacts_picker" />
+
     <!-- Allows an app to update the verification status of E2EE contact keys owned by other apps.
         <p>This permission is only granted to system apps.
         <p>Protection level: signature|privileged

@@ -12163,6 +12163,7 @@ package android.content {
     field public static final String EXTRA_USER = "android.intent.extra.USER";
     field public static final String EXTRA_USER_INITIATED = "android.intent.extra.USER_INITIATED";
     field public static final String EXTRA_USE_STYLUS_MODE = "android.intent.extra.USE_STYLUS_MODE";
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String EXTRA_USE_SYSTEM_CONTACTS_PICKER = "android.intent.extra.USE_SYSTEM_CONTACTS_PICKER";
     field public static final int FILL_IN_ACTION = 1; // 0x1
     field public static final int FILL_IN_CATEGORIES = 4; // 0x4
     field public static final int FILL_IN_CLIP_DATA = 128; // 0x80
@@ -38601,6 +38602,19 @@ package android.provider {
     method public static void set(android.content.ContentProviderClient, android.accounts.Account, byte[]) throws android.os.RemoteException;
     field public static final String CONTENT_DIRECTORY = "syncstate";
     field public static final android.net.Uri CONTENT_URI;
+  }
+
+  @FlaggedApi("android.content.flags.enable_system_contacts_picker") public final class ContactsPickerSessionContract {
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String ACTION_PICK_CONTACTS = "android.provider.action.PICK_CONTACTS";
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String AUTHORITY = "com.android.contacts.picker.sessions";
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") @NonNull public static final android.net.Uri AUTHORITY_URI;
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String EXTRA_PICK_CONTACTS_REQUESTED_DATA_FIELDS = "android.provider.extra.PICK_CONTACTS_REQUESTED_DATA_FIELDS";
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String EXTRA_PICK_CONTACTS_SELECTION_LIMIT = "android.provider.extra.PICK_CONTACTS_SELECTION_LIMIT";
+  }
+
+  @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final class ContactsPickerSessionContract.Session implements android.provider.BaseColumns {
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String CONTENT_TYPE = "vnd.android.cursor.dir/data";
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") @NonNull public static final android.net.Uri CONTENT_URI;
   }
 
   public final class DocumentsContract {
