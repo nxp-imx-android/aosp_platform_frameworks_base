@@ -642,7 +642,7 @@ static jlong android_os_Debug_getFreeZramKb(JNIEnv* env, jobject clazz) {
 
 static jlong android_os_Debug_getDmabufTotalExportedKb(JNIEnv* env, jobject clazz) {
     if (dmabufinfo::DmabufPerBufferStats stats; dmabufinfo::GetDmabufPerBufferStats(stats)) {
-        return stats.total_size();
+        return stats.total_size() / 1024;
     }
 
     return -1;
