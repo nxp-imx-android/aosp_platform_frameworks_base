@@ -41,8 +41,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,6 +55,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
@@ -141,7 +144,7 @@ constructor(
 
     override val userActions: Flow<Map<UserAction, UserActionResult>> = actionsViewModel.actions
 
-    override val alwaysCompose: Boolean = false
+    override val alwaysCompose: Boolean = true
 
     @Composable
     override fun ContentScope.Content(modifier: Modifier) {
@@ -243,10 +246,11 @@ private fun ContentScope.SingleShade(
             key = QuickSettings.SharedValues.TilesSquishiness,
             canOverflow = false,
         )
-
-    LaunchedEffect(Unit) {
+    LaunchedEffectWithLifecycle(Unit) {
         snapshotFlow { tileSquishiness }.collect { viewModel.setTileSquishiness(it) }
     }
+
+    LaunchedEffectWithLifecycle(Unit) { viewModel.detectShadeModeChanges() }
 
     val shouldPunchHoleBehindScrim =
         layoutState.isTransitioningBetween(Scenes.Gone, Scenes.Shade) ||
@@ -300,21 +304,31 @@ private fun ContentScope.SingleShade(
                         Modifier.element(QuickSettings.Elements.QuickQuickSettingsAndMedia)
                             .padding(bottom = qqsLayoutPaddingBottom)
                             .padding(horizontal = qsHorizontalMargin),
-                    tiles = {
-                        Box {
-                            val qqsViewModel =
-                                rememberViewModel(traceName = "shade_scene_qqs") {
-                                    viewModel.quickQuickSettingsViewModel.create()
-                                }
-                            if (viewModel.isQsEnabled) {
-                                QuickQuickSettings(
-                                    qqsViewModel,
-                                    listening = { true },
-                                    modifier = Modifier.sysuiResTag("quick_qs_panel"),
-                                )
+                    tiles =
+                        @Composable {
+                            // Because the ShadeScene is always composed, we need to manually tell
+                            // the tiles when they're actually visible and should be listening, just
+                            // like in the [QuickSettingsContent] Composable.
+                            var listening by remember { mutableStateOf(false) }
+                            LifecycleStartEffect(Unit) {
+                                listening = true
+
+                                onStopOrDispose { listening = false }
                             }
-                        }
-                    },
+                            Box {
+                                val qqsViewModel =
+                                    rememberViewModel(traceName = "shade_scene_qqs") {
+                                        viewModel.quickQuickSettingsViewModel.create()
+                                    }
+                                if (viewModel.isQsEnabled) {
+                                    QuickQuickSettings(
+                                        qqsViewModel,
+                                        listening = { listening },
+                                        modifier = Modifier.sysuiResTag("quick_qs_panel"),
+                                    )
+                                }
+                            }
+                        },
                     media = {
                         if (isAlwaysComposedContentVisible()) {
                             if (viewModel.isQsEnabled && viewModel.showMedia) {
