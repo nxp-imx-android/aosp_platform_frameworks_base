@@ -633,7 +633,7 @@ class SceneFrameworkIntegrationTest : SysuiTestCase() {
      * power button press that wakes up the device but is then expected to be in the locked state.
      */
     private suspend fun Kosmos.lockDevice() {
-        val authMethod = authenticationInteractor.getAuthenticationMethod()
+        val authMethod = currentValue(authenticationInteractor.authenticationMethod)
         assertWithMessage("The authentication method of $authMethod is not secure, cannot lock!")
             .that(authMethod.isSecure)
             .isTrue()

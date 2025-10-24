@@ -188,7 +188,7 @@ constructor(
         } else {
             // Only show if there is a secure screen (password/pin/pattern/SIM pin/SIM puk).
             withContext(backgroundDispatcher) {
-                authenticationInteractor.getAuthenticationMethod().isSecure
+                authenticationInteractor.authenticationMethod.value.isSecure
             }
         }
     }

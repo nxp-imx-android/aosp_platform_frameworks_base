@@ -64,12 +64,10 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             val authMethod by collectLastValue(underTest.authenticationMethod)
             runCurrent()
             assertThat(authMethod).isEqualTo(Pin)
-            assertThat(underTest.getAuthenticationMethod()).isEqualTo(Pin)
 
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
 
             assertThat(authMethod).isEqualTo(Password)
-            assertThat(underTest.getAuthenticationMethod()).isEqualTo(Password)
         }
 
     @Test
@@ -81,7 +79,6 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(None)
 
             assertThat(authMethod).isEqualTo(None)
-            assertThat(underTest.getAuthenticationMethod()).isEqualTo(None)
         }
 
     @Test

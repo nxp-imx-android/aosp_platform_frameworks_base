@@ -289,9 +289,9 @@ constructor(
      * Returns `true` if the device currently requires authentication before entry is granted;
      * `false` if the device can be entered without authenticating first.
      */
-    suspend fun isAuthenticationRequired(): Boolean {
+    fun isAuthenticationRequired(): Boolean {
         return !deviceUnlockedInteractor.get().deviceUnlockStatus.value.isUnlocked &&
-            authenticationInteractor.get().getAuthenticationMethod().isSecure
+            authenticationInteractor.get().authenticationMethod.value.isSecure
     }
 
     /**
