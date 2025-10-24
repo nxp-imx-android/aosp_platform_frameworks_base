@@ -12,6 +12,7 @@ per-file AppProfiler.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file ForegroundServiceTypeLoggerModule.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file AppRestrictionController.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file ConnectionRecord.java = file:/ACTIVITY_MANAGER_OWNERS
+per-file ActiveUids.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file UidRecord.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file IntentBindRecord.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file AppFGSTracker.java = file:/ACTIVITY_MANAGER_OWNERS
