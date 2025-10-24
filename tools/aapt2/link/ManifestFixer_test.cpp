@@ -1709,4 +1709,57 @@ TEST_F(ManifestFixerTest, DoNothingForOtherConfigChanges) {
   attr = el->FindAttribute(xml::kSchemaAndroid, "configChanges");
   ASSERT_THAT(attr->value, "testConfigChange2");
 }
+
+TEST_F(ManifestFixerTest, PermissionPurposeTagsAreAllowed) {
+  // Verifies that <specific-purpose> is a valid child of <uses-permission>.
+  std::string input = R"(
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="android">
+      <uses-permission android:name="android.permission.INTERNET">
+        <specific-purpose />
+      </uses-permission>
+    </manifest>)";
+  EXPECT_THAT(Verify(input), NotNull());
+
+  // Verifies that <specific-purpose> is a valid child of <uses-permission-sdk-23>.
+  input = R"(
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="android">
+      <uses-permission-sdk-23 android:name="android.permission.INTERNET">
+        <specific-purpose />
+      </uses-permission-sdk-23>
+    </manifest>)";
+  EXPECT_THAT(Verify(input), NotNull());
+
+  // Verifies that <valid-specific-purpose> is a valid child of <permission>
+  // and has a non-empty name attribute.
+  input = R"(
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="android">
+      <permission android:name="my.permission">
+        <valid-specific-purpose android:name="foo" />
+      </permission>
+    </manifest>)";
+  EXPECT_THAT(Verify(input), NotNull());
+
+  // Verifies that <valid-specific-purpose> must have a name attribute.
+  input = R"(
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="android">
+      <permission android:name="my.permission">
+        <valid-specific-purpose />
+      </permission>
+    </manifest>)";
+  EXPECT_THAT(Verify(input), IsNull());
+
+  // Verifies that the name attribute of <valid-specific-purpose> must not be empty.
+  input = R"(
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="android">
+      <permission android:name="my.permission">
+        <valid-specific-purpose android:name="" />
+      </permission>
+    </manifest>)";
+  EXPECT_THAT(Verify(input), IsNull());
+}
 }  // namespace aapt
