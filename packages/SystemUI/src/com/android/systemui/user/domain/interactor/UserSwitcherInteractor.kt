@@ -66,7 +66,7 @@ import com.android.systemui.user.shared.model.UserModel
 import com.android.systemui.user.utils.MultiUserActionsEvent
 import com.android.systemui.user.utils.MultiUserActionsEventHelper
 import com.android.systemui.util.kotlin.pairwise
-import com.android.systemui.utils.UserRestrictionChecker
+import com.android.systemui.util.policy.UserRestrictionChecker
 import java.io.PrintWriter
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher

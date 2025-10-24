@@ -23,8 +23,8 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.user.data.repository.UserRepository
-import com.android.systemui.utils.PolicyRestriction
-import com.android.systemui.utils.UserRestrictionChecker
+import com.android.systemui.util.policy.PolicyRestriction
+import com.android.systemui.util.policy.UserRestrictionChecker
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow

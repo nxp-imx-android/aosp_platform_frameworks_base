@@ -17,7 +17,7 @@
 package com.android.systemui.brightness.data.repository
 
 import com.android.settingslib.RestrictedLockUtils
-import com.android.systemui.utils.PolicyRestriction
+import com.android.systemui.util.policy.PolicyRestriction
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 

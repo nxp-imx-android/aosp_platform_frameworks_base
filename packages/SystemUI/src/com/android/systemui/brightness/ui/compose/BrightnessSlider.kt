@@ -91,7 +91,6 @@ import com.android.systemui.brightness.ui.compose.AnimationSpecs.IconAppearSpec
 import com.android.systemui.brightness.ui.compose.AnimationSpecs.IconDisappearSpec
 import com.android.systemui.brightness.ui.compose.InternalDimensions.IconPadding
 import com.android.systemui.brightness.ui.compose.InternalDimensions.IconSize
-import com.android.systemui.brightness.ui.compose.InternalDimensions.SliderBackgroundFrameWidth
 import com.android.systemui.brightness.ui.compose.InternalDimensions.SliderBackgroundRoundedCorner
 import com.android.systemui.brightness.ui.compose.InternalDimensions.SliderTrackRoundedCorner
 import com.android.systemui.brightness.ui.compose.InternalDimensions.ThumbTrackGapSize
@@ -105,7 +104,7 @@ import com.android.systemui.haptics.slider.compose.ui.SliderHapticsViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.qs.ui.compose.borderOnFocus
 import com.android.systemui.res.R
-import com.android.systemui.utils.PolicyRestriction
+import com.android.systemui.util.policy.PolicyRestriction
 import platform.test.motion.compose.values.MotionTestValueKey
 import platform.test.motion.compose.values.motionTestValues
 

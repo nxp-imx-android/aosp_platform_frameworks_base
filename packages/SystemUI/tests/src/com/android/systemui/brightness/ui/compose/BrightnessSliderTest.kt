@@ -39,7 +39,7 @@ import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.haptics.slider.sliderHapticsViewModelFactory
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
-import com.android.systemui.utils.PolicyRestriction
+import com.android.systemui.util.policy.PolicyRestriction
 import java.util.Locale
 import org.junit.Rule
 import org.junit.Test

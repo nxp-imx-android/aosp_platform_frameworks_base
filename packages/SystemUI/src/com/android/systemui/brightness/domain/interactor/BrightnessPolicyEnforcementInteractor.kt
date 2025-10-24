@@ -20,7 +20,7 @@ import com.android.settingslib.RestrictedLockUtils
 import com.android.systemui.brightness.data.repository.BrightnessPolicyRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.plugins.ActivityStarter
-import com.android.systemui.utils.PolicyRestriction
+import com.android.systemui.util.policy.PolicyRestriction
 import javax.inject.Inject
 
 /** Interactor for enforcing the policy that may disallow brightness changing. */
