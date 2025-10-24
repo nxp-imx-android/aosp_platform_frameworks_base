@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.systemui.util.policy
+package com.android.systemui.util.policy.impl
 
 import android.content.Context
 import com.android.settingslib.RestrictedLockUtils
 import com.android.settingslib.RestrictedLockUtilsInternal
+import com.android.systemui.util.policy.UserRestrictionChecker
 import javax.inject.Inject
 
 /** Proxy to call [RestrictedLockUtilsInternal] */
-class UserRestrictionCheckerImpl @Inject constructor() : UserRestrictionChecker {
+public class UserRestrictionCheckerImpl @Inject constructor() : UserRestrictionChecker {
     override fun checkIfRestrictionEnforced(
         context: Context,
         userRestriction: String,

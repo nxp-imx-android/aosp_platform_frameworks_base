@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.systemui.util.policy
+package com.android.systemui.util.policy.impl
 
+import com.android.systemui.util.policy.UserRestrictionChecker
 import dagger.Binds
 import dagger.Module
 

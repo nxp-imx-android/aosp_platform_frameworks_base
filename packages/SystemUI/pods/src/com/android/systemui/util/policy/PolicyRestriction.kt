@@ -16,6 +16,16 @@
 
 package com.android.systemui.util.policy
 
-import com.android.systemui.kosmos.Kosmos
+import com.android.settingslib.RestrictedLockUtils
 
-val Kosmos.userRestrictionChecker by Kosmos.Fixture { UserRestrictionCheckerImpl() }
+/**
+ * Models a possible policy restriction.
+ *
+ * @see RestrictedLockUtils.checkIfRestrictionEnforced
+ */
+public sealed interface PolicyRestriction {
+    public data object NoRestriction : PolicyRestriction
+
+    public data class Restricted(public val admin: RestrictedLockUtils.EnforcedAdmin) :
+        PolicyRestriction
+}
