@@ -52,6 +52,16 @@ flag {
 }
 
 flag {
+    name: "disable_desk_switch_wallpaper_offsets"
+    namespace: "lse_desktop_experience"
+    description: "Disables wallpaper offsets when switching between desks"
+    bug: "447196823"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "disable_restore_non_fullscreen_bounds_on_configuration_change"
     namespace: "lse_desktop_experience"
     description: "Disable restoring bounds to mLastNonFullscreenBounds on configuration change."
