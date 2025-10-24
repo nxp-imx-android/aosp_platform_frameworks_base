@@ -89,6 +89,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
+import android.Manifest;
 import android.app.AppOpsManager;
 import android.app.servertransaction.ClientTransaction;
 import android.app.servertransaction.WindowStateResizeItem;
@@ -104,6 +105,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.InputConfig;
 import android.os.RemoteException;
+import android.permission.PermissionManager;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
@@ -2005,7 +2007,7 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    public void testIsWindowTrustedOverlay_pprivateFlagSystemApplicationOverlay_noPermission() {
+    public void testIsWindowTrustedOverlay_privateFlagSystemApplicationOverlay_noPermission() {
         final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY)
                 .build();
         window.mAttrs.privateFlags |= PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
@@ -2114,6 +2116,34 @@ public class WindowStateTests extends WindowTestsBase {
         final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
 
         assertThat(window.mSession.canCreateSystemApplicationOverlay(window)).isFalse();
+    }
+
+    @Test
+    @EnableFlags(com.android.media.projection.flags.Flags.FLAG_RECORDING_OVERLAY)
+    public void
+            testSessionCanCreateSystemApplicationOverlay_recordingOverlayEnabled_hasPermission() {
+        PermissionManager permissionManager = mock(PermissionManager.class);
+        when(permissionManager.checkPermissionForPreflight(
+                eq(Manifest.permission.SYSTEM_APPLICATION_OVERLAY), any()))
+                .thenReturn(PermissionManager.PERMISSION_GRANTED);
+        getTestSession().updateCanCreateSystemApplicationOverlay(permissionManager);
+
+        final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
+
+        assertThat(window.mSession.canCreateSystemApplicationOverlay(window)).isTrue();
+    }
+
+    @Test
+    @DisableFlags(com.android.media.projection.flags.Flags.FLAG_RECORDING_OVERLAY)
+    public void
+            testSessionCanCreateSystemApplicationOverlay_recordingOverlayDisabled_hasPermission() {
+        when(mWm.mContext.checkCallingOrSelfPermission(
+                Manifest.permission.SYSTEM_APPLICATION_OVERLAY))
+                .thenReturn(PermissionManager.PERMISSION_GRANTED);
+        getTestSession().updateCanCreateSystemApplicationOverlay(mWm.mPermissionManager);
+        final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
+
+        assertThat(window.mSession.canCreateSystemApplicationOverlay(window)).isTrue();
     }
 
     @Test
