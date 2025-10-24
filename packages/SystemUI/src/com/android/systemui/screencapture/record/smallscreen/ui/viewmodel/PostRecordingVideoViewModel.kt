@@ -29,17 +29,21 @@ import kotlinx.coroutines.flow.filter
 interface PostRecordingVideoViewModel {
 
     val recording: ScreenRecording
+    val notificationId: Int
 }
 
-class PostRecordingImmediateVideoViewModel @AssistedInject constructor(@Assisted videoUri: Uri) :
+class PostRecordingImmediateVideoViewModel
+@AssistedInject
+constructor(@Assisted videoUri: Uri, @Assisted override val notificationId: Int) :
     HydratedActivatable(), PostRecordingVideoViewModel {
 
-    override val recording: ScreenRecording.Saved = ScreenRecording.Saved(videoUri, null)
+    override val recording: ScreenRecording.Saved =
+        ScreenRecording.Saved(videoUri, null, notificationId)
 
     @AssistedFactory
     interface Factory {
 
-        fun create(videoUri: Uri): PostRecordingImmediateVideoViewModel
+        fun create(videoUri: Uri, notificationId: Int): PostRecordingImmediateVideoViewModel
     }
 }
 
@@ -47,6 +51,7 @@ class PostRecordingWaitingVideoViewModel
 @AssistedInject
 constructor(
     @Assisted private val videoUri: Uri,
+    @Assisted override val notificationId: Int,
     screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
 ) : HydratedActivatable(), PostRecordingVideoViewModel {
 
@@ -55,12 +60,12 @@ constructor(
             .filter { it.uri == videoUri }
             .hydratedStateOf(
                 "PostRecordingWaitingVideoViewModel#recording",
-                ScreenRecording.Saving(videoUri),
+                ScreenRecording.Saving(videoUri, notificationId),
             )
 
     @AssistedFactory
     interface Factory {
 
-        fun create(videoUri: Uri): PostRecordingWaitingVideoViewModel
+        fun create(videoUri: Uri, notificationId: Int): PostRecordingWaitingVideoViewModel
     }
 }
