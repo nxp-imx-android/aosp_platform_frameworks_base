@@ -40,6 +40,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.inOrder;
@@ -161,6 +162,8 @@ public class WindowDecorationTests extends ShellTestCase {
     @Mock
     private SurfaceControl mMockTaskSurface;
     @Mock
+    private SurfaceControl mMockCaptionSurface;
+    @Mock
     private DesktopModeEventLogger mDesktopModeEventLogger;
     @Mock
     private Transitions mTransitions;
@@ -216,7 +219,11 @@ public class WindowDecorationTests extends ShellTestCase {
 
         when(mMockWindowDecorViewHostSupplier.acquire(any(), any()))
                 .thenReturn(mMockWindowDecorViewHost);
-        when(mMockWindowDecorViewHost.getSurfaceControl()).thenReturn(mock(SurfaceControl.class));
+        when(mMockWindowDecorViewHost.getSurfaceControl()).thenReturn(mMockCaptionSurface);
+        doAnswer(invocation -> {
+            ((Runnable) invocation.getArgument(0)).run();
+            return null;
+        }).when(mMockBGExecutor).execute(any());
     }
 
     @Test
@@ -1171,6 +1178,38 @@ public class WindowDecorationTests extends ShellTestCase {
                 .updateViewAsync(eq(mRelayoutResult.mRootView), any(),
                         eq(windowDecor.mTaskInfo.configuration), any());
         windowDecor.close();
+    }
+
+    @Test
+    public void relayout_validCaptionSurface_excludesFromTaskSnapshot() {
+        final ActivityManager.RunningTaskInfo taskInfo = new TestRunningTaskInfoBuilder()
+                .setDisplayId(Display.DEFAULT_DISPLAY)
+                .setVisible(true)
+                .build();
+        final TestWindowDecoration windowDecor = createWindowDecoration(taskInfo);
+        mRelayoutParams.mIsCaptionVisible = true;
+        when(mMockCaptionSurface.isValid()).thenReturn(true);
+
+        windowDecor.relayout(taskInfo, true /* hasGlobalFocus */);
+
+        SurfaceControl[] expectedLayers = {mMockCaptionSurface};
+        verify(mMockShellTaskOrganizer).setExcludeLayersFromTaskSnapshot(
+                eq(taskInfo.token), argThat(layers -> layers[0] == expectedLayers[0]));
+    }
+
+    @Test
+    public void relayout_invalidCaptionSurface_doesNotExcludeFromTaskSnapshot() {
+        final ActivityManager.RunningTaskInfo taskInfo = new TestRunningTaskInfoBuilder()
+                .setDisplayId(Display.DEFAULT_DISPLAY)
+                .setVisible(true)
+                .build();
+        final TestWindowDecoration windowDecor = createWindowDecoration(taskInfo);
+        mRelayoutParams.mIsCaptionVisible = true;
+        when(mMockCaptionSurface.isValid()).thenReturn(false);
+
+        windowDecor.relayout(taskInfo, true /* hasGlobalFocus */);
+
+        verify(mMockShellTaskOrganizer, never()).setExcludeLayersFromTaskSnapshot(any(), any());
     }
 
     @Test
