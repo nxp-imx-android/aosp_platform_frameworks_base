@@ -23,7 +23,7 @@ import static com.android.modules.utils.ravenwood.RavenwoodHelper.RavenwoodInter
 import static org.junit.Assert.assertThrows;
 
 import android.annotation.Nullable;
-import android.app.ActivityManager;
+import android.app.ActivityManager_ravenwood;
 import android.app.RavenwoodAppDriver;
 import android.app.UiAutomation_ravenwood;
 import android.graphics.Typeface;
@@ -34,7 +34,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.os.Process_ravenwood;
-import android.os.ServiceManager;
+import android.os.ServiceManager_ravenwood;
 import android.os.SystemProperties;
 import android.provider.DeviceConfig_ravenwood;
 import android.system.ErrnoException;
@@ -245,9 +245,9 @@ public class RavenwoodDriver {
         RavenwoodUtils.sPendingExceptionThrower =
                 RavenwoodErrorHandler::maybeThrowPendingRecoverableUncaughtExceptionNoClear;
 
-        ServiceManager.init$ravenwood();
+        ServiceManager_ravenwood.init();
         LocalServices.removeAllServicesForTest();
-        ActivityManager.init$ravenwood(SYSTEM.getIdentifier());
+        ActivityManager_ravenwood.init(SYSTEM.getIdentifier());
 
         // Start the main thread.
         var mainThread = new HandlerThread(RavenwoodEnvironment.MAIN_THREAD_NAME);
