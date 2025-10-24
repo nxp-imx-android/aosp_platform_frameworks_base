@@ -35,11 +35,11 @@ import android.os.Binder;
 import android.os.RemoteException;
 import android.os.UserManager;
 import android.security.Flags;
+import android.util.ArrayMap;
 import android.util.Log;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -121,40 +121,74 @@ public final class AdvancedProtectionManager {
     public static final int FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN = 5;
 
     /** @hide */
+    /**
+     * Defines the set of integer identifiers for Advanced Protection features.
+     *
+     * <p>When adding a new feature, its identifier must also be added to
+     * {@link #FEATURE_ID_TO_NAME} to support conversion to and from its string representation.
+     *
+     * <p>When a feature is deprecated, its identifier must not be removed from this list or from
+     * {@link #FEATURE_ID_TO_NAME} to maintain compatibility with older devices that might still
+     * reference the deprecated ID.
+     *
+     * @hide */
     @IntDef(prefix = { "FEATURE_ID_" }, value = {
             FEATURE_ID_DISALLOW_CELLULAR_2G,
             FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES,
             FEATURE_ID_DISALLOW_USB,
+            FEATURE_ID_DISALLOW_WEP,
             FEATURE_ID_ENABLE_MTE,
             FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface FeatureId {}
 
-    /** @hide */
-    public static String featureIdToString(@FeatureId int featureId) {
-        return switch (featureId) {
-            case FEATURE_ID_DISALLOW_CELLULAR_2G -> "DISALLOW_CELLULAR_2G";
-            case FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES -> "DISALLOW_INSTALL_UNKNOWN_SOURCES";
-            case FEATURE_ID_DISALLOW_USB -> "DISALLOW_USB";
-            case FEATURE_ID_ENABLE_MTE -> "ENABLE_MTE";
-            case FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN -> "DISALLOW_INSECURE_WIFI_AUTOJOIN";
-            default -> "UNKNOWN";
-        };
+    private static final ArrayMap<Integer, String> FEATURE_ID_TO_NAME = buildFeatureIdToNameMap();
+    private static final Set<Integer> ALL_FEATURE_IDS = Set.copyOf(FEATURE_ID_TO_NAME.keySet());
+
+    private static ArrayMap<Integer, String> buildFeatureIdToNameMap() {
+        final ArrayMap<Integer, String> map = new ArrayMap<>();
+        map.put(FEATURE_ID_DISALLOW_CELLULAR_2G, "DISALLOW_CELLULAR_2G");
+        map.put(
+                FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES, "DISALLOW_INSTALL_UNKNOWN_SOURCES");
+        map.put(FEATURE_ID_DISALLOW_USB, "DISALLOW_USB");
+        map.put(FEATURE_ID_DISALLOW_WEP, "DISALLOW_WEP");
+        map.put(FEATURE_ID_ENABLE_MTE, "ENABLE_MTE");
+        if (Flags.aapmFeatureDisableInsecureWifiAutojoin()) {
+            map.put(FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN,
+                    "DISALLOW_INSECURE_WIFI_AUTOJOIN");
+        }
+        return map;
     }
 
-    private static final Set<Integer> ALL_FEATURE_IDS = buildAllFeatureIds();
-
-    private static Set<Integer> buildAllFeatureIds() {
-        final Set<Integer> allFeatureIds = new HashSet<>();
-        allFeatureIds.add(FEATURE_ID_DISALLOW_CELLULAR_2G);
-        allFeatureIds.add(FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES);
-        allFeatureIds.add(FEATURE_ID_DISALLOW_USB);
-        allFeatureIds.add(FEATURE_ID_ENABLE_MTE);
-        if (Flags.aapmFeatureDisableInsecureWifiAutojoin()) {
-            allFeatureIds.add(FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN);
+    /**
+     * Returns the corresponding Advanced Protection feature string to an ID.
+     *
+     * @throws IllegalArgumentException if the feature ID is invalid
+     * @hide
+     */
+    public static String featureIdToString(@FeatureId int featureId)
+            throws IllegalArgumentException {
+        if (FEATURE_ID_TO_NAME.containsKey(featureId)) {
+            return FEATURE_ID_TO_NAME.get(featureId);
         }
-        return allFeatureIds;
+        throw new IllegalArgumentException("Invalid feature ID: " + featureId);
+    }
+
+    /**
+     * Returns the corresponding Advanced Protection feature ID to a string.
+     *
+     * @throws IllegalArgumentException if the feature string is invalid
+     * @hide
+     */
+    public static @FeatureId int featureStringToId(@NonNull String featureString)
+            throws IllegalArgumentException {
+        Objects.requireNonNull(featureString);
+        int index = FEATURE_ID_TO_NAME.indexOfValue(featureString);
+        if (index >= 0) {
+            return FEATURE_ID_TO_NAME.keyAt(index);
+        }
+        throw new IllegalArgumentException("Invalid feature string: " + featureString);
     }
 
     /**

@@ -134,6 +134,7 @@ java_library_static {
         ":display-layout-config",
         ":display-topology",
         ":supplemental_security_patches_xsd",
+        ":advanced-protection-config",
         ":device-state-config",
         "java/com/android/server/EventLogTags.logtags",
         "java/com/android/server/am/EventLogTags.logtags",
@@ -171,6 +172,7 @@ java_library_static {
 
     required: [
         "default_television.xml",
+        "advanced-protection-config.xml",
         "gps_debug.conf",
         "core.protolog.pb",
     ],

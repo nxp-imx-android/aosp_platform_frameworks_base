@@ -376,6 +376,9 @@ java_defaults {
         // TODO(b/120066492): remove default_television.xml when the build system
         // propagates "required" properly.
         "default_television.xml",
+        // TODO(b/120066492): remove advanced-protection-config.xml when the build system
+        // propagates "required" properly.
+        "advanced-protection-config.xml",
         // TODO(b/120066492): remove gps_debug and protolog.conf.json when the build
         // system propagates "required" properly.
         "gps_debug.conf",

@@ -18,6 +18,10 @@ package com.android.server.security.advancedprotection;
 
 import static android.provider.Settings.Secure.ADVANCED_PROTECTION_MODE;
 import static android.provider.Settings.Secure.AAPM_USB_DATA_PROTECTION;
+import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_CELLULAR_2G;
+import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES;
+import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB;
+import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_ENABLE_MTE;
 
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
 
@@ -38,8 +42,6 @@ import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.os.PermissionEnforcer;
 import android.os.RemoteException;
-import android.os.ResultReceiver;
-import android.os.ShellCallback;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.security.advancedprotection.AdvancedProtectionFeature;
@@ -60,6 +62,7 @@ import com.android.server.FgThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.security.advancedprotection.AdvancedProtectionConfigLoader.Injector;
 import com.android.server.security.advancedprotection.features.AdvancedProtectionHook;
 import com.android.server.security.advancedprotection.features.AdvancedProtectionProvider;
 import com.android.server.security.advancedprotection.features.DisallowCellular2GAdvancedProtectionHook;
@@ -92,6 +95,8 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
     private final Handler mHandler;
     private final AdvancedProtectionStore mStore;
     private final UserManagerInternal mUserManager;
+    @Nullable
+    private final AdvancedProtectionConfigLoader mConfigLoader;
 
     // Features living with the service - their code will be executed when state changes
     private final ArrayList<AdvancedProtectionHook> mHooks = new ArrayList<>();
@@ -110,38 +115,71 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         mHandler = new AdvancedProtectionHandler(FgThread.get().getLooper());
         mStore = new AdvancedProtectionStore(mContext);
         mUserManager = LocalServices.getService(UserManagerInternal.class);
+        mConfigLoader = android.security.Flags.aapmApiV2()
+                ? new AdvancedProtectionConfigLoader(new Injector()) : null;
     }
 
     private void initFeatures(boolean enabled) {
         if (android.security.Flags.aapmFeatureDisableInstallUnknownSources()) {
-          try {
-            mHooks.add(new DisallowInstallUnknownSourcesAdvancedProtectionHook(mContext, enabled));
-          } catch (Exception e) {
-            Slog.e(TAG, "Failed to initialize DisallowInstallUnknownSources", e);
-          }
+            try {
+                if (android.security.Flags.aapmApiV2()) {
+                    if (isFeatureIdAvailableInConfig(
+                            FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES)) {
+                        mHooks.add(new DisallowInstallUnknownSourcesAdvancedProtectionHook(mContext,
+                                enabled));
+                    }
+                } else {
+                    mHooks.add(new DisallowInstallUnknownSourcesAdvancedProtectionHook(mContext,
+                            enabled));
+                }
+            } catch (Exception e) {
+                Slog.e(TAG, "Failed to initialize DisallowInstallUnknownSources", e);
+            }
         }
         try {
-            mHooks.add(new MemoryTaggingExtensionHook(mContext, enabled));
+            if (android.security.Flags.aapmApiV2()) {
+                if (isFeatureIdAvailableInConfig(FEATURE_ID_ENABLE_MTE)) {
+                    mHooks.add(new MemoryTaggingExtensionHook(mContext, enabled));
+                }
+            } else {
+                mHooks.add(new MemoryTaggingExtensionHook(mContext, enabled));
+            }
         } catch (Exception e) {
             Slog.e(TAG, "Failed to initialize MemoryTaggingExtension", e);
         }
         if (android.security.Flags.aapmFeatureDisableCellular2g()) {
-          try {
-            mHooks.add(new DisallowCellular2GAdvancedProtectionHook(mContext, enabled));
-          } catch (Exception e) {
-            Slog.e(TAG, "Failed to initialize DisallowCellular2g", e);
-          }
+            try {
+                if (android.security.Flags.aapmApiV2()) {
+                    if (isFeatureIdAvailableInConfig(FEATURE_ID_DISALLOW_CELLULAR_2G)) {
+                        mHooks.add(new DisallowCellular2GAdvancedProtectionHook(mContext, enabled));
+                    }
+                } else {
+                    mHooks.add(new DisallowCellular2GAdvancedProtectionHook(mContext, enabled));
+                }
+            } catch (Exception e) {
+                Slog.e(TAG, "Failed to initialize DisallowCellular2g", e);
+            }
         }
         if (android.security.Flags.aapmFeatureUsbDataProtection()
                 // Usb data protection is enabled by default
                 && mStore.retrieveInt(AAPM_USB_DATA_PROTECTION, AdvancedProtectionStore.ON)
                 == AdvancedProtectionStore.ON) {
-          try {
-            mHooks.add(new UsbDataAdvancedProtectionHook(mContext, enabled, this));
-          } catch (Exception e) {
-            Slog.e(TAG, "Failed to initialize UsbDataAdvancedProtection", e);
-          }
+            try {
+                if (android.security.Flags.aapmApiV2()) {
+                    if (isFeatureIdAvailableInConfig(FEATURE_ID_DISALLOW_USB)) {
+                        mHooks.add(new UsbDataAdvancedProtectionHook(mContext, enabled, this));
+                    }
+                } else {
+                    mHooks.add(new UsbDataAdvancedProtectionHook(mContext, enabled, this));
+                }
+            } catch (Exception e) {
+                Slog.e(TAG, "Failed to initialize UsbDataAdvancedProtection", e);
+            }
         }
+    }
+
+    private boolean isFeatureIdAvailableInConfig(int featureId) {
+        return mConfigLoader != null && mConfigLoader.isFeatureIdAvailable(featureId);
     }
 
     private void initLogging() {
@@ -162,16 +200,27 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
             @NonNull Looper looper,
             @NonNull PermissionEnforcer permissionEnforcer,
             @Nullable AdvancedProtectionHook hook,
-            @Nullable AdvancedProtectionProvider provider) {
+            @Nullable AdvancedProtectionProvider provider,
+            @NonNull Injector injector) {
         super(permissionEnforcer);
         mContext = context;
         mStore = store;
         mUserManager = userManager;
         mHandler = new AdvancedProtectionHandler(looper);
+        mConfigLoader = android.security.Flags.aapmApiV2()
+                ? new AdvancedProtectionConfigLoader(injector) : null;
+
         if (hook != null) {
-            mHooks.add(hook);
+            if (android.security.Flags.aapmApiV2()) {
+                if (isFeatureIdAvailableInConfig(hook.getFeature().getId())) {
+                    mHooks.add(hook);
+                }
+            } else {
+                mHooks.add(hook);
+            }
         }
 
+        // TODO (b/438957900): Allow changing availability of a subset of features via providers.
         if (provider != null) {
             mProviders.add(provider);
         }
@@ -358,7 +407,20 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         getAdvancedProtectionFeatures_enforcePermission();
         List<AdvancedProtectionFeature> features = new ArrayList<>();
         for (int i = 0; i < mProviders.size(); i++) {
-            features.addAll(mProviders.get(i).getFeatures(mContext));
+            // TODO (b/438957900): Remove filtering of providers in getAdvancedProtectionFeatures
+            //  once initFeatures filters mProviders.
+            if (android.security.Flags.aapmApiV2()) {
+                AdvancedProtectionProvider provider = mProviders.get(i);
+                List<AdvancedProtectionFeature> providerFeatures = provider.getFeatures(mContext);
+                for (int j = 0; j < providerFeatures.size(); j++) {
+                    AdvancedProtectionFeature feature = providerFeatures.get(j);
+                    if (isFeatureIdAvailableInConfig(feature.getId())) {
+                        features.add(feature);
+                    }
+                }
+            } else {
+                features.addAll(mProviders.get(i).getFeatures(mContext));
+            }
         }
 
         for (int i = 0; i < mHooks.size(); i++) {
@@ -420,6 +482,13 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
             });
         });
         writer.println("  mSharedPreferences: " + getSharedPreferences().getAll());
+        if (android.security.Flags.aapmApiV2()) {
+            if (mConfigLoader == null) {
+                writer.println("AdvancedProtectionConfigLoader: null");
+            } else {
+                mConfigLoader.dump(writer);
+            }
+        }
     }
 
     void sendModeChanged(boolean enabled) {

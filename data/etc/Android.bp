@@ -214,3 +214,11 @@ prebuilt_etc {
     src: "com.android.systemui.xml",
     filename_from_src: true,
 }
+
+// Advanced Protection config loaded by AdvancedProtectionService
+
+prebuilt_etc {
+    name: "advanced-protection-config.xml",
+    sub_dir: "advanced-protection-config",
+    src: "advanced-protection-config.xml",
+}
