@@ -579,6 +579,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                         }
                 );
             }
+
             @Override
             public void requestTokenInfo(Feature feature,
                     Bundle request,
@@ -614,15 +615,20 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                             .build();
                     result = executor.execute(service -> {
                                 AndroidFuture<Void> future = new AndroidFuture<>();
-                                service.requestTokenInfo(callerUid, feature,
-                                        request,
-                                        wrapCancellationFuture(cancellationSignalFuture),
-                                        wrapWithValidation(tokenInfoCallback, future,
-                                                mInferenceInfoStore));
+                                try {
+                                    service.requestTokenInfo(callerUid, feature,
+                                            request,
+                                            wrapCancellationFuture(cancellationSignalFuture),
+                                            wrapWithValidation(tokenInfoCallback, future,
+                                                    mInferenceInfoStore));
+                                } finally {
+                                    resourceClosingExecutor.execute(
+                                            () -> BundleUtil.tryCloseResource(request));
+                                }
                                 return future.orTimeout(getIdleTimeoutMs(),
                                         TimeUnit.MILLISECONDS);
                             });
-                    trackInferenceJob(callerUid, request, result);
+                    trackInferenceJob(callerUid, result);
                 } finally {
                     if (result == null) {
                         resourceClosingExecutor.execute(() -> BundleUtil.tryCloseResource(request));
@@ -668,21 +674,26 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                             .build();
                     result = executor.execute(service -> {
                                 AndroidFuture<Void> future = new AndroidFuture<>();
-                                boolean shouldAddInferenceInfo = request.getBoolean(
-                                        OnDeviceIntelligenceManager.KEY_REQUEST_INFERENCE_INFO,
-                                        false);
-                                service.processRequest(callerUid, feature,
-                                        request,
-                                        requestType,
-                                        wrapCancellationFuture(cancellationSignalFuture),
-                                        wrapProcessingFuture(processingSignalFuture),
-                                        wrapWithValidation(responseCallback,
-                                                resourceClosingExecutor, future,
-                                                mInferenceInfoStore, shouldAddInferenceInfo));
+                                try {
+                                    boolean shouldAddInferenceInfo = request.getBoolean(
+                                            OnDeviceIntelligenceManager.KEY_REQUEST_INFERENCE_INFO,
+                                            false);
+                                    service.processRequest(callerUid, feature,
+                                            request,
+                                            requestType,
+                                            wrapCancellationFuture(cancellationSignalFuture),
+                                            wrapProcessingFuture(processingSignalFuture),
+                                            wrapWithValidation(responseCallback,
+                                                    resourceClosingExecutor, future,
+                                                    mInferenceInfoStore, shouldAddInferenceInfo));
+                                } finally {
+                                    resourceClosingExecutor.execute(
+                                            () -> BundleUtil.tryCloseResource(request));
+                                }
                                 return future.orTimeout(getIdleTimeoutMs(),
                                         TimeUnit.MILLISECONDS);
                             });
-                    trackInferenceJob(callerUid, request, result);
+                    trackInferenceJob(callerUid, result);
                 } finally {
                     if (result == null) {
                         resourceClosingExecutor.execute(() -> BundleUtil.tryCloseResource(request));
@@ -727,25 +738,30 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                             .build();
                     result = executor.execute(service -> {
                                 AndroidFuture<Void> future = new AndroidFuture<>();
-                                boolean shouldAddInferenceInfo = request.getBoolean(
-                                        OnDeviceIntelligenceManager.KEY_REQUEST_INFERENCE_INFO,
-                                        false);
-                                service.processRequestStreaming(callerUid,
-                                        feature,
-                                        request, requestType,
-                                        wrapCancellationFuture(cancellationSignalFuture),
-                                        wrapProcessingFuture(processingSignalFuture),
-                                        new ListenableStreamingResponseCallback(
-                                                wrapWithValidation(streamingCallback,
-                                                        resourceClosingExecutor, future,
-                                                        mInferenceInfoStore,
-                                                        shouldAddInferenceInfo),
-                                                mMainHandler, future, getIdleTimeoutMs()));
+                                try {
+                                    boolean shouldAddInferenceInfo = request.getBoolean(
+                                            OnDeviceIntelligenceManager.KEY_REQUEST_INFERENCE_INFO,
+                                            false);
+                                    service.processRequestStreaming(callerUid,
+                                            feature,
+                                            request, requestType,
+                                            wrapCancellationFuture(cancellationSignalFuture),
+                                            wrapProcessingFuture(processingSignalFuture),
+                                            new ListenableStreamingResponseCallback(
+                                                    wrapWithValidation(streamingCallback,
+                                                            resourceClosingExecutor, future,
+                                                            mInferenceInfoStore,
+                                                            shouldAddInferenceInfo),
+                                                    mMainHandler, future, getIdleTimeoutMs()));
+                                } finally {
+                                    resourceClosingExecutor.execute(
+                                            () -> BundleUtil.tryCloseResource(request));
+                                }
                                 return future; // this future has no timeout because, actual
                                 // streaming might take long, we fail early if there is no progress
                                 // callbacks
                             });
-                    trackInferenceJob(callerUid, request, result);
+                    trackInferenceJob(callerUid, result);
                 } finally {
                     if (result == null) {
                         resourceClosingExecutor.execute(() -> BundleUtil.tryCloseResource(request));
@@ -1407,12 +1423,11 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
         return mRemoteOnDeviceIntelligenceService;
     }
 
-    private void trackInferenceJob(int callerUid, Bundle request, AndroidFuture<?> result) {
+    private void trackInferenceJob(int callerUid, AndroidFuture<?> result) {
         if (result != null) {
             trackJobElevated(callerUid);
             result.whenCompleteAsync(
                     (c, e) -> {
-                        BundleUtil.tryCloseResource(request);
                         untrackJobElevated(callerUid);
                     },
                     resourceClosingExecutor);
