@@ -18,4 +18,4 @@ package com.android.systemui.util.policy
 
 import com.android.systemui.kosmos.Kosmos
 
-val Kosmos.userRestrictionChecker by Kosmos.Fixture { UserRestrictionChecker() }
+val Kosmos.userRestrictionChecker by Kosmos.Fixture { UserRestrictionCheckerImpl() }

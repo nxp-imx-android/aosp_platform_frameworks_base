@@ -180,6 +180,7 @@ import com.android.systemui.util.EventLogModule;
 import com.android.systemui.util.concurrency.SysUIConcurrencyModule;
 import com.android.systemui.util.dagger.UtilModule;
 import com.android.systemui.util.kotlin.SysUICoroutinesModule;
+import com.android.systemui.util.policy.PolicyRestrictionModule;
 import com.android.systemui.util.reference.ReferenceModule;
 import com.android.systemui.util.sensors.SensorModule;
 import com.android.systemui.util.settings.SettingsProxy;
@@ -273,6 +274,7 @@ import javax.inject.Named;
         PeopleModule.class,
         PluginModule.class,
         PolicyModule.class,
+        PolicyRestrictionModule.class,
         PrivacyModule.class,
         QRCodeScannerModule.class,
         RecordIssueModule.class,
