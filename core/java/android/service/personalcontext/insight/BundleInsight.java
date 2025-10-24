@@ -50,7 +50,7 @@ public final class BundleInsight extends ContextInsight {
 
     @Override
     @InsightType
-    public int getInsightType() {
+    int getInsightType() {
         return INSIGHT_TYPE_BUNDLE;
     }
 

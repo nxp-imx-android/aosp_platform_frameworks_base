@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package android.service.personalcontext;
+package android.service.personalcontext.hint;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Parcel;
-import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.hint.ContextHintWrapper;
 
 /** Utility methods for testing {@link ContextHint} implementation parceling. */
 public final class ContextHintTestUtils {

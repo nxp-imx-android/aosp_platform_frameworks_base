@@ -20,12 +20,10 @@ import static android.service.personalcontext.insight.ContextInsight.INSIGHT_TYP
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.content.Intent;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.hint.ContextHint;
-import android.text.TextUtils;
 
 import com.android.internal.util.Preconditions;
 
@@ -123,7 +121,8 @@ public final class ActionableInsight extends ContextInsight {
     }
 
     @Override
-    public int getInsightType() {
+    @InsightType
+    int getInsightType() {
         return INSIGHT_TYPE_ACTIONABLE;
     }
 

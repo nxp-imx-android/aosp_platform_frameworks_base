@@ -51,7 +51,7 @@ public final class BundleHint extends ContextHint {
 
     @Override
     @HintType
-    public int getHintType() {
+    int getHintType() {
         return HINT_TYPE_BUNDLE;
     }
 

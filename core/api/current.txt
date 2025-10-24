@@ -43175,15 +43175,10 @@ package android.service.personalcontext.hint {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class BundleHint extends android.service.personalcontext.hint.ContextHint {
     ctor public BundleHint();
     method @NonNull public android.os.Bundle getDataBundle();
-    method public int getHintType();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextHint {
     method @NonNull public final java.util.UUID getHintId();
-    method public abstract int getHintType();
-    field public static final int HINT_TYPE_BUNDLE = 1; // 0x1
-    field public static final int HINT_TYPE_ERROR = -1; // 0xffffffff
-    field public static final int HINT_TYPE_NOTIFICATION = 2; // 0x2
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class NotificationEvent {
@@ -43210,7 +43205,6 @@ package android.service.personalcontext.hint {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class NotificationHint extends android.service.personalcontext.hint.ContextHint {
-    method public int getHintType();
     method @NonNull public android.service.personalcontext.hint.NotificationEvent getNotificationEvent();
   }
 
@@ -43226,7 +43220,6 @@ package android.service.personalcontext.insight {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ActionableInsight extends android.service.personalcontext.insight.ContextInsight {
     method @NonNull public android.content.Intent createActionIntent();
     method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails getDisplayDetails();
-    method public int getInsightType();
   }
 
   public static final class ActionableInsight.Builder {
@@ -43237,7 +43230,6 @@ package android.service.personalcontext.insight {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class BundleInsight extends android.service.personalcontext.insight.ContextInsight {
     method @NonNull public android.os.Bundle getDataBundle();
-    method public int getInsightType();
   }
 
   public static final class BundleInsight.Builder {
@@ -43249,11 +43241,7 @@ package android.service.personalcontext.insight {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
     method @NonNull public final java.util.UUID getInsightId();
-    method public abstract int getInsightType();
     method @NonNull public final java.util.List<android.service.personalcontext.hint.ContextHint> getOriginHints();
-    field public static final int INSIGHT_TYPE_ACTIONABLE = 2; // 0x2
-    field public static final int INSIGHT_TYPE_BUNDLE = 1; // 0x1
-    field public static final int INSIGHT_TYPE_ERROR = -1; // 0xffffffff
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightDisplayDetails implements android.os.Parcelable {

@@ -54,7 +54,7 @@ public final class NotificationHint extends ContextHint {
 
     @Override
     @HintType
-    public int getHintType() {
+    int getHintType() {
         return HINT_TYPE_NOTIFICATION;
     }
 

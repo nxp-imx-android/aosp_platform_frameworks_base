@@ -28,6 +28,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.internal.annotations.VisibleForTesting;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
@@ -39,6 +41,8 @@ import java.util.UUID;
  * Abstract base class for insights. Subclasses will provide concrete implementations. The context
  * engine flow will produce these insights, which will ultimately make their way to insight
  * renderers, where they will be rendered as UI to the user.
+ *
+ * Users of this class can use instanceof to determine the type of the insight.
  */
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public abstract class ContextInsight {
@@ -66,13 +70,18 @@ public abstract class ContextInsight {
     public @interface InsightType {}
 
     /** Type identifier for an error insight (to return when there is an unparceling error). */
-    public static final int INSIGHT_TYPE_ERROR = -1;
+    static final int INSIGHT_TYPE_ERROR = -1;
 
-    /** Type identifier for {@link BundleInsight}. */
+    /**
+     * Type identifier for {@link BundleInsight}.
+     *
+     * @hide
+     */
+    @VisibleForTesting
     public static final int INSIGHT_TYPE_BUNDLE = 1;
 
     /** Type identifier for {@link ActionableInsight}. */
-    public static final int INSIGHT_TYPE_ACTIONABLE = 2;
+    static final int INSIGHT_TYPE_ACTIONABLE = 2;
 
     /**
      * Object returned when there is an unparcelling error.
@@ -125,7 +134,7 @@ public abstract class ContextInsight {
      * Returns the {@link InsightType} of this hint.
      */
     @InsightType
-    public abstract int getInsightType();
+    abstract int getInsightType();
 
     /**
      * Returns the unique identifier for this insight.
