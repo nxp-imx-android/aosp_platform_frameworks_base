@@ -594,6 +594,19 @@ public abstract class OomAdjuster {
          * "last activity" state before allowing it to be demoted to the regular cached LRU list.
          */
         public volatile long mContentProviderRetainTime;
+        /**
+         * When enabled, logs a stack trace whenever the process state or UID state is updated
+         * for a debuggable UID.
+         */
+        public volatile boolean mEnableProcStateStacktrace;
+        /**
+         * A delay in milliseconds to introduce when updating the proc state for a debuggable UID.
+         */
+        public volatile int mProcStateDebugSetProcStateDelay;
+        /**
+         * A delay in milliseconds to introduce when updating the UID state for a debuggable UID.
+         */
+        public volatile int mProcStateDebugSetUidStateDelay;
     }
 
     // TODO(b/346822474): hook up global state usage.
@@ -668,7 +681,7 @@ public abstract class OomAdjuster {
 
         mConstants = mService.mConstants;
 
-        mLogger = new OomAdjusterDebugLogger(this, mOomConstants, mService.mConstants);
+        mLogger = new OomAdjusterDebugLogger(this, mOomConstants);
 
         mProcessGroupHandler = new Handler(adjusterThread.getLooper(), msg -> {
             final int group = msg.what;

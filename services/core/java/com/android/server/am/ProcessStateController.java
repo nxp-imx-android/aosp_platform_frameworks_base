@@ -173,6 +173,18 @@ public class ProcessStateController {
         mOomConstants.mContentProviderRetainTime = value;
     }
 
+    public void setEnableProcStateStacktrace(boolean value) {
+        mOomConstants.mEnableProcStateStacktrace = value;
+    }
+
+    public void setProcStateDebugSetProcStateDelay(int value) {
+        mOomConstants.mProcStateDebugSetProcStateDelay = value;
+    }
+
+    public void setProcStateDebugSetUidStateDelay(int value) {
+        mOomConstants.mProcStateDebugSetUidStateDelay = value;
+    }
+
     /**
      * Start a batch session for specifically service state changes. ProcessStateController updates
      * will not be triggered until until the returned SyncBatchSession is closed.

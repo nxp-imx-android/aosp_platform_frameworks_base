@@ -471,9 +471,9 @@ final class ActivityManagerConstants extends ContentObserver {
      * array when it's changed to avoid synchronization.
      */
     volatile SparseBooleanArray mProcStateDebugUids = new SparseBooleanArray(0);
-    volatile boolean mEnableProcStateStacktrace = false;
-    volatile int mProcStateDebugSetProcStateDelay = 0;
-    volatile int mProcStateDebugSetUidStateDelay = 0;
+    private volatile boolean mEnableProcStateStacktrace = false;
+    private volatile int mProcStateDebugSetProcStateDelay = 0;
+    private volatile int mProcStateDebugSetUidStateDelay = 0;
 
     // Maximum number of cached processes we will allow.
     public int MAX_CACHED_PROCESSES = DEFAULT_MAX_CACHED_PROCESSES;
@@ -2150,6 +2150,9 @@ final class ActivityManagerConstants extends ContentObserver {
         mEnableProcStateStacktrace = false;
         mProcStateDebugSetProcStateDelay = 0;
         mProcStateDebugSetUidStateDelay = 0;
+        mService.mProcessStateController.setEnableProcStateStacktrace(false);
+        mService.mProcessStateController.setProcStateDebugSetProcStateDelay(0);
+        mService.mProcessStateController.setProcStateDebugSetUidStateDelay(0);
         if (val.length() == 0) {
             mProcStateDebugUids = new SparseBooleanArray(0);
             mService.mProcessStateController.setProcStateDebugUids(mProcStateDebugUids);
@@ -2166,6 +2169,7 @@ final class ActivityManagerConstants extends ContentObserver {
             // "stack" -> enable stacktrace.
             if ("stack".equals(token)) {
                 mEnableProcStateStacktrace = true;
+                mService.mProcessStateController.setEnableProcStateStacktrace(true);
                 continue;
             }
             boolean isUid = true;
@@ -2188,9 +2192,11 @@ final class ActivityManagerConstants extends ContentObserver {
             } else if (prefix == 'p') {
                 // Enable delay in set-proc-state
                 mProcStateDebugSetProcStateDelay = value;
+                mService.mProcessStateController.setProcStateDebugSetProcStateDelay(value);
             } else if (prefix == 'u') {
                 // Enable delay in set-uid-state
                 mProcStateDebugSetUidStateDelay = value;
+                mService.mProcessStateController.setProcStateDebugSetUidStateDelay(value);
             } else {
                 Slog.w(TAG, "Invalid prefix " + prefix + " in " + val);
             }
@@ -2368,6 +2374,9 @@ final class ActivityManagerConstants extends ContentObserver {
         oomConstants.mMaxPreviousTime = mMaxPreviousTime;
         oomConstants.mMaxServiceInactivity = mMaxServiceInactivity;
         oomConstants.mContentProviderRetainTime = mContentProviderRetainTime;
+        oomConstants.mEnableProcStateStacktrace = mEnableProcStateStacktrace;
+        oomConstants.mProcStateDebugSetProcStateDelay = mProcStateDebugSetProcStateDelay;
+        oomConstants.mProcStateDebugSetUidStateDelay = mProcStateDebugSetUidStateDelay;
 
         return oomConstants;
     }
