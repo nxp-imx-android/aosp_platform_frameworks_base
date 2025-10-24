@@ -2640,8 +2640,13 @@ class DesktopTasksController(
         repository: DesktopRepository,
         componentName: ComponentName?,
         displayLayout: DisplayLayout,
+        taskInfo: TaskInfo?,
     ): Rect? {
         if (!Flags.enableRememberedBounds()) {
+            return null
+        }
+        if (taskInfo?.leafTaskBoundsFromOptions == true) {
+            // ActivityOptions have a higher priority.
             return null
         }
         val packageName = componentName?.packageName ?: return null
@@ -2679,6 +2684,7 @@ class DesktopTasksController(
                     userProfileContexts.getOrCreate(userId).packageManager
                 ),
                 displayLayout,
+                /* taskInfo= */ null,
             )
         val bounds = rememberedBounds ?: calculateDefaultDesktopTaskBounds(displayLayout)
         val deskId = getOrCreateDefaultDeskId(displayId, userId) ?: return
@@ -4219,6 +4225,7 @@ class DesktopTasksController(
                         userRepositories.getProfile(task.userId),
                         task.baseActivity,
                         displayLayout,
+                        task,
                     )
                 },
             requestType = requestType,
@@ -5013,7 +5020,7 @@ class DesktopTasksController(
                 0
             }
         val rememberedBounds =
-            calculateRememberedBounds(repository, taskInfo.baseActivity, displayLayout)
+            calculateRememberedBounds(repository, taskInfo.baseActivity, displayLayout, taskInfo)
         val bounds =
             rememberedBounds
                 ?: calculateInitialBounds(displayLayout, taskInfo, captionInsets = captionInsets)
