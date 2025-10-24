@@ -424,14 +424,31 @@ class ActivityClientController extends IActivityClientController.Stub {
             synchronized (mGlobalLock) {
                 final int taskId = ActivityRecord.getTaskForActivityLocked(token, !nonRoot);
                 final Task task = mService.mRootWindowContainer.anyTaskForId(taskId);
-                if (task != null) {
-                    return ActivityRecord.getRootTask(token).moveTaskToBack(task);
+                if (task == null) {
+                    // Not root activity.
+                    return false;
                 }
+                final Task rootTask = task.getRootTask();
+                if (com.android.window.flags.Flags.fixBubbleBackGesture()
+                        && rootTask != null && rootTask.isAlwaysOnTop()) {
+                    final ActivityRecord r = ActivityRecord.isInRootTaskLocked(token);
+                    if (r != null && mService.mWindowOrganizerController.mTaskOrganizerController
+                            .handleInterceptBackPressedOnTaskRoot(r)) {
+                        // For AOT Task, it can't be moved to back. In this case, treat it as on
+                        // back press on root if Shell is intercepting.
+                        return true;
+                    }
+                }
+                return moveActivityTaskToBackInner(task);
             }
         } finally {
             Binder.restoreCallingIdentity(origId);
         }
-        return false;
+    }
+
+    private boolean moveActivityTaskToBackInner(@NonNull Task task) {
+        final Task rootTask = task.getRootTask();
+        return rootTask != null && rootTask.moveTaskToBack(task);
     }
 
     @Override
@@ -1857,7 +1874,7 @@ class ActivityClientController extends IActivityClientController.Stub {
                     return;
                 }
                 if (shouldMoveTaskToBack(r, root)) {
-                    moveActivityTaskToBack(token, true /* nonRoot */);
+                    moveActivityTaskToBackInner(task);
                     return;
                 }
             }
