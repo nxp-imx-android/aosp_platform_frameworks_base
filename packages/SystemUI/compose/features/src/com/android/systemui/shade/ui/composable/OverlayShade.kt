@@ -52,7 +52,6 @@ import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
-import com.android.compose.animation.scene.mechanics.rememberGestureContext
 import com.android.compose.modifiers.thenIf
 import com.android.mechanics.behavior.VerticalExpandContainerSpec
 import com.android.mechanics.behavior.verticalExpandContainerBackground
@@ -98,7 +97,6 @@ fun ContentScope.OverlayShade(
                 Modifier.fillMaxSize().panelContainerPadding(isFullWidth, alignmentOnWideScreens),
             contentAlignment = panelAlignment,
         ) {
-            val gestureContext = rememberGestureContext()
             Panel(
                 enableTransparency = enableTransparency,
                 spec = panelSpec,
@@ -106,7 +104,10 @@ fun ContentScope.OverlayShade(
                     Modifier.overscroll(verticalOverscrollEffect)
                         .element(panelElement)
                         .thenIf(TileRevealFlag.isEnabled) {
-                            Modifier.motionDriver(gestureContext, label = "OverlayShade")
+                            Modifier.motionDriver(
+                                contentScope = this@OverlayShade,
+                                label = "OverlayShade",
+                            )
                         }
                         .width(Dimensions.PanelWidth)
                         // TODO(440566878): Investigate if this can be optimized by replacing with

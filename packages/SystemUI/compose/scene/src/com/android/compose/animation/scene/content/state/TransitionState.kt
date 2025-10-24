@@ -279,8 +279,14 @@ sealed interface TransitionState {
         /** Whether user input is currently driving the transition. */
         abstract val isUserInputOngoing: Boolean
 
-        /** Additional gesture context whenever the transition is driven by a user gesture. */
-        abstract val gestureContext: GestureContext?
+        /**
+         * Provides contextual information to fine-tune animations.
+         *
+         * This is used to adjust motion based on details that cannot be inferred from the states
+         * alone, such as gesture velocity or the direction of the animation.
+         */
+        open val gestureContext: GestureContext?
+            get() = transformationSpec.defaultGestureContext
 
         /**
          * True when the transition reached the end and the progress won't be updated anymore.
