@@ -26,7 +26,6 @@ import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.pm.ServiceInfo;
-import android.media.AudioManager;
 import android.net.Uri;
 import android.os.BadParcelableException;
 import android.os.Build;
@@ -220,7 +219,24 @@ public final class Call {
      * The CRS is an operator-specific feature that allows a subscriber to customize the media
      * played to the called party during the establishment of an incoming call. When the MT call is
      * received, the device will present the CRS media instead of its standard ringtone. This CRS
-     * media can consist of audio, video, still images, or any combination thereof.
+     * media can consist of audio, video, or any combination thereof.
+     * <p>
+     * To maintain compatibility with third-party dialer applications that are not CRS-aware, the
+     * public video state of the call (see {@link Details#getVideoState()}) will remain
+     * {@link android.telecom.VideoProfile#STATE_AUDIO_ONLY} even if the CRS call contains video.
+     * <p>
+     * A CRS-aware dialer should check for the presence of this extra. If the value includes the
+     * {@link #CRS_MEDIA_TYPE_VIDEO} bit, the dialer is responsible for displaying the video to the
+     * user. The dialer can accomplish this by:
+     * <ol>
+     *   <li>Obtaining the {@link android.telecom.InCallService.VideoCall} instance from this call
+     *       via {@link #getVideoCall()}.</li>
+     *   <li>Creating a {@link android.view.Surface} for video rendering.</li>
+     *   <li>Passing the surface to the framework using
+     *       {@link android.telecom.InCallService.VideoCall#setDisplaySurface(Surface)}.</li>
+     * </ol>
+     * The underlying IMS stack then handles the video streaming and rendering on the provided
+     * Surface.
      * <p>
      * The value associated with this key should be an integer bitmask of the following values:
      * <ul>
@@ -231,30 +247,17 @@ public final class Call {
      * {@link Connection#putExtras(Bundle)} should be used to notify Telecom that this extra has
      * been set.
      */
+
     @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
     public static final String EXTRA_CRS_MEDIA_TYPE = "android.telecom.extra.CRS_MEDIA_TYPE";
 
     /**
-     * API to indicate the CRS (Customized Ringing Signal) mode. This defines the audio
-     * mode to be used when playing the CRS media.
-     *
-     * @hide
-     */
-    @IntDef(prefix = "CRS_MODE_", value = {CRS_MODE_RINGTONE, CRS_MODE_IN_CALL})
-    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
-    public @interface CrsMode {
-    }
-
-    /** Indicates CRS contains audio */
-    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
-    public static final int CRS_MODE_RINGTONE = AudioManager.MODE_RINGTONE;
-    /** Indicates CRS contains video */
-    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
-    public static final int CRS_MODE_IN_CALL = AudioManager.MODE_IN_CALL;
-
-    /**
      * Extra key to indicate the audio mode that should be set for playing the network-provided
      * Customized Ringing Signal (CRS).
+     * <p>
+     * Legacy OEM implementations may use {@link android.media.AudioManager#MODE_IN_CALL} due to HAL
+     * implementation internals, where newer implementations are expected to use
+     * {@link android.media.AudioManager#MODE_RINGTONE}.
      * <p>
      * The value associated with this key should be one of the following constants from
      * {@link android.media.AudioManager}:
