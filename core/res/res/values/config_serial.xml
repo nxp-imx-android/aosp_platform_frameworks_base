@@ -16,10 +16,16 @@
   -->
 
 <resources>
-    <!-- List of paths to serial ports that are available to the serial manager.
+    <!-- List of paths to serial ports that are available to the serial manager,
          for example, /dev/ttyUSB0
     -->
     <string-array translatable="false" name="config_serialPorts">
+    </string-array>
+
+    <!-- List of paths to serial ports that are blocked from being available to the serial manager,
+         for example, /dev/ttyUSB0
+    -->
+    <string-array translatable="false" name="config_blockedSerialPorts">
     </string-array>
 
     <!-- Component name of the activity that shows the request for access to a serial port. -->
