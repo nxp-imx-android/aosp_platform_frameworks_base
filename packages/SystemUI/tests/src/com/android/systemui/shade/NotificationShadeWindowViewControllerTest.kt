@@ -23,7 +23,6 @@ import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
-import android.view.Choreographer
 import android.view.Display
 import android.view.MotionEvent
 import android.view.View
@@ -72,7 +71,6 @@ import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.domain.interactor.ShadeAnimationInteractorLegacyImpl
 import com.android.systemui.shade.domain.interactor.shadeStatusBarComponentsInteractor
-import com.android.systemui.statusbar.BlurUtils
 import com.android.systemui.statusbar.DragDownHelper
 import com.android.systemui.statusbar.LockscreenShadeTransitionController
 import com.android.systemui.statusbar.NotificationInsetsController
@@ -100,6 +98,7 @@ import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.time.FakeSystemClock
+import com.android.systemui.window.ui.BlurChoreographer
 import com.android.systemui.window.ui.viewmodel.WindowRootViewModel
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
@@ -178,8 +177,7 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
     @Mock lateinit var sysUIKeyEventHandler: SysUIKeyEventHandler
     @Mock lateinit var primaryBouncerInteractor: PrimaryBouncerInteractor
     @Mock lateinit var alternateBouncerInteractor: AlternateBouncerInteractor
-    @Mock private lateinit var blurUtils: BlurUtils
-    @Mock private lateinit var choreographer: Choreographer
+    @Mock private lateinit var blurChoreographer: BlurChoreographer
     @Mock private lateinit var windowViewModelFactory: WindowRootViewModel.Factory
     private val notificationLaunchAnimationRepository = NotificationLaunchAnimationRepository()
     private val notificationLaunchAnimationInteractor =
@@ -234,9 +232,8 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
         fakeClock = FakeSystemClock()
         underTest =
             NotificationShadeWindowViewController(
-                blurUtils,
+                blurChoreographer,
                 windowViewModelFactory,
-                choreographer,
                 lockscreenShadeTransitionController,
                 falsingCollector,
                 sysuiStatusBarStateController,

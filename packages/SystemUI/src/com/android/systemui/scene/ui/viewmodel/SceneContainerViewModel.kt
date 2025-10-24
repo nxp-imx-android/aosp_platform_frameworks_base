@@ -91,12 +91,14 @@ constructor(
     val animateQsTilesViewModelFactory: AnimateQsTilesViewModel.Factory,
     @Assisted view: View,
     @Assisted private val motionEventHandlerReceiver: (MotionEventHandler?) -> Unit,
+    private val sceneTransitionBlurViewModelFactory: SceneTransitionBlurViewModel.Factory,
 ) : ExclusiveActivatable() {
 
     /** The scene that should be rendered. */
     val currentScene: StateFlow<SceneKey> = sceneInteractor.currentScene
 
     private val hydrator = Hydrator("SceneContainerViewModel.hydrator")
+    val blurViewModel: SceneTransitionBlurViewModel = sceneTransitionBlurViewModelFactory.create()
 
     /** Whether the container is visible. */
     val isVisible: Boolean by hydrator.hydratedStateOf("isVisible", sceneInteractor.isVisible)
@@ -167,6 +169,7 @@ constructor(
 
             coroutineScope {
                 launch { hydrator.activate() }
+                launch("SceneTransitionBlurViewModel") { blurViewModel.activate() }
                 launch("SceneContainerHapticsViewModel") { hapticsViewModel.activate() }
                 launch("NotificationContainerInteractor") {
                     notificationContainerInteractor.activate()
