@@ -35,6 +35,7 @@ import android.window.RemoteTransition;
 import android.window.TransitionFilter;
 
 import com.android.systemui.animation.OriginRemoteTransition.TransitionPlayer;
+import com.android.systemui.animation.shared.IOriginTransitionCallback;
 import com.android.systemui.animation.shared.IOriginTransitions;
 
 import java.lang.annotation.Retention;
@@ -258,6 +259,8 @@ public class OriginTransitionSession {
         private String mName;
         @Nullable private Predicate<RemoteTransition> mIntentStarter;
 
+        @Nullable private IOriginTransitionCallback mOriginTransitionCallback;
+
         /** Create a builder that only supports entry transition. */
         public Builder(Context context) {
             this(context, /* originTransitions= */ null);
@@ -300,6 +303,12 @@ public class OriginTransitionSession {
                     });
         }
 
+        /** Specify a callback that will receive event updates around the transition. */
+        public Builder withCallback(@Nullable  IOriginTransitionCallback callback) {
+            mOriginTransitionCallback = callback;
+            return this;
+        }
+
         private static ActivityOptions createDefaultActivityOptions(
                 @Nullable RemoteTransition transition) {
             ActivityOptions options =
@@ -334,7 +343,8 @@ public class OriginTransitionSession {
 
         /** Add an origin entry transition to the builder. */
         public Builder withEntryTransition(
-                UIComponent entryOrigin, TransitionPlayer entryPlayer) {
+                UIComponent entryOrigin,
+                TransitionPlayer entryPlayer) {
             mEntryTransitionSupplier =
                     () ->
                             new OriginRemoteTransition(
@@ -342,7 +352,8 @@ public class OriginTransitionSession {
                                     /* isEntry= */ true,
                                     entryOrigin,
                                     entryPlayer,
-                                    mHandler);
+                                    mHandler,
+                                    mOriginTransitionCallback);
             return this;
         }
 
@@ -362,7 +373,8 @@ public class OriginTransitionSession {
                                         /* isEntry= */ false,
                                         exitTarget,
                                         exitPlayer,
-                                        mHandler), null);
+                                        mHandler,
+                                        mOriginTransitionCallback), null);
             return this;
         }
 
@@ -396,7 +408,8 @@ public class OriginTransitionSession {
                     /* isEntry= */ false,
                     exitTarget,
                     exitPlayer,
-                    mHandler), filter);
+                    mHandler,
+                    mOriginTransitionCallback), filter);
             return this;
         }
 
