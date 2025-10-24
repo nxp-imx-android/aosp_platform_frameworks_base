@@ -42,11 +42,13 @@ import android.annotation.TestApi;
 import android.annotation.UserIdInt;
 import android.annotation.WorkerThread;
 import android.annotation.XmlRes;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityThread;
 import android.app.AppDetailsActivity;
 import android.app.PackageDeleteObserver;
 import android.app.PackageInstallObserver;
+import android.app.PendingIntent;
 import android.app.PropertyInvalidatedCache;
 import android.app.admin.DevicePolicyManager;
 import android.app.usage.StorageStatsManager;
@@ -949,6 +951,7 @@ public abstract class PackageManager {
             MATCH_HIDDEN_UNTIL_INSTALLED_COMPONENTS,
             MATCH_APEX,
             MATCH_ARCHIVED_PACKAGES,
+            GET_APP_LOCK_INFO,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ApplicationInfoFlagsBits {}
@@ -973,6 +976,7 @@ public abstract class PackageManager {
             GET_DISABLED_UNTIL_USED_COMPONENTS,
             GET_UNINSTALLED_PACKAGES,
             MATCH_QUARANTINED_COMPONENTS,
+            GET_APP_LOCK_INFO,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ComponentInfoFlagsBits {}
@@ -998,6 +1002,7 @@ public abstract class PackageManager {
             GET_UNINSTALLED_PACKAGES,
             MATCH_CLONE_PROFILE_LONG,
             MATCH_QUARANTINED_COMPONENTS,
+            GET_APP_LOCK_INFO,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ResolveInfoFlagsBits {}
@@ -1404,6 +1409,15 @@ public abstract class PackageManager {
     @FlaggedApi(android.content.pm.Flags.FLAG_FIX_DUPLICATED_FLAGS)
     @SystemApi
     public static final long MATCH_CLONE_PROFILE_LONG = 1L << 34;
+
+    /**
+     * {@link ApplicationInfo}, {@link ComponentInfo}, and {@link ResolveInfo} flag: return the
+     * {@link ApplicationInfo#isAppLockSupported} and {@link ApplicationInfo#isAppLockEnabled}
+     * associated with an application. The caller should have the
+     * {@link Manifest.permission.LOCK_APPS} permission, or the data will not be returned.
+     */
+    @FlaggedApi(android.security.Flags.FLAG_APP_LOCK_APIS)
+    public static final long GET_APP_LOCK_INFO = 1L << 35;
 
     //-------------------------------------------------------------------------
     // End of GET_ and MATCH_ flags
@@ -5192,6 +5206,23 @@ public abstract class PackageManager {
     @Deprecated
     public static final String EXTRA_INTENT_FILTER_VERIFICATION_PACKAGE_NAME
             = "android.content.pm.extra.INTENT_FILTER_VERIFICATION_PACKAGE_NAME";
+
+    /**
+     * The action used to launch an activity for the user to set the App Lock state for an app.
+     *
+     * @hide
+     */
+    public static final String ACTION_SET_APP_LOCK = "android.content.pm.action.SET_APP_LOCK";
+
+    /**
+     * Extra field name used with {@link #ACTION_SET_APP_LOCK} for the new App Lock state to be set
+     * after successful authentication. This should be a boolean, where {@code true} means App Lock
+     * should be enabled, and {@code false} means that App Lock should be disabled.
+     *
+     * @hide
+     */
+    public static final String EXTRA_APP_LOCK_NEW_STATE =
+            "android.content.pm.extra.APP_LOCK_NEW_STATE";
 
     /**
      * The action used to request that the user approve a permission request
@@ -10529,6 +10560,72 @@ public abstract class PackageManager {
      */
     public @Nullable String getSuspendingPackage(@NonNull String suspendedPackage) {
         throw new UnsupportedOperationException("getSuspendingPackage not implemented");
+    }
+
+    /**
+     * Returns a {@link PendingIntent} to launch an {@link Activity} that allows the caller to
+     * set App Lock for the specified package. Returns null if the App Lock state of the package
+     * cannot be set, either because App Lock is not supported for that package, or because it is
+     * already set to that value.
+     *
+     * <p> Before calling this API to avoid getting a null {@link PendingIntent), callers should
+     * first verify that App Lock is supported for the specified package by first checking
+     * {@link ApplicationInfo#isAppLockSupported}, or if it's already at the target state for that
+     * package by checking {@link ApplicationInfo#isAppLockEnabled}. The {@link PendingIntent)
+     * resolves to
+     * an activity, which allows the user to enroll a device credential if one isn't enrolled, and
+     * then requires authentication before setting the App Lock enablement state as enabled or
+     * disabled.
+     *
+     * @param packageName the package to enable or disable App Lock.
+     * @param enabled true when the user would like to enable App Lock for the given package, false
+     *                otherwise
+     * @return a {@link PendingIntent} to launch an activity to set App Lock for the passed in
+     *         package. If the package does not support App Lock or the package's App Lock state is
+     *         already in the passed in state, return null.
+     */
+    @FlaggedApi(android.security.Flags.FLAG_APP_LOCK_APIS)
+    @RequiresPermission(Manifest.permission.LOCK_APPS)
+    @Nullable
+    public PendingIntent getEnableAppLockIntentForPackage(@NonNull String packageName,
+            boolean enabled) {
+        throw new UnsupportedOperationException(
+                "getEnableAppLockIntentForPackage has not been implemented");
+    }
+
+    /**
+     * Set App Lock enablement state (enabled or disabled). This should only be called after a
+     * successful authentication with either Device Credential or a Class 3 Biometric.
+     *
+     * Only called by the system. This will do UID checks to verify the caller.
+     *
+     * @param packageName the package to enable or disable App Lock.
+     * @param enabled true when the user would like to enable App Lock for the given package, false
+     *                otherwise
+     * @return true if App Lock was successfully set to the target state for the given package for
+     *         the given context, false otherwise.
+     * @throws SecurityException if the caller isn't system.
+     *
+     * @hide
+     */
+    public boolean setPackageAppLockEnabled(@NonNull String packageName, boolean enabled) {
+        throw new UnsupportedOperationException(
+                "setPackageAppLockEnabled has not been implemented");
+    }
+
+    /**
+     * Check whether App Lock is enabled for a given package.
+     *
+     * Only called by the system. This will do UID checks to verify the caller.
+     *
+     * @param packageName the package being queried for the App Lock state
+     * @return True if App Lock is enabled for the given package and user, false otherwise
+     * @throws SecurityException if the caller isn't system.
+     *
+     * @hide
+     */
+    public boolean isPackageAppLockEnabled(@NonNull String packageName) {
+        throw new UnsupportedOperationException("isPackageAppLockEnabled has not been implemented");
     }
 
     /**

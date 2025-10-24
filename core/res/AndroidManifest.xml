@@ -2577,6 +2577,15 @@
     <permission android:name="android.permission.SUSPEND_APPS"
         android:protectionLevel="signature|role|verifier" />
 
+    <!-- Permission granted to apps holding the {@link android.app.role.RoleManager#ROLE_HOME} role
+         that allows them to enable app lock. App Lock is a feature that allows users to require
+         authentication before opening apps.
+         <p>Protection level: internal|role
+         @FlaggedApi(android.security.Flags.FLAG_APP_LOCK_APIS) -->
+    <permission android:name="android.permission.LOCK_APPS"
+        android:protectionLevel="internal|role"
+        android:featureFlag="android.security.app_lock_apis" />
+
     <!-- @SystemApi
          @hide
          @FlaggedApi("android.content.pm.quarantined_enabled")

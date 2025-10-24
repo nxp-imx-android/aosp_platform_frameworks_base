@@ -517,6 +517,7 @@ java_aconfig_library {
     apex_available: [
         "//apex_available:platform",
         "com.android.conscrypt",
+        "com.android.permission",
         "com.android.tethering",
         "com.android.wifi",
     ],
