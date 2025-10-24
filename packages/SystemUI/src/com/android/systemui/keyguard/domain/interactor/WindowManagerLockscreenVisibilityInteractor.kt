@@ -124,7 +124,8 @@ constructor(
         if (SceneContainerFlag.isEnabled) {
                 sceneInteractor.get().transitionState.flatMapLatestConflated { state ->
                     when {
-                        state.isTransitioning(from = Scenes.Lockscreen, to = Scenes.Gone) ->
+                        state.isTransitioning(from = Scenes.Lockscreen, to = Scenes.Gone) ||
+                            state.isTransitioning(from = Scenes.Shade, to = Scenes.Gone) ->
                             isDeviceEnteredDirectly
                         state.isTransitioning(from = Overlays.Bouncer, to = Scenes.Gone) ->
                             (state as Transition).progress.map { progress ->

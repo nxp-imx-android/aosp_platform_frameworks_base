@@ -257,18 +257,18 @@ constructor(
                         )
                 }
             } else {
-                if (sceneBackInteractor.get().backStack.value.peek() != null) {
-                    // If there is a back stack, replacing the Lockscreen scene at the bottom of the
-                    // stack triggers device entry without necessarily dismissing the current scene.
+                val willAnimateToGone =
+                    keyguardDismissActionInteractor.get().willAnimateDismissActionOnLockscreen.value
+                if (
+                    !willAnimateToGone && sceneBackInteractor.get().backStack.value.peek() != null
+                ) {
+                    // If we don't need to animate to Scenes.Gone, and there's a back stack,
+                    // replacing the Lockscreen scene at the bottom of the stack triggers device
+                    // entry without animating a transition away from the current scene.
                     sceneBackInteractor.get().replaceLockscreenSceneOnBackStack()
                 } else {
                     val transitionKey =
-                        if (
-                            keyguardDismissActionInteractor
-                                .get()
-                                .willAnimateDismissActionOnLockscreen
-                                .value
-                        ) {
+                        if (willAnimateToGone) {
                             KeyguardTransitionKeys.WithAnimationOverLockscreen
                         } else {
                             null

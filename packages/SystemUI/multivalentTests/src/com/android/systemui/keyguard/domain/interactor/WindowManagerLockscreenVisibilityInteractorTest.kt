@@ -22,8 +22,10 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
+import com.android.systemui.deviceentry.data.repository.deviceEntryRepository
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
+import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
@@ -251,6 +253,42 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             setSceneTransition(ObservableTransitionState.Idle(Scenes.Gone))
             sceneInteractor.changeScene(Scenes.Gone, "")
             assertThat(currentScene).isEqualTo(Scenes.Gone)
+            assertThat(isSurfaceBehindVisible).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun surfaceBehindVisibility_fromShadeToGone_dependsOnDeviceEntry() =
+        kosmos.runTest {
+            val isSurfaceBehindVisible by collectLastValue(underTest.surfaceBehindVisibility)
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+
+            setSceneTransition(ObservableTransitionState.Idle(Scenes.Lockscreen))
+            sceneInteractor.changeScene(Scenes.Lockscreen, "")
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(isSurfaceBehindVisible).isFalse()
+
+            setSceneTransition(ObservableTransitionState.Idle(Scenes.Shade))
+            sceneInteractor.changeScene(Scenes.Shade, "")
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
+            assertThat(isSurfaceBehindVisible).isFalse()
+
+            // Mark the device unlocked so we can transition to Gone.
+            deviceEntryRepository.deviceUnlockStatus.value = DeviceUnlockStatus(true, null)
+            runCurrent()
+
+            // Start the transition to Gone, the surface should become visible.
+            sceneInteractor.changeScene(Scenes.Gone, "")
+            setSceneTransition(
+                ObservableTransitionState.Transition(
+                    fromScene = Scenes.Shade,
+                    toScene = Scenes.Gone,
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                    progress = flowOf(0.1f),
+                    currentScene = flowOf(Scenes.Gone),
+                )
+            )
             assertThat(isSurfaceBehindVisible).isTrue()
         }
 
