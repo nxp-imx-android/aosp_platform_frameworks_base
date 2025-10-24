@@ -240,8 +240,9 @@ size_t PipelineCacheStore::getLastSizeBytes() const {
 PipelineCache::PipelineCache(std::string storePath, useconds_t writeThrottleInterval)
         : mStorePath(std::move(storePath))
         , mPipelineCacheStore(writeThrottleInterval)
+        , mHasCache(false)
         , mKey(SkData::MakeEmpty())
-        , mData(SkData::MakeEmpty()) {
+        , mData(nullptr) {
     PipelineCacheData cache;
     auto result = PipelineCacheData::load(mStorePath, cache);
     if (result.outcome != PipelineCacheData::LoadResult::Success) {
@@ -251,6 +252,7 @@ PipelineCache::PipelineCache(std::string storePath, useconds_t writeThrottleInte
         return;
     }
 
+    mHasCache = true;
     mKey = cache.key;
     mData = cache.data;
 }
@@ -259,6 +261,10 @@ sk_sp<SkData> PipelineCache::tryLoad(const SkData& key) {
     ATRACE_NAME("PipelineCache::tryLoad");
 
     if (!key.equals(mKey.get())) {
+        return nullptr;
+    }
+
+    if (!mHasCache) {
         return nullptr;
     }
 
