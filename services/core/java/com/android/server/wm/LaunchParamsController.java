@@ -91,8 +91,19 @@ class LaunchParamsController {
             @LaunchParamsModifier.Phase int phase, LaunchParams result) {
         result.reset();
 
-        if (task != null || activity != null) {
-            mPersister.getLaunchParams(task, activity, result);
+        if (com.android.wm.shell.Flags.limitPersistedLaunchParamsFreeform()) {
+            if (task != null) {
+                if (task.supportsPersistedLaunchState()) {
+                    // If task exists, check if it supports loading persisted state.
+                    mPersister.getLaunchParams(task, activity, result);
+                }
+            } else if (activity != null) {
+                mPersister.getLaunchParams(null, activity, result);
+            }
+        } else {
+            if (task != null || activity != null) {
+                mPersister.getLaunchParams(task, activity, result);
+            }
         }
 
         // We start at the last registered {@link LaunchParamsModifier} as this represents

@@ -2471,16 +2471,24 @@ class Task extends TaskFragment {
             return;
         }
 
-        // Don't persist state if Task Display Area isn't in freeform mode. Then the task will be
-        // launched back to its last state in a freeform Task Display Area when it's launched in a
-        // freeform Task Display Area next time.
-        if (getTaskDisplayArea() == null
-                || getTaskDisplayArea().getWindowingMode() != WINDOWING_MODE_FREEFORM) {
+
+        if (!supportsPersistedLaunchState()) {
             return;
         }
 
         // Saves the new state so that we can launch the activity at the same location.
         mTaskSupervisor.mLaunchParamsPersister.saveTask(this, display);
+    }
+
+    /**
+     * Check if the Task supports persisting its launch state
+     */
+    boolean supportsPersistedLaunchState() {
+        // Don't persist state if Task Display Area isn't in freeform mode. Then the task will be
+        // launched back to its last state in a freeform Task Display Area when it's launched in a
+        // freeform Task Display Area next time.
+        final TaskDisplayArea tda = getTaskDisplayArea();
+        return tda != null && tda.getWindowingMode() == WINDOWING_MODE_FREEFORM;
     }
 
     /**
