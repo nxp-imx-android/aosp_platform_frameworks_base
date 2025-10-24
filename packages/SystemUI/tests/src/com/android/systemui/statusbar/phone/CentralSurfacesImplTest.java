@@ -30,7 +30,6 @@ import static android.provider.Settings.Global.HEADS_UP_ON;
 import static com.android.systemui.flags.Flags.SHORTCUT_LIST_SEARCH_LAYOUT;
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
 import static com.android.systemui.statusbar.StatusBarState.SHADE;
-import static com.android.systemui.statusbar.phone.CentralSurfaces.MSG_DISMISS_KEYBOARD_SHORTCUTS_MENU;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -49,7 +48,6 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import static java.util.Collections.emptySet;
@@ -62,8 +60,6 @@ import android.app.trust.TrustManager;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
-import android.graphics.Rect;
 import android.hardware.devicestate.DeviceState;
 import android.hardware.devicestate.DeviceStateManager;
 import android.hardware.display.AmbientDisplayConfiguration;
@@ -85,7 +81,6 @@ import android.util.SparseArray;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
-import android.view.WindowMetrics;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -152,8 +147,6 @@ import com.android.systemui.shade.ShadeLogger;
 import com.android.systemui.shade.StatusBarLongPressGestureDetector;
 import com.android.systemui.shared.notifications.domain.interactor.NotificationSettingsInteractor;
 import com.android.systemui.statusbar.CommandQueue;
-import com.android.systemui.statusbar.KeyboardShortcutListSearch;
-import com.android.systemui.statusbar.KeyboardShortcuts;
 import com.android.systemui.statusbar.KeyguardIndicationController;
 import com.android.systemui.statusbar.LightRevealScrim;
 import com.android.systemui.statusbar.LockscreenShadeTransitionController;
@@ -222,7 +215,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.io.ByteArrayOutputStream;
@@ -360,8 +352,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     @Mock IPowerManager mPowerManagerService;
     @Mock ActivityStarter mActivityStarter;
     @Mock private WindowRootViewVisibilityInteractor mWindowRootViewVisibilityInteractor;
-    @Mock private KeyboardShortcuts mKeyboardShortcuts;
-    @Mock private KeyboardShortcutListSearch mKeyboardShortcutListSearch;
     @Mock private PackageManager mPackageManager;
     @Mock private NotificationManager mNotificationManager;
     @Mock private GlanceableHubContainerController mGlanceableHubContainerController;
@@ -525,13 +515,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     private void createCentralSurfaces() {
         mMainExecutor = new FakeExecutor(mFakeSystemClock);
         mMessageRouter = new MessageRouterImpl(mMainExecutor);
-        mKeyboardShortcuts = mock(KeyboardShortcuts.class);
-        mKeyboardShortcutListSearch = mock(KeyboardShortcutListSearch.class);
-        // Test setup for legacy version
-        mKeyboardShortcuts.mContext = mContext;
-        mKeyboardShortcutListSearch.mContext = mContext;
-        KeyboardShortcuts.sInstance = mKeyboardShortcuts;
-        KeyboardShortcutListSearch.sInstance = mKeyboardShortcutListSearch;
 
         ConfigurationController configurationController = new ConfigurationControllerImpl(mContext);
         mCentralSurfaces = new CentralSurfacesImpl(
@@ -1198,81 +1181,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
         // The default is to call the one with the callback argument
         verify(mScrimController, atLeastOnce()).legacyTransitionTo(captor.capture(), any());
         assertThat(captor.getValue()).isNotEqualTo(ScrimState.BRIGHTNESS_MIRROR);
-    }
-
-    @Test
-    public void dismissKeyboardShortcuts_largeScreen_bothFlagsEnabled_doesNotDismissAny() {
-        switchToLargeScreen();
-        mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, true);
-        createCentralSurfaces();
-
-        dismissKeyboardShortcuts();
-
-        verifyNoMoreInteractions(mKeyboardShortcuts, mKeyboardShortcutListSearch);
-    }
-
-    @Test
-    public void dismissKeyboardShortcuts_smallScreen_bothFlagsEnabled_doesNotDismissAny() {
-        switchToSmallScreen();
-        mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, true);
-        createCentralSurfaces();
-
-        dismissKeyboardShortcuts();
-
-        verifyNoMoreInteractions(mKeyboardShortcuts, mKeyboardShortcutListSearch);
-    }
-
-    @Test
-    public void toggleKeyboardShortcuts_largeScreen_bothFlagsEnabled_doesNotTogglesAny() {
-        switchToLargeScreen();
-        mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, true);
-        createCentralSurfaces();
-
-        int deviceId = 321;
-        toggleKeyboardShortcuts(/* deviceId= */ deviceId);
-
-        verifyNoMoreInteractions(mKeyboardShortcuts, mKeyboardShortcutListSearch);
-    }
-
-    @Test
-    public void toggleKeyboardShortcuts_smallScreen_bothFlagsEnabled_doesNotToggleAny() {
-        switchToSmallScreen();
-        mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, true);
-        createCentralSurfaces();
-
-        int deviceId = 789;
-        toggleKeyboardShortcuts(/* deviceId= */ deviceId);
-
-        verifyNoMoreInteractions(mKeyboardShortcuts, mKeyboardShortcutListSearch);
-    }
-
-    private void dismissKeyboardShortcuts() {
-        mMessageRouter.sendMessage(MSG_DISMISS_KEYBOARD_SHORTCUTS_MENU);
-        mMainExecutor.runAllReady();
-    }
-
-    private void toggleKeyboardShortcuts(int deviceId) {
-        mMessageRouter.sendMessage(new CentralSurfaces.KeyboardShortcutsMessage(deviceId));
-        mMainExecutor.runAllReady();
-    }
-
-    private void switchToLargeScreen() {
-        switchToScreenSize(1280, 800);
-    }
-
-    private void switchToSmallScreen() {
-        switchToScreenSize(504, 1122);
-    }
-
-    private void switchToScreenSize(int widthDp, int heightDp) {
-        WindowMetrics windowMetrics = Mockito.mock(WindowMetrics.class);
-
-        Configuration configuration = new Configuration();
-        configuration.densityDpi = DisplayMetrics.DENSITY_DEFAULT;
-        mContext.getOrCreateTestableResources().overrideConfiguration(configuration);
-
-        when(windowMetrics.getBounds()).thenReturn(new Rect(0, 0, widthDp, heightDp));
-        when(mWindowManager.getCurrentWindowMetrics()).thenReturn(windowMetrics);
     }
 
     /**
