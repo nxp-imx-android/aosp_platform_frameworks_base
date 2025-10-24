@@ -9303,6 +9303,10 @@
             <flag name="low_light" value="0x1" />
             <flag name="home_panel" value="0x2" />
         </attr>
+
+        <!-- Whether the dream is user selectable. Default to true.
+        @hide -->
+        <attr name="userSelectable" format="boolean" />
     </declare-styleable>
 
     <!--  Use <code>trust-agent</code> as the root tag of the XML resource that
