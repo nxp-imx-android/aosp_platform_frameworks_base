@@ -98,7 +98,7 @@ constructor(
         )
     }
 
-    fun logSceneChangeRejection(
+    fun logContentChangeRejection(
         from: ContentKey?,
         to: ContentKey?,
         originalChangeReason: String?,

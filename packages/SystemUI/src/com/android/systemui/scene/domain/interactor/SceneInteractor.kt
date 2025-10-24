@@ -570,7 +570,7 @@ constructor(
         }
 
         if (from == to) {
-            logger.logSceneChangeRejection(
+            logger.logContentChangeRejection(
                 from = from,
                 to = to,
                 originalChangeReason = loggingReason,
@@ -580,7 +580,7 @@ constructor(
         }
 
         if (to !in repository.allContentKeys) {
-            logger.logSceneChangeRejection(
+            logger.logContentChangeRejection(
                 from = from,
                 to = to,
                 originalChangeReason = loggingReason,
@@ -590,7 +590,7 @@ constructor(
         }
 
         if (disabledContentInteractor.isDisabled(to)) {
-            logger.logSceneChangeRejection(
+            logger.logContentChangeRejection(
                 from = from,
                 to = to,
                 originalChangeReason = loggingReason,
@@ -646,7 +646,7 @@ constructor(
         }
 
         if (to != null && disabledContentInteractor.isDisabled(to)) {
-            logger.logSceneChangeRejection(
+            logger.logContentChangeRejection(
                 from = from,
                 to = to,
                 originalChangeReason = loggingReason,
@@ -657,7 +657,7 @@ constructor(
 
         return when {
             to != null && from != null && to == from -> {
-                logger.logSceneChangeRejection(
+                logger.logContentChangeRejection(
                     from = from,
                     to = to,
                     originalChangeReason = loggingReason,
@@ -667,7 +667,7 @@ constructor(
             }
 
             to != null && to !in repository.allContentKeys -> {
-                logger.logSceneChangeRejection(
+                logger.logContentChangeRejection(
                     from = from,
                     to = to,
                     originalChangeReason = loggingReason,
@@ -677,7 +677,7 @@ constructor(
             }
 
             from != null && from !in currentOverlays.value -> {
-                logger.logSceneChangeRejection(
+                logger.logContentChangeRejection(
                     from = from,
                     to = to,
                     originalChangeReason = loggingReason,
@@ -687,7 +687,7 @@ constructor(
             }
 
             to != null && to in currentOverlays.value -> {
-                logger.logSceneChangeRejection(
+                logger.logContentChangeRejection(
                     from = from,
                     to = to,
                     originalChangeReason = loggingReason,
@@ -697,7 +697,7 @@ constructor(
             }
 
             to == Overlays.Bouncer && currentScene.value == Scenes.Gone -> {
-                logger.logSceneChangeRejection(
+                logger.logContentChangeRejection(
                     from = from,
                     to = to,
                     originalChangeReason = loggingReason,
