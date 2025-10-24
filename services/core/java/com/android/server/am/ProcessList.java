@@ -170,6 +170,7 @@ import com.android.server.ServiceThread;
 import com.android.server.StorageManagerInternal;
 import com.android.server.SystemConfig;
 import com.android.server.Watchdog;
+import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.PlatformCompatCache;
 import com.android.server.am.psc.ProcessListInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
@@ -5312,14 +5313,14 @@ public final class ProcessList extends ProcessListInternal
      * @param activeUids The set of UIDs whose proc state sequence was just incremented.
      */
     @GuardedBy(anyOf = {"mService", "mProcLock"})
-    void notifyProcStateChangedForNetworkLOSP(ActiveUids activeUids) {
+    void notifyProcStateChangedForNetworkLOSP(ActiveUidsInternal activeUids) {
         if (mService.mConstants.mNetworkAccessTimeoutMs <= 0) {
             return;
         }
         // Used for identifying which uids need to block for network.
         ArrayList<Integer> blockingUids = null;
         for (int i = activeUids.size() - 1; i >= 0; --i) {
-            final UidRecord uidRec = activeUids.valueAt(i);
+            final UidRecord uidRec = (UidRecord) activeUids.valueAt(i);
             // If the network is not restricted for uid, then nothing to do here.
             if (!mService.mInjector.isNetworkRestrictedForUid(uidRec.getUid())) {
                 continue;

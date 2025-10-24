@@ -608,7 +608,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             new ComputeConnectionsConsumer();
 
     OomAdjusterImpl(ActivityManagerService service, ProcessListInternal processList,
-            ActiveUids activeUids, ServiceThread adjusterThread, Constants oomConstants,
+            ActiveUidsInternal activeUids, ServiceThread adjusterThread, Constants oomConstants,
             GlobalState globalState, Injector injector, Callback callback) {
         super(service, processList, activeUids, adjusterThread, oomConstants, globalState, injector,
                 callback);
@@ -788,7 +788,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         final long nowElapsed = mInjector.getElapsedRealtimeMillis();
         final long oldTime = now - mConstants.mMaxEmptyTimeMillis;
 
-        ActiveUids activeUids = mTmpUidRecords;
+        final ActiveUidsInternal activeUids = mTmpUidRecords;
         activeUids.clear();
         mTmpOomAdjusterArgs.update(topApp, now, UNKNOWN_ADJ, oomAdjReason, activeUids, false);
 
@@ -847,10 +847,10 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         // Repopulate any uid record that may have changed.
         for (int i = 0, size = activeUids.size(); i < size; i++) {
-            final UidRecord ur = activeUids.valueAt(i);
-            ur.reset();
-            for (int j = ur.getNumOfProcs() - 1; j >= 0; j--) {
-                final ProcessRecordInternal proc = ur.getProcessRecordByIndex(j);
+            final UidRecordInternal uidRec = activeUids.valueAt(i);
+            uidRec.reset();
+            for (int j = uidRec.getNumOfProcs() - 1; j >= 0; j--) {
+                final ProcessRecordInternal proc = uidRec.getProcessRecordByIndex(j);
                 updateAppUidRecIfNecessaryLSP(proc);
             }
         }
