@@ -14221,9 +14221,8 @@ public class Notification implements Parcelable
              * {@link #FLAG_PROMOTED_ONGOING is promoted} this value is used to style (e.g.
              * color) the segment.
              *
-             * <p>If an app specifies <em>both</em> color and semantic style, the style overrides
-             * the color. This allows apps to provide a color as a fallback on platforms that do not
-             * support style.
+             * <p>If an app specifies <em>both</em> color and semantic style, the color overrides
+             * the style.
              */
             @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
             public @NonNull Segment setSemanticStyle(@SemanticStyle int semanticStyle) {
@@ -14331,9 +14330,8 @@ public class Notification implements Parcelable
              * {@link #FLAG_PROMOTED_ONGOING is promoted} this value is used to style (e.g.
              * color) the point.
              *
-             * <p>If an app specifies <em>both</em> color and semantic style, the style overrides
-             * the color. This allows apps to provide a color as a fallback on platforms that do not
-             * support style.
+             * <p>If an app specifies <em>both</em> color and semantic style, the color overrides
+             * the style.
              */
             @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
             public @NonNull Point setSemanticStyle(@SemanticStyle int semanticStyle) {
