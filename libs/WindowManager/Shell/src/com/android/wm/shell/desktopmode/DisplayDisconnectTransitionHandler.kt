@@ -17,15 +17,16 @@
 package com.android.wm.shell.desktopmode
 
 import android.os.IBinder
-import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
 import android.view.SurfaceControl
 import android.window.DesktopExperienceFlags
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
+import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import java.util.Optional
@@ -75,6 +76,7 @@ class DisplayDisconnectTransitionHandler(
         transition: IBinder,
         request: TransitionRequestInfo,
     ): WindowContainerTransaction? {
+        logV("handleRequest: transition=$transition, request=$request")
         val displayChange = request.displayChange
         if (
             DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue &&
@@ -82,16 +84,9 @@ class DisplayDisconnectTransitionHandler(
         ) {
             var reparentDisplay = displayChange.disconnectReparentDisplay
             if (reparentDisplay == INVALID_DISPLAY) {
-                val display = displayController.getDisplay(displayChange.displayId)
-                // If the display is connected but can't host tasks, we should still handle this
-                // as a disconnect transition, so determine the reparentDisplay here.
-                if (display != null && !display.canHostTasks()) {
-                    reparentDisplay =
-                        rootTaskDisplayAreaOrganizer.defaultDisplayArea?.displayId
-                            ?: DEFAULT_DISPLAY
-                }
+                logV("handleRequest: no reparent display; returning")
+                return null
             }
-            if (reparentDisplay == INVALID_DISPLAY) return null
             // This is a disconnect transition; flag it so we handle animation here later.
             // We need to do this here to prevent default handler from attempting to animate
             // disconnect transitions as this potentially crashes.
@@ -104,5 +99,13 @@ class DisplayDisconnectTransitionHandler(
         }
         // Return null since another handler may want to make specific task changes.
         return null
+    }
+
+    private fun logV(msg: String, vararg arguments: Any?) {
+        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    companion object {
+        private const val TAG = "DisplayDisconnectTransitionHandler"
     }
 }

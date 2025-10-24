@@ -3352,34 +3352,43 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return new Point(w, h);
     }
 
-    void onDisplayInfoChangeApplied() {
+    void updateContentMode() {
         if (!DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
             Slog.e(TAG, "ShouldShowSystemDecors shouldn't be updated when the flag is off.");
         }
-
-        if (!allowContentModeSwitch()) {
-            return;
+        if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
+            Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER,
+                    "updateContentMode, displayId=" + getDisplayId());
         }
+        try {
+            if (!allowContentModeSwitch()) {
+                return;
+            }
 
-        final boolean shouldShowContent = mDisplay.canHostTasks();
-        if (shouldShowContent == mWmService.mDisplayWindowSettings
+            final boolean shouldShowContent = mDisplay.canHostTasks();
+            if (shouldShowContent == mWmService.mDisplayWindowSettings
                 .shouldShowSystemDecorsLocked(this)) {
-            return;
-        }
-        mWmService.mDisplayWindowSettings.setShouldShowSystemDecorsLocked(this, shouldShowContent);
+                return;
+            }
+            mWmService.mDisplayWindowSettings.setShouldShowSystemDecorsLocked(this,
+                    shouldShowContent);
 
-        if (!shouldShowContent) {
-            clearAllTasksOnDisplay(null /* clearTasksCallback */, false /* isRemovingDisplay */);
+            if (!shouldShowContent) {
+                clearAllTasksOnDisplay(null /* clearTasksCallback */,
+                        false /* isRemovingDisplay */);
 
-            // Move the app error dialogs (such as app crash dialog, anr dialog, etc) to the default
-            // display.
-            mWmService.mAmInternal.moveErrorDialogsToDefaultDisplay(mDisplayId);
-        }
+                // Move the app error dialogs (such as app crash dialog, anr dialog, etc) to the
+                // default display.
+                mWmService.mAmInternal.moveErrorDialogsToDefaultDisplay(mDisplayId);
+            }
 
-        // If the display is allowed to show content, then it belongs to the display topology;
-        // vice versa.
-        mWmService.mDisplayManagerInternal.onDisplayBelongToTopologyChanged(mDisplayId,
+            // If the display is allowed to show content, then it belongs to the display topology;
+            // vice versa.
+            mWmService.mDisplayManagerInternal.onDisplayBelongToTopologyChanged(mDisplayId,
                 /* inTopology= */ shouldShowContent);
+        } finally {
+            Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+        }
     }
 
     /**

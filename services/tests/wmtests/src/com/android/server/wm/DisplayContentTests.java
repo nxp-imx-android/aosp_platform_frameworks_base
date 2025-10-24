@@ -3061,7 +3061,7 @@ public class DisplayContentTests extends WindowTestsBase {
     public void testSetShouldShowSystemDecorations_defaultDisplay() {
         DisplayContent dc = mWm.mRoot.getDisplayContent(DEFAULT_DISPLAY);
 
-        dc.onDisplayInfoChangeApplied();
+        dc.updateContentMode();
         assertTrue(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
     }
 
@@ -3072,7 +3072,7 @@ public class DisplayContentTests extends WindowTestsBase {
         displayInfo.flags = FLAG_PRIVATE;
         final DisplayContent dc = createNewDisplay(displayInfo);
 
-        dc.onDisplayInfoChangeApplied();
+        dc.updateContentMode();
         assertFalse(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
     }
 
@@ -3085,7 +3085,7 @@ public class DisplayContentTests extends WindowTestsBase {
         displayInfo.flags = FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS;
         final DisplayContent dc = createNewDisplay(displayInfo);
 
-        dc.onDisplayInfoChangeApplied();
+        dc.updateContentMode();
         assertFalse(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
     }
 
@@ -3098,7 +3098,7 @@ public class DisplayContentTests extends WindowTestsBase {
         displayInfo.flags = FLAG_TRUSTED;
         final DisplayContent dc = createNewDisplay(displayInfo);
 
-        dc.onDisplayInfoChangeApplied();
+        dc.updateContentMode();
         assertFalse(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
     }
 
@@ -3111,7 +3111,7 @@ public class DisplayContentTests extends WindowTestsBase {
         displayInfo.flags = FLAG_ALLOWS_CONTENT_MODE_SWITCH;
         final DisplayContent dc = createNewDisplay(displayInfo);
 
-        dc.onDisplayInfoChangeApplied();
+        dc.updateContentMode();
         assertFalse(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
     }
 
@@ -3125,11 +3125,11 @@ public class DisplayContentTests extends WindowTestsBase {
 
         spyOn(dc.mDisplay);
         doReturn(false).when(dc.mDisplay).canHostTasks();
-        dc.onDisplayInfoChangeApplied();
+        dc.updateContentMode();
         assertFalse(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
 
         doReturn(true).when(dc.mDisplay).canHostTasks();
-        dc.onDisplayInfoChangeApplied();
+        dc.updateContentMode();
         assertTrue(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
     }
 
@@ -3142,7 +3142,7 @@ public class DisplayContentTests extends WindowTestsBase {
         final DisplayContent dc = createNewDisplay(displayInfo);
         spyOn(dc.mDisplay);
         doReturn(true).when(dc.mDisplay).canHostTasks();
-        dc.onDisplayInfoChangeApplied();
+        dc.updateContentMode();
         final DisplayPolicy displayPolicy = dc.getDisplayPolicy();
         spyOn(displayPolicy);
 
@@ -3160,7 +3160,7 @@ public class DisplayContentTests extends WindowTestsBase {
         final DisplayContent dc = createNewDisplay(displayInfo);
         spyOn(dc.mDisplay);
         doReturn(false).when(dc.mDisplay).canHostTasks();
-        dc.onDisplayInfoChangeApplied();
+        dc.updateContentMode();
         final DisplayPolicy displayPolicy = dc.getDisplayPolicy();
         spyOn(displayPolicy);
 

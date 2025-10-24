@@ -777,7 +777,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                             t.getTaskFragmentOrganizer());
                 }
             }
-            if (transition != null && transition.applyDisplayRemovalsIfNeeded()) {
+            if (transition != null && transition.applyDisplayContentClearIfNeeded()) {
                 effects |= TRANSACT_EFFECTS_LIFECYCLE;
             }
             if ((effects & TRANSACT_EFFECTS_LIFECYCLE) != 0) {
