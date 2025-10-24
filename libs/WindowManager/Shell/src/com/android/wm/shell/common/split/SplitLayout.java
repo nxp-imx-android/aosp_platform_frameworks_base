@@ -621,6 +621,9 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         dividerBounds.set(mRootBounds);
         bounds1.set(mRootBounds);
         bounds2.set(mRootBounds);
+        DividerView dividerView = mSplitWindowManager.getDividerView();
+        boolean allowExtendedBounds = (dividerView != null && dividerView.isMoving()) ||
+                mSplitState.currentOrAnimatingToStateWithOffscreenApps();
         if (mIsLeftRightSplit) {
             position += mRootBounds.left;
             dividerBounds.left = position - mDividerInsets;
@@ -629,7 +632,8 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             bounds2.left = bounds1.right + mDividerSize;
 
             if (mDividerSnapAlgorithm.areOffscreenRatiosSupported()) {
-                if (mDividerSnapAlgorithm.getSnapMode() == SNAP_FLEXIBLE_HYBRID) {
+                if (mDividerSnapAlgorithm.getSnapMode() == SNAP_FLEXIBLE_HYBRID &&
+                        allowExtendedBounds) {
                     // In flex hybrid split, extend offscreen only if it is at the flex breakpoint.
                     int leftFlexTargetPos = mDividerSnapAlgorithm.getFirstSplitTarget().position;
                     int rightFlexTargetPos = mDividerSnapAlgorithm.getLastSplitTarget().position;
@@ -649,7 +653,8 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             bounds2.top = bounds1.bottom + mDividerSize;
 
             if (mDividerSnapAlgorithm.areOffscreenRatiosSupported()) {
-                if (mDividerSnapAlgorithm.getSnapMode() == SNAP_FLEXIBLE_HYBRID) {
+                if (mDividerSnapAlgorithm.getSnapMode() == SNAP_FLEXIBLE_HYBRID &&
+                        allowExtendedBounds) {
                     // In flex hybrid split, extend offscreen only if it is at the flex breakpoint.
                     int topFlexTargetPos = mDividerSnapAlgorithm.getFirstSplitTarget().position;
                     int bottomFlexTargetPos = mDividerSnapAlgorithm.getLastSplitTarget().position;
@@ -847,6 +852,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
      */
     public void snapToTarget(int currentPosition, SnapTarget snapTarget, int duration,
             Interpolator interpolator) {
+        mSplitState.setAnimatingToState(snapTarget.snapPosition);
         switch (snapTarget.snapPosition) {
             case SNAP_TO_START_AND_DISMISS:
                 flingDividerPosition(currentPosition, snapTarget.position, duration, interpolator,
