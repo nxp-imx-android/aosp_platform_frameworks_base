@@ -607,6 +607,37 @@ public abstract class OomAdjuster {
          * A delay in milliseconds to introduce when updating the UID state for a debuggable UID.
          */
         public volatile int mProcStateDebugSetUidStateDelay;
+        /**
+         * If true, the OOM adjuster uses a quick path for updates, skipping further actions if
+         * there are no significant adj/proc state changes for a process.
+         * Otherwise, it uses the traditional slow path, updating all processes in the LRU list.
+         */
+        public volatile boolean mOomadjUpdateQuick;
+        /**
+         * If true, enables the proactive killing of cached apps to manage memory.
+         */
+        public volatile boolean mProactiveKillsEnabled;
+        /**
+         * The minimum percentage of free swap space. If free swap falls below this threshold,
+         * LRU cached apps may be trimmed.
+         * This is only active if {@link #mProactiveKillsEnabled} is true.
+         */
+        public volatile float mLowSwapThresholdPercent;
+        /**
+         * If true, prevents proactive killing of excessive cached processes until the primary user
+         * has unlocked.
+         */
+        public volatile boolean mNoKillCachedProcessesUntilBootCompleted;
+        /**
+         * The duration in milliseconds after each user unlock during which excessive cached
+         * processes will not be proactively killed.
+         */
+        public volatile long mNoKillCachedProcessesPostBootCompletedDurationMillis;
+        /**
+         * The oom_adj score cutoff. Processes with an oom_adj score greater than or equal to this
+         * value may be frozen if they do not hold the CPU_TIME capability.
+         */
+        public volatile int mFreezerCutoffAdj;
     }
 
     // TODO(b/346822474): hook up global state usage.
@@ -774,7 +805,7 @@ public abstract class OomAdjuster {
 
     @GuardedBy({"mService", "mProcLock"})
     private boolean updateOomAdjLSP(ProcessRecordInternal app, @OomAdjReason int oomAdjReason) {
-        if (app == null || !mConstants.OOMADJ_UPDATE_QUICK) {
+        if (app == null || !mOomConstants.mOomadjUpdateQuick) {
             updateOomAdjLSP(oomAdjReason);
             return true;
         }
@@ -1254,8 +1285,8 @@ public abstract class OomAdjuster {
         int numEmpty = 0;
         int numTrimming = 0;
 
-        final boolean proactiveKillsEnabled = mConstants.PROACTIVE_KILLS_ENABLED;
-        final double lowSwapThresholdPercent = mConstants.LOW_SWAP_THRESHOLD_PERCENT;
+        final boolean proactiveKillsEnabled = mOomConstants.mProactiveKillsEnabled;
+        final double lowSwapThresholdPercent = mOomConstants.mLowSwapThresholdPercent;
         final double freeSwapPercent = proactiveKillsEnabled ? getFreeSwapPercent() : 1.00;
         ProcessRecordInternal lruCachedApp = null;
 
@@ -1546,10 +1577,10 @@ public abstract class OomAdjuster {
 
         if (lastUserUnlockingUptime == 0) {
             // No users have been unlocked.
-            return !mConstants.mNoKillCachedProcessesUntilBootCompleted;
+            return !mOomConstants.mNoKillCachedProcessesUntilBootCompleted;
         }
         final long noKillCachedProcessesPostBootCompletedDurationMillis =
-                mConstants.mNoKillCachedProcessesPostBootCompletedDurationMillis;
+                mOomConstants.mNoKillCachedProcessesPostBootCompletedDurationMillis;
         if ((lastUserUnlockingUptime + noKillCachedProcessesPostBootCompletedDurationMillis)
                 > nowUptime) {
             return false;
@@ -2000,8 +2031,8 @@ public abstract class OomAdjuster {
 
     // Grant PROCESS_CAPABILITY_IMPLICIT_CPU_TIME to processes based on oom adj score.
     protected int getImplicitCpuCapability(ProcessRecordInternal app, int adj) {
-        if (adj < mConstants.FREEZER_CUTOFF_ADJ
-                || app.getMaxAdj() < mConstants.FREEZER_CUTOFF_ADJ) {
+        if (adj < mOomConstants.mFreezerCutoffAdj
+                || app.getMaxAdj() < mOomConstants.mFreezerCutoffAdj) {
             app.addCurImplicitCpuTimeReasons(IMPLICIT_CPU_TIME_REASON_OTHER);
             return PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
         }

@@ -19478,8 +19478,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             // TODO: b/441879937 - Pass useFreezer() information to OomAdjuster and move the trace
             // logging back to OomAdjuster.
             if (Flags.traceUpdateAppFreezeStateLsp()) {
-                final boolean oomAdjChanged = (app.getCurAdj() >= mConstants.FREEZER_CUTOFF_ADJ
-                        ^ oldOomAdj >= mConstants.FREEZER_CUTOFF_ADJ) || oldOomAdj == UNKNOWN_ADJ;
+                final boolean oomAdjChanged = (app.getCurAdj() >= mConstants.mFreezerCutoffAdj
+                        ^ oldOomAdj >= mConstants.mFreezerCutoffAdj) || oldOomAdj == UNKNOWN_ADJ;
                 final boolean hasCpuCapability =
                         (PROCESS_CAPABILITY_CPU_TIME & app.getCurCapability())
                                 == PROCESS_CAPABILITY_CPU_TIME;

@@ -932,7 +932,7 @@ final class ActivityManagerConstants extends ContentObserver {
      * Note we don't proactively kill extra cached processes after this. The next oomadjuster pass
      * will naturally do it.
      */
-    volatile long mNoKillCachedProcessesPostBootCompletedDurationMillis =
+    private volatile long mNoKillCachedProcessesPostBootCompletedDurationMillis =
             DEFAULT_NO_KILL_CACHED_PROCESSES_POST_BOOT_COMPLETED_DURATION_MILLIS;
 
     // The number of empty apps at which we don't consider it necessary to do
@@ -997,7 +997,7 @@ final class ActivityManagerConstants extends ContentObserver {
     // in which no futher actions will be performed if there are no significant adj/proc state
     // changes for the specific process; otherwise, use the traditonal slow path which would
     // keep updating all processes in the LRU list.
-    public boolean OOMADJ_UPDATE_QUICK = DEFAULT_OOMADJ_UPDATE_POLICY == OOMADJ_UPDATE_POLICY_QUICK;
+    private boolean mOomadjUpdateQuick = DEFAULT_OOMADJ_UPDATE_POLICY == OOMADJ_UPDATE_POLICY_QUICK;
 
     private static final long MIN_AUTOMATIC_HEAP_DUMP_PSS_THRESHOLD_BYTES = 100 * 1024; // 100 KB
 
@@ -1064,8 +1064,8 @@ final class ActivityManagerConstants extends ContentObserver {
     public static boolean BINDER_HEAVY_HITTER_AUTO_SAMPLER_ENABLED;
     public static int BINDER_HEAVY_HITTER_AUTO_SAMPLER_BATCHSIZE;
     public static float BINDER_HEAVY_HITTER_AUTO_SAMPLER_THRESHOLD;
-    public static boolean PROACTIVE_KILLS_ENABLED = DEFAULT_PROACTIVE_KILLS_ENABLED;
-    public static float LOW_SWAP_THRESHOLD_PERCENT = DEFAULT_LOW_SWAP_THRESHOLD_PERCENT;
+    private boolean mProactiveKillsEnabled = DEFAULT_PROACTIVE_KILLS_ENABLED;
+    private float mLowSwapThresholdPercent = DEFAULT_LOW_SWAP_THRESHOLD_PERCENT;
 
     /** Timeout for a "short service" FGS, in milliseconds. */
     private static final String KEY_SHORT_FGS_TIMEOUT_DURATION =
@@ -1178,7 +1178,7 @@ final class ActivityManagerConstants extends ContentObserver {
      *
      * @see #KEY_FREEZER_CUTOFF_ADJ
      */
-    public int FREEZER_CUTOFF_ADJ = DEFAULT_FREEZER_CUTOFF_ADJ;
+    public int mFreezerCutoffAdj = DEFAULT_FREEZER_CUTOFF_ADJ;
 
     /**
      * Indicates whether PSS profiling in AppProfiler is disabled or not.
@@ -1384,8 +1384,10 @@ final class ActivityManagerConstants extends ContentObserver {
                                 updateUseTieredCachedAdj();
                                 break;
                             case KEY_FREEZER_CUTOFF_ADJ:
-                                FREEZER_CUTOFF_ADJ = properties.getInt(KEY_FREEZER_CUTOFF_ADJ,
+                                mFreezerCutoffAdj = properties.getInt(KEY_FREEZER_CUTOFF_ADJ,
                                         DEFAULT_FREEZER_CUTOFF_ADJ);
+                                mService.mProcessStateController.setFreezerCutoffAdj(
+                                        mFreezerCutoffAdj);
                                 oomAdjusterConfigUpdated = true;
                                 break;
                             case KEY_DISABLE_APP_PROFILER_PSS_PROFILING:
@@ -1801,11 +1803,12 @@ final class ActivityManagerConstants extends ContentObserver {
     }
 
     private void updateOomAdjUpdatePolicy() {
-        OOMADJ_UPDATE_QUICK = DeviceConfig.getInt(
+        mOomadjUpdateQuick = DeviceConfig.getInt(
                 DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
                 KEY_OOMADJ_UPDATE_POLICY,
                 /* defaultValue */ DEFAULT_OOMADJ_UPDATE_POLICY)
                 == OOMADJ_UPDATE_POLICY_QUICK;
+        mService.mProcessStateController.setOomadjUpdateQuick(mOomadjUpdateQuick);
     }
 
     private void updateForceRestrictedBackgroundCheck() {
@@ -1942,6 +1945,8 @@ final class ActivityManagerConstants extends ContentObserver {
                 DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
                 KEY_NO_KILL_CACHED_PROCESSES_UNTIL_BOOT_COMPLETED,
                 DEFAULT_NO_KILL_CACHED_PROCESSES_UNTIL_BOOT_COMPLETED);
+        mService.mProcessStateController.setNoKillCachedProcessesUntilBootCompleted(
+                mNoKillCachedProcessesUntilBootCompleted);
     }
 
     private void updateNoKillCachedProcessesPostBootCompletedDurationMillis() {
@@ -1949,6 +1954,8 @@ final class ActivityManagerConstants extends ContentObserver {
                 DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
                 KEY_NO_KILL_CACHED_PROCESSES_POST_BOOT_COMPLETED_DURATION_MILLIS,
                 DEFAULT_NO_KILL_CACHED_PROCESSES_POST_BOOT_COMPLETED_DURATION_MILLIS);
+        mService.mProcessStateController.setNoKillCachedProcessesPostBootCompletedDurationMillis(
+                mNoKillCachedProcessesPostBootCompletedDurationMillis);
     }
 
     private void updateMaxEmptyTimeMillis() {
@@ -2097,17 +2104,19 @@ final class ActivityManagerConstants extends ContentObserver {
     }
 
     private void updateProactiveKillsEnabled() {
-        PROACTIVE_KILLS_ENABLED = DeviceConfig.getBoolean(
+        mProactiveKillsEnabled = DeviceConfig.getBoolean(
                 DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
                 KEY_PROACTIVE_KILLS_ENABLED,
                 DEFAULT_PROACTIVE_KILLS_ENABLED);
+        mService.mProcessStateController.setProactiveKillsEnabled(mProactiveKillsEnabled);
     }
 
     private void updateLowSwapThresholdPercent() {
-        LOW_SWAP_THRESHOLD_PERCENT = DeviceConfig.getFloat(
+        mLowSwapThresholdPercent = DeviceConfig.getFloat(
                 DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
                 KEY_LOW_SWAP_THRESHOLD_PERCENT,
                 DEFAULT_LOW_SWAP_THRESHOLD_PERCENT);
+        mService.mProcessStateController.setLowSwapThresholdPercent(mLowSwapThresholdPercent);
     }
 
 
@@ -2377,6 +2386,14 @@ final class ActivityManagerConstants extends ContentObserver {
         oomConstants.mEnableProcStateStacktrace = mEnableProcStateStacktrace;
         oomConstants.mProcStateDebugSetProcStateDelay = mProcStateDebugSetProcStateDelay;
         oomConstants.mProcStateDebugSetUidStateDelay = mProcStateDebugSetUidStateDelay;
+        oomConstants.mOomadjUpdateQuick = mOomadjUpdateQuick;
+        oomConstants.mProactiveKillsEnabled = mProactiveKillsEnabled;
+        oomConstants.mLowSwapThresholdPercent = mLowSwapThresholdPercent;
+        oomConstants.mNoKillCachedProcessesUntilBootCompleted =
+                mNoKillCachedProcessesUntilBootCompleted;
+        oomConstants.mNoKillCachedProcessesPostBootCompletedDurationMillis =
+                mNoKillCachedProcessesPostBootCompletedDurationMillis;
+        oomConstants.mFreezerCutoffAdj = mFreezerCutoffAdj;
 
         return oomConstants;
     }
@@ -2534,9 +2551,9 @@ final class ActivityManagerConstants extends ContentObserver {
         pw.print("  "); pw.print(KEY_MAX_SERVICE_CONNECTIONS_PER_PROCESS);
         pw.print("="); pw.println(mMaxServiceConnectionsPerProcess);
         pw.print("  "); pw.print(KEY_PROACTIVE_KILLS_ENABLED);
-        pw.print("="); pw.println(PROACTIVE_KILLS_ENABLED);
+        pw.print("="); pw.println(mProactiveKillsEnabled);
         pw.print("  "); pw.print(KEY_LOW_SWAP_THRESHOLD_PERCENT);
-        pw.print("="); pw.println(LOW_SWAP_THRESHOLD_PERCENT);
+        pw.print("="); pw.println(mLowSwapThresholdPercent);
 
         pw.print("  "); pw.print(KEY_DEFERRED_FGS_NOTIFICATIONS_ENABLED);
         pw.print("="); pw.println(mFlagFgsNotificationDeferralEnabled);
@@ -2578,7 +2595,7 @@ final class ActivityManagerConstants extends ContentObserver {
         pw.print("="); pw.println(TIERED_CACHED_ADJ_UI_TIER_SIZE);
 
         pw.print("  "); pw.print(KEY_FREEZER_CUTOFF_ADJ);
-        pw.print("="); pw.println(FREEZER_CUTOFF_ADJ);
+        pw.print("="); pw.println(mFreezerCutoffAdj);
 
         pw.print("  "); pw.print(KEY_DISABLE_APP_PROFILER_PSS_PROFILING);
         pw.print("="); pw.println(APP_PROFILER_PSS_PROFILING_DISABLED);
@@ -2601,7 +2618,7 @@ final class ActivityManagerConstants extends ContentObserver {
         pw.print("  CUR_MAX_EMPTY_PROCESSES="); pw.println(CUR_MAX_EMPTY_PROCESSES);
         pw.print("  CUR_TRIM_EMPTY_PROCESSES="); pw.println(CUR_TRIM_EMPTY_PROCESSES);
         pw.print("  CUR_TRIM_CACHED_PROCESSES="); pw.println(CUR_TRIM_CACHED_PROCESSES);
-        pw.print("  OOMADJ_UPDATE_QUICK="); pw.println(OOMADJ_UPDATE_QUICK);
+        pw.print("  OOMADJ_UPDATE_QUICK="); pw.println(mOomadjUpdateQuick);
         pw.print("  ENABLE_WAIT_FOR_FINISH_ATTACH_APPLICATION=");
         pw.println(mEnableWaitForFinishAttachApplication);
 

@@ -185,6 +185,30 @@ public class ProcessStateController {
         mOomConstants.mProcStateDebugSetUidStateDelay = value;
     }
 
+    public void setOomadjUpdateQuick(boolean value) {
+        mOomConstants.mOomadjUpdateQuick = value;
+    }
+
+    public void setProactiveKillsEnabled(boolean value) {
+        mOomConstants.mProactiveKillsEnabled = value;
+    }
+
+    public void setLowSwapThresholdPercent(float value) {
+        mOomConstants.mLowSwapThresholdPercent = value;
+    }
+
+    public void setNoKillCachedProcessesUntilBootCompleted(boolean value) {
+        mOomConstants.mNoKillCachedProcessesUntilBootCompleted = value;
+    }
+
+    public void setNoKillCachedProcessesPostBootCompletedDurationMillis(long value) {
+        mOomConstants.mNoKillCachedProcessesPostBootCompletedDurationMillis = value;
+    }
+
+    public void setFreezerCutoffAdj(int value) {
+        mOomConstants.mFreezerCutoffAdj = value;
+    }
+
     /**
      * Start a batch session for specifically service state changes. ProcessStateController updates
      * will not be triggered until until the returned SyncBatchSession is closed.
