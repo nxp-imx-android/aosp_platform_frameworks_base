@@ -166,17 +166,17 @@ public class StackScrollAlgorithm {
 
             if (isHunGoingToShade) {
                 // Keep 100% opacity for heads up notification going to shade.
-                viewState.setAlpha(1f);
+                viewState.setAlpha(1f, "hun going to shade");
             } else if (!SceneContainerFlag.isEnabled() && ambientState.isOnKeyguard()) {
                 // Adjust alpha for wakeup to lockscreen.
                 if (view.isHeadsUpState()) {
                     // Pulsing HUN should be visible on AOD and stay visible during
                     // AOD=>lockscreen transition
-                    viewState.setAlpha(1f - ambientState.getHideAmount());
+                    viewState.setAlpha(1f - ambientState.getHideAmount(), "keyguard hun");
                 } else {
                     // Normal notifications are hidden on AOD and should fade in during
                     // AOD=>lockscreen transition
-                    viewState.setAlpha(1f - ambientState.getDozeAmount());
+                    viewState.setAlpha(1f - ambientState.getDozeAmount(), "keyguard notif");
                 }
             } else if (SceneContainerFlag.isEnabled()
                     && ambientState.isShowingStackOnLockscreen()) {
@@ -184,23 +184,26 @@ public class StackScrollAlgorithm {
                 if (view.isHeadsUpState()) {
                     // Pulsing HUN should be visible on AOD and stay visible during
                     // AOD=>lockscreen transition
-                    viewState.setAlpha(1f - ambientState.getHideAmount());
+                    viewState.setAlpha(1f - ambientState.getHideAmount(), "keyguard hun");
                 } else {
                     // Take into account scene container-specific Lockscreen fade-in progress
                     float fadeAlpha = ambientState.getLockscreenStackFadeInProgress();
                     float dozeAlpha = 1f - ambientState.getDozeAmount();
-                    viewState.setAlpha(Math.min(dozeAlpha, fadeAlpha));
+                    viewState.setAlpha(Math.min(dozeAlpha, fadeAlpha), "keyguard notif");
                 }
             } else if (ambientState.isExpansionChanging()) {
                 // Adjust alpha for shade open & close.
                 float expansion = ambientState.getExpansionFraction();
                 if (ambientState.isBouncerInTransit()) {
                     viewState.setAlpha(
-                            BouncerPanelExpansionCalculator.aboutToShowBouncerProgress(expansion));
+                            BouncerPanelExpansionCalculator.aboutToShowBouncerProgress(expansion),
+                            "isBouncerInTransit");
                 } else if (view instanceof FooterView) {
-                    viewState.setAlpha(interpolateFooterAlpha(ambientState));
+                    viewState.setAlpha(interpolateFooterAlpha(ambientState),
+                            "expansionChanging footer");
                 } else {
-                    viewState.setAlpha(interpolateNotificationContentAlpha(ambientState));
+                    viewState.setAlpha(interpolateNotificationContentAlpha(ambientState),
+                            "expansionChanging notif");
                 }
             }
 
@@ -210,14 +213,15 @@ public class StackScrollAlgorithm {
             // aren't visible unless the shade is expanded.
             if (ambientState.getExpansionFraction() == 0f && (isEmptyShadeView(view) || (
                     SceneContainerFlag.isEnabled() && view instanceof FooterView))) {
-                viewState.setAlpha(0f);
+                viewState.setAlpha(0f, "empty shade");
             }
 
             // For EmptyShadeView if on keyguard, we need to control the alpha to create
             // a nice transition when the user is dragging down the notification panel.
             if (isEmptyShadeView(view) && ambientState.isOnKeyguard()) {
                 final float fractionToShade = ambientState.getFractionToShade();
-                viewState.setAlpha(ShadeInterpolation.getContentAlpha(fractionToShade));
+                viewState.setAlpha(ShadeInterpolation.getContentAlpha(fractionToShade),
+                        "keyguard empty shade");
             }
 
             NotificationShelf shelf = ambientState.getShelf();
@@ -236,7 +240,7 @@ public class StackScrollAlgorithm {
                 final float shelfTop = shelfState.getYTranslation();
                 final float viewTop = viewState.getYTranslation();
                 if (viewTop >= shelfTop) {
-                    viewState.setAlpha(0);
+                    viewState.setAlpha(0, "below shelf");
                 }
             }
         }

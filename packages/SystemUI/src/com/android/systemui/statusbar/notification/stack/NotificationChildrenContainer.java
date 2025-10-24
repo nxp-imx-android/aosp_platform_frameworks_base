@@ -913,13 +913,12 @@ public class NotificationChildrenContainer extends ViewGroup
             childState.hideSensitive = parentState.hideSensitive;
             childState.belowSpeedBump = parentState.belowSpeedBump;
             childState.clipTopAmount = 0;
-            childState.setAlpha(0);
+            childState.setAlpha(0, "ncc updateState");
             if (i < firstOverflowIndex) {
-                childState.setAlpha(showingAsLowPriority() ? expandFactor : 1.0f);
+                childState.setAlpha(showingAsLowPriority() ? expandFactor : 1.0f, "ncc overflow");
             } else if (expandFactor == 1.0f && i <= lastVisibleIndex) {
-                childState.setAlpha(
-                        (mActualHeight - childState.getYTranslation()) / childState.height);
-                childState.setAlpha(Math.max(0.0f, Math.min(1.0f, childState.getAlpha())));
+                float rawAlpha = (mActualHeight - childState.getYTranslation()) / childState.height;
+                childState.setAlpha(Math.max(0.0f, Math.min(1.0f, rawAlpha)), "ncc alpha");
             }
             childState.location = parentState.location;
             childState.inShelf = parentState.inShelf;
@@ -947,7 +946,7 @@ public class NotificationChildrenContainer extends ViewGroup
                     if (mirrorView.getVisibility() == GONE) {
                         mirrorView = alignView;
                     }
-                    mGroupOverFlowState.setAlpha(mirrorView.getAlpha());
+                    mGroupOverFlowState.setAlpha(mirrorView.getAlpha(), "group overflow");
                     float yTranslation = mGroupOverFlowState.getYTranslation()
                             + NotificationUtils.getRelativeYOffset(
                             mirrorView, overflowView);
@@ -956,7 +955,7 @@ public class NotificationChildrenContainer extends ViewGroup
             } else {
                 mGroupOverFlowState.setYTranslation(
                         mGroupOverFlowState.getYTranslation() + getCollapsedHeaderMargin());
-                mGroupOverFlowState.setAlpha(0.0f);
+                mGroupOverFlowState.setAlpha(0.0f, "group overflow");
             }
         }
         if (mGroupHeader != null) {
@@ -971,7 +970,7 @@ public class NotificationChildrenContainer extends ViewGroup
                 mHeaderViewState.setZTranslation(0);
             }
             mHeaderViewState.setYTranslation(mCurrentHeaderTranslation);
-            mHeaderViewState.setAlpha(mHeaderVisibleAmount);
+            mHeaderViewState.setAlpha(mHeaderVisibleAmount, "header visible amount");
 
             if (notificationsRedesignTemplates()) {
                 // While mUserLocked, the expandFactor reflects where in the drag-to-expand gesture
@@ -1103,7 +1102,7 @@ public class NotificationChildrenContainer extends ViewGroup
                         Math.min(viewState.getAlpha(), expandFraction));
             }
             tmpState.hidden = !dividersVisible;
-            tmpState.setAlpha(alpha);
+            tmpState.setAlpha(alpha, "divider");
             tmpState.applyToView(divider);
             // There is no fake shadow to be drawn on the children
             child.setFakeShadowIntensity(0.0f, 0.0f, 0, 0);
@@ -1264,17 +1263,18 @@ public class NotificationChildrenContainer extends ViewGroup
                         Math.min(viewState.getAlpha(), expandFraction));
             }
             tmpState.hidden = !dividersVisible;
-            tmpState.setAlpha(alpha);
+            tmpState.setAlpha(alpha, "divider");
             tmpState.animateTo(divider, properties);
             // There is no fake shadow to be drawn on the children
             child.setFakeShadowIntensity(0.0f, 0.0f, 0, 0);
         }
         if (mOverflowNumber != null) {
             if (mNeverAppliedGroupState) {
-                float alpha = mGroupOverFlowState.getAlpha();
-                mGroupOverFlowState.setAlpha(0);
+                float oldAlpha = mGroupOverFlowState.getAlpha();
+                String oldReason = mGroupOverFlowState.getAlphaReason();
+                mGroupOverFlowState.setAlpha(0, "group overflow init");
                 mGroupOverFlowState.applyToView(mOverflowNumber);
-                mGroupOverFlowState.setAlpha(alpha);
+                mGroupOverFlowState.setAlpha(oldAlpha, oldReason);
                 mNeverAppliedGroupState = false;
             }
             mGroupOverFlowState.animateTo(mOverflowNumber, properties);
@@ -1455,7 +1455,7 @@ public class NotificationChildrenContainer extends ViewGroup
             child.setAlpha(start);
             ViewState viewState = new ViewState();
             viewState.initFrom(child);
-            viewState.setAlpha(target);
+            viewState.setAlpha(target, "child alpha animation");
             ALPHA_FADE_IN.setDelay(i * 50);
             viewState.animateTo(child, ALPHA_FADE_IN);
         }

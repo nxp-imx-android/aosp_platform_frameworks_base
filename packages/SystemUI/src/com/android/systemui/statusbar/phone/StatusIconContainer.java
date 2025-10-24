@@ -421,7 +421,7 @@ public class StatusIconContainer extends AlphaOptimizedLinearLayout {
             }
 
             vs.initFrom(child);
-            vs.setAlpha(1.0f);
+            vs.setAlpha(1.0f, "statusIconContainer reset");
             vs.hidden = false;
         }
     }

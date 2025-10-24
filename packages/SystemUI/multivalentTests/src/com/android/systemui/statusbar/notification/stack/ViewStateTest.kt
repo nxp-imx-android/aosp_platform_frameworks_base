@@ -49,7 +49,7 @@ class ViewStateTest : SysuiTestCase() {
     fun testWtfs() {
         // Setting valid values doesn't cause any wtfs.
         assertDoesNotLogWtf {
-            viewState.alpha = 0.1f
+            viewState.setAlpha(0.1f, "test")
             viewState.xTranslation = 0f
             viewState.yTranslation = 10f
             viewState.zTranslation = 20f
@@ -58,7 +58,7 @@ class ViewStateTest : SysuiTestCase() {
         }
 
         // Setting NaN values leads to wtfs being logged, and the value not being changed.
-        assertLogsWtf { viewState.alpha = 0.0f / 0.0f }
+        assertLogsWtf { viewState.setAlpha(0.0f / 0.0f, "test NaN") }
         Assert.assertEquals(viewState.alpha, 0.1f)
 
         assertLogsWtf { viewState.xTranslation = Float.NaN }
