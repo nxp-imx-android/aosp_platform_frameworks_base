@@ -25,7 +25,6 @@ import com.android.wm.shell.unfold.ShellUnfoldProgressProvider
  * start transitioning an expanded bubble to floating.
  */
 class BubblesUnfoldListener(
-    private val supportsBubbleNonResizableMultiWindow: Boolean,
     private val bubbleData: BubbleData,
     private val foldLockSettingsObserver: BubblesFoldLockSettingsObserver,
     private val onStartBarToFloatingOrFullscreenTransition: (Bubble, Boolean) -> Unit
@@ -40,12 +39,7 @@ class BubblesUnfoldListener(
             && selectedBubble is Bubble
             && foldLockSettingsObserver.isStayAwakeOnFold()
         ) {
-            val moveToFullscreen: Boolean =
-                if (supportsBubbleNonResizableMultiWindow) {
-                    false
-                } else {
-                    selectedBubble.isTopActivityFixedOrientationLandscape
-                }
+            val moveToFullscreen: Boolean = selectedBubble.isTaskValidToBubble
             onStartBarToFloatingOrFullscreenTransition(selectedBubble, moveToFullscreen)
         }
     }

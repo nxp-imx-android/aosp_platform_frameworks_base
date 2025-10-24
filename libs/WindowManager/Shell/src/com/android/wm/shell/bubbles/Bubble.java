@@ -168,7 +168,7 @@ public class Bubble implements BubbleViewProvider {
     @Nullable
     private Icon mIcon;
     private boolean mIsBubble;
-    private boolean mIsTopActivityFixedOrientationLandscape;
+    private boolean mIsTaskValidToBubble;
     private boolean mIsTextChanged;
     private boolean mIsDismissable;
     private boolean mShouldSuppressNotificationDot;
@@ -1057,10 +1057,10 @@ public class Bubble implements BubbleViewProvider {
     }
 
     /**
-     * Sets whether the task's top activity is fixed orientation landscape.
+     * Sets whether the task is valid to bubble.
      */
-    public void setIsTopActivityFixedOrientationLandscape(boolean isLandscape) {
-        mIsTopActivityFixedOrientationLandscape = isLandscape;
+    public void setIsTaskValidToBubble(boolean isTaskValidToBubble) {
+        mIsTaskValidToBubble = isTaskValidToBubble;
     }
 
     /**
@@ -1294,8 +1294,8 @@ public class Bubble implements BubbleViewProvider {
         return mFlags;
     }
 
-    public boolean isTopActivityFixedOrientationLandscape() {
-        return mIsTopActivityFixedOrientationLandscape;
+    public boolean isTaskValidToBubble() {
+        return mIsTaskValidToBubble;
     }
 
     @Override
