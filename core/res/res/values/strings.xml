@@ -1881,6 +1881,11 @@
     <string name="permdesc_access_local_network">Allows the app to access local network devices</string>
 
     <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=50]-->
+    <string name="permlab_use_loopback_interface">use loopback interface</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=120]-->
+    <string name="permdesc_use_loopback_interface">Allows the app to interact with other apps over loopback interface</string>
+
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=50]-->
     <string name="permlab_ranging">determine relative position between nearby devices</string>
     <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=120]-->
     <string name="permdesc_ranging">Allow the app to determine relative position between nearby devices</string>
