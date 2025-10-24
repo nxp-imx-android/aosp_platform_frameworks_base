@@ -638,6 +638,12 @@ public abstract class OomAdjuster {
          * value may be frozen if they do not hold the CPU_TIME capability.
          */
         public volatile int mFreezerCutoffAdj;
+        /**
+         * Whether to enable batching of OOM adjustment score updates sent to the lmkd.
+         * When enabled, instead of sending updates for each process individually, the OomAdjuster
+         * collects them and sends them in a single batch.
+         */
+        public boolean mEnableBatchingOomAdj;
     }
 
     // TODO(b/346822474): hook up global state usage.
@@ -2174,7 +2180,7 @@ public abstract class OomAdjuster {
 
         final int oldOomAdj = state.getSetAdj();
         if (state.getCurAdj() != state.getSetAdj()) {
-            if (isBatchingOomAdj && mConstants.ENABLE_BATCHING_OOM_ADJ) {
+            if (isBatchingOomAdj && mOomConstants.mEnableBatchingOomAdj) {
                 mProcsToOomAdj.add(state);
             } else {
                 mInjector.setOomAdj(state.getPid(), state.uid, state.getCurAdj());
