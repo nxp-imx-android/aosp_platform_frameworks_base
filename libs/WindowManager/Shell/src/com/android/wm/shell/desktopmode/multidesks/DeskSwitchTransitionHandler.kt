@@ -24,6 +24,7 @@ import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
@@ -431,6 +432,9 @@ class DeskSwitchTransitionHandler(
         fromDeskIndex: Int,
         toDeskIndex: Int,
     ) {
+        if (Flags.disableDeskSwitchWallpaperOffsets()) {
+            return
+        }
         if (!desktopState.shouldShowHomeBehindDesktop) {
             logD("startWallpaperAnimation: sending broadcast")
             context.sendBroadcast(
@@ -441,8 +445,6 @@ class DeskSwitchTransitionHandler(
                     toDeskIndex = toDeskIndex,
                 )
             )
-        } else {
-            // TODO: b/441146489 - animate the launcher wallpaper?
         }
     }
 
