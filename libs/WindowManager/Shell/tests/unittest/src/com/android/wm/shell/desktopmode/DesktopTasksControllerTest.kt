@@ -1478,7 +1478,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES)
     fun addMoveToDeskTaskChanges_newTaskInstance_inheritsClosingInstanceBounds() {
         // Setup existing task.
         val existingTask = setUpFreeformTask(active = true)
@@ -1503,7 +1502,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES)
     fun addMoveToDeskTaskChanges_newTaskInstanceInDifferentUser_doesntInheritBounds() {
         // Setup existing task.
         val existingTask = setUpFreeformTask(active = true)
@@ -1532,7 +1530,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES)
     fun handleRequest_newTaskInstance_inheritsClosingInstanceBounds() {
         setUpLandscapeDisplay()
         // Setup existing task.
@@ -1559,7 +1556,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES)
     fun handleRequest_newTaskInstanceInDifferentUser_doesntInheritBounds() {
         setUpLandscapeDisplay()
         // Setup existing task.
