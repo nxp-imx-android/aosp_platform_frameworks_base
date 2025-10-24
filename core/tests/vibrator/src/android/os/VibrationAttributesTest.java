@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class VibrationAttributesTest {
     @Test
-    public void testSimple() throws Exception {
+    public void testSimple() {
         final VibrationAttributes attr = new VibrationAttributes.Builder()
                 .setUsage(VibrationAttributes.USAGE_ALARM)
                 .build();
