@@ -35,6 +35,7 @@ import androidx.activity.addCallback
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.FragmentActivity
+import com.android.window.flags.Flags
 import com.android.wm.shell.desktopmode.multidesks.animation.DeskWallpaperAnimator
 import com.android.wm.shell.desktopmode.multidesks.animation.DeskWallpaperAnimator.Companion.JUMP_CUT_ANIMATION
 import com.android.wm.shell.desktopmode.multidesks.animation.DeskWallpaperAnimator.Companion.SLIDE_ANIMATION
@@ -133,15 +134,19 @@ class DesktopWallpaperActivity : FragmentActivity() {
 
     override fun onResume() {
         super.onResume()
-        registerReceiver(
-            wallpaperAnimationReceiver,
-            IntentFilter(START_WALLPAPER_ANIMATION_ACTION),
-            RECEIVER_EXPORTED,
-        )
+        if (!Flags.disableDeskSwitchWallpaperOffsets()) {
+            registerReceiver(
+                wallpaperAnimationReceiver,
+                IntentFilter(START_WALLPAPER_ANIMATION_ACTION),
+                RECEIVER_EXPORTED,
+            )
+        }
     }
 
     override fun onPause() {
-        unregisterReceiver(wallpaperAnimationReceiver)
+        if (!Flags.disableDeskSwitchWallpaperOffsets()) {
+            unregisterReceiver(wallpaperAnimationReceiver)
+        }
         super.onPause()
     }
 
@@ -183,6 +188,7 @@ class DesktopWallpaperActivity : FragmentActivity() {
         WindowCompat.getInsetsController(window, window.decorView)
 
     private fun handleStartWallpaperAnimationRequest(intent: Intent) {
+        if (Flags.disableDeskSwitchWallpaperOffsets()) return
         Log.d(TAG, "handleStartWallpaperAnimationRequest")
         if (intent.action != START_WALLPAPER_ANIMATION_ACTION) return
         val animType = intent.getIntExtra(WALLPAPER_ANIMATION_EXTRA_ANIM_TYPE, JUMP_CUT_ANIMATION)
