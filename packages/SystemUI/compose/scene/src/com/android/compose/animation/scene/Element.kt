@@ -1131,20 +1131,28 @@ private fun isElementOpaqueWithDefaultScale(
         return true
     }
 
-    val isSharedElement = fromState != null && toState != null
-    if (isSharedElement && isSharedElementEnabled(element.key, transition)) {
-        return true
-    }
-
     val transformations = transition.transformationSpec.transformations(element.key, content.key)
     val previewTransformations =
         transition.previewTransformationSpec?.transformations(element.key, content.key)
+
+    val isSharedElement = fromState != null && toState != null
+    if (isSharedElement && isSharedElementEnabled(element.key, transition)) {
+        return (transformations == null ||
+            !transformations.hasSharedAlphaOrScaleTransformation()) &&
+            (previewTransformations == null ||
+                !previewTransformations.hasSharedAlphaOrScaleTransformation())
+    }
+
     return (transformations == null || !transformations.hasAlphaOrScaleTransformation()) &&
         (previewTransformations == null || !previewTransformations.hasAlphaOrScaleTransformation())
 }
 
 private fun ElementTransformations.hasAlphaOrScaleTransformation(): Boolean {
-    return alpha != null || sharedAlpha != null || scale != null || sharedDrawScale != null
+    return alpha != null || scale != null
+}
+
+private fun ElementTransformations.hasSharedAlphaOrScaleTransformation(): Boolean {
+    return sharedAlpha != null || sharedDrawScale != null
 }
 
 /**
