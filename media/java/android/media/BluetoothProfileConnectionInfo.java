@@ -23,11 +23,13 @@ import android.annotation.SystemApi;
 import android.bluetooth.BluetoothProfile;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 /**
  * Contains information about Bluetooth profile connection state changed
  * @hide
  */
+@RavenwoodKeepWholeClass
 @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
 public final class BluetoothProfileConnectionInfo implements Parcelable {
     private final int mProfile;

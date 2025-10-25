@@ -29,6 +29,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.ravenwood.annotation.RavenwoodThrow;
 import android.util.Log;
 
 import java.util.Objects;
@@ -43,6 +45,7 @@ import java.util.Objects;
  * internal range).
  */
 @SystemApi
+@RavenwoodKeepWholeClass
 public final class VolumeInfo implements Parcelable {
     private static final String TAG = "VolumeInfo";
 
@@ -183,6 +186,7 @@ public final class VolumeInfo implements Parcelable {
      * to STREAM_MUSIC with min/max initialized to the associated range
      * @return the default VolumeInfo for the device
      */
+    @RavenwoodThrow(reason = "no default on host")
     public static @NonNull VolumeInfo getDefaultVolumeInfo() {
         if (sService == null) {
             IBinder b = ServiceManager.getService(Context.AUDIO_SERVICE);

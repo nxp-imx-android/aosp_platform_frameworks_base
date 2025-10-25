@@ -18,6 +18,7 @@ package android.media;
 
 import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
  *
  * @hide
  */
+@RavenwoodKeepWholeClass
 public class AudioPort {
     private static final String TAG = "AudioPort";
 

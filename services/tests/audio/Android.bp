@@ -57,3 +57,20 @@ android_test {
         enabled: false,
     },
 }
+
+android_ravenwood_test {
+    name: "AudioServiceTestsRavenwood",
+
+    srcs: [
+        "src/com/android/server/audio/audio/ActivityDebouncerTest.java",
+        "src/com/android/server/audio/audio/AudioServerPermissionProviderTest.java",
+        "src/com/android/server/audio/audio/MediaFocusControlTest.java",
+        "src/com/android/server/audio/audio/ServiceHolderTest.java",
+    ],
+
+    static_libs: shared_deps + [
+        "servicestests-utils-ravenwood",
+    ],
+
+    auto_gen_config: true,
+}

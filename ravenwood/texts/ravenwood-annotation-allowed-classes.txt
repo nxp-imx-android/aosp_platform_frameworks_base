@@ -253,6 +253,29 @@ android.graphics.text.MeasuredText
 android.graphics.text.PositionedGlyphs
 android.graphics.text.TextRunShaper
 
+android.media.AudioAttributes
+android.media.AudioDescriptor
+android.media.AudioDeviceAttributes
+android.media.AudioDeviceInfo
+android.media.AudioDevicePort
+android.media.AudioDevicePortConfig
+android.media.AudioFocusInfo
+android.media.AudioFocusRequest
+android.media.AudioFormat
+android.media.AudioGain
+android.media.AudioGainConfig
+android.media.AudioHandle
+android.media.AudioManager
+android.media.AudioPort
+android.media.AudioPortConfig
+android.media.AudioProfile
+android.media.AudioRoutesInfo
+android.media.AudioSystem
+android.media.BluetoothProfileConnectionInfo
+android.media.MediaMetrics
+android.media.Utils
+android.media.VolumeInfo
+
 android.metrics.LogMaker
 
 android.os.AggregateBatteryConsumer

@@ -18,6 +18,7 @@ package android.media;
 
 import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 /**
  * An AudioPortConfig contains a possible configuration of an audio port chosen
@@ -32,6 +33,7 @@ import android.os.Build;
  * @hide
  */
 
+@RavenwoodKeepWholeClass
 public class AudioPortConfig {
     @UnsupportedAppUsage
     final AudioPort mPort;

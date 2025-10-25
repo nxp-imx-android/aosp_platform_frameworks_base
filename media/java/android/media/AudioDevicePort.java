@@ -19,6 +19,7 @@ package android.media;
 import android.annotation.NonNull;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import com.android.aconfig.annotations.VisibleForTesting;
 
@@ -38,7 +39,7 @@ import java.util.List;
  * @see AudioPort
  * @hide
  */
-
+@RavenwoodKeepWholeClass
 public class AudioDevicePort extends AudioPort {
 
     /** @hide */

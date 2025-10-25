@@ -18,6 +18,7 @@ package android.media;
 
 import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 /**
  * The AudioGain describes a gain controller. Gain controllers are exposed by
@@ -41,6 +42,7 @@ import android.os.Build;
  * valid gain configuration from AudioGain.buildConfig()
  * @hide
  */
+@RavenwoodKeepWholeClass
 public class AudioGain {
 
     /**
