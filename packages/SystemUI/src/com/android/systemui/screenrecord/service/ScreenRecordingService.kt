@@ -233,7 +233,7 @@ protected constructor(
                     originalShouldShowTouches = getShouldShowTouches(),
                     captureTarget = parameters.captureTarget,
                     audioSource = parameters.audioSource,
-                    displayId = displayId,
+                    displayId = parameters.displayId,
                     shouldShowTaps = parameters.shouldShowTaps,
                     recorder =
                         ScreenMediaRecorder(
@@ -242,7 +242,7 @@ protected constructor(
                             Process.myUid(),
                             parameters.audioSource,
                             parameters.captureTarget,
-                            displayId,
+                            parameters.displayId,
                             screenMediaRecorderListener,
                         ),
                 )
