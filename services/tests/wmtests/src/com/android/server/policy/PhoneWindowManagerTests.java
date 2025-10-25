@@ -28,8 +28,6 @@ import static android.view.WindowManagerGlobal.ADD_OKAY;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
-import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
-import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -607,7 +605,12 @@ public class PhoneWindowManagerTests {
 
         final int expectedDisplayId = expectEventDisplayIdForWakeup ? displayId : DEFAULT_DISPLAY;
         verify(mWindowWakeUpPolicy)
-                .wakeUpFromKey(expectedDisplayId, time, keyCode, /* isDown= */ true);
+                .wakeUpFromKey(
+                        expectedDisplayId,
+                        time,
+                        keyCode,
+                        /* isDown= */ true,
+                        /* keyEventFlags= */ 0);
     }
 
     @Test
@@ -636,7 +639,12 @@ public class PhoneWindowManagerTests {
 
         final int expectedDisplayId = expectEventDisplayIdForWakeup ? displayId : DEFAULT_DISPLAY;
         verify(mWindowWakeUpPolicy)
-                .wakeUpFromKey(expectedDisplayId, time, KEYCODE_POWER, /* isDown= */ false);
+                .wakeUpFromKey(
+                        expectedDisplayId,
+                        time,
+                        KEYCODE_POWER,
+                        /* isDown= */ false,
+                        /* keyEventFlags= */ 0);
     }
 
     @Test

@@ -721,7 +721,7 @@ class TestPhoneWindowManager {
     void assertPowerWakeUp() {
         mTestLooper.dispatchAll();
         verify(mWindowWakeUpPolicy).wakeUpFromKey(
-                eq(DEFAULT_DISPLAY), anyLong(), eq(KeyEvent.KEYCODE_POWER), anyBoolean());
+                eq(DEFAULT_DISPLAY), anyLong(), eq(KeyEvent.KEYCODE_POWER), anyBoolean(), anyInt());
     }
 
     void assertNoPowerSleep() {
