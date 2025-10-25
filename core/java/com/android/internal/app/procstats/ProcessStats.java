@@ -273,7 +273,9 @@ public final class ProcessStats implements Parcelable {
         if (running) {
             // If we are actively running, we need to determine whether the system is
             // collecting swap pss data.
-            mHasSwappedOutPss = isSwapEnabled();
+            Debug.MemoryInfo info = new Debug.MemoryInfo();
+            Debug.getMemoryInfo(android.os.Process.myPid(), info);
+            mHasSwappedOutPss = info.hasSwappedOutPss();
         }
     }
 
@@ -734,19 +736,6 @@ public final class ProcessStats implements Parcelable {
      * leading or trailing spaces.  The format is ensured by the regex
      * above.
      */
-    private static boolean isSwapEnabled() {
-        try (BufferedReader reader = new BufferedReader(new FileReader("/proc/swaps"))) {
-            // Skip header line.
-            if (reader.readLine() == null) {
-                return false;
-            }
-            // If there is a second line, there is a swap entry.
-            return reader.readLine() != null;
-        } catch (IOException e) {
-            return false;
-        }
-    }
-
     private static int[] splitAndParseNumbers(String s) {
         // These are always positive and the numbers can't be so big that we'll overflow
         // so just do the parsing inline.
