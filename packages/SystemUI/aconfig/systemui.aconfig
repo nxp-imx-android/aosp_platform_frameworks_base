@@ -2071,6 +2071,16 @@ flag {
 }
 
 flag {
+    name: "launch_internet_details"
+    namespace: "systemui"
+    description: "Fix the crash when launching details view with INTERNET_CONNECTIVITY"
+    bug: "425987324"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fix_shade_header_wrong_dnd_icon_size"
     namespace: "lse_desktop_experience"
     description: "Fix DnD icon size in shade header on connected displays"

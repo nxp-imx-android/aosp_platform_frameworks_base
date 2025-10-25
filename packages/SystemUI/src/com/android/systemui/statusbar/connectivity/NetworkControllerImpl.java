@@ -61,6 +61,7 @@ import com.android.settingslib.mobile.MobileStatusTracker.SubscriptionDefaults;
 import com.android.settingslib.mobile.TelephonyIcons;
 import com.android.settingslib.net.DataUsageController;
 import com.android.systemui.Dumpable;
+import com.android.systemui.Flags;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Background;
@@ -71,9 +72,11 @@ import com.android.systemui.dump.DumpManager;
 import com.android.systemui.log.LogBuffer;
 import com.android.systemui.log.core.LogLevel;
 import com.android.systemui.log.dagger.StatusBarNetworkControllerLog;
+import com.android.systemui.qs.flags.QsDetailedView;
 import com.android.systemui.qs.tiles.dialog.InternetDialogManager;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor;
 import com.android.systemui.statusbar.pipeline.StatusBarPipelineFlags;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.DataSaverController;
@@ -203,6 +206,7 @@ public class NetworkControllerImpl extends BroadcastReceiver
     private boolean mForceCellularValidated;
     private InternetDialogManager mInternetDialogManager;
     private Handler mMainHandler;
+    private ShadeModeInteractor mShadeModeInteractor;
 
     private ConfigurationController.ConfigurationListener mConfigurationListener =
             new ConfigurationController.ConfigurationListener() {
@@ -245,9 +249,10 @@ public class NetworkControllerImpl extends BroadcastReceiver
             WifiStatusTrackerFactory trackerFactory,
             MobileSignalControllerFactory mobileFactory,
             @Main Handler handler,
-            InternetDialogManager internetDialogManager,
             DumpManager dumpManager,
-            @StatusBarNetworkControllerLog LogBuffer logBuffer) {
+            InternetDialogManager internetDialogManager,
+            @StatusBarNetworkControllerLog LogBuffer logBuffer,
+            ShadeModeInteractor shadeModeInteractor) {
         this(context, connectivityManager,
                 telephonyManager,
                 telephonyListenerManager,
@@ -270,7 +275,8 @@ public class NetworkControllerImpl extends BroadcastReceiver
                 mobileFactory,
                 handler,
                 dumpManager,
-                logBuffer);
+                logBuffer,
+                shadeModeInteractor);
         mReceiverHandler.post(mRegisterListeners);
         mInternetDialogManager = internetDialogManager;
     }
@@ -298,8 +304,8 @@ public class NetworkControllerImpl extends BroadcastReceiver
             MobileSignalControllerFactory mobileFactory,
             @Main Handler handler,
             DumpManager dumpManager,
-            LogBuffer logBuffer
-    ) {
+            LogBuffer logBuffer,
+            ShadeModeInteractor shadeModeInteractor) {
         mContext = context;
         mTelephonyListenerManager = telephonyListenerManager;
         mConfig = config;
@@ -321,6 +327,7 @@ public class NetworkControllerImpl extends BroadcastReceiver
         mCarrierConfigTracker = carrierConfigTracker;
         mDumpManager = dumpManager;
         mLogBuffer = logBuffer;
+        mShadeModeInteractor = shadeModeInteractor;
 
         // telephony
         mPhone = telephonyManager;
@@ -833,10 +840,15 @@ public class NetworkControllerImpl extends BroadcastReceiver
                 mReceiverHandler.post(this::handleConfigurationChanged);
                 break;
             case Settings.Panel.ACTION_INTERNET_CONNECTIVITY:
-                mMainHandler.post(() -> mInternetDialogManager.create(true,
-                        mAccessPoints.canConfigMobileData(), mAccessPoints.canConfigWifi(),
-                        null /* view */));
-                break;
+                if (Flags.launchInternetDetails()) {
+                    break;
+                }
+                if (!QsDetailedView.isEnabled() || !mShadeModeInteractor.isDualShade()) {
+                    mMainHandler.post(() -> mInternetDialogManager.create(true,
+                            mAccessPoints.canConfigMobileData(), mAccessPoints.canConfigWifi(),
+                            null /* view */));
+                    break;
+                }
             default:
                 int subId = intent.getIntExtra(SubscriptionManager.EXTRA_SUBSCRIPTION_INDEX,
                         INVALID_SUBSCRIPTION_ID);

@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.connectivity
 
 import android.os.UserManager
+import com.android.systemui.CoreStartable
 import com.android.systemui.bluetooth.qsdialog.dagger.AudioSharingModule
 import com.android.systemui.qs.QsEventLogger
 import com.android.systemui.qs.pipeline.shared.TileSpec
@@ -59,14 +60,37 @@ import com.android.systemui.qs.tiles.impl.wifi.domain.interactor.WifiTileUserAct
 import com.android.systemui.qs.tiles.impl.wifi.domain.model.WifiTileModel
 import com.android.systemui.qs.tiles.impl.wifi.ui.mapper.WifiTileMapper
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.connectivity.data.repository.InternetConnectivityActionRepository
+import com.android.systemui.statusbar.connectivity.data.repository.InternetConnectivityActionRepositoryImpl
+import com.android.systemui.statusbar.connectivity.domain.interactor.InternetConnectivityActionInteractor
+import com.android.systemui.statusbar.connectivity.domain.interactor.InternetConnectivityActionInteractorImpl
+import com.android.systemui.statusbar.connectivity.ui.viewmodel.InternetConnectivityActionViewModel
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.StringKey
 
 @Module(includes = [AudioSharingModule::class])
 interface ConnectivityModule {
+
+    @Binds
+    fun bindInternetConnectivityActionRepository(
+        impl: InternetConnectivityActionRepositoryImpl
+    ): InternetConnectivityActionRepository
+
+    @Binds
+    fun bindInternetConnectivityActionInteractor(
+        impl: InternetConnectivityActionInteractorImpl
+    ): InternetConnectivityActionInteractor
+
+    @Binds
+    @IntoMap
+    @ClassKey(InternetConnectivityActionViewModel::class)
+    fun bindInternetConnectivityActionViewModel(
+        impl: InternetConnectivityActionViewModel
+    ): CoreStartable
 
     /** Inject BluetoothTile into tileMap in QSModule */
     @Binds
