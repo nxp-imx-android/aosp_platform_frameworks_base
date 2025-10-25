@@ -26,9 +26,6 @@ import static android.media.audiopolicy.Flags.enableFadeManagerConfiguration;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.AppOpsManager;
-import android.content.ContentResolver;
-import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioFocusInfo;
 import android.media.AudioManager;
@@ -103,8 +100,6 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
      */
     static final boolean ENFORCE_FADEOUT_FOR_FOCUS_LOSS = true;
 
-    private final Context mContext;
-    private final AppOpsManager mAppOps;
     private final @NonNull PlayerFocusEnforcer mFocusEnforcer;
     private boolean mMultiAudioFocusEnabled = false;
 
@@ -114,21 +109,10 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
     @GuardedBy("mExtFocusChangeLock")
     private long mExtFocusChangeCounter;
 
-    protected MediaFocusControl(Context cntxt, PlayerFocusEnforcer pfe) {
-        mContext = cntxt;
-        mAppOps = (AppOpsManager)mContext.getSystemService(Context.APP_OPS_SERVICE);
+    protected MediaFocusControl(PlayerFocusEnforcer pfe, boolean isMultiFocus) {
         mFocusEnforcer = pfe;
-        final ContentResolver cr = mContext.getContentResolver();
 
-        boolean multiAudioFocusEnabledDefault =
-                audioFocusDesktop()
-                        && mContext.getResources()
-                                .getBoolean(
-                                        com.android.internal.R.bool
-                                                .config_multi_audio_focus_enabled_default);
-        mMultiAudioFocusEnabled = Settings.System.getIntForUser(cr,
-                Settings.System.MULTI_AUDIO_FOCUS_ENABLED,
-                multiAudioFocusEnabledDefault ? 1 : 0, cr.getUserId()) != 0;
+        mMultiAudioFocusEnabled = isMultiFocus;
         initFocusThreading();
     }
 
@@ -1846,9 +1830,6 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
     public void updateMultiAudioFocus(boolean enabled) {
         Log.d(TAG, "updateMultiAudioFocus( " + enabled + " )");
         mMultiAudioFocusEnabled = enabled;
-        final ContentResolver cr = mContext.getContentResolver();
-        Settings.System.putIntForUser(cr,
-                Settings.System.MULTI_AUDIO_FOCUS_ENABLED, enabled ? 1 : 0, cr.getUserId());
         if (!mFocusStack.isEmpty()) {
             final FocusRequester fr = mFocusStack.peek();
             fr.handleFocusLoss(AudioManager.AUDIOFOCUS_LOSS, null, false);

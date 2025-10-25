@@ -32,6 +32,7 @@ import android.media.AudioDeviceAttributes;
 import android.media.AudioManager;
 import android.media.AudioSystem;
 import android.platform.test.annotations.Presubmit;
+import android.os.PowerManager;
 import android.util.Log;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -58,6 +59,7 @@ public class AudioDeviceInventoryTest {
     private AudioDeviceInventory mDevInventory;
     @Spy private AudioDeviceBroker mSpyAudioDeviceBroker;
     @Spy private AudioSystemAdapter mSpyAudioSystem;
+    @Mock private PowerManager.WakeLock mMockWakelock;
 
     private SystemServerAdapter mSystemServer;
 
@@ -72,7 +74,7 @@ public class AudioDeviceInventoryTest {
         mDevInventory = new AudioDeviceInventory(mSpyAudioSystem, new ArrayList<>());
         mSystemServer = new NoOpSystemServerAdapter();
         mSpyAudioDeviceBroker = spy(new AudioDeviceBroker(context, mMockAudioService, mDevInventory,
-                mSystemServer, mSpyAudioSystem));
+                mSystemServer, mSpyAudioSystem, mMockWakelock));
         mDevInventory.setDeviceBroker(mSpyAudioDeviceBroker);
 
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();

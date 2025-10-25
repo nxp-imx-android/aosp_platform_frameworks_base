@@ -87,7 +87,8 @@ public class MediaFocusControlTest {
     @Before
     public void setUp() throws Exception {
         mContext = InstrumentationRegistry.getTargetContext();
-        mMediaFocusControl = new MediaFocusControl(mContext, new NoopPlayerFocusEnforcer());
+        mMediaFocusControl = new MediaFocusControl(new NoopPlayerFocusEnforcer(),
+                /*isMultiFocus=*/ false);
     }
 
     private static final AudioAttributes MEDIA_ATTRIBUTES = new AudioAttributes.Builder()

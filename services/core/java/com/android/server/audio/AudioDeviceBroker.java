@@ -201,42 +201,39 @@ public class AudioDeviceBroker {
     }
 
     //-------------------------------------------------------------------
-    /*package*/ AudioDeviceBroker(@NonNull Context context, @NonNull AudioService service,
-            @NonNull AudioSystemAdapter audioSystem) {
+    /*package*/ AudioDeviceBroker(Context context, AudioService service,
+            AudioDeviceInventory deviceInventory, SystemServerAdapter systemServer,
+            AudioSystemAdapter audioSystem, PowerManager.WakeLock wakelock) {
         mContext = context;
         mAudioService = service;
-        mBtHelper = new BtHelper(this, context);
-        mDeviceInventory = new AudioDeviceInventory(this,
-                audioSystem.getAudioProductStrategies(/* filterInternal= */ true));
-        mSystemServer = SystemServerAdapter.getDefaultAdapter(mContext);
+        mDeviceInventory = deviceInventory;
+        mSystemServer = systemServer;
         mAudioSystem = audioSystem;
-        mScoManagedByAudio = scoManagedByAudio()
-                && BluetoothProperties.isScoManagedByAudioEnabled().orElse(false);
-        mCommunicationStack = new RouteSelectionStack(
-                client -> postCommunicationRouteClientDied(client),
-                AudioService.sDeviceLogger);
-        init();
-    }
+        mBrokerEventWakeLock = wakelock;
 
-    // TODO: combine these methods, error-prone
-    /** for test purposes only, inject AudioDeviceInventory and adapter for operations running
-     *  in system_server */
-    AudioDeviceBroker(@NonNull Context context, @NonNull AudioService service,
-                      @NonNull AudioDeviceInventory mockDeviceInventory,
-                      @NonNull SystemServerAdapter mockSystemServer,
-                      @NonNull AudioSystemAdapter audioSystem) {
-        mContext = context;
-        mAudioService = service;
-        mBtHelper = new BtHelper(this, context);
-        mDeviceInventory = mockDeviceInventory;
-        mSystemServer = mockSystemServer;
-        mAudioSystem = audioSystem;
         mScoManagedByAudio = scoManagedByAudio()
                 && BluetoothProperties.isScoManagedByAudioEnabled().orElse(false);
         mCommunicationStack = new RouteSelectionStack(
-                client -> postCommunicationRouteClientDied(client),
-                AudioService.sDeviceLogger);
-        init();
+                client -> postCommunicationRouteClientDied(client), AudioService.sDeviceLogger);
+        mBtHelper = new BtHelper(this);
+        deviceInventory.setDeviceBroker(this);
+
+        setupMessaging();
+
+        mCommunicationActivityDebouncer =
+                new ActivityDebouncer(mBrokerHandler, MSG_L_COMMUNICATION_ROUTE_INACTIVE,
+                        uid -> updateCommunicationClientActivity(uid, true),
+                        CLIENT_INACTIVITY_DEBOUNCE_MS
+                        );
+
+
+        initAudioHalBluetoothState();
+        initRoutingStrategyIds();
+        mPreferredCommunicationDevice = null;
+        AudioDeviceInfo device = getCommunicationDeviceInt();
+        mCurCommunicationPortId = device != null ? device.getId() : 0;
+
+        mSystemServer.registerUserStartedReceiver(mContext);
     }
 
     /**
@@ -298,24 +295,6 @@ public class AudioDeviceBroker {
                 mAccessibilityStrategyId = strategy.getId();
             }
         }
-    }
-
-    private void init() {
-        setupMessaging(mContext);
-
-        mCommunicationActivityDebouncer =
-                new ActivityDebouncer(mBrokerHandler, MSG_L_COMMUNICATION_ROUTE_INACTIVE,
-                        uid -> updateCommunicationClientActivity(uid, true),
-                        CLIENT_INACTIVITY_DEBOUNCE_MS
-                        );
-
-        initAudioHalBluetoothState();
-        initRoutingStrategyIds();
-        mPreferredCommunicationDevice = null;
-        AudioDeviceInfo device = getCommunicationDeviceInt();
-        mCurCommunicationPortId = device != null ? device.getId() : 0;
-
-        mSystemServer.registerUserStartedReceiver(mContext);
     }
 
     /*package*/ Context getContext() {
@@ -1803,10 +1782,7 @@ public class AudioDeviceBroker {
     private BrokerThread mBrokerThread;
     private PowerManager.WakeLock mBrokerEventWakeLock;
 
-    private void setupMessaging(Context ctxt) {
-        final PowerManager pm = (PowerManager) ctxt.getSystemService(Context.POWER_SERVICE);
-        mBrokerEventWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                "handleAudioDeviceEvent");
+    private void setupMessaging() {
         mBrokerThread = new BrokerThread();
         mBrokerThread.start();
         waitForBrokerHandlerCreation();

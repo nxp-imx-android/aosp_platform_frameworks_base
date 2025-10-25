@@ -48,6 +48,7 @@ import android.media.AudioManager;
 import android.media.AudioSystem;
 import android.media.BluetoothProfileConnectionInfo;
 import android.platform.test.annotations.Presubmit;
+import android.os.PowerManager;
 import android.util.Log;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -76,6 +77,7 @@ public class AudioDeviceBrokerTest {
     private AudioDeviceBroker mAudioDeviceBroker;
 
     @Mock private AudioService mMockAudioService;
+    @Mock private PowerManager.WakeLock mMockWakelock;
     @Spy private AudioDeviceInventory mSpyDevInventory;
     @Spy private AudioSystemAdapter mSpyAudioSystem;
     @Spy private SystemServerAdapter mSpySystemServer;
@@ -97,7 +99,7 @@ public class AudioDeviceBrokerTest {
         mSpyDevInventory = spy(new AudioDeviceInventory(mSpyAudioSystem, new ArrayList<>()));
         mSpySystemServer = spy(new NoOpSystemServerAdapter());
         mAudioDeviceBroker = new AudioDeviceBroker(context, mMockAudioService, mSpyDevInventory,
-                mSpySystemServer, mSpyAudioSystem);
+                mSpySystemServer, mSpyAudioSystem, mMockWakelock);
         mSpyDevInventory.setDeviceBroker(mAudioDeviceBroker);
 
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
