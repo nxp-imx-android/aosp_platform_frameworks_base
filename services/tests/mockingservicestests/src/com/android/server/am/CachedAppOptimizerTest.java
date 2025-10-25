@@ -751,7 +751,9 @@ public final class CachedAppOptimizerTest {
                 .containsExactlyElementsIn(expected);
     }
 
-    @EnableFlags(com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK)
+    @EnableFlags({
+            com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK,
+            com.android.server.am.Flags.FLAG_LOG_ZRAM_WRITEBACK_EVENTS})
     @Test
     public void zramWritebackInitiated() throws Exception {
         long[] rssAfter =
@@ -760,7 +762,9 @@ public final class CachedAppOptimizerTest {
                 /*shouldBeCalled*/ true);
     }
 
-    @EnableFlags(com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK)
+    @EnableFlags({
+            com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK,
+            com.android.server.am.Flags.FLAG_LOG_ZRAM_WRITEBACK_EVENTS})
     @Test
     public void zramWritebackNotInitiatedDueToSwapSize() throws Exception {
         // 200MB swap size
@@ -771,7 +775,9 @@ public final class CachedAppOptimizerTest {
                 /*shouldBeCalled*/ false);
     }
 
-    @EnableFlags(com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK)
+    @EnableFlags({
+            com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK,
+            com.android.server.am.Flags.FLAG_LOG_ZRAM_WRITEBACK_EVENTS})
     @Test
     public void zramWritebackNotInitiatedNoActivities() throws Exception {
         long[] rssAfter =
@@ -780,7 +786,9 @@ public final class CachedAppOptimizerTest {
                 /*shouldBeCalled*/ false);
     }
 
-    @EnableFlags(com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK)
+    @EnableFlags({
+            com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK,
+            com.android.server.am.Flags.FLAG_LOG_ZRAM_WRITEBACK_EVENTS})
     @Test
     public void zramWritebackNotInitiatedNoZramOpsSupport() throws Exception {
         long[] rssAfter =

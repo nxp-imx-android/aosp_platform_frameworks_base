@@ -1627,8 +1627,8 @@ public class CachedAppOptimizer {
         return 0;
     }
 
-    private void maybeWritebackZram(
-            int pid, String processName, long zramUsedDeltaKb, boolean hasActivities) {
+    private void maybeWritebackZram(int pid, String processName, String packageName, int uid,
+            long zramUsedDeltaKb, boolean hasActivities) {
         if (DEBUG_WRITEBACK) {
             Slog.i(
                 TAG_AM,
@@ -1645,54 +1645,106 @@ public class CachedAppOptimizer {
                         + hasActivities
                         );
         }
-        if (!Flags.enableZramWriteback()) {
+        if (!Flags.logZramWritebackEvents() && !Flags.enableZramWriteback()) {
             return;
         }
-        if (zramUsedDeltaKb >= ZRAM_WRITEBACK_THRESHOLD_KB) {
-            return;
-        }
-        if (!hasActivities) {
-            return;
-        }
-        final IMmd mmd = getMmd();
-        if (mmd == null) {
-            return;
-        }
+        int eventTypeToLog =
+                FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_OTHER_REASONS;
+        String processNameForLogging =
+                (processName != null && processName.equals(packageName)) ? null : processName;
         try {
-            if (mHasZramWritebackSupport == null) {
-                mHasZramWritebackSupport = mmd.supportsProcessMemoryZramOps();
-            }
-            if (!mHasZramWritebackSupport) {
+            if (zramUsedDeltaKb >= ZRAM_WRITEBACK_THRESHOLD_KB) {
+                eventTypeToLog =
+                        FrameworkStatsLog
+                                .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_RSS_SWAP_TOO_HIGH;
                 return;
             }
-            final IMmdProcessWritebackCallback callback =
-                    new IMmdProcessWritebackCallback.Stub() {
-                        @Override
-                        @RequiresNoPermission
-                        public void onProcessMemoryWritebackComplete(byte status) {
-                            if (status != IMmdProcessWritebackCallback.WritebackStatus.SUCCESS
-                                    && DEBUG_WRITEBACK) {
-                                Slog.d(
-                                        TAG_AM,
-                                        "onProcessMemoryWritebackComplete failed for "
-                                                + processName
-                                                + ":"
-                                                + pid
-                                                + "status="
-                                                + status);
-                            }
-                        }
-                    };
-            try {
-                final FileDescriptor fd = Process.openPidFd(pid, 0);
-                try (final ParcelFileDescriptor pfd = ParcelFileDescriptor.adoptFd(fd.getInt$())) {
-                    mmd.asyncWritebackProcessZramMemory(pfd, callback);
-                }
-            } catch (IOException e) {
-                Slog.w(TAG_AM, "Failed to get pidfd for " + pid, e);
+            if (!hasActivities) {
+                eventTypeToLog =
+                        FrameworkStatsLog
+                                .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_NO_ACTIVITY;
+                return;
             }
-        } catch (RemoteException e) {
-            Slog.w(TAG_AM, "Failed to call mmd.", e);
+            final IMmd mmd = getMmd();
+            if (mmd == null) {
+                eventTypeToLog =
+                        FrameworkStatsLog
+                                .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_MMD_SERVICE_UNAVAILABLE;
+                return;
+            }
+            try {
+                if (mHasZramWritebackSupport == null) {
+                    mHasZramWritebackSupport = mmd.supportsProcessMemoryZramOps();
+                }
+                if (!mHasZramWritebackSupport) {
+                    eventTypeToLog =
+                            FrameworkStatsLog
+                                    .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_UNSUPPORTED_BY_MMD;
+                    return;
+                }
+                final IMmdProcessWritebackCallback callback =
+                        new IMmdProcessWritebackCallback.Stub() {
+                            @Override
+                            @RequiresNoPermission
+                            public void onProcessMemoryWritebackComplete(
+                                    byte status, long bytesWritten) {
+                                if (status != IMmdProcessWritebackCallback.WritebackStatus.SUCCESS
+                                        && DEBUG_WRITEBACK) {
+                                    Slog.d(
+                                            TAG_AM,
+                                            "onProcessMemoryWritebackComplete failed for "
+                                                    + processName
+                                                    + ":"
+                                                    + pid
+                                                    + "status="
+                                                    + status);
+                                }
+                                FrameworkStatsLog.write(FrameworkStatsLog.ZRAM_WRITEBACK_EVENT,
+                                        getZramWritebackEventType(status), uid, processName,
+                                        hasActivities, zramUsedDeltaKb, bytesWritten,
+                                        /* hasDmaBuf= */ false, /* hasGpuMemory= */ false);
+                            }
+                        };
+                try {
+                    final FileDescriptor fd = Process.openPidFd(pid, 0);
+                    try (final ParcelFileDescriptor pfd =
+                            ParcelFileDescriptor.adoptFd(fd.getInt$())) {
+                        if (!Flags.enableZramWriteback()) {
+                            eventTypeToLog =
+                                    FrameworkStatsLog
+                                            .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__DISABLED_BY_FLAG;
+                            return;
+                        }
+                        eventTypeToLog =
+                            FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__STARTED;
+                        mmd.asyncWritebackProcessZramMemory(pfd, callback);
+                    }
+                } catch (IOException e) {
+                    eventTypeToLog =
+                            FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__FAILED_OTHER;
+                    Slog.w(TAG_AM, "Failed to get pidfd for " + pid, e);
+                }
+            } catch (RemoteException e) {
+                eventTypeToLog = FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__FAILED_OTHER;
+                Slog.w(TAG_AM, "Failed to call mmd.", e);
+            }
+        } finally {
+            FrameworkStatsLog.write(FrameworkStatsLog.ZRAM_WRITEBACK_EVENT, eventTypeToLog, uid,
+                    processName, hasActivities, zramUsedDeltaKb, /* zramBytesWritten= */ 0,
+                    /* hasDmaBuf= */ false, /* hasGpuMemory= */ false);
+        }
+    }
+
+    private static int getZramWritebackEventType(byte status) {
+        switch (status) {
+            case IMmdProcessWritebackCallback.WritebackStatus.SUCCESS:
+                return FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SUCCEEDED;
+            case IMmdProcessWritebackCallback.WritebackStatus.FAILURE_DEVICE_FULL:
+                return FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__FAILED_DEVICE_FULL;
+            case IMmdProcessWritebackCallback.WritebackStatus.FAILURE_UNSUPPORTED:
+                return FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__FAILED_UNSUPPORTED;
+            default:
+                return FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__FAILED_OTHER;
         }
     }
 
@@ -1853,6 +1905,7 @@ public class CachedAppOptimizer {
                     int uid;
                     int pid;
                     final String name;
+                    final String packageName;
                     CompactProfile lastCompactProfile;
                     long lastCompactTime;
                     int newOomAdj = msg.arg1;
@@ -1876,6 +1929,7 @@ public class CachedAppOptimizer {
                         uid = proc.uid;
                         pid = proc.getPid();
                         name = proc.processName;
+                        packageName = proc.getPackageName();
                         opt.setHasPendingCompact(false);
                         compactSource = opt.getReqCompactSource();
                         requestedProfile = opt.getReqCompactProfile();
@@ -1967,7 +2021,13 @@ public class CachedAppOptimizer {
                         long deltaFileRss = rssAfter[RSS_FILE_INDEX] - rssBefore[RSS_FILE_INDEX];
                         long deltaAnonRss = rssAfter[RSS_ANON_INDEX] - rssBefore[RSS_ANON_INDEX];
                         long deltaSwapRss = rssAfter[RSS_SWAP_INDEX] - rssBefore[RSS_SWAP_INDEX];
-                        maybeWritebackZram(pid, name, rssAfter[RSS_SWAP_INDEX], hasActivities);
+                        maybeWritebackZram(
+                                pid,
+                                name,
+                                packageName,
+                                uid,
+                                rssAfter[RSS_SWAP_INDEX],
+                                hasActivities);
                         switch (opt.getReqCompactProfile()) {
                             case SOME:
                                 mCompactStatsManager.logSomeCompactionPerformed(compactSource,
