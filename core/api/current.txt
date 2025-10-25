@@ -56379,6 +56379,7 @@ package android.view.accessibility {
     field @FlaggedApi("android.view.accessibility.a11y_expansion_state_api") public static final int EXPANDED_STATE_PARTIAL = 2; // 0x2
     field @FlaggedApi("android.view.accessibility.a11y_expansion_state_api") public static final int EXPANDED_STATE_UNDEFINED = 0; // 0x0
     field public static final String EXTRA_DATA_RENDERING_INFO_KEY = "android.view.accessibility.extra.DATA_RENDERING_INFO_KEY";
+    field @FlaggedApi("android.view.accessibility.a11y_layout_based_actions_api") public static final String EXTRA_DATA_REQUEST_LAYOUT_BASED_ACTIONS_KEY = "android.view.accessibility.extra.DATA_REQUEST_LAYOUT_BASED_ACTIONS_KEY";
     field public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_LENGTH = "android.view.accessibility.extra.DATA_TEXT_CHARACTER_LOCATION_ARG_LENGTH";
     field public static final int EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_MAX_LENGTH = 20000; // 0x4e20
     field public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_START_INDEX = "android.view.accessibility.extra.DATA_TEXT_CHARACTER_LOCATION_ARG_START_INDEX";
