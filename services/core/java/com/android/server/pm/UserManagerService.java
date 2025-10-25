@@ -1491,7 +1491,7 @@ public class UserManagerService extends IUserManager.Stub {
         synchronized (mUsersLock) {
             if (mBootUser != UserHandle.USER_NULL) {
                 final UserData userData = mUsers.get(mBootUser);
-                if (userData != null && userData.info.supportsSwitchToByUser()) {
+                if (userData != null && userData.info.supportsSwitchTo()) {
                     Slogf.i(LOG_TAG, "Using provided boot user: %d", mBootUser);
                     return mBootUser;
                 } else {
