@@ -318,3 +318,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "limit_persisted_launch_params_freeform"
+    namespace: "multitasking"
+    description: "Limits loading persisted launch params to freeform TDAs"
+    bug: "419385904"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
