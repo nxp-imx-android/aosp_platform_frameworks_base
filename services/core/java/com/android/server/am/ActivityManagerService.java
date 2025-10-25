@@ -537,6 +537,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -9364,15 +9365,15 @@ public class ActivityManagerService extends IActivityManager.Stub
      */
     void handleApplicationCrashInner(String eventType, @Nullable ProcessRecord r,
             String processName, ApplicationErrorReport.CrashInfo crashInfo) {
-        CountDownLatch profilingRunningLatch = null;
-        int profilingDelaySeconds = 0;
+        final CountDownLatch profilingRunningLatch = new CountDownLatch(1);
+        Duration profilingDelay = Duration.ZERO;
         if (android.os.profiling.Flags.profilingTriggerOom() && r != null) {
-            profilingRunningLatch = new CountDownLatch(1);
-            profilingDelaySeconds = ProfilingServiceHelper.getInstance().profileApplicationCrash(
+            profilingDelay = ProfilingServiceHelper.getInstance().profileApplicationCrash(
                     r.uid,
                     r.info.packageName,
                     crashInfo,
-                    profilingRunningLatch);
+                    BackgroundThread.getExecutor(),
+                    () -> profilingRunningLatch.countDown());
         }
 
         float loadingProgress = 1;
@@ -9482,11 +9483,11 @@ public class ActivityManagerService extends IActivityManager.Stub
         if (recoverable) {
             mAppErrors.sendRecoverableCrashToAppExitInfo(r, crashInfo);
         } else {
-            if (profilingRunningLatch != null && profilingDelaySeconds > 0) {
+            if (profilingDelay.isPositive() && profilingRunningLatch.getCount() > 0) {
                 // This will delay the crashing of the application while we wait for profiling to be
                 // collected in order to provide to the crashing app.
                 try {
-                    profilingRunningLatch.await(profilingDelaySeconds, TimeUnit.SECONDS);
+                    profilingRunningLatch.await(profilingDelay.getSeconds(), TimeUnit.SECONDS);
                 } catch (InterruptedException ignored) {
                     // Nothing else to do here, continue. Profiling result may be empty/useless.
                 }
