@@ -217,13 +217,12 @@ public class WindowLayoutComponentImplTest {
     @Test
     @EnableFlags(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
     public void testGetCurrentWindowLayoutInfo_systemApiEnabled_returnsDefaultMode() {
-        Context context = getMockContext();
+        final Context testUiContext = new TestUiContext(mAppContext, mMockWindowManager);
         mWindowLayoutComponent = new WindowLayoutComponentImpl(
-                context,
+                testUiContext,
                 mMockFoldingFeatureProducer,
                 mMockDisplayStateProvider
         );
-        final Context testUiContext = new TestUiContext(context, mMockWindowManager);
         final WindowLayoutInfo layoutInfo =
                 mWindowLayoutComponent.getCurrentWindowLayoutInfo(testUiContext);
 
@@ -234,31 +233,27 @@ public class WindowLayoutComponentImplTest {
     @Test
     @EnableFlags(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
     public void testAddWindowLayoutListener_systemApiAvailable_registersCallback() {
-        Context context = getMockContext();
+        final Context testUiContext = new TestUiContext(mAppContext, mMockWindowManager);
         mWindowLayoutComponent = new WindowLayoutComponentImpl(
-                context,
+                testUiContext,
                 mMockFoldingFeatureProducer,
                 mMockDisplayStateProvider
         );
-        final Context testUiContext = new TestUiContext(context, mMockWindowManager);
         mWindowLayoutComponent.addWindowLayoutInfoListener(testUiContext, info -> {});
 
         verify(mMockWindowManager).registerDisplayEngagementModeCallback(
                 any(Executor.class), any(Consumer.class));
     }
 
-
-
     @Test
     @EnableFlags(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
     public void testOnEngagementModeChanged_systemApiAvailable_updatesLayoutInfo() {
-        Context context = getMockContext();
+        final Context testUiContext = new TestUiContext(mAppContext, mMockWindowManager);
         mWindowLayoutComponent = new WindowLayoutComponentImpl(
-                context,
+                testUiContext,
                 mMockFoldingFeatureProducer,
                 mMockDisplayStateProvider
         );
-        final Context testUiContext = new TestUiContext(context, mMockWindowManager);
         final ArgumentCaptor<WindowLayoutInfo> layoutInfoCaptor =
                 ArgumentCaptor.forClass(WindowLayoutInfo.class);
         final androidx.window.extensions.core.util.function.Consumer<WindowLayoutInfo> consumer =
@@ -288,13 +283,12 @@ public class WindowLayoutComponentImplTest {
     @Test
     @EnableFlags(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
     public void testRemoveWindowLayoutListener_systemApiAvailable_unregistersCallback() {
-        Context context = getMockContext();
+        final Context testUiContext = new TestUiContext(mAppContext, mMockWindowManager);
         mWindowLayoutComponent = new WindowLayoutComponentImpl(
-                context,
+                testUiContext,
                 mMockFoldingFeatureProducer,
                 mMockDisplayStateProvider
         );
-        final Context testUiContext = new TestUiContext(context, mMockWindowManager);
         final androidx.window.extensions.core.util.function.Consumer<WindowLayoutInfo> consumer =
                 mock(androidx.window.extensions.core.util.function.Consumer.class);
         mWindowLayoutComponent.addWindowLayoutInfoListener(testUiContext, consumer);
@@ -306,20 +300,6 @@ public class WindowLayoutComponentImplTest {
         mWindowLayoutComponent.removeWindowLayoutInfoListener(consumer);
 
         verify(mMockWindowManager).unregisterDisplayEngagementModeCallback(callback);
-    }
-
-
-
-    private Context getMockContext() {
-        return new ContextWrapper(mAppContext) {
-            @Override
-            public Object getSystemService(String name) {
-                if (Context.WINDOW_SERVICE.equals(name)) {
-                    return mMockWindowManager;
-                }
-                return super.getSystemService(name);
-            }
-        };
     }
 
     /**
