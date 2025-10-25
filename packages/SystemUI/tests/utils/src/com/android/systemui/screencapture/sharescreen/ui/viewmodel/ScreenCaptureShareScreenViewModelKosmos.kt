@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel
+package com.android.systemui.screencapture.sharescreen.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModelImpl
 import com.android.systemui.screencapture.common.ui.viewmodel.recentTasksViewModel
-import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
+import com.android.systemui.screencapture.sharescreen.domain.interactor.shareScreenUiInteractor
 import com.android.systemui.statusbar.featurepods.sharescreen.domain.interactor.shareScreenPrivacyIndicatorInteractor
 
-val Kosmos.preShareToolbarViewModelFactory by Fixture {
-    object : PreShareToolbarViewModel.Factory {
-        override fun create(): PreShareToolbarViewModel {
-            return PreShareToolbarViewModel(
+val Kosmos.screenCaptureShareScreenViewModelFactory by Fixture {
+    object : ScreenCaptureShareScreenViewModel.Factory {
+        override fun create(): ScreenCaptureShareScreenViewModel {
+            return ScreenCaptureShareScreenViewModel(
                 drawableLoaderViewModelImpl,
-                screenCaptureUiInteractor,
+                shareScreenUiInteractor,
                 shareScreenPrivacyIndicatorInteractor,
                 { recentTasksViewModel },
             )
@@ -36,4 +36,6 @@ val Kosmos.preShareToolbarViewModelFactory by Fixture {
     }
 }
 
-val Kosmos.preShareToolbarViewModel by Fixture { preShareToolbarViewModelFactory.create() }
+val Kosmos.screenCaptureShareScreenViewModel by Fixture {
+    screenCaptureShareScreenViewModelFactory.create()
+}

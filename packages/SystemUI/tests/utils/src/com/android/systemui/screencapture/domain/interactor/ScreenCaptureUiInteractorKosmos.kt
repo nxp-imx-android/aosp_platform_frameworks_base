@@ -17,13 +17,11 @@
 package com.android.systemui.screencapture.domain.interactor
 
 import android.content.applicationContext
-import android.content.res.mainResources
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.mediaprojection.devicepolicy.mockDevicePolicyResolver
+import com.android.systemui.screencapture.data.repository.screenCaptureDeviceStateRepository
 import com.android.systemui.screencapture.data.repository.screenCaptureUiRepository
-import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.user.data.repository.userRepository
 import dagger.Lazy
 
@@ -31,9 +29,7 @@ val Kosmos.screenCaptureUiInteractor: ScreenCaptureUiInteractor by
     Kosmos.Fixture {
         ScreenCaptureUiInteractor(
             context = applicationContext,
-            resources = mainResources,
-            scope = backgroundScope,
-            configurationController = configurationController,
+            deviceStateRepository = screenCaptureDeviceStateRepository,
             repository = screenCaptureUiRepository,
             userRepository = userRepository,
             devicePolicyResolver = Lazy { mockDevicePolicyResolver },

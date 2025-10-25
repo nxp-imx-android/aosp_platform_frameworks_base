@@ -43,10 +43,7 @@ sealed interface ScreenCaptureUiParameters {
     }
 
     /** Share screen content to a local app. */
-    data class ShareScreen(
-        val hostAppUserHandle: UserHandle,
-        val onApprovedCallback: ((Int) -> Unit)? = null,
-    ) : ScreenCaptureUiParameters {
+    data class ShareScreen(val hostAppUserHandle: UserHandle) : ScreenCaptureUiParameters {
 
         override val screenCaptureType: ScreenCaptureType = ScreenCaptureType.SHARE_SCREEN
     }
