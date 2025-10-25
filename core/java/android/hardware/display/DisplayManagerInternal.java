@@ -889,7 +889,13 @@ public abstract class DisplayManagerInternal {
 
     /** The callbacks that controls the entry & exit of display offloading. */
     public interface DisplayOffloader {
-        boolean startOffload();
+        /**
+         * Start display offload.
+         *
+         * @param displayState display state at time of offload request.
+         * @return {@code true} on success, {@code false} otherwise.
+         */
+        boolean startOffload(@Display.DisplayState int displayState);
 
         void stopOffload();
 

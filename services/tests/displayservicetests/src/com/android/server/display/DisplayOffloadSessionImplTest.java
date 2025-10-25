@@ -19,6 +19,7 @@ package com.android.server.display;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.hardware.display.DisplayManagerInternal;
+import android.view.Display;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -45,23 +47,23 @@ public class DisplayOffloadSessionImplTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        when(mDisplayOffloader.startOffload()).thenReturn(true);
+        when(mDisplayOffloader.startOffload(anyInt())).thenReturn(true);
         mSession = new DisplayOffloadSessionImpl(mDisplayOffloader, mDisplayPowerController);
     }
 
     @Test
     public void testStartOffload() {
-        mSession.startOffload();
+        mSession.startOffload(Display.STATE_DOZE_SUSPEND);
         assertTrue(mSession.isActive());
 
         // An active session shouldn't be started again
-        mSession.startOffload();
-        verify(mDisplayOffloader, times(1)).startOffload();
+        mSession.startOffload(Display.STATE_DOZE_SUSPEND);
+        verify(mDisplayOffloader, times(1)).startOffload(Display.STATE_DOZE_SUSPEND);
     }
 
     @Test
     public void testStopOffload() {
-        mSession.startOffload();
+        mSession.startOffload(Display.STATE_DOZE_SUSPEND);
         mSession.stopOffload();
 
         assertFalse(mSession.isActive());
@@ -81,7 +83,7 @@ public class DisplayOffloadSessionImplTest {
     public void testUpdateBrightness_sessionActive() {
         float brightness = 0.3f;
 
-        mSession.startOffload();
+        mSession.startOffload(Display.STATE_DOZE_SUSPEND);
         mSession.updateBrightness(brightness);
 
         verify(mDisplayPowerController).setBrightnessFromOffload(brightness);
