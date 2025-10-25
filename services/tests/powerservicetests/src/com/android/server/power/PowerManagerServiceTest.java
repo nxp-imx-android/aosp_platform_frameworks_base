@@ -29,7 +29,9 @@ import static android.os.PowerManager.FLAG_AMBIENT_SUPPRESSION_NONE;
 import static android.os.PowerManager.SCREEN_TIMEOUT_KEEP_DISPLAY_ON;
 import static android.os.PowerManager.SCREEN_TIMEOUT_ACTIVE;
 import static android.os.PowerManager.USER_ACTIVITY_EVENT_BUTTON;
+import static android.os.PowerManager.WAKE_REASON_APPLICATION;
 import static android.os.PowerManagerInternal.UserActivityListener;
+import static android.os.PowerManagerInternal.WakeUpDelegate;
 import static android.os.PowerManagerInternal.WAKEFULNESS_ASLEEP;
 import static android.os.PowerManagerInternal.WAKEFULNESS_AWAKE;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DOZING;
@@ -1237,6 +1239,113 @@ public class PowerManagerServiceTest {
         mService.getBinderServiceInstance().wakeUp(mClock.now(),
                 PowerManager.WAKE_REASON_UNKNOWN, "testing IPowerManager.wakeUp()", "pkg.name");
         assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_INTERACTIVE_DOZE_EXPERIENCE)
+    public void testWakeUpDelegate_delegateHandlesWakeUp_skipsPowerGroupWakeUp() {
+        createService();
+        startSystem();
+        forceSleep();
+
+        WakeUpDelegate wakeUpDelegate = mock(WakeUpDelegate.class);
+        when(wakeUpDelegate.wakeUp(anyLong(), anyInt(), anyString(), anyInt())).thenReturn(true);
+        mService.getLocalServiceInstance().setWakeUpDelegate(wakeUpDelegate);
+        mService.getBinderServiceInstance().wakeUp(
+                mClock.now(), WAKE_REASON_APPLICATION, "details", "pkg");
+
+        verify(wakeUpDelegate).wakeUp(
+                mClock.now(), WAKE_REASON_APPLICATION, "details", Binder.getCallingUid());
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_ASLEEP);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_INTERACTIVE_DOZE_EXPERIENCE)
+    public void testWakeUpDelegate_delegateDoesNotHandleWakeUp_performsRegularWakeUp() {
+        createService();
+        startSystem();
+        forceSleep();
+
+        WakeUpDelegate wakeUpDelegate = mock(WakeUpDelegate.class);
+        when(wakeUpDelegate.wakeUp(anyLong(), anyInt(), anyString(), anyInt())).thenReturn(false);
+        mService.getLocalServiceInstance().setWakeUpDelegate(wakeUpDelegate);
+        mService.getBinderServiceInstance().wakeUp(
+                mClock.now(), WAKE_REASON_APPLICATION, "details", "pkg");
+
+        verify(wakeUpDelegate).wakeUp(
+                mClock.now(), WAKE_REASON_APPLICATION, "details", Binder.getCallingUid());
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_INTERACTIVE_DOZE_EXPERIENCE)
+    public void testWakeUpDelegate_nullDelegateSet_performsRegularWakeUp() {
+        createService();
+        startSystem();
+        forceSleep();
+
+        WakeUpDelegate wakeUpDelegate = mock(WakeUpDelegate.class);
+        when(wakeUpDelegate.wakeUp(anyLong(), anyInt(), anyString(), anyInt())).thenReturn(false);
+        mService.getLocalServiceInstance().setWakeUpDelegate(wakeUpDelegate);
+        mService.getLocalServiceInstance().setWakeUpDelegate(null);
+        mService.getBinderServiceInstance().wakeUp(
+                mClock.now(), WAKE_REASON_APPLICATION, "details", "pkg");
+
+        verifyNoInteractions(wakeUpDelegate);
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_INTERACTIVE_DOZE_EXPERIENCE)
+    public void testWakeUpDelegate_interactiveDozeDisabled_performsRegularWakeUp() {
+        createService();
+        startSystem();
+        forceSleep();
+
+        WakeUpDelegate wakeUpDelegate = mock(WakeUpDelegate.class);
+        when(wakeUpDelegate.wakeUp(anyLong(), anyInt(), anyString(), anyInt())).thenReturn(false);
+        mService.getLocalServiceInstance().setWakeUpDelegate(wakeUpDelegate);
+        mService.getBinderServiceInstance().wakeUp(
+                mClock.now(), WAKE_REASON_APPLICATION, "details", "pkg");
+
+        verifyNoInteractions(wakeUpDelegate);
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_INTERACTIVE_DOZE_EXPERIENCE)
+    public void testWakeUpDelegate_delegateImpactsOnlyPrimaryPowerGroup() {
+        final AtomicReference<DisplayManagerInternal.DisplayGroupListener> listener =
+                new AtomicReference<>();
+        doAnswer((Answer<Void>) invocation -> {
+            listener.set(invocation.getArgument(0));
+            return null;
+        }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
+        createService();
+        startSystem();
+        // Setup the non default power group
+        final int nonDefaultPowerGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
+        int displayInNonDefaultGroup = 1;
+        when(mDisplayManagerInternalMock.getDisplayGroupFlags(nonDefaultPowerGroupId))
+                .thenReturn(DisplayGroup.FLAG_DEFAULT_GROUP_ADJACENT);
+        DisplayInfo displayInfo = mock(DisplayInfo.class);
+        displayInfo.displayGroupId = nonDefaultPowerGroupId;
+        when(mDisplayManagerInternalMock.getDisplayInfo(displayInNonDefaultGroup))
+                .thenReturn(displayInfo);
+        listener.get().onDisplayGroupAdded(nonDefaultPowerGroupId);
+        WakeUpDelegate wakeUpDelegate = mock(WakeUpDelegate.class);
+        when(wakeUpDelegate.wakeUp(anyLong(), anyInt(), anyString(), anyInt())).thenReturn(true);
+        mService.getLocalServiceInstance().setWakeUpDelegate(wakeUpDelegate);
+
+        mService.getBinderServiceInstance().goToSleep(mClock.now(),
+                PowerManager.GO_TO_SLEEP_REASON_APPLICATION, 0);
+        mService.getBinderServiceInstance().wakeUp(
+                mClock.now(), WAKE_REASON_APPLICATION, "details", "pkg");
+
+        assertThat(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP))
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+        assertThat(mService.getWakefulnessLocked(nonDefaultPowerGroupId))
+                .isEqualTo(WAKEFULNESS_AWAKE);
     }
 
     @Test

@@ -16,8 +16,10 @@
 
 package android.os;
 
+import android.annotation.Nullable;
 import android.os.PowerManager.UserActivityEvent;
 import android.os.PowerManager.UserActivityFlag;
+import android.os.PowerManager.WakeReason;
 import android.view.Display;
 import android.view.KeyEvent;
 
@@ -205,6 +207,29 @@ public abstract class PowerManagerInternal {
          */
         void onUserActivity(long when, @UserActivityEvent int event, @UserActivityFlag int flags);
     }
+
+    /** A delegate for handling wake up tasks. */
+    public interface WakeUpDelegate {
+        /**
+         * Invokes the wake up logic of the delegate.
+         *
+         * @param eventTime The time when the request to wake up was issued, in the
+         *      {@link SystemClock#uptimeMillis()} time base..
+         * @param reason The reason for the wake up.
+         * @param details A free form string to explain the specific details behind the wake up for
+         *      debugging purposes.
+         * @param uid The UID that triggered this wake up.
+         * @return {@code true} if the delegate successfully handles the wake up, {@code false}
+         *      otherwise.
+         */
+        boolean wakeUp(long eventTime, @WakeReason int reason, String details, int uid);
+    }
+
+    /**
+     * Sets a wake up delegate that can handle wake up events. Set to {@code null} to remove any
+     * previously set delegate.
+     */
+    public abstract void setWakeUpDelegate(@Nullable WakeUpDelegate delegate);
 
     /**
      * Registers a listener to be notified about user activity events.
