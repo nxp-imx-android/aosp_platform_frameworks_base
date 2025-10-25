@@ -81,6 +81,7 @@ public class ComputerControlSessionProcessorTest {
     private static final int CALLBACK_TIMEOUT_MS = 1_000;
     private static final String PACKAGE_NAME_PERMISSION_CONTROLLER = "permission.controller";
     private static final String TARGET_PACKAGE = "com.android.foo";
+    private static final String ANOTHER_TARGET_PACKAGE = "com.android.bar";
     private static final int CALLING_USER_ID = UserHandle.USER_SYSTEM;
     private static final int VIRTUAL_DISPLAY_ID = 123;
     private static final int DEVICE_ID = 42;
@@ -167,6 +168,8 @@ public class ComputerControlSessionProcessorTest {
         when(mPackageManager.getPermissionControllerPackageName())
                 .thenReturn(PACKAGE_NAME_PERMISSION_CONTROLLER);
         when(mPackageManager.getLaunchIntentForPackage(TARGET_PACKAGE)).thenReturn(new Intent());
+        when(mPackageManager.getLaunchIntentForPackage(ANOTHER_TARGET_PACKAGE))
+                .thenReturn(new Intent());
 
         when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any()))
                 .thenReturn(mVirtualDevice);
@@ -184,6 +187,7 @@ public class ComputerControlSessionProcessorTest {
         when(mComputerControlSessionCallback.asBinder()).thenReturn(new Binder());
 
         when(mAllowlistController.isPackageAllowedToCreateSession(anyString())).thenReturn(true);
+        when(mAllowlistController.isPackageAutomatable(TARGET_PACKAGE)).thenReturn(true);
 
         mProcessor = new ComputerControlSessionProcessor(
                 context, mVirtualDeviceFactory, mPendingIntentFactory, mAllowlistController);
@@ -195,11 +199,19 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
+    public void initialize_initializesAllowlistController() throws Exception {
+        mProcessor.initialize();
+
+        verify(mAllowlistController).initialize();
+    }
+
+    @Test
     public void keyguardLocked_sessionNotCreated() throws Exception {
         when(mKeyguardManager.isDeviceLocked()).thenReturn(true);
 
         mProcessor.processNewSessionRequest(
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
                 .onSessionCreationFailed(ComputerControlSession.ERROR_DEVICE_LOCKED);
     }
@@ -211,6 +223,37 @@ public class ComputerControlSessionProcessorTest {
         assertThrows(SecurityException.class,
                 () -> mProcessor.processNewSessionRequest(
                         ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback));
+    }
+
+    @Test
+    public void anyTargetAppNotAllowListed_throwsException() throws Exception {
+        when(mAllowlistController.isPackageAutomatable(ANOTHER_TARGET_PACKAGE))
+                .thenReturn(false);
+
+        ComputerControlSessionParams params = new ComputerControlSessionParams.Builder()
+                .setName(ComputerControlSessionImplTest.class.getSimpleName())
+                .setTargetPackageNames(List.of(TARGET_PACKAGE, ANOTHER_TARGET_PACKAGE))
+                .build();
+        assertThrows(IllegalArgumentException.class, () -> {
+            mProcessor.processNewSessionRequest(
+                    ATTRIBUTION_SOURCE, params, mComputerControlSessionCallback);
+        });
+    }
+
+    @Test
+    public void allTargetAppsAllowListed_sessionCreated() throws Exception {
+        when(mAllowlistController.isPackageAutomatable(ANOTHER_TARGET_PACKAGE))
+                .thenReturn(true);
+
+        ComputerControlSessionParams params = new ComputerControlSessionParams.Builder()
+                .setName(ComputerControlSessionImplTest.class.getSimpleName())
+                .setTargetPackageNames(List.of(TARGET_PACKAGE, ANOTHER_TARGET_PACKAGE))
+                .build();
+        mProcessor.processNewSessionRequest(
+                ATTRIBUTION_SOURCE, params, mComputerControlSessionCallback);
+
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS).times(1))
+                .onSessionCreated(anyInt(), any());
     }
 
     @Test
@@ -259,8 +302,7 @@ public class ComputerControlSessionProcessorTest {
                 Intent.EXTRA_RESULT_RECEIVER, ResultReceiver.class);
         resultReceiver.send(Activity.RESULT_OK, null);
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
-                .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
-        mSessionArgumentCaptor.getValue().close();
+                .onSessionCreated(anyInt(), any());
     }
 
     @Test
@@ -285,11 +327,10 @@ public class ComputerControlSessionProcessorTest {
         mProcessor.processNewSessionRequest(
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
-                .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
+                .onSessionCreated(anyInt(), any());
         assertThrows(IllegalArgumentException.class,
                 () -> mProcessor.processNewSessionRequest(
                         ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback));
-        mSessionArgumentCaptor.getValue().close();
     }
 
     @Test
@@ -298,8 +339,7 @@ public class ComputerControlSessionProcessorTest {
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
 
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
-                .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
-        mSessionArgumentCaptor.getValue().close();
+                .onSessionCreated(anyInt(), any());
     }
 
     @Test
@@ -384,9 +424,8 @@ public class ComputerControlSessionProcessorTest {
             throws Exception {
         mProcessor.processNewSessionRequest(
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
-        verify(mComputerControlSessionCallback,
-                timeout(CALLBACK_TIMEOUT_MS).times(1))
-                .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS).times(1))
+                .onSessionCreated(anyInt(), any());
 
         assertFalse(mProcessor.isComputerControlNotification(5, "hello", OWNER_PACKAGE_NAME));
     }
