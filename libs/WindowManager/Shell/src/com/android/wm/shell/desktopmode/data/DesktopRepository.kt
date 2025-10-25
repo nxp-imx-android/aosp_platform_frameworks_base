@@ -18,6 +18,7 @@ package com.android.wm.shell.desktopmode.data
 
 import android.app.ActivityManager
 import android.graphics.Rect
+import android.graphics.RectF
 import android.graphics.Region
 import android.util.ArrayMap
 import android.util.ArraySet
@@ -83,6 +84,11 @@ class DesktopRepository(
 
     private var desktopGestureExclusionListener: Consumer<Region>? = null
     private var desktopGestureExclusionExecutor: Executor? = null
+
+    // TODO: b/452164707 - Remove an entry when its package is removed (e.g., observing
+    // [onPackageRemoved]).
+    // TODO: b/452164081 - Add this to persistent repository.
+    private val rememberedBoundsRatioByPackageName = ArrayMap<String, RectF>()
 
     // TODO - b/365873835: Add this to persistent repository.
     private val preservedDisplaysByUniqueId = ArrayMap<String, DesktopDisplay>()
@@ -1239,6 +1245,22 @@ class DesktopRepository(
                 }
             }
             .toTypedArray()
+
+    /** Returns the remembered bounds ratio for the given package. */
+    fun getRememberedBoundsRatio(packageName: String): RectF? {
+        if (!Flags.enableRememberedBounds()) {
+            return null
+        }
+        return rememberedBoundsRatioByPackageName[packageName]
+    }
+
+    /** Sets the remembered bounds ratio for the given package. */
+    fun setRememberedBoundsRatio(packageName: String, bounds: RectF) {
+        if (!Flags.enableRememberedBounds()) {
+            return
+        }
+        rememberedBoundsRatioByPackageName[packageName] = bounds
+    }
 
     private fun updatePersistentRepository(displayId: Int): Unit =
         traceSection("DesktopRepository#updatePersistentRepository") {

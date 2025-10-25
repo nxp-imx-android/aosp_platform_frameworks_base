@@ -54,6 +54,7 @@ import android.content.res.Resources
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Binder
 import android.os.Bundle
 import android.os.Handler
@@ -1853,6 +1854,29 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val finalBounds = findBoundsChange(wct, task)
         assertThat(stableBounds.getDesktopTaskPosition(finalBounds!!))
             .isEqualTo(DesktopTaskPosition.Center)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun getInitialBounds_withRememberedBounds_returnsCorrectBounds() {
+        setUpLandscapeDisplay()
+        val packageName = "com.test.app"
+        val task = setUpFreeformTask().apply { baseActivity = ComponentName(packageName, "") }
+        val boundsRatio = RectF(0.1f, 0.2f, 0.8f, 0.9f)
+        val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
+
+        taskRepository.setRememberedBoundsRatio(packageName, boundsRatio)
+
+        val bounds = controller.getInitialBounds(displayLayout, task, 0)
+
+        val expectedBounds =
+            Rect(
+                (stableBounds.left + stableBounds.width() * boundsRatio.left).toInt(),
+                (stableBounds.top + stableBounds.height() * boundsRatio.top).toInt(),
+                (stableBounds.left + stableBounds.width() * boundsRatio.right).toInt(),
+                (stableBounds.top + stableBounds.height() * boundsRatio.bottom).toInt(),
+            )
+        assertThat(bounds).isEqualTo(expectedBounds)
     }
 
     @Test

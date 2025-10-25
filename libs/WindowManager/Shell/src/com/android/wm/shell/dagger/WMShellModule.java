@@ -1598,6 +1598,7 @@ public abstract class WMShellModule {
             ShellTaskOrganizer shellTaskOrganizer,
             Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler,
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
+            DisplayController displayController,
             DesktopState desktopState,
             ShellInit shellInit) {
         return desktopUserRepositories.flatMap(
@@ -1609,6 +1610,7 @@ public abstract class WMShellModule {
                                         shellTaskOrganizer,
                                         desktopMixedTransitionHandler.get(),
                                         desktopWallpaperActivityTokenProvider,
+                                        displayController,
                                         desktopState,
                                         shellInit)));
     }

@@ -18,8 +18,11 @@ package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
+import android.graphics.Rect
+import android.graphics.RectF
 import android.os.IBinder
 import android.view.SurfaceControl
+import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.view.WindowManager.TRANSIT_TO_BACK
@@ -30,7 +33,9 @@ import android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVI
 import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil.isClosingMode
@@ -50,6 +55,7 @@ class DesktopTasksTransitionObserver(
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val desktopMixedTransitionHandler: DesktopMixedTransitionHandler,
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
+    private val displayController: DisplayController,
     desktopState: DesktopState,
     shellInit: ShellInit,
 ) : Transitions.TransitionObserver {
@@ -97,6 +103,7 @@ class DesktopTasksTransitionObserver(
             closingTransitionToTransitionInfo.put(transition, info)
         }
         removeWallpaperOnLastTaskClosingIfNeeded(transition, info)
+        updateLastPackageStateChange(info)
     }
 
     private fun containsClosingTaskInDesktop(info: TransitionInfo): Boolean {
@@ -263,6 +270,44 @@ class DesktopTasksTransitionObserver(
                         desktopRepository.clearTopTransparentFullscreenTaskData(deskId)
                         return@forEachLoop
                     }
+                }
+            }
+        }
+    }
+
+    private fun updateLastPackageStateChange(info: TransitionInfo) {
+        if (!Flags.enableRememberedBounds()) {
+            return
+        }
+        run forEachLoop@{
+            info.changes.forEach { change ->
+                change.taskInfo?.let { taskInfo ->
+                    if (change.mode != TRANSIT_CHANGE) return@forEachLoop
+                    // Has any bounds change.
+                    if (change.startAbsBounds == change.endAbsBounds) return@forEachLoop
+                    // Is a freeform task.
+                    if (!taskInfo.isFreeform) return@forEachLoop
+
+                    // TODO: b/452164082 - Consider excluding full-immersive case.
+
+                    val displayLayout =
+                        displayController.getDisplayLayout(taskInfo.displayId) ?: return@forEachLoop
+                    val packageName = taskInfo.baseActivity?.packageName ?: return@forEachLoop
+                    val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
+                    val stableBounds =
+                        Rect().apply { displayLayout.getStableBoundsForDesktopMode(this) }
+                    val bounds = taskInfo.configuration.windowConfiguration.bounds
+                    val boundsRatio =
+                        RectF().apply {
+                            left =
+                                (bounds.left - stableBounds.left) / stableBounds.width().toFloat()
+                            top = (bounds.top - stableBounds.top) / stableBounds.height().toFloat()
+                            right =
+                                (bounds.right - stableBounds.left) / stableBounds.width().toFloat()
+                            bottom =
+                                (bounds.bottom - stableBounds.top) / stableBounds.height().toFloat()
+                        }
+                    desktopRepository.setRememberedBoundsRatio(packageName, boundsRatio)
                 }
             }
         }
