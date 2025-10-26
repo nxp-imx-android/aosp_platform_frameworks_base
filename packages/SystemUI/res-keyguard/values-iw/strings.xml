@@ -88,10 +88,8 @@
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"התכונה \'סביבה אמינה\' לא זמינה"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"הקשת קוד אימות שגוי יותר מדי פעמים"</string>
     <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"כבר ניסית את קוד האימות הזה. כדאי לנסות קוד אחר."</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
-    <skip />
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="3827593245962385968">"כבר ניסית את קו פתיחת הנעילה הזה. כדאי לנסות קו אחר."</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"כבר ניסית את הסיסמה הזו. כדאי לנסות סיסמה אחרת."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"ציירת קו פתיחת נעילה שגוי יותר מדי פעמים"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"הסיסמה שהקלדת הייתה שגויה יותר מדי פעמים"</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"הקלדת קוד אימות שגוי יותר מדי פעמים\nמידע נוסף זמין בכתובת <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
