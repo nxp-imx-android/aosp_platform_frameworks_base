@@ -317,7 +317,27 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         mParent.getRootView().getLocationInWindow(mCoordsOnWindow);
         int windowLeftOnScreen = mCoordsOnScreen[0] - mCoordsOnWindow[0];
         int windowTopOnScreen = mCoordsOnScreen[1] - mCoordsOnWindow[1];
-        return new Point(Math.max(0, x - windowLeftOnScreen), Math.max(0, y - windowTopOnScreen));
+        // In some cases, app can have specific Window for Android UI components such as EditText.
+        // In this case, Window bounds != App bounds. Hence, instead of ensuring non-negative
+        // PopupWindow coords, app bounds should be used to limit the coords. For instance,
+        //  ____  <- |
+        // |   |     |W1 & App bounds
+        // |___|    |
+        // |W2 |    | W2 has smaller bounds and contain EditText where PopupWindow will be opened.
+        // ----  <-|
+        // Here, we'll open PopupWindow upwards, but as PopupWindow is anchored based on W2, it
+        // will have negative Y coords. This negative Y is safe to use because it's still within app
+        // bounds. However, if it gets out of app bounds, we should clamp it to 0.
+        Rect appBounds = mContext
+                .getResources().getConfiguration().windowConfiguration.getAppBounds();
+        Point coordsInWindow = new Point(x - windowLeftOnScreen, y - windowTopOnScreen);
+        if (mCoordsOnScreen[0] + coordsInWindow.x < appBounds.left) {
+            coordsInWindow.x = 0;
+        }
+        if (mCoordsOnScreen[1] + coordsInWindow.y < appBounds.top) {
+            coordsInWindow.y = 0;
+        }
+        return coordsInWindow;
     }
 
     private static List<ToolbarMenuItem> getToolbarMenuItems(List<MenuItem> menuItems) {
