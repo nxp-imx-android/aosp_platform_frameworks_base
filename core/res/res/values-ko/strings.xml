@@ -641,6 +641,10 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"앱이 광역 신호를 보내 근처에 있는 Wi‑Fi 기기의 상대적인 위치를 확인하고 연결할 수 있도록 허용합니다."</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"로컬 네트워크 기기에 액세스"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"앱이 로컬 네트워크 기기에 액세스하도록 허용합니다."</string>
+    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
+    <skip />
+    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"근처 기기 간 상대 위치 파악"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"앱이 근처 기기 간 상대 위치를 파악하도록 허용"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"기본 NFC 결제 서비스 정보"</string>
@@ -1043,7 +1047,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"잠금을 해제하려면 PIN 입력"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"PIN 코드가 잘못되었습니다."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"잠금해제하려면 메뉴를 누른 다음 0을 누릅니다."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"비상 전화번호"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"서비스 불가"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"화면 잠김"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"비상 전화를 걸거나 잠금해제하려면 메뉴를 누르세요."</string>

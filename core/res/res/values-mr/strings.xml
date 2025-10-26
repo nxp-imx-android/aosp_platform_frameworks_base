@@ -641,6 +641,10 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"ॲपला जाहिरात करण्याची, कनेक्ट करण्याची आणि जवळपासच्या वाय-फाय डिव्हाइसचे संबंधित स्थान निर्धारित करण्याची परवानगी देते"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"लोकल नेटवर्क डिव्हाइस अ‍ॅक्सेस करा"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"अ‍ॅपला लोकल नेटवर्क डिव्हाइस अ‍ॅक्सेस करण्याची अनुमती देते"</string>
+    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
+    <skip />
+    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"जवळपासच्या डिव्हाइसदरम्यान संबंधित स्थान निश्चित करा"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"ॲपला जवळच्या डिव्हाइसदरम्यानचे संबंधित स्थान निर्धारित करण्याची अनुमती द्या"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"प्राधान्यकृत NFC पेमेंट सेवा माहिती"</string>
@@ -1043,7 +1047,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"अनलॉक करण्यासाठी पिन टाइप करा"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"अयोग्य पिन कोड."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"अनलॉक करण्यासाठी, आधी मेनू व नंतर 0 प्रेस करा."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"आणीबाणीचा नंबर"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"सेवा नाही"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"स्क्रीन लॉक केली."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"अनलॉक करण्‍यासाठी मेनू प्रेस करा किंवा आणीबाणीचा कॉल करा."</string>
@@ -1277,8 +1280,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"क्रिया पूर्ण झाली"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"यासह उघडा"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"%1$s सह उघडा"</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"<xliff:g id="APP_NAME">%1$s</xliff:g> उघडा"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"उघडा"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"वापरून <xliff:g id="HOST">%1$s</xliff:g> लिंक उघडा"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"हे वापरून लिंक उघडा"</string>

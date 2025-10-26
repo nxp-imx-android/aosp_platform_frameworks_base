@@ -641,6 +641,10 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Nagbibigay-daan sa app na i-advertise ang, kumonekta sa, at tukuyin ang nauugnay na posisyon ng mga kalapit na Wi‑Fi device"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"i-access ang mga local network device"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Pinapayagan ang app na i-access ang mga local network device"</string>
+    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
+    <skip />
+    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"alamin ang relative position sa kalapit na device"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Payagan ang app na alamin ang relatibong posisyon sa pagitan ng mga kalapit na device"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Impormasyon sa Gustong NFC na Serbisyo sa Pagbabayad"</string>
@@ -1043,7 +1047,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"I-type ang PIN upang i-unlock"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Maling PIN code."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Upang i-unlock, pindutin ang Menu pagkatapos ay 0."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Pang-emergency na numero"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Walang serbisyo"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Naka-lock ang screen."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Pindutin ang Menu upang i-unlock o magsagawa ng pang-emergency na tawag."</string>

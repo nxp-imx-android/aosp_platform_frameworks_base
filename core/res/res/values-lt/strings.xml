@@ -643,6 +643,10 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Leidžiama programai reklamuoti, prisijungti ir nustatyti apytikslę netoliese esančių „Wi-Fi“ įrenginių poziciją"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"pasiekti vietinio tinklo įrenginius"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Leidžia programai pasiekti vietinio tinklo įrenginius"</string>
+    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
+    <skip />
+    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"nustatyti apytikslę netoliese esančių įrenginių poziciją"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Leisti programai nustatyti apytikslę netoliese esančių įrenginių poziciją"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Pageidaujama ARL mokėjimo paslaugos informacija"</string>
@@ -1045,7 +1049,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Jei norite atrakinti, įveskite PIN kodą"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Neteisingas PIN kodas."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Jei norite atrakinti, paspauskite „Meniu“ ir 0."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Pagalbos numeris"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Nėra paslaugos"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Ekranas užrakintas."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Paspauskite „Meniu“, kad atrakintumėte ar skambintumėte pagalbos numeriu."</string>

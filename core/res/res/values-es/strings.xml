@@ -642,6 +642,10 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Permite a la aplicación emitir y conectarse a dispositivos Wi-Fi cercanos y determinar su posición relativa"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"acceder a dispositivos de la red local"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Permite que la app acceda a dispositivos de la red local"</string>
+    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
+    <skip />
+    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"determinar posición relativa de dispositivos cercanos"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Permite que la aplicación determine la posición relativa de los dispositivos cercanos"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Información sobre el servicio de pago por NFC preferido"</string>
@@ -1044,7 +1048,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Introduce el código PIN para desbloquear."</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Código PIN incorrecto"</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Para desbloquear el teléfono, pulsa la tecla de menú y, a continuación, pulsa 0."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Número de emergencia"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Sin servicio"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Pantalla bloqueada"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Pulsa la tecla de menú para desbloquear el teléfono o realizar una llamada de emergencia."</string>
