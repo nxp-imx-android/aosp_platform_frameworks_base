@@ -367,8 +367,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Απενεργοποίηση αισθητήρων ενεργή"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Διαγραφή όλων των ειδοποιήσεων."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Ειδοποιήσεις"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Βοηθός"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# ακόμη ειδοποίηση μέσα στην ομάδα.}other{# ακόμη ειδοποιήσεις μέσα στην ομάδα.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Η οθόνη έχει κλειδωθεί σε οριζόντιο προσανατολισμό."</string>
@@ -710,8 +709,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Σίγαση"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Ειδοποιήσεις"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Συνομιλίες"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"Αξιοσημείωτα"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Διαγραφή όλων των ειδοποιήσεων σε σίγαση"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Άνοιγμα ρυθμίσεων ειδοποιήσεων"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Δεν υπάρχουν ειδοποιήσεις}=1{Οι ειδοποιήσεις τέθηκαν σε παύση από τη λειτουργία {mode}}=2{Οι ειδοποιήσεις τέθηκαν σε παύση από τη λειτουργία {mode} και μία άλλη λειτουργία}other{Οι ειδοποιήσεις τέθηκαν σε παύση από τη λειτουργία {mode} και # άλλες λειτουργίες}}"</string>
@@ -1161,19 +1159,17 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Να απενεργοποιηθεί η συντόμευση"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Να παραμείνει ενεργή"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Ο συνδυασμός Ενέργεια "<annotation id="action_key_icon">"εικονίδιο"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> είναι η συντόμευση πληκτρολογίου για τη χρήση της λειτουργίας <xliff:g id="ID_3">^3</xliff:g>. Η λειτουργία <xliff:g id="ID_4">^3</xliff:g> είναι ένας αναγνώστης οθόνης που σας επιτρέπει να ακούτε την εκφώνηση των στοιχείων. Μπορεί να βοηθήσει άτομα που αντιμετωπίζουν κάποιο πρόβλημα με την παρακολούθηση του περιεχομένου της οθόνης. Αυτό μπορεί να αλλάξει τον τρόπο λειτουργίας της συσκευής σας."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Με την ενεργοποίηση των συντομεύσεων πληκτρολογίου, επιτρέπετε στο TalkBack να έχει τον πλήρη έλεγχο της συσκευής σας."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Ο πλήρης έλεγχος είναι κατάλληλος για εφαρμογές που εξυπηρετούν τις ανάγκες προσβασιμότητάς σας, αλλά όχι για τις περισσότερες εφαρμογές."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Προβολή και έλεγχος οθόνης"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Μπορεί να διαβάσει όλο το περιεχόμενο της οθόνης σας και να εμφανίσει περιεχόμενο πάνω από άλλες εφαρμογές."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Προβολή και εκτέλεση ενεργειών"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Μπορεί να παρακολουθήσει τις αλληλεπιδράσεις σας με μια εφαρμογή ή έναν αισθητήρα εξοπλισμού και να αλληλεπιδράσει με εφαρμογές εκ μέρους σας."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Με το πάτημα του "<annotation id="action_key_icon">"εικονιδίου"</annotation>" Ενέργεια και <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ενεργοποιείται η λειτουργία <xliff:g id="ID_3">^3</xliff:g>, μια λειτουργία προσβασιμότητας. Αυτό σας επιτρέπει να ελέγχετε τη συσκευή σας handsfree."</string>
+    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Οθόνη κλειδώματος"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Τερματισμός λειτουργίας…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Δείτε βήματα αντιμετώπισης."</string>

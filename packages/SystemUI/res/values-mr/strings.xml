@@ -367,8 +367,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"सेन्सर बंद आहेत"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"सर्व सूचना साफ करा."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"नोटिफिकेशन"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{आतमध्ये आणखी # सूचना आहे.}other{आतमध्ये आणखी # सूचना आहेत.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"लॅंडस्केप ओरिएंटेशनमध्ये स्क्रीन लॉक केली आहे."</string>
@@ -710,8 +709,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"सायलंट"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"सूचना"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"संभाषणे"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"हायलाइट"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"सर्व सायलंट सूचना साफ करा"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"नोटिफिकेशन सेटिंग्ज उघडा"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{कोणतेही नोटिफिकेशन नाही}=1{{mode} द्वारे नोटिफिकेशन थांबवली आहेत}=2{{mode} द्वारे आणि आणखी एका मोडद्वारे नोटिफिकेशन थांबवली आहेत}other{{mode} द्वारे आणि आणखी # मोडद्वारे नोटिफिकेशन थांबवली आहेत}}"</string>
@@ -1161,19 +1159,17 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"शॉर्टकट बंद करा"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"सुरू ठेवा"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"कृती "<annotation id="action_key_icon">"आयकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> हा <xliff:g id="ID_3">^3</xliff:g> वापरण्यासाठीचा कीबोर्ड शॉर्टकट आहे. <xliff:g id="ID_4">^3</xliff:g> हा स्क्रीन रीडर आहे, ज्यामुळे तुम्हाला मोठ्याने बोललेले आयटम ऐकू येतात. स्क्रीनकडे पाहण्यात समस्या असलेल्या लोकांसाठी ते उपयुक्त असू शकते. यामुळे तुमचे डिव्हाइस कसे काम करते ते बदलू शकते."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"कीबोर्ड शॉर्टकट सुरू करून, तुम्ही TalkBack ला तुमच्या डिव्हाइसचे संपूर्ण नियंत्रण ठेवण्याची अनुमती द्याल."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"जी ॲप्स तुमच्या ॲक्सेसिबिलिटी गरजा पूर्ण करतात अशा ॲप्ससाठी संपूर्ण नियंत्रण योग्य आहे. पण ते सर्व ॲप्सना लागू होईल असे नाही."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"स्क्रीन पहा आणि नियंत्रित करा"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"ते स्क्रीनवरील सर्व आशय वाचू शकते आणि इतर ॲप्सवर आशय प्रदर्शित करू शकते."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"पहा आणि कृती करा"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"हे तुम्ही ॲप किंवा हार्डवेअर सेन्सर कसे वापरता याचा मागोवा घेऊ शकते आणि तुमच्या वतीने ॲप्सशी संवाद साधू शकते."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> प्रेस केल्याने, <xliff:g id="ID_3">^3</xliff:g> हे अ‍ॅक्सेसिबिलिटी वैशिष्ट्ये सुरू होते. यामुळे तुम्हाला तुमचे डिव्हाइस हँड्स-फ्री नियंत्रित करता येते."</string>
+    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"लॉक स्‍क्रीन"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"बंद होत आहे…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"काय काळजी घ्यावी ते पहा"</string>

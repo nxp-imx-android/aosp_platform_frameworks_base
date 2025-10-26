@@ -367,8 +367,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"სენსორების გამორთვა აქტიურია"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"ყველა შეტყობინების წაშლა"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"შეტყობინებები"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"ასისტენტი"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{კიდევ # შეტყობინება.}other{კიდევ # შეტყობინება.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ეკრანი დაბლოკილია თარაზულ ორიენტაციაში"</string>
@@ -427,8 +426,8 @@
     <string name="quick_settings_casting" msgid="1435880708719268055">"გადაიცემა"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"უსახელო მოწყობილობა"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"მოწყობილობები მიუწვდომელია"</string>
-    <string name="quick_settings_cast_detail_title" msgid="8212426967651562547">"ეკრანის მოწყობილობაზე გადაცემა"</string>
-    <string name="quick_settings_cast_detail_subtitle" msgid="6406833630052788623">"მიმდინარეობს მოწყობილობების ძიება…"</string>
+    <string name="quick_settings_cast_detail_title" msgid="8212426967651562547">"ეკრანის ტრანსლირება მოწყობილობაზე"</string>
+    <string name="quick_settings_cast_detail_subtitle" msgid="6406833630052788623">"მოწყობილობები იძებნება..."</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Wi‑Fi ან Ethernet-ის კავშირი არ არის"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"კავშირის გაწყვეტა"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"მიმდინარე მიკროფონი:"</string>
@@ -710,8 +709,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"ჩუმი"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"შეტყობინებები"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"საუბრები"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"მნიშვნელოვანი"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"ყველა ჩუმი შეტყობინების გასუფთავება"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"შეტყობინების პარამეტრების გახსნა"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{შეტყობინებები არ არის}=1{შეტყობინებები შეჩერებულია {mode}-ის გამო}=2{შეტყობინებები შეჩერებულია {mode}-ის და ერთი სხვა რეჟიმის გამო}other{შეტყობინებები შეჩერებულია {mode}-ის და # სხვა რეჟიმის გამო}}"</string>
@@ -1161,19 +1159,17 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"მალსახმობის გამორთვა"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"დარჩეს ჩართული"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"მოქმედების "<annotation id="action_key_icon">"ხატულა"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> არის კლავიატურის მალსახმობი <xliff:g id="ID_3">^3</xliff:g>-ის გამოსაყენებლად. <xliff:g id="ID_4">^3</xliff:g> არის ეკრანის წამკითხველი, რომელიც საშუალებას გაძლევთ, მოისმინოთ ხმამაღლა წარმოთქმული ტექსტი. ეს ეხმარება მხედველობის შეზღუდვის მქონე ადამიანებს, რომლებსაც ეკრანის ყურება უჭირთ. ამან შეიძლება შეცვალოს თქვენი მოწყობილობის მუშაობის პრინციპი."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"კლავიატურის მალსახმობის ჩართვით თქვენ TalkBack-ს თქვენს მოწყობილობაზე სრული მართვის უფლებას მისცემთ."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"სრული მართვა გამოსადეგია აპებისთვის, რომლებიც მარტივი წვდომის საჭიროებისას გეხმარებათ, მაგრამ არა აპების უმრავლესობისთვის."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"ეკრანის ნახვა და მართვა"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"მას შეუძლია წაიკითხოს ეკრანზე არსებული მთელი კონტენტი და აჩვენოს კონტენტი სხვა აპებში."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"მოქმედებების ნახვა და შესრულება"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"მას შეუძლია თვალი მიადევნოს თქვენს ინტერაქციებს აპის ან აპარატურის სენსორის საშუალებით, ასევე, თქვენი სახელით აწარმოოს აპებთან ინტერაქცია."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"დაჭერა მოქმედების "<annotation id="action_key_icon">"ხატულაზე"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> რთავს <xliff:g id="ID_3">^3</xliff:g>-ს, მარტივი წვდომის ფუნქციას. ეს საშუალებას გაძლევთ, თქვენი მოწყობილობა უკონტაქტოდ მართოთ."</string>
+    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ჩაკეტილი ეკრანი"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"მიმდინარეობს გამორთვა…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"მისაღები ზომების გაცნობა"</string>

@@ -367,8 +367,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"سینسرز آف فعال ہے"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"سبھی اطلاعات صاف کریں۔"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"اطلاعات"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"اسسٹنٹ"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g> +"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{گروپ میں # مزید اطلاع ہے۔}other{گروپ میں # مزید اطلاعات ہے۔}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"اسکرین لینڈ اسکیپ سمت بندی میں مقفل ہے۔"</string>
@@ -710,8 +709,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"خاموش"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"اطلاعات"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"گفتگوئیں"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"ہائی لائٹس"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"سبھی خاموش اطلاعات کو صاف کریں"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"اطلاعات کی ترتیبات کھولیں"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{کوئی اطلاع نہیں ہے}=1{{mode} کی طرف سے اطلاعات کو روک دیا گیا ہے}=2{{mode} اور ایک دوسرے موڈ کے ذریعہ اطلاعات کو روک دیا گیا ہے}other{{mode} اور # دیگر طریقوں کے ذریعے اطلاعات کو روک دیا گیا ہے}}"</string>
@@ -1174,6 +1172,10 @@
     <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
     <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"ایکشن "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> کو دبانے سے <xliff:g id="ID_3">^3</xliff:g>، ایک ایکسیسبیلٹی خصوصیت آن ہو جاتی ہے۔ یہ آپ کو اپنے آلے کو ہینڈز فری کنٹرول کرنے دیتی ہے۔"</string>
+    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"مقفل اسکرین"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"بند ہو رہا ہے…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"نگہداشت کے اقدامات ملاحظہ کریں"</string>

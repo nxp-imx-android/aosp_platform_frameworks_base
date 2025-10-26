@@ -367,8 +367,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"أجهزة الاستشعار غير مفعّلة"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"محو جميع الإشعارات."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"الإشعارات"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"‏مساعد Google"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{إشعار واحد آخر بداخل المجموعة.}zero{# إشعار آخر بداخل المجموعة.}two{إشعاران آخران بداخل المجموعة.}few{# إشعارات أخرى بداخل المجموعة.}many{# إشعارًا آخر بداخل المجموعة.}other{# إشعار آخر بداخل المجموعة.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"تم قفل الشاشة في الاتجاه الأفقي."</string>
@@ -710,8 +709,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"إشعارات صامتة"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"الإشعارات"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"المحادثات"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"أهم الإشعارات"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"محو جميع الإشعارات الصامتة"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"يؤدي النقر على هذا الزر إلى فتح إعدادات الإشعارات"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{ما مِن إشعارات}=1{تم إيقاف الإشعارات مؤقتًا بواسطة \"{mode}\"}=2{تم إيقاف الإشعارات مؤقتًا بواسطة \"{mode}\" ووضع واحد آخر}few{تم إيقاف الإشعارات مؤقتًا بواسطة \"{mode}\" و# أوضاع أخرى}many{تم إيقاف الإشعارات مؤقتًا بواسطة \"{mode}\" و# وضعًا آخر}other{تم إيقاف الإشعارات مؤقتًا بواسطة \"{mode}\" و# وضع آخر}}"</string>
@@ -1161,19 +1159,17 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"إيقاف الاختصار"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"عدم الإيقاف"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"‏الإجراء "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> هو اختصار لوحة المفاتيح لاستخدام <xliff:g id="ID_3">^3</xliff:g>. ‫<xliff:g id="ID_4">^3</xliff:g> هو قارئ شاشة يقرأ العناصر المعروضة عليها بصوتٍ عالٍ، ما يجعله مفيدًا للأشخاص الذين يجدون صعوبة في النظر إلى الشاشة. وقد يؤدي ذلك إلى تغيير طريقة عمل جهازك."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"‏عند تفعيل اختصار لوحة المفاتيح، يتم السماح لميزة TalkBack بالتحكّم الكامل في جهازك."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"أذونات التحكم الكامل مناسبة لتطبيقات تسهيل الاستخدام، وليس لكل التطبيقات."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"عرض محتوى الشاشة والتحكّم فيه"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"يتيح هذا الإذن قراءة كل محتوى الشاشة وعرضه فوق تطبيقات أخرى."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"عرض الإجراءات وتنفيذها"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"يتيح هذا الإذن تتبّع تفاعلاتك مع تطبيق أو جهاز استشعار والتفاعل مع التطبيقات نيابةً عنك."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"‏يؤدي الضغط على الإجراء "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g>‏ + <xliff:g id="ID_2">^2</xliff:g> إلى تفعيل \"<xliff:g id="ID_3">^3</xliff:g>\"، وهي إحدى ميزات تسهيل الاستخدام التي تتيح لك التحكّم في جهازك بدون لمسه."</string>
+    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"شاشة القفل"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"جارٍ إيقاف التشغيل…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"الاطّلاع على خطوات العناية"</string>

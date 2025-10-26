@@ -367,8 +367,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Датчыкі выключаны"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Выдалiць усе апавяшчэннi."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Апавяшчэнні"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Памочнік"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Яшчэ # апавяшчэнне ўнутры.}one{Яшчэ # апавяшчэнне ўнутры.}few{Яшчэ # апавяшчэнні ўнутры.}many{Яшчэ # апавяшчэнняў унутры.}other{Яшчэ # апавяшчэння ўнутры.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Экран заблакiраваны ў альбомнай арыентацыі."</string>
@@ -710,8 +709,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Без гуку"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Апавяшчэнні"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Размовы"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"Асноўнае"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Выдаліць усе апавяшчэнні без гуку"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Адкрыць налады апавяшчэнняў"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Апавяшчэнняў няма}=1{Атрыманне апавяшчэнняў прыпынена рэжымам \"{mode}\"}=2{Атрыманне апавяшчэнняў прыпынена рэжымам \"{mode}\" і яшчэ адным рэжымам}one{Атрыманне апавяшчэнняў прыпынена рэжымам \"{mode}\" і яшчэ # рэжымам}few{Атрыманне апавяшчэнняў прыпынена рэжымам \"{mode}\" і яшчэ # рэжымамі}many{Атрыманне апавяшчэнняў прыпынена рэжымам \"{mode}\" і яшчэ # рэжымамі}other{Атрыманне апавяшчэнняў прыпынена рэжымам \"{mode}\" і яшчэ # рэжыму}}"</string>
@@ -1161,19 +1159,17 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Выключыць спалучэнне клавіш"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Не выключаць"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Клавіша дзеяння "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> – гэта спалучэнне для выкарыстання функцыі \"<xliff:g id="ID_3">^3</xliff:g>\". <xliff:g id="ID_4">^3</xliff:g> – гэта праграма чытання з экрана, якая агучвае апісанне элементаў на ім. Яна дапамагае людзям, у якіх узнікаюць складанасці з праглядам экрана. У выніку ваша прылада можа пачаць працаваць па-іншаму."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Калі вы ўключыце спалучэнне клавіш, TalkBack атрымае поўны кантроль над вашай прыладай."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Поўны кантроль прызначаны для сэрвісаў спецыяльных магчымасцей, аднак не падыходзіць для большасці праграм."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Прагляд экрана і кіраванне ім"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Функцыя можа распазнаваць усё змесціва на экране і паказваць яго паверх іншых праграм."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Прагляд і выкананне дзеянняў"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Гэта функцыя можа адсочваць вашы ўзаемадзеянні з праграмай ці датчыкам апаратнага забеспячэння і ўзаемадзейнічаць з праграмамі ад вашага імя."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Калі націснуць клавішу дзеяння "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, будзе ўключана функцыя спецыяльных магчымасцей \"<xliff:g id="ID_3">^3</xliff:g>\". Вы зможаце кіраваць прыладай з дапамогай галасавых каманд."</string>
+    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Экран блакіроўкі"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Ідзе завяршэнне працы…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Глядзець паэтапную дапамогу"</string>

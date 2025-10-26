@@ -367,8 +367,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Option \"Capteurs désactivés\" active"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Supprimer toutes les notifications"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notifications"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g> autres"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# autre notification dans le groupe.}one{# autre notification dans le groupe.}many{# autres notifications dans le groupe.}other{# autres notifications dans le groupe.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"L\'écran est verrouillé en mode paysage."</string>
@@ -710,8 +709,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Silencieux"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Notifications"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Conversations"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"Sélection"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Effacer toutes les notifications silencieuses"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Ouvrir les paramètres de notification"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Aucune notification}=1{Notifications suspendues par le mode {mode}}=2{Notifications suspendues par le mode {mode} et un autre mode}one{Notifications suspendues par le mode {mode} et # autre mode}many{Notifications suspendues par le mode {mode} et # d\'autres modes}other{Notifications suspendues par le mode {mode} et # autres modes}}"</string>
@@ -1174,6 +1172,10 @@
     <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
     <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Appuyer sur l\'action "<annotation id="action_key_icon">"icône"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> active <xliff:g id="ID_3">^3</xliff:g>, une fonctionnalité d\'accessibilité. Cela vous permet de contrôler votre appareil en mode mains libres."</string>
+    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Écran de verrouillage"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Arrêt…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Afficher les étapes d\'entretien"</string>

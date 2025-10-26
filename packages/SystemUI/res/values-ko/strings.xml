@@ -367,8 +367,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"센서 끄기 활성화"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"모든 알림 지우기"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"알림"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"어시스턴트"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g>개 더보기"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{그룹에 알림이 #개 더 있습니다.}other{그룹에 알림이 #개 더 있습니다.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"화면이 가로 방향으로 잠겨 있습니다."</string>
@@ -710,8 +709,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"무음"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"알림"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"대화"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"하이라이트"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"무음 알림 모두 삭제"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"알림 설정 열기"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{알림 없음}=1{{mode} 모드로 인해 알림이 일시중지되었습니다.}=2{{mode} 및 다른 모드로 인해 알림이 일시중지되었습니다.}other{{mode} 및 다른 모드 #개로 인해 알림이 일시중지되었습니다.}}"</string>
@@ -1174,6 +1172,10 @@
     <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
     <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"작업 "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 키를 누르면 접근성 기능인 <xliff:g id="ID_3">^3</xliff:g> 기능이 사용 설정됩니다. 이를 통해 핸즈프리로 기기를 제어할 수 있습니다."</string>
+    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"잠금 화면"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"종료 중…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"해결 방법 확인하기"</string>

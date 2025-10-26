@@ -367,8 +367,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"ປິດການເຮັດວຽກຂອງເຊັນເຊີແລ້ວ"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"ລຶບການແຈ້ງເຕືອນທັງໝົດ."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"ການແຈ້ງເຕືອນ"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"ຜູ້ຊ່ວຍ"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ມີ # ການແຈ້ງເຕືອນເພີ່ມເຕີມຢູ່ທາງໃນ.}other{ມີ # ການແຈ້ງເຕືອນເພີ່ມເຕີມຢູ່ທາງໃນ.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ໜ້າຈໍຖືກລັອກໃນລວງນອນ."</string>
@@ -710,8 +709,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"ປິດສຽງ"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"ການແຈ້ງເຕືອນ"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"ການສົນທະນາ"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"ໄຮໄລ້"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"ລຶບລ້າງການແຈ້ງເຕືອນແບບງຽບທັງໝົດ"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"ເປີດການຕັ້ງຄ່າການແຈ້ງເຕືອນ"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{ບໍ່ມີການແຈ້ງເຕືອນ}=1{{mode} ຢຸດການແຈ້ງເຕືອນໄວ້ຊົ່ວຄາວ}=2{{mode} ແລະ ອີກ 1 ໂໝດຢຸດການແຈ້ງເຕືອນໄວ້ຊົ່ວຄາວ}other{{mode} ແລະ ອີກ # ໂໝດຢຸດການແຈ້ງເຕືອນໄວ້ຊົ່ວຄາວ}}"</string>
@@ -1174,6 +1172,10 @@
     <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
     <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"ກດ "<annotation id="action_key_icon">"ໄອຄອນ"</annotation>" ຄຳສັ່ງ + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ເປີດໃຊ້ <xliff:g id="ID_3">^3</xliff:g>, ເຊິ່ງເປັນຄຸນສົມບັດການຊ່ວຍເຂົ້າເຖິງ. ນີ້ຈະຊ່ວຍໃຫ້ທ່ານຄວບຄຸມອຸປະກອນໄດ້ແບບແຮນຟຣີ."</string>
+    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ໜ້າຈໍລັອກ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ກຳລັງປິດເຄື່ອງ…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"ເບິ່ງຂັ້ນຕອນການເບິ່ງແຍງ"</string>
