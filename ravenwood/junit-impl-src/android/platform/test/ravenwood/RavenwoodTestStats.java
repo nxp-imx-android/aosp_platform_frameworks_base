@@ -119,8 +119,9 @@ public class RavenwoodTestStats {
                             return getCaller(ex);
                         }
                         if (ex instanceof ExceptionInInitializerError
-                                && ex.getMessage().contains("RavenwoodUnsupportedApiException")) {
-                            // A static initializer hit a Ravenwood unsupported API
+                                && (ex.getMessage().contains("RavenwoodUnsupportedApiException")
+                                || ex.getMessage().contains("Stub!"))) {
+                            // A static initializer hit a Ravenwood unsupported API or stub
                             return getCaller(ex);
                         }
                         if ("Stub!".equals(ex.getMessage())) {

@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 import android.os.Handler;
 import android.os.Looper;
 import android.platform.test.annotations.NoRavenizer;
+import android.platform.test.ravenwood.RavenwoodErrorHandler;
 import android.platform.test.ravenwood.RavenwoodUtils;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -62,6 +63,7 @@ public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
             // if any. So the remaining code shouldn't be executed.
             try {
                 RavenwoodUtils.waitForMainLooperDone();
+                RavenwoodErrorHandler.maybeThrowPendingRecoverableUncaughtException();
             } catch (Throwable th) {
                 // Ensure that the exception has MessageWasPostedHereStackTrace as a "cause".
                 assertHasMessageWasPostedHereStackTraceAsCause(th, "testMainThreadException");
@@ -104,6 +106,7 @@ public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
                 setError(new RuntimeException("Shouldn't reach here"));
             });
             RavenwoodUtils.waitForMainLooperDone();
+            RavenwoodErrorHandler.maybeThrowPendingRecoverableUncaughtException();
         }
     }
 }

@@ -18,6 +18,8 @@ package android.os;
 import android.annotation.NonNull;
 import android.platform.test.ravenwood.RavenwoodErrorHandler;
 
+import java.util.ArrayList;
+
 public class Handler_ravenwood {
     private Handler_ravenwood() {
     }
@@ -47,13 +49,21 @@ public class Handler_ravenwood {
     public static void clearMessageQueue(MessageQueue queue) {
         // Extract all messages immediately and dispatch them all.
         // We do this because other threads may be waiting on a specific message to be dispatched.
+        // Because new messages may be enqueued during the dispatch, we collect the entire list
+        // of pending messages as a snapshot, and ONLY execute messages in the snapshot.
+        var pendingList = new ArrayList<Message>();
         Message pending;
         while ((pending = queue.pollForTest()) != null) {
+            pendingList.add(pending);
+        }
+        pendingList.forEach(msg -> {
             try {
-                pending.getTarget().dispatchMessageImpl(pending);
+                msg.getTarget().dispatchMessageImpl(msg);
             } catch (Throwable ignored) {
             }
-        }
+        });
+        // New messages may be queued, clear all of them.
+        while (queue.pollForTest() != null);
 
         // If the message queue is blocked by sync barrier, we need to remove it.
         if (queue.isBlockedOnSyncBarrier()) {
