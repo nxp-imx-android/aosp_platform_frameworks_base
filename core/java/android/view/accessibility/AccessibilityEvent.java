@@ -1277,23 +1277,7 @@ public final class AccessibilityEvent extends AccessibilityRecord implements Par
      * {@link #TYPE_WINDOW_CONTENT_CHANGED} event or {@link #TYPE_WINDOW_STATE_CHANGED}. A single
      * event may represent multiple change types.
      *
-     * @return The bit mask of change types. One or more of:
-     *         <ul>
-     *         <li>{@link #CONTENT_CHANGE_TYPE_CONTENT_DESCRIPTION}
-     *         <li>{@link #CONTENT_CHANGE_TYPE_STATE_DESCRIPTION}
-     *         <li>{@link #CONTENT_CHANGE_TYPE_SUBTREE}
-     *         <li>{@link #CONTENT_CHANGE_TYPE_TEXT}
-     *         <li>{@link #CONTENT_CHANGE_TYPE_PANE_TITLE}
-     *         <li>{@link #CONTENT_CHANGE_TYPE_UNDEFINED}
-     *         <li>{@link #CONTENT_CHANGE_TYPE_PANE_APPEARED}
-     *         <li>{@link #CONTENT_CHANGE_TYPE_PANE_DISAPPEARED}
-     *         <li>{@link #CONTENT_CHANGE_TYPE_DRAG_STARTED}
-     *         <li>{@link #CONTENT_CHANGE_TYPE_DRAG_DROPPED}
-     *         <li>{@link #CONTENT_CHANGE_TYPE_DRAG_CANCELLED}
-     *         <li>{@link #CONTENT_CHANGE_TYPE_CONTENT_INVALID}
-     *         <li>{@link #CONTENT_CHANGE_TYPE_ERROR}
-     *         <li>{@link #CONTENT_CHANGE_TYPE_ENABLED}
-     *         </ul>
+     * @return The bit mask of change types.
      */
     @ContentChangeTypes
     public int getContentChangeTypes() {
@@ -1403,12 +1387,8 @@ public final class AccessibilityEvent extends AccessibilityRecord implements Par
      * Gets the bit mask of the speech state signaled by a {@link #TYPE_SPEECH_STATE_CHANGE} event.
      *
      * @return The bit mask of speech change types.
-     *
-     * @see #SPEECH_STATE_SPEAKING_START
-     * @see #SPEECH_STATE_SPEAKING_END
-     * @see #SPEECH_STATE_LISTENING_START
-     * @see #SPEECH_STATE_LISTENING_END
      */
+    @SpeechStateChangeTypes
     public int getSpeechStateChangeTypes() {
         return mSpeechStateChangeTypes;
     }
@@ -1439,11 +1419,6 @@ public final class AccessibilityEvent extends AccessibilityRecord implements Par
      * The sender is responsible for ensuring that  the state change types  make sense. For example,
      * the sender should not send
      * {@link #SPEECH_STATE_SPEAKING_START} and {@link #SPEECH_STATE_SPEAKING_END} together.
-     *
-     * @see #SPEECH_STATE_SPEAKING_START
-     * @see #SPEECH_STATE_SPEAKING_END
-     * @see #SPEECH_STATE_LISTENING_START
-     * @see #SPEECH_STATE_LISTENING_END
      */
     public void setSpeechStateChangeTypes(@SpeechStateChangeTypes int state) {
         enforceNotSealed();
@@ -1455,18 +1430,6 @@ public final class AccessibilityEvent extends AccessibilityRecord implements Par
      * single event may represent multiple change types.
      *
      * @return The bit mask of change types.
-     *
-     * @see #WINDOWS_CHANGE_ADDED
-     * @see #WINDOWS_CHANGE_REMOVED
-     * @see #WINDOWS_CHANGE_TITLE
-     * @see #WINDOWS_CHANGE_BOUNDS
-     * @see #WINDOWS_CHANGE_LAYER
-     * @see #WINDOWS_CHANGE_ACTIVE
-     * @see #WINDOWS_CHANGE_FOCUSED
-     * @see #WINDOWS_CHANGE_ACCESSIBILITY_FOCUSED
-     * @see #WINDOWS_CHANGE_PARENT
-     * @see #WINDOWS_CHANGE_CHILDREN
-     * @see #WINDOWS_CHANGE_PIP
      */
     @WindowsChangeTypes
     public int getWindowChanges() {
@@ -1505,11 +1468,6 @@ public final class AccessibilityEvent extends AccessibilityRecord implements Par
      * {@link #TYPE_VIEW_TEXT_CHANGED} event.
      * Providing these change types is optional. If it is not provided,
      * it will default to {@link #TEXT_CHANGE_TYPE_UNDEFINED}.
-     *
-     * @see #TEXT_CHANGE_TYPE_UNDEFINED
-     * @see #TEXT_CHANGE_TYPE_IN_COMPOSITION
-     * @see #TEXT_CHANGE_TYPE_COMMITTED_BY_IME
-     * @see #TEXT_CHANGE_TYPE_CONVERSION_SUGGESTION_SELECTED_BY_IME
      */
     @FlaggedApi(Flags.FLAG_A11Y_TEXT_CHANGE_TYPES_API)
     public void setTextChangeTypes(@TextChangeTypes int types) {
@@ -1524,11 +1482,6 @@ public final class AccessibilityEvent extends AccessibilityRecord implements Par
      * to better understand the nature of text changes.
      *
      * @return The bit mask of change types.
-     *
-     * @see #TEXT_CHANGE_TYPE_UNDEFINED
-     * @see #TEXT_CHANGE_TYPE_IN_COMPOSITION
-     * @see #TEXT_CHANGE_TYPE_COMMITTED_BY_IME
-     * @see #TEXT_CHANGE_TYPE_CONVERSION_SUGGESTION_SELECTED_BY_IME
      */
     @FlaggedApi(Flags.FLAG_A11Y_TEXT_CHANGE_TYPES_API)
     @TextChangeTypes
