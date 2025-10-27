@@ -18,17 +18,17 @@ package com.android.systemui.globalactions.domain.interactor
 
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.globalactions.data.repository.GlobalActionsRepository
+import com.android.systemui.globalactions.shared.model.GlobalActionType
 import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
 
 @SysUISingleton
-class GlobalActionsInteractor
-@Inject
-constructor(
-    private val repository: GlobalActionsRepository,
-) {
+class GlobalActionsInteractor @Inject constructor(private val repository: GlobalActionsRepository) {
     /** Is the global actions dialog visible. */
     val isVisible: StateFlow<Boolean> = repository.isVisible
+
+    val possibleGlobalActions: List<GlobalActionType>
+        get() = repository.possibleGlobalActions
 
     /** Notifies that the global actions dialog is shown. */
     fun onShown() {
