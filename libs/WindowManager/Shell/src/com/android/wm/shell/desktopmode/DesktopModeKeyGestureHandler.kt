@@ -260,14 +260,6 @@ class DesktopModeKeyGestureHandler(
             return@getGloballyFocusedTaskToMoveToNextDisplay desktopTask
         }
 
-        if (!DesktopExperienceFlags.MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE.isTrue) {
-            logV(
-                "getGloballyFocusedTaskToMoveToNextDisplay: Skip focusing fullscreen task because " +
-                    "MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE is disabled"
-            )
-            return null
-        }
-
         if (!desktopState.isProjectedMode()) {
             logV(
                 "getGloballyFocusedTaskToMoveToNextDisplay: Skip focusing fullscreen task because the device is not " +

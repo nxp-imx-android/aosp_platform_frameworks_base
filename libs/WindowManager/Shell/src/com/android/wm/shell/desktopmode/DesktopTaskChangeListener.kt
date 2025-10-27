@@ -110,11 +110,7 @@ class DesktopTaskChangeListener(
                 taskInfo.taskId,
                 taskInfo.displayId,
             )
-            if (
-                DesktopExperienceFlags.MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE.isTrue &&
-                    !isDesktopTask &&
-                    isActiveTask
-            ) {
+            if (!isDesktopTask && isActiveTask) {
                 logD(
                     "Removing previous desktop task moved to non-desktop display",
                     taskInfo.taskId,
