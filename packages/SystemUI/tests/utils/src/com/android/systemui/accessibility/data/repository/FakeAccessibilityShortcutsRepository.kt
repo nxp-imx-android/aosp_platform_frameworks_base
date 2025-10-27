@@ -21,7 +21,6 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.hardware.input.KeyGestureEvent
 import android.os.Handler
-import android.view.Display.DEFAULT_DISPLAY
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
 import com.android.internal.accessibility.util.TtsPrompt
 import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConfirmInfo
@@ -78,7 +77,7 @@ class FakeAccessibilityShortcutsRepository(
                     emptyList(),
                     targetName,
                     0,
-                    DEFAULT_DISPLAY,
+                    displayId,
                     ttsText,
                 )
             }

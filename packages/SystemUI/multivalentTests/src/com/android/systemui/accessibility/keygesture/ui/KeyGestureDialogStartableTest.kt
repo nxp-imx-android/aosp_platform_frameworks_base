@@ -32,6 +32,7 @@ import com.android.systemui.accessibility.data.repository.accessibilityShortcuts
 import com.android.systemui.accessibility.keygesture.domain.KeyGestureDialogInteractor
 import com.android.systemui.accessibility.keygesture.domain.keyGestureDialogInteractor
 import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.display.data.repository.FakeDisplayRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.runTest
@@ -42,18 +43,27 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableFlags(Flags.FLAG_ENABLE_TALKBACK_AND_MAGNIFIER_KEY_GESTURES)
 class KeyGestureDialogStartableTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
+    private val fakeDisplayRepository = FakeDisplayRepository()
     private val broadcastDispatcher = kosmos.broadcastDispatcher
     private val interactor = kosmos.keyGestureDialogInteractor
 
     private val Kosmos.underTest by
         Kosmos.Fixture {
             KeyGestureDialogStartable(
+                context,
+                fakeDisplayRepository,
                 interactor,
                 kosmos.systemUIDialogFactory,
                 kosmos.backgroundScope,
@@ -236,6 +246,32 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFY_MAGNIFICATION_KEY_GESTURE_DIALOG)
+    fun start_onMagnificationDialog_opensCorrectlyOnNonDefaultDisplay() {
+        kosmos.runTest {
+            val underTest =
+                spy(
+                    KeyGestureDialogStartable(
+                        context,
+                        fakeDisplayRepository,
+                        interactor,
+                        kosmos.systemUIDialogFactory,
+                        kosmos.backgroundScope,
+                    )
+                )
+
+            doNothing().whenever(underTest).createDialog(anyOrNull())
+
+            val externalDisplayId = 2
+            underTest.start()
+
+            sendIntentBroadcastForMagnificationInMainThread(displayId = externalDisplayId)
+
+            verify(underTest).createDialog(argThat { info -> info.displayId == externalDisplayId })
+        }
+    }
+
+    @Test
     fun start_screenReaderDialog_performsTtsPrompt() =
         kosmos.runTest {
             val shortcutsRepository = kosmos.accessibilityShortcutsRepository
@@ -255,6 +291,33 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
             assertThat(shortcutsRepository.ttsText)
                 .isEqualTo("Press Action + Alt + T again to enable Screen Reader")
             assertThat(shortcutsRepository.areShortcutsEnabled).isTrue()
+        }
+
+    @Test
+    fun start_screenReaderDialog_opensCorrectlyOnNonDefaultDisplay() =
+        kosmos.runTest {
+            val underTest =
+                spy(
+                    KeyGestureDialogStartable(
+                        context,
+                        fakeDisplayRepository,
+                        interactor,
+                        kosmos.systemUIDialogFactory,
+                        kosmos.backgroundScope,
+                    )
+                )
+
+            doNothing().whenever(underTest).createDialog(anyOrNull())
+
+            val externalDisplayId = 2
+            underTest.start()
+
+            sendIntentBroadcastForScreenReaderInMainThread(
+                KeyGestureDialogInteractor.LAUNCH_DIALOG_ACTION,
+                externalDisplayId,
+            )
+
+            verify(underTest).createDialog(argThat { info -> info.displayId == externalDisplayId })
         }
 
     @Test
@@ -334,23 +397,26 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
         }
     }
 
-    private fun sendIntentBroadcastForMagnificationInMainThread() {
+    private fun sendIntentBroadcastForMagnificationInMainThread(displayId: Int = DEFAULT_DISPLAY) {
         sendIntentBroadcastInMainThread(
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
             KeyEvent.META_META_ON or KeyEvent.META_ALT_ON,
             KeyEvent.KEYCODE_M,
             "targetNameForMagnification",
-            DEFAULT_DISPLAY,
+            displayId,
         )
     }
 
-    private fun sendIntentBroadcastForScreenReaderInMainThread(intentAction: String) {
+    private fun sendIntentBroadcastForScreenReaderInMainThread(
+        intentAction: String,
+        displayId: Int = DEFAULT_DISPLAY,
+    ) {
         sendIntentBroadcastInMainThread(
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
             KeyEvent.META_META_ON or KeyEvent.META_ALT_ON,
             KeyEvent.KEYCODE_T,
             "targetNameForScreenReader",
-            DEFAULT_DISPLAY,
+            displayId,
             intentAction,
         )
     }
