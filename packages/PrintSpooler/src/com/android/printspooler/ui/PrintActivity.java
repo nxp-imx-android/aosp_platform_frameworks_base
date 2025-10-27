@@ -1644,7 +1644,9 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
         public void onClick(View view) {
             if (view == mPrintButton) {
                 if (mCurrentPrinter != null) {
-                    if (mDestinationSpinnerAdapter.getPdfPrinter() == mCurrentPrinter) {
+                    if (Flags.skipServiceWarning()) {
+                        confirmPrint();
+                    } else if (mDestinationSpinnerAdapter.getPdfPrinter() == mCurrentPrinter) {
                         confirmPrint();
                     } else {
                         ApprovedPrintServices approvedServices =
