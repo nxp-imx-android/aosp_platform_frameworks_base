@@ -37,6 +37,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.RemoteException;
+import android.util.Log;
 import android.util.Size;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -67,6 +68,8 @@ import java.util.concurrent.Executor;
  */
 public final class ComputerControlSession extends IComputerControlLifecycleCallback.Stub
         implements AutoCloseable {
+
+    private static final String TAG = ComputerControlSession.class.getSimpleName();
 
     /** @hide */
     public static final String ACTION_REQUEST_ACCESS =
@@ -319,9 +322,14 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
                 }
             }
         }
+        final Image image;
         synchronized (mImageReaderLock) {
-            return mImageReader == null ? null : mImageReader.acquireLatestImage();
+            image = mImageReader == null ? null : mImageReader.acquireLatestImage();
         }
+        if (image == null) {
+            Log.w(TAG, "getScreenshot: No new image available!");
+        }
+        return image;
     }
 
     /**

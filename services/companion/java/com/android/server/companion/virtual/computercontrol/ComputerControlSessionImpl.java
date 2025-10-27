@@ -119,6 +119,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             CUSTOM_BLOCKED_APP_PACKAGE,
             CUSTOM_BLOCKED_APP_PACKAGE + ".NotifyComputerControlBlockedActivity");
 
+    // The virtual display's refresh rate, which also limits how fast the client Surface can consume
+    // frames from the display.
+    private static final float VIRTUAL_DISPLAY_REQUESTED_REFRESH_RATE = 10f;
+
     // Input device names are limited to 80 bytes, so keep the prefix shorter than that.
     private static final int MAX_INPUT_DEVICE_NAME_PREFIX_LENGTH = 70;
 
@@ -310,6 +314,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 mParams.getName() + "-display", displayWidth, displayHeight,
                 mainDisplayInfo.logicalDensityDpi)
                 .setFlags(displayFlags)
+                .setRequestedRefreshRate(VIRTUAL_DISPLAY_REQUESTED_REFRESH_RATE)
                 .build();
 
         mBlockedStateImageReader = ImageReader.newInstance(displayWidth, displayHeight,
