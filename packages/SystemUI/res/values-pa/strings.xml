@@ -1159,19 +1159,17 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ਸ਼ਾਰਟਕੱਟ ਬੰਦ ਕਰੋ"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ਚਾਲੂ ਰੱਖੋ"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"ਕਾਰਵਾਈ "<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> <xliff:g id="ID_3">^3</xliff:g> ਨੂੰ ਵਰਤਣ ਦਾ ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਹੈ। <xliff:g id="ID_4">^3</xliff:g> ਇੱਕ ਸਕ੍ਰੀਨ ਰੀਡਰ ਹੈ, ਜੋ ਤੁਹਾਨੂੰ ਉੱਚੀ ਅਵਾਜ਼ ਵਿੱਚ ਬੋਲੀਆਂ ਜਾਣ ਵਾਲੀਆਂ ਆਈਟਮਾਂ ਨੂੰ ਸੁਣਨ ਦਿੰਦੀ ਹੈ। ਇਹ ਉਨ੍ਹਾਂ ਲੋਕਾਂ ਲਈ ਲਾਹੇਵੰਦ ਹੋ ਸਕਦੀ ਹੈ, ਜਿਨ੍ਹਾਂ ਨੂੰ ਸਕ੍ਰੀਨ ਦੇਖਣ ਵਿੱਚ ਮੁਸ਼ਕਲ ਆਉਂਦੀ ਹੈ। ਇਸ ਨਾਲ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਦੇ ਕੰਮ ਕਰਨ ਦਾ ਤਰੀਕਾ ਬਦਲ ਸਕਦਾ ਹੈ।"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਨੂੰ ਚਾਲੂ ਕਰ ਕੇ, ਤੁਸੀਂ TalkBack ਨੂੰ ਆਪਣੇ ਡੀਵਾਈਸ ਦਾ ਪੂਰਾ ਕੰਟਰੋਲ ਦੇਣ ਦੀ ਆਗਿਆ ਦੇਵੋਗੇ।"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"ਪੂਰਾ ਕੰਟਰੋਲ ਉਨ੍ਹਾਂ ਐਪਾਂ ਲਈ ਢੁਕਵਾਂ ਹੈ ਜੋ ਪਹੁੰਚਯੋਗਤਾ ਸੰਬੰਧੀ ਲੋੜਾਂ ਵਿੱਚ ਤੁਹਾਡੀ ਮਦਦ ਕਰਦੀਆਂ ਹਨ, ਪਰ ਜ਼ਿਆਦਾਤਰ ਐਪਾਂ ਲਈ ਢੁਕਵਾਂ ਨਹੀਂ ਹੁੰਦਾ।"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"ਸਕ੍ਰੀਨ ਨੂੰ ਦੇਖਣਾ ਅਤੇ ਕੰਟਰੋਲ ਕਰਨਾ"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"ਇਹ ਸਕ੍ਰੀਨ \'ਤੇ ਸਾਰੀ ਸਮੱਗਰੀ ਪੜ੍ਹ ਸਕਦਾ ਹੈ ਅਤੇ ਸਮੱਗਰੀ ਨੂੰ ਦੂਜੀਆਂ ਐਪਾਂ ਦੇ ਉੱਪਰ ਦਿਖਾ ਸਕਦਾ ਹੈ।"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"ਕਾਰਵਾਈਆਂ ਦੇਖੋ ਅਤੇ ਕਰੋ"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"ਇਹ ਕਿਸੇ ਐਪ ਜਾਂ ਹਾਰਡਵੇਅਰ ਸੈਂਸਰ ਦੇ ਨਾਲ ਤੁਹਾਡੀਆਂ ਅੰਤਰਕਿਰਿਆਵਾਂ ਨੂੰ ਟਰੈਕ ਕਰ ਸਕਦੀ ਹੈ ਅਤੇ ਤੁਹਾਡੀ ਤਰਫ਼ੋਂ ਐਪਾਂ ਦੇ ਨਾਲ ਅੰਤਰਕਿਰਿਆ ਕਰ ਸਕਦੀ ਹੈ।"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"ਕਾਰਵਾਈ "<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ਦਬਾਉਣ \'ਤੇ <xliff:g id="ID_3">^3</xliff:g> ਪਹੁੰਚਯੋਗਤਾ ਵਿਸ਼ੇਸ਼ਤਾ ਚਾਲੂ ਹੋ ਜਾਂਦੀ ਹੈ। ਇਸ ਨਾਲ ਤੁਸੀਂ ਆਪਣੇ ਡੀਵਾਈਸ ਨੂੰ ਹੱਥ-ਰਹਿਤ ਕੰਟਰੋਲ ਕਰ ਸਕਦੇ ਹੋ।"</string>
+    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">" ਲਾਕ  ਸਕ੍ਰੀਨ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ਬੰਦ ਹੋ ਰਿਹਾ ਹੈ…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"ਦੇਖਭਾਲ ਦੇ ਪੜਾਅ ਦੇਖੋ"</string>

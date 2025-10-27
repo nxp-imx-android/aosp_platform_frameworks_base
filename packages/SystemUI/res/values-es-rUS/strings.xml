@@ -367,8 +367,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Sensores desactivados sí"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Eliminar todas las notificaciones"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notificaciones"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Asistente"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g> más"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# notificación más en el grupo.}many{# de notificaciones más en el grupo.}other{# notificaciones más en el grupo.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"La pantalla está bloqueada en modo horizontal."</string>
@@ -710,8 +709,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Silenciadas"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Notificaciones"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Conversaciones"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"Destacados"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Borrar todas las notificaciones silenciosas"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Abrir configuración de notificaciones"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{No hay notificaciones}=1{{mode} pausó las notificaciones}=2{{mode} y un modo más pausaron las notificaciones}many{{mode} y # de modos más pausaron las notificaciones}other{{mode} y # modos más pausaron las notificaciones}}"</string>
@@ -1161,19 +1159,15 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Desactivar combinación de teclas"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Mantener activada"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"La combinación de teclas para usar <xliff:g id="ID_3">^3</xliff:g> es "<annotation id="action_key_icon">"ícono"</annotation>" de acción + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> es un lector de pantalla que te permite escuchar los elementos en voz alta. Puede ser útil para las personas con dificultades para ver la pantalla. Esto puede cambiar la manera en que funciona tu dispositivo."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Si activas la combinación de teclas, permitirás que TalkBack tenga el control total del dispositivo."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"El control total es apropiado para las apps que te ayudan con las necesidades de accesibilidad, pero no para la mayoría de las apps."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Ver y controlar la pantalla"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Puede leer todo el contenido en la pantalla y mostrarlo sobre otras apps."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Ver y realizar acciones"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Puede seguir tus interacciones con una app o un sensor de hardware, así como interactuar con las apps por ti."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Si presionas Acción "<annotation id="action_key_icon">"ícono"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, se activará <xliff:g id="ID_3">^3</xliff:g>, una función de accesibilidad. Esta te permite controlar tu dispositivo sin usar las manos."</string>
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Accesibilidad"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Listo"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Pantalla de bloqueo"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Apagando…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Ver pasos de mantenimiento"</string>

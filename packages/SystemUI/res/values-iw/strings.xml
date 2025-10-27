@@ -367,8 +367,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"ההגדרה \'חיישנים כבויים\' פעילה"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"הסרת כל ההתראות."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"התראות"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{עוד התראה אחת (#) בקבוצה.}one{עוד # התראות בקבוצה.}two{עוד # התראות בקבוצה.}other{עוד # התראות בקבוצה.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"המסך נעול עכשיו לרוחב."</string>
@@ -710,8 +709,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"מצב שקט"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"התראות"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"שיחות"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"המיטב"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"ניקוי כל ההתראות השקטות"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"פתיחה של הגדרת ההתראות"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{אין התראות}=1{ההתראות הושהו על ידי {mode}}=2{ההתראות הושהו על ידי {mode} ועל ידי מצב אחד נוסף}one{ההתראות הושהו על ידי {mode} ועל ידי # מצבים נוספים}other{ההתראות הושהו על ידי {mode} ועל ידי # מצבים נוספים}}"</string>
@@ -1161,19 +1159,17 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"השבתת מקש הקיצור"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"לא, התחרטתי"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"‫<xliff:g id="ID_4">^3</xliff:g> יכול להקריא את מה שרואים על המסך, כדי לעזור לאנשים שמתקשים לראות. כדי להפעיל את <xliff:g id="ID_3">^3</xliff:g>, אפשר להשתמש במקשי הקיצור "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. מקש הקיצור יכול לגרום לשינוי באופן שבו המכשיר פועל."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"‏הפעלת מקש הקיצור תאפשר ל-TalkBack לקבל שליטה מלאה במכשיר."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"אפשרות השליטה מלאה מיועדת רק לאפליקציות שעוזרות עם צורכי הנגישות שלך, אבל לא לרוב האפליקציות."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"הצגת המסך ושליטה בו"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"זוהי אפשרות לקריאת כל התוכן במסך ולהצגת התוכן מעל אפליקציות אחרות."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"הצגה וביצוע של פעולות"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"התכונה תוכל לעקוב אחר הפעילות שלך באפליקציות או עם חיישני חומרה, ולבצע פעולות באפליקציות בשמך."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"לחיצה על מקש הפעולה "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> מפעילה את <xliff:g id="ID_3">^3</xliff:g>, תכונת נגישות. הפעולה הזו מאפשרת לך לשלוט במכשיר באמצעות הקול."</string>
+    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"מסך נעילה"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"בתהליך כיבוי…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"לצפייה בשלבי הטיפול"</string>

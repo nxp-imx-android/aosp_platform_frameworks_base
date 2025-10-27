@@ -367,8 +367,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Tùy chọn tắt cảm biến đang hoạt động"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Xóa tất cả thông báo."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Thông báo"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Trợ lý"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# thông báo khác bên trong.}other{# thông báo khác bên trong.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Màn hình hiện bị khóa theo hướng ngang."</string>
@@ -710,8 +709,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Im lặng"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Thông báo"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Cuộc trò chuyện"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"Thông báo nổi bật"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Xóa tất cả thông báo im lặng"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Mở phần cài đặt thông báo"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Không có thông báo}=1{{mode} đã tạm dừng thông báo}=2{{mode} và một chế độ khác đã tạm dừng thông báo}other{{mode} và # chế độ khác đã tạm dừng thông báo}}"</string>
@@ -1174,6 +1172,10 @@
     <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
     <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Khi bạn nhấn tổ hợp phím Hành động "<annotation id="action_key_icon">"biểu tượng"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, tính năng hỗ trợ tiếp cận <xliff:g id="ID_3">^3</xliff:g> sẽ bật. Tính năng này giúp bạn điều khiển thiết bị mà không dùng tay."</string>
+    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Màn hình khóa"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Đang tắt…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Xem các bước chăm sóc"</string>
