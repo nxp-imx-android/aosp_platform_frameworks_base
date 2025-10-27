@@ -22,7 +22,6 @@ import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowManager
 import android.window.DesktopExperienceFlags
 import android.window.WindowContainerTransaction
-import com.android.wm.shell.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.bubbles.util.BubbleUtils
@@ -75,9 +74,7 @@ class ShellCrashHandler(
             }
         }
 
-        if (Flags.enableShellRestartBubbleCleanup()) {
-            bubbleController.ifPresent { handleBubbleTaskCleanup(it) }
-        }
+        bubbleController.ifPresent { handleBubbleTaskCleanup(it) }
         handlePipTaskCleanup()
     }
 
