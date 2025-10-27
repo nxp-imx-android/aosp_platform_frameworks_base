@@ -38,6 +38,12 @@
     -->
     <bool name="config_dualShadeEnabledByDefault">false</bool>
 
+   <!--
+    Whether an inline power menu should be shown instead of the global actions dialog when the
+    power button is clicked in the QS Panel.
+    -->
+    <bool name="config_qsInlinePowerMenu">false</bool>
+
     <!--
     Sets the boundary for the swipe-down gesture from the top of the screen that opens the
     Notifications and Quick Settings shades in Dual Shade mode.
