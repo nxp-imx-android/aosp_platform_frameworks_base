@@ -219,7 +219,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.autofill.AutofillManagerInternal;
 import android.widget.Toast;
-import android.window.DesktopExperienceFlags;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
@@ -6323,8 +6322,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         DisplayInfo displayInfo = mDisplayManagerInternal.getDisplayInfo(displayId);
         boolean isDisplayExternal = displayInfo != null && displayInfo.type == TYPE_EXTERNAL;
-        if (DesktopExperienceFlags.ENABLE_LAUNCHER_HANDLE_GO_HOME_KEYBOARD_SHORTCUT.isTrue()
-                && isDisplayExternal) {
+        if (isDisplayExternal) {
             // TODO(b/441952247): Clean up using home gesture handling in WM Core
             mInputManagerInternal.handleKeyGestureInKeyGestureController(
                     new KeyGestureEvent.Builder()
