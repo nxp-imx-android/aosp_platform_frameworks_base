@@ -27,7 +27,6 @@ import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX;
-import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_SPLITSCREEN_TRANSITION_BUGFIX;
 import static com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_PIP2;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING;
@@ -290,7 +289,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DESKTOP_SPLITSCREEN_TRANSITION_BUGFIX)
     public void testStartAnimation_hidesHomeTask() {
         final IBinder transition = startRecentsTransition(/* synthetic= */ false);
         RecentsTransitionHandler.RecentsController controller =
