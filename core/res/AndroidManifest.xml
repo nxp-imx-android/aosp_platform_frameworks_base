@@ -10301,7 +10301,8 @@
 
         <service android:name="android.net.ConnectivityCallListenerService"
                  android:permission="android.permission.BIND_INCALL_SERVICE"
-                 android:exported="true">
+                 android:exported="true"
+                 android:featureFlag="com.android.server.telecom.flags.enable_incall_service_class_check">
             <meta-data android:name="android.telecom.INCLUDE_SELF_MANAGED_CALLS"
                        android:value="true" />
             <!-- Indicates that this service's class may not be present in all builds.
