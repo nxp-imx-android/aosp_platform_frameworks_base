@@ -17,6 +17,7 @@
 package com.android.systemui.media.remedia.data.repository
 
 import android.content.packageManager
+import android.content.pm.ApplicationInfo
 import android.media.session.MediaSession
 import android.os.UserHandle
 import android.provider.Settings
@@ -31,7 +32,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.remedia.data.model.MediaDataModel
 import com.android.systemui.res.R
-import com.android.systemui.testKosmos
+import com.android.systemui.testKosmosNew
 import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -40,7 +41,11 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyString
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -51,8 +56,11 @@ class MediaRepositoryTest : SysuiTestCase() {
 
     private val drawable = context.getDrawable(R.drawable.ic_music_note)!!
     private val kosmos =
-        testKosmos().apply {
-            whenever(packageManager.getApplicationIcon(anyString())).thenReturn(drawable)
+        testKosmosNew().apply {
+            val appInfo = mock<ApplicationInfo>()
+            whenever(packageManager.getApplicationInfoAsUser(anyString(), anyInt(), anyInt()))
+                .thenReturn(appInfo)
+            whenever(packageManager.getApplicationIcon(any<ApplicationInfo>())).thenReturn(drawable)
             context.setMockPackageManager(packageManager)
         }
     private val testScope = kosmos.testScope
@@ -289,6 +297,28 @@ class MediaRepositoryTest : SysuiTestCase() {
 
             assertThat(allowMediaOnLockscreen).isTrue()
         }
+
+    @Test
+    fun loadMediaFromSecondaryProfile() {
+        testScope.runTest {
+            val instanceId = InstanceId.fakeInstanceId(123)
+            val secondUserAppInfo = mock<ApplicationInfo>()
+            val secondUserIcon = context.getDrawable(R.drawable.ic_media_prev)!!
+
+            whenever(kosmos.packageManager.getApplicationInfoAsUser(anyString(), anyInt(), eq(2)))
+                .thenReturn(secondUserAppInfo)
+            whenever(kosmos.packageManager.getApplicationIcon(secondUserAppInfo))
+                .thenReturn(secondUserIcon)
+
+            val secondUserMedia =
+                MediaData().copy(instanceId = instanceId, userId = 2, resumption = true)
+            addCurrentUserMediaEntry(secondUserMedia)
+
+            val entry = underTest.currentMedia.find { it.instanceId == instanceId }!!
+            val expectedIcon = Icon.Loaded(secondUserIcon, null)
+            assertThat(entry.appIcon).isEqualTo(expectedIcon)
+        }
+    }
 
     private fun TestScope.addCurrentUserMediaEntry(data: MediaData) {
         underTest.addCurrentUserMediaEntry(data)
