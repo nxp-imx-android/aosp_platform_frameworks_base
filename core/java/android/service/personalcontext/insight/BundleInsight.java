@@ -48,9 +48,10 @@ public final class BundleInsight extends ContextInsight {
         mDataBundle = b.getBundle(KEY_INSIGHT_DATA);
     }
 
+    /** @hide */
     @Override
     @InsightType
-    int getInsightType() {
+    public int getInsightType() {
         return INSIGHT_TYPE_BUNDLE;
     }
 
