@@ -400,39 +400,37 @@ constructor(
 
     private fun handleSimUnlock() {
         applicationScope.launch {
-            simBouncerInteractor
-                .get()
-                .isAnySimSecure
-                .sample(deviceUnlockedInteractor.deviceUnlockStatus, ::Pair)
-                .collect { (isAnySimLocked, unlockStatus) ->
-                    when {
-                        isAnySimLocked -> {
-                            sceneInteractor.showOverlay(
-                                overlay = Overlays.Bouncer,
-                                loggingReason = "Need to authenticate locked SIM card.",
-                            )
-                        }
-                        unlockStatus.isUnlocked &&
-                            deviceEntryInteractor.canSwipeToEnter.value == false -> {
-                            val loggingReason =
-                                "All SIM cards unlocked and device already unlocked and" +
-                                    " lockscreen doesn't require a swipe to dismiss."
-                            switchToScene(
-                                targetSceneKey = Scenes.Gone,
-                                loggingReason = loggingReason,
-                            )
-                        }
-                        else -> {
-                            val loggingReason =
-                                "All SIM cards unlocked and device still locked" +
-                                    " or lockscreen still requires a swipe to dismiss."
-                            switchToScene(
-                                targetSceneKey = Scenes.Lockscreen,
-                                loggingReason = loggingReason,
-                            )
-                        }
+            simBouncerInteractor.get().isAnySimSecure.collect { isAnySimLocked ->
+                val unlockStatus = deviceUnlockedInteractor.deviceUnlockStatus.value
+                when {
+                    isAnySimLocked -> {
+                        switchToScene(
+                            targetSceneKey = Scenes.Lockscreen,
+                            loggingReason = "SIM unlock required",
+                        )
+                        sceneInteractor.showOverlay(
+                            overlay = Overlays.Bouncer,
+                            loggingReason = "Need to authenticate locked SIM card.",
+                        )
+                    }
+                    unlockStatus.isUnlocked &&
+                        deviceEntryInteractor.canSwipeToEnter.value == false -> {
+                        val loggingReason =
+                            "All SIM cards unlocked and device already unlocked and" +
+                                " lockscreen doesn't require a swipe to dismiss."
+                        switchToScene(targetSceneKey = Scenes.Gone, loggingReason = loggingReason)
+                    }
+                    else -> {
+                        val loggingReason =
+                            "All SIM cards unlocked and device still locked" +
+                                " or lockscreen still requires a swipe to dismiss."
+                        switchToScene(
+                            targetSceneKey = Scenes.Lockscreen,
+                            loggingReason = loggingReason,
+                        )
                     }
                 }
+            }
         }
     }
 
