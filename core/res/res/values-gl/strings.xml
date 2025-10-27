@@ -641,6 +641,10 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Permítelle á aplicación enviar anuncios e conectarse a dispositivos wifi próximos, e determinar a súa posición relativa"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"acceso aos dispositivos da rede local"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Permite que a aplicación acceda aos dispositivos da rede local"</string>
+    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
+    <skip />
+    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"fixar a posición relativa entre disp. próximos"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Permite que a aplicación determine a posición relativa entre os dispositivos próximos"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Información do servizo de pagos de NFC preferido"</string>
@@ -1043,7 +1047,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Escribe o PIN para desbloquear"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Código PIN incorrecto"</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Para desbloquear, preme Menú e, a continuación, 0."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Número de emerxencia"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Sen servizo"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Pantalla bloqueada"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Preme Menú para desbloquear ou realizar unha chamada de emerxencia."</string>

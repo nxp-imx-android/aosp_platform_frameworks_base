@@ -641,6 +641,10 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Колдонмо жакын жердеги Wi-Fi түзмөктөргө туташып, алардын жайгашкан жерин аныктап, ар кандай нерселерди өткөрө алат."</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"жергиликтүү тармактагы түзмөктөрдү көрүү"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Колдонмого жергиликтүү тармактагы түзмөктөрдү көрүүгө уруксат берүү"</string>
+    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
+    <skip />
+    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"жакын жердеги түзмөктөр арасындагы салыштырмалуу абалды аныктоо"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Колдонмого жакын жердеги түзмөктөр ортосундагы салыштырмалуу абалды аныктоого уруксат берүү"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Тандалган NFC төлөм кызматы жөнүндө маалымат"</string>
@@ -1043,7 +1047,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Кулпуну ачуу үчүн PIN кодду териңиз"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"PIN код туура эмес."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Кулпусун ачуу үчүн Менюну андан соң 0 баскычын басыңыз."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Өзгөчө кырдаалдар кызматы"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Интернет жок"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Экран кулпуланды."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Кулпусун ачып же Шашылыш чалуу аткаруу үчүн менюну басыңыз."</string>

@@ -209,7 +209,7 @@
     <string name="low_memory" product="default" msgid="2539532364144025569">"फोन भण्डारण भरिएको छ! ठाउँ खाली गर्नको लागि केही फाइलहरू मेटाउनुहोस्।"</string>
     <string name="ssl_ca_cert_warning" msgid="7233573909730048571">"{count,plural, =1{प्रमाणपत्र जारी गर्ने निकायको प्रमाणपत्र इन्स्टल गरियो}other{प्रमाणपत्र जारी गर्ने निकायका प्रमाणपत्रहरू इन्स्टल गरिए}}"</string>
     <string name="ssl_ca_cert_noti_by_unknown" msgid="4961102218216815242">"अज्ञात तेस्रो पक्ष द्वारा"</string>
-    <string name="ssl_ca_cert_noti_by_administrator" msgid="4564941950768783879">"तपाईंको कार्य प्रोफाइलका प्रशासकद्वारा"</string>
+    <string name="ssl_ca_cert_noti_by_administrator" msgid="4564941950768783879">"तपाईंको वर्क प्रोफाइलका प्रशासकद्वारा"</string>
     <string name="ssl_ca_cert_noti_managed" msgid="217337232273211674">"<xliff:g id="MANAGING_DOMAIN">%s</xliff:g> द्वारा"</string>
     <string name="work_profile_deleted" msgid="5891181538182009328">"वर्क प्रोफाइल मेटियो"</string>
     <string name="work_profile_deleted_details" msgid="3773706828364418016">"उक्त वर्क प्रोफाइलको प्रशासकीय एप छैन वा बिग्रेको छ। त्यसले गर्दा, तपाईंको वर्क प्रोफाइल र सम्बन्धित डेटालाई मेटिएको छ। सहायताका लागि आफ्ना प्रशासकलाई सम्पर्क गर्नुहोस्।"</string>
@@ -641,6 +641,10 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"यसले एपलाई Wi-Fi चल्ने नजिकै रहेका डिभाइसहरूमा विज्ञापन गर्न, कनेक्ट गर्न र सापेक्ष स्थिति निर्धारण गर्न दिन्छ"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"लोकल नेटवर्कमा कनेक्ट गरिएका डिभाइसहरूको एक्सेस"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"तपाईंले यो अनुमति दिनुभयो भने यो एपले लोकल नेटवर्कमा कनेक्ट गरिएका डिभाइसहरू एक्सेस गर्न सक्छ"</string>
+    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
+    <skip />
+    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"नजिकै रहेका डिभाइसहरूबिचको तुलनात्मक स्थान पत्ता लगाउने"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"यो एपलाई नजिकै रहेका डिभाइसहरूबिचको तुलनात्मक स्थान पत्ता लगाउन दिनुहोस्"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"NFC भुक्तानी सेवासम्बन्धी रुचाइएको जानकारी"</string>
@@ -1043,7 +1047,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"अनलक गर्न PIN कोड टाइप गर्नुहोस्"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"गलत PIN कोड।"</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"अनलक गर्न मेनु थिच्नुहोस् र त्यसपछि ० थिच्नुहोस्।"</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"आपत्‌कालीन नम्बर"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"कुनै सेवा छैन"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"स्क्रिन लक गरिएको।"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"अनलक वा आपत्‌कालीन कल गर्न मेनु थिच्नुहोस्।"</string>

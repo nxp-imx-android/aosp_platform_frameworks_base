@@ -641,6 +641,10 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Επιτρέπει στην εφαρμογή: προβολή διαφημίσεων, σύνδεση και καθορισμό της σχετικής τοποθεσίας των κοντινών συσκευών Wi‑Fi"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"πρόσβαση σε συσκευές τοπικού δικτύου"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Επιτρέπει στην εφαρμογή να αποκτήσει πρόσβαση σε συσκευές τοπικού δικτύου"</string>
+    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
+    <skip />
+    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"προσδιορ. σχετ. θέσης μεταξύ συσκ. σε κοντ. απόστ."</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Επιτρέψτε στην εφαρμογή να προσδιορίζει τη σχετική θέση μεταξύ συσκευών σε κοντινή απόσταση"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Πληροφορίες προτιμώμενης υπηρεσίας πληρωμών NFC"</string>
@@ -1043,7 +1047,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Πληκτρολογήστε τον αριθμό PIN για ξεκλείδωμα"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Λανθασμένος κωδικός PIN."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Για ξεκλείδωμα, πατήστε το πλήκτρο Menu και, στη συνέχεια, το πλήκτρο 0."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Αριθμός έκτακτης ανάγκης"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Δίκτυο μη διαθέσιμο"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Η οθόνη κλειδώθηκε."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Πατήστε \"Menu\" για ξεκλείδωμα ή για κλήση έκτακτης ανάγκης."</string>
@@ -1277,8 +1280,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Ολοκλήρωση ενέργειας"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Άνοιγμα με"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Άνοιγμα με %1$s"</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"Άνοιγμα εφαρμογής <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Άνοιγμα"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Άνοιγμα συνδέσμων <xliff:g id="HOST">%1$s</xliff:g> με"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Άνοιγμα συνδέσμων με"</string>

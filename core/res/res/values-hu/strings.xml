@@ -641,6 +641,10 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Engedélyezi az alkalmazás számára, hogy közzétegye és meghatározza a közeli Wi-Fi-eszközök viszonylagos helyzetét, és csatlakozzon hozzájuk."</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"hozzáférés a helyi hálózati eszközökhöz"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Az alkalmazás hozzáférhet a helyi hálózati eszközökhöz"</string>
+    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
+    <skip />
+    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"közeli eszközök közötti relatív pozíció meghatározása"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Az alkalmazás meghatározhatja a közeli eszközök közötti relatív pozíciót"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Preferált NFC fizetési szolgáltatási információk"</string>
@@ -1043,7 +1047,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Feloldáshoz írja be a PIN kódot"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Helytelen PIN-kód."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"A feloldáshoz nyomja meg a Menü, majd a 0 gombot."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Segélyhívó szám"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Nincs szolgáltatás"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"A képernyő le van zárva."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"A feloldáshoz vagy segélyhívás kezdeményezéséhez nyomja meg a Menü gombot."</string>

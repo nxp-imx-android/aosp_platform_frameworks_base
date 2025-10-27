@@ -340,7 +340,7 @@
     <string name="permgroupdesc_contacts" msgid="2001771388402758264">"તમારા સંપર્કો ઍક્સેસ કરવા અને આ ડિવાઇસ પર સંપર્કો સાચવી શકતા હોય તેવા તમારા એકાઉન્ટની સૂચિ જોવી"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"લોકેશન"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"આ ઉપકરણના સ્થાનને ઍક્સેસ કરવાની"</string>
-    <string name="permgrouplab_calendar" msgid="6426860926123033230">"કૅલેન્ડર"</string>
+    <string name="permgrouplab_calendar" msgid="6426860926123033230">"Calendar"</string>
     <string name="permgroupdesc_calendar" msgid="6762751063361489379">"તમારા કેલેન્ડરને ઍક્સેસ કરવાની"</string>
     <string name="permgrouplab_sms" msgid="795737735126084874">"SMS"</string>
     <string name="permgroupdesc_sms" msgid="5726462398070064542">"SMS મેસેજ મોકલો અને જુઓ"</string>
@@ -641,6 +641,10 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"ઍપને નજીકના વાઇ-ફાઇ ડિવાઇસની માહિતી બતાવવાની, તેની સાથે કનેક્ટ કરવાની અને તેની સંબંધિત સ્થિતિ નક્કી કરવાની મંજૂરી આપો"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"સ્થાનિક નેટવર્કના ડિવાઇસ ઍક્સેસ કરો"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"ઍપને સ્થાનિક નેટવર્કના ડિવાઇસ ઍક્સેસ કરવાની મંજૂરી આપે છે"</string>
+    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
+    <skip />
+    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"ડિવાઇસની વચ્ચેનું સાપેક્ષ અંતર નક્કી કરો"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"ઍપને નજીકના ડિવાઇસની વચ્ચેનું સાપેક્ષ અંતર નક્કી કરવાની મંજૂરી આપો"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"પસંદગીની NFC ચુકવણીની સેવા વિશે માહિતી"</string>
@@ -1043,7 +1047,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"અનલૉક કરવા માટે પિન લખો"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"ખોટો પિન કોડ."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"અનલૉક કરવા માટે, મેનૂ દબાવો તે પછી 0."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"ઇમર્જન્સી નંબર"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"કોઈ સેવા નથી"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"સ્ક્રીન લૉક કરી."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"અનલૉક કરવા માટે અથવા કટોકટીનો કૉલ કરવા માટે મેનૂ દબાવો."</string>
