@@ -25,7 +25,6 @@ import android.os.FileUtils;
 import android.os.IBinder;
 import android.os.SystemProperties;
 import android.platform.test.ravenwood.RavenwoodEnvironment;
-import android.platform.test.ravenwood.RavenwoodPackageManager;
 
 import java.io.File;
 
@@ -42,7 +41,7 @@ public class ContextImpl_ravenwood {
     }
 
     static PackageManager getPackageManagerInner(ContextImpl contextImpl) {
-        return RavenwoodPackageManager.create(contextImpl);
+        return new ApplicationPackageManager(contextImpl, null);
     }
 
     static File ensurePrivateDirExists(File file, int mode, int gid, String xattr) {

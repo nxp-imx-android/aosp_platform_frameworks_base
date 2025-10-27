@@ -106,6 +106,9 @@ class android.app.ContextImpl$ApplicationContentResolver !android.app.ContextImp
 class android.app.ActivityManager
     method getService exp
 
+class android.app.ApplicationPackageManager throw
+    method getDefaultActivityIcon exp
+
 class android.content.Context exp
 class android.content.ContentResolver exp
 class android.content.ContentProvider exp

@@ -92,6 +92,10 @@ import android.os.incremental.IncrementalManager;
 import android.os.storage.StorageManager;
 import android.os.storage.VolumeInfo;
 import android.permission.PermissionManager;
+import android.ravenwood.annotation.RavenwoodKeep;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.ravenwood.annotation.RavenwoodSupported;
 import android.ravenwood.annotation.RavenwoodSupported.SupportType;
 import android.telephony.TelephonyManager;
 import android.telephony.UiccCardInfo;
@@ -141,7 +145,7 @@ import java.util.function.Function;
  * <a href="/training/basics/intents/package-visibility">manage package visibility</a>.
  * </p>
  */
-@android.ravenwood.annotation.RavenwoodKeepPartialClass
+@RavenwoodKeepPartialClass
 public abstract class PackageManager {
     private static final String TAG = "PackageManager";
 
@@ -155,7 +159,7 @@ public abstract class PackageManager {
      * This exception is thrown when a given package, application, or component
      * name cannot be found.
      */
-    @android.ravenwood.annotation.RavenwoodKeepWholeClass
+    @RavenwoodKeepWholeClass
     public static class NameNotFoundException extends AndroidException {
         public NameNotFoundException() {
         }
@@ -5821,7 +5825,7 @@ public abstract class PackageManager {
      * application info.
      * @hide
      */
-    @android.ravenwood.annotation.RavenwoodKeepWholeClass
+    @RavenwoodKeepWholeClass
     public static class Flags {
         final long mValue;
         protected Flags(long value) {
@@ -5836,7 +5840,7 @@ public abstract class PackageManager {
      * Specific flags used for retrieving package info. Example:
      * {@code PackageManager.getPackageInfo(packageName, PackageInfoFlags.of(0)}
      */
-    @android.ravenwood.annotation.RavenwoodKeepWholeClass
+    @RavenwoodKeepWholeClass
     public final static class PackageInfoFlags extends Flags {
         private PackageInfoFlags(@PackageInfoFlagsBits long value) {
             super(value);
@@ -5850,7 +5854,7 @@ public abstract class PackageManager {
     /**
      * Specific flags used for retrieving application info.
      */
-    @android.ravenwood.annotation.RavenwoodKeepWholeClass
+    @RavenwoodKeepWholeClass
     public final static class ApplicationInfoFlags extends Flags {
         private ApplicationInfoFlags(@ApplicationInfoFlagsBits long value) {
             super(value);
@@ -5864,7 +5868,7 @@ public abstract class PackageManager {
     /**
      * Specific flags used for retrieving component info.
      */
-    @android.ravenwood.annotation.RavenwoodKeepWholeClass
+    @RavenwoodKeepWholeClass
     public final static class ComponentInfoFlags extends Flags {
         private ComponentInfoFlags(@ComponentInfoFlagsBits long value) {
             super(value);
@@ -5878,7 +5882,7 @@ public abstract class PackageManager {
     /**
      * Specific flags used for retrieving resolve info.
      */
-    @android.ravenwood.annotation.RavenwoodKeepWholeClass
+    @RavenwoodKeepWholeClass
     public final static class ResolveInfoFlags extends Flags {
         private ResolveInfoFlags(@ResolveInfoFlagsBits long value) {
             super(value);
@@ -5899,7 +5903,7 @@ public abstract class PackageManager {
      * {@link Context#getPackageManager}
      */
     @Deprecated
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public PackageManager() {}
 
     /**
@@ -7818,6 +7822,7 @@ public abstract class PackageManager {
      *
      * @return Returns true if the devices supports the feature, else false.
      */
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ApplicationPackageManager")
     public abstract boolean hasSystemFeature(@NonNull String featureName);
 
     /**
@@ -7829,6 +7834,7 @@ public abstract class PackageManager {
      *
      * @return Returns true if the devices supports the feature, else false.
      */
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ApplicationPackageManager")
     public abstract boolean hasSystemFeature(@NonNull String featureName, int version);
 
     /**
@@ -8594,8 +8600,7 @@ public abstract class PackageManager {
      *             found on the system.
      */
     @NonNull
-    @android.ravenwood.annotation.RavenwoodSupported(
-            type = SupportType.SUBCLASS, subclass = "RavenwoodPackageManager")
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ApplicationPackageManager")
     public abstract InstrumentationInfo getInstrumentationInfo(@NonNull ComponentName className,
             @InstrumentationInfoFlags int flags) throws NameNotFoundException;
 

@@ -96,7 +96,7 @@ per-file *UiModeManager* = file:/packages/SystemUI/OWNERS
 per-file notification.aconfig = file:/packages/SystemUI/OWNERS
 
 # PackageManager
-per-file ApplicationPackageManager.java = file:/services/core/java/com/android/server/pm/OWNERS
+per-file ApplicationPackageManager*.java = file:/services/core/java/com/android/server/pm/OWNERS
 per-file InstantAppResolverService.java = file:/services/core/java/com/android/server/pm/OWNERS
 per-file LoadedApk.java = file:/services/core/java/com/android/server/pm/OWNERS
 per-file PackageDeleteObserver.java = file:/services/core/java/com/android/server/pm/OWNERS

@@ -19,7 +19,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.ravenwood.annotation.RavenwoodKeep;
 import android.ravenwood.annotation.RavenwoodRedirect;
-import android.ravenwood.annotation.RavenwoodReplace;
+import android.ravenwood.annotation.RavenwoodSupported;
 import android.ravenwood.annotation.RavenwoodSupported.RavenwoodProvidingImplementation;
 
 import org.junit.Test;
@@ -38,17 +38,15 @@ import java.util.stream.Collectors;
  * and {@link RavenwoodProvidingImplementation} are used correctly.
  */
 public class RavenwoodSupportedAnnotationTest {
-    /** HostStubGenProcessedAsThrowButSupported annotation  */
-    private static final Class<? extends Annotation> RAVENWOOD_SUPPORTED_ANNOT =
-            getThrowButSupportedAnnotation();
-
     /** Ravenwood annotations that mark methods as "available"  */
     private static final ArrayList<Class<? extends Annotation>> RAVENWOOD_AVAILABLE_ANNOTS =
             new ArrayList<>();
     static {
         RAVENWOOD_AVAILABLE_ANNOTS.add(RavenwoodKeep.class);
-        RAVENWOOD_AVAILABLE_ANNOTS.add(RavenwoodReplace.class);
         RAVENWOOD_AVAILABLE_ANNOTS.add(RavenwoodRedirect.class);
+        // We need to use the HostStubGenProcessedAsSubstitute annotation for RavenwoodReplace,
+        // because the method to be replaced will actually be removed, losing the annotation.
+        RAVENWOOD_AVAILABLE_ANNOTS.add(getSubstituteAnnotation() /* RavenwoodReplace */);
     }
 
     /** Test if a method has any of {@link #RAVENWOOD_AVAILABLE_ANNOTS}. */
@@ -73,9 +71,9 @@ public class RavenwoodSupportedAnnotationTest {
 
     @Test
     public void testPackageManager() throws Exception {
-        check("android.content.pm.PackageManager",
-                "android.platform.test.ravenwood.RavenwoodPackageManager",
-                sAllMethods // RavenwoodPackageManager doesn't use @RavenwoodKeep, etc
+        check("android.content.pm.PackageManager", "android.app.ApplicationPackageManager",
+                // Compare to methods with @RavenwoodKeep, etc
+                sWithAvailableAnnotation
         );
     }
 
@@ -88,10 +86,10 @@ public class RavenwoodSupportedAnnotationTest {
     }
 
     @SuppressWarnings("unchecked")
-    private static Class<? extends Annotation> getThrowButSupportedAnnotation() {
+    private static Class<? extends Annotation> getSubstituteAnnotation() {
         try {
             return (Class<? extends Annotation>) Class.forName(
-                    "com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrowButSupported");
+                    "com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -216,7 +214,7 @@ public class RavenwoodSupportedAnnotationTest {
 
         // Extract only methods with @RavenwoodSupported.
         var supportedFrameworkMethods = frameworkMethods.stream()
-                .filter(m -> m.method.isAnnotationPresent(RAVENWOOD_SUPPORTED_ANNOT))
+                .filter(m -> m.method.isAnnotationPresent(RavenwoodSupported.class))
                 .collect(Collectors.toList());
 
         // Find the implementation methods.
