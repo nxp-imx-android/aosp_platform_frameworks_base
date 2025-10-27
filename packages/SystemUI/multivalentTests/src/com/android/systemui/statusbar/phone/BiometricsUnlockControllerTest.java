@@ -560,6 +560,12 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
     }
 
     @Test
+    public void onStartedGoingToSleep_biometricUnlockStateResets() {
+        mBiometricUnlockController.mWakefulnessObserver.onStartedGoingToSleep();
+        verify(mBiometricUnlockInteractor).setBiometricUnlockState(eq(MODE_NONE), eq(null));
+    }
+
+    @Test
     public void onFinishedGoingToSleep_authenticatesWhenPending() {
         when(mUpdateMonitor.isGoingToSleep()).thenReturn(true);
         mBiometricUnlockController.mWakefulnessObserver.onFinishedGoingToSleep();
