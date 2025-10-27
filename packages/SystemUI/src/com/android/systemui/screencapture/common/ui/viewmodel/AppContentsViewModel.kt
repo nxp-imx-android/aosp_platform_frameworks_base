@@ -28,44 +28,30 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
 /**
- * Interface for view models concerned with app content.
+ * Interface for view models concerned with app contents.
  *
- * Example Usage:
+ * Example usage in a [HydratedActivatable]:
  * ```
  * class FooViewModel(
- *     factory: AppContentsViewModel.Factory,
- * ) : AppContentsViewModel, HydratedActivatable() {
+ *     viewModelFactory: AppContentsViewModel.Factory,
+ * ) : HydratedActivatable() {
  *
- *     private val appContentsViewModel = factory.create(200, 100)
- *
- *     override val targets = appContentsViewModel.targets
+ *     private val viewModel = viewModelFactory.create(200, 100)
  *
  *     override suspend fun onActivated() {
  *         coroutineScope {
- *             launch { appContentsViewModel.activate() }
+ *             launchTraced("FooTraceName") { viewModel.activate() }
  *         }
  *     }
  * }
  * ```
  *
- * And then in compose:
+ * Example usage in a [Composable][androidx.compose.runtime.Composable]
+ *
  * ```
  * @Composable
- * fun Foo(
- *     viewModel: FooViewModel,
- *     modelFactory: AppContentViewModel.Factory,
- * ) {
- *     val appContents by viewModel.appContents
- *     LazyRow {
- *         appContents?.let {
- *             items(it) { appContent ->
- *                 val model by rememberViewModel("FooTraceName", appContent) {
- *                     modelFactory.create(appContent)
- *                 }
- *                 // ...
- *             }
- *         }
- *     }
+ * fun Foo(viewModelFactory: AppContentsViewModel.Factory) {
+ *     val viewModel = rememberViewModel("FooTraceName") {  viewModelFactory.create(200, 100) }
  * }
  * ```
  */

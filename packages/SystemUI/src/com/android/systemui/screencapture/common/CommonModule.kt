@@ -34,6 +34,8 @@ import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewMod
 import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModelImpl
 import com.android.systemui.screencapture.common.ui.viewmodel.AudioSwitchViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.AudioSwitchViewModelImpl
+import com.android.systemui.screencapture.common.ui.viewmodel.DisplaysViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.DisplaysViewModelImpl
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModelImpl
 import dagger.Binds
@@ -82,6 +84,8 @@ interface CommonModule {
     fun bindAppContentsViewModelFactory(
         impl: AppContentsViewModelImpl.Factory
     ): AppContentsViewModel.Factory
+
+    @Binds fun bindDisplaysViewModel(impl: DisplaysViewModelImpl): DisplaysViewModel
 
     companion object {
         @Provides
