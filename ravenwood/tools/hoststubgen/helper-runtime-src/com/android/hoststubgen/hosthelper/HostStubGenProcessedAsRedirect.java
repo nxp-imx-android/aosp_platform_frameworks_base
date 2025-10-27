@@ -16,6 +16,7 @@
 package com.android.hoststubgen.hosthelper;
 
 import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -23,8 +24,11 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation injected to all methods that are processed as "redirect".
+ *
+ * - It's set to individual methods with the target information
+ * - It's also set to their enclosing classes, without any parameter.
  */
-@Target({METHOD})
+@Target({METHOD, TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface HostStubGenProcessedAsRedirect {
     String CLASS_INTERNAL_NAME = HostTestUtils.getInternalName(
