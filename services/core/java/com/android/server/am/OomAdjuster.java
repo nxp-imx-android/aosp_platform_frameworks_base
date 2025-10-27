@@ -435,11 +435,22 @@ public abstract class OomAdjuster {
         void onUidLastBackgroundTimeUpdated(UidRecordInternal uidRec, long nowElapsed,
                 OomAdjusterDebugLogger logger);
 
+        /**
+         * Notifies after the OOM adjustment values for all processes have been updated.
+         *
+         * @param adjSeq The sequence number of the adjustment pass that has been completed.
+         *               See {@link OomAdjuster#mAdjSeq}.
+         */
+        void onOomAdjUpdated(int adjSeq);
+
         /** Notifies when a process becomes effectively background restricted. */
         void onProcessBackgroundRestricted(ProcessRecordInternal app);
 
         /** Notifies when a process transitions to a cached state. */
         void onProcessCached(ProcessRecordInternal app, OomAdjusterDebugLogger logger);
+
+        /** Notifies when a debugging message related to OOM adjustments is reported. */
+        void onReportOomAdjMessage(String msg);
     }
 
     @VisibleForTesting
@@ -953,24 +964,9 @@ public abstract class OomAdjuster {
         updateAndTrimProcessLSP(now, nowElapsed, oldTime, oomAdjReason, doingAll);
         mNumServiceProcs = mNewNumServiceProcs;
 
-        if (mService.mAlwaysFinishActivities) {
-            // Need to do this on its own message because the stack may not
-            // be in a consistent state at this point.
-            mService.mAtmInternal.scheduleDestroyAllActivities("always-finish");
-        }
-
         updateUidsLSP(activeUids, nowElapsed);
 
-        synchronized (mService.mProcessStats.mLock) {
-            final long nowUptime = mInjector.getUptimeMillis();
-            if (mService.mProcessStats.shouldWriteNowLocked(nowUptime)) {
-                mService.mHandler.post(new ActivityManagerService.ProcStatsRunnable(mService,
-                        mService.mProcessStats));
-            }
-
-            // Run this after making sure all procstates are updated.
-            mService.mProcessStats.updateTrackingAssociationsLocked(mAdjSeq, nowUptime);
-        }
+        mCallback.onOomAdjUpdated(mAdjSeq);
 
         if (DEBUG_OOM_ADJ) {
             final long duration = mInjector.getUptimeMillis() - now;
@@ -2062,7 +2058,7 @@ public abstract class OomAdjuster {
     @GuardedBy("mService")
     protected void reportOomAdjMessageLocked(String tag, String msg) {
         Slog.d(tag, msg);
-        mService.reportOomAdjMessageLocked(msg);
+        mCallback.onReportOomAdjMessage(msg);
     }
 
     /** Applies the computed oomadj, procstate and sched group values and freezes them in set* */
