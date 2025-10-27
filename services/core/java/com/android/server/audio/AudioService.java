@@ -15454,6 +15454,27 @@ public class AudioService extends IAudioService.Stub
         return status;
     }
 
+    /**
+     * @see AudioManager#getPreferredMixerAttributes(AudioAttributes, AudioDeviceInfo)
+     */
+    public AudioMixerAttributes getPreferredMixerAttributes(AudioAttributes attributes,
+            int portId) {
+        Objects.requireNonNull(attributes);
+        int uid = Binder.getCallingUid();
+        List<AudioMixerAttributes> mixerAttrList = new ArrayList<>();
+        int status = AudioSystem.ERROR;
+        try (SafeCloseable ignored = ClearCallingIdentityContext.create()) {
+            status = mAudioSystem.getPreferredMixerAttributes(attributes, portId, uid,
+                    mixerAttrList);
+        }
+        if (status == AudioSystem.SUCCESS) {
+            return mixerAttrList.isEmpty() ? null : mixerAttrList.get(0);
+        } else {
+            Log.e(TAG, "Failed calling getPreferredMixerAttributes, status=" + status);
+            return null;
+        }
+    }
+
     void dispatchPreferredMixerAttributesChanged(
             AudioAttributes attr, int deviceId, AudioMixerAttributes mixerAttr) {
         Bundle bundle = new Bundle();

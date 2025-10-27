@@ -10582,14 +10582,10 @@ public class AudioManager {
             @NonNull AudioDeviceInfo device) {
         Objects.requireNonNull(attributes);
         Objects.requireNonNull(device);
-        List<AudioMixerAttributes> mixerAttrList = new ArrayList<>();
-        int ret = AudioSystem.getPreferredMixerAttributes(
-                attributes, device.getId(), mixerAttrList);
-        if (ret == AudioSystem.SUCCESS) {
-            return mixerAttrList.isEmpty() ? null : mixerAttrList.get(0);
-        } else {
-            Log.e(TAG, "Failed calling getPreferredMixerAttributes, ret=" + ret);
-            return null;
+        try {
+            return getService().getPreferredMixerAttributes(attributes, device.getId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
         }
     }
 

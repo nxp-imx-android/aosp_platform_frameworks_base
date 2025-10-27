@@ -896,6 +896,12 @@ public class AudioSystemAdapter implements AudioSystem.RoutingUpdateCallback,
         return AudioProductStrategy.getZoneIdForAudioVolumeGroupId(strategies, groupId);
     }
 
+    /** Same as {@link AudioSystem#getPreferredMixerAttributes(AudioAttributes, int, int, List)} */
+    public int getPreferredMixerAttributes(AudioAttributes attributes, int portId, int uid,
+            List<AudioMixerAttributes> mixerAttrList) {
+        return AudioSystem.getPreferredMixerAttributes(attributes, portId, uid, mixerAttrList);
+    }
+
     /**
      * Part of AudioService dump
      * @param pw
