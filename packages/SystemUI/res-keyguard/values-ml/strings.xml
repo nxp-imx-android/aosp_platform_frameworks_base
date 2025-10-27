@@ -88,10 +88,8 @@
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"വിശ്വസ്ത ഏജന്റ് ലഭ്യമല്ല"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"തെറ്റായ പിൻ ഉപയോഗിച്ച് നിരവധി ശ്രമങ്ങൾ"</string>
     <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"ആ പിൻ ഇതിനകം പരീക്ഷിച്ചിട്ടുണ്ട്. മറ്റൊരെണ്ണം പരീക്ഷിച്ച് നോക്കുക."</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
-    <skip />
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="3827593245962385968">"ആ പാറ്റേൺ ഇതിനകം പരീക്ഷിച്ചിട്ടുണ്ട്. മറ്റൊരെണ്ണം പരീക്ഷിച്ച് നോക്കുക."</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"പാസ്‌വേഡ് മുമ്പ് പരീക്ഷിച്ചിട്ടുണ്ട്. മറ്റൊരെണ്ണം പരീക്ഷിച്ച് നോക്കുക."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"തെറ്റായ പാറ്റേൺ ഉപയോഗിച്ച് നിരവധി ശ്രമങ്ങൾ"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"തെറ്റായ പാസ്‍വേഡ് ഉപയോഗിച്ച് നിരവധി ശ്രമങ്ങൾ"</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"തെറ്റായ പിൻ ഉപയോഗിച്ച് നിരവധി ശ്രമങ്ങൾ\n <xliff:g id="SHORTLINK">{shortlink}</xliff:g> എന്നതിൽ കൂടുതലറിയുക"</string>
