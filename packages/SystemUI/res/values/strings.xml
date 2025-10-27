@@ -416,8 +416,12 @@
     <string name="screen_share_app_window_sharing_title">Share app window</string>
     <!-- Text for tab sharing title [CHAR LIMIT=35] -->
     <string name="screen_share_tab_sharing_title">Share tab</string>
-    <!-- Text diclaimer that tells a user that they're currently sharing screen [CHAR LIMIT=100] -->
-    <string name="screen_share_disclaimer">When sharing, the contents of your screen are visible</string>
+    <!-- Title for the screen prompting the user to begin sharing their entire screen [CHAR LIMIT=NONE]-->
+    <string name="screen_share_entire_screen_sharing_title">Share entire screen</string>
+    <!-- Text disclaimer that tells a user that they're currently sharing an app [CHAR LIMIT=100] -->
+    <string name="screen_share_disclaimer_app_sharing">When you’re sharing an app, anything shown or played in that app is visible to [APP NAME]. So be careful with things like passwords, payment details, messages, photos and audio &amp; video.</string>
+    <!-- Disclaimer text for full screen sharing. [CHAR LIMIT=NONE] -->
+    <string name="screen_share_disclaimer_full_screen_sharing">When you’re sharing your entire screen, anything on your screen is visible to [APP NAME]. So be careful with things like passwords, payment details, messages, photos, and audio &amp; video.</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y">Take screenshot of window</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "record". [CHAR LIMIT=NONE] -->
