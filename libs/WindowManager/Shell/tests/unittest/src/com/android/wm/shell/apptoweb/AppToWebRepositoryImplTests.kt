@@ -21,6 +21,7 @@ import android.content.ComponentName
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.content.res.Resources
 import android.net.Uri
 import android.platform.test.annotations.EnableFlags
 import android.test.mock.MockContext
@@ -28,6 +29,7 @@ import android.testing.AndroidTestingRunner
 import androidx.core.net.toUri
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
+import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
@@ -62,6 +64,7 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
     @Mock private lateinit var mockContext: MockContext
     @Mock private lateinit var mockPackageManager: PackageManager
     @Mock private lateinit var shellTaskOrganizer: ShellTaskOrganizer
+    @Mock private lateinit var mockResources: Resources
 
     private lateinit var mockInit: AutoCloseable
     private val testExecutor = TestShellExecutor()
@@ -83,6 +86,8 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
         whenever(mockContext.packageManager).thenReturn(mockPackageManager)
         whenever(mockPackageManager.resolveActivityAsUser(any(), anyInt(), anyInt()))
             .thenReturn(resolveInfo)
+        whenever(mockContext.resources).thenReturn(mockResources)
+        setAppToWebActivePrompting(true)
         appToWebRepository = AppToWebRepositoryImpl(
             mockContext,
             mockAssistContentRequester,
@@ -216,6 +221,22 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
         assertFalse(appToWebRepository.isFirstRunPromptShown(taskInfo))
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_ENHANCED_APP_TO_WEB_TRANSITION)
+    fun firstRunPrompt_resourceFlag() {
+        val taskInfoWithCapturedLink = createTaskInfo().apply {
+            taskId = taskInfo.taskId + 1
+            baseActivity = taskInfo.baseActivity
+            capturedLink = TEST_CAPTURED_URI
+        }
+
+        setAppToWebActivePrompting(false)
+        assertFalse(appToWebRepository.shouldShowFirstRunPrompt(taskInfoWithCapturedLink))
+
+        setAppToWebActivePrompting(true)
+        assertTrue(appToWebRepository.shouldShowFirstRunPrompt(taskInfoWithCapturedLink))
+    }
+
     private suspend fun assertAppToWebIntent(expectedUri: Uri, isBrowserApp: Boolean = false) {
         whenever(
             mockAssistContentRequester.requestAssistContent(
@@ -234,6 +255,11 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
                 isBrowserApp = isBrowserApp,
             )?.data
         )
+    }
+
+    private fun setAppToWebActivePrompting(enabled: Boolean) {
+        whenever(mockResources.getBoolean(R.bool.config_appToWebActivePrompting))
+            .thenReturn(enabled)
     }
 
     private companion object {
