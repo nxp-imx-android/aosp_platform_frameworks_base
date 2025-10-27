@@ -32,7 +32,6 @@ import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
-import android.window.DesktopModeFlags.ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX
 import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
 import android.window.TransitionRequestInfo
@@ -622,9 +621,6 @@ sealed class DragToDesktopTransitionHandler(
         finishCallback: Transitions.TransitionFinishCallback,
         state: TransitionState,
     ): Boolean {
-        if (!ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX.isTrue) {
-            return false
-        }
         val isCancelDragToDesktop =
             info.type == TRANSIT_DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP &&
                 transition == state.cancelTransitionToken
@@ -796,9 +792,6 @@ sealed class DragToDesktopTransitionHandler(
         state.cancelTransitionToken != null || state.endTransitionToken != null
 
     private fun interruptStartTransition(state: TransitionState) {
-        if (!ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX.isTrue) {
-            return
-        }
         if (isCancelOrEndTransitionRequested(state)) {
             logV("interruptStartTransition, bookend requested -> finish start transition")
             // Finish the start-drag transition, we will finish the overall transition properly when
