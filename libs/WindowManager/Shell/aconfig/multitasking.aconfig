@@ -203,16 +203,6 @@ flag {
 }
 
 flag {
-    name: "fix_bubbles_expanded_sysui_flag"
-    namespace: "multitasking"
-    description: "Fixes a bug when we shell fails to notify launcher of collapsed expanded bubble."
-    bug: "435098356"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "fix_bubbles_add_same_bubble_being_removed"
     namespace: "multitasking"
     description: "Fixes a race condition where a bubble gets an update while being animated out"
