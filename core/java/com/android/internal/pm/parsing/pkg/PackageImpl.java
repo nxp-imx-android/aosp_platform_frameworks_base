@@ -20,6 +20,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 
+import android.annotation.FlaggedApi;
 import android.annotation.LongDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -1838,6 +1839,14 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         return getBoolean(Booleans.USE_EMBEDDED_DEX);
     }
 
+    /**
+     * @deprecated This API will be deprecated in the future and will always return false for
+     * newer platform versions.
+     * The future-proof mechanism to opt-in to cleartext traffic is to specify a
+     * <a href="{@docRoot}privacy-and-security/security-config#CleartextTrafficOptIn">Network
+     * Security Configuration file</a> in addition to android:usesCleartextTraffic in the
+     * manifest.
+     */
     @Override
     public boolean isCleartextTrafficAllowed() {
         return getBoolean(Booleans.USES_CLEARTEXT_TRAFFIC);
@@ -2541,7 +2550,14 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         return setBoolean(Booleans.USE_EMBEDDED_DEX, value);
     }
 
+    /**
+     * @deprecated This API will be deprecated in the future and will have no effect.
+     * Specify a <a href="{@docRoot}privacy-and-security/security-config#CleartextTrafficOptIn">
+     * Network Security Configuration file</a> in addition to this API to prevent future breakage.
+     */
+    @Deprecated
     @Override
+    @FlaggedApi(android.security.Flags.FLAG_DEPRECATE_USES_CLEARTEXT_TRAFFIC)
     public PackageImpl setCleartextTrafficAllowed(boolean value) {
         return setBoolean(Booleans.USES_CLEARTEXT_TRAFFIC, value);
     }

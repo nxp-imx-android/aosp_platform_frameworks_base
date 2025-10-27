@@ -18,6 +18,7 @@ package com.android.server.pm.pkg;
 
 import android.annotation.Dimension;
 import android.annotation.DrawableRes;
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.StringRes;
@@ -655,7 +656,11 @@ public interface AndroidPackage {
     /**
      * @see ApplicationInfo#FLAG_USES_CLEARTEXT_TRAFFIC
      * @see R.styleable#AndroidManifestApplication_usesCleartextTraffic
+     * @deprecated Use a <a href="{@docRoot}privacy-and-security/security-config#manifest">Network
+     * Security Configuration file</a> instead.
      */
+    @Deprecated
+    @FlaggedApi("android.security.deprecate_uses_cleartext_traffic")
     boolean isCleartextTrafficAllowed();
 
     /**
