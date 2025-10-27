@@ -773,7 +773,6 @@ public class Notification implements Parcelable
      * <p>This flag is for internal use only; applications cannot set this flag directly.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
     public static final int FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY = 0x00010000;
 
     /**
