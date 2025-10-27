@@ -1720,6 +1720,22 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
+    fun switchesToLockscreenWhenInGone_whenSimBecomesLocked() =
+        kosmos.runTest {
+            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+            prepareState(
+                isDeviceUnlocked = true,
+                initialSceneKey = Scenes.Gone,
+                authenticationMethod = AuthenticationMethodModel.None,
+            )
+            underTest.start()
+
+            fakeMobileConnectionsRepository.isAnySimSecure.value = true
+
+            assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
+        }
+
+    @Test
     fun switchesToLockscreen_whenSimBecomesUnlocked() =
         kosmos.runTest {
             fakeMobileConnectionsRepository.isAnySimSecure.value = true
