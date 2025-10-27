@@ -893,7 +893,7 @@ public class StatusBarManager {
      *
      * @hide
      */
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_RESOLVE_HIDDEN_DEPENDENCIES_TWO)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_RELEASE_ICON_AS_API)
     @RequiresPermission(android.Manifest.permission.STATUS_BAR)
     @SystemApi
     public void setIcon(@NonNull String slot, @DrawableRes int iconId, int iconLevel,
@@ -915,7 +915,7 @@ public class StatusBarManager {
      * @throws IllegalArgumentException if no icon is found for the specified slot.
      * @hide
      */
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_RESOLVE_HIDDEN_DEPENDENCIES_TWO)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_RELEASE_ICON_AS_API)
     @RequiresPermission(android.Manifest.permission.STATUS_BAR)
     @TestApi
     public @DrawableRes int getIcon(@NonNull String slot) {
@@ -934,7 +934,7 @@ public class StatusBarManager {
      *
      * @hide
      */
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_RESOLVE_HIDDEN_DEPENDENCIES_TWO)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_RELEASE_ICON_AS_API)
     @RequiresPermission(android.Manifest.permission.STATUS_BAR)
     @SystemApi
     public void removeIcon(@NonNull String slot) {
