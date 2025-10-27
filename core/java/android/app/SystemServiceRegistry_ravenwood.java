@@ -37,6 +37,7 @@ import android.platform.test.ravenwood.RavenwoodPermissionEnforcer;
 import android.platform.test.ravenwood.RavenwoodUnsupportedApiException;
 import android.ravenwood.example.BlueManager;
 import android.ravenwood.example.RedManager;
+import android.telephony.euicc.EuiccManager;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
 import android.view.WindowManagerImpl;
@@ -231,6 +232,13 @@ public class SystemServiceRegistry_ravenwood {
                     @Override
                     public PowerManager createService(ContextImpl ctx) {
                         return objenesis.newInstance(PowerManager.class);
+                    }
+                });
+        registerService(Context.EUICC_SERVICE, EuiccManager.class,
+                new CachedServiceFetcher<>() {
+                    @Override
+                    public EuiccManager createService(ContextImpl ctx) {
+                        return null;
                     }
                 });
         registerService(Context.WALLPAPER_SERVICE, WallpaperManager.class,

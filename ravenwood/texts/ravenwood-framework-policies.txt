@@ -73,8 +73,17 @@ package android.widget exp
 package android.window exp
 package com.android.internal exp
 
-# Classes we know that won't work
-class android.app.Notification throw
+package android.appwidget exp
+package android.media exp
+package android.audio exp
+package android.os.vibrator exp
+package android.service.dreams exp
+package android.service.notification exp
+package android.service.quicksettings exp
+package android.service.quickaccesswallet exp
+
+# Classes we know are not supported
+class android.app.admin.DevicePolicyManager throw
 
 # The above package-level policies won't overide class or method level
 # annotations. In order to override these annotations, we need to
@@ -82,6 +91,8 @@ class android.app.Notification throw
 
 class android.app.ContextImpl exp
     method checkPermission redirect
+    method registerReceiverInternal ignore
+    method unregisterReceiver ignore
 
 class android.app.ContextImpl$ApplicationContentResolver !android.app.ContextImpl_ravenwood$ContentResolver
     method acquireProvider              redirect
@@ -92,11 +103,18 @@ class android.app.ContextImpl$ApplicationContentResolver !android.app.ContextImp
     method unstableProviderDied         ignore
     method appNotRespondingViaProvider  ignore
 
+class android.app.ActivityManager
+    method getService exp
+
 class android.content.Context exp
 class android.content.ContentResolver exp
 class android.content.ContentProvider exp
 class android.content.ContentProviderClient exp
 class android.content.ContentProviderNative exp
+
+class android.content.Intent
+    method migrateExtraStreamToClipData exp
+    method prepareToLeaveProcess exp
 
 class android.provider.Settings exp
 
@@ -112,6 +130,8 @@ class android.view.animation.AnimationUtils exp
 
 class android.view.Display exp
 
+class android.os.Vibrator exp
+class android.os.VibrationEffect exp
 class android.os.UserManager exp
 class android.os.UserManagerCache exp
 class android.os.GraphicsEnvironment exp
@@ -119,6 +139,7 @@ class android.os.StrictMode
     method trackActivity exp
     method assertConfigurationContext exp
     method vmRegistrationLeaksEnabled ignore
+    method vmUnsafeIntentLaunchEnabled ignore
 
 class android.os.StrictMode$InstanceTracker exp
 
