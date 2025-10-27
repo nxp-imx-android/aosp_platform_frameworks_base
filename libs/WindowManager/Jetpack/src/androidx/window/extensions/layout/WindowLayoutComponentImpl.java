@@ -146,7 +146,14 @@ public class WindowLayoutComponentImpl implements WindowLayoutComponent {
                 mFoldingFeatureProducer.getDisplayFeatures(), DisplayFoldFeatureUtil::translate);
         mSupportedWindowFeatures = new SupportedWindowFeatures.Builder(displayFoldFeatures).build();
 
-        if (com.android.window.flags.Flags.deviceEngagementMode()) {
+        if (!mContext.isUiContext()) {
+            Log.w(TAG, "WindowLayoutComponentImpl initialized with a non-UI Context. "
+                    + "Some features may not be available. Context: "
+                    + dumpAllBaseContextToString(mContext));
+        }
+        // WindowManager and its APIs should be only be accessed from UI Context.
+        // TODO(b/444335819): Create a UI Context from the given context if it is not a UI Context.
+        if (com.android.window.flags.Flags.deviceEngagementMode() && mContext.isUiContext()) {
             mEngagementModeListener = new SystemApiEngagementModeListener(mContext);
         } else {
             mEngagementModeListener = new SideChannelEngagementModeListener(mContext);
