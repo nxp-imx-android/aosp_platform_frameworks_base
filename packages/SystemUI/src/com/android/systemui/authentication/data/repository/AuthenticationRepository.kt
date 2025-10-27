@@ -21,7 +21,6 @@ import android.app.admin.DevicePolicyManager
 import android.content.IntentFilter
 import android.os.UserHandle
 import android.security.Flags.lockscreenIndicateDuplicateGuesses
-import android.security.Flags.manageLockoutEndTimeInService
 import android.security.Flags.secureLockDevice
 import android.util.Log
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -54,6 +53,7 @@ import java.util.function.Function
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.toJavaDuration
 import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -152,7 +152,7 @@ interface AuthenticationRepository {
     suspend fun reportAuthenticationAttempt(isSuccessful: Boolean, isDuplicate: Boolean = false)
 
     /** Reports that the user has entered a temporary device lockout (throttling). */
-    suspend fun reportLockoutStarted(durationMs: Int)
+    suspend fun reportLockoutStarted(duration: Duration)
 
     /**
      * Returns the current maximum number of login attempts that are allowed before the device or
@@ -273,12 +273,9 @@ constructor(
 
     override val lockoutEndTime: Duration?
         get() =
-            if (manageLockoutEndTimeInService()) {
-                    lockPatternUtils.getLockoutEndTime(selectedUserId).toKotlinDuration()
-                } else {
-                    lockPatternUtils.getLockoutAttemptDeadline(selectedUserId).milliseconds
-                }
-                .takeIf { clock.elapsedRealtime().milliseconds < it }
+            lockPatternUtils.getLockoutEndTime(selectedUserId).toKotlinDuration().takeIf {
+                clock.elapsedRealtime().milliseconds < it
+            }
 
     private val _hasLockoutOccurred = MutableStateFlow(false)
     override val hasLockoutOccurred: StateFlow<Boolean> = _hasLockoutOccurred.asStateFlow()
@@ -302,21 +299,12 @@ constructor(
         credential: LockscreenCredential
     ): AuthenticationResultModel {
         return withContext(backgroundDispatcher) {
-            if (lockscreenIndicateDuplicateGuesses()) {
-                val response =
-                    lockPatternUtils.checkCredentialWithResponse(credential, selectedUserId) {}
-                return@withContext AuthenticationResultModel(
-                    isSuccessful = response.isMatched,
-                    lockoutDurationMs = response.timeout,
-                    isDuplicate = response.isCredAlreadyTried,
-                )
-            }
-            try {
-                val matched = lockPatternUtils.checkCredential(credential, selectedUserId) {}
-                AuthenticationResultModel(isSuccessful = matched, lockoutDurationMs = 0)
-            } catch (ex: LockPatternUtils.RequestThrottledException) {
-                AuthenticationResultModel(isSuccessful = false, lockoutDurationMs = ex.timeoutMs)
-            }
+            val response = lockPatternUtils.checkCredential(credential, selectedUserId) {}
+            return@withContext AuthenticationResultModel(
+                isSuccessful = response.isMatched,
+                lockoutDuration = response.timeout.toKotlinDuration(),
+                isDuplicate = lockscreenIndicateDuplicateGuesses() && response.isCredAlreadyTried,
+            )
         }
     }
 
@@ -352,10 +340,10 @@ constructor(
         }
     }
 
-    override suspend fun reportLockoutStarted(durationMs: Int) {
-        lockPatternUtils.setLockoutAttemptDeadline(selectedUserId, durationMs)
+    override suspend fun reportLockoutStarted(duration: Duration) {
+        lockPatternUtils.setLockoutAttemptDeadline(selectedUserId, duration.toJavaDuration())
         withContext(backgroundDispatcher) {
-            lockPatternUtils.reportPasswordLockout(durationMs, selectedUserId)
+            lockPatternUtils.reportPasswordLockout(duration.toJavaDuration(), selectedUserId)
         }
         _hasLockoutOccurred.value = true
     }

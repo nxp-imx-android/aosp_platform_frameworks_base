@@ -14126,7 +14126,6 @@ com.android.internal.widget.LockPatternChecker$OnCheckCallback
 com.android.internal.widget.LockPatternChecker
 com.android.internal.widget.LockPatternUtils$1
 com.android.internal.widget.LockPatternUtils$CheckCredentialProgressCallback
-com.android.internal.widget.LockPatternUtils$RequestThrottledException
 com.android.internal.widget.LockPatternUtils$StrongAuthTracker$1
 com.android.internal.widget.LockPatternUtils$StrongAuthTracker$H
 com.android.internal.widget.LockPatternUtils$StrongAuthTracker

@@ -30,6 +30,7 @@ import dagger.Module
 import dagger.Provides
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -110,11 +111,7 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
     private var _isDuplicateAttempt = MutableStateFlow(false)
     override val isDuplicateAttempt: StateFlow<Boolean> = _isDuplicateAttempt.asStateFlow()
 
-    override suspend fun reportLockoutStarted(durationMs: Int) {
-        reportLockoutStarted(durationMs.milliseconds)
-    }
-
-    fun reportLockoutStarted(duration: Duration) {
+    override suspend fun reportLockoutStarted(duration: Duration) {
         _lockoutEndTime = (currentTime + duration).takeIf { duration.isPositive() }
         hasLockoutOccurred.value = true
         lockoutStartedReportCount++
@@ -155,12 +152,9 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
 
             val failedAttempts = _failedAuthenticationAttempts.value
             if (isSuccessful || failedAttempts < MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT - 1) {
-                AuthenticationResultModel(isSuccessful = isSuccessful, lockoutDurationMs = 0)
+                AuthenticationResultModel(isSuccessful, lockoutDuration = Duration.ZERO)
             } else {
-                AuthenticationResultModel(
-                    isSuccessful = false,
-                    lockoutDurationMs = LOCKOUT_DURATION_MS,
-                )
+                AuthenticationResultModel(isSuccessful = false, lockoutDuration = LOCKOUT_DURATION)
             }
         }
     }
@@ -219,8 +213,8 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
         const val MAX_FAILED_AUTH_TRIES_BEFORE_WIPE =
             MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT +
                 LockPatternUtils.FAILED_ATTEMPTS_BEFORE_WIPE_GRACE
+        val LOCKOUT_DURATION = 30.seconds
         const val LOCKOUT_DURATION_SECONDS = 30
-        const val LOCKOUT_DURATION_MS = LOCKOUT_DURATION_SECONDS * 1000
         const val HINTING_PIN_LENGTH = 6
         val DEFAULT_PIN = buildList { repeat(HINTING_PIN_LENGTH) { add(it + 1) } }
         val WRONG_PIN = buildList { repeat(HINTING_PIN_LENGTH) { add(9 - it) } }

@@ -16,6 +16,8 @@
 
 package com.android.internal.widget;
 
+import static com.android.internal.widget.LockPatternUtils.clamp;
+
 import android.annotation.IntDef;
 import android.annotation.Nullable;
 import android.os.Parcel;
@@ -259,22 +261,17 @@ public final class VerifyCredentialResponse implements Parcelable {
     }
 
     /**
-     * Get the timeout in milliseconds clamped to fit in an int. It can only represent up to ~25
-     * days.
+     * Get the timeout clamped to {@link Integer#MAX_VALUE} milliseconds.
      *
      * <p>A negative timeout should never occur here, since the rate-limiters do not report negative
      *    timeouts. If a negative timeout is seen anyway, fail secure and treat it as possibly
      *    intended to be an unsigned value, i.e. MAX_VALUE rather than MIN_VALUE.
      *
-     * @deprecated Use {@link #getTimeoutAsDuration()}, which can represent larger timeout ranges.
+     * @deprecated Use {@link #getTimeoutAsDuration()}, which can return larger timeout ranges.
      */
     @Deprecated
-    public int getTimeout() {
-        Duration timeout = getTimeoutAsDuration();
-        if (timeout.isNegative() || timeout.compareTo(MAX_INT_TIMEOUT) > 0) {
-            return Integer.MAX_VALUE;
-        }
-        return (int) timeout.toMillis();
+    public Duration getTimeout() {
+        return Duration.ofMillis(clamp(mTimeout));
     }
 
     public Duration getTimeoutAsDuration() {
