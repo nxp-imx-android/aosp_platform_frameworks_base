@@ -2652,8 +2652,14 @@ class DesktopTasksController(
         val packageName = componentName?.packageName ?: return null
         // TODO: b/452162812 - Support collision avoidance. Maybe we can merge it with
         // cascadeWindow?
-        // TODO: b/452162813 - Do not use remembered bounds when another instance of the same
-        // package is active.
+        if (
+            shellTaskOrganizer.runningTasks.any {
+                it.baseActivity?.packageName == packageName && it.taskId != taskInfo?.taskId
+            }
+        ) {
+            // Do not use remembered bounds when another instance of the same package is active.
+            return null
+        }
         val ratio = repository.getRememberedBoundsRatio(packageName) ?: return null
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
         return Rect().apply {

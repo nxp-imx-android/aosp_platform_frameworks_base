@@ -422,6 +422,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .addOverride(SharedR.integer.to_desktop_animation_duration_ms, TO_DESKTOP_ANIM_DURATION)
 
         whenever(shellTaskOrganizer.getRunningTasks(anyInt())).thenAnswer { runningTasks }
+        whenever(shellTaskOrganizer.getRunningTasks()).thenAnswer { runningTasks }
         whenever(transitions.startTransition(anyInt(), any(), anyOrNull())).thenAnswer { Binder() }
         whenever(enterDesktopTransitionHandler.moveToDesktop(any(), any())).thenAnswer { Binder() }
         whenever(exitDesktopTransitionHandler.startTransition(any(), any(), any(), any()))
@@ -1889,6 +1890,25 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 baseActivity = ComponentName(packageName, "")
                 leafTaskBoundsFromOptions = true
             }
+        val nonRememberedTask = setUpFreeformTask()
+        val boundsRatio = RectF(0.1f, 0.2f, 0.8f, 0.9f)
+        val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
+
+        taskRepository.setRememberedBoundsRatio(packageName, boundsRatio)
+
+        assertThat(controller.getInitialBounds(displayLayout, rememberedTask, 0))
+            .isEqualTo(controller.getInitialBounds(displayLayout, nonRememberedTask, 0))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun getInitialBounds_withRememberedBounds_anotherInstanceActive_returnsNull() {
+        setUpLandscapeDisplay()
+        val packageName = "com.test.app"
+        val rememberedTask =
+            setUpFreeformTask().apply { baseActivity = ComponentName(packageName, "") }
+        val rememberedTaskButDifferentInstance =
+            setUpFreeformTask().apply { baseActivity = ComponentName(packageName, "") }
         val nonRememberedTask = setUpFreeformTask()
         val boundsRatio = RectF(0.1f, 0.2f, 0.8f, 0.9f)
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
