@@ -112,6 +112,7 @@ private:
     std::string mStorePath;
     PipelineCacheStore mPipelineCacheStore;
 
+    bool mHasCache;
     sk_sp<SkData> mKey;
     sk_sp<SkData> mData;
 };
