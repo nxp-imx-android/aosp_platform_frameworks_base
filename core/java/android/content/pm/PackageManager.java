@@ -10568,10 +10568,10 @@ public abstract class PackageManager {
      * cannot be set, either because App Lock is not supported for that package, or because it is
      * already set to that value.
      *
-     * <p> Before calling this API to avoid getting a null {@link PendingIntent), callers should
+     * <p> Before calling this API to avoid getting a null {@link PendingIntent} callers should
      * first verify that App Lock is supported for the specified package by first checking
      * {@link ApplicationInfo#isAppLockSupported}, or if it's already at the target state for that
-     * package by checking {@link ApplicationInfo#isAppLockEnabled}. The {@link PendingIntent)
+     * package by checking {@link ApplicationInfo#isAppLockEnabled}. The {@link PendingIntent}
      * resolves to
      * an activity, which allows the user to enroll a device credential if one isn't enrolled, and
      * then requires authentication before setting the App Lock enablement state as enabled or
