@@ -60,7 +60,7 @@ public class HeadsUpAppearanceController extends ViewController<PhoneStatusBarVi
 
     private final ShadeViewController mShadeViewController;
     private final NotificationRoundnessManager mNotificationRoundnessManager;
-    private final Consumer<ExpandableNotificationRow>
+    private final BiConsumer<ExpandableNotificationRow, String>
             mSetTrackingHeadsUp = this::setTrackingHeadsUp;
     private final BiConsumer<Float, Float> mSetExpandedHeight = this::setAppearFraction;
     private final PhoneStatusBarTransitions mPhoneStatusBarTransitions;
@@ -157,7 +157,7 @@ public class HeadsUpAppearanceController extends ViewController<PhoneStatusBarVi
      *
      * @param trackedChild the tracked headsUp or null if it's not tracking anymore.
      */
-    public void setTrackingHeadsUp(ExpandableNotificationRow trackedChild) {
+    public void setTrackingHeadsUp(ExpandableNotificationRow trackedChild, String reason) {
         ExpandableNotificationRow previousTracked = mTrackedChild;
         mTrackedChild = trackedChild;
         if (previousTracked != null) {
