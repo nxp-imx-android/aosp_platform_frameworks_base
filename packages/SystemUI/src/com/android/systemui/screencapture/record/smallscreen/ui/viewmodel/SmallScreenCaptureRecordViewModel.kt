@@ -63,6 +63,7 @@ constructor(
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val markupInteractor: ScreenCaptureMarkupInteractor,
     private val activityManager: ActivityManagerWrapper,
+    private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
     val recordDetailsAppSelectorViewModel: RecordDetailsAppSelectorViewModel =
@@ -99,7 +100,7 @@ constructor(
                 initialValue = null,
             )
 
-    val shouldShowMarkupButton: Boolean = ScreenCaptureRecordFeaturesInteractor.isMarkupAvailable
+    val shouldShowMarkupButton: Boolean = screenCaptureRecordFeaturesInteractor.isMarkupAvailable
 
     val shouldShowSettingsButton: Boolean by derivedStateOf { isRecording }
 

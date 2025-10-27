@@ -32,8 +32,11 @@ import kotlinx.coroutines.flow.map
 @ScreenCaptureScope
 class ScreenCaptureMarkupInteractor
 @Inject
-constructor(@Main resources: Resources, private val repository: ScreenCaptureMarkupRepository) {
-
+constructor(
+    @Main resources: Resources,
+    private val repository: ScreenCaptureMarkupRepository,
+    private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
+) {
     val availableColors: List<Int> =
         resources.obtainTypedArray(R.array.screen_record_color_palette).use { array ->
             array.map { index -> getColor(index, Color.TRANSPARENT) }
@@ -41,7 +44,7 @@ constructor(@Main resources: Resources, private val repository: ScreenCaptureMar
     val color: Flow<Int> = repository.color.map { it ?: availableColors.first() }
     val enabled: Flow<Boolean> =
         repository.enabled.map { enabled ->
-            enabled && ScreenCaptureRecordFeaturesInteractor.isMarkupAvailable
+            enabled && screenCaptureRecordFeaturesInteractor.isMarkupAvailable
         }
 
     fun setEnabled(enabled: Boolean) {

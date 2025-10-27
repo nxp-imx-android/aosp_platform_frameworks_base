@@ -52,6 +52,7 @@ class ScreenRecordingServiceNotificationInteractor(
     private val channelId: String,
     private val tag: String,
     private val serviceClass: Class<out Service>,
+    private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
 ) : NotificationInteractor {
 
     override fun notifyProcessing(notificationId: Int, audioSource: ScreenRecordingAudioSource) {
@@ -131,7 +132,7 @@ class ScreenRecordingServiceNotificationInteractor(
         )
 
         val viewIntent =
-            if (ScreenCaptureRecordFeaturesInteractor.isNewScreenRecordToolbarEnabled) {
+            if (screenCaptureRecordFeaturesInteractor.isSmallScreenRecordingEnabled) {
                 SmallScreenPostRecordingActivity.showRecording(context, savedRecording.uri)
             } else {
                 Intent(Intent.ACTION_VIEW)

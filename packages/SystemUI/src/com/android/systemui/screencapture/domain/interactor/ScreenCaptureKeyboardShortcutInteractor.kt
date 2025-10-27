@@ -47,6 +47,7 @@ constructor(
     private val userRepository: UserRepository,
     private val hsum: HeadlessSystemUserMode,
     private val featuresInteractor: LargeScreenCaptureFeaturesInteractor,
+    private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
 ) {
     fun attemptPartialRegionScreenshot() {
         backgroundScope.launch {
@@ -76,7 +77,7 @@ constructor(
         // TODO(b/420714826) Check if the large-screen screen capture UI is supported on this device
         // device's display (i.e. the focused display or external display). If not supported,
         // default to taking a fullscreen screenshot.
-        if (!ScreenCaptureRecordFeaturesInteractor.isLargeScreenScreencaptureEnabled) {
+        if (!screenCaptureRecordFeaturesInteractor.isLargeScreenScreencaptureEnabled) {
             return
         }
 

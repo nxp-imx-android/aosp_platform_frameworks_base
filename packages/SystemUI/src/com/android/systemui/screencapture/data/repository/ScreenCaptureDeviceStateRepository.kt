@@ -16,34 +16,10 @@
 
 package com.android.systemui.screencapture.data.repository
 
-import android.content.res.Resources
-import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.dagger.qualifiers.Main
-import com.android.systemui.res.R
-import com.android.systemui.statusbar.policy.ConfigurationController
-import com.android.systemui.statusbar.policy.onConfigChanged
-import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
 
 /** Provides information about the current state of the device related to screen capture. */
-@SysUISingleton
-class ScreenCaptureDeviceStateRepository
-@Inject
-constructor(
-    @Main private val resources: Resources,
-    @Application private val scope: CoroutineScope,
-    configurationController: ConfigurationController,
-) {
+interface ScreenCaptureDeviceStateRepository {
     /** Emits `true` if the device is considered a large screen for screen capture purposes. */
-    val isLargeScreen: StateFlow<Boolean?> =
-        configurationController.onConfigChanged
-            .onStart { emit(resources.configuration) }
-            .map { resources.getBoolean(R.bool.config_enableLargeScreenScreencapture) }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
+    val isLargeScreen: StateFlow<Boolean?>
 }
