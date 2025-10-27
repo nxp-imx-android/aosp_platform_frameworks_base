@@ -78,10 +78,6 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
     var maximumTimeToLock: Long = 0
     var fakePowerButtonInstantlyLocks: Boolean = true
 
-    override suspend fun getAuthenticationMethod(): AuthenticationMethodModel {
-        return authenticationMethod.value
-    }
-
     fun setAuthenticationMethod(authenticationMethod: AuthenticationMethodModel) {
         _authenticationMethod.value = authenticationMethod
         securityMode = authenticationMethod.toSecurityMode()

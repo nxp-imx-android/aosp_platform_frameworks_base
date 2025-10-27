@@ -57,7 +57,6 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -128,10 +127,6 @@ interface AuthenticationRepository {
      *
      * Note: there may be other ways to unlock the device that "bypass" the need for this
      * authentication challenge (notably, biometrics like fingerprint or face unlock).
-     *
-     * Note: by design, this is a [Flow] and not a [StateFlow]; a consumer who wishes to get a
-     * snapshot of the current authentication method without establishing a collector of the flow
-     * can do so by invoking [getAuthenticationMethod].
      */
     val authenticationMethod: StateFlow<AuthenticationMethodModel>
 
@@ -149,20 +144,6 @@ interface AuthenticationRepository {
      * [AuthenticationResultModel] representing what happened.
      */
     suspend fun checkCredential(credential: LockscreenCredential): AuthenticationResultModel
-
-    /**
-     * Returns the currently-configured authentication method. This determines how the
-     * authentication challenge needs to be completed in order to unlock an otherwise locked device.
-     *
-     * Note: there may be other ways to unlock the device that "bypass" the need for this
-     * authentication challenge (notably, biometrics like fingerprint or face unlock).
-     *
-     * Note: by design, this is offered as a convenience method alongside [authenticationMethod].
-     * The flow should be used for code that wishes to stay up-to-date its logic as the
-     * authentication changes over time and this method should be used for simple code that only
-     * needs to check the current value.
-     */
-    suspend fun getAuthenticationMethod(): AuthenticationMethodModel
 
     /** Returns the length of the PIN or `0` if the current auth method is not PIN. */
     suspend fun getPinLength(): Int
@@ -264,7 +245,11 @@ constructor(
                     .onStart { emit(Unit) }
                     .map { selectedUserId }
             }
-            .map { getAuthenticationMethod() }
+            .map {
+                withContext(backgroundDispatcher) {
+                    getAuthenticationMethodBlocking(selectedUserId)
+                }
+            }
             .logDiffsForTable(tableLogBuffer = tableLogBuffer, initialValue = None)
             .stateIn(
                 scope = applicationScope,
@@ -333,10 +318,6 @@ constructor(
                 AuthenticationResultModel(isSuccessful = false, lockoutDurationMs = ex.timeoutMs)
             }
         }
-    }
-
-    override suspend fun getAuthenticationMethod(): AuthenticationMethodModel {
-        return withContext(backgroundDispatcher) { getAuthenticationMethodBlocking(selectedUserId) }
     }
 
     override suspend fun getPinLength(): Int {

@@ -106,29 +106,21 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
             runCurrent()
             dispatchBroadcast()
             assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Pin)
-            assertThat(underTest.getAuthenticationMethod()).isEqualTo(AuthenticationMethodModel.Pin)
 
             setSecurityModeAndDispatchBroadcast(KeyguardSecurityModel.SecurityMode.Pattern)
             assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Pattern)
-            assertThat(underTest.getAuthenticationMethod())
-                .isEqualTo(AuthenticationMethodModel.Pattern)
 
             setSecurityModeAndDispatchBroadcast(KeyguardSecurityModel.SecurityMode.None)
             assertThat(authMethod).isEqualTo(AuthenticationMethodModel.None)
-            assertThat(underTest.getAuthenticationMethod())
-                .isEqualTo(AuthenticationMethodModel.None)
 
             currentSecurityMode = KeyguardSecurityModel.SecurityMode.SimPin
             mobileConnectionsRepository.fake.isAnySimSecure.value = true
             assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Sim)
-            assertThat(underTest.getAuthenticationMethod()).isEqualTo(AuthenticationMethodModel.Sim)
 
             setSecurityModeAndDispatchBroadcast(
                 KeyguardSecurityModel.SecurityMode.SecureLockDeviceBiometricAuth
             )
             assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Biometric)
-            assertThat(underTest.getAuthenticationMethod())
-                .isEqualTo(AuthenticationMethodModel.Biometric)
         }
 
     @Test

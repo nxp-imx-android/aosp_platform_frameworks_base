@@ -669,7 +669,7 @@ constructor(
                             )
                         }
                     } else if (
-                        authenticationInteractor.get().getAuthenticationMethod() ==
+                        authenticationInteractor.get().authenticationMethod.value ==
                             AuthenticationMethodModel.Sim
                     ) {
                         sceneInteractor.showOverlay(

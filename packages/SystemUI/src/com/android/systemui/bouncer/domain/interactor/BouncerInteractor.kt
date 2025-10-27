@@ -197,8 +197,8 @@ constructor(
      * may authenticate the device before the user has the opportunity to enter their
      * pin/pattern/password. Else, false.
      */
-    suspend fun passiveAuthMaySucceedBeforeFullyShowingBouncer(): Boolean {
-        return authenticationInteractor.getAuthenticationMethod() != Sim &&
+    fun passiveAuthMaySucceedBeforeFullyShowingBouncer(): Boolean {
+        return authenticationInteractor.authenticationMethod.value != Sim &&
             (deviceEntryFaceAuthInteractor.canFaceAuthRun() ||
                 activeUnlockInteractor.canRunActiveUnlock.value)
     }
@@ -288,7 +288,7 @@ constructor(
             return AuthenticationResult.SKIPPED
         }
 
-        if (authenticationInteractor.getAuthenticationMethod() == Sim) {
+        if (authenticationInteractor.authenticationMethod.value == Sim) {
             // SIM is authenticated in SimBouncerInteractor.
             return AuthenticationResult.SKIPPED
         }
@@ -309,7 +309,7 @@ constructor(
             _onIncorrectBouncerInput.emit(Unit)
         }
 
-        if (authenticationInteractor.getAuthenticationMethod() in setOf(Pin, Password, Pattern)) {
+        if (authenticationInteractor.authenticationMethod.value in setOf(Pin, Password, Pattern)) {
             if (authResult == AuthenticationResult.SUCCEEDED) {
                 uiEventLogger.log(BouncerUiEvent.BOUNCER_PASSWORD_SUCCESS)
             } else if (authResult == AuthenticationResult.FAILED) {
