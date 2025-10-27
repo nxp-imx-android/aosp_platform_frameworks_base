@@ -32,6 +32,7 @@ import com.android.systemui.screenrecord.data.repository.screenRecordingServiceR
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.launch
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -57,6 +58,30 @@ class ScreenCaptureComponentInteractorTest : SysuiTestCase() {
                             displayId = Display.DEFAULT_DISPLAY,
                             shouldShowTaps = false,
                         )
+                    )
+                },
+                stopCapture = {
+                    screenRecordingServiceRepository.stopRecording(StopReason.STOP_HOST_APP)
+                },
+            )
+        }
+
+    @Test
+    fun testDelayedRecordComponentLifecycle() =
+        kosmos.runTest {
+            testComponentLifecycle(
+                screenCaptureType = ScreenCaptureType.RECORD,
+                parameters = ScreenCaptureUiParameters.Record(),
+                startCapture = {
+                    screenRecordingServiceRepository.startRecordingDelayed(
+                        parameters =
+                            ScreenRecordingParameters(
+                                captureTarget = null,
+                                audioSource = ScreenRecordingAudioSource.NONE,
+                                displayId = Display.DEFAULT_DISPLAY,
+                                shouldShowTaps = false,
+                            ),
+                        delay = 3.seconds,
                     )
                 },
                 stopCapture = {
