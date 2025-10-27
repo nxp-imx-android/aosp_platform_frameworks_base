@@ -105,6 +105,7 @@ import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.common.UserProfileContexts;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.compatui.api.CompatUIHandler;
+import com.android.wm.shell.compatui.api.CompatUISharedRepositoryCleanUp;
 import com.android.wm.shell.compatui.letterbox.DelegateLetterboxTransitionObserver;
 import com.android.wm.shell.compatui.letterbox.LetterboxCommandHandler;
 import com.android.wm.shell.compatui.letterbox.config.DefaultLetterboxDependenciesHelper;
@@ -2183,6 +2184,7 @@ public abstract class WMShellModule {
             @NonNull LetterboxCommandHandler letterboxCommandHandler,
             @NonNull LetterboxTaskListenerAdapter letterboxTaskListenerAdapter,
             @NonNull LetterboxCleanupAdapter letterboxCleanupAdapter,
+            @NonNull Optional<CompatUISharedRepositoryCleanUp> compatUISharedStateManager,
             Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserverOptional,
             Optional<DesktopDisplayEventHandler> desktopDisplayEventHandler,
             Optional<DesktopModeKeyGestureHandler> desktopModeKeyGestureHandler,

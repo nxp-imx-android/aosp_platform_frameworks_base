@@ -23,9 +23,9 @@ import com.android.wm.shell.compatui.api.CompatUIComponent
 import com.android.wm.shell.compatui.api.CompatUIComponentFactory
 import com.android.wm.shell.compatui.api.CompatUIComponentRepository
 import com.android.wm.shell.compatui.api.CompatUIInfo
+import com.android.wm.shell.compatui.api.CompatUISharedStateRepository
 import com.android.wm.shell.compatui.api.CompatUISpec
-import com.android.wm.shell.compatui.api.CompatUIState
-import junit.framework.Assert.assertEquals
+import kotlin.test.assertEquals
 
 /** Fake {@link CompatUIComponentFactory} implementation. */
 class FakeCompatUIComponentFactory(
@@ -33,11 +33,11 @@ class FakeCompatUIComponentFactory(
     private val syncQueue: SyncTransactionQueue,
     private val displayController: DisplayController,
     private val compatUIComponentRepository: CompatUIComponentRepository,
+    private val sharedStateRepository: CompatUISharedStateRepository,
 ) : CompatUIComponentFactory {
 
     var lastSpec: CompatUISpec? = null
     var lastCompId: String? = null
-    var lastState: CompatUIState? = null
     var lastInfo: CompatUIInfo? = null
 
     var numberInvocations = 0
@@ -45,19 +45,17 @@ class FakeCompatUIComponentFactory(
     override fun create(
         spec: CompatUISpec,
         compId: String,
-        state: CompatUIState,
         compatUIInfo: CompatUIInfo,
     ): CompatUIComponent {
         lastSpec = spec
         lastCompId = compId
-        lastState = state
         lastInfo = compatUIInfo
         numberInvocations++
         return CompatUIComponent(
             spec,
             compId,
             context,
-            state,
+            sharedStateRepository,
             compatUIComponentRepository,
             compatUIInfo,
             syncQueue,
