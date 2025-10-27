@@ -21,7 +21,6 @@ import android.annotation.CallbackExecutor;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.SystemClock;
 import android.view.accessibility.AccessibilityDisplayProxy;
 import android.view.accessibility.AccessibilityEvent;
@@ -30,19 +29,23 @@ import com.android.internal.annotations.GuardedBy;
 
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 /**
  * {@link AccessibilityDisplayProxy} for gathering A11y signals for apps running on a
  * {@link ComputerControlSession}, and inferring when the session can be considered stable.
  */
 final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy {
+
+    private final Handler mHandler;
+
     @Nullable
     @GuardedBy("this")
     private StabilitySignalTracker mStabilitySignalTracker;
 
-    ComputerControlAccessibilityProxy(int displayId) {
-        super(displayId, Executors.newSingleThreadExecutor(), getAccessibilityServiceInfos());
+    ComputerControlAccessibilityProxy(int displayId, @NonNull Handler handler) {
+        super(displayId, handler::post, getAccessibilityServiceInfos());
+
+        mHandler = handler;
     }
 
     @Override
@@ -78,7 +81,7 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
                 throw new IllegalStateException("A stability listener is already set.");
             }
             mStabilitySignalTracker =
-                    new StabilitySignalTracker(
+                    new StabilitySignalTracker(mHandler,
                             () -> executor.execute(listener::onSessionStable));
         }
     }
@@ -109,17 +112,12 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
             EventIdleTracker.Callback {
         private static final long STABILITY_TIMER_MS = 500L;
 
-        private final HandlerThread mHandlerThread = new HandlerThread("StabilityTracker");
-
         private final ComputerControlSession.StabilityListener mStabilityListener;
         private final EventIdleTracker mEventIdleTracker;
 
-        StabilitySignalTracker(ComputerControlSession.StabilityListener listener) {
+        StabilitySignalTracker(Handler handler, ComputerControlSession.StabilityListener listener) {
             mStabilityListener = listener;
-
-            mHandlerThread.start();
-            mEventIdleTracker = new EventIdleTracker(
-                    mHandlerThread.getThreadHandler(), STABILITY_TIMER_MS);
+            mEventIdleTracker = new EventIdleTracker(handler, STABILITY_TIMER_MS);
         }
 
         void onAccessibilityEvent() {
@@ -134,7 +132,6 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
         @Override
         public void close() {
             mEventIdleTracker.reset();
-            mHandlerThread.quitSafely();
         }
 
         @Override
