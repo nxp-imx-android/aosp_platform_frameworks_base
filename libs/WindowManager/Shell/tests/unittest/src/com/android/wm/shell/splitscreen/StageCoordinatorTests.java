@@ -1027,10 +1027,11 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    public void closeTask_multipleChildren_returnsClosedTaskSplitRemained() {
+    public void closeTask_notAllTasksToBeVanished_returnsClosedTaskSplitRemained() {
         when(mStageCoordinator.isSplitActive()).thenReturn(true);
         mRunningTaskInfo.parentTaskId = mMainStage.mRootTaskInfo.taskId;
-        when(mMainStage.getChildCount()).thenReturn(2);
+        when(mMainStage.containsTask(mTaskId)).thenReturn(true);
+        when(mMainStage.areAllTasksToBeVanished()).thenReturn(false);
 
         assertThat(mStageCoordinator.closeTask(mTaskId)).isEqualTo(
                 CloseTaskResult.CLOSED_TASK_SPLIT_REMAINED);
@@ -1060,11 +1061,22 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    public void closeTask_singleChild_dismissesSplit() {
+    public void closeTask_markClosingTaskToBeVanished() {
         when(mStageCoordinator.isSplitActive()).thenReturn(true);
         mRunningTaskInfo.parentTaskId = mMainStage.mRootTaskInfo.taskId;
-        when(mMainStage.getChildCount()).thenReturn(1);
         when(mMainStage.containsTask(mTaskId)).thenReturn(true);
+
+        mStageCoordinator.closeTask(mTaskId);
+
+        verify(mMainStage).markToBeVanished(mTaskId);
+    }
+
+    @Test
+    public void closeTask_allTasksToBeVanished_dismissesSplit() {
+        when(mStageCoordinator.isSplitActive()).thenReturn(true);
+        mRunningTaskInfo.parentTaskId = mMainStage.mRootTaskInfo.taskId;
+        when(mMainStage.containsTask(mTaskId)).thenReturn(true);
+        when(mMainStage.areAllTasksToBeVanished()).thenReturn(true);
         mStageCoordinator.setSideStagePosition(SPLIT_POSITION_BOTTOM_OR_RIGHT, null);
 
         assertThat(mStageCoordinator.closeTask(mTaskId)).isEqualTo(
