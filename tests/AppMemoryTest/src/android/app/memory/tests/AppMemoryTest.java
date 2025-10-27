@@ -26,21 +26,18 @@ import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
-@RunWith(Parameterized.class)
+@RunWith(AndroidJUnit4.class)
 public class AppMemoryTest {
 
     private static final String TAG = "AppMemoryTest";
@@ -103,41 +100,10 @@ public class AppMemoryTest {
         uninstallHelper();
     }
 
-    // How long the process should wait before triggering a heap dump.  This delay should be long
-    // enough that all allocations have completed.
-    private static final long DELAY_MS = 10 * 1000;
-
-    // Set the variable true to enable a calibration run, which repeats the test with a series of
-    // ever larger allocations in the app.  The results should reflect the extra allocations quite
-    // closely.
-    private static boolean sCalibration = false;
-
-    // The interesting parameter is the "extra-size"
-    @Parameter(0)
-    public int mExtraSize;
-
-    /**
-     * Return the parameter list for the run.  The result depends on sCalibration: if it is false,
-     * run a baseline test (no extra memory).  If it is true, then run a sequence of tests with
-     * increasing extra allocations.
-     */
-    @Parameters(name = "extra-size: {0}")
-    public static Iterable<? extends Object> data() {
-        if (sCalibration) {
-            return Arrays.asList(new Object[][]{ {0}, {1}, {256}, {512}, {1024}, {4096} });
-        } else {
-            return Arrays.asList(new Object[][]{ {0} });
-        }
-    }
-
     // Launch the test app with the specified parameters and create one heap profile.  Metrics are
     // extracted and reported.
-    private void generateOneProfile(long delay, int extra) throws Exception {
-        // Compute the suffix for this particular test.  The suffix is just the amount of extra
-        // memory divided by 1024.
-        final String suffix = String.format("-%04d", extra / 1024);
-        final String path = mRootPath + "jheap" + suffix;
-        final String profilePath = mRootPath + "jheap" + suffix + ".hprof";
+    private void generateOneProfile() throws Exception {
+        final String profilePath = mRootPath + "jheap.hprof";
         final File profileFile = new File(profilePath);
 
         // Ensure clean state
@@ -189,18 +155,18 @@ public class AppMemoryTest {
 
         // Send metrics to the automation system.
         Bundle stats = new Bundle();
-        String key = "PSize" + suffix;
+        String key = "PSize";
         stats.putLong(key, profileAllocated);
         stats.putString(Instrumentation.REPORT_KEY_STREAMRESULT, key + ": " + profileAllocated);
-        key = "PCount" + suffix;
+        key = "PCount";
         stats.putLong(key, profileCount);
         stats.putString(Instrumentation.REPORT_KEY_STREAMRESULT, key + ": " + profileCount);
         InstrumentationRegistry.getInstrumentation().sendStatus(Activity.RESULT_OK, stats);
     }
 
-    // Test the basic app with the specified extra memory.
+    // Test the basic app
     @Test
     public void testApp() throws Exception {
-        generateOneProfile(DELAY_MS, mExtraSize * 1024);
+        generateOneProfile();
     }
 }
