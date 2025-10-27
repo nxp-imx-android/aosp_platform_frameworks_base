@@ -24,7 +24,6 @@ import android.view.WindowInsets.Type.displayCutout
 import android.view.WindowInsets.Type.navigationBars
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
-import android.window.DesktopExperienceFlags
 import com.android.app.displaylib.ExternalDisplayConnectionType
 import com.android.app.displaylib.ExternalDisplayConnectionType.DESKTOP
 import com.android.app.displaylib.ExternalDisplayConnectionType.MIRROR
@@ -40,7 +39,6 @@ import com.android.systemui.display.data.repository.KioskModeRepository
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor.PendingDisplay
 import com.android.systemui.display.ui.view.ExternalDisplayConnectionDialogDelegate
-import com.android.systemui.display.ui.view.MirroringConfirmationDialogDelegate
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIBottomSheetDialog
 import com.android.systemui.statusbar.phone.SystemUIBottomSheetDialog.WindowLayout
@@ -76,7 +74,6 @@ constructor(
     private val connectedDisplayInteractor: ConnectedDisplayInteractor,
     @Application private val scope: CoroutineScope,
     @Background private val bgDispatcher: CoroutineDispatcher,
-    private val bottomSheetFactoryDeprecated: MirroringConfirmationDialogDelegate.Factory,
     private val delegateFactory: ExternalDisplayConnectionDialogDelegate.Factory,
     private val dialogFactory: SystemUIBottomSheetDialog.Factory,
     private val externalDisplayDialogWindowLayout: WindowLayout.ExternalDisplayDialogWindowLayout,
@@ -116,30 +113,7 @@ constructor(
             .launchIn(scope)
     }
 
-    @Deprecated("Use showNewDialog instead")
-    private fun showMirroringDialog(
-        pendingDisplay: PendingDisplay,
-        concurrentDisplaysInProgress: Boolean,
-    ) {
-        dismissDialog()
-        dialog =
-            bottomSheetFactoryDeprecated
-                .createDialog(
-                    onStartMirroringClickListener = {
-                        scope.launch(context = bgDispatcher) { pendingDisplay.enable() }
-                        dismissDialog()
-                    },
-                    onCancelMirroring = {
-                        scope.launch(context = bgDispatcher) { pendingDisplay.ignore() }
-                        dismissDialog()
-                    },
-                    navbarBottomInsetsProvider = { Utils.getNavbarInsets(context).bottom },
-                    showConcurrentDisplayInfo = concurrentDisplaysInProgress,
-                )
-                .apply { show() }
-    }
-
-    private fun PendingDisplay.showNewDialog(
+    private fun PendingDisplay.showConnectionDialog(
         showConcurrentDisplayInfo: Boolean,
         isInKioskMode: Boolean,
     ) {
@@ -172,12 +146,6 @@ constructor(
         isInKioskMode: Boolean,
         concurrentDisplaysInProgress: Boolean,
     ) {
-        val useNewDialog = DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue
-        if (!useNewDialog) {
-            showMirroringDialog(pendingDisplay, concurrentDisplaysInProgress)
-            return
-        }
-
         val isInExtendedMode = desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
 
         when {
@@ -186,7 +154,10 @@ constructor(
             }
             isInKioskMode -> {
                 dismissDialog()
-                pendingDisplay.showNewDialog(concurrentDisplaysInProgress, isInKioskMode = true)
+                pendingDisplay.showConnectionDialog(
+                    concurrentDisplaysInProgress,
+                    isInKioskMode = true,
+                )
             }
             isInExtendedMode -> {
                 pendingDisplay.enableForDesktop()
@@ -197,7 +168,7 @@ constructor(
                     DESKTOP -> pendingDisplay.enableForDesktop()
                     MIRROR -> pendingDisplay.enableForMirroring()
                     NOT_SPECIFIED ->
-                        pendingDisplay.showNewDialog(
+                        pendingDisplay.showConnectionDialog(
                             concurrentDisplaysInProgress,
                             isInKioskMode = false,
                         )
