@@ -18,6 +18,7 @@ package com.android.systemui.screencapture.common.ui.compose
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -47,7 +48,7 @@ fun PostCaptureToastBar(
     shape: RoundedCornerShape = RoundedCornerShape(percent = 50),
 ) {
     Card(shape = shape, elevation = elevation, colors = colors, modifier = modifier) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(modifier = Modifier.padding(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             actionButtonGroup.forEach { item ->
                 FilledTonalIconButton(
                     onClick = item.onClick,
