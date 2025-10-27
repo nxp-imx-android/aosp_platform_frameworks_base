@@ -293,8 +293,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
             mInfoItem = createPartialConversationItem(mContext);
         } else if (personNotifType >= PeopleNotificationIdentifier.TYPE_FULL_PERSON) {
             mInfoItem = createConversationItem(mContext);
-        } else if (android.app.Flags.uiRichOngoing()
-                && Flags.permissionHelperUiRichOngoing()
+        } else if (Flags.permissionHelperUiRichOngoing()
                 && (sbn != null && sbn.getNotification().isPromotedOngoing())) {
             mInfoItem = createPromotedItem(mContext);
         } else if ((NotificationClassificationUiFlag.isEnabled()
@@ -314,8 +313,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         boolean isPromotedOngoing = NotificationBundleUi.isEnabled()
                 ? mParent.getEntryAdapter().isPromotedOngoing()
                 : mParent.getEntryLegacy().isPromotedOngoing();
-        if (android.app.Flags.uiRichOngoing() && Flags.permissionHelperInlineUiRichOngoing()
-                && isPromotedOngoing) {
+        if (Flags.permissionHelperInlineUiRichOngoing() && isPromotedOngoing) {
             mRightMenuItems.add(createDemoteItem(mContext));
         }
 

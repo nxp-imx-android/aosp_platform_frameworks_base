@@ -48,12 +48,14 @@ import static android.content.ComponentCallbacks2.TRIM_MEMORY_BACKGROUND;
 
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_COMPACTION;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_FREEZER;
+import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_WRITEBACK;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 import static com.android.server.am.psc.Constants.CACHED_APP_MAX_ADJ;
 import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
 import static com.android.server.am.psc.Constants.PERCEPTIBLE_APP_ADJ;
 
 import android.annotation.IntDef;
+import android.annotation.RequiresNoPermission;
 import android.annotation.UptimeMillisLong;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal.FrozenProcessListener;
@@ -67,10 +69,15 @@ import android.content.pm.ApplicationInfo;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.IMmd;
+import android.os.IMmdProcessWritebackCallback;
 import android.os.Message;
+import android.os.ParcelFileDescriptor;
 import android.os.PowerManagerInternal;
 import android.os.Process;
 import android.os.RemoteException;
+import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.os.Trace;
 import android.provider.DeviceConfig;
@@ -92,11 +99,13 @@ import com.android.internal.os.BinderfsStatsReader;
 import com.android.internal.os.ProcLocksReader;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.ServiceThread;
+import com.android.server.am.Flags;
 import com.android.server.am.compaction.CompactionStatsManager;
 import com.android.server.am.compaction.SingleCompactionStats;
 
 import dalvik.annotation.optimization.NeverCompile;
 
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
@@ -371,6 +380,10 @@ public class CachedAppOptimizer {
     // Bitfield values for sync transactions received by frozen binder threads
     static final int TXNS_PENDING_WHILE_FROZEN = 4;
 
+    private static final long ZRAM_WRITEBACK_THRESHOLD_KB = 150 * 1024L;
+
+    private static final String MMD_SERVICE_NAME = "mmd";
+
     /**
      * This thread must be moved to the system background cpuset.
      * If that doesn't happen, it's probably going to draw a lot of power.
@@ -549,6 +562,9 @@ public class CachedAppOptimizer {
     private final ProcLocksReader mProcLocksReader;
 
     private final Freezer mFreezer;
+
+    private volatile IMmd mMmd;
+    private volatile Boolean mHasZramWritebackSupport;
 
     public CachedAppOptimizer(ActivityManagerService am) {
         this(am, null, new DefaultProcessDependencies());
@@ -1582,6 +1598,24 @@ public class CachedAppOptimizer {
         }
     }
 
+    private IMmd getMmd() {
+        if (mMmd == null) {
+            IBinder b = ServiceManager.getService(MMD_SERVICE_NAME);
+            if (b != null) {
+                mMmd = IMmd.Stub.asInterface(b);
+            }
+            if (mMmd == null && DEBUG_WRITEBACK) {
+                Slog.w(TAG_AM, "mmd service not available");
+            }
+        }
+        return mMmd;
+    }
+
+    @VisibleForTesting
+    void setMmd(IMmd mmd) {
+        mMmd = mmd;
+    }
+
     private static int getCompactionFlags(CompactProfile profile) {
         if (profile == CompactProfile.FULL) {
             return COMPACT_ACTION_FILE_FLAG | COMPACT_ACTION_ANON_FLAG;
@@ -1591,6 +1625,127 @@ public class CachedAppOptimizer {
             return COMPACT_ACTION_ANON_FLAG;
         }
         return 0;
+    }
+
+    private void maybeWritebackZram(int pid, String processName, String packageName, int uid,
+            long zramUsedDeltaKb, boolean hasActivities) {
+        if (DEBUG_WRITEBACK) {
+            Slog.i(
+                TAG_AM,
+                "maybeWritebackZram "
+                        + " enableZramWriteback: "
+                        + Flags.enableZramWriteback()
+                        + " processName: "
+                        + processName
+                        + " pid: "
+                        + pid
+                        + " zramUsedDeltaKb: "
+                        + zramUsedDeltaKb
+                        + " hasActivities: "
+                        + hasActivities
+                        );
+        }
+        if (!Flags.logZramWritebackEvents() && !Flags.enableZramWriteback()) {
+            return;
+        }
+        int eventTypeToLog =
+                FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_OTHER_REASONS;
+        String processNameForLogging =
+                (processName != null && processName.equals(packageName)) ? null : processName;
+        try {
+            if (zramUsedDeltaKb >= ZRAM_WRITEBACK_THRESHOLD_KB) {
+                eventTypeToLog =
+                        FrameworkStatsLog
+                                .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_RSS_SWAP_TOO_HIGH;
+                return;
+            }
+            if (!hasActivities) {
+                eventTypeToLog =
+                        FrameworkStatsLog
+                                .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_NO_ACTIVITY;
+                return;
+            }
+            final IMmd mmd = getMmd();
+            if (mmd == null) {
+                eventTypeToLog =
+                        FrameworkStatsLog
+                                .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_MMD_SERVICE_UNAVAILABLE;
+                return;
+            }
+            try {
+                if (mHasZramWritebackSupport == null) {
+                    mHasZramWritebackSupport = mmd.supportsProcessMemoryZramOps();
+                }
+                if (!mHasZramWritebackSupport) {
+                    eventTypeToLog =
+                            FrameworkStatsLog
+                                    .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_UNSUPPORTED_BY_MMD;
+                    return;
+                }
+                final IMmdProcessWritebackCallback callback =
+                        new IMmdProcessWritebackCallback.Stub() {
+                            @Override
+                            @RequiresNoPermission
+                            public void onProcessMemoryWritebackComplete(
+                                    byte status, long bytesWritten) {
+                                if (status != IMmdProcessWritebackCallback.WritebackStatus.SUCCESS
+                                        && DEBUG_WRITEBACK) {
+                                    Slog.d(
+                                            TAG_AM,
+                                            "onProcessMemoryWritebackComplete failed for "
+                                                    + processName
+                                                    + ":"
+                                                    + pid
+                                                    + "status="
+                                                    + status);
+                                }
+                                FrameworkStatsLog.write(FrameworkStatsLog.ZRAM_WRITEBACK_EVENT,
+                                        getZramWritebackEventType(status), uid, processName,
+                                        hasActivities, zramUsedDeltaKb, bytesWritten,
+                                        /* hasDmaBuf= */ false, /* hasGpuMemory= */ false);
+                            }
+                        };
+                try {
+                    final FileDescriptor fd = Process.openPidFd(pid, 0);
+                    try (final ParcelFileDescriptor pfd =
+                            ParcelFileDescriptor.adoptFd(fd.getInt$())) {
+                        if (!Flags.enableZramWriteback()) {
+                            eventTypeToLog =
+                                    FrameworkStatsLog
+                                            .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__DISABLED_BY_FLAG;
+                            return;
+                        }
+                        eventTypeToLog =
+                            FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__STARTED;
+                        mmd.asyncWritebackProcessZramMemory(pfd, callback);
+                    }
+                } catch (IOException e) {
+                    eventTypeToLog =
+                            FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__FAILED_OTHER;
+                    Slog.w(TAG_AM, "Failed to get pidfd for " + pid, e);
+                }
+            } catch (RemoteException e) {
+                eventTypeToLog = FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__FAILED_OTHER;
+                Slog.w(TAG_AM, "Failed to call mmd.", e);
+            }
+        } finally {
+            FrameworkStatsLog.write(FrameworkStatsLog.ZRAM_WRITEBACK_EVENT, eventTypeToLog, uid,
+                    processName, hasActivities, zramUsedDeltaKb, /* zramBytesWritten= */ 0,
+                    /* hasDmaBuf= */ false, /* hasGpuMemory= */ false);
+        }
+    }
+
+    private static int getZramWritebackEventType(byte status) {
+        switch (status) {
+            case IMmdProcessWritebackCallback.WritebackStatus.SUCCESS:
+                return FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SUCCEEDED;
+            case IMmdProcessWritebackCallback.WritebackStatus.FAILURE_DEVICE_FULL:
+                return FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__FAILED_DEVICE_FULL;
+            case IMmdProcessWritebackCallback.WritebackStatus.FAILURE_UNSUPPORTED:
+                return FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__FAILED_UNSUPPORTED;
+            default:
+                return FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__FAILED_OTHER;
+        }
     }
 
     private final class MemCompactionHandler extends Handler {
@@ -1750,6 +1905,7 @@ public class CachedAppOptimizer {
                     int uid;
                     int pid;
                     final String name;
+                    final String packageName;
                     CompactProfile lastCompactProfile;
                     long lastCompactTime;
                     int newOomAdj = msg.arg1;
@@ -1758,6 +1914,7 @@ public class CachedAppOptimizer {
                     CompactSource compactSource;
                     CompactProfile requestedProfile;
                     int oomAdjReason;
+                    boolean hasActivities;
                     synchronized (mProcLock) {
                         if (mPendingCompactionProcesses.isEmpty()) {
                             if (DEBUG_COMPACTION) {
@@ -1772,12 +1929,14 @@ public class CachedAppOptimizer {
                         uid = proc.uid;
                         pid = proc.getPid();
                         name = proc.processName;
+                        packageName = proc.getPackageName();
                         opt.setHasPendingCompact(false);
                         compactSource = opt.getReqCompactSource();
                         requestedProfile = opt.getReqCompactProfile();
                         lastCompactProfile = opt.getLastCompactProfile();
                         lastCompactTime = opt.getLastCompactTime();
                         oomAdjReason = opt.getLastOomAdjChangeReason();
+                        hasActivities = proc.hasActivities();
                     }
 
                     long[] rssBefore;
@@ -1862,6 +2021,13 @@ public class CachedAppOptimizer {
                         long deltaFileRss = rssAfter[RSS_FILE_INDEX] - rssBefore[RSS_FILE_INDEX];
                         long deltaAnonRss = rssAfter[RSS_ANON_INDEX] - rssBefore[RSS_ANON_INDEX];
                         long deltaSwapRss = rssAfter[RSS_SWAP_INDEX] - rssBefore[RSS_SWAP_INDEX];
+                        maybeWritebackZram(
+                                pid,
+                                name,
+                                packageName,
+                                uid,
+                                rssAfter[RSS_SWAP_INDEX],
+                                hasActivities);
                         switch (opt.getReqCompactProfile()) {
                             case SOME:
                                 mCompactStatsManager.logSomeCompactionPerformed(compactSource,
@@ -2408,7 +2574,8 @@ public class CachedAppOptimizer {
      * exit.
      */
     @Keep
-    private boolean handleBinderReport(int error, int toPid, boolean large, boolean oneway) {
+    private boolean handleBinderReport(int error, int fromPid, int toPid, boolean large,
+            boolean oneway) {
         switch (error) {
             case BR_REPORT_FAILED:
                 Slog.e(TAG_AM, "failed to retrieve binder report");

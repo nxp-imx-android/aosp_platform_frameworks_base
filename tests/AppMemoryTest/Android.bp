@@ -96,3 +96,21 @@ filegroup {
     name: "appmemorytest_perfetto_config",
     srcs: ["perfetto.textproto"],
 }
+
+filegroup {
+    name: "appmemorytest_metrics_artifacts",
+    srcs: [
+        "metrics/appmemorytest_binder_transactions.textproto",
+        "metrics/appmemorytest_native_allocations.textproto",
+    ],
+}
+
+prebuilt_etc {
+    name: "appmemorytest_binder_transactions.textproto",
+    src: "metrics/appmemorytest_binder_transactions.textproto",
+}
+
+prebuilt_etc {
+    name: "appmemorytest_native_allocations.textproto",
+    src: "metrics/appmemorytest_native_allocations.textproto",
+}

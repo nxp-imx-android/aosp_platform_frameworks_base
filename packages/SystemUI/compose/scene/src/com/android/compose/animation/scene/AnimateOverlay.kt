@@ -17,7 +17,6 @@
 package com.android.compose.animation.scene
 
 import com.android.compose.animation.scene.content.state.TransitionState
-import com.android.mechanics.GestureContext
 import kotlinx.coroutines.CoroutineScope
 
 /** Trigger a one-off transition to show or hide an overlay. */
@@ -119,7 +118,6 @@ private class OneOffShowOrHideOverlayTransition(
 
     override val isInitiatedByUserInput: Boolean = false
     override val isUserInputOngoing: Boolean = false
-    override val gestureContext: GestureContext? = null
 
     override suspend fun run() {
         oneOffAnimation.run()
@@ -146,7 +144,6 @@ private class OneOffOverlayReplacingTransition(
 
     override val isInitiatedByUserInput: Boolean = false
     override val isUserInputOngoing: Boolean = false
-    override val gestureContext: GestureContext? = null
 
     override suspend fun run() {
         oneOffAnimation.run()

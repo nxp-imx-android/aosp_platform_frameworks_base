@@ -17,12 +17,13 @@ package com.android.app.concurrent.benchmark.util
 
 private const val MAIN_THREAD_NAME = "BenchmarkRunner"
 
-const val VLOG_TAG = "Benchmark"
+const val TAG = "ConcurrentBenchmark"
 
 // This name should match the one used in the Perfetto SQL
 const val BG_THREAD_NAME_PREFIX = "Bg:"
 
 const val BARRIER_TIMEOUT_MILLIS = 1000L
+const val THREAD_FACTORY_TIMEOUT_MILLIS = 2000L
 
 // These variables make it easier to copy-paste the SQL query below into the Perfetto UI for
 // development:

@@ -40,9 +40,11 @@ import java.util.concurrent.ScheduledFuture;
  * This class facilitates theme updates by tracking both the current and pending theme states,
  * preventing unnecessary overlay updates. It also handles deferments when wallpaper changes
  * originate from background apps, ensuring that theme updates are applied at the appropriate time.
+ *
+ * @hide
  */
 class ThemeStatePair {
-    private static final String TAG = ThemeStatePair.class.getSimpleName();
+    private static final String TAG = "ThemeStatePair";
 
     public final int userId;
     private ThemeState mCurrent;
@@ -309,12 +311,7 @@ class ThemeStatePair {
             return false;
         }
 
-        if (shouldUpdateOverlays()) {
-            return true;
-        }
-
-
-        Slog.d(TAG, "User " + userId + " will update.");
+        Slog.d(TAG, "User " + userId + " should update.");
         return true;
     }
 

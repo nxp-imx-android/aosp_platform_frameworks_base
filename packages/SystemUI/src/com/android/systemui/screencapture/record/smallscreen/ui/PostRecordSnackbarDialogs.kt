@@ -38,7 +38,6 @@ import com.android.systemui.statusbar.phone.DialogDelegate
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import com.android.systemui.statusbar.phone.create
-import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
@@ -70,18 +69,11 @@ constructor(
                 ),
             onActionPerformed = {
                 activityStarter.startActivity(
-                    SmallScreenPostRecordingActivity.getStartingIntent(context, uri),
+                    SmallScreenPostRecordingActivity.showRecording(context, uri),
                     true,
                 )
             },
-            onDismissed = {
-                val file = uri.path?.let(::File)
-                with(file ?: return@showSnackbar) {
-                    if (exists()) {
-                        delete()
-                    }
-                }
-            },
+            onDismissed = { context.contentResolver.delete(uri, null) },
         )
     }
 

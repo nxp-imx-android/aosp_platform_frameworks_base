@@ -27,6 +27,7 @@ import static com.android.systemui.Flags.enableViewCaptureTracing;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.ActivityTaskManager;
 import android.app.IActivityTaskManager;
 import android.app.KeyguardManager;
 import android.content.Context;
@@ -177,6 +178,7 @@ import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.onehanded.OneHandedController;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 import com.android.wm.shell.pip.PipTransitionController;
+import com.android.wm.shell.pip2.phone.PipScheduler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
@@ -212,7 +214,7 @@ import com.android.wm.shell.windowdecor.CaptionWindowDecorViewModel;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer;
-import com.android.wm.shell.windowdecor.common.AppHandleAndHeaderVisibilityHelper;
+import com.android.wm.shell.windowdecor.common.CaptionVisibilityHelper;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoaderImpl;
 import com.android.wm.shell.windowdecor.common.viewhost.DefaultWindowDecorViewHostSupplier;
@@ -306,10 +308,11 @@ public abstract class WMShellModule {
             @NonNull TaskViewRepository repository,
             @NonNull BubbleData bubbleData,
             @NonNull @Bubbles TaskViewTransitions taskViewTransitions,
-            @NonNull BubbleAppInfoProvider appInfoProvider
+            @NonNull BubbleAppInfoProvider appInfoProvider,
+            @ShellBackgroundThread ShellExecutor bgExecutor
     ) {
         return new BubbleTransitions(context, transitions, organizer, repository,
-                bubbleData, taskViewTransitions, appInfoProvider);
+                bubbleData, taskViewTransitions, appInfoProvider, bgExecutor);
     }
 
     @WMSingleton
@@ -764,6 +767,7 @@ public abstract class WMShellModule {
             ShellInit shellInit,
             Optional<SplitScreenController> splitScreenOptional,
             @Nullable PipTransitionController pipTransitionController,
+            PipScheduler pipScheduler,
             Optional<PinnedLayerController> pinnedLayerController,
             Optional<RecentsTransitionHandler> recentsTransitionHandler,
             KeyguardTransitionHandler keyguardTransitionHandler,
@@ -777,6 +781,7 @@ public abstract class WMShellModule {
                 transitions,
                 splitScreenOptional,
                 pipTransitionController,
+                PipFlags.isPip2ExperimentEnabled() ? Optional.of(pipScheduler) : Optional.empty(),
                 pinnedLayerController.orElse(null),
                 recentsTransitionHandler,
                 keyguardTransitionHandler,
@@ -818,13 +823,13 @@ public abstract class WMShellModule {
     static UnfoldAnimationController provideUnfoldAnimationController(
             Optional<ShellUnfoldProgressProvider> progressProvider,
             TransactionPool transactionPool,
-            @UnfoldTransition SplitTaskUnfoldAnimator splitAnimator,
+            Optional<SplitTaskUnfoldAnimator> splitAnimator,
             FullscreenUnfoldTaskAnimator fullscreenAnimator,
             Lazy<Optional<UnfoldTransitionHandler>> unfoldTransitionHandler,
             ShellInit shellInit,
             @ShellMainThread ShellExecutor mainExecutor) {
         final List<UnfoldTaskAnimator> animators = new ArrayList<>();
-        animators.add(splitAnimator);
+        splitAnimator.ifPresent(animators::add);
         animators.add(fullscreenAnimator);
 
         return new UnfoldAnimationController(
@@ -847,24 +852,27 @@ public abstract class WMShellModule {
     }
 
     @Provides
-    static SplitTaskUnfoldAnimator provideSplitTaskUnfoldAnimatorBase(
+    static Optional<SplitTaskUnfoldAnimator> provideSplitTaskUnfoldAnimatorBase(
             Context context,
             UnfoldBackgroundController backgroundController,
             ShellController shellController,
             @ShellMainThread ShellExecutor executor,
             Lazy<Optional<SplitScreenController>> splitScreenOptional,
             DisplayInsetsController displayInsetsController) {
+        if (!ActivityTaskManager.supportsSplitScreenMultiWindow(context)) {
+            return Optional.empty();
+        }
         // TODO(b/238217847): The lazy reference here causes some dependency issues since it
         // immediately registers a listener on that controller on init.  We should reference the
         // controller directly once we refactor ShellTaskOrganizer to not depend on the unfold
         // animation controller directly.
-        return new SplitTaskUnfoldAnimator(
+        return Optional.of(new SplitTaskUnfoldAnimator(
                 context,
                 executor,
                 splitScreenOptional,
                 shellController,
                 backgroundController,
-                displayInsetsController);
+                displayInsetsController));
     }
 
     @WMSingleton
@@ -885,7 +893,7 @@ public abstract class WMShellModule {
     static UnfoldTransitionHandler provideUnfoldTransitionHandler(
             Optional<ShellUnfoldProgressProvider> progressProvider,
             FullscreenUnfoldTaskAnimator animator,
-            @UnfoldShellTransition SplitTaskUnfoldAnimator unfoldAnimator,
+            Optional<SplitTaskUnfoldAnimator> unfoldAnimatorOptional,
             TransactionPool transactionPool,
             Transitions transitions,
             @ShellMainThread ShellExecutor executor,
@@ -896,7 +904,7 @@ public abstract class WMShellModule {
                 shellInit,
                 progressProvider.get(),
                 animator,
-                unfoldAnimator,
+                unfoldAnimatorOptional,
                 transactionPool,
                 executor,
                 handler,
@@ -1341,7 +1349,7 @@ public abstract class WMShellModule {
             MultiInstanceHelper multiInstanceHelper,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             AppHandleEducationController appHandleEducationController,
-            AppHandleAndHeaderVisibilityHelper appHandleAndHeaderVisibilityHelper,
+            CaptionVisibilityHelper captionVisibilityHelper,
             WindowDecorCaptionRepository windowDecorCaptionRepository,
             Optional<DesktopActivityOrientationChangeHandler> activityOrientationChangeHandler,
             FocusTransitionObserver focusTransitionObserver,
@@ -1372,7 +1380,7 @@ public abstract class WMShellModule {
                 rootTaskDisplayAreaOrganizer, interactionJankMonitor, genericLinksParser,
                 appToWebRepository, assistContentRequester, windowDecorViewHostSupplier,
                 multiInstanceHelper, desktopTasksLimiter, appHandleEducationController,
-                appHandleAndHeaderVisibilityHelper, windowDecorCaptionRepository,
+                captionVisibilityHelper, windowDecorCaptionRepository,
                 activityOrientationChangeHandler, focusTransitionObserver, desktopModeEventLogger,
                 desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
                 desktopModeCompatPolicy, desktopTilingDecorViewModel,
@@ -1422,13 +1430,14 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
-    static AppHandleAndHeaderVisibilityHelper provideAppHandleAndHeaderVisibilityHelper(
+    static CaptionVisibilityHelper provideCaptionVisibilityHelper(
             @NonNull DisplayController displayController,
             @NonNull DesktopModeCompatPolicy desktopModeCompatPolicy,
             @NonNull DesktopState desktopState,
-            Optional<BubbleController> bubbleController) {
-        return new AppHandleAndHeaderVisibilityHelper(displayController,
-                desktopModeCompatPolicy, desktopState, bubbleController);
+            Optional<BubbleController> bubbleController,
+            LockTaskChangeListener lockTaskChangeListener) {
+        return new CaptionVisibilityHelper(displayController,
+                desktopModeCompatPolicy, desktopState, bubbleController, lockTaskChangeListener);
     }
 
     @WMSingleton
@@ -1589,6 +1598,7 @@ public abstract class WMShellModule {
             ShellTaskOrganizer shellTaskOrganizer,
             Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler,
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
+            DisplayController displayController,
             DesktopState desktopState,
             ShellInit shellInit) {
         return desktopUserRepositories.flatMap(
@@ -1600,6 +1610,7 @@ public abstract class WMShellModule {
                                         shellTaskOrganizer,
                                         desktopMixedTransitionHandler.get(),
                                         desktopWallpaperActivityTokenProvider,
+                                        displayController,
                                         desktopState,
                                         shellInit)));
     }

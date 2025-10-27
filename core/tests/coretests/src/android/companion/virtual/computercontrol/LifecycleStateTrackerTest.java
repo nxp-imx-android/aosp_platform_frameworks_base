@@ -17,6 +17,7 @@
 package android.companion.virtual.computercontrol;
 
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -95,9 +96,10 @@ public class LifecycleStateTrackerTest {
         doAnswer((inv) -> {
             mLifecycle.onClosed(ComputerControlSession.CLOSE_REASON_CALLER_INITIATED);
             return null;
-        }).when(mMockCallback).onBlocked(anyInt());
+        }).when(mMockCallback).onBlocked(anyInt(), any());
 
         assertThrows(IllegalStateException.class,
-                () -> mLifecycle.onBlocked(ComputerControlSession.BLOCK_REASON_SECURE_CONTENT));
+                () -> mLifecycle.onBlocked(ComputerControlSession.BLOCK_REASON_SECURE_CONTENT,
+                        null));
     }
 }

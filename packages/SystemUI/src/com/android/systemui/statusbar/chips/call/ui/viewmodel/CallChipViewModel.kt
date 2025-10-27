@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.chips.call.ui.viewmodel
 import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
-import android.view.View
 import com.android.internal.jank.Cuj
 import com.android.internal.logging.InstanceId
 import com.android.systemui.animation.ActivityTransitionAnimator
@@ -41,17 +40,13 @@ import com.android.systemui.statusbar.chips.call.domain.interactor.CallChipInter
 import com.android.systemui.statusbar.chips.notification.domain.interactor.StatusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
-import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createNotificationToggleClickBehavior
-import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createNotificationToggleClickListenerLegacy
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.isShowingHeadsUpFromChipTap
 import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.domain.model.TopPinnedState
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
@@ -231,7 +226,6 @@ constructor(
         val intent = state.intent
         val instanceId = state.notificationInstanceId
 
-        // This block mimics OngoingCallController#updateChip.
         val content =
             when {
                 state.startTimeMs <= 0L -> {
@@ -239,10 +233,9 @@ constructor(
                     // See b/192379214.
                     OngoingActivityChipModel.Content.IconOnly
                 }
-                PromotedNotificationUi.isEnabled &&
-                    headsUpState.isShowingHeadsUpFromChipTap(
-                        notificationKey = state.notificationKey
-                    ) -> {
+                headsUpState.isShowingHeadsUpFromChipTap(
+                    notificationKey = state.notificationKey
+                ) -> {
                     // If the user tapped this chip to show the HUN, we want to just show the icon
                     // because the HUN will show the rest of the information.
                     // Similar behavior to [NotifChipsViewModel].
@@ -263,7 +256,6 @@ constructor(
             managingPackageName = state.packageName,
             content = content,
             colors = colors,
-            onClickListenerLegacy = getOnClickListener(intent, instanceId, state.notificationKey),
             clickBehavior =
                 getClickBehavior(
                     intent = intent,
@@ -277,84 +269,18 @@ constructor(
         )
     }
 
-    private fun getOnClickListener(
-        intent: PendingIntent?,
-        instanceId: InstanceId?,
-        notificationKey: String,
-    ): View.OnClickListener? {
-        if (PromotedNotificationUi.isEnabled) {
-            return createNotificationToggleClickListenerLegacy(
-                applicationScope = scope,
-                notifChipsInteractor = notifChipsInteractor,
-                logger = logger,
-                notificationKey = notificationKey,
-            )
-        }
-        if (intent == null) {
-            return null
-        }
-        return View.OnClickListener { view ->
-            StatusBarChipsModernization.assertInLegacyMode()
-
-            logChipTapped(key = notificationKey, instanceId = instanceId)
-
-            val backgroundView =
-                view.requireViewById<ChipBackgroundContainer>(R.id.ongoing_activity_chip_background)
-            // This mimics OngoingCallController#updateChipClickListener.
-            activityStarter.postStartActivityDismissingKeyguard(
-                intent,
-                ActivityTransitionAnimator.Controller.fromView(
-                    backgroundView,
-                    Cuj.CUJ_STATUS_BAR_APP_LAUNCH_FROM_CALL_CHIP,
-                ),
-            )
-        }
-    }
-
     private fun getClickBehavior(
         intent: PendingIntent?,
         instanceId: InstanceId?,
         notificationKey: String,
         headsUpState: TopPinnedState,
     ): OngoingActivityChipModel.ClickBehavior {
-        if (PromotedNotificationUi.isEnabled) {
-            return createNotificationToggleClickBehavior(
-                applicationScope = scope,
-                notifChipsInteractor = notifChipsInteractor,
-                logger = logger,
-                notificationKey = notificationKey,
-                isShowingHeadsUpFromChipTap =
-                    headsUpState.isShowingHeadsUpFromChipTap(notificationKey),
-            )
-        }
-        if (intent == null) {
-            return OngoingActivityChipModel.ClickBehavior.None
-        }
-        return OngoingActivityChipModel.ClickBehavior.ExpandAction(
-            onClick = { expandable ->
-                StatusBarChipsModernization.unsafeAssertInNewMode()
-
-                logChipTapped(key = notificationKey, instanceId = instanceId)
-
-                val animationController =
-                    if (
-                        !StatusBarChipsReturnAnimations.isEnabled ||
-                            transitionControllerFactory == null
-                    ) {
-                        expandable.activityTransitionController(
-                            Cuj.CUJ_STATUS_BAR_APP_LAUNCH_FROM_CALL_CHIP
-                        )
-                    } else {
-                        transitionState.value = TransitionState.LaunchRequested
-                        // When return animations are enabled, we use a long-lived registration
-                        // with controllers created on-demand by the animation library instead
-                        // of explicitly creating one at the time of the click. By not passing
-                        // a controller here, we let the framework do its work. Otherwise, the
-                        // explicit controller would take precedence and override the other one.
-                        null
-                    }
-                activityStarter.postStartActivityDismissingKeyguard(intent, animationController)
-            }
+        return createNotificationToggleClickBehavior(
+            applicationScope = scope,
+            notifChipsInteractor = notifChipsInteractor,
+            logger = logger,
+            notificationKey = notificationKey,
+            isShowingHeadsUpFromChipTap = headsUpState.isShowingHeadsUpFromChipTap(notificationKey),
         )
     }
 

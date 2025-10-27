@@ -120,6 +120,7 @@ final class DevicePolicyEngine {
     private final Context mContext;
     private final UserManager mUserManager;
     private final PolicyPathProvider mPolicyPathProvider;
+    private final PolicyDefinitionMap mPolicyDefinitionMap;
 
     // TODO(b/256849338): add more granular locks
     private final Object mLock;
@@ -150,7 +151,9 @@ final class DevicePolicyEngine {
     DevicePolicyEngine(
             @NonNull Context context,
             @NonNull DeviceAdminServiceController deviceAdminServiceController,
-            @NonNull Object lock, @NonNull PolicyPathProvider policyPathProvider) {
+            @NonNull Object lock,
+            @NonNull PolicyPathProvider policyPathProvider,
+            @NonNull PolicyDefinitionMap policyDefinitionMap) {
         mContext = Objects.requireNonNull(context);
         mDeviceAdminServiceController = Objects.requireNonNull(deviceAdminServiceController);
         mLock = Objects.requireNonNull(lock);
@@ -160,6 +163,7 @@ final class DevicePolicyEngine {
         mGlobalPolicies = new HashMap<>();
         mEnforcingAdmins = new SparseArray<>();
         mAdminPolicySize = new SparseArray<>();
+        mPolicyDefinitionMap = policyDefinitionMap;
     }
 
     @GuardedBy("mLock")
@@ -2815,7 +2819,7 @@ final class DevicePolicyEngine {
             }
         }
 
-        private static void readPoliciesInner(
+        private void readPoliciesInner(
                 TypedXmlPullParser parser, Map<PolicyKey, PolicyState<?>> policyStateMap)
                 throws IOException, XmlPullParserException {
             PolicyKey policyKey = null;
@@ -2826,7 +2830,7 @@ final class DevicePolicyEngine {
                 String tag = parser.getName();
                 switch (tag) {
                     case TAG_POLICY_KEY_ENTRY:
-                        policyDefinition = PolicyDefinition.readFromXml(parser);
+                        policyDefinition = mPolicyDefinitionMap.readFromXml(parser);
                         if (policyDefinition != null) {
                             policyKey = policyDefinition.getPolicyKey();
                         }

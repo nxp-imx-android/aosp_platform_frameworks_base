@@ -217,7 +217,6 @@ class ScreenRotationAnimation {
         }
 
         setScreenshotTransform(t);
-        t.apply();
     }
 
     private boolean isCustomRotate() {

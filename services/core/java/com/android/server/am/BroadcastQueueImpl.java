@@ -45,7 +45,6 @@ import static com.android.server.am.BroadcastRecord.getReceiverProcessName;
 import static com.android.server.am.BroadcastRecord.getReceiverUid;
 import static com.android.server.am.BroadcastRecord.isDeliveryStateTerminal;
 import static com.android.server.am.psc.Constants.SCHED_GROUP_UNDEFINED;
-import static com.android.window.flags.Flags.balCheckBroadcastWhenDispatched;
 
 import android.annotation.CheckResult;
 import android.annotation.NonNull;
@@ -803,10 +802,21 @@ class BroadcastQueueImpl extends BroadcastQueue {
                         r.callingUid);
                 if (oldestPendingTime > SystemClock.uptimeMillis() - DateUtils.HOUR_IN_MILLIS) {
                     final StringBuilder sb = new StringBuilder();
-                    sb.append("Too many pending broadcasts from uid ").append(r.callingUid)
-                            .append("; dropping ").append(r).append(".");
+                    sb.append("Too many enqueued broadcasts from uid ")
+                            .append(r.callingUid)
+                            .append(".");
                     mHistory.appendPendingBroadcastsSummaryForUid(sb, r.callingUid);
                     Slog.wtf(TAG, sb.toString());
+                    if (!UserHandle.isCore(r.callingUid) && r.callerApp != null) {
+                        r.callerApp.killLocked("Too many enqueued broadcasts",
+                                ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE,
+                                ApplicationExitInfo.SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT,
+                                true /* noisy */);
+                        forEachMatchingBroadcast(QUEUE_PREDICATE_ANY,
+                                (testRecord, testIndex) -> r.callingUid == testRecord.callingUid,
+                                mBroadcastConsumerSkipDueToExcessiveCount, true);
+                        return;
+                    }
                 }
             }
         }
@@ -1171,7 +1181,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
         }
 
         if (r.mBackgroundStartPrivileges.allowsAny()
-                && (r.realCallingUid != app.uid || !balCheckBroadcastWhenDispatched())) {
+                && (r.realCallingUid != app.uid)) {
             // allow the broadcast receiver potential privileges if it is not sent to itself
             app.addOrUpdateBackgroundStartPrivileges(r, r.mBackgroundStartPrivileges);
 
@@ -1722,6 +1732,12 @@ class BroadcastQueueImpl extends BroadcastQueue {
 
     @GuardedBy("mService")
     final BroadcastRecordConsumer mBroadcastRecordConsumerEnqueue = this::enqueueBroadcastLocked;
+
+    @GuardedBy("mService")
+    private final BroadcastConsumer mBroadcastConsumerSkipDueToExcessiveCount = (r, i) -> {
+        setDeliveryState(null, null, r, i, r.receivers.get(i), BroadcastRecord.DELIVERY_SKIPPED,
+                "mBroadcastConsumerSkipDueToExcessiveCount");
+    };
 
     /**
      * Verify that all known {@link #mProcessQueues} are in the state tested by
@@ -2436,6 +2452,11 @@ class BroadcastQueueImpl extends BroadcastQueue {
                     r.userId,
                     userType);
         }
+    }
+
+    @Nullable
+    public String getBroadcastConstant(String key) {
+        return String.valueOf(mConstants.getValue(key));
     }
 
     @Override

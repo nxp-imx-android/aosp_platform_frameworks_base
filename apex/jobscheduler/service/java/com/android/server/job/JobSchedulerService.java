@@ -99,7 +99,6 @@ import android.os.LimitExceededException;
 import android.os.Looper;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
-import android.os.PerfettoTrace;
 import android.os.Process;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
@@ -2584,7 +2583,7 @@ public class JobSchedulerService extends com.android.server.SystemService
     }
 
     private void traceJobScheduledLocked(JobStatus jobStatus) {
-        if (!Flags.usePerfettoSdkForTracing() || !PerfettoTrace.isJobSchedulerCategoryEnabled()) {
+        if (!mPerfettoTracer.isTraceEnabled()) {
             return;
         }
         final int scheduledState = FrameworkStatsLog.SCHEDULED_JOB_STATE_CHANGED__STATE__SCHEDULED;
@@ -2694,7 +2693,7 @@ public class JobSchedulerService extends com.android.server.SystemService
 
     private void traceJobCancelledLocked(JobStatus cancelled,
             @JobParameters.StopReason int reason, int internalReasonCode) {
-        if (!Flags.usePerfettoSdkForTracing() || !PerfettoTrace.isJobSchedulerCategoryEnabled()) {
+        if (!mPerfettoTracer.isTraceEnabled()) {
             return;
         }
         final int cancelledState =
@@ -2723,6 +2722,9 @@ public class JobSchedulerService extends com.android.server.SystemService
      * </p>
      *
      * @param context The system server context.
+     * @param maxJobs The maximum number of jobs a single app can have enqueued at one time.
+     * @param jobStore The JobStore to use for persisting jobs, or {@code null} to use the default.
+     * @param jobPerfettoTracer The JobPerfettoTracer to use for perfetto tracing.
      */
     @VisibleForTesting
     JobSchedulerService(Context context, int maxJobs, @Nullable JobStore jobStore,

@@ -1054,10 +1054,8 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Chính xác!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Thử lại"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Thử lại"</string>
-    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
-    <skip />
-    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
-    <skip />
+    <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Nhấp để mở khoá"</string>
+    <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Nhấn phím bất kỳ để mở khoá"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Mở khóa đối với tất cả các tính năng và dữ liệu"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Đã vượt quá số lần Mở khóa bằng khuôn mặt tối đa"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Không có SIM"</string>
@@ -1279,6 +1277,8 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Hoàn thành tác vụ"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Mở bằng"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Mở bằng %1$s"</string>
+    <!-- no translation found for open_app_name (6114096770130122912) -->
+    <skip />
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Mở"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Mở đường liên kết <xliff:g id="HOST">%1$s</xliff:g> bằng"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Mở đường liên kết bằng"</string>
@@ -1800,10 +1800,8 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Thao tác nhấn và giữ cả hai phím âm lượng trong vài giây sẽ bật <xliff:g id="SERVICE">%1$s</xliff:g>, một tính năng hỗ trợ tiếp cận. Việc bật tính năng này có thể thay đổi cách thiết bị của bạn hoạt động.\n\nBạn có thể chuyển phím tắt này thành một tính năng khác trong phần Cài đặt &gt; Hỗ trợ tiếp cận."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Bật"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Không bật"</string>
-    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
-    <skip />
+    <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"Đang bật"</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"Đang tắt"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Cho phép <xliff:g id="SERVICE">%1$s</xliff:g> toàn quyền kiểm soát thiết bị của bạn?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Bạn chỉ nên cấp toàn quyền kiểm soát cho những ứng dụng trợ giúp mình khi cần hỗ trợ tiếp cận, chứ không nên cấp cho hầu hết các ứng dụng."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Xem và điều khiển màn hình"</string>
@@ -1817,16 +1815,11 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Nhấn vào một tính năng để bắt đầu sử dụng:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Chọn các tính năng để dùng với nút hỗ trợ tiếp cận"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Chọn các tính năng để dùng với lối tắt cho phím âm lượng"</string>
-    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
-    <skip />
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"nút hỗ trợ tiếp cận"</string>
+    <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"phím âm lượng"</string>
+    <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"cử chỉ"</string>
+    <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"cài đặt nhanh"</string>
+    <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"nhấn 3 lần"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> đã bị tắt"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Chỉnh sửa phím tắt"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Xong"</string>

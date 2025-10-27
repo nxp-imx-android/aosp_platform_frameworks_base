@@ -208,7 +208,7 @@ std::unique_ptr<const IdmapConstraints> IdmapConstraints::FromBinaryStream(std::
 
 std::unique_ptr<const IdmapData::Header> IdmapData::Header::FromBinaryStream(std::istream& stream) {
   std::unique_ptr<IdmapData::Header> idmap_data_header(new IdmapData::Header());
-  if (!Read32(stream, &idmap_data_header->target_entry_count) ||
+  if (!Read32(stream, &idmap_data_header->target_entry_section_count) ||
       !Read32(stream, &idmap_data_header->target_entry_inline_count) ||
       !Read32(stream, &idmap_data_header->target_entry_inline_value_count) ||
       !Read32(stream, &idmap_data_header->config_count) ||
@@ -227,16 +227,44 @@ std::unique_ptr<const IdmapData> IdmapData::FromBinaryStream(std::istream& strea
     return nullptr;
   }
 
-  // Read the mapping of target resource id to overlay resource value.
-  data->target_entries_.resize(data->header_->GetTargetEntryCount());
-  for (size_t i = 0; i < data->header_->GetTargetEntryCount(); i++) {
-    if (!Read32(stream, &data->target_entries_[i].target_id)) {
+  // Target entries are associated with sections that may or may not be flagged. Read the section
+  // data first and then the entry data.
+  data->target_entry_sections_.resize(data->header_->GetTargetEntrySectionCount());
+  for (size_t i = 0; i < data->header_->GetTargetEntrySectionCount(); i++) {
+    if (!Read32(stream, &data->target_entry_sections_[i].flag_name_index)) {
       return nullptr;
     }
-  }
-  for (size_t i = 0; i < data->header_->GetTargetEntryCount(); i++) {
-    if (!Read32(stream, &data->target_entries_[i].overlay_id)) {
+    uint8_t negated_int;
+    if (!Read8(stream, &negated_int)) {
       return nullptr;
+    }
+    data->target_entry_sections_[i].flag_negated = negated_int != 0;
+
+    uint8_t padding = CalculatePadding(sizeof(bool));
+    for (uint8_t p = 0; p < padding; p++) {
+      uint8_t ignored;
+      if (!Read8(stream, &ignored)) {
+        return nullptr;
+      }
+    }
+
+    uint32_t entry_count;
+    if (!Read32(stream, &entry_count)) {
+      return nullptr;
+    }
+    data->target_entry_sections_[i].target_entries.resize(entry_count);
+  }
+  // Now read the mapping of target resource id to overlay resource value.
+  for (size_t i = 0; i < data->header_->GetTargetEntrySectionCount(); i++) {
+    for (size_t j = 0; j < data->target_entry_sections_[i].target_entries.size(); j++) {
+      if (!Read32(stream, &data->target_entry_sections_[i].target_entries[j].target_id)) {
+        return nullptr;
+      }
+    }
+    for (size_t j = 0; j < data->target_entry_sections_[i].target_entries.size(); j++) {
+      if (!Read32(stream, &data->target_entry_sections_[i].target_entries[j].overlay_id)) {
+        return nullptr;
+      }
     }
   }
 
@@ -367,9 +395,10 @@ Result<std::unique_ptr<const IdmapData>> IdmapData::FromResourceMapping(
   data->string_pool_data_ = std::string(resource_mapping.GetStringPoolData());
   uint32_t inline_value_count = 0;
   std::set<std::string_view> config_set;
+  data->target_entry_sections_.push_back({});
   for (const auto& mapping : resource_mapping.GetTargetToOverlayMap()) {
     if (auto overlay_resource = std::get_if<ResourceId>(&mapping.second)) {
-      data->target_entries_.push_back({mapping.first, *overlay_resource});
+      data->target_entry_sections_[0].target_entries.push_back({mapping.first, *overlay_resource});
     } else {
       std::map<ConfigDescription, TargetValue> values;
       for (const auto& [config, value] : std::get<ConfigMap>(mapping.second)) {
@@ -390,7 +419,8 @@ Result<std::unique_ptr<const IdmapData>> IdmapData::FromResourceMapping(
   }
 
   std::unique_ptr<IdmapData::Header> data_header(new IdmapData::Header());
-  data_header->target_entry_count = static_cast<uint32_t>(data->target_entries_.size());
+  data_header->target_entry_section_count =
+      static_cast<uint32_t>(data->target_entry_sections_.size());
   data_header->target_entry_inline_count =
       static_cast<uint32_t>(data->target_inline_entries_.size());
   data_header->target_entry_inline_value_count = inline_value_count;

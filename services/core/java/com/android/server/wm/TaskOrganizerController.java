@@ -698,7 +698,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
             // Set defer remove mode for IME
             final DisplayContent dc = topActivity.getDisplayContent();
             if (hasImeSurface) {
-                if (topActivity.isVisibleRequested() && dc.mInputMethodWindow != null
+                if (topActivity.isVisibleRequested() && dc.getImeWindow() != null
                         && dc.isFixedRotationLaunchingApp(topActivity)) {
                     removalInfo.deferRemoveMode = DEFER_MODE_ROTATION;
                 } else {
@@ -1170,9 +1170,6 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
     public void setExcludeLayersFromTaskSnapshot(WindowContainerToken token,
             SurfaceControl[] layers) throws RemoteException {
         enforceTaskPermission("setExcludeLayersFromTaskSnapshot()");
-        if (!Flags.excludingLayerFromTaskSnapshot()) {
-            return;
-        }
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
@@ -1196,9 +1193,6 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
     @Override
     public void clearExcludeLayersFromTaskSnapshot(WindowContainerToken token) {
         enforceTaskPermission("clearExcludeLayersFromTaskSnapshot()");
-        if (!Flags.excludingLayerFromTaskSnapshot()) {
-            return;
-        }
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {

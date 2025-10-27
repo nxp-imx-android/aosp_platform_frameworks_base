@@ -16,6 +16,7 @@
 
 package com.android.server.pm;
 
+import android.annotation.ArrayRes;
 import android.annotation.ColorRes;
 import android.annotation.DrawableRes;
 import android.annotation.NonNull;
@@ -166,6 +167,13 @@ public final class UserTypeDetails {
      */
     private final @NonNull UserProperties mDefaultUserProperties;
 
+    /**
+     * The Resource ID of the that will be used create the {@link UserActivitiesAllowlist}
+     * associated with the user type (or {@link Resources#ID_NULL} when the type doesn't define such
+     * allowlist).
+     */
+    private final @ArrayRes int mActivitiesAllowlist;
+
     private UserTypeDetails(@NonNull String name, boolean enabled, int maxAllowed,
             @UserInfoFlag int baseType, @UserInfoFlag int defaultUserInfoPropertyFlags,
             @Nullable int[] labels, int maxAllowedPerParent, boolean profileParentRequired,
@@ -178,7 +186,8 @@ public final class UserTypeDetails {
             @Nullable Bundle defaultSecureSettings,
             @Nullable List<DefaultCrossProfileIntentFilter> defaultCrossProfileIntentFilters,
             @StringRes int accessibilityString,
-            @NonNull UserProperties defaultUserProperties) {
+            @NonNull UserProperties defaultUserProperties,
+            @ArrayRes int activitiesAllowlists) {
         this.mName = name;
         this.mEnabled = enabled;
         this.mMaxAllowed = maxAllowed;
@@ -200,6 +209,7 @@ public final class UserTypeDetails {
         this.mDarkThemeBadgeColors = darkThemeBadgeColors;
         this.mAccessibilityString = accessibilityString;
         this.mDefaultUserProperties = defaultUserProperties;
+        this.mActivitiesAllowlist = activitiesAllowlists;
     }
 
     /**
@@ -379,6 +389,10 @@ public final class UserTypeDetails {
                 : Collections.emptyList();
     }
 
+    @ArrayRes int getActivitiesAllowlist() {
+        return mActivitiesAllowlist;
+    }
+
     /** Value that indicates that there is no limit to the number of users allowed. */
     public static int getLegacyUnlimitedNumberOfUsersValue() {
         if (android.multiuser.Flags.decoupleMaxUsersFromProfiles()) {
@@ -416,6 +430,8 @@ public final class UserTypeDetails {
         pw.println(mDarkThemeBadgeColors != null ? mDarkThemeBadgeColors.length : "0(null)");
         pw.print(prefix); pw.print("mLabels.length: ");
         pw.println(mLabels != null ? mLabels.length : "0(null)");
+        pw.print(prefix); pw.print("mActivitiesAllowlist: ");
+        pw.println(mActivitiesAllowlist);
     }
 
     /** Builder for a {@link UserTypeDetails}; see that class for documentation. */
@@ -446,6 +462,7 @@ public final class UserTypeDetails {
         // Default UserProperties cannot be null but for efficiency we don't initialize it now.
         // If it isn't set explicitly, {@link UserProperties.Builder#build()} will be used.
         private @Nullable UserProperties mDefaultUserProperties = null;
+        private @ArrayRes int mActivitiesAllowlist = Resources.ID_NULL;
 
         public Builder setName(String name) {
             mName = name;
@@ -560,6 +577,17 @@ public final class UserTypeDetails {
             return this;
         }
 
+        /**
+         * Sets the allowlist of activities associated with the user type.
+         *
+         * <p>If the resource is {@link Resources#ID_NULL}, allowlisting is disabled (and all
+         * activities are allowed).
+         */
+        public Builder setActivitiesAllowlist(@ArrayRes int activitiesAllowlist) {
+            this.mActivitiesAllowlist = activitiesAllowlist;
+            return this;
+        }
+
         public @NonNull UserProperties getDefaultUserProperties() {
             if (mDefaultUserProperties == null) {
                 mDefaultUserProperties = new UserProperties.Builder().build();
@@ -623,7 +651,8 @@ public final class UserTypeDetails {
                     mDefaultSecureSettings,
                     mDefaultCrossProfileIntentFilters,
                     mAccessibilityString,
-                    getDefaultUserProperties());
+                    getDefaultUserProperties(),
+                    mActivitiesAllowlist);
         }
 
         private boolean hasBadge() {

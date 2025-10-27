@@ -500,9 +500,7 @@ public class BubbleData {
                     // Not in the overflow, have an entry, so it's a new bubble
                     bubbleToReturn = new Bubble(entry,
                             mBubbleMetadataFlagListener,
-                            mCancelledListener,
-                            mMainExecutor,
-                            mBgExecutor);
+                            mCancelledListener, mMainExecutor);
                 } else {
                     // If there's no entry it must be a persisted bubble
                     bubbleToReturn = persistedBubble;
@@ -522,7 +520,7 @@ public class BubbleData {
         String bubbleKey = Bubble.getBubbleKeyForShortcut(info);
         Bubble bubbleToReturn = findAndRemoveBubbleFromOverflow(bubbleKey);
         if (bubbleToReturn == null) {
-            bubbleToReturn = Bubble.createShortcutBubble(info, mMainExecutor, mBgExecutor);
+            bubbleToReturn = Bubble.createShortcutBubble(info);
         }
         return bubbleToReturn;
     }
@@ -531,7 +529,7 @@ public class BubbleData {
         String bubbleKey = Bubble.getAppBubbleKeyForApp(intent.getPackage(), user);
         Bubble bubbleToReturn = findAndRemoveBubbleFromOverflow(bubbleKey);
         if (bubbleToReturn == null) {
-            bubbleToReturn = Bubble.createAppBubble(intent, user, null, mMainExecutor, mBgExecutor);
+            bubbleToReturn = Bubble.createAppBubble(intent, user, null);
         }
         return bubbleToReturn;
     }
@@ -540,8 +538,7 @@ public class BubbleData {
         String bubbleKey = Bubble.getAppBubbleKeyForApp(pendingIntent.getCreatorPackage(), user);
         Bubble bubbleToReturn = findAndRemoveBubbleFromOverflow(bubbleKey);
         if (bubbleToReturn == null) {
-            bubbleToReturn = Bubble.createAppBubble(pendingIntent, user, mMainExecutor,
-                    mBgExecutor);
+            bubbleToReturn = Bubble.createAppBubble(pendingIntent, user);
         }
         return bubbleToReturn;
     }
@@ -551,8 +548,7 @@ public class BubbleData {
         String bubbleKey = Bubble.getAppBubbleKeyForTask(taskInfo);
         Bubble bubbleToReturn = findAndRemoveBubbleFromOverflow(bubbleKey);
         if (bubbleToReturn == null) {
-            bubbleToReturn = Bubble.createTaskBubble(taskInfo, user, null, mMainExecutor,
-                    mBgExecutor);
+            bubbleToReturn = Bubble.createTaskBubble(taskInfo, user, null);
         }
         return bubbleToReturn;
     }

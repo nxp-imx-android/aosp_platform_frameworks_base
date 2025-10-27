@@ -46,6 +46,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import platform.test.desktop.DesktopMouseTestRule
+import platform.test.desktop.LogicalDisplayPointPx
 
 @RunWith(AndroidJUnit4::class)
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
@@ -101,13 +102,15 @@ class AutoclickClickTypeTests {
     // Move the mouse to the center of the view
     private fun moveMouseToView(view: View) {
         val (centerX, centerY) = getViewCenter(view)
-        desktopMouseTestRule.move(DEFAULT_DISPLAY, centerX, centerY)
+        desktopMouseTestRule.move(LogicalDisplayPointPx(DEFAULT_DISPLAY, centerX, centerY))
     }
 
     // Move the mouse a given distance away from the center of the view.
     private fun moveMouseAwayFromView(view: View, deltaX: Int, deltaY: Int) {
         val (centerX, centerY) = getViewCenter(view)
-        desktopMouseTestRule.move(DEFAULT_DISPLAY, centerX + deltaX, centerY + deltaY)
+        desktopMouseTestRule.move(
+            LogicalDisplayPointPx(DEFAULT_DISPLAY, centerX + deltaX, centerY + deltaY)
+        )
     }
 
     private fun moveMouseToScrollButton(resourceId: String) {
@@ -115,9 +118,11 @@ class AutoclickClickTypeTests {
             uiDevice, By.res(resourceId)
         )
         desktopMouseTestRule.move(
-            DEFAULT_DISPLAY,
-            scrollButton.visibleCenter.x,
-            scrollButton.visibleCenter.y
+            LogicalDisplayPointPx(
+                DEFAULT_DISPLAY,
+                scrollButton.visibleCenter.x,
+                scrollButton.visibleCenter.y,
+            )
         )
     }
 

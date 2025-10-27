@@ -24,12 +24,10 @@ import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.IInterface;
-
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.am.PersistentConnection;
 import com.android.server.appbinding.finders.AppServiceFinder;
 import com.android.server.utils.Slogf;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Queue;
@@ -51,8 +49,13 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
     private final Queue<Consumer<AppServiceConnection>> mCallbacks = new ArrayDeque<>();
     private final Object mLock = new Object();
 
-    AppServiceConnection(Context context, int userId, AppBindingConstants constants,
-            Handler handler, AppServiceFinder finder, String packageName,
+    public AppServiceConnection(
+            Context context,
+            int userId,
+            AppBindingConstants constants,
+            Handler handler,
+            AppServiceFinder finder,
+            String packageName,
             @NonNull ComponentName componentName) {
         super(TAG, context, handler, userId, componentName,
                 constants.SERVICE_RECONNECT_BACKOFF_SEC,

@@ -287,6 +287,8 @@
     <uses-permission android:name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" />
     <uses-permission android:name="android.permission.MANAGE_AUTO_FILL" />
     <uses-permission android:name="android.permission.MANAGE_CONTENT_CAPTURE" />
+    <uses-permission android:name="android.permission.SET_CONTENT_PROTECTION_ALLOWLIST"
+        android:featureFlag="android.view.contentprotection.flags.set_content_protection_allowlist_enabled" />
     <uses-permission android:name="android.permission.MANAGE_CONTENT_SUGGESTIONS" />
     <uses-permission android:name="android.permission.MANAGE_APP_PREDICTIONS" />
     <uses-permission android:name="android.permission.MANAGE_LOW_POWER_STANDBY" />
@@ -370,6 +372,8 @@
     <uses-permission android:name="android.permission.ACCESS_COMPANION_INFO" />
     <uses-permission android:name="android.permission.READ_REMOTE_TASKS" />
     <uses-permission android:name="android.permission.REQUEST_TASK_HANDOFF" />
+    <uses-permission android:name="android.permission.READ_HANDOFF_SETTINGS" />
+    <uses-permission android:name="android.permission.MODIFY_HANDOFF_SETTINGS" />
 
     <uses-permission android:name="android.permission.MANAGE_APPOPS" />
     <uses-permission android:name="android.permission.WATCH_APPOPS" />

@@ -72,6 +72,7 @@ import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.common.HomeIntentProvider;
+import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
@@ -103,6 +104,7 @@ public class BubbleTransitions {
     @NonNull final ShellTaskOrganizer mTaskOrganizer;
     @NonNull final TaskViewRepository mRepository;
     @NonNull final Executor mMainExecutor;
+    @NonNull final Executor mBackgroundExecutor;
     @NonNull final BubbleData mBubbleData;
     @NonNull final TaskViewTransitions mTaskViewTransitions;
     @NonNull final Context mContext;
@@ -124,11 +126,13 @@ public class BubbleTransitions {
             @NonNull Transitions transitions, @NonNull ShellTaskOrganizer organizer,
             @NonNull TaskViewRepository repository, @NonNull BubbleData bubbleData,
             @NonNull TaskViewTransitions taskViewTransitions,
-            @NonNull BubbleAppInfoProvider appInfoProvider) {
+            @NonNull BubbleAppInfoProvider appInfoProvider,
+            @NonNull ShellExecutor bgExecutor) {
         mTransitions = transitions;
         mTaskOrganizer = organizer;
         mRepository = repository;
         mMainExecutor = transitions.getMainExecutor();
+        mBackgroundExecutor = bgExecutor;
         mBubbleData = bubbleData;
         mTaskViewTransitions = taskViewTransitions;
         mContext = context;
@@ -639,7 +643,9 @@ public class BubbleTransitions {
                     layerView,
                     iconFactory,
                     mAppInfoProvider,
-                    false /* skipInflation */);
+                    false /* skipInflation */,
+                    mMainExecutor,
+                    mBackgroundExecutor);
         }
 
         @VisibleForTesting
@@ -930,7 +936,9 @@ public class BubbleTransitions {
                     layerView,
                     iconFactory,
                     mAppInfoProvider,
-                    false /* skipInflation */);
+                    false /* skipInflation */,
+                    mMainExecutor,
+                    mBackgroundExecutor);
         }
 
         @VisibleForTesting
@@ -1193,7 +1201,9 @@ public class BubbleTransitions {
                     layerView,
                     iconFactory,
                     mAppInfoProvider,
-                    false /* skipInflation */);
+                    false /* skipInflation */,
+                    mMainExecutor,
+                    mBackgroundExecutor);
         }
 
         @VisibleForTesting
@@ -1372,6 +1382,12 @@ public class BubbleTransitions {
                     mSnapshot = chg.getSnapshot();
                     mPlayConvertTaskAnimation = !isOpeningMode(chg.getMode()) && mSnapshot != null;
                     found = true;
+                    if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+                        // Prepare to animate in. This is normally pre-set in
+                        // Transitions#setupStartState, but after root Task for Bubble, the opening
+                        // leaf Task can be considered as dependent.
+                        startTransaction.setAlpha(chg.getLeash(), 0f);
+                    }
                 } else {
                     // In core-initiated launches, the transition is of an OPEN type, and we need to
                     // manually show the surfaces behind the newly bubbled task
@@ -1589,7 +1605,9 @@ public class BubbleTransitions {
                     layerView,
                     iconFactory,
                     mAppInfoProvider,
-                    false /* skipInflation */);
+                    false /* skipInflation */,
+                    mMainExecutor,
+                    mBackgroundExecutor);
         }
 
         @VisibleForTesting

@@ -262,8 +262,7 @@ public final class RecordingActivityMonitor implements AudioSystem.AudioRecordin
 
     protected void dump(PrintWriter pw) {
         // recorders
-        pw.println("\nRecordActivityMonitor dump time: "
-                + DateFormat.getTimeInstance().format(new Date()));
+        pw.println("## RecordActivityMonitor");
         synchronized (mRecordStates) {
             for (RecordingState state : mRecordStates) {
                 state.dump(pw);
@@ -272,6 +271,7 @@ public final class RecordingActivityMonitor implements AudioSystem.AudioRecordin
         pw.println("\n");
         // log
         sEventLogger.dump(pw);
+        pw.println();
     }
 
     private static ArrayList<AudioRecordingConfiguration> anonymizeForPublicConsumption(
@@ -643,7 +643,5 @@ public final class RecordingActivityMonitor implements AudioSystem.AudioRecordin
         }
     }
 
-    private static final EventLogger
-            sEventLogger = new EventLogger(50,
-            "recording activity received by AudioService");
+    private static final EventLogger sEventLogger = new EventLogger(50, "### Recording Activity");
 }

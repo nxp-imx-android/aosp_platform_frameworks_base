@@ -43,7 +43,6 @@ import android.media.AudioSystem;
 import android.media.MediaRoute2Info;
 import android.media.RoutingChangeInfo;
 import android.media.RoutingSessionInfo;
-import android.media.SuggestedDeviceInfo;
 
 import com.android.settingslib.bluetooth.A2dpProfile;
 import com.android.settingslib.bluetooth.CachedBluetoothDevice;
@@ -105,7 +104,6 @@ public class LocalMediaManagerTest {
     private MediaRoute2Info mRouteInfo2;
     @Mock
     private AudioManager mAudioManager;
-    @Mock private SuggestedDeviceInfo mSuggestedDeviceInfo;
 
     private Context mContext;
     private LocalMediaManager mLocalMediaManager;
@@ -113,7 +111,6 @@ public class LocalMediaManagerTest {
     private ShadowBluetoothAdapter mShadowBluetoothAdapter;
     private InfoMediaDevice mInfoMediaDevice1;
     private InfoMediaDevice mInfoMediaDevice2;
-    private SuggestedDeviceState mSuggestedDeviceState;
 
     @Before
     public void setUp() {
@@ -128,7 +125,6 @@ public class LocalMediaManagerTest {
         when(mLocalBluetoothManager.getProfileManager()).thenReturn(mLocalProfileManager);
         when(mLocalProfileManager.getA2dpProfile()).thenReturn(mA2dpProfile);
         when(mLocalProfileManager.getHearingAidProfile()).thenReturn(mHapProfile);
-        mSuggestedDeviceState = new SuggestedDeviceState(mSuggestedDeviceInfo);
 
         // Need to call constructor to initialize final fields.
         mInfoMediaManager =
@@ -637,88 +633,6 @@ public class LocalMediaManagerTest {
         mLocalMediaManager.mMediaDevices.add(device2);
 
         assertThat(mLocalMediaManager.updateCurrentConnectedDevice()).isEqualTo(phoneDevice);
-    }
-
-    @Test
-    public void connectSuggestedDevice_deviceIsDiscovered_immediatelyConnects() {
-        when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_1);
-        mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice1);
-
-        RoutingChangeInfo routingChangeInfo =
-                new RoutingChangeInfo(ENTRY_POINT_SYSTEM_MEDIA_CONTROLS, /* isSuggested= */ true);
-        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState, routingChangeInfo);
-
-        verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1, routingChangeInfo);
-        verify(mInfoMediaManager, never()).startScan();
-    }
-
-    @Test
-    public void connectSuggestedDevice_deviceIsNotDiscovered_scanStarted() {
-        when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_2);
-        mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice1);
-
-        RoutingChangeInfo routingChangeInfo =
-                new RoutingChangeInfo(ENTRY_POINT_SYSTEM_MEDIA_CONTROLS, /* isSuggested= */ true);
-        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState, routingChangeInfo);
-
-        verify(mInfoMediaManager).startScan();
-        verify(mInfoMediaManager, never()).connectToDevice(mInfoMediaDevice1, routingChangeInfo);
-    }
-
-    @Test
-    public void connectSuggestedDevice_deviceDiscoveredAfter_connects() {
-        when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_1);
-        mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice2);
-
-        RoutingChangeInfo routingChangeInfo =
-                new RoutingChangeInfo(ENTRY_POINT_SYSTEM_MEDIA_CONTROLS, /* isSuggested= */ true);
-        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState, routingChangeInfo);
-        mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice1);
-        mLocalMediaManager.dispatchDeviceListUpdate();
-
-        verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1, routingChangeInfo);
-        verify(mInfoMediaManager).startScan();
-    }
-
-    @Test
-    public void connectSuggestedDevice_handlerTimesOut_completesConnectionAttempt() {
-        when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_1);
-        mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice2);
-
-        RoutingChangeInfo routingChangeInfo =
-                new RoutingChangeInfo(ENTRY_POINT_SYSTEM_MEDIA_CONTROLS, /* isSuggested= */ true);
-        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState, routingChangeInfo);
-        mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice1);
-        mLocalMediaManager.dispatchDeviceListUpdate();
-
-        verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1, routingChangeInfo);
-
-        long scanAndConnectTimeoutSeconds = 30;
-        ShadowLooper.idleMainLooper(scanAndConnectTimeoutSeconds - 5, TimeUnit.SECONDS);
-
-        verify(mCallback, never()).onConnectSuggestedDeviceFinished(mSuggestedDeviceState, false);
-
-        ShadowLooper.idleMainLooper(6, TimeUnit.SECONDS);
-
-        verify(mCallback).onConnectSuggestedDeviceFinished(mSuggestedDeviceState, false);
-    }
-
-    @Test
-    public void connectSuggestedDevice_connectionSuccess_completesConnectionAttempt() {
-        when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_1);
-        mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice2);
-
-        RoutingChangeInfo routingChangeInfo =
-                new RoutingChangeInfo(ENTRY_POINT_SYSTEM_MEDIA_CONTROLS, /* isSuggested= */ true);
-        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState, routingChangeInfo);
-        mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice1);
-        mLocalMediaManager.dispatchDeviceListUpdate();
-
-        verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1, routingChangeInfo);
-
-        mLocalMediaManager.dispatchSelectedDeviceStateChanged(mInfoMediaDevice1,
-            LocalMediaManager.MediaDeviceState.STATE_CONNECTED);
-        verify(mCallback).onConnectSuggestedDeviceFinished(mSuggestedDeviceState, true);
     }
 
     @Test

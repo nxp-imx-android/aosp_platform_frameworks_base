@@ -243,16 +243,6 @@ flag {
 }
 
 flag {
-    name: "fix_exit_split_on_enter_bubble"
-    namespace: "multitasking"
-    description: "Fixes a bug where split screen remains active if one of the tasks moves to bubble via a trampoline task."
-    bug: "440647718"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_shell_restart_bubble_cleanup"
     namespace: "multitasking"
     description: "Convert bubbled tasks back to fullscreen when WMShell restarts."
@@ -309,3 +299,32 @@ flag {
     }
 }
 
+flag {
+    name: "fix_flickers_during_switch_from_dismiss"
+    namespace: "multitasking"
+    description: "Fixes flickers while switching bubbles as a result of dismissing a bubble."
+    bug: "452305969"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "fix_bubble_swipe_up_gesture"
+    namespace: "multitasking"
+    description: "Fixes the swipe up gesture getting broken due to bubbles."
+    bug: "444859270"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "limit_persisted_launch_params_freeform"
+    namespace: "multitasking"
+    description: "Limits loading persisted launch params to freeform TDAs"
+    bug: "419385904"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

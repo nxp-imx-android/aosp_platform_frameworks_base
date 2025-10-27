@@ -31,9 +31,8 @@ import org.junit.Ignore
 import org.junit.Test
 
 @Ignore("Test Base Class")
-abstract class OpenAppFromTaskbar(val rotation: Rotation = Rotation.ROTATION_0) : TestScenarioBase(
-    rotation
-) {
+abstract class OpenAppFromTaskbar(val rotation: Rotation = Rotation.ROTATION_0) :
+    TestScenarioBase(rotation) {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
@@ -50,9 +49,7 @@ abstract class OpenAppFromTaskbar(val rotation: Rotation = Rotation.ROTATION_0) 
 
     @Test
     open fun openApp() {
-        tapl.launchedAppState.taskbar
-            .getAppIcon(browserApp.appName)
-            .launch(browserApp.packageName)
+        tapl.launchedAppState.taskbar.getAppIcon(browserApp.appName).launch(browserApp.packageName)
     }
 
     @After

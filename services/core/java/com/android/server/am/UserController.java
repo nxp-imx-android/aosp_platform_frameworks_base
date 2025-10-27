@@ -465,9 +465,6 @@ class UserController implements Handler.Callback {
     @GuardedBy("mLock")
     private @StopUserOnSwitch int mStopUserOnSwitch = STOP_USER_ON_SWITCH_DEFAULT;
 
-    /** @see #getLastUserUnlockingUptime */
-    private volatile long mLastUserUnlockingUptime = 0;
-
     /**
      * Pending user starts waiting for shutdown step to complete.
      */
@@ -881,7 +878,7 @@ class UserController implements Handler.Callback {
                 .logUserLifecycleEvent(userId, USER_LIFECYCLE_EVENT_UNLOCKING_USER,
                 EVENT_STATE_BEGIN);
         // If the user's CE storage hasn't been unlocked yet, we cannot proceed.
-        if (!StorageManager.isCeStorageUnlocked(userId)) return false;
+        if (!mInjector.isCeStorageUnlocked(userId)) return false;
         synchronized (mLock) {
             // Do not proceed if unexpected state or a stale user
             if (mStartedUsers.get(userId) != uss || uss.state != STATE_RUNNING_LOCKED) {
@@ -896,7 +893,7 @@ class UserController implements Handler.Callback {
 
         // Call onBeforeUnlockUser on a worker thread that allows disk I/O
         FgThread.getHandler().post(() -> {
-            if (!StorageManager.isCeStorageUnlocked(userId)) {
+            if (!mInjector.isCeStorageUnlocked(userId)) {
                 Slogf.w(TAG, "User's CE storage got locked unexpectedly, leaving user locked.");
                 return;
             }
@@ -915,7 +912,7 @@ class UserController implements Handler.Callback {
 
             uss.mUnlockProgress.setProgress(20);
 
-            mLastUserUnlockingUptime = SystemClock.uptimeMillis();
+            mInjector.setLastUserUnlockingUptime(SystemClock.uptimeMillis());
 
             // Dispatch unlocked to system services; when fully dispatched,
             // that calls through to the next "unlocked" phase
@@ -932,7 +929,7 @@ class UserController implements Handler.Callback {
         final int userId = uss.mHandle.getIdentifier();
         EventLog.writeEvent(EventLogTags.UC_FINISH_USER_UNLOCKED, userId);
         // Only keep marching forward if the user's CE storage is unlocked.
-        if (!StorageManager.isCeStorageUnlocked(userId)) return;
+        if (!mInjector.isCeStorageUnlocked(userId)) return;
         synchronized (mLock) {
             // Bail if we ended up with a stale user
             if (mStartedUsers.get(uss.mHandle.getIdentifier()) != uss) return;
@@ -1019,7 +1016,7 @@ class UserController implements Handler.Callback {
             return;
         }
         // Only keep marching forward if the user's CE storage is unlocked.
-        if (!StorageManager.isCeStorageUnlocked(userId)) return;
+        if (!mInjector.isCeStorageUnlocked(userId)) return;
 
         // Remember that we logged in
         mInjector.getUserManager().onUserLoggedIn(userId);
@@ -2490,7 +2487,7 @@ class UserController implements Handler.Callback {
         }
 
         UserState uss;
-        if (!StorageManager.isCeStorageUnlocked(userId)) {
+        if (!mInjector.isCeStorageUnlocked(userId)) {
             // We always want to try to unlock CE storage, even if the user is not started yet.
             mLockPatternUtils.unlockUserKeyIfUnsecured(userId);
         }
@@ -3668,7 +3665,7 @@ class UserController implements Handler.Callback {
                 // In the stopping/shutdown state, return unlock state of the user's CE storage.
                 case UserState.STATE_STOPPING:
                 case UserState.STATE_SHUTDOWN:
-                    return StorageManager.isCeStorageUnlocked(userId);
+                    return mInjector.isCeStorageUnlocked(userId);
                 default:
                     return false;
             }
@@ -3680,7 +3677,7 @@ class UserController implements Handler.Callback {
                 // In the stopping/shutdown state, return unlock state of the user's CE storage.
                 case UserState.STATE_STOPPING:
                 case UserState.STATE_SHUTDOWN:
-                    return StorageManager.isCeStorageUnlocked(userId);
+                    return mInjector.isCeStorageUnlocked(userId);
                 default:
                     return false;
             }
@@ -4101,7 +4098,7 @@ class UserController implements Handler.Callback {
                     + mIsBroadcastSentForSystemUserStarting);
             pw.println("  mSwitchingFromUserMessage:" + mSwitchingFromUserMessage);
             pw.println("  mSwitchingToUserMessage:" + mSwitchingToUserMessage);
-            pw.println("  mLastUserUnlockingUptime: " + mLastUserUnlockingUptime);
+            pw.println("  mLastUserUnlockingUptime: " + mInjector.getLastUserUnlockingUptime());
             pw.println("  mReady: " + mReady);
         }
     }
@@ -4356,14 +4353,6 @@ class UserController implements Handler.Callback {
     private static void asyncTraceEnd(String msg, int cookie) {
         Trace.asyncTraceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER, msg, cookie);
         Slogf.d(TAG, "%s - asyncTraceEnd(%d)", msg, cookie);
-    }
-
-    /**
-     * Uptime when any user was being unlocked most recently. 0 if no users have been unlocked
-     * yet. To avoid lock contention (since it's used by OomAdjuster), it's volatile internally.
-     */
-    public long getLastUserUnlockingUptime() {
-        return mLastUserUnlockingUptime;
     }
 
     private static class UserProgressListener extends IProgressListener.Stub {
@@ -4811,5 +4800,16 @@ class UserController implements Handler.Callback {
             return lmk != null && lmk >= 0 ? lmk : -1;
         }
 
+        boolean isCeStorageUnlocked(@UserIdInt int userId) {
+            return StorageManager.isCeStorageUnlocked(userId);
+        }
+
+        protected void setLastUserUnlockingUptime(long now) {
+            mService.mProcessStateController.setLastUserUnlockingUptime(now);
+        }
+
+        protected long getLastUserUnlockingUptime() {
+            return mService.mProcessStateController.getLastUserUnlockingUptime();
+        }
     }
 }

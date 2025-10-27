@@ -130,6 +130,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.isActive
 
@@ -150,7 +151,7 @@ constructor(
     private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
     private val shadeInteractor: ShadeInteractor,
     private val sceneInteractor: SceneInteractor,
-    private val bouncerInteractor: BouncerInteractor,
+    bouncerInteractor: BouncerInteractor,
     shadeModeInteractor: ShadeModeInteractor,
     notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
     private val alternateBouncerToGoneTransitionViewModel:
@@ -564,11 +565,8 @@ constructor(
                             combineTransform(
                                 shadeInteractor.shadeExpansion,
                                 shadeInteractor.qsExpansion,
-                                bouncerInteractor.bouncerExpansion,
-                            ) { shadeExpansion, qsExpansion, bouncerExpansion ->
-                                if (bouncerExpansion > 0f) {
-                                    emit(alphaForBouncerExpansion(bouncerExpansion))
-                                } else if (qsExpansion == 1f) {
+                            ) { shadeExpansion, qsExpansion ->
+                                if (qsExpansion == 1f) {
                                     // Ensure HUNs will be visible in QS shade (at least while
                                     // unlocked)
                                     emit(1f)
@@ -578,12 +576,8 @@ constructor(
                                 }
                             }
                         Split ->
-                            combineTransform(isAnyExpanded, bouncerInteractor.bouncerExpansion) {
-                                isAnyExpanded,
-                                bouncerExpansion ->
-                                if (bouncerExpansion > 0f) {
-                                    emit(alphaForBouncerExpansion(bouncerExpansion))
-                                } else if (isAnyExpanded) {
+                            isAnyExpanded.transform { isAnyExpanded ->
+                                if (isAnyExpanded) {
                                     emit(1f)
                                 }
                             }
@@ -592,15 +586,8 @@ constructor(
                                 headsUpNotificationInteractor.get().isHeadsUpOrAnimatingAway,
                                 shadeInteractor.shadeExpansion,
                                 shadeInteractor.qsExpansion,
-                                bouncerInteractor.bouncerExpansion,
-                            ) {
-                                isHeadsUpOrAnimatingAway,
-                                shadeExpansion,
-                                qsExpansion,
-                                bouncerExpansion ->
-                                if (bouncerExpansion > 0f) {
-                                    emit(alphaForBouncerExpansion(bouncerExpansion))
-                                } else if (isHeadsUpOrAnimatingAway) {
+                            ) { isHeadsUpOrAnimatingAway, shadeExpansion, qsExpansion ->
+                                if (isHeadsUpOrAnimatingAway) {
                                     // Ensure HUNs will be visible in QS shade (at least while
                                     // unlocked)
                                     emit(1f)
@@ -673,11 +660,24 @@ constructor(
             }
             .dumpWhileCollecting("bouncerToGoneNotificationAlpha")
 
+    private val bouncerOverlayNotificationAlpha: Flow<Float> =
+        if (SceneContainerFlag.isEnabled) {
+            bouncerInteractor.bouncerExpansion.map {
+                when {
+                    it > 0f -> alphaForBouncerExpansion(it)
+                    else -> 1f
+                }
+            }
+        } else {
+            flowOf(1f)
+        }
+
     private fun alphaForTransitions(viewState: ViewStateAccessor): Flow<Float> {
         return merge(
             keyguardInteractor.dismissAlpha.dumpWhileCollecting("keyguardInteractor.dismissAlpha"),
             // All transition view models are mutually exclusive, and safe to merge
             bouncerToGoneNotificationAlpha(viewState),
+            bouncerOverlayNotificationAlpha,
             aodToGoneTransitionViewModel.notificationAlpha(viewState),
             aodToLockscreenTransitionViewModel.notificationAlpha,
             aodToOccludedTransitionViewModel.lockscreenAlpha(viewState),

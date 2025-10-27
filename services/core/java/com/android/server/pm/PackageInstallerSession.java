@@ -1762,10 +1762,17 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     @GuardedBy("mLock")
     private void enableFsVerityToAddedApksWithIdsig() throws PackageManagerException {
         try {
+            long fsVerityEnabledApksSizeBytes = 0;
             List<File> files = getAddedApksLocked();
             for (var file : files) {
                 if (new File(file.getPath() + V4Signature.EXT).exists()) {
                     VerityUtils.setUpFsverity(file.getPath());
+                    fsVerityEnabledApksSizeBytes += file.length();
+                }
+            }
+            if (fsVerityEnabledApksSizeBytes > 0) {
+                synchronized (mMetrics) {
+                    mMetrics.onFsVerityEnabledApksSizeBytesCalculated(fsVerityEnabledApksSizeBytes);
                 }
             }
         } catch (IOException e) {

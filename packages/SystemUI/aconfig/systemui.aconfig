@@ -315,17 +315,6 @@ flag {
 }
 
 flag {
-    name: "status_bar_chips_modernization"
-    namespace: "systemui"
-    description: "Deprecate OngoingCallController and implement OngoingActivityChips"
-    "in compose"
-    bug: "372657935"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "status_bar_system_status_icons_in_compose"
   namespace: "systemui"
   description: "Use compose for displaying icons in the status bar system status area"
@@ -372,16 +361,6 @@ flag {
     namespace: "systemui"
     description: "Fix the HUN animation when tapping on a status bar call chip"
     bug: "444551887"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "status_bar_always_schedule_auto_hide"
-    namespace: "systemui"
-    description: "Schedule the status bar auto-hide functionality more often for fullscreen mode"
-    bug: "428659575"
     metadata {
       purpose: PURPOSE_BUGFIX
     }
@@ -461,6 +440,16 @@ flag {
 }
 
 flag {
+   name: "system_status_animation_per_display"
+   namespace: "systemui"
+   description: "Make system status events / animations per display"
+   bug: "378578911"
+   metadata {
+       purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
    name: "avalanche_replace_hun_when_critical"
    namespace: "systemui"
    description: "Fix for replacing a sticky HUN when a critical HUN posted"
@@ -492,13 +481,6 @@ flag {
    namespace: "systemui"
    description: "Replace Record Trace QS Tile with expanded Record Issue QS Tile"
    bug: "305049544"
-}
-
-flag {
-   name: "confine_notification_touch_to_view_width"
-   namespace: "systemui"
-   description: "Use notification view width when detecting gestures."
-   bug: "335828150"
 }
 
 flag {
@@ -552,6 +534,16 @@ flag {
     namespace: "systemui"
     description: "Bugfix flag to control the percentage-outside-battery behavior"
     bug: "408730362"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "status_bar_chronometer_width_reset"
+    namespace: "systemui"
+    description: "Bugfix flag to reset status bar chip chronometer width in more circumstances"
+    bug: "450956553"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -760,13 +752,6 @@ flag {
    description: "Disables iOS switcher check which guard the tips designed only for iOS switchers."
    namespace: "systemui"
    bug: "322891421"
-}
-
-flag {
-   name: "shaderlib_loading_effect_refactor"
-   namespace: "systemui"
-   description: "Extend shader library to provide the common loading effects."
-   bug: "282007590"
 }
 
 flag {
@@ -1734,6 +1719,13 @@ flag {
 }
 
 flag {
+    name: "new_screen_record_toolbar_markup"
+    namespace: "systemui"
+    description: "Enables the markup functionality in the new screen record"
+    bug: "427481098"
+}
+
+flag {
     name: "large_screen_sharing"
     namespace: "systemui"
     description: "Enables the new large screen window and tab sharing experience."
@@ -1797,6 +1789,16 @@ flag {
     namespace: "systemui"
     description: "Migrate from the old remote animation APIs to the new Shell RemoteTransition-based ones."
     bug: "397180418"
+}
+
+flag {
+    name: "low_light_dream_hysteresis"
+    namespace: "systemui"
+    description: "Enables hysteresis in the low light dream debounce algorithm to prevent rapid switching."
+    bug: "447857169"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -1946,30 +1948,10 @@ flag {
 }
 
 flag {
-    name: "shortcut_helper_multi_display_support"
-    namespace: "systemui"
-    description: "Shortcut helper is triggered on the current display"
-    bug: "406740115"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "ambient_cue_plugin"
     namespace: "ailabs"
     description: "Enable plugin for ambient cue project"
     bug: "439907833"
-}
-
-flag {
-   name: "update_keyguard_on_wake_and_unlock_earlier"
-   namespace: "systemui"
-   description: "Call updateIsKeyguard earlier than on the dozing callback."
-   bug: "441261701"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
 }
 
 flag {
@@ -2050,6 +2032,14 @@ flag {
   }
 }
 
+
+flag {
+    name: "animation_library_dynamic_target_resolution"
+    namespace: "systemui"
+    description: "Enabling new robust animation system for ensuring accurate transition to the optimal target. This allows launch and return animations to intelligently adapt to changes in the underlying UI (e.g., scrolling, rotation, new views)"
+    bug: "412899675"
+}
+
 flag {
   name: "fix_privacy_indicator_both_dot_chip_visible_qs"
   namespace: "systemui"
@@ -2061,10 +2051,30 @@ flag {
 }
 
 flag {
+    name: "fix_dialog_anim_collapse_flicker"
+    namespace: "systemui"
+    description: "Fix a flicker in bluetooth tile when it is tapping during dialog collapse animation"
+    bug: "450208234"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fix_cast_dialog_flicker"
     namespace: "systemui"
     description: "Fix a flicker in activity launch animations originating from the Cast QS dialog"
     bug: "437996864"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "launch_internet_details"
+    namespace: "systemui"
+    description: "Fix the crash when launching details view with INTERNET_CONNECTIVITY"
+    bug: "425987324"
     metadata {
        purpose: PURPOSE_BUGFIX
     }
@@ -2088,4 +2098,11 @@ flag {
     metadata {
        purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "split_show_passwords_to_touch_and_physical"
+    namespace: "systemui"
+    description: "Splits the 'Show passwords' setting into two new settings: one for touch inputs and one for physical inputs."
+    bug: "417951523"
 }

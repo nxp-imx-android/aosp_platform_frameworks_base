@@ -23,21 +23,18 @@ import static com.android.modules.utils.ravenwood.RavenwoodHelper.RavenwoodInter
 import static org.junit.Assert.assertThrows;
 
 import android.annotation.Nullable;
-import android.app.ActivityManager;
-import android.app.AppCompatCallbacks;
+import android.app.ActivityManager_ravenwood;
 import android.app.RavenwoodAppDriver;
 import android.app.UiAutomation_ravenwood;
-import android.content.Context;
-import android.content.pm.ApplicationInfo;
 import android.graphics.Typeface;
 import android.icu.util.ULocale;
 import android.os.Binder;
 import android.os.Build;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.MessageQueue;
 import android.os.Process_ravenwood;
-import android.os.ServiceManager;
-import android.os.ServiceManager.ServiceNotFoundException;
+import android.os.ServiceManager_ravenwood;
 import android.os.SystemProperties;
 import android.provider.DeviceConfig_ravenwood;
 import android.system.ErrnoException;
@@ -52,7 +49,6 @@ import com.android.ravenwood.RavenwoodRuntimeNative;
 import com.android.ravenwood.common.RavenwoodInternalUtils;
 import com.android.ravenwood.common.SneakyThrow;
 import com.android.server.LocalServices;
-import com.android.server.compat.PlatformCompat;
 
 import org.junit.internal.management.ManagementFactory;
 import org.junit.runner.Description;
@@ -237,18 +233,18 @@ public class RavenwoodDriver {
         Typeface.loadPreinstalledSystemFontMap();
         Typeface.loadNativeSystemFonts();
 
+        // Do it after the framework is initialized.
+        dumpFrameworkInfo();
+
         // This will let AndroidJUnit4 use the original runner.
         System.setProperty("android.junit.runner",
                 "androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner");
 
         assertMockitoVersion();
 
-        RavenwoodUtils.sPendingExceptionThrower =
-                RavenwoodErrorHandler::maybeThrowPendingRecoverableUncaughtExceptionNoClear;
-
-        ServiceManager.init$ravenwood();
+        ServiceManager_ravenwood.init();
         LocalServices.removeAllServicesForTest();
-        ActivityManager.init$ravenwood(SYSTEM.getIdentifier());
+        ActivityManager_ravenwood.init(SYSTEM.getIdentifier());
 
         // Start the main thread.
         var mainThread = new HandlerThread(RavenwoodEnvironment.MAIN_THREAD_NAME);
@@ -257,10 +253,6 @@ public class RavenwoodDriver {
 
         // Start app lifecycle.
         RavenwoodAppDriver.init();
-
-        // TODO(b/428775903) Make sure nothing would try to access compat-IDs before this call.
-        // We may want to do it within initAppDriver().
-        initializeCompatIds();
 
         // `pkill -USR2 -f tradefed-isolation.jar` will interrupt the test thread.
         final Thread testThread = Thread.currentThread();
@@ -318,33 +310,6 @@ public class RavenwoodDriver {
         // TODO(b/375272444): this is a hacky workaround to ensure binder identity
         Binder.restoreCallingIdentity(
                 RavenwoodEnvironment.getInstance().getDefaultCallingIdentity());
-    }
-
-    private static void initializeCompatIds() {
-        // Set up compat-IDs for the app side.
-        // TODO: Inside the system server, all the compat-IDs should be enabled,
-        // Due to the `AppCompatCallbacks.install(new long[0], new long[0] ...` call in
-        // SystemServer.
-
-        var env = RavenwoodEnvironment.getInstance();
-
-        // Compat framework only uses the package name and the target SDK level.
-        ApplicationInfo appInfo = new ApplicationInfo();
-        appInfo.packageName = env.getTargetPackageName();
-        appInfo.targetSdkVersion = env.getTargetSdkLevel();
-
-        PlatformCompat platformCompat = null;
-        try {
-            platformCompat = (PlatformCompat) ServiceManager.getServiceOrThrow(
-                    Context.PLATFORM_COMPAT_SERVICE);
-        } catch (ServiceNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
-        var disabledChanges = platformCompat.getDisabledChanges(appInfo);
-        var loggableChanges = platformCompat.getLoggableChanges(appInfo);
-
-        AppCompatCallbacks.install(disabledChanges, loggableChanges, false);
     }
 
     private static final String MOCKITO_ERROR = "FATAL: Unsupported Mockito detected!"
@@ -431,5 +396,9 @@ public class RavenwoodDriver {
 
         var itz = android.icu.util.TimeZone.getDefault();
         Log.i(TAG, "  android.icu.util.TimeZone="  + itz.getDisplayName() + " / " + itz);
+    }
+
+    private static void dumpFrameworkInfo() {
+        Log.i(TAG, "MessageQueue implementation=" + MessageQueue.getImplName());
     }
 }

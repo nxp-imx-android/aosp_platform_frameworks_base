@@ -328,7 +328,7 @@
   <java-symbol type="bool" name="config_enableBurnInProtection" />
   <java-symbol type="bool" name="config_hotswapCapable" />
   <java-symbol type="integer" name="config_hsumBootStrategy" />
-  <java-symbol type="array" name="config_hsu_allowlist_activitivies" />
+  <java-symbol type="array" name="config_hsu_allowlist_activities" />
   <java-symbol type="bool" name="config_mms_content_disposition_support" />
   <java-symbol type="bool" name="config_networkSamplingWakesDevice" />
   <java-symbol type="bool" name="config_showMenuShortcutsWhenKeyboardPresent" />
@@ -764,7 +764,6 @@
   <java-symbol type="string" name="emailTypeMobile" />
   <java-symbol type="string" name="emailTypeOther" />
   <java-symbol type="string" name="emailTypeWork" />
-  <java-symbol type="string" name="emergency_call_dialog_number_for_display" />
   <java-symbol type="string" name="widget_default_package_name" />
   <java-symbol type="string" name="widget_default_class_name" />
   <java-symbol type="string" name="emergency_calls_only" />
@@ -885,6 +884,7 @@
   <java-symbol type="string" name="number_picker_increment_scroll_mode" />
   <java-symbol type="string" name="old_app_action" />
   <java-symbol type="string" name="older" />
+  <java-symbol type="string" name="open_app_name" />
   <java-symbol type="string" name="orgTypeCustom" />
   <java-symbol type="string" name="orgTypeOther" />
   <java-symbol type="string" name="orgTypeWork" />
@@ -1466,7 +1466,6 @@
   <java-symbol type="drawable" name="jog_tab_left_generic" />
   <java-symbol type="drawable" name="jog_tab_right_generic" />
   <java-symbol type="drawable" name="jog_tab_target_gray" />
-  <java-symbol type="drawable" name="picture_emergency" />
   <java-symbol type="drawable" name="platlogo" />
   <java-symbol type="drawable" name="stat_notify_sync_error" />
   <java-symbol type="drawable" name="stat_notify_wifi_in_range" />
@@ -2492,6 +2491,7 @@
   <java-symbol type="layout" name="notification_2025_template_compact_heads_up_metric" />
   <java-symbol type="layout" name="notification_2025_template_expanded_metric" />
   <java-symbol type="layout" name="notification_2025_template_expanded_single_metric" />
+  <java-symbol type="layout" name="notification_2025_template_promoted_single_metric" />
   <java-symbol type="layout" name="notification_2025_template_expanded_base" />
   <java-symbol type="layout" name="notification_2025_template_heads_up_base" />
   <java-symbol type="layout" name="notification_2025_template_compact_heads_up_base" />

@@ -37,8 +37,9 @@ import org.junit.Ignore
 import org.junit.Test
 
 @Ignore("Test Base Class")
-abstract class OpenTrampolineAppInDesktopModeTaskLimit(val rotation: Rotation = Rotation.ROTATION_0) :
-    TestScenarioBase(rotation) {
+abstract class OpenTrampolineAppInDesktopModeTaskLimit(
+    val rotation: Rotation = Rotation.ROTATION_0
+) : TestScenarioBase(rotation) {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
@@ -49,11 +50,12 @@ abstract class OpenTrampolineAppInDesktopModeTaskLimit(val rotation: Rotation = 
     private val calculatorHelper = CalculatorAppHelper(instrumentation)
     private val clockAppHelper = ClockAppHelper()
     private val messagingAppHelper = MessagingAppHelper(instrumentation)
-    private val trampolineAppHelper = SimpleAppHelper(
-        instrumentation,
-        launcherName = ActivityOptions.TrampolineStartActivity.LABEL,
-        component = ActivityOptions.TrampolineStartActivity.COMPONENT.toFlickerComponent()
-    )
+    private val trampolineAppHelper =
+        SimpleAppHelper(
+            instrumentation,
+            launcherName = ActivityOptions.TrampolineStartActivity.LABEL,
+            component = ActivityOptions.TrampolineStartActivity.COMPONENT.toFlickerComponent(),
+        )
 
     @Before
     fun setup() {
@@ -67,7 +69,8 @@ abstract class OpenTrampolineAppInDesktopModeTaskLimit(val rotation: Rotation = 
     @Test
     open fun openTrampolineApp() {
         trampolineAppHelper.launchViaIntent()
-        wmHelper.StateSyncBuilder()
+        wmHelper
+            .StateSyncBuilder()
             .withAppTransitionIdle()
             // Exactly one app is minimized
             .withWindowSurfaceDisappeared(mailAppHelper.componentMatcher)
@@ -75,7 +78,9 @@ abstract class OpenTrampolineAppInDesktopModeTaskLimit(val rotation: Rotation = 
             .withLayerVisible(clockAppHelper.componentMatcher)
             .withLayerVisible(messagingAppHelper.componentMatcher)
             // We need to verify that the second Activity (opened as trampolined task) is visible
-            .withLayerVisible(ActivityOptions.TrampolineFinishActivity.COMPONENT.toFlickerComponent())
+            .withLayerVisible(
+                ActivityOptions.TrampolineFinishActivity.COMPONENT.toFlickerComponent()
+            )
             .waitForAndVerify()
     }
 

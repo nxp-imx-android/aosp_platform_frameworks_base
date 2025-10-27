@@ -147,7 +147,10 @@ constructor(
     ): Float {
         return if (currentScene == Scenes.Lockscreen) {
             1f
-        } else if (transition.isTransitioningFromOrTo(Overlays.NotificationsShade)) {
+        } else if (
+            transition.isTransitioningFromOrTo(Overlays.NotificationsShade) ||
+                transition.isTransitioningFromOrTo(Scenes.Shade)
+        ) {
             shadeExpansion
         } else if (Overlays.NotificationsShade in currentOverlays) {
             1f
@@ -165,7 +168,7 @@ constructor(
             .map { state: ObservableTransitionState ->
                 when (state) {
                     is Idle -> {
-                        state.currentScene == Scenes.QuickSettings
+                        false
                     }
                     is Transition -> {
                         state.isTransitioningBetween(Scenes.Shade, Scenes.QuickSettings) ||
@@ -311,7 +314,7 @@ constructor(
     /** The alpha of the Notification Stack for lockscreen fade-in */
     val alphaForLockscreenFadeIn = stackAppearanceInteractor.alphaForLockscreenFadeIn
 
-    private val allowScrimClipping: Flow<Boolean> =
+    val allowScrimClipping: Flow<Boolean> =
         combine(
                 shadeModeInteractor.shadeMode,
                 shadeInteractor.qsExpansion,
@@ -323,7 +326,6 @@ constructor(
                         // Don't clip notifications while we are opening the DualShade panel to
                         // enable the shared element transition.
                         !transition.isTransitioning(
-                            from = Scenes.Lockscreen,
                             to = Overlays.NotificationsShade,
                         )
                     is ShadeMode.Split -> true

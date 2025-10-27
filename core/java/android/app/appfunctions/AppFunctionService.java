@@ -17,6 +17,8 @@
 package android.app.appfunctions;
 
 import static android.Manifest.permission.BIND_APP_FUNCTION_SERVICE;
+import static android.app.appfunctions.AppFunctionManagerHelper.buildCancellationSignal;
+import static android.app.appfunctions.AppFunctionManagerHelper.executionExceptionToErrorCode;
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 
@@ -32,9 +34,7 @@ import android.content.pm.SigningInfo;
 import android.os.Binder;
 import android.os.CancellationSignal;
 import android.os.IBinder;
-import android.os.ICancellationSignal;
 import android.os.OutcomeReceiver;
-import android.os.RemoteException;
 import android.util.Log;
 
 /**
@@ -137,26 +137,12 @@ public abstract class AppFunctionService extends Service {
                                         Log.w(TAG, "Uncaught exception in AppFunctionService", ex);
                                         safeCallback.onError(
                                                 new AppFunctionException(
-                                                        toErrorCode(ex), ex.getMessage()));
+                                                        executionExceptionToErrorCode(ex),
+                                                        ex.getMessage()));
                                     }
                                 });
             }
         };
-    }
-
-    private static CancellationSignal buildCancellationSignal(
-            @NonNull ICancellationCallback cancellationCallback) {
-        final ICancellationSignal cancellationSignalTransport =
-                CancellationSignal.createTransport();
-        CancellationSignal cancellationSignal =
-                CancellationSignal.fromTransport(cancellationSignalTransport);
-        try {
-            cancellationCallback.sendCancellationTransport(cancellationSignalTransport);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-
-        return cancellationSignal;
     }
 
     private final Binder mBinder =
@@ -209,16 +195,4 @@ public abstract class AppFunctionService extends Service {
             @NonNull SigningInfo callingPackageSigningInfo,
             @NonNull CancellationSignal cancellationSignal,
             @NonNull OutcomeReceiver<ExecuteAppFunctionResponse, AppFunctionException> callback);
-
-    /**
-     * Returns result codes from throwable.
-     *
-     * @hide
-     */
-    private static @AppFunctionException.ErrorCode int toErrorCode(@NonNull Throwable t) {
-        if (t instanceof IllegalArgumentException) {
-            return AppFunctionException.ERROR_INVALID_ARGUMENT;
-        }
-        return AppFunctionException.ERROR_APP_UNKNOWN_ERROR;
-    }
 }

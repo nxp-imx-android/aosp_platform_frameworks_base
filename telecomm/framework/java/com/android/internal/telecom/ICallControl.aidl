@@ -27,12 +27,12 @@ import android.os.ResultReceiver;
  */
 oneway interface ICallControl {
     void setActive(String callId, in ResultReceiver callback);
-    void answer(int videoState, String callId, in ResultReceiver callback);
+    void answer(int callType, String callId, in ResultReceiver callback);
     void setInactive(String callId, in ResultReceiver callback);
     void disconnect(String callId, in DisconnectCause disconnectCause, in ResultReceiver callback);
     void startCallStreaming(String callId, in ResultReceiver callback);
     void requestCallEndpointChange(in CallEndpoint callEndpoint, in ResultReceiver callback);
     void setMuteState(boolean isMuted, in ResultReceiver callback);
     void sendEvent(String callId, String event, in Bundle extras);
-    void requestVideoState(int videoState, String callId, in ResultReceiver callback);
+    void requestVideoState(int callType, String callId, in ResultReceiver callback);
 }

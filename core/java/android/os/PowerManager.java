@@ -2122,7 +2122,7 @@ public final class PowerManager {
      * @hide
      */
     @FlaggedApi(FLAG_PARTIAL_SLEEP_WAKELOCKS)
-    @SystemApi
+    @TestApi
     @NonNull
     @RequiresPermission(permission.ACQUIRE_SLEEP_LOCK)
     public SleepLock newSleepLock(int displayId, @NonNull String tag) throws RuntimeException {
@@ -2153,7 +2153,7 @@ public final class PowerManager {
      * @hide
      */
     @FlaggedApi(FLAG_PARTIAL_SLEEP_WAKELOCKS)
-    @SystemApi
+    @TestApi
     @SuppressLint("NotCloseable")
     public final class SleepLock {
         private static final int SLEEP_LOCK = PowerManager.PARTIAL_SLEEP_WAKE_LOCK;

@@ -1054,10 +1054,8 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"சரி!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"மீண்டும் முயற்சிக்கவும்"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"மீண்டும் முயற்சிக்கவும்"</string>
-    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
-    <skip />
-    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
-    <skip />
+    <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"அன்லாக் செய்ய கிளிக் செய்யலாம்"</string>
+    <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"அன்லாக் செய்ய ஏதேனும் ஒரு பட்டனை அழுத்தலாம்"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"எல்லா அம்சங்கள் &amp; தரவை பெற, அன்லாக் செய்யவும்"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"முகம் காட்டித் திறத்தல் அம்சத்தை அதிகமுறை பயன்படுத்துவிட்டீர்கள்"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"சிம் இல்லை"</string>
@@ -1279,6 +1277,8 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"செயலை முடி"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"இதன்மூலம் திற"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"%1$s மூலம் திற"</string>
+    <!-- no translation found for open_app_name (6114096770130122912) -->
+    <skip />
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"திற"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"<xliff:g id="HOST">%1$s</xliff:g> இணைப்புகளை இதன் மூலம் திற:"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"இணைப்புகளை இதன் மூலம் திற:"</string>
@@ -1800,10 +1800,8 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"இரண்டு ஒலியளவு விசைகளையும் சில விநாடிகள் பிடித்திருப்பதால் அணுகல்தன்மை அம்சமான <xliff:g id="SERVICE">%1$s</xliff:g> ஆன் ஆகும். இதனால் உங்கள் சாதனம் வேலை செய்யும் முறை மாறக்கூடும்.\n\nஅமைப்புகள் &gt; அணுகல்தன்மைக்குச் சென்று இந்த ஷார்ட்கட்டை வேறு அம்சத்திற்கு மாற்ற முடியும்."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"ஆன் செய்"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"ஆன் செய்யாதே"</string>
-    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
-    <skip />
+    <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"ஆன்"</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"ஆஃப்"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"உங்கள் சாதனத்தை முழுமையாகக் கட்டுப்படுத்த <xliff:g id="SERVICE">%1$s</xliff:g> சேவையை அனுமதிக்க வேண்டுமா?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"உங்களுக்கு உதவக்கூடிய ஆப்ஸுக்குக் தேவையான அணுகல்தன்மையை அளித்து முழுக் கட்டுப்பாட்டையும் அளிக்கலாம், ஆனால் பெரும்பாலான ஆப்ஸுக்கு இது பொருந்தாது."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"திரையைப் பார்த்தலும் நிர்வகித்தலும்"</string>
@@ -1817,16 +1815,11 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"ஒரு அம்சத்தைப் பயன்படுத்த அதைத் தட்டவும்:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"அணுகல்தன்மை பட்டன் மூலம் பயன்படுத்த விரும்பும் அம்சங்களைத் தேர்வுசெய்யுங்கள்"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"ஒலியளவு விசைகளுக்கான ஷார்ட்கட்டுடன் பயன்படுத்துவதற்கான அம்சங்களைத் தேர்வுசெய்யுங்கள்"</string>
-    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
-    <skip />
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"மாற்றுத்திறன் பட்டன்"</string>
+    <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"ஒலியளவு பட்டன்கள்"</string>
+    <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"சைகை"</string>
+    <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"விரைவு அமைப்புகள்"</string>
+    <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"மூன்று முறை தட்டுதல்"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> ஆஃப் செய்யப்பட்டுள்ளது"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"ஷார்ட்கட்களை மாற்று"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"முடிந்தது"</string>

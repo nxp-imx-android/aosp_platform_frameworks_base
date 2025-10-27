@@ -98,15 +98,6 @@ class BackNavigationController {
     // back animation.
     private AnimationHandler.ScheduleAnimationBuilder mCurrentAnimationBuilder;
 
-    /**
-     * This will be set if the back navigation is in progress and the current transition is still
-     * running. The pending animation builder will do the animation stuff includes creating leashes,
-     * re-parenting leashes and set launch behind, etc. Will be handled when transition finished.
-     *
-     * @deprecated Remove after Flags#predictive_back_intercept_transition
-     */
-    private AnimationHandler.ScheduleAnimationBuilder mPendingAnimationBuilder;
-
     private static int sDefaultAnimationResId;
 
     /**
@@ -139,7 +130,17 @@ class BackNavigationController {
             }
             final AnimationHandler.ScheduleAnimationBuilder tmp = mCurrentAnimationBuilder;
             mCurrentAnimationBuilder = null;
-            scheduleAnimationInner(tmp);
+            mPendingAnimation = tmp.build();
+            if (mAnimationHandler.mOpenAnimAdaptor != null
+                    && mAnimationHandler.mOpenAnimAdaptor.mPreparedOpenTransition != null) {
+                startAnimation();
+            } else {
+                mWindowManagerService.mWindowPlacerLocked.requestTraversal();
+                if (mShowWallpaper) {
+                    mWindowManagerService.getDefaultDisplayContentLocked().mWallpaperController
+                            .adjustWallpaperWindows();
+                }
+            }
         }
         return true;
     }
@@ -237,8 +238,7 @@ class BackNavigationController {
                 return null;
             }
 
-            if (Flags.predictiveBackInterceptTransition()
-                    && window.mTransitionController.inTransition()) {
+            if (window.mTransitionController.inTransition()) {
                 infoBuilder.setType(BackNavigationInfo.TYPE_IN_TRANSITION);
                 ProtoLog.d(WM_DEBUG_BACK_PREVIEW, "A transition is happening.");
                 return infoBuilder.build();
@@ -715,20 +715,6 @@ class BackNavigationController {
                 && mAnimationHandler.mOpenAnimAdaptor.mPreparedOpenTransition == transition;
     }
 
-    private void scheduleAnimation(@NonNull AnimationHandler.ScheduleAnimationBuilder builder) {
-        mPendingAnimation = builder.build();
-        if (mAnimationHandler.mOpenAnimAdaptor != null
-                && mAnimationHandler.mOpenAnimAdaptor.mPreparedOpenTransition != null) {
-            startAnimation();
-        } else {
-            mWindowManagerService.mWindowPlacerLocked.requestTraversal();
-            if (mShowWallpaper) {
-                mWindowManagerService.getDefaultDisplayContentLocked().mWallpaperController
-                        .adjustWallpaperWindows();
-            }
-        }
-    }
-
     boolean hasFixedRotationAnimation(@NonNull DisplayContent displayContent) {
         if (!mAnimationHandler.mComposed) {
             return false;
@@ -929,7 +915,6 @@ class BackNavigationController {
                 notifyAnimationCanceled(mCurrentAnimationBuilder);
                 mCurrentAnimationBuilder = null;
             }
-            cancelPendingAnimation();
         }
     }
 
@@ -1093,8 +1078,7 @@ class BackNavigationController {
     }
 
     /**
-     * Handle the pending animation when the running transition finished, all the visibility change
-     * has applied so ready to start pending predictive back animation.
+     * Cancel animation state by monitor transition finish.
      * @param finishedTransition The finished transition target.
     */
     void onTransitionFinish(@NonNull Transition finishedTransition) {
@@ -1107,61 +1091,6 @@ class BackNavigationController {
         if (finishedTransition == mAnimationHandler.mPrepareCloseTransition) {
             clearBackAnimations(false /* cancel */);
         }
-        if (!mBackAnimationInProgress || mPendingAnimationBuilder == null) {
-            return;
-        }
-        ProtoLog.d(WM_DEBUG_BACK_PREVIEW,
-                "Handling the deferred animation after transition finished");
-
-        // Find the participated container collected by transition when :
-        // Open transition -> the open target in back navigation, the close target in transition.
-        // Close transition -> the close target in back navigation, the open target in transition.
-        boolean hasTarget = false;
-        for (int i = 0; i < finishedTransition.mParticipants.size(); i++) {
-            final WindowContainer wc = finishedTransition.mParticipants.valueAt(i);
-            if (wc.asActivityRecord() == null && wc.asTask() == null
-                    && wc.asTaskFragment() == null) {
-                continue;
-            }
-
-            if (mPendingAnimationBuilder.containTarget(wc)) {
-                hasTarget = true;
-                break;
-            }
-        }
-
-        if (!hasTarget) {
-            // Skip if no target participated in current finished transition.
-            Slog.w(TAG, "Finished transition didn't include the targets"
-                    + " open: " + Arrays.toString(mPendingAnimationBuilder.mOpenTargets)
-                    + " close: " + mPendingAnimationBuilder.mCloseTarget);
-            cancelPendingAnimation();
-            return;
-        }
-
-        if (mWindowManagerService.mRoot.mTransitionController.inTransition()) {
-            Slog.v(TAG, "Skip predictive back transition, another transition is playing");
-            cancelPendingAnimation();
-            return;
-        }
-
-        // The pending builder could be cleared due to prepareSurfaces
-        // => updateNonSystemOverlayWindowsVisibilityIfNeeded
-        // => setForceHideNonSystemOverlayWindowIfNeeded
-        // => updateFocusedWindowLocked => onFocusWindowChanged.
-        if (mPendingAnimationBuilder != null) {
-            scheduleAnimation(mPendingAnimationBuilder);
-            mPendingAnimationBuilder = null;
-        }
-    }
-
-    private void cancelPendingAnimation() {
-        if (mPendingAnimationBuilder == null) {
-            return;
-        }
-        notifyAnimationCanceled(mPendingAnimationBuilder);
-        mPendingAnimationBuilder = null;
-        mNavigationMonitor.stopMonitorTransition();
     }
 
     private static void notifyAnimationCanceled(
@@ -2245,17 +2174,6 @@ class BackNavigationController {
         }
     }
 
-    private void scheduleAnimationInner(AnimationHandler.ScheduleAnimationBuilder builder) {
-        if (!Flags.predictiveBackInterceptTransition()
-                && mWindowManagerService.mAtmService.getTransitionController().inTransition()) {
-            ProtoLog.w(WM_DEBUG_BACK_PREVIEW,
-                    "Pending back animation due to another animation is running");
-            mPendingAnimationBuilder = builder;
-        } else {
-            scheduleAnimation(builder);
-        }
-    }
-
     private void onBackNavigationDone(Bundle result, int backType) {
         if (result == null) {
             return;
@@ -2272,7 +2190,6 @@ class BackNavigationController {
                 mShowWallpaper = false;
                 // All animation should be done, clear any un-send animation.
                 mPendingAnimation = null;
-                mPendingAnimationBuilder = null;
                 mCurrentAnimationBuilder = null;
             }
         }

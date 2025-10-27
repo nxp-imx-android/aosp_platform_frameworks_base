@@ -647,6 +647,14 @@ flag {
 }
 
 flag {
+    name: "use_loopback_interface_permission_enabled"
+    is_exported: true
+    namespace: "android_core_networking"
+    description: "This flag is used to enable the new USE_LOOPBACK_INTERFACE install permission. When enabled, this permission will guard IP traffic on the loopback interface."
+    bug: "430058614"
+}
+
+flag {
     name: "granular_health_permissions_phase_two_enabled"
     namespace: "android_health_services"
     description: "This flag enables adding heart rate variability, respiratory rate, VO2 max and blood pressure permissions."
@@ -668,4 +676,19 @@ flag {
     description: "This flag protects the permission that is required to call Health Connect device data provider APIs"
     bug: "416236349"
     is_exported: true
+}
+
+flag {
+    name: "extend_send_safety_center_update_permission_to_signature"
+    namespace: "android_exploits_research"
+    description: "This flag controls whether the SEND_SAFETY_CENTER_UPDATE permission is extended to signature level"
+    bug: "403623944"
+}
+
+flag {
+    name: "assist_settings_privacy_improvements_enabled"
+    is_exported: true
+    namespace: "permissions"
+    description: "enable assistant settings privacy improvements"
+    bug: "437416500"
 }

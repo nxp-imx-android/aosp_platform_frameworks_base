@@ -7159,6 +7159,28 @@ public class Intent implements Parcelable, Cloneable {
     @FlaggedApi(com.android.eyedropper.Flags.FLAG_ENABLE_EYE_DROPPER_API)
     public static final String EXTRA_COLOR = "android.intent.extra.COLOR";
 
+
+    /**
+     * Optional boolean extra indicating if the system contacts picker should be invoked
+     * with {@link #ACTION_PICK}, if data field is set as one of:
+     * <ul>
+     *    <li> data android:mimeType="vnd.android.cursor.dir/contact"</li>
+     *    <li> data android:mimeType="vnd.android.cursor.dir/phone_v2"</li>
+     *    <li> data android:mimeType="vnd.android.cursor.dir/postal-address_v2"</li>
+     *    <li> data android:mimeType="vnd.android.cursor.dir/email_v2"</li>
+     * </ul>
+     *
+     * <p>Has an effect only on {@link #ACTION_PICK} with the mentioned data filed values, starting
+     * Android 17 (API 37)
+     *
+     * @see #ACTION_PICK
+     * @see #setData(Uri)
+     * @see android.provider.ContactsPickerSessionContract.ACTION_PICK_CONTACTS
+     */
+    @FlaggedApi(android.content.flags.Flags.FLAG_ENABLE_SYSTEM_CONTACTS_PICKER)
+    public static final String EXTRA_USE_SYSTEM_CONTACTS_PICKER =
+            "android.intent.extra.USE_SYSTEM_CONTACTS_PICKER";
+
     // ---------------------------------------------------------------------
     // ---------------------------------------------------------------------
     // Intent flags (see mFlags variable).

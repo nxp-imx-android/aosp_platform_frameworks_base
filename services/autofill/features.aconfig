@@ -74,3 +74,10 @@ flag {
   description: "Supports expressive style for fill dialog"
   bug: "438420320"
 }
+
+flag {
+  name: "expressive_save_dialog"
+  namespace: "autofill"
+  description: "Supports expressive style for save dialog"
+  bug: "438420324"
+}

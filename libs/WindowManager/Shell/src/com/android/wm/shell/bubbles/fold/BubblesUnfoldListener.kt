@@ -19,7 +19,6 @@ package com.android.wm.shell.bubbles.fold
 import com.android.wm.shell.bubbles.Bubble
 import com.android.wm.shell.bubbles.BubbleData
 import com.android.wm.shell.unfold.ShellUnfoldProgressProvider
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 
 /**
  * An implementation of [ShellUnfoldProgressProvider.UnfoldListener] that notifies when we should
@@ -40,12 +39,7 @@ class BubblesUnfoldListener(
             && selectedBubble is Bubble
             && foldLockSettingsObserver.isStayAwakeOnFold()
         ) {
-            val moveToFullscreen: Boolean =
-                if (BubbleAnythingFlagHelper.allowMultiWindowNonResizableActivities()) {
-                    false
-                } else {
-                    selectedBubble.isTopActivityFixedOrientationLandscape
-                }
+            val moveToFullscreen: Boolean = selectedBubble.isTaskValidToBubble
             onStartBarToFloatingOrFullscreenTransition(selectedBubble, moveToFullscreen)
         }
     }

@@ -34,7 +34,6 @@ import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.keyguard.logging.KeyguardLogger
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
@@ -70,7 +69,6 @@ import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.batteryViewModelShowWhenChargingOrSettingFactory
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.batteryWithPercentViewModelFactory
-import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.statusbar.policy.UserInfoController
@@ -115,8 +113,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
     @Mock private lateinit var animationScheduler: SystemStatusAnimationScheduler
 
-    @Mock private lateinit var batteryController: BatteryController
-
     @Mock private lateinit var userInfoController: UserInfoController
 
     @Mock private lateinit var statusBarIconController: StatusBarIconController
@@ -124,8 +120,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
     @Mock private lateinit var iconManagerFactory: TintedIconManager.Factory
 
     @Mock private lateinit var iconManager: TintedIconManager
-
-    @Mock private lateinit var batteryMeterViewController: BatteryMeterViewController
 
     @Mock private lateinit var keyguardStateController: KeyguardStateController
 
@@ -199,13 +193,12 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
             context,
             keyguardStatusBarView,
             carrierTextController,
-            configurationController,
-            animationScheduler,
-            batteryController,
+            { configurationController },
+            { configurationController },
+            { animationScheduler },
             userInfoController,
             statusBarIconController,
             iconManagerFactory,
-            batteryMeterViewController,
             kosmos.batteryWithPercentViewModelFactory,
             kosmos.batteryViewModelShowWhenChargingOrSettingFactory,
             shadeViewStateProvider,
@@ -356,42 +349,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         controller.onViewAttached()
 
         Mockito.verify(statusBarIconController).addIconGroup(ArgumentMatchers.any())
-    }
-
-    @Test
-    @DisableSceneContainer
-    fun setBatteryListening_true_callbackAdded() {
-        controller.setBatteryListening(true)
-
-        Mockito.verify(batteryController).addCallback(ArgumentMatchers.any())
-    }
-
-    @Test
-    @DisableSceneContainer
-    fun setBatteryListening_false_callbackRemoved() {
-        // First set to true so that we know setting to false is a change in state.
-        controller.setBatteryListening(true)
-
-        controller.setBatteryListening(false)
-
-        Mockito.verify(batteryController).removeCallback(ArgumentMatchers.any())
-    }
-
-    @Test
-    @DisableSceneContainer
-    fun setBatteryListening_trueThenTrue_callbackAddedOnce() {
-        controller.setBatteryListening(true)
-        controller.setBatteryListening(true)
-
-        Mockito.verify(batteryController).addCallback(ArgumentMatchers.any())
-    }
-
-    @Test
-    @EnableSceneContainer
-    fun setBatteryListening_true_flagOn_callbackNotAdded() {
-        controller.setBatteryListening(true)
-
-        Mockito.verify(batteryController, Mockito.never()).addCallback(ArgumentMatchers.any())
     }
 
     @Test

@@ -91,10 +91,6 @@ fun AODPromotedNotification(
     viewModelFactory: AODPromotedNotificationViewModel.Factory,
     modifier: Modifier = Modifier,
 ) {
-    if (!PromotedNotificationUi.isEnabled) {
-        return
-    }
-
     val viewModel = rememberViewModel(traceName = "$TAG.viewModel") { viewModelFactory.create() }
 
     val content = viewModel.content ?: return
@@ -283,22 +279,22 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         } else {
             listOf(
                 MetricView(
-                    container = root.findViewById<View>(R.id.metric_view_0),
-                    label = root.findViewById<TextView>(R.id.metric_label_0),
-                    textValue = root.findViewById<TextView>(R.id.metric_value_0),
-                    chronometer = root.findViewById<Chronometer>(R.id.metric_chronometer_0),
+                    container = root.findViewById<View?>(R.id.metric_view_0),
+                    label = root.findViewById<TextView?>(R.id.metric_label_0),
+                    textValue = root.findViewById<TextView?>(R.id.metric_value_0),
+                    chronometer = root.findViewById<Chronometer?>(R.id.metric_chronometer_0),
                 ),
                 MetricView(
-                    container = root.findViewById<View>(R.id.metric_view_1),
-                    label = root.findViewById<TextView>(R.id.metric_label_1),
-                    textValue = root.findViewById<TextView>(R.id.metric_value_1),
-                    chronometer = root.findViewById<Chronometer>(R.id.metric_chronometer_1),
+                    container = root.findViewById<View?>(R.id.metric_view_1),
+                    label = root.findViewById<TextView?>(R.id.metric_label_1),
+                    textValue = root.findViewById<TextView?>(R.id.metric_value_1),
+                    chronometer = root.findViewById<Chronometer?>(R.id.metric_chronometer_1),
                 ),
                 MetricView(
-                    container = root.findViewById<View>(R.id.metric_view_2),
-                    label = root.findViewById<TextView>(R.id.metric_label_2),
-                    textValue = root.findViewById<TextView>(R.id.metric_value_2),
-                    chronometer = root.findViewById<Chronometer>(R.id.metric_chronometer_2),
+                    container = root.findViewById<View?>(R.id.metric_view_2),
+                    label = root.findViewById<TextView?>(R.id.metric_label_2),
+                    textValue = root.findViewById<TextView?>(R.id.metric_value_2),
+                    chronometer = root.findViewById<Chronometer?>(R.id.metric_chronometer_2),
                 ),
             )
         }
@@ -510,6 +506,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         // Determine if the notification has no content *below* the header/top line
         val hasTextBelowHeader = content.text != null
         val hasTitleBelowHeader = content.title != null && headerTitleView == null
+
         val isSingleLine = !hasTitleBelowHeader && !hasTextBelowHeader
 
         // the collapsed form doesn't show the app name unless there is no other text in the header
@@ -520,7 +517,10 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         header?.centerTopLine(isSingleLine)
         // We normally use the (empty) actions container for the bottom padding of the notification,
         // but that's not necessary when single line
-        actionsContainer?.isVisible = !isSingleLine
+        // NOTE: Metric Style notifications show title in topline and
+        // they have only 1 line below topline for single metric
+        val isMetricStyleWithSingleMetric = content.metrics?.size == 1
+        actionsContainer?.isVisible = !(isSingleLine || isMetricStyleWithSingleMetric)
 
         updateAppName(content, forceHide = hideAppName)
         updateTextView(headerTextSecondary, content.subText)

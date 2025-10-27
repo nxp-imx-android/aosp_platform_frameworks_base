@@ -88,8 +88,10 @@
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"ટ્રસ્ટ એજન્ટ ઉપલબ્ધ નથી"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"ખોટા પિન વડે ઘણા બધા પ્રયાસો કર્યા"</string>
     <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"તે પિન પહેલેથી અજમાવી લીધો છે. કોઈ બીજો પિન અજમાવી જુઓ."</string>
-    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"તે પાસવર્ડ પહેલેથી અજમાવી લીધો છે. કોઈ બીજો પાસવર્ડ અજમાવી જુઓ."</string>
-    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"તે પૅટર્ન પહેલેથી અજમાવી લીધી છે. કોઈ બીજી પૅટર્ન અજમાવી જુઓ."</string>
+    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
+    <skip />
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"ખોટી પૅટર્ન વડે ઘણા બધા પ્રયાસો કર્યા"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"ખોટા પાસવર્ડ વડે ઘણા બધા પ્રયાસો કર્યા"</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"ખોટા પિન વડે ઘણા બધા પ્રયાસો કરવામાં આવ્યા છે\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> પર જઈને વધુ જાણો"</string>

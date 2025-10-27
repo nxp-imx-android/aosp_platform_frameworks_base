@@ -17,11 +17,14 @@ package android.integration.multiuser;
 
 import static com.google.common.truth.Truth.assertWithMessage;
 
+import static org.junit.Assert.assertThrows;
+
 import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
+import android.util.AndroidRuntimeException;
 import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -67,6 +70,30 @@ public final class ActivitiesHelper {
         activity.finish();
     }
 
+    /**
+     * Asserts that an activity can be launched.
+     *
+     * <p>It will actually be launched, and finished right away.
+     */
+    public static void assertCanLaunchActivity(Class<? extends Activity> activityClass) {
+        Activity activity = null;
+        try {
+            activity = launchActivity(activityClass);
+        } finally {
+            finishActivity(activity);
+        }
+    }
+
+    /**
+     * Asserts that an activity cannot be launched.
+     */
+    public static void assertCannotLaunchActivity(Class<? extends Activity> activityClass) {
+        Exception thrown = assertThrows(AndroidRuntimeException.class,
+                () -> launchActivity(activityClass));
+
+        assertWithMessage("exception message").that(thrown).hasMessageThat()
+                .contains("Unknown error code -88");
+    }
 
     private ActivitiesHelper() {
         throw new UnsupportedOperationException("contains only static methods");

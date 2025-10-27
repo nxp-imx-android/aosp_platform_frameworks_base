@@ -1576,13 +1576,12 @@ public final class DisplayManagerService extends SystemService {
 
     private boolean doesInternalMaskRequiresPermissionCheck(
             int callingPid, @InternalEventFlag long internalEventFlagsMask) {
+        if ((internalEventFlagsMask
+                & DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_CONNECTION_CHANGED) == 0) {
+            // No need to check permission because protected event flag is not set
+            return false;
+        }
         synchronized (mSyncRoot) {
-            if ((internalEventFlagsMask
-                    & DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_CONNECTION_CHANGED) == 0) {
-                // No need to check permission because protected event flag is not set
-                return false;
-            }
-
             CallbackRecord record = mCallbacks.get(callingPid);
             // Need to check permissions if there is no callback registered yet
             // Or the current callback mask does not have protected flag yet
@@ -4718,18 +4717,20 @@ public final class DisplayManagerService extends SystemService {
          * @return the event mask that was sent to the client. Returns 0 if the notification was
          * not sent e.g. because client is not registered for any of the events.
          */
-        private int notifyDisplayEventAsync(int displayId, int oldEventMask) {
+        @VisibleForTesting
+        int notifyDisplayEventAsync(int displayId, int oldEventMask) {
             int eventMask = calculateEventsToSend(oldEventMask);
             if (eventMask == 0) {
                 if (extraLogging(mPackageName)) {
                     Slog.i(TAG,
-                            "Not sending displayEvent: " + eventsToString(eventMask)
-                                    + " due to mask:" + mInternalEventFlagsMask);
+                            "Not sending displayEvent: " + eventsToString(oldEventMask)
+                                    + " due to mask:" + mInternalEventFlagsMask + " uid " + mUid
+                                    + " pid " + mPid);
                 }
                 if (Trace.isTagEnabled(Trace.TRACE_TAG_POWER)) {
                     Trace.instant(Trace.TRACE_TAG_POWER,
                             "notifyDisplayEventAsync#notSendingEvents="
-                                    + eventsToString(eventMask) + ",mInternalEventFlagsMask="
+                                    + eventsToString(oldEventMask) + ",mInternalEventFlagsMask="
                                     + mInternalEventFlagsMask + ",uid" + mUid);
                 }
                 // The client is not interested in these events, so do nothing.
@@ -4746,13 +4747,46 @@ public final class DisplayManagerService extends SystemService {
                         && !mPendingDisplayEvents.isEmpty())) {
                     // The client is interested in the eventMask but is not ready to receive it.
                     // Put the new events on the pending list.
+                    if (extraLogging(mPackageName)) {
+                        Slog.i(TAG,
+                                "Not sending displayEvent: " + eventsToString(eventMask)
+                                        + " due to mask:" + mInternalEventFlagsMask + " uid " + mUid
+                                        + " pid " + mPid + " ready state " + isReadyLocked()
+                                        + " pendingDisplayEvents list "
+                                        + (mPendingDisplayEvents != null
+                                        && !mPendingDisplayEvents.isEmpty()));
+                    }
                     return addDisplayEvents(displayId, eventMask);
                 }
             }
 
             if (!shouldReceiveRefreshRateWithChangeUpdate(eventMask)) {
                 // The client is not visible to the user and is not a system service, so do nothing.
-                return 0;
+                if (Flags.sendNonRrCallbacksWhenInBackground()) {
+                    if ((eventMask & DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED)
+                            != 0) {
+                        eventMask =
+                                eventMask ^ DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED;
+                    }
+                    if (extraLogging(mPackageName)) {
+                        Slog.i(TAG,
+                                "Not sending refresh rate event because the pid is not in "
+                                        + "the foreground. New eventMask " + eventMask
+                                        + ", mInternalEventFlagsMask:" + mInternalEventFlagsMask
+                                        + " uid " + mUid + " pid " + mPid);
+                    }
+                    if (eventMask == 0) {
+                        return 0;
+                    }
+                } else {
+                    if (extraLogging(mPackageName)) {
+                        Slog.i(TAG,
+                                "Not sending displayEvent: " + eventsToString(eventMask)
+                                        + " due to mask:" + mInternalEventFlagsMask + " uid " + mUid
+                                        + " pid " + mPid + " is in the background");
+                    }
+                    return 0;
+                }
             }
 
             try {

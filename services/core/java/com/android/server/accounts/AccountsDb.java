@@ -715,6 +715,14 @@ class AccountsDb implements AutoCloseable {
 
             db.execSQL("DETACH DATABASE preNDb");
         }
+
+        @Override
+        public void onConfigure(SQLiteDatabase db) {
+            if (Flags.detachDeCe()) {
+                db.enableWriteAheadLogging();
+                db.execSQL("PRAGMA synchronous = NORMAL");
+            }
+        }
     }
 
     boolean deleteDeAccount(long accountId) {

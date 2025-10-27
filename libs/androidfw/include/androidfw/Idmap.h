@@ -81,6 +81,10 @@ struct Idmap_constraints {
 struct Idmap_target_entries {
   const uint32_t* target_id = nullptr;
   const uint32_t* overlay_id = nullptr;
+  const size_t entry_count;
+};
+struct Idmap_target_entry_sections {
+  std::vector<Idmap_target_entries> enabled_sections;
 };
 struct Idmap_target_inline_entries {
   const uint32_t* target_id = nullptr;
@@ -187,14 +191,15 @@ class IdmapResMap {
 
  private:
   explicit IdmapResMap(const Idmap_data_header* data_header, const Idmap_constraints& constraints,
-                       Idmap_target_entries entries, Idmap_target_inline_entries inline_entries,
+                       Idmap_target_entry_sections sections,
+                       Idmap_target_inline_entries inline_entries,
                        const Idmap_target_entry_inline_value* inline_entry_values,
                        const ConfigDescription* configs, uint8_t target_assigned_package_id,
                        const OverlayDynamicRefTable* overlay_ref_table);
 
   const Idmap_data_header* data_header_;
   Idmap_constraints constraints_;
-  Idmap_target_entries entries_;
+  const Idmap_target_entry_sections entry_sections_;
   Idmap_target_inline_entries inline_entries_;
   const Idmap_target_entry_inline_value* inline_entry_values_;
   const ConfigDescription* configurations_;
@@ -227,7 +232,7 @@ class LoadedIdmap {
   // Returns a mapping from target resource ids to overlay values.
   IdmapResMap GetTargetResourcesMap(uint8_t target_assigned_package_id,
                                     const OverlayDynamicRefTable* overlay_ref_table) const {
-    return IdmapResMap(data_header_, constraints_, target_entries_, target_inline_entries_,
+    return IdmapResMap(data_header_, constraints_, target_entry_sections_, target_inline_entries_,
                        inline_entry_values_, configurations_, target_assigned_package_id,
                        overlay_ref_table);
   }
@@ -252,7 +257,7 @@ class LoadedIdmap {
   const Idmap_header* header_;
   const Idmap_data_header* data_header_;
   Idmap_constraints constraints_;
-  Idmap_target_entries target_entries_;
+  const Idmap_target_entry_sections target_entry_sections_;
   Idmap_target_inline_entries target_inline_entries_;
   const Idmap_target_entry_inline_value* inline_entry_values_;
   const ConfigDescription* configurations_;
@@ -269,7 +274,7 @@ class LoadedIdmap {
 
   explicit LoadedIdmap(const std::string& idmap_path, const Idmap_header* header,
                        const Idmap_data_header* data_header, const Idmap_constraints& constraints,
-                       Idmap_target_entries target_entries,
+                       Idmap_target_entry_sections target_entry_sections,
                        Idmap_target_inline_entries target_inline_entries,
                        const Idmap_target_entry_inline_value* inline_entry_values_,
                        const ConfigDescription* configs, Idmap_overlay_entries overlay_entries,

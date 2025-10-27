@@ -243,6 +243,15 @@ public abstract class BroadcastQueue {
     }
 
     /**
+     * Retrieves the value of a broadcast constant identified by its key.
+     *
+     * @param key The key (name) of the broadcast constant to retrieve.
+     * @return The string value of the broadcast constant, or {@code null} if the key is not found.
+     */
+    @Nullable
+    public abstract String getBroadcastConstant(@NonNull String key);
+
+    /**
      * Brief summary of internal state, useful for debugging purposes.
      */
     @GuardedBy("mService")

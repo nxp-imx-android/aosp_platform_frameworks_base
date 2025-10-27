@@ -25,7 +25,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManagerImpl.HeadsUpEntry
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.shared.AvalancheReplaceHunWhenCritical
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun
 import java.io.PrintWriter
@@ -215,10 +214,7 @@ constructor(
      */
     private fun checkNextPinnedByUser(entry: HeadsUpEntry): String? {
         AvalancheReplaceHunWhenCritical.assertInLegacyMode()
-        if (
-            PromotedNotificationUi.isEnabled &&
-                entry.requestedPinnedStatus == PinnedStatus.PinnedByUser
-        ) {
+        if (entry.requestedPinnedStatus == PinnedStatus.PinnedByUser) {
             val string = "next is PinnedByUser"
             headsUpEntryShowing?.updateEntry(
                 /* updatePostTime= */ false,
@@ -248,10 +244,7 @@ constructor(
             result = "$result next is critical call"
             ignoreSticky = true
         }
-        if (
-            PromotedNotificationUi.isEnabled &&
-                entry.requestedPinnedStatus == PinnedStatus.PinnedByUser
-        ) {
+        if (entry.requestedPinnedStatus == PinnedStatus.PinnedByUser) {
             result = "$result next is PinnedByUser"
             ignoreSticky = true
         }
@@ -411,10 +404,7 @@ constructor(
         val nextEntry = entryList[nextEntryIndex]
         val nextKey = getKey(nextEntry)
 
-        if (
-            PromotedNotificationUi.isEnabled &&
-                nextEntry.requestedPinnedStatus == PinnedStatus.PinnedByUser
-        ) {
+        if (nextEntry.requestedPinnedStatus == PinnedStatus.PinnedByUser) {
             return RemainingDuration.HideImmediately.also {
                 headsUpManagerLogger.logAvalancheDuration(
                     thisKey,

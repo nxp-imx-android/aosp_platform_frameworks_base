@@ -5419,7 +5419,7 @@ public final class ActiveServices {
                         // Do nothing. The ProcessStateController BatchSession close
                         // would have triggered the update.
                     } else {
-                        mAm.updateOomAdjPendingTargetsLocked(OOM_ADJ_REASON_BATCH_UPDATE_REQUEST);
+                        mAm.updateOomAdjPendingTargetsLocked(oomAdjReason);
                     }
                 }
             }

@@ -80,6 +80,7 @@ import com.android.wm.shell.util.StubTransaction
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.DefaultWindowDecorationActions
 import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.assertFalse
+import junit.framework.Assert.assertNotNull
 import junit.framework.Assert.assertTrue
 import junit.framework.Assert.fail
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -133,6 +134,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testDeleteCaptionOnChangeTransitionWhenNecessary() {
         val task = createTask(windowingMode = WINDOWING_MODE_FREEFORM)
         val taskSurface = SurfaceControl()
@@ -150,6 +152,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testCreateCaptionOnChangeTransitionWhenNecessary() {
         val task =
             createTask(
@@ -297,6 +300,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testDecorationIsNotCreatedForNoDisplayActivities() {
         val task =
             createTask(windowingMode = WINDOWING_MODE_FULLSCREEN).apply {
@@ -308,6 +312,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testDecorationIsNotCreatedForTopTranslucentActivities() {
         val task =
             createTask(windowingMode = WINDOWING_MODE_FULLSCREEN).apply {
@@ -320,6 +325,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testDecorationIsNotCreatedForSystemUIActivities() {
         // Set task as systemUI package
         val systemUIPackageName =
@@ -336,6 +342,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testDecorationIsNotCreatedForDefaultHomePackage() {
         val task =
             createTask(windowingMode = WINDOWING_MODE_FULLSCREEN).apply {
@@ -1191,7 +1198,10 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY)
+    @DisableFlags(
+        Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY,
+        Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS,
+    )
     fun testGestureExclusionChanged_otherDisplay_skipsDecorationUpdate() {
         val captor = argumentCaptor<ISystemGestureExclusionListener>()
         verify(mockWindowManager)
@@ -1261,7 +1271,11 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     @EnableFlags(Flags.FLAG_ROOT_TASK_FOR_BUBBLE)
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testOnTaskOpening_startingAppBubbleTask_skipsWindowDecorationCreation() {
+        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())
+        assumeTrue(BubbleAnythingFlagHelper.enableRootTaskForBubble())
+
         val taskInfo = createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
         mockBubbleController.stub { on { shouldBeAppBubble(taskInfo) } doReturn true }
 
@@ -1277,6 +1291,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testOnTaskOpening_expandedBubbleTask_skipsWindowDecorationCreation() {
         val taskInfo =
             createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW).apply {
@@ -1298,6 +1313,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testOnTaskChanging_collapsedBubbleTask_skipsWindowDecorationCreation() {
         assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())
 
@@ -1315,6 +1331,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testOnTaskChanging_convertTaskToBubble_destroysWindowDecoration() {
         assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())
 

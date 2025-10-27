@@ -20,7 +20,6 @@ import com.android.compose.animation.scene.Edge
 import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
-import com.android.compose.animation.scene.UserActionResult.ShowOverlay
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
@@ -68,9 +67,9 @@ fun splitShadeActions(): Array<Pair<UserAction, UserActionResult>> {
 /** Returns collection of [UserAction] to [UserActionResult] pairs for opening the dual shade. */
 fun dualShadeActions(): Array<Pair<UserAction, UserActionResult>> {
     return arrayOf(
-        Swipe.Down to ShowOverlay(Overlays.NotificationsShade),
-        Swipe.Down(fromSource = SceneContainerArea.TopEdgeEndHalf) to
-            ShowOverlay(Overlays.QuickSettingsShade),
+        Swipe.Down to Overlays.NotificationsShade,
+        Swipe.Down(pointerCount = 2) to Overlays.QuickSettingsShade,
+        Swipe.Down(fromSource = SceneContainerArea.TopEdgeEndHalf) to Overlays.QuickSettingsShade,
     )
 }
 

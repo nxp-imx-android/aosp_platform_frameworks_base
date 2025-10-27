@@ -28,8 +28,7 @@ import org.junit.Ignore
 import org.junit.Test
 
 @Ignore("Test Base Class")
-abstract class DragAppWindowMultiWindow : DragAppWindowScenarioTestBase()
-{
+abstract class DragAppWindowMultiWindow : DragAppWindowScenarioTestBase() {
     private val mailAppHelper = MailAppHelper(instrumentation)
     private val mailAppDesktopHelper = DesktopModeAppHelper(mailAppHelper)
 
@@ -56,7 +55,7 @@ abstract class DragAppWindowMultiWindow : DragAppWindowScenarioTestBase()
             endX = startX + 150,
             endY = startY + 150,
             wmHelper,
-            device
+            device,
         )
     }
 

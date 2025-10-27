@@ -88,8 +88,10 @@
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"বিশ্বাসী এজেণ্ট উপলব্ধ নহয়"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"ভুল পিন দি অতি বেছিসংখ্যক প্ৰয়াস কৰা হৈছে"</string>
     <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"সেই পিনটো ইতিমধ্যে ব্যৱহাৰ কৰি চোৱা হৈছে। অন্য এটা ব্যৱহাৰ কৰি চাওক।"</string>
-    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"সেই পাছৱৰ্ডটো ইতিমধ্যে ব্যৱহাৰ কৰি চোৱা হৈছে। অন্য এটা ব্যৱহাৰ কৰি চাওক।"</string>
-    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"সেই আৰ্হিটো ইতিমধ্যে ব্যৱহাৰ কৰি চোৱা হৈছে। অন্য এটা ব্যৱহাৰ কৰি চাওক।"</string>
+    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
+    <skip />
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"ভুল আৰ্হি দি অতি বেছিসংখ্যক প্ৰয়াস কৰা হৈছে"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"ভুল পাছৱৰ্ড দি অতি বেছিসংখ্যক প্ৰয়াস কৰা হৈছে"</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"ভুল পিন দি অতি বেছিসংখ্যক প্ৰয়াস কৰা হৈছে\nইয়াত অধিক জানক <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>

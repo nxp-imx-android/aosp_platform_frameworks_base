@@ -293,7 +293,7 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
             }
             return null;
         }
-        final WindowState imeWindow = source.getDisplayContent().mInputMethodWindow;
+        final WindowState imeWindow = source.getDisplayContent().getImeWindow();
         // Exclude IME window snapshot when IME isn't proper to attach to app.
         final boolean excludeIme = imeWindow != null && imeWindow.getSurfaceControl() != null
                 && !source.getDisplayContent().shouldImeAttachedToApp();

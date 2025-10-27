@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture
 
+import android.content.Context
 import android.util.Log
 import com.android.app.tracing.coroutines.launchInTraced
 import com.android.systemui.CoreStartable
@@ -23,15 +24,21 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.FocusedDisplayRepository
+import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.screencapture.common.ScreenCaptureComponent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureComponentInteractor
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
+import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
+import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
 import com.android.systemui.screencapture.ui.ScreenCaptureUi
+import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
+import com.android.systemui.screenrecord.shared.model.ScreenRecording
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
@@ -43,15 +50,19 @@ class ScreenCaptureStartable
 @Inject
 constructor(
     @Application private val appScope: CoroutineScope,
+    @Application private val context: Context,
     private val screenCaptureComponentInteractor: ScreenCaptureComponentInteractor,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val focusedDisplayRepository: FocusedDisplayRepository,
     private val displayRepository: DisplayRepository,
+    private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
+    private val activityStarter: ActivityStarter,
 ) : CoreStartable {
 
     override fun start() {
         appScope.launch { screenCaptureComponentInteractor.initialize() }
         ScreenCaptureType.entries.forEach { observeUiState(it) }
+        setupPostRecordings()
     }
 
     private fun observeUiState(type: ScreenCaptureType) {
@@ -84,6 +95,25 @@ constructor(
                     screenCaptureUi.show()
                     screenCaptureUiInteractor.hide(type)
                 }
+            }
+            .launchIn(appScope)
+    }
+
+    private fun setupPostRecordings() {
+        if (!ScreenCaptureRecordFeaturesInteractor.isNewScreenRecordToolbarEnabled) return
+
+        screenRecordingServiceInteractor.screenRecordings
+            .filter { it is ScreenRecording.Saving }
+            .onEach { recording ->
+                activityStarter.startActivityDismissingKeyguard(
+                    /* intent = */ SmallScreenPostRecordingActivity.waitForRecording(
+                        context = context,
+                        videoUri = recording.uri,
+                    ),
+                    /* onlyProvisioned = */ true,
+                    /* dismissShade = */ true,
+                    /* customMessage = */ null,
+                )
             }
             .launchIn(appScope)
     }

@@ -20,6 +20,8 @@ import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.service.personalcontext.hint.ContextHint;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -34,9 +36,18 @@ public class ServiceClientUnderstander extends ServiceClientRefiner {
     }
 
     @Override
-    public Set<Set<ContextHint>> getInterestingHintClusters(Set<ContextHint> unseenContextHints) {
+    public Set<Set<ContextHint>> getInterestedHintClusters(
+            Set<ContextHint> allContextHints, Set<UUID> seenIDs, boolean isFirstRun) {
         // TODO(b/452425566): Implement this to use a filter in the package's manifest.
         // For now this runs hints through the understander in one big block.
-        return Set.of(unseenContextHints);
+        final Set<ContextHint> interestingHints = new HashSet<>();
+        for (ContextHint hint : allContextHints) {
+            if (!seenIDs.contains(hint.getHintId())) interestingHints.add(hint);
+        }
+        if (interestingHints.isEmpty()) {
+            return Collections.emptySet();
+        } else {
+            return Set.of(interestingHints);
+        }
     }
 }

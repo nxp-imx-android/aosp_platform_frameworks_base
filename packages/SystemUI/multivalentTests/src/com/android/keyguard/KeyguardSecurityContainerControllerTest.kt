@@ -57,11 +57,11 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.FakeFeatureFlags
 import com.android.systemui.flags.Flags
 import com.android.systemui.keyboard.data.repository.FakeKeyboardRepository
-import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
+import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardDismissTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
-import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
+import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.SessionTracker
@@ -78,6 +78,7 @@ import com.android.systemui.scene.shared.model.fakeSceneDataSource
 import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
 import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
 import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.DevicePostureController
 import com.android.systemui.statusbar.policy.DeviceProvisionedController
@@ -1029,8 +1030,9 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
 
             // While listening, going from the bouncer scene to the gone scene, does dismiss the
             // keyguard.
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
             fakeSceneDataSource.pause()

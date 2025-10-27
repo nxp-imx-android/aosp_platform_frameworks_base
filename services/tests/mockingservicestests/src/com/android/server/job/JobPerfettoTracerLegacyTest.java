@@ -16,8 +16,6 @@
 
 package com.android.server.job;
 
-import static android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2;
-
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.server.job.Flags.FLAG_USE_PERFETTO_SDK_FOR_TRACING;
@@ -27,21 +25,21 @@ import static org.mockito.ArgumentMatchers.eq;
 
 import android.os.PerfettoTrace;
 import android.os.PerfettoTrackEventExtra;
-import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.mockito.MockitoSession;
 import org.mockito.quality.Strictness;
 
-@RequiresFlagsEnabled({
-    FLAG_PERFETTO_SDK_TRACING_V2,
-    FLAG_USE_PERFETTO_SDK_FOR_TRACING
-})
 public final class JobPerfettoTracerLegacyTest {
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     private MockitoSession mMockingSession;
 
     @Before
@@ -61,6 +59,7 @@ public final class JobPerfettoTracerLegacyTest {
     }
 
     @Test
+    @EnableFlags(FLAG_USE_PERFETTO_SDK_FOR_TRACING)
     public void testLegacyTracer() {
         final PerfettoTrackEventExtra.Builder mockBuilderLegacy =
                 Mockito.mock(PerfettoTrackEventExtra.Builder.class, Mockito.RETURNS_SELF);

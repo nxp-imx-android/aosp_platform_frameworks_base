@@ -73,7 +73,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.os.PerfettoTrace;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.Trace;
@@ -1825,7 +1824,7 @@ public final class JobServiceContext implements ServiceConnection {
     }
 
     private void traceJobStarted(JobStatus job, int procState) {
-        if (!Flags.usePerfettoSdkForTracing() || !PerfettoTrace.isJobSchedulerCategoryEnabled()) {
+        if (!mPerfettoTracer.isTraceEnabled()) {
             return;
         }
 
@@ -1845,7 +1844,7 @@ public final class JobServiceContext implements ServiceConnection {
 
     private void traceJobFinished(JobStatus completedJob, int procState,
             int loggingInternalStopReason, int loggingStopReason) {
-        if (!Flags.usePerfettoSdkForTracing() || !PerfettoTrace.isJobSchedulerCategoryEnabled()) {
+        if (!mPerfettoTracer.isTraceEnabled()) {
             return;
         }
         final int finishedState = FrameworkStatsLog.SCHEDULED_JOB_STATE_CHANGED__STATE__FINISHED;

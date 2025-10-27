@@ -1277,6 +1277,8 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Amalni bajarish"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Ochish…"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"%1$s bilan ochish"</string>
+    <!-- no translation found for open_app_name (6114096770130122912) -->
+    <skip />
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Ochish"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"<xliff:g id="HOST">%1$s</xliff:g> havolalarini quyidagi orqali ochish"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Havolalarni quyidagi orqali ochish"</string>
@@ -1798,10 +1800,8 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"<xliff:g id="SERVICE">%1$s</xliff:g> funksiyasini yoqish uchun ikkala tovush tugmalarini bir necha soniya bosib turing. Qurilmangiz ishlashida oʻzgarish yuz berishi mumkin.\n\nBu tezkor tugmalarni boshqa funksiyaga Sozlamalar ichidagi Qulayliklar orqali tayinlash mumkin."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Yoqilsin"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Yoqilmasin"</string>
-    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
-    <skip />
+    <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"Yoniq"</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"Yoqilmagan"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"<xliff:g id="SERVICE">%1$s</xliff:g> xizmatiga qurilmangizni boshqarish uchun toʻliq ruxsat berilsinmi?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Toʻliq nazorat maxsus imkoniyatlar bilan ishlovchi ilovalar uchun mos, lekin barcha ilovalar uchun emas."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Ekranni ochish va boshqarish"</string>
@@ -1815,16 +1815,11 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Kerakli funksiyani tanlang"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Qulayliklar tugmasi bilan foydalanish uchun funksiyalarni tanlang"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Tovush tugmasi bilan ishga tushiriladigan funksiyalarni tanlang"</string>
-    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
-    <skip />
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"qulayliklar tugmasi"</string>
+    <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"tovush tugmalari"</string>
+    <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"ishora"</string>
+    <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"tezkor sozlamalar"</string>
+    <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"uch marta teginish"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> faolsizlantirildi"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Tezkor tugmalarni tahrirlash"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"OK"</string>

@@ -45,20 +45,22 @@ public final class PwleSegment extends VibrationEffectSegment {
     private final float mEndAmplitude;
     private final float mEndFrequencyHz;
     private final long mDuration;
+    private final boolean mIsFirstSegment;
 
     PwleSegment(@android.annotation.NonNull Parcel in) {
-        this(in.readFloat(), in.readFloat(), in.readFloat(), in.readFloat(), in.readLong());
+        this(in.readFloat(), in.readFloat(), in.readFloat(), in.readFloat(), in.readLong(),
+             in.readBoolean());
     }
 
     /** @hide */
-    @FlaggedApi(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public PwleSegment(float startAmplitude, float endAmplitude, float startFrequencyHz,
-            float endFrequencyHz, long duration) {
+            float endFrequencyHz, long duration, boolean isFirstSegment) {
         mStartAmplitude = startAmplitude;
         mEndAmplitude = endAmplitude;
         mStartFrequencyHz = startFrequencyHz;
         mEndFrequencyHz = endFrequencyHz;
         mDuration = duration;
+        mIsFirstSegment = isFirstSegment;
     }
 
     public float getStartAmplitude() {
@@ -92,7 +94,8 @@ public final class PwleSegment extends VibrationEffectSegment {
                 && Float.compare(mEndAmplitude, other.mEndAmplitude) == 0
                 && Float.compare(mStartFrequencyHz, other.mStartFrequencyHz) == 0
                 && Float.compare(mEndFrequencyHz, other.mEndFrequencyHz) == 0
-                && mDuration == other.mDuration;
+                && mDuration == other.mDuration
+                && mIsFirstSegment == other.mIsFirstSegment;
     }
 
     /** @hide */
@@ -115,6 +118,11 @@ public final class PwleSegment extends VibrationEffectSegment {
     @Override
     public boolean isHapticFeedbackCandidate() {
         return true;
+    }
+
+    /** @hide */
+    public boolean isFirstSegmentOfEnvelope() {
+        return mIsFirstSegment;
     }
 
     /** @hide */
@@ -149,7 +157,8 @@ public final class PwleSegment extends VibrationEffectSegment {
         }
         return new PwleSegment(newStartAmplitude, newEndAmplitude, mStartFrequencyHz,
                 mEndFrequencyHz,
-                mDuration);
+                mDuration,
+                mIsFirstSegment);
     }
 
     /** @hide */
@@ -164,7 +173,8 @@ public final class PwleSegment extends VibrationEffectSegment {
         }
         return new PwleSegment(newStartAmplitude, newEndAmplitude, mStartFrequencyHz,
                 mEndFrequencyHz,
-                mDuration);
+                mDuration,
+                mIsFirstSegment);
     }
 
     /** @hide */
@@ -177,7 +187,7 @@ public final class PwleSegment extends VibrationEffectSegment {
     @Override
     public int hashCode() {
         return Objects.hash(mStartAmplitude, mEndAmplitude, mStartFrequencyHz, mEndFrequencyHz,
-                mDuration);
+                mDuration, mIsFirstSegment);
     }
 
     @Override
@@ -187,14 +197,16 @@ public final class PwleSegment extends VibrationEffectSegment {
                 + ", startFrequencyHz=" + mStartFrequencyHz
                 + ", endFrequencyHz=" + mEndFrequencyHz
                 + ", duration=" + mDuration
+                + ", isFirstSegment=" + mIsFirstSegment
                 + "}";
     }
 
     /** @hide */
     @Override
     public String toDebugString() {
-        return String.format(Locale.US, "Pwle=%dms(amplitude=%.2f @ %.2fHz to %.2f @ %.2fHz)",
+        return String.format(Locale.US, "Pwle=%dms(%samplitude=%.2f @ %.2fHz to %.2f @ %.2fHz)",
                 mDuration,
+                mIsFirstSegment ? "first, " : "",
                 mStartAmplitude,
                 mStartFrequencyHz,
                 mEndAmplitude,
@@ -214,6 +226,7 @@ public final class PwleSegment extends VibrationEffectSegment {
         dest.writeFloat(mStartFrequencyHz);
         dest.writeFloat(mEndFrequencyHz);
         dest.writeLong(mDuration);
+        dest.writeBoolean(mIsFirstSegment);
     }
 
     @android.annotation.NonNull

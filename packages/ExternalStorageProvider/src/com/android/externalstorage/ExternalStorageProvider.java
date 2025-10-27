@@ -736,8 +736,8 @@ public class ExternalStorageProvider extends FileSystemProvider {
             return docUriPermission.getUri();
         }
 
-        throw new SecurityException("The app is not given any access to the document under path " +
-                path + " with permissions granted in " + accessUriPermissions);
+        // No persisted permissions matched, fall back to single-document URI.
+        return DocumentsContract.buildDocumentUri(AUTHORITY, docId);
     }
 
     private static boolean allowsBothReadAndWrite(UriPermission permission) {

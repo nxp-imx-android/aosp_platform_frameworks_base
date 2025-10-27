@@ -213,13 +213,31 @@ class SceneLogger @Inject constructor(@SceneFrameworkLog private val logBuffer: 
         )
     }
 
-    fun logUserInputFinished() {
-        logBuffer.log(
-            tag = TAG,
-            level = LogLevel.INFO,
-            messageInitializer = {},
-            messagePrinter = { "user interaction finished" },
-        )
+    fun logUserInputFinished(transitionState: ObservableTransitionState) {
+        when (transitionState) {
+            is ObservableTransitionState.Transition -> {
+                logBuffer.log(
+                    tag = TAG,
+                    level = LogLevel.INFO,
+                    messageInitializer = {
+                        str1 = transitionState.fromContent.toString()
+                        str2 = transitionState.toContent.toString()
+                    },
+                    messagePrinter = { "User interaction finished during: $str1 → $str2" },
+                )
+            }
+            is ObservableTransitionState.Idle -> {
+                logBuffer.log(
+                    tag = TAG,
+                    level = LogLevel.INFO,
+                    messageInitializer = {
+                        str1 = transitionState.currentScene.toString()
+                        str2 = transitionState.currentOverlays.joinToString()
+                    },
+                    messagePrinter = { "User interaction finished on: $str1, overlays: $str2" },
+                )
+            }
+        }
     }
 
     fun logSceneBackStack(backStack: SceneStack) {

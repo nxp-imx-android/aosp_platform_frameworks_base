@@ -917,21 +917,6 @@ public final class MediaRoute2Info implements Parcelable {
     }
 
     /**
-     * Returns if the route has all the specified route features.
-     *
-     * @hide
-     */
-    public boolean hasAllFeatures(@NonNull Collection<String> features) {
-        Objects.requireNonNull(features, "features must not be null");
-        for (String feature : features) {
-            if (!getFeatures().contains(feature)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * Returns whether this route supports routing of the system media.
      *
      * @hide

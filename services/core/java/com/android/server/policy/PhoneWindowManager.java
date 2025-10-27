@@ -109,6 +109,7 @@ import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.L
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_BEHAVIOR_SLEEP;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_CLOSED;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_OPEN;
+import static com.android.server.power.feature.flags.Flags.interactiveDozeExperience;
 import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
 import static com.android.systemui.shared.Flags.enableLppAssistInvocationHapticEffect;
 
@@ -722,6 +723,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     // Timeout for showing the keyguard after the screen is on, in case no "ready" is received.
     private int mKeyguardDrawnTimeout = 1000;
+
+    // Whether or not the device supports interactive doze.
+    private boolean mInteractiveDozeEnabled;
 
     private final boolean mVisibleBackgroundUsersEnabled = isVisibleBackgroundUsersEnabled();
 
@@ -1871,7 +1875,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         // If there's a dream running then use home to escape the dream
         // but don't actually go home.
         final DreamManagerInternal dreamManagerInternal = getDreamManagerInternal();
-        if (dreamManagerInternal != null && dreamManagerInternal.isDreaming()) {
+        if (dreamManagerInternal != null
+                && dreamManagerInternal.isDreaming()
+                && !skipDreamWakeForInteractiveDoze()) {
             dreamManagerInternal.stopDream(false /*immediate*/, "short press on home" /*reason*/);
             if (mHasFeatureLeanback) {
                 if (localLOGV) Log.v(TAG, "TV will launch home after stopping dream");
@@ -2505,6 +2511,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         initKeyGestures();
         mButtonOverridePermissionChecker = injector.getButtonOverridePermissionChecker();
         mSideFpsEventHandler = new SideFpsEventHandler(mContext, mHandler, mPowerManager);
+        mInteractiveDozeEnabled =
+                interactiveDozeExperience()
+                        && mContext.getResources().getBoolean(
+                                com.android.internal.R.bool.config_enableInteractiveDoze);
     }
 
     /**
@@ -4212,8 +4222,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     }
 
+    private boolean skipDreamWakeForInteractiveDoze() {
+        return mInteractiveDozeEnabled && mDefaultDisplay.getState() == Display.STATE_ON;
+    }
+
     void launchHomeFromHotKey(int displayId) {
-        launchHomeFromHotKey(displayId, true /* awakenFromDreams */, true /*respectKeyguard*/);
+        final boolean awakenFromDreams = !skipDreamWakeForInteractiveDoze();
+        launchHomeFromHotKey(displayId, awakenFromDreams, true /*respectKeyguard*/);
     }
 
     /**
@@ -5557,7 +5572,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 startDockOrHome(
                         displayId,
                         /*fromHomeKey*/ keyCode == KEYCODE_HOME,
-                        /*wakenFromDreams*/ true,
+                        /*wakenFromDreams*/ !skipDreamWakeForInteractiveDoze(),
                         "Wake from " + KeyEvent. keyCodeToString(keyCode));
             }
         }
@@ -6444,6 +6459,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     @Override
     public void setDismissImeOnBackKeyPressed(boolean newValue) {
         mDismissImeOnBackKeyPressed = newValue;
+    }
+
+    @Override
+    public boolean getDismissImeOnBackKeyPressed() {
+        return mDismissImeOnBackKeyPressed;
     }
 
     @Override

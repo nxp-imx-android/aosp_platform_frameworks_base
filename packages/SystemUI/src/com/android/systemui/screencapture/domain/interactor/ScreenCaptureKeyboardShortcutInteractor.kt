@@ -16,8 +16,10 @@
 
 package com.android.systemui.screencapture.domain.interactor
 
+import android.util.Log
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters.Record.LargeScreenCaptureUiParameters
@@ -33,8 +35,14 @@ class ScreenCaptureKeyboardShortcutInteractor
 constructor(
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val uiEventLogger: UiEventLogger,
+    private val keyguardInteractor: KeyguardInteractor,
 ) {
     fun attemptPartialRegionScreenshot() {
+        if (keyguardInteractor.isKeyguardCurrentlyShowing()) {
+            Log.i(TAG, "Screen capture UI is disabled when keyguard is showing.")
+            return
+        }
+
         // TODO(b/420714826) Check if the large-screen screen capture UI is supported on this device
         // device's display (i.e. the focused display or external display). If not supported,
         // default to taking a fullscreen screenshot.
@@ -52,5 +60,9 @@ constructor(
                 )
             )
         }
+    }
+
+    private companion object {
+        const val TAG = "ScreenCaptureKeyboardShortcutInteractor"
     }
 }

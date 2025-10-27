@@ -88,11 +88,9 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Апликација или организација не дозвољавају прављење снимака екрана"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"ИТ администратор блокира прављење снимака екрана"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Измени"</string>
-    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
-    <skip />
+    <string name="screenshot_edit_description" msgid="7802378587672433507">"Дугме за измену снимка екрана"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Дели"</string>
-    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
-    <skip />
+    <string name="screenshot_share_description" msgid="2654362001720033972">"Дугме за дељење снимка екрана"</string>
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Снимите још"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Одбаците снимак екрана"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Одбаци поруку пословног профила"</string>
@@ -161,8 +159,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Паузирај"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Искључи звук"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Укључи звук"</string>
-    <!-- no translation found for screen_capture_blocked_by_admin (1751756953683506644) -->
-    <skip />
+    <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"ИТ администратор је блокирао снимање екрана"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Направи снимак целог екрана"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Сними цео екран"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Направи снимак екрана изабране области"</string>
@@ -370,6 +367,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Сензори су искључени"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Обриши сва обавештења."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Обавештења"</string>
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Помоћник"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"и још <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Унутра је још # обавештење.}one{Унутра је још # обавештење.}few{Унутра су још # обавештења.}other{Унутра је још # обавештења.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Екран је закључан у хоризонталном положају."</string>
@@ -428,10 +426,8 @@
     <string name="quick_settings_casting" msgid="1435880708719268055">"Пребацивање"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Неименовани уређај"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Није доступан ниједан уређај"</string>
-    <!-- no translation found for quick_settings_cast_detail_title (8212426967651562547) -->
-    <skip />
-    <!-- no translation found for quick_settings_cast_detail_subtitle (6406833630052788623) -->
-    <skip />
+    <string name="quick_settings_cast_detail_title" msgid="8212426967651562547">"Пребаците екран на уређај"</string>
+    <string name="quick_settings_cast_detail_subtitle" msgid="6406833630052788623">"Траже се уређаји..."</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Нема WiFi нити етернет везе"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Прекини везу"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"Тренутни микрофон је"</string>
@@ -713,6 +709,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Нечујно"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Обавештења"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Конверзације"</string>
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"Истакнуто"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Обришите сва нечујна обавештења"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Отворите подешавања обавештења"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Нема обавештења}=1{Обавештења је паузирао {mode}}=2{Обавештења су паузирали {mode} и још један режим}one{Обавештења су паузирали {mode} и још # режим}few{Обавештења су паузирали {mode} и још # режима}other{Обавештења су паузирали {mode} и још # режима}}"</string>
@@ -1027,8 +1024,7 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Отвори листу апликација"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Отвори подешавања"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Отвори дигитални помоћник"</string>
-    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
-    <skip />
+    <string name="group_system_access_contextual_search" msgid="525635757621336007">"Контекстуална претрага"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Откључавање екрана"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Направи белешку"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Обављање више задатака истовремено"</string>
@@ -1163,6 +1159,18 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Искључи пречицу"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Не искључуј"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003"><annotation id="action_key_icon">"Икона"</annotation>" Радња + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> је тастерска пречица за коришћење функције <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> је читач екрана који вам омогућава да чујете наглас изговорене називе ставки. Може да буде користан особама које слабо виде екран. То може да промени начин рада уређаја."</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Када притиснете "<annotation id="action_key_icon">"икону"</annotation>" Радња + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, укључује се функцијa приступачности за <xliff:g id="ID_3">^3</xliff:g>. Ово вам омогућава да контролишете уређај хендсфри."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Закључан екран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Искључује се…"</string>
@@ -1476,8 +1484,12 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"Ради бољег доживљаја уређаја, апликације и услуге и даље могу да траже WiFi мреже у било ком тренутку, чак и када је WiFi искључен. То можете да промените у подешавањима WiFi скенирања. "<annotation id="link">"Промените"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Искључи режим рада у авиону"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g> жели да дода следећу плочицу у Брза подешавања"</string>
+    <string name="qs_tile_request_dialog_text_with_size" msgid="732578771040573291">"<xliff:g id="APPNAME">%1$s</xliff:g> жели да дода плочицу у Брза подешавања. Изаберите величину плочице да бисте наставили."</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Додај плочицу"</string>
-    <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"Не додај плочицу"</string>
+    <string name="qs_tile_request_dialog_not_add" msgid="8375425041428574394">"Немој да додајеш плочицу"</string>
+    <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Додајте плочицу у Брза подешавања"</string>
+    <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Мали формат"</string>
+    <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Велики формат"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Изаберите корисника"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# апликација је активна}one{# апликација је активна}few{# апликације су активне}other{# апликација је активно}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Нове информације"</string>
@@ -1720,8 +1732,7 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Превуците од горњег левог угла да бисте отворили обавештења"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Превуците од горњег десног угла да бисте отворили Брза подешавања"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Назад"</string>
-    <!-- no translation found for accessibility_button_on_bouncer_description (9186344135931507168) -->
-    <skip />
+    <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Приступачност"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Претходно"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Следеће"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"идите на следећу страницу"</string>

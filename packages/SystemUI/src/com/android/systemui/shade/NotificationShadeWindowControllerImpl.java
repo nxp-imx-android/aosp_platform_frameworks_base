@@ -557,9 +557,8 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     }
 
     private boolean isExpanded(NotificationShadeWindowState state) {
-        boolean keyguardFadingAway = !SceneContainerFlag.isEnabled() && state.keyguardFadingAway;
         boolean isExpanded = !state.forceWindowCollapsed && (state.isKeyguardShowingAndNotOccluded()
-                || state.panelVisible || keyguardFadingAway || state.bouncerShowing
+                || state.panelVisible || state.keyguardFadingAway || state.bouncerShowing
                 || state.headsUpNotificationShowing)
                 || state.launchingActivityFromNotification
                 || state.isAnimatingGoneToAod;
@@ -572,7 +571,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
 
         mLogger.logIsExpanded(isExpanded, state.forceWindowCollapsed,
                 state.isKeyguardShowingAndNotOccluded(), state.panelVisible,
-                keyguardFadingAway, state.bouncerShowing, state.headsUpNotificationShowing,
+                state.keyguardFadingAway, state.bouncerShowing, state.headsUpNotificationShowing,
                 state.scrimsVisibility != ScrimController.TRANSPARENT,
                 state.launchingActivityFromNotification, state.forceHideAfterActivityLaunch,
                 state.isAnimatingGoneToAod);

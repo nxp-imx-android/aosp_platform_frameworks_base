@@ -44,6 +44,7 @@ import static com.android.server.am.UserController.USER_COMPLETED_EVENT_MSG;
 import static com.android.server.am.UserController.USER_CURRENT_MSG;
 import static com.android.server.am.UserController.USER_START_MSG;
 import static com.android.server.am.UserController.USER_SWITCH_TIMEOUT_MSG;
+import static com.android.server.am.UserController.USER_UNLOCK_MSG;
 import static com.android.server.pm.UserManagerInternal.USER_START_MODE_BACKGROUND;
 import static com.android.server.pm.UserManagerInternal.USER_START_MODE_FOREGROUND;
 
@@ -203,8 +204,10 @@ public class UserControllerTest {
             USER_CURRENT_MSG);
 
     private static final Set<Integer> START_BACKGROUND_USER_MESSAGE_CODES = newHashSet(
-            USER_START_MSG,
-            REPORT_LOCKED_BOOT_COMPLETE_MSG);
+            USER_START_MSG, REPORT_LOCKED_BOOT_COMPLETE_MSG, USER_UNLOCK_MSG);
+
+    private static final Set<Integer> START_BACKGROUND_USER_MESSAGE_CODES_WITHOUT_UNLOCK =
+            newHashSet(USER_START_MSG, REPORT_LOCKED_BOOT_COMPLETE_MSG);
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -318,13 +321,13 @@ public class UserControllerTest {
 
         // ACTION_LOCKED_BOOT_COMPLETED not sent yet
         startUserAssertions(newArrayList(Intent.ACTION_USER_STARTED, Intent.ACTION_USER_STARTING),
-                START_BACKGROUND_USER_MESSAGE_CODES);
+                START_BACKGROUND_USER_MESSAGE_CODES_WITHOUT_UNLOCK);
 
         mUserController.onBootComplete(null);
 
         startUserAssertions(newArrayList(Intent.ACTION_USER_STARTED, Intent.ACTION_USER_STARTING,
                         Intent.ACTION_LOCKED_BOOT_COMPLETED),
-                START_BACKGROUND_USER_MESSAGE_CODES);
+                START_BACKGROUND_USER_MESSAGE_CODES_WITHOUT_UNLOCK);
     }
 
     @Test
@@ -420,14 +423,9 @@ public class UserControllerTest {
 
         assertWithMessage("should not have received intents")
                 .that(getActions(mInjector.mSentIntents)).isEmpty();
-        // TODO(b/140868593): should have received a USER_UNLOCK_MSG message as well, but it doesn't
-        // because StorageManager.isCeStorageUnlocked(TEST_PRE_CREATED_USER_ID) returns false - to
-        // properly fix it, we'd need to move this class to FrameworksMockingServicesTests so we can
-        // mock static methods (but moving this class would involve changing the presubmit tests,
-        // and the cascade effect goes on...). In fact, a better approach would to not assert the
-        // binder calls, but their side effects (in this case, that the user is stopped right away)
-        assertWithMessage("wrong binder message calls").that(mInjector.mHandler.getMessageCodes())
-                .containsExactly(USER_START_MSG);
+        assertWithMessage("wrong binder message calls").that(
+                mInjector.mHandler.getMessageCodes()).containsExactly(USER_START_MSG,
+                USER_UNLOCK_MSG);
     }
 
     private void startUserAssertions(
@@ -2654,12 +2652,15 @@ public class UserControllerTest {
         private final AudioManagerInternal mAudioManagerInternal;
         private final KeyguardManager mKeyguardManagerMock;
         private final LockPatternUtils mLockPatternUtilsMock;
+        private long mLastUserUnlockingUptime = 0;
 
         private final UserJourneyLogger mUserJourneyLoggerMock;
 
         private final Context mCtx;
 
         private Integer mRelevantUser;
+
+        private HashSet<Integer> mUnlockedUsers = new HashSet<Integer>();
 
         TestInjector(Context ctx) {
             super(null);
@@ -2671,6 +2672,11 @@ public class UserControllerTest {
             mUserManagerMock = mock(UserManagerService.class);
             mUserManagerInternalMock = mock(UserManagerInternal.class);
             mLockSettingsInternalMock = mock(LockSettingsInternal.class);
+            doAnswer(invocation -> {
+                int userId = (int) invocation.getArguments()[0];
+                mUnlockedUsers.remove(userId);
+                return null;
+            }).when(mLockSettingsInternalMock).lockUser(anyInt());
             mWindowManagerMock = mock(WindowManagerService.class);
             mPowerManagerInternal = mock(PowerManagerInternal.class);
             mAlarmManagerInternal = mock(AlarmManagerInternal.class);
@@ -2678,6 +2684,11 @@ public class UserControllerTest {
             mKeyguardManagerMock = mock(KeyguardManager.class);
             when(mKeyguardManagerMock.isDeviceSecure(anyInt())).thenReturn(true);
             mLockPatternUtilsMock = mock(LockPatternUtils.class);
+            doAnswer(invocation -> {
+                int userId = (int) invocation.getArguments()[0];
+                mUnlockedUsers.add(userId);
+                return null;
+            }).when(mLockPatternUtilsMock).unlockUserKeyIfUnsecured(anyInt());
             mUserJourneyLoggerMock = mock(UserJourneyLogger.class);
         }
 
@@ -2689,6 +2700,16 @@ public class UserControllerTest {
         @Override
         protected Handler getUiHandler(Handler.Callback callback) {
             return mUiHandler;
+        }
+
+        @Override
+        protected void setLastUserUnlockingUptime(long now) {
+            mLastUserUnlockingUptime = now;
+        }
+
+        @Override
+        protected long getLastUserUnlockingUptime() {
+            return mLastUserUnlockingUptime;
         }
 
         @Override
@@ -2831,6 +2852,11 @@ public class UserControllerTest {
         @Override
         int getLmkdKillCount() {
             return 0;
+        }
+
+        @Override
+        boolean isCeStorageUnlocked(@UserIdInt int userId) {
+            return mUnlockedUsers.contains(userId);
         }
     }
 

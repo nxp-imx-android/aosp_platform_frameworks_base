@@ -2442,6 +2442,7 @@ class ContextImpl extends Context {
 
     /** @hide */
     @Override
+    @RavenwoodKeep
     public boolean isUiContext() {
         switch (mContextType) {
             case CONTEXT_TYPE_ACTIVITY:

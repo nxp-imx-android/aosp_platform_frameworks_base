@@ -76,7 +76,6 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
                             "onRouteListingPreferenceUpdated(), hasRLP: " + (preference != null));
                 }
                 notifyRouteListingPreferenceUpdated(preference);
-                refreshDevices();
             };
 
     private final DeviceSuggestionsUpdatesCallback mDeviceSuggestionsUpdatesCallback =

@@ -21,7 +21,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.DumpManager
-import com.android.systemui.log.LogBufferFactory
+import com.android.systemui.log.impl.LogBufferFactoryImpl
 import com.android.systemui.statusbar.pipeline.StatusBarPipelineFlags
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileViewLogger.Companion.getIdForLogging
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.KeyguardMobileIconViewModel
@@ -40,7 +40,7 @@ import org.mockito.MockitoAnnotations
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class MobileViewLoggerTest : SysuiTestCase() {
-    private val buffer = LogBufferFactory(DumpManager(), mock()).create("buffer", 10)
+    private val buffer = LogBufferFactoryImpl(DumpManager(), mock()).create("buffer", 10)
     private val stringWriter = StringWriter()
     private val printWriter = PrintWriter(stringWriter)
 

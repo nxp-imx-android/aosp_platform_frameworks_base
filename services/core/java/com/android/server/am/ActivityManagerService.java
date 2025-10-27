@@ -486,6 +486,7 @@ import com.android.server.am.LowMemDetector.MemFactor;
 import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.ProcessListInternal.ProcessChangeItem;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.appop.AppOpsService;
 import com.android.server.compat.PlatformCompat;
 import com.android.server.contentcapture.ContentCaptureManagerInternal;
@@ -536,6 +537,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -9363,15 +9365,15 @@ public class ActivityManagerService extends IActivityManager.Stub
      */
     void handleApplicationCrashInner(String eventType, @Nullable ProcessRecord r,
             String processName, ApplicationErrorReport.CrashInfo crashInfo) {
-        CountDownLatch profilingRunningLatch = null;
-        int profilingDelaySeconds = 0;
+        final CountDownLatch profilingRunningLatch = new CountDownLatch(1);
+        Duration profilingDelay = Duration.ZERO;
         if (android.os.profiling.Flags.profilingTriggerOom() && r != null) {
-            profilingRunningLatch = new CountDownLatch(1);
-            profilingDelaySeconds = ProfilingServiceHelper.getInstance().profileApplicationCrash(
+            profilingDelay = ProfilingServiceHelper.getInstance().profileApplicationCrash(
                     r.uid,
                     r.info.packageName,
                     crashInfo,
-                    profilingRunningLatch);
+                    BackgroundThread.getExecutor(),
+                    () -> profilingRunningLatch.countDown());
         }
 
         float loadingProgress = 1;
@@ -9481,11 +9483,11 @@ public class ActivityManagerService extends IActivityManager.Stub
         if (recoverable) {
             mAppErrors.sendRecoverableCrashToAppExitInfo(r, crashInfo);
         } else {
-            if (profilingRunningLatch != null && profilingDelaySeconds > 0) {
+            if (profilingDelay.isPositive() && profilingRunningLatch.getCount() > 0) {
                 // This will delay the crashing of the application while we wait for profiling to be
                 // collected in order to provide to the crashing app.
                 try {
-                    profilingRunningLatch.await(profilingDelaySeconds, TimeUnit.SECONDS);
+                    profilingRunningLatch.await(profilingDelay.getSeconds(), TimeUnit.SECONDS);
                 } catch (InterruptedException ignored) {
                     // Nothing else to do here, continue. Profiling result may be empty/useless.
                 }
@@ -18641,6 +18643,12 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
     }
 
+    String getBroadcastConstant(@NonNull String key) {
+        Objects.requireNonNull(key);
+        enforceCallingPermission(permission.DUMP, "getBroadcastConstant()");
+        return mBroadcastQueue.getBroadcastConstant(key);
+    }
+
     boolean shouldIgnoreDeliveryGroupPolicy(@Nullable String broadcastAction) {
         if (broadcastAction == null) {
             return false;
@@ -19570,7 +19578,48 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         @Override
         public void onProcStateSeqIncremented(ActiveUidsInternal activeUids) {
-            mProcessList.notifyProcStateChangedForNetworkLOSP((ActiveUids) activeUids);
+            mProcessList.notifyProcStateChangedForNetworkLOSP(activeUids);
+        }
+
+        @Override
+        public void onUidLastBackgroundTimeUpdated(UidRecordInternal uidRec, long nowElapsed,
+                OomAdjusterDebugLogger logger) {
+            final boolean shouldLog = logger.shouldLog(uidRec.getUid());
+            if (shouldLog) {
+                logger.logSetLastBackgroundTime(uidRec.getUid(), nowElapsed);
+            }
+            if (mDeterministicUidIdle || !mHandler.hasMessages(IDLE_UIDS_MSG)) {
+                // Note: the background settle time is in elapsed realtime, while
+                // the handler time base is uptime.  All this means is that we may
+                // stop background uids later than we had intended, but that only
+                // happens because the device was sleeping so we are okay anyway.
+                if (shouldLog) {
+                    logger.logScheduleUidIdle1(uidRec.getUid(), mConstants.BACKGROUND_SETTLE_TIME);
+                }
+                mHandler.sendEmptyMessageDelayed(IDLE_UIDS_MSG, mConstants.BACKGROUND_SETTLE_TIME);
+            }
+        }
+
+        @Override
+        public void onProcessBackgroundRestricted(ProcessRecordInternal app) {
+            mHandler.post(() -> {
+                synchronized (ActivityManagerService.this) {
+                    mServices.stopAllForegroundServicesLocked(app.uid, app.getPackageName());
+                }
+            });
+        }
+
+        @Override
+        public void onProcessCached(ProcessRecordInternal app, OomAdjusterDebugLogger logger) {
+            if (mDeterministicUidIdle || !mHandler.hasMessages(IDLE_UIDS_MSG)) {
+                if (logger.shouldLog(app.uid)) {
+                    logger.logScheduleUidIdle2(
+                            app.getUidRecord().getUid(), app.getPid(),
+                            mConstants.mKillBgRestrictedAndCachedIdleSettleTimeMs);
+                }
+                mHandler.sendEmptyMessageDelayed(IDLE_UIDS_MSG,
+                        mConstants.mKillBgRestrictedAndCachedIdleSettleTimeMs);
+            }
         }
     }
 

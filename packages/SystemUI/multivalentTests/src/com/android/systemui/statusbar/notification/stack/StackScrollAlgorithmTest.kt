@@ -32,7 +32,6 @@ import com.android.systemui.statusbar.notification.footer.ui.view.FooterView
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView.FooterViewState
 import com.android.systemui.statusbar.notification.headsup.AvalancheController
 import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
@@ -771,7 +770,6 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun resetViewStates_hunAnimatingAway_noStatusBarChip_hunTranslatedToTopOfScreen() {
         val topMargin = 100f
         ambientState.maxHeadsUpTranslation = 2000f
@@ -792,7 +790,6 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun resetViewStates_hunAnimatingAway_withStatusBarChip_hunTranslatedToBottomOfStatusBar() {
         val topMargin = 100f
         ambientState.maxHeadsUpTranslation = 2000f

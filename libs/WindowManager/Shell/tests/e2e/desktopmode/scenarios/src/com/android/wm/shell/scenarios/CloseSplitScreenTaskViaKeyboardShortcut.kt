@@ -23,6 +23,7 @@ import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.KeyEvent
+import android.view.KeyEvent.KEYCODE_META_RIGHT
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import androidx.test.uiautomator.UiDevice
 import com.android.launcher3.tapl.LauncherInstrumentation
@@ -40,9 +41,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-/**
- * Base scenario test for closing a split screen task via the keyboard shortcut.
- */
+/** Base scenario test for closing a split screen task via the keyboard shortcut. */
 @RequiresFlagsEnabled(
     Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
     Flags.FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT,
@@ -57,7 +56,8 @@ abstract class CloseSplitScreenTaskViaKeyboardShortcut {
     private val keyEventHelper = KeyEventHelper(getInstrumentation())
 
     @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-    @get:Rule(order = 1) val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
+    @get:Rule(order = 1)
+    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
 
     @Before
     fun setup() {
@@ -69,40 +69,28 @@ abstract class CloseSplitScreenTaskViaKeyboardShortcut {
 
     @Test
     open fun closeTaskViaKeyboardShortcut() {
-        secondaryApp.enterDesktopMode(wmHelper, device)
         primaryApp.enterDesktopMode(wmHelper, device)
-        tapl.showTaskbarIfHidden()
 
         // Enter split screen
         primaryApp.exitDesktopModeToSplitScreenWithAppHeader(wmHelper)
-        tapl.launchedAppState.taskbar
+        // Open allApps via keyboard shortcut
+        keyEventHelper.press(KEYCODE_META_RIGHT)
+        tapl.allApps
             .getAppIcon(immersiveAppHelper.appName)
-            .launch(secondaryApp.packageName)
+            .launch(immersiveAppHelper.packageName)
         SplitScreenUtils.waitForSplitComplete(wmHelper, primaryApp, secondaryApp)
 
         // Focus on the primary app.
         primaryApp.bringToFront(wmHelper, device)
 
-        keyEventHelper.press(
-            KeyEvent.KEYCODE_W,
-            KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON
-        )
-        wmHelper
-            .StateSyncBuilder()
-            .withWindowSurfaceDisappeared(primaryApp)
-            .waitForAndVerify()
+        keyEventHelper.press(KeyEvent.KEYCODE_W, KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON)
+        wmHelper.StateSyncBuilder().withWindowSurfaceDisappeared(primaryApp).waitForAndVerify()
 
         // Focus on the secondary app.
         secondaryApp.bringToFront(wmHelper, device)
 
-        keyEventHelper.press(
-            KeyEvent.KEYCODE_W,
-            KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON
-        )
-        wmHelper
-            .StateSyncBuilder()
-            .withWindowSurfaceDisappeared(secondaryApp)
-            .waitForAndVerify()
+        keyEventHelper.press(KeyEvent.KEYCODE_W, KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON)
+        wmHelper.StateSyncBuilder().withWindowSurfaceDisappeared(secondaryApp).waitForAndVerify()
     }
 
     @After

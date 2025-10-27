@@ -33,11 +33,9 @@ import android.annotation.TestApi;
 import android.annotation.UserHandleAware;
 import android.annotation.UserIdInt;
 import android.app.supervision.flags.Flags;
-import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
 import android.content.Intent;
 import android.os.RemoteException;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,7 +67,7 @@ public class SupervisionManager {
 
                     @Override
                     public void onPolicyChanged(Policy policy) {
-                        // TODO (b/446219213): Implement listener
+                        // Empty for now. Can be implemented in the future if needed.
                     }
                 };
 

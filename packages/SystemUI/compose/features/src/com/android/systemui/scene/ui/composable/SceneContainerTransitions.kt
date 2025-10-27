@@ -183,7 +183,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
             ) {
                 reversed { lockscreenToShadeSceneTransition() }
-                sharedElement(Notifications.Elements.NotificationStackPlaceholder, enabled = false)
+                sharedElement(Notifications.Elements.StackPlaceholder, enabled = false)
                 sharedElement(
                     Notifications.Elements.HeadsUpNotificationPlaceholder,
                     enabled = false,

@@ -81,21 +81,32 @@ public class NotificationCollapsedMetricContainer extends LinearLayout {
      */
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        final int availableWidth = MeasureSpec.getSize(widthMeasureSpec);
         final int measureSpecForWidth = MeasureSpec.makeSafeMeasureSpec(
                 Integer.MAX_VALUE, MeasureSpec.UNSPECIFIED);
         super.onMeasure(measureSpecForWidth, heightMeasureSpec);
-
-        final int availableWidth = MeasureSpec.getSize(widthMeasureSpec);
-        int usedWidth = 0;
+        final int horizontalPaddings = mPaddingLeft + mPaddingRight;
+        final int verticalPaddings = mPaddingTop + mPaddingBottom;
+        int usedWidth = horizontalPaddings;
         final int viewWidth0 = getChildUsedWidth(mMetricView0);
         final int viewWidth1 = getChildUsedWidth(mMetricView1);
         final int viewWidth2 = getChildUsedWidth(mMetricView2);
 
         usedWidth += viewWidth0;
-
+        // First child does not fit in the available space. Let's fit it in and show it.
+        if (usedWidth > availableWidth) {
+            measureChildWithMargins(mMetricView0, widthMeasureSpec,
+                    horizontalPaddings, heightMeasureSpec, verticalPaddings);
+            updateShowing(mMetricView1, false);
+            updateShowing(mMetricView2, false);
+            setMeasuredDimension(horizontalPaddings + getChildUsedWidth(mMetricView0),
+                    getMeasuredHeight());
+            return;
+        }
         if (usedWidth + viewWidth1 > availableWidth) {
             updateShowing(mMetricView1, false);
             updateShowing(mMetricView2,false);
+            setMeasuredDimension(usedWidth, getMeasuredHeight());
             return;
         }
 
@@ -105,8 +116,10 @@ public class NotificationCollapsedMetricContainer extends LinearLayout {
         if (usedWidth + viewWidth2 > availableWidth) {
             updateShowing(mMetricView2, false);
         } else {
+            usedWidth += viewWidth2;
             updateShowing(mMetricView2, true);
         }
+        setMeasuredDimension(usedWidth, getMeasuredHeight());
     }
 
     private static int getChildUsedWidth(View child) {

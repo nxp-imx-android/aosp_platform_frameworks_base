@@ -21,6 +21,7 @@ import android.media.session.MediaSession
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.media.InfoMediaManager
 import com.android.settingslib.media.LocalMediaManager
+import dagger.Lazy
 import javax.inject.Inject
 
 /** Factory to create [LocalMediaManager] objects. */
@@ -28,7 +29,7 @@ class LocalMediaManagerFactory
 @Inject
 constructor(
     private val context: Context,
-    private val localBluetoothManager: LocalBluetoothManager?
+    private val localBluetoothManager: Lazy<LocalBluetoothManager?>,
 ) {
     /** Creates a [LocalMediaManager] for the given package. */
     fun create(packageName: String?, token: MediaSession.Token? = null): LocalMediaManager {
@@ -38,9 +39,9 @@ constructor(
                 context,
                 packageName,
                 null,
-                localBluetoothManager,
-                token
+                localBluetoothManager.get(),
+                token,
             )
-            .run { LocalMediaManager(context, localBluetoothManager, this, packageName) }
+            .run { LocalMediaManager(context, localBluetoothManager.get(), this, packageName) }
     }
 }

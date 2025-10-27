@@ -1,0 +1,56 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package android.app.contentrestriction;
+
+import android.annotation.FlaggedApi;
+import android.annotation.Nullable;
+import android.annotation.SdkConstant;
+import android.annotation.SdkConstant.SdkConstantType;
+import android.annotation.SystemApi;
+import android.app.Service;
+import android.app.contentrestriction.flags.Flags;
+import android.content.Intent;
+import android.os.IBinder;
+
+/**
+ * Base class for a service that the
+ * {@code android.app.role.RoleManager.ROLE_CONTENT_RESTRICTION} role holder must implement.
+ *
+ * @hide
+ */
+@SystemApi
+@FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
+public class ContentRestrictionAppService extends Service {
+    /**
+     * Service action: Action for a service that the {@code
+     * android.app.role.RoleManager.ROLE_CONTENT_RESTRICTION} role holder must implement.
+     *
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.SERVICE_ACTION)
+    public static final String ACTION_BIND_CONTENT_RESTRICTION_APP_SERVICE =
+            "android.app.action.BIND_CONTENT_RESTRICTION_APP_SERVICE";
+
+    private final IContentRestrictionAppService mBinder = new IContentRestrictionAppService.Stub() {
+    };
+
+    @Nullable
+    @Override
+    public final IBinder onBind(@Nullable Intent intent) {
+        return mBinder.asBinder();
+    }
+}

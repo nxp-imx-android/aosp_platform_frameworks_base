@@ -39,8 +39,6 @@ object KeyguardStatusBarViewBinder {
                     }
                 }
 
-                launch { viewModel.isBatteryCharging.collect { view.onBatteryChargingChanged(it) } }
-
                 launch {
                     viewModel.isKeyguardUserSwitcherEnabled.distinctUntilChanged().collect {
                         view.setKeyguardUserSwitcherEnabled(it)

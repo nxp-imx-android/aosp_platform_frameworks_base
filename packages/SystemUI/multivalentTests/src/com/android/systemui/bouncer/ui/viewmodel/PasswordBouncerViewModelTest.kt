@@ -41,6 +41,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
+import com.android.systemui.runOnMainThreadAndWaitForIdleSync
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.testKosmos
@@ -408,13 +409,14 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             val isPasswordRevealed by collectLastValue(underTest.isPasswordRevealed)
 
             underTest.onRevealPasswordButtonClicked()
-            runCurrent()
 
             assertThat(isPasswordRevealed).isTrue()
 
             advanceTimeBy(2.seconds)
 
-            underTest.textFieldState.setTextAndPlaceCursorAtEnd("p")
+            runOnMainThreadAndWaitForIdleSync {
+                underTest.textFieldState.setTextAndPlaceCursorAtEnd("p")
+            }
 
             advanceTimeBy(4.seconds)
 
@@ -451,12 +453,16 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, true)
 
-            underTest.textFieldState.setTextAndPlaceCursorAtEnd("p")
+            runOnMainThreadAndWaitForIdleSync {
+                underTest.textFieldState.setTextAndPlaceCursorAtEnd("p")
+            }
 
             advanceTimeBy(2.seconds)
             assertThat(underTest.textFieldState.text.toString()).isEqualTo("p")
 
-            underTest.textFieldState.setTextAndPlaceCursorAtEnd("pa")
+            runOnMainThreadAndWaitForIdleSync {
+                underTest.textFieldState.setTextAndPlaceCursorAtEnd("pa")
+            }
 
             advanceTimeBy(30.seconds - 1.milliseconds)
             assertThat(underTest.textFieldState.text.toString()).isEqualTo("pa")
@@ -471,7 +477,9 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, false)
 
-            underTest.textFieldState.setTextAndPlaceCursorAtEnd("p")
+            runOnMainThreadAndWaitForIdleSync {
+                underTest.textFieldState.setTextAndPlaceCursorAtEnd("p")
+            }
 
             advanceTimeBy(31.seconds)
             assertThat(underTest.textFieldState.text.toString()).isEqualTo("p")

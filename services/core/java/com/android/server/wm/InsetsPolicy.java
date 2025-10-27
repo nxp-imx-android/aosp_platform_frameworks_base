@@ -531,17 +531,22 @@ class InsetsPolicy {
             }
         } else if ((w.mMergedExcludeInsetsTypes & WindowInsets.Type.ime()) != 0) {
             // In some cases (e.g. split screen from when the IME was requested and the animation
-            // actually starts) the insets should not be send, unless the flag is unset.
+            // actually starts) the insets should not be sent unless WindowInsets.Type.ime() is
+            // unset from mMergedExcludeInsetsTypes.
             final InsetsSource originalImeSource = originalState.peekSource(ID_IME);
             if (originalImeSource != null && originalImeSource.isVisible()) {
                 final InsetsState state = copyState
                         ? new InsetsState(originalState)
                         : originalState;
-                final InsetsSource imeSource = new InsetsSource(originalImeSource);
-                // Setting the height to zero, pretending we're in floating mode
-                imeSource.setFrame(0, 0, 0, 0);
-                imeSource.setVisibleFrame(imeSource.getFrame());
-                state.addSource(imeSource);
+                if (android.view.inputmethod.Flags.setSourceInvisibleOnMultiWindowMode()) {
+                    state.removeSource(originalImeSource.getId());
+                } else {
+                    final InsetsSource imeSource = new InsetsSource(originalImeSource);
+                    // Setting the height to zero, pretending we're in floating mode
+                    imeSource.setFrame(0, 0, 0, 0);
+                    imeSource.setVisibleFrame(imeSource.getFrame());
+                    state.addSource(imeSource);
+                }
                 return state;
             }
         }
@@ -710,7 +715,7 @@ class InsetsPolicy {
     @Nullable
     private InsetsControlTarget getNavControlTargetInner(@Nullable WindowState focusedWin,
             boolean fake) {
-        final WindowState imeWin = mDisplayContent.mInputMethodWindow;
+        final WindowState imeWin = mDisplayContent.getImeWindow();
         if (imeWin != null && imeWin.isVisible() && !mHideNavBarForKeyboard) {
             // Force showing navigation bar while IME is visible and if navigation bar is not
             // configured to be hidden by the IME.

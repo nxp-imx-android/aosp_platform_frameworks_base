@@ -29,9 +29,17 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.when;
 
 import android.annotation.UserIdInt;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.ContentResolver;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.ContentObserver;
 import android.os.Handler;
 import android.os.Looper;
@@ -49,7 +57,13 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
+import java.util.Collections;
+import java.util.List;
+
 public final class HsuDeviceProvisionerTest {
+
+    private static final String SETUP_WIZARD_PKG = "com.google.android.setupwizard";
+    private static final String SETUP_WIZARD_ACTIVITY = "SetupWizardActivity";
 
     private static final String TAG = HsuDeviceProvisionerTest.class.getSimpleName();
 
@@ -66,14 +80,17 @@ public final class HsuDeviceProvisionerTest {
                     .build();
     @Mock private ContentResolver mMockContentResolver;
     @Mock private UserManagerService mMockUms;
+    @Mock private Context mMockContext;
+    @Mock private PackageManager mMockPackageManager;
 
     private HsuDeviceProvisioner mFixture;
 
     @Before
     public void setFixtures() {
+        when(mMockContext.getPackageManager()).thenReturn(mMockPackageManager);
         mFixture =
                 new HsuDeviceProvisioner(
-                    new Handler(Looper.getMainLooper()), mMockContentResolver);
+                    mMockContext, new Handler(Looper.getMainLooper()), mMockContentResolver);
     }
 
     @Test
@@ -100,19 +117,23 @@ public final class HsuDeviceProvisionerTest {
     @Test
     public void testOnChange_notProvisioned_dontSetAnything() {
         mockIsDeviceProvisioned(false);
+        mockQuerySetupWizardHomeActivity();
 
         mFixture.onChange(true);
 
         verifyNoSecureSettingsSet();
+        verifyDisableSuwNeverCalled();
     }
 
     @Test
     public void testOnChange_provisioned_setUserSetupComplete() {
         mockIsDeviceProvisioned(true);
+        mockQuerySetupWizardHomeActivity();
 
         mFixture.onChange(true);
 
         verifySettingCopied(USER_SETUP_COMPLETE, 1);
+        verifyDisableSuwCalled();
     }
 
     @Test
@@ -196,6 +217,37 @@ public final class HsuDeviceProvisionerTest {
                         eq(false),
                         captor.capture());
         return captor.getValue();
+    }
+
+    private ResolveInfo createFakeResolveInfo(String packageName, String activityName) {
+        ResolveInfo resolveInfo = new ResolveInfo();
+        resolveInfo.activityInfo = new ActivityInfo();
+        resolveInfo.activityInfo.packageName = packageName;
+        resolveInfo.activityInfo.name = activityName;
+        resolveInfo.activityInfo.applicationInfo = new ApplicationInfo();
+        resolveInfo.activityInfo.applicationInfo.packageName = packageName;
+        return resolveInfo;
+    }
+
+    private void mockQuerySetupWizardHomeActivity() {
+        List<ResolveInfo> matches = Collections.singletonList(
+            createFakeResolveInfo(SETUP_WIZARD_PKG, SETUP_WIZARD_ACTIVITY)
+        );
+        when(mMockPackageManager.queryIntentActivities(
+            any(Intent.class), anyInt())).thenReturn(matches);
+    }
+
+    private void verifyDisableSuwCalled() {
+        ComponentName expectedComponent =
+            new ComponentName(SETUP_WIZARD_PKG, SETUP_WIZARD_ACTIVITY);
+        verify(mMockPackageManager).setComponentEnabledSetting(
+            expectedComponent,
+            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+            PackageManager.DONT_KILL_APP);
+    }
+
+    private void verifyDisableSuwNeverCalled() {
+        verify(mMockPackageManager, never()).setComponentEnabledSetting(any(), anyInt(), anyInt());
     }
 
     private void verifySettingNotCopied(String settingName) {

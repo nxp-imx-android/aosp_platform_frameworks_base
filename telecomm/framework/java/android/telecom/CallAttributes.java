@@ -25,6 +25,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
+import com.android.internal.telecom.ParcelUtils;
 import com.android.server.telecom.flags.Flags;
 
 import java.lang.annotation.Retention;
@@ -181,7 +182,7 @@ public final class CallAttributes implements Parcelable {
                 @Direction int callDirection, @NonNull CharSequence displayName,
                 @NonNull Uri address) {
             if (!isInRange(DIRECTION_INCOMING, DIRECTION_OUTGOING, callDirection)) {
-                throw new IllegalArgumentException(TextUtils.formatSimple("CallDirection=[%d] is"
+                throw new IllegalArgumentException(String.format("CallDirection=[%d] is"
                                 + " invalid. CallDirections value should be within [%d, %d]",
                         callDirection, DIRECTION_INCOMING, DIRECTION_OUTGOING));
             }
@@ -202,7 +203,7 @@ public final class CallAttributes implements Parcelable {
         @NonNull
         public Builder setCallType(@CallType int callType) {
             if (!isInRange(AUDIO_CALL, VIDEO_CALL, callType)) {
-                throw new IllegalArgumentException(TextUtils.formatSimple("CallType=[%d] is"
+                throw new IllegalArgumentException(String.format("CallType=[%d] is"
                                 + " invalid. CallTypes value should be within [%d, %d]",
                         callType, AUDIO_CALL, VIDEO_CALL));
             }
@@ -314,7 +315,7 @@ public final class CallAttributes implements Parcelable {
     @Override
     public void writeToParcel(@Nullable Parcel dest, int flags) {
         dest.writeParcelable(mPhoneAccountHandle, flags);
-        dest.writeCharSequence(mDisplayName);
+        ParcelUtils.writeCharSequence(dest, mDisplayName);
         dest.writeParcelable(mAddress, flags);
         dest.writeInt(mDirection);
         dest.writeInt(mCallType);
@@ -332,7 +333,7 @@ public final class CallAttributes implements Parcelable {
                 public CallAttributes createFromParcel(Parcel source) {
                     return new CallAttributes(source.readParcelable(getClass().getClassLoader(),
                             android.telecom.PhoneAccountHandle.class),
-                            source.readCharSequence(),
+                            ParcelUtils.readCharSequence(source),
                             source.readParcelable(getClass().getClassLoader(),
                                     android.net.Uri.class),
                             source.readInt(),

@@ -21,6 +21,7 @@ import android.content.Context;
 import android.hardware.light.HwLight;
 import android.hardware.light.HwLightState;
 import android.hardware.light.ILights;
+import android.hardware.light.LightType;
 import android.hardware.lights.ILightsManager;
 import android.hardware.lights.Light;
 import android.hardware.lights.LightState;
@@ -438,9 +439,24 @@ public class LightsService extends SystemService {
          * applications using the {@link android.hardware.lights.LightsManager} API.
          */
         private boolean isSystemLight() {
-            // LIGHT_ID_COUNT comes from the 2.0 HIDL HAL and only contains system lights.
-            // Newly-added lights are made available via the public LightsManager API.
-            return (0 <= mHwLight.type && mHwLight.type < LightsManager.LIGHT_ID_COUNT);
+            // This list of lights is based on the list of lights from the 2.0 HIDL HAL, which only
+            // contains system lights.
+            //
+            // Newly-added public lights are made available via the public LightsManager API and
+            // new system-only lights are filtered here, through constants from the latest HAL API.
+            switch(mHwLight.type) {
+                case  LightType.BACKLIGHT:
+                case  LightType.KEYBOARD:
+                case  LightType.BUTTONS:
+                case  LightType.BATTERY:
+                case  LightType.NOTIFICATIONS:
+                case  LightType.ATTENTION:
+                case  LightType.BLUETOOTH:
+                case  LightType.WIFI:
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         private int getColor() {

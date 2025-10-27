@@ -21,7 +21,6 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.traceSection
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.shared.IconData
 import com.android.systemui.statusbar.notification.row.shared.ImageModel
 import com.android.systemui.statusbar.notification.row.shared.ImageModelProvider
@@ -78,17 +77,9 @@ interface RowImageInflater {
     fun getNewImageIndex(): ImageModelIndex?
 
     companion object {
-        @Suppress("NOTHING_TO_INLINE")
-        @JvmStatic
-        inline fun featureFlagEnabled() = PromotedNotificationUi.isEnabled
-
         @JvmStatic
         fun newInstance(previousIndex: ImageModelIndex?, reinflating: Boolean): RowImageInflater =
-            if (featureFlagEnabled()) {
-                RowImageInflaterImpl(previousIndex, reinflating)
-            } else {
-                RowImageInflaterStub
-            }
+            RowImageInflaterImpl(previousIndex, reinflating)
     }
 }
 

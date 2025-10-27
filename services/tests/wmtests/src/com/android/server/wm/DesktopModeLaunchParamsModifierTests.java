@@ -703,8 +703,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS,
-            Flags.FLAG_IGNORE_OVERRIDE_TASK_BOUNDS_IF_INCOMPATIBLE_WITH_DISPLAY})
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
     public void testRespectOverrideTaskBoundsIfValid() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -723,8 +722,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS,
-            Flags.FLAG_IGNORE_OVERRIDE_TASK_BOUNDS_IF_INCOMPATIBLE_WITH_DISPLAY})
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
     public void testDontRespectOverrideTaskBoundsIfNotValid() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -1322,8 +1320,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void testDefaultLandscapeBounds_landscapeDevice_unResizable_landscapeOrientation() {
         setupDesktopModeLaunchParamsModifier();
         final int captionHeight = getDesktopViewAppHeaderHeightPx(mContext);
@@ -1348,7 +1345,6 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS)
     public void testUnResizablePortraitBounds_landscapeDevice_unResizable_portraitOrientation() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -1498,8 +1494,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void testDefaultPortraitBounds_portraitDevice_unResizable_portraitOrientation() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -1525,7 +1520,6 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS)
     public void testUnResizableLandscapeBounds_portraitDevice_unResizable_landscapeOrientation() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -1584,6 +1578,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         assertEquals(RESULT_CONTINUE,
                 new CalculateRequestBuilder().setTask(task).setOptions(options).calculate());
+        assertTrue(mResult.mBoundsSetFromOptions);
         assertEquals(DISPLAY_BOUNDS.width(), mResult.mBounds.width());
         assertEquals(DISPLAY_BOUNDS.height(), mResult.mBounds.height());
     }

@@ -368,7 +368,7 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
             }
             return null;
         }
-        final WindowState imeWindow = task.getDisplayContent().mInputMethodWindow;
+        final WindowState imeWindow = task.getDisplayContent().getImeWindow();
         if (imeWindow != null && imeWindow.isVisible()) {
             final Rect bounds = imeWindow.getParentFrame();
             bounds.offsetTo(0, 0);

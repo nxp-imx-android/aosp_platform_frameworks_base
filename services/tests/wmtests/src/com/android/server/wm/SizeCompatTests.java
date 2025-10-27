@@ -191,6 +191,8 @@ public class SizeCompatTests extends WindowTestsBase {
         final ActivityBuilder appBuilder = aBuilder != null ? aBuilder : new ActivityBuilder(mAtm);
         mActivity = appBuilder.setTask(mTask).setComponent(componentName).build();
         doReturn(false).when(mActivity).isImmersiveMode(any());
+        // adding task to empty display may wakes it up, so finish that transition
+        waitHandlerIdle(mAtm.mH);
         return mActivity;
     }
 
@@ -4485,7 +4487,6 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS)
     @DisableCompatChanges({ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED})
     public void testInFreeform_boundsSandboxedToAppBounds() {
         allowDesktopMode();

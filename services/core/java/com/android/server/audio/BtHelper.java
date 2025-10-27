@@ -1278,31 +1278,6 @@ public class BtHelper {
         return addresses;
     }
 
-    /**
-     * Returns the String equivalent of the btCodecType.
-     *
-     * This uses an "ENCODING_" prefix for consistency with Audio;
-     * we could alternately use the "SOURCE_CODEC_TYPE_" prefix from Bluetooth.
-     */
-    public static String bluetoothCodecToEncodingString(int btCodecType) {
-        switch (btCodecType) {
-            case BluetoothCodecConfig.SOURCE_CODEC_TYPE_SBC:
-                return "ENCODING_SBC";
-            case BluetoothCodecConfig.SOURCE_CODEC_TYPE_AAC:
-                return "ENCODING_AAC";
-            case BluetoothCodecConfig.SOURCE_CODEC_TYPE_APTX:
-                return "ENCODING_APTX";
-            case BluetoothCodecConfig.SOURCE_CODEC_TYPE_APTX_HD:
-                return "ENCODING_APTX_HD";
-            case BluetoothCodecConfig.SOURCE_CODEC_TYPE_LDAC:
-                return "ENCODING_LDAC";
-            case BluetoothCodecConfig.SOURCE_CODEC_TYPE_OPUS:
-                return "ENCODING_OPUS";
-            default:
-                return "ENCODING_BT_CODEC_TYPE(" + btCodecType + ")";
-        }
-    }
-
     /*package */ static int getProfileFromType(int deviceType) {
         if (AudioSystem.isBluetoothA2dpOutDevice(deviceType)) {
             return BluetoothProfile.A2DP;

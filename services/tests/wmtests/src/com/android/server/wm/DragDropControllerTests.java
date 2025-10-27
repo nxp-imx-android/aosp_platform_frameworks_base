@@ -545,6 +545,8 @@ public class DragDropControllerTests extends WindowTestsBase {
         testDisplay.mBaseDisplayDensity =
                 (int) (mDisplayContent.mBaseDisplayDensity * testDensityMultiplier);
         WindowState testWindow = createDropTargetWindow("App drag test window", testDisplay);
+        // wait for display WAKE transition
+        waitHandlerIdle(mAtm.mH);
 
         // Test starts from mWindow which is on default display.
         startDrag(0, 0, View.DRAG_FLAG_GLOBAL | View.DRAG_FLAG_GLOBAL_URI_READ,

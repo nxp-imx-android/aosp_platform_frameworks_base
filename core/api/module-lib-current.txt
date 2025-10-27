@@ -225,6 +225,12 @@ package android.media {
     method @Nullable public android.os.IBinder get();
   }
 
+  public class RingtoneManager {
+    field @FlaggedApi("android.media.audio.support_per_phone_account_ringtone") public static final String PHONE_ACCOUNT_HANDLE_COMPONENT_NAME = "phone_account_component";
+    field @FlaggedApi("android.media.audio.support_per_phone_account_ringtone") public static final String PHONE_ACCOUNT_HANDLE_ID = "phone_account_id";
+    field @FlaggedApi("android.media.audio.support_per_phone_account_ringtone") public static final String PHONE_ACCOUNT_HANDLE_USER_HANDLE = "phone_account_user_handle";
+  }
+
   @FlaggedApi("android.media.audio.ringtone_vibration_utils_api") public final class RingtoneVibrationUtils {
     method @FlaggedApi("android.media.audio.ringtone_vibration_utils_api") public static boolean hasVibrationParameter(@Nullable android.net.Uri);
     field @FlaggedApi("android.media.audio.ringtone_vibration_utils_api") public static final String SYNCHRONIZED_VIBRATION = "synchronized";

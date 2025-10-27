@@ -159,13 +159,12 @@ constructor(
         repository.setShowWhenLockedActivityInfo(showWhenLockedActivityOnTop, taskInfo)
     }
 
-    /** Has the device been entered (Gone state) or on AOD? */
-    private val isGoneOrAod: StateFlow<Boolean> =
+    /** Has the device been entered (Gone state) or asleep? */
+    private val isGoneOrAsleep: StateFlow<Boolean> =
         anyOf(
-                transitionInteractor
-                    .transitionValue(KeyguardState.AOD)
-                    .onStart { emit(0f) }
-                    .map { it > 0 },
+                powerInteractor.isAsleep.onStart {
+                    emit(powerInteractor.detailedWakefulness.value.isAsleep())
+                },
                 deviceEntryInteractor.isDeviceEntered,
             )
             .stateIn(
@@ -176,25 +175,25 @@ constructor(
 
     /**
      * Whether the keyguard is in an occluded state: when "show when locked" activity is present.
-     * AOD should always take precedence.
+     * Asleep should always take precedence.
      */
     val isKeyguardOccluded: StateFlow<Boolean> =
-        combine(isShowWhenLockedActivityOnTop, isGoneOrAod) {
+        combine(isShowWhenLockedActivityOnTop, isGoneOrAsleep) {
                 isShowWhenLockedActivityOnTop,
-                isGoneOrAod ->
-                isKeyguardOccluded(isShowWhenLockedActivityOnTop, isGoneOrAod)
+                isGoneOrAsleep ->
+                isKeyguardOccluded(isShowWhenLockedActivityOnTop, isGoneOrAsleep)
             }
             .stateIn(
                 scope = applicationScope,
                 started = SharingStarted.WhileSubscribed(),
                 initialValue =
-                    isKeyguardOccluded(isShowWhenLockedActivityOnTop.value, isGoneOrAod.value),
+                    isKeyguardOccluded(isShowWhenLockedActivityOnTop.value, isGoneOrAsleep.value),
             )
 
     private fun isKeyguardOccluded(
         isOccludingActivityShown: Boolean,
-        isGoneOrAod: Boolean,
+        isGoneOrAsleep: Boolean,
     ): Boolean {
-        return isOccludingActivityShown && !isGoneOrAod
+        return isOccludingActivityShown && !isGoneOrAsleep
     }
 }

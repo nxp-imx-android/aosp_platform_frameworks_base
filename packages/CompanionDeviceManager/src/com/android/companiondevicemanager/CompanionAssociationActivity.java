@@ -16,6 +16,7 @@
 
 package com.android.companiondevicemanager;
 
+import static android.companion.AssociationRequest.DEVICE_PROFILE_WATCH;
 import static android.companion.CompanionDeviceManager.RESULT_INTERNAL_ERROR;
 import static android.companion.CompanionDeviceManager.RESULT_SECURITY_ERROR;
 import static android.companion.CompanionDeviceManager.RESULT_USER_REJECTED;
@@ -652,7 +653,12 @@ public class CompanionAssociationActivity extends FragmentActivity implements
         final Spanned summary;
 
         if (deviceProfile == null && mRequest.isSingleDevice()) {
-            summary = getHtmlFromResources(this, summaryResourceId, remoteDeviceName);
+            final int summaryResourceIdNonProfile =
+                    CollectionUtils.isEmpty(mRequest.getExtraPermissions())
+                            ? PROFILE_SUMMARIES.get(deviceProfile)
+                            : PROFILE_SUMMARIES.get(DEVICE_PROFILE_WATCH);
+            summary = getHtmlFromResources(
+                    this, summaryResourceIdNonProfile, getString(R.string.device_type));
             if (mRequest.getRequestedPerms() == null)  {
                 mConstraintList.setVisibility(View.GONE);
             } else {

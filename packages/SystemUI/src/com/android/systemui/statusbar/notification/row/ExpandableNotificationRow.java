@@ -130,7 +130,6 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus;
 import com.android.systemui.statusbar.notification.logging.NotificationCounters;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationCompactMessagingTemplateViewWrapper;
@@ -3135,9 +3134,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      * relevant.
      */
     public void setHasStatusBarChipDuringHeadsUpAnimation(boolean hasStatusBarChip) {
-        if (PromotedNotificationUi.isUnexpectedlyInLegacyMode()) {
-            return;
-        }
         mHasStatusBarChipDuringHeadsUpAnimation = hasStatusBarChip;
     }
 
@@ -3149,7 +3145,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      * that's the only time it's relevant.
      */
     public boolean hasStatusBarChipDuringHeadsUpAnimation() {
-        return PromotedNotificationUi.isEnabled() && mHasStatusBarChipDuringHeadsUpAnimation;
+        return mHasStatusBarChipDuringHeadsUpAnimation;
     }
 
     @Override
@@ -3455,10 +3451,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     public boolean isPromotedOngoing() {
-        if (!PromotedNotificationUi.isEnabled()) {
-            return false;
-        }
-
         if (NotificationBundleUi.isEnabled()) {
             if (getEntryAdapter() == null) {
                 return false;

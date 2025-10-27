@@ -84,26 +84,44 @@ void PrettyPrintVisitor::visit(const IdmapData& data) {
   const ResStringPool string_pool(data.GetStringPoolData().data(), data.GetStringPoolData().size());
   const size_t string_pool_offset = data.GetHeader()->GetStringPoolIndexOffset();
 
-  for (const auto& target_entry : data.GetTargetEntries()) {
-    std::string target_name = kUnknownResourceName;
-    if (target_ != nullptr) {
-      if (auto name = target_->GetResourceName(target_entry.target_id)) {
-        target_name = *name;
+  for (const auto& section : data.GetTargetEntrySections()) {
+    if (section.flag_name_index) {
+      const auto& flag_name = string_pool.string8At(section.flag_name_index);
+      std::string flag_name_str;
+      if (flag_name.has_value()) {
+        flag_name_str = std::string(flag_name->data(), flag_name->size());
+      } else {
+        flag_name_str = "Error getting flag name";
       }
+      stream_ << TAB
+              << base::StringPrintf("0x%08x %s (%s%s)", section.flag_name_index,
+                                    section.flag_negated ? "true" : "false",
+                                    section.flag_negated ? "!" : "", flag_name_str.c_str())
+              << '\n';
+    } else {
+      stream_ << TAB << "(NO FEATURE FLAG)\n";
     }
-
-    std::string overlay_name = kUnknownResourceName;
-    if (overlay_ != nullptr) {
-      if (auto name = overlay_->GetResourceName(target_entry.overlay_id)) {
-        overlay_name = *name;
+    for (const auto& target_entry : section.target_entries) {
+      std::string target_name = kUnknownResourceName;
+      if (target_ != nullptr) {
+        if (auto name = target_->GetResourceName(target_entry.target_id)) {
+          target_name = *name;
+        }
       }
-    }
 
-    stream_ << TAB
-            << base::StringPrintf("0x%08x -> 0x%08x (%s -> %s)", target_entry.target_id,
-                                  target_entry.overlay_id, target_name.c_str(),
-                                  overlay_name.c_str())
-            << '\n';
+      std::string overlay_name = kUnknownResourceName;
+      if (overlay_ != nullptr) {
+        if (auto name = overlay_->GetResourceName(target_entry.overlay_id)) {
+          overlay_name = *name;
+        }
+      }
+
+      stream_ << TAB << TAB
+              << base::StringPrintf("0x%08x -> 0x%08x (%s -> %s)", target_entry.target_id,
+                                    target_entry.overlay_id, target_name.c_str(),
+                                    overlay_name.c_str())
+              << '\n';
+    }
   }
 
   for (auto& target_entry : data.GetTargetInlineEntries()) {

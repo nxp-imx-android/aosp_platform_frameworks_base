@@ -20,7 +20,6 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.provider.Settings
 import android.util.SparseArray
-import android.util.SparseBooleanArray
 import android.view.Display
 import android.view.SurfaceControl.RefreshRateRange
 import android.view.SurfaceControl.RefreshRateRanges
@@ -217,36 +216,5 @@ class SettingsObserverTest {
         LIMITS_90_120_0_WITH_PHYSICAL_RR(90f, 120f, 0f, RANGES_90TO120, RANGES_120),
         LIMITS_90_60_0_WITH_PHYSICAL_RR(90f, 60f, 0f, RANGES_90TO90, RANGES_90),
         LIMITS_60_120_90_WITH_PHYSICAL_RR(60f, 120f, 90f, RANGES_60TO120_60TO90, RANGES_120),
-    }
-
-    @Test
-    fun testSettingsRefreshRates_peakRefreshRateIgnoredForArr() {
-        whenever(mockFlags.hasArrSupportFlag()).thenReturn(true)
-        val displayModeDirector = DisplayModeDirector(
-            spyContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
-        displayModeDirector.injectHasArrSupport(SparseBooleanArray().apply {
-            append(Display.DEFAULT_DISPLAY, true)
-        })
-
-        val modes = arrayOf(
-            Display.Mode(1, 1000, 1000, 60f),
-            Display.Mode(2, 1000, 1000, 90f),
-            Display.Mode(3, 1000, 1000, 120f)
-        )
-        displayModeDirector.injectSupportedModesByDisplay(SparseArray<Array<Display.Mode>>().apply {
-            append(Display.DEFAULT_DISPLAY, modes)
-        })
-        displayModeDirector.injectDefaultModeByDisplay(SparseArray<Display.Mode>().apply {
-            append(Display.DEFAULT_DISPLAY, modes[0])
-        })
-
-        val specs = displayModeDirector.getDesiredDisplayModeSpecsWithInjectedFpsSettings(
-            0f, 90f, 120f)
-
-        // Peak refresh rate is not added to physical limit, however it is added to render limit
-        assertWithMessage("Primary RefreshRateRanges: ")
-            .that(specs.primary).isEqualTo(RANGES_NO_LIMIT_90)
-        assertWithMessage("App RefreshRateRanges: ")
-            .that(specs.appRequest).isEqualTo(RANGES_NO_LIMIT_90)
     }
 }

@@ -1689,6 +1689,28 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      */
     public boolean allowCrossUidActivitySwitchFromBelow = true;
 
+
+    /**
+     * If {@code true} this app supports App Lock. This field is only set if the
+     * {@link PackageManager#GET_APP_LOCK_INFO} was used when retrieving the application info and
+     * the caller has the {@link Manifest.permission.LOCK_APPS} permission, and will default to
+     * {@code false}. To enable App Lock for a package, call
+     * {@link PackageManager#getEnableAppLockIntentForPackage}.
+     */
+    @FlaggedApi(android.security.Flags.FLAG_APP_LOCK_APIS)
+    public boolean isAppLockSupported = false;
+
+
+    /**
+     * App lock enablement state of an application. This field is only set if the
+     * {@link PackageManager#GET_APP_LOCK_INFO} was used when retrieving the application info and
+     * the caller has the {@link Manifest.permission.LOCK_APPS} permission and will default to
+     * {@code false}. To enable App Lock for a package, call
+     * {@link PackageManager#getEnableAppLockIntentForPackage}.
+     */
+    @FlaggedApi(android.security.Flags.FLAG_APP_LOCK_APIS)
+    public boolean isAppLockEnabled = false;
+
     /**
      * Represents the default policy. The actual policy used will depend on other properties of
      * the application, e.g. the target SDK version.
@@ -1894,6 +1916,8 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
             pw.println(prefix + "allowCrossUidActivitySwitchFromBelow="
                     + allowCrossUidActivitySwitchFromBelow);
             pw.println(prefix + "mPageSizeAppCompatFlags=" + mPageSizeAppCompatFlags);
+            pw.println(prefix + "isAppLockSupported=" + isAppLockSupported);
+            pw.println(prefix + "isAppLockEnabled=" + isAppLockEnabled);
         }
         pw.println(prefix + "createTimestamp=" + createTimestamp);
         if (mKnownActivityEmbeddingCerts != null) {
@@ -2016,6 +2040,9 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
 
             proto.write(ApplicationInfoProto.Detail.ENABLE_PAGE_SIZE_APP_COMPAT,
                         mPageSizeAppCompatFlags);
+
+            proto.write(ApplicationInfoProto.Detail.IS_APP_LOCK_SUPPORTED, isAppLockSupported);
+            proto.write(ApplicationInfoProto.Detail.IS_APP_LOCK_ENABLED, isAppLockEnabled);
 
             proto.end(detailToken);
         }
@@ -2146,6 +2173,8 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         allowCrossUidActivitySwitchFromBelow = orig.allowCrossUidActivitySwitchFromBelow;
         createTimestamp = SystemClock.uptimeMillis();
         mPageSizeAppCompatFlags = orig.mPageSizeAppCompatFlags;
+        isAppLockSupported = orig.isAppLockSupported;
+        isAppLockEnabled = orig.isAppLockEnabled;
         this.unalignedNativeLibraries = orig.unalignedNativeLibraries;
     }
 
@@ -2253,6 +2282,8 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         dest.writeInt(localeConfigRes);
         dest.writeInt(allowCrossUidActivitySwitchFromBelow ? 1 : 0);
         dest.writeInt(mPageSizeAppCompatFlags);
+        dest.writeBoolean(isAppLockSupported);
+        dest.writeBoolean(isAppLockEnabled);
         dest.writeTypedArray(unalignedNativeLibraries, parcelableFlags);
 
         sForStringSet.parcel(mKnownActivityEmbeddingCerts, dest, flags);
@@ -2356,6 +2387,8 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         localeConfigRes = source.readInt();
         allowCrossUidActivitySwitchFromBelow = source.readInt() != 0;
         mPageSizeAppCompatFlags = source.readInt();
+        isAppLockSupported = source.readBoolean();
+        isAppLockEnabled = source.readBoolean();
         unalignedNativeLibraries = source.createTypedArray(LibraryAlignmentInfo.CREATOR);
 
         mKnownActivityEmbeddingCerts = sForStringSet.unparcel(source);

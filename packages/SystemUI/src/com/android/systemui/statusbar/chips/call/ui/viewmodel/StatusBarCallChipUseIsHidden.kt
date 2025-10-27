@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.chips.call.ui.viewmodel
 
 import com.android.systemui.Flags
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 
 /** Helper for reading or using the status_bar_call_chip_use_is_hidden flag state. */
 object StatusBarCallChipUseIsHidden {
@@ -27,5 +26,5 @@ object StatusBarCallChipUseIsHidden {
     /** Is the feature enabled. */
     @JvmStatic
     inline val isEnabled
-        get() = StatusBarChipsModernization.isEnabled && Flags.statusBarCallChipUseIsHidden()
+        get() = Flags.statusBarCallChipUseIsHidden()
 }

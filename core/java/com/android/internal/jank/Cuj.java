@@ -528,9 +528,19 @@ public class Cuj {
      */
     public static final int CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR = 150;
 
+    /**
+     * Track the animation of an app back into its status bar ongoing notification chip when
+     * returning Home.
+     *
+     * <p>Tracking starts when the RemoteTransition registered to handle the transition from the app
+     * to Home is sent the startAnimation()/takeOverAnimation() signal and starts the animation.
+     * Tracking ends when the animation is fully settled and the transition is complete.</p>
+     */
+    public static final int CUJ_STATUS_BAR_APP_RETURN_TO_ONGOING_CHIP = 151;
+
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
     @VisibleForTesting static final int LAST_CUJ =
-            CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR;
+            CUJ_STATUS_BAR_APP_RETURN_TO_ONGOING_CHIP;
 
     /** @hide */
     @IntDef({
@@ -672,7 +682,8 @@ public class Cuj {
             CUJ_AMBIENT_CUE_EXPAND,
             CUJ_AMBIENT_CUE_COLLAPSE,
             CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR,
-            CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR
+            CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR,
+            CUJ_STATUS_BAR_APP_RETURN_TO_ONGOING_CHIP
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -825,6 +836,7 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_AMBIENT_CUE_COLLAPSE] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__AMBIENT_CUE_COLLAPSE;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_STATUS_BAR_APP_RETURN_TO_ONGOING_CHIP] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__STATUS_BAR_APP_RETURN_TO_ONGOING_CHIP;
     }
 
     private Cuj() {

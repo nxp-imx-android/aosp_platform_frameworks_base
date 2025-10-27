@@ -34,6 +34,8 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import com.android.window.flags.Flags;
+
 /**
  * A detector for touch inputs that differentiates between drag and click inputs. It receives a flow
  * of {@link MotionEvent} and generates a new flow of motion events with slop in consideration to
@@ -95,12 +97,14 @@ public class DragDetector {
             return false;
         }
 
-        final boolean isTouchScreen =
-                (ev.getSource() & SOURCE_TOUCHSCREEN) == SOURCE_TOUCHSCREEN;
-        if (!isTouchScreen) {
-            // Only touches generate noisy moves, so mouse/trackpad events don't need to filtered
-            // to take the slop threshold into consideration.
-            return mEventHandler.handleMotionEvent(v, ev);
+        if (!Flags.handleNonTouchscreenEventsInDragDetector()) {
+            final boolean isTouchScreen =
+                    (ev.getSource() & SOURCE_TOUCHSCREEN) == SOURCE_TOUCHSCREEN;
+            if (!isTouchScreen) {
+                // Only touches generate noisy moves, so mouse/trackpad events don't need to be
+                // filtered to take the slop threshold into consideration.
+                return mEventHandler.handleMotionEvent(v, ev);
+            }
         }
         switch (ev.getActionMasked()) {
             case ACTION_DOWN: {
@@ -125,15 +129,19 @@ public class DragDetector {
                     return mResultOfDownAction;
                 }
                 if (!mIsDragEvent) {
+                    final boolean isTouchScreen =
+                            (ev.getSource() & SOURCE_TOUCHSCREEN) == SOURCE_TOUCHSCREEN;
                     float dx = ev.getRawX(dragPointerIndex) - mInputDownPoint.x;
                     float dy = ev.getRawY(dragPointerIndex) - mInputDownPoint.y;
-                    final float dt = ev.getEventTime() - ev.getDownTime();
                     final boolean pastTouchSlop = Math.hypot(dx, dy) > mTouchSlop;
-                    final boolean withinHoldRegion = !pastTouchSlop;
-
-                    if (mHoldToDragMinDurationMs <= 0) {
+                    if (!isTouchScreen || mHoldToDragMinDurationMs <= 0) {
+                        // No need to apply the hold-to-drag logic if the event is from a
+                        // non-touchscreen source like mouse/touchpad, or the minimum hold duration
+                        // is not set to a positive value.
                         mDidHoldForMinDuration = true;
                     } else {
+                        final float dt = ev.getEventTime() - ev.getDownTime();
+                        final boolean withinHoldRegion = !pastTouchSlop;
                         if (!withinHoldRegion && dt < mHoldToDragMinDurationMs) {
                             // Mark as having strayed so that in case the (x,y) ends up in the
                             // original position we know it's not actually valid.

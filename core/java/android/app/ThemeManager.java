@@ -22,11 +22,20 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemService;
 import android.content.Context;
+import android.content.om.FabricatedOverlay;
 import android.content.theming.IThemeManager;
 import android.content.theming.IThemeSettingsCallback;
+import android.content.theming.ThemeInfo;
 import android.content.theming.ThemeSettings;
+import android.graphics.Color;
+import android.os.FabricatedOverlayInternalEntry;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.util.TypedValue;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -59,6 +68,46 @@ public class ThemeManager {
                     ServiceManager.getServiceOrThrow(Context.THEME_SERVICE));
         } catch (ServiceManager.ServiceNotFoundException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Generates a {@link FabricatedOverlay} of dynamic color resources based on the current
+     * user's theme, with optional overrides.
+     *
+     * <p>This method uses the current user's theme settings as a baseline. Any non-null
+     * properties in the provided {@code options} object will override the corresponding values
+     * from the user's theme.
+     *
+     * <p>The returned overlay contains dynamic color pairs (e.g.,
+     * {@code system_primary_dark} and {@code system_primary_light}) that enable the use of
+     * dynamic colors like {@code ?attr/materialColorPrimary}.
+     *
+     * @param options A {@link ThemeInfo} object containing properties to override the current
+     *                user's theme. If a property is {@code null}, the value from the user's
+     *                current theme settings is used.
+     * @return A {@link FabricatedOverlay} object representing the generated color resources.
+     * @hide
+     */
+    public FabricatedOverlay generateDynamicColorOverlay(ThemeInfo options) {
+        try {
+            return new FabricatedOverlay(mService.generateDynamicColorOverlay(options));
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Retrieves the current theme information for the calling user.
+     *
+     * @return A {@link ThemeInfo} object with the current theme settings.
+     * @hide
+     */
+    public ThemeInfo getUserThemeInfo() {
+        try {
+            return mService.getUserThemeInfo();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
         }
     }
 
@@ -161,5 +210,27 @@ public class ThemeManager {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
+    }
+
+    /**
+     * Generates a map of color resources based on the provided FabricatedOverlay.
+     *
+     * @param fabricatedOverlay A {@link FabricatedOverlay} to extract color names and values from
+     * @return A map where keys are color resource names (e.g., "android:color/system_accent1_100")
+     * and values are the corresponding {@link Color} objects.
+     * @hide
+     */
+    public Map<String, Color> extractColorPairs(FabricatedOverlay fabricatedOverlay) {
+        final List<FabricatedOverlayInternalEntry> colorEntries = fabricatedOverlay.getEntries(
+                TypedValue.TYPE_INT_COLOR_ARGB8,
+                TypedValue.TYPE_INT_COLOR_RGB8,
+                TypedValue.TYPE_INT_COLOR_ARGB4,
+                TypedValue.TYPE_INT_COLOR_RGB4);
+
+        final Map<String, Color> colorMap = new HashMap<>();
+        for (FabricatedOverlayInternalEntry entry : colorEntries) {
+            colorMap.put(entry.resourceName, Color.valueOf(entry.data));
+        }
+        return colorMap;
     }
 }

@@ -19,6 +19,7 @@ package android.app;
 import static android.app.appfunctions.flags.Flags.enableAppFunctionManager;
 import static android.app.lskfreset.flags.Flags.enableLskfResetManager;
 import static android.hardware.serial.flags.Flags.enableWiredSerialApi;
+import static android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled;
 import static android.provider.flags.Flags.newStoragePublicApi;
 import static android.server.Flags.removeGameManagerServiceFromWear;
 import static android.service.chooser.Flags.interactiveChooser;
@@ -40,6 +41,8 @@ import android.app.appfunctions.AppFunctionManagerConfiguration;
 import android.app.appfunctions.IAppFunctionManager;
 import android.app.appsearch.AppSearchManagerFrameworkInitializer;
 import android.app.blob.BlobStoreManagerFrameworkInitializer;
+import android.app.contentrestriction.ContentRestrictionManager;
+import android.app.contentrestriction.IContentRestrictionManager;
 import android.app.contentsuggestions.ContentSuggestionsManager;
 import android.app.contentsuggestions.IContentSuggestionsManager;
 import android.app.contextualsearch.ContextualSearchManager;
@@ -67,6 +70,7 @@ import android.app.usage.IStorageStatsManager;
 import android.app.usage.IUsageStatsManager;
 import android.app.usage.StorageStatsManager;
 import android.app.usage.UsageStatsManager;
+import android.app.voiceinteraction.VoiceInteractionManager;
 import android.app.wallpapereffectsgeneration.IWallpaperEffectsGenerationManager;
 import android.app.wallpapereffectsgeneration.WallpaperEffectsGenerationManager;
 import android.app.wearable.IWearableSensingManager;
@@ -183,6 +187,7 @@ import android.net.wifi.WifiFrameworkInitializer;
 import android.net.wifi.nl80211.WifiNl80211Manager;
 import android.net.wifi.sharedconnectivity.app.SharedConnectivityManager;
 import android.nfc.NfcFrameworkInitializer;
+import android.npumanager.NpuManagerFrameworkInitializer;
 import android.ondevicepersonalization.OnDevicePersonalizationFrameworkInitializer;
 import android.os.AnomalyDetectorFrameworkInitializer;
 import android.os.BatteryManager;
@@ -301,6 +306,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.app.ISoundTriggerService;
+import com.android.internal.app.IVoiceInteractionManagerService;
 import com.android.internal.appwidget.IAppWidgetService;
 import com.android.internal.graphics.fonts.IFontManager;
 import com.android.internal.net.INetworkWatchlistManager;
@@ -883,6 +889,22 @@ public final class SystemServiceRegistry {
             public Vibrator createService(ContextImpl ctx) {
                 return new SystemVibrator(ctx);
             }});
+
+        if (assistSettingsPrivacyImprovementsEnabled()) {
+            registerService(Context.VOICE_INTERACTION_MANAGER_SERVICE,
+                    VoiceInteractionManager.class,
+                    new CachedServiceFetcher<>() {
+                        @Override
+                        public VoiceInteractionManager createService(ContextImpl ctx)
+                                throws ServiceNotFoundException {
+                            IVoiceInteractionManagerService service;
+                            service = IVoiceInteractionManagerService.Stub.asInterface(
+                                    ServiceManager.getServiceOrThrow(
+                                            Context.VOICE_INTERACTION_MANAGER_SERVICE));
+                            return new VoiceInteractionManager(service, ctx);
+                        }
+                    });
+        }
 
         registerService(Context.THEME_SERVICE, ThemeManager.class,
             new CachedServiceFetcher<ThemeManager>() {
@@ -1506,7 +1528,7 @@ public final class SystemServiceRegistry {
             }
         });
 
-        if (android.companion.Flags.enableTaskContinuity()) {
+        if (android.companion.Flags.taskContinuity()) {
             registerService(Context.TASK_CONTINUITY_SERVICE, TaskContinuityManager.class,
                     new CachedServiceFetcher<TaskContinuityManager>() {
                         @Override
@@ -1872,6 +1894,23 @@ public final class SystemServiceRegistry {
                         return new E2eeContactKeysManager(ctx);
                     }});
 
+      registerService(Context.CONTENT_RESTRICTION_SERVICE, ContentRestrictionManager.class,
+                new CachedServiceFetcher<>() {
+                    @Override
+                    public ContentRestrictionManager createService(ContextImpl ctx)
+                            throws ServiceNotFoundException {
+                        if (!android.app.contentrestriction.flags.Flags.contentRestrictionApi()) {
+                            throw new ServiceNotFoundException(
+                                    "ContentRestrictionManager is not supported");
+                        }
+                        IBinder iBinder = ServiceManager.getServiceOrThrow(
+                                Context.CONTENT_RESTRICTION_SERVICE);
+                        IContentRestrictionManager service =
+                                IContentRestrictionManager.Stub.asInterface(iBinder);
+                        return new ContentRestrictionManager(ctx, service);
+                    }
+                });
+
         registerService(Context.SUPERVISION_SERVICE, SupervisionManager.class,
                 new CachedServiceFetcher<>() {
                     @Override
@@ -1989,6 +2028,7 @@ public final class SystemServiceRegistry {
             OnDevicePersonalizationFrameworkInitializer.registerServiceWrappers();
             OnDeviceIntelligenceFrameworkInitializer.registerServiceWrappers();
             DeviceLockFrameworkInitializer.registerServiceWrappers();
+            NpuManagerFrameworkInitializer.registerServiceWrappers();
             VirtualizationFrameworkInitializer.registerServiceWrappers();
             ConnectivityFrameworkInitializerBaklava.registerServiceWrappers();
 

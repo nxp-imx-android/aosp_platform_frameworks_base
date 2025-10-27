@@ -27,14 +27,16 @@ import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.KeyEventHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
+import com.android.wm.shell.flicker.utils.SplitScreenUtils
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 
 @Ignore("Test Base Class")
-abstract class ExitDesktopToSplitScreenWithAppHeaderMenu(val rotation: Rotation = Rotation.ROTATION_0) :
-    TestScenarioBase(rotation) {
+abstract class ExitDesktopToSplitScreenWithAppHeaderMenu(
+    val rotation: Rotation = Rotation.ROTATION_0
+) : TestScenarioBase(rotation) {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
@@ -57,9 +59,8 @@ abstract class ExitDesktopToSplitScreenWithAppHeaderMenu(val rotation: Rotation 
         testApp.exitDesktopModeToSplitScreenWithAppHeader(wmHelper)
         // Open allApps via keyboard shortcut
         keyEventHelper.press(KEYCODE_META_RIGHT)
-        tapl.allApps
-            .getAppIcon(calculatorApp.appName)
-            .launch(calculatorApp.packageName)
+        tapl.allApps.getAppIcon(calculatorApp.appName).launch(calculatorApp.packageName)
+        SplitScreenUtils.waitForSplitComplete(wmHelper, testApp, calculatorApp)
     }
 
     @After

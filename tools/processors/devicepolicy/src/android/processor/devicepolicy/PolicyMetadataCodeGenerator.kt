@@ -180,6 +180,28 @@ object PolicyMetadataCodeGenerator {
         return builder.build()
     }
 
+    private fun generateTaggedSetBuilder(values: List<Pair<Int, String>>): CodeBlock {
+        if (values.isEmpty()) {
+            return CodeBlock.builder().add(
+                "\$T.of()", setType
+            ).build()
+        }
+        val builder = CodeBlock.builder()
+
+        builder.add(
+            "\$T.of(\n", setType
+        ).indent()
+
+        for ((value, tag) in values.dropLast(1)) {
+            builder.add("\$L, // \$L\n", value, tag)
+        }
+        builder.add("\$L  // \$L\n", values.last().first, values.last().second)
+
+        builder.unindent().add(")")
+
+        return builder.build()
+    }
+
     private fun CodeBlock.Builder.addPolicyId(name: String) =
         this.add("/* id= */ \$L,\n", name.substringAfterLast("."))
 
@@ -200,10 +222,17 @@ object PolicyMetadataCodeGenerator {
         }
 
         if (policy.requiredCrossUserPermission.isEmpty()) {
-            add("/* requiredCrossUserPermission= */ null")
+            add("/* requiredCrossUserPermission= */ null,\n")
         } else {
-            add("/* requiredCrossUserPermission= */ \$S", policy.requiredCrossUserPermission)
+            add("/* requiredCrossUserPermission= */ \$S,\n", policy.requiredCrossUserPermission)
         }
+        add(
+            "/* allowedDpcTypes= */ \$L",
+            generateTaggedSetBuilder(policy.allowedDpcTypesList.map {
+                // Remove the DPC_TYPE_ prefix that is present in the proto but
+                // not in the IntDef.
+                it.number to it.name.removePrefix("DPC_TYPE_") })
+        )
 
         return this
     }

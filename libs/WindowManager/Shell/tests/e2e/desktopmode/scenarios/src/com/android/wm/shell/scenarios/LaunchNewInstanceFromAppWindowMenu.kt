@@ -34,7 +34,7 @@ import org.junit.Test
 @Ignore("Test Base Class")
 abstract class LaunchNewInstanceFromAppWindowMenu(
     val navigationMode: NavBar = NavBar.MODE_GESTURAL,
-    val rotation: Rotation = Rotation.ROTATION_0
+    val rotation: Rotation = Rotation.ROTATION_0,
 ) : TestScenarioBase(rotation) {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
@@ -53,7 +53,7 @@ abstract class LaunchNewInstanceFromAppWindowMenu(
     open fun launchNewInstanceFromFullScreenAndEnterSplitScreen() {
         browserApp.openThreeDotsMenu()
         browserApp.clickNewWindowInMenu()
-        SplitScreenUtils.waitForSplitComplete(wmHelper,browserApp,browserApp)
+        SplitScreenUtils.waitForSplitComplete(wmHelper, browserApp, browserApp)
         wmHelper
             .StateSyncBuilder()
             .withAppTransitionIdle()

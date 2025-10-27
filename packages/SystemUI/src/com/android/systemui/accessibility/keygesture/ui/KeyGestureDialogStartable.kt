@@ -20,18 +20,25 @@ import android.annotation.StringRes
 import android.hardware.input.KeyGestureEvent
 import android.text.Annotation
 import android.text.Spanned
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.compose.PlatformButton
 import com.android.compose.PlatformOutlinedButton
@@ -41,6 +48,7 @@ import com.android.internal.accessibility.util.TtsPrompt
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.CoreStartable
 import com.android.systemui.accessibility.keygesture.domain.KeyGestureDialogInteractor
+import com.android.systemui.accessibility.keygesture.shared.model.DialogContentSection
 import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConfirmInfo
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -230,10 +238,23 @@ constructor(
                     AlertDialogContent(
                         title = { Text(text = keyGestureConfirmInfo.title) },
                         content = {
-                            TextWithIcon(
-                                keyGestureConfirmInfo.contentText,
-                                keyGestureConfirmInfo.actionKeyIconResId,
-                            )
+                            Column {
+                                TextWithIcon(
+                                    keyGestureConfirmInfo.contentText,
+                                    keyGestureConfirmInfo.actionKeyIconResId,
+                                    textAlign =
+                                        if (keyGestureConfirmInfo.contentSections.isNotEmpty()) {
+                                            TextAlign.Start
+                                        } else {
+                                            null
+                                        },
+                                )
+                                if (keyGestureConfirmInfo.contentSections.isNotEmpty()) {
+                                    FormattedDialogContent(
+                                        sections = keyGestureConfirmInfo.contentSections
+                                    )
+                                }
+                            }
                         },
                         negativeButton = {
                             PlatformOutlinedButton(
@@ -272,6 +293,26 @@ constructor(
         }
     }
 
+    @Composable
+    private fun FormattedDialogContent(sections: List<DialogContentSection>) {
+        Column {
+            sections.forEach { section ->
+                Spacer(modifier = Modifier.height(16.dp))
+                section.heading?.let {
+                    Text(
+                        text = it.toString(),
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+                section.message?.let {
+                    Text(text = it.toString(), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        }
+    }
+
     private fun buildAnnotatedStringFromResource(resourceText: CharSequence): AnnotatedString {
         // `resourceText` is an instance of SpannableStringBuilder, so we can cast it to a Spanned.
         val spanned = resourceText as? Spanned ?: return AnnotatedString(resourceText.toString())
@@ -298,7 +339,11 @@ constructor(
     }
 
     @Composable
-    private fun TextWithIcon(text: CharSequence, modifierKeyIconResId: Int) {
+    private fun TextWithIcon(
+        text: CharSequence,
+        modifierKeyIconResId: Int,
+        textAlign: TextAlign? = null,
+    ) {
         // TODO: b/419026315 - Update the icon drawable based on keyboard device.
         val inlineContentMap =
             mapOf(
@@ -314,7 +359,11 @@ constructor(
                     }
             )
 
-        Text(buildAnnotatedStringFromResource(text), inlineContent = inlineContentMap)
+        Text(
+            buildAnnotatedStringFromResource(text),
+            inlineContent = inlineContentMap,
+            textAlign = textAlign,
+        )
     }
 
     companion object {

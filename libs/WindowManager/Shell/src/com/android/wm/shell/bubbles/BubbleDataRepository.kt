@@ -262,8 +262,6 @@ class BubbleDataRepository(
                                 entity.taskId,
                                 entity.locus,
                                 entity.isDismissable,
-                                mainExecutor,
-                                bgExecutor,
                                 bubbleMetadataFlagListener)
                     }
         }

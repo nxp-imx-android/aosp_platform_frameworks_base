@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.chips.ui.compose
 
+import androidx.annotation.VisibleForTesting
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrain
 import androidx.compose.ui.unit.dp
+import com.android.systemui.Flags
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
@@ -106,7 +108,7 @@ fun ChipContent(
                                 startPadding = startPadding,
                                 endPadding = endPadding,
                             )
-                            .neverDecreaseWidth(density, locale),
+                            .neverDecreaseWidth(density, locale, text.length),
                 )
             }
         }
@@ -119,7 +121,7 @@ fun ChipContent(
                 color = textColor,
                 softWrap = false,
                 textAlign = TextAlign.Center,
-                modifier = modifier.neverDecreaseWidth(density, locale),
+                modifier = modifier.neverDecreaseWidth(density, locale, text.length),
             )
         }
 
@@ -178,30 +180,64 @@ fun ChipContent(
 }
 
 /** A modifier that ensures the width of the content only increases and never decreases. */
-private fun Modifier.neverDecreaseWidth(density: Density, locale: Locale?): Modifier {
-    return this.then(NeverDecreaseWidthElement(density, locale))
+@VisibleForTesting
+fun Modifier.neverDecreaseWidth(density: Density, locale: Locale?, textLength: Int): Modifier {
+    return this.then(NeverDecreaseWidthElement(density, locale, textLength))
 }
 
-private data class NeverDecreaseWidthElement(val density: Density, val locale: Locale?) :
-    ModifierNodeElement<NeverDecreaseWidthNode>() {
+private data class NeverDecreaseWidthElement(
+    val density: Density,
+    val locale: Locale?,
+    val textLength: Int,
+) : ModifierNodeElement<NeverDecreaseWidthNode>() {
     override fun create(): NeverDecreaseWidthNode {
-        return NeverDecreaseWidthNode()
+        return NeverDecreaseWidthNode(density, locale, textLength)
     }
 
     override fun update(node: NeverDecreaseWidthNode) {
-        node.onDisplayParamsUpdated()
+        node.textLength = textLength
+        node.locale = locale
+        node.density = density
     }
 }
 
-private class NeverDecreaseWidthNode : Modifier.Node(), LayoutModifierNode {
+private class NeverDecreaseWidthNode(
+    initialDensity: Density,
+    initialLocale: Locale?,
+    initialTextLength: Int,
+) : Modifier.Node(), LayoutModifierNode {
     private var minWidth = 0
 
-    fun onDisplayParamsUpdated() {
-        // When the font, display size, or locale changes, we should re-determine what our minWidth
-        // is from scratch (e.g. if the font size decreased, we may be able to take *less* room).
-        // See b/395607413.
-        minWidth = 0
-    }
+    var density: Density = initialDensity
+        set(value) {
+            if (field != value) {
+                // Reset minWidth in case display size decreased. See b/395607413.
+                minWidth = 0
+            }
+            field = value
+        }
+
+    var locale: Locale? = initialLocale
+        set(value) {
+            if (field != value) {
+                // Reset minWidth in case new locale has smaller characters. See b/414387398.
+                minWidth = 0
+            }
+            field = value
+        }
+
+    var textLength = initialTextLength
+        set(value) {
+            if (!Flags.statusBarChronometerWidthReset()) {
+                return
+            }
+            if (field != value) {
+                // Reset minWidth in case the total number of characters has decreased. (e.g. from
+                // 1:00:00 to 59:59). See b/450956553.
+                minWidth = 0
+            }
+            field = value
+        }
 
     override fun MeasureScope.measure(
         measurable: Measurable,

@@ -286,9 +286,12 @@ public final class MotionEvent extends InputEvent implements Parcelable {
     public static final int ACTION_POINTER_UP       = 6;
 
     /**
-     * Constant for {@link #getActionMasked}: A change happened but the pointer
-     * is not down (unlike {@link #ACTION_MOVE}).  The motion contains the most
-     * recent point, as well as any intermediate points since the last
+     * Constant for {@link #getActionMasked}: The pointer moved while hovering.
+     * <p>
+     * See {@link #ACTION_HOVER_ENTER} for the conditions in which a pointer is considered to be
+     * hovering. If these are not met, an {@link #ACTION_MOVE} event is sent instead.
+     * <p>
+     * The motion contains the most recent point, as well as any intermediate points since the last
      * hover move event.
      * <p>
      * This action is always delivered to the window or view under the pointer.
@@ -297,6 +300,9 @@ public final class MotionEvent extends InputEvent implements Parcelable {
      * {@link View#onGenericMotionEvent(MotionEvent)} rather than
      * {@link View#onTouchEvent(MotionEvent)}.
      * </p>
+     * @see #ACTION_HOVER_ENTER
+     * @see #ACTION_HOVER_EXIT
+     * @see #ACTION_MOVE
      */
     public static final int ACTION_HOVER_MOVE       = 7;
 
@@ -317,8 +323,21 @@ public final class MotionEvent extends InputEvent implements Parcelable {
     public static final int ACTION_SCROLL           = 8;
 
     /**
-     * Constant for {@link #getActionMasked}: The pointer is not down but has entered the
-     * boundaries of a window or view.
+     * Constant for {@link #getActionMasked}: The pointer is not down but has begun to hover over a
+     * window or view.
+     * <p>
+     * A pointer is considered to be hovering over a window or view when all of the following are
+     * true:
+     * <ul>
+     * <li>It is within the boundaries of the window or view
+     * <li>The window or view is not obscured by another at the pointer's location
+     * <li>For mice and touchpads, none of the primary, secondary, or tertiary buttons (also known
+     *     as the left, right, and middle buttons) are pressed
+     * <li>For styluses, the stylus is hovering over the screen or drawing tablet but has not
+     *     touched it
+     * </ul>
+     * <p>
+     * When all of these conditions become true for a window or view, it will receive this event.
      * <p>
      * This action is always delivered to the window or view under the pointer.
      * </p><p>
@@ -326,12 +345,22 @@ public final class MotionEvent extends InputEvent implements Parcelable {
      * {@link View#onGenericMotionEvent(MotionEvent)} rather than
      * {@link View#onTouchEvent(MotionEvent)}.
      * </p>
+     * @see #ACTION_HOVER_MOVE
+     * @see #ACTION_HOVER_EXIT
      */
     public static final int ACTION_HOVER_ENTER      = 9;
 
     /**
-     * Constant for {@link #getActionMasked}: The pointer is not down but has exited the
-     * boundaries of a window or view.
+     * Constant for {@link #getActionMasked}: The pointer is no longer hovering over a window or
+     * view.
+     * <p>
+     * This event occurs when one or more of the conditions described in {@link #ACTION_HOVER_ENTER}
+     * becomes false, for example:
+     * <ul>
+     * <li>When the pointer exits the boundaries of the window or view
+     * <li>When a mouse or touchpad button is pressed, putting the pointer into the "down" state (in
+     *     which case this event will be followed by an {@link #ACTION_DOWN} event)
+     * </ul>
      * <p>
      * This action is always delivered to the window or view that was previously under the pointer.
      * </p><p>
@@ -339,6 +368,8 @@ public final class MotionEvent extends InputEvent implements Parcelable {
      * {@link View#onGenericMotionEvent(MotionEvent)} rather than
      * {@link View#onTouchEvent(MotionEvent)}.
      * </p>
+     * @see #ACTION_HOVER_ENTER
+     * @see #ACTION_HOVER_MOVE
      */
     public static final int ACTION_HOVER_EXIT       = 10;
 
@@ -1555,7 +1586,7 @@ public final class MotionEvent extends InputEvent implements Parcelable {
             AXIS_GESTURE_SWIPE_FINGER_COUNT,
     })
     @Retention(RetentionPolicy.SOURCE)
-    @interface Axis {}
+    public @interface Axis {}
 
     /**
      * Button constant: Primary button (left mouse button).

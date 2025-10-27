@@ -25,6 +25,8 @@ import static android.content.pm.UserInfo.FLAG_PROFILE;
 import static android.content.pm.UserInfo.FLAG_RESTRICTED;
 import static android.content.pm.UserInfo.FLAG_SYSTEM;
 
+import static com.google.common.truth.Truth.assertWithMessage;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -69,6 +71,7 @@ public class UserManagerServiceUserTypeTest {
     public void setup() {
         mResources = InstrumentationRegistry.getTargetContext().getResources();
     }
+
     @Test
     public void testUserTypeBuilder_createUserType() {
         final Bundle restrictions = makeRestrictionsBundle("r1", "r2");
@@ -98,6 +101,8 @@ public class UserManagerServiceUserTypeTest {
                 .setProfileApiVisibility(34)
                 .setItemsRestrictedOnHomeScreen(true);
 
+
+        final int activitiesAllowlistResId = 42;
         final UserTypeDetails type = new UserTypeDetails.Builder()
                 .setName("a.name")
                 .setEnabled(1)
@@ -118,6 +123,7 @@ public class UserManagerServiceUserTypeTest {
                 .setDefaultSecureSettings(secureSettings)
                 .setDefaultCrossProfileIntentFilters(filters)
                 .setDefaultUserProperties(userProps)
+                .setActivitiesAllowlist(activitiesAllowlistResId)
                 .createUserTypeDetails();
 
         assertEquals("a.name", type.getName());
@@ -198,14 +204,14 @@ public class UserManagerServiceUserTypeTest {
         assertEquals(Resources.ID_NULL, type.getBadgeColor(-100));
 
         assertTrue(type.hasBadge());
+
+        assertWithMessage("getActivitiesAllowlist()")
+                .that(type.getActivitiesAllowlist()).isEqualTo(activitiesAllowlistResId);
     }
 
     @Test
     public void testUserTypeBuilder_defaults() {
-        UserTypeDetails type = new UserTypeDetails.Builder()
-                .setName("name") // Required (no default allowed)
-                .setBaseType(FLAG_FULL) // Required (no default allowed)
-                .createUserTypeDetails();
+        UserTypeDetails type = getMinimalBuilder().createUserTypeDetails();
 
         assertTrue(type.isEnabled());
         assertEquals(android.multiuser.Flags.decoupleMaxUsersFromProfiles() ?
@@ -246,6 +252,8 @@ public class UserManagerServiceUserTypeTest {
                 props.getProfileApiVisibility());
 
         assertFalse(type.hasBadge());
+        assertWithMessage("getActivitiesAllowlist()")
+                .that(type.getActivitiesAllowlist()).isEqualTo(Resources.ID_NULL);
     }
 
     @Test

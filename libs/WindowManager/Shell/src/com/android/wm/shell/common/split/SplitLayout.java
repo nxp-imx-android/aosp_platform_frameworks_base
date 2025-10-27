@@ -851,12 +851,12 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             case SNAP_TO_START_AND_DISMISS:
                 flingDividerPosition(currentPosition, snapTarget.position, duration, interpolator,
                         () -> mSplitLayoutHandler.onSnappedToDismiss(false /* bottomOrRight */,
-                                EXIT_REASON_DRAG_DIVIDER));
+                                EXIT_REASON_DRAG_DIVIDER, new WindowContainerTransaction()));
                 break;
             case SNAP_TO_END_AND_DISMISS:
                 flingDividerPosition(currentPosition, snapTarget.position, duration, interpolator,
                         () -> mSplitLayoutHandler.onSnappedToDismiss(true /* bottomOrRight */,
-                                EXIT_REASON_DRAG_DIVIDER));
+                                EXIT_REASON_DRAG_DIVIDER, new WindowContainerTransaction()));
                 break;
             default:
                 flingDividerPosition(currentPosition, snapTarget.position, duration, interpolator,
@@ -941,11 +941,11 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
     }
 
     /** Fling divider from current position to end or start position then exit */
-    public void flingDividerToDismiss(boolean toEnd, int reason) {
+    public void flingDividerToDismiss(boolean toEnd, int reason, WindowContainerTransaction wct) {
         final int target = toEnd ? mDividerSnapAlgorithm.getDismissEndTarget().position
                 : mDividerSnapAlgorithm.getDismissStartTarget().position;
         flingDividerPosition(getDividerPosition(), target, FLING_EXIT_DURATION, FAST_OUT_SLOW_IN,
-                () -> mSplitLayoutHandler.onSnappedToDismiss(toEnd, reason));
+                () -> mSplitLayoutHandler.onSnappedToDismiss(toEnd, reason, wct));
     }
 
     /** Fling divider from current position to center position. */
@@ -1444,7 +1444,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
     public interface SplitLayoutHandler {
 
         /** Calls when dismissing split. */
-        void onSnappedToDismiss(boolean snappedToEnd, int reason);
+        void onSnappedToDismiss(boolean snappedToEnd, int reason, WindowContainerTransaction wct);
 
         /**
          * Calls when resizing the split bounds.

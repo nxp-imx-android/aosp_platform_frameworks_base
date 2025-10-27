@@ -88,8 +88,10 @@
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"Pouzdani agent je nedostupan"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"Previše pokušaja sa netačnim PIN-om"</string>
     <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"Već ste pokušali sa tim PIN-om. Probajte sa nekim drugim."</string>
-    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"Već ste pokušali sa tom lozinkom. Probajte sa nekom drugom."</string>
-    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"Već ste pokušali sa tim šablonom. Probajte sa nekim drugim."</string>
+    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
+    <skip />
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Previše pokušaja sa netačnim šablonom"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Previše pokušaja sa netačnom lozinkom"</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"Previše pokušaja sa netačnim PIN-om\nSaznajte više na <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>

@@ -1054,10 +1054,8 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"맞습니다."</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"다시 시도"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"다시 시도"</string>
-    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
-    <skip />
-    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
-    <skip />
+    <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"잠금 해제하려면 클릭하세요."</string>
+    <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"잠금 해제하려면 아무 키나 누르세요."</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"모든 기능 및 데이터 잠금 해제"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"얼굴 인식 잠금 해제 최대 시도 횟수를 초과했습니다."</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"SIM 없음"</string>
@@ -1279,6 +1277,8 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"작업 완료"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"연결 앱"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"%1$s(으)로 열기"</string>
+    <!-- no translation found for open_app_name (6114096770130122912) -->
+    <skip />
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"열기"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"<xliff:g id="HOST">%1$s</xliff:g> 링크를 열 때 사용할 앱"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"링크를 열 때 사용할 앱"</string>
@@ -1800,10 +1800,8 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"볼륨 키 2개를 몇 초 동안 길게 누르면 <xliff:g id="SERVICE">%1$s</xliff:g> 접근성 기능이 사용 설정됩니다. 이렇게 되면 기기 작동 방식이 달라질 수 있습니다.\n\n설정 &gt; 접근성에서 이 단축키를 다른 기능으로 변경할 수 있습니다."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"사용"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"사용 안 함"</string>
-    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
-    <skip />
+    <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"사용"</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"사용 안함"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"<xliff:g id="SERVICE">%1$s</xliff:g>에서 기기를 완전히 제어하도록 허용하시겠습니까?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"접근성 관련 지원을 제공하는 앱에는 완벽한 제어권을 부여하는 것이 좋으나, 대부분의 앱에는 적합하지 않습니다."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"화면 확인 및 제어"</string>
@@ -1817,16 +1815,11 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"기능을 사용하려면 탭하세요"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"접근성 버튼으로 사용할 기능 선택"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"볼륨 키 바로가기로 사용할 기능 선택"</string>
-    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
-    <skip />
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"접근성 버튼"</string>
+    <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"볼륨 키"</string>
+    <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"동작"</string>
+    <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"빠른 설정"</string>
+    <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"세 번 탭"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g>이(가) 사용 중지됨"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"단축키 수정"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"완료"</string>

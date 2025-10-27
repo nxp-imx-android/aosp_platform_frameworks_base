@@ -143,9 +143,6 @@
           "include-annotation": "androidx.test.filters.FlakyTest"
         }
       ]
-    },
-    {
-      "name": "SystemUIGoogleScreenshotTests_desktop"
     }
   ],
   "sysui-robo-test": [
@@ -171,7 +168,10 @@
     }
   ],
 
-  "sysui-unit-test-desktop": [
+  "desktop-presubmit": [
+    {
+      "name": "SystemUIGoogleScreenshotTests_desktop"
+    },
     {
       "name": "SystemUITests_desktop"
     }

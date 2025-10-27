@@ -256,6 +256,9 @@ constructor(
         object : ContentObserver(handler) {
             override fun onChange(selfChange: Boolean, uri: Uri?) {
                 execution.assertIsMainThread()
+                if (session == null) {
+                    return
+                }
                 reloadSmartspace()
             }
         }
@@ -503,13 +506,13 @@ constructor(
 
         deviceProvisionedController.removeCallback(deviceProvisionedListener)
         userTracker.addCallback(userTrackerCallback, uiExecutor)
-        contentResolver.registerContentObserver(
+        secureSettings.registerContentObserverForUserAsync(
             secureSettings.getUriFor(LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS),
             true,
             settingsObserver,
             UserHandle.USER_ALL,
         )
-        contentResolver.registerContentObserver(
+        secureSettings.registerContentObserverForUserAsync(
             secureSettings.getUriFor(LOCK_SCREEN_SHOW_NOTIFICATIONS),
             true,
             settingsObserver,
@@ -555,7 +558,7 @@ constructor(
             it.close()
         }
         userTracker.removeCallback(userTrackerCallback)
-        contentResolver.unregisterContentObserver(settingsObserver)
+        secureSettings.unregisterContentObserverAsync(settingsObserver)
         sysuiColorExtractor.removeOnColorsChangedListener(onColorsChangedListener)
         configurationController.removeCallback(configChangeListener)
         statusBarStateController.removeCallback(statusBarStateListener)

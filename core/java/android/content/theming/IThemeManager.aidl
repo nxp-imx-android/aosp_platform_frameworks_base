@@ -16,11 +16,17 @@
 
 package android.content.theming;
 
+import android.os.FabricatedOverlayInternal;
+import android.content.theming.ThemeInfo;
 import android.content.theming.ThemeSettings;
 import android.content.theming.IThemeSettingsCallback;
 
 /** @hide */
 interface IThemeManager {
+    /** @hide */
+    FabricatedOverlayInternal generateDynamicColorOverlay(in ThemeInfo options);
+    /** @hide */
+    ThemeInfo getUserThemeInfo();
     /** @hide */
     boolean registerThemeSettingsCallback(in IThemeSettingsCallback callback);
     /** @hide */

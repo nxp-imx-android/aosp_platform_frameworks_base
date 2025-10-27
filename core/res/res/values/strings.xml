@@ -1881,6 +1881,11 @@
     <string name="permdesc_access_local_network">Allows the app to access local network devices</string>
 
     <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=50]-->
+    <string name="permlab_use_loopback_interface">use loopback interface</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=120]-->
+    <string name="permdesc_use_loopback_interface">Allows the app to interact with other apps over loopback interface</string>
+
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=50]-->
     <string name="permlab_ranging">determine relative position between nearby devices</string>
     <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=120]-->
     <string name="permdesc_ranging">Allow the app to determine relative position between nearby devices</string>
@@ -2780,9 +2785,6 @@
     <!-- Instructions telling the user how to unlock the phone. -->
     <string name="keyguard_label_text">To unlock, press Menu then 0.</string>
 
-    <!-- This can be used in any application wanting to disable the text "Emergency number" -->
-    <string name="emergency_call_dialog_number_for_display">Emergency number</string>
-
     <!--
        *** touch based lock / unlock ***
                                           --> <skip />
@@ -3544,6 +3546,8 @@
     <!-- Title of intent resolver dialog when selecting a viewer application to run
          and a previously used application is known. -->
     <string name="whichViewApplicationNamed">Open with %1$s</string>
+    <!-- Default title for a notification action that opens an app. -->
+    <string name="open_app_name">Open <xliff:g id="app_name" example="Maps">%1$s</xliff:g></string>
     <!-- Label for a link to a intent resolver dialog to view something -->
     <string name="whichViewApplicationLabel">Open</string>
     <!-- Title of intent resolver dialog when selecting a browser/application that opens specific URIs

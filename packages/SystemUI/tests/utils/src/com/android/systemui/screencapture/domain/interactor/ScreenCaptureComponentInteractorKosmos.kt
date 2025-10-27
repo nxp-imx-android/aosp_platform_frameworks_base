@@ -27,7 +27,7 @@ import com.android.systemui.screencapture.ui.ScreenCaptureOverlayUi
 import com.android.systemui.screencapture.ui.ScreenCaptureUi
 import com.android.systemui.screencapture.ui.screenCaptureOverlayUi
 import com.android.systemui.screencapture.ui.screenCaptureUiFactory
-import com.android.systemui.screenrecord.data.repository.screenRecordingServiceRepository
+import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
 import kotlinx.coroutines.CoroutineScope
 
 val Kosmos.screenCaptureComponentInteractor by
@@ -37,7 +37,7 @@ val Kosmos.screenCaptureComponentInteractor by
             repository = screenCaptureComponentRepository,
             screenCaptureUiInteractor = screenCaptureUiInteractor,
             componentBuilder = FakeScreenCaptureComponentBuilder(this),
-            screenRecordingServiceRepository = screenRecordingServiceRepository,
+            screenRecordingServiceInteractor = screenRecordingServiceInteractor,
         )
     }
 

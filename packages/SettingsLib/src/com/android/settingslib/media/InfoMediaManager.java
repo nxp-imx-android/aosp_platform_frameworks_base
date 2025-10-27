@@ -312,7 +312,7 @@ public abstract class InfoMediaManager {
                 }
             }
         }
-        // TODO: b/435500030 - update the device list whenever RLP changes.
+        refreshDevices();
     }
 
     @VisibleForTesting

@@ -19,6 +19,7 @@ package com.android.server.am;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_BFSL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_CPU_TIME;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_STATE_BOUND_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.PROCESS_STATE_BOUND_TOP;
@@ -137,6 +138,7 @@ import android.util.SparseIntArray;
 
 import com.android.server.LocalServices;
 import com.android.server.am.ProcessStateController.ProcessLruUpdater;
+import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.tests.assertutils.FlagAssert;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
@@ -203,7 +205,7 @@ public class MockingOomAdjusterTests {
     private OomAdjuster.Constants mOomConstants;
     private ProcessStateController mProcessStateController;
     private ProcessStateController.ActivityStateAsyncUpdater mActivityStateAsyncUpdater;
-    private ActiveUids mActiveUids;
+    private ActiveUidsInternal mActiveUids;
     private PackageManagerInternal mPackageManagerInternal;
     private ActivityManagerService mService;
     private TestCachedAppOptimizer mTestCachedAppOptimizer;
@@ -277,7 +279,7 @@ public class MockingOomAdjusterTests {
                 anyInt());
         doNothing().when(pr).enqueueProcessChangeItemLocked(anyInt(), anyInt(), anyInt(),
                 anyBoolean());
-        mActiveUids = new ActiveUids(null);
+        mActiveUids = new ActiveUidsInternal();
         mActivityStateHandlerThread = new HandlerThread("ActivityStateThread");
         mActivityStateHandlerThread.start();
         mActivityStateHandler = new Handler(mActivityStateHandlerThread.getLooper());
@@ -1831,6 +1833,7 @@ public class MockingOomAdjusterTests {
         assertThatProcess(app).hasImplicitCpuTimeCapability().withExactReasons(
                 IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertThatProcess(app).hasCapability(PROCESS_CAPABILITY_BFSL);
+        assertThatProcess(app).hasCapability(PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1866,6 +1869,7 @@ public class MockingOomAdjusterTests {
         assertProcStates(app, PROCESS_STATE_BOUND_TOP, VISIBLE_APP_ADJ, SCHED_GROUP_DEFAULT);
         assertThatProcess(app).hasImplicitCpuTimeCapability().withExactReasons(
                 IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
+        assertThatProcess(app).hasCapability(PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -4950,7 +4954,7 @@ public class MockingOomAdjusterTests {
             }
             providers.setLastProviderTime(mLastProviderTime);
 
-            UidRecord uidRec = mActiveUids.get(mUid);
+            UidRecord uidRec = (UidRecord) mActiveUids.get(mUid);
             if (uidRec == null) {
                 uidRec = new UidRecord(mUid, mService);
                 mActiveUids.put(mUid, uidRec);

@@ -17,7 +17,6 @@
 package com.android.server.companion.virtual.computercontrol;
 
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
-import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_AUDIO;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_ACTIVITY;
@@ -29,6 +28,7 @@ import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
+import android.annotation.UserIdInt;
 import android.app.ActivityOptions;
 import android.companion.virtual.ActivityPolicyExemption;
 import android.companion.virtual.VirtualDeviceManager;
@@ -102,8 +102,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * A computer control session that encapsulates a {@link IVirtualDevice}. The device is created and
- * managed by the system, but it is still owned by the caller.
+ * A computer control session that encapsulates a {@link android.companion.virtual.IVirtualDevice}.
+ * The device is created and managed by the system, but it is still owned by the caller.
  */
 final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         implements IBinder.DeathRecipient {
@@ -195,13 +195,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             new ComputerControlSession.LifecycleCallback() {
                 @Override
                 public void onActive() {
-                    reconfigureActivityPolicy(/* unlockPolicy= */ false);
+                    configureActivityPolicy();
 
                     mVirtualDisplay.setSurface(mClientSurface);
                 }
 
                 @Override
-                public void onBlocked(@ComputerControlSession.SessionCloseReason int reason) {
+                public void onBlocked(@ComputerControlSession.SessionCloseReason int reason,
+                        @Nullable String blockingPackage) {
                     cancelOngoingKeyGestures();
                     cancelOngoingTouchGestures();
 
@@ -209,8 +210,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                         // Prevent the client from being able to see the display by disconnecting
                         // the client surface from the display.
                         mVirtualDisplay.setSurface(mBlockedStateImageReader.getSurface());
-
-                        reconfigureActivityPolicy(/* unlockPolicy= */ true);
                     }
                 }
 
@@ -287,7 +286,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     .setDevicePolicy(POLICY_TYPE_BLOCKED_ACTIVITY, DEVICE_POLICY_CUSTOM)
                     .setDevicePolicy(POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS,
                             DEVICE_POLICY_CUSTOM);
-        if (Flags.computerControlUserRestriction()) {
+        // If we block input and screenshots in the blocked state, we can simply allow launches for
+        // any user. We'll detect blocked state automatically when an activity launch request comes
+        // in for a different user.
+        if (!Flags.computerControlBlockInputAndScreenshots()
+                && Flags.computerControlUserRestriction()) {
             // TODO: b/451568055 - Support cross-user sessions.
             virtualDeviceParamsBuilder.setAllowedUsers(Set.of(mOwnerUser));
         }
@@ -296,7 +299,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
         final VirtualDeviceParams virtualDeviceParams = virtualDeviceParamsBuilder.build();
 
-        int displayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
+        final int displayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED;
 
@@ -445,8 +448,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             synchronized (mAllowlistedPackages) {
                 mAllowlistedPackages.add(packageName);
             }
-            mVirtualDevice.addActivityPolicyExemption(
-                    new ActivityPolicyExemption.Builder().setPackageName(packageName).build());
+            // If we block input and screenshots in the blocked state, we simply allow all
+            // activities to launch. We detect blocked state automatically when an activity
+            // launch request comes in for a package that's not allowed to launch. So there is no
+            // need for any activity policy exemption.
+            if (!Flags.computerControlBlockInputAndScreenshots()) {
+                mVirtualDevice.addActivityPolicyExemption(
+                        new ActivityPolicyExemption.Builder().setPackageName(packageName).build());
+            }
         }
         Binder.withCleanCallingIdentity(() ->
                 mContext.startActivityAsUser(intent,
@@ -648,15 +657,17 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mOnClosedListener.accept(this);
     }
 
-    private void reconfigureActivityPolicy(boolean unlockPolicy) {
-        List<String> exemptedPackageNames = new ArrayList<>();
+    private void configureActivityPolicy() {
+        // If we're blocking input and screenshots in blocked state, then we should be allowing
+        // all activities to launch and we don't need to configure the activity policy.
+        if (Flags.computerControlBlockInputAndScreenshots()) {
+            return;
+        }
+
+        final List<String> exemptedPackageNames = new ArrayList<>();
         if (Flags.computerControlActivityPolicyStrict()) {
-            if (unlockPolicy) {
-                mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_DEFAULT);
-            } else {
-                mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
-                exemptedPackageNames.addAll(mAllowlistedPackages);
-            }
+            mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
+            exemptedPackageNames.addAll(mAllowlistedPackages);
         } else {
             // This legacy policy allows all apps other than PermissionController to be automated.
             String permissionControllerPackage =
@@ -744,6 +755,19 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 : prefix;
     }
 
+    private boolean isActivityLaunchAllowed(@NonNull ComponentName componentName,
+            @UserIdInt int userId) {
+        synchronized (mAllowlistedPackages) {
+            if (!mAllowlistedPackages.contains(componentName.getPackageName())) {
+                return false;
+            }
+        }
+
+        // TODO: b/451568055 - Support cross-user sessions.
+        return !Flags.computerControlUserRestriction()
+                || userId == UserHandle.USER_SYSTEM || userId == mOwnerUser.getIdentifier();
+    }
+
     private Intent getLaunchIntent(String packageName, String className) {
         if (className == null) {
             return mOwnerContext.getPackageManager().getLaunchIntentForPackage(packageName);
@@ -771,6 +795,17 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mActivityTaskManagerInternal.moveAllTasks(fromDisplayId, toDisplayId);
     }
 
+    private boolean shouldDisallowInteractions(String callSite) {
+        // TODO: b/452428736 - Find a long term solution for blocking agent interactions.
+        if (Flags.computerControlBlockedState() && Flags.computerControlBlockInputAndScreenshots()
+                && !(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
+            Slog.w(TAG, "Computer control interaction blocked since session is not active: "
+                    + callSite);
+            return true;
+        }
+        return false;
+    }
+
     private static VirtualTouchEvent createTouchEvent(int x, int y,
             @VirtualTouchEvent.Action int action) {
         return new VirtualTouchEvent.Builder()
@@ -796,25 +831,22 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private class ComputerControlActivityListener implements VirtualDeviceManager.ActivityListener {
         @Override
-        public void onTopActivityChanged(int displayId, @NonNull ComponentName topActivity) {
-            Slog.v(TAG, "Top activity changed to " + topActivity);
-            synchronized (mAllowlistedPackages) {
+        public void onTopActivityChanged(int displayId, @NonNull ComponentName topActivity) {}
+
+        @Override
+        public void onTopActivityChanged(int displayId, @NonNull ComponentName topActivity,
+                @UserIdInt int userId) {
+            Slog.v(TAG, "Top activity changed to " + topActivity + " for user " + userId);
+
+            if (topActivity.getPackageName().equals(CUSTOM_BLOCKED_APP_PACKAGE)) {
+                return;
+            }
+
+            // If we have a new top activity which is allowed, then attempt a transition to the
+            // active state.
+            if (isActivityLaunchAllowed(topActivity, userId)) {
                 mLifecycle.updateLifecycleState((config) -> {
-                    if (config.mBlockedActivityVisible && mAllowlistedPackages.contains(
-                            topActivity.getPackageName())) {
-                        // In the short term, stay in the blocked state as long as content from the
-                        // custom blocked dialog package is visible.
-                        // TODO: b/441475896 - Remove this condition when we stop showing the
-                        //  custom blocked dialog activity.
-                        if (topActivity.getPackageName().equals(CUSTOM_BLOCKED_APP_PACKAGE)) {
-                            return;
-                        }
-                        // The top activity is now no longer a blocked activity so unblock the
-                        // session.
-                        // TODO: b/441475896 - Do not rely only on the top activity, but took a
-                        //  all running activities on the display.
-                        config.mBlockedActivityVisible = false;
-                    }
+                    config.mBlockingActivityPackage = null;
                 });
             }
         }
@@ -823,10 +855,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         public void onDisplayEmpty(int displayId) {
             Slog.v(TAG, "Display empty");
             mLifecycle.updateLifecycleState((config) -> {
-                config.mBlockedActivityVisible = false;
-                // We cannot currently assume all secure windows are gone when the display is empty.
-                // Therefore mSecureWindowVisible cannot be update here for now.
-                // TODO: b/449765707 - Investigate and update mSecureWindowVisible.
+                config.mBlockingActivityPackage = null;
+                config.mSecureWindowPackage = null;
             });
         }
 
@@ -836,25 +866,20 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 @NonNull UserHandle user, IntentSender intentSender) {
             Slog.v(TAG, "Blocked activity launch for " + componentName + " on session "
                     + mParams.getName());
+            // If we block input and screenshots in the blocked state, no need to do anything here.
+            if (Flags.computerControlBlockInputAndScreenshots()) {
+                return;
+            }
+
             final var changedState = mLifecycle.updateLifecycleState(
-                    (config) -> config.mBlockedActivityVisible = true);
+                    (config) -> config.mBlockingActivityPackage =
+                            Objects.requireNonNull(componentName.getPackageName()));
             if (Flags.computerControlBlockedState()) {
                 if (!(changedState instanceof LifecycleState.Blocked)) {
                     return;
                 }
-                if (Flags.computerControlBlockInputAndScreenshots()) {
-                    try {
-                        intentSender.sendIntent(mContext, 0, null, null, null);
-                    } catch (IntentSender.SendIntentException e) {
-                        Slog.e(TAG, "Failed to start blocked activity's intent, closing session.",
-                                e);
-                        close(CLOSE_REASON_CALLER_INITIATED);
-                    }
-                    // Early return to avoid showing the blocked activity dialog.
-                    return;
-                }
             }
-            Intent intent = new Intent()
+            final Intent intent = new Intent()
                     .setComponent(CUSTOM_BLOCKED_APP_ACTIVITY)
                     .putExtra(Intent.EXTRA_COMPONENT_NAME, componentName);
             mContext.startActivityAsUser(
@@ -868,13 +893,32 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         public void onSecureWindowShown(int displayId, @NonNull ComponentName componentName,
                 @NonNull UserHandle user) {
             Slog.v(TAG, "Secure window shown for " + componentName);
-            mLifecycle.updateLifecycleState((config) -> config.mSecureWindowVisible = true);
+            mLifecycle.updateLifecycleState((config) -> config.mSecureWindowPackage =
+                    Objects.requireNonNull(componentName.getPackageName()));
         }
 
         @Override
         public void onSecureWindowHidden(int displayId) {
             Slog.v(TAG, "Secure window hidden");
-            mLifecycle.updateLifecycleState((config) -> config.mSecureWindowVisible = false);
+            mLifecycle.updateLifecycleState((config) -> config.mSecureWindowPackage = null);
+        }
+
+        @Override
+        public void onActivityLaunchRequested(int displayId, @NonNull ComponentName componentName,
+                @UserIdInt int userId) {
+            Slog.v(TAG, "Activity launch requested for " + componentName + " for user "
+                    + userId);
+            if (!Flags.computerControlBlockInputAndScreenshots()) {
+                return;
+            }
+
+            // If we have an activity launch request which is not allowed, then transition to
+            // blocked state.
+            if (!isActivityLaunchAllowed(componentName, userId)) {
+                mLifecycle.updateLifecycleState(
+                        (config) -> config.mBlockingActivityPackage =
+                                Objects.requireNonNull(componentName.getPackageName()));
+            }
         }
     }
 
@@ -901,16 +945,5 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         public int hashCode() {
             return Objects.hash(mNotificationId, mNotificationTag);
         }
-    }
-
-    private boolean shouldDisallowInteractions(String callsite) {
-        // TODO: b/452428736 - Find a long term solution for blocking agent interactions.
-        if (Flags.computerControlBlockedState() && Flags.computerControlBlockInputAndScreenshots()
-                && !(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
-            Slog.w(TAG, "Computer control interaction blocked since session is not active: "
-                    + callsite);
-            return true;
-        }
-        return false;
     }
 }

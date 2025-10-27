@@ -1395,7 +1395,9 @@ public class BubbleController implements ConfigurationChangeListener,
                     mLayerView,
                     mBubbleIconFactory,
                     mAppInfoProvider,
-                    false /* skipInflation */);
+                    false /* skipInflation */,
+                    mMainExecutor,
+                    mBackgroundExecutor);
         }
         for (Bubble b : mBubbleData.getOverflowBubbles()) {
             b.inflate(null /* callback */,
@@ -1407,7 +1409,9 @@ public class BubbleController implements ConfigurationChangeListener,
                     mLayerView,
                     mBubbleIconFactory,
                     mAppInfoProvider,
-                    true /* skipInflation */);
+                    true /* skipInflation */,
+                    mMainExecutor,
+                    mBackgroundExecutor);
         }
     }
 
@@ -2045,8 +2049,7 @@ public class BubbleController implements ConfigurationChangeListener,
                 b.setIntent(intent);
             } else {
                 // Notes bubble does not exist, lets add and expand it
-                b = Bubble.createNotesBubble(intent, user, icon, mMainExecutor,
-                        mBackgroundExecutor);
+                b = Bubble.createNotesBubble(intent, user, icon);
             }
             BubbleLog.d("BubbleController.showOrHideNotesBubble() inflateAndAdd %s", noteBubbleKey);
             b.setShouldAutoExpand(true);
@@ -2134,7 +2137,9 @@ public class BubbleController implements ConfigurationChangeListener,
                         mLayerView,
                         mBubbleIconFactory,
                         mAppInfoProvider,
-                        true /* skipInflation */);
+                        true /* skipInflation */,
+                        mMainExecutor,
+                        mBackgroundExecutor);
             });
             return null;
         });
@@ -2249,7 +2254,9 @@ public class BubbleController implements ConfigurationChangeListener,
                     mLayerView,
                     mBubbleIconFactory,
                     mAppInfoProvider,
-                    false /* skipInflation */);
+                    false /* skipInflation */,
+                    mMainExecutor,
+                    mBackgroundExecutor);
         }
         if (mBubbleData.isShowingOverflow()) {
             BubbleOverflow bubbleOverflow = mBubbleData.getOverflow();
@@ -2351,7 +2358,9 @@ public class BubbleController implements ConfigurationChangeListener,
                 mLayerView,
                 mBubbleIconFactory,
                 mAppInfoProvider,
-                false /* skipInflation */);
+                false /* skipInflation */,
+                mMainExecutor,
+                mBackgroundExecutor);
     }
 
     /**

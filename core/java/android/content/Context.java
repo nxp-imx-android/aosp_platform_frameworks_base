@@ -4669,6 +4669,7 @@ public abstract class Context {
                 ADVANCED_PROTECTION_SERVICE,
                 ANOMALY_DETECTOR_SERVICE,
                 TASK_CONTINUITY_SERVICE,
+                NPU_SERVICE,
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ServiceName {}
@@ -7075,6 +7076,15 @@ public abstract class Context {
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.npumanager.NpuManager}.
+     *
+     * @see #getSystemService(String)
+     */
+    @FlaggedApi(com.android.npumanager.Flags.FLAG_NPUMANAGER_ENABLED)
+    public static final String NPU_SERVICE = "npu";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve a
      * {@link android.devicelock.DeviceLockManager}.
      *
      * @see #getSystemService(String)
@@ -7210,6 +7220,18 @@ public abstract class Context {
      * @hide
      */
     public static final String PROTOLOG_CONFIGURATION_SERVICE = "protolog_configuration";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.app.contentrestriction.ContentRestrictionManager}.
+     *
+     * @see #getSystemService(String)
+     * @see android.app.contentrestriction.ContentRestrictionManager
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(android.app.contentrestriction.flags.Flags.FLAG_CONTENT_RESTRICTION_API)
+    public static final String CONTENT_RESTRICTION_SERVICE = "content_restriction";
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
@@ -8761,6 +8783,7 @@ public abstract class Context {
      * @see #getSystemService(String)
      * @see android.os.StrictMode.VmPolicy.Builder#detectIncorrectContextUse()
      */
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl")
     public boolean isUiContext() {
         throw new RuntimeException("Not implemented. Must override in a subclass.");
     }

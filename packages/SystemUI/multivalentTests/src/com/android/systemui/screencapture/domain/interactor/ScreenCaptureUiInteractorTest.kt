@@ -17,7 +17,6 @@
 package com.android.systemui.screencapture.domain.interactor
 
 import android.content.pm.UserInfo
-import android.content.testableContext
 import android.os.UserHandle
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -26,11 +25,9 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.mediaprojection.devicepolicy.mockDevicePolicyResolver
-import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
-import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
@@ -64,26 +61,6 @@ class ScreenCaptureUiInteractorTest : SysuiTestCase() {
 
             underTest.show(ScreenCaptureUiParameters.Record())
             assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
-        }
-
-    @Test
-    fun isLargeScreenReturnsConfigValue() =
-        kosmos.runTest {
-            val isLargeScreen by collectLastValue(underTest.isLargeScreen)
-
-            testableContext.orCreateTestableResources.addOverride(
-                R.bool.config_enableLargeScreenScreencapture,
-                true,
-            )
-            configurationController.onConfigurationChanged(testableContext.resources.configuration)
-            assertThat(isLargeScreen).isTrue()
-
-            testableContext.orCreateTestableResources.addOverride(
-                R.bool.config_enableLargeScreenScreencapture,
-                false,
-            )
-            configurationController.onConfigurationChanged(testableContext.resources.configuration)
-            assertThat(isLargeScreen).isFalse()
         }
 
     companion object {

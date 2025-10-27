@@ -18,8 +18,13 @@ package androidx.window.extensions.layout;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.Activity;
 import android.app.WindowConfiguration;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -31,6 +36,7 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.test.core.app.ApplicationProvider;
@@ -43,11 +49,14 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 /**
  * Test class for {@link WindowLayoutComponentImpl}.
@@ -69,40 +78,69 @@ public class WindowLayoutComponentImplTest {
     private WindowLayoutComponentImpl mWindowLayoutComponent;
 
     @Mock
-    private EngagementModeClient mMockEngagementModeClient;
-    @Mock
     private DeviceStateManagerFoldingFeatureProducer mMockFoldingFeatureProducer;
     @Mock
     private WindowLayoutComponentImpl.DisplayStateProvider mMockDisplayStateProvider;
+    @Mock
+    private WindowManager mMockWindowManager;
+    @Mock
+    private Activity mMockActivity;
+
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        // Default component uses a NoOp client for tests that don't need engagement mode.
-        mWindowLayoutComponent = new WindowLayoutComponentImpl(
-                mAppContext,
-                mMockFoldingFeatureProducer,
-                mMockDisplayStateProvider,
-                new NoOpEngagementModeClient()
-        );
+        when(mMockActivity.isUiContext()).thenReturn(true);
+        when(mMockActivity.getAssociatedDisplayId()).thenReturn(Display.DEFAULT_DISPLAY);
+        when(mMockActivity.getResources()).thenReturn(mAppContext.getResources());
+        when(mMockActivity.getApplicationContext()).thenReturn(mAppContext);
     }
 
     @Test
-    public void testAddWindowLayoutListener_onFakeUiContext_noCrash() {
-        final Context fakeUiContext = new FakeUiContext(mAppContext);
+    public void testOnDisplayFeaturesChanged_withListener_doesNotCrash() {
+        mWindowLayoutComponent = new WindowLayoutComponentImpl(
+                mAppContext, mMockFoldingFeatureProducer, mMockDisplayStateProvider);
+        final Context testUiContext = new TestUiContext(mAppContext);
 
-        mWindowLayoutComponent.addWindowLayoutInfoListener(fakeUiContext, info -> {});
+        mWindowLayoutComponent.addWindowLayoutInfoListener(testUiContext, info -> {});
 
         mWindowLayoutComponent.onDisplayFeaturesChanged(Collections.emptyList());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testAddWindowLayoutListener_nonUiContext_throwsError() {
+        mWindowLayoutComponent = new WindowLayoutComponentImpl(
+                mAppContext, mMockFoldingFeatureProducer, mMockDisplayStateProvider);
         mWindowLayoutComponent.addWindowLayoutInfoListener(mAppContext, info -> {});
     }
 
     @Test
+    public void testAddWindowLayoutListener_activityConsumer_receivesUpdates() {
+        mWindowLayoutComponent = new WindowLayoutComponentImpl(
+                mAppContext, mMockFoldingFeatureProducer, mMockDisplayStateProvider);
+
+        WindowLayoutInfo[] receivedInfo = new WindowLayoutInfo[1];
+        java.util.function.Consumer<WindowLayoutInfo> consumer = (info) -> receivedInfo[0] = info;
+
+        mWindowLayoutComponent.addWindowLayoutInfoListener(mMockActivity, consumer);
+
+        // Trigger an update
+        mWindowLayoutComponent.onDisplayFeaturesChanged(Collections.emptyList());
+
+        assertThat(receivedInfo[0]).isNotNull();
+        assertThat(receivedInfo[0].getDisplayFeatures()).isEmpty();
+
+        // Now remove the listener and check it doesn't get updates.
+        receivedInfo[0] = null;
+        mWindowLayoutComponent.removeWindowLayoutInfoListener(consumer);
+        mWindowLayoutComponent.onDisplayFeaturesChanged(Collections.emptyList());
+        assertThat(receivedInfo[0]).isNull();
+    }
+
+    @Test
     public void testGetCurrentWindowLayoutInfo_noFoldingFeature_returnsEmptyList() {
+        mWindowLayoutComponent = new WindowLayoutComponentImpl(
+                mAppContext, mMockFoldingFeatureProducer, mMockDisplayStateProvider);
         final Context testUiContext = new TestUiContext(mAppContext);
 
         final WindowLayoutInfo layoutInfo =
@@ -140,8 +178,7 @@ public class WindowLayoutComponentImplTest {
         mWindowLayoutComponent = new WindowLayoutComponentImpl(
                 mAppContext,
                 mMockFoldingFeatureProducer,
-                displayStateProvider,
-                new NoOpEngagementModeClient()
+                displayStateProvider
         );
         final CommonFoldingFeature foldingFeature = new CommonFoldingFeature(
                 CommonFoldingFeature.COMMON_TYPE_HINGE,
@@ -159,12 +196,16 @@ public class WindowLayoutComponentImplTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testGetCurrentWindowLayoutInfo_nonUiContext_throwsError() {
+        mWindowLayoutComponent = new WindowLayoutComponentImpl(
+                mAppContext, mMockFoldingFeatureProducer, mMockDisplayStateProvider);
         mWindowLayoutComponent.getCurrentWindowLayoutInfo(mAppContext);
     }
 
     @Test
     @DisableFlags(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
     public void testGetCurrentWindowLayoutInfo_engagementModeDisabled_returnsDefaultMode() {
+        mWindowLayoutComponent = new WindowLayoutComponentImpl(
+                mAppContext, mMockFoldingFeatureProducer, mMockDisplayStateProvider);
         final Context testUiContext = new TestUiContext(mAppContext);
         final WindowLayoutInfo layoutInfo =
                 mWindowLayoutComponent.getCurrentWindowLayoutInfo(testUiContext);
@@ -175,27 +216,111 @@ public class WindowLayoutComponentImplTest {
 
     @Test
     @EnableFlags(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
-    public void testGetCurrentWindowLayoutInfo_engagementModeEnabled_returnsCurrentMode() {
-        final Context testUiContext = new TestUiContext(mAppContext);
-        final int expectedMode = WindowLayoutInfo.ENGAGEMENT_MODE_FLAG_VISUALS_ON;
-
-        // Stub the initial value that the constructor will read.
-        when(mMockEngagementModeClient.getEngagementModeFlags()).thenReturn(expectedMode);
-
-        // Create the component with the mock client injected.
+    public void testGetCurrentWindowLayoutInfo_systemApiEnabled_returnsDefaultMode() {
+        Context context = getMockContext();
         mWindowLayoutComponent = new WindowLayoutComponentImpl(
-                mAppContext,
+                context,
                 mMockFoldingFeatureProducer,
-                mMockDisplayStateProvider,
-                mMockEngagementModeClient
+                mMockDisplayStateProvider
         );
-
+        final Context testUiContext = new TestUiContext(context, mMockWindowManager);
         final WindowLayoutInfo layoutInfo =
                 mWindowLayoutComponent.getCurrentWindowLayoutInfo(testUiContext);
 
-        assertThat(layoutInfo.getEngagementModeFlags()).isEqualTo(expectedMode);
+        assertThat(layoutInfo.getEngagementModeFlags()).isEqualTo(
+                EngagementModeClient.DEFAULT_ENGAGEMENT_MODE);
     }
 
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
+    public void testAddWindowLayoutListener_systemApiAvailable_registersCallback() {
+        Context context = getMockContext();
+        mWindowLayoutComponent = new WindowLayoutComponentImpl(
+                context,
+                mMockFoldingFeatureProducer,
+                mMockDisplayStateProvider
+        );
+        final Context testUiContext = new TestUiContext(context, mMockWindowManager);
+        mWindowLayoutComponent.addWindowLayoutInfoListener(testUiContext, info -> {});
+
+        verify(mMockWindowManager).registerDisplayEngagementModeCallback(
+                any(Executor.class), any(Consumer.class));
+    }
+
+
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
+    public void testOnEngagementModeChanged_systemApiAvailable_updatesLayoutInfo() {
+        Context context = getMockContext();
+        mWindowLayoutComponent = new WindowLayoutComponentImpl(
+                context,
+                mMockFoldingFeatureProducer,
+                mMockDisplayStateProvider
+        );
+        final Context testUiContext = new TestUiContext(context, mMockWindowManager);
+        final ArgumentCaptor<WindowLayoutInfo> layoutInfoCaptor =
+                ArgumentCaptor.forClass(WindowLayoutInfo.class);
+        final androidx.window.extensions.core.util.function.Consumer<WindowLayoutInfo> consumer =
+                mock(androidx.window.extensions.core.util.function.Consumer.class);
+        mWindowLayoutComponent.addWindowLayoutInfoListener(testUiContext, consumer);
+
+        final ArgumentCaptor<Consumer> callbackCaptor = ArgumentCaptor.forClass(Consumer.class);
+        verify(mMockWindowManager).registerDisplayEngagementModeCallback(
+                any(Executor.class), callbackCaptor.capture());
+        final Consumer callback = callbackCaptor.getValue();
+        final int expectedMode = WindowLayoutInfo.ENGAGEMENT_MODE_FLAG_VISUALS_ON;
+        final int displayId = testUiContext.getAssociatedDisplayId();
+
+        final WindowManager.DisplayEngagementModeState mockEngagementModeState =
+                mock(WindowManager.DisplayEngagementModeState.class);
+        when(mockEngagementModeState.getDisplayId()).thenReturn(displayId);
+        when(mockEngagementModeState.getEngagementModeFlags()).thenReturn(expectedMode);
+
+        callback.accept(mockEngagementModeState);
+
+        verify(consumer, atLeastOnce()).accept(layoutInfoCaptor.capture());
+        final WindowLayoutInfo lastLayoutInfo =
+                layoutInfoCaptor.getValue();
+        assertThat(lastLayoutInfo.getEngagementModeFlags()).isEqualTo(expectedMode);
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
+    public void testRemoveWindowLayoutListener_systemApiAvailable_unregistersCallback() {
+        Context context = getMockContext();
+        mWindowLayoutComponent = new WindowLayoutComponentImpl(
+                context,
+                mMockFoldingFeatureProducer,
+                mMockDisplayStateProvider
+        );
+        final Context testUiContext = new TestUiContext(context, mMockWindowManager);
+        final androidx.window.extensions.core.util.function.Consumer<WindowLayoutInfo> consumer =
+                mock(androidx.window.extensions.core.util.function.Consumer.class);
+        mWindowLayoutComponent.addWindowLayoutInfoListener(testUiContext, consumer);
+        final ArgumentCaptor<Consumer> callbackCaptor = ArgumentCaptor.forClass(Consumer.class);
+        verify(mMockWindowManager).registerDisplayEngagementModeCallback(
+                any(Executor.class), callbackCaptor.capture());
+        final Consumer callback = callbackCaptor.getValue();
+
+        mWindowLayoutComponent.removeWindowLayoutInfoListener(consumer);
+
+        verify(mMockWindowManager).unregisterDisplayEngagementModeCallback(callback);
+    }
+
+
+
+    private Context getMockContext() {
+        return new ContextWrapper(mAppContext) {
+            @Override
+            public Object getSystemService(String name) {
+                if (Context.WINDOW_SERVICE.equals(name)) {
+                    return mMockWindowManager;
+                }
+                return super.getSystemService(name);
+            }
+        };
+    }
 
     /**
      * A {@link Context} that simulates a UI context specifically for testing purposes.
@@ -205,8 +330,15 @@ public class WindowLayoutComponentImplTest {
      */
     private static class TestUiContext extends ContextWrapper {
 
+        private final WindowManager mWindowManager;
+
         TestUiContext(Context base) {
+            this(base, null);
+        }
+
+        TestUiContext(Context base, WindowManager windowManager) {
             super(base);
+            mWindowManager = windowManager;
         }
 
         @Override
@@ -218,22 +350,13 @@ public class WindowLayoutComponentImplTest {
         public boolean isUiContext() {
             return true;
         }
-    }
-
-    /**
-     * A {@link Context} that cheats by overriding {@link Context#isUiContext} to always
-     * return {@code true}. This is useful for scenarios where a UI context is needed,
-     * but the underlying context isn't actually a UI one.
-     */
-    private static class FakeUiContext extends ContextWrapper {
-
-        FakeUiContext(Context base) {
-            super(base);
-        }
 
         @Override
-        public boolean isUiContext() {
-            return true;
+        public Object getSystemService(String name) {
+            if (WINDOW_SERVICE.equals(name)) {
+                return mWindowManager;
+            }
+            return super.getSystemService(name);
         }
     }
 }

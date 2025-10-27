@@ -88,8 +88,10 @@
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"可信代理已被停用"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"输错 PIN 码的尝试次数太多"</string>
     <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"已尝试过该 PIN 码。请换一个试试。"</string>
-    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"已尝试过该密码。请换一个试试。"</string>
-    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"已尝试过该解锁图案。请换一个试试。"</string>
+    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
+    <skip />
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"绘错解锁图案的尝试次数太多"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"输错密码的尝试次数太多"</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"输错 PIN 码的次数太多\n如需了解详情，请访问 <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>

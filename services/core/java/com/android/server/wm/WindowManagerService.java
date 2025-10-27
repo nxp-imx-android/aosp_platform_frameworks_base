@@ -302,6 +302,7 @@ import android.view.WindowInsets;
 import android.view.WindowInsets.Type.InsetsType;
 import android.view.WindowManager;
 import android.view.WindowManager.DisplayImePolicy;
+import android.view.WindowManager.EngagementModeFlags;
 import android.view.WindowManager.LayoutParams;
 import android.view.WindowManager.RemoveContentMode;
 import android.view.WindowManagerGlobal;
@@ -317,6 +318,7 @@ import android.window.ClientWindowFrames;
 import android.window.ConfigurationChangeSetting;
 import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
+import android.window.IDisplayEngagementModeCallback;
 import android.window.IGlobalDragListener;
 import android.window.IScreenCaptureCallback;
 import android.window.IScreenRecordingCallback;
@@ -488,6 +490,9 @@ public class WindowManagerService extends IWindowManager.Stub
 
     private final RemoteCallbackList<IKeyguardLockedStateListener> mKeyguardLockedStateListeners =
             new RemoteCallbackList<>();
+
+    private final RemoteCallbackList<IDisplayEngagementModeCallback>
+            mDisplayEngagementModeCallbacks = new RemoteCallbackList<>();
 
     private final List<OnWindowRemovedListener> mOnWindowRemovedListeners = new ArrayList<>();
 
@@ -1981,7 +1986,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 // IME window is always touchable.
                 // Ignore non-touchable windows e.g. Stylus InkWindow.java.
                 && (win.mAttrs.flags & FLAG_NOT_TOUCHABLE) == 0) {
-            displayContent.setInputMethodWindowLocked(win);
+            displayContent.setImeWindow(win);
             imMayMove = false;
         } else if (type == TYPE_INPUT_METHOD_DIALOG) {
             displayContent.computeImeLayeringTarget(true /* update */);
@@ -2246,8 +2251,8 @@ public class WindowManagerService extends IWindowManager.Stub
         ProtoLog.v(WM_DEBUG_WINDOW_MOVEMENT, "Final remove of window: %s", win);
 
         final DisplayContent displayContent = win.getDisplayContent();
-        if (displayContent.mInputMethodWindow == win) {
-            displayContent.setInputMethodWindowLocked(null);
+        if (displayContent.getImeWindow() == win) {
+            displayContent.setImeWindow(null /* win */);
         }
 
         final WindowToken token = win.mToken;
@@ -2720,8 +2725,8 @@ public class WindowManagerService extends IWindowManager.Stub
                     focusMayChange = true;
                 }
                 if (win.mAttrs.type == TYPE_INPUT_METHOD
-                        && displayContent.mInputMethodWindow == null) {
-                    displayContent.setInputMethodWindowLocked(win);
+                        && displayContent.getImeWindow() == null) {
+                    displayContent.setImeWindow(win);
                     imMayMove = true;
                 }
                 win.adjustStartingWindowFlags();
@@ -3672,6 +3677,21 @@ public class WindowManagerService extends IWindowManager.Stub
             mDispatchedKeyguardLockedState = isKeyguardLocked;
             mFirstKeyguardLockedStateDispatched = true;
         });
+    }
+
+    @VisibleForTesting
+    void dispatchDisplayEngagementModeChanged(
+            int displayId, @EngagementModeFlags int engagementMode) {
+        final int n = mDisplayEngagementModeCallbacks.beginBroadcast();
+        for (int i = 0; i < n; i++) {
+            try {
+                mDisplayEngagementModeCallbacks.getBroadcastItem(i).onEngagementModeChanged(
+                        displayId, engagementMode);
+            } catch (RemoteException e) {
+                // Handled by the RemoteCallbackList.
+            }
+        }
+        mDisplayEngagementModeCallbacks.finishBroadcast();
     }
 
     void dispatchImeOverlayLayeringTargetVisibilityChanged(@Nullable IBinder token,
@@ -6965,8 +6985,8 @@ public class WindowManagerService extends IWindowManager.Stub
             // get the right IME touch region.
             for (int i = mRoot.mChildren.size() - 1; i >= 0; --i) {
                 final DisplayContent displayContent = mRoot.mChildren.get(i);
-                if (displayContent.mInputMethodWindow != null) {
-                    displayContent.mInputMethodWindow.getTouchableRegion(r);
+                if (displayContent.getImeWindow() != null) {
+                    displayContent.getImeWindow().getTouchableRegion(r);
                     return r;
                 }
             }
@@ -7105,7 +7125,7 @@ public class WindowManagerService extends IWindowManager.Stub
             if (topFocusedDisplayContent.mFocusedApp != null) {
                 topFocusedDisplayContent.mFocusedApp.writeNameToProto(proto, FOCUSED_APP);
             }
-            final WindowState imeWindow = mRoot.getCurrentInputMethodWindow();
+            final WindowState imeWindow = mRoot.getCurrentImeWindow();
             if (imeWindow != null) {
                 imeWindow.writeIdentifierToProto(proto, INPUT_METHOD_WINDOW);
             }
@@ -7224,7 +7244,7 @@ public class WindowManagerService extends IWindowManager.Stub
         dumpAccessibilityController(pw, /* force= */ false);
 
         if (dumpAll) {
-            final WindowState imeWindow = mRoot.getCurrentInputMethodWindow();
+            final WindowState imeWindow = mRoot.getCurrentImeWindow();
             if (imeWindow != null) {
                 pw.print("  mInputMethodWindow="); pw.println(imeWindow);
             }
@@ -7697,7 +7717,7 @@ public class WindowManagerService extends IWindowManager.Stub
     public void requestImeKeyboardShortcuts(IResultReceiver receiver, int deviceId) {
         enforceRegisterWindowManagerListenersPermission("requestImeKeyboardShortcuts");
 
-        WindowState imeWindow = mRoot.getCurrentInputMethodWindow();
+        final WindowState imeWindow = mRoot.getCurrentImeWindow();
         if (imeWindow == null || imeWindow.mClient == null) {
             notifyReceiverWithEmptyBundle(receiver);
             return;
@@ -10718,6 +10738,102 @@ public class WindowManagerService extends IWindowManager.Stub
                     true /* traverseTopToBottom */);
             return List.copyOf(notifiedApps);
         }
+    }
+
+    @EnforcePermission(android.Manifest.permission.MANAGE_DISPLAYS)
+    @Override
+    public void setDisplayEngagementMode(int displayId,
+            @EngagementModeFlags int engagementModeFlags) {
+        setDisplayEngagementMode_enforcePermission();
+        if (!Flags.deviceEngagementMode()) {
+            return;
+        }
+
+        synchronized (mGlobalLock) {
+            final DisplayContent dc = mRoot.getDisplayContent(displayId);
+            if (dc == null) {
+                Slog.w(TAG, "Attempted to set engagement mode for non-existent display: "
+                        + displayId);
+                return;
+            }
+            if (dc.getEngagementMode() == engagementModeFlags) {
+                return;
+            }
+            dc.setEngagementMode(engagementModeFlags);
+            mH.post(() -> dispatchDisplayEngagementModeChanged(displayId, engagementModeFlags));
+        }
+    }
+
+    @Override
+    @EngagementModeFlags
+    public int getDisplayEngagementMode(int displayId) {
+        if (!Flags.deviceEngagementMode()) {
+            return DisplayContent.DEFAULT_ENGAGEMENT_MODE;
+        }
+
+        synchronized (mGlobalLock) {
+            final DisplayContent dc = mRoot.getDisplayContent(displayId);
+            if (dc == null) {
+                Slog.w(TAG, "Attempted to get engagement mode for non-existent display: "
+                        + displayId);
+                return DisplayContent.DEFAULT_ENGAGEMENT_MODE;
+            }
+            return dc.getEngagementMode();
+        }
+    }
+
+    @Override
+    public void registerDisplayEngagementModeCallback(IDisplayEngagementModeCallback callback) {
+        mDisplayEngagementModeCallbacks.register(callback);
+
+        // Post the initial state dispatch to avoid a synchronous callback while holding the
+        // global lock, which can lead to deadlocks.
+        mH.post(() -> {
+            // Create a copy of the data to be sent outside the lock.
+            final ArrayMap<Integer, Integer> displayModes = new ArrayMap<>();
+            boolean isRegistered = false;
+
+            synchronized (mGlobalLock) {
+                // See if the callback is still registered before sending the initial state by
+                // checking the snapshot provided by beginBroadcast.
+                final int callbackCount = mDisplayEngagementModeCallbacks.beginBroadcast();
+                try {
+                    for (int i = 0; i < callbackCount; i++) {
+                        if (mDisplayEngagementModeCallbacks.getBroadcastItem(i).equals(callback)) {
+                            isRegistered = true;
+                            break;
+                        }
+                    }
+                } finally {
+                    mDisplayEngagementModeCallbacks.finishBroadcast();
+                }
+
+                if (!isRegistered) {
+                    return;
+                }
+
+                // Call back with the current state for all displays.
+                for (int i = mRoot.getChildCount() - 1; i >= 0; i--) {
+                    final DisplayContent dc = mRoot.getChildAt(i);
+                    displayModes.put(dc.getDisplayId(), dc.getEngagementMode());
+                }
+            }
+
+            // Call back with the current state for all displays.
+            for (int i = 0; i < displayModes.size(); i++) {
+                try {
+                    callback.onEngagementModeChanged(
+                            displayModes.keyAt(i), displayModes.valueAt(i));
+                } catch (RemoteException e) {
+                    // The process is gone, no need to call it.
+                }
+            }
+        });
+    }
+
+    @Override
+    public void unregisterDisplayEngagementModeCallback(IDisplayEngagementModeCallback callback) {
+        mDisplayEngagementModeCallbacks.unregister(callback);
     }
 
     /**

@@ -43,6 +43,7 @@ import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.mediaprojection.appselector.MediaProjectionAppSelectorActivity
 import com.android.systemui.mediaprojection.permission.BaseMediaProjectionPermissionContentManager
 import com.android.systemui.mediaprojection.permission.ENTIRE_SCREEN
+import com.android.systemui.mediaprojection.permission.ENTIRE_SCREEN_EXTERNAL
 import com.android.systemui.mediaprojection.permission.MediaProjectionPermissionUtils.getConnectedDisplays
 import com.android.systemui.mediaprojection.permission.SINGLE_APP
 import com.android.systemui.mediaprojection.permission.ScreenShareMode
@@ -118,7 +119,10 @@ class ScreenRecordPermissionContentManager(
 
     fun startButtonOnClicked() {
         onStartRecordingClicked?.run()
-        if (selectedScreenShareOption.mode == ENTIRE_SCREEN) {
+        if (
+            selectedScreenShareOption.mode == ENTIRE_SCREEN ||
+                selectedScreenShareOption.mode == ENTIRE_SCREEN_EXTERNAL
+        ) {
             requestScreenCapture(
                 captureTarget = null,
                 displayId = selectedScreenShareOption.displayId,
@@ -274,7 +278,12 @@ class ScreenRecordPermissionContentManager(
                     ),
                     ScreenShareOption(
                         ENTIRE_SCREEN,
-                        R.string.screenrecord_permission_dialog_option_text_entire_screen,
+                        if (connectedDisplays.isEmpty()) {
+                            R.string.screenrecord_permission_dialog_option_text_entire_screen
+                        } else {
+                            R.string
+                                .screenrecord_permission_dialog_option_text_entire_screen_for_display
+                        },
                         R.string.screenrecord_permission_dialog_warning_entire_screen,
                         startButtonText =
                             R.string.screenrecord_permission_dialog_continue_entire_screen,
@@ -287,7 +296,7 @@ class ScreenRecordPermissionContentManager(
                 options +=
                     connectedDisplays.map {
                         ScreenShareOption(
-                            ENTIRE_SCREEN,
+                            ENTIRE_SCREEN_EXTERNAL,
                             R.string
                                 .screenrecord_permission_dialog_option_text_entire_screen_for_display,
                             warningText =

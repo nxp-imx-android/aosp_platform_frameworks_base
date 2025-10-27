@@ -22,8 +22,8 @@ import com.android.internal.logging.InstanceId
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.log.LogBuffer
-import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.log.LogcatEchoTracker
+import com.android.systemui.log.impl.LogBufferFactoryImpl
 import com.google.common.truth.Truth.assertThat
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -42,7 +42,7 @@ class MediaTttSenderLoggerTest : SysuiTestCase() {
     @Before
     fun setUp() {
         buffer =
-            LogBufferFactory(DumpManager(), mock(LogcatEchoTracker::class.java))
+            LogBufferFactoryImpl(DumpManager(), mock(LogcatEchoTracker::class.java))
                 .create("buffer", 10)
         logger = MediaTttSenderLogger(buffer)
     }
@@ -98,12 +98,12 @@ class MediaTttSenderLoggerTest : SysuiTestCase() {
                 "123" to
                     Pair(
                         InstanceId.fakeInstanceId(100),
-                        ChipStateSender.ALMOST_CLOSE_TO_START_CAST
+                        ChipStateSender.ALMOST_CLOSE_TO_START_CAST,
                     ),
                 "456" to
                     Pair(
                         InstanceId.fakeInstanceId(200),
-                        ChipStateSender.TRANSFER_TO_THIS_DEVICE_TRIGGERED
+                        ChipStateSender.TRANSFER_TO_THIS_DEVICE_TRIGGERED,
                     ),
             )
 

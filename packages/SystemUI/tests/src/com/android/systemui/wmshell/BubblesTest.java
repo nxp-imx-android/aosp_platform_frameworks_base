@@ -2798,7 +2798,7 @@ public class BubblesTest extends SysuiTestCase {
         SyncExecutor executor = new SyncExecutor();
         return new Bubble(mBubblesManager.notifToBubbleEntry(workEntry),
                 null,
-                mock(Bubbles.PendingIntentCanceledListener.class), executor, executor);
+                mock(Bubbles.PendingIntentCanceledListener.class), executor);
     }
 
     /**

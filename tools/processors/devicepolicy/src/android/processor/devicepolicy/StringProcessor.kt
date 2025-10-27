@@ -27,7 +27,7 @@ import javax.lang.model.type.TypeMirror
  * Since this annotation holds no data and we don't export any type-specific information, this only
  * contains type-specific checks.
  */
-class StringProcessor(processingEnv: ProcessingEnvironment) : Processor<StringPolicyDefinition>(processingEnv) {
+class StringProcessor(processingEnv: ProcessingEnvironment) : PolicyProcessor<StringPolicyDefinition>(processingEnv) {
     private companion object {
         const val SIMPLE_TYPE_STRING = "java.lang.String"
     }

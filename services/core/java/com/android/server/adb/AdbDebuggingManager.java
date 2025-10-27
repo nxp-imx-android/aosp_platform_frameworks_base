@@ -1211,8 +1211,18 @@ public class AdbDebuggingManager {
         private boolean verifyWifiNetwork(String bssid, String ssid) {
             // Check against a list of user-trusted networks.
             if (mAdbKeyStore.isTrustedNetwork(bssid, ssid)) {
+                Slog.d(
+                        TAG,
+                        TextUtils.formatSimple(
+                                "Network {bssid=%s, ssid=%s} is a trusted network", bssid, ssid));
                 return true;
             }
+            Slog.d(
+                    TAG,
+                    TextUtils.formatSimple(
+                            "Network {bssid=%s, ssid=%s} isn't a trusted network, Displaying auth "
+                                    + "prompt",
+                            bssid, ssid));
 
             // Ask user to confirm using wireless debugging on this network.
             startConfirmationForNetwork(ssid, bssid);

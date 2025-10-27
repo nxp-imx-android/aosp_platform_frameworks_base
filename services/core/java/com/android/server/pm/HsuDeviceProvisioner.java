@@ -15,16 +15,26 @@
  */
 package com.android.server.pm;
 
+import android.Manifest;
 import android.annotation.UserIdInt;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.ContentResolver;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.ContentObserver;
 import android.os.Handler;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Log;
 
+import androidx.annotation.RequiresPermission;
+
 import com.android.server.utils.Slogf;
 import com.android.server.utils.TimingsTraceAndSlog;
+
+import java.util.List;
 
 /**
  * Class responsible for device provisioning related activities for when the device boots in
@@ -36,11 +46,22 @@ final class HsuDeviceProvisioner extends ContentObserver {
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
     private final ContentResolver mContentResolver;
+    private final PackageManager mPm;
     private @UserIdInt int mBootUserId = UserHandle.USER_NULL;
 
-    public HsuDeviceProvisioner(Handler handler, ContentResolver contentResolver) {
+    /**
+     * Constructs a new HsuDeviceProvisioner.
+     *
+     * <p>This code runs within the system_server process. The provided {@code context}
+     * is therefore associated with {@link UserHandle#USER_SYSTEM} (user 0).
+     *
+     * <p>Consequently, the {@link PackageManager} obtained via {@code context.getPackageManager()}
+     * will operate with the privileges and scope of the system user.
+     */
+    public HsuDeviceProvisioner(Context context, Handler handler, ContentResolver contentResolver) {
         super(handler);
         mContentResolver = contentResolver;
+        mPm = context.getPackageManager();
     }
 
     /**
@@ -65,9 +86,11 @@ final class HsuDeviceProvisioner extends ContentObserver {
         if (isDeviceProvisioned()) {
             // Set USER_SETUP_COMPLETE for the (headless) system user only when the device
             // has been set up at least once.
-            Slogf.i(TAG, "Marking USER_SETUP_COMPLETE for system user");
+            Slogf.i(TAG,
+                "Marking USER_SETUP_COMPLETE and disabling SUW home activity for system user");
             Settings.Secure.putInt(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 1);
             mContentResolver.unregisterContentObserver(this);
+            disableSetupWizardHomeForSystemUser();
             // Copy settings from the Real user to the system user.
             copySecureSettings();
         }
@@ -111,6 +134,42 @@ final class HsuDeviceProvisioner extends ContentObserver {
                 settingName, settingValue);
         Settings.Secure.putIntForUser(
                 mContentResolver, settingName, settingValue, UserHandle.USER_SYSTEM);
+    }
+
+    @RequiresPermission(Manifest.permission.CHANGE_COMPONENT_ENABLED_STATE)
+    @SuppressWarnings("AndroidFrameworkRequiresPermission")
+    private void disableSetupWizardHomeForSystemUser() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_SETUP_WIZARD);
+
+        int flags = PackageManager.MATCH_SYSTEM_ONLY | PackageManager.MATCH_DIRECT_BOOT_AWARE
+            | PackageManager.MATCH_DIRECT_BOOT_UNAWARE | PackageManager.MATCH_DISABLED_COMPONENTS;
+
+        List<ResolveInfo> matches = mPm.queryIntentActivities(intent, flags);
+
+        if (matches == null || matches.isEmpty()) {
+            Slogf.w(TAG, "Could not find Setup Wizard component for system user");
+            return;
+        }
+
+        ComponentName setupWizardHomeComponent =
+            matches.get(0).getComponentInfo().getComponentName();
+
+        if (setupWizardHomeComponent != null) {
+            Slogf.i(TAG, "Disabling Setup Wizard component for system user: %s",
+                setupWizardHomeComponent.flattenToString());
+
+            try {
+                mPm.setComponentEnabledSetting(setupWizardHomeComponent,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
+                Slogf.i(TAG, "Successfully disabled %s",
+                    setupWizardHomeComponent.flattenToString());
+            }  catch (Exception e) {
+                Slogf.e(TAG, e, "Exception disabling component: %s",
+                    setupWizardHomeComponent.flattenToString());
+            }
+        }
     }
 
     /**

@@ -994,6 +994,8 @@ public class WindowContainerTests extends WindowTestsBase {
         // Add a window and make the activity animating so the removal of activity is deferred.
         newWindowBuilder("win", TYPE_BASE_APPLICATION).setWindowToken(r).build();
         doReturn(true).when(r).isAnimating(anyInt(), anyInt());
+        // Finish WAKE transition (adding task to empty display wakes it up)
+        waitHandlerIdle(mAtm.mH);
 
         displayContent.remove();
         // Ensure that ActivityRecord#onRemovedFromDisplay is called.

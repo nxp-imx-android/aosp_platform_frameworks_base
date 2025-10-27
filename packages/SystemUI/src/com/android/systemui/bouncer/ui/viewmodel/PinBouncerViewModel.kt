@@ -194,6 +194,8 @@ constructor(
     }
 
     fun onBackspaceButtonPressed(view: View?) {
+        onDown()
+
         if (bouncerHapticPlayer?.isEnabled == true) {
             bouncerHapticPlayer.playDeleteKeyPressFeedback()
         } else {

@@ -27,13 +27,15 @@ import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.KeyEventHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
+import com.android.wm.shell.flicker.utils.SplitScreenUtils
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 
 @Ignore("Test Base Class")
-abstract class EnterSplitScreenWithDrag(val rotation: Rotation = Rotation.ROTATION_0) : TestScenarioBase(rotation) {
+abstract class EnterSplitScreenWithDrag(val rotation: Rotation = Rotation.ROTATION_0) :
+    TestScenarioBase(rotation) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
@@ -51,12 +53,15 @@ abstract class EnterSplitScreenWithDrag(val rotation: Rotation = Rotation.ROTATI
 
     @Test
     open fun enterSplitScreenWithDrag() {
-        testApp.dragFromFullscreenToSplit(wmHelper, device, DesktopModeAppHelper.SplitDirection.RIGHT)
+        testApp.dragFromFullscreenToSplit(
+            wmHelper,
+            device,
+            DesktopModeAppHelper.SplitDirection.RIGHT,
+        )
         // Open allApps via keyboard shortcut
         keyEventHelper.press(KEYCODE_META_RIGHT)
-        tapl.allApps
-            .getAppIcon(calculatorApp.appName)
-            .launch(calculatorApp.packageName)
+        tapl.allApps.getAppIcon(calculatorApp.appName).launch(calculatorApp.packageName)
+        SplitScreenUtils.waitForSplitComplete(wmHelper, testApp, calculatorApp)
     }
 
     @After

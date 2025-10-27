@@ -24,6 +24,7 @@ import android.Manifest;
 import android.annotation.Nullable;
 import android.app.AppOpsManager;
 import android.app.PendingIntent;
+import android.chre.flags.Flags;
 import android.compat.Compatibility;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
@@ -283,6 +284,23 @@ public class ContextHubClientBroker extends IContextHubClient.Stub
             }
         };
 
+    private final PendingIntent.CancelListener mCancelListener =
+            intent -> onPendingIntentCanceled();
+
+    @VisibleForTesting
+    void onPendingIntentCanceled() {
+        mIsPendingIntentCancelled.set(true);
+        Log.w(TAG, "PendingIntent has been canceled, unregistering from client (hostEndpointId="
+                + mHostEndPointId + ", packageName=" + mPackage + ")");
+        close();
+    }
+
+    @VisibleForTesting
+    void replacePendingIntentCancelListener(PendingIntent.CancelListener listener) {
+        mPendingIntentRequest.getPendingIntent().removeCancelListener(mCancelListener);
+        mPendingIntentRequest.getPendingIntent().addCancelListener(Runnable::run, listener);
+    }
+
     /*
      * Helper class to manage registered PendingIntent requests from the client.
      */
@@ -351,6 +369,9 @@ public class ContextHubClientBroker extends IContextHubClient.Stub
             mPendingIntentRequest = new PendingIntentRequest();
         } else {
             mPendingIntentRequest = new PendingIntentRequest(pendingIntent, nanoAppId);
+            if (Flags.highNumberHostEndpointFix()) {
+                pendingIntent.addCancelListener(Runnable::run, mCancelListener);
+            }
         }
 
         if (packageName == null) {
@@ -547,6 +568,9 @@ public class ContextHubClientBroker extends IContextHubClient.Stub
     @Override
     public void close() {
         synchronized (this) {
+            if (Flags.highNumberHostEndpointFix() && mPendingIntentRequest.hasPendingIntent()) {
+                mPendingIntentRequest.getPendingIntent().removeCancelListener(mCancelListener);
+            }
             mPendingIntentRequest.clear();
         }
         onClientExit();
@@ -1094,9 +1118,24 @@ public class ContextHubClientBroker extends IContextHubClient.Stub
         info.packageName = mPackage;
         info.attributionTag = mAttributionTag;
         info.type = (mUid == Process.SYSTEM_UID)
-             ? HostEndpointInfo.Type.FRAMEWORK
-             : HostEndpointInfo.Type.APP;
-        mContextHubProxy.onHostEndpointConnected(info);
+                ? HostEndpointInfo.Type.FRAMEWORK
+                : HostEndpointInfo.Type.APP;
+        if (Flags.highNumberHostEndpointFix()) {
+            // Do not call onHostEndpointConnected() if the client is not registered, which can
+            // be a state caused by a race condition between client disconnection and CHRE / HAL
+            // disconnection.
+            // TODO(b/348958054) - Making IPC call while holding the lock is against best
+            //  practice. This should be refactored.
+            synchronized (this) {
+                if (mRegistered) {
+                    mContextHubProxy.onHostEndpointConnected(info);
+                }
+            }
+        } else {
+            mContextHubProxy.onHostEndpointConnected(info);
+        }
+
+
     }
 
     /**

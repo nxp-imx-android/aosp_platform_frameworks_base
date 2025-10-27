@@ -20,8 +20,8 @@ package com.android.app.concurrent.benchmark
 import androidx.benchmark.BlackHole
 import androidx.benchmark.ExperimentalBlackHoleApi
 import com.android.app.concurrent.benchmark.base.BaseSchedulerBenchmark
-import com.android.app.concurrent.benchmark.util.ExecutorThreadBuilder
-import com.android.app.concurrent.benchmark.util.ThreadFactory
+import com.android.app.concurrent.benchmark.util.ExecutorServiceThreadWithExecutorBuilder
+import com.android.app.concurrent.benchmark.util.ThreadBuilder
 import com.android.app.concurrent.benchmark.util.times
 import java.util.concurrent.Executor
 import kotlin.coroutines.CoroutineContext
@@ -61,7 +61,7 @@ private fun wrapDispatcher(executor: Executor): CoroutineDispatcher {
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class CoroutineContextSwitchBenchmark(
-    param: ThreadFactory<Any, Executor>,
+    param: ThreadBuilder<Executor>,
     contextTransformer: ContextTransformParam,
 ) : BaseSchedulerBenchmark<Executor>(param) {
 
@@ -69,7 +69,7 @@ class CoroutineContextSwitchBenchmark(
         @Parameters(name = "{0},{1}")
         @JvmStatic
         fun getDispatchers() =
-            listOf(ExecutorThreadBuilder) *
+            listOf(ExecutorServiceThreadWithExecutorBuilder) *
                 listOf(
                     ContextTransformParam("unwrapped") { _ -> EmptyCoroutineContext },
                     ContextTransformParam("wrapped") { executor -> wrapDispatcher(executor) },

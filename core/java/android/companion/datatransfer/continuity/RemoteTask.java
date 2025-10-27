@@ -36,7 +36,7 @@ import java.util.Objects;
  * @hide
  */
 @SystemApi
-@FlaggedApi(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+@FlaggedApi(android.companion.Flags.FLAG_TASK_CONTINUITY)
 public final class RemoteTask implements Parcelable {
 
     private final int mId;

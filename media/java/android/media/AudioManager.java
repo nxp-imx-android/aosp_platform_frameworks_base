@@ -7484,7 +7484,7 @@ public class AudioManager {
     /**
      * @hide
      * Returns whether CSD is enabled and supported by the current active audio module HAL.
-     * This method will return {@code false) for setups in which CSD as a feature is available
+     * This method will return {@code false} for setups in which CSD as a feature is available
      * (see {@link AudioManager#isCsdAsAFeatureAvailable()}) and not enabled (see
      * {@link AudioManager#isCsdAsAFeatureEnabled()}).
      */

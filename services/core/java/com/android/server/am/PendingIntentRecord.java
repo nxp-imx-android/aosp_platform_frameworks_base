@@ -31,7 +31,6 @@ import static android.os.Process.SYSTEM_UID;
 
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
-import static com.android.window.flags.Flags.balCheckBroadcastWhenDispatched;
 import static com.android.window.flags.Flags.balDontAddBalTokenInSetAllowBgActivityStarts;
 
 import android.annotation.IntDef;
@@ -759,8 +758,7 @@ public final class PendingIntentRecord extends IIntentSender.Stub {
         }
         // temporarily allow receivers and services to open activities from background if the
         // PendingIntent.send() caller was foreground at the time of sendInner() call
-        if ((uid != callingUid || balCheckBroadcastWhenDispatched())
-                && controller.mAtmInternal.isUidForeground(callingUid)) {
+        if (controller.mAtmInternal.isUidForeground(callingUid)) {
             return getBackgroundStartPrivilegesAllowedByCaller(options, callingUid, null);
         }
         return BackgroundStartPrivileges.NONE;

@@ -25,6 +25,8 @@ import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.util.Log;
 
+import com.android.internal.annotations.VisibleForTesting;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Objects;
@@ -35,6 +37,8 @@ import java.util.UUID;
  *
  * Hints may describe some current state of the device or represent an event that may be of use for
  * kicking off an understanding flow.
+ *
+ * Users of this class can use instanceof to determine the type of the hint.
  */
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public abstract class ContextHint {
@@ -54,17 +58,20 @@ public abstract class ContextHint {
     /**
      * Hint type indicating an error when unparceling.
      */
-    public static final int HINT_TYPE_ERROR = -1;
+    static final int HINT_TYPE_ERROR = -1;
 
     /**
      * Hint type for {@link BundleHint}.
+     *
+     * @hide
      */
+    @VisibleForTesting
     public static final int HINT_TYPE_BUNDLE = 1;
 
     /**
      * Hint type for {@link NotificationHint}.
      */
-    public static final int HINT_TYPE_NOTIFICATION = 2;
+    static final int HINT_TYPE_NOTIFICATION = 2;
 
     /**
      * Object returned when there is an unparceling error.
@@ -124,7 +131,7 @@ public abstract class ContextHint {
      * Returns the {@link HintType} of this hint.
      */
     @HintType
-    public abstract int getHintType();
+    abstract int getHintType();
 
     /**
      * Returns the unique ID of this hint.
@@ -150,6 +157,11 @@ public abstract class ContextHint {
         b.putString(KEY_HINT_ID, mId.toString());
         b.putBundle(KEY_HINT_DATA, toBundleImpl());
         return b;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{" + mId + "}";
     }
 
     /**

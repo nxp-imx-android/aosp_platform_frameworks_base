@@ -25,8 +25,12 @@ android_test {
     static_libs: [
         "androidx.test.core",
         "androidx.test.runner",
+        "androidx.test.uiautomator_uiautomator",
         "flag-junit",
         "truth",
+    ],
+    libs: [
+        "error_prone_annotations",
     ],
     host_required: [
         "MultiUserTestsTradefedLibrary",

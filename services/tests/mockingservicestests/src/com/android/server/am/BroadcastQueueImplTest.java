@@ -122,6 +122,7 @@ public final class BroadcastQueueImplTest extends BaseBroadcastQueueTest {
         mConstants.DELAY_URGENT_MILLIS = -120_000;
         mConstants.DELAY_NORMAL_MILLIS = 10_000;
         mConstants.DELAY_CACHED_MILLIS = 120_000;
+        mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID = 10;
 
         mImpl = new BroadcastQueueImpl(mAms, mHandlerThread.getThreadHandler(),
                 mConstants, mConstants, mSkipPolicy, mEmptyHistory);

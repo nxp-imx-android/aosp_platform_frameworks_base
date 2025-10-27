@@ -16,14 +16,15 @@
 
 package android.app.supervision;
 
-import android.annotation.StringDef;
-import android.annotation.NonNull;
 import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+import android.annotation.StringDef;
 import android.annotation.SuppressLint;
 import android.app.supervision.flags.Flags;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.Parcelable.Creator;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -66,6 +67,13 @@ public abstract class Policy implements Parcelable {
      * <p>Default is true.
      */
     private boolean mIsEnabled = true;
+
+    /**
+     * Increments the version of this policy.
+     *
+     * @hide
+     */
+    public final void incrementVersion() { mVersion++; }
 
     /**
      * Retrieves the version of this policy.
@@ -139,6 +147,10 @@ public abstract class Policy implements Parcelable {
         parcel.writeString8(getIdentifier());
         parcel.writeLong(mVersion);
         parcel.writeBoolean(mIsEnabled);
+    }
+
+    public PolicyKey getPolicyKey() {
+        return PolicyKey.builder().setType(getIdentifier()).build();
     }
 
     @NonNull

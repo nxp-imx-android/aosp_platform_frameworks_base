@@ -71,6 +71,9 @@ public enum DesktopExperienceFlags {
     ENABLE_ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS(
             Flags::enableActivityEmbeddingSupportForConnectedDisplays, true,
             Flags.FLAG_ENABLE_ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS),
+    ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS(
+            Flags::enableAddWindowDecorationToAllTasks, false,
+            Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS),
     ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH(
             Flags::applyDeskActivationOnUserSwitch, false,
             Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH),
@@ -163,9 +166,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN),
     ENABLE_DESKTOP_WINDOWING_PIP(Flags::enableDesktopWindowingPip, true,
             Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP),
-    ENABLE_DESKTOP_WINDOWING_PIP_IN_OVERVIEW_BUGFIX(
-            Flags::enableDesktopWindowingPipInOverviewBugfix, false,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP_IN_OVERVIEW_BUGFIX),
     ENABLE_DISPLAY_COMPAT_MODE(Flags::enableDisplayCompatMode, false,
             Flags.FLAG_ENABLE_DISPLAY_COMPAT_MODE),
     ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT(
@@ -279,8 +279,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_RESTRICT_FREEFORM_HIDDEN_SYSTEM_BARS_TO_FILLING_TASKS),
     ENABLE_SEE_THROUGH_TASK_FRAGMENTS(Flags::enableSeeThroughTaskFragments,
             true, Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS),
-    ENABLE_SHRINK_WINDOW_BOUNDS_AFTER_DRAG(Flags::enableShrinkWindowBoundsAfterDrag, false,
-            Flags.FLAG_ENABLE_SHRINK_WINDOW_BOUNDS_AFTER_DRAG),
     ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS(
             Flags::enableSizeCompatModeImprovementsForConnectedDisplays, true,
             Flags.FLAG_ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS),
@@ -322,9 +320,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK),
     FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH(Flags::formFactorBasedDesktopFirstSwitch, true,
             Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH),
-    IGNORE_OVERRIDE_TASK_BOUNDS_IF_INCOMPATIBLE_WITH_DISPLAY(
-            Flags::ignoreOverrideTaskBoundsIfIncompatibleWithDisplay, false,
-            Flags.FLAG_IGNORE_OVERRIDE_TASK_BOUNDS_IF_INCOMPATIBLE_WITH_DISPLAY),
     MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE(
             Flags::moveToNextDisplayShortcutWithProjectedMode, true,
             Flags.FLAG_MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE),

@@ -671,10 +671,9 @@ public final class PlaybackActivityMonitor
 
     protected void dump(PrintWriter pw) {
         // players
-        pw.println("\nPlaybackActivityMonitor dump time: "
-                + DateFormat.getTimeInstance().format(new Date()));
+        pw.println("## PlaybackActivityMonitor");
         synchronized(mPlayerLock) {
-            pw.println("\n  playback listeners:");
+            pw.println("  playback listeners:");
             for (PlayMonitorClient pmc : mClients) {
                 pw.println(" " + pmc);
             }
@@ -726,6 +725,7 @@ public final class PlaybackActivityMonitor
             pw.println("\n");
             // log
             sEventLogger.dump(pw);
+            pw.println();
         }
 
         synchronized (mAllowedCapturePolicies) {
@@ -1562,9 +1562,7 @@ public final class PlaybackActivityMonitor
         }
     }
 
-    static final EventLogger
-            sEventLogger = new EventLogger(100,
-            "playback activity as reported through PlayerBase");
+    static final EventLogger sEventLogger = new EventLogger(100, "### Playback activity");
 
     //==========================================================================================
     // Mute conditional on device connection

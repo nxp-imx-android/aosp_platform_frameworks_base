@@ -88,8 +88,10 @@
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"Agente de confianza no disponible"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"Demasiados intentos con un PIN incorrecto"</string>
     <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"Ya has probado con ese PIN. Prueba con otro."</string>
-    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"Ya has probado con esa contraseña. Prueba con otra."</string>
-    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"Ya has probado con ese patrón. Prueba con otro."</string>
+    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
+    <skip />
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Demasiados intentos con un patrón incorrecto"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Demasiados intentos con una contraseña incorrecta"</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"Demasiados intentos con un PIN incorrecto\nMás información en <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>

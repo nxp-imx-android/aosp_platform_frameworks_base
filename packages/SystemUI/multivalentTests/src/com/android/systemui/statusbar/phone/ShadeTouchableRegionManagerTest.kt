@@ -32,8 +32,8 @@ import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
-import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
+import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
+import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -205,8 +205,9 @@ class ShadeTouchableRegionManagerTest : SysuiTestCase() {
     }
 
     private fun Kosmos.unlockDevice() {
-        fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-            SuccessFingerprintAuthenticationStatus(0, true)
+        kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+            biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
         )
         sceneInteractor.changeScene(Scenes.Gone, "unlock")
         sceneContainerRepository.setTransitionState(flowOf(Idle(Scenes.Gone)))

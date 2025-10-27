@@ -17,6 +17,7 @@
 package com.android.server.contentcapture;
 
 import static android.Manifest.permission.MANAGE_CONTENT_CAPTURE;
+import static android.Manifest.permission.SET_CONTENT_PROTECTION_ALLOWLIST;
 import static android.content.Context.CONTENT_CAPTURE_MANAGER_SERVICE;
 import static android.service.contentcapture.ContentCaptureService.ASSIST_CONTENT_ACTIVITY_START_KEY;
 import static android.service.contentcapture.ContentCaptureService.setClientState;
@@ -35,6 +36,7 @@ import static android.view.contentcapture.ContentCaptureManager.RESULT_CODE_OK;
 import static android.view.contentcapture.ContentCaptureManager.RESULT_CODE_SECURITY_EXCEPTION;
 import static android.view.contentcapture.ContentCaptureManager.RESULT_CODE_TRUE;
 import static android.view.contentcapture.ContentCaptureSession.STATE_DISABLED;
+import static android.view.contentprotection.flags.Flags.setContentProtectionAllowlistEnabled;
 
 import static com.android.internal.util.FrameworkStatsLog.CONTENT_CAPTURE_SERVICE_EVENTS__EVENT__ACCEPT_DATA_SHARE_REQUEST;
 import static com.android.internal.util.FrameworkStatsLog.CONTENT_CAPTURE_SERVICE_EVENTS__EVENT__DATA_SHARE_ERROR_CLIENT_PIPE_FAIL;
@@ -50,6 +52,7 @@ import static com.android.server.wm.ActivityTaskManagerInternal.ASSIST_KEY_CONTE
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.UserIdInt;
 import android.app.ActivityManagerInternal;
 import android.app.ActivityThread;
@@ -154,6 +157,9 @@ public class ContentCaptureManagerService extends
 
     private static final String CONTENT_PROTECTION_GROUP_CONFIG_SEPARATOR_GROUP = ";";
     private static final String CONTENT_PROTECTION_GROUP_CONFIG_SEPARATOR_VALUE = ",";
+
+    // Same separator as in ComponentName, so it's safe for package name.
+    private static final char CALLBACK_COOKIE_SEPARATOR = '/';
 
     // Needed to pass checkstyle_hook as names are too long for one line.
     private static final int EVENT__DATA_SHARE_ERROR_CONCURRENT_REQUEST =
@@ -772,8 +778,8 @@ public class ContentCaptureManagerService extends
     }
 
     void updateOptions(String packageName, ContentCaptureOptions options) {
-        mCallbacks.broadcast((callback, pkg) -> {
-            if (pkg.equals(packageName)) {
+        mCallbacks.broadcast((callback, cookie) -> {
+            if (isCallbackCookieFor(cookie, packageName)) {
                 try {
                     callback.setContentCaptureOptions(options);
                 } catch (RemoteException e) {
@@ -801,7 +807,7 @@ public class ContentCaptureManagerService extends
 
     @GuardedBy("mLock")
     private boolean isCalledByServiceLocked(@NonNull String methodName) {
-        final int userId = UserHandle.getCallingUserId();
+        final int userId = getCallingUserId();
         final int callingUid = Binder.getCallingUid();
         final String serviceName = mServiceNameResolver.getServiceName(userId);
         if (serviceName == null) {
@@ -821,7 +827,7 @@ public class ContentCaptureManagerService extends
         final PackageManager pm = getContext().getPackageManager();
         final int serviceUid;
         try {
-            serviceUid = pm.getPackageUidAsUser(servicePackageName, UserHandle.getCallingUserId());
+            serviceUid = pm.getPackageUidAsUser(servicePackageName, getCallingUserId());
         } catch (NameNotFoundException e) {
             Slog.w(TAG, methodName + ": could not verify UID for " + serviceName);
             return false;
@@ -992,7 +998,7 @@ public class ContentCaptureManagerService extends
     protected ContentCaptureServiceInfo createContentProtectionServiceInfo(
             @NonNull ComponentName componentName) throws PackageManager.NameNotFoundException {
         return new ContentCaptureServiceInfo(
-                getContext(), componentName, /* isTemp= */ false, UserHandle.getCallingUserId());
+                getContext(), componentName, /* isTemp= */ false, getCallingUserId());
     }
 
     /** @hide */
@@ -1028,7 +1034,7 @@ public class ContentCaptureManagerService extends
         return new RemoteContentProtectionService(
                 getContext(),
                 componentName,
-                UserHandle.getCallingUserId(),
+                getCallingUserId(),
                 isBindInstantServiceAllowed(),
                 autoDisconnectTimeoutMs);
     }
@@ -1083,6 +1089,18 @@ public class ContentCaptureManagerService extends
                         && mDevCfgContentProtectionOptionalGroups.isEmpty());
     }
 
+    /**
+     * Use everywhere except in logServiceEvent from DataShareCallbackDelegate which is static. Not
+     * worth changing it at this moment, both are private and unrelated to the tests which need it.
+     *
+     * @hide
+     */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    @UserIdInt
+    protected int getCallingUserId() {
+        return UserHandle.getCallingUserId();
+    }
+
     final class ContentCaptureManagerServiceStub extends IContentCaptureManager.Stub {
 
         @Override
@@ -1091,7 +1109,7 @@ public class ContentCaptureManagerService extends
                 int sessionId, int flags, @NonNull IResultReceiver result) {
             Objects.requireNonNull(activityToken);
             Objects.requireNonNull(shareableActivityToken);
-            final int userId = UserHandle.getCallingUserId();
+            final int userId = getCallingUserId();
 
             final ActivityPresentationInfo activityPresentationInfo = getAmInternal()
                     .getActivityPresentationInfo(activityToken);
@@ -1109,7 +1127,7 @@ public class ContentCaptureManagerService extends
 
         @Override
         public void finishSession(int sessionId) {
-            final int userId = UserHandle.getCallingUserId();
+            final int userId = getCallingUserId();
 
             synchronized (mLock) {
                 final ContentCapturePerUserService service = getServiceForUserLocked(userId);
@@ -1119,7 +1137,7 @@ public class ContentCaptureManagerService extends
 
         @Override
         public void getServiceComponentName(@NonNull IResultReceiver result) {
-            final int userId = UserHandle.getCallingUserId();
+            final int userId = getCallingUserId();
             ComponentName connectedServiceComponentName;
             synchronized (mLock) {
                 final ContentCapturePerUserService service = getServiceForUserLocked(userId);
@@ -1137,7 +1155,7 @@ public class ContentCaptureManagerService extends
             Objects.requireNonNull(request);
             assertCalledByPackageOwner(request.getPackageName());
 
-            final int userId = UserHandle.getCallingUserId();
+            final int userId = getCallingUserId();
             synchronized (mLock) {
                 final ContentCapturePerUserService service = getServiceForUserLocked(userId);
                 service.removeDataLocked(request);
@@ -1152,7 +1170,7 @@ public class ContentCaptureManagerService extends
 
             assertCalledByPackageOwner(request.getPackageName());
 
-            final int userId = UserHandle.getCallingUserId();
+            final int userId = getCallingUserId();
             synchronized (mLock) {
                 final ContentCapturePerUserService service = getServiceForUserLocked(userId);
 
@@ -1186,7 +1204,7 @@ public class ContentCaptureManagerService extends
                     return;
                 }
 
-                final int userId = UserHandle.getCallingUserId();
+                final int userId = getCallingUserId();
                 enabled = !mDisabledByDeviceConfig && !isDisabledBySettingsLocked(userId);
             }
             try {
@@ -1202,7 +1220,7 @@ public class ContentCaptureManagerService extends
                 return;
             }
 
-            final int userId = UserHandle.getCallingUserId();
+            final int userId = getCallingUserId();
             final ComponentName componentName;
             synchronized (mLock) {
                 final ContentCapturePerUserService service = getServiceForUserLocked(userId);
@@ -1223,7 +1241,7 @@ public class ContentCaptureManagerService extends
                 return;
             }
 
-            final int userId = UserHandle.getCallingUserId();
+            final int userId = getCallingUserId();
             final ArrayList<ContentCaptureCondition> conditions;
             synchronized (mLock) {
                 final ContentCapturePerUserService service = getServiceForUserLocked(userId);
@@ -1242,10 +1260,10 @@ public class ContentCaptureManagerService extends
                 IContentCaptureOptionsCallback callback) {
             assertCalledByPackageOwner(packageName);
 
-            mCallbacks.register(callback, packageName);
+            final int userId = getCallingUserId();
+            mCallbacks.register(callback, createCallbackCookie(packageName, userId));
 
             // Set options here in case it was updated before this was registered.
-            final int userId = UserHandle.getCallingUserId();
             final ContentCaptureOptions options = mGlobalContentCaptureOptions.getOptions(userId,
                     packageName);
             if (options != null) {
@@ -1333,6 +1351,89 @@ public class ContentCaptureManagerService extends
                         }
                     });
         }
+
+        @Override
+        @RequiresPermission(android.Manifest.permission.SET_CONTENT_PROTECTION_ALLOWLIST)
+        public void setContentProtectionAllowlist(@NonNull List<String> packageNames) {
+            if (!setContentProtectionAllowlistEnabled()) {
+                throw new UnsupportedOperationException("API not enabled");
+            }
+
+            Context context = getContext();
+            context.enforceCallingPermission(
+                    SET_CONTENT_PROTECTION_ALLOWLIST, "setContentProtectionAllowlist");
+
+            ContentProtectionAllowlistManager allowlistManager;
+            ComponentName serviceComponentName;
+            synchronized (mLock) {
+                allowlistManager = mContentProtectionAllowlistManager;
+                serviceComponentName = mContentProtectionServiceComponentName;
+            }
+            if (allowlistManager == null || serviceComponentName == null) {
+                Slog.w(TAG, "Content protection is disabled");
+                return;
+            }
+
+            PackageManager packageManager = context.getPackageManager();
+            String callerPackageName = packageManager.getNameForUid(Binder.getCallingUid());
+            if (!serviceComponentName.getPackageName().equals(callerPackageName)) {
+                throw new SecurityException("Caller must be content protection service");
+            }
+
+            Set<String> changedPackages =
+                    allowlistManager.setContentProtectionAllowlist(packageNames);
+
+            mCallbacks.broadcast((callback, cookie) -> {
+                String cookieString = (String) cookie;
+                int index = cookieString.indexOf(CALLBACK_COOKIE_SEPARATOR);
+                if (index < 0) {
+                    Slog.w(TAG, "Unable to find cookie separator: " + cookie);
+                    return;
+                }
+                String packageName = cookieString.substring(0, index);
+                if (!changedPackages.contains(packageName)) {
+                    return;
+                }
+
+                int userId;
+                try {
+                    userId = Integer.parseInt(cookieString.substring(index + 1));
+                } catch (NumberFormatException e) {
+                    Slog.w(TAG, "Unable to parse user from cookie: " + e);
+                    return;
+                }
+
+                ContentCaptureOptions options =
+                        mGlobalContentCaptureOptions.getOptions(userId, packageName);
+                try {
+                    // Sending null is safe, see Application and ContextWrapper.
+                    callback.setContentCaptureOptions(options);
+                } catch (RemoteException e) {
+                    Slog.w(TAG, "Unable to send setContentCaptureOptions(): " + e);
+                }
+            });
+        }
+    }
+
+    @NonNull
+    private Object createCallbackCookie(@NonNull String packageName, @UserIdInt int userId) {
+        if (!setContentProtectionAllowlistEnabled()) {
+            return packageName;
+        }
+        return packageName + CALLBACK_COOKIE_SEPARATOR + userId;
+    }
+
+    private boolean isCallbackCookieFor(@NonNull Object cookie, @NonNull String packageName) {
+        if (!setContentProtectionAllowlistEnabled()) {
+            return cookie.equals(packageName);
+        }
+        String cookieString = (String) cookie;
+        int index = cookieString.indexOf(CALLBACK_COOKIE_SEPARATOR);
+        if (index < 0) {
+            return cookie.equals(packageName);
+        }
+        // Content capture did not check the user before, so keep it consistent.
+        return cookieString.substring(0, index).equals(packageName);
     }
 
     private final class LocalService extends ContentCaptureManagerInternal {
@@ -1482,6 +1583,18 @@ public class ContentCaptureManagerService extends
             if (!isContentCaptureReceiverEnabled
                     && !isContentProtectionReceiverEnabled
                     && whitelistedComponents == null) {
+
+                // Allow content protection service to access itself in lite mode.
+                if (setContentProtectionAllowlistEnabled()) {
+                    synchronized (mLock) {
+                        if (mContentProtectionServiceComponentName != null
+                                && packageName.equals(
+                                        mContentProtectionServiceComponentName.getPackageName())) {
+                            return new ContentCaptureOptions(mDevCfgLoggingLevel);
+                        }
+                    }
+                }
+
                 // No can do!
                 if (verbose) {
                     Slog.v(TAG, "getOptionsForPackage(" + packageName + "): not whitelisted");

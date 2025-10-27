@@ -21,8 +21,10 @@ import static android.os.VibrationEffect.Composition.DELAY_TYPE_RELATIVE_START_O
 
 import android.os.VibrationEffect.Composition.DelayType;
 import android.os.VibratorInfo;
+import android.os.vibrator.BasicPwleSegment;
 import android.os.vibrator.Flags;
 import android.os.vibrator.PrimitiveSegment;
+import android.os.vibrator.PwleSegment;
 import android.os.vibrator.VibrationEffectSegment;
 
 import java.util.List;
@@ -57,7 +59,7 @@ final class PrimitiveDelayAdapter implements VibrationSegmentsAdapter {
             if (!(segment instanceof PrimitiveSegment primitive)
                     || (primitive.getDelayType() == DELAY_TYPE_PAUSE)) {
                 // Effect will play normally, keep track of its start offset.
-                previousStartOffset = -calculateEffectDuration(info, segment);
+                previousStartOffset = -calculateEffectDuration(info, segment, previousStartOffset);
                 continue;
             }
 
@@ -65,7 +67,8 @@ final class PrimitiveDelayAdapter implements VibrationSegmentsAdapter {
             if (pause >= 0) {
                 segments.set(i, toPrimitiveWithPause(primitive, pause));
                 // Delay will be ignored from this calculation.
-                previousStartOffset = -calculateEffectDuration(info, primitive);
+                previousStartOffset = -calculateEffectDuration(
+                        info, primitive, previousStartOffset);
             } else {
                 // Primitive overlapping with previous segment, ignore it.
                 segments.remove(i);
@@ -95,7 +98,19 @@ final class PrimitiveDelayAdapter implements VibrationSegmentsAdapter {
         return primitive.getDelay();
     }
 
-    private static int calculateEffectDuration(VibratorInfo info, VibrationEffectSegment segment) {
+    private static boolean isIntermediatePwleSegment(
+            VibrationEffectSegment segment) {
+        if (segment instanceof PwleSegment pwleSegment) {
+            return !pwleSegment.isFirstSegmentOfEnvelope();
+        }
+        if (segment instanceof BasicPwleSegment basicPwleSegment) {
+            return !basicPwleSegment.isFirstSegmentOfEnvelope();
+        }
+        return false;
+    }
+
+    private static int calculateEffectDuration(VibratorInfo info, VibrationEffectSegment segment,
+            int previousStartOffset) {
         long segmentDuration = segment.getDuration(info);
         if (segmentDuration < 0) {
             // Duration unknown, default to zero.
@@ -105,6 +120,10 @@ final class PrimitiveDelayAdapter implements VibrationSegmentsAdapter {
         if (segment instanceof PrimitiveSegment primitive) {
             // Ignore primitive delays from effect duration.
             effectDuration -= primitive.getDelay();
+        } else if (Flags.compositionPwleApis() && isIntermediatePwleSegment(segment)) {
+            // Include the previous start offset in the effect duration for intermediate PWLE
+            // segments.
+            effectDuration -= previousStartOffset;
         }
         return effectDuration;
     }

@@ -132,11 +132,7 @@ class ScreenRecordingServiceNotificationInteractor(
 
         val viewIntent =
             if (ScreenCaptureRecordFeaturesInteractor.isNewScreenRecordToolbarEnabled) {
-                SmallScreenPostRecordingActivity.getStartingIntent(
-                    context = context,
-                    videoUri = savedRecording.uri,
-                    shouldShowVideoSaved = true,
-                )
+                SmallScreenPostRecordingActivity.showRecording(context, savedRecording.uri)
             } else {
                 Intent(Intent.ACTION_VIEW)
                     .setFlags(
@@ -154,6 +150,7 @@ class ScreenRecordingServiceNotificationInteractor(
                         REQUEST_CODE,
                         Intent.createChooser(
                             Intent(Intent.ACTION_SEND)
+                                .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                 .putExtra(Intent.EXTRA_STREAM, savedRecording.uri)
                                 .setDataAndType(savedRecording.uri, MimeTypes.VIDEO_MP4),
                             context.getString(R.string.screenrecord_share_label),

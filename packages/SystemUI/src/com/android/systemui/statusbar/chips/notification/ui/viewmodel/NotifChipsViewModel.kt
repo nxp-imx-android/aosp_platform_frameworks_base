@@ -34,13 +34,12 @@ import com.android.systemui.statusbar.chips.notification.domain.model.Notificati
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createNotificationToggleClickBehavior
-import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createNotificationToggleClickListenerLegacy
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.isShowingHeadsUpFromChipTap
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.domain.model.TopPinnedState
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Metric
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -84,7 +83,10 @@ constructor(
         // Chips are never shown when locked, so it's safe to use the version with sensitive content
         val content = promotedContent.privateVersion
 
-        val time =
+        val firstMetricValue = content.metrics?.firstOrNull()
+        val textFromMetric = (firstMetricValue as? Metric.Text)?.metricValue?.toString()
+        val timeFromMetric = (firstMetricValue as? Metric.TimeDifference)?.toWhen()
+        val timeFromWhen =
             when (val rawTime = content.time) {
                 null -> null
                 is PromotedNotificationContentModel.When.Time -> {
@@ -107,18 +109,63 @@ constructor(
                 }
                 is PromotedNotificationContentModel.When.Chronometer -> rawTime
             }
+
+        val chipText = content.shortCriticalText ?: textFromMetric
+        val chipTime = timeFromMetric ?: timeFromWhen
+
         return PrunedNotificationChipModel(
             key = key,
             packageName = packageName,
             appName = appName,
             statusBarChipIconView = statusBarChipIconView,
-            text = content.shortCriticalText,
-            time = time,
+            text = chipText,
+            time = chipTime,
             wasPromotedAutomatically = content.wasPromotedAutomatically,
             isAppVisible = isAppVisible,
             instanceId = instanceId,
         )
     }
+
+    private fun PromotedNotificationContentModel.Metric.TimeDifference.toWhen():
+        PromotedNotificationContentModel.When? =
+        when (this) {
+            is Metric.TimeDifference.Paused ->
+                // paused timers will need to be supported in the UI layer,
+                // but it's also fine for now to just decide not to show anything
+                null
+            is Metric.TimeDifference.Instant ->
+                if (useAdaptiveFormat) {
+                    PromotedNotificationContentModel.When.Time(
+                        currentTimeMillis = zeroTime.toEpochMilli()
+                    )
+                } else {
+                    PromotedNotificationContentModel.When.Chronometer(
+                        elapsedRealtimeMillis =
+                            systemClock.toElapsedRealtime(fromSystemTime = zeroTime.toEpochMilli()),
+                        isCountDown = isTimer,
+                    )
+                }
+            is Metric.TimeDifference.ElapsedRealtime ->
+                if (useAdaptiveFormat) {
+                    PromotedNotificationContentModel.When.Time(
+                        currentTimeMillis =
+                            systemClock.toSystemTime(fromElapsedRealtime = zeroElapsedRealtime)
+                    )
+                } else {
+                    PromotedNotificationContentModel.When.Chronometer(
+                        elapsedRealtimeMillis = zeroElapsedRealtime,
+                        isCountDown = isTimer,
+                    )
+                }
+        }
+
+    /** Converts a system time (epoch millis) to elapsed realtime. */
+    private fun SystemClock.toElapsedRealtime(fromSystemTime: Long): Long =
+        fromSystemTime + (elapsedRealtime() - currentTimeMillis())
+
+    /** Converts an elapsed realtime to a system time (epoch millis). */
+    private fun SystemClock.toSystemTime(fromElapsedRealtime: Long): Long =
+        fromElapsedRealtime + (currentTimeMillis() - elapsedRealtime())
 
     /**
      * A flow modeling the current notification chips. Emits an empty list if there are no
@@ -137,8 +184,6 @@ constructor(
     private fun PrunedNotificationChipModel.toActivityChipModel(
         headsUpState: TopPinnedState
     ): OngoingActivityChipModel.Active {
-        PromotedNotificationUi.unsafeAssertInNewMode()
-
         val contentDescription = getContentDescription(this.appName)
         val icon =
             if (this.statusBarChipIconView != null) {
@@ -161,13 +206,6 @@ constructor(
         val isHidden = this.isAppVisible
 
         val isShowingHeadsUpFromChipTap = headsUpState.isShowingHeadsUpFromChipTap(this.key)
-        val onClickListenerLegacy =
-            createNotificationToggleClickListenerLegacy(
-                applicationScope = applicationScope,
-                notifChipsInteractor = notifChipsInteractor,
-                logger = logger,
-                notificationKey = this.key,
-            )
         val clickBehavior =
             createNotificationToggleClickBehavior(
                 applicationScope = applicationScope,
@@ -220,7 +258,6 @@ constructor(
             icon = icon,
             content = content,
             colors = colors,
-            onClickListenerLegacy = onClickListenerLegacy,
             clickBehavior = clickBehavior,
             isHidden = isHidden,
             instanceId = instanceId,

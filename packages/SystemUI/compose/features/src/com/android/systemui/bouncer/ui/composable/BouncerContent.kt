@@ -147,7 +147,7 @@ fun ContentScope.BouncerContent(
         val currentTransition = layoutState.currentTransition
         return currentTransition != null &&
             currentTransition.isTransitioning(to = Overlays.Bouncer) &&
-            currentTransition.gestureContext != null
+            currentTransition.isInitiatedByUserInput
     }
 
     // Custom handle the BouncerContent toBouncer transition here.

@@ -41,6 +41,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
@@ -78,6 +79,8 @@ import android.os.IBinder;
 import android.os.PowerExemptionManager;
 import android.os.SystemClock;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.util.ArrayMap;
 import android.util.Log;
@@ -86,6 +89,8 @@ import android.util.proto.ProtoOutputStream;
 
 import androidx.test.filters.MediumTest;
 import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.android.dx.mockito.inline.extended.ExtendedMockito;
 
 import org.junit.After;
 import org.junit.Before;
@@ -250,6 +255,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
         mConstants.PENDING_COLD_START_CHECK_INTERVAL_MILLIS = 500;
         mConstants.MAX_FROZEN_OUTGOING_BROADCASTS = 10;
         mConstants.PENDING_COLD_START_ABANDON_TIMEOUT_MILLIS = 2000;
+        mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID = 100;
     }
 
     @After
@@ -2544,6 +2550,108 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
                 .isGreaterThan(getReceiverScheduledTime(prioritizedRecord, receiverBlue));
     }
 
+    @EnableFlags(Flags.FLAG_LIMIT_PENDING_BROADCASTS_PER_SENDER_UID)
+    @Test
+    public void testEnqueueBroadcast_killAppWithTooManyEnqueuedBroadcasts() throws Exception {
+        final ProcessRecord callerApp = new ActiveProcBuilder(PACKAGE_GREEN).build();
+        ExtendedMockito.doNothing().when(callerApp).killLocked(anyString(),
+                anyInt(), anyInt(), anyBoolean());
+        final ArrayList<BroadcastRecord> enqueuedBroadcasts = new ArrayList();
+        for (int i = 0; i <= mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID; ++i) {
+            final BroadcastRecord timeTickRecord = new BroadcastRecordBuilder()
+                    .setIntentAction(Intent.ACTION_TIME_TICK)
+                    .setReceivers(List.of(makeManifestReceiver(PACKAGE_RED, CLASS_RED)))
+                    .setCallerApp(callerApp)
+                    .setCallingUid(callerApp.uid)
+                    .setCallerPackage(callerApp.info.packageName)
+                    .build();
+            timeTickRecord.enqueueTime = SystemClock.uptimeMillis();
+            enqueueBroadcast(timeTickRecord);
+            enqueuedBroadcasts.add(timeTickRecord);
+        }
+        waitForIdle();
+        verify(callerApp).killLocked(anyString(),
+                eq(ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE),
+                eq(ApplicationExitInfo.SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT),
+                anyBoolean());
+        // Verify that broadcasts have been dropped
+        verify(mAms, times(0)).startProcessLocked(eq(PACKAGE_RED), any(), anyBoolean(), anyInt(),
+                any(), anyInt(), anyBoolean(), anyBoolean());
+        assertNull(mAms.getProcessRecordLocked(PACKAGE_RED, getUidForPackage(PACKAGE_RED)));
+        // Skip checking the state for the very last broadcast as it wouldn't be enqueued.
+        for (int i = 0; i < enqueuedBroadcasts.size() - 1; ++i) {
+            final BroadcastRecord record = enqueuedBroadcasts.get(i);
+            assertEquals("Broadcast should have been skipped #" + i + ": " + record,
+                    BroadcastRecord.DELIVERY_SKIPPED,
+                    record.getDeliveryState(0));
+        }
+    }
+
+    @DisableFlags(Flags.FLAG_LIMIT_PENDING_BROADCASTS_PER_SENDER_UID)
+    @Test
+    public void testEnqueueBroadcast_killAppWithTooManyEnqueuedBroadcasts_flagDisabled()
+            throws Exception {
+        mConstants.EXCESSIVE_PENDING_BROADCASTS =
+                mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID * 2;
+        final ProcessRecord callerApp = new ActiveProcBuilder(PACKAGE_GREEN).build();
+        ExtendedMockito.doNothing().when(callerApp).killLocked(anyString(),
+                anyInt(), anyInt(), anyBoolean());
+        final Intent timeTick = new Intent(Intent.ACTION_TIME_TICK);
+        for (int i = 0; i <= mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID; ++i) {
+            final BroadcastRecord timeTickRecord = new BroadcastRecordBuilder()
+                    .setIntent(timeTick)
+                    .setReceivers(List.of(makeManifestReceiver(PACKAGE_RED, CLASS_RED)))
+                    .setCallerApp(callerApp)
+                    .setCallingUid(callerApp.uid)
+                    .setCallerPackage(callerApp.info.packageName)
+                    .build();
+            timeTickRecord.enqueueTime = SystemClock.uptimeMillis();
+            enqueueBroadcast(timeTickRecord);
+        }
+        waitForIdle();
+        verify(callerApp, times(0)).killLocked(anyString(),
+                anyInt(),
+                anyInt(),
+                anyBoolean());
+        final ProcessRecord receiverRedApp = mAms.getProcessRecordLocked(PACKAGE_RED,
+                getUidForPackage(PACKAGE_RED));
+        assertNotNull(receiverRedApp);
+        verifyScheduleReceiver(times(mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID + 1),
+                receiverRedApp, timeTick);
+    }
+
+    @Test
+    public void testEnqueueBroadcast_doNotKillCoreUidWithTooManyEnqueuedBroadcast()
+            throws Exception {
+        mConstants.EXCESSIVE_PENDING_BROADCASTS =
+                mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID * 2;
+        final ProcessRecord systemCallerApp = new ActiveProcBuilder(PACKAGE_ANDROID).build();
+        ExtendedMockito.doNothing().when(systemCallerApp).killLocked(anyString(),
+                anyInt(), anyInt(), anyBoolean());
+        final Intent timeTick = new Intent(Intent.ACTION_TIME_TICK);
+        for (int i = 0; i <= mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID; ++i) {
+            final BroadcastRecord timeTickRecord = new BroadcastRecordBuilder()
+                    .setIntent(timeTick)
+                    .setReceivers(List.of(makeManifestReceiver(PACKAGE_RED, CLASS_RED)))
+                    .setCallerApp(systemCallerApp)
+                    .setCallingUid(systemCallerApp.uid)
+                    .setCallerPackage(systemCallerApp.info.packageName)
+                    .build();
+            timeTickRecord.enqueueTime = SystemClock.uptimeMillis();
+            enqueueBroadcast(timeTickRecord);
+        }
+        waitForIdle();
+        verify(systemCallerApp, times(0)).killLocked(anyString(),
+                anyInt(),
+                anyInt(),
+                anyBoolean());
+        final ProcessRecord receiverRedApp = mAms.getProcessRecordLocked(PACKAGE_RED,
+                getUidForPackage(PACKAGE_RED));
+        assertNotNull(receiverRedApp);
+        verifyScheduleReceiver(times(mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID + 1),
+                receiverRedApp, timeTick);
+    }
+
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_DEFER_OUTGOING_BROADCASTS)
     public void testDeferOutgoingBroadcasts() throws Exception {
@@ -2627,5 +2735,74 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
         }
         fail(receiver + "not found in " + r);
         return -1;
+    }
+
+    @Test
+    public void testSkipReceiver_getReceiverIntentReturnsNull_coldStart() throws Exception {
+        // Scenario: A broadcast is sent to a receiver in a non-running process (cold start).
+        // BroadcastRecord.getReceiverIntent() is mocked to return null.
+
+        // Create a broadcast record with a manifest receiver.
+        final Intent intent = new Intent(Intent.ACTION_TIME_TICK);
+        final Object receiver = makeManifestReceiver(PACKAGE_GREEN, CLASS_GREEN);
+        final ProcessRecord app = new ActiveProcBuilder(PACKAGE_ORANGE).build();
+        final BroadcastRecord record = makeBroadcastRecord(intent, app, List.of(receiver));
+
+        // Spy on the record to mock getReceiverIntent().
+        final BroadcastRecord recordSpy = spy(record);
+        doReturn(null).when(recordSpy).getReceiverIntent(eq(receiver));
+
+        // Verify that the process is not running initially for a cold start scenario.
+        assertNull(mAms.getProcessRecordLocked(PACKAGE_GREEN, getUidForPackage(PACKAGE_GREEN)));
+
+        // Enqueue the broadcast.
+        mQueue.enqueueBroadcastLocked(recordSpy);
+
+        // Let the queue process the broadcast.
+        waitForIdle();
+
+        // Verification: The receiver should be skipped because getReceiverIntent() returned null.
+        // The delivery state should be DELIVERY_SKIPPED.
+        assertEquals("Receiver should be skipped when getReceiverIntent is null",
+                BroadcastRecord.DELIVERY_SKIPPED, recordSpy.getDeliveryState(0));
+
+        // We can also verify that startProcessLocked was not called, as skipping happens before
+        // that.
+        verify(mAms, times(0)).startProcessLocked(eq(PACKAGE_GREEN), any(), anyBoolean(), anyInt(),
+                any(), anyInt(), anyBoolean(), anyBoolean());
+    }
+
+    @Test
+    public void testSkipReceiver_getReceiverIntentReturnsNull_warmStart() throws Exception {
+        // Scenario: A broadcast is sent to a receiver in a running process (warm start).
+        // BroadcastRecord.getReceiverIntent() is mocked to return null.
+
+        // Ensure the process is running for a warm start scenario.
+        final ProcessRecord app = new ActiveProcBuilder(PACKAGE_GREEN).build();
+        final IApplicationThread thread = app.getThread();
+
+        // Create a broadcast record with a manifest receiver.
+        final Intent intent = new Intent(Intent.ACTION_TIME_TICK);
+        final Object receiver = makeManifestReceiver(PACKAGE_GREEN, CLASS_GREEN);
+        final BroadcastRecord record = makeBroadcastRecord(intent, app, List.of(receiver));
+
+        // Spy on the record to mock getReceiverIntent().
+        final BroadcastRecord recordSpy = spy(record);
+        doReturn(null).when(recordSpy).getReceiverIntent(eq(receiver));
+
+        // Enqueue the broadcast.
+        enqueueBroadcast(recordSpy);
+
+        // Let the queue process the broadcast.
+        waitForIdle();
+
+        // Verification: The receiver should be skipped because getReceiverIntent() returned null.
+        // The delivery state should be DELIVERY_SKIPPED.
+        assertEquals("Receiver should be skipped when getReceiverIntent is null",
+                BroadcastRecord.DELIVERY_SKIPPED, recordSpy.getDeliveryState(0));
+
+        // We can also verify that the receiver was not scheduled on the app thread.
+        verify(thread, times(0)).scheduleReceiver(any(), any(), any(), anyInt(),
+                any(), any(), anyBoolean(), anyBoolean(), anyInt(), anyInt(), anyInt(), any());
     }
 }

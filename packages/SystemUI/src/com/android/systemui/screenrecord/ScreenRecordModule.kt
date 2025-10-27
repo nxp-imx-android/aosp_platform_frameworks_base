@@ -41,6 +41,7 @@ import com.android.systemui.qs.tiles.impl.screenrecord.domain.interactor.ScreenR
 import com.android.systemui.qs.tiles.impl.screenrecord.domain.interactor.ScreenRecordTileUserActionInteractor
 import com.android.systemui.qs.tiles.impl.screenrecord.domain.ui.mapper.ScreenRecordTileMapper
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.LegacyScreenRecordingStartStopRepository
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepository
@@ -59,8 +60,6 @@ import java.util.concurrent.Executor
 
 @Module
 interface ScreenRecordModule {
-
-    @Binds fun bindScreenRecordRepository(impl: ScreenRecordRepositoryImpl): ScreenRecordRepository
 
     /** Inject ScreenRecordTile into tileMap in QSModule */
     @Binds
@@ -175,6 +174,19 @@ interface ScreenRecordModule {
         @RecordingControllerLog
         fun provideRecordingControllerLogBuffer(factory: LogBufferFactory): LogBuffer {
             return factory.create("RecordingControllerLog", 50)
+        }
+
+        @Provides
+        fun provideScreenRecordRepository(
+            serviceRepository: Lazy<ScreenRecordingServiceRepository>,
+            impl: Lazy<ScreenRecordRepositoryImpl>,
+        ): ScreenRecordRepository {
+            return if (ScreenCaptureRecordFeaturesInteractor.isNewScreenRecordToolbarEnabled) {
+                    serviceRepository
+                } else {
+                    impl
+                }
+                .get()
         }
     }
 }

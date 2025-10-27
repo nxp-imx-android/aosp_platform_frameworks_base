@@ -28,6 +28,7 @@ import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Region;
 import android.os.Build;
+import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.SystemClock;
@@ -242,6 +243,8 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
 
     private EventStreamState mKeyboardStreamState;
 
+    private final Handler mHandler;
+
     /**
      * The last MotionEvent emitted from the input device that's currently active. This is used to
      * keep track of which input device is currently active, and also to generate the cancel event
@@ -303,19 +306,27 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
 
     AccessibilityInputFilter(Context context, AccessibilityManagerService service) {
         this(context, service, new SparseArray<>(0), new SparseArray<>(0),
-                context.getMainLooper());
+                new Handler(context.getMainLooper()));
     }
 
     AccessibilityInputFilter(Context context, AccessibilityManagerService service,
             SparseArray<EventStreamTransformation> eventHandler,
             SparseArray<MagnificationGestureHandler> magnificationGestureHandler,
             Looper looper) {
-        super(looper);
+        this(context, service, eventHandler, magnificationGestureHandler, new Handler(looper));
+    }
+
+    AccessibilityInputFilter(Context context, AccessibilityManagerService service,
+            SparseArray<EventStreamTransformation> eventHandler,
+            SparseArray<MagnificationGestureHandler> magnificationGestureHandler,
+            Handler handler) {
+        super(handler.getLooper());
         mContext = context;
         mAms = service;
         mPm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         mEventHandler = eventHandler;
         mMagnificationGestureHandler = magnificationGestureHandler;
+        mHandler = handler;
         // Enable debugger only for debug builds or when debug logging is active.
         mInputDebugger = (DEBUG || Build.isDebuggable())
                 ? new AccessibilityInputDebugger()
@@ -796,8 +807,14 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
         if ((mEnabledFeatures & FLAG_FEATURE_FILTER_KEY_EVENTS) != 0) {
             // mKeyboardInterceptor does not forward KeyEvents to other EventStreamTransformations,
             // so it must be the last EventStreamTransformation for key events in the list.
-            mKeyboardInterceptor = new KeyboardInterceptor(mAms,
-                    LocalServices.getService(InputManagerInternal.class));
+            // The KeyboardInterceptor constructor that takes a Handler is for testing.
+            if (mHandler.getLooper() == Looper.getMainLooper()) {
+                mKeyboardInterceptor = new KeyboardInterceptor(mAms,
+                        LocalServices.getService(InputManagerInternal.class));
+            } else {
+                mKeyboardInterceptor = new KeyboardInterceptor(mAms,
+                        LocalServices.getService(InputManagerInternal.class), mHandler);
+            }
             // Since the display id of KeyEvent always would be -1 and it would be dispatched to
             // the display with input focus directly, we only need one KeyboardInterceptor for
             // default display.
@@ -1041,8 +1058,11 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
             mFullScreenMagnificationPointerMotionEventFilter = null;
         }
 
-        inputManager.registerAccessibilityPointerMotionFilter(
-                mFullScreenMagnificationPointerMotionEventFilter);
+        // Invoke the input manager without holding the accessibility lock
+        // (`AccessibilityManagerService#mLock`) to avoid a potential deadlock since the input stack
+        // also invokes `AccessibilityPointerMotionFilter` APIs while holding the input lock.
+        mHandler.post(() -> inputManager.registerAccessibilityPointerMotionFilter(
+                mFullScreenMagnificationPointerMotionEventFilter));
     }
 
     private MagnificationGestureHandler createMagnificationGestureHandler(

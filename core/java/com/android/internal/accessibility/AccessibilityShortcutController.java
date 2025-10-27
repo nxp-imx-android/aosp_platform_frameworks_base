@@ -766,8 +766,7 @@ public class AccessibilityShortcutController {
          * @return True if the accessibility service is enabled, false otherwise.
          */
         public boolean activateShortcut(Context context, int userId) {
-            if (com.android.server.display.feature.flags.Flags.evenDimmer()
-                    && context.getResources().getBoolean(
+            if (context.getResources().getBoolean(
                     com.android.internal.R.bool.config_evenDimmerEnabled)) {
                 launchExtraDimDialog(context);
                 return true;

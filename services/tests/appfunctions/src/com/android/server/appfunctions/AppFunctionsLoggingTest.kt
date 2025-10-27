@@ -91,6 +91,7 @@ class AppFunctionsLoggingTest {
             ) { _ ->
                 mock()
             },
+            mock<MultiUserDynamicAppFunctionRegistry>(),
             MoreExecutors.directExecutor(),
         )
 

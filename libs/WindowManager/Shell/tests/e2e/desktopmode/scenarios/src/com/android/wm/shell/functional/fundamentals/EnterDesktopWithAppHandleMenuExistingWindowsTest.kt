@@ -28,4 +28,5 @@ import org.junit.runners.BlockJUnit4ClassRunner
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class EnterDesktopWithAppHandleMenuExistingWindowsTest : EnterDesktopWithAppHandleMenuExistingWindows()
+class EnterDesktopWithAppHandleMenuExistingWindowsTest :
+    EnterDesktopWithAppHandleMenuExistingWindows()

@@ -25,10 +25,10 @@ import com.android.app.concurrent.benchmark.event.FlowWritableEventBuilder
 import com.android.app.concurrent.benchmark.event.SimpleEvent
 import com.android.app.concurrent.benchmark.event.SimpleWritableEventBuilder
 import com.android.app.concurrent.benchmark.event.WritableEventFactory
-import com.android.app.concurrent.benchmark.util.ThreadFactory
-import com.android.app.concurrent.benchmark.util.UnconfinedExecutorThreadScopeBuilder
-import com.android.app.concurrent.benchmark.util.UnconfinedThreadBuilder
-import com.android.app.concurrent.benchmark.util.UnsafeImmediateThreadScopeBuilder
+import com.android.app.concurrent.benchmark.util.NoThreadWithDirectImmediateDispatcherBuilder
+import com.android.app.concurrent.benchmark.util.NoThreadWithDirectImmediateExecutorBuilder
+import com.android.app.concurrent.benchmark.util.NoThreadWithUnconfinedDispatcherBuilder
+import com.android.app.concurrent.benchmark.util.ThreadBuilder
 import com.android.app.concurrent.benchmark.util.times
 import java.util.concurrent.Executor
 import kotlinx.coroutines.CoroutineScope
@@ -104,7 +104,7 @@ private sealed interface UnconfinedEventBenchmark<T, E : Any>
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class SimpleUnconfinedEventBenchmark(
-    threadParam: ThreadFactory<Any, Executor>,
+    threadParam: ThreadBuilder<Executor>,
     override val producerCount: Int,
     override val consumerCount: Int,
 ) :
@@ -114,14 +114,15 @@ class SimpleUnconfinedEventBenchmark(
     companion object {
         @Parameters(name = "{0},{1},{2}")
         @JvmStatic
-        fun getDispatchers() = listOf(UnconfinedThreadBuilder) * PRODUCER_LIST * CONSUMER_LIST
+        fun getDispatchers() =
+            listOf(NoThreadWithDirectImmediateExecutorBuilder) * PRODUCER_LIST * CONSUMER_LIST
     }
 }
 
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class FlowUnconfinedEventBenchmark(
-    threadParam: ThreadFactory<Any, CoroutineScope>,
+    threadParam: ThreadBuilder<CoroutineScope>,
     override val producerCount: Int,
     override val consumerCount: Int,
 ) :
@@ -132,8 +133,9 @@ class FlowUnconfinedEventBenchmark(
         @Parameters(name = "{0},{1},{2}")
         @JvmStatic
         fun getDispatchers() =
-            listOf(UnconfinedExecutorThreadScopeBuilder, UnsafeImmediateThreadScopeBuilder) *
-                PRODUCER_LIST *
-                CONSUMER_LIST
+            listOf(
+                NoThreadWithUnconfinedDispatcherBuilder,
+                NoThreadWithDirectImmediateDispatcherBuilder,
+            ) * PRODUCER_LIST * CONSUMER_LIST
     }
 }

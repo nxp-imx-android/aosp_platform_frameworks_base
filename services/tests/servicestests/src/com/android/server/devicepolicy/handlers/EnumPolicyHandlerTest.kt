@@ -1,0 +1,161 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.server.devicepolicy.handlers
+
+import android.app.admin.DevicePolicyManager.NOT_A_DPC
+import android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE
+import android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER
+import android.app.admin.DevicePolicyManager.RESOURCE_PER_USER
+import android.app.admin.IntegerPolicyValue
+import android.app.admin.NoArgsPolicyKey
+import android.app.admin.PolicyIdentifier
+import android.app.admin.PolicyValueTransport
+import android.app.admin.metadata.EnumPolicyMetadata
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.server.devicepolicy.IPermissionChecker
+import com.android.server.devicepolicy.IntegerPolicySerializer
+import com.android.server.devicepolicy.MostRecent
+import com.android.server.devicepolicy.PolicyDefinition
+import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertFailsWith
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+
+@RunWith(AndroidJUnit4::class)
+class EnumPolicyHandlerTest {
+
+    val mockDelegate: PolicyHandler.Delegate =
+        mock<PolicyHandler.Delegate> {
+            on { getDpcType(any()) } doReturn NOT_A_DPC
+            on { getPermissionChecker() } doReturn mock<IPermissionChecker>()
+        }
+
+    // A sample enum policy that can be used in the tests.
+    object Policy {
+        val name = "theEnumPolicy"
+        const val VALUE_1 = 1
+        const val VALUE_2 = 2
+        val key = PolicyIdentifier<Int>(name)
+        val metadata =
+            EnumPolicyMetadata(
+                key,
+                /*allowedScopes=*/ setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
+                /*affectedResource=*/ RESOURCE_PER_USER,
+                /*requiredPermission=*/ null,
+                /*requiredCrossUserPermission=*/ null,
+                /*allowedDpcTypes=*/ setOf(),
+                /*allowedValues=*/ setOf(VALUE_1, VALUE_2),
+            )
+        val anyTransportValue: PolicyValueTransport = PolicyValueTransport.integerField(VALUE_1)
+
+        // The policy definition used for storing the policy value in DevicePolicyEngine.
+        val definition =
+            PolicyDefinition<Int>(
+                NoArgsPolicyKey(name),
+                MostRecent<Int>(),
+                NoOpPolicyEnforcerCallback<Int>(),
+                IntegerPolicySerializer(),
+            )
+    }
+
+    fun copyOf(
+        source: EnumPolicyMetadata,
+        id: PolicyIdentifier<Int>? = null,
+        allowedScopes: Set<Int>? = null,
+        affectedResource: Int? = null,
+        requiredPermission: String? = null,
+        requiredCrossUserPermission: String? = null,
+        allowedDpcTypes: Set<Int>? = null,
+        allowedValues: Set<Int>? = null,
+    ) =
+        EnumPolicyMetadata(
+            id ?: source.id,
+            allowedScopes ?: source.allowedScopes,
+            affectedResource ?: source.affectedResource,
+            requiredPermission ?: source.requiredPermission,
+            requiredCrossUserPermission ?: source.requiredCrossUserPermission,
+            allowedDpcTypes ?: source.allowedDpcTypes,
+            allowedValues ?: source.allowedValues,
+        )
+
+    fun createHandler(
+        key: PolicyIdentifier<Int> = Policy.key,
+        metadata: EnumPolicyMetadata = Policy.metadata,
+        definition: PolicyDefinition<Int> = Policy.definition,
+        delegate: PolicyHandler.Delegate = this.mockDelegate,
+    ) = PolicyHandler<Int>(key, metadata, definition, delegate)
+
+    @Test
+    fun setPolicy_shouldHandleValidValues() {
+        val enumValues = setOf(123, 456, 789)
+        val metadata = copyOf(Policy.metadata, allowedValues = enumValues)
+        val handler = createHandler(metadata = metadata, delegate = mockDelegate)
+
+        for (enumValue in enumValues) {
+            handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.integerField(enumValue))
+
+            val expectedValue = IntegerPolicyValue(enumValue)
+            verify(mockDelegate, times(1)).storePolicy(any(), any(), any(), eq(expectedValue))
+        }
+
+        verify(mockDelegate, never()).clearPolicy<Int>(any(), any(), any())
+    }
+
+    @Test
+    fun setPolicy_shouldHandleNull() {
+        val handler = createHandler(delegate = mockDelegate)
+
+        handler.setPolicy(anyCaller, anyScope, null)
+
+        verify(mockDelegate).clearPolicy<Int>(any(), any(), any())
+        verify(mockDelegate, never()).storePolicy<Int>(any(), any(), any(), any())
+    }
+
+    @Test
+    fun setPolicy_shouldRejectValuesOutOfRange() {
+        val validEnumValues = setOf(555, 666)
+        val metadata = copyOf(Policy.metadata, allowedValues = validEnumValues)
+        val handler = createHandler(metadata = metadata)
+
+        val invalidEnumValues = setOf(0, 1, 554, 556, 665, 667, 1000)
+
+        for (enumValue in invalidEnumValues) {
+            assertFailsWith<IllegalArgumentException> {
+                handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.integerField(enumValue))
+            }
+        }
+    }
+
+    @Test
+    fun setPolicy_shouldRejectValueOfWrongType() {
+        val handler = createHandler()
+
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.booleanField(true))
+            }
+
+        assertThat(exception.message).contains("is not an integer")
+    }
+}

@@ -1480,6 +1480,19 @@ public final class VirtualDeviceManager {
          */
         @FlaggedApi(Flags.FLAG_ACTIVITY_CONTROL_API)
         default void onSecureWindowHidden(int displayId) {}
+
+        /**
+         * Called when an activity launch is requested on the given display for the given user.
+         *
+         * @param displayId The display ID on which the activity launch is requested.
+         * @param componentName The component name of the activity whose launch is requested.
+         * @param userId The user ID associated with the activity whose launch is requested.
+         * @hide
+         */
+        @TestApi
+        @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+        default void onActivityLaunchRequested(int displayId, @NonNull ComponentName componentName,
+                @UserIdInt int userId) {}
     }
 
     /**

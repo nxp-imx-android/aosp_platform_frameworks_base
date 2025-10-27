@@ -52,6 +52,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Point;
 import android.graphics.PointF;
@@ -63,6 +64,7 @@ import android.platform.test.annotations.EnableFlags;
 import android.view.SurfaceControl;
 import android.view.ViewRootImpl;
 import android.window.TransitionInfo;
+import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.core.animation.AnimatorTestRule;
@@ -81,6 +83,7 @@ import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.common.HomeIntentProvider;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewRepository;
@@ -140,6 +143,12 @@ public class BubbleTransitionsTest extends ShellTestCase {
     private ShellTaskOrganizer mTaskOrganizer;
     @Mock
     private BubbleController mBubbleController;
+    @Mock
+    private IBinder mRootTaskBinder;
+    @Mock
+    private WindowContainerToken mRootTaskToken;
+    @Mock
+    private PendingIntent mPendingIntent;
 
     private TaskViewTransitions mTaskViewTransitions;
     private TaskViewRepository mRepository;
@@ -157,7 +166,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 mSyncQueue);
         mBubbleTransitions = new BubbleTransitions(mContext, mTransitions, mTaskOrganizer,
                 mRepository, mBubbleData, mTaskViewTransitions,
-                new PackageManagerBubbleAppInfoProvider());
+                new PackageManagerBubbleAppInfoProvider(), new TestSyncExecutor());
         mBubbleTransitions.setBubbleController(mBubbleController);
         mTaskViewFactory = () -> {
             TaskViewTaskController taskViewTaskController = new TaskViewTaskController(
@@ -198,6 +207,10 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble(
                 bubble, taskView, taskViewTaskController);
         doReturn(true).when(mBubbleController).shouldBeAppBubble(taskInfo);
+        if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            doReturn(mRootTaskBinder).when(mRootTaskToken).asBinder();
+            doReturn(mRootTaskToken).when(mBubbleController).getAppBubbleRootTaskToken();
+        }
         return taskInfo;
     }
 
@@ -307,7 +320,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
     @Test
     public void testConvertToBubble_excludesTaskFromRecents() {
-        final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
+        final ActivityManager.RunningTaskInfo taskInfo = setupAppBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
                 mBubble, taskInfo, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
                 mStackView, mLayerView, mIconFactory, mHomeIntentProvider, null /* dragData */,
@@ -321,16 +334,14 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         // Verify that the WCT has the task force exclude from recents.
         final WindowContainerTransaction wct = wctCaptor.getValue();
-        final Map<IBinder, WindowContainerTransaction.Change> chgs = wct.getChanges();
-        final boolean hasForceExcludedFromRecents = chgs.entrySet().stream()
-                .filter((entry) -> entry.getKey().equals(taskInfo.token.asBinder()))
-                .anyMatch((entry) -> entry.getValue().getForceExcludedFromRecents());
-        assertThat(hasForceExcludedFromRecents).isTrue();
+        verifyEnterBubbleTransaction(wct, taskInfo.token.asBinder(), true /* isAppBubble */,
+                false /* reparentToTda */,
+                BubbleAnythingFlagHelper.enableRootTaskForBubble() ? mRootTaskBinder : null);
     }
 
     @Test
     public void testConvertToBubble_disallowFlagLaunchAdjacent() {
-        final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
+        final ActivityManager.RunningTaskInfo taskInfo = setupAppBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
                 mBubble, taskInfo, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
                 mStackView, mLayerView, mIconFactory, mHomeIntentProvider, null /* dragData */,
@@ -344,7 +355,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         // Verify that the WCT has the disallow-launch-adjacent hierarchy op
         final WindowContainerTransaction wct = wctCaptor.getValue();
-        verifyEnterBubbleTransaction(wct, taskInfo.token.asBinder(), true /* isAppBubble */);
+        verifyEnterBubbleTransaction(wct, taskInfo.token.asBinder(), true /* isAppBubble */,
+                false /* reparentToTda */,
+                BubbleAnythingFlagHelper.enableRootTaskForBubble() ? mRootTaskBinder : null);
     }
 
     @Test
@@ -787,6 +800,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final ActivityManager.RunningTaskInfo taskInfo = setupAppBubble();
 
         when(mLayerView.canExpandView(mBubble)).thenReturn(true);
+        doReturn(mPendingIntent).when(mBubble).getPendingIntent();
 
         final BubbleTransitions.LaunchOrConvertToBubble bt =
                 (BubbleTransitions.LaunchOrConvertToBubble) mBubbleTransitions
@@ -877,6 +891,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final ActivityManager.RunningTaskInfo taskInfo = setupAppBubble();
 
         when(mLayerView.canExpandView(mBubble)).thenReturn(true);
+        doReturn(mPendingIntent).when(mBubble).getPendingIntent();
 
         final BubbleTransitions.LaunchOrConvertToBubble bt =
                 (BubbleTransitions.LaunchOrConvertToBubble) mBubbleTransitions
@@ -964,6 +979,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final ActivityManager.RunningTaskInfo taskInfo = setupAppBubble();
 
         when(mLayerView.canExpandView(mBubble)).thenReturn(true);
+        doReturn(mPendingIntent).when(mBubble).getPendingIntent();
 
         final BubbleTransitions.LaunchOrConvertToBubble bt =
                 (BubbleTransitions.LaunchOrConvertToBubble) mBubbleTransitions
@@ -1037,6 +1053,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         setupAppBubble(newBubble, newTaskView, mTaskViewTaskController);
         final String bubbleKey = "testingKey";
         doReturn(bubbleKey).when(newBubble).getKey();
+        doReturn(mPendingIntent).when(newBubble).getPendingIntent();
         final BubbleTransitions.LaunchOrConvertToBubble bt =
                 (BubbleTransitions.LaunchOrConvertToBubble) mBubbleTransitions
                         .startLaunchIntoOrConvertToBubble(

@@ -19,18 +19,18 @@ package com.android.wm.shell.flicker.fundamentals
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
-import android.tools.flicker.assertions.FlickerChecker
-import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.FlickerBuilder
 import android.tools.flicker.FlickerTest
 import android.tools.flicker.FlickerTestFactory
+import android.tools.flicker.assertions.FlickerChecker
+import android.tools.flicker.junit.FlickerParametersRunnerFactory
+import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.DesktopModeBaseTest
 import com.android.wm.shell.flicker.utils.appWindowInsideDisplayBoundsAtEnd
 import com.android.wm.shell.flicker.utils.appWindowOnTopAtEnd
-import com.android.wm.shell.flicker.utils.layerBecomesVisible
 import com.android.wm.shell.flicker.utils.cascadingEffectAppliedAtEnd
+import com.android.wm.shell.flicker.utils.layerBecomesVisible
 import com.android.wm.shell.scenarios.OpenAppsInDesktopMode
-import com.android.wm.shell.Utils
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -41,7 +41,9 @@ import org.junit.runners.Parameterized
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @Postsubmit
 class OpenAppsInDesktopModeFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {
-    inner class OpenAppsInDesktopModeScenario : OpenAppsInDesktopMode(flicker.scenario.startRotation)
+    inner class OpenAppsInDesktopModeScenario :
+        OpenAppsInDesktopMode(flicker.scenario.startRotation)
+
     @Rule
     @JvmField
     val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, flicker.scenario.startRotation)
@@ -51,36 +53,26 @@ class OpenAppsInDesktopModeFlickerTest(flicker: FlickerTest) : DesktopModeBaseTe
 
     override val transition: FlickerBuilder.() -> Unit
         get() = {
-            setup {
-                scenario.setup()
-            }
-            transitions {
-                scenario.openApps()
-            }
-            teardown {
-                scenario.teardown()
-            }
+            setup { scenario.setup() }
+            transitions { scenario.openApps() }
+            teardown { scenario.teardown() }
         }
 
     @Test
     fun appWindowInsideDisplayBoundsAtEnd() = flicker.appWindowInsideDisplayBoundsAtEnd(fifthApp)
 
-    @Test
-    fun appWindowOnTopAtEnd() = flicker.appWindowOnTopAtEnd(fifthApp)
+    @Test fun appWindowOnTopAtEnd() = flicker.appWindowOnTopAtEnd(fifthApp)
 
-    @Test
-    fun layerBecomesVisible() =
-            appInDesktop.forEach {flicker.layerBecomesVisible(it)}
+    @Test fun layerBecomesVisible() = appInDesktop.forEach { flicker.layerBecomesVisible(it) }
 
-    @Test
-    fun cascadingEffectAppliedAtEnd() = flicker.cascadingEffectAppliedAtEnd(fifthApp)
+    @Test fun cascadingEffectAppliedAtEnd() = flicker.cascadingEffectAppliedAtEnd(fifthApp)
 
     companion object {
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
         fun getParams(): Collection<FlickerChecker> {
             return FlickerTestFactory.nonRotationTests(
-                    supportedNavigationModes = listOf(NavBar.MODE_GESTURAL)
+                supportedNavigationModes = listOf(NavBar.MODE_GESTURAL)
             )
         }
     }

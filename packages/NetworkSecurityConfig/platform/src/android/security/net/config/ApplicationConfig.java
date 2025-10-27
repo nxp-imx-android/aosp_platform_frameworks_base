@@ -26,6 +26,8 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.Pair;
 
+import libcore.net.NetworkSecurityPolicy;
+
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -66,14 +68,22 @@ public final class ApplicationConfig {
         return mConfigs != null && !mConfigs.isEmpty();
     }
 
-    /**
-     * Returns an {@link ApplicationConfig} based on the configuration for {@code packageName}.
-     */
-    public static ApplicationConfig createApplicationConfigForPackage(Context context,
-            String packageName) throws PackageManager.NameNotFoundException {
+    /** Returns an {@link ApplicationConfig} based on the configuration for {@code packageName}. */
+    public static ApplicationConfig createInstanceForPackage(Context context, String packageName)
+            throws PackageManager.NameNotFoundException {
         Context appContext = context.createPackageContext(packageName, 0);
         ManifestConfigSource source = new ManifestConfigSource(appContext);
         return new ApplicationConfig(source);
+    }
+
+    /**
+     * Returns a {@link NetworkSecurityPolicy} based on this application config.
+     *
+     * @hide
+     */
+    @NonNull
+    public NetworkSecurityPolicy createNetworkSecurityPolicy() {
+        return new ConfigNetworkSecurityPolicy(this);
     }
 
     /**

@@ -875,6 +875,18 @@ public class DevicePolicyManager {
     public static final int RESULT_DEVICE_OWNER_SET = 123;
 
     /**
+     * Result code that can be returned by the {@link
+     * #ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE} or {@link
+     * #ACTION_ROLE_HOLDER_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE} intent handlers if the
+     * multi-user device was provisioned.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    public static final int RESULT_MULTI_USER_DEVICE_PROVISIONED = 124;
+
+    /**
      * Activity action: starts the trusted source provisioning flow inside the device policy
      * management role holder.
      *
@@ -891,7 +903,8 @@ public class DevicePolicyManager {
      * which the role holder returns alongside {@link #RESULT_UPDATE_ROLE_HOLDER}.
      *
      * <p>The result codes can be either {@link #RESULT_WORK_PROFILE_CREATED}, {@link
-     * #RESULT_DEVICE_OWNER_SET} or {@link Activity#RESULT_CANCELED} if provisioning failed.
+     * #RESULT_DEVICE_OWNER_SET}, {@link #RESULT_MULTI_USER_DEVICE_PROVISIONED} or
+     * {@link Activity#RESULT_CANCELED} if provisioning failed.
      *
      * @see #ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE
      *
@@ -18733,6 +18746,7 @@ public class DevicePolicyManager {
     @Retention(RetentionPolicy.SOURCE)
     public @interface ResourceType {}
 
+    // LINT.IfChange(dpc_type)
     /** @hide */
     public static final int NOT_A_DPC = -1;
     /** @hide */
@@ -18766,6 +18780,7 @@ public class DevicePolicyManager {
             AFFILIATED_PROFILE_OWNER_ON_USER
     })
     public @interface DpcType {}
+    // LINT.ThenChange(/tools/processors/devicepolicy/proto/policy_metadata.proto:dpc_type)
 
     /**
      * Sets the given policy.

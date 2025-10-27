@@ -396,6 +396,13 @@ abstract class WindowDecoration2<T>(
             return
         }
 
+        if (
+            DesktopExperienceFlags.ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS.isTrue &&
+                !params.shouldUpdateTaskSurfaceOutline
+        ) {
+            return
+        }
+
         if (borderSettings != null && borderSettings.strokeWidth > 0) {
             startT.setBorderSettings(taskSurface, borderSettings)
             finishT.setBorderSettings(taskSurface, borderSettings)
@@ -593,6 +600,7 @@ abstract class WindowDecoration2<T>(
         val hasGlobalFocus: Boolean = false,
         val shouldSetAppBounds: Boolean = false,
         val shouldSetBackground: Boolean = false,
+        val shouldUpdateTaskSurfaceOutline: Boolean = true,
         val inSyncWithTransition: Boolean = false,
     ) {
 

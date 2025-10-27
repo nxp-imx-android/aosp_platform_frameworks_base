@@ -85,6 +85,15 @@ object DesktopTestHelpers {
     fun createFullscreenTask(displayId: Int = DEFAULT_DISPLAY): RunningTaskInfo =
         createFullscreenTaskBuilder(displayId).build()
 
+    /**
+     * Create a task that has windowing mode set to [WINDOWING_MODE_FULLSCREEN] with a base
+     * activity.
+     */
+    fun createFullscreenTaskWithBaseActivity(displayId: Int = DEFAULT_DISPLAY): RunningTaskInfo =
+        createFullscreenTaskBuilder(displayId).build().apply {
+            baseActivity = ComponentName("com.test.dummypackage", "TestClass")
+        }
+
     fun createRecentTaskInfo(taskId: Int, displayId: Int = DEFAULT_DISPLAY): RecentTaskInfo =
         RecentTaskInfo().apply {
             this.taskId = taskId

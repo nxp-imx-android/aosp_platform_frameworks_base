@@ -76,6 +76,9 @@ import java.util.Objects;
  */
 @TestApi
 public final class WindowContainerTransaction implements Parcelable {
+    /** @hide */
+    public static final int FLAG_DROP_DURING_DISPLAY_CHANGE = 1;
+
     private final ArrayMap<IBinder, Change> mChanges = new ArrayMap<>();
 
     // Flat list because re-order operations are order-dependent
@@ -87,11 +90,22 @@ public final class WindowContainerTransaction implements Parcelable {
     @Nullable
     private ITaskFragmentOrganizer mTaskFragmentOrganizer;
 
+    /** @hide */
+    @IntDef(flag = true, prefix = { "FLAG_" }, value = {
+            FLAG_DROP_DURING_DISPLAY_CHANGE
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface WindowContainerTransactionFlags {}
+
+    @WindowContainerTransactionFlags
+    private int mFlags = 0;
+
     public WindowContainerTransaction() {}
 
     private WindowContainerTransaction(@NonNull Parcel in) {
         in.readMap(mChanges, null /* loader */);
         in.readTypedList(mHierarchyOps, HierarchyOp.CREATOR);
+        mFlags = in.readInt();
         mErrorCallbackToken = in.readStrongBinder();
         mTaskFragmentOrganizer = ITaskFragmentOrganizer.Stub.asInterface(in.readStrongBinder());
     }
@@ -115,6 +129,7 @@ public final class WindowContainerTransaction implements Parcelable {
     public void clear() {
         mChanges.clear();
         mHierarchyOps.clear();
+        mFlags = 0;
         mErrorCallbackToken = null;
         mTaskFragmentOrganizer = null;
     }
@@ -1441,6 +1456,7 @@ public final class WindowContainerTransaction implements Parcelable {
             final HierarchyOp otherHierarchyOp = other.mHierarchyOps.get(i);
             mHierarchyOps.add(transfer ? otherHierarchyOp : new HierarchyOp(otherHierarchyOp));
         }
+        mFlags |= other.mFlags;
         if (mErrorCallbackToken != null && other.mErrorCallbackToken != null && mErrorCallbackToken
                 != other.mErrorCallbackToken) {
             throw new IllegalArgumentException("Can't merge two WCTs with different error token");
@@ -1458,6 +1474,27 @@ public final class WindowContainerTransaction implements Parcelable {
         mErrorCallbackToken = mErrorCallbackToken != null
                 ? mErrorCallbackToken
                 : other.mErrorCallbackToken;
+    }
+
+    /**
+     * @return flags set at the {@link WindowContainerTransaction} level.
+     * @hide
+     */
+    public int getFlags() {
+        return mFlags;
+    }
+
+    /**
+     * Sets whether this {@link WindowContainerTransaction} can be dropped when starting
+     * a transition with it if a display change is ongoing.
+     * @hide
+     */
+    public void setCanDropDuringDisplayChange(boolean canDropDuringDisplayChange) {
+        if (canDropDuringDisplayChange) {
+            mFlags |= FLAG_DROP_DURING_DISPLAY_CHANGE;
+        } else {
+            mFlags &= ~FLAG_DROP_DURING_DISPLAY_CHANGE;
+        }
     }
 
     /** @hide */
@@ -1495,6 +1532,7 @@ public final class WindowContainerTransaction implements Parcelable {
         return "WindowContainerTransaction {"
                 + " changes= " + mChanges
                 + " hops= " + mHierarchyOps
+                + " flags= " + mFlags
                 + " errorCallbackToken=" + mErrorCallbackToken
                 + " taskFragmentOrganizer=" + mTaskFragmentOrganizer
                 + " }";
@@ -1504,6 +1542,7 @@ public final class WindowContainerTransaction implements Parcelable {
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeMap(mChanges);
         dest.writeTypedList(mHierarchyOps);
+        dest.writeInt(mFlags);
         dest.writeStrongBinder(mErrorCallbackToken);
         dest.writeStrongInterface(mTaskFragmentOrganizer);
     }

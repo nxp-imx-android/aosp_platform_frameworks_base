@@ -257,7 +257,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testHasTitle_noStyle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setContentTitle("TITLE")
@@ -266,7 +265,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testHasTitle_bigText() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
@@ -275,7 +273,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testHasTitle_noTitle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setContentText("text not title")
@@ -284,7 +281,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testHasTitle_callStyle() {
         PendingIntent intent = createPendingIntent("hangUp");
         Person person = new Person.Builder().setName("A Caller").build();
@@ -296,7 +292,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_API_METRIC_STYLE})
+    @EnableFlags(Flags.FLAG_API_METRIC_STYLE)
     public void testHasTitle_metricStyle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setStyle(new Notification.MetricStyle()
@@ -307,7 +303,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testContainsCustomViews_none() {
         Notification np = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -322,7 +317,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testContainsCustomViews_content() {
         Notification np = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -338,7 +332,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testContainsCustomViews_big() {
         Notification np = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -354,7 +347,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testContainsCustomViews_headsUp() {
         Notification np = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -370,7 +362,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testContainsCustomViews_content_public() {
         Notification np = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -386,7 +377,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testContainsCustomViews_big_public() {
         Notification np = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -402,7 +392,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testContainsCustomViews_headsUp_public() {
         Notification np = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -418,7 +407,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_API_METRIC_STYLE})
+    @EnableFlags({Flags.FLAG_API_METRIC_STYLE})
     public void testGetNotificationStyle_metricStyle_withApiFlagEnabled() {
         // FIRST -- check that this works if you use the constructor
         Notification n = new Notification.Builder(mContext, "test")
@@ -440,7 +429,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     @DisableFlags(Flags.FLAG_API_METRIC_STYLE)
     public void testGetNotificationStyle_metricStyle_withApiFlagDisabled() {
         // ALTERNATIVELY -- check that this returns null if the API flag is disabled
@@ -452,7 +440,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testHasPromotableStyle_noStyle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -462,7 +449,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testHasPromotableStyle_bigText() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -472,7 +458,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testHasPromotableStyle_no_bigPictureStyle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -482,7 +467,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testHasPromotableStyle_no_messagingStyle() {
         Notification.MessagingStyle style = new Notification.MessagingStyle("self name")
                 .setGroupConversation(true)
@@ -495,7 +479,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testHasPromotableStyle_no_mediaStyle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -505,7 +488,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testHasPromotableStyle_no_inboxStyle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -515,7 +497,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testHasPromotableStyle_callText() {
         PendingIntent answerIntent = createPendingIntent("answer");
         PendingIntent declineIntent = createPendingIntent("decline");
@@ -532,7 +513,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableStyle_progress() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -542,7 +522,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableStyle_unknownStyle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -553,7 +532,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_bigText_bigTitle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -566,7 +544,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_bigText_normalTitle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -580,7 +557,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_notOngoing() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -592,7 +568,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_noRequestPromoted() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -604,7 +579,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_wrongStyle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -618,7 +592,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_colorized() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -632,7 +605,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_noTitle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -645,7 +617,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_noStyle_onlyBigTitle() {
         Bundle extras = new Bundle();
         extras.putString(Notification.EXTRA_TITLE_BIG, "BIG");
@@ -660,7 +631,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_ongoingCallStyle_colorized() {
         PendingIntent intent = PendingIntent.getActivity(
                 mContext, 0, new Intent("test1"), PendingIntent.FLAG_IMMUTABLE);
@@ -677,7 +647,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_ongoingCallStyle_notColorized() {
         PendingIntent intent = PendingIntent.getActivity(
                 mContext, 0, new Intent("test1"), PendingIntent.FLAG_IMMUTABLE);
@@ -693,7 +662,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_incomingCallStyle_colorized() {
         PendingIntent intent = PendingIntent.getActivity(
                 mContext, 0, new Intent("test1"), PendingIntent.FLAG_IMMUTABLE);
@@ -710,7 +678,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_incomingCallStyle_notColorized() {
         PendingIntent intent = PendingIntent.getActivity(
                 mContext, 0, new Intent("test1"), PendingIntent.FLAG_IMMUTABLE);
@@ -726,7 +693,6 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_groupSummary() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -741,7 +707,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_API_METRIC_STYLE})
+    @EnableFlags(Flags.FLAG_API_METRIC_STYLE)
     public void testHasPromotableCharacteristics_metricStyle_noTitle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)

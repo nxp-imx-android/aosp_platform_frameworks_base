@@ -138,10 +138,20 @@ public class AdbWifiNetworkMonitor extends ConnectivityManager.NetworkCallback
         boolean isTrusted =
                 mIsTrustedNetworkChecker.isTrusted(wifiInfo.getBSSID(), wifiInfo.getSSID());
         if (isTrusted) {
-            setAdbWifiState(true, "Connected to a trusted Wi-Fi network. Enabling adb over Wi-Fi.");
+            setAdbWifiState(
+                    true,
+                    TextUtils.formatSimple(
+                            "Connected to a trusted Wi-Fi network {bssid=%s, ssid=%s}. Enabling adb"
+                                    + " over Wi-Fi.",
+                            wifiInfo.getBSSID(), wifiInfo.getSSID()));
+
         } else {
             setAdbWifiState(
-                    false, "Connected to a non-trusted Wi-Fi network. Disabling adb over Wi-Fi.");
+                    false,
+                    TextUtils.formatSimple(
+                            "Connected to a non-trusted Wi-Fi network {bssid=%s, ssid=%s}."
+                                    + " Disabling adb over Wi-Fi.",
+                            wifiInfo.getBSSID(), wifiInfo.getSSID()));
         }
     }
 

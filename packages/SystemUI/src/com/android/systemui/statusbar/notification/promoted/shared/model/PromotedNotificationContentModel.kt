@@ -23,7 +23,6 @@ import android.graphics.drawable.Drawable
 import android.view.View
 import androidx.annotation.ColorInt
 import com.android.internal.widget.NotificationProgressModel
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.ImageResult
 import com.android.systemui.statusbar.notification.row.LazyImage
 import com.android.systemui.statusbar.notification.row.shared.ImageModel
@@ -275,9 +274,5 @@ data class PromotedNotificationContentModel(
             is ImageResult.Empty -> this.toString()
             is ImageResult.Image -> "Image(drawable=[${drawable.javaClass.simpleName}])"
         }
-    }
-
-    companion object {
-        @JvmStatic fun featureFlagEnabled(): Boolean = PromotedNotificationUi.isEnabled
     }
 }

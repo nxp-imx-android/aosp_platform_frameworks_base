@@ -263,8 +263,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
 
         if ((options == null || options.getLaunchBounds() == null) && task.hasOverrideBounds()) {
             final Rect overrideTaskBounds = task.getRequestedOverrideBounds();
-            if (DesktopExperienceFlags.IGNORE_OVERRIDE_TASK_BOUNDS_IF_INCOMPATIBLE_WITH_DISPLAY
-                    .isTrue() && areTaskBoundsValidForDisplay(overrideTaskBounds, display)) {
+            if (areTaskBoundsValidForDisplay(overrideTaskBounds, display)) {
                 // We are in desktop, return result done to prevent other modifiers from
                 // modifying exiting task bounds or resolved windowing mode.
                 if (ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS.isTrue()) {

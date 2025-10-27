@@ -88,11 +88,9 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Правенето на екранни снимки не е разрешено от приложението или организацията ви"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Правенето на екранни снимки е блокирано от системния ви администратор"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Редактиране"</string>
-    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
-    <skip />
+    <string name="screenshot_edit_description" msgid="7802378587672433507">"Бутон за редактиране на екранната снимка"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Споделяне"</string>
-    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
-    <skip />
+    <string name="screenshot_share_description" msgid="2654362001720033972">"Бутон за споделяне на екранната снимка"</string>
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Заснемане на още"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Отхвърляне на екранната снимка"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Отхвърляне на съобщението за служебния потребителски профил"</string>
@@ -369,6 +367,8 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Сензорите са изключени"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Изчистване на всички известия."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Известия"</string>
+    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Съдържа още # известие.}other{Съдържа още # известия.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Екранът е заключен в хоризонтална ориентация."</string>
@@ -710,6 +710,8 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Беззвучни"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Известия"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Разговори"</string>
+    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
+    <skip />
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Изчистване на всички беззвучни известия"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Отваряне на настройките за известията"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Няма известия}=1{Известията са поставени на пауза от {mode}}=2{Известията са поставени на пауза от {mode} и един друг режим}other{Известията са поставени на пауза от {mode} и # други режима}}"</string>
@@ -1024,8 +1026,7 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Отваряне на списъка с приложения"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Отваряне на настройките"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Отваряне на дигиталния асистент"</string>
-    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
-    <skip />
+    <string name="group_system_access_contextual_search" msgid="525635757621336007">"Контекстуално търсене"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Заключване на екрана"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Създаване на бележка"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Няколко задачи едновременно"</string>
@@ -1160,6 +1161,18 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Изключване на прекия път"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Без изключване"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003"><annotation id="action_key_icon">"Иконата"</annotation>" за действие + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> е клавишната комбинация за използване на <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> е екранен четец, който ви дава възможност да чувате гласово описание на елементите. Той може да е полезен за хора, които трудно виждат екрана. Това може да промени начина, по който работи устройството ви."</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Натискането на "<annotation id="action_key_icon">"иконата"</annotation>" за действие + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> включва <xliff:g id="ID_3">^3</xliff:g> – функция за достъпност. Това ви дава възможност да контролирате устройството си в режим „свободни ръце“."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Заключен екран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Изключва се…"</string>
@@ -1473,8 +1486,12 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"С цел подобряване на практическата работа с устройството приложенията и услугите пак могат да сканират за Wi‑Fi мрежи по всяко време дори когато функцията за Wi‑Fi e изключена. Можете да промените съответното поведение от настройките за сканиране за Wi‑Fi. "<annotation id="link">"Промяна"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Изключване на режима"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g> иска да добави следния панел към бързите настройки"</string>
+    <string name="qs_tile_request_dialog_text_with_size" msgid="732578771040573291">"<xliff:g id="APPNAME">%1$s</xliff:g> иска да добави панел към бързите настройки. Изберете размер на панела, за да продължите."</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Добавяне на панел"</string>
-    <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"Отмяна на добавянето"</string>
+    <string name="qs_tile_request_dialog_not_add" msgid="8375425041428574394">"Без добавяне на панел"</string>
+    <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Добавяне на панел към бързите настройки"</string>
+    <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Малък формат"</string>
+    <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Голям формат"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Избор на потребител"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# приложение е активно}other{# приложения са активни}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Нова информация"</string>

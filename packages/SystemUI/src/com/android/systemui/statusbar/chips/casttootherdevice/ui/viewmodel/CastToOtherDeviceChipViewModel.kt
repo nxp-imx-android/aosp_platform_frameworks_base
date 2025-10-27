@@ -42,7 +42,6 @@ import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ChipTransitionHelper
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createDialogLaunchOnClickCallback
-import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createDialogLaunchOnClickListener
 import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
@@ -215,19 +214,6 @@ constructor(
                     startTimeMs = systemClock.elapsedRealtime()
                 ),
             colors = ColorsModel.Red,
-            onClickListenerLegacy =
-                createDialogLaunchOnClickListener(
-                    dialogDelegateCreator = { context ->
-                        createCastScreenToOtherDeviceDialogDelegate(context, state)
-                    },
-                    dialogTransitionAnimator = dialogTransitionAnimator,
-                    cuj = DIALOG_CUJ,
-                    key = KEY,
-                    instanceId = instanceId,
-                    uiEventLogger = uiEventLogger,
-                    logger = logger,
-                    tag = TAG,
-                ),
             clickBehavior =
                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
                     onClick =
@@ -263,19 +249,6 @@ constructor(
                 ),
             content = OngoingActivityChipModel.Content.IconOnly,
             colors = ColorsModel.Red,
-            onClickListenerLegacy =
-                createDialogLaunchOnClickListener(
-                    dialogDelegateCreator = { context ->
-                        createGenericCastToOtherDeviceDialogDelegate(context, deviceName)
-                    },
-                    dialogTransitionAnimator = dialogTransitionAnimator,
-                    cuj = DIALOG_CUJ_AUDIO_ONLY,
-                    key = KEY,
-                    instanceId = instanceId,
-                    uiEventLogger = uiEventLogger,
-                    logger = logger,
-                    tag = TAG,
-                ),
             clickBehavior =
                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
                     createDialogLaunchOnClickCallback(

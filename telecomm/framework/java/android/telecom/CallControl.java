@@ -28,7 +28,6 @@ import android.os.OutcomeReceiver;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
-import android.text.TextUtils;
 
 import com.android.internal.telecom.ICallControl;
 import com.android.server.telecom.flags.Flags;
@@ -106,7 +105,7 @@ public final class CallControl {
      * Request Telecom answer an incoming call.  For outgoing calls and calls that have been placed
      * on hold, use {@link CallControl#setActive(Executor, OutcomeReceiver)}.
      *
-     * @param videoState to report to Telecom. Telecom will store VideoState in the event another
+     * @param callType to report to Telecom. Telecom will store CallType in the event another
      *                   service/device requests it in order to continue the call on another screen.
      * @param executor   The {@link Executor} on which the {@link OutcomeReceiver} callback
      *                   will be called on.
@@ -120,14 +119,14 @@ public final class CallControl {
      *                   the call state to active.  A {@link CallException} will be passed
      *                   that details why the operation failed.
      */
-    public void answer(@android.telecom.CallAttributes.CallType int videoState,
+    public void answer(@android.telecom.CallAttributes.CallType int callType,
             @CallbackExecutor @NonNull Executor executor,
             @NonNull OutcomeReceiver<Void, CallException> callback) {
-        validateVideoState(videoState);
+        validateCallType(callType);
         Objects.requireNonNull(executor);
         Objects.requireNonNull(callback);
         try {
-            mServerInterface.answer(videoState, mCallId,
+            mServerInterface.answer(callType, mCallId,
                     new CallControlResultReceiver("answer", executor, callback));
 
         } catch (RemoteException e) {
@@ -301,7 +300,7 @@ public final class CallControl {
         }
     }
 
-     /**
+    /**
      * Request a new video state for the ongoing call. This can only be changed if the application
      * has registered a {@link PhoneAccount} with the
      * {@link PhoneAccount#CAPABILITY_SUPPORTS_VIDEO_CALLING} and set the
@@ -309,8 +308,8 @@ public final class CallControl {
      * {@link TelecomManager#addCall(CallAttributes, Executor, OutcomeReceiver,
      *                                                      CallControlCallback, CallEventCallback)}
      *
-     * @param videoState to report to Telecom. To see the valid argument to pass,
-      *                   see {@link CallAttributes.CallType}.
+     * @param callType to report to Telecom. To see the valid argument to pass,
+     *                   see {@link CallAttributes.CallType}.
      * @param executor   The {@link Executor} on which the {@link OutcomeReceiver} callback
      *                   will be called on.
      * @param callback   that will be completed on the Telecom side that details success or failure
@@ -325,20 +324,20 @@ public final class CallControl {
      * @throws IllegalArgumentException if the argument passed for videoState is invalid.  To see a
      * list of valid states, see {@link CallAttributes.CallType}.
      */
-     @FlaggedApi(Flags.FLAG_TRANSACTIONAL_VIDEO_STATE)
-     public void requestVideoState(@CallAttributes.CallType int videoState,
-             @CallbackExecutor @NonNull Executor executor,
-             @NonNull OutcomeReceiver<Void, CallException> callback) {
-         validateVideoState(videoState);
-         Objects.requireNonNull(executor);
-         Objects.requireNonNull(callback);
-         try {
-             mServerInterface.requestVideoState(videoState, mCallId,
-                     new CallControlResultReceiver("requestVideoState", executor, callback));
-         } catch (RemoteException e) {
-             throw e.rethrowAsRuntimeException();
-         }
-     }
+    @FlaggedApi(Flags.FLAG_TRANSACTIONAL_VIDEO_STATE)
+    public void requestVideoState(@CallAttributes.CallType int callType,
+            @CallbackExecutor @NonNull Executor executor,
+            @NonNull OutcomeReceiver<Void, CallException> callback) {
+        validateCallType(callType);
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(callback);
+        try {
+            mServerInterface.requestVideoState(callType, mCallId,
+                    new CallControlResultReceiver("requestVideoState", executor, callback));
+        } catch (RemoteException e) {
+            throw e.rethrowAsRuntimeException();
+        }
+    }
 
     /**
      * Raises an event to the {@link android.telecom.InCallService} implementations tracking this
@@ -423,7 +422,7 @@ public final class CallControl {
         final int code = disconnectCause.getCode();
         if (code != DisconnectCause.LOCAL && code != DisconnectCause.REMOTE
                 && code != DisconnectCause.MISSED && code != DisconnectCause.REJECTED) {
-            throw new IllegalArgumentException(TextUtils.formatSimple(
+            throw new IllegalArgumentException(String.format(
                     "The DisconnectCause code provided, %d , is not a valid Disconnect code. Valid "
                             + "DisconnectCause codes are limited to [DisconnectCause.LOCAL, "
                             + "DisconnectCause.REMOTE, DisconnectCause.MISSED, or "
@@ -432,12 +431,12 @@ public final class CallControl {
     }
 
     /** @hide */
-    private void validateVideoState(@android.telecom.CallAttributes.CallType int videoState) {
-        if (videoState != CallAttributes.AUDIO_CALL && videoState != CallAttributes.VIDEO_CALL) {
-            throw new IllegalArgumentException(TextUtils.formatSimple(
+    private void validateCallType(@android.telecom.CallAttributes.CallType int callType) {
+        if (callType != CallAttributes.AUDIO_CALL && callType != CallAttributes.VIDEO_CALL) {
+            throw new IllegalArgumentException(String.format(
                     "The VideoState argument passed in, %d , is not a valid VideoState. The "
                             + "VideoState choices are limited to CallAttributes.AUDIO_CALL or"
-                            + "CallAttributes.VIDEO_CALL", videoState));
+                            + "CallAttributes.VIDEO_CALL", callType));
         }
     }
 }

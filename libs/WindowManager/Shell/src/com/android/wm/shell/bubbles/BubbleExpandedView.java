@@ -23,6 +23,7 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_BUBBLES;
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.wm.shell.bubbles.BubblePositioner.MAX_HEIGHT;
+import static com.android.wm.shell.bubbles.util.BubbleUtils.isValidToBubble;
 import static com.android.wm.shell.shared.TypefaceUtils.setTypeface;
 
 import android.annotation.NonNull;
@@ -347,7 +348,9 @@ public class BubbleExpandedView extends LinearLayout {
 
                         @Override
                         public void onTaskInfoChanged(RunningTaskInfo taskInfo) {
-                            // nothing to do / handled in listener.
+                            if (mBubble != null && taskInfo != null) {
+                                mBubble.setIsTaskValidToBubble(isValidToBubble(taskInfo));
+                            }
                         }
                     });
 
@@ -1010,6 +1013,11 @@ public class BubbleExpandedView extends LinearLayout {
 
     public int getManageButtonMargin() {
         return ((LinearLayout.LayoutParams) mManageButton.getLayoutParams()).getMarginStart();
+    }
+
+    /** Whether the bubble associated with this expanded view is being cleaned up. */
+    public boolean isCleanupDeferred() {
+        return mBubble != null && mBubble.isCleanupDeferred();
     }
 
     /** Hide the task view. */

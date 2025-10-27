@@ -23,7 +23,7 @@ import com.android.systemui.notetask.NoteTaskEntryPoint.QS_NOTES_TILE
 import com.android.systemui.notetask.NoteTaskEntryPoint.QUICK_AFFORDANCE
 import com.android.systemui.notetask.NoteTaskEntryPoint.TAIL_BUTTON
 import com.android.systemui.notetask.NoteTaskEntryPoint.WIDGET_PICKER_SHORTCUT
-import com.android.systemui.notetask.NoteTaskEntryPoint.WIDGET_PICKER_SHORTCUT_IN_MULTI_WINDOW_MODE
+import com.android.systemui.notetask.NoteTaskEntryPoint.WIDGET_PICKER_SHORTCUT_LAUNCH_IN_ACTIVITY
 import com.android.systemui.notetask.NoteTaskEventLogger.NoteTaskUiEvent
 import com.android.systemui.notetask.NoteTaskEventLogger.NoteTaskUiEvent.NOTE_OPENED_VIA_KEYGUARD_QUICK_AFFORDANCE
 import com.android.systemui.notetask.NoteTaskEventLogger.NoteTaskUiEvent.NOTE_OPENED_VIA_SHORTCUT
@@ -54,12 +54,12 @@ class NoteTaskEventLogger @Inject constructor(private val uiEventLogger: UiEvent
                 }
 
                 WIDGET_PICKER_SHORTCUT,
-                WIDGET_PICKER_SHORTCUT_IN_MULTI_WINDOW_MODE -> NOTE_OPENED_VIA_SHORTCUT
+                WIDGET_PICKER_SHORTCUT_LAUNCH_IN_ACTIVITY -> NOTE_OPENED_VIA_SHORTCUT
 
                 QUICK_AFFORDANCE -> NOTE_OPENED_VIA_KEYGUARD_QUICK_AFFORDANCE
                 APP_CLIPS,
                 KEYBOARD_SHORTCUT,
-                QS_NOTES_TILE,  // TODO(b/376640872): Add logging for QS Tile entry point.
+                QS_NOTES_TILE, // TODO(b/376640872): Add logging for QS Tile entry point.
                 null -> return
             }
         uiEventLogger.log(event, info.uid, info.packageName)
@@ -78,7 +78,7 @@ class NoteTaskEventLogger @Inject constructor(private val uiEventLogger: UiEvent
                 }
 
                 WIDGET_PICKER_SHORTCUT,
-                WIDGET_PICKER_SHORTCUT_IN_MULTI_WINDOW_MODE,
+                WIDGET_PICKER_SHORTCUT_LAUNCH_IN_ACTIVITY,
                 QUICK_AFFORDANCE,
                 APP_CLIPS,
                 KEYBOARD_SHORTCUT,

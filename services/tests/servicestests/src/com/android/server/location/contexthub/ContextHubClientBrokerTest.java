@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.when;
 
 import android.app.PendingIntent;
+import android.chre.flags.Flags;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.location.ContextHubInfo;
@@ -28,7 +29,9 @@ import android.hardware.location.IContextHubClientCallback;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -56,6 +59,8 @@ public class ContextHubClientBrokerTest {
     @Mock private ContextHubInfo mMockContextHubInfo;
     @Mock private IContextHubClientCallback mMockCallback;
     @Rule public final MockitoRule mockito = MockitoJUnit.rule();
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Before
     public void setUp() throws RemoteException {
@@ -239,5 +244,24 @@ public class ContextHubClientBrokerTest {
 
         assertThat(broker.isWakelockUsable()).isFalse();
         assertThat(broker.getWakeLock().isHeld()).isFalse();
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_HIGH_NUMBER_HOST_ENDPOINT_FIX})
+    public void testPendingIntentCanceled() throws InterruptedException {
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0, new Intent(), 0);
+        CountDownLatch latch = new CountDownLatch(1);
+        ContextHubClientBroker broker = createFromPendingIntent(pendingIntent);
+        broker.replacePendingIntentCancelListener(intent -> {
+            broker.onPendingIntentCanceled();
+            latch.countDown();
+        });
+        assertThat(broker.isPendingIntentCancelled()).isFalse();
+
+        pendingIntent.cancel();
+
+        boolean isListenerTriggered = latch.await(5, TimeUnit.SECONDS);
+        assertThat(isListenerTriggered).isTrue();
+        assertThat(broker.isPendingIntentCancelled()).isTrue();
     }
 }

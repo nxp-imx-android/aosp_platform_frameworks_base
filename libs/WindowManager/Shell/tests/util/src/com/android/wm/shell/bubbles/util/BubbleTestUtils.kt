@@ -21,6 +21,7 @@ import android.graphics.Rect
 import android.os.IBinder
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.Change.CHANGE_LAUNCH_NEXT_TO_BUBBLE
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.google.common.truth.Truth.assertThat
 
 object BubbleTestUtils {
@@ -55,20 +56,23 @@ object BubbleTestUtils {
         }
 
         // Verify Change
-
-        assertThat(wct.changes[taskToken]).isNotNull()
-        val change = wct.changes[taskToken]!!
-        if (rootTaskToken == null) {
+        if (isAppBubble && com.android.window.flags.Flags.rootTaskForBubble()) {
+            assertThat(wct.changes[rootTaskToken]).isNotNull()
+            val change = wct.changes[rootTaskToken]!!
+            assertThat(change.windowSetMask and WindowConfiguration.WINDOW_CONFIG_BOUNDS)
+                .isEqualTo(1)
+        } else {
+            assertThat(wct.changes[taskToken]).isNotNull()
+            val change = wct.changes[taskToken]!!
+            assertThat(rootTaskToken).isNull()
             assertThat(change.windowingMode)
                 .isEqualTo(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW)
-        }
-        if (rootTaskToken == null && isAppBubble) {
-            assertThat(change.launchNextToBubble).isTrue()
-            assertThat(change.interceptBackPressed).isTrue()
-        } else {
-            assertThat(change.changeMask and CHANGE_LAUNCH_NEXT_TO_BUBBLE).isEqualTo(0)
-        }
-        if (!com.android.window.flags.Flags.rootTaskForBubble()) {
+            if (isAppBubble) {
+                assertThat(change.launchNextToBubble).isTrue()
+                assertThat(change.interceptBackPressed).isTrue()
+            } else {
+                assertThat(change.changeMask and CHANGE_LAUNCH_NEXT_TO_BUBBLE).isEqualTo(0)
+            }
             assertThat(change.forceExcludedFromRecents).isTrue()
             assertThat(change.disablePip).isTrue()
             assertThat(change.disableLaunchAdjacent).isTrue()
@@ -83,6 +87,11 @@ object BubbleTestUtils {
         captionInsetsOwner: IBinder? = null,
     ) {
         // Verify hierarchy ops
+        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            assertThat(
+                wct.hierarchyOps.any { op -> op.container == taskToken && !op.isAlwaysOnTop }
+            ).isTrue()
+        }
 
         // If there is a caption insets owner set, then that will add an hierarchy op after the
         // alwaysOnTop hierarchy op to remove the insets source.
@@ -97,11 +106,7 @@ object BubbleTestUtils {
                 .isTrue()
         }
 
-        assertThat(wct.hierarchyOps.any { op -> op.container == taskToken && !op.isAlwaysOnTop })
-            .isTrue()
-
         // Verify Change
-
         assertThat(wct.changes[taskToken]).isNotNull()
         val change = wct.changes[taskToken]!!
         if (!com.android.window.flags.Flags.rootTaskForBubble()) {

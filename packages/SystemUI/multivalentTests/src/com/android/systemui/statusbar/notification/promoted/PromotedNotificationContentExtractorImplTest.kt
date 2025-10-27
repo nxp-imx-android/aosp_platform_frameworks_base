@@ -28,7 +28,6 @@ import android.app.PendingIntent
 import android.app.Person
 import android.content.Intent
 import android.graphics.drawable.Icon
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -67,17 +66,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         Kosmos.Fixture { rowImageInflater.useForContentModel() }
 
     @Test
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun shouldNotExtract_bothFlagsDisabled() =
-        kosmos.runTest {
-            val notif = createEntry()
-            val content = extractContent(notif)
-            assertThat(content).isNull()
-        }
-
-    @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun shouldExtract_bothFlagsEnabled() =
+    fun shouldExtract() =
         kosmos.runTest {
             val entry = createEntry()
             val content = extractContent(entry)
@@ -85,7 +74,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun shouldNotExtract_becauseNotPromoted() =
         kosmos.runTest {
             val entry = createEntry(promoted = false)
@@ -94,7 +82,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractsContent_commonFields() =
         kosmos.runTest {
             val entry = createEntry {
@@ -119,7 +106,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractsContent_commonFields_noRedaction() =
         kosmos.runTest {
             val entry = createEntry {
@@ -144,7 +130,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractContent_wasPromotedAutomatically_false() =
         kosmos.runTest {
             val entry = createEntry { extras.putBoolean(EXTRA_WAS_AUTOMATICALLY_PROMOTED, false) }
@@ -155,7 +140,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractContent_wasPromotedAutomatically_true() =
         kosmos.runTest {
             val entry = createEntry { extras.putBoolean(EXTRA_WAS_AUTOMATICALLY_PROMOTED, true) }
@@ -166,7 +150,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractContent_apiFlagOn_shortCriticalTextExtracted() =
         kosmos.runTest {
             val entry = createEntry { setShortCriticalText(TEST_SHORT_CRITICAL_TEXT) }
@@ -177,7 +160,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractContent_noShortCriticalTextSet_textIsNull() =
         kosmos.runTest {
             val entry = createEntry { setShortCriticalText(null) }
@@ -188,7 +170,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractTime_none() =
         kosmos.runTest {
             assertExtractedTime(
@@ -199,7 +180,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractTime_basicTimeZero() =
         kosmos.runTest {
             assertExtractedTime(
@@ -211,7 +191,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractTime_basicTimeNow() =
         kosmos.runTest {
             assertExtractedTime(
@@ -223,7 +202,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractTime_basicTimePast() =
         kosmos.runTest {
             assertExtractedTime(
@@ -235,7 +213,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractTime_basicTimeFuture() =
         kosmos.runTest {
             assertExtractedTime(
@@ -247,7 +224,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractTime_countUpZero() =
         kosmos.runTest {
             assertExtractedTime(
@@ -260,7 +236,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractTime_countUpNow() =
         kosmos.runTest {
             assertExtractedTime(
@@ -273,7 +248,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractTime_countUpPast() =
         kosmos.runTest {
             assertExtractedTime(
@@ -286,7 +260,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractTime_countUpFuture() =
         kosmos.runTest {
             assertExtractedTime(
@@ -299,7 +272,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractTime_countDownZero() =
         kosmos.runTest {
             assertExtractedTime(
@@ -312,7 +284,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractTime_countDownNow() =
         kosmos.runTest {
             assertExtractedTime(
@@ -325,7 +296,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractTime_countDownPast() =
         kosmos.runTest {
             assertExtractedTime(
@@ -338,7 +308,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractTime_countDownFuture() =
         kosmos.runTest {
             assertExtractedTime(
@@ -351,7 +320,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractTime_prefersChronometerToWhen() =
         kosmos.runTest {
             assertExtractedTime(
@@ -432,7 +400,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
     // TODO: Add tests for the style of the publicVersion once we implement that
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractContent_fromBaseStyle() =
         kosmos.runTest {
             val entry = createEntry { setStyle(null) }
@@ -444,7 +411,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractContent_fromBigTextStyle() =
         kosmos.runTest {
             val entry = createEntry {
@@ -470,7 +436,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractContent_fromBigTextStyle_fallbackToContentTitle() =
         kosmos.runTest {
             val entry = createEntry {
@@ -496,7 +461,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractContent_fromBigTextStyle_fallbackToContentText() =
         kosmos.runTest {
             val entry = createEntry {
@@ -522,7 +486,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractContent_fromCallStyle() =
         kosmos.runTest {
             val hangUpIntent =
@@ -547,7 +510,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractContent_fromProgressStyle() =
         kosmos.runTest {
             val entry = createEntry {
@@ -568,7 +530,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractContent_fromIneligibleStyle() =
         kosmos.runTest {
             val entry = createEntry {
@@ -583,7 +544,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractContent_fromOldProgressDeterminate() =
         kosmos.runTest {
             val entry = createEntry {
@@ -600,7 +560,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun extractContent_fromOldProgressIndeterminate() =
         kosmos.runTest {
             val entry = createEntry {
@@ -616,7 +575,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_API_METRIC_STYLE)
+    @EnableFlags(FLAG_API_METRIC_STYLE)
     fun extractContent_fromMetricStyle_singleTextValue() =
         kosmos.runTest {
             val entry = createEntry {
@@ -643,7 +602,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_API_METRIC_STYLE)
+    @EnableFlags(FLAG_API_METRIC_STYLE)
     fun extractContent_fromMetricStyle_singleIntegerValue() =
         kosmos.runTest {
             val entry = createEntry {
@@ -670,7 +629,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_API_METRIC_STYLE)
+    @EnableFlags(FLAG_API_METRIC_STYLE)
     fun extractContent_fromMetricStyle_timeDifferenceWithInstant() =
         kosmos.runTest {
             val zeroTime = java.time.Instant.ofEpochMilli(100)
@@ -704,7 +663,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_API_METRIC_STYLE)
+    @EnableFlags(FLAG_API_METRIC_STYLE)
     fun extractContent_fromMetricStyle_timeDifferenceWithPausedDuration() =
         kosmos.runTest {
             val pausedDuration = java.time.Duration.ofSeconds(30)
@@ -734,7 +693,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_API_METRIC_STYLE)
+    @EnableFlags(FLAG_API_METRIC_STYLE)
     fun extractContent_fromMetricStyle_multipleMetrics() =
         kosmos.runTest {
             val entry = createEntry {

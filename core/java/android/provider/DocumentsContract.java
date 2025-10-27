@@ -428,7 +428,6 @@ public final class DocumentsContract {
          *
          * @see #SYNC_STATE_FLAG_AVAILABLE_LOCALLY
          * @see #SYNC_STATE_FLAG_LOCAL_CHANGES
-         * @see #SYNC_STATE_FLAG_REMOTE_CHANGES
          * @see #SYNC_STATE_FLAG_UPLOAD_PROGRESS
          * @see #SYNC_STATE_FLAG_DOWNLOAD_PROGRESS
          * @see #SYNC_STATE_FLAG_UPLOAD_ERROR
@@ -456,15 +455,6 @@ public final class DocumentsContract {
         public static final int SYNC_STATE_FLAG_LOCAL_CHANGES = 1 << 1;
 
         /**
-         * Flag indicating that the local version of the document has remote changes that require a
-         * download, or that the document is not available locally but exists remotely.
-         *
-         * @see #COLUMN_CONTENT_SYNC_STATE_FLAGS
-         */
-        @FlaggedApi(Flags.FLAG_ENABLE_SYNC_STATE)
-        public static final int SYNC_STATE_FLAG_REMOTE_CHANGES = 1 << 2;
-
-        /**
          * Flag indicating that an upload of local changes is currently in progress. This flag
          * typically implies {@link #SYNC_STATE_FLAG_AVAILABLE_LOCALLY} and
          * {@link #SYNC_STATE_FLAG_LOCAL_CHANGES} are also set.
@@ -472,16 +462,15 @@ public final class DocumentsContract {
          * @see #COLUMN_CONTENT_SYNC_STATE_FLAGS
          */
         @FlaggedApi(Flags.FLAG_ENABLE_SYNC_STATE)
-        public static final int SYNC_STATE_FLAG_UPLOAD_PROGRESS = 1 << 3;
+        public static final int SYNC_STATE_FLAG_UPLOAD_PROGRESS = 1 << 2;
 
         /**
-         * Flag indicating that a download of remote changes is currently in progress. This flag
-         * typically implies {@link #SYNC_STATE_FLAG_REMOTE_CHANGES} is also set.
+         * Flag indicating that a download of remote changes is currently in progress.
          *
          * @see #COLUMN_CONTENT_SYNC_STATE_FLAGS
          */
         @FlaggedApi(Flags.FLAG_ENABLE_SYNC_STATE)
-        public static final int SYNC_STATE_FLAG_DOWNLOAD_PROGRESS = 1 << 4;
+        public static final int SYNC_STATE_FLAG_DOWNLOAD_PROGRESS = 1 << 3;
 
         /**
          * Flag indicating that the last upload attempt resulted in an error. This flag typically
@@ -491,16 +480,15 @@ public final class DocumentsContract {
          * @see #COLUMN_CONTENT_SYNC_STATE_FLAGS
          */
         @FlaggedApi(Flags.FLAG_ENABLE_SYNC_STATE)
-        public static final int SYNC_STATE_FLAG_UPLOAD_ERROR = 1 << 5;
+        public static final int SYNC_STATE_FLAG_UPLOAD_ERROR = 1 << 4;
 
         /**
-         * Flag indicating that the last download attempt resulted in an error. This flag typically
-         * implies {@link #SYNC_STATE_FLAG_REMOTE_CHANGES} is also set.
+         * Flag indicating that the last download attempt resulted in an error.
          *
          * @see #COLUMN_CONTENT_SYNC_STATE_FLAGS
          */
         @FlaggedApi(Flags.FLAG_ENABLE_SYNC_STATE)
-        public static final int SYNC_STATE_FLAG_DOWNLOAD_ERROR = 1 << 6;
+        public static final int SYNC_STATE_FLAG_DOWNLOAD_ERROR = 1 << 5;
 
         /**
          * MIME type of a document which is a directory that may contain

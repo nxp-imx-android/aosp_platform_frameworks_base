@@ -35,7 +35,7 @@ import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.controls.ui.view.MediaHostState
-import com.android.systemui.media.dagger.MediaModule.KEYGUARD
+import com.android.systemui.media.dagger.MediaModule
 import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
@@ -71,7 +71,7 @@ import kotlinx.coroutines.launch
 class KeyguardMediaController
 @Inject
 constructor(
-    @param:Named(KEYGUARD) private val mediaHost: MediaHost,
+    @param:Named(MediaModule.KEYGUARD) private val mediaHost: MediaHost,
     @Application private val applicationScope: CoroutineScope,
     private val bypassController: KeyguardBypassController,
     private val statusBarStateController: SysuiStatusBarStateController,

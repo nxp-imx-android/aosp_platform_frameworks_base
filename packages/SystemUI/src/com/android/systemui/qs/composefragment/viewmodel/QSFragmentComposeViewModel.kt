@@ -47,8 +47,7 @@ import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.C
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.Companion.LOCATION_QS
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.controls.ui.view.MediaHostState
-import com.android.systemui.media.dagger.MediaModule.QS_PANEL
-import com.android.systemui.media.dagger.MediaModule.QUICK_QS_PANEL
+import com.android.systemui.media.dagger.MediaModule
 import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
@@ -113,8 +112,8 @@ constructor(
     private val inFirstPageViewModel: InFirstPageViewModel,
     @QSFragmentComposeLog private val tableLogBuffer: TableLogBuffer,
     mediaInRowInLandscapeViewModelFactory: MediaInRowInLandscapeViewModel.Factory,
-    @Named(QUICK_QS_PANEL) val qqsMediaHost: MediaHost,
-    @Named(QS_PANEL) val qsMediaHost: MediaHost,
+    @Named(MediaModule.QUICK_QS_PANEL) val qqsMediaHost: MediaHost,
+    @Named(MediaModule.QS_PANEL) val qsMediaHost: MediaHost,
     @Named(QSFragmentComposeModule.QS_USING_MEDIA_PLAYER) private val usingMedia: Boolean,
     private val uiEventLogger: UiEventLogger,
     @Assisted private val lifecycleScope: LifecycleCoroutineScope,

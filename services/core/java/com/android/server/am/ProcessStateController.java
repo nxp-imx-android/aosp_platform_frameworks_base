@@ -42,6 +42,7 @@ import android.util.SparseBooleanArray;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
+import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.AsyncBatchSession;
 import com.android.server.am.psc.ProcessListInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
@@ -84,7 +85,7 @@ public class ProcessStateController {
     private final ConcurrentLinkedQueue<Runnable> mStagingQueue = new ConcurrentLinkedQueue<>();
 
     private ProcessStateController(ActivityManagerService ams, ProcessListInternal processList,
-            ActiveUids activeUids, ServiceThread handlerThread,
+            ActiveUidsInternal activeUids, ServiceThread handlerThread,
             Object lock, Object procLock, Consumer<ProcessRecord> topChangeCallback,
             ProcessLruUpdater lruUpdater, OomAdjuster.Injector oomAdjInjector,
             OomAdjuster.Constants oomConstants, OomAdjuster.Callback callback) {
@@ -319,6 +320,7 @@ public class ProcessStateController {
         private ProcessRecordInternal mPreviousProcess = null;
         private static final int NONE_DEBUG_UID = -1;
         private volatile int mDebugUid = NONE_DEBUG_UID;
+        private volatile long mLastUserUnlockingUptime = 0;
 
         private void commitStagedState() {
             mUnlocking = mUnlockingStaged;
@@ -376,6 +378,10 @@ public class ProcessStateController {
 
         public boolean isDebugEnabled(ProcessRecordInternal app) {
             return app.getApplicationUid() == mDebugUid;
+        }
+
+        public long getLastUserUnlockingUptime() {
+            return mLastUserUnlockingUptime;
         }
     }
 
@@ -483,6 +489,21 @@ public class ProcessStateController {
      */
     public int getDebugUid() {
         return mGlobalState.mDebugUid;
+    }
+
+    /**
+     * Sets the timestamp for the last user unlock event. This should be called when a user starts
+     * unlocking to record the uptime.
+     */
+    public void setLastUserUnlockingUptime(long time) {
+        mGlobalState.mLastUserUnlockingUptime = time;
+    }
+
+    /**
+     * Returns the timestamp for the last user unlock event.
+     */
+    public long getLastUserUnlockingUptime() {
+        return mGlobalState.mLastUserUnlockingUptime;
     }
 
     /***************************** UID State Events ****************************/
@@ -1153,7 +1174,7 @@ public class ProcessStateController {
     public static class Builder {
         private final ActivityManagerService mAms;
         private final ProcessListInternal mProcessList;
-        private final ActiveUids mActiveUids;
+        private final ActiveUidsInternal mActiveUids;
         private final OomAdjuster.Constants mOomConstants;
         private final OomAdjuster.Callback mOomAdjCallback;
 
@@ -1164,7 +1185,7 @@ public class ProcessStateController {
         private OomAdjuster.Injector mOomAdjInjector = null;
 
         public Builder(ActivityManagerService ams, ProcessListInternal processList,
-                ActiveUids activeUids, OomAdjuster.Constants oomConstants,
+                ActiveUidsInternal activeUids, OomAdjuster.Constants oomConstants,
                 OomAdjuster.Callback oomAdjCallback) {
             mAms = ams;
             mProcessList = processList;

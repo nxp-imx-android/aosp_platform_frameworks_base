@@ -23,7 +23,6 @@ import static com.android.app.animation.Interpolators.STANDARD;
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_NOTIFICATION_SHADE_SCROLL_FLING;
 import static com.android.server.notification.Flags.screenshareNotificationHiding;
 import static com.android.systemui.Dependency.ALLOW_NOTIFICATION_LONG_PRESS_NAME;
-import static com.android.systemui.Flags.confineNotificationTouchToViewWidth;
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.OnEmptySpaceClickListener;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.OnOverscrollTopChangedListener;
@@ -115,7 +114,6 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpTouchHelper;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpTouchHelper.HeadsUpNotificationViewController;
 import com.android.systemui.statusbar.notification.headsup.OnHeadsUpChangedListener;
 import com.android.systemui.statusbar.notification.init.NotificationsController;
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.row.ActivatableNotificationView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
@@ -635,7 +633,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                             ev.getY(),
                             true /* requireMinHeight */,
                             false /* ignoreDecors */,
-                            !confineNotificationTouchToViewWidth() /* ignoreWidth */);
+                            !SceneContainerFlag.isEnabled() /* ignoreWidth */);
 
                     // Verify the MotionEvent x,y are actually inside the touch area of the shelf,
                     // since the shelf may be animated down to a collapsed size on keyguard.
@@ -1715,13 +1713,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
     }
 
     public void generateHeadsUpAnimation(NotificationEntry entry, boolean isHeadsUp) {
-        RectF chipBounds;
-        if (PromotedNotificationUi.isEnabled()) {
-            chipBounds = mVisibleStatusBarNotificationChips.getOrDefault(entry.getKey(), null);
-        } else {
-            chipBounds = null;
-        }
-
+        RectF chipBounds = mVisibleStatusBarNotificationChips.getOrDefault(entry.getKey(), null);
         mView.generateHeadsUpAnimation(entry, isHeadsUp, chipBounds);
     }
 

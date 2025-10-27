@@ -87,20 +87,16 @@
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"Entsperrung mit Finger geht nicht. Zu oft versucht."</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"Trust Agent nicht verfügbar"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"Zu viele Versuche mit falscher PIN"</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pin (5834891656916692329) -->
+    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"Diese PIN wurde bereits eingegeben. Bitte versuch es mit einer anderen."</string>
+    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
     <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (7373825671396212841) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (8830545654233356393) -->
+    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
     <skip />
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Zu viele Versuche mit falschem Muster"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Zu viele Versuche mit falschem Passwort"</string>
-    <!-- no translation found for kg_primary_auth_locked_out_pin_shortlink (1294871994741389848) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_pattern_shortlink (5998598232858156495) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_password_shortlink (7035847891707609104) -->
-    <skip />
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"Zu viele Versuche mit falscher PIN\nWeitere Informationen unter <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"Zu viele Versuche mit falschem Muster\nWeitere Informationen unter <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"Zu viele Versuche mit falschem Passwort\nWeitere Informationen unter <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{Versuche es in # Sekunde noch einmal}other{Versuche es in # Sekunden noch einmal}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_seconds" msgid="5869847493314053274">"{count,plural, =1{Versuche es in # Sekunde noch einmal}other{Versuche es in # Sekunden noch einmal}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_minutes" msgid="6688071439818994316">"{count,plural, =1{Versuche es in # Minute noch einmal}other{Versuche es in # Minuten noch einmal}}"</string>

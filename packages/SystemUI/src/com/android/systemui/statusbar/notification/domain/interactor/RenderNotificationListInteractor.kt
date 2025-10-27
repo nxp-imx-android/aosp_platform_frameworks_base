@@ -190,13 +190,6 @@ private class ActiveNotificationsStoreBuilder(
         }
 
     private fun NotificationEntry.toModel(): ActiveNotificationModel {
-        val promotedContent =
-            if (PromotedNotificationContentModel.featureFlagEnabled()) {
-                promotedNotificationContentModels
-            } else {
-                null
-            }
-
         return existingModels.createOrReuseNotif(
             key = key,
             groupKey = sbn.groupKey,
@@ -221,7 +214,7 @@ private class ActiveNotificationsStoreBuilder(
             isGroupSummary = sbn.notification.isGroupSummary,
             bucket = bucket,
             callType = sbn.toCallType(),
-            promotedContent = promotedContent,
+            promotedContent = promotedNotificationContentModels,
             requestedPromotion = sbn.notification.isRequestPromotedOngoing,
             notifStyle = notifStyle(sbn.notification),
         )

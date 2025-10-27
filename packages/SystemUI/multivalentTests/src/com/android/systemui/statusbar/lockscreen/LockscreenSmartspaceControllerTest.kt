@@ -779,7 +779,7 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         verify(smartspaceSession).removeOnTargetsAvailableListener(sessionListener)
         verify(smartspaceSession).close()
         verify(userTracker).removeCallback(userListener)
-        verify(contentResolver).unregisterContentObserver(settingsObserver)
+        verify(secureSettings).unregisterContentObserverAsync(settingsObserver)
         verify(sysuiColorExtractor).removeOnColorsChangedListener(onColorsChangedListener)
         verify(configurationController).removeCallback(configChangeListener)
         verify(statusBarStateController).removeCallback(statusBarStateListener)
@@ -881,8 +881,8 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         verify(userTracker).addCallback(capture(userTrackerCaptor), any())
         userListener = userTrackerCaptor.value
 
-        verify(contentResolver)
-            .registerContentObserver(
+        verify(secureSettings)
+            .registerContentObserverForUserAsync(
                 eq(fakePrivateLockscreenSettingUri),
                 eq(true),
                 capture(settingsObserverCaptor),

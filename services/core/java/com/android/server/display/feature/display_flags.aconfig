@@ -71,14 +71,6 @@ flag {
 }
 
 flag {
-    name: "even_dimmer"
-    namespace: "display_manager"
-    description: "Feature flag for extending the brightness below traditional range"
-    bug: "294760970"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "configurable_default_doze_values"
     namespace: "display_manager"
     description: "Specify the default doze values in config.xml"
@@ -381,16 +373,6 @@ flag {
 }
 
 flag {
-    name: "enable_single_app_event_for_mode_and_frame_rate_override"
-    namespace: "display_manager"
-    description: "Enable single app event for mode and frame rate override changed event."
-    bug: "415850294"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_display_mirror_in_lock_task_mode"
     namespace: "lse_desktop_experience"
     description: "Starts mirroring on the connected display if the device is in lock task mode."
@@ -442,4 +424,14 @@ flag {
     namespace: "display_manager"
     description: "Enable merging of display events"
     bug: "378668902"
+}
+
+flag {
+    name: "send_non_rr_callbacks_when_in_background"
+    namespace: "display_manager"
+    description: "Continue sending non refresh rate events callbacks when the corresponding pid is not in the foreground"
+    bug: "449949226"
+    metadata {
+          purpose: PURPOSE_BUGFIX
+    }
 }

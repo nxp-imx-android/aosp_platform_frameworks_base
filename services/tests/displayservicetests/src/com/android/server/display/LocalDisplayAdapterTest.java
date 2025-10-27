@@ -244,7 +244,6 @@ public class LocalDisplayAdapterTest {
         when(mMockDisplayDeviceConfig.isEvenDimmerAvailable()).thenReturn(true);
 
         doReturn(true).when(mFlags).isDisplayOffloadEnabled();
-        doReturn(true).when(mFlags).isEvenDimmerEnabled();
         doReturn(true).when(mFlags).isDisplayContentModeManagementEnabled();
         initDisplayOffloadSession();
     }
@@ -905,7 +904,6 @@ public class LocalDisplayAdapterTest {
     @Test
     @EnableFlags(com.android.graphics.surfaceflinger.flags.Flags.FLAG_SUPPORTED_REFRESH_RATE_UPDATE)
     public void testOnModeAndFrameRateOverridesChanged() throws Exception {
-        doReturn(true).when(mFlags).isSingleAppEventForModeAndFrameRateOverrideEnabled();
         long appVsyncOffsetNanosMode1 = 100;
         long presentationDeadlineNanosMode1 = 200;
         long appVsyncOffsetNanosMode2 = 101;

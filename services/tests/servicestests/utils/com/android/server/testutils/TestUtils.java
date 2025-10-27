@@ -124,6 +124,13 @@ public class TestUtils {
         }
 
         /**
+         * @return True if there is a suppressed exception.
+         */
+        public boolean hasException() {
+            return mPrimaryExceptionRef.get() != null;
+        }
+
+        /**
          * Execute all the cleanups based on the configured order, and throw all
          * the suppressed exceptions at the end of close().
          */

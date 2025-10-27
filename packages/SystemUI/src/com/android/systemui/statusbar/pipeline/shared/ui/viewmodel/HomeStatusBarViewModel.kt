@@ -56,8 +56,6 @@ import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.MediaProjectionStopDialogModel
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppChipViewModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
-import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModelLegacy
-import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
@@ -70,11 +68,9 @@ import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarBoundsViewMod
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsetsViewModelStore
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.icon.domain.interactor.StatusBarNotificationIconsInteractor
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.domain.interactor.DarkIconInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.phone.domain.interactor.LightsOutInteractor
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryNextToPercentViewModel
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
 import com.android.systemui.statusbar.pipeline.shared.StatusBarShowIconsInSecureCamera
@@ -150,12 +146,6 @@ interface HomeStatusBarViewModel : Activatable {
      */
     val mediaProjectionStopDialogDueToCallEndedState: StateFlow<MediaProjectionStopDialogModel>
 
-    /**
-     * The ongoing activity chip that should be primarily shown on the left-hand side of the status
-     * bar. If there are multiple ongoing activity chips, this one should take priority.
-     */
-    val primaryOngoingActivityChip: StateFlow<OngoingActivityChipModel>
-
     /** All supported activity chips, whether they are currently active or not. */
     val ongoingActivityChips: ChipsVisibilityModel
 
@@ -182,13 +172,6 @@ interface HomeStatusBarViewModel : Activatable {
 
     /** Whether the Notifications chip should be highlighted. */
     val isNotificationsChipHighlighted: Boolean
-
-    /**
-     * The multiple ongoing activity chips that should be shown on the left-hand side of the status
-     * bar.
-     */
-    @Deprecated("Since StatusBarChipsModernization, use the new ongoingActivityChips")
-    val ongoingActivityChipsLegacy: StateFlow<MultipleOngoingActivityChipsModelLegacy>
 
     /** View model for the carrier name that may show in the status bar based on carrier config */
     val operatorNameViewModel: StatusBarOperatorNameViewModel
@@ -285,7 +268,7 @@ constructor(
     shareToAppChipViewModel: ShareToAppChipViewModel,
     @DisplayAware private val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel,
     statusBarPopupChipsViewModelFactory: StatusBarPopupChipsViewModel.Factory,
-    animations: SystemStatusEventAnimationInteractor,
+    @DisplayAware animations: SystemStatusEventAnimationInteractor,
     statusBarContentInsetsViewModelStore: StatusBarContentInsetsViewModelStore,
     @DisplayAware bgDisplayScope: CoroutineScope,
     @Background bgDispatcher: CoroutineDispatcher,
@@ -321,10 +304,6 @@ constructor(
 
     override val mediaProjectionStopDialogDueToCallEndedState =
         shareToAppChipViewModel.stopDialogToShow
-
-    override val primaryOngoingActivityChip = ongoingActivityChipsViewModel.primaryChip
-
-    override val ongoingActivityChipsLegacy = ongoingActivityChipsViewModel.chipsLegacy
 
     override val popupChips
         get() = statusBarPopupChips.shownPopupChips
@@ -646,13 +625,7 @@ constructor(
     }
 
     private val hasOngoingActivityChips =
-        if (StatusBarChipsModernization.isEnabled) {
-            chipsVisibilityModel.map { it.chips.active.any { chip -> !chip.isHidden } }
-        } else if (PromotedNotificationUi.isEnabled) {
-            ongoingActivityChipsLegacy.map { it.primary is OngoingActivityChipModel.Active }
-        } else {
-            primaryOngoingActivityChip.map { it is OngoingActivityChipModel.Active }
-        }
+        chipsVisibilityModel.map { it.chips.active.any { chip -> !chip.isHidden } }
 
     private val isAnyChipVisible =
         combine(hasOngoingActivityChips, canShowOngoingActivityChips) { hasChips, canShowChips ->

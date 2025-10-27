@@ -117,6 +117,14 @@ public final class MessageQueue {
     }
 
     /**
+     * @return human-readable string that identifies the implementation.
+     * @hide
+     */
+    public static String getImplName() {
+        return "legacy";
+    }
+
+    /**
      * Returns true if the looper has no pending messages which are due to be processed
      * and is not blocked on sync barrier.
      *

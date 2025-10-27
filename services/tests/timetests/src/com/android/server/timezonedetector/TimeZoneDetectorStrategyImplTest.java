@@ -57,6 +57,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
@@ -64,6 +65,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.time.LocationTimeZoneAlgorithmStatus;
 import android.app.time.TelephonyTimeZoneAlgorithmStatus;
@@ -76,6 +78,7 @@ import android.app.timezonedetector.TelephonyTimeZoneSuggestion;
 import android.app.timezonedetector.TelephonyTimeZoneSuggestion.MatchType;
 import android.app.timezonedetector.TelephonyTimeZoneSuggestion.Quality;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.timezone.TimeZoneProviderStatus;
 import android.util.IndentingPrintWriter;
@@ -87,6 +90,7 @@ import com.android.server.timezonedetector.QualifiedTelephonyTimeZoneSuggestion;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -102,7 +106,10 @@ import java.util.function.Function;
 
 /** White-box unit tests for {@link TimeZoneDetectorStrategyImpl}. */
 @RunWith(JUnitParamsRunner.class)
-@EnableFlags(Flags.FLAG_DATETIME_NOTIFICATIONS)
+@EnableFlags({
+    Flags.FLAG_DATETIME_NOTIFICATIONS,
+    android.timezone.flags.Flags.FLAG_ENABLE_FUSED_TIME_ZONE_DETECTOR
+})
 public class TimeZoneDetectorStrategyImplTest {
 
     @ClassRule public static final SetFlagsRule.ClassRule mClassRule = new SetFlagsRule.ClassRule();
@@ -146,13 +153,13 @@ public class TimeZoneDetectorStrategyImplTest {
                 newTelephonyTestCase(
                         MATCH_TYPE_EMULATOR_ZONE_ID, QUALITY_SINGLE_ZONE, TELEPHONY_SCORE_HIGHEST),
             };
-
     private static final TelephonyTimeZoneAlgorithmStatus TELEPHONY_ALGORITHM_RUNNING_STATUS =
             new TelephonyTimeZoneAlgorithmStatus(DETECTION_ALGORITHM_STATUS_RUNNING);
 
     private FakeServiceConfigAccessor mFakeServiceConfigAccessorSpy;
     private FakeEnvironment mFakeEnvironment;
     private FakeTimeZoneChangeEventListener mFakeTimeZoneChangeEventTracker;
+    private FakeFusedTimeZoneDetector mFakeFusedTimeZoneDetector;
 
     private TimeZoneDetectorStrategyImpl mTimeZoneDetectorStrategy;
 
@@ -163,12 +170,14 @@ public class TimeZoneDetectorStrategyImplTest {
         mFakeServiceConfigAccessorSpy.initializeCurrentUserConfiguration(
                 CONFIG_AUTO_DISABLED_GEO_DISABLED);
         mFakeTimeZoneChangeEventTracker = new FakeTimeZoneChangeEventListener();
+        mFakeFusedTimeZoneDetector = new FakeFusedTimeZoneDetector();
 
         mTimeZoneDetectorStrategy =
                 new TimeZoneDetectorStrategyImpl(
                         mFakeServiceConfigAccessorSpy,
                         mFakeEnvironment,
-                        mFakeTimeZoneChangeEventTracker);
+                        mFakeTimeZoneChangeEventTracker,
+                        mFakeFusedTimeZoneDetector);
     }
 
     @Test
@@ -482,7 +491,8 @@ public class TimeZoneDetectorStrategyImplTest {
                     expectedScoredSuggestion,
                     mTimeZoneDetectorStrategy.findBestTelephonySuggestionForTests());
 
-            if (Flags.datetimeNotifications()) {
+            if (Flags.datetimeNotifications()
+                    && !android.timezone.flags.Flags.enableFusedTimeZoneDetector()) {
                 assertEquals(1, mFakeTimeZoneChangeEventTracker.getTimeZoneChangeEvents().size());
                 assertEquals(
                         ORIGIN_TELEPHONY,
@@ -510,7 +520,8 @@ public class TimeZoneDetectorStrategyImplTest {
                     expectedScoredSuggestion,
                     mTimeZoneDetectorStrategy.findBestTelephonySuggestionForTests());
 
-            if (Flags.datetimeNotifications()) {
+            if (Flags.datetimeNotifications()
+                    && !android.timezone.flags.Flags.enableFusedTimeZoneDetector()) {
                 // Still 1 from last good quality suggestion but not recorded as quality is too low
                 assertEquals(1, mFakeTimeZoneChangeEventTracker.getTimeZoneChangeEvents().size());
             }
@@ -523,6 +534,8 @@ public class TimeZoneDetectorStrategyImplTest {
      */
     @Test
     public void testTogglingAutoDetection_autoTelephony() {
+        Assume.assumeFalse(android.timezone.flags.Flags.enableFusedTimeZoneDetector());
+
         Script script = new Script();
 
         for (TelephonyTestCase testCase : TELEPHONY_TEST_CASES) {
@@ -618,7 +631,8 @@ public class TimeZoneDetectorStrategyImplTest {
             makeSlotIndex1SuggestionAndCheckState(script, testCase);
         }
 
-        if (Flags.datetimeNotifications()) {
+        if (Flags.datetimeNotifications()
+                && !android.timezone.flags.Flags.enableFusedTimeZoneDetector()) {
             /*
              * Only 6 out of 7 tests have a quality good enough to trigger an event and the
              * set of tests is run twice.
@@ -664,6 +678,8 @@ public class TimeZoneDetectorStrategyImplTest {
      */
     @Test
     public void testTelephonySuggestionMultipleSlotIndexSuggestionScoringAndSlotIndexBias() {
+        Assume.assumeFalse(android.timezone.flags.Flags.enableFusedTimeZoneDetector());
+
         String[] zoneIds = {"Europe/London", "Europe/Paris"};
         TelephonyTimeZoneSuggestion emptySlotIndex1Suggestion = createEmptySlotIndex1Suggestion();
         TelephonyTimeZoneSuggestion emptySlotIndex2Suggestion = createEmptySlotIndex2Suggestion();
@@ -779,6 +795,8 @@ public class TimeZoneDetectorStrategyImplTest {
      */
     @Test
     public void testTelephonySuggestionStrategyDoesNotAssumeCurrentSetting_autoTelephony() {
+        Assume.assumeFalse(android.timezone.flags.Flags.enableFusedTimeZoneDetector());
+
         Script script =
                 new Script()
                         .simulateConfigurationInternalChange(CONFIG_AUTO_ENABLED_GEO_DISABLED)
@@ -1167,7 +1185,8 @@ public class TimeZoneDetectorStrategyImplTest {
         script.verifyCachedDetectorStatus(expectedDetectorStatus)
                 .verifyLatestLocationAlgorithmEventReceived(locationAlgorithmEvent);
 
-        if (Flags.datetimeNotifications()) {
+        if (Flags.datetimeNotifications()
+                && !android.timezone.flags.Flags.enableFusedTimeZoneDetector()) {
             List<TimeZoneChangeListener.TimeZoneChangeEvent> timeZoneChangeEvents =
                     mFakeTimeZoneChangeEventTracker.getTimeZoneChangeEvents();
 
@@ -1183,6 +1202,8 @@ public class TimeZoneDetectorStrategyImplTest {
      */
     @Test
     public void testLocationAlgorithmEvent_multiZone() {
+        Assume.assumeFalse(android.timezone.flags.Flags.enableFusedTimeZoneDetector());
+
         Script script =
                 new Script()
                         .initializeTimeZoneSetting(ARBITRARY_TIME_ZONE_ID, TIME_ZONE_CONFIDENCE_LOW)
@@ -1231,6 +1252,8 @@ public class TimeZoneDetectorStrategyImplTest {
      */
     @Test
     public void testChangingGeoDetectionEnabled() {
+        Assume.assumeFalse(android.timezone.flags.Flags.enableFusedTimeZoneDetector());
+
         TestStateChangeListener stateChangeListener = new TestStateChangeListener();
         LocationAlgorithmEvent locationAlgorithmEvent =
                 createCertainLocationAlgorithmEvent("Europe/London");
@@ -1300,6 +1323,8 @@ public class TimeZoneDetectorStrategyImplTest {
 
     @Test
     public void testTelephonyFallback_enableTelephonyTimeZoneFallbackCalled() {
+        Assume.assumeFalse(android.timezone.flags.Flags.enableFusedTimeZoneDetector());
+
         ConfigurationInternal config =
                 new ConfigurationInternal.Builder(CONFIG_AUTO_ENABLED_GEO_ENABLED)
                         .setTelephonyFallbackSupported(true)
@@ -1507,6 +1532,8 @@ public class TimeZoneDetectorStrategyImplTest {
 
     @Test
     public void testTelephonyFallback_locationAlgorithmEventSuggestsFallback() {
+        Assume.assumeFalse(android.timezone.flags.Flags.enableFusedTimeZoneDetector());
+
         ConfigurationInternal config =
                 new ConfigurationInternal.Builder(CONFIG_AUTO_ENABLED_GEO_ENABLED)
                         .setTelephonyFallbackSupported(true)
@@ -1685,6 +1712,8 @@ public class TimeZoneDetectorStrategyImplTest {
 
     @Test
     public void testTelephonyFallback_noTelephonySuggestionToFallBackTo() {
+        Assume.assumeFalse(android.timezone.flags.Flags.enableFusedTimeZoneDetector());
+
         ConfigurationInternal config =
                 new ConfigurationInternal.Builder(CONFIG_AUTO_ENABLED_GEO_ENABLED)
                         .setTelephonyFallbackSupported(true)
@@ -1853,6 +1882,8 @@ public class TimeZoneDetectorStrategyImplTest {
     }
 
     private void testGenerateMetricsState(boolean enhancedMetricsCollection) {
+        Assume.assumeFalse(android.timezone.flags.Flags.enableFusedTimeZoneDetector());
+
         ConfigurationInternal expectedInternalConfig =
                 new ConfigurationInternal.Builder(CONFIG_AUTO_DISABLED_GEO_DISABLED)
                         .setEnhancedMetricsCollectionEnabled(enhancedMetricsCollection)
@@ -1929,6 +1960,45 @@ public class TimeZoneDetectorStrategyImplTest {
                 telephonySuggestion,
                 locationAlgorithmEvent,
                 MetricsTimeZoneDetectorState.DETECTION_MODE_GEO);
+    }
+
+    @Test
+    public void testFusedDetectorReceivesTelephonySuggestion() {
+        Script script =
+                new Script()
+                        .initializeTimeZoneSetting(ARBITRARY_TIME_ZONE_ID, TIME_ZONE_CONFIDENCE_LOW)
+                        .simulateConfigurationInternalChange(CONFIG_AUTO_ENABLED_GEO_ENABLED)
+                        .resetConfigurationTracking();
+
+        TelephonyTestCase testCase = TELEPHONY_TEST_CASES[TELEPHONY_TEST_CASES.length - 1];
+        TelephonyTimeZoneSuggestion suggestion =
+                testCase.createSuggestion(SLOT_INDEX1, "Europe/London");
+        script.simulateTelephonyTimeZoneSuggestion(suggestion);
+
+        QualifiedTelephonyTimeZoneSuggestion expectedScoredSuggestion =
+                new QualifiedTelephonyTimeZoneSuggestion(suggestion, testCase.expectedScore);
+        assertEquals(
+                expectedScoredSuggestion,
+                mFakeFusedTimeZoneDetector.getLatestTelephonySuggestion());
+        assertNull(mFakeFusedTimeZoneDetector.getLatestLocationEvent());
+    }
+
+    @Test
+    public void testFusedDetectorReceivesLocationEvent() {
+        assumeTrue(android.timezone.flags.Flags.enableFusedTimeZoneDetector());
+
+        Script script =
+                new Script()
+                        .initializeTimeZoneSetting(ARBITRARY_TIME_ZONE_ID, TIME_ZONE_CONFIDENCE_LOW)
+                        .simulateConfigurationInternalChange(CONFIG_AUTO_ENABLED_GEO_ENABLED)
+                        .resetConfigurationTracking();
+
+        LocationAlgorithmEvent locationAlgorithmEvent =
+                createCertainLocationAlgorithmEvent("Europe/London");
+        script.simulateLocationAlgorithmEvent(locationAlgorithmEvent);
+
+        assertEquals(locationAlgorithmEvent, mFakeFusedTimeZoneDetector.getLatestLocationEvent());
+        assertNull(mFakeFusedTimeZoneDetector.getLatestTelephonySuggestion());
     }
 
     /**
@@ -2174,7 +2244,10 @@ public class TimeZoneDetectorStrategyImplTest {
 
         /** Verifies the device's time zone has been set and clears change tracking history. */
         Script verifyTimeZoneChangedAndReset(String zoneId, @TimeZoneConfidence int confidence) {
-            mFakeEnvironment.assertTimeZoneChangedTo(zoneId, confidence);
+            if (!android.timezone.flags.Flags.enableFusedTimeZoneDetector()) {
+                mFakeEnvironment.assertTimeZoneChangedTo(zoneId, confidence);
+            }
+
             mFakeEnvironment.commitAllChanges();
             return this;
         }
@@ -2268,23 +2341,43 @@ public class TimeZoneDetectorStrategyImplTest {
         return new TelephonyTestCase(matchType, quality, expectedScore);
     }
 
-    static class FakeTimeZoneChangeEventListener implements TimeZoneChangeListener {
-        private final List<TimeZoneChangeEvent> mEvents = new ArrayList<>();
-
-        FakeTimeZoneChangeEventListener() {}
+    static class FakeFusedTimeZoneDetector implements FusedTimeZoneDetector {
+        private QualifiedTelephonyTimeZoneSuggestion mLatestTelephonySuggestion;
+        private LocationAlgorithmEvent mLatestLocationEvent;
+        private TimeZoneSetter mTimeZoneSetter;
 
         @Override
-        public void process(TimeZoneChangeEvent event) {
-            mEvents.add(event);
-        }
-
-        public List<TimeZoneChangeEvent> getTimeZoneChangeEvents() {
-            return mEvents;
+        public void onTelephonyTimeZoneDetected(
+                @NonNull QualifiedTelephonyTimeZoneSuggestion suggestion) {
+            mLatestTelephonySuggestion = suggestion;
         }
 
         @Override
-        public void dump(IndentingPrintWriter ipw) {
+        public void onLocationTimeZoneDetected(@NonNull LocationAlgorithmEvent event) {
+            mLatestLocationEvent = event;
+        }
+
+        @Override
+        public void setTimeZoneSetter(@NonNull TimeZoneSetter timeZoneSetter) {
+            mTimeZoneSetter = timeZoneSetter;
+        }
+
+        @Override
+        public void replay() {
             // No-op for tests
+        }
+
+        @Override
+        public void dump(@NonNull IndentingPrintWriter pw, @Nullable String[] args) {
+            // No-op for tests
+        }
+
+        QualifiedTelephonyTimeZoneSuggestion getLatestTelephonySuggestion() {
+            return mLatestTelephonySuggestion;
+        }
+
+        LocationAlgorithmEvent getLatestLocationEvent() {
+            return mLatestLocationEvent;
         }
     }
 

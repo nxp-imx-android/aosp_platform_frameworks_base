@@ -72,6 +72,7 @@ import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
 import android.app.FullscreenRequestHandler;
 import android.app.HandoffActivityData;
+import android.app.HandoffActivityParams;
 import android.app.IActivityClientController;
 import android.app.IRequestFinishCallback;
 import android.app.PictureInPictureParams;
@@ -356,29 +357,30 @@ class ActivityClientController extends IActivityClientController.Stub {
     }
 
     @Override
-    public boolean isHandoffFullTaskRecreationAllowed(IBinder token) {
+    @Nullable
+    public HandoffActivityParams getHandoffActivityParams(IBinder token) {
         final long origId = Binder.clearCallingIdentity();
-        boolean isHandoffFullTaskRecreationAllowed = false;
+        HandoffActivityParams handoffActivityParams = null;
         synchronized (mGlobalLock) {
             final ActivityRecord r = ActivityRecord.forTokenLocked(token);
             if (r != null) {
-                isHandoffFullTaskRecreationAllowed = r.isHandoffFullTaskRecreationAllowed();
+                handoffActivityParams = r.getHandoffActivityParams();
             }
         }
         Binder.restoreCallingIdentity(origId);
-        return isHandoffFullTaskRecreationAllowed;
+        return handoffActivityParams;
     }
 
     @Override
     public void setHandoffEnabled(
             IBinder token,
             boolean handoffEnabled,
-            boolean allowFullTaskRecreation) {
+            @Nullable HandoffActivityParams handoffActivityParams) {
         final long origId = Binder.clearCallingIdentity();
         synchronized (mGlobalLock) {
             final ActivityRecord r = ActivityRecord.forTokenLocked(token);
             if (r != null) {
-                r.setHandoffEnabled(handoffEnabled, allowFullTaskRecreation);
+                r.setHandoffEnabled(handoffEnabled, handoffActivityParams);
             }
         }
         Binder.restoreCallingIdentity(origId);

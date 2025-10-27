@@ -934,6 +934,153 @@ public final class UpdatableFontDirTest {
     }
 
     @Test
+    public void insertFontFamilyBefore() throws Exception {
+        UpdatableFontDir dir = new UpdatableFontDir(
+                mUpdatableFontFilesDir, mParser, mFakeFsverityUtil,
+                mConfigFile, mCurrentTimeSupplier, mConfigSupplier);
+        dir.loadFontFileMap();
+
+        dir.update(Arrays.asList(
+                newFontUpdateRequest("xyz.ttf,1,xyz", GOOD_SIGNATURE),
+                newAddFontFamilyRequest("<family name='xyz'>"
+                        + "  <font>xyz.ttf</font>"
+                        + "</family>")));
+
+        dir.update(Arrays.asList(
+                newFontUpdateRequest("test.ttf,1,test", GOOD_SIGNATURE),
+                newAddFontFamilyRequest("<family name='test'>"
+                        + "  <font>test.ttf</font>"
+                        + "</family>")));
+
+        dir.insert(Arrays.asList(
+                newFontUpdateRequest("abc.ttf,1,abc", GOOD_SIGNATURE),
+                newAddFontFamilyRequest("<family name='abc'>"
+                        + "  <font>abc.ttf</font>"
+                        + "</family>")), "xyz");
+
+        assertThat(dir.getPostScriptMap()).containsKey("abc");
+        assertThat(dir.getFontFamilyMap()).containsKey("abc");
+        assertThat(dir.getFontFamilyMap().get("abc").getFamilies().size()).isEqualTo(1);
+        FontConfig.FontFamily abc = dir.getFontFamilyMap().get("abc").getFamilies().get(0);
+        assertThat(abc.getFontList()).hasSize(1);
+        assertThat(abc.getFontList().get(0).getFile())
+                .isEqualTo(dir.getPostScriptMap().get("abc"));
+
+        PersistentSystemFontConfig.Config config = dir.readPersistentConfig();
+        assertThat(config.fontFamilies.size()).isEqualTo(3);
+        assertThat(config.fontFamilies.get(0).getName()).isEqualTo("test");
+        assertThat(config.fontFamilies.get(1).getName()).isEqualTo("abc");
+        assertThat(config.fontFamilies.get(2).getName()).isEqualTo("xyz");
+    }
+
+    @Test
+    public void insertFontFamilyBefore_invalidFontFamilyNameToInsertBefore() throws Exception {
+        UpdatableFontDir dir = new UpdatableFontDir(
+                mUpdatableFontFilesDir, mParser, mFakeFsverityUtil,
+                mConfigFile, mCurrentTimeSupplier, mConfigSupplier);
+        dir.loadFontFileMap();
+
+        try {
+            dir.insert(Arrays.asList(
+                    newFontUpdateRequest("abc.ttf,1,abc", GOOD_SIGNATURE),
+                    newAddFontFamilyRequest("<family name='abc'>"
+                            + "  <font>abc.ttf</font>"
+                            + "</family>")), "test");
+            fail("Expect SystemFontException");
+        } catch (FontManagerService.SystemFontException e) {
+            assertThat(e.getErrorCode())
+                    .isEqualTo(FontManager.RESULT_ERROR_INVALID_FONT_FAMILY_NAME_TO_INSERT_BEFORE);
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void insertFontFamilyBefore_noName() throws Exception {
+        UpdatableFontDir dir = new UpdatableFontDir(
+                mUpdatableFontFilesDir, mParser, mFakeFsverityUtil,
+                mConfigFile, mCurrentTimeSupplier, mConfigSupplier);
+        dir.loadFontFileMap();
+
+        dir.update(Arrays.asList(
+                newFontUpdateRequest("test.ttf,1,test", GOOD_SIGNATURE),
+                newAddFontFamilyRequest("<family name='test'>"
+                        + "  <font>test.ttf</font>"
+                        + "</family>")));
+        List<FontUpdateRequest> requests = Arrays.asList(
+                newFontUpdateRequest("abc.ttf,1,abc", GOOD_SIGNATURE),
+                newAddFontFamilyRequest("<family lang='en'>"
+                        + "  <font>abc.ttf</font>"
+                        + "</family>"));
+        dir.insert(requests, "test");
+    }
+
+    @Test
+    public void insertFontFamilyBefore_fontNotAvailable() throws Exception {
+        UpdatableFontDir dir = new UpdatableFontDir(
+                mUpdatableFontFilesDir, mParser, mFakeFsverityUtil,
+                mConfigFile, mCurrentTimeSupplier, mConfigSupplier);
+        dir.loadFontFileMap();
+
+        dir.update(Arrays.asList(
+                newFontUpdateRequest("test.ttf,1,test", GOOD_SIGNATURE),
+                newAddFontFamilyRequest("<family name='test'>"
+                        + "  <font>test.ttf</font>"
+                        + "</family>")));
+        try {
+            dir.insert(Arrays.asList(newAddFontFamilyRequest("<family name='abc'>"
+                    + "  <font>abc.ttf</font>"
+                    + "</family>")), "test");
+            fail("Expect SystemFontException");
+        } catch (FontManagerService.SystemFontException e) {
+            assertThat(e.getErrorCode())
+                    .isEqualTo(FontManager.RESULT_ERROR_FONT_NOT_FOUND);
+        }
+    }
+
+    @Test
+    public void insertFontFamilyBefore_fontNotInTheFontFamily() throws Exception {
+        UpdatableFontDir dir = new UpdatableFontDir(
+                mUpdatableFontFilesDir, mParser, mFakeFsverityUtil,
+                mConfigFile, mCurrentTimeSupplier, mConfigSupplier);
+        dir.loadFontFileMap();
+
+        dir.update(Arrays.asList(
+                newFontUpdateRequest("test.ttf,1,test", GOOD_SIGNATURE),
+                newAddFontFamilyRequest("<family name='test'>"
+                        + "  <font>test.ttf</font>"
+                        + "</family>")));
+        try {
+            dir.insert(Arrays.asList(
+                    newFontUpdateRequest("xyz.ttf,1,xyz", GOOD_SIGNATURE),
+                    newAddFontFamilyRequest("<family name='abc'>"
+                            + "  <font>abc.ttf</font>"
+                            + "</family>")), "test");
+            fail("Expect SystemFontException");
+        } catch (FontManagerService.SystemFontException e) {
+            assertThat(e.getErrorCode())
+                    .isEqualTo(FontManager.RESULT_ERROR_FONT_NOT_FOUND);
+        }
+    }
+
+    @Test
+    public void insertFontFamilyBefore_fontIsAlreadyInstalled() throws Exception {
+        UpdatableFontDir dir = new UpdatableFontDir(
+                mUpdatableFontFilesDir, mParser, mFakeFsverityUtil,
+                mConfigFile, mCurrentTimeSupplier, mConfigSupplier);
+        dir.loadFontFileMap();
+
+        dir.update(Arrays.asList(
+                newFontUpdateRequest("abc.ttf,1,abc", GOOD_SIGNATURE),
+                newFontUpdateRequest("test.ttf,1,test", GOOD_SIGNATURE),
+                newAddFontFamilyRequest("<family name='test'>"
+                        + "  <font>test.ttf</font>"
+                        + "</family>")));
+        dir.insert(List.of(
+                newAddFontFamilyRequest("<family name='abc'>"
+                        + "  <font>abc.ttf</font>"
+                        + "</family>")), "test");
+    }
+
+    @Test
     public void getSystemFontConfig() throws Exception {
         UpdatableFontDir dir = new UpdatableFontDir(
                 mUpdatableFontFilesDir, mParser, mFakeFsverityUtil,

@@ -47,7 +47,6 @@ import android.os.Bundle;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
-import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.notification.NotificationListenerService.Ranking;
 import android.service.notification.SnoozeCriterion;
 import android.service.notification.StatusBarNotification;
@@ -61,11 +60,9 @@ import com.android.systemui.res.R;
 import com.android.systemui.statusbar.RankingBuilder;
 import com.android.systemui.statusbar.SbnBuilder;
 import com.android.systemui.statusbar.notification.NmSummarizationAllFlag;
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.util.time.FakeSystemClock;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -88,9 +85,6 @@ public class NotificationEntryTest extends SysuiTestCase {
     private NotificationChannel mChannel = Mockito.mock(NotificationChannel.class);
     private final FakeSystemClock mClock = new FakeSystemClock();
     private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
-
-    @Rule
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Before
     public void setup() {
@@ -295,7 +289,6 @@ public class NotificationEntryTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     public void isPromotedOngoing_flagOnNotif_true() {
         mEntry.getSbn().getNotification().flags |= FLAG_PROMOTED_ONGOING;
 
@@ -303,17 +296,8 @@ public class NotificationEntryTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     public void isPromotedOngoing_noFlagOnNotif_false() {
         mEntry.getSbn().getNotification().flags &= ~FLAG_PROMOTED_ONGOING;
-
-        assertFalse(mEntry.isPromotedOngoing());
-    }
-
-    @Test
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    public void isPromotedOngoing_flagOff_false() {
-        mEntry.getSbn().getNotification().flags |= FLAG_PROMOTED_ONGOING;
 
         assertFalse(mEntry.isPromotedOngoing());
     }

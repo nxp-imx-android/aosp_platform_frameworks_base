@@ -1017,7 +1017,10 @@ public class DisplayManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_SET_DISPLAY_STATE_AFTER_DEVICE_CHANGE)
+    @EnableFlags({
+        Flags.FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED,
+        Flags.FLAG_FIX_SET_DISPLAY_STATE_AFTER_DEVICE_CHANGE
+    })
     public void testDockedDeviceState_displayStateUpdated() {
         mDisplayManager = new DisplayManagerService(mContext,
                 mShortMockedInjector);
@@ -5603,5 +5606,64 @@ public class DisplayManagerServiceTest {
         void setCallback(FakeDisplayManagerCallback callback) {
             this.mCallback = callback;
         }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SEND_NON_RR_CALLBACKS_WHEN_IN_BACKGROUND)
+    public void testRefreshRateEventFilteredForBackgroundApp_WithFlagEnabled() throws Exception {
+        when(mMockFlags.isRefreshRateEventForForegroundAppsEnabled()).thenReturn(true);
+        // Setup DMS and a callback record
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        IDisplayManagerCallback mockCallback = mock(IDisplayManagerCallback.class);
+        IBinder mockBinder = mock(IBinder.class);
+        when(mockCallback.asBinder()).thenReturn(mockBinder);
+        mDisplayManager.windowManagerAndInputReady();
+        DisplayManagerService.CallbackRecord callbackRecord =
+                mDisplayManager.new CallbackRecord(
+                        CALLBACK_RECORD_PID, CALLBACK_RECORD_UID, mockCallback, -1L);
+
+        // Simulate app being in the background
+        when(mMockActivityManagerInternal.getUidProcessState(CALLBACK_RECORD_UID))
+                .thenReturn(PROCESS_STATE_TRANSIENT_BACKGROUND); // Importance > VISIBLE
+
+        // Event mask with both RR and another event
+        int eventMask = DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED
+                | DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED;
+
+        // Act: Notify the callback
+        callbackRecord.notifyDisplayEventAsync(DISPLAY_ID_1, eventMask);
+
+        // Verify: onDisplayEvent was called with only the non-RR event
+        verify(mockCallback).onDisplayEvent(DISPLAY_ID_1,
+                DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SEND_NON_RR_CALLBACKS_WHEN_IN_BACKGROUND)
+    public void testOnlyRefreshRateEventFilteredForBackgroundApp_WithFlagEnabled()
+            throws Exception {
+        when(mMockFlags.isRefreshRateEventForForegroundAppsEnabled()).thenReturn(true);
+        // Setup DMS and a callback record
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        IDisplayManagerCallback mockCallback = mock(IDisplayManagerCallback.class);
+        IBinder mockBinder = mock(IBinder.class);
+        when(mockCallback.asBinder()).thenReturn(mockBinder);
+        mDisplayManager.windowManagerAndInputReady();
+        DisplayManagerService.CallbackRecord callbackRecord =
+                mDisplayManager.new CallbackRecord(
+                        CALLBACK_RECORD_PID, CALLBACK_RECORD_UID, mockCallback, -1L);
+
+        // Simulate app being in the background
+        when(mMockActivityManagerInternal.getUidProcessState(CALLBACK_RECORD_UID))
+                .thenReturn(PROCESS_STATE_TRANSIENT_BACKGROUND); // Importance > VISIBLE
+
+        // Event mask with only RR event
+        int eventMask = DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED;
+
+        // Act: Notify the callback
+        callbackRecord.notifyDisplayEventAsync(DISPLAY_ID_1, eventMask);
+
+        // Verify: onDisplayEvent was NOT called at all
+        verify(mockCallback, never()).onDisplayEvent(anyInt(), anyInt());
     }
 }

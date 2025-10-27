@@ -74,4 +74,11 @@ public @interface PolicyDefinition {
      * If {@link requiredPermission has} a value, this should also have a value.
      */
     String requiredCrossUserPermission() default "";
+
+    /**
+     * Indicates which DPC types are allowed to set this policy, even if they don't hold the
+     * required permission.
+     */
+    AllowedDpcTypes allowedDpcTypes();
+
 }

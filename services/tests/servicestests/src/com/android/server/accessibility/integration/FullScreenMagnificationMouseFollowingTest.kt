@@ -58,6 +58,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import platform.test.desktop.DesktopMouseTestRule
+import platform.test.desktop.LogicalDisplayPointPx
 
 // Convenient extension functions.
 // Injecting mouse move is in integer in PX. Allowing at most 1px error.
@@ -236,7 +237,7 @@ class FullScreenMagnificationMouseFollowingTest {
     }
 
     private fun ensureMouseAtCenter() {
-        desktopMouseRule.move(displayId, centerX.toInt(), centerY.toInt())
+        desktopMouseRule.move(LogicalDisplayPointPx(displayId, centerX.toInt(), centerY.toInt()))
     }
 
     private fun sendMouseMove(dx: Int, dy: Int) {

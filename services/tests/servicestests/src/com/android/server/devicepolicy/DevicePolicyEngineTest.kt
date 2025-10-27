@@ -18,9 +18,12 @@ package com.android.server.devicepolicy
 
 import android.app.admin.DevicePolicyManager
 import android.app.admin.IntegerPolicyValue
+import android.app.admin.ListOfStringPolicyValue
+import android.app.admin.NoArgsPolicyKey
 import android.app.admin.PackageSetPolicyValue
 import android.app.admin.PolicyUpdateResult
 import android.app.admin.PolicyValue
+import android.app.admin.StringPolicyValue
 import android.app.usage.UsageStatsManagerInternal
 import android.content.ComponentName
 import android.content.pm.PackageManagerInternal
@@ -57,6 +60,7 @@ class DevicePolicyEngineTest {
     private val packageManager = mock<PackageManagerInternal>()
     private val usageStatsManagerInternal = mock<UsageStatsManagerInternal>()
     private val policyPathProvider = mock<PolicyPathProvider>()
+    private var policyDefinitionMap = PolicyDefinitionMap()
 
     private val lock = Any()
     private lateinit var devicePolicyEngine: DevicePolicyEngine
@@ -91,8 +95,22 @@ class DevicePolicyEngineTest {
 
     private fun resetDevicePolicyEngine() {
         devicePolicyEngine =
-            DevicePolicyEngine(context, deviceAdminServiceController, lock, policyPathProvider)
+            DevicePolicyEngine(
+                context,
+                deviceAdminServiceController,
+                lock,
+                policyPathProvider,
+                policyDefinitionMap,
+            )
         devicePolicyEngine.load()
+    }
+
+    private fun usePolicyMap(
+        testingPolicyDefinitionMap: PolicyDefinitionMap = policyDefinitionMap
+    ) {
+        policyDefinitionMap = testingPolicyDefinitionMap
+
+        resetDevicePolicyEngine()
     }
 
     // Helper functions for test setup.
@@ -108,7 +126,7 @@ class DevicePolicyEngineTest {
                 policyDefinition,
                 enforcingAdmin,
                 value,
-                SYSTEM_USER_ID,
+                userId,
             )
         assertThat(result.get()).isEqualTo(POLICY_SET)
     }
@@ -452,6 +470,131 @@ class DevicePolicyEngineTest {
             )
 
         assertThat(enforcingAdmins).isEmpty()
+    }
+
+    private val stringPolicyDefinition = PolicyDefinition<String>(
+        NoArgsPolicyKey("testStringPolicy"),
+        MostRecent<String>(),
+        PolicyEnforcerCallbacks::noOp,
+        StringPolicySerializer()
+    )
+
+    private val stringListPolicyDefinition = PolicyDefinition<MutableList<String>>(
+        NoArgsPolicyKey("testStringListPolicy"),
+        MostRecent<MutableList<String>>(),
+        PolicyEnforcerCallbacks::noOp,
+        ListOfStringPolicySerializer()
+    )
+
+    val testingPolicyMap = PolicyDefinitionMap(
+        mapOf(
+            stringPolicyDefinition.policyKey.identifier to stringPolicyDefinition,
+            stringListPolicyDefinition.policyKey.identifier to stringListPolicyDefinition,
+        )
+    )
+
+    @Test
+    fun persistentPolicyStorage_shouldPersistEmptyString() {
+        val emptyString = StringPolicyValue("")
+
+        usePolicyMap(testingPolicyMap)
+
+        ensurePolicyIsSetLocally(
+            stringPolicyDefinition,
+            emptyString
+        )
+
+        resetDevicePolicyEngine()
+
+        val resolvedPolicy =
+            devicePolicyEngine.getResolvedPolicy(stringPolicyDefinition, SYSTEM_USER_ID)
+
+        assertThat(resolvedPolicy).isEqualTo(emptyString.value)
+    }
+
+    @Test
+    fun persistentPolicyStorage_shouldPersistString() {
+        val stringValue = StringPolicyValue("testValue")
+
+        usePolicyMap(testingPolicyMap)
+
+        ensurePolicyIsSetLocally(
+            stringPolicyDefinition,
+            stringValue
+        )
+
+        resetDevicePolicyEngine()
+
+        val resolvedPolicy =
+            devicePolicyEngine.getResolvedPolicy(stringPolicyDefinition, SYSTEM_USER_ID)
+
+        assertThat(resolvedPolicy).isEqualTo(stringValue.value)
+    }
+
+    @Test
+    fun persistentPolicyStorage_shouldPersistEmptyList() {
+        val emptyList = ListOfStringPolicyValue(listOf())
+
+        usePolicyMap(testingPolicyMap)
+
+        ensurePolicyIsSetLocally(
+            stringListPolicyDefinition,
+            emptyList
+        )
+
+        resetDevicePolicyEngine()
+
+        val resolvedPolicy =
+            devicePolicyEngine.getResolvedPolicy(stringListPolicyDefinition, SYSTEM_USER_ID)
+
+        assertThat(resolvedPolicy).isEqualTo(emptyList.value)
+    }
+
+    @Test
+    fun persistentPolicyStorage_shouldPersistList() {
+        val listValue = ListOfStringPolicyValue(listOf(
+            "testValue1",
+            "testValue2",
+        ))
+
+        usePolicyMap(testingPolicyMap)
+
+        ensurePolicyIsSetLocally(
+            stringListPolicyDefinition,
+            listValue
+        )
+
+        resetDevicePolicyEngine()
+
+        val resolvedPolicy =
+            devicePolicyEngine.getResolvedPolicy(stringListPolicyDefinition, SYSTEM_USER_ID)
+
+        assertThat(resolvedPolicy).isEqualTo(listValue.value)
+    }
+
+    @Test
+    fun persistentPolicyStorage_shouldPersistEmptyListWithSpecialCharacters() {
+        val listValue = ListOfStringPolicyValue(listOf(
+            "test<WithLessThan",
+            "test>GreaterLessThan",
+            "test\"Quote",
+            "test\nNewline",
+            "test=Equals",
+        ))
+
+        usePolicyMap(testingPolicyMap)
+
+        ensurePolicyIsSetLocally(
+            stringListPolicyDefinition,
+            listValue
+        )
+
+        resetDevicePolicyEngine()
+
+        val resolvedPolicy =
+            devicePolicyEngine.getResolvedPolicy(stringListPolicyDefinition, SYSTEM_USER_ID)
+
+        assertThat(resolvedPolicy).isEqualTo(listValue.value)
     }
 
     companion object {

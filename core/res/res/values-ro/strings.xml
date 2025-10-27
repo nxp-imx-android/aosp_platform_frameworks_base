@@ -1055,10 +1055,8 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Corect!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Încearcă din nou"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Încearcă din nou"</string>
-    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
-    <skip />
-    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
-    <skip />
+    <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Dă clic pentru deblocare"</string>
+    <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Apasă orice tastă pentru a debloca"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Deblochează pentru toate funcțiile și datele"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"S-a depășit numărul maxim de încercări pentru Deblocare facială"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Niciun card SIM"</string>
@@ -1280,6 +1278,8 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Finalizează acțiunea"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Deschide cu"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Deschide cu %1$s"</string>
+    <!-- no translation found for open_app_name (6114096770130122912) -->
+    <skip />
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Deschide"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Deschide linkurile <xliff:g id="HOST">%1$s</xliff:g> cu"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Deschide linkurile cu"</string>
@@ -1801,10 +1801,8 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Dacă apeși ambele taste de volum câteva secunde, activezi funcția de accesibilitate <xliff:g id="SERVICE">%1$s</xliff:g>. Acest lucru poate schimba funcționarea dispozitivului.\n\nPoți alege altă funcție pentru această comandă în Setări &gt; Accesibilitate."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Activează"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Nu activa"</string>
-    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
-    <skip />
+    <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"Activată"</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"Dezactivată"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Permiți serviciului <xliff:g id="SERVICE">%1$s</xliff:g> să aibă control total asupra dispozitivului?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Controlul total este adecvat pentru aplicații care te ajută cu accesibilitatea, însă nu pentru majoritatea aplicaților."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"să vadă și să controleze ecranul"</string>
@@ -1818,16 +1816,11 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Atinge o funcție ca să începi să o folosești:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Alege funcțiile pe care să le folosești cu butonul de accesibilitate"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Alege funcțiile pentru comanda rapidă a butoanelor de volum"</string>
-    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
-    <skip />
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"buton de accesibilitate"</string>
+    <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"butoane de volum"</string>
+    <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"gest"</string>
+    <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"setări rapide"</string>
+    <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"atingere triplă"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> a fost dezactivat"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Editează comenzile rapide"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Gata"</string>

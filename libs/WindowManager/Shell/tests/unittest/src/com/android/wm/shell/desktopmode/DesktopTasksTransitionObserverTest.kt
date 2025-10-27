@@ -22,6 +22,8 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.Rect
+import android.graphics.RectF
 import android.os.IBinder
 import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
@@ -41,6 +43,8 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.data.TopTransparentFullscreenTaskData
@@ -81,6 +85,7 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     private val mixedHandler = mock<DesktopMixedTransitionHandler>()
     private val desktopWallpaperActivityTokenProvider =
         mock<DesktopWallpaperActivityTokenProvider>()
+    private val displayController = mock<DisplayController>()
     private val wallpaperToken = MockToken().token()
     private val desktopState = FakeDesktopState()
 
@@ -103,6 +108,7 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
                 shellTaskOrganizer,
                 mixedHandler,
                 desktopWallpaperActivityTokenProvider,
+                displayController,
                 desktopState,
                 shellInit,
             )
@@ -353,6 +359,43 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
             )
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun onTransitionReady_changeTransition_updatesLastPackageState() {
+        val mockTransition = Mockito.mock(IBinder::class.java)
+        val startBounds = Rect(0, 0, 100, 100)
+        val endBounds = Rect(10, 20, 120, 130)
+        val stableBounds = Rect(0, 0, 200, 200)
+        val packageName = "package"
+        val task =
+            createTaskInfo(1, WINDOWING_MODE_FREEFORM).apply {
+                baseActivity = ComponentName(packageName, "component.name")
+                configuration.windowConfiguration.bounds.set(endBounds)
+            }
+        val displayLayout = mock<DisplayLayout>()
+        whenever(displayLayout.getStableBoundsForDesktopMode(any())).thenAnswer {
+            (it.arguments[0] as Rect).set(stableBounds)
+        }
+        whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(displayLayout)
+
+        transitionObserver.onTransitionReady(
+            transition = mockTransition,
+            info = createChangeTransition(task, startBounds, endBounds),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        val expectedBoundsRatio =
+            RectF(
+                (endBounds.left - stableBounds.left).toFloat() / stableBounds.width(),
+                (endBounds.top - stableBounds.top).toFloat() / stableBounds.height(),
+                (endBounds.right - stableBounds.left).toFloat() / stableBounds.width(),
+                (endBounds.bottom - stableBounds.top).toFloat() / stableBounds.height(),
+            )
+
+        verify(taskRepository).setRememberedBoundsRatio(packageName, expectedBoundsRatio)
+    }
+
     private fun createBackNavigationTransition(
         task: RunningTaskInfo?,
         type: Int = TRANSIT_TO_BACK,
@@ -430,6 +473,26 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
                     mode = TRANSIT_TO_FRONT
                     parent = null
                     taskInfo = task
+                    flags = flags
+                }
+            )
+        }
+    }
+
+    private fun createChangeTransition(
+        task: RunningTaskInfo?,
+        startBounds: Rect,
+        endBounds: Rect,
+        type: Int = WindowManager.TRANSIT_CHANGE,
+    ): TransitionInfo {
+        return TransitionInfo(type, 0 /* flags */).apply {
+            addChange(
+                Change(mock(), mock()).apply {
+                    mode = type
+                    parent = null
+                    taskInfo = task
+                    this.startAbsBounds.set(startBounds)
+                    this.endAbsBounds.set(endBounds)
                     flags = flags
                 }
             )

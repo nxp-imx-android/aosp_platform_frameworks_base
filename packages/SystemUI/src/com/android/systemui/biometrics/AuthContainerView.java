@@ -49,6 +49,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewPropertyAnimator;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
@@ -754,25 +755,32 @@ public class AuthContainerView extends LinearLayout
 
         final long animateDuration = mConfig.mSkipAnimation ? 0 : ANIMATION_DURATION_AWAY_MS;
         postOnAnimation(() -> {
-            animate()
+            final ViewPropertyAnimator animator = animate()
                     .alpha(0f)
                     .translationY(mTranslationY)
                     .setDuration(animateDuration)
                     .setInterpolator(mLinearOutSlowIn)
                     .setListener(getJankListener(this, DISMISS, animateDuration))
-                    .setUpdateListener(animation -> {
-                        if (mWindowManager == null || getViewRootImpl() == null) {
-                            Log.w(TAG, "skip updateViewLayout() for dim animation.");
-                            return;
-                        }
-                        final WindowManager.LayoutParams lp = getViewRootImpl().mWindowAttributes;
-                        lp.dimAmount = (1.0f - (Float) animation.getAnimatedValue())
-                                * BACKGROUND_DIM_AMOUNT;
-                        mWindowManager.updateViewLayout(this, lp);
-                    })
-                    .withLayer()
-                    .withEndAction(endActionRunnable)
-                    .start();
+                    .withLayer();
+
+            if (animateDuration > 0) {
+                animator.setUpdateListener(animation -> {
+                    if (mWindowManager == null || getViewRootImpl() == null) {
+                        Log.w(TAG, "skip updateViewLayout() for dim animation.");
+                        return;
+                    }
+                    final WindowManager.LayoutParams lp = getViewRootImpl().mWindowAttributes;
+                    lp.dimAmount = (1.0f - (Float) animation.getAnimatedValue())
+                            * BACKGROUND_DIM_AMOUNT;
+                    mWindowManager.updateViewLayout(this, lp);
+                });
+                animator.withEndAction(endActionRunnable);
+            }
+
+            animator.start();
+            if (animateDuration == 0) {
+                endActionRunnable.run();
+            }
         });
     }
 

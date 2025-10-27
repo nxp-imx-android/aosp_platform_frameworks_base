@@ -10490,7 +10490,7 @@ public class CarrierConfigManager {
     /**
      * Indicates if the carrier supports a unidirectional video service call (UVS).
      */
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_IS_USING_UNIDIRECTIONAL_VIDEO_SERVICE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_UNIDIRECTIONAL_VIDEO_SERVICE)
     public static final String KEY_SUPPORTS_UNIDIRECTIONAL_VIDEO_SERVICE_BOOL =
             "supports_unidirectional_video_service_bool";
 

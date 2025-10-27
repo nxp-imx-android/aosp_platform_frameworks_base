@@ -44,6 +44,9 @@ public class RavenwoodSystemProperties {
     /** This is the actual build.prop we use to build the device (contents depends on lunch). */
     private static final String DEVICE_BUILD_PROP = "ravenwood-data/build.prop";
 
+    /** Property files from each test. Optional. This is relative to the current directory. */
+    private static final String PER_TEST_PROP = "ravenwood.prop";
+
     /** The default values. */
     static final Map<String, String> sDefaultValues = new HashMap<>();
 
@@ -85,9 +88,14 @@ public class RavenwoodSystemProperties {
      * since we only read from system-build.prop
      */
     static void initialize() {
-        var path = getRavenwoodRuntimePath();
-        var ravenwoodProps = readProperties(path + RAVENWOOD_BUILD_PROP);
-        var deviceProps = readProperties(path + DEVICE_BUILD_PROP);
+        var runtimePath = getRavenwoodRuntimePath();
+        var ravenwoodProps = readProperties(runtimePath + RAVENWOOD_BUILD_PROP);
+        var deviceProps = readProperties(runtimePath + DEVICE_BUILD_PROP);
+
+        // TODO(b/450069205): Use of "exists" is a bad recipe for incremental builds... Make sure
+        // ravenwood.go empties it if not specified.
+        var testProps = Files.exists(Path.of(PER_TEST_PROP)) ? readProperties(PER_TEST_PROP)
+                : new HashMap<String, String>();
 
         Log.i(TAG, "Default system properties:");
         ravenwoodProps.forEach((key, origValue) -> {
@@ -139,6 +147,13 @@ public class RavenwoodSystemProperties {
             }
         }
 
+        Log.i(TAG, "Per-test properties:");
+        testProps.forEach((key, origValue) -> {
+            Log.i(TAG, key + "=" + origValue);
+            sDefaultValues.put(key, origValue);
+        });
+        Log.i(TAG, "Done reading properties");
+
         if (RAVENWOOD_VERBOSE_LOGGING) {
             // Dump all properties for local debugging.
             Log.v(TAG, "All system properties:");
@@ -172,6 +187,10 @@ public class RavenwoodSystemProperties {
     private static boolean isKeyReadable(String key) {
         // All core values should be readable
         if (sDefaultValues.containsKey(key)) {
+            return true;
+        }
+        // Any keys starting with "ravenwood." are readable. (but not writable.)
+        if (key.startsWith("ravenwood.")) {
             return true;
         }
         if (checkAllowed(key, sReadableKeys)) {

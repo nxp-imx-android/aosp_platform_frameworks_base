@@ -46,8 +46,7 @@ public final class DesktopModeCompatUtils {
      */
     public static boolean shouldExcludeCaptionFromAppBounds(@NonNull ActivityInfo info,
             boolean isResizeable, boolean optOutEdgeToEdge) {
-        return DesktopModeFlags.EXCLUDE_CAPTION_FROM_APP_BOUNDS.isTrue()
-                && isAnyForceConsumptionFlagsEnabled()
+        return isAnyForceConsumptionFlagsEnabled()
                 && !isConfigurationDecoupled(info, optOutEdgeToEdge)
                 && (!isResizeable
                     || info.isChangeEnabled(OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS));

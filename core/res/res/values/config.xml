@@ -3352,7 +3352,7 @@
     <integer name="config_hsumBootStrategy">0</integer>
 
     <!-- List of activities (flattened component names) allowed to be launched when the current user is the Headless System User -->
-    <string-array name="config_hsu_allowlist_activitivies" translatable="false">
+    <string-array name="config_hsu_allowlist_activities" translatable="false">
        <!-- default empty (meaning all activities will be allowed) -->
     </string-array>
 
@@ -3455,7 +3455,7 @@
          When false, presentations are not allowed on internal displays by default, but vendors can
          still explicitly override this by explicitly adding the flag to the internal display(s).
     -->
-    <bool name="config_allowPresentationOnInternalDisplay">true</bool>
+    <bool name="config_allowPresentationOnInternalDisplay">false</bool>
 
     <!-- When true, udfps vote is ignored. This feature is disabled by default. -->
     <bool name="config_ignoreUdfpsVote">false</bool>

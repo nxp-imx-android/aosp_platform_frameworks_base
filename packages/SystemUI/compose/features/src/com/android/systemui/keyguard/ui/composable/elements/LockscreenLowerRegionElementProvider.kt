@@ -34,7 +34,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.animation.scene.Key
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordanceViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordancesCombinedViewModel
+import com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordancesCombinedViewModelModule.Companion.LOCKSCREEN_INSTANCE
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenLowerRegionViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
@@ -48,7 +50,7 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenSc
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
-import kotlinx.coroutines.flow.map
+import javax.inject.Named
 
 @SysUISingleton
 /** Provides a combined element for all lockscreen ui above the lock icon */
@@ -57,6 +59,7 @@ class LockscreenLowerRegionElementProvider
 constructor(
     @ShadeDisplayAware private val context: Context,
     private val viewModelFactory: LockscreenLowerRegionViewModel.Factory,
+    @Named(LOCKSCREEN_INSTANCE)
     private val quickAffordancesCombinedViewModel: KeyguardQuickAffordancesCombinedViewModel,
 ) : LockscreenElementProvider {
     override val elements: List<LockscreenElement> by lazy { listOf(LowerRegionElement()) }
@@ -97,19 +100,20 @@ constructor(
             key: Key,
             viewModel: LockscreenLowerRegionViewModel,
         ) {
-            val endVisible by
-                quickAffordancesCombinedViewModel.endButton
-                    .map { it.isVisible }
-                    .collectAsStateWithLifecycle(initialValue = false)
 
-            val startVisible by
-                quickAffordancesCombinedViewModel.startButton
-                    .map { it.isVisible }
-                    .collectAsStateWithLifecycle(initialValue = false)
+            val endButton by
+                quickAffordancesCombinedViewModel.endButton.collectAsStateWithLifecycle(
+                    initialValue = KeyguardQuickAffordanceViewModel(slotId = "")
+                )
+
+            val startButton by
+                quickAffordancesCombinedViewModel.startButton.collectAsStateWithLifecycle(
+                    initialValue = KeyguardQuickAffordanceViewModel(slotId = "")
+                )
 
             // If neither shortcut is visible, do not display anything to allow indication area
             // and other features to take the full width of the device.
-            if (!startVisible && !endVisible) {
+            if (!startButton.isVisible && !endButton.isVisible) {
                 return
             }
 
@@ -137,9 +141,5 @@ constructor(
                     ),
             )
         }
-    }
-
-    private companion object {
-        private const val TAG = "LowerRegionElement"
     }
 }

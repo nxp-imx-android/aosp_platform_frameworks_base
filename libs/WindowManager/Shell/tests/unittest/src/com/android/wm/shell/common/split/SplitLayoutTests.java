@@ -170,7 +170,8 @@ public class SplitLayoutTests extends ShellTestCase {
 
         mSplitLayout.snapToTarget(mSplitLayout.getDividerPosition(), snapTarget);
         waitDividerFlingFinished();
-        verify(mSplitLayoutHandler).onSnappedToDismiss(eq(false), anyInt());
+        verify(mSplitLayoutHandler).onSnappedToDismiss(eq(false), anyInt(),
+                any(WindowContainerTransaction.class));
     }
 
     @Test
@@ -182,7 +183,8 @@ public class SplitLayoutTests extends ShellTestCase {
 
         mSplitLayout.snapToTarget(mSplitLayout.getDividerPosition(), snapTarget);
         waitDividerFlingFinished();
-        verify(mSplitLayoutHandler).onSnappedToDismiss(eq(true), anyInt());
+        verify(mSplitLayoutHandler).onSnappedToDismiss(eq(true), anyInt(),
+                any(WindowContainerTransaction.class));
     }
 
     @Test

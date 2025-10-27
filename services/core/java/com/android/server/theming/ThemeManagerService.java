@@ -16,58 +16,115 @@
 
 package com.android.server.theming;
 
+import static android.app.WallpaperManager.FLAG_SYSTEM;
+import static android.content.theming.FieldColorSource.VALUE_PRESET;
+
+import android.Manifest;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.UserIdInt;
+import android.annotation.RequiresPermission;
+import android.app.ActivityManagerInternal;
+import android.app.KeyguardManager;
+import android.app.WallpaperColors;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.theming.ThemeSettings;
+import android.content.theming.ThemeStyle;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.util.Slog;
 
 import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.os.BackgroundThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
+import com.android.server.UiModeManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
+import com.android.systemui.monet.ColorScheme;
 
 import java.util.Collection;
+import java.util.concurrent.Executor;
 
 /**
- * The ThemeService is a system service that manages the theming of the device.
- * It is responsible for loading and applying theme settings, and for notifying
- * other components of changes to the theme. It also handles the registration of
- * content observers for theme-related settings.
+ * ThemeManagerService handles the application of theme overlays across the Android system.
+ * <p>
+ * It listens for various events like wallpaper changes, user settings modifications, and system
+ * events to ensure the appropriate theme overlays are applied.
+ * <p>
+ * In essence, ThemeManagerService acts as an intermediary that gathers, filters, and transforms
+ * various theming-related signals into a cohesive lifecycle for each user, relayed to the
+ * ThemeStateManager for managing the actual application of theme overlays.
+ * <p>
+ * The ThemeService class orchestrates the theming lifecycle by:
+ * <p>
+ * <ol>
+ * Monitoring theme-related events: It listens for changes in wallpaper colors, theming
+ * settings, display contrast, user setup completion, profile additions, device lock state,
+ * and user lifecycle events.
+ * </ol><ol>
+ * Loading and applying theme settings, and for notifying other components of changes to the
+ * theme. It also handles the registration of content observers for theme-related settings.
+ * </ol><ol>
+ * Consolidating and filtering inputs: It gathers relevant data from these sources,
+ * such as user IDs, seed colors, contrast values, and theming styles, filtering out
+ * irrelevant or redundant information.
+ * </ol><ol>
+ * Transforming data for each user: It processes the collected information on a per-user basis,
+ * handling cases where color information comes from presets or when specific styles need to
+ * be applied.
+ * </ol><ol>
+ * Driving the ThemeStateManager lifecycle: It provides a clean, user-specific lifecycle
+ * to the ThemeStateManager by invoking appropriate methods based on the processed events.
+ * This includes informing the state manager about new users, user setup completion,
+ * theme style changes, and other relevant events, ensuring the correct application of
+ * theme overlays.
+ * </ol>
+ *
+ * @hide
  */
 @FlaggedApi(android.server.Flags.FLAG_ENABLE_THEME_SERVICE)
 public class ThemeManagerService extends SystemService {
-    private static final String TAG = "ThemeService";
+    private static final String TAG = "ThemeManagerService";
 
     private final ThemeManagerInternal mInternal;
     private final ThemeBinderService mPublic;
     private final Context mContext;
     private final ThemeSettingsManager mThemeSettingsManager;
+    private final ThemeStateManager mStateManager;
+
+    private final WallpaperManagerInternal mWallpaperManagerInternal;
+    private UiModeManagerInternal mUiModeManagerInternal;
     private final SystemPropertiesReader mSystemPropertiesReader;
 
+
     public ThemeManagerService(@NonNull Context context) {
-        this(context, new SystemPropertiesReaderImpl());
+        this(context, SystemProperties::get, new ThemeStateManager(context),
+                LocalServices.getService(WallpaperManagerInternal.class));
     }
 
     @VisibleForTesting
-    ThemeManagerService(@NonNull Context context, @NonNull SystemPropertiesReader systemPropertiesReader) {
+    ThemeManagerService(@NonNull Context context,
+            @NonNull SystemPropertiesReader systemPropertiesReader,
+            ThemeStateManager themeStateManager,
+            WallpaperManagerInternal wallpaperManagerInternal) {
         super(context);
         mContext = context;
-        WallpaperManagerInternal wallpaperManagerInternal = LocalServices.getService(
-                WallpaperManagerInternal.class);
-        mThemeSettingsManager = new ThemeSettingsManager(wallpaperManagerInternal);
+        mStateManager = themeStateManager;
+        mWallpaperManagerInternal = wallpaperManagerInternal;
+        mThemeSettingsManager = new ThemeSettingsManager(mWallpaperManagerInternal);
         mSystemPropertiesReader = systemPropertiesReader;
 
         mInternal = new ThemeManagerInternal(mContext, mThemeSettingsManager,
-                mSystemPropertiesReader);
+                mSystemPropertiesReader, mStateManager);
         mPublic = new ThemeBinderService(mContext, mInternal);
     }
 
@@ -78,41 +135,157 @@ public class ThemeManagerService extends SystemService {
     }
 
     @Override
+    @RequiresPermission(Manifest.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE)
     public void onBootPhase(@BootPhase int phase) {
+        Slog.d(TAG, "onBootPhase: " + phase);
         if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
             setupListeners();
+            mStateManager.onServicesReady();
         }
+
+        if (phase == SystemService.PHASE_ACTIVITY_MANAGER_READY) {
+            mStateManager.onBootComplete();
+        }
+
+    }
+
+    @Override
+    public void onUserStarting(@NonNull TargetUser user) {
+        int userId = user.getUserHandle().getIdentifier();
+
+        // check if seed color comes from wallpaper or preset
+        ThemeSettings userSettings = mInternal.getThemeSettingsOrDefault(userId);
+
+        int seedColor = userSettings.colorSource().equals(VALUE_PRESET)
+                ? userSettings.systemPalette().toArgb()
+                : ColorScheme.getSeedColor(
+                        mWallpaperManagerInternal.getWallpaperColors(FLAG_SYSTEM, userId));
+
+        Slog.d(TAG, "User: " + user.getUserIdentifier() + " starting");
+
+        mStateManager.onUserStart(user.getUserHandle(),
+                /*isSetup*/Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                        Settings.Secure.USER_SETUP_COMPLETE, 0, userId) == 1,
+                /*seedColor*/ seedColor,
+                /*contrast*/ mUiModeManagerInternal.getContrast(userId),
+                /*style*/userSettings.themeStyle());
+    }
+
+    @Override
+    public void onUserSwitching(@Nullable TargetUser from, @NonNull TargetUser to) {
+        Slog.d(TAG, "User switch from:" + (from != null ? from.getUserIdentifier() : "-") + " to:"
+                + to.getUserIdentifier());
+        mStateManager.onUserSwitching(from.getUserIdentifier(), to.getUserIdentifier());
+    }
+
+    @Override
+    public void onUserCompletedEvent(@NonNull TargetUser user, UserCompletedEventType eventType) {
+        Slog.d(TAG, "User: " + user.getUserIdentifier() + " completed eventType: "
+                + eventType.toString());
     }
 
     // HELPER METHODS
 
+    @RequiresPermission(Manifest.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE)
     private void setupListeners() {
-        ContentResolver resolver = mContext.getContentResolver();
+        Executor mainExecutor = mContext.getMainExecutor();
         Handler bgHandler = BackgroundThread.getHandler();
+
+        KeyguardManager keyguardManager = mContext.getSystemService(KeyguardManager.class);
+        mUiModeManagerInternal = LocalServices.getService(
+                UiModeManagerInternal.class);
+
+        ActivityManagerInternal activityManagerInternal = LocalServices.getService(
+                ActivityManagerInternal.class);
+
+        // Profile changes
+        final IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_PROFILE_ADDED);
+
+        mContext.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+
+                // Added User
+                if (Intent.ACTION_PROFILE_ADDED.equals(action)) {
+                    UserHandle newUserHandle = intent.getParcelableExtra(Intent.EXTRA_USER,
+                            UserHandle.class);
+
+                    int newUserOrProfileId = newUserHandle.getIdentifier();
+                    int parentId = mStateManager.parentOf(newUserOrProfileId);
+
+                    Slog.d(TAG, "User: " + newUserOrProfileId + " added to parent: " + parentId);
+                    mStateManager.onProfileAdd(parentId, newUserOrProfileId);
+                }
+            }
+        }, filter);
+
+
+        // Wallpaper Color Change
+        mWallpaperManagerInternal.addOnColorsChangedListener(
+                (wallpaperColors, which, displayId, userId, fromForegroundApp) -> {
+                    Slog.d(TAG, "User: " + userId + " changed wallpaper");
+                    mStateManager.onSeedColorChange(activityManagerInternal.getCurrentUserId(),
+                            ColorScheme.getSeedColor(wallpaperColors),
+                            fromForegroundApp);
+                }, bgHandler);
+
+
+        mUiModeManagerInternal.addContrastListener(mStateManager::onContrastChange, mainExecutor);
+
+        // Sleep
+        keyguardManager.addKeyguardLockedStateListener(mainExecutor, isKeyguardLocked -> {
+            if (isKeyguardLocked) {
+                Slog.d(TAG, "Keyguard locked");
+                mStateManager.onLockStateChange(true);
+            }
+        });
+
+        // Setup Change
+        ContentResolver resolver = mContext.getContentResolver();
+        resolver.registerContentObserver(
+                Settings.Secure.getUriFor(Settings.Secure.USER_SETUP_COMPLETE), false,
+                new ContentObserver(bgHandler) {
+                    @Override
+                    public void onChange(boolean selfChange, @NonNull Collection<Uri> uris,
+                            int flags, int userId) {
+                        Slog.d(TAG, "User: " + userId + " setup complete");
+                        mStateManager.onFinishSetup(userId);
+                    }
+                }, UserHandle.USER_ALL);
 
         // Style Change
         resolver.registerContentObserver(
+                // This listener is also called when choosing a style with fixed color.
+                // Case in which we should fork the call to onSeedColorChange and onStyleChange
+                // in this case
                 Settings.Secure.getUriFor(Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES),
                 false, new ContentObserver(bgHandler) {
                     @Override
                     public void onChange(boolean selfChange, @NonNull Collection<Uri> uris,
-                            int flags, @UserIdInt int userId) {
-                        Context userContext = mContext.createContextAsUser(UserHandle.of(userId),
-                                Context.CONTEXT_IGNORE_SECURITY);
+                            int flags, int userId) {
+                        ThemeSettings userSettings = mInternal.getThemeSettingsOrDefault(userId);
 
                         // notifies other listeners of the Theme Settings
-                        mInternal.notifySettingsChange(userId,
-                                mThemeSettingsManager.readSettings(userId,
-                                        userContext.getContentResolver()));
+                        mInternal.notifySettingsChange(userId, mInternal.getThemeSettings(userId));
+
+                        // we now check the source of the color is "preset", case in which we fork
+                        // the event
+
+                        if (userSettings.colorSource().equals(VALUE_PRESET)) {
+                            int newSeed = ColorScheme.getSeedColor(
+                                    new WallpaperColors(userSettings.systemPalette(), null, null));
+
+                            Slog.d(TAG, "User: " + userId + " changed seed to "
+                                    + Integer.toHexString(newSeed));
+                            mStateManager.onSeedColorChange(userId, newSeed, true);
+                        }
+
+                        Slog.d(TAG, "User: " + userId + " changed style to "
+                                + ThemeStyle.name(userSettings.themeStyle()));
+                        mStateManager.onStyleChange(userId, userSettings.themeStyle());
                     }
                 }, UserHandle.USER_ALL);
-    }
-
-    private static class SystemPropertiesReaderImpl implements SystemPropertiesReader {
-        @Override
-        @NonNull
-        public String get(@NonNull String key, @Nullable String def) {
-            return android.os.SystemProperties.get(key, def);
-        }
     }
 }

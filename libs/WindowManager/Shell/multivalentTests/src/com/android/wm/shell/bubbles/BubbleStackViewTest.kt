@@ -1367,6 +1367,94 @@ class BubbleStackViewTest {
         assertThat(finishCalled).isTrue()
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_FLICKERS_DURING_SWITCH_FROM_DISMISS)
+    fun dismissBubble_multipleBubblesInStack_cleanupDeferred() {
+        val bubble1 = createAndInflateChatBubble("key1")
+        val bubble2 = createAndInflateChatBubble("key2")
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(bubble1)
+            bubbleStackView.addBubble(bubble2)
+            bubbleStackView.setSelectedBubble(bubble2)
+            bubbleData.isExpanded = true
+            bubbleStackView.isExpanded = true
+            shellExecutor.flushAll()
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        // wait for the expansion animation to complete
+        PhysicsAnimatorTestUtils.blockUntilAnimationsEnd(
+            AnimatableScaleMatrix.SCALE_X, AnimatableScaleMatrix.SCALE_Y)
+
+        assertThat(bubbleStackView.isExpanded).isTrue()
+        assertThat(bubbleStackView.bubbleCount).isEqualTo(2)
+        assertThat(bubble2.expandedView).isNotNull()
+        assertThat(bubble2.iconView).isNotNull()
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.findViewById<View>(R.id.bubble_manage_menu_dismiss_container)
+                .performClick()
+            shellExecutor.flushAll()
+        }
+        assertThat(bubbleData.hasBubbleInStackWithKey(bubble2.key)).isFalse()
+        assertThat(bubbleData.hasOverflowBubbleWithKey(bubble2.key)).isTrue()
+        assertThat(bubble2.isCleanupDeferred).isTrue()
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            // send the request to remove the bubble
+            bubbleStackView.removeBubble(bubble2)
+        }
+        assertThat(bubble2.expandedView).isNotNull()
+        assertThat(bubbleStackView.bubbleCount).isEqualTo(1)
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            // send the request to switch to the next bubble
+            bubbleStackView.setSelectedBubble(bubble1)
+            shellExecutor.flushAll()
+        }
+
+        // wait for the switch animation to complete
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        PhysicsAnimatorTestUtils.blockUntilAnimationsEnd(
+            AnimatableScaleMatrix.SCALE_X, AnimatableScaleMatrix.SCALE_Y)
+        // let the animation end runnable execute
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+
+        // check that bubble2 was cleaned up
+        assertThat(bubble2.isCleanupDeferred).isFalse()
+        assertThat(bubble2.expandedView).isNull()
+        // bubble2 was overflowed so it should have an icon view
+        assertThat(bubble2.iconView).isNotNull()
+    }
+
+    @Test
+    fun dismissBubble_singleBubbleInStack_cleanupNotDeferred() {
+        val bubble1 = createAndInflateChatBubble("key1")
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(bubble1)
+            bubbleStackView.setSelectedBubble(bubble1)
+            bubbleData.isExpanded = true
+            bubbleStackView.isExpanded = true
+            shellExecutor.flushAll()
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        // wait for the expansion animation to complete
+        PhysicsAnimatorTestUtils.blockUntilAnimationsEnd(
+            AnimatableScaleMatrix.SCALE_X, AnimatableScaleMatrix.SCALE_Y)
+
+        assertThat(bubbleStackView.isExpanded).isTrue()
+        assertThat(bubbleStackView.bubbleCount).isEqualTo(1)
+        assertThat(bubble1.expandedView).isNotNull()
+        assertThat(bubble1.iconView).isNotNull()
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.findViewById<View>(R.id.bubble_manage_menu_dismiss_container)
+                .performClick()
+            shellExecutor.flushAll()
+        }
+        assertThat(bubbleData.hasBubbleInStackWithKey(bubble1.key)).isFalse()
+        assertThat(bubble1.isCleanupDeferred).isFalse()
+    }
+
     private fun createAndInflateChatBubble(key: String): Bubble {
         val icon = Icon.createWithResource(context.resources, R.drawable.bubble_ic_overflow_button)
         val shortcutInfo = ShortcutInfo.Builder(context, "fakeId").setIcon(icon).build()
@@ -1379,9 +1467,7 @@ class BubbleStackViewTest {
                 "title",
                 /* taskId= */ 0,
                 "locus",
-                /* isDismissable= */ true,
-                directExecutor(),
-                directExecutor()
+                /* isDismissable= */ true
             ) {}
         inflateBubble(bubble)
         return bubble
@@ -1391,7 +1477,7 @@ class BubbleStackViewTest {
         val intent = Intent(Intent.ACTION_VIEW).setPackage(context.packageName)
         val icon = Icon.createWithResource(context.resources, R.drawable.bubble_ic_overflow_button)
         val bubble =
-            Bubble.createAppBubble(intent, UserHandle(1), icon, directExecutor(), directExecutor())
+            Bubble.createAppBubble(intent, UserHandle(1), icon)
         inflateBubble(bubble)
         return bubble
     }
@@ -1413,7 +1499,9 @@ class BubbleStackViewTest {
             null,
             iconFactory,
             FakeBubbleAppInfoProvider(),
-            false
+            false,
+            directExecutor(),
+            directExecutor()
         )
 
         assertThat(semaphore.tryAcquire(5, TimeUnit.SECONDS)).isTrue()

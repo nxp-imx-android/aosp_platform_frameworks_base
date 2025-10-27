@@ -21,6 +21,7 @@ import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.AppProtoEnums;
+import android.app.HandoffActivityParams;
 import android.app.IActivityManager;
 import android.app.IAppTask;
 import android.app.IApplicationThread;
@@ -836,6 +837,9 @@ public abstract class ActivityTaskManagerInternal implements ActiveUids.Observer
 
     /** Returns whether handoff is enabled for the given task. */
     public abstract boolean isHandoffEnabledForTask(int taskId);
+
+    /** Returns the handoff activity configuration params for the given task. */
+    public abstract HandoffActivityParams getHandoffActivityParamsForTask(int taskId);
 
     /** Registers a listener for handoff enablement changes. */
     public abstract void registerHandoffEnablementListener(

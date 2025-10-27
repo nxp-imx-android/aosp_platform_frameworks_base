@@ -29,4 +29,3 @@ import org.junit.runners.BlockJUnit4ClassRunner
 @Postsubmit
 @ScreenRecordRule.ScreenRecord
 class FocusAppFromTaskbarOverflowTest : FocusAppFromTaskbarOverflow()
-

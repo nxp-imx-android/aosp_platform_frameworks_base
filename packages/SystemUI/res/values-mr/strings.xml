@@ -88,11 +88,9 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"अ‍ॅप किंवा आपल्या संस्थेद्वारे स्क्रीनशॉट घेण्याची अनुमती नाही"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"तुमच्या आयटी ॲडमिनने स्क्रीनशॉट घेणे ब्लॉक केले आहे"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"संपादित करा"</string>
-    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
-    <skip />
+    <string name="screenshot_edit_description" msgid="7802378587672433507">"स्क्रीनशॉट बटण संपादित करा"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"शेअर करा"</string>
-    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
-    <skip />
+    <string name="screenshot_share_description" msgid="2654362001720033972">"स्क्रीनशॉट शेअर करा बटण"</string>
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"आणखी गोष्टी कॅप्चर करा"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"स्क्रीनशॉट डिसमिस करा"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"कार्य प्रोफाइलसंबंधित मेसेज डिसमिस करा"</string>
@@ -161,8 +159,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"थांबवा"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"म्यूट करा"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"अनम्यूट करा"</string>
-    <!-- no translation found for screen_capture_blocked_by_admin (1751756953683506644) -->
-    <skip />
+    <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"तुमच्या आयटी ॲडमिनने स्क्रीन कॅप्चर ब्लॉक केले आहे"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"संपूर्ण स्क्रीनचा स्क्रीनशॉट घ्या"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"संपूर्ण स्क्रीन रेकॉर्ड करा"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"निवडलेल्या भागाचा स्क्रीनशॉट घ्या"</string>
@@ -370,6 +367,8 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"सेन्सर बंद आहेत"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"सर्व सूचना साफ करा."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"नोटिफिकेशन"</string>
+    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{आतमध्ये आणखी # सूचना आहे.}other{आतमध्ये आणखी # सूचना आहेत.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"लॅंडस्केप ओरिएंटेशनमध्ये स्क्रीन लॉक केली आहे."</string>
@@ -428,10 +427,8 @@
     <string name="quick_settings_casting" msgid="1435880708719268055">"कास्ट करत आहे"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"निनावी डिव्हाइस"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"कोणतेही डिव्हाइसेस उपलब्ध नाहीत"</string>
-    <!-- no translation found for quick_settings_cast_detail_title (8212426967651562547) -->
-    <skip />
-    <!-- no translation found for quick_settings_cast_detail_subtitle (6406833630052788623) -->
-    <skip />
+    <string name="quick_settings_cast_detail_title" msgid="8212426967651562547">"डिव्‍हाइसवर स्क्रीन कास्‍ट करा"</string>
+    <string name="quick_settings_cast_detail_subtitle" msgid="6406833630052788623">"डिव्हाइस शोधत आहे..."</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"वाय-फाय किंवा इथरनेट कनेक्शन नाही"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"डिस्कनेक्ट करा"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"सद्य माइक"</string>
@@ -713,6 +710,8 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"सायलंट"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"सूचना"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"संभाषणे"</string>
+    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
+    <skip />
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"सर्व सायलंट सूचना साफ करा"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"नोटिफिकेशन सेटिंग्ज उघडा"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{कोणतेही नोटिफिकेशन नाही}=1{{mode} द्वारे नोटिफिकेशन थांबवली आहेत}=2{{mode} द्वारे आणि आणखी एका मोडद्वारे नोटिफिकेशन थांबवली आहेत}other{{mode} द्वारे आणि आणखी # मोडद्वारे नोटिफिकेशन थांबवली आहेत}}"</string>
@@ -1027,8 +1026,7 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"ॲप्सची सूची उघडा"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"सेटिंग्ज उघडा"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"डिजिटल असिस्टंट उघडा"</string>
-    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
-    <skip />
+    <string name="group_system_access_contextual_search" msgid="525635757621336007">"संदर्भानुसार शोध"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"स्क्रीन लॉक करा"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"नोंद घ्या"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"मल्टिटास्किंग"</string>
@@ -1163,6 +1161,18 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"शॉर्टकट बंद करा"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"सुरू ठेवा"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"कृती "<annotation id="action_key_icon">"आयकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> हा <xliff:g id="ID_3">^3</xliff:g> वापरण्यासाठीचा कीबोर्ड शॉर्टकट आहे. <xliff:g id="ID_4">^3</xliff:g> हा स्क्रीन रीडर आहे, ज्यामुळे तुम्हाला मोठ्याने बोललेले आयटम ऐकू येतात. स्क्रीनकडे पाहण्यात समस्या असलेल्या लोकांसाठी ते उपयुक्त असू शकते. यामुळे तुमचे डिव्हाइस कसे काम करते ते बदलू शकते."</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> प्रेस केल्याने, <xliff:g id="ID_3">^3</xliff:g> हे अ‍ॅक्सेसिबिलिटी वैशिष्ट्ये सुरू होते. यामुळे तुम्हाला तुमचे डिव्हाइस हँड्स-फ्री नियंत्रित करता येते."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"लॉक स्‍क्रीन"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"बंद होत आहे…"</string>
@@ -1476,8 +1486,12 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"डिव्हाइसच्या अनुभवामध्ये सुधारणा करण्यासाठी, वाय-फाय बंद असले तरीही ॲप्स आणि सेवा या कधीही वाय-फाय नेटवर्क स्कॅन करू शकतात. तुम्ही हे वाय-फाय स्कॅनिंग सेटिंग्जमध्ये बदलू शकता. "<annotation id="link">"बदला"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"विमान मोड बंद करा"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g> ला क्विक सेटिंग्जमध्ये पुढील टाइल जोडायची आहे"</string>
+    <string name="qs_tile_request_dialog_text_with_size" msgid="732578771040573291">"<xliff:g id="APPNAME">%1$s</xliff:g> ला क्विक सेटिंग्ज मध्ये टाइल जोडायची आहे. पुढे सुरू ठेवण्यासाठी टाइलचा आकार निवडा."</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"टाइल जोडा"</string>
-    <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"टाइल जोडू नका"</string>
+    <string name="qs_tile_request_dialog_not_add" msgid="8375425041428574394">"टाइल जोडू नका"</string>
+    <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"क्विक सेटिंग्ज मध्ये टाइल जोडा"</string>
+    <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"लहान फॉरमॅट"</string>
+    <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"मोठा फॉरमॅट"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"वापरकर्ता निवडा"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# अ‍ॅप अ‍ॅक्टिव्ह आहे}other{# अ‍ॅप्स अ‍ॅक्टिव्ह आहेत}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"नवीन माहिती"</string>
@@ -1720,8 +1734,7 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"नोटिफिकेशन उघडण्यासाठी सर्वात वरती डावीकडून स्‍वाइप करा"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"क्विक सेटिंग्ज उघडण्यासाठी सर्वात वरती डावीकडून स्‍वाइप करा"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"मागे जा"</string>
-    <!-- no translation found for accessibility_button_on_bouncer_description (9186344135931507168) -->
-    <skip />
+    <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"अ‍ॅक्सेसिबिलिटी"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"मागील"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"पुढील"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"पुढील पेजवर नेव्हिगेट करा"</string>

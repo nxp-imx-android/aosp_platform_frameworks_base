@@ -23,6 +23,7 @@ import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.assist.AssistManager
 import com.android.systemui.assist.mockAssistManager
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -34,6 +35,8 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.argThat
+import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 
@@ -76,6 +79,19 @@ class AssistantRepositoryTest : SysuiTestCase() {
             securitySettings.putIntForUser(Settings.Secure.ASSISTANT, 1, 0)
             assertThat(assistInfo).isNotNull()
             assertThat(assistInfo!!.packageName).isEqualTo(ASSISTANT_PACKAGE_2)
+        }
+
+    @Test
+    fun assistantInfo_verifyInvocationType() =
+        kosmos.runTest {
+            underTest.startAssistant()
+            verify(assistManager)
+                .startAssist(
+                    argThat { bundle ->
+                        bundle.getInt(AssistManager.INVOCATION_TYPE_KEY) ==
+                            AssistManager.INVOCATION_TYPE_STATUS_BAR_ICON
+                    }
+                )
         }
 
     private companion object {

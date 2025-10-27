@@ -173,7 +173,12 @@ class DesktopModeShellCommandHandler(
                 pw.println("Error: desk id should be an integer")
                 return false
             }
-        controller.removeDesk(deskId, exitReason = ExitReason.ADB_COMMAND_EXIT)
+        controller.removeDesk(
+            deskId = deskId,
+            exitReason = ExitReason.ADB_COMMAND_EXIT,
+            shouldEndUpAtHome = true,
+            skipWallpaperAndHomeOrdering = false,
+        )
         return true
     }
 
@@ -182,7 +187,11 @@ class DesktopModeShellCommandHandler(
             pw.println("Not supported.")
             return false
         }
-        controller.removeAllDesks(exitReason = ExitReason.ADB_COMMAND_EXIT)
+        controller.removeAllDesks(
+            exitReason = ExitReason.ADB_COMMAND_EXIT,
+            shouldEndUpAtHome = true,
+            skipWallpaperAndHomeOrdering = false,
+        )
         return false
     }
 

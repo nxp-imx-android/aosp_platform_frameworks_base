@@ -32,11 +32,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
 import com.android.compose.animation.Easings
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.animation.scene.PropertyTransformationBuilder
 import com.android.compose.animation.scene.TransitionBuilder
+import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.shared.model.ClockSize
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenUpperRegionViewModel
@@ -60,7 +62,6 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenSc
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.shared.model.ShadeMode
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import javax.inject.Inject
 
 @SysUISingleton
@@ -114,9 +115,7 @@ constructor(
             modifier: Modifier = Modifier
         ) {
             Column(modifier) {
-                if (PromotedNotificationUi.isEnabled) {
-                    LockscreenElement(Notifications.AOD.Promoted, Modifier.padding(bottom = 4.dp))
-                }
+                LockscreenElement(Notifications.AOD.Promoted, Modifier.padding(bottom = 4.dp))
                 LockscreenElement(Notifications.AOD.IconShelf)
             }
         }
@@ -392,11 +391,21 @@ constructor(
             NARROW,
         }
 
+        @Composable
         fun getLayoutType(shadeMode: ShadeMode): LayoutType {
             return when (shadeMode) {
                 ShadeMode.Single -> LayoutType.NARROW
-                ShadeMode.Split,
-                ShadeMode.Dual -> LayoutType.WIDE
+                ShadeMode.Split -> LayoutType.WIDE
+                ShadeMode.Dual -> {
+                    with(LocalWindowSizeClass.current) {
+                        val isWindowLarge =
+                            isAtLeastBreakpoint(
+                                WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND,
+                                WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND,
+                            )
+                        if (isWindowLarge) LayoutType.WIDE else LayoutType.NARROW
+                    }
+                }
             }
         }
     }

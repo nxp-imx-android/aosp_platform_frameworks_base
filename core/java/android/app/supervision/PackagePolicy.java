@@ -18,13 +18,11 @@ package android.app.supervision;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.os.Parcelable.Creator;
-import android.os.Parcelable.WriteFlags;
-import androidx.annotation.Nullable;
 import android.app.supervision.flags.Flags;
+import android.os.Parcel;
+
 import androidx.annotation.IntDef;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -125,6 +123,11 @@ public final class PackagePolicy extends Policy {
     @Override
     public int describeContents() {
         return 0;
+    }
+
+    @Override
+    public PolicyKey getPolicyKey() {
+        return PolicyKey.builder().setType(getIdentifier()).setPackageName(mPackageName).build();
     }
 
     @Override

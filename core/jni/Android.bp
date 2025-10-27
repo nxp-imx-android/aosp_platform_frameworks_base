@@ -294,6 +294,11 @@ cc_defaults_for_libandroid_runtime {
                     "-DANDROID_NATIVE_FRAMEWORK_PROTOTYPE",
                 ],
                 default: [],
+            }) + select(release_flag("RELEASE_BUILD_EXECUTE_ONLY_MEMORY"), {
+                true: [
+                    "-DBUILD_EXECUTE_ONLY_MEMORY",
+                ],
+                default: [],
             }),
 
             static_libs: [

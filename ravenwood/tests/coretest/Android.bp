@@ -27,7 +27,10 @@ android_ravenwood_test {
         "test/**/*.java",
         "test/**/*.kt",
     ],
-    data: ["data/**/*"],
+    data: [
+        "data/**/*",
+        "ravenwood.prop",
+    ],
     test_options: {
         // This is injected outside of the <test> element.
         tradefed_options: [

@@ -105,12 +105,12 @@
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3552780111383069051">"&lt;p&gt;此應用程式在驗證開發人員時發生問題，因此已遭封鎖。為保障裝置和資料安全，你只可安裝已驗證開發人員所提供的應用程式。&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;進一步瞭解開發人員驗證&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="353457015429601377">"&lt;p&gt;此應用程式在驗證開發人員時發生問題，因此尚未更新。為保障裝置和資料安全，你只可安裝已驗證開發人員所提供的更新。&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;進一步瞭解開發人員驗證&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"如不驗證便安裝，必須緊記未經驗證開發人員的應用程式可能會對你的裝置和資料構成威脅。"</string>
-    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"如不驗證便更新，必須緊記未經驗證開發人員的更新可能會對你的裝置和資料構成威脅。"</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"請注意，如不驗證開發人員就更新，有關更新可能會對你的裝置和資料構成威脅。"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"應用程式開發人員未驗證"</string>
     <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"未連線至互聯網，因此無法驗證應用程式開發人員"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"無法驗證應用程式開發人員"</string>
     <string name="install_without_verifying" msgid="5359680595440741626">"不驗證便安裝"</string>
-    <string name="update_without_verifying" msgid="2841466981431484179">"不驗證便更新"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"不驗證，直接更新"</string>
     <string name="button_install" msgid="7434013176505680162">"安裝"</string>
     <string name="button_update" msgid="3046719350226327526">"更新"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"仍要更新"</string>

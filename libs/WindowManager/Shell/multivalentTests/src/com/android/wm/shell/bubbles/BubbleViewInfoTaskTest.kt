@@ -352,15 +352,13 @@ class BubbleViewInfoTaskTest {
             0 /* taskId */,
             "mockLocus",
             true /* isDismissible */,
-            mainExecutor,
-            bgExecutor,
             metadataFlagListener
         )
     }
 
     private fun createAppBubble(): Bubble {
         val intent = Intent().apply { setPackage("com.app.bubble") }
-        return Bubble.createAppBubble(intent, UserHandle.of(0), null, mainExecutor, bgExecutor)
+        return Bubble.createAppBubble(intent, UserHandle.of(0), null)
     }
 
     private fun createBubbleViewInfoTask(

@@ -427,6 +427,16 @@ public abstract class BaseBroadcastQueueTest {
             return this;
         }
 
+        public BroadcastRecordBuilder setCallerApp(ProcessRecord callerApp) {
+            mProcessRecord = callerApp;
+            return this;
+        }
+
+        public BroadcastRecordBuilder setReceivers(List receivers) {
+            mReceivers = receivers;
+            return this;
+        }
+
         public BroadcastRecord build() {
             return new BroadcastRecord(mQueue, mIntent, mProcessRecord, mCallerPackage,
                     mCallerFeatureId, mCallingPid, mCallingUid, mCallerInstantApp, mResolvedType,

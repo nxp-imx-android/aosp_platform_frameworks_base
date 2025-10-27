@@ -12,6 +12,13 @@ flag {
 }
 
 flag {
+    name: "aapm_api_v2"
+    namespace: "responsible_apis"
+    description: "Flag for V2 of Advanced Protection Manager changes"
+    bug: "419508351"
+}
+
+flag {
     name: "aapm_feature_disable_cellular_2g"
     namespace: "responsible_apis"
     description: "Android Advanced Protection Mode Feature: Disable Cellular 2G"
@@ -22,7 +29,9 @@ flag {
     name: "aapm_feature_disable_insecure_wifi_autojoin"
     namespace: "responsible_apis"
     description: "Android Advanced Protection Mode Feature: Disable Insecure Wifi Autojoin"
+    is_exported: true
     bug: "424512082"
+    is_fixed_read_only: true
 }
 
 flag {

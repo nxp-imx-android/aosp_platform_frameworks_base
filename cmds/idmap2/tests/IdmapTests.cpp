@@ -68,7 +68,7 @@ TEST(IdmapTests, CreateIdmapHeaderFromBinaryStream) {
   std::unique_ptr<const IdmapHeader> header = IdmapHeader::FromBinaryStream(stream);
   ASSERT_THAT(header, NotNull());
   ASSERT_EQ(header->GetMagic(), 0x504d4449U);
-  ASSERT_EQ(header->GetVersion(), 11);
+  ASSERT_EQ(header->GetVersion(), 12);
   ASSERT_EQ(header->GetTargetCrc(), 0x1234U);
   ASSERT_EQ(header->GetOverlayCrc(), 0x5678U);
   ASSERT_EQ(header->GetFulfilledPolicies(), 0x11);
@@ -116,7 +116,7 @@ TEST(IdmapTests, CreateIdmapDataHeaderFromBinaryStream) {
 
   std::unique_ptr<const IdmapData::Header> header = IdmapData::Header::FromBinaryStream(stream);
   ASSERT_THAT(header, NotNull());
-  ASSERT_EQ(header->GetTargetEntryCount(), 0x03);
+  ASSERT_EQ(header->GetTargetEntrySectionCount(), 0x02);
   ASSERT_EQ(header->GetOverlayEntryCount(), 0x03);
 }
 
@@ -128,11 +128,17 @@ TEST(IdmapTests, CreateIdmapDataFromBinaryStream) {
   std::unique_ptr<const IdmapData> data = IdmapData::FromBinaryStream(stream);
   ASSERT_THAT(data, NotNull());
 
-  const auto& target_entries = data->GetTargetEntries();
-  ASSERT_EQ(target_entries.size(), 3U);
-  ASSERT_TARGET_ENTRY(target_entries[0], 0x7f020000, 0x7f020000);
-  ASSERT_TARGET_ENTRY(target_entries[1], 0x7f030000, 0x7f030000);
-  ASSERT_TARGET_ENTRY(target_entries[2], 0x7f030002, 0x7f030001);
+  const auto& target_entry_sections = data->GetTargetEntrySections();
+  ASSERT_EQ(target_entry_sections.size(), 2U);
+  ASSERT_EQ(target_entry_sections[0].flag_name_index, 0U);
+  const auto& target_entries0 = target_entry_sections[0].target_entries;
+  ASSERT_EQ(target_entries0.size(), 3U);
+  ASSERT_TARGET_ENTRY(target_entries0[0], 0x7f020000, 0x7f020000);
+  ASSERT_TARGET_ENTRY(target_entries0[1], 0x7f030000, 0x7f030000);
+  ASSERT_TARGET_ENTRY(target_entries0[2], 0x7f030002, 0x7f030001);
+  const auto& target_entries1 = target_entry_sections[1].target_entries;
+  ASSERT_EQ(target_entries1.size(), 1U);
+  ASSERT_TARGET_ENTRY(target_entries1[0], 0x7f020000, 0x7f020001);
 
   const auto& target_inline_entries = data->GetTargetInlineEntries();
   ASSERT_EQ(target_inline_entries.size(), 1U);
@@ -140,7 +146,7 @@ TEST(IdmapTests, CreateIdmapDataFromBinaryStream) {
                              Res_value::TYPE_INT_HEX, 0x12345678);
 
   const auto& overlay_entries = data->GetOverlayEntries();
-  ASSERT_EQ(target_entries.size(), 3U);
+  ASSERT_EQ(overlay_entries.size(), 3U);
   ASSERT_OVERLAY_ENTRY(overlay_entries[0], 0x7f020000, 0x7f020000);
   ASSERT_OVERLAY_ENTRY(overlay_entries[1], 0x7f030000, 0x7f030000);
   ASSERT_OVERLAY_ENTRY(overlay_entries[2], 0x7f030001, 0x7f030002);
@@ -156,7 +162,7 @@ TEST(IdmapTests, CreateIdmapFromBinaryStream) {
 
   ASSERT_THAT(idmap->GetHeader(), NotNull());
   ASSERT_EQ(idmap->GetHeader()->GetMagic(), 0x504d4449U);
-  ASSERT_EQ(idmap->GetHeader()->GetVersion(), 11);
+  ASSERT_EQ(idmap->GetHeader()->GetVersion(), 12);
   ASSERT_EQ(idmap->GetHeader()->GetTargetCrc(), 0x1234U);
   ASSERT_EQ(idmap->GetHeader()->GetOverlayCrc(), 0x5678U);
   ASSERT_EQ(idmap->GetHeader()->GetFulfilledPolicies(), kIdmapRawDataPolicies);
@@ -171,11 +177,17 @@ TEST(IdmapTests, CreateIdmapFromBinaryStream) {
   const std::unique_ptr<const IdmapData>& data = dataBlocks[0];
   ASSERT_THAT(data, NotNull());
 
-  const auto& target_entries = data->GetTargetEntries();
-  ASSERT_EQ(target_entries.size(), 3U);
-  ASSERT_TARGET_ENTRY(target_entries[0], 0x7f020000, 0x7f020000);
-  ASSERT_TARGET_ENTRY(target_entries[1], 0x7f030000, 0x7f030000);
-  ASSERT_TARGET_ENTRY(target_entries[2], 0x7f030002, 0x7f030001);
+  const auto& target_entry_sections = data->GetTargetEntrySections();
+  ASSERT_EQ(target_entry_sections.size(), 2U);
+  ASSERT_EQ(target_entry_sections[0].flag_name_index, 0U);
+  const auto& target_entries0 = target_entry_sections[0].target_entries;
+  ASSERT_EQ(target_entries0.size(), 3U);
+  ASSERT_TARGET_ENTRY(target_entries0[0], 0x7f020000, 0x7f020000);
+  ASSERT_TARGET_ENTRY(target_entries0[1], 0x7f030000, 0x7f030000);
+  ASSERT_TARGET_ENTRY(target_entries0[2], 0x7f030002, 0x7f030001);
+  const auto& target_entries1 = target_entry_sections[1].target_entries;
+  ASSERT_EQ(target_entries1.size(), 1U);
+  ASSERT_TARGET_ENTRY(target_entries1[0], 0x7f020000, 0x7f020001);
 
   const auto& target_inline_entries = data->GetTargetInlineEntries();
   ASSERT_EQ(target_inline_entries.size(), 1U);
@@ -183,7 +195,7 @@ TEST(IdmapTests, CreateIdmapFromBinaryStream) {
                              Res_value::TYPE_INT_HEX, 0x12345678);
 
   const auto& overlay_entries = data->GetOverlayEntries();
-  ASSERT_EQ(target_entries.size(), 3U);
+  ASSERT_EQ(overlay_entries.size(), 3U);
   ASSERT_OVERLAY_ENTRY(overlay_entries[0], 0x7f020000, 0x7f020000);
   ASSERT_OVERLAY_ENTRY(overlay_entries[1], 0x7f030000, 0x7f030000);
   ASSERT_OVERLAY_ENTRY(overlay_entries[2], 0x7f030001, 0x7f030002);
@@ -218,7 +230,7 @@ TEST(IdmapTests, CreateIdmapHeaderFromApkAssets) {
 
   ASSERT_THAT(idmap->GetHeader(), NotNull());
   ASSERT_EQ(idmap->GetHeader()->GetMagic(), 0x504d4449U);
-  ASSERT_EQ(idmap->GetHeader()->GetVersion(), 11);
+  ASSERT_EQ(idmap->GetHeader()->GetVersion(), 12);
   ASSERT_EQ(idmap->GetHeader()->GetTargetCrc(), android::idmap2::TestConstants::TARGET_CRC);
   ASSERT_EQ(idmap->GetHeader()->GetOverlayCrc(), android::idmap2::TestConstants::OVERLAY_CRC);
   ASSERT_EQ(idmap->GetHeader()->GetFulfilledPolicies(), PolicyFlags::PUBLIC);
@@ -266,7 +278,10 @@ TEST(IdmapTests, CreateIdmapDataFromApkAssets) {
   const std::unique_ptr<const IdmapData>& data = dataBlocks[0];
   ASSERT_THAT(data, NotNull());
 
-  const auto& target_entries = data->GetTargetEntries();
+  const auto& target_entry_sections = data->GetTargetEntrySections();
+  ASSERT_EQ(target_entry_sections.size(), 1U);
+  ASSERT_EQ(target_entry_sections[0].flag_name_index, 0U);
+  const auto& target_entries = target_entry_sections[0].target_entries;
   ASSERT_EQ(target_entries.size(), 4U);
   ASSERT_TARGET_ENTRY(target_entries[0], R::target::integer::int1, R::overlay::integer::int1);
   ASSERT_TARGET_ENTRY(target_entries[1], R::target::string::str1, R::overlay::string::str1);
@@ -323,7 +338,10 @@ TEST(IdmapTests, FabricatedOverlay) {
 
   const std::unique_ptr<const IdmapData>& data = dataBlocks[0];
   ASSERT_THAT(data, NotNull());
-  ASSERT_EQ(data->GetTargetEntries().size(), 0U);
+  const auto& target_entry_sections = data->GetTargetEntrySections();
+  ASSERT_EQ(target_entry_sections.size(), 1U);
+  ASSERT_EQ(target_entry_sections[0].flag_name_index, 0U);
+  const auto& target_entries = target_entry_sections[0].target_entries;
   ASSERT_EQ(data->GetOverlayEntries().size(), 0U);
 
   auto string_pool_data = data->GetStringPoolData();
@@ -396,7 +414,11 @@ TEST(IdmapTests, CreateIdmapDataFromApkAssetsSharedLibOverlay) {
   const std::unique_ptr<const IdmapData>& data = dataBlocks[0];
   ASSERT_THAT(data, NotNull());
 
-  const auto& target_entries = data->GetTargetEntries();
+  const auto& target_entry_sections = data->GetTargetEntrySections();
+  ASSERT_EQ(target_entry_sections.size(), 1U);
+  ASSERT_EQ(target_entry_sections[0].flag_name_index, 0U);
+  const auto& target_entries = target_entry_sections[0].target_entries;
+
   ASSERT_EQ(target_entries.size(), 4U);
   ASSERT_TARGET_ENTRY(target_entries[0], R::target::integer::int1,
                       fix_package_id(R::overlay::integer::int1, 0));
@@ -461,7 +483,10 @@ TEST(IdmapTests, CreateIdmapDataDoNotRewriteNonOverlayResourceId) {
   ASSERT_TRUE(idmap_data) << idmap_data.GetErrorMessage();
   auto& data = *idmap_data;
 
-  const auto& target_entries = data->GetTargetEntries();
+  const auto& target_entry_sections = data->GetTargetEntrySections();
+  ASSERT_EQ(target_entry_sections.size(), 1U);
+  ASSERT_EQ(target_entry_sections[0].flag_name_index, 0U);
+  const auto& target_entries = target_entry_sections[0].target_entries;
   ASSERT_EQ(target_entries.size(), 2U);
   ASSERT_TARGET_ENTRY(target_entries[0], R::target::string::str1,
                       0x0104000a);  // -> android:string/ok
@@ -483,7 +508,10 @@ TEST(IdmapTests, CreateIdmapDataInlineResources) {
   ASSERT_TRUE(idmap_data) << idmap_data.GetErrorMessage();
   auto& data = *idmap_data;
 
-  const auto& target_entries = data->GetTargetEntries();
+  const auto& target_entry_sections = data->GetTargetEntrySections();
+  ASSERT_EQ(target_entry_sections.size(), 1U);
+  ASSERT_EQ(target_entry_sections[0].flag_name_index, 0U);
+  const auto& target_entries = target_entry_sections[0].target_entries;
   ASSERT_EQ(target_entries.size(), 0U);
 
   constexpr size_t overlay_string_pool_size = 10U;

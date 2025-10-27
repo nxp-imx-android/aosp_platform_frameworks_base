@@ -454,6 +454,10 @@ public final class DisplayShape implements Parcelable {
         @GuardedBy("Cache.class")
         private static int sCachedPhysicalDisplayHeight;
         @GuardedBy("Cache.class")
+        private static int sCachedResDisplayWidth;
+        @GuardedBy("Cache.class")
+        private static int sCachedResDisplayHeight;
+        @GuardedBy("Cache.class")
         private static DisplayShape sCachedDisplayShapeFromResources;
 
         @GuardedBy("Cache.class")
@@ -492,7 +496,9 @@ public final class DisplayShape implements Parcelable {
                 int displayHeight) {
             if (Objects.equals(sCachedDisplayUniqueId, displayUniqueId)
                     && sCachedPhysicalDisplayWidth == physicalDisplayWidth
-                    && sCachedPhysicalDisplayHeight == physicalDisplayHeight) {
+                    && sCachedPhysicalDisplayHeight == physicalDisplayHeight
+                    && sCachedResDisplayWidth == displayWidth
+                    && sCachedResDisplayHeight == displayHeight) {
                 return sCachedDisplayShapeFromResources;
             }
 
@@ -504,6 +510,8 @@ public final class DisplayShape implements Parcelable {
             sCachedDisplayUniqueId = displayUniqueId;
             sCachedPhysicalDisplayWidth = physicalDisplayWidth;
             sCachedPhysicalDisplayHeight = physicalDisplayHeight;
+            sCachedResDisplayWidth = displayWidth;
+            sCachedResDisplayHeight = displayHeight;
             sCachedDisplayShapeFromResources = shape;
             return shape;
         }
@@ -520,12 +528,10 @@ public final class DisplayShape implements Parcelable {
                     0 /* physicalDisplayWidth */, 0 /* physicalDisplayHeight */, isScreenRound,
                     null /* spec */, 0f /* specRatio */, displayWidth, displayHeight,
                     ROTATION_0, 0, 0, 1f);
-            if (sCachedDisplayShapeFromDefault == null) {
-                sCachedDefaultDisplayWidth = displayWidth;
-                sCachedDefaultDisplayHeight = displayHeight;
-                sCachedIsRound = isScreenRound;
-                sCachedDisplayShapeFromDefault = shape;
-            }
+            sCachedDefaultDisplayWidth = displayWidth;
+            sCachedDefaultDisplayHeight = displayHeight;
+            sCachedIsRound = isScreenRound;
+            sCachedDisplayShapeFromDefault = shape;
             return shape;
         }
     }

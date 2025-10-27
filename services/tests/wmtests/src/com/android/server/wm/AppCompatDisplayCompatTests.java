@@ -67,7 +67,7 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
     @Before
     public void setUp() {
         doReturn(false).when(mDisplayContent).shouldSleep();
-        mAtm.updateSleepIfNeededLocked();
+        mDisplayContent.wakeIfNeeded();
     }
 
     @EnableFlags({FLAG_ENABLE_DISPLAY_COMPAT_MODE, FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS})

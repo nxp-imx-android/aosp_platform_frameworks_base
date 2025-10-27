@@ -46,6 +46,8 @@ import java.util.Objects;
  */
 public final class DisconnectCause implements Parcelable {
 
+    private static final int TONE_UNKNOWN = -1;
+
     /** Disconnected because of an unknown or unspecified reason. */
     public static final int UNKNOWN = 0;
     /** Disconnected because there was an error, such as a problem with the network. */
@@ -157,7 +159,7 @@ public final class DisconnectCause implements Parcelable {
      * @param code The code for the disconnect cause.
      */
     public DisconnectCause(@DisconnectCauseCode int code) {
-        this(code, null, null, null, ToneGenerator.TONE_UNKNOWN);
+        this(code, null, null, null, TONE_UNKNOWN);
     }
 
     /**
@@ -167,7 +169,7 @@ public final class DisconnectCause implements Parcelable {
      * @param reason The reason for the disconnect.
      */
     public DisconnectCause(@DisconnectCauseCode int code, String reason) {
-        this(code, null, null, reason, ToneGenerator.TONE_UNKNOWN);
+        this(code, null, null, reason, TONE_UNKNOWN);
     }
 
     /**
@@ -180,7 +182,7 @@ public final class DisconnectCause implements Parcelable {
      */
     public DisconnectCause(@DisconnectCauseCode int code, CharSequence label,
             CharSequence description, String reason) {
-        this(code, label, description, reason, ToneGenerator.TONE_UNKNOWN);
+        this(code, label, description, reason, TONE_UNKNOWN);
     }
 
     /**
@@ -332,7 +334,7 @@ public final class DisconnectCause implements Parcelable {
         private CharSequence mDisconnectLabel;
         private CharSequence mDisconnectDescription;
         private String mDisconnectReason;
-        private int mToneToPlay = ToneGenerator.TONE_UNKNOWN;
+        private int mToneToPlay = TONE_UNKNOWN;
         private int mTelephonyDisconnectCause;
         private int mTelephonyPreciseDisconnectCause;
         private ImsReasonInfo mImsReasonInfo;

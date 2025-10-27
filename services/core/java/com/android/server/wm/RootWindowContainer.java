@@ -36,10 +36,8 @@ import static android.view.WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG;
 import static android.view.WindowManager.LayoutParams.TYPE_NOTIFICATION_SHADE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION;
-import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_OCCLUDING;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.view.WindowManager.TRANSIT_SLEEP;
-import static android.view.WindowManager.TRANSIT_WAKE;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
 import static android.window.DesktopExperienceFlags.ENABLE_FILTER_REMOVING_DISPLAY_BUGFIX;
 
@@ -806,8 +804,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 WindowState win = mWmService.mDestroySurface.get(i);
                 win.mDestroying = false;
                 final DisplayContent displayContent = win.getDisplayContent();
-                if (displayContent.mInputMethodWindow == win) {
-                    displayContent.setInputMethodWindowLocked(null);
+                if (displayContent.getImeWindow() == win) {
+                    displayContent.setImeWindow(null /* win */);
                 }
                 if (displayContent.mWallpaperController.isWallpaperTarget(win)) {
                     displayContent.pendingLayoutChanges |= FINISH_LAYOUT_REDO_WALLPAPER;
@@ -1119,11 +1117,13 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
      * Get current topmost focused IME window in system.
      * Will look on all displays in current Z-order.
      */
-    WindowState getCurrentInputMethodWindow() {
+    @Nullable
+    WindowState getCurrentImeWindow() {
         for (int i = mChildren.size() - 1; i >= 0; --i) {
             final DisplayContent displayContent = mChildren.get(i);
-            if (displayContent.mInputMethodWindow != null) {
-                return displayContent.mInputMethodWindow;
+            final WindowState imeWindow = displayContent.getImeWindow();
+            if (imeWindow != null) {
+                return imeWindow;
             }
         }
         return null;
@@ -2587,90 +2587,11 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         }
     }
 
-    void applySleepTokens(@NonNull ActionChain chain) {
-        boolean scheduleSleepTransition = false;
-        Transition newWakeTransition = null;
-
-        for (int displayNdx = getChildCount() - 1; displayNdx >= 0; --displayNdx) {
-            // Set the sleeping state of the display.
-            final DisplayContent display = getChildAt(displayNdx);
-            final boolean displayShouldSleep = display.shouldSleep();
-            if (displayShouldSleep == display.isSleeping()) {
-                continue;
-            }
-            display.setIsSleeping(displayShouldSleep);
-            scheduleSleepTransition |= displayShouldSleep && display.isScreenSleeping();
-
-            // Prepare transition before resume top activity, so it can be collected.
-            if (!displayShouldSleep && display.mTransitionController.isShellTransitionsEnabled()
-                    && !chain.isCollecting()) {
-                Task startTask = null;
-                int flags = 0;
-                if (display.isKeyguardOccluded()) {
-                    startTask = display.getTaskOccludingKeyguard();
-                    flags = TRANSIT_FLAG_KEYGUARD_OCCLUDING;
-                }
-                chain.attachTransition(
-                        display.mTransitionController.createTransition(TRANSIT_WAKE, flags));
-                newWakeTransition = chain.getTransition();
-                display.mTransitionController.requestStartTransition(chain.getTransition(),
-                        startTask, null /* remoteTransition */, null /* displayChange */);
-            }
-            // Set the sleeping state of the root tasks on the display.
-            display.forAllRootTasks(rootTask -> {
-                if (displayShouldSleep) {
-                    rootTask.goToSleepIfPossible(false /* shuttingDown */);
-                } else {
-                    rootTask.forAllLeafTasksAndLeafTaskFragments(
-                            taskFragment -> taskFragment.awakeFromSleeping(),
-                            true /* traverseTopToBottom */);
-                    if (rootTask.isFocusedRootTaskOnDisplay()
-                            && !mTaskSupervisor.getKeyguardController()
-                            .isKeyguardOrAodShowing(display.mDisplayId)) {
-                        // If the keyguard is unlocked - resume immediately.
-                        // It is possible that the display will not be awake at the time we
-                        // process the keyguard going away, which can happen before the sleep
-                        // token is released. As a result, it is important we resume the
-                        // activity here.
-                        rootTask.resumeTopActivityUncheckedLocked();
-                    }
-                    // The visibility update must not be called before resuming the top, so the
-                    // display orientation can be updated first if needed. Otherwise there may
-                    // have redundant configuration changes due to apply outdated display
-                    // orientation (from keyguard) to activity.
-                    rootTask.ensureActivitiesVisible(null /* starting */);
-                }
-            });
-        }
-        if (newWakeTransition != null) {
-            newWakeTransition.setAllReady();
-        }
-        if (scheduleSleepTransition) {
-            scheduleSleepTransition();
-        } else {
-            mHandler.removeMessages(MSG_SEND_SLEEP_TRANSITION);
-        }
-    }
-
-    private void scheduleSleepTransition() {
+    void scheduleSleepTransition() {
         if (!mService.getTransitionController().isShellTransitionsEnabled()) return;
         if (mHandler.hasMessages(MSG_SEND_SLEEP_TRANSITION)) return;
         mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_SEND_SLEEP_TRANSITION),
                 SLEEP_TRANSITION_WAIT_MILLIS);
-    }
-
-    void sleepAllDisplays() {
-        boolean scheduleSleepTransition = false;
-        for (int displayNdx = getChildCount() - 1; displayNdx >= 0; --displayNdx) {
-            // Set the sleeping state of the display.
-            final DisplayContent display = getChildAt(displayNdx);
-            if (display.isSleeping()) continue;
-            display.setIsSleeping(true);
-            scheduleSleepTransition |= display.isScreenSleeping();
-        }
-        if (scheduleSleepTransition) {
-            scheduleSleepTransition();
-        }
     }
 
     protected Task getRootTask(int rooTaskId) {
@@ -2855,9 +2776,10 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     transition.setAllReady();
                     TransitionRequestInfo.DisplayChange displayChange =
                             new TransitionRequestInfo.DisplayChange(displayId);
-                    displayChange.setDisconnectReparentDisplay(
-                            mWindowManager.mUmInternal.getMainDisplayAssignedToUser(mCurrentUser)
-                    );
+                    final int disconnectReparentDisplay =
+                            mWindowManager.mUmInternal.getMainDisplayAssignedToUser(mCurrentUser);
+                    displayChange.setDisconnectReparentDisplay(disconnectReparentDisplay);
+                    transition.addDisconnectReparentDisplay(disconnectReparentDisplay);
 
                     mTransitionController.requestStartTransition(transition, null /* startTask */,
                             null /* remoteTransition */, displayChange);
@@ -2895,16 +2817,17 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             if (displayContent != null) {
                 displayContent.requestDisplayUpdate(
                         () -> {
+                            final boolean displayContentInReparentTransition =
+                                    mTransitionController.isCollecting()
+                                        && mTransitionController.getCollectingTransition()
+                                            .getDisconnectReparentDisplays().contains(displayId);
                             clearDisplayInfoCaches(displayId);
                             if (ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
-                                if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
-                                    Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER,
-                                            "onDisplayInfoChangeApplied, displayId=" + displayId);
-                                }
-                                try {
-                                    displayContent.onDisplayInfoChangeApplied();
-                                } finally {
-                                    Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+                                // If the display content is in a transition, make the
+                                // transition responsible for calling this. Otherwise,
+                                // do it now.
+                                if (!displayContentInReparentTransition) {
+                                    displayContent.updateContentMode();
                                 }
                             }
                         });

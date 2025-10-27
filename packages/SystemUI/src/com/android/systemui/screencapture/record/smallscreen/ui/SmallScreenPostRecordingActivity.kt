@@ -83,9 +83,6 @@ constructor(
     private val systemUIDialogFactory: SystemUIDialogFactory,
 ) : ComponentActivity() {
 
-    private val shouldShowVideoSaved: Boolean
-        get() = intent.getBooleanExtra(SHOULD_SHOW_VIDEO_SAVED, SHOULD_SHOW_VIDEO_SAVED_DEFAULT)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -100,9 +97,10 @@ constructor(
                 viewModelFactory.create(intent.data ?: error("Data URI is missing"))
             }
 
-        LaunchedEffect(shouldShowVideoSaved) {
-            if (shouldShowVideoSaved) {
-                intent.putExtra(SHOULD_SHOW_VIDEO_SAVED, false)
+        val shouldShowVideoSaved = intent.shouldWaitForVideo()
+        LaunchedEffect(shouldShowVideoSaved, viewModel.isVideoSaved) {
+            if (shouldShowVideoSaved && viewModel.isVideoSaved) {
+                intent.putExtra(SHOULD_WAIT_FOR_VIDEO, false)
                 postRecordSnackbarDialogs.showVideoSaved()
             }
         }
@@ -236,19 +234,31 @@ constructor(
 
     companion object {
 
-        private const val SHOULD_SHOW_VIDEO_SAVED = "should_show_video_saved"
-        private const val SHOULD_SHOW_VIDEO_SAVED_DEFAULT = false
+        private const val SHOULD_WAIT_FOR_VIDEO = "should_show_video_saved"
 
-        fun getStartingIntent(
+        /** Immediately shows the recording by the [videoUri] */
+        fun showRecording(context: Context, videoUri: Uri): Intent = createIntent(context, videoUri)
+
+        /**
+         * Listens to the [ScreenRecordingsInteractor] for the recording status identified by the
+         * [videoUri]
+         */
+        fun waitForRecording(context: Context, videoUri: Uri): Intent =
+            createIntent(context, videoUri) { putExtra(SHOULD_WAIT_FOR_VIDEO, true) }
+
+        private fun createIntent(
             context: Context,
             videoUri: Uri,
-            shouldShowVideoSaved: Boolean = SHOULD_SHOW_VIDEO_SAVED_DEFAULT,
+            setup: Intent.() -> Unit = {},
         ): Intent {
             return Intent(context, SmallScreenPostRecordingActivity::class.java)
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 .setDataAndType(videoUri, MimeTypes.VIDEO_MP4)
-                .putExtra(SHOULD_SHOW_VIDEO_SAVED, shouldShowVideoSaved)
+                .apply(setup)
         }
+
+        private fun Intent.shouldWaitForVideo(): Boolean =
+            getBooleanExtra(SHOULD_WAIT_FOR_VIDEO, false)
     }
 }
 

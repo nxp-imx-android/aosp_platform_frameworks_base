@@ -35,7 +35,10 @@ import android.app.appsearch.PropertyPath;
 import android.app.appsearch.SearchResult;
 import android.app.appsearch.SearchResults;
 import android.app.appsearch.SearchSpec;
+import android.os.CancellationSignal;
+import android.os.ICancellationSignal;
 import android.os.OutcomeReceiver;
+import android.os.RemoteException;
 import android.text.TextUtils;
 
 import java.io.IOException;
@@ -118,6 +121,22 @@ public class AppFunctionManagerHelper {
                         callback.onError(e);
                     }
                 });
+    }
+
+    /** Creates a {@link CancellationSignal} from a {@link ICancellationCallback}. */
+    static CancellationSignal buildCancellationSignal(
+            @NonNull ICancellationCallback cancellationCallback) {
+        final ICancellationSignal cancellationSignalTransport =
+                CancellationSignal.createTransport();
+        CancellationSignal cancellationSignal =
+                CancellationSignal.fromTransport(cancellationSignalTransport);
+        try {
+            cancellationCallback.sendCancellationTransport(cancellationSignalTransport);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+
+        return cancellationSignal;
     }
 
     /**
@@ -239,5 +258,17 @@ public class AppFunctionManagerHelper {
         private AppFunctionNotFoundException(@NonNull String errorMessage) {
             super(errorMessage);
         }
+    }
+
+    /**
+     * Returns result codes from throwable.
+     *
+     * @hide
+     */
+    static @AppFunctionException.ErrorCode int executionExceptionToErrorCode(@NonNull Throwable t) {
+        if (t instanceof IllegalArgumentException) {
+            return AppFunctionException.ERROR_INVALID_ARGUMENT;
+        }
+        return AppFunctionException.ERROR_APP_UNKNOWN_ERROR;
     }
 }

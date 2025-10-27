@@ -120,6 +120,7 @@ import static org.mockito.Mockito.never;
 import android.app.ActivityOptions;
 import android.app.AppOpsManager;
 import android.app.HandoffActivityData;
+import android.app.HandoffActivityParams;
 import android.app.PictureInPictureParams;
 import android.app.servertransaction.ActivityConfigurationChangeItem;
 import android.app.servertransaction.ClientTransaction;
@@ -140,7 +141,6 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsDisabled;
@@ -877,42 +877,56 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public void testSetHandoffEnabled() {
         ActivityTaskManagerInternal.HandoffEnablementListener handoffEnablementListener =
                 mock(ActivityTaskManagerInternal.HandoffEnablementListener.class);
+
+        // Verify that Handoff is disabled by default on the ActivityRecord.
         mAtm.getAtmInternal().registerHandoffEnablementListener(handoffEnablementListener);
         final ActivityRecord activity = createActivityWithTask();
         assertFalse(activity.isHandoffEnabled());
-        assertFalse(activity.isHandoffFullTaskRecreationAllowed());
-        activity.setHandoffEnabled(true, true);
+        assertNull(activity.getHandoffActivityParams());
+
+        // Set params for Handoff, verify this is recorded on the ActivityRecord.
+        HandoffActivityParams handoffEnabledParams =
+                new HandoffActivityParams.Builder()
+                        .setAllowHandoffWithoutPackageInstalled(true)
+                        .build();
+        activity.setHandoffEnabled(true, handoffEnabledParams);
         verify(handoffEnablementListener).onHandoffEnabledChanged(activity.getRootTaskId(), true);
         assertTrue(activity.isHandoffEnabled());
-        assertTrue(activity.isHandoffFullTaskRecreationAllowed());
-        activity.setHandoffEnabled(false, false);
+        assertEquals(handoffEnabledParams, activity.getHandoffActivityParams());
+
+        // Disable Handoff, verify params are null.
+        activity.setHandoffEnabled(false, handoffEnabledParams);
         verify(handoffEnablementListener).onHandoffEnabledChanged(activity.getRootTaskId(), false);
         assertFalse(activity.isHandoffEnabled());
-        assertFalse(activity.isHandoffFullTaskRecreationAllowed());
+        assertNull(activity.getHandoffActivityParams());
     }
 
     @Test
-    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public void testClientControllerCanModifyHandoffStatus() {
+        // Create a new task, verify Handoff is disabled by default.
         final ActivityRecord activity = createActivityWithTask();
-        assertFalse(mAtm
-                        .mActivityClientController
-                        .isHandoffEnabled(activity.token));
-        assertFalse(mAtm.mActivityClientController
-                        .isHandoffFullTaskRecreationAllowed(activity.token));
+        assertFalse(mAtm.mActivityClientController.isHandoffEnabled(activity.token));
+        HandoffActivityParams params =
+                mAtm.mActivityClientController.getHandoffActivityParams(activity.token);
+        assertNull(params);
+
+        // Enable Handoff, verify the params are set.
+        HandoffActivityParams handoffEnabledParams = new HandoffActivityParams.Builder()
+                .setAllowHandoffWithoutPackageInstalled(true)
+                .build();
         mAtm
             .mActivityClientController
-            .setHandoffEnabled(activity.token, true, true);
-        assertTrue(mAtm
-                       .mActivityClientController
-                       .isHandoffEnabled(activity.token));
-        assertTrue(mAtm
-                       .mActivityClientController
-                       .isHandoffFullTaskRecreationAllowed(activity.token));
+            .setHandoffEnabled(activity.token, true, handoffEnabledParams);
+        assertTrue(mAtm.mActivityClientController.isHandoffEnabled(activity.token));
+        assertEquals(
+                handoffEnabledParams,
+                mAtm.mActivityClientController.getHandoffActivityParams(
+                        activity.token));
     }
 
     @Test
@@ -983,10 +997,10 @@ public class ActivityRecordTests extends WindowTestsBase {
         final ActivityRecord activity = createActivityWithTask();
         final HandoffActivityData handoffActivityData = new HandoffActivityData.Builder(
                 new ComponentName("pkg", "cls")).build();
-        activity.setHandoffEnabled(true, false);
+        activity.setHandoffEnabled(true, null);
         activity.setHandoffActivityData(handoffActivityData);
         assertEquals(handoffActivityData, activity.getHandoffActivityData());
-        activity.setHandoffEnabled(false, false);
+        activity.setHandoffEnabled(false, null);
         assertNull(activity.getHandoffActivityData());
     }
 
@@ -996,9 +1010,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         final HandoffActivityData handoffActivityData = new HandoffActivityData.Builder(
                 new ComponentName("pkg", "cls")).build();
         activity.setHandoffActivityData(handoffActivityData);
-        activity.setHandoffEnabled(
-            false /* handoffEnabled */,
-            false /* allowFullTaskRecreation */);
+        activity.setHandoffEnabled(false, null);
         assertNull(activity.getHandoffActivityData());
     }
 
@@ -1012,9 +1024,7 @@ public class ActivityRecordTests extends WindowTestsBase {
                 new ComponentName("pkg", "cls")).build();
         final PersistableBundle persistentSavedState = new PersistableBundle();
         persistentSavedState.putString("persist", "string");
-        activity.setHandoffEnabled(
-            true /* handoffEnabled */,
-            false /* allowFullTaskRecreation */);
+        activity.setHandoffEnabled(true, null);
 
         // Set state to STOPPING, or ActivityRecord#activityStoppedLocked() call will be ignored.
         activity.setState(STOPPING, "test");
@@ -3088,38 +3098,6 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_TRANSFER_STARTING_WINDOW_TO_NEXT_WHEN_INVISIBLE)
-    public void testTryTransferStartingWindowFromHiddenAboveToken() {
-        registerTestStartingWindowOrganizer();
-        // Add two tasks on top of each other.
-        final ActivityRecord activityTop = new ActivityBuilder(mAtm).setCreateTask(true).build();
-        final ActivityRecord activityBottom = new ActivityBuilder(mAtm).build();
-        activityTop.getTask().addChild(activityBottom, 0);
-
-        // Add a starting window.
-        activityTop.addStartingWindow(mPackageName, android.R.style.Theme, null, true, true, false,
-                true, false, false, false);
-        waitUntilHandlersIdle();
-
-        final WindowState startingWindow = activityTop.mStartingWindow;
-        assertNotNull(startingWindow);
-
-        // Make the top one invisible, and try transferring the starting window from the top to the
-        // bottom one.
-        activityTop.setVisibility(false);
-        activityBottom.transferStartingWindowFromHiddenAboveTokenIfNeeded();
-        waitUntilHandlersIdle();
-
-        // Expect getFrozenInsetsState will be null when transferring the starting window.
-        assertNull(startingWindow.getFrozenInsetsState());
-
-        // Assert that the bottom window now has the starting window.
-        assertNoStartingWindow(activityTop);
-        assertHasStartingWindow(activityBottom);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_TRANSFER_STARTING_WINDOW_TO_NEXT_WHEN_INVISIBLE)
     public void testTryTransferStartingWindowToNextRunningIfNeeded() {
         registerTestStartingWindowOrganizer();
         // Add two tasks on top of each other.

@@ -164,6 +164,7 @@ import com.android.server.connectivity.PacProxyService;
 import com.android.server.content.ContentService;
 import com.android.server.contentcapture.ContentCaptureManagerInternal;
 import com.android.server.contentcapture.ContentCaptureManagerService;
+import com.android.server.contentrestriction.ContentRestrictionService;
 import com.android.server.contentsuggestions.ContentSuggestionsManagerService;
 import com.android.server.contextualsearch.ContextualSearchManagerService;
 import com.android.server.coverage.CoverageService;
@@ -419,6 +420,8 @@ public final class SystemServer implements Dumpable {
                     + "OnDevicePersonalizationSystemService$Lifecycle";
     private static final String UPDATABLE_DEVICE_CONFIG_SERVICE_CLASS =
             "com.android.server.deviceconfig.DeviceConfigInit$Lifecycle";
+    private static final String NPU_MANAGER_SERVICE_CLASS =
+            "com.android.server.npumanager.NpuManagerService";
 
 
     /*
@@ -1653,6 +1656,13 @@ public final class SystemServer implements Dumpable {
             SQLiteCompatibilityWalFlags.reset();
             t.traceEnd();
 
+            if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_NEURAL_PROCESSING_UNIT)
+                    && com.android.npumanager.Flags.npumanagerEnabled()) {
+                t.traceBegin("StartNpuManagerService");
+                mSystemServiceManager.startService(NPU_MANAGER_SERVICE_CLASS);
+                t.traceEnd();
+            }
+
             // Records errors and logs, for example wtf()
             // Currently this service indirectly depends on SettingsProvider so do this after
             // InstallSystemProviders.
@@ -1676,6 +1686,12 @@ public final class SystemServer implements Dumpable {
                     new RoleServicePlatformHelperImpl(mSystemContext));
             mSystemServiceManager.startService(ROLE_SERVICE_CLASS);
             t.traceEnd();
+
+            if (android.app.contentrestriction.flags.Flags.contentRestrictionApi()) {
+                t.traceBegin("StartContentRestrictionService");
+                mSystemServiceManager.startService(ContentRestrictionService.Lifecycle.class);
+                t.traceEnd();
+            }
 
             t.traceBegin("StartSupervisionService");
             mSystemServiceManager.startService(SupervisionService.Lifecycle.class);
@@ -1947,15 +1963,13 @@ public final class SystemServer implements Dumpable {
         }
         t.traceEnd();
 
-        if (com.android.window.flags.Flags.restoreUserAspectRatioSettingsUsingService()) {
-            t.traceBegin("StartUAppWindowLayoutSettingsService");
-            try {
-                mSystemServiceManager.startService(AppWindowLayoutSettingsService.class);
-            } catch (Throwable e) {
-                reportWtf("starting AppWindowLayoutSettingsService service", e);
-            }
-            t.traceEnd();
+        t.traceBegin("StartUAppWindowLayoutSettingsService");
+        try {
+            mSystemServiceManager.startService(AppWindowLayoutSettingsService.class);
+        } catch (Throwable e) {
+            reportWtf("starting AppWindowLayoutSettingsService service", e);
         }
+        t.traceEnd();
 
         t.traceBegin("StartGrammarInflectionService");
         try {
@@ -2652,7 +2666,7 @@ public final class SystemServer implements Dumpable {
                 t.traceEnd();
             }
 
-            if (android.companion.Flags.enableTaskContinuity()) {
+            if (android.companion.Flags.taskContinuity()) {
                 t.traceBegin("StartTaskContinuityService");
                 mSystemServiceManager.startService(TaskContinuityManagerService.class);
                 t.traceEnd();

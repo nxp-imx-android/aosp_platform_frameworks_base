@@ -18,8 +18,10 @@ package android.view.contentcapture;
 import static android.view.contentcapture.ContentCaptureHelper.sDebug;
 import static android.view.contentcapture.ContentCaptureHelper.sVerbose;
 import static android.view.contentcapture.ContentCaptureHelper.toSet;
+import static android.view.contentprotection.flags.Flags.FLAG_SET_CONTENT_PROTECTION_ALLOWLIST_ENABLED;
 
 import android.annotation.CallbackExecutor;
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -34,7 +36,6 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.ContentCaptureOptions;
 import android.content.Context;
-import android.content.LocusId;
 import android.graphics.Canvas;
 import android.os.Binder;
 import android.os.Handler;
@@ -1098,6 +1099,27 @@ public final class ContentCaptureManager {
         }
         try {
             service.setDefaultServiceEnabled(userId, enabled);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Sets the allowlist for content protection.
+     *
+     * @param packageNames set of packages for the new allowlist.
+     * @throws SecurityException if the caller doesn't have the required permission or isn't the app
+     * that owns the content protection service.
+     *
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.SET_CONTENT_PROTECTION_ALLOWLIST)
+    @FlaggedApi(FLAG_SET_CONTENT_PROTECTION_ALLOWLIST_ENABLED)
+    public void setContentProtectionAllowlist(@NonNull Set<String> packageNames) {
+        Objects.requireNonNull(packageNames);
+        try {
+            mService.setContentProtectionAllowlist(packageNames.stream().toList());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

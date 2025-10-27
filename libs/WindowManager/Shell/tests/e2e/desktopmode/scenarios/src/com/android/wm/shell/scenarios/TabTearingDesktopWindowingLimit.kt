@@ -65,17 +65,20 @@ abstract class TabTearingDesktopWindowingLimit(val rotation: Rotation = Rotation
         browserDesktopAppHelper.dragWindowTopLeftCorner(
             device,
             wmHelper,
-            DesktopModeAppHelper.WindowDraggingDirection.CENTER
+            DesktopModeAppHelper.WindowDraggingDirection.CENTER,
         )
         browserAppHelper.performTabTearing(
             wmHelper,
-            BrowserAppHelper.Companion.TabDraggingDirection.TOP_LEFT
+            BrowserAppHelper.Companion.TabDraggingDirection.TOP_LEFT,
         )
         wmHelper
             .StateSyncBuilder()
             .withWindowSurfaceDisappeared(mailAppHelper.componentMatcher)
             // We need to verify that after tab tearing we have 2 browser windows
-            .withTopVisibleApps(browserAppHelper.componentMatcher, browserAppHelper.componentMatcher)
+            .withTopVisibleApps(
+                browserAppHelper.componentMatcher,
+                browserAppHelper.componentMatcher,
+            )
             .waitForAndVerify()
     }
 

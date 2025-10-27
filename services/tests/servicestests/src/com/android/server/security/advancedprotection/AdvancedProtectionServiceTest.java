@@ -17,6 +17,7 @@
 package com.android.server.security.advancedprotection;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -30,7 +31,12 @@ import android.content.pm.UserInfo;
 import android.os.RemoteException;
 import android.os.test.FakePermissionEnforcer;
 import android.os.test.TestLooper;
+import android.platform.test.annotations.RequiresFlagsDisabled;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.provider.Settings;
+import android.security.Flags;
 import android.security.advancedprotection.AdvancedProtectionFeature;
 import android.security.advancedprotection.AdvancedProtectionManager;
 import android.security.advancedprotection.IAdvancedProtectionCallback;
@@ -42,16 +48,20 @@ import com.android.server.security.advancedprotection.features.AdvancedProtectio
 import com.android.server.security.advancedprotection.features.AdvancedProtectionProvider;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressLint("VisibleForTests")
 @RunWith(JUnit4.class)
@@ -60,14 +70,19 @@ public class AdvancedProtectionServiceTest {
     private UserManagerInternal mUserManager;
     private Context mContext;
     private TestLooper mLooper;
+    private AdvancedProtectionConfigLoader.Injector mInjector;
     AdvancedProtectionFeature mTestFeature2g =
             new AdvancedProtectionFeature(
                     AdvancedProtectionManager.FEATURE_ID_DISALLOW_CELLULAR_2G);
+
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     @Before
     public void setup() throws Settings.SettingNotFoundException {
         mContext = mock(Context.class);
         mUserManager = mock(UserManagerInternal.class);
+        mInjector = new AdvancedProtectionConfigLoader.Injector();
         mLooper = new TestLooper();
         mPermissionEnforcer = new FakePermissionEnforcer();
         mPermissionEnforcer.grant(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE);
@@ -112,7 +127,8 @@ public class AdvancedProtectionServiceTest {
                 mLooper.getLooper(),
                 mPermissionEnforcer,
                 hook,
-                provider);
+                provider,
+                mInjector);
     }
 
     @Test
@@ -280,6 +296,7 @@ public class AdvancedProtectionServiceTest {
         assertFalse(callbackCalledCaptor.get());
     }
 
+    @RequiresFlagsDisabled(Flags.FLAG_AAPM_API_V2)
     @Test
     public void testGetFeatures() {
         AdvancedProtectionFeature feature1 =
@@ -315,6 +332,7 @@ public class AdvancedProtectionServiceTest {
         assertThat(features, containsInAnyOrder(feature1, feature2));
     }
 
+    @RequiresFlagsDisabled(Flags.FLAG_AAPM_API_V2)
     @Test
     public void testGetFeatures_featureNotAvailable() {
         AdvancedProtectionFeature feature1 =
@@ -348,6 +366,180 @@ public class AdvancedProtectionServiceTest {
         AdvancedProtectionService service = createService(hook, provider);
         List<AdvancedProtectionFeature> features = service.getAdvancedProtectionFeatures();
         assertThat(features, containsInAnyOrder(feature2));
+        assertThat(features, not(containsInAnyOrder(feature1)));
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testGetFeatures_featuresAvailableInHookAndConfig() throws IOException {
+        AdvancedProtectionFeature feature1 =
+                new AdvancedProtectionFeature(
+                        AdvancedProtectionManager.FEATURE_ID_DISALLOW_CELLULAR_2G);
+        AdvancedProtectionFeature feature2 =
+                new AdvancedProtectionFeature(
+                        AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES);
+        AdvancedProtectionHook hook =
+                new AdvancedProtectionHook(mContext, true) {
+                    @NonNull
+                    @Override
+                    public AdvancedProtectionFeature getFeature() {
+                        return feature1;
+                    }
+
+                    @Override
+                    public boolean isAvailable() {
+                        return true;
+                    }
+                };
+
+        AdvancedProtectionProvider provider =
+                new AdvancedProtectionProvider() {
+                    @Override
+                    public List<AdvancedProtectionFeature> getFeatures(Context context) {
+                        return List.of(feature2);
+                    }
+                };
+
+        mockSystemConfig("""
+                <advanced-protection-config>
+                    <available-protections>
+                        <protection id="DISALLOW_CELLULAR_2G" />
+                        <protection id="DISALLOW_INSTALL_UNKNOWN_SOURCES" />
+                    </available-protections>
+                </advanced-protection-config>""");
+
+        AdvancedProtectionService service = createService(hook, provider);
+        List<AdvancedProtectionFeature> features = service.getAdvancedProtectionFeatures();
+        assertThat(features, containsInAnyOrder(feature1, feature2));
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testGetFeatures_featureAvailableInHookButNotAvailableInConfig() throws IOException {
+        AdvancedProtectionFeature feature1 =
+                new AdvancedProtectionFeature(
+                        AdvancedProtectionManager.FEATURE_ID_DISALLOW_CELLULAR_2G);
+        AdvancedProtectionFeature feature2 =
+                new AdvancedProtectionFeature(
+                        AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES);
+        AdvancedProtectionHook hook =
+                new AdvancedProtectionHook(mContext, true) {
+                    @NonNull
+                    @Override
+                    public AdvancedProtectionFeature getFeature() {
+                        return feature1;
+                    }
+
+                    @Override
+                    public boolean isAvailable() {
+                        return true;
+                    }
+                };
+
+        AdvancedProtectionProvider provider =
+                new AdvancedProtectionProvider() {
+                    @Override
+                    public List<AdvancedProtectionFeature> getFeatures(Context context) {
+                        return List.of(feature2);
+                    }
+                };
+
+        mockSystemConfig("""
+              <advanced-protection-config>
+                    <available-protections>
+                        <protection id="DISALLOW_INSTALL_UNKNOWN_SOURCES" />
+                    </available-protections>
+                </advanced-protection-config>""");
+
+        AdvancedProtectionService service = createService(hook, provider);
+        List<AdvancedProtectionFeature> features = service.getAdvancedProtectionFeatures();
+        assertThat(features, containsInAnyOrder(feature2));
+        assertThat(features, not(containsInAnyOrder(feature1)));
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testGetFeatures_featureNotAvailableInHookButAvailableInConfig() throws IOException {
+        AdvancedProtectionFeature feature1 =
+                new AdvancedProtectionFeature(
+                        AdvancedProtectionManager.FEATURE_ID_DISALLOW_CELLULAR_2G);
+        AdvancedProtectionFeature feature2 =
+                new AdvancedProtectionFeature(
+                        AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES);
+        AdvancedProtectionHook hook =
+                new AdvancedProtectionHook(mContext, true) {
+                    @NonNull
+                    @Override
+                    public AdvancedProtectionFeature getFeature() {
+                        return feature1;
+                    }
+
+                    @Override
+                    public boolean isAvailable() {
+                        return false;
+                    }
+                };
+
+        AdvancedProtectionProvider provider =
+                new AdvancedProtectionProvider() {
+                    @Override
+                    public List<AdvancedProtectionFeature> getFeatures(Context context) {
+                        return List.of(feature2);
+                    }
+                };
+
+        mockSystemConfig("""
+                <advanced-protection-config>
+                    <available-protections>
+                        <protection id="DISALLOW_CELLULAR_2G" />
+                        <protection id="DISALLOW_INSTALL_UNKNOWN_SOURCES" />
+                    </available-protections>
+                </advanced-protection-config>""");
+
+        AdvancedProtectionService service = createService(hook, provider);
+        List<AdvancedProtectionFeature> features = service.getAdvancedProtectionFeatures();
+        assertThat(features, containsInAnyOrder(feature2));
+        assertThat(features, not(containsInAnyOrder(feature1)));
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testGetFeatures_featuresNotAvailableInHookAndConfig() throws IOException {
+        AdvancedProtectionFeature feature1 =
+                new AdvancedProtectionFeature(
+                        AdvancedProtectionManager.FEATURE_ID_DISALLOW_CELLULAR_2G);
+        AdvancedProtectionFeature feature2 =
+                new AdvancedProtectionFeature(
+                        AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES);
+        AdvancedProtectionHook hook =
+                new AdvancedProtectionHook(mContext, true) {
+                    @NonNull
+                    @Override
+                    public AdvancedProtectionFeature getFeature() {
+                        return feature1;
+                    }
+
+                    @Override
+                    public boolean isAvailable() {
+                        return false;
+                    }
+                };
+
+        AdvancedProtectionProvider provider =
+                new AdvancedProtectionProvider() {
+                    @Override
+                    public List<AdvancedProtectionFeature> getFeatures(Context context) {
+                        return List.of(feature2);
+                    }
+                };
+
+        mockSystemConfig("""
+                <advanced-protection-config>
+                </advanced-protection-config>""");
+
+        AdvancedProtectionService service = createService(hook, provider);
+        List<AdvancedProtectionFeature> features = service.getAdvancedProtectionFeatures();
+        assertTrue(features.isEmpty());
     }
 
     @Test
@@ -384,5 +576,11 @@ public class AdvancedProtectionServiceTest {
                 () ->
                         service.unregisterAdvancedProtectionCallback(
                                 new IAdvancedProtectionCallback.Default()));
+    }
+
+    private void mockSystemConfig(String configContent) throws IOException {
+        mInjector = mock(AdvancedProtectionConfigLoader.Injector.class);
+        Mockito.when(mInjector.readSystemConfig()).thenReturn(new ByteArrayInputStream(
+                configContent.getBytes(StandardCharsets.UTF_8)));
     }
 }

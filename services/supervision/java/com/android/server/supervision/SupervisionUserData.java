@@ -19,12 +19,13 @@ package com.android.server.supervision;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
-import android.os.PersistableBundle;
 import android.app.supervision.Policy;
-import java.util.ArrayList;
-import java.util.List;
+import android.app.supervision.PolicyKey;
+import android.os.PersistableBundle;
 import android.util.ArraySet;
 import android.util.IndentingPrintWriter;
+
+import java.util.HashMap;
 
 /** User specific data, used internally by the {@link SupervisionService}. */
 public class SupervisionUserData {
@@ -34,7 +35,7 @@ public class SupervisionUserData {
     public boolean supervisionLockScreenEnabled;
     @Nullable public PersistableBundle supervisionLockScreenOptions;
     ArraySet<String> supervisionRoleHolders = new ArraySet<>();
-    List<Policy> policies = new ArrayList<>();
+    final PolicyMap policies = new PolicyMap();
 
     public SupervisionUserData(@UserIdInt int userId) {
         this.userId = userId;
@@ -51,10 +52,28 @@ public class SupervisionUserData {
         pw.println("supervisionLockScreenOptions: " + supervisionLockScreenOptions);
         pw.println("policies list size(): " + policies.size());
         pw.increaseIndent();
-        for (Policy policy : policies) {
+        for (Policy policy : policies.values()) {
             pw.println("policy: " + policy);
         }
         pw.decreaseIndent();
         pw.decreaseIndent();
+    }
+
+     /**
+     * A map of policies, keyed by their {@link PolicyKey}.
+     *
+     * <p>This class extends {@link HashMap} to enforce that the key of the map is always the same
+     * as the {@link PolicyKey} of the {@link Policy} object.
+     */
+    static class PolicyMap extends HashMap<PolicyKey, Policy> {
+        @Override
+        @Deprecated
+        public Policy put(PolicyKey k, Policy p) { return super.put(p.getPolicyKey(), p); }
+
+        public void add(Policy policy) { super.put(policy.getPolicyKey(), policy); }
+
+        public long getCurrentVersion(PolicyKey k) {
+            return (this.containsKey(k)) ? get(k).getVersion() : 0;
+        }
     }
 }

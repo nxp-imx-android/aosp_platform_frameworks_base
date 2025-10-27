@@ -474,6 +474,14 @@ public class PlatformCompat extends IPlatformCompat.Stub {
         return mCompatConfig.lookupChangeId(name);
     }
 
+    /**
+     * Returns all the known compat-IDs. Ravenwood uses it to ensure no unknown compat-IDs
+     * may be used. The result is sorted.
+     */
+    public long[] getAllChangeIds() {
+        return mCompatConfig.getAllChangeIds();
+    }
+
     @Override
     protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
         if (!DumpUtils.checkDumpAndUsageStatsPermission(mContext, "platform_compat", pw)) {

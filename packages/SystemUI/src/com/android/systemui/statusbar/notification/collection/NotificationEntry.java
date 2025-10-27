@@ -1074,12 +1074,7 @@ public final class NotificationEntry extends ListEntry {
      * surfaces (like status bar chips and AOD).
      */
     public PromotedNotificationContentModels getPromotedNotificationContentModels() {
-        if (PromotedNotificationContentModel.featureFlagEnabled()) {
-            return mPromotedNotificationContentModels;
-        } else {
-            Log.wtf(TAG, "getting promoted content without feature flag enabled", new Throwable());
-            return null;
-        }
+        return mPromotedNotificationContentModels;
     }
 
     /**
@@ -1095,11 +1090,7 @@ public final class NotificationEntry extends ListEntry {
      */
     public void setPromotedNotificationContentModels(
             @Nullable PromotedNotificationContentModels promotedNotificationContentModels) {
-        if (PromotedNotificationContentModel.featureFlagEnabled()) {
-            this.mPromotedNotificationContentModels = promotedNotificationContentModels;
-        } else {
-            Log.wtf(TAG, "setting promoted content without feature flag enabled", new Throwable());
-        }
+        this.mPromotedNotificationContentModels = promotedNotificationContentModels;
     }
 
     public @Nullable String getSummarization() {

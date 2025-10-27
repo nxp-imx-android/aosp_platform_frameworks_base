@@ -239,6 +239,7 @@ import android.app.Activity;
 import android.app.ActivityManager.TaskDescription;
 import android.app.ActivityOptions;
 import android.app.HandoffActivityData;
+import android.app.HandoffActivityParams;
 import android.app.IApplicationThread;
 import android.app.IScreenCaptureObserver;
 import android.app.PendingIntent;
@@ -502,9 +503,10 @@ final class ActivityRecord extends WindowToken {
     private State mState;    // current state we are in
     private Bundle mIcicle;         // last saved activity state
     private HandoffActivityData mHandoffActivityData; // last saved handoff activity data
-    private boolean mHandoffEnabled = false; // if Handoff is enabled for this activity
-    private boolean mAllowFullTaskRecreation = false; // if the entire task stack can be recreated
-                                                      // during handoff of this activity.
+    private boolean mHandoffEnabled; // If Handoff is enabled for this activity.
+    private HandoffActivityParams mHandoffActivityParams = null; // Configuration params for
+                                                                 // Handoff. This will be null if
+                                                                 // Handoff is disabled.
     private PersistableBundle mPersistentState; // last persistently saved activity state
     private boolean mHaveState = true; // Indicates whether the last saved state of activity is
                                        // preserved. This starts out 'true', since the initial state
@@ -1279,12 +1281,21 @@ final class ActivityRecord extends WindowToken {
     }
 
     /** Update if handoff is enabled for this activity. */
-    void setHandoffEnabled(boolean handoffEnabled, boolean allowFullTaskRecreation) {
-        final boolean didChange = mHandoffEnabled != handoffEnabled;
+    void setHandoffEnabled(
+        boolean handoffEnabled,
+        @Nullable HandoffActivityParams handoffActivityParams) {
+
+        final boolean didChange
+            = mHandoffEnabled != handoffEnabled || !Objects.equals(
+                    mHandoffActivityParams,
+                    handoffActivityParams);
+
         mHandoffEnabled = handoffEnabled;
-        mAllowFullTaskRecreation = allowFullTaskRecreation;
         if (!mHandoffEnabled) {
             mHandoffActivityData = null;
+            mHandoffActivityParams = null;
+        } else {
+            mHandoffActivityParams = handoffActivityParams;
         }
 
         if (didChange) {
@@ -1302,17 +1313,12 @@ final class ActivityRecord extends WindowToken {
     }
 
     /**
-     * Get if the entire task will be recreated when handing off this activity.
-     * @see #setHandoffEnabled() to change this parameter. If Handoff is disabled for this
-     * activity, this will return false.
-     * @return if the entire task will be recreated when handing off this activity.
+     * Get configuration parameters for Handoff
+     * @return Handoff configuration parameters.
      */
-    boolean isHandoffFullTaskRecreationAllowed() {
-        if (!isHandoffEnabled()) {
-            return false;
-        }
-
-        return mAllowFullTaskRecreation;
+    @Nullable
+    HandoffActivityParams getHandoffActivityParams() {
+        return mHandoffActivityParams;
     }
 
     /**
@@ -4613,8 +4619,7 @@ final class ActivityRecord extends WindowToken {
                 }
                 if (fromActivity.isVisible()) {
                     // Collect this activity in case it isn't yet visible from resume.
-                    if (Flags.transferStartingWindowToNextWhenInvisible()
-                            && !isVisibleRequested()) {
+                    if (!isVisibleRequested()) {
                         mTransitionController.collect(this);
                     }
                     setVisible(true);
@@ -4666,46 +4671,6 @@ final class ActivityRecord extends WindowToken {
         }
 
         return false;
-    }
-
-    /**
-     * Tries to transfer the starting window from a token that's above ourselves in the task but
-     * not visible anymore. This is a common scenario apps use: Trampoline activity T start main
-     * activity M in the same task. Now, when reopening the task, T starts on top of M but then
-     * immediately finishes after, so we have to transfer T to M.
-     */
-    void transferStartingWindowFromHiddenAboveTokenIfNeeded() {
-        final WindowState mainWin = findMainWindow(false);
-        if (mainWin != null && mainWin.mWinAnimator.getShown()) {
-            // This activity already has a visible window, so doesn't need to transfer the starting
-            // window from above activity to here. The starting window will be removed with above
-            // activity.
-            return;
-        }
-        task.forAllActivities(fromActivity -> {
-            if (fromActivity == this) return true;
-            // The snapshot starting window could remove itself when receive resized request without
-            // redraw, so transfer it to a different size activity could only cause flicker.
-            // By schedule remove snapshot starting window, the remove process will happen when
-            // transition ready, transition ready means the app window is drawn.
-            final StartingData tmpStartingData = fromActivity.mStartingData;
-            if (tmpStartingData != null && tmpStartingData.mAssociatedTask == null
-                    && mTransitionController.isCollecting(fromActivity)
-                    && tmpStartingData instanceof SnapshotStartingData) {
-                final Rect fromBounds = fromActivity.getBounds();
-                final Rect myBounds = getBounds();
-                if (!fromBounds.equals(myBounds)) {
-                    // Mark as no animation, so these changes won't merge into playing transition.
-                    if (mTransitionController.inPlayingTransition(fromActivity)) {
-                        mTransitionController.setNoAnimation(this);
-                        mTransitionController.setNoAnimation(fromActivity);
-                    }
-                    fromActivity.removeStartingWindow();
-                    return true;
-                }
-            }
-            return !fromActivity.isVisibleRequested() && transferStartingWindow(fromActivity);
-        });
     }
 
     /**
@@ -5404,8 +5369,8 @@ final class ActivityRecord extends WindowToken {
             final InputTarget imeInputTarget = mDisplayContent.getImeInputTarget();
             mLastImeShown = imeInputTarget != null && imeInputTarget.getWindowState() != null
                     && imeInputTarget.getWindowState().mActivityRecord == this
-                    && mDisplayContent.mInputMethodWindow != null
-                    && mDisplayContent.mInputMethodWindow.isVisible();
+                    && mDisplayContent.getImeWindow() != null
+                    && mDisplayContent.getImeWindow().isVisible();
             finishOrAbortReplacingWindow();
             if (!firstWindowDrawn && task != null && task.mSharedStartingData != null) {
                 final ActivityRecord r = getSharedStartingWindowOwnerIfTaskDrawn();
@@ -5471,8 +5436,12 @@ final class ActivityRecord extends WindowToken {
         boolean inFinishingTransition = false;
         if (mTransitionController.isShellTransitionsEnabled()) {
             if (mTransitionController.isCollecting()) {
+                if (Flags.promoteExistenceChangedStateToParent() && app == null) {
+                    mTransitionController.collectExistenceChange(this);
+                } else {
+                    mTransitionController.collect(this);
+                }
                 isCollecting = true;
-                mTransitionController.collect(this);
             } else {
                 // Failsafe to make sure that we show any activities that were incorrectly hidden
                 // during a transition. If this vis-change is a result of finishing, ignore it.
@@ -5497,9 +5466,7 @@ final class ActivityRecord extends WindowToken {
         setVisibleRequested(visible);
 
         if (!visible) {
-            if (Flags.transferStartingWindowToNextWhenInvisible()) {
-                transferStartingWindowToNextRunningIfNeeded();
-            }
+            transferStartingWindowToNextRunningIfNeeded();
             // Because starting window was transferred, this activity may be a trampoline which has
             // been occluded by next activity. If it has added windows, set client visibility
             // immediately to avoid the client getting RELAYOUT_RES_FIRST_TIME from relayout and
@@ -5523,10 +5490,6 @@ final class ActivityRecord extends WindowToken {
 
             ProtoLog.v(WM_DEBUG_ADD_REMOVE, "No longer Stopped: %s", this);
             mAppStopped = false;
-
-            if (!Flags.transferStartingWindowToNextWhenInvisible()) {
-                transferStartingWindowFromHiddenAboveTokenIfNeeded();
-            }
         }
         requestUpdateWallpaperIfNeeded();
 
@@ -8822,8 +8785,8 @@ final class ActivityRecord extends WindowToken {
             final InputTarget imeInputTarget = mDisplayContent.getImeInputTarget();
             mLastImeShown = imeInputTarget != null && imeInputTarget.getWindowState() != null
                     && imeInputTarget.getWindowState().mActivityRecord == this
-                    && mDisplayContent.mInputMethodWindow != null
-                    && mDisplayContent.mInputMethodWindow.isVisible();
+                    && mDisplayContent.getImeWindow() != null
+                    && mDisplayContent.getImeWindow().isVisible();
         }
         // Do not waiting for translucent activity if it is going to relaunch.
         final Task rootTask = getRootTask();

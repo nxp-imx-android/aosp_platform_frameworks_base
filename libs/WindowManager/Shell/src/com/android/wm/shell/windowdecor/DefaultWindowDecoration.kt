@@ -18,6 +18,9 @@ package com.android.wm.shell.windowdecor
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
+import android.content.pm.ActivityInfo.CONFIG_FONT_SCALE
+import android.content.pm.ActivityInfo.CONFIG_LOCALE
+import android.content.pm.ActivityInfo.CONFIG_UI_MODE
 import android.content.res.Configuration
 import android.content.res.Resources.ID_NULL
 import android.graphics.Point
@@ -44,12 +47,15 @@ import android.view.WindowManagerGlobal
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import android.window.WindowContainerTransaction
+import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.traceSection
 import com.android.internal.policy.DesktopModeCompatPolicy
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.apptoweb.AppToWebRepository
+import com.android.wm.shell.apptoweb.DialogLifecycleListener
+import com.android.wm.shell.apptoweb.OpenByDefaultFirstRunPrompt
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.LockTaskChangeListener
 import com.android.wm.shell.common.MultiInstanceHelper
@@ -77,6 +83,7 @@ import com.android.wm.shell.windowdecor.caption.AppHandleController
 import com.android.wm.shell.windowdecor.caption.AppHeaderController
 import com.android.wm.shell.windowdecor.caption.AppPinnedController
 import com.android.wm.shell.windowdecor.caption.CaptionController
+import com.android.wm.shell.windowdecor.common.CaptionVisibilityHelper
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.ExclusionRegionListener
 import com.android.wm.shell.windowdecor.common.Theme
@@ -85,6 +92,8 @@ import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import com.android.wm.shell.windowdecor.extension.getDimensionPixelSize
 import com.android.wm.shell.windowdecor.extension.isDragResizable
+import com.android.wm.shell.windowdecor.extension.isFullscreen
+import com.android.wm.shell.windowdecor.extension.isPinned
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
 import kotlinx.coroutines.CoroutineScope
@@ -126,6 +135,7 @@ constructor(
     private val desktopConfig: DesktopConfig,
     private val windowDecorationActions: WindowDecorationActions,
     private val appToWebRepository: AppToWebRepository,
+    private val captionVisibilityHelper: CaptionVisibilityHelper,
     private val windowManagerWrapper: WindowManagerWrapper =
         WindowManagerWrapper(context.getSystemService(WindowManager::class.java)),
     private val surfaceControlBuilderSupplier: () -> SurfaceControl.Builder = {
@@ -165,9 +175,15 @@ constructor(
     private val taskPositionInParent = Point()
     private var dragResizeListener: DragResizeInputListener? = null
     private var resizeVeil: ResizeVeil? = null
+    private var openByDefaultFirstRunPrompt: OpenByDefaultFirstRunPrompt? = null
+    private val isOpenByDefaultFirstRunPromptActive
+        get() = openByDefaultFirstRunPrompt != null
+
     private val positionInParent
         get() = taskInfo.positionInParent
 
+    // True if task is in desktop windowing with fullscreen bounds while app is requesting
+    // immersive mode.
     private val inFullImmersive
         get() = desktopUserRepositories.current.isTaskInFullImmersiveState(taskInfo.taskId)
 
@@ -206,6 +222,13 @@ constructor(
 
     /** Declares whether the window decoration is being dragged. */
     var isDragging = false
+        set(value) {
+            field = value
+            // If we are dragging, close the maximize menu if it's open
+            if (value) {
+                maximizeMenuController?.closeMaximizeMenu()
+            }
+        }
 
     /**
      * Declares whether a Recents transition is currently active.
@@ -366,6 +389,13 @@ constructor(
 
             val wct = windowContainerTransactionSupplier.invoke()
             val oldDecorationSurface = decorationContainerSurface
+            // Check for relevant configuration changes
+            val oldConfig = this.taskInfo.configuration
+            val newConfig = relayoutParams.runningTaskInfo.configuration
+            val diff = newConfig.diff(oldConfig)
+            // Check for UI mode (dark/light), locale, or font scale changes
+            val configChanged =
+                (diff and (CONFIG_UI_MODE or CONFIG_LOCALE or CONFIG_FONT_SCALE)) != 0
             relayout(relayoutParams, startT, finishT, wct, taskSurface)
 
             // After this line, [WindowDecoration2.taskInfo] is up-to-date and should be
@@ -398,9 +428,12 @@ constructor(
             decorationContainerSurface?.let {
                 updateDragResizeListenerIfNeeded(oldDecorationSurface)
             }
+
+            updateOpenByDefaultFirstRunPromptIfNeeded(configChanged, taskInfo)
         }
 
-    private fun getRelayoutParams(
+    @VisibleForTesting
+    fun getRelayoutParams(
         taskInfo: RunningTaskInfo,
         splitScreenController: SplitScreenController,
         applyStartTransactionOnDraw: Boolean,
@@ -412,14 +445,16 @@ constructor(
         desktopConfig: DesktopConfig,
         inSyncWithTransition: Boolean,
     ): RelayoutParams {
+        val shouldCreateCaption =
+            !DesktopExperienceFlags.ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS.isTrue ||
+                captionVisibilityHelper.shouldCreateCaption(taskInfo, isKeyguardVisibleAndOccluded)
         val isPinnedLayer = pinnedLayerController?.isPinned(taskInfo.taskId) ?: false
         val captionType =
-            if (isPinnedLayer) {
-                CaptionController.CaptionType.APP_PINNED
-            } else if (taskInfo.isFreeform) {
-                CaptionController.CaptionType.APP_HEADER
-            } else {
-                CaptionController.CaptionType.APP_HANDLE
+            when {
+                !shouldCreateCaption -> CaptionController.CaptionType.NO_CAPTION
+                isPinnedLayer -> CaptionController.CaptionType.APP_PINNED
+                taskInfo.isFreeform -> CaptionController.CaptionType.APP_HEADER
+                else -> CaptionController.CaptionType.APP_HANDLE
             }
         val isAppHeader = captionType == CaptionController.CaptionType.APP_HEADER
         val isAppHandle = captionType == CaptionController.CaptionType.APP_HANDLE
@@ -516,6 +551,17 @@ constructor(
         // Otherwise if fluid resize is enabled, add a background to freeform tasks.
         val shouldSetBackground = desktopConfig.shouldSetBackground(taskInfo)
 
+        val isCaptionVisible =
+            if (DesktopExperienceFlags.ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS.isTrue) {
+                shouldShowCaption(taskInfo, captionType)
+            } else {
+                shouldShowCaption(taskInfo, lockTaskChangeListener.isTaskLocked)
+            }
+
+        // Task outline (i.e. corner radius and shadows) should update when a task is in desktop
+        // windowing with non-fullscreen bounds
+        val shouldUpdateTaskSurfaceOutline = taskInfo.isFreeform && !inFullImmersive
+
         return RelayoutParams(
             runningTaskInfo = taskInfo,
             captionType = captionType,
@@ -527,7 +573,7 @@ constructor(
             cornerRadiusId = getCornerRadiusId(captionType, shouldIgnoreCornerRadius),
             borderSettingsId = getBorderSettingsId(captionType, taskInfo, hasGlobalFocus),
             boxShadowSettingsIds = getShadowSettingsIds(captionType, hasGlobalFocus),
-            isCaptionVisible = shouldShowCaption(taskInfo, lockTaskChangeListener.isTaskLocked),
+            isCaptionVisible = isCaptionVisible,
             windowDecorConfig = windowDecorConfig,
             asyncViewHost = asyncViewHost,
             applyStartTransactionOnDraw = applyStartTransactionOnDraw,
@@ -535,6 +581,7 @@ constructor(
             hasGlobalFocus = hasGlobalFocus,
             shouldSetAppBounds = shouldSetAppBounds,
             shouldSetBackground = shouldSetBackground,
+            shouldUpdateTaskSurfaceOutline = shouldUpdateTaskSurfaceOutline,
             inSyncWithTransition = inSyncWithTransition,
         )
     }
@@ -615,6 +662,50 @@ constructor(
             else -> false
         }
 
+    private fun shouldShowCaption(
+        taskInfo: RunningTaskInfo,
+        captionType: CaptionController.CaptionType,
+    ) =
+        when {
+            captionType == CaptionController.CaptionType.NO_CAPTION -> {
+                // If caption is not created for this task, return false
+                false
+            }
+            isDragging -> {
+                // If task is being dragged by caption, force caption to show to prevent loss of
+                // drag
+                // input
+                true
+            }
+            isStatusBarVisible -> {
+                // Always show the caption when status bar is visible, regardless of the mode
+                true
+            }
+            inFullImmersive || taskInfo.isFullscreen -> {
+                // The status bar is not visible, so fullscreen windows, whether due to a task being
+                // in
+                // WINDOWING_MODE_FULLSCREEN or full-immersive, should follow the status bar
+                false
+            }
+            taskInfo.isFreeform -> {
+                // Caption should always be visible in freeform mode.
+                //  TODO: b/447166117 - Investigate how it's possible for the status bar visibility
+                // to
+                //   be false while a freeform window is open if the status bar is always
+                //   forcibly-shown. It may be that the InsetsState (from which
+                // |mIsStatusBarVisible|
+                //   is set) still contains an invisible insets source in immersive cases even if
+                // the
+                //   status bar is shown?
+                true
+            }
+            else -> {
+                // Return true by default
+                true
+            }
+        }
+
+    @Deprecated("Use shouldShowCaption(taskInfo)")
     private fun shouldShowCaption(taskInfo: RunningTaskInfo, isTaskLocked: Boolean): Boolean {
         var showCaption: Boolean
         if (DesktopModeFlags.ENABLE_DESKTOP_IMMERSIVE_DRAG_BUGFIX.isTrue && isDragging) {
@@ -634,7 +725,7 @@ constructor(
             // Caption should always be visible in freeform mode. When not in freeform,
             // align with the status bar except when showing over keyguard (where it should not
             // shown).
-            //  TODO: b/356405803 - Investigate how it's possible for the status bar visibility to
+            //  TODO: b/447166117 - Investigate how it's possible for the status bar visibility to
             //   be false while a freeform window is open if the status bar is always
             //   forcibly-shown. It may be that the InsetsState (from which |mIsStatusBarVisible|
             //   is set) still contains an invisible insets source in immersive cases even if the
@@ -874,8 +965,53 @@ constructor(
         (captionController as? AppHeaderController)?.a11yFocusMaximizeButton()
     }
 
+    private fun createOpenByDefaultFirstRunPrompt() {
+        if (isOpenByDefaultFirstRunPromptActive) return
+        openByDefaultFirstRunPrompt =
+            OpenByDefaultFirstRunPrompt(
+                decorWindowContext,
+                userContext,
+                transitions,
+                taskInfo,
+                taskSurface,
+                displayController,
+                taskResourceLoader,
+                surfaceControlTransactionSupplier,
+                mainScope,
+                object : DialogLifecycleListener {
+                    override fun onDialogDismissed() {
+                        openByDefaultFirstRunPrompt = null
+                    }
+
+                    override fun onDialogCreated() {
+                        appToWebRepository.onFirstRunPromptShown(taskInfo)
+                    }
+                },
+            )
+    }
+
+    private fun updateOpenByDefaultFirstRunPromptIfNeeded(
+        configChanged: Boolean,
+        taskInfo: RunningTaskInfo,
+    ) {
+        if (configChanged && isOpenByDefaultFirstRunPromptActive) {
+            // Config changed, so destroy the old dialog and create a new one.
+            // The new one will inflate with the correct resources.
+            openByDefaultFirstRunPrompt?.dismiss()
+            createOpenByDefaultFirstRunPrompt()
+        } else {
+            // No config change, just relayout the existing dialog for size/position changes.
+            openByDefaultFirstRunPrompt?.relayout(taskInfo)
+        }
+
+        if (appToWebRepository.shouldShowFirstRunPrompt(taskInfo)) {
+            createOpenByDefaultFirstRunPrompt()
+        }
+    }
+
     /** Closes the window decoration. */
     override fun close() {
+        openByDefaultFirstRunPrompt?.dismiss()
         taskResourceLoader.onWindowDecorClosed(taskInfo)
         closeDragResizeListener()
         disposeResizeVeil()

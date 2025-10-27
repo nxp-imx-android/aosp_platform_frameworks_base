@@ -1054,10 +1054,8 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Saktë!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Provo sërish"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Provo sërish"</string>
-    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
-    <skip />
-    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
-    <skip />
+    <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Kliko për ta shkyçur"</string>
+    <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Shtyp një tast çfarëdo për ta shkyçur"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Shkyçe për të gjitha funksionet dhe të dhënat"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Përpjektet maksimale të \"Shkyçjes me fytyrë\" u tejkaluan"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Nuk ka kartë SIM"</string>
@@ -1279,6 +1277,8 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Përfundo veprimin"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Hap me"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Hap me %1$s"</string>
+    <!-- no translation found for open_app_name (6114096770130122912) -->
+    <skip />
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Hap"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Hapi lidhjet e <xliff:g id="HOST">%1$s</xliff:g> me"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Hapi lidhjet me"</string>
@@ -1800,10 +1800,8 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Mbajtja shtypur e dy tasteve të volumit për pak sekonda aktivizon <xliff:g id="SERVICE">%1$s</xliff:g>, një veçori të qasshmërisë. Kjo mund të ndryshojë mënyrën se si funksionon pajisja jote.\n\nMund të ndryshosh këtë shkurtore te një veçori tjetër te Cilësimet &gt; Qasshmëria."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Aktivizo"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Mos e aktivizo"</string>
-    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
-    <skip />
+    <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"Aktivizuar"</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"Çaktivizuar"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Do të lejosh që <xliff:g id="SERVICE">%1$s</xliff:g> të ketë kontroll të plotë të pajisjes sate?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Kontrolli i plotë është i përshtatshëm për aplikacionet që të ndihmojnë me nevojat e qasshmërisë, por jo për shumicën e aplikacioneve."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Shiko dhe kontrollo ekranin"</string>
@@ -1817,16 +1815,11 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Trokit te një veçori për të filluar ta përdorësh atë:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Zgjidh veçoritë që do të përdorësh me butonin e qasshmërisë"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Zgjidh veçoritë që do të përdorësh me shkurtoren e tasteve të volumit"</string>
-    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
-    <skip />
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"butoni i qasshmërisë"</string>
+    <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"tastet e volumit"</string>
+    <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"gjesti"</string>
+    <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"cilësimet e shpejta"</string>
+    <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"trokitja tri herë"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> është çaktivizuar"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Redakto shkurtoret"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"U krye"</string>

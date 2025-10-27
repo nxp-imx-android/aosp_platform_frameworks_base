@@ -161,3 +161,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "user_selectable_metadata"
+    namespace: "systemui"
+    description: "Controls whether a dream can be selected by the user"
+    bug: "450294768"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

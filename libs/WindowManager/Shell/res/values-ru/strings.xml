@@ -172,4 +172,8 @@
     <string name="open_by_default_dialog_in_browser_text" msgid="8042769465958497081">"В браузере"</string>
     <string name="open_by_default_dialog_dismiss_button_text" msgid="3487238795534582291">"ОК"</string>
     <string name="desktop_windowing_app_to_web_education_text" msgid="1599668769538703570">"Здесь можно быстро открывать приложения в браузере"</string>
+    <string name="open_by_default_splash_dialog_title_text" msgid="2645214455870859991">"Как вы хотите открывать ссылки приложения &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt;?"</string>
+    <string name="open_by_default_splash_dialog_checkbox_text" msgid="7367791478473586694">"Запомнить выбор"</string>
+    <string name="open_by_default_splash_dialog_browser_text" msgid="4439951040200685938">"В браузере"</string>
+    <string name="open_by_default_splash_dialog_app_text" msgid="2680408983754147907">"В приложении"</string>
 </resources>

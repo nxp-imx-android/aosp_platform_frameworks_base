@@ -196,7 +196,7 @@ private constructor(
             intent.setPackage(pkgName)
         }
         val result = packageManager.queryIntentServices(intent, 0)
-        var logLevel = LogLevel.INFO
+        var logLevel = if (result.size <= 0) LogLevel.DEBUG else LogLevel.INFO
         val logMessage = buildString {
             append("Found ")
             append(result.size)
@@ -204,18 +204,24 @@ private constructor(
 
             if (result.size > 1 && !allowMultiple) {
                 append(", but multiple plugins are disallowed.")
-                logLevel = LogLevel.WARNING
-                return@buildString
+                logLevel = LogLevel.ERROR
+            }
+
+            if (buildInfo.isDebuggable) {
+                append(" (debuggable)")
             }
 
             for (info in result) {
                 val name = ComponentName(info.serviceInfo.packageName, info.serviceInfo.name)
-                append("\n  $name")
-                val pluginInstance = loadPluginComponent(name)
-                if (pluginInstance != null) {
-                    // add plugin before sending PLUGIN_CONNECTED message
-                    pluginInstances.add(pluginInstance)
-                    mainExecutor.execute { onPluginConnected(pluginInstance) }
+                append("\n $name")
+
+                if (logLevel != LogLevel.ERROR) {
+                    val pluginInstance = loadPluginComponent(name)
+                    if (pluginInstance != null) {
+                        // add plugin before sending PLUGIN_CONNECTED message
+                        pluginInstances.add(pluginInstance)
+                        mainExecutor.execute { onPluginConnected(pluginInstance) }
+                    }
                 }
             }
         }

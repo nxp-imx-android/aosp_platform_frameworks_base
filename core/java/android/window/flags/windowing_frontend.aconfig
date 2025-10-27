@@ -324,16 +324,6 @@ flag {
 }
 
 flag {
-    name: "predictive_back_intercept_transition"
-    namespace: "windowing_frontend"
-    description: "Allows back gesture to intercept a running transition."
-    bug: "426448018"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "current_animator_scale_uses_shared_memory"
     namespace: "wear_system_health"
     description: "WindowManagerService.getCurrentAnimatorScale() reads the animator scale from shared memory"
@@ -368,25 +358,6 @@ flag {
     namespace: "windowing_frontend"
     description: "Record the initial z-order while collecting window containers, keep the wallpaper always at the bottom, and use a cross-fade animation when a close wallpaper transition includes an open target."
     bug: "421436197"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-flag {
-    name: "transfer_starting_window_to_next_when_invisible"
-    namespace: "windowing_frontend"
-    description: "Transfer the starting window to the next non-finishing activity when the top activity becomes invisible that contains the starting window."
-    bug: "436461530"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "excluding_layer_from_task_snapshot"
-    namespace: "windowing_frontend"
-    description: "Supports excluding non-window layers from being included in a task snapshot."
-    bug: "399228526"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -458,6 +429,16 @@ flag {
     namespace: "windowing_frontend"
     description: "Prefer choosing a visible window as wallpaper target."
     bug: "446629055"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "promote_existence_changed_state_to_parent"
+    namespace: "windowing_frontend"
+    description: "Always promote existenceChanged state to parent."
+    bug: "452214913"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

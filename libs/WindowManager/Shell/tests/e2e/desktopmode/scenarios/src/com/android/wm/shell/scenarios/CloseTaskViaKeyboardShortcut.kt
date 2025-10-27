@@ -37,12 +37,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-/**
- * Base scenario test for closing a task via the keyboard shortcut.
- */
-@RequiresFlagsEnabled(
-    Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-)
+/** Base scenario test for closing a task via the keyboard shortcut. */
+@RequiresFlagsEnabled(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
 abstract class CloseTaskViaKeyboardShortcut {
     private val wmHelper = WindowManagerStateHelper(getInstrumentation())
     private val device = UiDevice.getInstance(getInstrumentation())
@@ -50,7 +46,8 @@ abstract class CloseTaskViaKeyboardShortcut {
     private val keyEventHelper = KeyEventHelper(getInstrumentation())
 
     @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-    @get:Rule(order = 1) val testSetupRule = Utils.testSetupRuleFunctional(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
+    @get:Rule(order = 1)
+    val testSetupRule = Utils.testSetupRuleFunctional(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
 
     @Before
     fun setup() {
@@ -63,14 +60,8 @@ abstract class CloseTaskViaKeyboardShortcut {
     @Test
     open fun closeTaskViaKeyboardShortcut() {
         testApp.enterDesktopMode(wmHelper, device)
-        keyEventHelper.press(
-            KeyEvent.KEYCODE_W,
-            KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON
-        )
-        wmHelper
-            .StateSyncBuilder()
-            .withWindowSurfaceDisappeared(testApp)
-            .waitForAndVerify()
+        keyEventHelper.press(KeyEvent.KEYCODE_W, KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON)
+        wmHelper.StateSyncBuilder().withWindowSurfaceDisappeared(testApp).waitForAndVerify()
     }
 
     @After

@@ -83,6 +83,9 @@ import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.WorkSource;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodRedirect;
+import android.ravenwood.annotation.RavenwoodRedirectionClass;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.DisplayMetrics;
@@ -157,7 +160,8 @@ import java.util.function.Consumer;
  * </p>
  */
 @SystemService(Context.ACTIVITY_SERVICE)
-@android.ravenwood.annotation.RavenwoodKeepPartialClass
+@RavenwoodKeepPartialClass
+@RavenwoodRedirectionClass("ActivityManager_ravenwood")
 public class ActivityManager {
     private static String TAG = "ActivityManager";
 
@@ -1329,20 +1333,6 @@ public class ActivityManager {
     @UnsupportedAppUsage
     /*package*/ ActivityManager(Context context, Handler handler) {
         mContext = context;
-    }
-
-    private static volatile int sCurrentUser$ravenwood = UserHandle.USER_NULL;
-
-    /** @hide */
-    @android.ravenwood.annotation.RavenwoodKeep
-    public static void init$ravenwood(int currentUser) {
-        sCurrentUser$ravenwood = currentUser;
-    }
-
-    /** @hide */
-    @android.ravenwood.annotation.RavenwoodKeep
-    public static void reset$ravenwood() {
-        sCurrentUser$ravenwood = UserHandle.USER_NULL;
     }
 
     /**
@@ -5402,19 +5392,13 @@ public class ActivityManager {
      * Returns "true" if the user interface is currently being messed with
      * by a monkey.
      */
-    @android.ravenwood.annotation.RavenwoodReplace
+    @RavenwoodRedirect
     public static boolean isUserAMonkey() {
         try {
             return getService().isUserAMonkey();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
-    }
-
-    /** @hide */
-    public static boolean isUserAMonkey$ravenwood() {
-        // Ravenwood environment is never considered a "monkey"
-        return false;
     }
 
     /**
@@ -5603,14 +5587,9 @@ public class ActivityManager {
             "android.permission.INTERACT_ACROSS_USERS",
             "android.permission.INTERACT_ACROSS_USERS_FULL"
     })
-    @android.ravenwood.annotation.RavenwoodReplace
+    @RavenwoodRedirect
     public static int getCurrentUser() {
         return mGetCurrentUserIdCache.query(null);
-    }
-
-    /** @hide */
-    public static int getCurrentUser$ravenwood() {
-        return sCurrentUser$ravenwood;
     }
 
     /**
@@ -5984,7 +5963,7 @@ public class ActivityManager {
     /**
      * @hide
      */
-    @android.ravenwood.annotation.RavenwoodReplace
+    @RavenwoodRedirect
     public static boolean isSystemReady() {
         if (!sSystemReady) {
             if (ActivityThread.isSystem()) {
@@ -5997,12 +5976,6 @@ public class ActivityManager {
             }
         }
         return sSystemReady;
-    }
-
-    /** @hide */
-    public static boolean isSystemReady$ravenwood() {
-        // Ravenwood environment is always considered as booted and ready
-        return true;
     }
 
     /**

@@ -1758,8 +1758,8 @@ final class Session
                 LocalServices.getService(ActivityTaskManagerInternal.class)
                         .getDisplayId(activityToken);
         mContext = sSupportMultiUserMultiDisplay
-                ? Helper.getDisplayContext(context, displayId)
-                : context;
+                ? context
+                : Helper.getDisplayContext(context, displayId);
         mComponentName = componentName;
         mCompatMode = compatMode;
         mSessionState = STATE_ACTIVE;
@@ -4207,9 +4207,6 @@ final class Session
                     Event.NO_SAVE_UI_REASON_NONE);
         }
         mSessionState = STATE_FINISHED;
-        final FillResponse response = getLastResponseLocked("showSaveLocked(%s)");
-        final SaveInfo saveInfo = response == null ? null : response.getSaveInfo();
-
         /*
          * Don't show save if the session has credman field
          */
@@ -4228,6 +4225,15 @@ final class Session
                     Event.NO_SAVE_UI_REASON_NONE);
         }
 
+        final FillResponse response = getLastResponseLocked("showSaveLocked(%s)");
+        final SaveInfo saveInfo = response == null ? null : response.getSaveInfo();
+        return processingSingleSaveInfoLocked(saveInfo, response);
+    }
+
+    @GuardedBy("mLock")
+    @NonNull
+    private SaveResult processingSingleSaveInfoLocked(@Nullable SaveInfo saveInfo,
+            @Nullable FillResponse response) {
         /*
          * The Save dialog is only shown if all conditions below are met:
          *

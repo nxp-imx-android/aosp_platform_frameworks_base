@@ -26,10 +26,12 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.when;
 
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
+import android.content.pm.PackageManager;
 import android.os.UserManager;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -69,6 +71,10 @@ public final class HsumBootUserInitializerTest {
     @Mock
     private PackageManagerService mMockPms;
     @Mock
+    private Context mMockContext;
+    @Mock
+    private PackageManager mMockPackageManager;
+    @Mock
     private ContentResolver mMockContentResolver;
     @Captor
     private ArgumentCaptor<ContentObserver> mCaptorContentObserver;
@@ -84,11 +90,12 @@ public final class HsumBootUserInitializerTest {
 
     @Before
     public void setFixtures() {
+        when(mMockContext.getPackageManager()).thenReturn(mMockPackageManager);
         mFixture = new HsumBootUserInitializer(mMockUms, mMockAms, mMockPms, mMockContentResolver,
                 // value of args below don't matter
                 /* shouldDesignateMainUser= */ false,
                 /* shouldCreateInitialUser= */ false,
-                mIsManagedDevice);
+                mIsManagedDevice, mMockContext);
     }
 
     @Test

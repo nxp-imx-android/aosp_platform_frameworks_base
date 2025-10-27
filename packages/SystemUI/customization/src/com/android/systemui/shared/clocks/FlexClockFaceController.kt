@@ -62,8 +62,8 @@ import com.android.systemui.plugins.keyguard.ui.clocks.TimeFormatKind
 import com.android.systemui.shared.clocks.FlexClockController.Companion.getDefaultAxes
 import com.android.systemui.shared.clocks.view.FlexClockViewGroup
 import java.util.Locale
+import kotlin.math.ceil
 import kotlin.math.max
-import kotlin.math.roundToInt
 
 interface FlexClockViewController {
     val view: View
@@ -199,8 +199,8 @@ class FlexClockFaceController(
                         else targetRegion.height / maxHeight
 
                     FrameLayout.LayoutParams(
-                        (maxWidth * scale).roundToInt(),
-                        (maxHeight * scale).roundToInt(),
+                        ceil(maxWidth * scale).toInt(),
+                        ceil(maxHeight * scale).toInt(),
                     )
                 }
 

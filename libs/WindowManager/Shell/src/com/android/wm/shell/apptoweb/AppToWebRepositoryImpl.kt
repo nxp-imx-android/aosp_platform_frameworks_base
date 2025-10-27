@@ -26,12 +26,14 @@ import android.util.SparseArray
 import androidx.core.net.toUri
 import androidx.core.util.forEach
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTaskOrganizer.TaskVanishedListener
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.sysui.ShellInit
 import java.io.PrintWriter
 import kotlin.coroutines.suspendCoroutine
+import android.os.SystemProperties
 
 /**
  * App-to-Web has the following features: transferring an app session to the web and transferring
@@ -55,6 +57,11 @@ class AppToWebRepositoryImpl(
     shellInit: ShellInit,
 ) : TaskVanishedListener, AppToWebRepository {
     private var appToWebDataByTask = SparseArray<TaskAppToWebData>()
+
+    // TODO(b/451760698) - Persist this data across reboots.
+    // TODO(b/451777807) - Remove an entry when its package is uninstalled.
+    private var firstRunPromptShownPackagesByUserId: MutableMap<Int, MutableSet<String>> =
+        mutableMapOf()
 
     init {
         shellInit.addInitCallback(
@@ -150,6 +157,28 @@ class AppToWebRepositoryImpl(
         }
     }
 
+    override fun shouldShowFirstRunPrompt(taskInfo: RunningTaskInfo): Boolean {
+        if (!Flags.enableEnhancedAppToWebTransition()) {
+            return false
+        }
+        val packageName = taskInfo.baseActivity?.packageName ?: return false
+        val everShown =
+            firstRunPromptShownPackagesByUserId[taskInfo.userId]?.contains(packageName) ?: false
+        return (!everShown || ALWAYS_SHOW_APP_TO_WEB_FIRST_RUN_PROMPT_FOR_TESTING) && !isBrowserApp(
+            context,
+            packageName,
+            taskInfo.userId
+        ) && taskInfo.capturedLink != null
+    }
+
+    override fun onFirstRunPromptShown(taskInfo: RunningTaskInfo) {
+        val packageName = taskInfo.baseActivity?.packageName ?: return
+        firstRunPromptShownPackagesByUserId.putIfAbsent(taskInfo.userId, mutableSetOf())
+        checkNotNull(firstRunPromptShownPackagesByUserId[taskInfo.userId]) {
+            "firstRunPromptShownPackagesByUserId must be non-null for userId ${taskInfo.userId}"
+        }.add(packageName)
+    }
+
     private suspend fun AssistContentRequester.requestAssistContent(taskId: Int): AssistContent? =
         suspendCoroutine { continuation ->
             requestAssistContent(taskId) { continuation.resumeWith(Result.success(it)) }
@@ -224,5 +253,11 @@ class AppToWebRepositoryImpl(
 
     companion object {
         private const val TAG = "AppToWebRepository"
+
+        private val ALWAYS_SHOW_APP_TO_WEB_FIRST_RUN_PROMPT_FOR_TESTING =
+            SystemProperties.getBoolean(
+                "persist.wm.debug.always_show_app_to_web_first_run_prompt_for_testing",
+                false,
+            )
     }
 }

@@ -608,7 +608,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             new ComputeConnectionsConsumer();
 
     OomAdjusterImpl(ActivityManagerService service, ProcessListInternal processList,
-            ActiveUids activeUids, ServiceThread adjusterThread, Constants oomConstants,
+            ActiveUidsInternal activeUids, ServiceThread adjusterThread, Constants oomConstants,
             GlobalState globalState, Injector injector, Callback callback) {
         super(service, processList, activeUids, adjusterThread, oomConstants, globalState, injector,
                 callback);
@@ -671,11 +671,13 @@ public class OomAdjusterImpl extends OomAdjuster {
         mPendingProcessSet.clear();
 
         mLastReason = oomAdjReason;
-        Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, oomAdjReasonToString(oomAdjReason));
+        try {
+            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, oomAdjReasonToString(oomAdjReason));
 
-        fullUpdateLSP(oomAdjReason);
-
-        Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+            fullUpdateLSP(oomAdjReason);
+        } finally {
+            Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+        }
     }
 
     @GuardedBy({"mService", "mProcLock"})
@@ -692,14 +694,16 @@ public class OomAdjusterImpl extends OomAdjuster {
     protected void performUpdateOomAdjPendingTargetsLocked(@OomAdjReason int oomAdjReason) {
         mLastReason = oomAdjReason;
         mProcessStateCurTop = enqueuePendingTopAppIfNecessaryLSP();
-        Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, oomAdjReasonToString(oomAdjReason));
+        try {
+            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, oomAdjReasonToString(oomAdjReason));
 
-        synchronized (mProcLock) {
-            partialUpdateLSP(oomAdjReason, mPendingProcessSet);
+            synchronized (mProcLock) {
+                partialUpdateLSP(oomAdjReason, mPendingProcessSet);
+            }
+            mPendingProcessSet.clear();
+        } finally {
+            Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
         }
-        mPendingProcessSet.clear();
-
-        Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
     }
 
     /**
@@ -784,7 +788,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         final long nowElapsed = mInjector.getElapsedRealtimeMillis();
         final long oldTime = now - mConstants.mMaxEmptyTimeMillis;
 
-        ActiveUids activeUids = mTmpUidRecords;
+        final ActiveUidsInternal activeUids = mTmpUidRecords;
         activeUids.clear();
         mTmpOomAdjusterArgs.update(topApp, now, UNKNOWN_ADJ, oomAdjReason, activeUids, false);
 
@@ -843,10 +847,10 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         // Repopulate any uid record that may have changed.
         for (int i = 0, size = activeUids.size(); i < size; i++) {
-            final UidRecord ur = activeUids.valueAt(i);
-            ur.reset();
-            for (int j = ur.getNumOfProcs() - 1; j >= 0; j--) {
-                final ProcessRecordInternal proc = ur.getProcessRecordByIndex(j);
+            final UidRecordInternal uidRec = activeUids.valueAt(i);
+            uidRec.reset();
+            for (int j = uidRec.getNumOfProcs() - 1; j >= 0; j--) {
+                final ProcessRecordInternal proc = uidRec.getProcessRecordByIndex(j);
                 updateAppUidRecIfNecessaryLSP(proc);
             }
         }
@@ -1838,6 +1842,8 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         capability |= getCpuCapabilitiesFromClient(app, client, cr);
 
+        capability |= getAudioCapabilitiesFromClient(client);
+
         if (cr.notHasFlag(Context.BIND_WAIVE_PRIORITY)) {
             if (cr.hasFlag(Context.BIND_INCLUDE_CAPABILITIES)) {
                 capability |= client.getCurCapability();
@@ -1866,15 +1872,6 @@ public class OomAdjusterImpl extends OomAdjuster {
                     if (cr.hasFlag(Context.BIND_BYPASS_USER_NETWORK_RESTRICTIONS)) {
                         capability |= PROCESS_CAPABILITY_USER_RESTRICTED_NETWORK;
                     }
-                }
-            }
-
-            // Sandbox should be able to control audio only when bound client
-            // has this capability.
-            if ((client.getCurCapability()
-                    & PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL) != 0) {
-                if (app.isSdkSandbox) {
-                    capability |= PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
                 }
             }
 

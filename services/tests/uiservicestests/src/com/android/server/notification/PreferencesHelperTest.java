@@ -647,10 +647,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.updateNotificationChannel(PKG_N_MR1, UID_N_MR1, updateNews, true, 1000, true);
 
         mHelper.setShowBadge(PKG_N_MR1, UID_N_MR1, true);
-        if (android.app.Flags.uiRichOngoing()) {
-            mHelper.setCanBePromoted(PKG_N_MR1, UID_N_MR1, false, true);
-            mHelper.setCanBePromoted(PKG_N_MR1, UID_N_MR1, true, true);
-        }
 
         ByteArrayOutputStream baos = writeXmlAndPurge(PKG_N_MR1, UID_N_MR1, false,
                 UserHandle.USER_ALL, channel1.getId(), channel2.getId(),
@@ -6608,38 +6604,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
             mXmlHelper.onPackagesChanged(true, mUserId, new String[]{PKG_P},
                     new int[]{INVALID_UID});
         }, 20, 50);
-    }
-
-    @Test
-    @DisableFlags(android.app.Flags.FLAG_UI_RICH_ONGOING)
-    public void testNoAppHasPermissionToPromoteByDefault() {
-        mHelper.setShowBadge(PKG_P, UID_P, true);
-        assertThat(mHelper.canBePromoted(PKG_P, UID_P)).isFalse();
-    }
-
-    @Test
-    // ui_rich_ongoing uses permissions, not preferences
-    @DisableFlags(android.app.Flags.FLAG_UI_RICH_ONGOING)
-    public void testSetCanBePromoted() {
-        mHelper.setCanBePromoted(PKG_P, UID_P, true, true);
-        assertThat(mHelper.canBePromoted(PKG_P, UID_P)).isTrue();
-
-        mHelper.setCanBePromoted(PKG_P, UID_P, false, true);
-        assertThat(mHelper.canBePromoted(PKG_P, UID_P)).isFalse();
-        verify(mHandler, never()).requestSort();
-    }
-
-    @Test
-    // ui_rich_ongoing uses permissions, not preferences
-    @DisableFlags(android.app.Flags.FLAG_UI_RICH_ONGOING)
-    public void testSetCanBePromoted_allowlistNotOverrideUser() {
-        // default value is true. So we need to set it false to trigger the change.
-        mHelper.setCanBePromoted(PKG_P, UID_P, false, true);
-        mHelper.setCanBePromoted(PKG_P, UID_P, true, true);
-        assertThat(mHelper.canBePromoted(PKG_P, UID_P)).isTrue();
-
-        mHelper.setCanBePromoted(PKG_P, UID_P, false, false);
-        assertThat(mHelper.canBePromoted(PKG_P, UID_P)).isTrue();
     }
 
     @Test

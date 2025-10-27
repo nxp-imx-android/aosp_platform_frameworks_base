@@ -32,6 +32,8 @@ import android.compat.annotation.EnabledAfter;
 import android.compat.annotation.Overridable;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.ravenwood.annotation.RavenwoodRedirect;
+import android.ravenwood.annotation.RavenwoodRedirectionClass;
 import android.ravenwood.annotation.RavenwoodThrow;
 import android.util.Log;
 import android.util.Printer;
@@ -59,6 +61,7 @@ import java.util.concurrent.locks.LockSupport;
  * {@link Looper#myQueue() Looper.myQueue()}.
  */
 @RavenwoodKeepWholeClass
+@RavenwoodRedirectionClass("MessageQueue_ravenwood")
 public final class MessageQueue {
     private static final String TAG_L = "LegacyMessageQueue";
     private static final String TAG_D = "DeliQueue";
@@ -69,9 +72,12 @@ public final class MessageQueue {
      *
      * @hide
      */
+    // Make sure MessageQueue_ravenwood's check matches this definition.
+    // LINT.IfChange
     @ChangeId
     @EnabledAfter(targetSdkVersion = android.os.Build.VERSION_CODES.BAKLAVA)
     public static final long USE_NEW_MESSAGEQUEUE = 421623328L;
+    // LINT.ThenChange(//frameworks/base/core/java/android/os/MessageQueue_ravenwood.java)
 
     // True if the message queue can be quit.
     @UnsupportedAppUsage
@@ -163,6 +169,15 @@ public final class MessageQueue {
         return sUseDeliQueue;
     }
 
+    /**
+     * @return human-readable string that identifies the implementation.
+     * @hide
+     */
+    public static String getImplName() {
+        return "deli:" + getUseConcurrent();
+    }
+
+    @RavenwoodRedirect(bug = 454028089, reason = "change IDs are not initialized when we call it")
     private static boolean computeUseDeliQueue() {
         if (CompatChanges.isChangeEnabled(USE_NEW_MESSAGEQUEUE)
                 || Flags.useConcurrentMessageQueueInApps()) {

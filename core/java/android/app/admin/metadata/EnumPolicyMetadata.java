@@ -36,6 +36,7 @@ public class EnumPolicyMetadata extends PolicyMetadata<Integer> {
             int affectedResource,
             @Nullable String requiredPermission,
             @Nullable String requiredCrossUserPermission,
+            @NonNull Set<Integer> allowedDpcTypes,
             @NonNull Set<Integer> allowedValues
     ) {
         super(
@@ -43,7 +44,8 @@ public class EnumPolicyMetadata extends PolicyMetadata<Integer> {
                 allowedScopes,
                 affectedResource,
                 requiredPermission,
-                requiredCrossUserPermission
+                requiredCrossUserPermission,
+                allowedDpcTypes
         );
         mAllowedValues = allowedValues;
     }

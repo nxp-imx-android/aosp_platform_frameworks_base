@@ -536,6 +536,14 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         mStageCoordinator.dismissSplitScreen(toTopTaskId, exitReason);
     }
 
+    /**
+     * Closes a task in split screen. This does not necessarily dismiss split if other tasks exist
+     * in the same stage where the task is being closed.
+     */
+    public void closeTask(int taskId) {
+        mStageCoordinator.closeTask(taskId);
+    }
+
     @Override
     public void onKeyguardVisibilityChanged(boolean visible, boolean occluded,
             boolean animatingDismiss) {

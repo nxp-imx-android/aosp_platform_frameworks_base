@@ -280,7 +280,14 @@ public class NotificationShelf extends ActivatableNotificationView {
             // bottom, without jump cutting any notifications
             viewState.setYTranslation(stackBottom + mPaddingBetweenElements);
         } else {
-            viewState.setYTranslation(stackBottom - viewState.height);
+            float yTranslation = stackBottom - viewState.height;
+            ExpandableNotificationRow trackedHun = ambientState.getTrackedHeadsUpRow();
+            if (trackedHun != null) {
+                ExpandableViewState hunState = trackedHun.getViewState();
+                float hunBottom = hunState.getYTranslation() + hunState.height;
+                yTranslation = Math.max(yTranslation, hunBottom + mPaddingBetweenElements);
+            }
+            viewState.setYTranslation(yTranslation);
         }
     }
 

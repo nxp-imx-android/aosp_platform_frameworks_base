@@ -16,8 +16,8 @@
 
 package com.android.systemui.screenrecord.service
 
-import com.android.systemui.screenrecord.data.repository.Status
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,28 +32,31 @@ class FakeScreenRecordingService : IScreenRecordingService.Stub() {
     val currentCallback: FakeScreenRecordingServiceCallbackWrapper?
         get() = _callback.value
 
-    private val _status = MutableStateFlow<Status>(Status.initial)
-    val status: Flow<Status> = _status.asStateFlow()
+    private val _status =
+        MutableStateFlow<ScreenRecordingStatus>(
+            ScreenRecordingStatus.Stopped(ScreenRecordingStatus.Stopped.STOP_REASON_NOT_STARTED)
+        )
+    val status: Flow<ScreenRecordingStatus> = _status.asStateFlow()
 
     override fun setCallback(callback: IScreenRecordingServiceCallback?) {
         _callback.value = callback?.let(::FakeScreenRecordingServiceCallbackWrapper)
     }
 
     override fun stopRecording(reason: Int) {
-        _status.value = Status.Stopped(reason)
+        _status.value = ScreenRecordingStatus.Stopped(reason)
         _callback.value?.onRecordingInterrupted(0, reason)
     }
 
     override fun startRecording(parameters: ScreenRecordingParameters) {
-        _status.value = Status.Started(parameters)
+        _status.value = ScreenRecordingStatus.Started(parameters)
         _callback.value?.onRecordingStarted()
     }
 
     override fun updateParameters(parameters: ScreenRecordingParameters) {
-        require(_status.value is Status.Started) {
+        require(_status.value is ScreenRecordingStatus.Started) {
             "Updating parameters only when the recording is ongoing should be enforced by the caller"
         }
-        _status.value = Status.Started(parameters)
+        _status.value = ScreenRecordingStatus.Started(parameters)
     }
 }
 

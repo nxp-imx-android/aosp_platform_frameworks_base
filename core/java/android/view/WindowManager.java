@@ -47,6 +47,7 @@ import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutPa
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.FIT_INSETS_SIDES;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.FIT_INSETS_TYPES;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.FLAGS;
+import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.FORCIBLY_SHOWN_TYPES;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.FORMAT;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.GRAVITY;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.HAS_SYSTEM_UI_LISTENERS;
@@ -6016,6 +6017,7 @@ public interface WindowManager extends ViewManager {
             proto.write(FIT_INSETS_TYPES, mFitInsetsTypes);
             proto.write(FIT_INSETS_SIDES, mFitInsetsSides);
             proto.write(FIT_IGNORE_VISIBILITY, mFitInsetsIgnoringVisibility);
+            proto.write(FORCIBLY_SHOWN_TYPES, forciblyShownTypes);
             proto.end(token);
         }
 
@@ -6700,6 +6702,144 @@ public interface WindowManager extends ViewManager {
     default void removeScreenRecordingCallback(
             @NonNull Consumer<@ScreenRecordingState Integer> callback) {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * A flag indicating the engagement mode includes a visual presentation.
+     * When this flag is set, it means the user can visually see the app UI on visible window.
+     *
+     * This should be kept in sync with
+     * @see androidx.window.extensions.layout.WindowLayoutInfo#ENGAGEMENT_MODE_FLAG_VISUALS_ON
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
+    @SystemApi
+    int ENGAGEMENT_MODE_FLAG_VISUALS_ON = 1 << 0;
+
+    /**
+     * A flag indicating the engagement mode includes an audio presentation.
+     * This can be set with or without {@link #ENGAGEMENT_MODE_FLAG_VISUALS_ON}.
+     * When set without, it signifies an audio-only experience.
+     *
+     * This should be kept in sync with
+     * @see androidx.window.extensions.layout.WindowLayoutInfo#ENGAGEMENT_MODE_FLAG_AUDIO_ON
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
+    @SystemApi
+    int ENGAGEMENT_MODE_FLAG_AUDIO_ON = 1 << 1;
+
+    /**
+     * An internal annotation for the engagement mode flags.
+     *
+     * @hide
+     */
+    @IntDef(flag = true, prefix = { "ENGAGEMENT_MODE_FLAG_" }, value = {
+            ENGAGEMENT_MODE_FLAG_VISUALS_ON,
+            ENGAGEMENT_MODE_FLAG_AUDIO_ON
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    @interface EngagementModeFlags {}
+
+    /**
+     * A class that holds information about the display engagement mode.
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
+    @SystemApi
+    final class DisplayEngagementModeState {
+        private final int mDisplayId;
+        private final @EngagementModeFlags int mEngagementModeFlags;
+
+        DisplayEngagementModeState(
+                int displayId, @EngagementModeFlags int engagementModeFlags) {
+            mDisplayId = displayId;
+            mEngagementModeFlags = engagementModeFlags;
+        }
+
+        public int getDisplayId() {
+            return mDisplayId;
+        }
+
+        @EngagementModeFlags
+        public int getEngagementModeFlags() {
+            return mEngagementModeFlags;
+        }
+    }
+
+    /**
+     * Sets the user engagement mode for a specific display. Does nothing if the display is not
+     * found.
+     *
+     * @param displayId The display to set the engagement mode for.
+     * @param engagementModeFlags The engagement mode to set.
+     * @see #ENGAGEMENT_MODE_FLAG_VISUALS_ON
+     * @see #ENGAGEMENT_MODE_FLAG_AUDIO_ON
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
+    @SystemApi
+    @SuppressLint("AndroidFrameworkRequiresPermission")
+    @RequiresPermission(permission.MANAGE_DISPLAYS)
+    default void setDisplayEngagementMode(
+            int displayId, @EngagementModeFlags int engagementModeFlags) {
+        throw new UnsupportedOperationException("setDisplayEngagementMode is not implemented");
+    }
+
+    /**
+     * Gets the user engagement mode for a specific display.
+     *
+     * @param displayId The display to get the engagement mode for.
+     * @return The engagement mode for the given display. Returns the system default if the display
+     * is not found.
+     * @see #ENGAGEMENT_MODE_FLAG_VISUALS_ON
+     * @see #ENGAGEMENT_MODE_FLAG_AUDIO_ON
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
+    @SystemApi
+    @EngagementModeFlags
+    default int getDisplayEngagementMode(int displayId) {
+        throw new UnsupportedOperationException("getDisplayEngagementMode is not implemented");
+    }
+
+    /**
+     * Registers a callback for display engagement mode changes.
+     *
+     * The callback will be invoked with the latest engagement mode flags upon registration.
+     * If the specified callback instance is already registered, this call does nothing.
+     *
+     * @param executor The executor to run the callback on.
+     * @param callback The callback to register.
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
+    @SystemApi
+    default void registerDisplayEngagementModeCallback(@NonNull @CallbackExecutor Executor executor,
+            @NonNull Consumer<DisplayEngagementModeState> callback) {
+        throw new UnsupportedOperationException(
+                "registerDisplayEngagementModeCallback is not implemented");
+    }
+
+    /**
+     * Unregisters a callback for display engagement mode changes.
+     *
+     * @param callback The callback to unregister.
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
+    @SystemApi
+    default void unregisterDisplayEngagementModeCallback(
+            @NonNull Consumer<DisplayEngagementModeState> callback) {
+        throw new UnsupportedOperationException(
+                "unregisterDisplayEngagementModeCallback is not implemented");
     }
 
     /**

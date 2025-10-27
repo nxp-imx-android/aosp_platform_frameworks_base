@@ -22,8 +22,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
-import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
-import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
+import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
+import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.collectLastValue
@@ -33,6 +33,7 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.featurepods.assistant.data.repository.fakeAssistantRepository
 import com.android.systemui.statusbar.featurepods.assistant.shared.model.AssistantIconSharedModel
+import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -121,9 +122,10 @@ class AssistantIconInteractorTest : SysuiTestCase() {
             assertThat(assistantIconSharedModel!!.isStatusBarAssistantPackage).isTrue()
         }
 
-    private fun Kosmos.setDeviceEntered() {
-        kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-            SuccessFingerprintAuthenticationStatus(0, true)
+    private fun setDeviceEntered() {
+        kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+            biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
         )
         kosmos.sceneInteractor.changeScene(Scenes.Gone, "test")
         assertThat(kosmos.deviceEntryInteractor.isDeviceEntered.value).isTrue()

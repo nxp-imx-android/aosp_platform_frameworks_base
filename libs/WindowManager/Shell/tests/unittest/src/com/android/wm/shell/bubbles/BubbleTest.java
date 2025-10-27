@@ -103,8 +103,7 @@ public class BubbleTest extends ShellTestCase {
         when(mRanking.getConversationShortcutInfo()).thenReturn(shortcutInfo);
 
         mBubbleEntry = new BubbleEntry(mSbn, mRanking, true, false, false, false);
-        mChatBubble = new Bubble(mBubbleEntry, mBubbleMetadataFlagListener, null, mMainExecutor,
-                mBgExecutor);
+        mChatBubble = new Bubble(mBubbleEntry, mBubbleMetadataFlagListener, null, mMainExecutor);
     }
 
     @Test
@@ -201,8 +200,7 @@ public class BubbleTest extends ShellTestCase {
     @Test
     public void testBubbleType_note() {
         Bubble bubble = Bubble.createNotesBubble(createIntent(), UserHandle.of(0),
-                mock(Icon.class),
-                mMainExecutor, mBgExecutor);
+                mock(Icon.class));
         assertThat(bubble.isNote()).isTrue();
     }
 
@@ -211,15 +209,14 @@ public class BubbleTest extends ShellTestCase {
         ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(mContext)
                 .setId("mockShortcutId")
                 .build();
-        Bubble bubble = Bubble.createShortcutBubble(shortcutInfo, mMainExecutor, mBgExecutor);
+        Bubble bubble = Bubble.createShortcutBubble(shortcutInfo);
         assertThat(bubble.isShortcut()).isTrue();
     }
 
     @Test
     public void testBubbleType_intent() {
         Bubble bubble = Bubble.createAppBubble(createIntent(), UserHandle.of(0),
-                mock(Icon.class),
-                mMainExecutor, mBgExecutor);
+                mock(Icon.class));
         assertThat(bubble.isApp()).isTrue();
     }
 
@@ -232,8 +229,7 @@ public class BubbleTest extends ShellTestCase {
         info.baseActivity = componentName;
         info.baseIntent = createIntent();
         Bubble bubble = Bubble.createTaskBubble(info, UserHandle.of(0),
-                mock(Icon.class),
-                mMainExecutor, mBgExecutor);
+                mock(Icon.class));
         assertThat(bubble.isApp()).isTrue();
         assertThat(bubble.getIntent()).isNotNull();
     }
@@ -248,8 +244,7 @@ public class BubbleTest extends ShellTestCase {
     @Test
     public void testShowAppBadge_note() {
         Bubble bubble = Bubble.createNotesBubble(createIntent(), UserHandle.of(0),
-                mock(Icon.class),
-                mMainExecutor, mBgExecutor);
+                mock(Icon.class));
         assertThat(bubble.isNote()).isTrue();
         assertThat(bubble.showAppBadge()).isTrue();
     }
@@ -257,8 +252,7 @@ public class BubbleTest extends ShellTestCase {
     @Test
     public void testShowAppBadge_app() {
         Bubble bubble = Bubble.createAppBubble(createIntent(), UserHandle.of(0),
-                mock(Icon.class),
-                mMainExecutor, mBgExecutor);
+                mock(Icon.class));
         assertThat(bubble.isApp()).isTrue();
         assertThat(bubble.showAppBadge()).isFalse();
     }
@@ -268,8 +262,7 @@ public class BubbleTest extends ShellTestCase {
         ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(mContext)
                 .setId("mockShortcutId")
                 .build();
-        Bubble bubble = Bubble.createShortcutBubble(shortcutInfo,
-                mMainExecutor, mBgExecutor);
+        Bubble bubble = Bubble.createShortcutBubble(shortcutInfo);
         assertThat(bubble.isShortcut()).isTrue();
         assertThat(bubble.showAppBadge()).isTrue();
     }
@@ -292,7 +285,7 @@ public class BubbleTest extends ShellTestCase {
         Intent intent = new Intent(mContext, BubblesTestActivity.class);
         intent.setPackage(mContext.getPackageName());
         Bubble bubble = Bubble.createAppBubble(intent, new UserHandle(1 /* userId */),
-                null /* icon */, mMainExecutor, mBgExecutor);
+                null /* icon */);
         BubbleInfo bubbleInfo = bubble.asBubbleBarBubble();
 
         assertThat(bubble.getShortcutInfo()).isNull();
@@ -309,7 +302,7 @@ public class BubbleTest extends ShellTestCase {
         info.taskId = 123;
         info.baseActivity = new ComponentName(mContext, "SomeActivity");
         Bubble bubble = Bubble.createTaskBubble(info, new UserHandle(1),
-                null /* icon */, mMainExecutor, mBgExecutor);
+                null /* icon */);
         assertThat(bubble.getTaskId()).isEqualTo(123);
 
         bubble.cleanupTaskView();
@@ -365,10 +358,9 @@ public class BubbleTest extends ShellTestCase {
                     .build();
             return new Bubble("mockKey", shortcutInfo, 10, Resources.ID_NULL,
                     "mockTitle", 0 /* taskId */, "mockLocus", true /* isDismissible */,
-                    mMainExecutor, mBgExecutor, mBubbleMetadataFlagListener);
+                    mBubbleMetadataFlagListener);
         } else {
-            return new Bubble(mBubbleEntry, mBubbleMetadataFlagListener, null, mMainExecutor,
-                    mBgExecutor);
+            return new Bubble(mBubbleEntry, mBubbleMetadataFlagListener, null, mMainExecutor);
         }
     }
 }

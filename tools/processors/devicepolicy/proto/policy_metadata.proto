@@ -4,6 +4,7 @@ package android.processor.devicepolicy;
 
 option java_package = "android.processor.devicepolicy.protos";
 option java_multiple_files = true;
+option java_outer_classname = "PolicyMetadataProto";
 
 // Fully qualified name for a class with package and class name split out.
 // The split is critical when inner classes are involved, for example `className` can be
@@ -56,6 +57,22 @@ message PolicyMetadata {
 
     optional string required_permission = 7;
     optional string required_cross_user_permission = 8;
+
+    // LINT.IfChange(dpc_type)
+    enum DpcType {
+        // UNSPECIFIED should not be used.
+        DPC_TYPE_UNSPECIFIED = 0;
+        // NOT_A_DPC is deliberately not part of this enum, since it is not supported.
+        DPC_TYPE_DEFAULT_DEVICE_OWNER = 1;
+        DPC_TYPE_FINANCED_DEVICE_OWNER = 2;
+        DPC_TYPE_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE = 3;
+        DPC_TYPE_PROFILE_OWNER_ON_USER0 = 4;
+        DPC_TYPE_PROFILE_OWNER = 5;
+        DPC_TYPE_PROFILE_OWNER_ON_USER = 6;
+        DPC_TYPE_AFFILIATED_PROFILE_OWNER_ON_USER = 7;
+    }
+    // LINT.ThenChange(/core/java/android/app/admin/DevicePolicyManager.java:dpc_type)
+    repeated DpcType allowed_dpc_types = 9;
 }
 
 message TypeSpecificPolicyMetadata {

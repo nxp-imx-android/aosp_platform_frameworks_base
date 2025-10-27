@@ -18,17 +18,14 @@ package com.android.wm.shell.desktopmode
 
 import android.os.Binder
 import android.platform.test.annotations.EnableFlags
-import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
 import android.view.WindowManager.TRANSIT_CHANGE
-import android.window.DisplayAreaInfo
 import android.window.TransitionRequestInfo
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
 import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION
-import com.android.wm.shell.MockToken
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
@@ -37,10 +34,9 @@ import com.android.wm.shell.transition.Transitions
 import java.util.Optional
 import kotlin.test.Test
 import org.junit.Before
-import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.never
 
 /**
  * Test class for {@link DesktopTasksController}
@@ -75,7 +71,7 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
         Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
-    fun handleRequest_displayStoppedHostingTasks_performsDisconnect() {
+    fun handleRequest_noReparentDisplay_doesNotPerformDisconnect() {
         val displayChange = TransitionRequestInfo.DisplayChange(SECOND_DISPLAY)
         displayChange.disconnectReparentDisplay = INVALID_DISPLAY
         val transitionRequestInfo =
@@ -85,11 +81,29 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
                     /* remoteTransition= */ null,
                 )
                 .apply { setDisplayChange(displayChange) }
-        val mockDisplay = mock(Display::class.java)
-        whenever(displayController.getDisplay(anyInt())).thenReturn(mockDisplay)
-        whenever(mockDisplay.canHostTasks()).thenReturn(false)
-        val defaultDisplayArea = DisplayAreaInfo(MockToken().token(), DEFAULT_DISPLAY, 0)
-        whenever(rootTaskDisplayAreaOrganizer.defaultDisplayArea).thenReturn(defaultDisplayArea)
+        val transition = Binder()
+
+        disconnectTransitionHandler.handleRequest(transition, transitionRequestInfo)
+
+        verify(desktopTasksController, never())
+            .onDisplayDisconnect(SECOND_DISPLAY, DEFAULT_DISPLAY, transition)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun handleRequest_validReparentDisplay_performsDisconnect() {
+        val displayChange = TransitionRequestInfo.DisplayChange(SECOND_DISPLAY)
+        displayChange.disconnectReparentDisplay = DEFAULT_DISPLAY
+        val transitionRequestInfo =
+            TransitionRequestInfo(
+                    TRANSIT_CHANGE,
+                    /* triggerTask = */ null,
+                    /* remoteTransition= */ null,
+                )
+                .apply { setDisplayChange(displayChange) }
         val transition = Binder()
 
         disconnectTransitionHandler.handleRequest(transition, transitionRequestInfo)

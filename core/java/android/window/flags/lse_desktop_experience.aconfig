@@ -20,6 +20,16 @@ flag {
 }
 
 flag {
+    name: "close_split_task_instead_of_moving_to_back"
+    namespace: "lse_desktop_experience"
+    description: "Closing a task in split screen via its window decor, instead of moving it to the background."
+    bug: "442283534"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "default_desk_without_warmup_migration"
     namespace: "lse_desktop_experience"
     description: "Moves desk creation to coroutines to guarantee non-null default desk"
@@ -52,6 +62,16 @@ flag {
 }
 
 flag {
+    name: "disable_desk_switch_wallpaper_offsets"
+    namespace: "lse_desktop_experience"
+    description: "Disables wallpaper offsets when switching between desks"
+    bug: "447196823"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "disable_restore_non_fullscreen_bounds_on_configuration_change"
     namespace: "lse_desktop_experience"
     description: "Disable restoring bounds to mLastNonFullscreenBounds on configuration change."
@@ -76,6 +96,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables activity embedding support for connected displays, including enabling AE optimization for Settings."
     bug: "369438353"
+}
+
+flag {
+    name: "enable_add_window_decoration_to_all_tasks"
+    namespace: "lse_desktop_experience"
+    description: "Adds window decorations to all tasks, even if caption is not being shown."
+    bug: "445542519"
+    metadata {
+            purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -293,6 +323,13 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enable window drag between connected displays."
     bug: "381172172"
+}
+
+flag {
+    name: "enable_consolidated_window_options"
+    namespace: "lse_desktop_experience"
+    description: "Whether to consolidate window options into MaximizeMenu"
+    bug: "411680007"
 }
 
 flag {
@@ -704,6 +741,13 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_windowing_free_floating_pip"
+    namespace: "lse_desktop_experience"
+    description: "Enables free-floating PiP in desktop windowing."
+    bug: "416788567"
+}
+
+flag {
     name: "enable_desktop_windowing_hsum"
     namespace: "lse_desktop_experience"
     description: "Enables HSUM on desktop mode."
@@ -753,16 +797,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables PiP features in desktop mode."
     bug: "350475854"
-}
-
-flag {
-    name: "enable_desktop_windowing_pip_in_overview_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enables an umbrella flag for bugfixes related to PiP in Overview with Desktop Windowing."
-    bug: "412463446"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -1339,16 +1373,6 @@ flag {
 }
 
 flag {
-    name: "enable_shrink_window_bounds_after_drag"
-    namespace: "lse_desktop_experience"
-    description: "Enables shrinking oversize windows after dragged to a smaller display."
-    bug: "403486903"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_size_compat_mode_improvements_for_connected_displays"
     namespace: "lse_desktop_experience"
     description: "Enable some improvements in size compat mode for connected displays."
@@ -1564,16 +1588,6 @@ flag {
 }
 
 flag {
-  name: "exclude_caption_from_app_bounds"
-  namespace: "lse_desktop_experience"
-  description: "Whether caption insets are excluded from app bounds in freeform"
-  bug: "388014743"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "exclude_desk_roots_from_desktop_tasks"
   namespace: "lse_desktop_experience"
   description: "Do not include desk root tasks in freeform/desktop tasks"
@@ -1610,11 +1624,13 @@ flag {
 }
 
 flag {
-    name: "ignore_override_task_bounds_if_incompatible_with_display"
+   name: "handle_non_touchscreen_events_in_drag_detector"
     namespace: "lse_desktop_experience"
-    description: "Ignores a tasks override bounds during the desktop launch params bounds /n"
-                 "calculation if the bounds do not fit in the displays stable bounds."
-    bug: "422364585"
+    description: "Handles non-touchscreen events from mouse/touchpad in DragDetector before \n"
+                 "passing them to MotionEventHandler. This allows filtering out irrelevant \n"
+                 "events like moves smaller than the slop threshold in an integrated way with \n"
+                 "touchscreen events."
+    bug: "435051530"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

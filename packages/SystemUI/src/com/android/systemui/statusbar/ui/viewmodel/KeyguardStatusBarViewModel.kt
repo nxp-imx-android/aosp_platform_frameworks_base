@@ -26,12 +26,9 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.domain.interactor.KeyguardStatusBarInteractor
 import com.android.systemui.statusbar.policy.BatteryController
-import com.android.systemui.statusbar.policy.BatteryController.BatteryStateChangeCallback
 import com.android.systemui.user.domain.interactor.UserLogoutInteractor
-import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -73,24 +70,6 @@ constructor(
                     !isDozing
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
-
-    /** True if the device's battery is currently charging and false otherwise. */
-    // Note: Never make this an eagerly-started state flow so that the callback is removed when the
-    // keyguard status bar view isn't attached.
-    val isBatteryCharging: Flow<Boolean> = conflatedCallbackFlow {
-        val callback =
-            object : BatteryStateChangeCallback {
-                override fun onBatteryLevelChanged(
-                    level: Int,
-                    pluggedIn: Boolean,
-                    charging: Boolean,
-                ) {
-                    trySend(charging)
-                }
-            }
-        batteryController.addCallback(callback)
-        awaitClose { batteryController.removeCallback(callback) }
-    }
 
     /** True if we can show the user switcher on keyguard and false otherwise. */
     val isKeyguardUserSwitcherEnabled: Flow<Boolean> =

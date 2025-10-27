@@ -31,15 +31,16 @@ import org.junit.Ignore
 import org.junit.Test
 
 /**
-* Base test for opening recent apps overview from desktop mode.
-*
-* Navigation mode can be passed as a constructor parameter, by default it is set to gesture navigation.
-*/
+ * Base test for opening recent apps overview from desktop mode.
+ *
+ * Navigation mode can be passed as a constructor parameter, by default it is set to gesture
+ * navigation.
+ */
 @Ignore("Base Test Class")
 abstract class SwitchToOverviewFromDesktop
 constructor(
     val navigationMode: NavBar = NavBar.MODE_GESTURAL,
-    val rotation: Rotation = Rotation.ROTATION_0
+    val rotation: Rotation = Rotation.ROTATION_0,
 ) : TestScenarioBase(rotation, navigationMode) {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()

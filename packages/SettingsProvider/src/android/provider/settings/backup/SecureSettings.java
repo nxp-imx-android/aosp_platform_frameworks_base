@@ -330,5 +330,7 @@ public class SecureSettings {
         Settings.Secure.NOTIFICATION_BUNDLES_ALWAYS_EXPAND,
         Settings.Secure.ACCESSIBILITY_TOP_ROW_KEY_TARGETS,
         Settings.Secure.NAVIGATIONBAR_KEY_ORDER,
+        Settings.Secure.IDENTITY_CHECK_WATCH_PROMO_CARD_SHOWN,
+        Settings.Secure.IDENTITY_CHECK_WATCH_NOTIFICATION_VIEW_DETAILS_CLICKED,
     };
 }

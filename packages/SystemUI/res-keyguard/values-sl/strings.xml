@@ -88,8 +88,10 @@
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"Posrednik zaupanja ni na voljo"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"Preveč poskusov z nepravilno kodo PIN"</string>
     <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"To kodo PIN ste že poskusili. Poskusite drugo."</string>
-    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"To geslo ste že poskusili. Poskusite drugo."</string>
-    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"Ta vzorec ste že poskusili. Poskusite drugega."</string>
+    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
+    <skip />
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Preveč poskusov z nepravilnim vzorcem"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Preveč poskusov z nepravilnim geslom"</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"Preveč poskusov z nepravilno kodo PIN\nVeč informacij je na voljo na <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>

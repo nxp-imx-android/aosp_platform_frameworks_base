@@ -989,7 +989,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
         @Override
         public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
             for (AudioDeviceInfo deviceInfo : addedDevices) {
-                if (Flags.enablePreferredDeviceFixes() && !deviceInfo.isSink()) {
+                if (Flags.enableRemovePreferredDeviceFixes() && !deviceInfo.isSink()) {
                     // We only care about media sinks / outputs.
                     continue;
                 }
@@ -998,7 +998,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
                     // that the default routing logic from the audio framework kicks in. As a result
                     // of this, when the user connects a bluetooth device or a wired headset, the
                     // new device becomes the active route, which is the traditional behavior.
-                    if (Flags.enablePreferredDeviceFixes()) {
+                    if (Flags.enableRemovePreferredDeviceFixes()) {
                         mHandler.post(
                                 AudioManagerRouteController.this
                                         ::maybeRemovePreferredDeviceOnHandler);

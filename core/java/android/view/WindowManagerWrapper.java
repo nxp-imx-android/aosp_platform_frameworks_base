@@ -303,6 +303,35 @@ public class WindowManagerWrapper implements WindowManager {
         mBase.removeScreenRecordingCallback(callback);
     }
 
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
+    @RequiresPermission(Manifest.permission.MANAGE_DISPLAYS)
+    @Override
+    public void setDisplayEngagementMode(
+            int displayId, @EngagementModeFlags int engagementModeFlags) {
+        mBase.setDisplayEngagementMode(displayId, engagementModeFlags);
+    }
+
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
+    @Override
+    @EngagementModeFlags
+    public int getDisplayEngagementMode(int displayId) {
+        return mBase.getDisplayEngagementMode(displayId);
+    }
+
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
+    @Override
+    public void registerDisplayEngagementModeCallback(@NonNull Executor executor,
+            @NonNull Consumer<DisplayEngagementModeState> callback) {
+        mBase.registerDisplayEngagementModeCallback(executor, callback);
+    }
+
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_DEVICE_ENGAGEMENT_MODE)
+    @Override
+    public void unregisterDisplayEngagementModeCallback(
+            @NonNull Consumer<DisplayEngagementModeState> callback) {
+        mBase.unregisterDisplayEngagementModeCallback(callback);
+    }
+
     @Override
     public WindowManager createLocalWindowManager(@NonNull Window parentWindow) {
         final WindowManager newBase = mBase.createLocalWindowManager(parentWindow);

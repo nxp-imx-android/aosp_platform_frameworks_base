@@ -107,6 +107,7 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.Notificati
 import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
 object Notifications {
@@ -119,10 +120,10 @@ object Notifications {
         val NotificationScrim = ElementKey("NotificationScrim")
         /**
          * The [ElementKey] identifying the space reserved for the main list of notifications. This
-         * key only links to an empty box sized to the height of Notifications (placeholder), so STL
+         * key only links to an empty box sized to the height of the Stack (placeholder), so STL
          * transitions are not fully supported here, except vertical positioning.
          */
-        val NotificationStackPlaceholder = ElementKey("NotificationStackPlaceholder")
+        val StackPlaceholder = ElementKey("StackPlaceholder")
         /**
          * The [ElementKey] identifying the space reserved for the top HUN. This key only links to
          * an empty box sized to the height of Notifications (placeholder), so STL transitions are
@@ -150,7 +151,8 @@ fun ContentScope.ConstrainedNotificationStack(
                     }
                 }
     ) {
-        NotificationPlaceholder(
+        StackPlaceholder(
+            tag = "Constrained",
             stackScrollView = stackScrollView,
             viewModel = viewModel,
             useStackBounds = { shouldUseLockscreenStackBounds(layoutState) },
@@ -265,16 +267,12 @@ fun ContentScope.ScrollingNotificationPanel(
     )
 }
 
-@Composable @OptIn(ExperimentalLayoutApi::class)
-
+@Composable
+@OptIn(ExperimentalLayoutApi::class)
 fun ContentScope.NestedScrollingNotificationPanel(
-
     tag: String,
-
     shadeSession: SaveableSession,
-
     stackScrollView: NotificationScrollView,
-
     viewModel: NotificationsPlaceholderViewModel,
     shouldPunchHoleBehindScrim: Boolean,
     isTransparencyEnabled: Boolean,
@@ -333,6 +331,13 @@ fun ContentScope.NestedScrollingNotificationPanel(
     // if we receive scroll delta from NSSL, offset the scrim and placeholder accordingly.
     LaunchedEffect(syntheticScroll, scrollState) {
         snapshotFlow { syntheticScroll.value }
+            .filter {
+                val transitionState =
+                    this@NestedScrollingNotificationPanel.layoutState.transitionState
+                // Only apply the synthetic scroll if we are not transitioning and showing notifs
+                transitionState.isIdle(Scenes.Shade) ||
+                    transitionState.isIdle(Overlays.NotificationsShade)
+            }
             .collect { delta ->
                 scrollStackWithNestedScroll(
                     delta = Offset(x = 0f, y = delta),
@@ -457,7 +462,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
                 .onGloballyPositioned { coordinates ->
                     val boundsInWindow = coordinates.boundsInWindow()
                     debugLog(viewModel) {
-                        "SCRIM onGloballyPositioned:" +
+                        "$tag.SCRIM onGloballyPositioned:" +
                             " size=${coordinates.size}" +
                             " bounds=$boundsInWindow"
                     }
@@ -517,7 +522,8 @@ fun ContentScope.NestedScrollingNotificationPanel(
                             stackBoundsOnScreen.value = coordinates.boundsInWindow()
                         }
             ) {
-                NotificationPlaceholder(
+                StackPlaceholder(
+                    tag = "NestedScroll",
                     stackScrollView = stackScrollView,
                     viewModel = viewModel,
                     useStackBounds = { !shouldUseLockscreenStackBounds(layoutState) },
@@ -691,7 +697,9 @@ private val DEBUG_BOX_COLOR = Color(0f, 1f, 0f, 0.2f)
 private fun LayoutCoordinates.rawBoundsInWindow(): android.graphics.RectF {
     val root = findRootCoordinates()
 
-    val bounds = root.localBoundingBoxOf(this)
+    // Explicitly set clipBounds=false to ensure we get the raw, unclipped bounds, as the default
+    // (true) would clip if any layout between sourceCoordinates and root has clip enabled.
+    val bounds = root.localBoundingBoxOf(sourceCoordinates = this, clipBounds = false)
     val boundsLeft = bounds.left
     val boundsTop = bounds.top
     val boundsRight = bounds.right

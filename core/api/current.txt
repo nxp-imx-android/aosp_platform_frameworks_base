@@ -144,6 +144,7 @@ package android {
     field public static final String LAUNCH_MULTI_PANE_SETTINGS_DEEP_LINK = "android.permission.LAUNCH_MULTI_PANE_SETTINGS_DEEP_LINK";
     field public static final String LOADER_USAGE_STATS = "android.permission.LOADER_USAGE_STATS";
     field public static final String LOCATION_HARDWARE = "android.permission.LOCATION_HARDWARE";
+    field @FlaggedApi("android.security.app_lock_apis") public static final String LOCK_APPS = "android.permission.LOCK_APPS";
     field public static final String MANAGE_DEVICE_LOCK_STATE = "android.permission.MANAGE_DEVICE_LOCK_STATE";
     field public static final String MANAGE_DEVICE_POLICY_ACCESSIBILITY = "android.permission.MANAGE_DEVICE_POLICY_ACCESSIBILITY";
     field public static final String MANAGE_DEVICE_POLICY_ACCOUNT_MANAGEMENT = "android.permission.MANAGE_DEVICE_POLICY_ACCOUNT_MANAGEMENT";
@@ -168,6 +169,7 @@ package android {
     field public static final String MANAGE_DEVICE_POLICY_CERTIFICATES = "android.permission.MANAGE_DEVICE_POLICY_CERTIFICATES";
     field public static final String MANAGE_DEVICE_POLICY_COMMON_CRITERIA_MODE = "android.permission.MANAGE_DEVICE_POLICY_COMMON_CRITERIA_MODE";
     field @FlaggedApi("android.view.contentprotection.flags.manage_device_policy_enabled") public static final String MANAGE_DEVICE_POLICY_CONTENT_PROTECTION = "android.permission.MANAGE_DEVICE_POLICY_CONTENT_PROTECTION";
+    field @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public static final String MANAGE_DEVICE_POLICY_CONTENT_RESTRICTION_APPS = "android.permission.MANAGE_DEVICE_POLICY_CONTENT_RESTRICTION_APPS";
     field public static final String MANAGE_DEVICE_POLICY_DEBUGGING_FEATURES = "android.permission.MANAGE_DEVICE_POLICY_DEBUGGING_FEATURES";
     field public static final String MANAGE_DEVICE_POLICY_DEFAULT_SMS = "android.permission.MANAGE_DEVICE_POLICY_DEFAULT_SMS";
     field public static final String MANAGE_DEVICE_POLICY_DEVICE_IDENTIFIERS = "android.permission.MANAGE_DEVICE_POLICY_DEVICE_IDENTIFIERS";
@@ -349,6 +351,7 @@ package android {
     field @Deprecated public static final String USE_FINGERPRINT = "android.permission.USE_FINGERPRINT";
     field public static final String USE_FULL_SCREEN_INTENT = "android.permission.USE_FULL_SCREEN_INTENT";
     field public static final String USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER = "android.permission.USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER";
+    field @FlaggedApi("android.permission.flags.use_loopback_interface_permission_enabled") public static final String USE_LOOPBACK_INTERFACE = "android.permission.USE_LOOPBACK_INTERFACE";
     field @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") public static final String USE_PINNED_WINDOWING_LAYER = "android.permission.USE_PINNED_WINDOWING_LAYER";
     field public static final String USE_SIP = "android.permission.USE_SIP";
     field public static final String UWB_RANGING = "android.permission.UWB_RANGING";
@@ -4562,7 +4565,7 @@ package android.app {
     method @Deprecated public final boolean isChild();
     method public boolean isDestroyed();
     method public boolean isFinishing();
-    method @FlaggedApi("android.companion.enable_task_continuity") public final boolean isHandoffEnabled();
+    method @FlaggedApi("android.companion.task_continuity") public final boolean isHandoffEnabled();
     method public boolean isImmersive();
     method public boolean isInMultiWindowMode();
     method public boolean isInPictureInPictureMode();
@@ -4606,7 +4609,7 @@ package android.app {
     method public void onEnterAnimationComplete();
     method public boolean onGenericMotionEvent(android.view.MotionEvent);
     method public void onGetDirectActions(@NonNull android.os.CancellationSignal, @NonNull java.util.function.Consumer<java.util.List<android.app.DirectAction>>);
-    method @FlaggedApi("android.companion.enable_task_continuity") @Nullable public android.app.HandoffActivityData onHandoffActivityDataRequested(@NonNull android.app.HandoffActivityDataRequestInfo);
+    method @FlaggedApi("android.companion.task_continuity") @Nullable public android.app.HandoffActivityData onHandoffActivityDataRequested(@NonNull android.app.HandoffActivityDataRequestInfo);
     method public boolean onKeyDown(int, android.view.KeyEvent);
     method public boolean onKeyLongPress(int, android.view.KeyEvent);
     method public boolean onKeyMultiple(int, int, android.view.KeyEvent);
@@ -4708,7 +4711,7 @@ package android.app {
     method public final void setFeatureDrawableResource(int, @DrawableRes int);
     method public final void setFeatureDrawableUri(int, android.net.Uri);
     method public void setFinishOnTouchOutside(boolean);
-    method @FlaggedApi("android.companion.enable_task_continuity") public final void setHandoffEnabled(boolean);
+    method @FlaggedApi("android.companion.task_continuity") public final void setHandoffEnabled(boolean, @Nullable android.app.HandoffActivityParams);
     method public void setImmersive(boolean);
     method public void setInheritShowWhenLocked(boolean);
     method public void setIntent(android.content.Intent);
@@ -6205,7 +6208,7 @@ package android.app {
     method public void setRequestedApplicationGrammaticalGender(int);
   }
 
-  @FlaggedApi("android.companion.enable_task_continuity") public final class HandoffActivityData implements android.os.Parcelable {
+  @FlaggedApi("android.companion.task_continuity") public final class HandoffActivityData implements android.os.Parcelable {
     method @NonNull public static android.app.HandoffActivityData createWebHandoff(@NonNull android.net.Uri);
     method public int describeContents();
     method @Nullable public android.content.ComponentName getComponentName();
@@ -6215,16 +6218,29 @@ package android.app {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.HandoffActivityData> CREATOR;
   }
 
-  @FlaggedApi("android.companion.enable_task_continuity") public static final class HandoffActivityData.Builder {
+  @FlaggedApi("android.companion.task_continuity") public static final class HandoffActivityData.Builder {
     ctor public HandoffActivityData.Builder(@NonNull android.content.ComponentName);
     method @NonNull public android.app.HandoffActivityData build();
     method @NonNull public android.app.HandoffActivityData.Builder setExtras(@NonNull android.os.PersistableBundle);
     method @NonNull public android.app.HandoffActivityData.Builder setFallbackUri(@Nullable android.net.Uri);
   }
 
-  @FlaggedApi("android.companion.enable_task_continuity") public final class HandoffActivityDataRequestInfo {
+  @FlaggedApi("android.companion.task_continuity") public final class HandoffActivityDataRequestInfo {
     ctor public HandoffActivityDataRequestInfo(boolean);
     method public boolean isActiveRequest();
+  }
+
+  @FlaggedApi("android.companion.task_continuity") public final class HandoffActivityParams implements android.os.Parcelable {
+    method public int describeContents();
+    method public boolean isAllowHandoffWithoutPackageInstalled();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.HandoffActivityParams> CREATOR;
+  }
+
+  @FlaggedApi("android.companion.task_continuity") public static final class HandoffActivityParams.Builder {
+    ctor public HandoffActivityParams.Builder();
+    method @NonNull public android.app.HandoffActivityParams build();
+    method @NonNull public android.app.HandoffActivityParams.Builder setAllowHandoffWithoutPackageInstalled(boolean);
   }
 
   public class Instrumentation {
@@ -10117,6 +10133,14 @@ package android.app.usage {
 
 }
 
+package android.app.voiceinteraction {
+
+  @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public class VoiceInteractionManager {
+    method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") @NonNull public android.content.Intent createRequestAssistStructureIntent();
+  }
+
+}
+
 package android.app.wallpaper {
 
   public final class WallpaperDescription implements android.os.Parcelable {
@@ -10466,7 +10490,7 @@ package android.companion {
     field public static final String EXTRA_ASSOCIATION = "android.companion.extra.ASSOCIATION";
     field @Deprecated public static final String EXTRA_DEVICE = "android.companion.extra.DEVICE";
     field public static final int FLAG_CALL_METADATA = 1; // 0x1
-    field @FlaggedApi("android.companion.enable_task_continuity") public static final int FLAG_TASK_CONTINUITY = 2; // 0x2
+    field @FlaggedApi("android.companion.task_continuity") public static final int FLAG_TASK_CONTINUITY = 2; // 0x2
     field public static final int RESULT_CANCELED = 0; // 0x0
     field public static final int RESULT_DISCOVERY_TIMEOUT = 2; // 0x2
     field public static final int RESULT_INTERNAL_ERROR = 3; // 0x3
@@ -11441,6 +11465,7 @@ package android.content {
     field public static final String NETWORK_STATS_SERVICE = "netstats";
     field public static final String NFC_SERVICE = "nfc";
     field public static final String NOTIFICATION_SERVICE = "notification";
+    field @FlaggedApi("com.android.npumanager.npumanager_enabled") public static final String NPU_SERVICE = "npu";
     field public static final String NSD_SERVICE = "servicediscovery";
     field public static final String OVERLAY_SERVICE = "overlay";
     field public static final String PEOPLE_SERVICE = "people";
@@ -12141,6 +12166,7 @@ package android.content {
     field public static final String EXTRA_USER = "android.intent.extra.USER";
     field public static final String EXTRA_USER_INITIATED = "android.intent.extra.USER_INITIATED";
     field public static final String EXTRA_USE_STYLUS_MODE = "android.intent.extra.USE_STYLUS_MODE";
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String EXTRA_USE_SYSTEM_CONTACTS_PICKER = "android.intent.extra.USE_SYSTEM_CONTACTS_PICKER";
     field public static final int FILL_IN_ACTION = 1; // 0x1
     field public static final int FILL_IN_CATEGORIES = 4; // 0x4
     field public static final int FILL_IN_CLIP_DATA = 128; // 0x80
@@ -12946,6 +12972,8 @@ package android.content.pm {
     field public String deviceProtectedDataDir;
     field public boolean enabled;
     field public int flags;
+    field @FlaggedApi("android.security.app_lock_apis") public boolean isAppLockEnabled;
+    field @FlaggedApi("android.security.app_lock_apis") public boolean isAppLockSupported;
     field public int largestWidthLimitDp;
     field public String manageSpaceActivityName;
     field public int minSdkVersion;
@@ -13689,6 +13717,7 @@ package android.content.pm {
     method public abstract int getComponentEnabledSetting(@NonNull android.content.ComponentName);
     method @NonNull public abstract android.graphics.drawable.Drawable getDefaultActivityIcon();
     method @Nullable public abstract android.graphics.drawable.Drawable getDrawable(@NonNull String, @DrawableRes int, @Nullable android.content.pm.ApplicationInfo);
+    method @FlaggedApi("android.security.app_lock_apis") @Nullable @RequiresPermission(android.Manifest.permission.LOCK_APPS) public android.app.PendingIntent getEnableAppLockIntentForPackage(@NonNull String, boolean);
     method public void getGroupOfPlatformPermission(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.String>);
     method @NonNull public android.content.pm.InstallSourceInfo getInstallSourceInfo(@NonNull String) throws android.content.pm.PackageManager.NameNotFoundException;
     method @NonNull public abstract java.util.List<android.content.pm.ApplicationInfo> getInstalledApplications(int);
@@ -13979,6 +14008,7 @@ package android.content.pm {
     field public static final int FLAG_PERMISSION_WHITELIST_SYSTEM = 1; // 0x1
     field public static final int FLAG_PERMISSION_WHITELIST_UPGRADE = 4; // 0x4
     field public static final int GET_ACTIVITIES = 1; // 0x1
+    field @FlaggedApi("android.security.app_lock_apis") public static final long GET_APP_LOCK_INFO = 34359738368L; // 0x800000000L
     field @Deprecated public static final int GET_ATTRIBUTIONS = -2147483648; // 0x80000000
     field public static final long GET_ATTRIBUTIONS_LONG = 2147483648L; // 0x80000000L
     field public static final int GET_CONFIGURATIONS = 16384; // 0x4000
@@ -25542,7 +25572,7 @@ package android.media {
     method public final void notifySessionCreated(long, @NonNull android.media.RoutingSessionInfo);
     method public final void notifySessionReleased(@NonNull String);
     method public final void notifySessionUpdated(@NonNull android.media.RoutingSessionInfo);
-    method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") @Nullable @RequiresPermission("android.permission.MODIFY_AUDIO_ROUTING") public final android.media.MediaRoute2ProviderService.MediaStreams notifySystemRoutingSessionCreated(long, @NonNull android.media.RoutingSessionInfo, @NonNull android.media.MediaRoute2ProviderService.MediaStreamsFormats);
+    method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") @Nullable @RequiresPermission(allOf={"android.permission.MODIFY_AUDIO_ROUTING", "android.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED"}) public final android.media.MediaRoute2ProviderService.MediaStreams notifySystemRoutingSessionCreated(long, @NonNull android.media.RoutingSessionInfo, @NonNull android.media.MediaRoute2ProviderService.MediaStreamsFormats);
     method @CallSuper @Nullable public android.os.IBinder onBind(@NonNull android.content.Intent);
     method public abstract void onCreateSession(long, @NonNull String, @NonNull String, @Nullable android.os.Bundle);
     method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public void onCreateSystemRoutingSession(long, @NonNull String, @NonNull android.media.MediaRoute2ProviderService.SystemRoutingSessionParams);
@@ -26088,6 +26118,7 @@ package android.media {
     method public static android.media.Ringtone getRingtone(android.content.Context, android.net.Uri);
     method public int getRingtonePosition(android.net.Uri);
     method public android.net.Uri getRingtoneUri(int);
+    method @FlaggedApi("android.media.audio.support_per_phone_account_ringtone") @Nullable public static android.net.Uri getRingtoneUriForPhoneAccountHandle(@NonNull android.content.Context, @Nullable android.telecom.PhoneAccountHandle);
     method public boolean getStopPreviousRingtone();
     method public static android.net.Uri getValidRingtoneUri(android.content.Context);
     method public boolean hasHapticChannels(int);
@@ -26098,6 +26129,7 @@ package android.media {
     method @Nullable public static android.content.res.AssetFileDescriptor openDefaultRingtoneUri(@NonNull android.content.Context, @NonNull android.net.Uri) throws java.io.FileNotFoundException;
     method public static void setActualDefaultRingtoneUri(android.content.Context, int, android.net.Uri);
     method @Deprecated public void setIncludeDrm(boolean);
+    method @FlaggedApi("android.media.audio.support_per_phone_account_ringtone") public static void setRingtoneUri(@NonNull android.content.Context, @Nullable android.net.Uri, @Nullable android.telecom.PhoneAccountHandle);
     method public void setStopPreviousRingtone(boolean);
     method public void setType(int);
     method public void stopPreviousRingtone();
@@ -38579,6 +38611,19 @@ package android.provider {
     field public static final android.net.Uri CONTENT_URI;
   }
 
+  @FlaggedApi("android.content.flags.enable_system_contacts_picker") public final class ContactsPickerSessionContract {
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String ACTION_PICK_CONTACTS = "android.provider.action.PICK_CONTACTS";
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String AUTHORITY = "com.android.contacts.picker.sessions";
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") @NonNull public static final android.net.Uri AUTHORITY_URI;
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String EXTRA_PICK_CONTACTS_REQUESTED_DATA_FIELDS = "android.provider.extra.PICK_CONTACTS_REQUESTED_DATA_FIELDS";
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String EXTRA_PICK_CONTACTS_SELECTION_LIMIT = "android.provider.extra.PICK_CONTACTS_SELECTION_LIMIT";
+  }
+
+  @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final class ContactsPickerSessionContract.Session implements android.provider.BaseColumns {
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String CONTENT_TYPE = "vnd.android.cursor.dir/data";
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") @NonNull public static final android.net.Uri CONTENT_URI;
+  }
+
   public final class DocumentsContract {
     method public static android.net.Uri buildChildDocumentsUri(String, String);
     method public static android.net.Uri buildChildDocumentsUriUsingTree(android.net.Uri, String);
@@ -38662,12 +38707,11 @@ package android.provider {
     field public static final int FLAG_WEB_LINKABLE = 4096; // 0x1000
     field public static final String MIME_TYPE_DIR = "vnd.android.document/directory";
     field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_AVAILABLE_LOCALLY = 1; // 0x1
-    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_DOWNLOAD_ERROR = 64; // 0x40
-    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_DOWNLOAD_PROGRESS = 16; // 0x10
+    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_DOWNLOAD_ERROR = 32; // 0x20
+    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_DOWNLOAD_PROGRESS = 8; // 0x8
     field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_LOCAL_CHANGES = 2; // 0x2
-    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_REMOTE_CHANGES = 4; // 0x4
-    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_UPLOAD_ERROR = 32; // 0x20
-    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_UPLOAD_PROGRESS = 8; // 0x8
+    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_UPLOAD_ERROR = 16; // 0x10
+    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_UPLOAD_PROGRESS = 4; // 0x4
   }
 
   public static final class DocumentsContract.Path implements android.os.Parcelable {
@@ -38974,6 +39018,7 @@ package android.provider {
     field public static final String ACTION_SHOW_WORK_POLICY_INFO = "android.settings.SHOW_WORK_POLICY_INFO";
     field public static final String ACTION_SOUND_SETTINGS = "android.settings.SOUND_SETTINGS";
     field @Deprecated public static final String ACTION_STORAGE_VOLUME_ACCESS_SETTINGS = "android.settings.STORAGE_VOLUME_ACCESS_SETTINGS";
+    field @FlaggedApi("android.app.supervision.flags.enable_supervision_settings_ui_updates") public static final String ACTION_SUPERVISION_SETTINGS = "android.settings.SUPERVISION_SETTINGS";
     field public static final String ACTION_SYNC_SETTINGS = "android.settings.SYNC_SETTINGS";
     field @FlaggedApi("android.provider.expose_system_update_settings") public static final String ACTION_SYSTEM_UPDATE_SETTINGS = "android.settings.SYSTEM_UPDATE_SETTINGS";
     field @FlaggedApi("android.provider.system_regional_preferences_api_enabled") public static final String ACTION_TEMPERATURE_UNIT_SETTINGS = "android.settings.TEMPERATURE_UNIT_SETTINGS";
@@ -43131,15 +43176,10 @@ package android.service.personalcontext.hint {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class BundleHint extends android.service.personalcontext.hint.ContextHint {
     ctor public BundleHint();
     method @NonNull public android.os.Bundle getDataBundle();
-    method public int getHintType();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextHint {
     method @NonNull public final java.util.UUID getHintId();
-    method public abstract int getHintType();
-    field public static final int HINT_TYPE_BUNDLE = 1; // 0x1
-    field public static final int HINT_TYPE_ERROR = -1; // 0xffffffff
-    field public static final int HINT_TYPE_NOTIFICATION = 2; // 0x2
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class NotificationEvent {
@@ -43166,7 +43206,6 @@ package android.service.personalcontext.hint {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class NotificationHint extends android.service.personalcontext.hint.ContextHint {
-    method public int getHintType();
     method @NonNull public android.service.personalcontext.hint.NotificationEvent getNotificationEvent();
   }
 
@@ -43179,9 +43218,19 @@ package android.service.personalcontext.hint {
 
 package android.service.personalcontext.insight {
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ActionableInsight extends android.service.personalcontext.insight.ContextInsight {
+    method @NonNull public android.content.Intent createActionIntent();
+    method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails getDisplayDetails();
+  }
+
+  public static final class ActionableInsight.Builder {
+    ctor public ActionableInsight.Builder(@NonNull android.content.Intent, @NonNull android.service.personalcontext.insight.InsightDisplayDetails);
+    method @NonNull public android.service.personalcontext.insight.ActionableInsight build();
+    method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder setOriginHints(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class BundleInsight extends android.service.personalcontext.insight.ContextInsight {
     method @NonNull public android.os.Bundle getDataBundle();
-    method public int getInsightType();
   }
 
   public static final class BundleInsight.Builder {
@@ -43193,10 +43242,24 @@ package android.service.personalcontext.insight {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
     method @NonNull public final java.util.UUID getInsightId();
-    method public abstract int getInsightType();
     method @NonNull public final java.util.List<android.service.personalcontext.hint.ContextHint> getOriginHints();
-    field public static final int INSIGHT_TYPE_BUNDLE = 1; // 0x1
-    field public static final int INSIGHT_TYPE_ERROR = -1; // 0xffffffff
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightDisplayDetails implements android.os.Parcelable {
+    method public int describeContents();
+    method @Nullable public CharSequence getContentDescription();
+    method @Nullable public android.graphics.drawable.Icon getIcon();
+    method @Nullable public CharSequence getTitle();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.InsightDisplayDetails> CREATOR;
+  }
+
+  public static final class InsightDisplayDetails.Builder {
+    ctor public InsightDisplayDetails.Builder(@NonNull CharSequence);
+    ctor public InsightDisplayDetails.Builder(@NonNull android.graphics.drawable.Icon);
+    ctor public InsightDisplayDetails.Builder(@NonNull CharSequence, @NonNull android.graphics.drawable.Icon);
+    method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails build();
+    method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails.Builder setContentDescription(@Nullable CharSequence);
   }
 
 }
@@ -44818,7 +44881,7 @@ package android.telephony {
     field public static final String KEY_SUPPORTS_DEVICE_TO_DEVICE_COMMUNICATION_USING_DTMF_BOOL = "supports_device_to_device_communication_using_dtmf_bool";
     field public static final String KEY_SUPPORTS_DEVICE_TO_DEVICE_COMMUNICATION_USING_RTP_BOOL = "supports_device_to_device_communication_using_rtp_bool";
     field public static final String KEY_SUPPORTS_SDP_NEGOTIATION_OF_D2D_RTP_HEADER_EXTENSIONS_BOOL = "supports_sdp_negotiation_of_d2d_rtp_header_extensions_bool";
-    field @FlaggedApi("com.android.server.telecom.flags.is_using_unidirectional_video_service") public static final String KEY_SUPPORTS_UNIDIRECTIONAL_VIDEO_SERVICE_BOOL = "supports_unidirectional_video_service_bool";
+    field @FlaggedApi("android.telecom.flags.is_using_unidirectional_video_service") public static final String KEY_SUPPORTS_UNIDIRECTIONAL_VIDEO_SERVICE_BOOL = "supports_unidirectional_video_service_bool";
     field @FlaggedApi("com.android.server.telecom.flags.is_using_video_ringback") public static final String KEY_SUPPORTS_VIDEO_RINGBACK_BOOL = "supports_video_back_tone_bool";
     field public static final String KEY_SUPPORT_3GPP_CALL_FORWARDING_WHILE_ROAMING_BOOL = "support_3gpp_call_forwarding_while_roaming_bool";
     field public static final String KEY_SUPPORT_ADD_CONFERENCE_PARTICIPANTS_BOOL = "support_add_conference_participants_bool";

@@ -623,6 +623,17 @@ enum class SwipeDirection(internal val resolve: (LayoutDirection) -> Resolved) {
         Left(Orientation.Horizontal),
         Right(Orientation.Horizontal),
     }
+
+    fun reversed(): SwipeDirection {
+        return when (this) {
+            Up -> Down
+            Down -> Up
+            Left -> Right
+            Right -> Left
+            Start -> End
+            End -> Start
+        }
+    }
 }
 
 /**

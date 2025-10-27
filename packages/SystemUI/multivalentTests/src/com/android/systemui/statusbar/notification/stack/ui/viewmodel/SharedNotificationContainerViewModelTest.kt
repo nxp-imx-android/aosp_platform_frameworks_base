@@ -69,11 +69,13 @@ import com.android.systemui.media.controls.domain.pipeline.legacyMediaDataManage
 import com.android.systemui.res.R
 import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.Transition
+import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.data.repository.setTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.transitionState
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
@@ -1058,6 +1060,72 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
 
             // Ensure that alpha is set back to 1f when QS is fully expanded
             shadeTestUtil.setQsExpansion(1f)
+            assertThat(alpha).isEqualTo(1f)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun alphaFadesOut_lockscreenToBouncerOverlay() =
+        kosmos.runTest {
+            val viewState = ViewStateAccessor()
+            val alpha by
+                collectLastValue(underTest.keyguardAlpha(viewState, testScope.backgroundScope))
+            val progress = MutableStateFlow(0f)
+
+            showLockscreen()
+            sceneContainerRepository.setTransitionState(transitionState)
+            transitionState.value =
+                ObservableTransitionState.Transition.showOverlay(
+                    overlay = Overlays.Bouncer,
+                    fromScene = Scenes.Lockscreen,
+                    currentOverlays = flowOf(emptySet()),
+                    progress = progress,
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                )
+
+            // Bouncer fully closed, showing Lockscreen.
+            assertThat(alpha).isEqualTo(1f)
+
+            // Bouncer opening.
+            progress.value = 0.2f
+            assertThat(alpha).isLessThan(1f)
+
+            // Bouncer fully shown.
+            progress.value = 1f
+            assertThat(alpha).isEqualTo(0f)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun alphaFadesIn_BouncerOverlayToLockscreen() =
+        kosmos.runTest {
+            val viewState = ViewStateAccessor()
+            val alpha by
+                collectLastValue(underTest.keyguardAlpha(viewState, testScope.backgroundScope))
+            val progress = MutableStateFlow(0f)
+
+            showLockscreen()
+            sceneContainerRepository.setTransitionState(transitionState)
+            transitionState.value =
+                ObservableTransitionState.Transition.hideOverlay(
+                    overlay = Overlays.Bouncer,
+                    toScene = Scenes.Lockscreen,
+                    currentOverlays = flowOf(emptySet()),
+                    progress = progress,
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                )
+
+            // Bouncer fully shown.
+            assertThat(alpha).isEqualTo(0f)
+
+            // Bouncer closing.
+            progress.value = 0.8f
+            assertThat(alpha).isGreaterThan(0f)
+
+            // Bouncer gone, back to Lockscreen.
+            progress.value = 1f
             assertThat(alpha).isEqualTo(1f)
         }
 

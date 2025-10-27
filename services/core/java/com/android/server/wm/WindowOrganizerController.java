@@ -382,7 +382,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                                     setAllReadyIfNeeded(nextTransition, wct);
                                 }
                                 mService.mChainTracker.end();
-                            }, true /* noopIfDuringDisplayChange */);
+                            }, canDropDuringDisplayChange(wct) /* noopIfDuringDisplayChange */);
                     return nextTransition.getToken();
                 }
                 // The transition already started collecting before sending a request to shell,
@@ -438,6 +438,11 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
+    }
+
+    private static boolean canDropDuringDisplayChange(@NonNull WindowContainerTransaction wct) {
+        return (wct.getFlags()
+                & WindowContainerTransaction.FLAG_DROP_DURING_DISPLAY_CHANGE) == 1;
     }
 
     private static boolean hasActivityLaunch(@NonNull WindowContainerTransaction wct) {
@@ -772,7 +777,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                             t.getTaskFragmentOrganizer());
                 }
             }
-            if (transition != null && transition.applyDisplayRemovalsIfNeeded()) {
+            if (transition != null && transition.applyDisplayContentClearIfNeeded()) {
                 effects |= TRANSACT_EFFECTS_LIFECYCLE;
             }
             if ((effects & TRANSACT_EFFECTS_LIFECYCLE) != 0) {
@@ -1284,8 +1289,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 }
                 // Disable reachability when an InputMethod is visible.
                 final DisplayContent dc = wc.mDisplayContent;
-                if (dc != null && dc.mInputMethodWindow != null
-                        && dc.mInputMethodWindow.isVisible()) {
+                if (dc != null && dc.getImeWindow() != null
+                        && dc.getImeWindow().isVisible()) {
                     break;
                 }
                 final Task currentTask = wc.asTask();

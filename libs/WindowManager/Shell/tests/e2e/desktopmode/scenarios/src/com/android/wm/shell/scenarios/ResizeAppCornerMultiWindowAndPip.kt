@@ -34,9 +34,11 @@ import org.junit.Test
 
 @Ignore("Test Base Class")
 abstract class ResizeAppCornerMultiWindowAndPip
-constructor(val rotation: Rotation = Rotation.ROTATION_0,
+constructor(
+    val rotation: Rotation = Rotation.ROTATION_0,
     val horizontalChange: Int = 50,
-    val verticalChange: Int = -50) : TestScenarioBase(rotation) {
+    val verticalChange: Int = -50,
+) : TestScenarioBase(rotation) {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
@@ -59,11 +61,13 @@ constructor(val rotation: Rotation = Rotation.ROTATION_0,
 
     @Test
     open fun resizeAppWithCornerResize() {
-        imeApp.cornerResize(wmHelper,
+        imeApp.cornerResize(
+            wmHelper,
             device,
             DesktopModeAppHelper.Corners.RIGHT_TOP,
             horizontalChange,
-            verticalChange)
+            verticalChange,
+        )
     }
 
     @After

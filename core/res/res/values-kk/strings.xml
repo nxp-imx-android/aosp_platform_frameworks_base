@@ -1277,6 +1277,8 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Әрекетті аяқтау"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Басқаша ашу"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"%1$s қолданбасымен ашу"</string>
+    <!-- no translation found for open_app_name (6114096770130122912) -->
+    <skip />
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Ашу"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"<xliff:g id="HOST">%1$s</xliff:g> сілтемелерін келесімен ашу:"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Сілтемелерді келесімен ашу:"</string>
@@ -1798,10 +1800,8 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Дыбыс деңгейі пернелерін бірнеше секунд басып тұрсаңыз, <xliff:g id="SERVICE">%1$s</xliff:g> арнайы қызметі іске қосылады. Бұл – құрылғының жүмысына әсер етуі мүмкін.\n\nБұл таңбашаны басқа функцияға \"Параметрлер &gt; Арнайы мүмкіндіктер\" бөлімінен өзгерте аласыз."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Қосылсын"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Қосылмасын"</string>
-    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
-    <skip />
+    <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"Қосулы"</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"Өшірулі"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"<xliff:g id="SERVICE">%1$s</xliff:g> қызметіне құрылғыны толық басқаруға рұқсат етілсін бе?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Арнайы мүмкіндіктер бойынша көмектесетін қолданбаларға ғана құрылғыны толық басқару рұқсатын берген дұрыс."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Экранды көру және басқару"</string>
@@ -1815,16 +1815,11 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Функцияны пайдалана бастау үшін түртіңіз:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"\"Арнайы мүмкіндіктер\" түймесімен қолданылатын функцияларды таңдаңыз"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Дыбыс деңгейі пернелері тіркесімімен қолданылатын функцияларды таңдаңыз"</string>
-    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
-    <skip />
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"арнайы мүмкіндіктер түймесі"</string>
+    <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"дыбыс деңгейі пернелері"</string>
+    <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"қимыл"</string>
+    <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"жылдам параметрлер"</string>
+    <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"үш рет түрту"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> қызметі өшірулі."</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Жылдам пәрмендерді өзгерту"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Дайын"</string>
@@ -1835,7 +1830,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Бір қолмен басқару режимі"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Экранды қарайту"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Есту аппараттары"</string>
-    <string name="autoclick_feature_name" msgid="4056260617171267864">"Автоматты басу (күту уақыты)"</string>
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"Автоматты түрде басу (кідіру уақыты)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Тінтуір пернелері"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Ажыратылды"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Қосылды"</string>
@@ -2303,7 +2298,7 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Сол жақ Dpad түймесі"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Оң жақ Dpad түймесі"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Ортаңғы Dpad түймесі"</string>
-    <string name="accessibility_autoclick_type_settings_panel_title" msgid="2153131135765368397">"\"Автоматты басу опциялары\" мәзірі"</string>
+    <string name="accessibility_autoclick_type_settings_panel_title" msgid="2153131135765368397">"\"Автоматты түрде басу опциялары\" мәзірі"</string>
     <string name="accessibility_autoclick_left_click" msgid="8241237237588793835">"Тінтуірдің сол жақ түймесін басу"</string>
     <string name="accessibility_autoclick_right_click" msgid="6208390123529830506">"Тінтуірдің оң жақ түймесін басу"</string>
     <string name="accessibility_autoclick_double_click" msgid="2800154470129612873">"Екі рет басу"</string>

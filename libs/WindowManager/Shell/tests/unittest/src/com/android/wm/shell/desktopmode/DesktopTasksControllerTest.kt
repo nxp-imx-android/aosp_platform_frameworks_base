@@ -54,6 +54,7 @@ import android.content.res.Resources
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Binder
 import android.os.Bundle
 import android.os.Handler
@@ -1607,6 +1608,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_newFreeformTaskLaunch_boundsSetFromOptions_cascadeNotApplied() {
+        setUpLandscapeDisplay()
+
+        setUpFreeformTask(bounds = DEFAULT_LANDSCAPE_BOUNDS)
+        val freeformTask =
+            setUpFreeformTask(bounds = DEFAULT_LANDSCAPE_BOUNDS, active = false).apply {
+                leafTaskBoundsFromOptions = true
+            }
+
+        val wct = controller.handleRequest(Binder(), createTransition(freeformTask))
+
+        assertNotNull(wct, "should handle request")
+        val finalBounds = findBoundsChange(wct, freeformTask)
+        assertThat(finalBounds).isEqualTo(DEFAULT_LANDSCAPE_BOUNDS)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun handleRequest_newFreeformTaskLaunch_newDesk_desksCascadeIndependently() {
         setUpLandscapeDisplay()
         val stableBounds =
@@ -1835,6 +1854,29 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val finalBounds = findBoundsChange(wct, task)
         assertThat(stableBounds.getDesktopTaskPosition(finalBounds!!))
             .isEqualTo(DesktopTaskPosition.Center)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun getInitialBounds_withRememberedBounds_returnsCorrectBounds() {
+        setUpLandscapeDisplay()
+        val packageName = "com.test.app"
+        val task = setUpFreeformTask().apply { baseActivity = ComponentName(packageName, "") }
+        val boundsRatio = RectF(0.1f, 0.2f, 0.8f, 0.9f)
+        val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
+
+        taskRepository.setRememberedBoundsRatio(packageName, boundsRatio)
+
+        val bounds = controller.getInitialBounds(displayLayout, task, 0)
+
+        val expectedBounds =
+            Rect(
+                (stableBounds.left + stableBounds.width() * boundsRatio.left).toInt(),
+                (stableBounds.top + stableBounds.height() * boundsRatio.top).toInt(),
+                (stableBounds.left + stableBounds.width() * boundsRatio.right).toInt(),
+                (stableBounds.top + stableBounds.height() * boundsRatio.bottom).toInt(),
+            )
+        assertThat(bounds).isEqualTo(expectedBounds)
     }
 
     @Test
@@ -5594,7 +5636,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val result = controller.closeTask(task)
 
-        assertThat(result).isEqualTo(DesktopTasksController.CloseTaskResult.CLOSED_SPLIT_SCREEN)
+        assertThat(result)
+            .isEqualTo(DesktopTasksController.CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN)
         verify(splitScreenController)
             .moveTaskToFullscreen(
                 eq(otherTask.taskId),
@@ -8209,10 +8252,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
 
         val wct = getLatestWct(TRANSIT_CLOSE)
-        assertThat(wct.hierarchyOps).hasSize(3)
-        wct.assertRemoveAt(index = 0, task1.token)
-        wct.assertRemoveAt(index = 1, task2.token)
-        wct.assertRemoveAt(index = 2, task3.token)
+        wct.assertRemove(task1.token)
+        wct.assertRemove(task2.token)
+        wct.assertRemove(task3.token)
     }
 
     @Test
@@ -8231,9 +8273,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
 
         val wct = getLatestWct(TRANSIT_CLOSE)
-        assertThat(wct.hierarchyOps).hasSize(2)
-        wct.assertRemoveAt(index = 0, task1.token)
-        wct.assertRemoveAt(index = 1, task2.token)
+        wct.assertRemove(task1.token)
+        wct.assertRemove(task2.token)
         verify(recentTasksController).removeBackgroundTask(task3.taskId)
     }
 
@@ -8347,6 +8388,45 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         this.deskId == 5
                 }
             )
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun removeAllDesks_endUpAtHome_hasActiveDesk_deskRemovedAndHomeBroughtToFront() {
+        val transition = Binder()
+        whenever(transitions.startTransition(eq(TRANSIT_CLOSE), any(), anyOrNull()))
+            .thenReturn(transition)
+        taskRepository.addDesk(DEFAULT_DISPLAY, deskId = 4)
+        taskRepository.addDesk(DEFAULT_DISPLAY, deskId = 5)
+        taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = 5)
+
+        controller.removeAllDesks(
+            userId = taskRepository.userId,
+            exitReason = ExitReason.UNKNOWN_EXIT,
+            shouldEndUpAtHome = true,
+        )
+
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat {
+                    this is DeskTransition.RemoveDesk &&
+                        this.token == transition &&
+                        this.deskId == 4
+                }
+            )
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat {
+                    this is DeskTransition.RemoveDesk &&
+                        this.token == transition &&
+                        this.deskId == 5
+                }
+            )
+        val wct = getLatestWct(type = TRANSIT_CLOSE)
+        wct.assertPendingIntent(launchHomeIntent(DEFAULT_DISPLAY))
     }
 
     @Test

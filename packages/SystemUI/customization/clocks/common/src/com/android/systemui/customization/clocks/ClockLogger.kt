@@ -19,11 +19,11 @@ package com.android.systemui.customization.clocks
 import android.annotation.SuppressLint
 import android.icu.util.TimeZone
 import android.view.View
-import android.view.View.MeasureSpec
 import com.android.systemui.log.LogcatOnlyMessageBuffer
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.core.MessageBuffer
+import com.android.systemui.plugins.keyguard.VMeasurePoint
 import com.android.systemui.plugins.keyguard.VPointF
 import com.android.systemui.plugins.keyguard.VRect
 import com.android.systemui.plugins.keyguard.ui.clocks.TimeFormatKind
@@ -65,11 +65,8 @@ class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :
         d({ "onLocaleChanged($str1)" }) { str1 = "$formatKind" }
     }
 
-    fun onMeasure(widthSpec: Int, heightSpec: Int) {
-        d({ "onMeasure(${getSpecText(int1)}, ${getSpecText(int2)})" }) {
-            int1 = widthSpec
-            int2 = heightSpec
-        }
+    fun onMeasure(specPt: VMeasurePoint) {
+        d({ "onMeasure(${VMeasurePoint.fromLong(long1)})" }) { long1 = specPt.toLong() }
     }
 
     fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -160,19 +157,6 @@ class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :
                 View.VISIBLE -> "VISIBLE"
                 else -> "$visibility"
             }
-        }
-
-        @JvmStatic
-        fun getSpecText(spec: Int): String {
-            val size = MeasureSpec.getSize(spec)
-            val modeText =
-                when (val mode = MeasureSpec.getMode(spec)) {
-                    MeasureSpec.EXACTLY -> "EXACTLY"
-                    MeasureSpec.AT_MOST -> "AT MOST"
-                    MeasureSpec.UNSPECIFIED -> "UNSPECIFIED"
-                    else -> "$mode"
-                }
-            return "($size, $modeText)"
         }
 
         @JvmStatic

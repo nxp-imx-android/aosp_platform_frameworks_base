@@ -956,7 +956,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
             kosmos.fakeDeviceEntryRepository.deviceUnlockStatus.value =
                 DeviceUnlockStatus(
                     isUnlocked = true,
-                    deviceUnlockSource = DeviceUnlockSource.FaceWithBypass,
+                    deviceUnlockSource = DeviceUnlockSource.FaceWithBypassOrUnlockIntent,
                 )
             runCurrent()
 
@@ -1064,7 +1064,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
             kosmos.fakeDeviceEntryRepository.deviceUnlockStatus.value =
                 DeviceUnlockStatus(
                     isUnlocked = true,
-                    deviceUnlockSource = DeviceUnlockSource.FaceWithBypass,
+                    deviceUnlockSource = DeviceUnlockSource.FaceWithBypassOrUnlockIntent,
                 )
             runCurrent()
 

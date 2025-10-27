@@ -29,6 +29,7 @@ import static android.os.PowerManagerInternal.WAKEFULNESS_ASLEEP;
 import static android.os.PowerManagerInternal.WAKEFULNESS_AWAKE;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DOZING;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DREAMING;
+import static android.os.PowerManagerInternal.WakeUpDelegate;
 import static android.os.PowerManagerInternal.wakefulnessToString;
 import static android.service.dreams.Flags.allowDreamWhenPostured;
 import static android.service.dreams.Flags.dreamsV2;
@@ -391,6 +392,10 @@ public final class PowerManagerService extends SystemService
     // All active user activity listeners.
     @GuardedBy("mLock")
     final ArrayList<UserActivityListener> mUserActivityListeners = new ArrayList<>();
+
+    @Nullable
+    @GuardedBy("mLock")
+    WakeUpDelegate mWakeUpDelegate;
 
     // A bitfield that summarizes the state of all active wakelocks.
     private int mWakeLockSummary;
@@ -2330,6 +2335,17 @@ public final class PowerManagerService extends SystemService
         }
         if (mForceSuspendActive || !mSystemReady || (powerGroup == null)
                 || hasWakeLockKeepingGroupAsleep(powerGroup.getWakeLockSummaryLocked())) {
+            return;
+        }
+        if (powerGroup.getGroupId() == Display.DEFAULT_DISPLAY_GROUP
+                && mWakeUpDelegate != null
+                && mWakeUpDelegate.wakeUp(eventTime, reason, details, uid)) {
+            // Note that, in this case where the WakeUpDelegate handles the wake up, the wakefulness
+            // state will not necessarily change to an interactive wakefulness state. This is
+            // because the delegate may implement its own definition of "waking" based on the
+            // device's behaviors and needs, which means that the wakefulness may remain in dozing
+            // or sleeping state.
+            Slog.i(TAG, "Wake up handled by delegate");
             return;
         }
         powerGroup.wakeUpLocked(eventTime, reason, details, uid, opPackageName, opUid,
@@ -4444,6 +4460,12 @@ public final class PowerManagerService extends SystemService
         }
     }
 
+    void setWakeUpDelegateInternal(WakeUpDelegate delegate) {
+        synchronized (mLock) {
+            mWakeUpDelegate = delegate;
+        }
+    }
+
     void unregisterUserActivityListenerInternal(UserActivityListener listener) {
         synchronized (mLock) {
             mUserActivityListeners.remove(listener);
@@ -5139,6 +5161,7 @@ public final class PowerManagerService extends SystemService
             pw.println("  mDoubleTapWakeEnabled=" + mDoubleTapWakeEnabled);
             pw.println("  mForegroundProfile=" + mForegroundProfile);
             pw.println("  mUserId=" + mUserId);
+            pw.println("  mWakeUpDelegate=" + mWakeUpDelegate);
 
             final long attentiveTimeout = mScreenTimeoutConstants.getAttentiveTimeoutLocked();
             final long sleepTimeout = mScreenTimeoutConstants
@@ -7755,6 +7778,15 @@ public final class PowerManagerService extends SystemService
         @Override
         public void unregisterUserActivityListener(UserActivityListener listener) {
             unregisterUserActivityListenerInternal(listener);
+        }
+
+        @Override
+        public void setWakeUpDelegate(WakeUpDelegate delegate) {
+            if (interactiveDozeExperience()) {
+                setWakeUpDelegateInternal(delegate);
+            } else {
+                Slog.w(TAG, "Wake up delegation is not enabled");
+            }
         }
 
         @Override

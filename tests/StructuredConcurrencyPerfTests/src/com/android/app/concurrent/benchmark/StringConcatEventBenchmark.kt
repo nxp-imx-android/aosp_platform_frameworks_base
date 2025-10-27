@@ -29,13 +29,13 @@ import com.android.app.concurrent.benchmark.event.MapOperator
 import com.android.app.concurrent.benchmark.event.SimpleEvent
 import com.android.app.concurrent.benchmark.event.SimpleWritableEventBuilder
 import com.android.app.concurrent.benchmark.event.WritableEventFactory
-import com.android.app.concurrent.benchmark.util.ExecutorServiceCoroutineScopeBuilder
-import com.android.app.concurrent.benchmark.util.ExecutorThreadBuilder
-import com.android.app.concurrent.benchmark.util.HandlerImmediateThreadBuilder
-import com.android.app.concurrent.benchmark.util.HandlerThreadBuilder
-import com.android.app.concurrent.benchmark.util.HandlerThreadImmediateScopeBuilder
-import com.android.app.concurrent.benchmark.util.HandlerThreadScopeBuilder
-import com.android.app.concurrent.benchmark.util.ThreadFactory
+import com.android.app.concurrent.benchmark.util.ExecutorServiceThreadWithExecutorBuilder
+import com.android.app.concurrent.benchmark.util.ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder
+import com.android.app.concurrent.benchmark.util.LooperThreadWithExecutorBuilder
+import com.android.app.concurrent.benchmark.util.LooperThreadWithHandlerDispatcherBuilder
+import com.android.app.concurrent.benchmark.util.LooperThreadWithImmediateExecutorBuilder
+import com.android.app.concurrent.benchmark.util.LooperThreadWithImmediateHandlerDispatcherBuilder
+import com.android.app.concurrent.benchmark.util.ThreadBuilder
 import com.android.app.concurrent.benchmark.util.dbg
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
@@ -200,7 +200,7 @@ private sealed interface StringConcatEventBenchmark<T, E : Any>
 
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class SimpleStringConcatEventBenchmark(param: ThreadFactory<Any, Executor>) :
+class SimpleStringConcatEventBenchmark(param: ThreadBuilder<Executor>) :
     BaseSimpleEventBenchmark(param),
     StringConcatEventBenchmark<SimpleWritableEventBuilder, SimpleEvent<*>> {
 
@@ -208,13 +208,17 @@ class SimpleStringConcatEventBenchmark(param: ThreadFactory<Any, Executor>) :
         @Parameters(name = "{0}")
         @JvmStatic
         fun getDispatchers() =
-            listOf(ExecutorThreadBuilder, HandlerThreadBuilder, HandlerImmediateThreadBuilder)
+            listOf(
+                ExecutorServiceThreadWithExecutorBuilder,
+                LooperThreadWithExecutorBuilder,
+                LooperThreadWithImmediateExecutorBuilder,
+            )
     }
 }
 
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class FlowStringConcatEventBenchmark(param: ThreadFactory<Any, CoroutineScope>) :
+class FlowStringConcatEventBenchmark(param: ThreadBuilder<CoroutineScope>) :
     BaseFlowEventBenchmark(param), StringConcatEventBenchmark<FlowWritableEventBuilder, Flow<*>> {
 
     companion object {
@@ -222,9 +226,9 @@ class FlowStringConcatEventBenchmark(param: ThreadFactory<Any, CoroutineScope>) 
         @JvmStatic
         fun getDispatchers() =
             listOf(
-                ExecutorServiceCoroutineScopeBuilder,
-                HandlerThreadScopeBuilder,
-                HandlerThreadImmediateScopeBuilder,
+                ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder,
+                LooperThreadWithHandlerDispatcherBuilder,
+                LooperThreadWithImmediateHandlerDispatcherBuilder,
             )
     }
 }

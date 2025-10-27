@@ -18,6 +18,8 @@ package com.android.app.concurrent.benchmark.util
 import android.device.collectors.BaseCollectionListener
 import android.device.collectors.annotations.OptionClass
 import android.os.Environment
+import android.os.Looper
+import android.os.Trace
 import android.util.Log
 import androidx.benchmark.Outputs
 import androidx.test.platform.app.InstrumentationRegistry
@@ -33,7 +35,7 @@ class CsvMetricCollector : BaseCollectionListener<String?>() {
 
         private const val PARAM_HEADER = "param_1,param_2,param_3,param_4"
         private val MAX_SUPPORTED_PARAMS = PARAM_HEADER.count { it == ',' } + 1
-        private const val CSV_HEADER = "test_name,class_name,$PARAM_HEADER,metric_name,metric_value"
+        private const val CSV_HEADER = "class_name,test_name,$PARAM_HEADER,metric_name,metric_value"
         private val csvFileContents = StringBuilder()
         lateinit var currentCsvPrefix: String
         private lateinit var bgThreadName: String
@@ -62,7 +64,7 @@ class CsvMetricCollector : BaseCollectionListener<String?>() {
             dbg { "setActiveName" }
             bgThreadName =
                 if (className.isEmpty() || methodName.isEmpty()) {
-                    "${BG_THREAD_NAME_PREFIX}not_set}"
+                    "${BG_THREAD_NAME_PREFIX}not_set"
                 } else {
                     "${BG_THREAD_NAME_PREFIX}${randomThreadId()}"
                 }
@@ -86,7 +88,7 @@ class CsvMetricCollector : BaseCollectionListener<String?>() {
                 }
             }
             params += String(CharArray(extraCommas) { ',' })
-            currentCsvPrefix = "$testName,$className,$params"
+            currentCsvPrefix = "$className,$testName,$params"
             Log.i(
                 TAG,
                 "setActiveName(\"$className\", \"$methodName\"), " +
@@ -116,7 +118,7 @@ class CsvMetricCollector : BaseCollectionListener<String?>() {
                     Environment.getExternalStorageState(it) == Environment.MEDIA_MOUNTED
                 }
             val metricsFile =
-                File(dirUsableByAppAndShell, "metric-summary_${Outputs.dateToFileName()}.csv")
+                File(dirUsableByAppAndShell, "metric-summary-csv_${Outputs.dateToFileName()}")
             val path = metricsFile.absolutePath
             if (!metricsFile.exists()) {
                 metricsFile.parentFile?.mkdirs()
@@ -149,6 +151,9 @@ class CsvMetricCollector : BaseCollectionListener<String?>() {
 
     init {
         Log.i(TAG, "init")
+        if (DEBUG) {
+            Looper.myLooper()!!.setTraceTag(Trace.TRACE_TAG_APP)
+        }
         createHelperInstance(Helper)
     }
 }

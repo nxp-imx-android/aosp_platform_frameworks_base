@@ -435,6 +435,8 @@ public class SystemServicesTestRule implements TestRule {
                 null, null, mTransaction, mWmService.mPowerManagerInternal);
 
         mWmService.onInitReady();
+        mAtmService.mTaskSupervisor.mGoingToSleepWakeLock =
+                createStubbedWakeLock(false /* needVerification */);
         mAtmService.setWindowManager(mWmService);
         mWmService.mDisplayEnabled = true;
         mWmService.mDisplayReady = true;

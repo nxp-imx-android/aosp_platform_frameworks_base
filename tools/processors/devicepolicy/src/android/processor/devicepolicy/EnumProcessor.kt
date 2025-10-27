@@ -88,7 +88,7 @@ import javax.lang.model.type.TypeMirror
  *      }
  * }
  */
-class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor<EnumPolicyDefinition>(processingEnv) {
+class EnumProcessor(processingEnv: ProcessingEnvironment) : PolicyProcessor<EnumPolicyDefinition>(processingEnv) {
     private companion object {
         const val SIMPLE_TYPE_INTEGER = "java.lang.Integer"
 

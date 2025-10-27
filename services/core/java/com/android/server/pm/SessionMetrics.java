@@ -108,6 +108,7 @@ final class SessionMetrics {
     private String mPackageNameWhenDeveloperVerificationFailed = null;
     private boolean mDeveloperVerificationCancelled;
     private int mUidOfPackageInstalled = INVALID_UID;
+    private long mFsVerityEnabledApksSizeBytes = 0;
 
     SessionMetrics(Handler handler,
             int sessionId, int userId, int installerUid,
@@ -279,6 +280,10 @@ final class SessionMetrics {
         mApksSizeBytes = apksSizeBytes;
     }
 
+    public void onFsVerityEnabledApksSizeBytesCalculated(long fsVerityEnabledApksSizeBytes) {
+        mFsVerityEnabledApksSizeBytes = fsVerityEnabledApksSizeBytes;
+    }
+
     private void reportStats() {
         final long sessionIdleDurationMillis = mCommittedMillis - mCreatedMillis;
         final long sessionCommitDurationMillis = mFinishedMillis - mCommittedMillis;
@@ -362,7 +367,8 @@ final class SessionMetrics {
                         developerVerifierConnectionDurationMillis, // 54
                         mWasUserResponseReceived, // 55
                         mWasDeveloperVerificationUserResponseReceived, // 56
-                        mUidOfPackageInstalled // 57
+                        mUidOfPackageInstalled, // 57
+                        mFsVerityEnabledApksSizeBytes // 58
                         )
         );
     }

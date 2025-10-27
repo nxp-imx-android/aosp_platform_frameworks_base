@@ -33,6 +33,7 @@ import com.android.internal.accessibility.dialog.AccessibilityTarget
 import com.android.internal.accessibility.dialog.AccessibilityTargetHelper
 import com.android.internal.accessibility.util.FrameworkObjectProvider
 import com.android.internal.accessibility.util.TtsPrompt
+import com.android.systemui.accessibility.keygesture.shared.model.DialogContentSection
 import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConfirmInfo
 import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
 import com.android.systemui.dagger.SysUISingleton
@@ -133,8 +134,61 @@ constructor(
         val keyCodeLabel = keyCodeMap[keyCode] ?: return null
 
         when (keyGestureType) {
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER -> {
+                val featureName = getFeatureName(keyGestureType, targetName) ?: return null
+                val title = getDialogTitle(keyGestureType, featureName) ?: return null
+                val content =
+                    getDialogContent(
+                        keyGestureType,
+                        secondaryModifierLabel.invoke(context),
+                        keyCodeLabel,
+                        featureName,
+                    ) ?: return null
+
+                val sectionsData =
+                    listOf(
+                        R.string.accessibility_key_gesture_screen_reader_dialog_warning_heading to
+                            null,
+                        null to
+                            R.string.accessibility_key_gesture_screen_reader_dialog_warning_message,
+                        R.string
+                            .accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading to
+                            R.string
+                                .accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message,
+                        R.string
+                            .accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading to
+                            R.string
+                                .accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message,
+                    )
+
+                val contentSections =
+                    sectionsData.map { (headingResId, messageResId) ->
+                        DialogContentSection(
+                            heading = headingResId?.let { resources.getString(it) },
+                            message = messageResId?.let { resources.getString(it) },
+                        )
+                    }
+
+                val ttsText =
+                    resources.getString(
+                        R.string.accessibility_key_gesture_dialog_screen_reader_tts,
+                        secondaryModifierLabel.invoke(context),
+                        keyCodeLabel,
+                        featureName,
+                    )
+
+                return KeyGestureConfirmInfo(
+                    keyGestureType,
+                    title,
+                    content,
+                    contentSections,
+                    targetName,
+                    getActionKeyIconResId(),
+                    displayId,
+                    ttsText,
+                )
+            }
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
-            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS -> {
                 val featureName = getFeatureName(keyGestureType, targetName) ?: return null
                 val title = getDialogTitle(keyGestureType, featureName) ?: return null
@@ -146,26 +200,15 @@ constructor(
                         featureName,
                     ) ?: return null
 
-                val ttsText =
-                    if (keyGestureType == KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER) {
-                        resources.getString(
-                            R.string.accessibility_key_gesture_dialog_screen_reader_tts,
-                            secondaryModifierLabel.invoke(context),
-                            keyCodeLabel,
-                            featureName,
-                        )
-                    } else {
-                        null
-                    }
-
                 return KeyGestureConfirmInfo(
                     keyGestureType,
                     title,
                     content,
+                    emptyList(),
                     targetName,
                     getActionKeyIconResId(),
                     displayId,
-                    ttsText,
+                    null,
                 )
             }
             else -> {
@@ -189,6 +232,7 @@ constructor(
                     keyGestureType,
                     title,
                     content,
+                    emptyList(),
                     targetName,
                     getActionKeyIconResId(),
                     displayId,
@@ -254,7 +298,7 @@ constructor(
             icon = icon,
             isAssigned = isShortcutEnabled,
             isToggleable = isToggleable,
-            isToggleOn = if (isToggleable) isStateOn else null,
+            isToggleOn = if (isToggleable) isStateOn else false,
         )
 
     private suspend fun getFeatureName(keyGestureType: Int, targetName: String): CharSequence? {

@@ -36,7 +36,7 @@ import org.junit.Test
 abstract class ResizeAppWithEdgeResize
 constructor(
     val inputMethod: MotionEventHelper.InputMethod,
-    val rotation: Rotation = Rotation.ROTATION_90
+    val rotation: Rotation = Rotation.ROTATION_90,
 ) : TestScenarioBase(rotation) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
@@ -53,11 +53,7 @@ constructor(
 
     @Test
     open fun resizeAppWithEdgeResizeRight() {
-        testApp.edgeResize(
-            wmHelper,
-            motionEventHelper,
-            DesktopModeAppHelper.Edges.RIGHT
-        )
+        testApp.edgeResize(wmHelper, motionEventHelper, DesktopModeAppHelper.Edges.RIGHT)
     }
 
     @After
