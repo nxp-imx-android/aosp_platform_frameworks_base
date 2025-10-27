@@ -235,7 +235,7 @@ public final class FadeManagerConfiguration implements Parcelable {
      * Get the list of {@link android.media.AudioAttributes content types} that can be faded
      *
      * @return list of {@link android.media.AudioAttributes content types}
-     * @throws IllegalStateExceptionif if the fade state is set to {@link #FADE_STATE_DISABLED}
+     * @throws IllegalStateException if the fade state is set to {@link #FADE_STATE_DISABLED}
      */
     @NonNull
     public List<Integer> getUnfadeableContentTypes() {
@@ -1690,4 +1690,3 @@ public final class FadeManagerConfiguration implements Parcelable {
         };
     }
 }
-
