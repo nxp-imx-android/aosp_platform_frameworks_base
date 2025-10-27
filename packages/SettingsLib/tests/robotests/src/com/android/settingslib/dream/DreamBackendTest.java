@@ -17,6 +17,7 @@ package com.android.settingslib.dream;
 
 
 import static android.service.dreams.Flags.FLAG_ALLOW_DREAM_WHEN_POSTURED;
+import static android.service.dreams.Flags.FLAG_USER_SELECTABLE_METADATA;
 
 import static com.android.settingslib.dream.DreamBackend.COMPLICATION_TYPE_DATE;
 import static com.android.settingslib.dream.DreamBackend.COMPLICATION_TYPE_HOME_CONTROLS;
@@ -29,21 +30,39 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+
+import android.platform.test.flag.junit.SetFlagsRule;
+import com.android.internal.R;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
+import android.os.Bundle;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
+import android.service.dreams.DreamService;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowSettings;
 
 import java.util.Arrays;
@@ -54,6 +73,12 @@ import java.util.stream.Collectors;
 @RunWith(RobolectricTestRunner.class)
 @Config(shadows = {ShadowSettings.ShadowSecure.class})
 public final class DreamBackendTest {
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
+    private static final String SELECTABLE_DREAM_LABEL = "Selectable Dream";
+    private static final String NON_SELECTABLE_DREAM_LABEL = "Non Selectable Dream";
+
     private static final int[] SUPPORTED_DREAM_COMPLICATIONS =
             {COMPLICATION_TYPE_HOME_CONTROLS, COMPLICATION_TYPE_DATE,
                     COMPLICATION_TYPE_TIME};
@@ -65,6 +90,8 @@ public final class DreamBackendTest {
     private Context mContext;
     @Mock
     private ContentResolver mMockResolver;
+    @Mock
+    private PackageManager mPackageManager;
     private DreamBackend mBackend;
 
     @Before
@@ -72,6 +99,7 @@ public final class DreamBackendTest {
         MockitoAnnotations.initMocks(this);
         when(mContext.getApplicationContext()).thenReturn(mContext);
         when(mContext.getContentResolver()).thenReturn(mMockResolver);
+        when(mContext.getPackageManager()).thenReturn(mPackageManager);
 
         final Resources res = mock(Resources.class);
         when(mContext.getResources()).thenReturn(res);
@@ -295,10 +323,67 @@ public final class DreamBackendTest {
         assertThat(mBackend.getLowLightDisplayBehaviorEnabled()).isTrue();
     }
 
+    @Test
+    @EnableFlags(FLAG_USER_SELECTABLE_METADATA)
+    public void testGetDreamInfos_filtersNonUserSelectable_whenFlagEnabled() {
+        // arrange
+        setupAllDreamInfos();
+
+        // act
+        final List<DreamBackend.DreamInfo> dreamInfos = mBackend.getDreamInfos();
+
+        // assert
+        assertThat(dreamInfos).hasSize(1);
+        assertThat(dreamInfos.get(0).caption.toString()).isEqualTo(SELECTABLE_DREAM_LABEL);
+    }
+
+    @Test
+    @DisableFlags(FLAG_USER_SELECTABLE_METADATA)
+    public void testGetDreamInfos_doesNotFilterNonUserSelectable_whenFlagDisabled() {
+        // arrange
+        setupAllDreamInfos();
+
+        // act
+        final List<DreamBackend.DreamInfo> dreamInfos = mBackend.getDreamInfos();
+
+        // assert
+        assertThat(dreamInfos).hasSize(2);
+    }
+
     private void setControlsEnabledOnLockscreen(boolean enabled) {
         Settings.Secure.putIntForUser(
                 mContext.getContentResolver(),
                 Settings.Secure.LOCKSCREEN_SHOW_CONTROLS,
                 enabled ? 1 : 0, UserHandle.USER_CURRENT);
+    }
+
+    private void setupAllDreamInfos() {
+        final ResolveInfo selectableDream = createDreamInfo(SELECTABLE_DREAM_LABEL);
+        final ResolveInfo nonSelectableDream = createDreamInfo(NON_SELECTABLE_DREAM_LABEL);
+
+        when(mPackageManager.queryIntentServices(any(Intent.class), anyInt())).thenReturn(
+                Arrays.asList(selectableDream, nonSelectableDream));
+
+        mockDreamMetadata(selectableDream, /* userSelectable= */ true);
+        mockDreamMetadata(nonSelectableDream, /* userSelectable= */ false);
+    }
+
+    private void mockDreamMetadata(ResolveInfo resolveInfo, boolean userSelectable) {
+        final TypedArray metadata = mock(TypedArray.class);
+        when(mPackageManager.extractPackageItemInfoAttributes(eq(resolveInfo.serviceInfo),
+                any(), any(), any())).thenReturn(metadata);
+        when(metadata.getBoolean(
+                R.styleable.Dream_userSelectable,
+                DreamService.DEFAULT_USER_SELECTABLE)).thenReturn(userSelectable);
+    }
+
+    private ResolveInfo createDreamInfo(String label) {
+        final ResolveInfo resolveInfo = new ResolveInfo();
+        resolveInfo.serviceInfo = new ServiceInfo();
+        resolveInfo.serviceInfo.packageName = "package";
+        resolveInfo.serviceInfo.name = "name";
+
+        resolveInfo.nonLocalizedLabel = label;
+        return resolveInfo;
     }
 }
