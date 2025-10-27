@@ -1967,10 +1967,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
         // update in-memory copy of QS_TILES in AccessibilityManager
         synchronized (mLock) {
-            Slog.d(LOG_TAG, TextUtils.formatSimple(
-                    "notifyQuickSettingsTilesChanged userId: %s, tileComponentNames: %s, "
-                            + "userInitializationCompleted? %s",
-                    userId, tileComponentNames, isServiceInitializedLocked()));
+            Slog.d(LOG_TAG,
+                    "notifyQuickSettingsTilesChanged userId: " + userId + ", tileComponentNames: "
+                            + tileComponentNames + ", userInitializationCompleted? "
+                            + isServiceInitializedLocked());
 
             AccessibilityUserState userState = getUserStateLocked(userId);
 
@@ -4075,11 +4075,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         scheduleNotifyClientsOfServicesStateChangeLocked(userState);
 
         // Log new shortcut targets in VERBOSE
-        Slog.v(LOG_TAG, TextUtils.formatSimple(
-                "UserState shortcut targets: userId: %s, type: %s, targets: %s",
-                userState.mUserId,
-                ShortcutUtils.convertToKey(shortcutType),
-                currentTargets));
+        Slog.v(LOG_TAG,
+                "UserState shortcut targets: userId: " + userState.mUserId
+                        + ", type: " + ShortcutUtils.convertToKey(shortcutType)
+                        + ", targets: " + currentTargets);
     }
 
     private void updateShortcutTargetSets(AccessibilityUserState userState,
@@ -4575,10 +4574,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     private void enableShortcutForTargets(
             boolean enable, @UserShortcutType int shortcutType,
             @NonNull List<String> shortcutTargets, @UserIdInt int userId) {
-        Slog.d(LOG_TAG, TextUtils.formatSimple(
-                "enableShortcutForTargets: enable %s, shortcutType: %s, shortcutTargets: %s, "
-                        + "userId: %s",
-                enable, shortcutType, shortcutTargets, userId));
+        Slog.d(LOG_TAG,
+                "enableShortcutForTargets: enable " + enable + ", shortcutType: " + shortcutType
+                        + ", shortcutTargets: " + shortcutTargets + ", userId: " + userId);
 
         if (shortcutType == UserShortcutType.KEY_GESTURE) {
             if (!enableTalkbackAndMagnifierKeyGestures()
@@ -4654,18 +4652,13 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             }
 
             if (currentTargets.equals(validNewTargets)) {
-                Slog.d(LOG_TAG,
-                        TextUtils.formatSimple(
-                                "shortcutTargets are the same: skip modifying: target: %s, "
-                                        + "shortcutType: %s, userId: %s",
-                                validNewTargets, shortcutType, userId));
+                Slog.d(LOG_TAG, "shortcutTargets are the same: skip modifying: target: %s, "
+                        + validNewTargets + ", shortcutType: " + shortcutType + ", userId: "
+                        + userId);
                 return;
             }
-            Slog.d(LOG_TAG,
-                    TextUtils.formatSimple(
-                            "writing new shortcut targets: target: %s, "
-                                    + "shortcutType: %s, userId: %s",
-                            validNewTargets, shortcutType, userId));
+            Slog.d(LOG_TAG, "writing new shortcut targets: target: " + validNewTargets
+                    + ", shortcutType: " + shortcutType + ", userId: " + userId);
 
             persistColonDelimitedSetToSettingLocked(
                     shortcutTypeSettingKey,
@@ -4745,11 +4738,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     private void updateA11yTileServicesInQuickSettingsPanel(
             Set<String> newQsTargets,
             Set<String> currentQsTargets, @UserIdInt int userId) {
-        Slog.d(LOG_TAG,
-                TextUtils.formatSimple(
-                        "updateA11yTileServicesInQuickSettingsPanel: newQsTargets: %s , "
-                                + "currentQsTargets: %s, userId: %s",
-                        newQsTargets, currentQsTargets, userId));
+        Slog.d(LOG_TAG, "updateA11yTileServicesInQuickSettingsPanel: newQsTargets: " + newQsTargets
+                + " , currentQsTargets: " + currentQsTargets + ", userId: " + userId);
         // Call StatusBarManager to add/remove tiles
         final StatusBarManagerInternal statusBarManagerInternal =
                 LocalServices.getService(StatusBarManagerInternal.class);

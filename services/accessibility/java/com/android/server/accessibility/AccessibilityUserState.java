@@ -889,8 +889,8 @@ public class AccessibilityUserState {
             mShortcutTargets.put(shortcutType, new ArraySet<>());
         }
         ArraySet<String> currentTargets = mShortcutTargets.get(shortcutType);
-        Slog.v(LOG_TAG, TextUtils.formatSimple("updateShortcutTargets: type:%s, current:%s, new:%s",
-                ShortcutUtils.convertToKey(shortcutType), currentTargets, newTargets));
+        Slog.v(LOG_TAG, "updateShortcutTargets: type:" + ShortcutUtils.convertToKey(shortcutType)
+                + ", current:" + currentTargets + ", new:" + newTargets);
         if (newTargets.equals(currentTargets)) {
             return false;
         }
