@@ -537,6 +537,19 @@ public final class Display {
      */
     public static final int STATE_ON_SUSPEND = ViewProtoEnums.DISPLAY_STATE_ON_SUSPEND; // 6
 
+    /** @hide */
+    @IntDef(prefix = {"STATE_"}, value = {
+            STATE_UNKNOWN,
+            STATE_OFF,
+            STATE_ON,
+            STATE_DOZE,
+            STATE_DOZE_SUSPEND,
+            STATE_VR,
+            STATE_ON_SUSPEND
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DisplayState {}
+
     /**
      * The cause of the display state change is unknown.
      *
@@ -2090,6 +2103,7 @@ public final class Display {
      * {@link #STATE_DOZE}, {@link #STATE_DOZE_SUSPEND}, {@link #STATE_ON_SUSPEND}, or
      * {@link #STATE_UNKNOWN}.
      */
+    @DisplayState
     public int getState() {
         synchronized (mLock) {
             updateDisplayInfoLocked();
