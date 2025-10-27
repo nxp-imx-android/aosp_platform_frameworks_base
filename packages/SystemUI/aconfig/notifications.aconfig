@@ -1,0 +1,12 @@
+package: "com.android.systemui"
+container: "system"
+
+flag {
+    name: "launch_new_fsi_on_update"
+    namespace: "notifications"
+    description: "Launch a notification's fullScreenIntent when it is updated by the app from not having one to having one."
+    bug: "448616024"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
