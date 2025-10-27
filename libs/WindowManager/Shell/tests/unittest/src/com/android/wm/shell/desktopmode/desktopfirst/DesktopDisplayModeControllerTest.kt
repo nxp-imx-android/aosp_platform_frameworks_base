@@ -36,7 +36,9 @@ import android.view.IWindowManager
 import android.view.InputDevice
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.DisplayAreaInfo
+import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
+import android.window.WindowContainerTransaction.Change
 import androidx.test.filters.SmallTest
 import com.android.server.display.feature.flags.Flags as DisplayFlags
 import com.android.window.flags.Flags
@@ -55,6 +57,7 @@ import com.google.common.truth.Truth.assertThat
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import com.google.testing.junit.testparameterinjector.TestParameterValuesProvider
+import kotlin.test.assertNotNull
 import org.junit.After
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -349,6 +352,58 @@ class DesktopDisplayModeControllerTest(
             .isEqualTo(WINDOWING_MODE_FREEFORM)
     }
 
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING,
+        Flags.FLAG_UPDATE_TDAS_TASK_MOVE_ALLOWED_ON_DESKTOP_FIRST_CHANGE,
+    )
+    fun defaultDisplay_taskMoveAllowed_updateFlagEnabled() {
+        defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
+        setExtendedMode(true)
+        whenever(rootTaskDisplayAreaOrganizer.getDisplayIds())
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, EXTERNAL_DISPLAY_ID))
+
+        controller.updateDefaultDisplayWindowingMode()
+
+        val arg = argumentCaptor<WindowContainerTransaction>()
+        verify(transitions, times(1)).startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
+        arg.firstValue.assertTaskMoveAllowed(defaultTDA.token, allowed = true)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
+    @DisableFlags(Flags.FLAG_UPDATE_TDAS_TASK_MOVE_ALLOWED_ON_DESKTOP_FIRST_CHANGE)
+    fun defaultDisplay_taskMoveAllowed_updateFlagDisabled() {
+        defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
+        setExtendedMode(true)
+        whenever(rootTaskDisplayAreaOrganizer.getDisplayIds())
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, EXTERNAL_DISPLAY_ID))
+
+        controller.updateDefaultDisplayWindowingMode()
+
+        verify(transitions, never()).startTransition(eq(TRANSIT_CHANGE), any(), isNull())
+    }
+
+    @Test
+    @EnableFlags(
+        DisplayFlags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
+        Flags.FLAG_UPDATE_TDAS_TASK_MOVE_ALLOWED_ON_DESKTOP_FIRST_CHANGE,
+    )
+    fun externalDisplay_taskMoveAllowed_updateFlagEnabled() {
+        externalTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
+        setExtendedMode(true)
+        whenever(rootTaskDisplayAreaOrganizer.getDisplayIds())
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, EXTERNAL_DISPLAY_ID))
+
+        controller.updateExternalDisplayWindowingMode(EXTERNAL_DISPLAY_ID)
+
+        val arg = argumentCaptor<WindowContainerTransaction>()
+        verify(transitions, times(1)).startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
+        assertThat(arg.firstValue.changes[externalTDA.token.asBinder()]?.windowingMode)
+            .isEqualTo(WINDOWING_MODE_FREEFORM)
+        arg.firstValue.assertTaskMoveAllowed(externalTDA.token, allowed = true)
+    }
+
     private fun connectExternalDisplay() {
         whenever(rootTaskDisplayAreaOrganizer.getDisplayIds())
             .thenReturn(intArrayOf(DEFAULT_DISPLAY, EXTERNAL_DISPLAY_ID))
@@ -389,6 +444,16 @@ class DesktopDisplayModeControllerTest(
         }
     }
 
+    private fun WindowContainerTransaction.assertTaskMoveAllowed(
+        container: WindowContainerToken,
+        allowed: Boolean,
+    ) {
+        val change = changes[container.asBinder()]
+        assertNotNull(change)
+        assertThat(change.isTaskMoveAllowed).isTrue()
+        assertThat(change.changeMask and Change.CHANGE_IS_TASK_MOVE_ALLOWED).isNotEqualTo(0)
+    }
+
     private class ExtendedDisplaySettingsRestoreSession(
         private val contentResolver: ContentResolver
     ) {
@@ -408,6 +473,7 @@ class DesktopDisplayModeControllerTest(
                 Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH,
                 DisplayFlags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
                 Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+                Flags.FLAG_UPDATE_TDAS_TASK_MOVE_ALLOWED_ON_DESKTOP_FIRST_CHANGE,
             )
         }
     }

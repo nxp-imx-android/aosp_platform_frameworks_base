@@ -336,6 +336,9 @@ public enum DesktopExperienceFlags {
     TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY(
             Flags::toggleFullscreenStateViaFullscreenKey, false,
             Flags.FLAG_TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY),
+    UPDATE_TDAS_TASK_MOVE_ALLOWED_ON_DESKTOP_FIRST_CHANGE(
+            Flags::updateTdasTaskMoveAllowedOnDesktopFirstChange, false,
+            Flags.FLAG_UPDATE_TDAS_TASK_MOVE_ALLOWED_ON_DESKTOP_FIRST_CHANGE),
     USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS(
             com.android.graphics.flags.Flags::useResourcesFromContextToCreateDrawableIcons,
             true,

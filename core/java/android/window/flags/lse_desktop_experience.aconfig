@@ -1834,4 +1834,14 @@ flag {
     }
 }
 
+flag {
+    name: "update_tdas_task_move_allowed_on_desktop_first_change"
+    namespace: "lse_desktop_experience"
+    description: "Updates the TaskMoveAllowed bit on the default TaskDisplayArea of a display whose desktop-first mode changes."
+    bug: "452049009"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
 # go/keep-sorted end
