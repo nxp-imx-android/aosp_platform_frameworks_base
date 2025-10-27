@@ -195,8 +195,15 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
         }
     }
 
-    boolean canCreateSystemApplicationOverlay() {
-        return mCanCreateSystemApplicationOverlay;
+    boolean canCreateSystemApplicationOverlay(@NonNull WindowState windowState) {
+        if (mCanCreateSystemApplicationOverlay) {
+            return true;
+        }
+        if (com.android.window.flags.Flags.virtualDisplayCanCreateSystemApplicationOverlay()
+                && windowState.isOnVirtualDisplay()) {
+            return windowState.getDisplayContent().getDisplayInfo().ownerUid == mUid;
+        }
+        return false;
     }
 
     void updateCanCreateSystemApplicationOverlay(PermissionManager permissionManager) {
@@ -787,7 +794,7 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
         // Track non-system apps adding overlay/alert windows, so a notification can post for the
         // user to control their visibility.
         final boolean noSystemOverlayPermission =
-                !mCanAddInternalSystemWindow && !mCanCreateSystemApplicationOverlay;
+                !mCanAddInternalSystemWindow && !canCreateSystemApplicationOverlay(window);
         if (visible) {
             changed = mAlertWindows.add(window);
             if (type == TYPE_APPLICATION_OVERLAY) {

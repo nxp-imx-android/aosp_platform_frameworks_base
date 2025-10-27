@@ -443,3 +443,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "virtual_display_can_create_system_application_overlay"
+    namespace: "windowing_frontend"
+    description: "Virtual display owners can create system application overlays"
+    bug: "432521645"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
