@@ -479,6 +479,9 @@ public abstract class OomAdjuster {
 
         /** Notifies when a debugging message related to OOM adjustments is reported. */
         void onReportOomAdjMessage(String msg);
+
+        /** Enqueues the pending top app if necessary. */
+        void enqueuePendingTopAppIfNecessaryLocked();
     }
 
     /**
@@ -839,12 +842,12 @@ public abstract class OomAdjuster {
     @GuardedBy({"mService", "mProcLock"})
     protected int enqueuePendingTopAppIfNecessaryLSP() {
         final int prevTopProcessState = getTopProcessState();
-        mService.enqueuePendingTopAppIfNecessaryLocked();
+        mCallback.enqueuePendingTopAppIfNecessaryLocked();
         final int topProcessState = getTopProcessState();
         if (prevTopProcessState != topProcessState) {
             // Unlikely but possible: WM just updated the top process state, it may have
             // enqueued the new top app to the pending top UID list. Enqueue that one here too.
-            mService.enqueuePendingTopAppIfNecessaryLocked();
+            mCallback.enqueuePendingTopAppIfNecessaryLocked();
         }
         return topProcessState;
     }

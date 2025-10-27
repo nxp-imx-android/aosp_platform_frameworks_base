@@ -306,6 +306,7 @@ public class MockingOomAdjusterTests {
         mService.setCachedAppOptimizer(mTestCachedAppOptimizer);
 
         mCallback = spy(mService.new OomAdjusterCallback());
+        doNothing().when(mCallback).enqueuePendingTopAppIfNecessaryLocked();
         final OomAdjuster.StateGetter stateGetter = mock(OomAdjuster.StateGetter.class);
         mProcessStateController = new ProcessStateController.Builder(mService,
                 mService.mProcessList, mActiveUids, mService.mConstants.createOomConstants(),
