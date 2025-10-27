@@ -20,7 +20,10 @@ import android.os.Binder
 import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
+import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CHANGE
+import android.window.DisplayAreaInfo
+import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
@@ -33,6 +36,8 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import java.util.Optional
 import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.Before
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
@@ -108,8 +113,84 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
 
         disconnectTransitionHandler.handleRequest(transition, transitionRequestInfo)
 
+        // Verify that the disconnect is forwarded to the controller.
         verify(desktopTasksController)
             .onDisplayDisconnect(SECOND_DISPLAY, DEFAULT_DISPLAY, transition)
+
+        // Verify that the transition is added to the pending list, so it can be animated.
+        val startT = mock(SurfaceControl.Transaction::class.java)
+        val finishT = mock(SurfaceControl.Transaction::class.java)
+        val finishCallback = mock(Transitions.TransitionFinishCallback::class.java)
+        val info = mock(TransitionInfo::class.java)
+        assertTrue(
+            disconnectTransitionHandler.startAnimation(transition, info, startT, finishT, finishCallback),
+            "Disconnect transition should be handled"
+        )
+    }
+
+    @Test
+    fun handleRequest_disconnectWithoutDesktopController_addsPendingTransition() {
+        // Re-initialize handler without the optional controller for this test.
+        disconnectTransitionHandler =
+            DisplayDisconnectTransitionHandler(
+                transitions,
+                shellInit,
+                Optional.empty(), // No DesktopTasksController
+                displayController,
+                rootTaskDisplayAreaOrganizer,
+            )
+
+        val displayChange = TransitionRequestInfo.DisplayChange(SECOND_DISPLAY)
+        displayChange.disconnectReparentDisplay = DEFAULT_DISPLAY
+        val transitionRequestInfo =
+            TransitionRequestInfo(
+                    TRANSIT_CHANGE,
+                    /* triggerTask = */ null,
+                    /* remoteTransition= */ null,
+                )
+                .apply { setDisplayChange(displayChange) }
+        val transition = Binder()
+
+        // Handle the request.
+        val wct = disconnectTransitionHandler.handleRequest(transition, transitionRequestInfo)
+
+        // Verify that no WCT is returned as there is no controller to generate one.
+        assertTrue(wct == null)
+
+        // Verify that the transition is added to the pending list, so it can be animated.
+        val startT = mock(SurfaceControl.Transaction::class.java)
+        val finishT = mock(SurfaceControl.Transaction::class.java)
+        val finishCallback = mock(Transitions.TransitionFinishCallback::class.java)
+        val info = mock(TransitionInfo::class.java)
+        assertTrue(
+            disconnectTransitionHandler.startAnimation(transition, info, startT, finishT, finishCallback),
+            "Disconnect transition should be handled even without DesktopTasksController"
+        )
+    }
+
+    @Test
+    fun handleRequest_notADisconnect_isNotHandled() {
+        val transitionRequestInfo =
+            TransitionRequestInfo(
+                TRANSIT_CHANGE,
+                /* triggerTask = */ null,
+                /* remoteTransition= */ null,
+            )
+        // No DisplayChange is set, so this is not a disconnect transition.
+        val transition = Binder()
+
+        // Handle the request.
+        disconnectTransitionHandler.handleRequest(transition, transitionRequestInfo)
+
+        // Verify that the transition is NOT added to the pending list.
+        val startT = mock(SurfaceControl.Transaction::class.java)
+        val finishT = mock(SurfaceControl.Transaction::class.java)
+        val finishCallback = mock(Transitions.TransitionFinishCallback::class.java)
+        val info = mock(TransitionInfo::class.java)
+        assertFalse(
+            disconnectTransitionHandler.startAnimation(transition, info, startT, finishT, finishCallback),
+            "Non-disconnect transition should not be handled"
+        )
     }
 
     companion object {
