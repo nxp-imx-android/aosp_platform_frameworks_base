@@ -16,9 +16,7 @@
 
 package com.android.server.signalcollector;
 
-import android.annotation.Nullable;
-
-import com.android.server.signalcollector.binder.BinderSpamSignalCollector;
+import android.os.binder.BinderSpamStats;
 
 /**
  * Internal interface for the SignalCollectorService.
@@ -27,8 +25,7 @@ import com.android.server.signalcollector.binder.BinderSpamSignalCollector;
  */
 public abstract class SignalCollectorManagerInternal {
     /**
-     * Gets the binder call signal collector.
+     * Report a list of binder call stats based on the configurations.
      */
-    @Nullable
-    public abstract BinderSpamSignalCollector getBinderSpamSignalCollector();
+    public abstract void reportBinderStats(BinderSpamStats[] statsArray);
 }

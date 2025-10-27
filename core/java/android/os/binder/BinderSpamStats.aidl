@@ -34,4 +34,7 @@ parcelable BinderSpamStats {
     /** New seconds of spam since last report. Intended for SUM aggregation. */
     int secondsWithAtLeast125Calls;
     int secondsWithAtLeast250Calls;
+
+    /** The highest observered call count over a one second period. */
+    int peakCallCountPerSecond;
 }

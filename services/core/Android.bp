@@ -254,6 +254,7 @@ java_library_static {
         "textclassifier_flags_lib",
         "accounts_flags_lib",
         "android.bpfprogs.flags-aconfig-java",
+        "services.signal-collector-manager-internal",
     ],
     javac_shard_size: 50,
     javacflags: [

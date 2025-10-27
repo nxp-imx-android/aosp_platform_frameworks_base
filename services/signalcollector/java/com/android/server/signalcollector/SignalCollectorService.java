@@ -27,6 +27,8 @@ import android.app.IActivityManager;
 import android.app.UidObserver;
 import android.content.Context;
 import android.os.RemoteException;
+import android.os.SystemClock;
+import android.os.binder.BinderSpamStats;
 import android.util.Slog;
 import android.util.SparseIntArray;
 
@@ -39,6 +41,9 @@ import com.android.os.profiling.anomaly.collector.binder.BinderSpamData;
 import com.android.server.LocalManagerRegistry;
 import com.android.server.SystemService;
 import com.android.server.signalcollector.binder.BinderSpamSignalCollector;
+import com.android.server.signalcollector.binder.BinderSpamSignalCollectorImpl;
+
+import java.util.function.LongSupplier;
 
 /**
  * Service for managing signal collectors and tracking process state for anomaly
@@ -52,11 +57,13 @@ public final class SignalCollectorService extends SystemService {
     /** A map of uid to its {@link ProcessState}. */
     @GuardedBy("mUidProcessState")
     private final SparseIntArray mUidProcessState = new SparseIntArray();
-    private final SignalCollectorManagerInternalImpl mInternal =
+    @VisibleForTesting
+    final SignalCollectorManagerInternalImpl mInternal =
             new SignalCollectorManagerInternalImpl();
-
+    @VisibleForTesting
     @Nullable
-    private BinderSpamSignalCollector mBinderSpamSignalCollector;
+    BinderSpamSignalCollector mBinderSpamSignalCollector;
+
     public SignalCollectorService(Context context) {
         this(context, new Injector());
     }
@@ -72,7 +79,7 @@ public final class SignalCollectorService extends SystemService {
         Slog.i(TAG, "onStart()");
         registerUidObserver();
         initSignalCollectors();
-        publishLocalService(SignalCollectorManagerInternal.class, getInternal());
+        publishLocalService(SignalCollectorManagerInternal.class, mInternal);
     }
 
     private final UidObserver mUidObserver = new UidObserver() {
@@ -112,7 +119,7 @@ public final class SignalCollectorService extends SystemService {
         }
 
         Slog.i(TAG, "Registering binder spam signal collector");
-        mBinderSpamSignalCollector = new BinderSpamSignalCollector();
+        mBinderSpamSignalCollector = mInjector.getBinderSpamSignalCollector();
         anomalyDetectorManagerLocal.registerSignalCollector(
                 BinderSpamConfig.class, BinderSpamData.class, mBinderSpamSignalCollector);
     }
@@ -128,15 +135,17 @@ public final class SignalCollectorService extends SystemService {
     }
 
     @VisibleForTesting
-    SignalCollectorManagerInternal getInternal() {
-        return mInternal;
+    void reportBinderStatsToCollector(BinderSpamStats[] statsArray) {
+        if (mBinderSpamSignalCollector == null) {
+            return;
+        }
+        mBinderSpamSignalCollector.onBinderSpamDataReported(statsArray);
     }
 
     private final class SignalCollectorManagerInternalImpl extends SignalCollectorManagerInternal {
         @Override
-        @Nullable
-        public BinderSpamSignalCollector getBinderSpamSignalCollector() {
-            return mBinderSpamSignalCollector;
+        public void reportBinderStats(BinderSpamStats[] statsArray) {
+            reportBinderStatsToCollector(statsArray);
         }
     }
 
@@ -156,6 +165,16 @@ public final class SignalCollectorService extends SystemService {
                 Slog.e(TAG, "AnomalyDetectorManagerLocal is not available!", e);
                 return null;
             }
+        }
+
+        /** Get the BinderSpamSignalCollector */
+        public BinderSpamSignalCollector getBinderSpamSignalCollector() {
+            return new BinderSpamSignalCollectorImpl();
+        }
+
+        /** Get the supplier of the {@link android.os.SystemClock#uptimeMillis()} */
+        public LongSupplier getUptimeMillisSupplier() {
+            return SystemClock::uptimeMillis;
         }
     }
 }

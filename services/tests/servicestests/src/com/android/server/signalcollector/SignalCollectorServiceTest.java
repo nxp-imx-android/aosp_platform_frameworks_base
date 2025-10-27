@@ -33,6 +33,7 @@ import static org.mockito.Mockito.when;
 import android.app.IActivityManager;
 import android.app.UidObserver;
 import android.os.RemoteException;
+import android.os.binder.BinderSpamStats;
 import android.os.profiling.anomaly.flags.Flags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -45,6 +46,8 @@ import com.android.os.profiling.anomaly.AnomalyDetectorManagerLocal;
 import com.android.os.profiling.anomaly.collector.binder.BinderSpamConfig;
 import com.android.os.profiling.anomaly.collector.binder.BinderSpamData;
 import com.android.server.LocalServices;
+import com.android.server.signalcollector.SignalCollectorService.Injector;
+import com.android.server.signalcollector.binder.BinderSpamSignalCollector;
 
 import org.junit.After;
 import org.junit.Before;
@@ -70,22 +73,20 @@ public final class SignalCollectorServiceTest {
     private static final int UID_PERSISTENT_UI = 1234567891;
     private static final int UID_TOP = 1234567892;
 
-    @Mock private SignalCollectorService.Injector mInjector;
+    @Mock private Injector mInjector;
     @Mock private IActivityManager mActivityManager;
     @Mock private AnomalyDetectorManagerLocal mAnomalyDetectorManagerLocal;
+    @Mock private BinderSpamSignalCollector mBinderSpamSignalCollector;
 
     @Captor private ArgumentCaptor<UidObserver> mUidObserverCaptor;
 
     private SignalCollectorService mSignalCollectorService;
-    private SignalCollectorManagerInternal mSignalCollectorManagerInternal;
 
     @Before
     public void setUp() {
-        when(mInjector.getActivityManager()).thenReturn(mActivityManager);
-        when(mInjector.getAnomalyDetectorManagerLocal()).thenReturn(mAnomalyDetectorManagerLocal);
+        setUpInjector();
         mSignalCollectorService = new SignalCollectorService(
                 ApplicationProvider.getApplicationContext(), mInjector);
-        mSignalCollectorManagerInternal = mSignalCollectorService.getInternal();
     }
 
     @After
@@ -109,7 +110,7 @@ public final class SignalCollectorServiceTest {
         verify(mAnomalyDetectorManagerLocal).registerSignalCollector(
                 BinderSpamConfig.class,
                 BinderSpamData.class,
-                mSignalCollectorManagerInternal.getBinderSpamSignalCollector());
+                mSignalCollectorService.mBinderSpamSignalCollector);
     }
 
 
@@ -118,7 +119,22 @@ public final class SignalCollectorServiceTest {
         mSignalCollectorService.onStart();
 
         assertThat(LocalServices.getService(SignalCollectorManagerInternal.class))
-                .isEqualTo(mSignalCollectorManagerInternal);
+                .isEqualTo(mSignalCollectorService.mInternal);
+    }
+
+    @Test
+    public void reportBinderStatsToCollector_shouldReportWithCorrectData() {
+        mSignalCollectorService.onStart();
+
+        BinderSpamStats[] statsArray = new BinderSpamStats[1];
+        statsArray[0] = new BinderSpamStats();
+        statsArray[0].interfaceDescriptor = "TestInterface";
+        statsArray[0].aidlMethod = "TestMethod";
+        statsArray[0].clientUid = 1000;
+        statsArray[0].secondsWithAtLeast125Calls = 3;
+
+        mSignalCollectorService.reportBinderStatsToCollector(statsArray);
+        verify(mBinderSpamSignalCollector).onBinderSpamDataReported(statsArray);
     }
 
     @Test
@@ -137,6 +153,12 @@ public final class SignalCollectorServiceTest {
                 .isEqualTo(PROCESS_STATE_PERSISTENT);
         assertThat(mSignalCollectorService.getProcessState(UID_TOP))
                 .isEqualTo(PROCESS_STATE_TOP);
+    }
+
+    private void setUpInjector() {
+        when(mInjector.getActivityManager()).thenReturn(mActivityManager);
+        when(mInjector.getAnomalyDetectorManagerLocal()).thenReturn(mAnomalyDetectorManagerLocal);
+        when(mInjector.getBinderSpamSignalCollector()).thenReturn(mBinderSpamSignalCollector);
     }
 
     private UidObserver getUidObserver() {

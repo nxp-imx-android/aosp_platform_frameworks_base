@@ -16,6 +16,7 @@
 
 package com.android.server.stats.binder;
 
+import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.content.Context;
 import android.os.Binder;
@@ -25,7 +26,9 @@ import android.os.binder.IBinderStatsConsumerService;
 import android.util.Slog;
 
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.server.LocalServices;
 import com.android.server.SystemService;
+import com.android.server.signalcollector.SignalCollectorManagerInternal;
 
 /**
  * Service that acts as a proxy to statsd for native binder stats.
@@ -38,8 +41,8 @@ import com.android.server.SystemService;
 public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub {
     private static final String TAG = "BinderStatsConsumerService";
     private static final boolean DEBUG = false;
-
-    public BinderStatsConsumerService() {}
+    @Nullable
+    private volatile SignalCollectorManagerInternal mSignalCollectorManagerInternal;
 
     @Override
     @RequiresNoPermission
@@ -89,6 +92,20 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
             FrameworkStatsLog.write(FrameworkStatsLog.BINDER_SPAM_REPORTED, spamStats.clientUid,
                     callingUid, spamStats.interfaceDescriptor, spamStats.aidlMethod,
                     spamStats.secondsWithAtLeast125Calls, spamStats.secondsWithAtLeast250Calls);
+        }
+        if (android.os.profiling.anomaly.flags.Flags.anomalyDetectorCore()) {
+            reportToSignalCollector(spamStatsArray);
+        }
+    }
+
+    private void reportToSignalCollector(BinderSpamStats[] statsArray) {
+        if (mSignalCollectorManagerInternal == null) {
+            mSignalCollectorManagerInternal =
+                    LocalServices.getService(SignalCollectorManagerInternal.class);
+        }
+
+        if (mSignalCollectorManagerInternal != null) {
+            mSignalCollectorManagerInternal.reportBinderStats(statsArray);
         }
     }
 
