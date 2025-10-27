@@ -115,6 +115,9 @@ constructor(
     override val isAnyExpanded =
         anyExpansion.map { it > 0f }.stateIn(scope, SharingStarted.Eagerly, false)
 
+    @Deprecated("consider using isAnyExpanded instead")
+    override val isAnyExpansionGreaterThanZero: StateFlow<Boolean> = isAnyExpanded
+
     override val isUserInteractingWithShade: Flow<Boolean> =
         shadeModeInteractor.shadeMode.flatMapLatest { shadeMode ->
             when (shadeMode) {
