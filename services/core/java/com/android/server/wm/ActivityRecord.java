@@ -3601,16 +3601,6 @@ final class ActivityRecord extends WindowToken {
         }
 
         final Task rootTask = getRootTask();
-        final boolean mayAdjustTop = !Flags.polishCloseWallpaperIncludesOpenChange()
-                && (isState(RESUMED) || rootTask.getTopResumedActivity() == null)
-                && rootTask.isFocusedRootTaskOnDisplay()
-                // Do not adjust focus task because the task will be reused to launch new activity.
-                && !task.isClearingToReuseTask();
-        final boolean shouldAdjustGlobalFocus = mayAdjustTop
-                // It must be checked before {@link #makeFinishingLocked} is called, because a
-                // root task is not visible if it only contains finishing activities.
-                && mRootWindowContainer.isTopDisplayFocusedRootTask(rootTask);
-
         final ActionChain chain;
         final Transition sourceTransit = mTransitionController.getCollectingTransition();
         if (sourceTransit != null
@@ -3660,13 +3650,6 @@ final class ActivityRecord extends WindowToken {
                 if (displayArea != null && rootTask == displayArea.mPreferredTopFocusableRootTask) {
                     displayArea.clearPreferredTopFocusableRootTask();
                 }
-            }
-            // We are finishing the top focused activity and its task has nothing to be focused so
-            // the next focusable task should be focused.
-            if (mayAdjustTop && task.topRunningActivity(true /* focusableOnly */)
-                    == null) {
-                task.adjustFocusToNextFocusableTask("finish-top", false /* allowFocusSelf */,
-                        shouldAdjustGlobalFocus);
             }
 
             finishActivityResults(resultCode, resultData, resultGrants);
