@@ -582,8 +582,9 @@ public final class ActivityThread extends ClientTransactionHandler
     final ArrayMap<ProviderKey, ProviderClientRecord> mProviderMap = new ArrayMap<>();
     @UnsupportedAppUsage
     final ArrayMap<IBinder, ProviderRefCount> mProviderRefCountMap = new ArrayMap<>();
+    @VisibleForTesting
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    final ArrayMap<IBinder, ProviderClientRecord> mLocalProviders = new ArrayMap<>();
+    public final ArrayMap<IBinder, ProviderClientRecord> mLocalProviders = new ArrayMap<>();
     @UnsupportedAppUsage
     final ArrayMap<ComponentName, ProviderClientRecord> mLocalProvidersByName = new ArrayMap<>();
 
@@ -868,7 +869,8 @@ public final class ActivityThread extends ClientTransactionHandler
         }
     }
 
-    static final class ProviderClientRecord {
+    @VisibleForTesting
+    public static final class ProviderClientRecord {
         final String[] mNames;
         @UnsupportedAppUsage
         final IContentProvider mProvider;
@@ -877,7 +879,8 @@ public final class ActivityThread extends ClientTransactionHandler
         @UnsupportedAppUsage
         final ContentProviderHolder mHolder;
 
-        ProviderClientRecord(String[] names, IContentProvider provider,
+        @VisibleForTesting
+        public ProviderClientRecord(String[] names, IContentProvider provider,
                 ContentProvider localProvider, ContentProviderHolder holder) {
             mNames = names;
             mProvider = provider;
@@ -7133,7 +7136,13 @@ public final class ActivityThread extends ClientTransactionHandler
         }
     }
 
-    private void updateDeviceIdForNonUIContexts(int deviceId) {
+    /**
+     * Updates the deviceId for the non UI Contexts (Application, Service, ContentProvider)
+     * belonging to the same process
+     * @param deviceId The new value to be set for the deviceId of the non UI Contexts
+     */
+    @VisibleForTesting
+    public void updateDeviceIdForNonUIContexts(int deviceId) {
         // Invalid device id is treated as a no-op.
         if (deviceId == Context.DEVICE_ID_INVALID) {
             return;
