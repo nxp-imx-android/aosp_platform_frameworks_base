@@ -675,11 +675,14 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
         }
 
         // Update the preview controller.
-        mPrintPreviewController.onContentUpdated(contentUpdated,
+        mPrintPreviewController.onContentUpdated(
+                contentUpdated,
                 getAdjustedPageCount(documentInfo.info),
                 mPrintedDocument.getDocumentInfo().pagesWrittenToFile,
-                mSelectedPages, mPrintJob.getAttributes().getMediaSize(),
-                mPrintJob.getAttributes().getMinMargins());
+                mSelectedPages,
+                mPrintJob.getAttributes().getMediaSize(),
+                mPrintJob.getAttributes().getMinMargins(),
+                mPrintJob.getAttributes().getColorMode());
     }
 
 

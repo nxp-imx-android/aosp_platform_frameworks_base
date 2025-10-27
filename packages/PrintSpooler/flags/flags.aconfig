@@ -21,3 +21,10 @@ flag {
     description: "Skip displaying the first-use print service warning."
     bug: "455021653"
 }
+
+flag {
+    name: "grayscale_preview"
+    namespace: "printing"
+    description: "Display preview images in grayscale when B&W is selected."
+    bug: "455021653"
+}
