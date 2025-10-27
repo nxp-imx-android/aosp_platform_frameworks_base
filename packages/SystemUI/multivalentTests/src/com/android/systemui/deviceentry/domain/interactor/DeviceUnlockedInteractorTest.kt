@@ -198,7 +198,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_NONE,
+                unlockStateInt = BiometricUnlockController.MODE_NONE_UNLOCKED,
                 biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
             )
             runCurrent()
@@ -940,6 +940,117 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
             assertThat(deviceUnlockStatus?.deviceUnlockSource)
                 .isEqualTo(DeviceUnlockSource.SecureLockDeviceTwoFactorAuth)
+        }
+
+    @Test
+    fun deviceUnlockStatus_showBouncer() =
+        testScope.runTest {
+            val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
+            kosmos.powerInteractor.setAwakeForTest()
+
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_SHOW_BOUNCER,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+            runCurrent()
+
+            assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
+            assertThat(deviceUnlockStatus?.deviceUnlockSource).isEqualTo(null)
+        }
+
+    @Test
+    fun deviceUnlockStatus_null_forInvalidState() =
+        testScope.runTest {
+            val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
+            kosmos.powerInteractor.setAwakeForTest()
+
+            // this is an invalid fingerprint BiometricUnlockState, so it should result in a NOT
+            // unlocked state with deviceUnlockSource=null
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_ONLY_WAKE_UNLOCKED,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+            runCurrent()
+
+            assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
+            assertThat(deviceUnlockStatus?.deviceUnlockSource).isEqualTo(null)
+
+            // this is an invalid fingerprint BiometricUnlockState, so it should result in a NOT
+            // unlocked state with deviceUnlockSource=null
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_NONE_UNLOCKED,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+            runCurrent()
+
+            assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
+            assertThat(deviceUnlockStatus?.deviceUnlockSource).isEqualTo(null)
+        }
+
+    @Test
+    fun deviceUnlockStatus_none() =
+        testScope.runTest {
+            val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
+            kosmos.powerInteractor.setAwakeForTest()
+
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_NONE,
+                biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
+            )
+            runCurrent()
+
+            assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
+            assertThat(deviceUnlockStatus?.deviceUnlockSource).isEqualTo(null)
+        }
+
+    @Test
+    fun deviceUnlockStatus_noneUnlocked() =
+        testScope.runTest {
+            val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
+            kosmos.powerInteractor.setAwakeForTest()
+
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_NONE_UNLOCKED,
+                biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
+            )
+            runCurrent()
+
+            assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
+            assertThat(deviceUnlockStatus?.deviceUnlockSource)
+                .isEqualTo(DeviceUnlockSource.FaceWithoutBypass)
+        }
+
+    @Test
+    fun deviceUnlockStatus_onlyWake() =
+        testScope.runTest {
+            val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
+            kosmos.powerInteractor.setAwakeForTest()
+
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_ONLY_WAKE,
+                biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
+            )
+            runCurrent()
+
+            assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
+            assertThat(deviceUnlockStatus?.deviceUnlockSource).isEqualTo(null)
+        }
+
+    @Test
+    fun deviceUnlockStatus_onlyWakeUnlocked() =
+        testScope.runTest {
+            val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
+            kosmos.powerInteractor.setAwakeForTest()
+
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_ONLY_WAKE_UNLOCKED,
+                biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
+            )
+            runCurrent()
+
+            assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
+            assertThat(deviceUnlockStatus?.deviceUnlockSource)
+                .isEqualTo(DeviceUnlockSource.FaceWithoutBypass)
         }
 
     private fun TestScope.unlockDevice() {

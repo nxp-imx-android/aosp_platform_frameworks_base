@@ -778,7 +778,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
 
             // Authenticate using a passive auth method like face auth while bypass is disabled.
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_NONE,
+                unlockStateInt = BiometricUnlockController.MODE_NONE_UNLOCKED,
                 biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
             )
             assertThat(currentSceneKey).isEqualTo(Scenes.Gone)

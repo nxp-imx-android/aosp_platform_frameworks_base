@@ -25,7 +25,9 @@ import com.android.systemui.log.core.LogLevel.INFO
 import com.android.systemui.log.dagger.BiometricLog
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_DISMISS_BOUNCER
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_NONE
+import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_NONE_UNLOCKED
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_ONLY_WAKE
+import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_ONLY_WAKE_UNLOCKED
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_SHOW_BOUNCER
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_UNLOCK_COLLAPSING
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_UNLOCK
@@ -202,6 +204,8 @@ private fun wakeAndUnlockModeToString(mode: Int): String {
         MODE_UNLOCK_COLLAPSING -> "MODE_UNLOCK_COLLAPSING"
         MODE_WAKE_AND_UNLOCK_FROM_DREAM -> "MODE_WAKE_AND_UNLOCK_FROM_DREAM"
         MODE_DISMISS_BOUNCER -> "MODE_DISMISS_BOUNCER"
+        MODE_NONE_UNLOCKED -> "MODE_NONE_UNLOCKED"
+        MODE_ONLY_WAKE_UNLOCKED -> "MODE_ONLY_WAKE_UNLOCKED"
         else -> "UNKNOWN{$mode}"
     }
 }

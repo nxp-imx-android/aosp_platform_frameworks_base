@@ -153,7 +153,7 @@ class SensitiveContentCoordinatorTest(flags: FlagsParameterization) : SysuiTestC
 
             // When the device gets unlocked
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_NONE,
+                unlockStateInt = BiometricUnlockController.MODE_NONE_UNLOCKED,
                 biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
             )
             runCurrent()
