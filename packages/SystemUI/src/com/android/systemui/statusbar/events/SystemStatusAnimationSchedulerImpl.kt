@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.events
 import android.location.flags.Flags.locationIndicatorsEnabled
 import android.os.Process
 import android.provider.DeviceConfig
+import android.view.Display
 import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.AnimatorSet
@@ -123,7 +124,13 @@ constructor(
 
     init {
         coordinator.attachScheduler(this)
-        dumpManager.registerCriticalDumpable(TAG, this)
+        val dumpableTagSuffix =
+            if (displayId == Display.DEFAULT_DISPLAY) {
+                ""
+            } else {
+                displayId.toString()
+            }
+        dumpManager.registerCriticalDumpable("$TAG$dumpableTagSuffix", this)
 
         coroutineScope.launch {
             // Wait for animationState to become ANIMATION_QUEUED and scheduledEvent to be non null.

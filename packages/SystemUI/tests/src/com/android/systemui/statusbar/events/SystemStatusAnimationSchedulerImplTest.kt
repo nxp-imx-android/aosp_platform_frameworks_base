@@ -755,6 +755,30 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
         assertEquals(Idle, systemStatusAnimationScheduler.animationState.value)
     }
 
+    @Test
+    fun init_defaultDisplayId_registersWithDefaultDumpableTag() = runTest {
+        initializeSystemStatusAnimationScheduler(displayId = Display.DEFAULT_DISPLAY)
+
+        verify(dumpManager)
+            .registerCriticalDumpable(
+                SystemStatusAnimationSchedulerImpl::class.java.simpleName,
+                systemStatusAnimationScheduler,
+            )
+    }
+
+    @Test
+    fun init_nonDefaultDisplayId_registersWithSuffixedDisplayId() = runTest {
+        val displayId = Display.DEFAULT_DISPLAY + 123
+
+        initializeSystemStatusAnimationScheduler(displayId = displayId)
+
+        verify(dumpManager)
+            .registerCriticalDumpable(
+                "${SystemStatusAnimationSchedulerImpl::class.java.simpleName}$displayId",
+                systemStatusAnimationScheduler,
+            )
+    }
+
     private fun TestScope.fastForwardAnimationToState(animationState: SystemEventAnimationState) {
         // this function should only be called directly after posting a status event
         assertEquals(AnimationQueued, systemStatusAnimationScheduler.animationState.value)
@@ -817,15 +841,16 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
         return eventChip
     }
 
-    private fun initializeSystemStatusAnimationScheduler(
-        testScope: TestScope,
+    private fun TestScope.initializeSystemStatusAnimationScheduler(
+        testScope: TestScope = this,
         advancePastMinUptime: Boolean = true,
+        displayId: Int = Display.DEFAULT_DISPLAY,
     ) {
         systemStatusAnimationScheduler =
             SystemStatusAnimationSchedulerImpl(
                 systemEventCoordinator,
                 chipAnimationController,
-                Display.DEFAULT_DISPLAY,
+                displayId,
                 statusBarWindowControllerStore,
                 dumpManager,
                 systemClock,
