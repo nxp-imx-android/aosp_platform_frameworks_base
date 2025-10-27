@@ -926,7 +926,9 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             // Notify the recent tasks that a task has been removed
             mRecentTasks.ifPresent(recentTasks -> recentTasks.onTaskRemoved(taskInfo));
 
-            int displayId = taskInfo.displayId;
+            // The appeared info holds the state from the last appeared/infoChanged callback,
+            // which had the correct display ID that was used to create an overview overlay leash.
+            int displayId = appearedInfo.getTaskInfo().displayId;
             if (isOverviewOverlayEnabled(displayId)
                     && taskInfo.getActivityType() == ACTIVITY_TYPE_HOME
                     && mOverviewOverlayLeashes.contains(displayId)) {
