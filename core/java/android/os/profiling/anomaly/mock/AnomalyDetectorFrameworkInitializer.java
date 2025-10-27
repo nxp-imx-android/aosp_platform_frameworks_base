@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.os;
+package android.os.profiling.anomaly;
 
 // TODO(b/437406213): Remove this after RELEASE_ANOMALY_DETECTOR is ramped up to next.
 
