@@ -45,12 +45,10 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.LaunchAdjacentController
 import com.android.wm.shell.desktopmode.createActivityOptionsForStartTask
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer.OnCreateCallback
-import com.android.wm.shell.freeform.TaskChangeListener
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellInit
 import java.io.PrintWriter
-import java.util.Optional
 
 /**
  * A [DesksOrganizer] that uses root tasks as the container of each desk.
@@ -65,7 +63,6 @@ class RootTaskDesksOrganizer(
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val launchAdjacentController: LaunchAdjacentController,
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
-    private val taskChangeListener: Optional<TaskChangeListener>,
 ) : DesksOrganizer, ShellTaskOrganizer.TaskListener {
 
     private val createDeskRootRequests = mutableListOf<CreateDeskRequest>()
@@ -697,10 +694,6 @@ class RootTaskDesksOrganizer(
 
     private fun cleanUpChildTask(taskInfo: RunningTaskInfo) {
         childLeashes.remove(taskInfo.taskId)
-
-        // Notify task close events to the [TaskChangeListener] since [TransitionsObserver]
-        // does not trigger them when invisible tasks are removed.
-        taskChangeListener.ifPresent { listener -> listener.onNonTransitionTaskClosing(taskInfo) }
     }
 
     private fun createDeskMinimizationRoot(
