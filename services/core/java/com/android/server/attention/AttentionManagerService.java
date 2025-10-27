@@ -193,6 +193,10 @@ public class AttentionManagerService extends SystemService {
     public void onStart() {
         publishBinderService(Context.ATTENTION_SERVICE, new BinderService());
         publishLocalService(AttentionManagerInternal.class, new LocalService());
+        if (com.android.input.flags.Flags.enableAttentionServiceApis()) {
+            publishLocalService(InteractionProviderServiceInternal.class,
+                    new InteractionProviderServiceInternal());
+        }
     }
 
     /** Returns {@code true} if attention service is configured on this device. */
