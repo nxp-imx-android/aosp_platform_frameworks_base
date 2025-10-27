@@ -247,7 +247,6 @@ public class Surface implements Parcelable {
      * For video, use {@link FRAME_RATE_COMPATIBILITY_FIXED_SOURCE} instead. For game content, use
      * {@link FRAME_RATE_COMPATIBILITY_DEFAULT}.
      */
-    @FlaggedApi(com.android.graphics.surfaceflinger.flags.Flags.FLAG_ARR_SETFRAMERATE_GTE_ENUM)
     public static final int FRAME_RATE_COMPATIBILITY_AT_LEAST = 2;
 
     /**
