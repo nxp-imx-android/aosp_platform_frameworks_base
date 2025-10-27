@@ -267,11 +267,10 @@ public class ExternalDisplayPolicyTest {
     @Test
     public void testExternalDisplayNoLongerAutoEnabledWithUpdatedDialogFlag() {
         when(mMockedFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
-        when(mMockedFlags.isUpdatedDisplayConnectionDialogEnabled()).thenReturn(true);
         when(mMockedLogicalDisplay.canHostTasksLocked()).thenReturn(true);
         mExternalDisplayPolicy.handleExternalDisplayConnectedLocked(mMockedLogicalDisplay);
-        assertNotAskedToEnableDisplay();
-        verify(mMockedExternalDisplayStatsService, never()).onDisplayConnected(any());
+        mExternalDisplayPolicy.onBootCompleted();
+        assertAskedToEnableDisplay();
     }
 
     @Test

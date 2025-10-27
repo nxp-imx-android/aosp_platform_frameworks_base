@@ -1434,16 +1434,6 @@ flag {
 }
 
 flag {
-    name: "enable_updated_display_connection_dialog"
-    namespace: "lse_desktop_experience"
-    description: "Enables new display connection dialog that allows selecting between desktop and mirroring. Requires ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT flag to work properly."
-    bug: "413620089"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_upscaling_size_compat_on_exiting_desktop_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables upscaling of size-compat apps in fullscreen after they exit desktop mode."
