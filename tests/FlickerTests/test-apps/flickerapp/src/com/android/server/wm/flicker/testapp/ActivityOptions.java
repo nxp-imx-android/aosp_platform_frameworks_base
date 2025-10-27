@@ -145,6 +145,12 @@ public class ActivityOptions {
         public static final String EXTRA_FIXED_ORIENTATION = "fixed_orientation";
     }
 
+    public static class MoveToBackOnBackPressedActivity {
+        public static final String LABEL = "MoveToBackOnBackPressedActivity";
+        public static final ComponentName COMPONENT = new ComponentName(FLICKER_APP_PACKAGE,
+                FLICKER_APP_PACKAGE + ".MoveToBackOnBackPressedActivity");
+    }
+
     public static class ActivityEmbedding {
         public static class MainActivity {
             public static final String LABEL = "ActivityEmbeddingMainActivity";
