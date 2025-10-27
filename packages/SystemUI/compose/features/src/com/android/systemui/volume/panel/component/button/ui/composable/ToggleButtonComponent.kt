@@ -61,6 +61,31 @@ class ToggleButtonComponent(
         val viewModelByState by viewModelFlow.collectAsStateWithLifecycle()
         val viewModel = viewModelByState ?: return
 
+        if (Flags.volumeRedesign()) {
+            VolumePanelButton(
+                label = viewModel.label,
+                icon = viewModel.icon,
+                isActive = viewModel.isActive,
+                onClick = { onCheckedChange(!viewModel.isActive) },
+                semantics = {
+                    role = Role.Switch
+                    if (viewModel.stateDescription == null) {
+                        toggleableState =
+                            if (viewModel.isActive) {
+                                ToggleableState.On
+                            } else {
+                                ToggleableState.Off
+                            }
+                    } else {
+                        stateDescription = viewModel.stateDescription
+                    }
+                    contentDescription = viewModel.label
+                },
+                modifier = modifier,
+            )
+            return
+        }
+
         Column(
             modifier = modifier,
             verticalArrangement = Arrangement.spacedBy(12.dp),

@@ -30,10 +30,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.android.compose.animation.Expandable
@@ -48,9 +46,9 @@ fun VolumePanelButton(
     icon: Icon?,
     isActive: Boolean,
     onClick: (expandable: Expandable) -> Unit,
-    semanticsRole: Role,
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
+    semantics: SemanticsPropertyReceiver.() -> Unit = {},
 ) {
     Column(
         modifier = modifier,
@@ -58,18 +56,14 @@ fun VolumePanelButton(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Expandable(
-            modifier =
-                Modifier.fillMaxWidth().height(56.dp).semantics {
-                    role = semanticsRole
-                    contentDescription = label
-                },
+            modifier = Modifier.fillMaxWidth().height(56.dp).semantics(properties = semantics),
             color =
                 when {
                     !isEnabled -> MaterialTheme.colorScheme.surfaceContainerHighest
                     isActive -> MaterialTheme.colorScheme.primary
                     else -> MaterialTheme.colorScheme.surfaceContainerHigh
                 },
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedCornerShape(28.dp),
             contentColor =
                 when {
                     !isEnabled -> MaterialTheme.colorScheme.outline
