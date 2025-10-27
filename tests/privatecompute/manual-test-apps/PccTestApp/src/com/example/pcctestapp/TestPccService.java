@@ -16,8 +16,11 @@
 
 package com.example.pcctestapp;
 
+import android.annotation.NonNull;
 import android.app.privatecompute.PccService;
+import android.os.Bundle;
 import android.util.Log;
+
 
 public class TestPccService extends PccService {
     private static final String TAG = TestPccService.class.getSimpleName();
@@ -26,5 +29,15 @@ public class TestPccService extends PccService {
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "PCC service created.");
+    }
+
+    @Override
+    public void onReceiveData(@NonNull Bundle data, @NonNull String packageName) {
+        String text = data.getString("my_key");
+        if (text != null) {
+            String message = String.format("Data received in Pcc service: \"%s\", from: \"%s\"",
+                    text, packageName);
+            Log.i(TAG, message);
+        }
     }
 }

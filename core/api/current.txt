@@ -9987,6 +9987,11 @@ package android.app.people {
 
 package android.app.privatecompute {
 
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public class PccClient {
+    method @NonNull public static android.app.privatecompute.PccClient createInstance(@NonNull android.content.Context, @NonNull android.os.IBinder);
+    method public void sendData(@NonNull android.os.Bundle);
+  }
+
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class PccSandboxManager {
     method public boolean isPrivateComputeServicesUid(int);
     method public void writeToAuditLog(@NonNull android.os.PersistableBundle);
@@ -9995,6 +10000,7 @@ package android.app.privatecompute {
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public abstract class PccService extends android.app.Service {
     ctor public PccService();
     method @NonNull public final android.os.IBinder onBind(@Nullable android.content.Intent);
+    method public abstract void onReceiveData(@NonNull android.os.Bundle, @NonNull String);
   }
 
 }

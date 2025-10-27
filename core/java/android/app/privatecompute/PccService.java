@@ -21,7 +21,16 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.os.ParcelableException;
+import android.os.Process;
+import android.os.RemoteException;
+import android.util.Log;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Abstract base class for a PCC service that receives data from other components. Developers must
@@ -29,8 +38,53 @@ import android.os.IBinder;
  */
 @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
 public abstract class PccService extends Service {
-    private final IPccService.Stub mBinder = new IPccService.Stub() {
 
+    private static final String TAG = PccService.class.getSimpleName();
+
+    private final IPccService.Stub mBinder = new IPccService.Stub() {
+        @Override
+        public void sendData(@NonNull Bundle data, @NonNull String packageName,
+                @Nullable IResultCallback callback) {
+            try {
+                int callingProcessUid = Binder.getCallingUid();
+
+                // We trust the system UID because calls from external clients are proxied via
+                // the system server, which validates the caller's identity before forwarding the
+                // request.
+                // If the call originates from the system server, it already is a trusted client.
+                if (callingProcessUid != Process.SYSTEM_UID) {
+                    String[] packages = getPackageManager().getPackagesForUid(callingProcessUid);
+                    if (packages == null) {
+                        if (callback != null) {
+                            callback.onFailure(new ParcelableException(new SecurityException(
+                                    "No known packages with the given UID: " + callingProcessUid)));
+                        }
+                        return;
+                    }
+                    List<String> packagesList = Arrays.asList(packages);
+
+                    if (!packagesList.contains(packageName)) {
+                        if (callback != null) {
+                            callback.onFailure(new ParcelableException(new SecurityException(
+                                    "Calling UID: " + callingProcessUid
+                                            + " is not associated with package: " + packageName)));
+                        }
+                        return;
+                    }
+                }
+
+                try {
+                    onReceiveData(data, packageName);
+                } finally {
+                    if (callback != null) {
+                        callback.onSuccess();
+                    }
+                }
+            } catch (RemoteException e) {
+                Log.e(TAG, "Failed to invoke " + IResultCallback.class.getSimpleName()
+                        + " for client: " + packageName, e);
+            }
+        }
     };
 
 
@@ -47,4 +101,14 @@ public abstract class PccService extends Service {
     public final IBinder onBind(@Nullable Intent intent) {
         return mBinder;
     }
+
+    /**
+     * This method is the data ingress point for a PCC service. When a client sends data
+     * via the sendData api, the service will receive that data in this endpoint and can
+     * process it.
+     *
+     * @param data        A Bundle containing the data sent by the client.
+     * @param packageName The package name for the app that calls sendData.
+     */
+    public abstract void onReceiveData(@NonNull Bundle data, @NonNull String packageName);
 }

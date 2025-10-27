@@ -17,6 +17,7 @@
 package com.example.pcctestapp;
 
 import android.app.Activity;
+import android.app.privatecompute.PccClient;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -33,17 +34,20 @@ public class MainActivity extends Activity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private boolean mIsPccServiceBound = false;
+    private PccClient mClient = null;
 
     private final ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             logAndShowToast(Log.INFO, "Service connected!");
+            mClient = PccClient.createInstance(MainActivity.this, service);
             mIsPccServiceBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName className) {
             logAndShowToast(Log.INFO, "Service disconnected unexpectedly.");
+            mClient = null;
             mIsPccServiceBound = false;
         }
     };
@@ -72,6 +76,26 @@ public class MainActivity extends Activity {
             }
         });
 
+        // Button to send data to the pcc service.
+        Button sendDataButton = new Button(this);
+        sendDataButton.setText("Send data to Pcc service");
+        sendDataButton.setOnClickListener(v -> {
+            if (mIsPccServiceBound) {
+                Bundle data = new Bundle();
+                data.putString("my_key", "Hello World");
+                try {
+                    mClient.sendData(data);
+                    logAndShowToast(Log.INFO, "Data sent to Pcc service.");
+                } catch (Exception e) {
+                    logAndShowToast(Log.WARN, "Failed to send data to Pcc service. " + e);
+                }
+            } else {
+                logAndShowToast(Log.ERROR,
+                        "Pcc service is not bound yet. Bind to Pcc service first.");
+            }
+        });
+
+
         // Button to unbind from the pcc service.
         Button unbindButton = new Button(this);
         unbindButton.setText("Unbind from PCC service");
@@ -86,7 +110,9 @@ public class MainActivity extends Activity {
             }
         });
 
+
         layout.addView(bindButton);
+        layout.addView(sendDataButton);
         layout.addView(unbindButton);
         setContentView(layout);
     }

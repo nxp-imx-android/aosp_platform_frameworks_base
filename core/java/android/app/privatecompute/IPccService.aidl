@@ -16,7 +16,10 @@
 
 package android.app.privatecompute;
 
+import android.app.privatecompute.IResultCallback;
+import android.os.Bundle;
+
 /** @hide */
 oneway interface IPccService {
-
+    oneway void sendData(in Bundle data, String packageName, IResultCallback callback);
 }

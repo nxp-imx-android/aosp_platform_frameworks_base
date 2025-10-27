@@ -18,17 +18,25 @@ package com.android.server.privatecompute;
 
 import static android.os.Process.SYSTEM_UID;
 
+import android.annotation.RequiresNoPermission;
 import android.app.privatecompute.IPccService;
+import android.app.privatecompute.IResultCallback;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManagerInternal;
+import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.os.ParcelableException;
 import android.os.Process;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.LocalServices;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,10 +51,15 @@ import java.util.Map;
 public final class PccSandboxManagerInternal {
     private static final String TAG = PccSandboxManagerInternal.class.getSimpleName();
 
+    private final PackageManagerInternal mPackageManagerInternal;
     private final Object mLock = new Object();
     @VisibleForTesting
     @GuardedBy("mLock")
     final Map<IBinder, PccServiceInfo> mPccServiceConnections = new ArrayMap<>();
+
+    public PccSandboxManagerInternal() {
+        this.mPackageManagerInternal = LocalServices.getService(PackageManagerInternal.class);
+    }
 
     /**
      * Called when a new client binds to a PCC service.
@@ -188,13 +201,52 @@ public final class PccSandboxManagerInternal {
     }
 
     @VisibleForTesting
-    static final class PccServiceProxy extends IPccService.Stub {
+    final class PccServiceProxy extends IPccService.Stub {
         private volatile IBinder mRealBinder;
 
         PccServiceProxy(IBinder realBinder) {
             this.mRealBinder = realBinder;
         }
 
+        @RequiresNoPermission
+        @Override
+        public void sendData(Bundle data, String packageName, IResultCallback callback) {
+            try {
+                if (mRealBinder == null) {
+                    callback.onFailure(new ParcelableException(
+                            new IllegalStateException("PCC service is already closed.")));
+                    return;
+                }
+
+                IPccService realService = IPccService.Stub.asInterface(mRealBinder);
+
+                final int callingUid = Binder.getCallingUid();
+
+                if (mPackageManagerInternal.isSameApp(packageName, callingUid,
+                        UserHandle.getUserId(callingUid))) {
+                    try {
+                        realService.sendData(data, packageName, null);
+                    } catch (RemoteException e) {
+                        callback.onFailure(new ParcelableException(e));
+                        return;
+                    }
+                    callback.onSuccess();
+                } else {
+                    callback.onFailure(new ParcelableException(new SecurityException(
+                            "Calling UID: " + callingUid + " is not associated with package: "
+                                    + packageName)));
+                }
+
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Failed to invoke " + IResultCallback.class.getSimpleName()
+                        + " for client: " + packageName, e);
+            }
+        }
+
+        /**
+         * A cleanup method to clear the reference to the real binder once the service is brought
+         * down. This is to reduce the memory footprint.
+         */
         public void destroy() {
             mRealBinder = null;
         }

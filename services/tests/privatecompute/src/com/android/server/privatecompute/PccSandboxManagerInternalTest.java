@@ -17,29 +17,44 @@
 package com.android.server.privatecompute;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import android.app.privatecompute.IPccService;
+import android.app.privatecompute.IResultCallback;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManagerInternal;
+import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
+import android.os.ParcelableException;
 import android.os.Process;
+import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
+import android.os.UserHandle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.android.server.LocalServices;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.io.FileDescriptor;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Tests for {@link PccSandboxManagerServiceInternal}.
@@ -51,17 +66,43 @@ public class PccSandboxManagerInternalTest {
     private static final int USER_ID_2 = 2;
     private static final int NON_PCC_CLIENT_UID = 10001;
     private static final int PCC_CLIENT_UID = 30001;
+    private static final String CORRECT_CALLING_PACKAGE = "com.example.client";
+    private static final String WRONG_CALLING_PACKAGE = "com.wrong.package";
 
     private PccSandboxManagerInternal mPccSandboxManagerInternal;
     private IBinder mRealBinder;
     private ComponentName mServiceName;
     private Intent mIntent;
 
+
+    @Mock
+    private PackageManagerInternal mPackageManagerInternal;
+
     @Before
     public void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
+
+        LocalServices.removeServiceForTest(PackageManagerInternal.class);
+        LocalServices.addService(PackageManagerInternal.class, mPackageManagerInternal);
+
+        int testUid = android.os.Process.myUid();
+        when(mPackageManagerInternal.isSameApp(CORRECT_CALLING_PACKAGE, testUid,
+                UserHandle.getUserId(testUid))).thenReturn(true);
+        when(mPackageManagerInternal.isSameApp(WRONG_CALLING_PACKAGE, testUid,
+                UserHandle.getUserId(testUid))).thenReturn(false);
+
         mPccSandboxManagerInternal = new PccSandboxManagerInternal();
         mRealBinder = new IPccService.Stub() {
-
+            @Override
+            public void sendData(Bundle data, String packageName, IResultCallback callback) {
+                try {
+                    if (callback != null) {
+                        callback.onSuccess();
+                    }
+                } catch (RemoteException e) {
+                    // Ignore
+                }
+            }
         };
         mServiceName = new ComponentName("com.example.test", "com.example.test.MyPccService");
         mIntent = new Intent().setComponent(mServiceName);
@@ -201,6 +242,60 @@ public class PccSandboxManagerInternalTest {
                 mPccSandboxManagerInternal.mPccServiceConnections.size());
         assertNull("Proxy should be destroyed after binder death",
                 ((PccSandboxManagerInternal.PccServiceProxy) binder).getRealBinder());
+    }
+
+    @Test
+    public void sendData_packageNameVerificationSuccess() throws Exception {
+        PccSandboxManagerInternal.PccServiceProxy proxy =
+                mPccSandboxManagerInternal.new PccServiceProxy(mRealBinder);
+
+        CompletableFuture<Boolean> result = new CompletableFuture<>();
+        Binder.withCleanCallingIdentity(() -> {
+            try {
+                proxy.sendData(new Bundle(), CORRECT_CALLING_PACKAGE, new IResultCallback.Stub() {
+                    @Override
+                    public void onSuccess() {
+                        result.complete(true);
+                    }
+
+                    @Override
+                    public void onFailure(ParcelableException e) {
+                        result.complete(false);
+                    }
+                });
+            } catch (Exception e) {
+                result.completeExceptionally(e);
+            }
+        });
+
+        assertTrue(result.get());
+    }
+
+    @Test
+    public void sendData_packageNameVerificationFailure() throws Exception {
+        PccSandboxManagerInternal.PccServiceProxy proxy =
+                mPccSandboxManagerInternal.new PccServiceProxy(mRealBinder);
+
+        CompletableFuture<Boolean> result = new CompletableFuture<>();
+        Binder.withCleanCallingIdentity(() -> {
+            try {
+                proxy.sendData(new Bundle(), WRONG_CALLING_PACKAGE, new IResultCallback.Stub() {
+                    @Override
+                    public void onSuccess() {
+                        result.complete(true);
+                    }
+
+                    @Override
+                    public void onFailure(ParcelableException e) {
+                        result.complete(false);
+                    }
+                });
+            } catch (Exception e) {
+                result.completeExceptionally(e);
+            }
+        });
+
+        assertFalse(result.get());
     }
 
     private IBinder createInvalidBinder() {
