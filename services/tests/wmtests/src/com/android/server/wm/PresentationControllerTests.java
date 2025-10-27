@@ -366,6 +366,33 @@ public class PresentationControllerTests extends WindowTestsBase {
 
     @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
     @Test
+    public void testPrivatePresentationDoesNotHaveHostTask() {
+        final int uid = Binder.getCallingUid();
+        final Task task = createTask(mDefaultDisplay);
+        task.effectiveUid = uid;
+        final ActivityRecord activity = createActivityRecord(task);
+        assertTrue(activity.isVisible());
+
+        // Add a presentation window on a presentation display.
+        final DisplayContent presentationDisplay = createPrivatePresentationDisplay();
+        final WindowState window = addPrivatePresentationWindow(uid,
+                presentationDisplay.getDisplayId());
+        final Transition addTransition = window.mTransitionController.getCollectingTransition();
+        completeTransition(addTransition, /*abortSync=*/ true);
+        assertTrue(window.isVisible());
+
+        // Reparenting the host task below the presentation must NOT close the presentation
+        // because the presentation doesn't have a host task in per-display-focus systems.
+        task.reparent(presentationDisplay.getDefaultTaskDisplayArea(), true);
+        waitHandlerIdle(window.mWmService.mAtmService.mH);
+        final Transition removeTransition = window.mTransitionController.getCollectingTransition();
+        assertEquals(TRANSIT_WAKE, removeTransition.mType);
+        completeTransition(removeTransition, /*abortSync=*/ false);
+        assertTrue(window.isVisible());
+    }
+
+    @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
+    @Test
     public void testNewPresentationCannotShowOnPresentingDesk() {
         forceAllowPresentationsOnDefaultDisplay();
 
