@@ -226,7 +226,7 @@ public class KeyValueBackupTask implements BackupRestoreTask, Runnable {
             boolean nonIncremental,
             BackupEligibilityRules backupEligibilityRules) {
         KeyValueBackupReporter reporter = null;
-        if (!Flags.enableKvBackupLogsFromTransportWithProperFlowId()) {
+        if (monitor != null) {
             reporter =
                 new KeyValueBackupReporter(backupManagerService, observer,
                         new BackupManagerMonitorEventSender(monitor));
@@ -245,7 +245,8 @@ public class KeyValueBackupTask implements BackupRestoreTask, Runnable {
                         userInitiated,
                         nonIncremental,
                         backupEligibilityRules,
-                        observer);
+                        observer,
+                        monitor);
         Thread thread = new Thread(task, "key-value-backup-" + THREAD_COUNT.incrementAndGet());
         thread.start();
         KeyValueBackupReporter.onNewThread(thread.getName());
@@ -282,6 +283,7 @@ public class KeyValueBackupTask implements BackupRestoreTask, Runnable {
     @Nullable private ParcelFileDescriptor mBackupData;
     @Nullable private ParcelFileDescriptor mNewState;
     @Nullable private KeyValueBackupReporter mReporter;
+    @Nullable private IBackupManagerMonitor mMonitor;
     // Indicates whether there was any data to be backed up, i.e. the queue was not empty
     // and at least one of the packages had data. Used to avoid updating current token for
     // empty backups.
@@ -324,7 +326,8 @@ public class KeyValueBackupTask implements BackupRestoreTask, Runnable {
             boolean userInitiated,
             boolean nonIncremental,
             BackupEligibilityRules backupEligibilityRules,
-            IBackupObserver observer) {
+            IBackupObserver observer,
+            @Nullable IBackupManagerMonitor monitor) {
         mBackupManagerService = backupManagerService;
         mOperationStorage = operationStorage;
         mPackageManager = backupManagerService.getPackageManager();
@@ -350,6 +353,7 @@ public class KeyValueBackupTask implements BackupRestoreTask, Runnable {
         mUserId = backupManagerService.getUserId();
         mBackupEligibilityRules = backupEligibilityRules;
         mObserver = observer;
+        mMonitor = monitor;
     }
 
     private void registerTask() {
@@ -1364,17 +1368,26 @@ public class KeyValueBackupTask implements BackupRestoreTask, Runnable {
     }
 
     private KeyValueBackupReporter getReporter() {
-        if (Flags.enableKvBackupLogsFromTransportWithProperFlowId() && mReporter == null) {
+        if (mReporter != null) {
+            return mReporter;
+        }
+
+        IBackupManagerMonitor monitor = mMonitor;
+        if (Flags.enableKvBackupLogsFromTransportWithProperFlowId()) {
             try {
                 BackupTransportClient transport =
                         mTransportConnection.connectOrThrow("KVBT.getReporter()");
-                IBackupManagerMonitor monitor = transport.getBackupManagerMonitor();
-                mReporter = new KeyValueBackupReporter(mBackupManagerService, mObserver,
-                        new BackupManagerMonitorEventSender(monitor));
+                monitor = transport.getBackupManagerMonitor();
             } catch (TransportNotAvailableException | RemoteException e) {
-                Log.e(TAG, "Could not obtain monitor from transport", e);
+                Log.e(TAG, "Could not obtain monitor from transport, using fallback", e);
             }
         }
+
+        mReporter =
+                new KeyValueBackupReporter(
+                        mBackupManagerService,
+                        mObserver,
+                        new BackupManagerMonitorEventSender(monitor));
         return mReporter;
     }
 
