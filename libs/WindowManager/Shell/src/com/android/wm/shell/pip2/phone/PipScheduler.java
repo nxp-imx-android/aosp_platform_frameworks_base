@@ -137,7 +137,8 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         WindowContainerTransaction wct = new WindowContainerTransaction();
         // final expanded bounds to be inherited from the parent
         wct.setBounds(pipTaskToken, null);
-        wct.setWindowingMode(pipTaskToken, mPipDesktopState.getOutPipWindowingMode());
+        wct.setWindowingMode(pipTaskToken,
+                mPipDesktopState.getOutPipWindowingMode(/* isMultiActivityChild= */false));
         wct.setDensityDpi(pipTaskToken, Configuration.DENSITY_DPI_UNDEFINED);
         return wct;
     }

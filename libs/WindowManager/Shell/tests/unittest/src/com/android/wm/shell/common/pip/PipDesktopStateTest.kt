@@ -179,7 +179,6 @@ class PipDesktopStateTest : ShellTestCase() {
         assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_UNDEFINED)
     }
 
-    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
     fun outPipWindowingMode_midRecents_inDesktop_returnsFullscreen() {
         recentsTransitionStateListener.onTransitionStateChanged(TRANSITION_STATE_ANIMATING)
