@@ -28,6 +28,7 @@ import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTE
 
 import static com.android.systemui.mediaprojection.permission.ScreenShareOptionKt.ENTIRE_SCREEN;
 import static com.android.systemui.mediaprojection.permission.ScreenShareOptionKt.ENTIRE_SCREEN_EXTERNAL;
+import static com.android.systemui.mediaprojection.permission.ScreenShareOptionKt.NOT_SELECTED;
 import static com.android.systemui.mediaprojection.permission.ScreenShareOptionKt.SINGLE_APP;
 
 import android.annotation.Nullable;
@@ -209,9 +210,12 @@ public class MediaProjectionPermissionActivity extends Activity {
         final Runnable screenShareDialogRunnable;
         if (showLargeScreenShareDialog) {
             screenShareDialogRunnable = () -> grantMediaProjectionPermission(
-                    SINGLE_APP,
+                    // The screen share mode will be determined by user's selection later
+                    // on large screen. Check [PreShareUI] and [ScreenCaptureShareScreenViewModel]
+                    // for more details.
+                    /* screenShareMode= */ NOT_SELECTED,
                     /* hasCastingCapabilities= */ false,
-                    getDisplay().getDisplayId(),
+                    /* displayId = */ getDisplay().getDisplayId(),
                     /* isLargeScreen = */ true
             );
         } else {
@@ -396,7 +400,7 @@ public class MediaProjectionPermissionActivity extends Activity {
                 setCommonIntentExtras(intent, hasCastingCapabilities, projection);
                 setResult(RESULT_OK, intent);
                 finish(RECORD_CONTENT_DISPLAY, projection);
-            } else if (screenShareMode == SINGLE_APP) {
+            } else if (screenShareMode == SINGLE_APP || isLargeScreen) {
                 final Intent intent = new Intent(this, isLargeScreen
                         ? ShareScreenActivity.class
                         : MediaProjectionAppSelectorActivity.class);
@@ -417,7 +421,12 @@ public class MediaProjectionPermissionActivity extends Activity {
                 // avoid creating a separate SystemUI process without access to recent tasks
                 // because it won't have WM Shell running inside.
                 mUserSelectingTask = true;
-                startActivityAsUser(intent, UserHandle.of(USER_SYSTEM));
+                if (isLargeScreen) {
+                    startActivityAsUser(intent,
+                            UserHandle.getUserHandleForUid(getLaunchedFromUid()));
+                } else {
+                    startActivityAsUser(intent, UserHandle.of(USER_SYSTEM));
+                }
                 // close shade if it's open
                 mStatusBarManager.collapsePanels();
             }
