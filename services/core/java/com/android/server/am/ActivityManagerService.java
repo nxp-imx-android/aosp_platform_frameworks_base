@@ -2435,7 +2435,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         mCachedAppOptimizer = new CachedAppOptimizer(this);
         mProcessStateController = new ProcessStateController
-                .Builder(this, mProcessList, activeUids, oomConstants, new OomAdjusterCallback())
+                .Builder(this, mProcessList, activeUids, oomConstants, new OomAdjusterCallback(),
+                         new OomAdjusterStateGetter())
                 .setHandlerThread(handlerThread)
                 .build();
         mOomAdjuster = mProcessStateController.getOomAdjuster();
@@ -2506,7 +2507,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         final Looper activityTaskLooper = DisplayThread.get().getLooper();
         mCachedAppOptimizer = new CachedAppOptimizer(this);
         mProcessStateController = new ProcessStateController
-                .Builder(this, mProcessList, activeUids, oomConstants, new OomAdjusterCallback())
+                .Builder(this, mProcessList, activeUids, oomConstants, new OomAdjusterCallback(),
+                         new OomAdjusterStateGetter())
                 .setLockObject(this)
                 .setTopProcessChangeCallback(this::updateTopAppListeners)
                 .setProcessLruUpdater(mProcessList)
@@ -19652,6 +19654,27 @@ public class ActivityManagerService extends IActivityManager.Stub
         @Override
         public void onReportOomAdjMessage(String msg) {
             reportOomAdjMessageLocked(msg);
+        }
+    }
+
+    private final class OomAdjusterStateGetter implements OomAdjuster.StateGetter {
+        @Override
+        public boolean isDeviceFullyAwake() {
+            return mWakefulness.get() == PowerManagerInternal.WAKEFULNESS_AWAKE;
+        }
+
+        @Override
+        public boolean isBackupProcess(ProcessRecordInternal app) {
+            final BackupRecord backupTarget = mBackupTargets.get(app.userId);
+            if (backupTarget == null) {
+                return false;
+            }
+            return app == backupTarget.app;
+        }
+
+        @Override
+        public boolean isLastMemoryLevelNormal() {
+            return mAppProfiler.isLastMemoryLevelNormal();
         }
     }
 
