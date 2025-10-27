@@ -2108,7 +2108,7 @@ public class AudioManager {
     @Deprecated public void setSpeakerphoneOn(boolean on) {
         final IAudioService service = getService();
         try {
-            service.setSpeakerphoneOn(mICallBack, on, getAttributionSource());
+            service.setSpeakerphoneOn(sLegacyRouteToken, on, getAttributionSource());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -3284,7 +3284,7 @@ public class AudioManager {
     @Deprecated public void startBluetoothSco() {
         final IAudioService service = getService();
         try {
-            service.startBluetoothSco(mICallBack,
+            service.startBluetoothSco(sLegacyRouteToken,
                     getContext().getApplicationInfo().targetSdkVersion,
                     getAttributionSource());
         } catch (RemoteException e) {
@@ -3311,7 +3311,7 @@ public class AudioManager {
     public void startBluetoothScoVirtualCall() {
         final IAudioService service = getService();
         try {
-            service.startBluetoothScoVirtualCall(mICallBack, getAttributionSource());
+            service.startBluetoothScoVirtualCall(sLegacyRouteToken, getAttributionSource());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -3331,7 +3331,7 @@ public class AudioManager {
     @Deprecated public void stopBluetoothSco() {
         final IAudioService service = getService();
         try {
-            service.stopBluetoothSco(mICallBack,  getAttributionSource());
+            service.stopBluetoothSco(sLegacyRouteToken,  getAttributionSource());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -3532,7 +3532,7 @@ public class AudioManager {
     public void setMode(@AudioMode int mode) {
         final IAudioService service = getService();
         try {
-            service.setMode(mode, mICallBack, mApplicationContext.getOpPackageName());
+            service.setMode(mode, sLegacyRouteToken, mApplicationContext.getOpPackageName());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -6326,6 +6326,15 @@ public class AudioManager {
       * @hide
       */
      private final IBinder mICallBack = new Binder();
+
+     /**
+      * Process-wide callback token for routing requests, for legacy APIs that don't explicitly
+      * return sessions. All APIs which update the routing preferences for a process which utilize
+      * this callback will override the existing preference for the process.
+      * @hide
+      */
+     private static final IBinder sLegacyRouteToken = new Binder();
+
 
     /**
      * Checks whether the phone is in silent mode, with or without vibrate.
@@ -9360,7 +9369,7 @@ public class AudioManager {
                 Log.w(TAG, "setCommunicationDevice: device not found: " + device);
                 return false;
             }
-            return getService().setCommunicationDevice(mICallBack, device.getId(),
+            return getService().setCommunicationDevice(sLegacyRouteToken, device.getId(),
                     getAttributionSource());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
@@ -9373,7 +9382,7 @@ public class AudioManager {
      */
     public void clearCommunicationDevice() {
         try {
-            getService().setCommunicationDevice(mICallBack, 0, getAttributionSource());
+            getService().setCommunicationDevice(sLegacyRouteToken, 0, getAttributionSource());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
