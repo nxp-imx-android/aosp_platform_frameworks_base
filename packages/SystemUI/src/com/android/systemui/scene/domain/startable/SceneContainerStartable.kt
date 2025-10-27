@@ -44,6 +44,7 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteract
 import com.android.systemui.deviceentry.shared.model.DeviceUnlockSource
 import com.android.systemui.kairos.internal.util.fastForEach
 import com.android.systemui.keyguard.DismissCallbackRegistry
+import com.android.systemui.keyguard.domain.interactor.KeyguardDismissActionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteractor
@@ -160,6 +161,7 @@ constructor(
     private val shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>,
     private val surfaceBehindInteractor: KeyguardSurfaceBehindInteractor,
     private val lockscreenUserManager: NotificationLockscreenUserManager,
+    private val keyguardDismissActionInteractor: KeyguardDismissActionInteractor,
 ) : CoreStartable {
     private val centralSurfaces: CentralSurfaces?
         get() = centralSurfacesOptLazy.get().getOrNull()
@@ -495,7 +497,11 @@ constructor(
                     ) {
                         uiEventLogger.log(BouncerUiEvent.BOUNCER_DISMISS_EXTENDED_ACCESS)
                     }
+
                     val leaveShadeOpen = statusBarStateController.leaveOpenOnKeyguardHide()
+                    val willAnimateDismissAction =
+                        keyguardDismissActionInteractor.willAnimateDismissActionOnLockscreen.value
+
                     when {
                         isAlternateBouncerVisible -> {
                             // When the device becomes unlocked when the alternate bouncer is
@@ -543,7 +549,18 @@ constructor(
                                             HideOverlayCommand.HideAll
                                         },
                                     loggingReason = loggingReason,
-                                    instantlySnapScenes = true,
+                                    // Only snap instantly if we don't need to run the transition
+                                    // for the dismiss animation.
+                                    instantlySnapScenes = !willAnimateDismissAction,
+                                )
+                            } else if (targetScene == Scenes.Shade && willAnimateDismissAction) {
+                                SwitchSceneCommand.SwitchToScene(
+                                    targetSceneKey = Scenes.Gone,
+                                    loggingReason =
+                                        "device was unlocked with primary bouncer" +
+                                            " showing, from shade, and we're animating the" +
+                                            " dismiss (from Shade -> Gone)",
+                                    instantlySnapScenes = false,
                                 )
                             } else {
                                 if (previousScene.value != Scenes.Gone) {
