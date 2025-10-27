@@ -493,6 +493,9 @@ public final class Looper {
      * null to disable message logging.
      */
     public void setMessageLogging(@Nullable Printer printer) {
+        if (printer != null) {
+            StrictMode.noteSlowCall("setMessageLogging");
+        }
         mLogging = printer;
     }
 
