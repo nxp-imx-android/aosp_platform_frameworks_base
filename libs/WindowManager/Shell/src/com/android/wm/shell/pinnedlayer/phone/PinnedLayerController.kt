@@ -16,11 +16,11 @@
 
 package com.android.wm.shell.pinnedlayer.phone
 
+import android.app.ActivityManager
 import android.app.ActivityManager.AppTask.WINDOWING_LAYER_PINNED
 import android.app.TaskInfo
 import android.app.TaskWindowingLayerRequestHandler.REMOTE_CALLBACK_RESULT_KEY
 import android.app.TaskWindowingLayerRequestHandler.RESULT_APPROVED
-import android.app.TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE
 import android.graphics.Rect
 import android.os.Bundle
 import android.os.IBinder
@@ -45,7 +45,7 @@ import com.android.wm.shell.transition.Transitions
  * policies like single window and always-on-top.
  */
 class PinnedLayerController(shellInit: ShellInit, private val transitions: Transitions) :
-    Transitions.TransitionHandler {
+    Transitions.TransitionHandler, Transitions.TransitionObserver {
 
     // Stores ids of pinned TaskInfo.
     private val pinnedTasks = mutableSetOf<Int>()
@@ -61,6 +61,7 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
 
     private fun onInit() {
         transitions.addHandler(this)
+        transitions.registerObserver(this)
     }
 
     override fun handleRequest(
@@ -143,14 +144,14 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
      * Checks whether controller is observing a transition and awaits changes for a particular task
      * in this transition.
      *
-     * Used to determine what channges should be propagated to this handler.
+     * Used to determine what changes should be propagated to this handler.
      *
      * @return `true` if the transition is active within the controller and contains a task, `false`
      *   otherwise.
      */
     fun awaitsChangesFor(taskInfo: TaskInfo?, transition: IBinder): Boolean {
         val taskId = taskInfo?.taskId ?: return false
-        return activeTransitions.get(transition)?.any { it.taskInfo.taskId == taskId } ?: false
+        return activeTransitions[transition]?.any { it.taskInfo.taskId == taskId } ?: false
     }
 
     /** Pins a task and adds it to the active transitions for the given transition token. */
@@ -203,20 +204,19 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
             .any { it is ActiveTransition.Pin }
     }
 
-    override fun startAnimation(
+    override fun onTransitionReady(
         transition: IBinder,
         info: TransitionInfo,
         startTransaction: SurfaceControl.Transaction,
         finishTransaction: SurfaceControl.Transaction,
-        finishCallback: Transitions.TransitionFinishCallback,
-    ): Boolean {
-        val transitions = activeTransitions.remove(transition) ?: return false
+    ) {
+        val transitions = activeTransitions[transition] ?: return
         transitions.forEach { transition ->
             when (transition) {
                 is ActiveTransition.Pin -> {
                     pin(transition.taskInfo)
 
-                    // Only send result if this transition caused by API request.
+                    // Only send result if the transition caused by an API request.
                     if (transition.resultCallback != null) {
                         sendWindowingLayerResult(RESULT_APPROVED, transition.resultCallback)
                     }
@@ -231,16 +231,37 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
                 }
             }
         }
+    }
 
-        // Should accept all the TransitionInfo.Change if there's an unpin transition.
-        // Required to properly handle animation for mixed transitions with pip.
-        if (transitions.any { it is ActiveTransition.Unpin }) {
-            finishCallback.onTransitionFinished(null)
-            return true
+    override fun startAnimation(
+        transition: IBinder,
+        info: TransitionInfo,
+        startTransaction: SurfaceControl.Transaction,
+        finishTransaction: SurfaceControl.Transaction,
+        finishCallback: Transitions.TransitionFinishCallback,
+    ): Boolean {
+        val transitions = activeTransitions[transition]
+        var hasFinishedTransition = false
+
+        if (transitions != null) {
+            // Should accept all the TransitionInfo.Change if there's an unpin transition.
+            // Required to properly handle animation for mixed transitions with pip.
+            if (transitions.any { it is ActiveTransition.Unpin }) {
+                finishCallback.onTransitionFinished(null)
+                hasFinishedTransition = true
+            }
         }
 
-        // This handler doesn't animate anything.
-        return false
+        cleanup(transition)
+        return hasFinishedTransition
+    }
+
+    override fun onTransitionConsumed(
+        transition: IBinder,
+        aborted: Boolean,
+        finishTransaction: SurfaceControl.Transaction?,
+    ) {
+        cleanup(transition)
     }
 
     private fun pin(taskInfo: TaskInfo) {
@@ -258,24 +279,9 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
         }
     }
 
-    override fun onTransitionConsumed(
-        transition: IBinder,
-        aborted: Boolean,
-        finishTransaction: SurfaceControl.Transaction?,
-    ) {
-        if (!aborted) return
-        val transitions = activeTransitions.remove(transition) ?: return
-        transitions.forEach { transition ->
-            if (transition is ActiveTransition.Pin && transition.resultCallback != null) {
-                // An already pinned task can re-request to be pinned again, since this that leads
-                // to a no-op the transition is aborted. In this case we want to send approved
-                // result.
-                val result =
-                    if (isPinned(transition.taskInfo.taskId)) RESULT_APPROVED
-                    else RESULT_FAILED_BAD_STATE
-                sendWindowingLayerResult(result, transition.resultCallback)
-            }
-        }
+    /** Cleans internal states, should be used on terminal transition state. */
+    private fun cleanup(transition: IBinder) {
+        activeTransitions.remove(transition)
     }
 
     private fun sendWindowingLayerResult(result: Int, callback: IRemoteCallback) {
@@ -291,8 +297,12 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
     /**
      * Checks whether a task with [taskId] is pinned.
      *
+     * The task is considered to be pinned when the API call has triggered a transition and it
+     * reported to be ready, marking that the Core has applied changes to the task.
+     *
      * @param taskId an id of task to check for pinned state.
      * @return `true` when the task is pinned, `false` otherwise.
+     * @see Transitions.TransitionObserver.onTransitionReady
      */
     fun isPinned(taskId: Int): Boolean = pinnedTasks.contains(taskId)
 
@@ -325,7 +335,7 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
     companion object {
         private const val TAG = "PinnedLayerController"
         /**
-         * Whether to minimize a pinned task when it is unpinned, e.g. when dissmised by media PiP.
+         * Whether to minimize a pinned task when it is unpinned, e.g. when dismissed by media PiP.
          */
         private const val DEFAULT_MINIMIZE_WHEN_UNPINNING = false
 
