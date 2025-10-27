@@ -112,6 +112,7 @@ public class MediaQualityService extends SystemService {
     private static final String SOUND_PROFILE_PREFERENCE = "sound_profile_preference";
     private static final String COMMA_DELIMITER = ",";
     private static final String DEFAULT_PICTURE_PROFILE_ID = "default_picture_profile_id";
+    private static final String DEFAULT_SOUND_PROFILE_ID = "default_sound_profile_id";
     private static final String STREAM_STATUS = "stream_status";
     private static final String PREVIOUS_STREAM_STATUS = "previous_stream_status";
     private static final String STREAM_STATUS_NOT_CREATED = "stream_status_not_created";
@@ -1194,6 +1195,31 @@ public class MediaQualityService extends SystemService {
 
         @GuardedBy("mSoundProfileLock")
         @Override
+        public SoundProfile getDefaultSoundProfile() {
+            if (DEBUG) {
+                Slog.d(TAG, "getDefaultSoundProfile");
+            }
+            int callingUid = Binder.getCallingUid();
+            int callingPid = Binder.getCallingPid();
+            if (!hasGlobalSoundQualityServicePermission(callingUid, callingPid)) {
+                mMqManagerNotifier.notifyOnSoundProfileError(
+                        null, SoundProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                Slog.e(TAG, "getDefaultSoundProfile:"
+                        + "no permission to get default sound profile");
+                return null;
+            }
+            Long defaultSoundProfileId = mSoundProfileSharedPreference.getLong(
+                    DEFAULT_SOUND_PROFILE_ID,
+                    -1
+            );
+            if (defaultSoundProfileId != -1) {
+                return mMqDatabaseUtils.getSoundProfile(defaultSoundProfileId, true);
+            }
+            return null;
+        }
+
+        @GuardedBy("mSoundProfileLock")
+        @Override
         public boolean setDefaultSoundProfile(String profileId, int userId) {
             if (DEBUG) {
                 Slog.d(TAG, "setDefaultSoundProfile");
@@ -1214,6 +1240,9 @@ public class MediaQualityService extends SystemService {
                 return false;
             }
 
+            SharedPreferences.Editor editor = mSoundProfileSharedPreference.edit();
+            editor.putLong(DEFAULT_SOUND_PROFILE_ID, longId);
+            editor.apply();
             SoundProfile soundProfile = mMqDatabaseUtils.getSoundProfile(longId);
             PersistableBundle params = soundProfile.getParameters();
 
@@ -1961,12 +1990,16 @@ public class MediaQualityService extends SystemService {
         }
 
         private SoundProfile getSoundProfile(Long dbId) {
+            return getSoundProfile(dbId, false);
+        }
+
+        private SoundProfile getSoundProfile(Long dbId, boolean includeParams) {
             String selection = BaseParameters.PARAMETER_ID + " = ?";
             String[] selectionArguments = {Long.toString(dbId)};
 
-            try (Cursor cursor = mMqDatabaseUtils.getCursorAfterQuerying(
+            try (Cursor cursor = getCursorAfterQuerying(
                     mMediaQualityDbHelper.SOUND_QUALITY_TABLE_NAME,
-                    MediaQualityUtils.getMediaProfileColumns(false), selection,
+                    MediaQualityUtils.getMediaProfileColumns(includeParams), selection,
                     selectionArguments)) {
                 int count = cursor.getCount();
                 if (count == 0) {
@@ -1974,13 +2007,13 @@ public class MediaQualityService extends SystemService {
                 }
                 if (count > 1) {
                     Log.wtf(TAG, TextUtils.formatSimple(String.valueOf(Locale.US), "%d entries "
-                                    + "found for id=%s in %s. Should only ever be 0 or 1.", count,
+                                    + "found for id=%d in %s. Should only ever be 0 or 1.", count,
                             dbId, mMediaQualityDbHelper.SOUND_QUALITY_TABLE_NAME));
                     return null;
                 }
                 cursor.moveToFirst();
-                return MediaQualityUtils.convertCursorToSoundProfileWithTempId(
-                        cursor, mSoundProfileTempIdMap);
+                return MediaQualityUtils.convertCursorToSoundProfileWithTempId(cursor,
+                        mSoundProfileTempIdMap);
             }
         }
 
