@@ -24,7 +24,6 @@ import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
-import android.companion.virtualdevice.flags.Flags;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -315,11 +314,9 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
      */
     @Nullable
     public Image getScreenshot() {
-        if (Flags.computerControlBlockInputAndScreenshots()) {
-            synchronized (mLifecycle) {
-                if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
-                    return null;
-                }
+        synchronized (mLifecycle) {
+            if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
+                return null;
             }
         }
         final Image image;
@@ -552,11 +549,9 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     @NonNull
     public List<AccessibilityWindowInfo> getAccessibilityWindows() {
         // TODO: b/452703212: Implement this inside system_server instead of the client.
-        if (Flags.computerControlBlockInputAndScreenshots()) {
-            synchronized (mLifecycle) {
-                if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
-                    return Collections.emptyList();
-                }
+        synchronized (mLifecycle) {
+            if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
+                return Collections.emptyList();
             }
         }
         return mAccessibilityProxy.getWindows();

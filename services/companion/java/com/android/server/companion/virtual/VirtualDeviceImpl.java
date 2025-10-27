@@ -1499,8 +1499,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
 
     /** Returns whether the user is allowed based on {@link VirtualDeviceParams#getAllowedUsers}. */
     private boolean isInAllowedUsers(UserHandle profile) {
-        return !Flags.computerControlUserRestriction()
-                || mParams.getAllowedUsers().isEmpty()
+        return mParams.getAllowedUsers().isEmpty()
                 || mParams.getAllowedUsers().contains(profile);
     }
 

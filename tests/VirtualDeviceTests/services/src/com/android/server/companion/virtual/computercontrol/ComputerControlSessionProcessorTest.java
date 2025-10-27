@@ -16,9 +16,6 @@
 
 package com.android.server.companion.virtual.computercontrol;
 
-import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
-import static android.os.UserManager.USER_TYPE_PROFILE_MANAGED;
-
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionProcessor.MAXIMUM_CONCURRENT_SESSIONS;
 
 import static org.junit.Assert.assertFalse;
@@ -45,22 +42,16 @@ import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
-import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.UserInfo;
 import android.hardware.display.VirtualDisplay;
 import android.os.Binder;
 import android.os.ResultReceiver;
 import android.os.UserHandle;
-import android.os.UserManager;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Display;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -73,7 +64,6 @@ import com.android.server.wm.WindowManagerInternal;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -102,8 +92,6 @@ public class ComputerControlSessionProcessorTest {
                     .setTargetPackageNames(List.of(TARGET_PACKAGE))
                     .build();
 
-    @Rule
-    public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     @Mock
     private KeyguardManager mKeyguardManager;
     @Mock
@@ -242,7 +230,6 @@ public class ComputerControlSessionProcessorTest {
         }
     }
 
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_CONSENT)
     @Test
     public void onSessionPending_consentGranted_sessionCreated() throws Exception {
         when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
@@ -261,7 +248,6 @@ public class ComputerControlSessionProcessorTest {
         mSessionArgumentCaptor.getValue().close();
     }
 
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_CONSENT)
     @Test
     public void onSessionPending_consentDenied_sessionCreationFailed() throws Exception {
         when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
@@ -291,7 +277,6 @@ public class ComputerControlSessionProcessorTest {
         mSessionArgumentCaptor.getValue().close();
     }
 
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
     @Test
     public void validateParams_packageNamesAreValid() throws Exception {
         mProcessor.processNewSessionRequest(
@@ -302,7 +287,6 @@ public class ComputerControlSessionProcessorTest {
         mSessionArgumentCaptor.getValue().close();
     }
 
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
     @Test
     public void validateParams_invalidPackageNames_permissionController() {
         String packageName = PACKAGE_NAME_PERMISSION_CONTROLLER;
@@ -320,7 +304,6 @@ public class ComputerControlSessionProcessorTest {
         });
     }
 
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
     @Test
     public void validateParams_invalidPackageNames_packageWithoutLauncherIntent() {
         String packageName = "package.name";
@@ -338,7 +321,6 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
     public void validateParams_userManaged_throwsSecurityException() {
         when(mDevicePolicyManagerInternal.isUserOrganizationManaged(CALLING_USER_ID))
                 .thenReturn(true);
@@ -365,7 +347,6 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_NON_DISMISSIBLE_NOTIFICATIONS)
     public void isComputerControlNotification_notificationInfoAttached_returnsTrue()
             throws Exception {
         final int notificationId = 5;
@@ -384,7 +365,6 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_NON_DISMISSIBLE_NOTIFICATIONS)
     public void isComputerControlNotification_notificationInfoNotAttached_returnsFalse()
             throws Exception {
         mProcessor.processNewSessionRequest(
@@ -394,24 +374,6 @@ public class ComputerControlSessionProcessorTest {
                 .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
 
         assertFalse(mProcessor.isComputerControlNotification(5, "hello", OWNER_PACKAGE_NAME));
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_NON_DISMISSIBLE_NOTIFICATIONS)
-    public void isComputerControlNotification_notificationInfoAttached_returnsFalse()
-            throws Exception {
-        final int notificationId = 5;
-        final String notificationTag = "hello";
-        mProcessor.processNewSessionRequest(
-                ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
-        verify(mComputerControlSessionCallback,
-                timeout(CALLBACK_TIMEOUT_MS).times(1))
-                .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
-
-        mSessionArgumentCaptor.getValue().attachNotificationInfo(notificationId, notificationTag);
-
-        assertFalse(mProcessor.isComputerControlNotification(notificationId, notificationTag,
-                OWNER_PACKAGE_NAME));
     }
 
     @Test
