@@ -123,9 +123,14 @@ public final class HostingRecord {
 
     public HostingRecord(@NonNull String hostingType, ComponentName hostingName,
             @Nullable String action, @Nullable String triggerType) {
+        this(hostingType, hostingName, action, triggerType, false /* isPcc */);
+    }
+
+    public HostingRecord(@NonNull String hostingType, ComponentName hostingName,
+            @Nullable String action, @Nullable String triggerType, boolean isPcc) {
         this(hostingType, hostingName.toShortString(), REGULAR_ZYGOTE,
                 null /* definingPackageName */, -1 /* mDefiningUid */, false /* isTopApp */,
-                null /* definingProcessName */, action, triggerType, false /* isPcc */);
+                null /* definingProcessName */, action, triggerType, isPcc);
     }
 
     public HostingRecord(@NonNull String hostingType, ComponentName hostingName,
