@@ -282,7 +282,10 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         boolean isBundled = NotificationBundleUi.isEnabled()
                 ? mParent.getEntryAdapter().isBundled()
                 : mParent.getEntryLegacy().isBundled();
-        if (personNotifType == PeopleNotificationIdentifier.TYPE_PERSON) {
+        if (android.app.Flags.bridgedNotifications()
+                && sbn.getNotification().getBridgedNotificationMetadata() != null) {
+            mInfoItem = createBridgedNotificationItem(mContext);
+        } else if (personNotifType == PeopleNotificationIdentifier.TYPE_PERSON) {
             mInfoItem = createPartialConversationItem(mContext);
         } else if (personNotifType >= PeopleNotificationIdentifier.TYPE_FULL_PERSON) {
             mInfoItem = createConversationItem(mContext);
@@ -819,6 +822,17 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
             ExpandableNotificationRow row) {
         final Intent intent = new Intent(Settings.ACTION_NOTIFICATION_BUNDLES);
         mNotificationActivityStarter.startNotificationGutsIntent(intent, appUid, row);
+    }
+
+    private NotificationMenuItem createBridgedNotificationItem(Context context) {
+        Resources res = context.getResources();
+        String infoDescription = res.getString(R.string.notification_menu_gear_description);
+        int layoutId = R.layout.notification_bridged_info;
+        BridgedNotificationInfo infoContent =
+                (BridgedNotificationInfo) LayoutInflater.from(context).inflate(
+                        layoutId, null, false);
+        return new NotificationMenuItem(context, infoDescription, infoContent,
+                NotificationMenuItem.OMIT_FROM_SWIPE_MENU);
     }
 
     static NotificationMenuItem createInfoItem(Context context) {

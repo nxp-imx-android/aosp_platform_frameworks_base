@@ -55,7 +55,6 @@ import android.service.notification.NotificationAssistantService;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.text.Annotation;
-import android.text.Html;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.transition.ChangeBounds;
@@ -357,10 +356,16 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
             }
         }
 
-        // System Settings button.
-        final View settingsButton = findViewById(R.id.info);
-        settingsButton.setOnClickListener(getSettingsOnClickListener());
-        settingsButton.setVisibility(settingsButton.hasOnClickListeners() ? VISIBLE : GONE);
+        // If the notification is a bridged notification, the settings button doesn't exist so skip
+        // setting it.
+        boolean isBridgedNotification = android.app.Flags.bridgedNotifications()
+                && mSbn.getNotification().getBridgedNotificationMetadata() != null;
+        if (!isBridgedNotification) {
+            // System Settings button.
+            final View settingsButton = findViewById(R.id.info);
+            settingsButton.setOnClickListener(getSettingsOnClickListener());
+            settingsButton.setVisibility(settingsButton.hasOnClickListeners() ? VISIBLE : GONE);
+        }
     }
 
     private void bindSummarizer() {

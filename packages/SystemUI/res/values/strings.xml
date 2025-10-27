@@ -2352,6 +2352,24 @@
     <!-- Notification inline controls: button to show block screen [CHAR_LIMIT=35] -->
     <string name="inline_turn_off_notifications">Turn off</string>
 
+    <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
+    <string name="bridged_device_type_phone">phone</string>
+
+    <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
+    <string name="bridged_device_type_tablet">tablet</string>
+
+    <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
+    <string name="bridged_device_type_laptop">laptop</string>
+
+    <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
+    <string name="bridged_device_type_watch">watch</string>
+
+    <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
+    <string name="bridged_device_type_tv">TV</string>
+
+    <!-- Notification inline controls: button to open bridged notification settings on associated device [CHAR_LIMIT=35] -->
+    <string name="inline_bridged_open_associated_device_settings">Open <xliff:g id="device_type" example="phone">%1$s</xliff:g> settings</string>
+
     <!-- [CHAR LIMIT=100] Notification Importance title -->
     <string name="notification_silence_title">Silent</string>
 
@@ -2360,6 +2378,9 @@
 
     <!-- [CHAR LIMIT=100] Notification Importance title -->
     <string name="notification_automatic_title">Automatic</string>
+
+    <!-- [CHAR LIMIT=100] Notification Importance title -->
+    <string name="notification_bridged_title">This notification is from your <xliff:g id="device_type" example="phone">%1$s</xliff:g></string>
 
     <!-- [CHAR LIMIT=150] Notification Importance title: low importance level summary -->
     <string name="notification_channel_summary_low">No sound or vibration</string>
@@ -2378,6 +2399,9 @@
 
     <!-- [CHAR LIMIT=150] Notification Importance title: automatic importance level summary (alerted) -->
     <string name="notification_channel_summary_automatic_alerted">&lt;b>Status:&lt;/b> Promoted to Default</string>
+
+    <!-- [CHAR LIMIT=150] Notification Importance title: bridged importance level summary -->
+    <string name="notification_channel_summary_bridged">Synced notification priority and settings can be adjusted on your <xliff:g id="device_name" example="Jane's Phone">%1$s</xliff:g></string>
 
     <!-- [CHAR LIMIT=150] Notification Importance title: automatic importance level summary (silenced) -->
     <string name="notification_channel_summary_automatic_silenced">&lt;b>Status:&lt;/b> Demoted to Silent</string>
