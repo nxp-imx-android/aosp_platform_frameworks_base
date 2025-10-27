@@ -63,6 +63,7 @@ package android {
     field public static final String BIND_CELL_BROADCAST_SERVICE = "android.permission.BIND_CELL_BROADCAST_SERVICE";
     field @Deprecated public static final String BIND_CONNECTION_SERVICE = "android.permission.BIND_CONNECTION_SERVICE";
     field public static final String BIND_CONTENT_CAPTURE_SERVICE = "android.permission.BIND_CONTENT_CAPTURE_SERVICE";
+    field @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public static final String BIND_CONTENT_SAFETY_SERVICE = "android.permission.BIND_CONTENT_SAFETY_SERVICE";
     field public static final String BIND_CONTENT_SUGGESTIONS_SERVICE = "android.permission.BIND_CONTENT_SUGGESTIONS_SERVICE";
     field @FlaggedApi("android.content.pm.sdk_dependency_installer") public static final String BIND_DEPENDENCY_INSTALLER = "android.permission.BIND_DEPENDENCY_INSTALLER";
     field @FlaggedApi("android.content.pm.verification_service") public static final String BIND_DEVELOPER_VERIFICATION_AGENT = "android.permission.BIND_DEVELOPER_VERIFICATION_AGENT";
@@ -92,6 +93,7 @@ package android {
     field public static final String BIND_RESUME_ON_REBOOT_SERVICE = "android.permission.BIND_RESUME_ON_REBOOT_SERVICE";
     field public static final String BIND_ROTATION_RESOLVER_SERVICE = "android.permission.BIND_ROTATION_RESOLVER_SERVICE";
     field public static final String BIND_RUNTIME_PERMISSION_PRESENTER_SERVICE = "android.permission.BIND_RUNTIME_PERMISSION_PRESENTER_SERVICE";
+    field @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public static final String BIND_SANDBOXED_CONTENT_SAFETY_SERVICE = "android.permission.BIND_SANDBOXED_CONTENT_SAFETY_SERVICE";
     field public static final String BIND_SATELLITE_SERVICE = "android.permission.BIND_SATELLITE_SERVICE";
     field public static final String BIND_SETTINGS_SUGGESTIONS_SERVICE = "android.permission.BIND_SETTINGS_SUGGESTIONS_SERVICE";
     field public static final String BIND_SOUND_TRIGGER_DETECTION_SERVICE = "android.permission.BIND_SOUND_TRIGGER_DETECTION_SERVICE";
@@ -129,6 +131,7 @@ package android {
     field public static final String CHANGE_APP_IDLE_STATE = "android.permission.CHANGE_APP_IDLE_STATE";
     field public static final String CHANGE_APP_LAUNCH_TIME_ESTIMATE = "android.permission.CHANGE_APP_LAUNCH_TIME_ESTIMATE";
     field public static final String CHANGE_DEVICE_IDLE_TEMP_WHITELIST = "android.permission.CHANGE_DEVICE_IDLE_TEMP_WHITELIST";
+    field @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public static final String CHECK_CONTENT_SAFETY = "android.permission.CHECK_CONTENT_SAFETY";
     field public static final String CHECK_REMOTE_LOCKSCREEN = "android.permission.CHECK_REMOTE_LOCKSCREEN";
     field public static final String CLEAR_APP_USER_DATA = "android.permission.CLEAR_APP_USER_DATA";
     field public static final String COMPANION_APPROVE_WIFI_CONNECTIONS = "android.permission.COMPANION_APPROVE_WIFI_CONNECTIONS";
