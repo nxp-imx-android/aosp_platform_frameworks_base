@@ -30,7 +30,6 @@ import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS;
 import static androidx.lifecycle.Lifecycle.State.RESUMED;
 
 import static com.android.systemui.Dependency.TIME_TICK_HANDLER_NAME;
-import static com.android.systemui.Flags.keyboardShortcutHelperRewrite;
 import static com.android.systemui.charging.WirelessChargingAnimation.UNKNOWN_BATTERY_LEVEL;
 import static com.android.systemui.flags.Flags.SHORTCUT_LIST_SEARCH_LAYOUT;
 import static com.android.systemui.statusbar.StatusBarState.SHADE;
@@ -824,13 +823,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         // TODO(b/190746471): Find a better home for this.
         DateTimeView.setReceiverHandler(timeTickHandler);
 
-        if (!keyboardShortcutHelperRewrite()) {
-            mMessageRouter.subscribeTo(
-                    KeyboardShortcutsMessage.class,
-                    data -> toggleKeyboardShortcuts(data.mDeviceId));
-            mMessageRouter.subscribeTo(
-                    MSG_DISMISS_KEYBOARD_SHORTCUTS_MENU, id -> dismissKeyboardShortcuts());
-        }
         mMessageRouter.subscribeTo(AnimateExpandSettingsPanelMessage.class,
                 data -> mCommandQueueCallbacks.animateExpandSettingsPanel(data.mSubpanel));
         mMessageRouter.subscribeTo(MSG_LAUNCH_TRANSITION_TIMEOUT,
@@ -1866,13 +1858,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             String action = intent.getAction();
             String reason = intent.getStringExtra(SYSTEM_DIALOG_REASON_KEY);
             if (Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(action)) {
-                if (!keyboardShortcutHelperRewrite()) {
-                    if (shouldUseTabletKeyboardShortcuts()) {
-                        KeyboardShortcutListSearch.dismiss();
-                    } else {
-                        KeyboardShortcuts.dismiss();
-                    }
-                }
                 mRemoteInputManager.closeRemoteInputs();
                 if (mLockscreenUserManager.isCurrentProfile(getSendingUserId())) {
                     mShadeLogger.d("ACTION_CLOSE_SYSTEM_DIALOGS intent: closing shade");
