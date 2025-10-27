@@ -65,6 +65,7 @@ import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import com.android.systemui.util.mockito.mock
 import javax.inject.Provider
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 
 val Kosmos.displayRepository by Fixture { FakeDisplayRepository() }
@@ -241,4 +242,12 @@ val Kosmos.displaysWithDecorationsRepositoryCompat by Fixture {
         testScope.backgroundScope,
         displaysWithDecorationsRepositoryFromDisplayLib,
     )
+}
+
+fun Kosmos.setDisplayType(displayId: Int, type: Int) {
+    runBlocking {
+        displayRepository.removeDisplay(displayId)
+        displayRepository.addDisplay(displayId, type = type)
+        displayRepository.emitDisplayChangeEvent(displayId)
+    }
 }
