@@ -52,9 +52,10 @@ public final class NotificationHint extends ContextHint {
         mNotificationEvent = NotificationEvent.fromBundle(hintData);
     }
 
+    /** @hide */
     @Override
     @HintType
-    int getHintType() {
+    public int getHintType() {
         return HINT_TYPE_NOTIFICATION;
     }
 

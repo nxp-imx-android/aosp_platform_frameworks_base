@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "PersonalContextTests_server_personalcontext"
+    }
+  ],
+  "postsubmit": [
+    {
+      "name": "PersonalContextTests_server_personalcontext"
+    }
+  ]
+}

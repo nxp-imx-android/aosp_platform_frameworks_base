@@ -129,9 +129,11 @@ public abstract class ContextHint {
 
     /**
      * Returns the {@link HintType} of this hint.
+     *
+     * @hide
      */
     @HintType
-    abstract int getHintType();
+    public abstract int getHintType();
 
     /**
      * Returns the unique ID of this hint.
