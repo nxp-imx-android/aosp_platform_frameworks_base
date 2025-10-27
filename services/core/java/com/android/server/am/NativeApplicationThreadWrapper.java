@@ -80,7 +80,7 @@ import java.util.Map;
  * <p>TODO(b/431636312): Implement necessary methods and raise errors when calling unexpected
  * methods.
  */
-public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
+public class NativeApplicationThreadWrapper implements IApplicationThread {
     static final String TAG = TAG_WITH_CLASS_NAME ? "ActivityManagerService" : TAG_AM;
 
     /** The default name of the native library that will be loaded in the native process. */
@@ -118,6 +118,11 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
         mMgr = mgr;
         mUid = uid;
         mStartSeq = startSeq;
+    }
+
+    @Override
+    public final IBinder asBinder() {
+        return mNativeThread.asBinder();
     }
 
     @Override
