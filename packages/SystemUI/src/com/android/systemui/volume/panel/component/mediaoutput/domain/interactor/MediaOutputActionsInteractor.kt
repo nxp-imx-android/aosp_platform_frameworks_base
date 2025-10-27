@@ -18,7 +18,6 @@ package com.android.systemui.volume.panel.component.mediaoutput.domain.interacto
 
 import android.app.Dialog
 import android.content.Context
-import android.content.res.Configuration
 import android.view.Gravity
 import android.view.WindowManager
 import com.android.internal.jank.InteractionJankMonitor
@@ -39,6 +38,7 @@ import com.android.systemui.volume.panel.dagger.scope.VolumePanelScope
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -67,22 +67,25 @@ constructor(
         val onDialogEventListener =
             if (expandedAudioTileDetailsFeatureInteractor.isEnabled()) {
                 object : MediaOutputDialog.OnDialogEventListener {
-                    override fun onConfigurationChanged(dialog: Dialog, newConfig: Configuration) {
-                        coroutineScope.launch {
-                            updateDialogBounds(
-                                dialog,
-                                qsPanelAppearanceRepository.qsPanelShape.value
-                            )
-                        }
-                    }
+                    private var job: Job? = null
 
                     override fun onCreate(dialog: Dialog) {
-                        coroutineScope.launch {
-                            updateDialogBounds(
-                                dialog,
-                                qsPanelAppearanceRepository.qsPanelShape.value
-                            )
-                        }
+                        job?.cancel()
+                        job =
+                            coroutineScope.launch {
+                                updateDialogBounds(
+                                    dialog,
+                                    qsPanelAppearanceRepository.qsPanelShape.value,
+                                )
+                                // Update the dialog bounds when the QS panel shape changes.
+                                qsPanelAppearanceRepository.qsPanelShape.collect { shape ->
+                                    updateDialogBounds(dialog, shape)
+                                }
+                            }
+                    }
+
+                    override fun onStop(dialog: Dialog) {
+                        job?.cancel()
                     }
                 }
             } else {
