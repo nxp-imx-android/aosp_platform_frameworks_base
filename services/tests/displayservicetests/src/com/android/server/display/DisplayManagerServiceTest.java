@@ -368,7 +368,7 @@ public class DisplayManagerServiceTest {
                     new VirtualDisplayAdapter.SurfaceControlDisplayFactory() {
                         @Override
                         public IBinder createDisplay(String name, boolean secure,
-                                boolean optimizeForPower, String uniqueId,
+                                boolean optimizeForPower, String uniqueId, int ownerUid,
                                 float requestedRefreshRate) {
                             return mMockDisplayToken;
                         }

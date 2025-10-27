@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -419,7 +420,7 @@ public class VirtualDisplayAdapterTest {
         final String uniqueId = "uniqueId";
         final IBinder displayToken = new Binder();
         when(mMockSufaceControlDisplayFactory.createDisplay(
-                any(), anyBoolean(), anyBoolean(), eq(uniqueId), anyFloat()))
+                any(), anyBoolean(), anyBoolean(), eq(uniqueId), anyInt(), anyFloat()))
                 .thenReturn(displayToken);
 
         // The display needs to be public, otherwise it will be considered never blank.
@@ -468,7 +469,7 @@ public class VirtualDisplayAdapterTest {
         final String name = "name";
         when(mVirtualDisplayConfigMock.getName()).thenReturn(name);
         when(mMockSufaceControlDisplayFactory.createDisplay(
-                any(), anyBoolean(), anyBoolean(), eq(uniqueId), anyFloat()))
+                any(), anyBoolean(), anyBoolean(), eq(uniqueId), anyInt(), anyFloat()))
                 .thenReturn(displayToken);
 
         // Use a private display to cause the display to be never blank.
@@ -477,7 +478,7 @@ public class VirtualDisplayAdapterTest {
                 uniqueId, /* surface= */ mSurfaceMock, 0, mVirtualDisplayConfigMock);
 
         verify(mMockSufaceControlDisplayFactory).createDisplay(eq(name), eq(false), eq(true),
-                eq(uniqueId), anyFloat());
+                eq(uniqueId), anyInt(), anyFloat());
     }
 
     @EnableFlags(
@@ -489,7 +490,7 @@ public class VirtualDisplayAdapterTest {
         final String name = "name";
         when(mVirtualDisplayConfigMock.getName()).thenReturn(name);
         when(mMockSufaceControlDisplayFactory.createDisplay(
-                any(), anyBoolean(), anyBoolean(), eq(uniqueId), anyFloat()))
+                any(), anyBoolean(), anyBoolean(), eq(uniqueId), anyInt(), anyFloat()))
                 .thenReturn(displayToken);
 
         // Use a public display to cause the display to be blankable
@@ -499,7 +500,7 @@ public class VirtualDisplayAdapterTest {
                 mVirtualDisplayConfigMock);
 
         verify(mMockSufaceControlDisplayFactory).createDisplay(eq(name), eq(false), eq(false),
-                eq(uniqueId), anyFloat());
+                eq(uniqueId), anyInt(), anyFloat());
     }
 
     private IVirtualDisplayCallback createCallback() {
