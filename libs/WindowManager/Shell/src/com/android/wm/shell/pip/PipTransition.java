@@ -730,7 +730,8 @@ public class PipTransition extends PipTransitionController {
         }
         if (mPipOrganizer.getOutPipWindowingMode() == WINDOWING_MODE_UNDEFINED) {
             mHomeTransitionObserver.notifyHomeVisibilityChanged(
-                    false /* isVisible */, false /* keyguardGoingAway */, false /* waking */);
+                    false /* isVisible */, false /* keyguardGoingAway */, false /* waking */,
+                    /* behindDesktop */ false);
         }
         if (pipChange == null) {
             ProtoLog.w(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,

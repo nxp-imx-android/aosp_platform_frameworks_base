@@ -689,7 +689,7 @@ public abstract class WMShellModule {
             WindowDecorViewModel windowDecorViewModel,
             Optional<TaskChangeListener> taskChangeListener,
             FocusTransitionObserver focusTransitionObserver,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             Optional<DesksTransitionObserver> desksTransitionObserver,
             DesktopState desktopState,
             Optional<DesktopImeHandler> desktopImeHandler,
@@ -885,7 +885,7 @@ public abstract class WMShellModule {
             Optional<RecentTasksController> recentTasksController,
             HomeTransitionObserver homeTransitionObserver,
             DisplayController displayController,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             BubbleHelper bubbleHelper) {
         return new RecentsTransitionHandler(
                 shellInit,
@@ -1009,6 +1009,7 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
+    @DynamicOverride
     static DesksOrganizer provideDesksOrganizer(
             @NonNull ShellInit shellInit,
             @NonNull ShellCommandHandler shellCommandHandler,
@@ -1078,7 +1079,7 @@ public abstract class WMShellModule {
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
             Optional<BubbleController> bubbleController,
             OverviewToDesktopTransitionObserver overviewToDesktopTransitionObserver,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             Optional<DesksTransitionObserver> desksTransitionObserver,
             UserProfileContexts userProfileContexts,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
@@ -1217,7 +1218,7 @@ public abstract class WMShellModule {
             DesktopState desktopState,
             ShellController shellController,
             Optional<PinnedLayerController> pinnedLayerController,
-            DesksOrganizer desksOrganizer) {
+            @DynamicOverride DesksOrganizer desksOrganizer) {
         if (ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()
                 && desktopState.canEnterDesktopMode()) {
             return Optional.of(
@@ -1261,7 +1262,7 @@ public abstract class WMShellModule {
             Transitions transitions,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             ShellTaskOrganizer shellTaskOrganizer,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             DesktopConfig desktopConfig,
             DesktopState desktopState,
             SnapController snapController,
@@ -1317,7 +1318,7 @@ public abstract class WMShellModule {
             Context context,
             Transitions transitions,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             InteractionJankMonitor interactionJankMonitor,
             Optional<BubbleController> bubbleController,
@@ -1542,7 +1543,7 @@ public abstract class WMShellModule {
             DesktopTilingDecorViewModel desktopTilingDecorViewModel,
             MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
             Optional<CompatUIHandler> compatUI,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             ShellDesktopState shelldesktopState,
             DesktopConfig desktopConfig,
             UserProfileContexts userProfileContexts,
@@ -1834,7 +1835,7 @@ public abstract class WMShellModule {
             Optional<DesktopUserRepositories> desktopUserRepositories,
             Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler,
             Optional<BackAnimationController> backAnimationController,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             Transitions transitions,
             DesktopState desktopState,
             ShellInit shellInit) {
@@ -1855,7 +1856,7 @@ public abstract class WMShellModule {
     @Provides
     static Optional<DesksTransitionObserver> provideDesksTransitionObserver(
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
-            @NonNull DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             @NonNull Transitions transitions,
             @NonNull DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
             @NonNull @ShellMainThread CoroutineScope mainScope,
@@ -1879,7 +1880,7 @@ public abstract class WMShellModule {
             ShellInit shellInit,
             Context context,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             DesksController desksController,
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
             DisplayController displayController,
@@ -1943,7 +1944,7 @@ public abstract class WMShellModule {
             DesktopModeEventLogger desktopModeEventLogger,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             DesktopState desktopState,
-            DesksOrganizer desksOrganizer) {
+            @DynamicOverride DesksOrganizer desksOrganizer) {
         return new DesktopModeLoggerTransitionObserver(
                 shellInit, desktopModeEventLogger,
                 desktopTasksLimiter, desktopState, desksOrganizer);
@@ -1963,7 +1964,7 @@ public abstract class WMShellModule {
             ShellController shellController,
             DisplayController displayController,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             Optional<DesktopUserRepositories> desktopUserRepositories,
             Optional<DesktopTasksController> desktopTasksController,
             Optional<DesktopDisplayModeController> desktopDisplayModeController,

@@ -54,7 +54,7 @@ public class DesktopModule {
             @NonNull DesktopConfig desktopConfig,
             @NonNull DesktopState desktopState,
             @NonNull DisplayController displayController,
-            @NonNull DesksOrganizer desksOrganizer,
+            @DynamicOverride @NonNull DesksOrganizer desksOrganizer,
             @NonNull ShellTaskOrganizer shellTaskOrganizer
     ) {
         return new DesksController(shellController, userRepositories,
