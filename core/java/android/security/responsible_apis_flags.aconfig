@@ -127,6 +127,14 @@ flag {
 }
 
 flag {
+    name: "dynamic_instrumentation_api"
+    namespace: "responsible_apis"
+    description: "New APIs for dynamic instrumentation."
+    bug: "412739902"
+    is_exported: false
+}
+
+flag {
     name: "enable_intent_firewall_component_class_filter"
     namespace: "responsible_apis"
     description: "Flag for enabling component-class-filter in IntentFirewall"
