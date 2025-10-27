@@ -2254,7 +2254,6 @@ public final class SystemServiceRegistry {
      * @hide
      */
     @Nullable
-    @RavenwoodRedirect
     public static String getSystemServiceClassName(@NonNull String name) {
         return SYSTEM_SERVICE_CLASS_NAMES.get(name);
     }
