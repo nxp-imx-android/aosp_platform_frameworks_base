@@ -53,7 +53,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalDensity
@@ -101,11 +105,20 @@ fun AODPromotedNotification(
         Log.w(TAG, "not displaying promoted notif with ineligible style on AOD")
         return
     }
+
+    var hasBindingError by remember(content.identity) { mutableStateOf(false) }
+
+    if (hasBindingError) {
+        Log.w(TAG, "Not rendering due to previous binding error for ${content.identity}")
+        return
+    }
+
     key(content.identity, notificationView.getTag(viewInflationIdentity)) {
         AODPromotedNotificationView(
             notificationViewFactory = { notificationView },
             content = content,
             audiblyAlertedIconVisible = audiblyAlertedIconVisible,
+            onBindingError = { hasBindingError = true },
             modifier = modifier,
         )
     }
@@ -116,6 +129,7 @@ fun AODPromotedNotificationView(
     notificationViewFactory: (Context) -> View,
     content: PromotedNotificationContentModel,
     audiblyAlertedIconVisible: Boolean,
+    onBindingError: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val sidePaddings = dimensionResource(systemuiR.dimen.notification_side_paddings)
@@ -143,23 +157,42 @@ fun AODPromotedNotificationView(
                 if (notificationView.parent != null) {
                     (notificationView.parent as ViewGroup).removeView(notificationView)
                 }
-
                 val updater =
-                    traceSection("$TAG.findViews") {
-                        AODPromotedNotificationViewUpdater(notificationView)
+                    try {
+                        traceSection("$TAG.findViews") {
+                            AODPromotedNotificationViewUpdater(notificationView)
+                        }
+                    } catch (tr: Throwable) {
+                        Log.wtf(TAG, "ViewUpdater creation failed", tr)
+                        onBindingError()
+                        null
                     }
 
-                val frame = FrameLayoutWithMaxHeight(maxHeight, context)
+                val frame =
+                    FrameLayoutWithMaxHeight(
+                        maxHeight = if (updater == null) 0 else maxHeight,
+                        context = context,
+                    )
                 frame.addView(notificationView)
                 frame.setTag(viewUpdaterTagId, updater)
-
                 frame
             },
             update = { frame ->
-                val updater = frame.getTag(viewUpdaterTagId) as AODPromotedNotificationViewUpdater
+                val updater = frame.getTag(viewUpdaterTagId) as? AODPromotedNotificationViewUpdater
+                if (updater == null) {
+                    return@AndroidView
+                }
 
-                traceSection("$TAG.update") { updater.update(content, audiblyAlertedIconVisible) }
-                frame.maxHeight = maxHeight
+                try {
+                    traceSection("$TAG.update") {
+                        updater.update(content, audiblyAlertedIconVisible)
+                    }
+                    frame.maxHeight = maxHeight
+                } catch (tr: Throwable) {
+                    Log.wtf(TAG, "ViewUpdater update failed", tr)
+                    onBindingError()
+                    frame.maxHeight = 0
+                }
             },
             modifier = viewModifier,
         )
