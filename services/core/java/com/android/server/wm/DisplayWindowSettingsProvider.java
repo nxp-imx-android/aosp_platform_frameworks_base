@@ -41,6 +41,7 @@ import android.view.DisplayInfo;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.wm.DisplayWindowSettings.SettingsProvider;
 import com.android.server.wm.DisplayWindowSettingsXmlHelper.FileData;
+import com.android.window.flags.Flags;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -61,8 +62,9 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
     /** Logging tag, abbreviated for Logcat tag length limit if {@code TAG_WITH_CLASS_NAME}. */
     private static final String TAG = TAG_WITH_CLASS_NAME ? "DispWinSettingsProvider" : TAG_WM;
 
-    private static final String DATA_DISPLAY_SETTINGS_FILE_PATH = "system/display_settings.xml";
-    private static final String VENDOR_DISPLAY_SETTINGS_FILE_PATH = "etc/display_settings.xml";
+    private static final String DISPLAY_SETTINGS_FILENAME = "display_settings.xml";
+    private static final String VENDOR_DISPLAY_SETTINGS_FILE_PATH =
+            "etc/" + DISPLAY_SETTINGS_FILENAME;
     private static final String WM_DISPLAY_COMMIT_TAG = "wm-displays";
     /**
      * Maximum number of display settings entries cached in LruCache. When limit is reached,
@@ -137,7 +139,7 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
     /**
      * Overrides the storage that should be used to save override settings for a user.
      *
-     * @see #DATA_DISPLAY_SETTINGS_FILE_PATH
+     * @see #getOverrideSettingsFileForUser
      */
     void setOverrideSettingsForUser(@UserIdInt int userId) {
         final AtomicFile settingsFile = getOverrideSettingsFileForUser(userId);
@@ -384,22 +386,35 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
         return new AtomicFile(vendorFile, WM_DISPLAY_COMMIT_TAG);
     }
 
+    /**
+     * Returns the file used to store display settings for a given user.
+     *
+     * <p>The path is {@code /data/system/display_settings.xml} for the system user
+     * ({@code USER_SYSTEM}), used for the owner on phones/tablets and the login screen on desktop.
+     * For other users, it's {@code /data/system_de/<user_id>/display_settings.xml} when the flag is
+     * enabled, or {@code /data/system_ce/<user_id>/system/display_settings.xml} otherwise.
+     *
+     * @param userId The user to retrieve the settings file for.
+     * @return The file for storing override display settings.
+     */
     @NonNull
     static AtomicFile getOverrideSettingsFileForUser(@UserIdInt int userId) {
-        final File directory = (userId == USER_SYSTEM)
-                ? Environment.getDataDirectory()
-                : Environment.getDataSystemCeDirectory(userId);
-        final File overrideSettingsFile = new File(directory, DATA_DISPLAY_SETTINGS_FILE_PATH);
+        final File directory;
+        if (userId == USER_SYSTEM) {
+            directory = new File(Environment.getDataDirectory(), "system");
+        } else {
+            directory = Flags.moveUserDisplaySettingsToDeStorage()
+                    ? Environment.getDataSystemDeDirectory(userId)
+                    // TODO(b/442757820): Remove once flag is cleaned up.
+                    : new File(Environment.getDataSystemCeDirectory(userId), "system");
+        }
+        final File overrideSettingsFile = new File(directory, DISPLAY_SETTINGS_FILENAME);
         return new AtomicFile(overrideSettingsFile, WM_DISPLAY_COMMIT_TAG);
     }
 
-    private static final class AtomicFileStorage implements WritableSettingsStorage {
-        @NonNull
-        private final AtomicFile mAtomicFile;
-
-        AtomicFileStorage(@NonNull AtomicFile atomicFile) {
-            mAtomicFile = atomicFile;
-        }
+    /** Provides I/O stream access to the immutable {@code mAtomicFile} reference. */
+    private record AtomicFileStorage(@NonNull AtomicFile mAtomicFile) implements
+            WritableSettingsStorage {
 
         @Override
         public InputStream openRead() throws FileNotFoundException {
@@ -413,10 +428,9 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
 
         @Override
         public void finishWrite(OutputStream os, boolean success) {
-            if (!(os instanceof FileOutputStream)) {
+            if (!(os instanceof FileOutputStream fos)) {
                 throw new IllegalArgumentException("Unexpected OutputStream as argument: " + os);
             }
-            FileOutputStream fos = (FileOutputStream) os;
             if (success) {
                 mAtomicFile.finishWrite(fos);
             } else {
