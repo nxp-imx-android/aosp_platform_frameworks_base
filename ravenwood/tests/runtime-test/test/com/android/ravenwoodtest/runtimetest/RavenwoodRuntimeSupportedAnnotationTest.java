@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ravenwoodtest.coretest;
+package com.android.ravenwoodtest.runtimetest;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -37,7 +37,8 @@ import java.util.stream.Collectors;
  * Test to verify {@link android.ravenwood.annotation.RavenwoodSupported}
  * and {@link RavenwoodProvidingImplementation} are used correctly.
  */
-public class RavenwoodSupportedAnnotationTest {
+public class RavenwoodRuntimeSupportedAnnotationTest {
+
     /** Ravenwood annotations that mark methods as "available"  */
     private static final ArrayList<Class<? extends Annotation>> RAVENWOOD_AVAILABLE_ANNOTS =
             new ArrayList<>();
