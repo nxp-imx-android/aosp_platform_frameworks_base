@@ -19,6 +19,7 @@ package com.android.server.devicepolicy.handlers;
 import android.annotation.NonNull;
 import android.app.admin.metadata.EnumPolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
+import android.app.admin.metadata.StringPolicyMetadata;
 
 /**
  * A PolicyValidator provides type specific functionality for validating the values of a policy.
@@ -41,7 +42,22 @@ public abstract class PolicyValidator<T> {
                                 "Unsupported value "
                                         + value
                                         + " for policy "
-                                        + policy.getId().getId());
+                                        + policy.getId());
+                    }
+                }
+            };
+
+    private static final PolicyValidator<String> STRING_POLICY_VALIDATOR =
+            new PolicyValidator<String>() {
+                @Override
+                public void validate(
+                        @NonNull String value, @NonNull PolicyMetadata<String> policy) {
+                    var stringPolicy = (StringPolicyMetadata) policy;
+
+                    if (!stringPolicy.isEmptyStringAllowed() && value.isEmpty()) {
+                        throw new IllegalArgumentException(
+                            "Unsupported value \"\" for policy " + policy.getId()
+                        );
                     }
                 }
             };
@@ -51,6 +67,8 @@ public abstract class PolicyValidator<T> {
         switch (policy) {
             case EnumPolicyMetadata e:
                 return (PolicyValidator<T>) ENUM_POLICY_VALIDATOR;
+            case StringPolicyMetadata e:
+                return (PolicyValidator<T>) STRING_POLICY_VALIDATOR;
             default:
                 throw new UnsupportedOperationException(
                         "Unsupported policy: " + policy.getId().getId());

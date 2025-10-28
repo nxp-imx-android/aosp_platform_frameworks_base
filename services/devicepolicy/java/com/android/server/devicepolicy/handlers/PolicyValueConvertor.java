@@ -19,8 +19,10 @@ package com.android.server.devicepolicy.handlers;
 import android.annotation.NonNull;
 import android.app.admin.IntegerPolicyValue;
 import android.app.admin.PolicyValue;
+import android.app.admin.StringPolicyValue;
 import android.app.admin.metadata.EnumPolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
+import android.app.admin.metadata.StringPolicyMetadata;
 
 /**
  * A PolicyValueConvertor provides type specific functionality for converting policy values to
@@ -43,6 +45,19 @@ public abstract class PolicyValueConvertor<T> {
                 }
             };
 
+    private static final PolicyValueConvertor<String> STRING_POLICY_VALUE_CONVERTOR =
+            new PolicyValueConvertor<String>() {
+                @Override
+                public @NonNull PolicyValue<String> toPolicyValue(@NonNull String value) {
+                    return new StringPolicyValue(value);
+                }
+
+                @Override
+                public @NonNull String fromPolicyValue(@NonNull PolicyValue<String> value) {
+                    return value.getValue();
+                }
+            };
+
     /**
      * Gets a convertor that can handle the given policy.
      *
@@ -55,6 +70,8 @@ public abstract class PolicyValueConvertor<T> {
         switch (metadata) {
             case EnumPolicyMetadata e:
                 return (PolicyValueConvertor<T>) INTEGER_POLICY_VALUE_CONVERTOR;
+            case StringPolicyMetadata e:
+                return (PolicyValueConvertor<T>) STRING_POLICY_VALUE_CONVERTOR;
             default:
                 throw new UnsupportedOperationException(
                         "Unsupported policy: " + metadata.getId());

@@ -107,7 +107,7 @@ class EnumPolicyHandlerTest {
     ) = PolicyHandler<Int>(key, metadata, definition, delegate)
 
     @Test
-    fun setPolicy_shouldHandleValidValues() {
+    fun setPolicy_shouldAcceptValidValues() {
         val enumValues = setOf(123, 456, 789)
         val metadata = copyOf(Policy.metadata, allowedValues = enumValues)
         val handler = createHandler(metadata = metadata, delegate = mockDelegate)
@@ -123,7 +123,7 @@ class EnumPolicyHandlerTest {
     }
 
     @Test
-    fun setPolicy_shouldHandleNull() {
+    fun setPolicy_shouldAcceptNull() {
         val handler = createHandler(delegate = mockDelegate)
 
         handler.setPolicy(anyCaller, anyScope, null)
