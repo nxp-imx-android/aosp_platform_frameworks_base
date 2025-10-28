@@ -56,6 +56,9 @@ public final class BinderProxy implements IBinder {
 
     private static volatile Binder.ProxyTransactListener sTransactListener = null;
 
+    private final boolean sUseExecutorForFrozenStateChangeCallback =
+            Flags.binderProxyUseExecutorMap();
+
     private static class BinderProxyMapSizeException extends AssertionError {
         BinderProxyMapSizeException(String s) {
             super(s);
@@ -672,10 +675,24 @@ public final class BinderProxy implements IBinder {
             Collections.synchronizedMap(new HashMap<>());
 
     /**
+     * This map is to hold strong reference to the executors of frozen state callbacks.
+     *
+     * The key is the original callback passed into {@link #addFrozenStateChangeCallback}. The value
+     * is the associated executor.
+     */
+    private Map<FrozenStateChangeCallback, Executor> mFrozenStateChangeCallbackExecutors =
+            Collections.synchronizedMap(new HashMap<>());
+
+    /**
      * See {@link IBinder#addFrozenStateChangeCallback(FrozenStateChangeCallback)}
      */
     public void addFrozenStateChangeCallback(Executor executor, FrozenStateChangeCallback callback)
             throws RemoteException {
+        if (sUseExecutorForFrozenStateChangeCallback) {
+            mFrozenStateChangeCallbackExecutors.put(callback, executor);
+            addFrozenStateChangeCallbackNative(callback);
+            return;
+        }
         FrozenStateChangeCallback wrappedCallback = (who, state) ->
                 executor.execute(() -> callback.onFrozenStateChanged(who, state));
         addFrozenStateChangeCallbackNative(wrappedCallback);
@@ -687,6 +704,12 @@ public final class BinderProxy implements IBinder {
      */
     public boolean removeFrozenStateChangeCallback(FrozenStateChangeCallback callback)
             throws IllegalArgumentException {
+        if (sUseExecutorForFrozenStateChangeCallback) {
+            if (mFrozenStateChangeCallbackExecutors.remove(callback) == null) {
+                throw new IllegalArgumentException("callback not found");
+            }
+            return removeFrozenStateChangeCallbackNative(callback);
+        }
         FrozenStateChangeCallback wrappedCallback = mFrozenStateChangeCallbacks.remove(callback);
         if (wrappedCallback == null) {
             throw new IllegalArgumentException("callback not found");
@@ -793,6 +816,20 @@ public final class BinderProxy implements IBinder {
 
     private static void invokeFrozenStateChangeCallback(
             FrozenStateChangeCallback callback, IBinder binderProxy, int stateIndex) {
+        if (binderProxy instanceof BinderProxy
+                && ((BinderProxy) binderProxy).sUseExecutorForFrozenStateChangeCallback) {
+            final BinderProxy bp = (BinderProxy) binderProxy;
+            final Executor executor = bp.mFrozenStateChangeCallbackExecutors.get(callback);
+            if (executor != null) {
+                try {
+                    executor.execute(() -> callback.onFrozenStateChanged(binderProxy, stateIndex));
+                } catch (RuntimeException exc) {
+                    Log.w("BinderNative",
+                            "Uncaught exception from frozen state change callback", exc);
+                }
+            }
+            return;
+        }
         try {
             callback.onFrozenStateChanged(binderProxy, stateIndex);
         } catch (RuntimeException exc) {

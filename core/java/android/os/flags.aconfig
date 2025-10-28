@@ -177,6 +177,13 @@ flag {
 }
 
 flag {
+    name: "binder_proxy_use_executor_map"
+    namespace: "system_performance"
+    description: "Whether to use mFrozenStateChangeCallbackExecutors in BinderProxy."
+    bug: "454431919"
+}
+
+flag {
     name: "bluetooth_bugreport_mode"
     is_exported: true
     namespace: "bluetooth"
