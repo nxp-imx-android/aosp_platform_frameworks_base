@@ -25,6 +25,8 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.annotation.RequiresPermission;
+import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.UserIdInt;
 import android.content.Context;
 import android.os.IBinder;
@@ -628,6 +630,77 @@ final class IInputMethodManagerGlobalInvoker {
         }
         try {
             service.setAllowedImesByPolicyForTest(client, allowedPackages);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @AnyThread
+    @RequiresPermission(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL},
+            conditional = true)
+    static boolean enableInputMethodForTesting(@NonNull String imeId,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        final IInputMethodManager service = getService();
+        if (service == null) {
+            return false;
+        }
+        try {
+            return service.enableInputMethodForTesting(imeId, userId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @AnyThread
+    @RequiresPermission(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL},
+            conditional = true)
+    static boolean disableInputMethodForTesting(@NonNull String imeId,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        final IInputMethodManager service = getService();
+        if (service == null) {
+            return false;
+        }
+        try {
+            return service.disableInputMethodForTesting(imeId, userId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @AnyThread
+    @RequiresPermission(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL},
+            conditional = true)
+    static boolean setInputMethodForTesting(@NonNull String imeId,
+            @UserIdInt @CanBeALL @CanBeCURRENT int userId) {
+        final IInputMethodManager service = getService();
+        if (service == null) {
+            return false;
+        }
+        try {
+            return service.setInputMethodForTesting(imeId, userId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @AnyThread
+    @RequiresPermission(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL},
+            conditional = true)
+    static void resetInputMethodsForTesting(@CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        final IInputMethodManager service = getService();
+        if (service == null) {
+            return;
+        }
+        try {
+            service.resetInputMethodsForTesting(userId);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

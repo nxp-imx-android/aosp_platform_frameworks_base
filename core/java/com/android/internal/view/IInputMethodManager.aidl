@@ -237,4 +237,52 @@ interface IInputMethodManager {
             + "android.Manifest.permission.TEST_INPUT_METHOD)")
     void setAllowedImesByPolicyForTest(
             in IInputMethodClient client, in List<String> allowedPackages);
+
+    /**
+     * A test API for CTS to reset the currently selected and enabled IMEs to the default ones for
+     * a given user.
+     *
+     * <p>This is the same as "adb shell ime reset --user <userId>" command.</p>
+     *
+     * This behavior can be triggered for all users using the UserHandle.USER_ALL constant.
+     */
+    @EnforcePermission(allOf = {"INTERACT_ACROSS_USERS_FULL", "TEST_INPUT_METHOD", "WRITE_SECURE_SETTINGS"})
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(allOf = {android.Manifest."
+            + "permission.INTERACT_ACROSS_USERS_FULL, android.Manifest.permission.TEST_INPUT_METHOD"
+            + ", android.Manifest.permission.WRITE_SECURE_SETTINGS})")
+    oneway void resetInputMethodsForTesting(int userId);
+
+    /**
+     * A test API for CTS to set the currently selected and enabled IMEs to the default ones for
+     * a given user.
+     *
+     * <p>This is the same as "adb shell ime set --user <userId>" command.</p>
+     */
+    @EnforcePermission(allOf = {"INTERACT_ACROSS_USERS_FULL", "TEST_INPUT_METHOD", "WRITE_SECURE_SETTINGS"})
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(allOf = {android.Manifest."
+            + "permission.INTERACT_ACROSS_USERS_FULL, android.Manifest.permission.TEST_INPUT_METHOD"
+            + ", android.Manifest.permission.WRITE_SECURE_SETTINGS})")
+    boolean setInputMethodForTesting(String imeId, int userId);
+
+    /**
+     * A test API for CTS to enable the given IME for the given user.
+     *
+     * <p>This is the same as "adb shell ime enable" command.</p>
+     */
+    @EnforcePermission(allOf = {"INTERACT_ACROSS_USERS_FULL", "TEST_INPUT_METHOD", "WRITE_SECURE_SETTINGS"})
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(allOf = {android.Manifest."
+            + "permission.INTERACT_ACROSS_USERS_FULL, android.Manifest.permission.TEST_INPUT_METHOD"
+            + ", android.Manifest.permission.WRITE_SECURE_SETTINGS})")
+    boolean enableInputMethodForTesting(String imeId, int userId);
+
+    /**
+     * A test API for CTS to disable the given IME for the given user.
+     *
+     * <p>This is the same as "adb shell ime disable" command.</p>
+     */
+    @EnforcePermission(allOf = {"INTERACT_ACROSS_USERS_FULL", "TEST_INPUT_METHOD", "WRITE_SECURE_SETTINGS"})
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(allOf = {android.Manifest."
+            + "permission.INTERACT_ACROSS_USERS_FULL, android.Manifest.permission.TEST_INPUT_METHOD"
+            + ", android.Manifest.permission.WRITE_SECURE_SETTINGS})")
+    boolean disableInputMethodForTesting(String imeId, int userId);
 }
