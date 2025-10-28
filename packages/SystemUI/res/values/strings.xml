@@ -2956,11 +2956,10 @@
     <!-- Text for the dialog title. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_dialog_title">Turn on <xliff:g name="feature_name" example="Magnification">%1$s</xliff:g>?</string>
     <!-- Text for showing inside the dialog. [CHAR LIMIT=NONE] -->
-    <!-- TODO: b/447609974 Update "Action" to a param in case of translation the hardware key for all of key gesture dialogs. -->
-    <string name="accessibility_key_gesture_dialog_content">Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="M">^2</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="TalkBack">^3</xliff:g>. <xliff:g name="feature_intro" example="TalkBack intro">^4</xliff:g></string>
+    <string name="accessibility_key_gesture_dialog_content"><xliff:g name="meta_key" example="Action">^1</xliff:g> <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^2</xliff:g> + <xliff:g name="key_code" example="M">^3</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="TalkBack">^4</xliff:g>. <xliff:g name="feature_intro" example="TalkBack intro">^5</xliff:g></string>
     <!-- The text for the TalkBack TextToSpeech announcement. [CHAR LIMIT=NONE] -->
     <!-- TODO: b/447609974 Update the TTS announced string to final one. -->
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts">Press Action + <xliff:g name="secondary_key" example="Alt">%1$s</xliff:g> + <xliff:g name="key_code" example="T">%2$s</xliff:g> again to enable <xliff:g name="feature_name" example="TalkBack">%3$s</xliff:g></string>
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts">Press <xliff:g name="meta_key" example="Action">%1$s</xliff:g> + <xliff:g name="secondary_key" example="Alt">%2$s</xliff:g> + <xliff:g name="key_code" example="T">%3$s</xliff:g> again to enable <xliff:g name="feature_name" example="TalkBack">%4$s</xliff:g></string>
 
     <!-- Text for the dialog title when keyboard shortcut has not yet been enabled. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title">Turn on <xliff:g name="feature_name" example="Voice Access">%1$s</xliff:g> keyboard shortcut?</string>
@@ -2972,14 +2971,14 @@
     <!-- Text for the Magnification dialog title when the keyboard shortcut is enabled and Magnification has been toggled on. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_magnification_dialog_title"><xliff:g name="feature_name" example="Magnification">%1$s</xliff:g> keyboard shortcut turned on</string>
     <!-- Text for showing inside the Magnification dialog. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_key_gesture_magnification_dialog_content">Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="M">^2</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="Magnification">^3</xliff:g>, an accessibility feature. This allows you to quickly zoom in on the screen to make content larger. Once magnification is on, press Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> and \"+\" or \"-\" to adjust zoom.</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content"><xliff:g name="meta_key" example="Action">^1</xliff:g> <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^2</xliff:g> + <xliff:g name="key_code" example="M">^3</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="Magnification">^4</xliff:g>, an accessibility feature. This allows you to quickly zoom in on the screen to make content larger. Once magnification is on, press <xliff:g name="meta_key" example="Action">^1</xliff:g> <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^2</xliff:g> and \"+\" or \"-\" to adjust zoom.</string>
     <!-- Negative button text for the Magnification dialog when the keyboard shortcut is enabled. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text">Turn off shortcut</string>
     <!-- Positive button text for the Magnification dialog when the keyboard shortcut is enabled. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text">Keep on</string>
 
     <!-- Text for showing inside the screen reader dialog. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_key_gesture_screen_reader_dialog_content">Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="T">^2</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="TalkBack">^3</xliff:g>. <xliff:g name="feature_name" example="TalkBack">^3</xliff:g> is a screen reader that allows you to hear items spoken aloud. It can be helpful for people who have difficulty seeing the screen. This may change how your device works.</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_content"><xliff:g name="meta_key" example="Action">^1</xliff:g> <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^2</xliff:g> + <xliff:g name="key_code" example="T">^3</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="TalkBack">^4</xliff:g>. <xliff:g name="feature_name" example="TalkBack">^4</xliff:g> is a screen reader that allows you to hear items spoken aloud. It can be helpful for people who have difficulty seeing the screen. This may change how your device works.</string>
     <!-- Warning for screen reader dialog [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading">By turning on the keyboard shortcut, you will allow TalkBack to have full control of your device.</string>
     <!-- Warning description for screen reader dialog [CHAR LIMIT=NONE] -->
@@ -2994,7 +2993,7 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message">It can track your interactions with an app or a hardware sensor, and interact with apps on your behalf.</string>
 
     <!-- Text for showing inside the Voice Access dialog. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_key_gesture_voice_access_dialog_content">Pressing Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="V">^2</xliff:g> turns on <xliff:g name="feature_name" example="Voice Access">^3</xliff:g>, an accessibility feature. This lets you control your device hands-free.</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content">Pressing <xliff:g name="meta_key" example="Action">^1</xliff:g> <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^2</xliff:g> + <xliff:g name="key_code" example="V">^3</xliff:g> turns on <xliff:g name="feature_name" example="Voice Access">^4</xliff:g>, an accessibility feature. This lets you control your device hands-free.</string>
 
     <!-- TODO: b/450609147 - Update to final string and remove "translatable" -->
     <!-- Text for the title of top row key tutorial dialog. [CHAR LIMIT=NONE] -->

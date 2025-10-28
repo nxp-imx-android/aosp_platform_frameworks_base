@@ -133,6 +133,7 @@ constructor(
             ShortcutHelperKeys.modifierLabels[MODIFIER_KEY xor metaState] ?: return null
         val keyCodeLabel = keyCodeMap[keyCode] ?: return null
 
+        val actionKeyLabel = resources.getText(R.string.shortcut_helper_customizer_action_key_text)
         when (keyGestureType) {
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER -> {
                 val featureName = getFeatureName(keyGestureType, targetName) ?: return null
@@ -140,6 +141,7 @@ constructor(
                 val content =
                     getDialogContent(
                         keyGestureType,
+                        actionKeyLabel,
                         secondaryModifierLabel.invoke(context),
                         keyCodeLabel,
                         featureName,
@@ -172,6 +174,7 @@ constructor(
                 val ttsText =
                     resources.getString(
                         R.string.accessibility_key_gesture_dialog_screen_reader_tts,
+                        actionKeyLabel,
                         secondaryModifierLabel.invoke(context),
                         keyCodeLabel,
                         featureName,
@@ -195,6 +198,7 @@ constructor(
                 val content =
                     getDialogContent(
                         keyGestureType,
+                        actionKeyLabel,
                         secondaryModifierLabel.invoke(context),
                         keyCodeLabel,
                         featureName,
@@ -222,6 +226,7 @@ constructor(
                 val content =
                     TextUtils.expandTemplate(
                         resources.getText(R.string.accessibility_key_gesture_dialog_content),
+                        actionKeyLabel,
                         secondaryModifierLabel.invoke(context),
                         keyCodeLabel,
                         featureNameToIntro.first,
@@ -350,6 +355,7 @@ constructor(
 
     private fun getDialogContent(
         keyGestureType: Int,
+        actionKeyLabel: CharSequence,
         secondaryModifierLabel: String,
         keyCodeLabel: String,
         featureName: CharSequence,
@@ -369,6 +375,7 @@ constructor(
             val contentTemplate = resources.getText(resId)
             TextUtils.expandTemplate(
                 contentTemplate,
+                actionKeyLabel,
                 secondaryModifierLabel,
                 keyCodeLabel,
                 featureName,
