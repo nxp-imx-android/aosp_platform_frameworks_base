@@ -669,6 +669,8 @@ applications that come with the platform
         <permission name="android.permission.GET_ROLE_HOLDERS"/>
         <!-- Permission required for CTS test - CtsAnomalyDetectorTests -->
         <permission name="android.permission.CONFIGURE_ANOMALY_DETECTOR"/>
+        <!-- Permission required for CTS test - CtsNpuManagerTestCases -->
+        <permission name="android.permission.ACCESS_NPU_MODEL_MANAGER_API"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">

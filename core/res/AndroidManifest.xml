@@ -9667,6 +9667,17 @@
         android:protectionLevel="signature|role"
         android:featureFlag="android.view.contentprotection.flags.set_content_protection_allowlist_enabled" />
 
+     <!-- Allows an application to access npu model manager api.
+         <p>Protection level: signature|privileged
+         @FlaggedApi(com.android.npumanager.Flags.FLAG_NPUMANAGER_ENABLED)
+         @SystemApi
+         @hide -->
+    <permission
+        android:name="android.permission.ACCESS_NPU_MODEL_MANAGER_API"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="com.android.npumanager.npumanager_enabled" />
+
+
     <!-- @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_GUARD_IDENTIFIER_AND_NETWORK_COUNTRY_APIS)
         Purpose guarded permission to query subscriber ID API.
         {@link android.telephony.TelephonyManager}
