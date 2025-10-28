@@ -36,6 +36,7 @@ soong_config_module_type {
         "release_package_profiling_module",
         "release_telephony_module",
         "release_uprobestats_bridge_service",
+        "release_webapp_module",
     ],
     properties: [
         "fragments",
@@ -221,6 +222,15 @@ custom_platform_bootclasspath {
                 {
                     apex: "com.android.uprobestats",
                     module: "com.android.uprobestats-bootclasspath-fragment",
+                },
+            ],
+        },
+        release_webapp_module: {
+            fragments: [
+                // only used if WebApp module is enabled.
+                {
+                    apex: "com.android.webapp",
+                    module: "com.android.webapp-bootclasspath-fragment",
                 },
             ],
         },
