@@ -69,12 +69,8 @@ import com.android.systemui.statusbar.notification.init.NotificationsController;
 import com.android.systemui.statusbar.notification.init.NotificationsControllerImpl;
 import com.android.systemui.statusbar.notification.init.NotificationsControllerStub;
 import com.android.systemui.statusbar.notification.interruption.KeyguardNotificationVisibilityProviderModule;
-import com.android.systemui.statusbar.notification.interruption.NotificationInterruptStateProvider;
-import com.android.systemui.statusbar.notification.interruption.NotificationInterruptStateProviderImpl;
-import com.android.systemui.statusbar.notification.interruption.NotificationInterruptStateProviderWrapper;
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider;
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProviderImpl;
-import com.android.systemui.statusbar.notification.interruption.VisualInterruptionRefactor;
 import com.android.systemui.statusbar.notification.logging.NotificationPanelLogger;
 import com.android.systemui.statusbar.notification.logging.NotificationPanelLoggerImpl;
 import com.android.systemui.statusbar.notification.logging.dagger.NotificationsLogModule;
@@ -248,11 +244,6 @@ public interface NotificationsModule {
 
     /** */
     @Binds
-    NotificationInterruptStateProvider bindNotificationInterruptStateProvider(
-            NotificationInterruptStateProviderImpl notificationInterruptStateProviderImpl);
-
-    /** */
-    @Binds
     NotifInflater bindNotifInflater(NotifInflaterImpl notifInflaterImpl);
 
     /** */
@@ -276,13 +267,8 @@ public interface NotificationsModule {
     @Provides
     @SysUISingleton
     static VisualInterruptionDecisionProvider provideVisualInterruptionDecisionProvider(
-            Provider<NotificationInterruptStateProviderImpl> oldImplProvider,
             Provider<VisualInterruptionDecisionProviderImpl> newImplProvider) {
-        if (VisualInterruptionRefactor.isEnabled()) {
-            return newImplProvider.get();
-        } else {
-            return new NotificationInterruptStateProviderWrapper(oldImplProvider.get());
-        }
+        return newImplProvider.get();
     }
 
     /** */

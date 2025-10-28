@@ -170,7 +170,6 @@ import com.android.systemui.statusbar.core.StatusBarConnectedDisplays;
 import com.android.systemui.statusbar.core.StatusBarInitializerImpl;
 import com.android.systemui.statusbar.data.repository.FakeStatusBarModeRepository;
 import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRepository;
-import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.NotificationLaunchAnimatorControllerProvider;
 import com.android.systemui.statusbar.notification.NotificationWakeUpCoordinator;
@@ -178,10 +177,9 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.init.NotificationsController;
 import com.android.systemui.statusbar.notification.interruption.AvalancheProvider;
 import com.android.systemui.statusbar.notification.interruption.KeyguardNotificationVisibilityProvider;
-import com.android.systemui.statusbar.notification.interruption.NotificationInterruptLogger;
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionLogger;
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider;
-import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProviderTestUtil;
+import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProviderImpl;
 import com.android.systemui.statusbar.notification.row.NotificationGutsManager;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController;
@@ -416,19 +414,17 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                 .thenReturn(mSystemUIDisplaySubcomponent);
 
         mVisualInterruptionDecisionProvider =
-                VisualInterruptionDecisionProviderTestUtil.INSTANCE.createProviderByFlag(
+                new VisualInterruptionDecisionProviderImpl(
                         mAmbientDisplayConfiguration,
                         mBatteryController,
                         mDeviceProvisionedController,
                         mFakeEventLog,
-                        mock(NotifPipelineFlags.class),
                         mFakeGlobalSettings,
                         mHeadsUpManager,
                         mock(KeyguardNotificationVisibilityProvider.class),
                         mKeyguardStateController,
-                        new Handler(TestableLooper.get(this).getLooper()),
                         mock(VisualInterruptionDecisionLogger.class),
-                        mock(NotificationInterruptLogger.class),
+                        new Handler(TestableLooper.get(this).getLooper()),
                         mPowerManager,
                         mStatusBarStateController,
                         mFakeSystemClock,

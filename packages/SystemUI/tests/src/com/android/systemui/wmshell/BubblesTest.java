@@ -141,10 +141,9 @@ import com.android.systemui.statusbar.notification.collection.render.Notificatio
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.interruption.AvalancheProvider;
 import com.android.systemui.statusbar.notification.interruption.KeyguardNotificationVisibilityProvider;
-import com.android.systemui.statusbar.notification.interruption.NotificationInterruptLogger;
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionLogger;
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider;
-import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProviderTestUtil;
+import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProviderImpl;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.phone.DozeParameters;
@@ -478,19 +477,17 @@ public class BubblesTest extends SysuiTestCase {
         fakeGlobalSettings.putInt(HEADS_UP_NOTIFICATIONS_ENABLED, HEADS_UP_ON);
 
         final VisualInterruptionDecisionProvider interruptionDecisionProvider =
-                VisualInterruptionDecisionProviderTestUtil.INSTANCE.createProviderByFlag(
+                new VisualInterruptionDecisionProviderImpl(
                         mock(AmbientDisplayConfiguration.class),
                         mock(BatteryController.class),
                         mock(DeviceProvisionedController.class),
                         new FakeEventLog(),
-                        mock(NotifPipelineFlags.class),
                         fakeGlobalSettings,
                         mock(HeadsUpManager.class),
                         mock(KeyguardNotificationVisibilityProvider.class),
                         mock(KeyguardStateController.class),
-                        mock(Handler.class),
                         mock(VisualInterruptionDecisionLogger.class),
-                        mock(NotificationInterruptLogger.class),
+                        mock(Handler.class),
                         mock(PowerManager.class),
                         mock(StatusBarStateController.class),
                         mock(SystemClock.class),

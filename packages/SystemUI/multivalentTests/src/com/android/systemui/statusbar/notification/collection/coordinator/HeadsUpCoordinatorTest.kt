@@ -55,8 +55,6 @@ import com.android.systemui.statusbar.notification.headsup.OnHeadsUpChangedListe
 import com.android.systemui.statusbar.notification.headsup.mockHeadsUpManager
 import com.android.systemui.statusbar.notification.interruption.HeadsUpViewBinder
 import com.android.systemui.statusbar.notification.interruption.NotificationInterruptStateProvider.FullScreenIntentDecision
-import com.android.systemui.statusbar.notification.interruption.NotificationInterruptStateProviderWrapper.DecisionImpl
-import com.android.systemui.statusbar.notification.interruption.NotificationInterruptStateProviderWrapper.FullScreenIntentDecisionImpl
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionLogger
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider
 import com.android.systemui.statusbar.notification.row.mockNotificationActionClickManager
@@ -1350,16 +1348,16 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
 
     private fun setDefaultShouldHeadsUp(should: Boolean) {
         whenever(visualInterruptionDecisionProvider.makeAndLogHeadsUpDecision(any()))
-            .thenReturn(DecisionImpl.of(should))
+            .thenReturn(DecisionImpl(should))
         whenever(visualInterruptionDecisionProvider.makeUnloggedHeadsUpDecision(any()))
-            .thenReturn(DecisionImpl.of(should))
+            .thenReturn(DecisionImpl(should))
     }
 
     private fun setShouldHeadsUp(entry: NotificationEntry, should: Boolean = true) {
         whenever(visualInterruptionDecisionProvider.makeAndLogHeadsUpDecision(entry))
-            .thenReturn(DecisionImpl.of(should))
+            .thenReturn(DecisionImpl(should))
         whenever(visualInterruptionDecisionProvider.makeUnloggedHeadsUpDecision(entry))
-            .thenReturn(DecisionImpl.of(should))
+            .thenReturn(DecisionImpl(should))
     }
 
     private fun setDefaultShouldFullScreen(originalDecision: FullScreenIntentDecision) {
@@ -1396,6 +1394,21 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
 
     private fun clearInterruptionProviderInvocations() {
         clearInvocations(visualInterruptionDecisionProvider)
+    }
+
+    private data class DecisionImpl(
+        override val shouldInterrupt: Boolean,
+        override val logReason: String = "unknown",
+    ) : VisualInterruptionDecisionProvider.Decision
+
+    private class FullScreenIntentDecisionImpl(
+        val originalEntry: NotificationEntry,
+        val originalDecision: FullScreenIntentDecision,
+    ) : VisualInterruptionDecisionProvider.FullScreenIntentDecision {
+        override val shouldInterrupt = originalDecision.shouldLaunch
+        override val wouldInterruptWithoutDnd =
+            originalDecision == FullScreenIntentDecision.NO_FSI_SUPPRESSED_ONLY_BY_DND
+        override val logReason = originalDecision.name
     }
 
     private fun finishBind(entry: NotificationEntry) {

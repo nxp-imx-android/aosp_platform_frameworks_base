@@ -207,12 +207,7 @@ abstract class VisualInterruptionDecisionProviderTestBase : SysuiTestCase() {
             ensurePeekState { hunSnoozed = true }
             assertShouldHeadsUp(entry)
 
-            // The old code logs a UiEvent when a HUN snooze is bypassed because the notification
-            // has an FSI, but that doesn't fit into the new code's suppressor-based logic, so we're
-            // not reimplementing it.
-            if (provider !is NotificationInterruptStateProviderWrapper) {
-                assertNoEventsLogged()
-            }
+            assertNoEventsLogged()
         }
     }
 
@@ -286,11 +281,8 @@ abstract class VisualInterruptionDecisionProviderTestBase : SysuiTestCase() {
         ensurePeekState()
         val entry = buildPeekEntry { whenMs = whenAgo(MAX_HUN_WHEN_AGE_MS) }
 
-        // The old code logs the "old when" UiEvent unconditionally, so don't expect that it hasn't.
-        if (provider !is NotificationInterruptStateProviderWrapper) {
-            provider.makeUnloggedHeadsUpDecision(entry)
-            assertNoEventsLogged()
-        }
+        provider.makeUnloggedHeadsUpDecision(entry)
+        assertNoEventsLogged()
 
         provider.makeAndLogHeadsUpDecision(entry)
         assertUiEventLogged(HUN_SUPPRESSED_OLD_WHEN, entry.sbn.uid, entry.sbn.packageName)
