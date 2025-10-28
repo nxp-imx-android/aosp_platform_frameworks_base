@@ -125,12 +125,12 @@ fun ShadeHighlightChip(
     hoverBackgroundColor: Color = Color.Unspecified,
     rippleColor: Color = Color.Unspecified,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+    isClickable: Boolean = true,
     onClick: () -> Unit = {},
     content: @Composable RowScope.() -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
-    val indication = ripple(color = rippleColor)
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -141,15 +141,18 @@ fun ShadeHighlightChip(
                 .thenIf(backgroundColor != Color.Unspecified) {
                     Modifier.background(backgroundColor)
                 }
-                .thenIf(isHovered && hoverBackgroundColor != Color.Unspecified) {
+                .thenIf(isClickable && isHovered && hoverBackgroundColor != Color.Unspecified) {
                     Modifier.background(hoverBackgroundColor)
                 }
-                .clickableWithoutFocus(
-                    interactionSource = interactionSource,
-                    indication = indication,
-                ) {
-                    onClick()
-                }
+                .then(
+                    if (isClickable)
+                        Modifier.clickableWithoutFocus(
+                            interactionSource = interactionSource,
+                            indication = ripple(color = rippleColor),
+                            onClick = onClick,
+                        )
+                    else Modifier
+                )
                 .thenIf(backgroundColor != Color.Unspecified) {
                     Modifier.padding(
                         horizontal = ChipPaddingHorizontal,
