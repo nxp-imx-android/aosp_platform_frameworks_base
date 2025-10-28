@@ -173,6 +173,7 @@ java_defaults {
         "androidx.annotation_annotation",
         "androidx.test.rules",
         "flag-junit",
+        "truth",
     ],
     auto_gen_config: true,
 }

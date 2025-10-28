@@ -101,10 +101,10 @@ java_library {
     host_supported: true,
     sdk_version: "core_current",
     srcs: ["common-src/**/*.java"],
-    static_libs: [
+    static_libs: ["modules-utils-ravenwood"],
+    libs: [
         "junit",
         "framework-annotations-lib",
-        "modules-utils-ravenwood",
     ],
     visibility: ["//visibility:private"],
     jarjar_rules: ":ravenwood-module-utils-jarjar-rules",
@@ -116,6 +116,7 @@ java_library_host {
     srcs: ["libcore-fake/**/*.java"],
     libs: [
         "app-compat-annotations",
+        "framework-annotations-lib",
         "ravenwood-common-utils",
     ],
     visibility: ["//visibility:private"],
@@ -132,7 +133,7 @@ java_host_for_device {
 java_import {
     name: "ravenwood-deps",
     jars: [
-        ":androidx.test.monitor",
+        ":androidx.test.runner",
         // Adds android.os.ext.SdkExtensions
         ":framework-sdkextensions.impl{.jar}",
     ],
@@ -162,7 +163,6 @@ java_library {
         "framework-minus-apex.ravenwood",
         "framework-updatable.ravenwood",
         "hoststubgen-helper-runtime",
-        "junit",
         "ravenwood-framework",
         "services.core.ravenwood",
         "objenesis",
@@ -627,9 +627,6 @@ android_ravenwood_libgroup {
         "android.test.mock.ravenwood",
         "icu4j-icudata-jarjar",
         "icu4j-icutzdata-jarjar",
-        "junit",
-        "truth",
-        "flag-junit",
         "mockito-ravenwood-prebuilt",
         "framework-updatable-stubs-module_libs_api-for-host",
         "all-modules-system-stubs-for-host",
@@ -639,12 +636,10 @@ android_ravenwood_libgroup {
 android_ravenwood_libgroup {
     name: "ravenwood-utils",
     libs: [
-        "flag-junit",
         "junit",
         "mockito-ravenwood-prebuilt",
         "ravenwood-framework",
         "ravenwood-junit",
-        "truth",
     ],
 }
 
