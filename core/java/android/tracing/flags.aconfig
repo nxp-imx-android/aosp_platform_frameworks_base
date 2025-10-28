@@ -61,3 +61,10 @@ flag {
     description: "Enables java native protologging through JNI calls"
     bug: "450529294"
 }
+
+flag {
+    name: "protolog_async_init"
+    namespace: "windowing_tools"
+    description: "Push protolog initialization to background thread"
+    bug: "434072453"
+}
