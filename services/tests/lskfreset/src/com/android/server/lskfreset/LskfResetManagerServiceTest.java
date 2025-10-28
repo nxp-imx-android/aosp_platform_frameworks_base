@@ -16,10 +16,12 @@
 
 package com.android.server.lskfreset;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import android.app.lskfreset.ILskfResetManager;
 import android.app.lskfreset.ILskfResetSession;
@@ -36,6 +38,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(AndroidJUnit4.class)
 public class LskfResetManagerServiceTest {
@@ -95,5 +100,72 @@ public class LskfResetManagerServiceTest {
         session.close();
         assertFalse(mService.isSessionActive(session));
         assertThrows(IllegalStateException.class, () -> session.close());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_LSKF_RESET_MANAGER)
+    public void testCreateParallelSessions() throws Exception {
+        ILskfResetManager manager = mService.getBinderService();
+
+        final int numThreads = 10;
+        CountDownLatch createLatch = new CountDownLatch(numThreads);
+        CountDownLatch closeLatch = new CountDownLatch(numThreads);
+        for (int i = 0; i < numThreads; ++i) {
+            Thread thread =
+                    new Thread(
+                            () -> {
+                                try {
+                                    ILskfResetSession session;
+                                    try {
+                                        session = manager.createLskfResetSession(TEST_USER_0);
+                                        assertTrue(mService.isSessionActive(session));
+                                    } finally {
+                                        createLatch.countDown();
+                                    }
+                                    createLatch.await();
+                                    session.close();
+                                    assertFalse(mService.isSessionActive(session));
+                                } catch (Exception e) {
+                                    fail("Unexpected exception: " + e.getMessage());
+                                } finally {
+                                    closeLatch.countDown();
+                                }
+                            });
+            thread.start();
+        }
+        closeLatch.await();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_LSKF_RESET_MANAGER)
+    public void testCloseParallelSessions() throws Exception {
+        ILskfResetManager manager = mService.getBinderService();
+        ILskfResetSession session = manager.createLskfResetSession(TEST_USER_0);
+
+        final int numThreads = 10;
+
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failureCount = new AtomicInteger(0);
+        CountDownLatch closeLatch = new CountDownLatch(numThreads);
+        for (int i = 0; i < numThreads; ++i) {
+            Thread thread =
+                    new Thread(
+                            () -> {
+                                try {
+                                    session.close();
+                                    successCount.incrementAndGet();
+                                } catch (IllegalStateException unused) {
+                                    failureCount.incrementAndGet();
+                                } catch (Exception e) {
+                                    fail("Unexpected exception: " + e.getMessage());
+                                } finally {
+                                    closeLatch.countDown();
+                                }
+                            });
+            thread.start();
+        }
+        closeLatch.await();
+        assertEquals(successCount.get(), 1);
+        assertEquals(failureCount.get(), numThreads - 1);
     }
 }
