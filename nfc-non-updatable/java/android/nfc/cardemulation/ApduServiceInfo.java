@@ -57,7 +57,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.regex.Pattern;
 
 /**
@@ -138,7 +140,7 @@ public final class ApduServiceInfo implements Parcelable {
 
     private final Map<String, Boolean> mAutoTransact;
 
-    private final Map<Pattern, Boolean> mAutoTransactPatterns;
+    private final ConcurrentMap<Pattern, Boolean> mAutoTransactPatterns;
 
     /**
      * Whether this service should only be started when the device is unlocked.
@@ -234,7 +236,7 @@ public final class ApduServiceInfo implements Parcelable {
         this(info, onHost, description, staticAidGroups, dynamicAidGroups,
                 requiresUnlock, requiresScreenOn, bannerResource, uid,
                 settingsActivityName, offHost, staticOffHost, isEnabled,
-                new HashMap<String, Boolean>(), new TreeMap<>(
+                new HashMap<String, Boolean>(), new ConcurrentSkipListMap<>(
                         Comparator.comparing(Pattern::toString)));
     }
 
@@ -251,7 +253,7 @@ public final class ApduServiceInfo implements Parcelable {
         this.mStaticAidGroups = new HashMap<String, AidGroup>();
         this.mDynamicAidGroups = new HashMap<String, AidGroup>();
         this.mAutoTransact = autoTransact;
-        this.mAutoTransactPatterns = autoTransactPatterns;
+        this.mAutoTransactPatterns = new ConcurrentHashMap<>(autoTransactPatterns);
         this.mOffHostName = offHost;
         this.mStaticOffHostName = staticOffHost;
         this.mOnHost = onHost;
@@ -383,7 +385,7 @@ public final class ApduServiceInfo implements Parcelable {
             mStaticAidGroups = new HashMap<String, AidGroup>();
             mDynamicAidGroups = new HashMap<String, AidGroup>();
             mAutoTransact = new HashMap<String, Boolean>();
-            mAutoTransactPatterns = new TreeMap<Pattern, Boolean>(
+            mAutoTransactPatterns = new ConcurrentSkipListMap<Pattern, Boolean>(
                     Comparator.comparing(Pattern::toString));
             mOnHost = onHost;
 
