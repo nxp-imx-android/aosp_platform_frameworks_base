@@ -64,9 +64,9 @@
                 <LinearLayout
                     android:id="@+id/ethernet_layout"
                     android:baselineAligned="false"
-                    android:layout_height="@dimen/tile_details_toggle_row_height"
+                    android:layout_height="@dimen/internet_dialog_wifi_network_height"
                     style="@style/InternetDialog.Network"
-                    android:background="@drawable/settingslib_switch_bar_bg_on"
+                    android:background="@drawable/settingslib_entry_bg_on"
                     android:visibility="gone">
 
                     <FrameLayout
@@ -76,9 +76,10 @@
                         android:clickable="false">
 
                         <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
                             android:contentDescription="@string/ethernet_label"
+                            android:scaleType="fitCenter"
                             android:layout_gravity="center"
                             android:autoMirrored="true"
                             android:src="@drawable/stat_sys_ethernet_fully"
@@ -95,7 +96,8 @@
 
                         <TextView
                             style="@style/InternetDetails.EntryTitle.Active"
-                            android:text="@string/ethernet_label" />
+                            android:text="@string/ethernet_label"
+                            android:textSize="14sp" />
 
                         <TextView
                             style="@style/InternetDetails.EntrySubTitle.Active"
