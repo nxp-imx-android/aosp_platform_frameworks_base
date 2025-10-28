@@ -16,6 +16,9 @@
 
 package android.service.personalcontext.embedded;
 
+import static com.google.common.truth.Truth.assertThat;
+
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,6 +29,7 @@ import android.content.res.Resources;
 import android.os.RemoteException;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.hint.BundleHint;
+import android.service.personalcontext.hint.ContextHint;
 import android.view.Display;
 import android.view.SurfaceControlViewHost.SurfacePackage;
 
@@ -40,31 +44,33 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class InsightSurfaceClientTest {
     @Mock private Context mContext;
-    @Mock private SurfacePackage mSurfacePackage;
-    @Mock private PersonalContextManager mPersonalContextManager;
-    @Mock private InsightSurfaceClient.ClientCallback mConnectionCallbacks;
     @Mock private Display mDisplay;
     @Mock private Resources mResources;
     @Mock private Configuration mConfiguration;
-    private Executor mExecutor = Runnable::run;
-    private BundleHint mHint = new BundleHint();
+    @Mock private SurfacePackage mSurfacePackage;
+    @Mock private PersonalContextManager mPersonalContextManager;
+    @Mock private InsightSurfaceClient.ClientCallback mConnectionCallbacks;
+    private final Executor mExecutor = Runnable::run;
+    private final BundleHint mHint = new BundleHint.Builder().build();
     private InsightSurfaceClient mClient;
 
     @Before
     public void setup() {
         MockitoAnnotations.openMocks(this);
 
-        when(mContext.getSystemService(PersonalContextManager.class))
-                .thenReturn(mPersonalContextManager);
         when(mContext.getDisplay()).thenReturn(mDisplay);
         when(mContext.getResources()).thenReturn(mResources);
         when(mResources.getConfiguration()).thenReturn(mConfiguration);
+
+        when(mContext.getSystemService(PersonalContextManager.class))
+                .thenReturn(mPersonalContextManager);
 
         mClient =
                 new InsightSurfaceClient.Builder(mContext, mExecutor, mConnectionCallbacks)
@@ -96,5 +102,50 @@ public class InsightSurfaceClientTest {
         final IEmbeddedInsightSurfaceCallback callback = clientInfoCaptor.getValue().getCallback();
         callback.onSurfaceReleased(mSurfacePackage);
         verify(mConnectionCallbacks).onSurfaceReleased(mSurfacePackage);
+    }
+
+    @Test
+    public void testInsightSurfaceClientCreation() {
+        final InsightSurfaceClient client =
+                new InsightSurfaceClient.Builder(mContext, mConnectionCallbacks).build();
+
+        assertThat(client.getHints()).isEmpty();
+        assertThat(client.getReceivers()).isEmpty();
+    }
+
+    @Test
+    public void testInsightSurfaceClientCreation_withHint() {
+        final BundleHint hint = new BundleHint();
+
+        final InsightSurfaceClient client =
+                new InsightSurfaceClient.Builder(mContext, mConnectionCallbacks)
+                        .addHint(hint).build();
+
+        assertThat(client.getHints()).containsExactly(hint);
+    }
+
+    @Test
+    public void testInsightSurfaceClientCreation_withReceiver() {
+        final InsightSurfaceClient.InsightReceiver receiver = insight -> true;
+
+        final InsightSurfaceClient client =
+                new InsightSurfaceClient.Builder(mContext, mConnectionCallbacks)
+                        .addReceiver(receiver)
+                        .build();
+
+        assertThat(client.getReceivers()).containsExactly(receiver);
+    }
+
+    @Test
+    public void testPublishHints() {
+        final InsightSurfaceClient client =
+                new InsightSurfaceClient.Builder(mContext, mConnectionCallbacks).build();
+        final Set<ContextHint> hints = Set.of(mHint);
+
+        client.register(0, 0);
+        client.publishHints(hints);
+
+        verify(mPersonalContextManager).publishInsightSurfaceHints(
+                eq(hints), any(InsightSurfaceClientInfo.class));
     }
 }

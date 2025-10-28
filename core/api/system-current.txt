@@ -14362,6 +14362,7 @@ package android.service.personalcontext.embedded {
     method public void close();
     method @NonNull public java.util.List<android.service.personalcontext.hint.ContextHint> getHints();
     method @NonNull public java.util.List<android.service.personalcontext.embedded.InsightSurfaceClient.InsightReceiver> getReceivers();
+    method public void publishHints(@NonNull java.util.Set<android.service.personalcontext.hint.ContextHint>);
     method public void register(int, int);
     method public void unregister();
   }
