@@ -4687,6 +4687,7 @@ public abstract class PackageManager {
      * the Android Keystore backed by an isolated execution environment. The version indicates
      * which features are implemented in the isolated execution environment:
      * <ul>
+     * <li>500: Hardware support for ML-DSA signature generation.
      * <li>400: Inclusion of module information (via tag MODULE_HASH) in the attestation record.
      * <li>300: Ability to include a second IMEI in the ID attestation record, see
      * {@link android.app.admin.DevicePolicyManager#ID_TYPE_IMEI}.
