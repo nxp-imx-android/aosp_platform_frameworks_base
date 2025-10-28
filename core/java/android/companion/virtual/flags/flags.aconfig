@@ -238,16 +238,6 @@ flag {
 }
 
 flag {
-    name: "enable_animations_per_display"
-    namespace: "virtual_devices"
-    description: "Enable/disable window and transition animations per display"
-    bug: "427437362"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "automated_app_launch_interception"
     namespace: "virtual_devices"
     description: "Show a warning dialog when launching an automated app"

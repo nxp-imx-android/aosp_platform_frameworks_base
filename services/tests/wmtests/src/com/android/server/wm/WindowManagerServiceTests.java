@@ -205,7 +205,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_ENABLE_ANIMATIONS_PER_DISPLAY)
     public void testEnableDisableAnimationsForDisplay() {
         // Set non-zero default animation scales for window and transition animations.
         float defaultScale = 5f;
