@@ -16,6 +16,7 @@
 
 package com.android.systemui.media.controls.domain.pipeline
 
+import android.annotation.UserIdInt
 import android.annotation.WorkerThread
 import android.app.Notification
 import android.app.Notification.EXTRA_SUBSTITUTE_APP_NAME
@@ -198,7 +199,7 @@ constructor(
             coroutineContext.ensureActive()
 
             // Album art
-            var artworkBitmap = metadata?.let { loadBitmapFromUri(it) }
+            var artworkBitmap = metadata?.let { loadBitmapFromUri(it, sbn.user) }
             if (artworkBitmap == null) {
                 artworkBitmap = metadata?.getBitmap(MediaMetadata.METADATA_KEY_ART)
             }
@@ -277,7 +278,7 @@ constructor(
      * Returns a [MediaDataLoaderResult] if loaded data or `null` if loading failed.
      */
     suspend fun loadMediaDataForResumption(
-        userId: Int,
+        @UserIdInt userId: Int,
         desc: MediaDescription,
         resumeAction: Runnable,
         currentEntry: MediaData?,
@@ -305,7 +306,7 @@ constructor(
     /** Loads media data for resumption, should be called from [backgroundScope]. */
     @WorkerThread
     private suspend fun loadMediaDataForResumptionInBackground(
-        userId: Int,
+        @UserIdInt userId: Int,
         desc: MediaDescription,
         resumeAction: Runnable,
         currentEntry: MediaData?,
@@ -328,7 +329,7 @@ constructor(
             var artworkBitmap = desc.iconBitmap
             if (artworkBitmap == null && desc.iconUri != null) {
                 artworkBitmap =
-                    loadBitmapFromUriForUser(desc.iconUri!!, userId, appUid, packageName)
+                    loadBitmapFromUriChecked(desc.iconUri!!, userId, appUid, packageName)
             }
             val artworkIcon =
                 if (artworkBitmap != null) {
@@ -435,13 +436,12 @@ constructor(
     }
 
     /** Load a bitmap from the various Art metadata URIs */
-    private suspend fun loadBitmapFromUri(metadata: MediaMetadata): Bitmap? {
+    private suspend fun loadBitmapFromUri(metadata: MediaMetadata, user: UserHandle): Bitmap? {
         for (uri in ART_URIS) {
             val uriString = metadata.getString(uri)
             if (!TextUtils.isEmpty(uriString)) {
-                val albumArt = loadBitmapFromUri(Uri.parse(uriString))
-                // If we got cancelled during slow album art load, cancel the rest of
-                // the process.
+                val albumArt = loadBitmapFromUriAsUser(Uri.parse(uriString), user)
+                // If we got cancelled during slow album art load, cancel the rest of the process.
                 coroutineContext.ensureActive()
                 if (albumArt != null) {
                     if (Log.isLoggable(TAG, Log.DEBUG)) {
@@ -454,7 +454,7 @@ constructor(
         return null
     }
 
-    private suspend fun loadBitmapFromUri(uri: Uri): Bitmap? {
+    private suspend fun loadBitmapFromUriAsUser(uri: Uri, user: UserHandle): Bitmap? {
         // ImageDecoder requires a scheme of the following types
         if (
             uri.scheme !in
@@ -468,7 +468,13 @@ constructor(
             return null
         }
 
-        val source = ImageLoader.Uri(uri)
+        val userContext =
+            if (context.userId == user.identifier) {
+                context
+            } else {
+                context.createContextAsUser(user, 0)
+            }
+        val source = ImageLoader.Uri(uri, userContext)
         return imageLoader.loadBitmap(
             source,
             artworkWidth,
@@ -477,9 +483,9 @@ constructor(
         )
     }
 
-    private suspend fun loadBitmapFromUriForUser(
+    private suspend fun loadBitmapFromUriChecked(
         uri: Uri,
-        userId: Int,
+        @UserIdInt userId: Int,
         appUid: Int,
         packageName: String,
     ): Bitmap? {
@@ -492,7 +498,7 @@ constructor(
                 Intent.FLAG_GRANT_READ_URI_PERMISSION,
                 ContentProvider.getUserIdFromUri(uri, userId),
             )
-            return loadBitmapFromUri(uri)
+            return loadBitmapFromUriAsUser(uri, UserHandle.of(userId))
         } catch (e: SecurityException) {
             Log.e(TAG, "Failed to get URI permission: $e")
         }

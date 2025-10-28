@@ -1,5 +1,7 @@
 package com.android.systemui.graphics
 
+import android.content.ContentResolver
+import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -27,6 +29,9 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -442,6 +447,32 @@ class ImageLoaderTest : SysuiTestCase() {
             assertThat(loadedDrawable).isNotNull()
             assertThat((loadedDrawable as BitmapDrawable).bitmap.config)
                 .isNotEqualTo(Bitmap.Config.HARDWARE)
+        }
+
+    @Test
+    fun uriWithContext_loadsFromContext() =
+        testScope.runTest {
+            val bitmap =
+                BitmapFactory.decodeResource(
+                    context.resources,
+                    R.drawable.dessert_zombiegingerbread,
+                )
+
+            // Set up a non-default context
+            val secondaryUserContext = mock<Context>()
+            val secondaryContentResolver = mock<ContentResolver>()
+            whenever(secondaryUserContext.contentResolver).thenReturn(secondaryContentResolver)
+            whenever(secondaryContentResolver.openInputStream(any())).thenAnswer {
+                val bos = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos)
+                ByteArrayInputStream(bos.toByteArray())
+            }
+
+            // Load image using secondary user context
+            val uri = Uri.parse("android.resource://secondaryUserPackage/someBitmap")
+            val loadedBitmap = imageLoader.loadBitmap(ImageLoader.Uri(uri, secondaryUserContext))
+
+            assertBitmapEqualToBitmap(loadedBitmap, bitmap)
         }
 
     private fun assertBitmapInDrawable(drawable: Drawable?): Bitmap {
