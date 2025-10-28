@@ -100,6 +100,7 @@ import com.android.systemui.log.SessionTracker;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
+import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.shared.system.SysUiStatsLog;
@@ -190,6 +191,7 @@ public class UdfpsController implements DozeReceiver, Dumpable {
     @NonNull private final InputManager mInputManager;
     @NonNull private final SelectedUserInteractor mSelectedUserInteractor;
     @NonNull private final MSDLPlayer mMsdlPlayer;
+    private final Lazy<SceneInteractor> mSceneInteractorLazy;
     private final boolean mIgnoreRefreshRate;
     private final KeyguardTransitionInteractor mKeyguardTransitionInteractor;
 
@@ -320,7 +322,8 @@ public class UdfpsController implements DozeReceiver, Dumpable {
                         mPromptUdfpsTouchOverlayViewModel,
                         mUdfpsOverlayInteractor,
                         mPowerInteractor,
-                        mScope
+                        mScope,
+                        mSceneInteractorLazy
                     )));
         }
 
@@ -720,7 +723,8 @@ public class UdfpsController implements DozeReceiver, Dumpable {
             @Application CoroutineScope scope,
             UserActivityNotifier userActivityNotifier,
             Lazy<WakefulnessLifecycle> wakefulnessLifecycle,
-            MSDLPlayer msdlPlayer) {
+            MSDLPlayer msdlPlayer,
+            Lazy<SceneInteractor> sceneInteractorLazy) {
         mContext = context;
         mExecution = execution;
         mVibrator = vibrator;
@@ -773,6 +777,7 @@ public class UdfpsController implements DozeReceiver, Dumpable {
         mDefaultUdfpsTouchOverlayViewModel = defaultUdfpsTouchOverlayViewModel;
         mPromptUdfpsTouchOverlayViewModel = promptUdfpsTouchOverlayViewModel;
         mMsdlPlayer = msdlPlayer;
+        mSceneInteractorLazy = sceneInteractorLazy;
 
         mDumpManager.registerDumpable(TAG, this);
 

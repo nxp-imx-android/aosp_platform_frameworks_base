@@ -54,13 +54,18 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInterac
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.res.R
+import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 
 private const val TAG = "UdfpsControllerOverlay"
 
@@ -88,13 +93,29 @@ constructor(
     private val udfpsOverlayInteractor: UdfpsOverlayInteractor,
     private val powerInteractor: PowerInteractor,
     @Application private val scope: CoroutineScope,
+    sceneInteractor: Lazy<SceneInteractor>,
 ) {
-    private val currentStateUpdatedToOffAodOrDozing: Flow<Unit> =
-        transitionInteractor.currentKeyguardState
-            .filter {
-                it == KeyguardState.OFF || it == KeyguardState.AOD || it == KeyguardState.DOZING
-            }
-            .map {} // map to Unit
+    private val currentStateUpdatedToOffAodDozingOrDreaming: Flow<Unit> =
+        merge(
+            transitionInteractor.currentKeyguardState
+                .filter {
+                    it == KeyguardState.OFF ||
+                        it == KeyguardState.AOD ||
+                        it == KeyguardState.DOZING ||
+                        it == KeyguardState.DREAMING
+                }
+                .map {}, // map to Unit
+            if (SceneContainerFlag.isEnabled) {
+                sceneInteractor
+                    .get()
+                    .currentScene
+                    .filter { it == Scenes.Dream }
+                    .map {} // map to Unit
+            } else {
+                emptyFlow()
+            },
+        )
+
     private var listenForCurrentKeyguardState: Job? = null
     private var addViewRunnable: Runnable? = null
     private var overlayTouchView: UdfpsTouchOverlay? = null
@@ -253,7 +274,9 @@ constructor(
         } else {
             listenForCurrentKeyguardState?.cancel()
             listenForCurrentKeyguardState =
-                scope.launch { currentStateUpdatedToOffAodOrDozing.collect { addViewIfPending() } }
+                scope.launch {
+                    currentStateUpdatedToOffAodDozingOrDreaming.collect { addViewIfPending() }
+                }
         }
     }
 

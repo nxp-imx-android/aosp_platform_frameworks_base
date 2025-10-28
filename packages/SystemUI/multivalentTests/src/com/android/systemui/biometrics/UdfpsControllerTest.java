@@ -80,6 +80,7 @@ import com.android.systemui.power.data.repository.FakePowerRepository;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.power.shared.model.WakeSleepReason;
 import com.android.systemui.power.shared.model.WakefulnessState;
+import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.statusbar.VibratorHelper;
 import com.android.systemui.statusbar.phone.ScreenOffAnimationController;
@@ -192,6 +193,8 @@ public class UdfpsControllerTest extends SysuiTestCase {
     private SelectedUserInteractor mSelectedUserInteractor;
     @Mock
     private Lazy<WakefulnessLifecycle> mWakefulnessLifecycle;
+    @Mock
+    private SceneInteractor mSceneInteractor;
 
     // Capture listeners so that they can be used to send events
     @Captor
@@ -309,7 +312,8 @@ public class UdfpsControllerTest extends SysuiTestCase {
                 mock(CoroutineScope.class),
                 UserActivityNotifierKosmosKt.getUserActivityNotifier(mKosmos),
                 mWakefulnessLifecycle,
-                mock(MSDLPlayer.class)
+                mock(MSDLPlayer.class),
+                () -> mSceneInteractor
         );
         verify(mFingerprintManager).setUdfpsOverlayController(mOverlayCaptor.capture());
         mOverlayController = mOverlayCaptor.getValue();
