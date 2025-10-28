@@ -107,13 +107,14 @@ public final class HostingRecord {
     private final int mDefiningUid;
     private final boolean mIsTopApp;
     private final String mDefiningProcessName;
+    private final boolean mIsPcc;
     @Nullable private final String mAction;
     @NonNull private final String mTriggerType;
 
     public HostingRecord(@NonNull String hostingType) {
         this(hostingType, null /* hostingName */, REGULAR_ZYGOTE, null /* definingPackageName */,
                 -1 /* mDefiningUid */, false /* isTopApp */, null /* definingProcessName */,
-                null /* action */, TRIGGER_TYPE_UNKNOWN);
+                null /* action */, TRIGGER_TYPE_UNKNOWN, false /* isPcc */);
     }
 
     public HostingRecord(@NonNull String hostingType, ComponentName hostingName) {
@@ -124,21 +125,22 @@ public final class HostingRecord {
             @Nullable String action, @Nullable String triggerType) {
         this(hostingType, hostingName.toShortString(), REGULAR_ZYGOTE,
                 null /* definingPackageName */, -1 /* mDefiningUid */, false /* isTopApp */,
-                null /* definingProcessName */, action, triggerType);
+                null /* definingProcessName */, action, triggerType, false /* isPcc */);
     }
 
     public HostingRecord(@NonNull String hostingType, ComponentName hostingName,
             String definingPackageName, int definingUid, String definingProcessName,
-            String triggerType) {
+            String triggerType, boolean isPcc) {
         this(hostingType, hostingName.toShortString(), REGULAR_ZYGOTE, definingPackageName,
                 definingUid, false /* isTopApp */, definingProcessName, null /* action */,
-                triggerType);
+                triggerType, isPcc /* isPcc */);
     }
 
     public HostingRecord(@NonNull String hostingType, ComponentName hostingName, boolean isTopApp) {
         this(hostingType, hostingName.toShortString(), REGULAR_ZYGOTE,
                 null /* definingPackageName */, -1 /* mDefiningUid */, isTopApp /* isTopApp */,
-                null /* definingProcessName */, null /* action */, TRIGGER_TYPE_UNKNOWN);
+                null /* definingProcessName */, null /* action */, TRIGGER_TYPE_UNKNOWN,
+                false /* isPcc */);
     }
 
     public HostingRecord(@NonNull String hostingType, String hostingName) {
@@ -153,12 +155,13 @@ public final class HostingRecord {
     private HostingRecord(@NonNull String hostingType, String hostingName, int hostingZygote) {
         this(hostingType, hostingName, hostingZygote, null /* definingPackageName */,
                 -1 /* mDefiningUid */, false /* isTopApp */, null /* definingProcessName */,
-                null /* action */, TRIGGER_TYPE_UNKNOWN);
+                null /* action */, TRIGGER_TYPE_UNKNOWN, false /* isPcc */);
     }
 
     private HostingRecord(@NonNull String hostingType, String hostingName, int hostingZygote,
             String definingPackageName, int definingUid, boolean isTopApp,
-            String definingProcessName, @Nullable String action, String triggerType) {
+            String definingProcessName, @Nullable String action, String triggerType,
+            boolean isPcc) {
         mHostingType = hostingType;
         mHostingName = hostingName;
         mHostingZygote = hostingZygote;
@@ -168,6 +171,7 @@ public final class HostingRecord {
         mDefiningProcessName = definingProcessName;
         mAction = action;
         mTriggerType = triggerType;
+        mIsPcc = isPcc;
     }
 
     public @NonNull String getType() {
@@ -180,6 +184,10 @@ public final class HostingRecord {
 
     public boolean isTopApp() {
         return mIsTopApp;
+    }
+
+    public boolean isPcc() {
+        return mIsPcc;
     }
 
     /**
@@ -235,7 +243,7 @@ public final class HostingRecord {
             String definingPackageName, int definingUid, String definingProcessName) {
         return new HostingRecord(HostingRecord.HOSTING_TYPE_EMPTY, hostingName.toShortString(),
                 WEBVIEW_ZYGOTE, definingPackageName, definingUid, false /* isTopApp */,
-                definingProcessName, null /* action */, TRIGGER_TYPE_UNKNOWN);
+                definingProcessName, null /* action */, TRIGGER_TYPE_UNKNOWN, false /* isPcc */);
     }
 
     /**
@@ -245,11 +253,12 @@ public final class HostingRecord {
      * @param definingUid uid of the package defining the service
      * @return The constructed HostingRecord
      */
-    public static HostingRecord byAppZygote(ComponentName hostingName, String definingPackageName,
+    public static HostingRecord byAppZygote(ComponentName hostingName,
+            String definingPackageName,
             int definingUid, String definingProcessName) {
         return new HostingRecord(HostingRecord.HOSTING_TYPE_EMPTY, hostingName.toShortString(),
                 APP_ZYGOTE, definingPackageName, definingUid, false /* isTopApp */,
-                definingProcessName, null /* action */, TRIGGER_TYPE_UNKNOWN);
+                definingProcessName, null /* action */, TRIGGER_TYPE_UNKNOWN, false /* isPcc */);
     }
 
     /**

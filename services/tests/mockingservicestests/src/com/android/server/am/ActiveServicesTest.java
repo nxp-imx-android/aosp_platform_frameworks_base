@@ -27,24 +27,38 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.junit.Assert.assertTrue;
 
+import android.app.IApplicationThread;
 import android.app.compat.CompatChanges;
+import android.app.usage.UsageStatsManagerInternal;
 import android.content.ComponentName;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManagerInternal;
 import android.content.pm.ServiceInfo;
+import android.os.Process;
 import android.os.SystemClock;
 import android.util.ArraySet;
 
 import androidx.test.runner.AndroidJUnit4;
+
+import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ServiceRecordInternal;
+import com.android.server.wm.ActivityTaskManagerService;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoSession;
 import org.mockito.quality.Strictness;
 
@@ -134,6 +148,7 @@ public class ActiveServicesTest {
         memFactor = ADJ_MEM_FACTOR_CRITICAL;
         when(mService.mAppProfiler.getLastMemoryLevelLocked()).thenReturn(memFactor);
         extra = mService.mConstants.mExtraServiceRestartDelayOnMemPressure[memFactor];
+        mService.mAppProfiler = mock(AppProfiler.class);
         final long elapsed4 = elapsed * 3;
         final long now4 = now + elapsed4;
         mActiveServices.rescheduleServiceRestartOnMemoryPressureIfNeededLocked(
@@ -384,5 +399,112 @@ public class ActiveServicesTest {
             assertEquals("Expected next restart time=" + (now + delays[i]),
                     now + delays[i], r.nextRestartTime);
         }
+    }
+
+    @Test
+    public void testBringUpServiceLocked_pcc() throws Exception {
+        mService.mPackageManagerInt = mock(PackageManagerInternal.class);
+        mService.mUsageStatsService = mock(UsageStatsManagerInternal.class);
+
+        setFieldValue(ActivityManagerService.class, mService,
+                "mUserController", mock(UserController.class));
+        setFieldValue(ActivityManagerService.class, mService, "mProcessList",
+                mock(ProcessList.class));
+        setFieldValue(ActiveServices.class, mActiveServices, "mPendingServices",
+                new ArrayList<>());
+
+        final ServiceRecord r = createPccServiceRecord();
+        final ProcessRecord proc = createPccProcessRecord(mService);
+
+        // Simulate no existing process for this ServiceRecord
+        when(mService.getProcessRecordLocked(anyString(), anyInt())).thenReturn(null);
+
+        when(mService.mUserController.hasStartedUserState(anyInt())).thenReturn(true);
+        when(mService.mProcessList.getAppStartInfoTracker()).thenReturn(
+                    mock(AppStartInfoTracker.class));
+        when(mService.startProcessLocked(anyString(), any(), anyBoolean(),
+                    anyInt(), any(), anyInt(), anyBoolean(),
+                    anyBoolean())).thenReturn(proc);
+
+        doCallRealMethod().when(mActiveServices).bringUpServiceLocked(any(),
+                anyInt(), anyBoolean(), anyBoolean(), anyBoolean(),
+                anyBoolean(), anyBoolean(), anyInt());
+
+        mActiveServices.bringUpServiceLocked(r, r.serviceInfo.flags, false,
+                false, false, false, false, 0);
+
+        verify(mService).getProcessRecordLocked(r.processName, r.appInfo.pccUid);
+
+        final ArgumentCaptor<HostingRecord> hostingRecord =
+                ArgumentCaptor.forClass(HostingRecord.class);
+        verify(mService).startProcessLocked(eq(r.processName), eq(r.appInfo),
+                eq(true), anyInt(), hostingRecord.capture(),
+                eq(Process.ZYGOTE_POLICY_FLAG_EMPTY), eq(false), eq(false));
+        assertTrue(hostingRecord.getValue().isPcc());
+    }
+
+    @Test
+    public void testAttachApplicationLocked_pcc() throws Exception {
+        mService = mock(ActivityManagerService.class);
+        mService.mProcessStateController = mock(ProcessStateController.class);
+        mService.mAppProfiler = mock(AppProfiler.class);
+        mService.mActivityTaskManager = mock(ActivityTaskManagerService.class);
+        mService.mPackageManagerInt = mock(PackageManagerInternal.class);
+        mService.mProcessStateController = mock(ProcessStateController.class);
+
+        setFieldValue(ActiveServices.class, mActiveServices, "mAm", mService);
+
+        final ServiceRecord r = createPccServiceRecord();
+        final ProcessRecord proc = createPccProcessRecord(mService);
+
+        // Make sure we call the real attachApplicationLocked, and mock out the stuff it calls
+        doCallRealMethod().when(mActiveServices).attachApplicationLocked(any(),
+                anyString());
+        when(mService.mProcessStateController.startServiceBatchSession(anyInt())).thenReturn(null);
+        when(mService.mProcessStateController.getOomConstants()).thenReturn(null);
+        doNothing().when(mActiveServices).realStartServiceLocked(any(ServiceRecord.class),
+                any(ProcessRecord.class), any(IApplicationThread.class),
+                anyInt(), any(UidRecord.class), anyBoolean(), anyBoolean(),
+                anyInt());
+        when(mActiveServices.isServiceNeededLocked(any(ServiceRecord.class),
+                    anyBoolean(), anyBoolean())).thenReturn(true);
+
+        setFieldValue(ActiveServices.class, mActiveServices, "mPendingServices",
+                new ArrayList<>());
+        mActiveServices.mPendingServices.add(r);
+
+        mActiveServices.attachApplicationLocked(proc, r.processName);
+
+        assertTrue(mActiveServices.mPendingServices.isEmpty());
+    }
+
+    private ProcessRecord createPccProcessRecord(ActivityManagerService ams) {
+        final ProcessRecord proc = mock(ProcessRecord.class);
+
+        proc.info = new ApplicationInfo();
+        proc.info.uid = 20001;
+        proc.info.pccUid = 30001;
+        proc.info.packageName = "com.android.pcc";
+        setFieldValue(ProcessRecord.class, proc, "mService", ams);
+        setFieldValue(ProcessRecordInternal.class, proc, "uid", 30001);
+
+        return proc;
+    }
+
+    private ServiceRecord createPccServiceRecord() {
+        final ServiceRecord r = mock(ServiceRecord.class);
+        r.appInfo = new ApplicationInfo();
+        r.appInfo.uid = 20001;
+        r.appInfo.pccUid = 30001;
+        r.appInfo.packageName = "com.android.pcc";
+        final ServiceInfo si = new ServiceInfo();
+        si.flags = ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX;
+        setFieldValue(ServiceRecord.class, r, "serviceInfo", si);
+        setFieldValue(ServiceRecord.class, r, "processName", "test");
+        setFieldValue(ServiceRecord.class, r, "intent", new
+                Intent.FilterComparison(new Intent()));
+        setFieldValue(ServiceRecordInternal.class, r, "instanceName", new
+                ComponentName("pkg", "class"));
+        return r;
     }
 }
