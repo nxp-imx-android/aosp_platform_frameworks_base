@@ -288,6 +288,18 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
             assertThat(recordingStatus)
                 .containsExactly(ScreenRecording.Saving(uri), ScreenRecording.Saved(uri, thumbnail))
         }
+
+    @Test
+    fun testServiceDisconnectedAfterStart_recordingIsStopped() {
+        kosmos.runTest {
+            val status: ScreenRecordingStatus? by collectLastValue(underTest.status)
+            underTest.startRecording()
+
+            serviceConnection!!.onServiceDisconnected(ComponentName("test.pkg", "test.cls"))
+
+            assertThat(status).isEqualTo(ScreenRecordingStatus.Stopped(StopReason.STOP_ERROR))
+        }
+    }
 }
 
 private fun ScreenRecordingServiceRepository.startRecording() {

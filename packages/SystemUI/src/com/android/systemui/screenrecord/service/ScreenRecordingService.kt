@@ -143,7 +143,7 @@ protected constructor(
             } else {
                 setShouldShowTouches(originalShouldShowTouches)
             }
-            Log.d(tag, "Error starting screen recording", e)
+            Log.e(tag, "Error starting screen recording", e)
             notificationInteractor.notifyErrorStarting(notificationId)
             showToast(R.string.screenrecord_start_error)
             stopSelf()
