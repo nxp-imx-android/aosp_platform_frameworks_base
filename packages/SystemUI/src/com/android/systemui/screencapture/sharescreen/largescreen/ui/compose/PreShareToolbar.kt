@@ -56,6 +56,12 @@ fun PreShareToolbar(
             resId = R.drawable.ic_screen_capture_window,
             contentDescription = null,
         )
+    val fullscreenIcon by
+        loadIcon(
+            viewModel = shareScreenViewModel,
+            resId = R.drawable.ic_screen_capture_fullscreen,
+            contentDescription = null,
+        )
     val shareTargetButtonItems =
         listOf(
             RadioButtonGroupItem(
@@ -75,6 +81,16 @@ fun PreShareToolbar(
                 onClick = {
                     shareScreenViewModel.selectedScreenCaptureTarget =
                         (ScreenCaptureTarget.App(displayId = 0, taskId = 0))
+                },
+            ),
+            RadioButtonGroupItem(
+                icon = fullscreenIcon,
+                isSelected =
+                    shareScreenViewModel.selectedScreenCaptureTarget
+                        is ScreenCaptureTarget.Fullscreen,
+                onClick = {
+                    shareScreenViewModel.selectedScreenCaptureTarget =
+                        (ScreenCaptureTarget.Fullscreen(displayId = 0))
                 },
             ),
         )
