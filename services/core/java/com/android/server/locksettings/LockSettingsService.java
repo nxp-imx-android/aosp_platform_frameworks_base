@@ -464,8 +464,15 @@ public class LockSettingsService extends ILockSettings.Stub {
         // as its parent.
         if (!isUserSecure(parent.id) && !profileUserPassword.isNone()) {
             Slogf.i(TAG, "Clearing password for profile user %d to match parent", profileUserId);
-            setLockCredentialInternal(LockscreenCredential.createNone(), profileUserPassword,
-                    profileUserId, /* isLockTiedToParent= */ true);
+            if (android.security.Flags.enableAtomicChildProfileLskf()) {
+                clearUnifiedProfilePassword(profileUserPassword, profileUserId);
+            } else {
+                setLockCredentialInternal(
+                        LockscreenCredential.createNone(),
+                        profileUserPassword,
+                        profileUserId,
+                        /* isLockTiedToParent= */ true);
+            }
             return;
         }
         final long parentSid;
@@ -1793,18 +1800,27 @@ public class LockSettingsService extends ILockSettings.Stub {
                     // credential, otherwise they get lost
                     if (profilePasswordMap != null
                             && profilePasswordMap.containsKey(profileUserId)) {
-                        setLockCredentialInternal(LockscreenCredential.createNone(),
-                                profilePasswordMap.get(profileUserId),
-                                profileUserId,
-                                /* isLockTiedToParent= */ true);
-                        mStorage.removeChildProfileLock(profileUserId);
-                        removeKeystoreProfileKeyLegacy(mKeyStore, profileUserId);
+                        LockscreenCredential profilePassword =
+                                profilePasswordMap.get(profileUserId);
+                        clearUnifiedProfilePassword(profilePassword, profileUserId);
                     } else {
                         Slog.wtf(TAG, "Attempt to clear tied challenge, but no password supplied.");
                     }
                 }
             }
         }
+    }
+
+    @GuardedBy("mSpManager")
+    private void clearUnifiedProfilePassword(
+            LockscreenCredential profilePassword, int profileUserId) {
+        setLockCredentialInternal(
+                LockscreenCredential.createNone(),
+                profilePassword,
+                profileUserId,
+                /* isLockTiedToParent= */ true);
+        mStorage.removeChildProfileLock(profileUserId);
+        removeKeystoreProfileKeyLegacy(mKeyStore, profileUserId);
     }
 
     /**

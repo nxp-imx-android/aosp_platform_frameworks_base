@@ -806,8 +806,12 @@ class SyntheticPasswordManager {
     public void removeUser(IGateKeeperService gatekeeper, int userId) {
         for (long protectorId : mStorage.listSyntheticPasswordProtectorsForUser(SP_BLOB_NAME,
                     userId)) {
-            destroyWeaverSlot(protectorId, userId);
-            destroyProtectorKey(getProtectorKeyAlias(protectorId));
+            if (android.security.Flags.enableAtomicChildProfileLskf()) {
+                destroyLskfBasedProtector(protectorId, userId);
+            } else {
+                destroyWeaverSlot(protectorId, userId);
+                destroyProtectorKey(getProtectorKeyAlias(protectorId));
+            }
         }
         // Remove potential persistent state (in RPMB), to prevent them from accumulating and
         // causing problems.
