@@ -18,8 +18,13 @@ package com.android.systemui.scene.ui.viewmodel
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
+import com.android.systemui.deviceentry.shared.model.DeviceUnlockSource
+import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
@@ -30,7 +35,8 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.scene.blurChoreographer
+import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.fakeBlurChoreographer
 import com.android.systemui.scene.sceneTransitionBlurViewModel
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.testKosmos
@@ -39,13 +45,11 @@ import com.android.systemui.window.data.repository.fakeWindowRootViewBlurReposit
 import com.android.systemui.window.shared.model.BlurEffect
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.never
-import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -70,7 +74,8 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             underTest.requestWindowBackgroundBlur(TransitionState.Idle(Scenes.Lockscreen), 1f)
 
-            verify(blurChoreographer).applyBlur(BlurEffect(blurConfig.minBlurRadiusPx, 1f))
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
+                .isEqualTo(BlurEffect(blurConfig.minBlurRadiusPx, 1f))
         }
 
     @Test
@@ -84,7 +89,8 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
             runCurrent()
             underTest.requestWindowBackgroundBlur(TransitionState.Idle(Scenes.Lockscreen), 1f)
 
-            verify(blurChoreographer).applyBlur(BlurEffect(blurConfig.minBlurRadiusPx, 1f))
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
+                .isEqualTo(BlurEffect(blurConfig.minBlurRadiusPx, 1f))
         }
 
     @Test
@@ -102,7 +108,8 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
                 .isEqualTo(KeyguardState.AOD)
             underTest.requestWindowBackgroundBlur(TransitionState.Idle(Scenes.Lockscreen), 1f)
 
-            verify(blurChoreographer).applyBlur(BlurEffect(blurConfig.maxBlurRadiusPx / 2, 1f))
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
+                .isEqualTo(BlurEffect(blurConfig.maxBlurRadiusPx / 2, 1f))
         }
 
     @Test
@@ -110,7 +117,8 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             underTest.requestWindowBackgroundBlur(TransitionState.Idle(Scenes.Communal), 1f)
 
-            verify(blurChoreographer).applyBlur(BlurEffect(blurConfig.maxBlurRadiusPx, 0.95f))
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
+                .isEqualTo(BlurEffect(blurConfig.maxBlurRadiusPx, 0.95f))
         }
 
     @Test
@@ -118,7 +126,7 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             underTest.requestWindowBackgroundBlur(TransitionState.Idle(Scenes.QuickSettings), 1f)
 
-            verify(blurChoreographer, never()).applyBlur(any())
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect).isNull()
         }
 
     @Test
@@ -126,7 +134,7 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             underTest.requestWindowBackgroundBlur(TransitionState.Idle(Scenes.Shade), 1f)
 
-            verify(blurChoreographer, never()).applyBlur(any())
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect).isNull()
         }
 
     @Test
@@ -134,7 +142,8 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             underTest.requestWindowBackgroundBlur(TransitionState.Idle(Scenes.Dream), 1f)
 
-            verify(blurChoreographer).applyBlur(eq(BlurEffect(blurConfig.minBlurRadiusPx, 1f)))
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
+                .isEqualTo(BlurEffect(blurConfig.minBlurRadiusPx, 1f))
         }
 
     @Test
@@ -142,7 +151,8 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             underTest.requestWindowBackgroundBlur(TransitionState.Idle(Scenes.Occluded), 1f)
 
-            verify(blurChoreographer).applyBlur(BlurEffect(blurConfig.minBlurRadiusPx, 1f))
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
+                .isEqualTo(BlurEffect(blurConfig.minBlurRadiusPx, 1f))
         }
 
     @Test
@@ -150,6 +160,72 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             underTest.requestWindowBackgroundBlur(TransitionState.Idle(Scenes.Gone), 1f)
 
-            verify(blurChoreographer).applyBlur(BlurEffect(blurConfig.minBlurRadiusPx, 1f))
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
+                .isEqualTo(BlurEffect(blurConfig.minBlurRadiusPx, 1f))
+        }
+
+    @Test
+    fun earlyWakeupReset_whenBlurIsNotSupported() =
+        kosmos.runTest {
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = false
+
+            assertThat(fakeBlurChoreographer.persistentEarlyWakeup).isFalse()
+        }
+
+    @Test
+    fun earlyWakeupSet_whenDeviceIsNotEntered() =
+        kosmos.runTest {
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+            sceneInteractor.snapToScene(Scenes.Lockscreen, loggingReason = "for test")
+            runCurrent()
+            assertThat(deviceEntryInteractor.isDeviceEntered.value).isFalse()
+
+            assertThat(fakeBlurChoreographer.persistentEarlyWakeup).isTrue()
+        }
+
+    @Test
+    fun earlyWakeupSet_whenDeviceIsEnteredAndShadeIsBeingDragged() =
+        kosmos.runTest {
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+            fakeDeviceEntryRepository.deviceUnlockStatus.value =
+                DeviceUnlockStatus(true, deviceUnlockSource = DeviceUnlockSource.Fingerprint)
+            sceneInteractor.snapToScene(Scenes.Gone, loggingReason = "for test")
+            runCurrent()
+            assertThat(deviceEntryInteractor.isDeviceEntered.value).isTrue()
+            assertThat(fakeBlurChoreographer.persistentEarlyWakeup).isFalse()
+
+            val shadeExpansionProgress = MutableStateFlow(0.0f)
+            val userInputOngoing = MutableStateFlow(true)
+            val transitionState =
+                MutableStateFlow(
+                    ObservableTransitionState.Transition.ChangeScene(
+                        fromScene = Scenes.Gone,
+                        toScene = Scenes.Shade,
+                        progress = shadeExpansionProgress,
+                        isInitiatedByUserInput = true,
+                        isUserInputOngoing = userInputOngoing,
+                        currentOverlays = emptySet(),
+                        currentScene = flowOf(Scenes.Gone),
+                        previewProgress = flowOf(0f),
+                        isInPreviewStage = flowOf(false),
+                    )
+                )
+
+            sceneInteractor.setTransitionState(transitionState)
+            runCurrent()
+
+            assertThat(fakeBlurChoreographer.persistentEarlyWakeup).isTrue()
+
+            shadeExpansionProgress.value = 0.1f
+            userInputOngoing.value = false
+            runCurrent()
+
+            assertThat(fakeBlurChoreographer.persistentEarlyWakeup).isTrue()
+
+            shadeExpansionProgress.value = 0f
+            userInputOngoing.value = true
+            runCurrent()
+
+            assertThat(fakeBlurChoreographer.persistentEarlyWakeup).isTrue()
         }
 }
