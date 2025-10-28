@@ -209,7 +209,7 @@ package android {
     field public static final String MANAGE_ACCESSIBILITY = "android.permission.MANAGE_ACCESSIBILITY";
     field @Deprecated public static final String MANAGE_ACTIVITY_STACKS = "android.permission.MANAGE_ACTIVITY_STACKS";
     field public static final String MANAGE_ACTIVITY_TASKS = "android.permission.MANAGE_ACTIVITY_TASKS";
-    field @FlaggedApi("android.security.aapm_api") public static final String MANAGE_ADVANCED_PROTECTION_MODE = "android.permission.MANAGE_ADVANCED_PROTECTION_MODE";
+    field public static final String MANAGE_ADVANCED_PROTECTION_MODE = "android.permission.MANAGE_ADVANCED_PROTECTION_MODE";
     field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final String MANAGE_APP_FUNCTION_ACCESS = "android.permission.MANAGE_APP_FUNCTION_ACCESS";
     field public static final String MANAGE_APP_HIBERNATION = "android.permission.MANAGE_APP_HIBERNATION";
     field public static final String MANAGE_APP_OPS_RESTRICTIONS = "android.permission.MANAGE_APP_OPS_RESTRICTIONS";
@@ -13187,7 +13187,7 @@ package android.security {
 
 package android.security.advancedprotection {
 
-  @FlaggedApi("android.security.aapm_api") public final class AdvancedProtectionFeature implements android.os.Parcelable {
+  public final class AdvancedProtectionFeature implements android.os.Parcelable {
     ctor public AdvancedProtectionFeature(int);
     method public int describeContents();
     method public int getId();
@@ -13195,7 +13195,7 @@ package android.security.advancedprotection {
     field @NonNull public static final android.os.Parcelable.Creator<android.security.advancedprotection.AdvancedProtectionFeature> CREATOR;
   }
 
-  @FlaggedApi("android.security.aapm_api") public final class AdvancedProtectionManager {
+  public final class AdvancedProtectionManager {
     method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE) public java.util.List<android.security.advancedprotection.AdvancedProtectionFeature> getAdvancedProtectionFeatures();
     method @RequiresPermission(android.Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE) public void setAdvancedProtectionEnabled(boolean);
     field public static final int FEATURE_ID_DISALLOW_CELLULAR_2G = 0; // 0x0

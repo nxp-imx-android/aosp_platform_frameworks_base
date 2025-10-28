@@ -111,59 +111,6 @@ public class RestrictedLockUtilsTest {
         RestrictedLockUtilsInternal.sProxy = mProxy;
     }
 
-    @RequiresFlagsDisabled({android.security.Flags.FLAG_AAPM_API,
-            android.app.admin.flags.Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED})
-    @Test
-    public void checkIfRestrictionEnforced_deviceOwner()
-            throws PackageManager.NameNotFoundException {
-        UserManager.EnforcingUser enforcingUser = new UserManager.EnforcingUser(mUserId,
-                UserManager.RESTRICTION_SOURCE_DEVICE_OWNER);
-        final String userRestriction = UserManager.DISALLOW_UNINSTALL_APPS;
-        when(mUserManager.getUserRestrictionSources(userRestriction,
-                UserHandle.of(mUserId))).
-                thenReturn(Collections.singletonList(enforcingUser));
-
-        when(mContext.createPackageContextAsUser(any(), eq(0),
-                eq(UserHandle.of(mUserId))))
-                .thenReturn(mContext);
-
-        setUpDeviceOwner(mAdmin1, mUserId);
-
-        EnforcedAdmin enforcedAdmin = RestrictedLockUtilsInternal
-                .checkIfRestrictionEnforced(mContext, userRestriction, mUserId);
-
-        assertThat(enforcedAdmin).isNotNull();
-        assertThat(enforcedAdmin.enforcedRestriction).isEqualTo(userRestriction);
-        assertThat(enforcedAdmin.component).isEqualTo(mAdmin1);
-    }
-
-    @RequiresFlagsDisabled({android.security.Flags.FLAG_AAPM_API,
-            android.app.admin.flags.Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED})
-    @Test
-    public void checkIfRestrictionEnforced_profileOwner()
-            throws PackageManager.NameNotFoundException {
-        UserManager.EnforcingUser enforcingUser = new UserManager.EnforcingUser(mUserId,
-                UserManager.RESTRICTION_SOURCE_PROFILE_OWNER);
-        final String userRestriction = UserManager.DISALLOW_UNINSTALL_APPS;
-        when(mUserManager.getUserRestrictionSources(userRestriction,
-                UserHandle.of(mUserId))).
-                thenReturn(Collections.singletonList(enforcingUser));
-
-        when(mContext.createPackageContextAsUser(any(), eq(0),
-                eq(UserHandle.of(mUserId))))
-                .thenReturn(mContext);
-
-        setUpProfileOwner(mAdmin1);
-
-        EnforcedAdmin enforcedAdmin = RestrictedLockUtilsInternal
-                .checkIfRestrictionEnforced(mContext, userRestriction, mUserId);
-
-        assertThat(enforcedAdmin).isNotNull();
-        assertThat(enforcedAdmin.enforcedRestriction).isEqualTo(userRestriction);
-        assertThat(enforcedAdmin.component).isEqualTo(mAdmin1);
-    }
-
-    @RequiresFlagsEnabled(android.security.Flags.FLAG_AAPM_API)
     @RequiresFlagsDisabled(android.app.admin.flags.Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED)
     @Test
     public void checkIfRestrictionEnforced_getEnforcingAdminExists() {
@@ -188,7 +135,6 @@ public class RestrictedLockUtilsTest {
         assertThat(enforcedAdmin.user).isEqualTo(enforcingAdmin.getUserHandle());
     }
 
-    @RequiresFlagsEnabled(android.security.Flags.FLAG_AAPM_API)
     @RequiresFlagsDisabled(android.app.admin.flags.Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED)
     @Test
     public void checkIfRestrictionEnforced_getEnforcingAdminReturnsNull_deviceOwner()
@@ -216,7 +162,6 @@ public class RestrictedLockUtilsTest {
         assertThat(enforcedAdmin.component).isEqualTo(mAdmin1);
     }
 
-    @RequiresFlagsEnabled(android.security.Flags.FLAG_AAPM_API)
     @RequiresFlagsDisabled(android.app.admin.flags.Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED)
     @Test
     public void checkIfRestrictionEnforced_getEnforcingAdminReturnsNull_profileOwner()
@@ -279,7 +224,6 @@ public class RestrictedLockUtilsTest {
         assertThat(enforcedAdmin.component).isEqualTo(mAdmin1);
     }
 
-    @RequiresFlagsEnabled(android.security.Flags.FLAG_AAPM_API)
     @Test
     public void isPolicyEnforcedByAdvancedProtection_notEnforced_returnsFalse() {
         final String userRestriction = UserManager.DISALLOW_UNINSTALL_APPS;
@@ -304,7 +248,6 @@ public class RestrictedLockUtilsTest {
         }
     }
 
-    @RequiresFlagsEnabled(android.security.Flags.FLAG_AAPM_API)
     @Test
     public void isPolicyEnforcedByAdvancedProtection_enforced_returnsTrue() {
         final Authority advancedProtectionAuthority = new SystemAuthority(

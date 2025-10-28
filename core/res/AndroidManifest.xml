@@ -4379,22 +4379,16 @@
 
     <!-- Allows an application to modify the device's advanced protection mode status, and query
          the list of enabled features
-        @FlaggedApi(android.security.Flags.FLAG_AAPM_API)
         @SystemApi
         @hide -->
     <permission android:name="android.permission.MANAGE_ADVANCED_PROTECTION_MODE"
-        android:protectionLevel="signature|privileged"
-        android:featureFlag="android.security.aapm_api"/>
-    <uses-permission android:name="android.permission.MANAGE_ADVANCED_PROTECTION_MODE"
-        android:featureFlag="android.security.aapm_api"/>
+        android:protectionLevel="signature|privileged" />
+    <uses-permission android:name="android.permission.MANAGE_ADVANCED_PROTECTION_MODE" />
 
-    <!-- Allows an application to query the device's advanced protection mode status.
-        @FlaggedApi(android.security.Flags.FLAG_AAPM_API) -->
+    <!-- Allows an application to query the device's advanced protection mode status. -->
     <permission android:name="android.permission.QUERY_ADVANCED_PROTECTION_MODE"
-        android:protectionLevel="normal"
-        android:featureFlag="android.security.aapm_api"/>
-    <uses-permission android:name="android.permission.QUERY_ADVANCED_PROTECTION_MODE"
-        android:featureFlag="android.security.aapm_api"/>
+        android:protectionLevel="normal" />
+    <uses-permission android:name="android.permission.QUERY_ADVANCED_PROTECTION_MODE" />
 
     <!-- Allows an application to read the state of the IntrusionDetectionService
          @FlaggedApi(android.security.Flags.FLAG_AFL_API)

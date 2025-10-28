@@ -6814,7 +6814,6 @@ public abstract class Context {
      * @see #getSystemService(String)
      * @see android.security.advancedprotection.AdvancedProtectionManager
      */
-    @FlaggedApi(android.security.Flags.FLAG_AAPM_API)
     public static final String ADVANCED_PROTECTION_SERVICE = "advanced_protection";
 
     /**

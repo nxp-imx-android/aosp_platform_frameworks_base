@@ -49,10 +49,6 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
-import android.platform.test.annotations.RequiresFlagsDisabled;
-import android.platform.test.annotations.RequiresFlagsEnabled;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.View;
@@ -79,9 +75,6 @@ public class RestrictedPreferenceHelperTest {
         return FlagsParameterization.allCombinationsOf(
                 Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED);
     }
-
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -120,24 +113,6 @@ public class RestrictedPreferenceHelperTest {
         mHelper = new RestrictedPreferenceHelper(mContext, mPreference, null);
     }
 
-    @RequiresFlagsDisabled(android.security.Flags.FLAG_AAPM_API)
-    @Test
-    public void bindPreference_disabled_shouldDisplayDisabledSummary() {
-        final TextView summaryView = mock(TextView.class, RETURNS_DEEP_STUBS);
-        when(mViewHolder.itemView.findViewById(android.R.id.summary))
-                .thenReturn(summaryView);
-        when(summaryView.getContext().getText(R.string.disabled_by_admin_summary_text))
-                .thenReturn("test");
-        when(mDevicePolicyResourcesManager.getString(any(), any())).thenReturn("test");
-
-        mHelper.useAdminDisabledSummary(true);
-        mHelper.setDisabledByAdmin(new RestrictedLockUtils.EnforcedAdmin());
-        mHelper.onBindViewHolder(mViewHolder);
-
-        verify(summaryView).setText("test");
-        verify(summaryView, never()).setVisibility(View.GONE);
-    }
-
     @Test
     public void bindPreference_disabledByEcm_shouldDisplayDisabledSummary() {
         final TextView summaryView = mock(TextView.class, RETURNS_DEEP_STUBS);
@@ -151,7 +126,6 @@ public class RestrictedPreferenceHelperTest {
         verify(summaryView, never()).setVisibility(View.GONE);
     }
 
-    @RequiresFlagsEnabled(android.security.Flags.FLAG_AAPM_API)
     @Test
     public void bindPreference_disabled_byAdvancedProtection_shouldKeepExistingSummary() {
         final TextView summaryView = mock(TextView.class, RETURNS_DEEP_STUBS);
@@ -176,7 +150,6 @@ public class RestrictedPreferenceHelperTest {
         verify(summaryView, never()).setVisibility(View.VISIBLE);
     }
 
-    @RequiresFlagsEnabled(android.security.Flags.FLAG_AAPM_API)
     @Test
     public void bindPreference_disabled_byAdmin_shouldDisplayDisabledSummary() {
         final TextView summaryView = mock(TextView.class, RETURNS_DEEP_STUBS);
@@ -257,7 +230,6 @@ public class RestrictedPreferenceHelperTest {
         assertThat(mHelper.isDisabledByAdmin()).isTrue();
     }
 
-    @RequiresFlagsEnabled(android.security.Flags.FLAG_AAPM_API)
     @Test
     public void setDisabledByAdmin_previousAndCurrentAdminsAreTheSame_returnsFalse() {
         RestrictedLockUtils.EnforcedAdmin enforcedAdmin =
@@ -269,7 +241,6 @@ public class RestrictedPreferenceHelperTest {
         assertThat(mHelper.setDisabledByAdmin(enforcedAdmin)).isFalse();
     }
 
-    @RequiresFlagsEnabled(android.security.Flags.FLAG_AAPM_API)
     @Test
     public void setDisabledByAdmin_previousAndCurrentAdminsAreDifferent_returnsTrue() {
         RestrictedLockUtils.EnforcedAdmin enforcedAdmin1 =
@@ -295,7 +266,6 @@ public class RestrictedPreferenceHelperTest {
         verify(mPreference).setEnabled(false);
     }
 
-    @RequiresFlagsEnabled(android.security.Flags.FLAG_AAPM_API)
     @Test
     public void isRestrictionEnforcedByAdvancedProtection_notEnforced_returnsFalse() {
         final Authority[] allNonAdvancedProtectionAuthorities = new Authority[] {
@@ -322,7 +292,6 @@ public class RestrictedPreferenceHelperTest {
         }
     }
 
-    @RequiresFlagsEnabled(android.security.Flags.FLAG_AAPM_API)
     @Test
     public void isRestrictionEnforcedByAdvancedProtection_enforced_returnsTrue() {
         final EnforcingAdmin advancedProtectionEnforcingAdmin = new EnforcingAdmin(mPackage,

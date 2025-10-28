@@ -19,26 +19,12 @@ flag {
 }
 
 flag {
-    name: "aapm_feature_disable_cellular_2g"
-    namespace: "responsible_apis"
-    description: "Android Advanced Protection Mode Feature: Disable Cellular 2G"
-    bug: "377748286"
-}
-
-flag {
     name: "aapm_feature_disable_insecure_wifi_autojoin"
     namespace: "responsible_apis"
     description: "Android Advanced Protection Mode Feature: Disable Insecure Wifi Autojoin"
     is_exported: true
     bug: "424512082"
     is_fixed_read_only: true
-}
-
-flag {
-    name: "aapm_feature_disable_install_unknown_sources"
-    namespace: "responsible_apis"
-    description: "Android Advanced Protection Mode Feature: Disable Install Unknown Sources"
-    bug: "369361373"
 }
 
 flag {
