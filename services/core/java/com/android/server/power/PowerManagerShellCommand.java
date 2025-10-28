@@ -377,26 +377,20 @@ class PowerManagerShellCommand extends ShellCommand {
                 mAlarmManager = IAlarmManager.Stub.asInterface(
                         ServiceManager.getService(Context.ALARM_SERVICE));
             }
+            final long ident = Binder.clearCallingIdentity();
             try {
-                PackageManagerInternal packageManagerInternal =
-                        LocalServices.getService(PackageManagerInternal.class);
-                AndroidPackage callingPackage =
-                        packageManagerInternal.getPackage(Binder.getCallingUid());
-                if (callingPackage == null) {
-                    pw.println("Calling uid " + Binder.getCallingUid() + " is not an android"
-                        + " package. Cannot schedule a delayed wakeup on behalf of it.");
-                    return -1;
-                }
                 pw.println("Schedule an alarm to wakeup in " + delayMillis +
-                        " ms, on behalf of " + callingPackage.getPackageName());
+                        " ms, on behalf of android");
                 mAlarmListener.restoreWakelocks = restoreWakelocks;
-                mAlarmManager.set(callingPackage.getPackageName(),
+                mAlarmManager.set("android",
                         AlarmManager.RTC_WAKEUP, wakeUpTime,
                         0, 0, AlarmManager.FLAG_PRIORITIZE,
                         null, mAlarmListener, "PowerManagerShellCommand", null, null);
             } catch (Exception e) {
                 pw.println("Error: " + e);
                 return -1;
+            } finally {
+                Binder.restoreCallingIdentity(ident);
             }
         }
         return 0;
