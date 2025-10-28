@@ -52,7 +52,6 @@ import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -89,7 +88,7 @@ public class PersonalContextManagerService extends SystemService {
                 @Override
                 public void onNotificationEvent(@NonNull NotificationEvent event) {
                     final Set<ContextHint> hints =
-                            Set.of(new NotificationHint.NotificationHintBuilder(event).build());
+                            Set.of(new NotificationHint.Builder(event).build());
 
                     final StatusBarNotification sbn = getSbnFromNotificationEvent(event);
                     if (sbn == null) {
