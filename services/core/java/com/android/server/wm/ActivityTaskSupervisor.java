@@ -2966,7 +2966,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                     mRootWindowContainer.anyTaskForId(taskId, MATCH_ATTACHED_TASK_OR_RECENT_TASKS);
             // TODO(b/456665032): more cleanly hook into ActivityStartInterceptor.
             boolean shouldIntercept =
-                    android.companion.virtualdevice.flags.Flags.automatedAppLaunchInterception()
+                    android.companion.virtualdevice.flags.Flags.computerControlAccess()
                     && attachedTask != null
                     && ActivityStartInterceptor.shouldInterceptStartActivityFromRecents(
                             this,
