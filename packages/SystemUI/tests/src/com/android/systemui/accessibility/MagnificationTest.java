@@ -43,8 +43,6 @@ import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
 import android.hardware.input.InputManager;
 import android.os.RemoteException;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper;
 import android.view.Display;
 import android.view.IWindowManager;
@@ -55,7 +53,6 @@ import android.view.accessibility.IMagnificationConnectionCallback;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.systemui.Flags;
 import com.android.systemui.LauncherProxyService;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.model.SysUiState;
@@ -411,25 +408,7 @@ public class MagnificationTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_CLEANUP_INSTANCES_WHEN_DISPLAY_REMOVED)
-    public void onDisplayRemoved_flagOff_instancesStayInSupplier() {
-        int originalCachedItemsSize = mSettingsSupplier.getSize();
-        int testDisplayId2 = 200;
-        int testDisplayId3 = 300;
-
-        // Make the settings supplier add 2 new instance entries.
-        mMagnification.hideMagnificationSettingsPanel(testDisplayId2);
-        mMagnification.hideMagnificationSettingsPanel(testDisplayId3);
-        // When displays removed, the current behavior keeps the entries/instances in the supplier.
-        mDisplayTracker.triggerOnDisplayRemoved(testDisplayId2);
-        mDisplayTracker.triggerOnDisplayRemoved(testDisplayId3);
-
-        assertThat(mSettingsSupplier.getSize()).isEqualTo(originalCachedItemsSize + 2);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_CLEANUP_INSTANCES_WHEN_DISPLAY_REMOVED)
-    public void onDisplayRemoved_flagOn_instancesAreRemovedFromSupplier() {
+    public void onDisplayRemoved_instancesAreRemovedFromSupplier() {
         int originalCachedItemsSize = mSettingsSupplier.getSize();
         int testDisplayId2 = 200;
         int testDisplayId3 = 300;
