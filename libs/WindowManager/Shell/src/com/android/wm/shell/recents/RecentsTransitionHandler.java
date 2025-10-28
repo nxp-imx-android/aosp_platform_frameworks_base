@@ -881,19 +881,13 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         // the pausing apps.
                         t.setLayer(target.leash, layer);
                     } else if (taskInfo != null && taskInfo.topActivityType == ACTIVITY_TYPE_HOME) {
-                        if (DesktopExperienceFlags
-                                .ENABLE_DESKTOP_SPLITSCREEN_TRANSITION_BUGFIX.isTrue()) {
-                            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                                    "  hiding home taskId=%d", taskInfo.taskId);
-                            // Hide the Home task (Launcher) so that it doesn't cause a flicker by
-                            // appearing before the animation itself starts.
-                            // TODO: b/399160023 remove this when we stop using transition-type
-                            //  checks in transition utils.
-                            t.setAlpha(target.leash, 0f);
-                        } else {
-                            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                                    "  not handling home taskId=%d", taskInfo.taskId);
-                        }
+                        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                                "  hiding home taskId=%d", taskInfo.taskId);
+                        // Hide the Home task (Launcher) so that it doesn't cause a flicker by
+                        // appearing before the animation itself starts.
+                        // TODO: b/399160023 remove this when we stop using transition-type
+                        //  checks in transition utils.
+                        t.setAlpha(target.leash, 0f);
                     } else if (TransitionUtil.isOpeningType(change.getMode())) {
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                                 "  adding opening leaf taskId=%d", taskInfo.taskId);

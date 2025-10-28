@@ -144,9 +144,6 @@ public enum DesktopExperienceFlags {
     ENABLE_DESKTOP_INVISIBLE_TASK_REMOVAL_CLEANUP_BUGFIX(
             Flags::enableDesktopInvisibleTaskRemovalCleanupBugfix, false,
             Flags.FLAG_ENABLE_DESKTOP_INVISIBLE_TASK_REMOVAL_CLEANUP_BUGFIX),
-    ENABLE_DESKTOP_SPLITSCREEN_TRANSITION_BUGFIX(
-            Flags::enableDesktopSplitscreenTransitionBugfix,false,
-            Flags.FLAG_ENABLE_DESKTOP_SPLITSCREEN_TRANSITION_BUGFIX),
     ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION(
             Flags::enableDesktopTabTearingLaunchAnimation, true,
             Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION),
