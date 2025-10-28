@@ -33,7 +33,10 @@ fun TransitionBuilder.lockscreenToCommunalTransition() {
     // Elevate the status bar so that it doesn't scale down during the transition.
     sharedElement(LockscreenElementKeys.StatusBar, elevateInContent = Scenes.Lockscreen)
 
-    timestampRange(endMillis = 166, easing = FastOutSlowInEasing) {
+    timestampRange(
+        endMillis = (TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS * 0.8f).toInt(),
+        easing = FastOutSlowInEasing
+    ) {
         // Lockscreen depth push
         scaleDraw(LockscreenElementKeys.Root, scaleX = 0.9f, scaleY = 0.9f)
 
@@ -44,7 +47,10 @@ fun TransitionBuilder.lockscreenToCommunalTransition() {
         translate(LockscreenElementKeys.IndicationArea, y = (-10).dp)
     }
 
-    timestampRange(startMillis = 166, easing = LinearOutSlowInEasing) {
+    timestampRange(
+        startMillis = (TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS * 0.2f).toInt(),
+        easing = LinearOutSlowInEasing
+    ) {
         // Widget entry x translation
         translate(Communal.Elements.Grid, Edge.End)
 

@@ -264,6 +264,8 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                         isShadeTouchable = isShadeTouchable,
                     )
                 )
+
+            assertThat(userActions?.get(Swipe.End)).isNull()
         }
 
     @Test
@@ -295,31 +297,17 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                     )
                 )
 
-            if (downFromEdge || !isShadeTouchable) {
-                // Top edge is not applicable in dual shade.
-                assertThat(downDestination).isNull()
-            } else if (downWithTwoPointers) {
-                assertThat(downDestination).isEqualTo(ShowOverlay(Overlays.QuickSettingsShade))
-                assertThat(downDestination?.transitionKey).isNull()
-            } else {
-                assertThat(downDestination).isEqualTo(ShowOverlay(Overlays.NotificationsShade))
-                assertThat(downDestination?.transitionKey).isNull()
-            }
-
-            val downFromBelowEdge =
-                userActions?.get(Swipe.Down(pointerCount = if (downWithTwoPointers) 2 else 1))
+            // Assert that the correct action is returned for a down swipe.
             when {
-                !isShadeTouchable -> assertThat(downFromBelowEdge).isNull()
-                downWithTwoPointers -> {
-                    assertThat(downFromBelowEdge)
-                        .isEqualTo(ShowOverlay(Overlays.QuickSettingsShade))
-                    assertThat(downFromBelowEdge?.transitionKey).isNull()
-                }
-                else -> {
-                    assertThat(downFromBelowEdge)
-                        .isEqualTo(ShowOverlay(Overlays.NotificationsShade))
-                    assertThat(downFromBelowEdge?.transitionKey).isNull()
-                }
+                // Swiping is disabled if the shade is not touchable.
+                !isShadeTouchable -> assertThat(downDestination).isNull()
+                // Swiping from the top edge has no action in dual shade mode.
+                downFromEdge -> assertThat(downDestination).isNull()
+                // A two-finger swipe should open the quick settings shade.
+                downWithTwoPointers ->
+                    assertThat(downDestination).isEqualTo(ShowOverlay(Overlays.QuickSettingsShade))
+                // A one-finger swipe should open the notifications shade.
+                else -> assertThat(downDestination).isEqualTo(ShowOverlay(Overlays.NotificationsShade))
             }
 
             val upContent =
@@ -354,5 +342,7 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                         isShadeTouchable = isShadeTouchable,
                     )
                 )
+
+            assertThat(userActions?.get(Swipe.End)).isNull()
         }
 }
