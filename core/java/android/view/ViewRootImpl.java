@@ -262,8 +262,6 @@ import android.view.accessibility.IAccessibilityEmbeddedConnection;
 import android.view.accessibility.IAccessibilityInteractionConnection;
 import android.view.accessibility.IAccessibilityInteractionConnectionCallback;
 import android.view.accessibility.IWindowSurfaceInfoCallback;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.Interpolator;
 import android.view.autofill.AutofillManager;
 import android.view.contentcapture.ContentCaptureManager;
 import android.view.contentcapture.ContentCaptureSession;
@@ -924,7 +922,6 @@ public final class ViewRootImpl implements ViewParent,
     int mScrollY;
     int mCurScrollY;
     Scroller mScroller;
-    static final Interpolator mResizeInterpolator = new AccelerateDecelerateInterpolator();
     private ArrayList<LayoutTransition> mPendingTransitions;
 
     final ViewConfiguration mViewConfiguration;
@@ -11913,12 +11910,10 @@ public final class ViewRootImpl implements ViewParent,
 
     static class W extends IWindow.Stub implements WindowStateTransactionItem.TransactionListener {
         private final WeakReference<ViewRootImpl> mViewAncestor;
-        private final IWindowSession mWindowSession;
         private boolean mIsFromTransactionItem;
 
         W(ViewRootImpl viewAncestor) {
             mViewAncestor = new WeakReference<ViewRootImpl>(viewAncestor);
-            mWindowSession = viewAncestor.mWindowSession;
         }
 
         @Override
