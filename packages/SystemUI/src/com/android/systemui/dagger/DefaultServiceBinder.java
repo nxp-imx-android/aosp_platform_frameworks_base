@@ -24,6 +24,7 @@ import com.android.systemui.doze.DozeService;
 import com.android.systemui.dreams.DreamOverlayService;
 import com.android.systemui.dump.SystemUIAuxiliaryDumpService;
 import com.android.systemui.keyguard.KeyguardService;
+import com.android.systemui.personalcontext.SysuiVisualizerService;
 import com.android.systemui.recordissue.IssueRecordingService;
 import com.android.systemui.screenrecord.RecordingService;
 import com.android.systemui.statusbar.phone.NotificationListenerWithPlugins;
@@ -100,4 +101,10 @@ public abstract class DefaultServiceBinder {
     @ClassKey(GlanceableHubWidgetManagerService.class)
     public abstract Service bindGlanceableHubWidgetManagerService(
             GlanceableHubWidgetManagerService service);
+
+    /** Inject into SysuiVisualizerService */
+    @Binds
+    @IntoMap
+    @ClassKey(SysuiVisualizerService.class)
+    public abstract Service bindSysuiVisualizerService(SysuiVisualizerService service);
 }

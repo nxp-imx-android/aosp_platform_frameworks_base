@@ -1226,5 +1226,15 @@
             android:exported="true"
             />
 
+        <service android:name="com.android.systemui.personalcontext.SysuiVisualizerService"
+            android:exported="true"
+            android:singleUser="true"
+            android:permission="android.permission.BIND_INSIGHT_SURFACE_VISUALIZER_SERVICE">
+            <intent-filter>
+                <action
+                    android:name="android.service.personalcontext.embedded.InsightSurfaceVisualizerService"
+                    />
+            </intent-filter>
+        </service>
     </application>
 </manifest>
