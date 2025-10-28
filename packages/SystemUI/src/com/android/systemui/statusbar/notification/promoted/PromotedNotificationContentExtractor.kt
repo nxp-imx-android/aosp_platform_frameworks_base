@@ -529,7 +529,12 @@ constructor(
         contentBuilder: PromotedNotificationContentModel.Builder
     ) {
         // TODO: Create NotificationProgressModel.toSkeleton, or something similar.
-        contentBuilder.newProgress = createProgressModel(0xffffffff.toInt(), 0xff000000.toInt())
+        contentBuilder.newProgress =
+            createProgressModel(
+                0xffffffff.toInt(),
+                0xff000000.toInt(),
+                { Notification.COLOR_DEFAULT },
+            )
     }
 
     companion object {

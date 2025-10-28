@@ -1033,6 +1033,9 @@ public class Notification implements Parcelable
      * may strip styling, even for semantic styles, it’s important that stripping these styles
      * should not distort the meaning of the text.
      *
+     * <p>Semantic style will only be applied to text appearance in notifications that are eligible
+     * (e.g. {@link #FLAG_PROMOTED_ONGOING promoted} notifications).
+     *
      * @see android.text.Spannable#setSpan(Object, int, int, int)
      */
     @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
@@ -3729,20 +3732,18 @@ public class Notification implements Parcelable
         return cs.toString();
     }
 
-    private static CharSequence stripNonStyleSpans(@Nullable CharSequence text) {
-        // Keep Strikethrough spans for MessagingStyle notifications.
-        // Strikethrough can be an important part of the meaning of the message
-        // e.g.the corrections, cancelations etc.
-        return stripNonStyleSpans(text, /* keepStrikethrough= */ true);
-    }
-
+    /**
+     * Strips all spans from a {@link CharSequence} except from a set of known, style-related ones.
+     *
+     * @param semanticColors if supplied, {@link Annotation} spans representing semantic
+     *                       style will be converted into {@link ForegroundColorSpan}.
+     */
     @Nullable
     private static CharSequence stripNonStyleSpans(@Nullable CharSequence text,
-        boolean keepStrikethrough) {
+            boolean keepStrikethrough, @Nullable SemanticColors semanticColors) {
         if (text == null) return null;
 
-        if (text instanceof Spanned) {
-            Spanned ss = (Spanned) text;
+        if (text instanceof Spanned ss) {
             Object[] spans = ss.getSpans(0, ss.length(), Object.class);
             SpannableString outString = new SpannableString(ss.toString());
             for (Object span : spans) {
@@ -3751,14 +3752,30 @@ public class Notification implements Parcelable
                         || (keepStrikethrough && (span instanceof StrikethroughSpan))
                         || span instanceof UnderlineSpan) {
                     resultSpan = span;
-                } else if (span instanceof TextAppearanceSpan) {
-                    final TextAppearanceSpan originalSpan = (TextAppearanceSpan) span;
+                } else if (span instanceof TextAppearanceSpan originalSpan) {
                     resultSpan = new TextAppearanceSpan(
                             null,
                             originalSpan.getTextStyle(),
                             -1,
                             null,
                             null);
+                } else if (Flags.apiNotificationSemanticStyle()
+                        && span instanceof Annotation annotation
+                        && ANNOTATION_SEMANTIC_STYLE_KEY.equals(annotation.getKey())
+                        && semanticColors != null) {
+                    try {
+                        int semanticStyle = Integer.parseInt(annotation.getValue());
+                        int semanticColor = semanticColors.getSemanticColor(semanticStyle);
+                        if (semanticColor != COLOR_DEFAULT) {
+                            resultSpan = new ForegroundColorSpan(semanticColor);
+                        } else {
+                            continue;
+                        }
+                    } catch (NumberFormatException ex) {
+                        Log.w(TAG, "Invalid " + ANNOTATION_SEMANTIC_STYLE_KEY + ": "
+                                + annotation.getValue());
+                        continue;
+                    }
                 } else {
                     continue;
                 }
@@ -7851,28 +7868,19 @@ public class Notification implements Parcelable
             return result;
         }
 
-        /**
-         * @hide
-         */
-        public CharSequence ensureColorSpanContrastOrStripStyling(CharSequence cs,
+        private CharSequence ensureColorSpanContrastOrStripStyling(CharSequence cs,
                 StandardTemplateParams p) {
-            return ensureColorSpanContrastOrStripStyling(cs, getBackgroundColor(p));
-        }
-
-        /**
-         * @hide
-         */
-        public CharSequence ensureColorSpanContrastOrStripStyling(CharSequence cs,
-                int buttonFillColor) {
-            if ( mN.isPromotedOngoing()) {
+            if (mN.isPromotedOngoing()) {
                 // RON keeps non style spans just like MessagingStyle but disallow strikethrough
                 // as that could change the text's meaning between promoted (which allows spans)
                 // and demoted (which removes spans).
-                return stripNonStyleSpans(cs, /* keepStrikethrough= */ false);
+                return stripNonStyleSpans(cs, /* keepStrikethrough= */ false,
+                        Flags.apiNotificationSemanticStyle() ? getColors(p) : null);
             } else if (Flags.cleanUpSpansAndNewLines()) {
                 return stripStyling(cs);
             }
 
+            int buttonFillColor = getBackgroundColor(p);
             return ContrastColorUtil.ensureColorSpanContrast(cs, buttonFillColor);
         }
 
@@ -10666,7 +10674,11 @@ public class Notification implements Parcelable
              */
             public void ensureColorContrastOrStripStyling(int backgroundColor) {
                 if (Flags.cleanUpSpansAndNewLines()) {
-                    mText = stripNonStyleSpans(mText);
+                    // Keep Strikethrough spans for MessagingStyle notifications (strikethrough can
+                    // be an important part of the meaning of the message, e.g. corrections).
+                    // But ignore any semantic style annotations.
+                    mText = stripNonStyleSpans(mText, /* keepStrikethrough= */ true,
+                                /* semanticColors= */ null);
                 } else {
                     ensureColorContrast(backgroundColor);
                 }
@@ -12218,11 +12230,27 @@ public class Notification implements Parcelable
                     mBuilder.setTextViewColorSecondary(contentView, metricView.labelId(), p);
                     contentView.setTextViewText(metricView.labelId(), metricLabel);
 
+                    // Choose the view (text/chronometer) to show and its visual appearance.
+                    int valueViewId = metricValue instanceof Metric.TimeDifference
+                            ? metricView.chronometerId : metricView.textValueId;
+                    contentView.setViewVisibility(metricView.textValueId,
+                            valueViewId == metricView.textValueId ? View.VISIBLE : View.GONE);
+                    contentView.setViewVisibility(metricView.chronometerId,
+                            valueViewId == metricView.chronometerId ? View.VISIBLE : View.GONE);
+                    if (Flags.apiNotificationSemanticStyle() && mBuilder.mN.isPromotedOngoing()
+                            && metric.getSemanticStyle() != SEMANTIC_STYLE_UNSPECIFIED) {
+                        int semanticColor = mBuilder.getColors(p).getSemanticColor(
+                                metric.getSemanticStyle());
+                        if (semanticColor != COLOR_DEFAULT) {
+                            contentView.setTextColor(valueViewId, semanticColor);
+                        } else {
+                            mBuilder.setTextViewColorSecondary(contentView, valueViewId, p);
+                        }
+                    } else {
+                        mBuilder.setTextViewColorSecondary(contentView, valueViewId, p);
+                    }
+
                     if (metricValue instanceof Metric.TimeDifference timeDifference) {
-                        contentView.setViewVisibility(metricView.textValueId(), View.GONE);
-                        contentView.setViewVisibility(metricView.chronometerId(), View.VISIBLE);
-                        mBuilder.setTextViewColorSecondary(contentView, metricView.chronometerId(),
-                                p);
                         contentView.setChronometerCountDown(
                                 metricView.chronometerId(), timeDifference.isTimer());
                         contentView.setBoolean(metricView.chronometerId(),
@@ -12246,10 +12274,6 @@ public class Notification implements Parcelable
                                             + metric);
                         }
                     } else {
-                        contentView.setViewVisibility(metricView.chronometerId(), View.GONE);
-                        contentView.setViewVisibility(metricView.textValueId(), View.VISIBLE);
-                        mBuilder.setTextViewColorSecondary(contentView, metricView.textValueId(),
-                                p);
                         contentView.setTextViewText(metricView.textValueId(), valueString.text());
                     }
                 } else {
@@ -12282,7 +12306,6 @@ public class Notification implements Parcelable
                             /* chronometerId = */R.id.metric_chronometer_2)
             );
         }
-
     }
 
     /**
@@ -13877,16 +13900,13 @@ public class Notification implements Parcelable
 
             contentView.setViewVisibility(R.id.progress, View.VISIBLE);
 
-            final int backgroundColor = mBuilder.getColors(p).getBackgroundColor();
-            final int defaultProgressColor = mBuilder.getPrimaryAccentColor(p);
-            final NotificationProgressModel model = createProgressModel(
-                    defaultProgressColor, backgroundColor);
-            contentView.setBundle(R.id.progress,
-                    "setProgressModel", model.toBundle());
-
-            contentView.setIcon(R.id.progress,
-                    "setProgressTrackerIcon",
-                    mTrackerIcon);
+            Colors colors = mBuilder.getColors(p);
+            final int backgroundColor = colors.getBackgroundColor();
+            final int defaultProgressColor = colors.getPrimaryAccentColor();
+            final NotificationProgressModel model = createProgressModel(defaultProgressColor,
+                    backgroundColor, colors);
+            contentView.setBundle(R.id.progress, "setProgressModel", model.toBundle());
+            contentView.setIcon(R.id.progress, "setProgressTrackerIcon", mTrackerIcon);
 
             return contentView;
         }
@@ -14013,7 +14033,7 @@ public class Notification implements Parcelable
          * @hide
          */
         public @NonNull NotificationProgressModel createProgressModel(int defaultProgressColor,
-                int backgroundColor) {
+                int backgroundColor, SemanticColors semanticColors) {
             final NotificationProgressModel model;
             if (mIndeterminate) {
                 final int indeterminateColor;
@@ -14024,8 +14044,8 @@ public class Notification implements Parcelable
                 }
 
                 model = new NotificationProgressModel(
-                        sanitizeProgressColor(indeterminateColor,
-                                backgroundColor, defaultProgressColor));
+                        sanitizeProgressColor(indeterminateColor, backgroundColor,
+                                defaultProgressColor));
             } else {
                 // Ensure segment color contrasts.
                 final List<Segment> segments = new ArrayList<>();
@@ -14036,8 +14056,8 @@ public class Notification implements Parcelable
 
                     try {
                         totalLength = Math.addExact(totalLength, length);
-                        segments.add(sanitizeSegment(segment, backgroundColor,
-                                defaultProgressColor));
+                        segments.add(fixSegmentColor(segment, backgroundColor, defaultProgressColor,
+                                semanticColors));
                     } catch (ArithmeticException e) {
                         totalLength = DEFAULT_PROGRESS_MAX;
                         segments.clear();
@@ -14048,8 +14068,8 @@ public class Notification implements Parcelable
                 // Create default segment when no segments are provided.
                 if (segments.isEmpty()) {
                     totalLength = DEFAULT_PROGRESS_MAX;
-                    segments.add(sanitizeSegment(new Segment(totalLength), backgroundColor,
-                            defaultProgressColor));
+                    segments.add(fixSegmentColor(new Segment(totalLength), backgroundColor,
+                            defaultProgressColor, semanticColors));
                 } else if (segments.size() > MAX_PROGRESS_SEGMENT_LIMIT) {
                     // If segment limit is exceeded, all segments are replaced with a single one.
                     // If all segments had the same color, that color is used (otherwise a default)
@@ -14062,11 +14082,10 @@ public class Notification implements Parcelable
                                 getUniqueOrDefault(segments, Segment::getSemanticStyle,
                                         SEMANTIC_STYLE_UNSPECIFIED));
                     }
-
                     segments.clear();
-                    segments.add(sanitizeSegment(singleSegment,
-                            backgroundColor,
-                            defaultProgressColor));
+                    segments.add(
+                            fixSegmentColor(singleSegment, backgroundColor, defaultProgressColor,
+                                    semanticColors));
                 }
 
                 // Ensure point color contrasts.
@@ -14076,7 +14095,8 @@ public class Notification implements Parcelable
                     // The points at start/end aren't supposed to show in the progress bar.
                     // Therefore those are also dropped here.
                     if (position <= 0 || position >= totalLength) continue;
-                    points.add(sanitizePoint(point, backgroundColor, defaultProgressColor));
+                    points.add(fixPointColor(point, backgroundColor, defaultProgressColor,
+                            semanticColors));
                     if (points.size() == MAX_PROGRESS_POINT_LIMIT) {
                         break;
                     }
@@ -14088,7 +14108,6 @@ public class Notification implements Parcelable
                 if (segments.size() <= 1) {
                     segmentsFallbackColor = NotificationProgressModel.INVALID_COLOR;
                 } else {
-
                     boolean allSameColor = true;
                     int firstSegmentColor = segments.getFirst().getColor();
                     for (int i = 1; i < segments.size(); i++) {
@@ -14118,27 +14137,40 @@ public class Notification implements Parcelable
                     : defaultValue;
         }
 
-        private static Segment sanitizeSegment(@NonNull Segment segment,
-                @ColorInt int bg,
-                @ColorInt int defaultColor) {
-            Segment sanitized = new Segment(segment.getLength())
-                    .setId(segment.getId())
-                    .setColor(sanitizeProgressColor(segment.getColor(), bg, defaultColor));
+        private static Segment fixSegmentColor(@NonNull Segment segment, @ColorInt int bg,
+                @ColorInt int defaultColor, SemanticColors semanticColors) {
+            Segment fixed = new Segment(segment.getLength()).setId(segment.getId());
             if (Flags.apiNotificationSemanticStyle()) {
-                sanitized.setSemanticStyle(segment.getSemanticStyle());
+                fixed.setSemanticStyle(segment.getSemanticStyle());
+                if (segment.getSemanticStyle() != SEMANTIC_STYLE_UNSPECIFIED
+                        && segment.getColor() == COLOR_DEFAULT) {
+                    int semanticColor = semanticColors.getSemanticColor(segment.getSemanticStyle());
+                    fixed.setColor(sanitizeProgressColor(semanticColor, bg, defaultColor));
+                } else {
+                    fixed.setColor(sanitizeProgressColor(segment.getColor(), bg, defaultColor));
+                }
+            } else {
+                fixed.setColor(sanitizeProgressColor(segment.getColor(), bg, defaultColor));
             }
-            return sanitized;
+            return fixed;
         }
 
-        private static Point sanitizePoint(@NonNull Point point,
-                @ColorInt int bg,
-                @ColorInt int defaultColor) {
-            Point sanitized = new Point(point.getPosition()).setId(point.getId())
-                    .setColor(sanitizeProgressColor(point.getColor(), bg, defaultColor));
+        private static Point fixPointColor(@NonNull Point point, @ColorInt int bg,
+                @ColorInt int defaultColor, SemanticColors semanticColors) {
+            Point fixed = new Point(point.getPosition()).setId(point.getId());
             if (Flags.apiNotificationSemanticStyle()) {
-                sanitized.setSemanticStyle(point.getSemanticStyle());
+                fixed.setSemanticStyle(point.getSemanticStyle());
+                if (point.getSemanticStyle() != SEMANTIC_STYLE_UNSPECIFIED
+                        && point.getColor() == COLOR_DEFAULT) {
+                    int semanticColor = semanticColors.getSemanticColor(point.getSemanticStyle());
+                    fixed.setColor(sanitizeProgressColor(semanticColor, bg, defaultColor));
+                } else {
+                    fixed.setColor(sanitizeProgressColor(point.getColor(), bg, defaultColor));
+                }
+            } else {
+                fixed.setColor(sanitizeProgressColor(point.getColor(), bg, defaultColor));
             }
-            return sanitized;
+            return fixed;
         }
 
         /**
@@ -17178,10 +17210,22 @@ public class Notification implements Parcelable
     }
 
     /**
+     * Helper to map semantic styles to concrete properties (currently, only color).
+     * @hide
+     */
+    @FunctionalInterface
+    public interface SemanticColors {
+        /** Maps semantic style to color value (e.g. SAFE -> green). */
+        @ColorInt
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+        int getSemanticColor(@SemanticStyle int style);
+    }
+
+    /**
      * A utility which stores and calculates the palette of colors used to color notifications.
      * @hide
      */
-    public static class Colors {
+    public static class Colors implements SemanticColors {
         private int mPaletteIsForRawColor = COLOR_INVALID;
         private boolean mPaletteIsForColorized = false;
         private boolean mPaletteIsForNightMode = false;
@@ -17201,6 +17245,12 @@ public class Notification implements Parcelable
         private int mSemanticRedContainerHighColor = COLOR_INVALID;
         private int mContrastColor = COLOR_INVALID;
         private int mRippleAlpha = 0x33;
+
+        // Colors associated to semantic styles.
+        private int mSemanticInfo = COLOR_INVALID;
+        private int mSemanticSafe = COLOR_INVALID;
+        private int mSemanticCaution = COLOR_INVALID;
+        private int mSemanticDanger = COLOR_INVALID;
 
         /**
          * A utility for obtaining a TypedArray of the given DayNight-styled attributes, which
@@ -17337,6 +17387,21 @@ public class Notification implements Parcelable
                 if (mErrorColor == COLOR_INVALID) {
                     mErrorColor = mPrimaryTextColor;
                 }
+                if (Flags.apiNotificationSemanticStyle()) {
+                    // TODO: b/454876153 - Use theme-based tokens, once they exist.
+                    if (mSemanticInfo == COLOR_INVALID) {
+                        mSemanticInfo = Color.BLUE;
+                    }
+                    if (mSemanticSafe == COLOR_INVALID) {
+                        mSemanticSafe = Color.GREEN;
+                    }
+                    if (mSemanticCaution == COLOR_INVALID) {
+                        mSemanticCaution = Color.YELLOW;
+                    }
+                    if (mSemanticDanger == COLOR_INVALID) {
+                        mSemanticDanger = Color.RED;
+                    }
+                }
             }
             // make sure every color has a valid value
             mProtectionColor = ctx.getColor(R.color.surface_effect_3);
@@ -17443,6 +17508,24 @@ public class Notification implements Parcelable
         /** @return the alpha component of the current theme's control highlight color */
         public int getRippleAlpha() {
             return mRippleAlpha;
+        }
+
+        /**
+         * Returns the actual color associated to a semantic style, depending on the current
+         * theme.
+         */
+        @Override
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+        @ColorInt
+        public int getSemanticColor(@SemanticStyle int style) {
+            return switch (style) {
+                case SEMANTIC_STYLE_INFO -> mSemanticInfo;
+                case SEMANTIC_STYLE_SAFE -> mSemanticSafe;
+                case SEMANTIC_STYLE_CAUTION -> mSemanticCaution;
+                case SEMANTIC_STYLE_DANGER -> mSemanticDanger;
+                case SEMANTIC_STYLE_UNSPECIFIED -> COLOR_DEFAULT;
+                default -> COLOR_DEFAULT;
+            };
         }
     }
 }
