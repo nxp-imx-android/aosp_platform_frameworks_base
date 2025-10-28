@@ -294,30 +294,32 @@ public final class MediaQualityUtils {
                     break;
                 case PictureParameter.noiseReduction:
                     if (pp.getNoiseReduction() > -1) {
-                        bundle.putInt(PictureQuality.PARAMETER_NOISE_REDUCTION,
-                                pp.getNoiseReduction());
+                        bundle.putString(PictureQuality.PARAMETER_NOISE_REDUCTION,
+                                mapQualityLevelToString(pp.getNoiseReduction()));
                     }
                     break;
                 case PictureParameter.mpegNoiseReduction:
                     if (pp.getMpegNoiseReduction() > -1) {
-                        bundle.putInt(PictureQuality.PARAMETER_MPEG_NOISE_REDUCTION,
-                                pp.getMpegNoiseReduction());
+                        bundle.putString(PictureQuality.PARAMETER_MPEG_NOISE_REDUCTION,
+                                mapQualityLevelToString(pp.getMpegNoiseReduction()));
                     }
                     break;
                 case PictureParameter.fleshTone:
                     if (pp.getFleshTone() > -1) {
-                        bundle.putInt(PictureQuality.PARAMETER_FLESH_TONE, pp.getFleshTone());
+                        bundle.putString(PictureQuality.PARAMETER_FLESH_TONE,
+                                mapQualityLevelToString(pp.getFleshTone()));
                     }
                     break;
                 case PictureParameter.deContour:
                     if (pp.getDeContour() > -1) {
-                        bundle.putInt(PictureQuality.PARAMETER_DECONTOUR, pp.getDeContour());
+                        bundle.putString(PictureQuality.PARAMETER_DECONTOUR,
+                                mapQualityLevelToString(pp.getDeContour()));
                     }
                     break;
                 case PictureParameter.dynamicLumaControl:
                     if (pp.getDynamicLumaControl() > -1) {
-                        bundle.putInt(PictureQuality.PARAMETER_DYNAMIC_LUMA_CONTROL,
-                                pp.getDynamicLumaControl());
+                        bundle.putString(PictureQuality.PARAMETER_DYNAMIC_LUMA_CONTROL,
+                                mapQualityLevelToString(pp.getDynamicLumaControl()));
                     }
                     break;
                 case PictureParameter.filmMode:
@@ -493,13 +495,15 @@ public final class MediaQualityUtils {
                     break;
                 case PictureParameter.lowBlueLight:
                     if (pp.getLowBlueLight() > -1) {
-                        bundle.putInt(
-                                PictureQuality.PARAMETER_LOW_BLUE_LIGHT, pp.getLowBlueLight());
+                        bundle.putString(
+                                PictureQuality.PARAMETER_LOW_BLUE_LIGHT,
+                                mapQualityLevelToString(pp.getLowBlueLight()));
                     }
                     break;
                 case PictureParameter.LdMode:
                     if (pp.getLdMode() > -1) {
-                        bundle.putInt(PictureQuality.PARAMETER_LD_MODE, pp.getLdMode());
+                        bundle.putString(PictureQuality.PARAMETER_LD_MODE,
+                                mapQualityLevelToString(pp.getLdMode()));
                     }
                     break;
                 case PictureParameter.osdRedGain:
@@ -1443,8 +1447,8 @@ public final class MediaQualityUtils {
                             sp.getDigitalOutput());
                     break;
                 case SoundParameter.dolbyDialogueEnhancer:
-                    bundle.putInt(SoundQuality.PARAMETER_DIALOGUE_ENHANCER,
-                            sp.getDolbyDialogueEnhancer());
+                    bundle.putString(SoundQuality.PARAMETER_DIALOGUE_ENHANCER,
+                            mapQualityLevelToString(sp.getDolbyDialogueEnhancer()));
                     break;
                 case SoundParameter.dtsVirtualX:
                     if (sp.getDtsVirtualX().tbHdx) {
@@ -2569,6 +2573,19 @@ public final class MediaQualityUtils {
             default -> {
                 Log.e("PictureParams", "Invalid noise_reduction string: " + qualityLevel);
                 yield QualityLevel.OFF;
+            }
+        };
+    }
+
+    private static String mapQualityLevelToString(byte qualityLevel) {
+        return switch (qualityLevel) {
+            case QualityLevel.OFF -> MediaQualityContract.LEVEL_OFF;
+            case QualityLevel.LOW -> MediaQualityContract.LEVEL_LOW;
+            case QualityLevel.MEDIUM -> MediaQualityContract.LEVEL_MEDIUM;
+            case QualityLevel.HIGH -> MediaQualityContract.LEVEL_HIGH;
+            default -> {
+                Log.e("PictureParams", "Invalid quality level: " + qualityLevel);
+                yield MediaQualityContract.LEVEL_OFF;
             }
         };
     }
