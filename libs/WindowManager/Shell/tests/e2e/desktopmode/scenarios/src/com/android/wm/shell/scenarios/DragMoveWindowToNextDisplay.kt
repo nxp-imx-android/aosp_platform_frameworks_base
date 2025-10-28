@@ -100,6 +100,7 @@ abstract class DragMoveWindowToNextDisplay {
     fun cannotMoveToDisplayWithFullscreenApp() {
         testApp.enterDesktopMode(wmHelper, device)
         val connectedDisplayId = connectedDisplayRule.setupTestDisplay()
+        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(connectedDisplayId).waitForAndVerify()
         immersiveAppHelper.launchViaIntent(
             wmHelper,
             waitConditionsBuilder =
