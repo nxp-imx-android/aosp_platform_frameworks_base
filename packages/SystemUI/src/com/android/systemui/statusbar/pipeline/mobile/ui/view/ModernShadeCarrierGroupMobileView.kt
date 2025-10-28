@@ -21,7 +21,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.kairos.buildSpec
 import com.android.systemui.res.R
@@ -118,7 +117,6 @@ class ModernShadeCarrierGroupMobileView(context: Context, attrs: AttributeSet?) 
          * Inflates a new instance of [ModernShadeCarrierGroupMobileView], binds it to [viewModel],
          * and returns it.
          */
-        @ExperimentalKairosApi
         @JvmStatic
         fun constructAndBindKairos(
             context: Context,

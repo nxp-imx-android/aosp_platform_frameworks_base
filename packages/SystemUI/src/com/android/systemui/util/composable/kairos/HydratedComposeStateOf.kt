@@ -18,11 +18,9 @@ package com.android.systemui.util.composable.kairos
 
 import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.KairosBuilder
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.util.nameTag
 
-@ExperimentalKairosApi
 fun <T> KairosBuilder.hydratedComposeStateOf(
     name: String,
     source: State<T>,

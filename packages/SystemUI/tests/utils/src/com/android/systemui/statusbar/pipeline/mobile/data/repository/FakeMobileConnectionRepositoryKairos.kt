@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.pipeline.mobile.data.repository
 
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.kairos.MutableState
 import com.android.systemui.kairos.State
@@ -28,7 +27,6 @@ import com.android.systemui.statusbar.pipeline.mobile.data.repository.FakeMobile
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository.Companion.DEFAULT_NUM_LEVELS
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
 
-@ExperimentalKairosApi
 class FakeMobileConnectionRepositoryKairos(
     override val subId: Int,
     kairos: KairosNetwork,

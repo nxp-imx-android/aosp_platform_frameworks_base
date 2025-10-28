@@ -27,7 +27,6 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.kairos.BuildScope
 import com.android.systemui.kairos.BuildSpec
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.Incremental
 import com.android.systemui.kairos.State as KairosState
 import com.android.systemui.kairos.State
@@ -69,7 +68,6 @@ import javax.inject.Provider
  * of [MobileIconViewModelKairos]s which describe the individual icons and can be bound to
  * [ModernStatusBarMobileView].
  */
-@ExperimentalKairosApi
 @SysUISingleton
 class MobileIconsViewModelKairos
 @Inject
@@ -217,7 +215,6 @@ constructor(
     }
 }
 
-@ExperimentalKairosApi
 class MobileIconsViewModelKairosComposeWrapper(
     icons: ComposeState<Map<Int, MobileIconViewModelKairos>>,
     val logger: MobileViewLogger,
@@ -225,7 +222,6 @@ class MobileIconsViewModelKairosComposeWrapper(
     val icons: Map<Int, MobileIconViewModelKairos> by icons
 }
 
-@ExperimentalKairosApi
 fun MobileIconsViewModelKairos.composeWrapper():
     BuildSpec<MobileIconsViewModelKairosComposeWrapper> = buildSpec {
     MobileIconsViewModelKairosComposeWrapper(

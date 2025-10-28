@@ -43,7 +43,7 @@ import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
-import com.android.systemui.kairos.ExperimentalKairosApi;
+
 import com.android.systemui.kairos.KairosNetwork;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.res.R;
@@ -79,7 +79,6 @@ import java.util.function.Consumer;
 
 import javax.inject.Inject;
 
-@OptIn(markerClass = ExperimentalKairosApi.class)
 public class ShadeCarrierGroupController {
     private static final String TAG = "ShadeCarrierGroup";
 

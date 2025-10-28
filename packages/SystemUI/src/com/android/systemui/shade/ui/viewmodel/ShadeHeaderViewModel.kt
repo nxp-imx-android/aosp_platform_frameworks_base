@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalKairosApi::class)
-
 package com.android.systemui.shade.ui.viewmodel
 
 import android.app.ActivityManager
@@ -29,7 +27,6 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.clock.domain.interactor.ClockInteractor
 import com.android.systemui.desktop.domain.interactor.DesktopInteractor
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator

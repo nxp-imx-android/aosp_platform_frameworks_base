@@ -23,7 +23,6 @@ import com.android.settingslib.SignalIcon
 import com.android.settingslib.mobile.MobileMappings
 import com.android.settingslib.mobile.TelephonyIcons
 import com.android.systemui.KairosBuilder
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.kairos.MutableEvents
 import com.android.systemui.kairos.MutableState
@@ -40,7 +39,6 @@ import com.android.systemui.statusbar.pipeline.mobile.util.FakeMobileMappingsPro
 import com.android.systemui.statusbar.pipeline.mobile.util.MobileMappingsProxy
 
 // TODO(b/261632894): remove this in favor of the real impl or DemoMobileConnectionsRepositoryKairos
-@ExperimentalKairosApi
 class FakeMobileConnectionsRepositoryKairos(
     kairos: KairosNetwork,
     val tableLogBuffer: TableLogBuffer,
@@ -129,6 +127,5 @@ class FakeMobileConnectionsRepositoryKairos(
     }
 }
 
-@ExperimentalKairosApi
 val MobileConnectionsRepositoryKairos.fake
     get() = this as FakeMobileConnectionsRepositoryKairos

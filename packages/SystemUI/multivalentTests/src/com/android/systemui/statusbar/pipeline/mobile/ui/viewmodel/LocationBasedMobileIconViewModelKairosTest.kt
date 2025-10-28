@@ -23,7 +23,6 @@ import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fake
 import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.kairos.ActivatedKairosFixture
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosTestScope
 import com.android.systemui.kairos.kairos
 import com.android.systemui.kairos.runKairosTest
@@ -52,7 +51,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
 
-@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class LocationBasedMobileIconViewModelKairosTest : SysuiTestCase() {

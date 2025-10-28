@@ -49,16 +49,13 @@ typealias BuildSpec<A> = BuildScope.() -> A
  * to perform network-building operations, including adding new inputs and outputs to the network,
  * as well as all operations available in [TransactionScope].
  */
-@ExperimentalKairosApi
 @Suppress("NOTHING_TO_INLINE")
 inline fun <A> buildSpec(noinline block: BuildScope.() -> A): BuildSpec<A> = block
 
 /** Applies the [BuildSpec] within this [BuildScope]. */
-@ExperimentalKairosApi
 inline operator fun <A> BuildScope.invoke(block: BuildScope.() -> A) = run(block)
 
 /** Operations that add inputs and outputs to a Kairos network. */
-@ExperimentalKairosApi
 interface BuildScope : HasNetwork, StateScope {
 
     /**
@@ -794,7 +791,6 @@ interface BuildScope : HasNetwork, StateScope {
  *       events { emit(block()) }.apply { observe() }
  * ```
  */
-@ExperimentalKairosApi
 fun <A> BuildScope.asyncEvent(
     name: NameTag? = null,
     block: suspend KairosScope.() -> A,
@@ -823,7 +819,6 @@ internal fun <A> BuildScope.asyncEvent(
  *       asyncState(maybeOf()) { maybeOf(block()) }
  * ```
  */
-@ExperimentalKairosApi
 fun <A> BuildScope.asyncState(
     name: NameTag? = null,
     block: suspend KairosScope.() -> A,
@@ -841,7 +836,6 @@ fun <A> BuildScope.asyncState(
  *       asyncEvents(block).holdState(initialValue)
  * ```
  */
-@ExperimentalKairosApi
 fun <A> BuildScope.asyncState(
     initialValue: A,
     name: NameTag? = null,
@@ -869,7 +863,6 @@ internal fun <A> BuildScope.asyncState(
  *       launchScope(context) { now.observe { block() } }
  * ```
  */
-@ExperimentalKairosApi
 fun BuildScope.effect(
     context: CoroutineContext = EmptyCoroutineContext,
     name: NameTag? = null,
@@ -906,7 +899,6 @@ internal fun BuildScope.effect(
  *
  * @see effect
  */
-@ExperimentalKairosApi
 fun BuildScope.effectSync(name: NameTag? = null, block: TransactionEffectScope.() -> Unit): Job =
     effectSync(name.toNameData("BuildScope.effectSync"), block)
 
@@ -927,7 +919,6 @@ internal fun BuildScope.effectSync(
  *       effect { effectCoroutineScope.launch { block() } }
  * ```
  */
-@ExperimentalKairosApi
 fun BuildScope.launchEffect(
     context: CoroutineContext = EmptyCoroutineContext,
     name: NameTag? = null,
@@ -955,7 +946,6 @@ internal fun BuildScope.launchEffect(
  *           .await()
  * ```
  */
-@ExperimentalKairosApi
 fun <R> BuildScope.asyncEffect(
     context: CoroutineContext = EmptyCoroutineContext,
     block: suspend KairosCoroutineScope.() -> R,
@@ -985,7 +975,6 @@ internal fun <R> BuildScope.asyncEffect(
 }
 
 /** Like [BuildScope.asyncScope], but ignores the result of [block]. */
-@ExperimentalKairosApi
 fun BuildScope.launchScope(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     block: BuildSpec<*>,
@@ -1019,7 +1008,6 @@ internal fun BuildScope.launchScope(
  * [coalesce]. Once the batch is consumed by the Kairos network in the next transaction, the batch
  * is reset back to [initialValue].
  */
-@ExperimentalKairosApi
 fun <In, Out> BuildScope.coalescingEvents(
     initialValue: Out,
     coalesce: (old: Out, new: In) -> Out,
@@ -1054,7 +1042,6 @@ internal fun <In, Out> BuildScope.coalescingEvents(
  * In the event of backpressure, emissions are *conflated*; any older emissions are dropped and only
  * the most recent emission will be used when the Kairos network is ready.
  */
-@ExperimentalKairosApi
 fun <T> BuildScope.conflatedEvents(
     builder: suspend CoalescingEventProducerScope<T>.() -> Unit
 ): Events<T> =
@@ -1115,7 +1102,6 @@ suspend fun awaitClose(block: () -> Unit): Nothing =
  * Runs [spec] in this [BuildScope], and then re-runs it whenever [rebuildSignal] emits. Returns a
  * [State] that holds the result of the currently-active [BuildSpec].
  */
-@ExperimentalKairosApi
 fun <A> BuildScope.rebuildOn(
     rebuildSignal: Events<*>,
     name: NameTag? = null,

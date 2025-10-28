@@ -22,7 +22,6 @@ import com.android.settingslib.graph.SignalDrawable
 import com.android.settingslib.mobile.MobileIconCarrierIdOverrides
 import com.android.settingslib.mobile.MobileIconCarrierIdOverridesImpl
 import com.android.systemui.KairosBuilder
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.combine
 import com.android.systemui.kairos.flatMap
@@ -43,7 +42,6 @@ import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconMod
 import com.android.systemui.statusbar.pipeline.satellite.ui.model.SatelliteIconModel
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
 
-@ExperimentalKairosApi
 interface MobileIconInteractorKairos {
     /** The table log created for this connection */
     val tableLogBuffer: TableLogBuffer
@@ -132,7 +130,6 @@ interface MobileIconInteractorKairos {
 }
 
 /** Interactor for a single mobile connection. This connection _should_ have one subscription ID */
-@ExperimentalKairosApi
 class MobileIconInteractorKairosImpl(
     defaultSubscriptionHasDataEnabled: State<Boolean>,
     override val alwaysShowDataRatIcon: State<Boolean>,

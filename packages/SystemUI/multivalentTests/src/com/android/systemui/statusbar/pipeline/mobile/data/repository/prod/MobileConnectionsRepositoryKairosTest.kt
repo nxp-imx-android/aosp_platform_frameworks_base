@@ -56,7 +56,6 @@ import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.broadcast.broadcastDispatcherContext
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosTestScope
 import com.android.systemui.kairos.combine
 import com.android.systemui.kairos.kairos
@@ -109,7 +108,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.whenever
 
-@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 // This is required because our [SubscriptionManager.OnSubscriptionsChangedListener] uses a looper
 // to run the callback and this makes the looper place nicely with TestScope etc.

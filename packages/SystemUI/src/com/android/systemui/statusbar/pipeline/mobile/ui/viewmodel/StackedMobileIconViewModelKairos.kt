@@ -20,7 +20,6 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import com.android.systemui.KairosBuilder
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.State as KairosState
 import com.android.systemui.kairos.combine
 import com.android.systemui.kairos.flatMap
@@ -36,7 +35,6 @@ import com.android.systemui.util.composable.kairos.hydratedComposeStateOf
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
-@OptIn(ExperimentalKairosApi::class)
 class StackedMobileIconViewModelKairos
 @AssistedInject
 constructor(

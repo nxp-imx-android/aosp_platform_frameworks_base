@@ -37,7 +37,6 @@ typealias Stateful<R> = StateScope.() -> R
  * Returns a [Stateful] that, when [applied][StateScope.applyStateful], invokes [block] with the
  * applier's [StateScope].
  */
-@ExperimentalKairosApi
 @Suppress("NOTHING_TO_INLINE")
 inline fun <A> statefully(noinline block: StateScope.() -> A): Stateful<A> = block
 
@@ -48,7 +47,6 @@ inline fun <A> statefully(noinline block: StateScope.() -> A): Stateful<A> = blo
  * [mapLatestStateful], to create smaller, nested lifecycles so that accumulation isn't running
  * longer than needed.
  */
-@ExperimentalKairosApi
 interface StateScope : TransactionScope {
 
     /**

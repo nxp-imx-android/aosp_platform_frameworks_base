@@ -58,7 +58,6 @@ import com.android.systemui.kairos.util.toNameData
  * @sample com.android.systemui.kairos.KairosSamples.groupByKey
  * @see selector
  */
-@ExperimentalKairosApi
 fun <K, A> Events<Map<K, A>>.groupByKey(numKeys: Int? = null): KeyedEvents<K, A> =
     groupByKey(nameTag("Events.groupByKey").toNameData("Events.groupByKey"), numKeys)
 
@@ -82,7 +81,6 @@ internal fun <K, A> Events<Map<K, A>>.groupByKey(
  *
  * @see groupByKey
  */
-@ExperimentalKairosApi
 fun <K, A> Events<A>.groupBy(
     numKeys: Int? = null,
     extractKey: TransactionScope.(A) -> K,
@@ -101,7 +99,6 @@ internal fun <K, A> Events<A>.groupBy(
  *
  * @see groupByKey
  */
-@ExperimentalKairosApi
 class KeyedEvents<in K, out A> internal constructor(internal val impl: DemuxImpl<K, A>) {
     /**
      * Returns an [Events] that emits values of type [A] that correspond to the given [key].
@@ -141,7 +138,6 @@ class KeyedEvents<in K, out A> internal constructor(internal val impl: DemuxImpl
  *
  * @see partitionEither
  */
-@ExperimentalKairosApi
 fun <A> Events<A>.partition(
     predicate: TransactionScope.(A) -> Boolean
 ): Pair<Events<A>, Events<A>> =
@@ -170,7 +166,6 @@ internal fun <A> Events<A>.partition(
  *
  * @see partitionThese
  */
-@ExperimentalKairosApi
 fun <A, B> Events<Either<A, B>>.partitionEither(): Pair<Events<A>, Events<B>> =
     partitionEither(nameTag("Events.partitionEither").toNameData("Events.partitionEither"))
 
@@ -191,7 +186,6 @@ internal fun <A, B> Events<Either<A, B>>.partitionEither(
  *
  * @sample com.android.systemui.kairos.KairosSamples.partitionThese
  */
-@ExperimentalKairosApi
 fun <A, B> Events<These<A, B>>.partitionThese(): Pair<Events<A>, Events<B>> =
     partitionThese(nameTag("Events.partitionThese").toNameData("Events.partitionThese"))
 

@@ -29,7 +29,6 @@ import com.android.systemui.Flags
 import com.android.systemui.common.ui.binder.IconViewBinder
 import com.android.systemui.kairos.BuildScope
 import com.android.systemui.kairos.BuildSpec
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.kairos.MutableState
 import com.android.systemui.kairos.combine
@@ -54,7 +53,6 @@ import kotlinx.coroutines.launch
 
 object MobileIconBinderKairos {
 
-    @ExperimentalKairosApi
     fun bind(
         subId: Int,
         view: ViewGroup,
@@ -84,7 +82,6 @@ object MobileIconBinderKairos {
             }
     }
 
-    @ExperimentalKairosApi
     private class ModernStatusBarViewBindingKairosImpl(
         subId: Int,
         kairosNetwork: KairosNetwork,
@@ -134,7 +131,6 @@ object MobileIconBinderKairos {
         override fun isCollecting(): Boolean = isCollecting
     }
 
-    @ExperimentalKairosApi
     private fun BuildScope.bind(
         view: ViewGroup,
         mobileDrawable: SignalDrawable,

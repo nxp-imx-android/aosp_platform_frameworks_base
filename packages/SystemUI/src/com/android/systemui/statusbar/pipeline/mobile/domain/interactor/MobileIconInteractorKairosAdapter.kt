@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.pipeline.mobile.domain.interactor
 
 import com.android.systemui.kairos.BuildScope
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.toColdConflatedFlow
 import com.android.systemui.kairos.util.nameTag
 import com.android.systemui.log.table.TableLogBuffer
@@ -28,7 +27,6 @@ import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityMod
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
-@ExperimentalKairosApi
 fun BuildScope.MobileIconInteractorKairosAdapter(
     kairosImpl: MobileIconInteractorKairos
 ): MobileIconInteractor =

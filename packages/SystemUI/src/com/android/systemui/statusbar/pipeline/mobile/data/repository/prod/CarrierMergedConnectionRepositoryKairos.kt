@@ -22,7 +22,6 @@ import android.telephony.TelephonyManager
 import android.util.Log
 import com.android.systemui.KairosBuilder
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.combine
 import com.android.systemui.kairos.map
@@ -53,7 +52,6 @@ import javax.inject.Inject
  * See [MobileConnectionRepositoryImpl] for a repository implementation of a typical mobile
  * connection.
  */
-@ExperimentalKairosApi
 class CarrierMergedConnectionRepositoryKairos(
     override val subId: Int,
     override val tableLogBuffer: TableLogBuffer,

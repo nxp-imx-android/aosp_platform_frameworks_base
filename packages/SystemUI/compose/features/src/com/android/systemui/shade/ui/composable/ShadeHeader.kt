@@ -82,7 +82,6 @@ import com.android.systemui.common.ui.compose.windowinsets.CutoutLocation
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
 import com.android.systemui.common.ui.compose.windowinsets.LocalScreenCornerRadius
 import com.android.systemui.compose.modifiers.sysuiResTag
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.util.nameTag
 import com.android.systemui.privacy.OngoingPrivacyChip
 import com.android.systemui.privacy.PrivacyItem
@@ -577,7 +576,6 @@ private fun BatteryInfo(
     )
 }
 
-@OptIn(ExperimentalKairosApi::class)
 @Composable
 private fun ShadeCarrierGroup(viewModel: ShadeHeaderViewModel, modifier: Modifier = Modifier) {
     if (StatusBarMobileIconKairos.isEnabled) {
@@ -615,7 +613,6 @@ private fun ShadeCarrierGroup(viewModel: ShadeHeaderViewModel, modifier: Modifie
     }
 }
 
-@ExperimentalKairosApi
 @Composable
 private fun ShadeCarrierGroupKairos(
     viewModel: ShadeHeaderViewModel,

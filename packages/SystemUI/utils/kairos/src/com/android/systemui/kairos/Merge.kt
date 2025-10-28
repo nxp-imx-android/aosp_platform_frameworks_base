@@ -56,7 +56,6 @@ import com.android.systemui.kairos.util.toNameData
  * @see mergeReduce
  * @see mergeFold
  */
-@ExperimentalKairosApi
 fun <A> Events<A>.mergeWith(
     other: Events<A>,
     transformCoincidence: TransactionScope.(A, A) -> A = { a, _ -> a },
@@ -96,7 +95,6 @@ internal fun <A> Events<A>.mergeWith(
  * @see mergeReduce
  * @see mergeFold
  */
-@ExperimentalKairosApi
 fun <A> merge(vararg events: Events<A>): Events<List<A>> =
     merge(nameTag("mergeList").toNameData("mergeList"), *events)
 
@@ -116,7 +114,6 @@ internal fun <A> merge(nameData: NameData, vararg events: Events<A>): Events<Lis
  * @see mergeReduce
  * @see mergeFold
  */
-@ExperimentalKairosApi
 fun <A> mergeLeft(vararg events: Events<A>): Events<A> =
     mergeLeft(nameTag("mergeLeftVarArg").toNameData("mergeLeftVarArg"), *events)
 
@@ -189,7 +186,6 @@ fun <A, B> mergeFold(
  * @see mergeReduce
  * @see mergeFold
  */
-@ExperimentalKairosApi
 fun <A> Iterable<Events<A>>.merge(): Events<List<A>> =
     merge(nameTag("Iterable<Events>.merge").toNameData("Iterable<Events>.merge"))
 
@@ -216,7 +212,6 @@ internal fun <A> Iterable<Events<A>>.merge(nameData: NameData): Events<List<A>> 
  * @see mergeReduce
  * @see mergeFold
  */
-@ExperimentalKairosApi
 fun <A> Iterable<Events<A>>.mergeLeft(): Events<A> =
     mergeLeft(nameTag("Iterable<Events>.mergeLeft").toNameData("Iterable<Events>.mergeLeft"))
 
@@ -246,7 +241,6 @@ internal fun <A> Iterable<Events<A>>.mergeLeft(nameData: NameData): Events<A> =
  * @see mergeLeft
  * @see mergeFold
  */
-@ExperimentalKairosApi
 fun <S, T : S> Iterable<Events<T>>.mergeReduce(
     reduceCoincidence: TransactionScope.(S, T) -> S
 ): Events<S> =
@@ -294,7 +288,6 @@ internal fun <S, T : S> mergeReduce(
  * @see mergeLeft
  * @see mergeReduce
  */
-@ExperimentalKairosApi
 fun <A, B> Iterable<Events<A>>.mergeFold(
     initialValue: B,
     foldCoincidence: TransactionScope.(A, B) -> B,
@@ -338,7 +331,6 @@ internal fun <A, B> mergeFold(
  * @see mergeReduce
  * @see mergeFold
  */
-@ExperimentalKairosApi
 fun <A> Sequence<Events<A>>.merge(): Events<List<A>> =
     merge(nameTag("Sequence<Events>.mergeList").toNameData("Sequence<Events>.mergeList"))
 
@@ -364,7 +356,6 @@ internal fun <A> Sequence<Events<A>>.merge(nameData: NameData): Events<List<A>> 
  * @see mergeReduce
  * @see mergeFold
  */
-@ExperimentalKairosApi
 fun <K, A> Map<K, Events<A>>.merge(): Events<Map<K, A>> =
     merge(nameTag("Map<K, Events>.merge").toNameData("Map<K, Events>.merge"))
 

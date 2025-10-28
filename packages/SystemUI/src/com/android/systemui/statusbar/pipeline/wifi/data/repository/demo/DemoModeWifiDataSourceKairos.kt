@@ -20,7 +20,6 @@ import com.android.systemui.KairosActivatable
 import com.android.systemui.KairosBuilder
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.kairos.Events
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.util.nameTag
 import com.android.systemui.kairosBuilder
 import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
@@ -35,7 +34,6 @@ import javax.inject.Provider
  *
  * @see DemoModeWifiDataSource
  */
-@ExperimentalKairosApi
 @SysUISingleton
 class DemoModeWifiDataSourceKairos
 private constructor(
