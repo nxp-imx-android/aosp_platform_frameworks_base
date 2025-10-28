@@ -153,7 +153,10 @@ constructor(
             // TODO(b/435225255) Implement a more reliable way to ensure the UI is hidden prior to
             // taking the screenshot.
             delay(100)
-            screenshotInteractor.requestFullscreenScreenshot(displayId)
+            screenshotInteractor.requestFullscreenScreenshot(
+                displayId = displayId,
+                customSaveUri = toolbarViewModel.currentSaveLocationUri,
+            )
         }
         closeUi()
     }
@@ -168,7 +171,11 @@ constructor(
             // TODO(b/435225255) Implement a more reliable way to ensure the UI is hidden prior to
             // taking the screenshot.
             delay(100)
-            screenshotInteractor.requestPartialScreenshot(regionBoxRect, displayId)
+            screenshotInteractor.requestPartialScreenshot(
+                regionBounds = regionBoxRect,
+                displayId = displayId,
+                customSaveUri = toolbarViewModel.currentSaveLocationUri,
+            )
         }
         closeUi()
     }

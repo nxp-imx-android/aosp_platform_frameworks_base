@@ -18,6 +18,7 @@ package com.android.systemui.screencapture.record.largescreen.domain.interactor
 
 import android.graphics.Bitmap
 import android.graphics.Rect
+import android.net.Uri
 import android.os.Handler
 import android.view.WindowManager
 import com.android.internal.logging.UiEventLogger
@@ -44,13 +45,14 @@ constructor(
     private val screenshotHelper: ScreenshotHelper,
     private val userRepository: UserRepository,
 ) {
-    suspend fun requestFullscreenScreenshot(displayId: Int) {
+    suspend fun requestFullscreenScreenshot(displayId: Int, customSaveUri: Uri?) {
         val request =
             ScreenshotRequest.Builder(
                     WindowManager.TAKE_SCREENSHOT_FULLSCREEN,
                     WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI,
                 )
                 .setDisplayId(displayId)
+                .setCustomSaveUri(customSaveUri)
                 .build()
 
         takeScreenshot(request)
@@ -60,7 +62,7 @@ constructor(
         )
     }
 
-    suspend fun requestPartialScreenshot(regionBounds: Rect, displayId: Int) {
+    suspend fun requestPartialScreenshot(regionBounds: Rect, displayId: Int, customSaveUri: Uri?) {
         val bitmap =
             withContext(backgroundContext) {
                 requireNotNull(imageCapture.captureDisplay(displayId, regionBounds))
@@ -74,6 +76,7 @@ constructor(
                 .setBoundsOnScreen(regionBounds)
                 .setDisplayId(displayId)
                 .setUserId(userRepository.getSelectedUserInfo().id)
+                .setCustomSaveUri(customSaveUri)
                 .build()
 
         takeScreenshot(request)
