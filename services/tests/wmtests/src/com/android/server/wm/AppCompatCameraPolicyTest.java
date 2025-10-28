@@ -78,6 +78,31 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
+    public void testDisplayRotationCompatPolicy_notPresentWhenSimReqOrientationPolicyIsEnabled() {
+        runTestScenario((robot) -> {
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(
+                    /* enabled= */ true);
+            robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
+            robot.activity().createActivityWithComponentInNewTaskAndDisplay();
+            robot.checkTopActivityHasDisplayRotationCompatPolicy(/* exists= */ false);
+        });
+    }
+
+
+    @Test
+    @EnableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
+    public void testDisplayRotationCompatPolicy_presentWhenSimReqOrientationPolicyIsEnabled() {
+        runTestScenario((robot) -> {
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(
+                    /* enabled= */ false);
+            robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
+            robot.activity().createActivityWithComponentInNewTaskAndDisplay();
+            robot.checkTopActivityHasDisplayRotationCompatPolicy(/* exists= */ true);
+        });
+    }
+
+    @Test
     @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testDisplayRotationCompatPolicy_startedWhenEnabled() {
         runTestScenario((robot) -> {
@@ -92,6 +117,8 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testSimReqOrientationPolicy_presentWhenEnabledAndDW() {
         runTestScenario((robot) -> {
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(
+                    /* enabled= */ true);
             robot.dw().allowEnterDesktopMode(/* isAllowed= */ true);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ true);
@@ -103,6 +130,8 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testSimReqOrientationPolicy_notPresentWhenNoDW() {
         runTestScenario((robot) -> {
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(
+                    /* enabled= */ true);
             robot.dw().allowEnterDesktopMode(/* isAllowed= */ false);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ false);
@@ -113,6 +142,8 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     @DisableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testSimReqOrientationPolicy_notPresentWhenNoFlag() {
         runTestScenario((robot) -> {
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(
+                    /* enabled= */ true);
             robot.dw().allowEnterDesktopMode(/* isAllowed= */ true);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ false);
@@ -124,6 +155,8 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testSimReqOrientationPolicy_notPresentWhenNoFlagAndNoDW() {
         runTestScenario((robot) -> {
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(
+                    /* enabled= */ true);
             robot.dw().allowEnterDesktopMode(/* isAllowed= */ false);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ false);
@@ -147,6 +180,8 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testSimReqOrientationPolicy_startedWhenEnabledAndDW() {
         runTestScenario((robot) -> {
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(
+                    /* enabled= */ true);
             robot.dw().allowEnterDesktopMode(/* isAllowed= */ true);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ true);
@@ -158,6 +193,8 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testCameraStateManager_existsWhenCameraCompatFreeformExists() {
         runTestScenario((robot) -> {
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(
+                    /* enabled= */ true);
             robot.dw().allowEnterDesktopMode(true);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ true);
@@ -169,6 +206,8 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testCameraStateManager_startedWhenCameraCompatFreeformExists() {
         runTestScenario((robot) -> {
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(
+                    /* enabled= */ true);
             robot.dw().allowEnterDesktopMode(true);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ true);
@@ -205,6 +244,8 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
             FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES})
     public void testCameraStateManager_doesNotExistWhenNoPolicyExists() {
         runTestScenario((robot) -> {
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(
+                    /* enabled= */ false);
             robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ false);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasDisplayRotationCompatPolicy(/* exists= */ false);
@@ -295,6 +336,8 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     public void testShouldOverrideMinAspectRatioForCameraFreeform_cameraRunning_overrideEnabled() {
         runTestScenario((robot) -> {
             robot.applyOnActivity((a)-> {
+                robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(
+                        /* enabled= */ true);
                 robot.dw().allowEnterDesktopMode(true);
                 a.createActivityWithComponentInNewTaskAndDisplay();
                 a.setIsCameraRunningAndWindowingModeEligibleFreeform(/* active */ true);
