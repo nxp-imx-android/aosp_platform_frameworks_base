@@ -28,7 +28,6 @@ import android.os.Bundle
 import android.os.IBinder
 import android.os.IRemoteCallback
 import android.os.RemoteException
-import android.util.Slog
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_TO_BACK
@@ -40,6 +39,8 @@ import android.window.WindowContainerTransaction
 import com.android.wm.shell.desktopmode.NormalAppLayerHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController.Companion.getLayerPinnedWct
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController.Companion.getLayerUnpinnedWct
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerLogs.logV
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerLogs.logW
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
@@ -83,36 +84,28 @@ class PinnedLayerController(
             return null
         }
 
-        // There's either a pin request or an already pinned task is brought to foreground.
         val wct = WindowContainerTransaction()
-        if (windowingLayerChange.isLayerPinningRequest() || request.isOpeningPinnedRequest()) {
+        val isLayerPinningRequest = windowingLayerChange.isLayerPinningRequest()
+        val isLayerOpeningPinnedRequest = request.isOpeningPinnedRequest()
+        logV(
+            "Creating a pin transition: isLayerPinningRequest=%b, isOpeningPinnedRequest=%b",
+            isLayerPinningRequest,
+            isLayerOpeningPinnedRequest,
+        )
+        // There's either a pin request or an already pinned task is brought to foreground.
+        if (isLayerPinningRequest || isLayerOpeningPinnedRequest) {
             createPinTransition(transition, triggerTask, windowingLayerChange?.remoteCallback, wct)
         }
 
-        // Unpinning can occur as a side-effect of another action, check if a task (not necessary
-        // the pinned one) is eligible to be unpinned.
-        val isSwitchingToAnotherLayer =
-            windowingLayerChange != null &&
-                !windowingLayerChange.isLayerPinningRequest() &&
-                windowingLayerChange.windowingLayer > WINDOWING_LAYER_UNDEFINED
-        val isUnpinningNeeded =
-            containsActivePinningTransition(transition) ||
-                request.isClosingPinnedRequest() ||
-                isSwitchingToAnotherLayer
-        val candidateTaskForUnpin =
-            when {
-                // TODO(b/452912851): Simplify to easier match unpinning and candidate task.
-                triggerTask.token != currentPinnedTask?.token -> currentPinnedTask
-                request.isClosingPinnedRequest() || isSwitchingToAnotherLayer -> triggerTask
-                else -> null
-            }
-        if (isUnpinningNeeded && candidateTaskForUnpin != null) {
+        // Find a task to unpin after pinning.
+        val candidateTaskForUnpin = resolveUnpinningTarget(transition, request)
+        if (candidateTaskForUnpin != null) {
             createUnpinTransition(
                 transition,
                 candidateTaskForUnpin,
                 wct,
                 isMinimizing = request.type != TRANSIT_CLOSE,
-                isSwitchingToAnotherLayer = isSwitchingToAnotherLayer,
+                isSwitchingToAnotherLayer = windowingLayerChange.isSwitchingToAnotherLayerRequest(),
             )
         }
 
@@ -122,6 +115,60 @@ class PinnedLayerController(
         }
 
         return wct.takeUnless { activeTransitions[transition].isNullOrEmpty() }
+    }
+
+    /**
+     * Finds a task to be unpinned in scope of the given [Transition].
+     *
+     * The task can be unpinned as a side-effect of another action, for example, pinning a new task
+     * when there's already a pinned one.
+     *
+     * @param transition a [Transition] token in which unpinning can happen.
+     * @param request a request that contains info about current transition.
+     * @return a [TaskInfo] to unpin or `null` if unpinning is not needed or there's nothing to
+     *   unpin.
+     */
+    private fun resolveUnpinningTarget(
+        transition: IBinder,
+        request: TransitionRequestInfo,
+    ): TaskInfo? {
+        val hasActivePinningTransition = containsActivePinningTransition(transition)
+        val isClosePinnedRequest = request.isClosingPinnedRequest()
+        val isSwitchingToAnotherLayer =
+            request.windowingLayerChange.isSwitchingToAnotherLayerRequest()
+        val isUnpinningNeeded =
+            hasActivePinningTransition || isClosePinnedRequest || isSwitchingToAnotherLayer
+
+        logV(
+            "Check whether unpinning is needed: isSwitchingToAnotherLayer=%b, " +
+                "hasActivePinningTransition=%b, isClosePinnedRequest=%b, isUnpinningNeeded=%b",
+            isSwitchingToAnotherLayer,
+            hasActivePinningTransition,
+            isClosePinnedRequest,
+            isSwitchingToAnotherLayer,
+        )
+        if (!isUnpinningNeeded) {
+            logV("Unpinning is not needed for any task, skipping.")
+            return null
+        }
+
+        val triggerTask = request.triggerTask
+        val isTriggerVisiblyPinned =
+            triggerTask != null && triggerTask.token == currentPinnedTask?.token
+        val candidateTaskForUnpin =
+            when {
+                hasActivePinningTransition && !isTriggerVisiblyPinned -> currentPinnedTask
+                isClosePinnedRequest || isSwitchingToAnotherLayer -> triggerTask
+                else -> {
+                    logW(
+                        "Unpinning is needed, but the task is not found. " +
+                            "Do you want to check for a new unpinning condition?"
+                    )
+                    null
+                }
+            }
+
+        return candidateTaskForUnpin.also { logV("Found a task=%s for unpinning", it) }
     }
 
     /**
@@ -215,6 +262,12 @@ class PinnedLayerController(
 
     private fun WindowingLayerChange?.isLayerPinningRequest(): Boolean {
         return this != null && windowingLayer == WINDOWING_LAYER_PINNED
+    }
+
+    private fun WindowingLayerChange?.isSwitchingToAnotherLayerRequest(): Boolean {
+        return this != null &&
+            !isLayerPinningRequest() &&
+            windowingLayer > WINDOWING_LAYER_UNDEFINED
     }
 
     private fun TransitionRequestInfo.isOpeningPinnedRequest(): Boolean {
@@ -319,7 +372,7 @@ class PinnedLayerController(
         try {
             callback.sendResult(bundle)
         } catch (e: RemoteException) {
-            Slog.w(TAG, "Failed to invoke callback", e)
+            logW("Failed to invoke callback, error=%s", e)
         }
     }
 
@@ -338,12 +391,12 @@ class PinnedLayerController(
     /**
      * Closes a pinned task.
      *
-     * @param taskInfo a [RunningTaskInfo] of the task to close
+     * @param task a [TaskInfo] of the task to close
      * @return `true` if the task closing transition has been started, `false` otherwise
      */
     fun closeTask(task: TaskInfo): Boolean {
         if (isNotPinned(task.taskId)) {
-            Slog.w(TAG, "closeTask: the task in question is not pinned")
+            logW("closeTask: the task=%s is not pinned", task)
             return false
         }
 
@@ -380,7 +433,6 @@ class PinnedLayerController(
     }
 
     companion object {
-        private const val TAG = "PinnedLayerController"
         /**
          * Whether to minimize a pinned task when it is unpinned, e.g. when dismissed by media PiP.
          */
