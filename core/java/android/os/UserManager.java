@@ -3486,11 +3486,10 @@ public class UserManager {
     public boolean canAddPrivateProfile() {
         if (!android.multiuser.Flags.enablePrivateSpaceFeatures()) return false;
         if (android.multiuser.Flags.blockPrivateSpaceCreation()) {
-            // TODO(b/413464199): Ideally, move this client-side, changing it to
-            // if (android.multiuser.Flags.consistentMaxUsers()) {
-            //  return canAddMoreProfilesToUser(USER_TYPE_PROFILE_PRIVATE, mUserId)
-            //          && !hasUserRestriction(UserManager.DISALLOW_ADD_PRIVATE_PROFILE);
-            // }
+            if (android.multiuser.Flags.consistentMaxUsers()) {
+                return canAddMoreProfilesToUser(USER_TYPE_PROFILE_PRIVATE, mUserId)
+                        && !hasUserRestriction(UserManager.DISALLOW_ADD_PRIVATE_PROFILE);
+            }
             try {
                 return mService.canAddPrivateProfile(mUserId);
             } catch (RemoteException re) {

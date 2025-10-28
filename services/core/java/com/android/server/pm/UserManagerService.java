@@ -3412,8 +3412,8 @@ public class UserManagerService extends IUserManager.Stub {
 
     @Override
     public boolean canAddPrivateProfile(@UserIdInt int userId) {
-        checkQueryOrCreateUsersPermission("canAddPrivateProfile");
         if (!android.multiuser.Flags.consistentMaxUsers()) {
+            checkQueryOrCreateUsersPermission("canAddPrivateProfile");
             UserInfo parentUserInfo = getUserInfo(userId);
             return isUserTypeEnabled(USER_TYPE_PROFILE_PRIVATE)
                     && canAddMoreProfilesToUser(USER_TYPE_PROFILE_PRIVATE,
@@ -3422,10 +3422,8 @@ public class UserManagerService extends IUserManager.Stub {
                     && doSystemFeaturesSupportUserType(USER_TYPE_PROFILE_PRIVATE)
                     && !hasUserRestriction(UserManager.DISALLOW_ADD_PRIVATE_PROFILE, userId);
         }
-        // TODO(b/413464199): Ideally, this should be performed client-side and this method removed
-        //  entirely. Unfortunately, Tradefed currently needs it too, so we cannot.
-        return canAddMoreProfilesToUser(USER_TYPE_PROFILE_PRIVATE, userId, false)
-                && !hasUserRestriction(UserManager.DISALLOW_ADD_PRIVATE_PROFILE, userId);
+        // Remove this method entirely when cleaning up consistentMaxUsers.
+        throw new UnsupportedOperationException("This method is no longer necessary");
     }
 
     @Override
@@ -8499,8 +8497,10 @@ public class UserManagerService extends IUserManager.Stub {
         mUserVisibilityMediator.dump(pw, args);
         pw.println();
 
-        // TODO(b/413464199): This confusing line is, regrettably, currently required by Tradefed.
-        pw.println("Can add private profile: "+ canAddPrivateProfile(currentUserId));
+        if (!android.multiuser.Flags.consistentMaxUsers()) {
+            // Before the flag, this confusing line used to be required by Tradefed.
+            pw.println("Can add private profile: "+ canAddPrivateProfile(currentUserId));
+        }
 
         pw.println();
         pw.println("Number of listeners for");
