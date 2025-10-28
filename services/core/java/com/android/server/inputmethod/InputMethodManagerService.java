@@ -1959,9 +1959,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         if (targetWindowState == null) {
             return InputBindResult.NOT_IME_TARGET_WINDOW;
         }
-        final int csDisplayId = cs.mSelfReportedDisplayId;
-        bindingController.setDisplayIdToShowIme(
-                visibilityStateComputer.computeImeDisplayId(targetWindowState, csDisplayId));
+        final int imeDisplayId =
+                visibilityStateComputer.computeImeDisplayId(cs.mSelfReportedDisplayId);
+        bindingController.setDisplayIdToShowIme(imeDisplayId);
 
         // Potentially override the selected input method if the new display belongs to a virtual
         // device with a custom IME.

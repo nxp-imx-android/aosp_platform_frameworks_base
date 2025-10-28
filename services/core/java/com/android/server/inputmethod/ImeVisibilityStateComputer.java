@@ -19,7 +19,6 @@ package com.android.server.inputmethod;
 import static android.accessibilityservice.AccessibilityService.SHOW_MODE_HIDDEN;
 import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.ACCESSIBILITY_REQUESTING_NO_SOFT_KEYBOARD;
 import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.INPUT_SHOWN;
-import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.MotionEvent.TOOL_TYPE_UNKNOWN;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_IS_FORWARD_NAVIGATION;
@@ -199,7 +198,7 @@ public final class ImeVisibilityStateComputer {
     }
 
     @GuardedBy("ImfLock.class")
-    int computeImeDisplayId(@NonNull ImeTargetWindowState state, int displayId) {
+    int computeImeDisplayId(int displayId) {
         final int displayToShowIme;
         final PackageManager pm = mService.mContext.getPackageManager();
         if (pm.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)
@@ -210,7 +209,6 @@ public final class ImeVisibilityStateComputer {
         } else {
             displayToShowIme = computeImeDisplayIdForTarget(displayId, mImeDisplayValidator);
         }
-        state.setImeDisplayId(displayToShowIme);
         final boolean imeHiddenByPolicy = displayToShowIme == INVALID_DISPLAY;
         mPolicy.setImeHiddenByDisplayPolicy(imeHiddenByPolicy);
         return displayToShowIme;
@@ -673,12 +671,6 @@ public final class ImeVisibilityStateComputer {
         @GuardedBy("ImfLock.class")
         private IBinder mRequestImeToken;
 
-        /**
-         * The IME target display id for which the latest startInput was called.
-         */
-        @GuardedBy("ImfLock.class")
-        private int mImeDisplayId = DEFAULT_DISPLAY;
-
         @AnyThread
         @SoftInputModeFlags
         int getSoftInputModeState() {
@@ -732,16 +724,6 @@ public final class ImeVisibilityStateComputer {
             return mRequestImeToken;
         }
 
-        @GuardedBy("ImfLock.class")
-        private void setImeDisplayId(int imeDisplayId) {
-            mImeDisplayId = imeDisplayId;
-        }
-
-        @GuardedBy("ImfLock.class")
-        int getImeDisplayId() {
-            return mImeDisplayId;
-        }
-
         @Override
         public String toString() {
             return "ImeTargetWindowState{"
@@ -753,7 +735,6 @@ public final class ImeVisibilityStateComputer {
                     + " toolType: " + mToolType
                     + " requestedImeVisible " + mRequestedImeVisible
                     + " requestImeToken " + mRequestImeToken
-                    + " imeDisplayId " + mImeDisplayId
                     + "}";
         }
     }
