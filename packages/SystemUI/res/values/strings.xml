@@ -2409,6 +2409,10 @@
     <!-- Notification: Control panel: Label for the app that posted this notification, if it's not the package that the notification was posted for -->
     <string name="notification_delegate_header">Proxied notification</string>
 
+
+    <!-- Notification: Control panel: text that appears when the posting app has provided the summarization text for the notification -->
+    <string name="notification_summarization_header">Summarized by <xliff:g id="app_name" example="YouTube">%1$s</xliff:g></string>
+
     <!-- [CHAR LIMIT=40 Notification: Label for the inline channel blocking view -->
     <string name="notification_channel_dialog_title">All <xliff:g id="app_name" example="YouTube">%1$s</xliff:g> notifications</string>
 

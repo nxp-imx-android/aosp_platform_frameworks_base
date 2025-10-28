@@ -1109,4 +1109,23 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
 
     }
 
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_SUMMARIZATION_ALL)
+    public void testBindNotification_noAppSummarization() {
+        doStandardBind();
+        View v = mNotificationInfo.findViewById(R.id.summarized_by);
+        assertThat(v.getVisibility()).isEqualTo(GONE);
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_SUMMARIZATION_ALL)
+    public void testBindNotification_appSummarized() {
+        mEntry.getSbn().getNotification().extras.putCharSequence(
+                Notification.EXTRA_APP_SUMMARIZATION, "hello");
+
+        doStandardBind();
+        TextView v = mNotificationInfo.findViewById(R.id.summarized_by);
+        assertThat(v.getVisibility()).isEqualTo(VISIBLE);
+        assertThat(v.getText().toString()).contains("Summarized");
+    }
 }
