@@ -7045,6 +7045,15 @@
     <permission android:name="android.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED"
                 android:protectionLevel="signature|privileged" />
 
+    <!--@SystemApi Allows control of audio behavior related to Assistant experiences, including
+        routing, mode change and volume control of the Assistant audio stream.
+        <p>Protection level: signature|privileged|role
+        @FlaggedApi(android.media.audio.Flags.FLAG_MANAGE_ASSISTANT_AUDIO_PERMISSION)
+        @hide -->
+    <permission android:name="android.permission.MANAGE_ASSISTANT_AUDIO"
+                android:featureFlag="android.media.audio.manage_assistant_audio_permission"
+                android:protectionLevel="signature|privileged|role" />
+
     <!-- @SystemApi Allows an application to access the uplink and downlink audio of an ongoing
         call.
          <p>Not for use by third-party applications.</p>
