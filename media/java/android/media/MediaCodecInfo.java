@@ -4428,6 +4428,101 @@ public final class MediaCodecInfo {
                             maxBlocks, maxBlocksPerSecond,
                             blockSize, blockSize,
                             2 /* widthAlignment */, 1 /* heightAlignment */);
+                } else if (GetFlag(() -> android.media.codec.Flags.vvcSupport())
+                        && mime.equalsIgnoreCase(MediaFormat.MIMETYPE_VIDEO_VVC)) {
+                    // CTBs are at least 4x4 so use 4x4 block size
+                    maxBlocks = 36864 >> 4; // 192x192 pixels == 2304 4x4 blocks
+                    maxBlocksPerSecond = maxBlocks * 15L;
+                    maxBps = 128000;
+                    for (CodecProfileLevel profileLevel: profileLevels) {
+                        double FR = 0;
+                        int FS = 0;
+                        int BR = 0;
+                        switch (profileLevel.level) {
+                            case CodecProfileLevel.VVCMainTierLevel10:
+                                FR =    15; FS =    36864; BR =    128; break;
+                            case CodecProfileLevel.VVCMainTierLevel20:
+                                FR =    30; FS =   122880; BR =   1500; break;
+                            case CodecProfileLevel.VVCMainTierLevel21:
+                                FR =    30; FS =   245760; BR =   3000; break;
+                            case CodecProfileLevel.VVCMainTierLevel30:
+                                FR =    30; FS =   552960; BR =   6000; break;
+                            case CodecProfileLevel.VVCMainTierLevel31:
+                                FR = 33.75; FS =   983040; BR =  10000; break;
+                            case CodecProfileLevel.VVCMainTierLevel40:
+                                FR =    30; FS =  2228224; BR =  12000; break;
+                            case CodecProfileLevel.VVCHighTierLevel40:
+                                FR =    30; FS =  2228224; BR =  30000; break;
+                            case CodecProfileLevel.VVCMainTierLevel41:
+                                FR =    60; FS =  2228224; BR =  20000; break;
+                            case CodecProfileLevel.VVCHighTierLevel41:
+                                FR =    60; FS =  2228224; BR =  50000; break;
+                            case CodecProfileLevel.VVCMainTierLevel50:
+                                FR =    30; FS =  8912896; BR =  25000; break;
+                            case CodecProfileLevel.VVCHighTierLevel50:
+                                FR =    30; FS =  8912896; BR = 100000; break;
+                            case CodecProfileLevel.VVCMainTierLevel51:
+                                FR =    60; FS =  8912896; BR =  40000; break;
+                            case CodecProfileLevel.VVCHighTierLevel51:
+                                FR =    60; FS =  8912896; BR = 160000; break;
+                            case CodecProfileLevel.VVCMainTierLevel52:
+                                FR =   120; FS =  8912896; BR =  60000; break;
+                            case CodecProfileLevel.VVCHighTierLevel52:
+                                FR =   120; FS =  8912896; BR = 240000; break;
+                            case CodecProfileLevel.VVCMainTierLevel60:
+                                FR =    30; FS = 35651584; BR =  60000; break;
+                            case CodecProfileLevel.VVCHighTierLevel60:
+                                FR =    30; FS = 35651584; BR = 240000; break;
+                            case CodecProfileLevel.VVCMainTierLevel61:
+                                FR =    60; FS = 35651584; BR = 120000; break;
+                            case CodecProfileLevel.VVCHighTierLevel61:
+                                FR =    60; FS = 35651584; BR = 480000; break;
+                            case CodecProfileLevel.VVCMainTierLevel62:
+                                FR =   120; FS = 35651584; BR = 240000; break;
+                            case CodecProfileLevel.VVCHighTierLevel62:
+                                FR =   120; FS = 35651584; BR = 800000; break;
+                            case CodecProfileLevel.VVCMainTierLevel63:
+                                FR =   60; FS = 80216064; BR =  320000; break;
+                            case CodecProfileLevel.VVCHighTierLevel63:
+                                FR =   60; FS = 80216064; BR = 1600000; break;
+                            default:
+                                Log.w(TAG, "Unrecognized level "
+                                        + profileLevel.level + " for " + mime);
+                                errors |= ERROR_UNRECOGNIZED;
+                        }
+                        switch (profileLevel.profile) {
+                            case CodecProfileLevel.VVCProfileMain8:
+                            case CodecProfileLevel.VVCProfileMain10:
+                            case CodecProfileLevel.VVCProfileMain10Still:
+                            case CodecProfileLevel.VVCProfileMain10HDR10:
+                            case CodecProfileLevel.VVCProfileMain10HDR10Plus:
+                                break;
+                            default:
+                                Log.w(TAG, "Unrecognized profile "
+                                        + profileLevel.profile + " for " + mime);
+                                errors |= ERROR_UNRECOGNIZED;
+                        }
+
+                        /* DPB logic:
+                        if      (width * height <= FS / 4)    DPB = 16;
+                        else if (width * height <= FS / 2)    DPB = 12;
+                        else if (width * height <= FS * 0.75) DPB = 8;
+                        else                                  DPB = 6;
+                        */
+
+                        FS >>= 4; // convert pixels to blocks
+                        errors &= ~ERROR_NONE_SUPPORTED;
+                        maxBlocksPerSecond = Math.max((int) (FR * FS), maxBlocksPerSecond);
+                        maxBlocks = Math.max(FS, maxBlocks);
+                        maxBps = Math.max(BR * 1000, maxBps);
+                    }
+
+                    int maxLengthInBlocks = (int) (Math.sqrt(maxBlocks * 8));
+                    applyMacroBlockLimits(
+                            maxLengthInBlocks, maxLengthInBlocks,
+                            maxBlocks, maxBlocksPerSecond,
+                            4 /* blockWidth */, 4 /* blockHeight */,
+                            1 /* widthAlignment */, 1 /* heightAlignment */);
                 } else {
                     Log.w(TAG, "Unsupported mime " + mime);
                     // using minimal bitrate here.  should be overridden by
