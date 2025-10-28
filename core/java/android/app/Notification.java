@@ -155,6 +155,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.LongSupplier;
 
 /**
@@ -1051,8 +1052,8 @@ public class Notification implements Parcelable
     public int color = COLOR_DEFAULT;
 
     /**
-     * Special value of {@link #color} telling the system not to decorate this notification with
-     * any special color but instead use default colors when presenting this notification.
+     * Special value of {@link #color} telling the system not to decorate this element with
+     * any special color (but instead use default system colors).
      */
     @ColorInt
     public static final int COLOR_DEFAULT = 0; // AKA Color.TRANSPARENT
@@ -14016,7 +14017,7 @@ public class Notification implements Parcelable
             if (mIndeterminate) {
                 final int indeterminateColor;
                 if (!mProgressSegments.isEmpty()) {
-                    indeterminateColor = mProgressSegments.get(0).mColor;
+                    indeterminateColor = mProgressSegments.getFirst().getColor();
                 } else {
                     indeterminateColor = defaultProgressColor;
                 }
@@ -14049,24 +14050,17 @@ public class Notification implements Parcelable
                     segments.add(sanitizeSegment(new Segment(totalLength), backgroundColor,
                             defaultProgressColor));
                 } else if (segments.size() > MAX_PROGRESS_SEGMENT_LIMIT) {
-                    // If segment limit is exceeded. All segments will be replaced
-                    // with a single segment
-                    boolean allSameColor = true;
-                    int firstSegmentColor = segments.getFirst().getColor();
-
-                    for (int i = 1; i < segments.size(); i++) {
-                        if (segments.get(i).getColor() != firstSegmentColor) {
-                            allSameColor = false;
-                            break;
-                        }
-                    }
-
-                    // This single segment length has same max as total.
+                    // If segment limit is exceeded, all segments are replaced with a single one.
+                    // If all segments had the same color, that color is used (otherwise a default)
+                    // and the same for the semantic style.
                     final Segment singleSegment = new Segment(totalLength);
-                    // Single segment color: if all segments have the same color,
-                    // use that color. Otherwise, use 0 / default.
-                    singleSegment.setColor(allSameColor ? firstSegmentColor
-                            : Notification.COLOR_DEFAULT);
+                    singleSegment.setColor(
+                            getUniqueOrDefault(segments, Segment::getColor, COLOR_DEFAULT));
+                    if (Flags.apiNotificationSemanticStyle()) {
+                        singleSegment.setSemanticStyle(
+                                getUniqueOrDefault(segments, Segment::getSemanticStyle,
+                                        SEMANTIC_STYLE_UNSPECIFIED));
+                    }
 
                     segments.clear();
                     segments.add(sanitizeSegment(singleSegment,
@@ -14116,19 +14110,34 @@ public class Notification implements Parcelable
             return model;
         }
 
-        private Segment sanitizeSegment(@NonNull Segment segment,
-                @ColorInt int bg,
-                @ColorInt int defaultColor) {
-            return new Segment(segment.getLength())
-                    .setId(segment.getId())
-                    .setColor(sanitizeProgressColor(segment.getColor(), bg, defaultColor));
+        private static <T> int getUniqueOrDefault(List<T> list, Function<T, Integer> extractor,
+                int defaultValue) {
+            return list.stream().map(extractor).distinct().limit(2).count() == 1
+                    ? extractor.apply(list.getFirst())
+                    : defaultValue;
         }
 
-        private Point sanitizePoint(@NonNull Point point,
+        private static Segment sanitizeSegment(@NonNull Segment segment,
                 @ColorInt int bg,
                 @ColorInt int defaultColor) {
-            return new Point(point.getPosition()).setId(point.getId())
+            Segment sanitized = new Segment(segment.getLength())
+                    .setId(segment.getId())
+                    .setColor(sanitizeProgressColor(segment.getColor(), bg, defaultColor));
+            if (Flags.apiNotificationSemanticStyle()) {
+                sanitized.setSemanticStyle(segment.getSemanticStyle());
+            }
+            return sanitized;
+        }
+
+        private static Point sanitizePoint(@NonNull Point point,
+                @ColorInt int bg,
+                @ColorInt int defaultColor) {
+            Point sanitized = new Point(point.getPosition()).setId(point.getId())
                     .setColor(sanitizeProgressColor(point.getColor(), bg, defaultColor));
+            if (Flags.apiNotificationSemanticStyle()) {
+                sanitized.setSemanticStyle(point.getSemanticStyle());
+            }
+            return sanitized;
         }
 
         /**
@@ -14263,7 +14272,7 @@ public class Notification implements Parcelable
          * navigation journey, where each point represents a destination.
          */
         public static final class Point {
-            private int mPosition;
+            private final int mPosition;
             private int mId = 0;
             private @ColorInt int mColor = Notification.COLOR_DEFAULT;
             private @SemanticStyle int mSemanticStyle = SEMANTIC_STYLE_UNSPECIFIED;
