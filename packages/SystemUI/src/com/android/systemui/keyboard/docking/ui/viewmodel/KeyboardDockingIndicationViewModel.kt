@@ -128,8 +128,8 @@ constructor(
             color = Utils.getColorAttr(context, android.R.attr.colorAccent).defaultColor,
             blurAmount = BLUR_AMOUNT,
             duration = DURATION,
-            easeInDuration = EASE_DURATION,
-            easeOutDuration = EASE_DURATION,
+            fadeInDuration = EASE_DURATION,
+            fadeOutDuration = EASE_DURATION,
         )
     }
 

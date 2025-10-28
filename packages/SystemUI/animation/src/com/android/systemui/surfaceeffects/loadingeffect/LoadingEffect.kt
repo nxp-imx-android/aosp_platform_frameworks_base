@@ -110,31 +110,32 @@ private constructor(
     private val config: TurbulenceNoiseAnimationConfig,
     private val paintCallback: PaintDrawCallback?,
     private val renderEffectCallback: RenderEffectDrawCallback?,
-    private val animationStateChangedCallback: AnimationStateChangedCallback? = null
+    private val animationStateChangedCallback: AnimationStateChangedCallback? = null,
 ) {
     constructor(
         baseType: TurbulenceNoiseShader.Companion.Type,
         config: TurbulenceNoiseAnimationConfig,
         paintCallback: PaintDrawCallback,
-        animationStateChangedCallback: AnimationStateChangedCallback? = null
+        animationStateChangedCallback: AnimationStateChangedCallback? = null,
     ) : this(
         baseType,
         config,
         paintCallback,
         renderEffectCallback = null,
-        animationStateChangedCallback
+        animationStateChangedCallback,
     )
+
     constructor(
         baseType: TurbulenceNoiseShader.Companion.Type,
         config: TurbulenceNoiseAnimationConfig,
         renderEffectCallback: RenderEffectDrawCallback,
-        animationStateChangedCallback: AnimationStateChangedCallback? = null
+        animationStateChangedCallback: AnimationStateChangedCallback? = null,
     ) : this(
         baseType,
         config,
         paintCallback = null,
         renderEffectCallback,
-        animationStateChangedCallback
+        animationStateChangedCallback,
     )
 
     private val turbulenceNoiseShader: TurbulenceNoiseShader =
@@ -162,11 +163,11 @@ private constructor(
             return // Ignore if any of the animation is playing.
         }
 
-        playEaseIn()
+        playFadeIn()
     }
 
     // TODO(b/237282226): Support force finish.
-    /** Finishes the main animation, which triggers the ease-out animation. */
+    /** Finishes the main animation, which triggers the fade-out animation. */
     fun finish() {
         if (state == AnimationState.MAIN) {
             // Calling Animator#end sets the animation state back to the initial state. Using pause
@@ -174,7 +175,7 @@ private constructor(
             currentAnimator?.pause()
             currentAnimator = null
 
-            playEaseOut()
+            playFadeOut()
         }
     }
 
@@ -196,18 +197,18 @@ private constructor(
         return arrayOf(
             turbulenceNoiseShader.noiseOffsetX,
             turbulenceNoiseShader.noiseOffsetY,
-            turbulenceNoiseShader.noiseOffsetZ
+            turbulenceNoiseShader.noiseOffsetZ,
         )
     }
 
-    private fun playEaseIn() {
+    private fun playFadeIn() {
         if (state != AnimationState.NOT_PLAYING) {
             return
         }
-        state = AnimationState.EASE_IN
+        state = AnimationState.FADE_IN
 
         val animator = ValueAnimator.ofFloat(0f, 1f)
-        animator.duration = config.easeInDuration.toLong()
+        animator.duration = config.fadeInDuration.toLong()
 
         // Animation should start from the initial position to avoid abrupt transition.
         val initialX = turbulenceNoiseShader.noiseOffsetX
@@ -221,7 +222,7 @@ private constructor(
             turbulenceNoiseShader.setNoiseMove(
                 initialX + timeInSec * config.noiseMoveSpeedX,
                 initialY + timeInSec * config.noiseMoveSpeedY,
-                initialZ + timeInSec * config.noiseMoveSpeedZ
+                initialZ + timeInSec * config.noiseMoveSpeedZ,
             )
 
             // TODO: Replace it with a better curve.
@@ -244,7 +245,7 @@ private constructor(
     }
 
     private fun playMain() {
-        if (state != AnimationState.EASE_IN) {
+        if (state != AnimationState.FADE_IN) {
             return
         }
         state = AnimationState.MAIN
@@ -264,7 +265,7 @@ private constructor(
             turbulenceNoiseShader.setNoiseMove(
                 initialX + timeInSec * config.noiseMoveSpeedX,
                 initialY + timeInSec * config.noiseMoveSpeedY,
-                initialZ + timeInSec * config.noiseMoveSpeedZ
+                initialZ + timeInSec * config.noiseMoveSpeedZ,
             )
 
             draw()
@@ -274,7 +275,7 @@ private constructor(
             object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
                     currentAnimator = null
-                    playEaseOut()
+                    playFadeOut()
                 }
             }
         )
@@ -283,14 +284,14 @@ private constructor(
         this.currentAnimator = animator
     }
 
-    private fun playEaseOut() {
+    private fun playFadeOut() {
         if (state != AnimationState.MAIN) {
             return
         }
-        state = AnimationState.EASE_OUT
+        state = AnimationState.FADE_OUT
 
         val animator = ValueAnimator.ofFloat(0f, 1f)
-        animator.duration = config.easeOutDuration.toLong()
+        animator.duration = config.fadeOutDuration.toLong()
 
         // Animation should start from the initial position to avoid abrupt transition.
         val initialX = turbulenceNoiseShader.noiseOffsetX
@@ -304,7 +305,7 @@ private constructor(
             turbulenceNoiseShader.setNoiseMove(
                 initialX + timeInSec * config.noiseMoveSpeedX,
                 initialY + timeInSec * config.noiseMoveSpeedY,
-                initialZ + timeInSec * config.noiseMoveSpeedZ
+                initialZ + timeInSec * config.noiseMoveSpeedZ,
             )
 
             // TODO: Replace it with a better curve.
@@ -331,7 +332,7 @@ private constructor(
         renderEffectCallback?.onDraw(
             RenderEffect.createRuntimeShaderEffect(
                 turbulenceNoiseShader,
-                TurbulenceNoiseShader.BACKGROUND_UNIFORM
+                TurbulenceNoiseShader.BACKGROUND_UNIFORM,
             )
         )
     }
@@ -339,16 +340,16 @@ private constructor(
     /**
      * States of the loading effect animation.
      *
-     * <p>The state is designed to be follow the order below: [AnimationState.EASE_IN],
-     * [AnimationState.MAIN], [AnimationState.EASE_OUT]. Note that ease in and out don't necessarily
+     * <p>The state is designed to be follow the order below: [AnimationState.FADE_IN],
+     * [AnimationState.MAIN], [AnimationState.FADE_OUT]. Note that fase in and out don't necessarily
      * mean the acceleration and deceleration in the animation curve. They simply mean each stage of
      * the animation. (i.e. Intro, core, and rest)
      */
     enum class AnimationState {
-        EASE_IN,
+        FADE_IN,
         MAIN,
-        EASE_OUT,
-        NOT_PLAYING
+        FADE_OUT,
+        NOT_PLAYING,
     }
 
     /** Optional callback that is triggered when the animation state changes. */

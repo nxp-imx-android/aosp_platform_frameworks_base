@@ -64,7 +64,7 @@ class TurbulenceNoiseView(context: Context?, attrs: AttributeSet?) : View(contex
         turbulenceNoiseShader?.setColor(color)
     }
 
-    /** Plays the turbulence noise with no easing. */
+    /** Plays the turbulence noise with no fading. */
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     fun play(onAnimationEnd: Runnable? = null) {
         if (noiseConfig == null) {
@@ -86,7 +86,7 @@ class TurbulenceNoiseView(context: Context?, attrs: AttributeSet?) : View(contex
             shader.setNoiseMove(
                 initialX + timeInSec * config.noiseMoveSpeedX,
                 initialY + timeInSec * config.noiseMoveSpeedY,
-                initialZ + timeInSec * config.noiseMoveSpeedZ
+                initialZ + timeInSec * config.noiseMoveSpeedZ,
             )
 
             shader.setOpacity(config.luminosityMultiplier)
@@ -107,9 +107,9 @@ class TurbulenceNoiseView(context: Context?, attrs: AttributeSet?) : View(contex
         currentAnimator = animator
     }
 
-    /** Plays the turbulence noise with linear ease-in. */
+    /** Plays the turbulence noise with linear fade-in. */
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
-    fun playEaseIn(onAnimationEnd: Runnable? = null) {
+    fun playFadeIn(onAnimationEnd: Runnable? = null) {
         if (noiseConfig == null) {
             return
         }
@@ -117,7 +117,7 @@ class TurbulenceNoiseView(context: Context?, attrs: AttributeSet?) : View(contex
         val shader = turbulenceNoiseShader!!
 
         val animator = ValueAnimator.ofFloat(0f, 1f)
-        animator.duration = config.easeInDuration.toLong()
+        animator.duration = config.fadeInDuration.toLong()
 
         // Animation should start from the initial position to avoid abrupt transition.
         val initialX = shader.noiseOffsetX
@@ -131,7 +131,7 @@ class TurbulenceNoiseView(context: Context?, attrs: AttributeSet?) : View(contex
             shader.setNoiseMove(
                 initialX + timeInSec * config.noiseMoveSpeedX,
                 initialY + timeInSec * config.noiseMoveSpeedY,
-                initialZ + timeInSec * config.noiseMoveSpeedZ
+                initialZ + timeInSec * config.noiseMoveSpeedZ,
             )
 
             // TODO: Replace it with a better curve.
@@ -153,9 +153,9 @@ class TurbulenceNoiseView(context: Context?, attrs: AttributeSet?) : View(contex
         currentAnimator = animator
     }
 
-    /** Plays the turbulence noise with linear ease-out. */
+    /** Plays the turbulence noise with linear fade-out. */
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
-    fun playEaseOut(onAnimationEnd: Runnable? = null) {
+    fun playFadeOut(onAnimationEnd: Runnable? = null) {
         if (noiseConfig == null) {
             return
         }
@@ -163,7 +163,7 @@ class TurbulenceNoiseView(context: Context?, attrs: AttributeSet?) : View(contex
         val shader = turbulenceNoiseShader!!
 
         val animator = ValueAnimator.ofFloat(0f, 1f)
-        animator.duration = config.easeOutDuration.toLong()
+        animator.duration = config.fadeOutDuration.toLong()
 
         // Animation should start from the initial position to avoid abrupt transition.
         val initialX = shader.noiseOffsetX
@@ -177,7 +177,7 @@ class TurbulenceNoiseView(context: Context?, attrs: AttributeSet?) : View(contex
             shader.setNoiseMove(
                 initialX + timeInSec * config.noiseMoveSpeedX,
                 initialY + timeInSec * config.noiseMoveSpeedY,
-                initialZ + timeInSec * config.noiseMoveSpeedZ
+                initialZ + timeInSec * config.noiseMoveSpeedZ,
             )
 
             // TODO: Replace it with a better curve.
@@ -214,7 +214,7 @@ class TurbulenceNoiseView(context: Context?, attrs: AttributeSet?) : View(contex
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     fun initShader(
         baseType: TurbulenceNoiseShader.Companion.Type,
-        config: TurbulenceNoiseAnimationConfig
+        config: TurbulenceNoiseAnimationConfig,
     ) {
         noiseConfig = config
         if (turbulenceNoiseShader == null || turbulenceNoiseShader?.baseType != baseType) {

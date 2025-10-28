@@ -1809,7 +1809,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
             clock.advanceTime(
                 MediaControlPanel.TURBULENCE_NOISE_PLAY_DURATION +
-                    TurbulenceNoiseAnimationConfig.DEFAULT_EASING_DURATION_IN_MILLIS.toLong()
+                    TurbulenceNoiseAnimationConfig.DEFAULT_FADING_DURATION_IN_MILLIS.toLong()
             )
 
             assertThat(turbulenceNoiseView.visibility).isEqualTo(View.INVISIBLE)
@@ -1841,7 +1841,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
             clock.advanceTime(
                 MediaControlPanel.TURBULENCE_NOISE_PLAY_DURATION +
-                    TurbulenceNoiseAnimationConfig.DEFAULT_EASING_DURATION_IN_MILLIS.toLong()
+                    TurbulenceNoiseAnimationConfig.DEFAULT_FADING_DURATION_IN_MILLIS.toLong()
             )
 
             assertThat(loadingEffectView.visibility).isEqualTo(View.INVISIBLE)
