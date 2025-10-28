@@ -412,6 +412,42 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
         )
     }
 
+    @Test
+    fun testIsTransparentOverlay_transparentTask_fullscreen_returnsTrue() {
+        val task = createFullscreenTask().apply {
+            isActivityStackTransparent = true
+            numActivities = 1
+        }
+        assertTrue(desktopModeCompatPolicy.isTransparentOverlay(task))
+    }
+
+    @Test
+    fun testIsTransparentOverlay_notTransparentTask_returnsFalse() {
+        val task = createFullscreenTask().apply {
+            isActivityStackTransparent = false
+            numActivities = 1
+        }
+        assertFalse(desktopModeCompatPolicy.isTransparentOverlay(task))
+    }
+
+    @Test
+    fun testIsTransparentOverlay_noActivities_returnsFalse() {
+        val task = createFullscreenTask().apply {
+            isActivityStackTransparent = true
+            numActivities = 0
+        }
+        assertFalse(desktopModeCompatPolicy.isTransparentOverlay(task))
+    }
+
+    @Test
+    fun testIsTransparentOverlay_notFullscreen_returnsFalse() {
+        val task = createFreeformTask().apply {
+            isActivityStackTransparent = true
+            numActivities = 1
+        }
+        assertFalse(desktopModeCompatPolicy.isTransparentOverlay(task))
+    }
+
     fun setUpFreeformTask(): TaskInfo =
         createFreeformTask().apply {
             val componentName =

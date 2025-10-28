@@ -17,6 +17,7 @@
 package com.android.internal.policy;
 
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_DREAM;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 
 import android.Manifest;
 import android.annotation.NonNull;
@@ -277,5 +278,24 @@ public class DesktopModeCompatPolicy {
             int userId) {
         final String defaultHomePackage = getDefaultHomePackage(userId);
         return defaultHomePackage == null || packageName.equals(defaultHomePackage);
+    }
+
+    /**
+    * Returns true if the task is transparent and full screen.
+    * Examples are Gemini and circle to search that overlay on top of other apps.
+    */
+    public boolean isTransparentOverlay(@NonNull TaskInfo task) {
+        return isTransparentOverlay(task.isActivityStackTransparent, task.numActivities,
+                task.getWindowingMode());
+    }
+
+   /**
+    * Returns true if the task is transparent and full screen.
+    * Examples are Gemini and circle to search that overlay on top of other apps.
+    */
+    public boolean isTransparentOverlay(boolean isActivityStackTransparent,
+            int numActivities, int windowingMode) {
+        return isTransparentTask(isActivityStackTransparent, numActivities)
+                && windowingMode == WINDOWING_MODE_FULLSCREEN;
     }
 }
