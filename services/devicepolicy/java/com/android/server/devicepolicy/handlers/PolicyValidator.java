@@ -56,7 +56,7 @@ public abstract class PolicyValidator<T> {
 
                     if (!stringPolicy.isEmptyStringAllowed() && value.isEmpty()) {
                         throw new IllegalArgumentException(
-                            "Unsupported value \"\" for policy " + policy.getId()
+                            "Empty string is not allowed for policy " + policy.getId()
                         );
                     }
                 }
