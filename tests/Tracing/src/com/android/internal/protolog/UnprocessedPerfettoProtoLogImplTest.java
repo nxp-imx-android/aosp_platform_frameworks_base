@@ -60,18 +60,24 @@ public class UnprocessedPerfettoProtoLogImplTest {
     @BeforeClass
     public static void setUp() throws Exception {
         sTestDataSource = new ProtoLogDataSource(TEST_PROTOLOG_DATASOURCE_NAME);
-        DataSourceParams params =
-                new DataSourceParams.Builder()
-                        .setBufferExhaustedPolicy(
-                                DataSourceParams
-                                        .PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_DROP)
-                        .build();
-        sTestDataSource.register(params);
-        busyWaitForDataSourceRegistration(TEST_PROTOLOG_DATASOURCE_NAME);
+        if (!android.tracing.Flags.protologAsyncInit()) {
+            DataSourceParams params =
+                    new DataSourceParams.Builder()
+                            .setBufferExhaustedPolicy(
+                                    DataSourceParams
+                                            .PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_DROP)
+                            .build();
+            sTestDataSource.register(params);
+        }
 
         sProtoLog = new UnprocessedPerfettoProtoLogImpl(sTestDataSource,
                 TestProtoLogGroup.values());
         sProtoLog.enable();
+
+        if (android.tracing.Flags.protologAsyncInit()) {
+            sProtoLog.mSingleThreadedExecutor.submit(() -> {}).get();
+        }
+        busyWaitForDataSourceRegistration(TEST_PROTOLOG_DATASOURCE_NAME);
     }
 
     @Before
