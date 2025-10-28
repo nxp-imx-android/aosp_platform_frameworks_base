@@ -173,6 +173,26 @@ public abstract class DataSource<DataSourceInstanceType extends DataSourceInstan
     }
 
     /**
+     * Called from native when creating a new tracing instance fails. Default
+     * implementation is a no-op. Data sources can override this to get notified.
+     *
+     * <p>An instance can fail to be created for multiple reasons, including:
+     * <ul>
+     *      <li>A native allocation failure.</li>
+     *      <li>The user-provided {@link #createInstance(ProtoInputStream, int)} method throwing an
+     *          exception.</li>
+     *      <li>The user-provided {@link #createInstance(ProtoInputStream, int)} method returning
+     *          null.</li>
+     * </ul>
+     *
+     * @param instanceIndex The index of the datasource instance that failed to be created.
+     * @param reason A string explaining the reason for failure.
+     */
+    protected void onInstanceCreateFailed(int instanceIndex, @NonNull String reason) {
+        // Default implementation is a no-op.
+    }
+
+    /**
      * Stop the datasource instance at the specified index (whose stop operation was previously
      * postponed with DataSourceParams#postponeStop).
      */
