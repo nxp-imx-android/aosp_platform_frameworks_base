@@ -831,9 +831,15 @@ public class SupervisionService extends ISupervisionManager.Stub {
     private void updateContentFilterSetting(@UserIdInt int userId, boolean enabled, String key) {
         try {
             final ContentResolver contentResolver = mInjector.context.getContentResolver();
-            final int value = Settings.Secure.getIntForUser(contentResolver, key, userId);
-            if (!enabled || value != 1) {
-                Settings.Secure.putIntForUser(contentResolver, key, value * -1, userId);
+            if (Flags.enableSupervisionSettingsUiUpdates()) {
+                if (!enabled) {
+                    Settings.Secure.putIntForUser(contentResolver, key, 0, userId);
+                }
+            } else {
+                final int value = Settings.Secure.getIntForUser(contentResolver, key, userId);
+                if (!enabled || value != 1) {
+                    Settings.Secure.putIntForUser(contentResolver, key, value * -1, userId);
+                }
             }
         } catch (Settings.SettingNotFoundException ignored) {
             // Ignore the exception and do not change the value as no value has been set.

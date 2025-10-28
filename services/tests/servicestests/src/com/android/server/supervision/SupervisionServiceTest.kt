@@ -56,6 +56,7 @@ import android.os.UserHandle.MIN_SECONDARY_USER_ID
 import android.os.UserHandle.USER_SYSTEM
 import android.os.UserManager
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.platform.test.flag.junit.SetFlagsRule
@@ -390,6 +391,7 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
     fun setSupervisionEnabledForUser_clearsContentFilters() {
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
         putSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED, 1)
@@ -402,6 +404,26 @@ class SupervisionServiceTest {
         setSupervisionEnabledForUser(USER_ID, false)
         assertThat(getSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED)).isEqualTo(-1)
         assertThat(getSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED)).isEqualTo(-1)
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
+    fun setSupervisionEnabledForUser_permanentlyClearsContentFilters() {
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+        putSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED, 1)
+        putSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED, 1)
+
+        setSupervisionEnabledForUser(USER_ID, true)
+        assertThat(getSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED)).isEqualTo(1)
+        assertThat(getSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED)).isEqualTo(1)
+
+        setSupervisionEnabledForUser(USER_ID, false)
+        assertThat(getSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED)).isEqualTo(0)
+        assertThat(getSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED)).isEqualTo(0)
+
+        setSupervisionEnabledForUser(USER_ID, true)
+        assertThat(getSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED)).isEqualTo(0)
+        assertThat(getSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED)).isEqualTo(0)
     }
 
     @Test
@@ -505,6 +527,7 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
     fun setSupervisionEnabledForUser_internal_clearsContentFilters() {
         putSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED, 1)
         putSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED, 0)
@@ -518,6 +541,29 @@ class SupervisionServiceTest {
         setSupervisionEnabledForUserInternal(USER_ID, false)
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
         assertThat(getSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED)).isEqualTo(-1)
+        assertThat(getSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED)).isEqualTo(0)
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
+    fun setSupervisionEnabledForUser_internal_permanentlyClearsContentFilters() {
+        putSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED, 1)
+        putSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED, 0)
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+
+        setSupervisionEnabledForUserInternal(USER_ID, true)
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
+        assertThat(getSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED)).isEqualTo(1)
+        assertThat(getSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED)).isEqualTo(0)
+
+        setSupervisionEnabledForUserInternal(USER_ID, false)
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+        assertThat(getSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED)).isEqualTo(0)
+        assertThat(getSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED)).isEqualTo(0)
+
+        setSupervisionEnabledForUserInternal(USER_ID, true)
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
+        assertThat(getSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED)).isEqualTo(0)
         assertThat(getSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED)).isEqualTo(0)
     }
 
