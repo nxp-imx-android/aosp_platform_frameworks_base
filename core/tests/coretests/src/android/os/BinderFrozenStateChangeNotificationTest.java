@@ -28,7 +28,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.platform.test.annotations.DisabledOnRavenwood;
-import android.platform.test.ravenwood.RavenwoodRule;
 import android.util.Log;
 
 import androidx.test.InstrumentationRegistry;
@@ -40,7 +39,6 @@ import com.android.frameworks.coretests.bdr_helper_app.TestCommsReceiver;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -73,8 +71,6 @@ public class BinderFrozenStateChangeNotificationTest {
     private Context mContext;
     private Handler mHandler;
 
-    @Rule
-    public final RavenwoodRule mRavenwood = new RavenwoodRule();
 
     @Before
     public void setUp() throws Exception {

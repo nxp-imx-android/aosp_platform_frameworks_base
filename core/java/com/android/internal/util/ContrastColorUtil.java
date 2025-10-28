@@ -31,6 +31,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.graphics.drawable.VectorDrawable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.text.NoCopySpan;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -49,6 +50,7 @@ import java.util.WeakHashMap;
  *
  * @hide
  */
+@RavenwoodKeepWholeClass
 public class ContrastColorUtil {
 
     private static final String TAG = "ContrastColorUtil";

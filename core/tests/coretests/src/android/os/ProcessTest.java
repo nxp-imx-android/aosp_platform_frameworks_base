@@ -23,17 +23,13 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import android.platform.test.annotations.DisabledOnRavenwood;
-import android.platform.test.ravenwood.RavenwoodRule;
 
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.Arrays;
 
 @DisabledOnRavenwood(blockedBy = Process.class)
 public class ProcessTest {
-    @Rule
-    public final RavenwoodRule mRavenwood = new RavenwoodRule();
 
     private static final int BAD_PID = 0;
 
