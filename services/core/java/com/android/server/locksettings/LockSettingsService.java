@@ -434,7 +434,7 @@ public class LockSettingsService extends ILockSettings.Stub {
     }
 
     /**
-     * Tie profile to primary profile if it is in unified mode and not tied before.
+     * Tie profile to primary profile if it is not already tied.
      * Only for profiles which share credential with parent. (e.g. managed and clone profiles)
      *
      * @param profileUserId  profile user Id
@@ -447,12 +447,8 @@ public class LockSettingsService extends ILockSettings.Stub {
         if (!isCredentialShareableWithParent(profileUserId)) {
             return;
         }
-        // Only tie profile when it uses its parent's lock.
-        if (!isUseOneLockSettingEnabledInternal(profileUserId)) {
-            return;
-        }
         // Do not tie profile to parent when it's done already
-        if (mStorage.hasChildProfileLock(profileUserId)) {
+        if (hasUnifiedProfilePassword(profileUserId)) {
             return;
         }
         final UserInfo parent = mUserManager.getProfileParent(profileUserId);
@@ -491,7 +487,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         try (LockscreenCredential unifiedProfilePassword = generateRandomProfilePassword()) {
             setLockCredentialInternal(unifiedProfilePassword, profileUserPassword, profileUserId,
                     /* isLockTiedToParent= */ true);
-            tieProfileLockToParent(profileUserId, parent.id, unifiedProfilePassword);
+            tieProfilePasswordToParent(profileUserId, parent.id, unifiedProfilePassword);
             mUnifiedProfilePasswordCache.storePassword(profileUserId, unifiedProfilePassword,
                     parentSid);
         }
@@ -958,17 +954,25 @@ public class LockSettingsService extends ILockSettings.Stub {
     private void onUserUnlocking(final int userId) {
         // Perform tasks which require locks in LSS on a handler, as we are callbacks from
         // ActivityManager.unlockUser()
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                // Hide notification first, as tie profile lock takes time
-                hideEncryptionNotification(new UserHandle(userId));
+        mHandler.post(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        // Hide notification first, as tie profile lock takes time
+                        hideEncryptionNotification(new UserHandle(userId));
 
-                synchronized (mSpManager) {
-                    tieProfileLockIfNecessary(userId, LockscreenCredential.createNone());
-                }
-            }
-        });
+                        synchronized (mSpManager) {
+                            // Do not tie on user start when user has configured a separate lock.
+                            // We check isCredentialShareableWithParent to mitigate a lock inversion
+                            // TODO: b/461782120 - Clean up isCredentialShareableWithParent check
+                            if (!isCredentialShareableWithParent(userId)
+                                    || !isUseOneLockSettingEnabledInternal(userId)) {
+                                return;
+                            }
+                            tieProfileLockIfNecessary(userId, LockscreenCredential.createNone());
+                        }
+                    }
+                });
     }
 
     private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
@@ -2249,9 +2253,9 @@ public class LockSettingsService extends ILockSettings.Stub {
      * Sets up an encrypted password protected by a new encryption key bound to the parent sid. The
      * credential must be a PASSWORD, rather than NONE.
      */
-    private void tieProfileLockToParent(
+    private void tieProfilePasswordToParent(
             int profileUserId, int parentUserId, LockscreenCredential password) {
-        Slogf.i(TAG, "Tying lock for profile user %d to parent user %d", profileUserId,
+        Slogf.i(TAG, "Tying password for profile user %d to parent user %d", profileUserId,
                 parentUserId);
         final long parentSid;
         try {
@@ -2374,7 +2378,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                 int piUserId = profileUserIds.get(i);
                 LockscreenCredential piUserDecryptedPassword = profileUserDecryptedPasswords.get(i);
                 if (piUserId != -1 && piUserDecryptedPassword != null) {
-                    tieProfileLockToParent(piUserId, userId, piUserDecryptedPassword);
+                    tieProfilePasswordToParent(piUserId, userId, piUserDecryptedPassword);
                 }
                 if (piUserDecryptedPassword != null) {
                     piUserDecryptedPassword.zeroize();
