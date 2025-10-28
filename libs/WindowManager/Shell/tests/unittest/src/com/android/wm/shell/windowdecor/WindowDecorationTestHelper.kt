@@ -403,6 +403,7 @@ object WindowDecorationTestHelper {
         override val windowControlButtonPadding: Rect = Rect(12, 12, 12, 12)
         override val windowControlButtonMarginEnd: Int = 8
         override val customizableRegionMarginStart: Int = CUSTOMIZABLE_REGION_MARGIN_START
+        override val customizableRegionMarginEnd: Int = 10
         override val customizableRegionEmptyDragSpace: Int = BUTTON_SIZE
 
         companion object {

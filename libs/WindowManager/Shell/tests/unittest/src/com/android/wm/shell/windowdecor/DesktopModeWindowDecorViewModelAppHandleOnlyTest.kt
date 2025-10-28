@@ -22,6 +22,7 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WindowingMode
 import android.content.ComponentName
 import android.content.pm.ActivityInfo
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
@@ -80,6 +81,7 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testWindowDecor_showAppHandle_decorCreated() {
         val task = createTask()
 
@@ -90,6 +92,7 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testWindowDecor_dontShowAppHandle_decorNotCreated() {
         // Simulate device that doesn't support showing app handle
         desktopState.overridesShowAppHandle = false
@@ -101,6 +104,7 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testDeleteDecorationOnChangeTransitionWhenNecessary() {
         val task = createTask()
         val taskSurface = SurfaceControl()
@@ -139,6 +143,7 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testDecorationIsNotCreatedForSystemUIActivities() {
         val task = createTask()
 
@@ -154,6 +159,7 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testAppHandleShowsOnlyOnLargeDisplay() {
         val task = createTask()
         val taskSurface = SurfaceControl()
@@ -169,6 +175,7 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY)
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testAppHandleShowsOnlyOnDisplayInTopology() {
         val task = createTask()
         val taskSurface = SurfaceControl()
