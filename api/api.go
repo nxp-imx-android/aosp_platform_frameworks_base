@@ -49,6 +49,9 @@ var non_updatable_modules = []string{virtualization, location, platformCrashreco
 
 // Map of RELEASE_ flags and the module associated with the flag.
 type moduleFlagInfo struct {
+	// name of the release flag
+	releaseFlag string
+
 	// Whether to include the module in the non updatable modules list if the flag is enabled
 	include bool
 
@@ -56,14 +59,16 @@ type moduleFlagInfo struct {
 	moduleName string
 }
 
-var releaseFlagToModule = map[string]moduleFlagInfo{
-	"RELEASE_TELECOM_MAINLINE_MODULE": {
+var moduleFlagInfos = []moduleFlagInfo{
+	moduleFlagInfo{
+		releaseFlag: "RELEASE_TELECOM_MAINLINE_MODULE",
 		// Do NOT include telecom as a non updatable module if the release flag is enabled for
 		// mainline.
 		include:    false,
 		moduleName: telecom,
 	},
-	"RELEASE_CONSCRYPT_NSC": {
+	moduleFlagInfo{
+		releaseFlag: "RELEASE_CONSCRYPT_NSC",
 		// Do NOT include network-security-config as a non updatable module if the release flag
 		//  is enabled for	 mainline.
 		include:    false,
@@ -73,12 +78,12 @@ var releaseFlagToModule = map[string]moduleFlagInfo{
 
 // getNonUpdatableModules returns a list of modules that are not yet updatable,
 // and hence they can still compile against hidden APIs. It will also include
-// modules defined in releaseFlagToModule if the associated RELEASE_ flag
+// modules defined in moduleFlagInfos if the associated RELEASE_ flag
 // is DISABLED (meaning the module is not updatable).
 func getNonUpdatableModules(config android.Config) []string {
 	nonUpdatableModules := slices.Clone(non_updatable_modules)
-	for releaseFlag, flagInfo := range releaseFlagToModule {
-		if config.GetBuildFlagBool(releaseFlag) == flagInfo.include {
+	for _, flagInfo := range moduleFlagInfos {
+		if config.GetBuildFlagBool(flagInfo.releaseFlag) == flagInfo.include {
 			nonUpdatableModules = append(nonUpdatableModules, flagInfo.moduleName)
 		}
 	}
