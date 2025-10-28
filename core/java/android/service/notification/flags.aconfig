@@ -95,7 +95,14 @@ flag {
   bug: "452941348"
   metadata {
       purpose: PURPOSE_BUGFIX
-    }
+  }
+}
+
+flag {
+  name: "enable_dnd_sync"
+  namespace: "wear_frameworks"
+  description: "Whether to enable dnd sync"
+  bug: "430676215"
 }
 
 flag {
