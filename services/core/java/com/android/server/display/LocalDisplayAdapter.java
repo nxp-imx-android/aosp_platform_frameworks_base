@@ -985,7 +985,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                         if (isDisplayOffloadEnabled) {
                             if (displayOffloadSession != null
                                     && DisplayOffloadSession.isSupportedOffloadState(state)) {
-                                displayOffloadSession.startOffload();
+                                displayOffloadSession.startOffload(state);
                             }
                         } else {
                             if (Display.isSuspendedState(state) && state != Display.STATE_OFF

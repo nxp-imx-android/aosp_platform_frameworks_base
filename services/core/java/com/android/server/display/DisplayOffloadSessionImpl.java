@@ -111,16 +111,17 @@ public class DisplayOffloadSessionImpl implements DisplayManagerInternal.Display
      * Start the offload session. The method returns if the session is already active.
      * @return Whether the session was started successfully
      */
-    public boolean startOffload() {
+    public boolean startOffload(int displayState) {
         if (mDisplayOffloader == null || mIsActive) {
             return false;
         }
 
         Trace.traceBegin(Trace.TRACE_TAG_POWER, "DisplayOffloader#startOffload");
         try {
-            mIsActive = mDisplayOffloader.startOffload();
+            mIsActive = mDisplayOffloader.startOffload(displayState);
             if (DEBUG) {
-                Slog.d(TAG, "startOffload = " + mIsActive);
+                Slog.d(TAG, "startOffload = " + mIsActive + " "
+                        + Display.stateToString(displayState));
             }
             return mIsActive;
         } finally {
