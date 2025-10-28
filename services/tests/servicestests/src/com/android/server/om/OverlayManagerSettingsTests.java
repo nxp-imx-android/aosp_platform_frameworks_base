@@ -25,6 +25,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -149,6 +150,34 @@ public class OverlayManagerSettingsTests {
 
         // No users installed for user 3
         assertEquals(Map.<String, List<OverlayInfo>>of(), mSettings.getOverlaysForUser(3));
+    }
+
+    @Test
+    public void testGetOverlayConstraints() throws Exception {
+        insertSetting(OVERLAY_A_USER0);
+        insertSetting(OVERLAY_B_USER0_WITH_CONSTRAINTS);
+        insertSetting(OVERLAY_A_USER1);
+        insertSetting(OVERLAY_B_USER1_WITH_CONSTRAINTS);
+
+        List<OverlayConstraint> constraintsAUser0 =
+                mSettings.getOverlayConstraints(OVERLAY_A_USER0.baseCodePath, USER_0);
+        assertEquals(OVERLAY_A_USER0.constraints, constraintsAUser0);
+        List<OverlayConstraint> constraintsBUser0 =
+                mSettings.getOverlayConstraints(
+                        OVERLAY_B_USER0_WITH_CONSTRAINTS.baseCodePath, USER_0);
+        assertEquals(OVERLAY_B_USER0_WITH_CONSTRAINTS.constraints, constraintsBUser0);
+        List<OverlayConstraint> constraintsAUser1 =
+                mSettings.getOverlayConstraints(OVERLAY_A_USER1.baseCodePath, USER_0);
+        assertEquals(OVERLAY_A_USER1.constraints, constraintsAUser1);
+        List<OverlayConstraint> constraintsBUser1 =
+                mSettings.getOverlayConstraints(
+                        OVERLAY_B_USER1_WITH_CONSTRAINTS.baseCodePath, USER_0);
+        assertEquals(OVERLAY_B_USER1_WITH_CONSTRAINTS.constraints, constraintsBUser1);
+
+        assertThrows(OverlayManagerSettings.BadKeyException.class,
+                () -> mSettings.getOverlayConstraints(OVERLAY_C_USER0.baseCodePath, USER_0));
+        assertThrows(OverlayManagerSettings.BadKeyException.class,
+                () -> mSettings.getOverlayConstraints("hello", USER_1));
     }
 
     @Test
