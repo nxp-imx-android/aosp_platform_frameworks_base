@@ -414,6 +414,8 @@
     <string name="screen_share_audio_sharing_text">Share audio</string>
     <!-- Text for app sharing title [CHAR LIMIT=35] -->
     <string name="screen_share_app_window_sharing_title">Share app window</string>
+    <!-- Text for tab sharing title [CHAR LIMIT=35] -->
+    <string name="screen_share_tab_sharing_title">Share tab</string>
     <!-- Text diclaimer that tells a user that they're currently sharing screen [CHAR LIMIT=100] -->
     <string name="screen_share_disclaimer">When sharing, the contents of your screen are visible</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
