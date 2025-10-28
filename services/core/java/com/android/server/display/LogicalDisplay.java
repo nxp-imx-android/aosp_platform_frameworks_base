@@ -228,13 +228,6 @@ final class LogicalDisplay {
     private SparseArray<SurfaceControl.RefreshRateRange> mThermalRefreshRateThrottling =
             new SparseArray<>();
 
-    /**
-     * Modes with corrected anisotropy are supplied by LocalDisplayAdapter, no anisotropy
-     * calculation is needed on LocalDisplay side. User selected resolution is scaled to fit
-     * physical resolution of the display.
-     */
-    private final boolean mIsAnisotropicModesEnabled;
-
     private final boolean mSyncedResolutionSwitchEnabled;
 
     private final boolean mSyntheticModesV2Enabled;
@@ -268,7 +261,6 @@ final class LogicalDisplay {
         mSizeOverrideEnabled = sizeOverrideEnabled;
         mDisplayInfoCache = displayInfoCache;
 
-        mIsAnisotropicModesEnabled = Flags.enableAnisotropyCorrectedModes();
         // No need to initialize mCanHostTasks here; it's handled in
         // DisplayManagerService#setupLogicalDisplay().
     }
@@ -558,16 +550,6 @@ final class LogicalDisplay {
             int maskedWidth = currentWidth - maskingInsets.left - maskingInsets.right;
             int maskedHeight = currentHeight - maskingInsets.top - maskingInsets.bottom;
 
-            if (!mIsAnisotropicModesEnabled
-                    && deviceInfo.type == Display.TYPE_EXTERNAL
-                        && currentXDpi > 0 && currentYDpi > 0) {
-                if (currentXDpi > currentYDpi * DisplayDevice.MAX_ANISOTROPY) {
-                    maskedHeight = (int) (maskedHeight * currentXDpi / currentYDpi + 0.5);
-                } else if (currentXDpi * DisplayDevice.MAX_ANISOTROPY < currentYDpi) {
-                    maskedWidth = (int) (maskedWidth * currentYDpi / currentXDpi + 0.5);
-                }
-            }
-
             mBaseDisplayInfo.type = deviceInfo.type;
             mBaseDisplayInfo.address = deviceInfo.address;
             mBaseDisplayInfo.deviceProductInfo = deviceInfo.deviceProductInfo;
@@ -845,33 +827,10 @@ final class LogicalDisplay {
         var displayLogicalWidth = displayInfo.logicalWidth;
         var displayLogicalHeight = displayInfo.logicalHeight;
 
-        if (!mIsAnisotropicModesEnabled && displayDeviceInfo.type == Display.TYPE_EXTERNAL
-                    && displayDeviceInfo.xDpi > 0 && displayDeviceInfo.yDpi > 0) {
-            if (displayDeviceInfo.xDpi > displayDeviceInfo.yDpi * DisplayDevice.MAX_ANISOTROPY) {
-                var scalingFactor = displayDeviceInfo.yDpi / displayDeviceInfo.xDpi;
-                if (rotated) {
-                    displayLogicalWidth = (int) ((float) displayLogicalWidth * scalingFactor + 0.5);
-                } else {
-                    displayLogicalHeight = (int) ((float) displayLogicalHeight * scalingFactor
-                                                          + 0.5);
-                }
-            } else if (displayDeviceInfo.xDpi * DisplayDevice.MAX_ANISOTROPY
-                               < displayDeviceInfo.yDpi) {
-                var scalingFactor = displayDeviceInfo.xDpi / displayDeviceInfo.yDpi;
-                if (rotated) {
-                    displayLogicalHeight = (int) ((float) displayLogicalHeight * scalingFactor
-                                                          + 0.5);
-                } else {
-                    displayLogicalWidth = (int) ((float) displayLogicalWidth * scalingFactor + 0.5);
-                }
-            }
-        }
-
         // For size override modes we want to scale logical width and height to physical/user mode
         // width and height ratio
         Display.Mode userMode = getUserPreferredModeForSizeOverrideLocked(displayDeviceInfo);
-        if (mIsAnisotropicModesEnabled && displayDeviceInfo.type == Display.TYPE_EXTERNAL
-                && userMode != null
+        if (displayDeviceInfo.type == Display.TYPE_EXTERNAL && userMode != null
                 && (userMode.getFlags() & Display.Mode.FLAG_SIZE_OVERRIDE) != 0) {
             int userWidth = rotated ? userMode.getPhysicalHeight() : userMode.getPhysicalWidth();
             int userHeight = rotated ? userMode.getPhysicalWidth() : userMode.getPhysicalHeight();

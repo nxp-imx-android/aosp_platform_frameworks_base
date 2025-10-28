@@ -33,7 +33,6 @@ import android.view.DisplayAddress;
 import android.view.Surface;
 import android.view.SurfaceControl;
 
-import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.mode.DisplayModeDirector;
 
 import java.io.PrintWriter;
@@ -161,14 +160,6 @@ abstract class DisplayDevice {
                 && (userMode.getFlags() & Display.Mode.FLAG_SIZE_OVERRIDE) != 0) {
             width = userMode.getPhysicalWidth();
             height = userMode.getPhysicalHeight();
-        } else if (!Flags.enableAnisotropyCorrectedModes()
-                && displayDeviceInfo.type == Display.TYPE_EXTERNAL
-                && displayDeviceInfo.yDpi > 0 && displayDeviceInfo.xDpi > 0) {
-            if (displayDeviceInfo.xDpi > displayDeviceInfo.yDpi * MAX_ANISOTROPY) {
-                height = (int) (height * displayDeviceInfo.xDpi / displayDeviceInfo.yDpi + 0.5);
-            } else if (displayDeviceInfo.xDpi * MAX_ANISOTROPY < displayDeviceInfo.yDpi) {
-                width = (int) (width * displayDeviceInfo.yDpi / displayDeviceInfo.xDpi + 0.5);
-            }
         }
         return isRotatedLocked() ? new Point(height, width) : new Point(width, height);
     }
