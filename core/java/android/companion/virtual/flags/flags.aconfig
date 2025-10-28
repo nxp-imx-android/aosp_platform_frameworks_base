@@ -248,16 +248,6 @@ flag {
 }
 
 flag {
-    name: "computer_control_typing"
-    namespace: "virtual_devices"
-    description: "Support input connection based CC text manipulation APIs"
-    bug: "422134565"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "virtual_camera_stable_stream_id"
     namespace: "virtual_devices"
     description: "Assign the index at which a stream has been added to the virtual camera config as its id."

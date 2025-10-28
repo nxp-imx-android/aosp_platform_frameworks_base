@@ -3592,18 +3592,16 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 }
                 // Keep track on computer control input connection that was last provided by the
                 // client on a particular display.
-                if (android.companion.virtualdevice.flags.Flags.computerControlTyping()) {
-                    if (mVdmInternal == null) {
-                        mVdmInternal = LocalServices.getService(VirtualDeviceManagerInternal.class);
-                    }
-                    if (remoteComputerControlInputConnection != null && mVdmInternal != null
-                            && mVdmInternal.isComputerControlDisplay(cs.mSelfReportedDisplayId)) {
-                        userData.mComputerControlInputConnectionMap.put(cs.mSelfReportedDisplayId,
-                                remoteComputerControlInputConnection);
-                    } else {
-                        userData.mComputerControlInputConnectionMap.remove(
-                                cs.mSelfReportedDisplayId);
-                    }
+                if (mVdmInternal == null) {
+                    mVdmInternal = LocalServices.getService(VirtualDeviceManagerInternal.class);
+                }
+                if (remoteComputerControlInputConnection != null && mVdmInternal != null
+                        && mVdmInternal.isComputerControlDisplay(cs.mSelfReportedDisplayId)) {
+                    userData.mComputerControlInputConnectionMap.put(cs.mSelfReportedDisplayId,
+                            remoteComputerControlInputConnection);
+                } else {
+                    userData.mComputerControlInputConnectionMap.remove(
+                            cs.mSelfReportedDisplayId);
                 }
                 final long ident = Binder.clearCallingIdentity();
                 try {
@@ -5877,9 +5875,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         @Override
         public IRemoteComputerControlInputConnection getComputerControlInputConnection(
                 @UserIdInt int userId, int displayId) {
-            if (!android.companion.virtualdevice.flags.Flags.computerControlTyping()) {
-                return null;
-            }
             synchronized (ImfLock.class) {
                 final UserData userData = getUserData(userId);
                 return userData.mComputerControlInputConnectionMap.get(displayId);

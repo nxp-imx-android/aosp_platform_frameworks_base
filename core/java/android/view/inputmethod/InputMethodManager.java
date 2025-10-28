@@ -3655,8 +3655,7 @@ public final class InputMethodManager {
                     servedInputConnection == null ? null
                             : servedInputConnection.asIRemoteAccessibilityInputConnection();
             final IRemoteComputerControlInputConnection computerControlInputConnection =
-                    (!android.companion.virtualdevice.flags.Flags.computerControlTyping()
-                            || servedInputConnection == null) ? null
+                    servedInputConnection == null ? null
                             : servedInputConnection.asIRemoteComputerControlInputConnection();
             // async result delivered via MSG_START_INPUT_RESULT.
             final int startInputSeq =

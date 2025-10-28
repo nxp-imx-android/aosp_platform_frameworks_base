@@ -56,8 +56,6 @@ import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.input.VirtualDpad;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualKeyEvent;
-import android.hardware.input.VirtualKeyboard;
-import android.hardware.input.VirtualKeyboardConfig;
 import android.hardware.input.VirtualTouchEvent;
 import android.hardware.input.VirtualTouchscreen;
 import android.hardware.input.VirtualTouchscreenConfig;
@@ -69,7 +67,6 @@ import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.Slog;
 import android.view.DisplayInfo;
-import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.SurfaceControl;
@@ -87,7 +84,6 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -167,8 +163,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final int mMainDisplayId;
     private final VirtualTouchscreen mVirtualTouchscreen;
     private final VirtualDpad mVirtualDpad;
-    @Nullable
-    private final VirtualKeyboard mVirtualKeyboard;
     private final ComputerControlAudioCapture mAudioCapture;
     private final ComputerControlAudioInjector mAudioInjector;
     private final ScheduledExecutorService mScheduler =
@@ -335,20 +329,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                             .setProductId(PRODUCT_ID_DPAD)
                             .build();
             mVirtualDpad = mVirtualDevice.createVirtualDpad(virtualDpadConfig);
-
-            if (!android.companion.virtualdevice.flags.Flags.computerControlTyping()) {
-                final String keyboardName = inputDeviceNamePrefix + "-kbrd";
-                final VirtualKeyboardConfig virtualKeyboardConfig =
-                        new VirtualKeyboardConfig.Builder()
-                                .setAssociatedDisplayId(mVirtualDisplayId)
-                                .setInputDeviceName(keyboardName)
-                                .setVendorId(VENDOR_ID)
-                                .setProductId(PRODUCT_ID_KEYBOARD)
-                                .build();
-                mVirtualKeyboard = mVirtualDevice.createVirtualKeyboard(virtualKeyboardConfig);
-            } else {
-                mVirtualKeyboard = null;
-            }
 
             final String touchscreenName = inputDeviceNamePrefix + "-tscr";
             final VirtualTouchscreenConfig virtualTouchscreenConfig =
@@ -519,64 +499,34 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             return;
         }
         cancelOngoingKeyGestures();
-        if (android.companion.virtualdevice.flags.Flags.computerControlTyping()) {
-            IRemoteComputerControlInputConnection ic = getInputConnection(mVirtualDisplayId);
-            if (ic == null) {
-                Slog.e(TAG, "Unable to insert text: No input connection found!");
-                return;
-            }
-            // TODO(b/422134565): Implement client invoker logic to pass the correct session id when
-            //  "client text view" invalidates input while view remains focused.
-            //  Currently, if we set text using A11y nodes or the application sets text into the
-            //  text field outside of input connection (while text view is focused), CC session will
-            //  no longer be able to insert text until the text view restarts the input connection.
-            try {
-                if (replaceExisting) {
-                    ic.replaceText(new InputConnectionCommandHeader(0), 0 /* start */,
-                            Integer.MAX_VALUE /* end */, text, 1 /* newCursorPosition */);
-                } else {
-                    ic.commitText(new InputConnectionCommandHeader(0), text,
-                            1 /* newCursorPosition */);
-                }
-                // TODO(b/422134565): Use right editor action to commit text instead key enter
-                if (commit) {
-                    ic.sendKeyEvent(new InputConnectionCommandHeader(0),
-                            new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
-                    ic.sendKeyEvent(new InputConnectionCommandHeader(0),
-                            new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER));
-                }
-            } catch (RemoteException e) {
-                Slog.e(TAG, "Unable to insert text through InputConnection", e);
-            }
-        } else {
-            KeyCharacterMap kcm = KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD);
-            KeyEvent[] events = kcm.getEvents(text.toCharArray());
 
-            if (events == null) {
-                Slog.e(TAG, "Couldn't generate key events from the provided text");
-                return;
-            }
-            List<VirtualKeyEvent> keysToSend = new ArrayList<>();
+        IRemoteComputerControlInputConnection ic = getInputConnection(mVirtualDisplayId);
+        if (ic == null) {
+            Slog.e(TAG, "Unable to insert text: No input connection found!");
+            return;
+        }
+        // TODO(b/422134565): Implement client invoker logic to pass the correct session id when
+        //  "client text view" invalidates input while view remains focused.
+        //  Currently, if we set text using A11y nodes or the application sets text into the
+        //  text field outside of input connection (while text view is focused), CC session will
+        //  no longer be able to insert text until the text view restarts the input connection.
+        try {
             if (replaceExisting) {
-                keysToSend.add(
-                        createKeyEvent(KeyEvent.KEYCODE_CTRL_LEFT, VirtualKeyEvent.ACTION_DOWN));
-                keysToSend.add(createKeyEvent(KeyEvent.KEYCODE_A, VirtualKeyEvent.ACTION_DOWN));
-                keysToSend.add(createKeyEvent(KeyEvent.KEYCODE_A, VirtualKeyEvent.ACTION_UP));
-                keysToSend.add(
-                        createKeyEvent(KeyEvent.KEYCODE_CTRL_LEFT, VirtualKeyEvent.ACTION_UP));
-                keysToSend.add(createKeyEvent(KeyEvent.KEYCODE_DEL, VirtualKeyEvent.ACTION_DOWN));
-                keysToSend.add(createKeyEvent(KeyEvent.KEYCODE_DEL, VirtualKeyEvent.ACTION_UP));
+                ic.replaceText(new InputConnectionCommandHeader(0), 0 /* start */,
+                        Integer.MAX_VALUE /* end */, text, 1 /* newCursorPosition */);
+            } else {
+                ic.commitText(new InputConnectionCommandHeader(0), text,
+                        1 /* newCursorPosition */);
             }
-
-            for (KeyEvent event : events) {
-                keysToSend.add(createKeyEvent(event.getKeyCode(), event.getAction()));
-            }
-
+            // TODO(b/422134565): Use right editor action to commit text instead key enter
             if (commit) {
-                keysToSend.add(createKeyEvent(KeyEvent.KEYCODE_ENTER, VirtualKeyEvent.ACTION_DOWN));
-                keysToSend.add(createKeyEvent(KeyEvent.KEYCODE_ENTER, VirtualKeyEvent.ACTION_UP));
+                ic.sendKeyEvent(new InputConnectionCommandHeader(0),
+                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+                ic.sendKeyEvent(new InputConnectionCommandHeader(0),
+                        new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER));
             }
-            performKeyStep(keysToSend, 0);
+        } catch (RemoteException e) {
+            Slog.e(TAG, "Unable to insert text through InputConnection", e);
         }
     }
 
@@ -646,22 +596,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mSwipeFuture = mScheduler.schedule(
                 () -> performSwipeStep(fromX, fromY, toX, toY, nextStep, stepCount),
                 TOUCH_EVENT_DELAY_MS, TimeUnit.MILLISECONDS);
-    }
-
-    private void performKeyStep(List<VirtualKeyEvent> keysToSend, int currStep) {
-        if (mVirtualKeyboard == null) {
-            return;
-        }
-        final int nextStep = currStep + 1;
-        mVirtualKeyboard.sendKeyEvent(keysToSend.get(currStep));
-        if (nextStep >= keysToSend.size()) {
-            mInsertTextFuture = null;
-            return;
-        }
-
-        mInsertTextFuture = mScheduler.schedule(
-                () -> performKeyStep(keysToSend, nextStep), KEY_EVENT_DELAY_MS,
-                TimeUnit.MILLISECONDS);
     }
 
     private void startSessionCloseGlobalTimeout() {
