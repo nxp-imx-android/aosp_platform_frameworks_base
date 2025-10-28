@@ -339,7 +339,7 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
     @GuardedBy("this")
     private void handleAgreeingTelephonySuggestion(@NonNull String newZoneId) {
         mCurrentFusedSignals.update(ORIGIN_TELEPHONY, List.of(newZoneId));
-        mCurrentFusedSignals.setQualityForOrigin(ORIGIN_TELEPHONY, /* quality= */ 100);
+        mCurrentFusedSignals.setQualityForOrigin(ORIGIN_TELEPHONY, QUALITY_HIGH);
         setLocationOnlyTzDetection(false);
     }
 
