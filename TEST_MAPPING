@@ -63,20 +63,23 @@
       "name": "CtsStrictJavaPackagesTestCases"
     }
   ],
-  "ravenwood-presubmit": [
+  // TODO(b/406842774) Change it to ravenwood-presubmit
+  "ravenwood-postsubmit": [
     {
-      "name": "CtsUtilTestCasesRavenwood",
-      "host": true,
-      "file_patterns": [
-        "[Rr]avenwood"
-      ]
+      "name": "FrameworksCoreSystemPropertiesTestsRavenwood",
+      "host": true
     },
     {
-      "name": "RavenwoodBivalentTest",
-      "host": true,
-      "file_patterns": [
-        "[Rr]avenwood"
-      ]
+      "name": "FrameworksCoreTestsRavenwood",
+      "host": true
+    },
+    {
+      "name": "FrameworksUtilTestsRavenwood",
+      "host": true
+    },
+    {
+      "name": "InternalTestsRavenwood",
+      "host": true
     }
   ],
   "postsubmit-managedprofile-stress": [
