@@ -48739,6 +48739,7 @@ package android.text {
     field public static final int TYPE_TEXT_FLAG_CAP_SENTENCES = 16384; // 0x4000
     field public static final int TYPE_TEXT_FLAG_CAP_WORDS = 8192; // 0x2000
     field public static final int TYPE_TEXT_FLAG_ENABLE_TEXT_CONVERSION_SUGGESTIONS = 1048576; // 0x100000
+    field @FlaggedApi("android.view.accessibility.a11y_text_change_types_api") public static final int TYPE_TEXT_FLAG_ENABLE_TEXT_SUGGESTION_SELECTED = 2097152; // 0x200000
     field public static final int TYPE_TEXT_FLAG_IME_MULTI_LINE = 262144; // 0x40000
     field public static final int TYPE_TEXT_FLAG_MULTI_LINE = 131072; // 0x20000
     field public static final int TYPE_TEXT_FLAG_NO_SUGGESTIONS = 524288; // 0x80000
@@ -57923,6 +57924,7 @@ package android.view.inputmethod {
     method public int describeContents();
     method @NonNull public android.os.PersistableBundle getExtras();
     method @NonNull public java.util.List<java.lang.String> getTextConversionSuggestions();
+    method @FlaggedApi("android.view.accessibility.a11y_text_change_types_api") public boolean isTextSuggestionSelected();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.view.inputmethod.TextAttribute> CREATOR;
   }
@@ -57932,6 +57934,7 @@ package android.view.inputmethod {
     method @NonNull public android.view.inputmethod.TextAttribute build();
     method @NonNull public android.view.inputmethod.TextAttribute.Builder setExtras(@NonNull android.os.PersistableBundle);
     method @NonNull public android.view.inputmethod.TextAttribute.Builder setTextConversionSuggestions(@NonNull java.util.List<java.lang.String>);
+    method @FlaggedApi("android.view.accessibility.a11y_text_change_types_api") @NonNull public android.view.inputmethod.TextAttribute.Builder setTextSuggestionSelected(boolean);
   }
 
   public final class TextBoundsInfo implements android.os.Parcelable {
