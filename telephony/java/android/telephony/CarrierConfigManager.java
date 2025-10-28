@@ -11083,6 +11083,95 @@ public class CarrierConfigManager {
             "opp_auto_data_switch_policy_int";
 
     /**
+     * In the context of auto data switch between primary and opportunistic networks, defines the
+     * duration for which a subscription's availability must be stable before switching, in
+     * milliseconds. A value of 0 means the switch should occur immediately. A negative value
+     * disables availability-based switching for opportunistic networks.
+     *
+     * <p>When overridden, this value supersedes the value from the device configuration {@code
+     * auto_data_switch_availability_stability_time_threshold_millis}.
+     *
+     * <p>This value does not impact auto data switching between primary networks.
+     *
+     * <p>The default value is 10000.
+     *
+     * @hide
+     */
+    public static final String KEY_OPP_AUTO_DATA_SWITCH_AVAILABILITY_STABILITY_MILLIS_LONG =
+            "opp_auto_data_switch_availability_stability_millis_long";
+
+    /**
+     * In the context of auto data switch between primary and opportunistic networks, defines the
+     * duration for which a subscription must maintain a network performance advantage (i.e., the
+     * score exceeds the value from {@code auto_data_switch_score_tolerance}) before switching, in
+     * milliseconds. A value of 0 means the switch should occur immediately. A negative value
+     * disables performance-based switching for opportunistic networks.
+     *
+     * <p>When overridden, this value supersedes the value from device configuration {@code
+     * auto_data_switch_performance_stability_time_threshold_millis}.
+     *
+     * <p>This value does not impact auto data switching between primary networks.
+     *
+     * <p>The default value is 120000.
+     *
+     * @hide
+     */
+    public static final String KEY_OPP_AUTO_DATA_SWITCH_PERFORMANCE_STABILITY_MILLIS_LONG =
+            "opp_auto_data_switch_performance_stability_millis_long";
+
+    /**
+     * In the context of auto data switch between primary and opportunistic networks, defines the
+     * duration to wait before switching data back to the default SIM when both SIMs are out of
+     * service, in milliseconds. A value of 0 means the switch should occur immediately. A negative
+     * value indicates the threshold defined by {@link
+     * #KEY_OPP_AUTO_DATA_SWITCH_AVAILABILITY_STABILITY_MILLIS_LONG} will be used instead.
+     *
+     * <p>When overridden, this value supersedes the value from device configuration {@code
+     * auto_data_switch_availability_switchback_stability_time_threshold_millis}.
+     *
+     * <p>This value does not impact auto data switching between primary networks.
+     *
+     * <p>The default value is 150000.
+     *
+     * @hide
+     */
+    public static final String KEY_OPP_AUTO_DATA_SWITCH_AVAILABILITY_SWITCHBACK_MILLIS_LONG =
+            "opp_auto_data_switch_availability_switchback_millis_long";
+
+    /**
+     * In the context of auto data switch between primary and opportunistic networks, indicates
+     * whether a ping test is required on the target data SIM before the device automatically
+     * switches to it.
+     *
+     * <p>When overridden, this value supersedes the value from the device configuration
+     * {@code auto_data_switch_ping_test_before_switch}.
+     *
+     * <p>This value does not impact auto data switching between primary networks.
+     *
+     * <p>The default value is true.
+     *
+     * @hide
+     */
+    public static final String KEY_OPP_AUTO_DATA_SWITCH_PING_BEFORE_SWITCH_BOOL =
+            "opp_auto_data_switch_ping_before_switch_bool";
+
+    /**
+     * In the context of auto data switch between primary and opportunistic networks, defines the
+     * maximum number of retries when a validation for a switch has failed.
+     *
+     * <p>When overridden, this value supersedes the value from device configuration {@code
+     * auto_data_switch_validation_max_retry}.
+     *
+     * <p>This value does not impact auto data switching between primary networks.
+     *
+     * <p>The default value is 7.
+     *
+     * @hide
+     */
+    public static final String KEY_OPP_AUTO_DATA_SWITCH_VALIDATION_MAX_RETRIES_INT =
+            "opp_auto_data_switch_validation_max_retries_int";
+
+    /**
      * Battery level threshold (in percentage) to trigger an audio alert.
      * <p>
      * This flag defines the minimum battery percentage at which an audio alert will be played.
@@ -11974,6 +12063,15 @@ public class CarrierConfigManager {
             sDefaults.putBoolean(KEY_SHOW_AVOID_BAD_WIFI_TOGGLE_BOOL, false);
         }
         sDefaults.putInt(KEY_OPP_AUTO_DATA_SWITCH_POLICY_INT, 0);
+        sDefaults.putLong(
+                KEY_OPP_AUTO_DATA_SWITCH_AVAILABILITY_STABILITY_MILLIS_LONG, 10000);
+        sDefaults.putLong(
+                KEY_OPP_AUTO_DATA_SWITCH_PERFORMANCE_STABILITY_MILLIS_LONG, 120000);
+        sDefaults.putLong(
+                KEY_OPP_AUTO_DATA_SWITCH_AVAILABILITY_SWITCHBACK_MILLIS_LONG,
+                150000);
+        sDefaults.putBoolean(KEY_OPP_AUTO_DATA_SWITCH_PING_BEFORE_SWITCH_BOOL, true);
+        sDefaults.putInt(KEY_OPP_AUTO_DATA_SWITCH_VALIDATION_MAX_RETRIES_INT, 7);
 
         // Default value for low battery alert.
         sDefaults.putInt(KEY_LOW_BATTERY_ALERT_THRESHOLD_INT,
@@ -12541,10 +12639,10 @@ public class CarrierConfigManager {
     }
 
     /**
-     * Get subset of specified carrier configuration if available or empty bundle, without throwing
-     * {@link RuntimeException} to caller.
-     *
-     * <p>This is a system internally used only utility to reduce the repetitive logic.
+     * Retrieves a subset of carrier configuration values for a specific subscription.
+     * <p>
+     * This is a utility method for internal use that simplifies retrieving specific carrier
+     * configurations and handles exceptions by returning an empty bundle.
      *
      * <p>Requires Permission:
      * {@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE}, or the calling app
@@ -12554,7 +12652,8 @@ public class CarrierConfigManager {
      * @param context Context used to get the CarrierConfigManager service.
      * @param subId The subscription ID to get the config from.
      * @param keys The config keys the client is interested in.
-     * @return Config bundle with key/value for the specified keys or empty bundle when failed
+     * @return A {@link PersistableBundle} containing the requested key-value pairs, or an empty
+     *         bundle if the configuration is unavailable or an error occurs.
      * @hide
      */
     @RequiresPermission(anyOf = {
