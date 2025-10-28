@@ -1628,7 +1628,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                 | InvalidAlgorithmParameterException | IllegalBlockSizeException
                 | BadPaddingException | CertificateException | IOException e) {
             if (e instanceof FileNotFoundException) {
-                Slog.i(TAG, "Child profile key not found");
+                Slog.e(TAG, "Child profile key not found", e);
             } else {
                 Slog.e(TAG, "Failed to decrypt child profile key", e);
             }
@@ -1992,7 +1992,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                         profilePassword = getDecryptedPasswordForUnifiedProfile(userId);
                         savedCredential = profilePassword;
                     } catch (FileNotFoundException e) {
-                        Slog.i(TAG, "Child profile key not found");
+                        Slog.e(TAG, "Child profile key not found", e);
                     } catch (UnrecoverableKeyException
                             | InvalidKeyException
                             | KeyStoreException
@@ -3257,7 +3257,11 @@ public class LockSettingsService extends ILockSettings.Stub {
             mSoftwareRateLimiter.clearLskfState(new LskfIdentifier(userId, oldProtectorId));
         }
         mSpManager.destroyLskfBasedProtector(oldProtectorId, userId);
-        Slogf.i(TAG, "Successfully changed lockscreen credential of user %d", userId);
+        Slogf.i(
+                TAG,
+                "Successfully changed lockscreen credential of user %d to type %s",
+                userId,
+                LockPatternUtils.credentialTypeToString(credential.getType()));
         return newProtectorId;
     }
 
