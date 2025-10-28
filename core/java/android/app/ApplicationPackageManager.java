@@ -114,8 +114,14 @@ import android.os.storage.VolumeInfo;
 import android.permission.PermissionControllerManager;
 import android.permission.PermissionManager;
 import android.provider.Settings;
+import android.ravenwood.annotation.RavenwoodIgnore;
+import android.ravenwood.annotation.RavenwoodKeep;
 import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodKeepStaticInitializer;
+import android.ravenwood.annotation.RavenwoodRedirect;
+import android.ravenwood.annotation.RavenwoodRedirectionClass;
 import android.ravenwood.annotation.RavenwoodReplace;
+import android.ravenwood.annotation.RavenwoodSupported.RavenwoodProvidingImplementation;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.OsConstants;
@@ -163,6 +169,9 @@ import java.util.function.Function;
 
 /** @hide */
 @RavenwoodKeepPartialClass
+@RavenwoodKeepStaticInitializer
+@RavenwoodProvidingImplementation(target = PackageManager.class)
+@RavenwoodRedirectionClass(value = "ApplicationPackageManager_ravenwood")
 public class ApplicationPackageManager extends PackageManager {
     private static final String TAG = "ApplicationPackageManager";
     private static final boolean DEBUG_ICONS = false;
@@ -791,6 +800,7 @@ public class ApplicationPackageManager extends PackageManager {
     }
 
     @Override
+    @RavenwoodKeep
     public boolean hasSystemFeature(String name) {
         return hasSystemFeature(name, 0);
     }
@@ -826,6 +836,7 @@ public class ApplicationPackageManager extends PackageManager {
             };
 
     @Override
+    @RavenwoodRedirect
     public boolean hasSystemFeature(String name, int version) {
         // We check for system features in the following order:
         //    * Build time-defined system features (constant, very efficient)
@@ -1840,6 +1851,7 @@ public class ApplicationPackageManager extends PackageManager {
     }
 
     @Override
+    @RavenwoodReplace
     public InstrumentationInfo getInstrumentationInfo(
         ComponentName className, int flags)
             throws NameNotFoundException {
@@ -1854,6 +1866,11 @@ public class ApplicationPackageManager extends PackageManager {
         }
 
         throw new NameNotFoundException(className.toString());
+    }
+
+    private InstrumentationInfo getInstrumentationInfo$ravenwood(
+            ComponentName className, int flags) {
+        return new InstrumentationInfo();
     }
 
     @Override
@@ -2255,7 +2272,7 @@ public class ApplicationPackageManager extends PackageManager {
     }
 
     @UnsupportedAppUsage
-    @RavenwoodReplace(reason = "<cinit> crashes due to unsupported class PropertyInvalidatedCache")
+    @RavenwoodKeep
     static void configurationChanged() {
         synchronized (sSync) {
             sIconCache.clear();
@@ -2263,17 +2280,15 @@ public class ApplicationPackageManager extends PackageManager {
         }
     }
 
-    private static void configurationChanged$ravenwood() {
-        /* no-op */
-    }
-
     @UnsupportedAppUsage
+    @RavenwoodKeep
     protected ApplicationPackageManager(ContextImpl context, IPackageManager pm) {
         mContext = context;
         mPM = pm;
         mUseSystemFeaturesCache = isSystemFeaturesCacheAvailable();
     }
 
+    @RavenwoodIgnore
     private static boolean isSystemFeaturesCacheAvailable() {
         if (ActivityThread.isSystem() && !SystemFeaturesCache.hasInstance()) {
             // There are a handful of utility "system" processes that are neither system_server nor
