@@ -45,6 +45,8 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.scene.data.repository.Idle
+import com.android.systemui.scene.data.repository.Transition
+import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.data.repository.setTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
@@ -519,6 +521,55 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
                 loggingReason = "reason",
             )
             assertThat(currentOverlays).containsExactly(Overlays.QuickSettingsShade)
+            assertThat(statusBarState).isEqualTo(StatusBarState.SHADE)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun start_hydratesStatusBarState_duringTransitionFromLockscreenToGone() =
+        kosmos.runTest {
+            var statusBarState = underTest.state
+            val listener =
+                object : StatusBarStateController.StateListener {
+                    override fun onStateChanged(newState: Int) {
+                        statusBarState = newState
+                    }
+                }
+            underTest.addCallback(listener)
+
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val deviceUnlockStatus by collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus)
+
+            // initial state: device is locked, on Lockscreen
+            fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Password)
+            assertThat(deviceUnlockStatus!!.isUnlocked).isFalse()
+
+            sceneInteractor.changeScene(toScene = Scenes.Lockscreen, loggingReason = "reason")
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+
+            // Call start to begin hydrating based on the scene framework:
+            underTest.start()
+
+            assertThat(statusBarState).isEqualTo(StatusBarState.KEYGUARD)
+
+            // unlock device
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+            assertThat(deviceUnlockStatus!!.isUnlocked).isTrue()
+
+            // device begins transition from lockscreen to gone
+            setSceneTransition(Transition(from = Scenes.Lockscreen, to = Scenes.Gone))
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
+
+            // because we are still in transition, even though device is unlocked and current
+            // (destination) scene is Gone, status bar state should still be KEYGUARD until
+            // the transition finishes
+            assertThat(statusBarState).isEqualTo(StatusBarState.KEYGUARD)
+
+            // complete transition
+            setSceneTransition(Idle(Scenes.Gone))
             assertThat(statusBarState).isEqualTo(StatusBarState.SHADE)
         }
 
