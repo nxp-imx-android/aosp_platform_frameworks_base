@@ -1665,6 +1665,15 @@
                 android:description="@string/permdesc_exemptFromAudioRecordRestrictions"
                 android:protectionLevel="signature|privileged|role" />
 
+    <!-- Allows sending dynamic instrumentation events.
+         <p>Protection level: signature
+         @hide
+         @SystemApi
+         @FlaggedApi(android.security.Flags.FLAG_DYNAMIC_INSTRUMENTATION_API)
+    -->
+    <permission android:name="android.permission.SEND_DYNAMIC_INSTRUMENTATION_EVENTS"
+        android:protectionLevel="signature" />
+
     <!-- Allows a calling app to continue a call which was started in another app.  An example is a
          video calling app that wants to continue a voice call on the user's mobile network.<p>
          When the handover of a call from one app to another takes place, there are two devices
