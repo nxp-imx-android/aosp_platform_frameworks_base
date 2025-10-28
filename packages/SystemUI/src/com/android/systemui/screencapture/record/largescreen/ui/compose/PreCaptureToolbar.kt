@@ -119,15 +119,20 @@ fun PreCaptureToolbar(
                     )
                 }
 
-                add(
-                    RadioButtonGroupItem(
-                        icon = icons?.region,
-                        isSelected = (selectedCaptureRegion == ScreenCaptureRegion.PARTIAL),
-                        onClick = { onCaptureRegionSelected(ScreenCaptureRegion.PARTIAL) },
-                        contentDescription = partialButtonContentDescription,
-                        hasTooltip = true,
+                if (
+                    selectedCaptureType == ScreenCaptureType.SCREENSHOT ||
+                        viewModel.regionRecordingSupported
+                ) {
+                    add(
+                        RadioButtonGroupItem(
+                            icon = icons?.region,
+                            isSelected = (selectedCaptureRegion == ScreenCaptureRegion.PARTIAL),
+                            onClick = { onCaptureRegionSelected(ScreenCaptureRegion.PARTIAL) },
+                            contentDescription = partialButtonContentDescription,
+                            hasTooltip = true,
+                        )
                     )
-                )
+                }
 
                 add(
                     RadioButtonGroupItem(

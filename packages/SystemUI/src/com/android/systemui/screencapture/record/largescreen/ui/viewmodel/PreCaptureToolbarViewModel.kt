@@ -62,6 +62,8 @@ constructor(
 
     val customSaveLocationSupported = featuresInteractor.customSaveLocationSupported
 
+    val regionRecordingSupported = featuresInteractor.regionRecordingSupported
+
     val customSaveLocationUriString: String by
         largeScreenCaptureParametersInteractor.customSaveLocationUriString.hydratedStateOf(
             initialValue = ""
