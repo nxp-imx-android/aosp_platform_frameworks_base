@@ -378,4 +378,12 @@ flag {
   bug: "270703654"
 }
 
+flag {
+  name: "modes_ui_transit"
+  namespace: "systemui"
+  description: "This flag controls DND UI: transit mode"
+  is_exported: true
+  bug: "450159513"
+}
+
 # End: Flags that have been cleaned up in code but need to remain for CTS
