@@ -38,4 +38,10 @@ interface SplitMultiDisplayProvider {
      * @param displayId The ID of the target display.
      */
     fun prepareMovingSplitScreenRoot(wct: WindowContainerTransaction?, displayId: Int)
+
+    /**
+     * Add the necessary {@Link WindowContainerTransaction} changes to move the split root from
+     * one display to the new one.
+     */
+    fun addMoveSplitPairToDisplayChanges(oldDisplayId: Int, destinationDisplayId: Int, wct: WindowContainerTransaction, toTop: Boolean)
 }

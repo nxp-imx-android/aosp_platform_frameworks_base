@@ -501,9 +501,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             DisplayDisconnectTransitionHandler(
                 transitions = transitions,
                 shellInit = shellInit,
+                splitScreenController = Optional.of(splitScreenController),
                 desktopTasksController = Optional.of(controller),
-                displayController = displayController,
-                rootTaskDisplayAreaOrganizer = rootTaskDisplayAreaOrganizer,
             )
 
         shellInit.init()

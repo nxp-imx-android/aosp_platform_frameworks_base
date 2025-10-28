@@ -1240,16 +1240,14 @@ public abstract class WMShellModule {
     @Provides
     static Optional<DisplayDisconnectTransitionHandler> provideDisplayDisconnectTransitionHandler(
             ShellInit shellInit, Transitions transitions,
-            Optional<DesktopTasksController> desktopTasksController,
-            DisplayController displayController,
-            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer) {
+            Optional<SplitScreenController> splitScreenOptional,
+            Optional<DesktopTasksController> desktopTasksController) {
         if (!DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
             return Optional.empty();
         } else {
             return Optional.of(
                     new DisplayDisconnectTransitionHandler(transitions, shellInit,
-                            desktopTasksController, displayController,
-                            rootTaskDisplayAreaOrganizer)
+                            splitScreenOptional, desktopTasksController)
             );
         }
     }

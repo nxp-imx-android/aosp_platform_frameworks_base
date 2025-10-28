@@ -2917,10 +2917,6 @@ class DesktopTasksController(
      * No-op if task is already on that display per [RunningTaskInfo.displayId].
      */
     private fun moveSplitPairToDisplay(task: RunningTaskInfo, displayId: Int) {
-        if (!splitScreenController.isTaskInSplitScreen(task.taskId)) {
-            return
-        }
-
         if (
             !ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue ||
                 !DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue
@@ -2928,24 +2924,25 @@ class DesktopTasksController(
             return
         }
 
+        if (!splitScreenController.isTaskInSplitScreen(task.taskId)) {
+            return
+        }
+
+        val wct = WindowContainerTransaction()
+        splitScreenController.multiDisplayProvider.addMoveSplitPairToDisplayChanges(
+            task.displayId,
+            displayId,
+            wct,
+            true, /* onTop */
+        )
+        if (wct.isEmpty) {
+            return
+        }
+
         val userId = task.userId
         val repository = userRepositories.getProfile(userId)
-        val wct = WindowContainerTransaction()
-        val displayAreaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)
-        if (displayAreaInfo == null) {
-            logW("moveSplitPairToDisplay: display not found")
-            return
-        }
-
         val activeDeskId = repository.getActiveDeskId(displayId)
         logV("moveSplitPairToDisplay: moving split root to displayId=%d", displayId)
-
-        val stageCoordinatorRootTaskToken =
-            splitScreenController.multiDisplayProvider.getDisplayRootForDisplayId(DEFAULT_DISPLAY)
-        if (stageCoordinatorRootTaskToken == null) {
-            return
-        }
-        wct.reparent(stageCoordinatorRootTaskToken, displayAreaInfo.token, true /* onTop */)
 
         val deactivationRunnable =
             if (activeDeskId != null) {
