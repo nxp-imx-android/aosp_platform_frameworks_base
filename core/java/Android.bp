@@ -24,6 +24,7 @@ filegroup {
         ":ranging_stack_mock_initializer",
         ":anomaly_detector_mock_initializer",
         ":npumanager_mock_initializer",
+        ":uprobestats_mock_initializer",
         ":systemfeatures-gen-srcs",
         ":framework-network-security-config-sources",
     ],
@@ -169,6 +170,43 @@ soong_config_module_type {
     properties: [
         "srcs",
     ],
+}
+
+// Mock to allow service registry for anomaly detector.
+// TODO(b/453094410): Remove this after RELEASE_UPROBESTATS_BRIDGE_SERVICE is ramped up to next.
+soong_config_module_type {
+    name: "uprobestats_mock_init",
+    module_type: "genrule",
+    config_namespace: "bootclasspath",
+    bool_variables: [
+        "release_uprobestats_bridge_service",
+    ],
+    properties: [
+        "cmd",
+        "out",
+        "srcs",
+    ],
+}
+
+// The actual UprobestatsFrameworkInitializer is present in
+// packages/modules/Uprobestats/framework.
+// Mock UprobestatsFrameworkInitializer does nothing and allows to successfully build
+// SystemServiceRegistry after registering for system service in SystemServiceRegistry both with
+// and without build flag RELEASE_UPROBESTATS_BRIDGE_SERVICE enabled.
+uprobestats_mock_init {
+    name: "uprobestats_mock_initializer",
+    soong_config_variables: {
+        release_uprobestats_bridge_service: {
+            cmd: "touch $(out)",
+            // Adding an empty file as out is mandatory.
+            out: ["android/service/uprobestats/empty_uprobestats.txt"],
+            conditions_default: {
+                srcs: ["android/service/uprobestats/UprobestatsFrameworkInitializer.java.mock"],
+                cmd: "mkdir -p android/service/uprobestats/; cp $(in) $(out);",
+                out: ["android/service/uprobestats/UprobestatsFrameworkInitializer.java"],
+            },
+        },
+    },
 }
 
 // Output the selected android/os/MessageQueue.java implementation
