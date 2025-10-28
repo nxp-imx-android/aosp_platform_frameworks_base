@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.notification.row;
 
 import static android.app.Flags.notificationsRedesignTemplates;
 import static android.app.Notification.EXTRA_BUILDER_APPLICATION_INFO;
-import static android.app.NotificationChannel.SYSTEM_RESERVED_IDS;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
 import static android.app.NotificationManager.IMPORTANCE_UNSPECIFIED;
@@ -445,8 +444,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
             intent.setClassName(activityInfo.packageName, activityInfo.name);
 
             intent.putExtra(NotificationAssistantService.EXTRA_NOTIFICATION_KEY, key);
-            if (ranking.getSummarization() != null ||
-                    SYSTEM_RESERVED_IDS.contains(ranking.getChannel().getId())) {
+            if (ranking.getSummarization() != null || ranking.getChannel().isBundleChannel()) {
                 intent.putExtra(NotificationAssistantService.EXTRA_NOTIFICATION_ADJUSTMENT,
                         ranking.getSummarization() != null
                         ? KEY_SUMMARIZATION
@@ -461,7 +459,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
             }
 
             // Check if it's a reserved system channel type
-            if (channel != null && SYSTEM_RESERVED_IDS.contains(channel.getId())) {
+            if (channel != null && channel.isBundleChannel()) {
                 keys.add(KEY_TYPE);
             }
 

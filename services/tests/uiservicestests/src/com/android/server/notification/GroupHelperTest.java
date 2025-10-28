@@ -3051,8 +3051,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getNotification().isGroupChild()
                     && record.getOriginalGroupKey().contains("testGrp")
-                    && NotificationChannel.SYSTEM_RESERVED_IDS.contains(
-                        record.getChannel().getId())) {
+                    && record.getChannel().isBundleChannel()) {
                 record.updateNotificationChannel(originalChannel);
                 mGroupHelper.onNotificationUnbundled(record, false);
             }
@@ -3145,8 +3144,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getNotification().isGroupChild()
                     && record.getOriginalGroupKey().contains("testGrp")
-                    && NotificationChannel.SYSTEM_RESERVED_IDS.contains(
-                    record.getChannel().getId())) {
+                    && record.getChannel().isBundleChannel()) {
                 record.updateNotificationChannel(originalChannel);
                 mGroupHelper.onNotificationUnbundled(record, false);
             }
@@ -3230,8 +3228,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             if (record.getNotification().isGroupSummary()) {
                 record.isCanceled = true;
             } else if (record.getOriginalGroupKey().contains("testGrp")
-                        && NotificationChannel.SYSTEM_RESERVED_IDS.contains(
-                        record.getChannel().getId())) {
+                        && record.getChannel().isBundleChannel()) {
                 record.setOverrideGroupKey(expectedGroupKey_social);
             }
         }
@@ -3252,8 +3249,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getNotification().isGroupChild()
                     && record.getOriginalGroupKey().contains("testGrp")
-                    && NotificationChannel.SYSTEM_RESERVED_IDS.contains(
-                        record.getChannel().getId())) {
+                    && record.getChannel().isBundleChannel()) {
                 record.updateNotificationChannel(originalChannel);
                 mGroupHelper.onNotificationUnbundled(record, true);
             }
@@ -3340,8 +3336,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         // Adjust group key for grouped notifications
         for (NotificationRecord record: notificationList) {
             if (record.getOriginalGroupKey().contains("testGrp")
-                    && NotificationChannel.SYSTEM_RESERVED_IDS.contains(
-                        record.getChannel().getId())) {
+                    && record.getChannel().isBundleChannel()) {
                 record.setOverrideGroupKey(expectedGroupKey_social);
             }
         }
@@ -3364,8 +3359,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getNotification().isGroupChild()
                     && record.getOriginalGroupKey().contains("testGrp")
-                    && NotificationChannel.SYSTEM_RESERVED_IDS.contains(
-                        record.getChannel().getId())) {
+                    && record.getChannel().isBundleChannel()) {
                 record.updateNotificationChannel(socialChannel);
             }
         }
@@ -3452,8 +3446,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         // Adjust group key
         for (NotificationRecord record: notificationList) {
             if (record.getOriginalGroupKey().contains("testGrp")
-                    && NotificationChannel.SYSTEM_RESERVED_IDS.contains(
-                        record.getChannel().getId())) {
+                    && record.getChannel().isBundleChannel()) {
                 record.setOverrideGroupKey(expectedGroupKey_social);
             }
         }
@@ -3480,8 +3473,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getNotification().isGroupChild()
                     && record.getOriginalGroupKey().contains("testGrp")
-                    && NotificationChannel.SYSTEM_RESERVED_IDS.contains(
-                        record.getChannel().getId())) {
+                    && record.getChannel().isBundleChannel()) {
                 record.updateNotificationChannel(socialChannel);
             }
         }
@@ -3567,8 +3559,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getNotification().isGroupChild()
                     && record.getOriginalGroupKey().contains("testGrp")
-                    && NotificationChannel.SYSTEM_RESERVED_IDS.contains(
-                    record.getChannel().getId())) {
+                    && record.getChannel().isBundleChannel()) {
                 record.updateNotificationChannel(socialChannel);
             }
         }

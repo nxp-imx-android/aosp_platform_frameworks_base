@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.notification.collection.coordinator;
 
+import static android.app.NotificationManager.IMPORTANCE_LOW;
+import static android.app.NotificationManager.IMPORTANCE_MIN;
 import static android.provider.Settings.Secure.SHOW_NOTIFICATION_SNOOZE;
 
 import static com.android.systemui.log.LogBufferHelperKt.logcatLogBuffer;
@@ -39,6 +41,8 @@ import static org.mockito.Mockito.when;
 
 import static java.util.Objects.requireNonNull;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.database.ContentObserver;
 import android.graphics.Bitmap;
 import android.os.Handler;
@@ -160,7 +164,10 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
                 mUserTracker,
                 mGroupMembershipManager
         );
-        mEntry = getNotificationEntryBuilder().setParent(ROOT_ENTRY).build();
+        mEntry = getNotificationEntryBuilder()
+                .setParent(ROOT_ENTRY)
+                .setChannel(new NotificationChannel("id", "Name", IMPORTANCE_LOW))
+                .build();
         mInflationError = new Exception(TEST_MESSAGE);
         mErrorManager = new NotifInflationErrorManager();
         when(mNotifSection.getSectioner()).thenReturn(mNotifSectioner);
@@ -228,6 +235,7 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
     @Test
     public void testMemorySizeExceeded_reinflatesStandardTemplate() {
         NotificationEntryBuilder eb = getNotificationEntryBuilder()
+                .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
                 .setParent(ROOT_ENTRY);
         eb.modifyNotification(mContext)
                 .setLargeIcon(Bitmap.createBitmap(20, 20, Bitmap.Config.ARGB_8888))
@@ -262,6 +270,7 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
     public void testMemorySizeExceeded_dontReinflateNotificationsWithoutCustomViews()
             throws RemoteException {
         NotificationEntryBuilder eb = getNotificationEntryBuilder()
+                .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
                 .setParent(ROOT_ENTRY);
         eb.modifyNotification(mContext)
                 .setLargeIcon(Bitmap.createBitmap(20, 20, Bitmap.Config.ARGB_8888))
@@ -289,10 +298,18 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
     @Test
     public void testPurgesAppIconProviderCache() {
         // GIVEN a notification list
-        NotificationEntry entry1 = getNotificationEntryBuilder().setPkg("1").build();
-        NotificationEntry entry2 = getNotificationEntryBuilder().setPkg("2").build();
-        NotificationEntry entry2bis = getNotificationEntryBuilder().setPkg("2").build();
-        NotificationEntry entry3 = getNotificationEntryBuilder().setPkg("3").build();
+        NotificationEntry entry1 = getNotificationEntryBuilder()
+                .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                .setPkg("1").build();
+        NotificationEntry entry2 = getNotificationEntryBuilder()
+                .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                .setPkg("2").build();
+        NotificationEntry entry2bis = getNotificationEntryBuilder()
+                .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                .setPkg("2").build();
+        NotificationEntry entry3 = getNotificationEntryBuilder()
+                .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                .setPkg("3").build();
 
         String groupKey1 = "group1";
         NotificationEntry summary =
@@ -301,9 +318,13 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
                         .setGroup(mContext, groupKey1)
                         .setGroupSummary(mContext, true)
                         .build();
-        NotificationEntry child1 = getNotificationEntryBuilder().setGroup(mContext, groupKey1)
+        NotificationEntry child1 = getNotificationEntryBuilder()
+                .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                .setGroup(mContext, groupKey1)
                 .setPkg(groupKey1).build();
-        NotificationEntry child2 = getNotificationEntryBuilder().setGroup(mContext, groupKey1)
+        NotificationEntry child2 = getNotificationEntryBuilder()
+                .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                .setGroup(mContext, groupKey1)
                 .setPkg(groupKey1).build();
         GroupEntry groupWithSummaryAndChildren = getGroupEntryBuilder().setKey(groupKey1)
                 .setSummary(summary).addChild(child1).addChild(child2).build();
@@ -312,6 +333,7 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
         NotificationEntry summary2 =
                 getNotificationEntryBuilder()
                         .setPkg(groupKey2)
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
                         .setGroup(mContext, groupKey2)
                         .setGroupSummary(mContext, true)
                         .build();
@@ -335,21 +357,34 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
     @Test
     public void testPurgesNotificationIconStyleProviderCache() {
         // GIVEN a notification list
-        NotificationEntry entry1 = getNotificationEntryBuilder().setPkg("1").build();
-        NotificationEntry entry2 = getNotificationEntryBuilder().setPkg("2").build();
-        NotificationEntry entry2bis = getNotificationEntryBuilder().setPkg("2").build();
-        NotificationEntry entry3 = getNotificationEntryBuilder().setPkg("3").build();
+        NotificationEntry entry1 = getNotificationEntryBuilder()
+                .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                .setPkg("1").build();
+        NotificationEntry entry2 = getNotificationEntryBuilder()
+                .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                .setPkg("2").build();
+        NotificationEntry entry2bis = getNotificationEntryBuilder()
+                .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                .setPkg("2").build();
+        NotificationEntry entry3 = getNotificationEntryBuilder()
+                .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                .setPkg("3").build();
 
         String groupKey1 = "group1";
         NotificationEntry summary =
                 getNotificationEntryBuilder()
                         .setPkg(groupKey1)
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
                         .setGroup(mContext, groupKey1)
                         .setGroupSummary(mContext, true)
                         .build();
-        NotificationEntry child1 = getNotificationEntryBuilder().setGroup(mContext, groupKey1)
+        NotificationEntry child1 = getNotificationEntryBuilder()
+                .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                .setGroup(mContext, groupKey1)
                 .setPkg(groupKey1).build();
-        NotificationEntry child2 = getNotificationEntryBuilder().setGroup(mContext, groupKey1)
+        NotificationEntry child2 = getNotificationEntryBuilder()
+                .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                .setGroup(mContext, groupKey1)
                 .setPkg(groupKey1).build();
         GroupEntry groupWithSummaryAndChildren = getGroupEntryBuilder().setKey(groupKey1)
                 .setSummary(summary).addChild(child1).addChild(child2).build();
@@ -358,6 +393,7 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
         NotificationEntry summary2 =
                 getNotificationEntryBuilder()
                         .setPkg(groupKey2)
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
                         .setGroup(mContext, groupKey2)
                         .setGroupSummary(mContext, true)
                         .build();
@@ -545,12 +581,14 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
         int id = 0;
         NotificationEntry summary = getNotificationEntryBuilder()
                 .setOverrideGroupKey(TEST_GROUP_KEY)
+                .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
                 .setId(id++)
                 .build();
         List<NotificationEntry> children = new ArrayList<>();
         for (int i = 0; i < TEST_CHILD_BIND_CUTOFF + 1; i++) {
             NotificationEntry child = getNotificationEntryBuilder()
                     .setOverrideGroupKey(TEST_GROUP_KEY)
+                    .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
                     .setId(id++)
                     .build();
             children.add(child);
@@ -588,9 +626,15 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
         // GIVEN a newly-posted group with a summary and two children
         final GroupEntry group = new GroupEntryBuilder()
                 .setCreationTime(400)
-                .setSummary(getNotificationEntryBuilder().setId(1).build())
-                .addChild(getNotificationEntryBuilder().setId(2).build())
-                .addChild(getNotificationEntryBuilder().setId(3).build())
+                .setSummary(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(1).build())
+                .addChild(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(2).build())
+                .addChild(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(3).build())
                 .build();
         fireAddEvents(List.of(group));
         final NotificationEntry child0 = group.getChildren().get(0);
@@ -608,9 +652,15 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
         // GIVEN a newly-posted group with a summary and two children
         final GroupEntry group = new GroupEntryBuilder()
                 .setCreationTime(400)
-                .setSummary(getNotificationEntryBuilder().setId(1).build())
-                .addChild(getNotificationEntryBuilder().setId(2).build())
-                .addChild(getNotificationEntryBuilder().setId(3).build())
+                .setSummary(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(1).build())
+                .addChild(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(2).build())
+                .addChild(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(3).build())
                 .build();
         fireAddEvents(List.of(group));
         final NotificationEntry summary = group.getSummary();
@@ -633,9 +683,15 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
         // GIVEN a newly-posted group with a summary and two children
         final GroupEntry group = new GroupEntryBuilder()
                 .setCreationTime(400)
-                .setSummary(getNotificationEntryBuilder().setId(1).build())
-                .addChild(getNotificationEntryBuilder().setId(2).build())
-                .addChild(getNotificationEntryBuilder().setId(3).build())
+                .setSummary(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(1).build())
+                .addChild(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(2).build())
+                .addChild(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(3).build())
                 .build();
         fireAddEvents(List.of(group));
         final NotificationEntry child0 = group.getChildren().get(0);
@@ -666,9 +722,15 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
         final GroupEntry group = new GroupEntryBuilder()
                 .setKey(groupKey)
                 .setCreationTime(400)
-                .setSummary(getNotificationEntryBuilder().setId(summaryId).setImportance(1).build())
-                .addChild(getNotificationEntryBuilder().setId(2).build())
-                .addChild(getNotificationEntryBuilder().setId(3).build())
+                .setSummary(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_MIN))
+                        .setId(summaryId).build())
+                .addChild(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(2).build())
+                .addChild(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(3).build())
                 .build();
         fireAddEvents(List.of(group));
         final NotificationEntry summary = group.getSummary();
@@ -697,9 +759,15 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
         // GIVEN a newly-posted group with a summary and two children
         final GroupEntry group = new GroupEntryBuilder()
                 .setCreationTime(400)
-                .setSummary(getNotificationEntryBuilder().setId(1).build())
-                .addChild(getNotificationEntryBuilder().setId(2).build())
-                .addChild(getNotificationEntryBuilder().setId(3).build())
+                .setSummary(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(1).build())
+                .addChild(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(2).build())
+                .addChild(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(3).build())
                 .build();
         fireAddEvents(List.of(group));
         final NotificationEntry summary = group.getSummary();
@@ -731,9 +799,15 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
         // GIVEN a newly-posted group with a summary and two children
         final GroupEntry group = new GroupEntryBuilder()
                 .setCreationTime(400)
-                .setSummary(getNotificationEntryBuilder().setId(1).build())
-                .addChild(getNotificationEntryBuilder().setId(2).build())
-                .addChild(getNotificationEntryBuilder().setId(3).build())
+                .setSummary(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(1).build())
+                .addChild(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(2).build())
+                .addChild(getNotificationEntryBuilder()
+                        .setChannel(new NotificationChannel("id", "name", IMPORTANCE_LOW))
+                        .setId(3).build())
                 .build();
         fireAddEvents(List.of(group));
         final NotificationEntry child0 = group.getChildren().get(0);

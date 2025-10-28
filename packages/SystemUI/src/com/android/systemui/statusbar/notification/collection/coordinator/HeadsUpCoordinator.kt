@@ -17,7 +17,6 @@ package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.app.Notification
 import android.app.Notification.GROUP_ALERT_SUMMARY
-import android.app.NotificationChannel.SYSTEM_RESERVED_IDS
 import android.util.ArrayMap
 import android.util.ArraySet
 import com.android.internal.annotations.VisibleForTesting
@@ -413,7 +412,7 @@ constructor(
         if (entry.channel == null || entry.channel.id == null) {
             return false
         }
-        return entry.channel.id in SYSTEM_RESERVED_IDS
+        return entry.isBundled
     }
 
     /**
@@ -647,9 +646,7 @@ constructor(
                 //  removing from HeadsUpManager and don't need to deal with re-entrant behavior
                 //  between HeadsUpCoordinator, HeadsUpManager, and VisualStabilityManager.
                 if (
-                    posted?.shouldHeadsUpEver == false &&
-                        !posted.isHeadsUpEntry &&
-                        posted.isBinding
+                    posted?.shouldHeadsUpEver == false && !posted.isHeadsUpEntry && posted.isBinding
                 ) {
                     // Don't let the bind finish
                     cancelHeadsUpBind(posted.entry)

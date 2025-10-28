@@ -446,6 +446,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         assertEquals(expected.getParentChannelId(), actual.getParentChannelId());
         assertEquals(expected.getConversationId(), actual.getConversationId());
         assertEquals(expected.isDemoted(), actual.isDemoted());
+        assertEquals(false, actual.isBundleChannel());
     }
 
     private void compareChannelsParentChild(NotificationChannel parent,
@@ -628,6 +629,14 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         channel2.setConversationId("id1", "conversation");
         channel2.setDemoted(true);
 
+        NotificationChannel dynamicBundle =
+                new NotificationChannel("dynamic", "dynamic", IMPORTANCE_LOW);
+        if (android.app.Flags.nmContextualDisplay()) {
+            dynamicBundle.setIsBundleChannel(true);
+            assertTrue(mHelper.createNotificationChannel(PKG_P, UID_P, dynamicBundle, false, false,
+                    1000, true));
+        }
+
         mHelper.createNotificationChannelGroup(PKG_N_MR1, UID_N_MR1, ncg, true,
                 UID_N_MR1, false);
         mHelper.createNotificationChannelGroup(PKG_N_MR1, UID_N_MR1, ncg2, true,
@@ -668,6 +677,16 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 false)).isEqualTo(updateNews);
         assertThat(mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, updateNews.getId(),
                 false).getImportance()).isEqualTo(IMPORTANCE_LOW);
+
+        if (android.app.Flags.nmContextualDisplay()) {
+            assertThat(mXmlHelper.getNotificationChannel(PKG_P, UID_P, dynamicBundle.getId(),
+                    false).getImportance()).isEqualTo(IMPORTANCE_LOW);
+            assertThat(mXmlHelper.getNotificationChannel(PKG_P, UID_P, dynamicBundle.getId(),
+                    false).isBundleChannel()).isTrue();
+
+            assertThat(mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, updateNews.getId(),
+                    false).isBundleChannel()).isTrue();
+        }
 
         List<NotificationChannelGroup> actualGroups = mXmlHelper.getNotificationChannelGroups(
                 PKG_N_MR1, UID_N_MR1,

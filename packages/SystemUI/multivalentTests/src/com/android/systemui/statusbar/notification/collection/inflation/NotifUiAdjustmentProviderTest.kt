@@ -76,7 +76,8 @@ class NotifUiAdjustmentProviderTest : SysuiTestCase() {
 
     private val section = NotifSection(mock(), 0)
     private val entry =
-        NotificationEntryBuilder().setSection(section).setParent(GroupEntry.ROOT_ENTRY).build()
+        NotificationEntryBuilder().setSection(section).setParent(GroupEntry.ROOT_ENTRY).setChannel(
+            NotificationChannel("id", "name", IMPORTANCE_LOW)).build()
 
     private lateinit var contentObserver: ContentObserver
 
