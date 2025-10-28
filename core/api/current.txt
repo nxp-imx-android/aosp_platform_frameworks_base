@@ -17153,6 +17153,8 @@ package android.graphics {
     method @NonNull @WorkerThread public static android.graphics.drawable.Drawable decodeDrawable(@NonNull android.graphics.ImageDecoder.Source) throws java.io.IOException;
     method public int getAllocator();
     method @Nullable public android.graphics.Rect getCrop();
+    method @FlaggedApi("com.android.graphics.hwui.flags.image_decoder_default_listener") @Nullable public static android.graphics.ImageDecoder.OnHeaderDecodedListener getDefaultProcessListener();
+    method @FlaggedApi("com.android.graphics.hwui.flags.image_decoder_default_listener") @Nullable public static android.graphics.ImageDecoder.OnHeaderDecodedListener getDefaultThreadListener();
     method public int getMemorySizePolicy();
     method @Nullable public android.graphics.ImageDecoder.OnPartialImageListener getOnPartialImageListener();
     method @Nullable public android.graphics.PostProcessor getPostProcessor();
@@ -17163,6 +17165,8 @@ package android.graphics {
     method public void setAllocator(int);
     method public void setCrop(@Nullable android.graphics.Rect);
     method public void setDecodeAsAlphaMaskEnabled(boolean);
+    method @FlaggedApi("com.android.graphics.hwui.flags.image_decoder_default_listener") public static void setDefaultProcessListener(@Nullable android.graphics.ImageDecoder.OnHeaderDecodedListener);
+    method @FlaggedApi("com.android.graphics.hwui.flags.image_decoder_default_listener") public static void setDefaultThreadListener(@Nullable android.graphics.ImageDecoder.OnHeaderDecodedListener);
     method public void setMemorySizePolicy(int);
     method public void setMutableRequired(boolean);
     method public void setOnPartialImageListener(@Nullable android.graphics.ImageDecoder.OnPartialImageListener);
