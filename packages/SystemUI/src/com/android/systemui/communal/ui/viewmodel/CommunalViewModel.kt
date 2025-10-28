@@ -276,7 +276,7 @@ constructor(
 
     private val isUiBlurredByShade =
         if (Flags.notificationShadeBlur()) {
-            shadeInteractor.anyExpansion.map { it > 0 }
+            shadeInteractor.anyExpansion.map { it > 0 }.distinctUntilChanged()
         } else {
             flowOf(false)
         }
