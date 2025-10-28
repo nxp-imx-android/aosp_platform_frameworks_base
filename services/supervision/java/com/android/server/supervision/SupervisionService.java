@@ -54,7 +54,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ResolveInfo;
@@ -426,50 +425,9 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
         for (String packageName : supervisionPackages) {
             intent.setPackage(packageName);
-            List<ResolveInfo> resolvers =
-                    packageManager.queryIntentActivities(
-                            intent,
-                            PackageManager.MATCH_DISABLED_COMPONENTS
-                                    | PackageManager.MATCH_DEFAULT_ONLY);
-
-            for (ResolveInfo resolveInfo : resolvers) {
-                ActivityInfo activityInfo = resolveInfo.activityInfo;
-                ComponentName componentName =
-                        new ComponentName(activityInfo.packageName, activityInfo.name);
-                // Enable any approval activities that may be currently disabled to ensure that
-                // they can be launched.
-                if (!activityInfo.enabled) {
-                    Slogf.d(
-                            SupervisionLog.TAG,
-                            "Component "
-                                    + componentName
-                                    + " for user "
-                                    + userId
-                                    + " is disabled. Attempting to enable.");
-                    try {
-                        packageManager.setComponentEnabledSetting(
-                                componentName,
-                                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                                PackageManager.DONT_KILL_APP);
-                        Slogf.d(
-                                SupervisionLog.TAG,
-                                "Successfully enabled component "
-                                        + componentName
-                                        + " for user "
-                                        + userId);
-                    } catch (SecurityException se) {
-                        Slogf.d(
-                                SupervisionLog.TAG,
-                                "Lacking permissions to enable component "
-                                        + componentName
-                                        + " for user "
-                                        + userId,
-                                se);
-                        continue;
-                    }
-                }
-                availableMethods.add(resolveInfo);
-            }
+            List<ResolveInfo> resolveInfo =
+                    packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+            availableMethods.addAll(resolveInfo);
         }
 
         // Sort alphabetically by label loaded using the user-specific package manager
