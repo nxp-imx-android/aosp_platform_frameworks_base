@@ -258,16 +258,6 @@ flag {
 }
 
 flag {
-    name: "computer_control_config_change_override"
-    namespace: "virtual_devices"
-    description: "Overrides configuration changes for display moves from/to ComputerControl VirtualDisplays"
-    bug: "437848392"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "virtual_camera_stable_stream_id"
     namespace: "virtual_devices"
     description: "Assign the index at which a stream has been added to the virtual camera config as its id."
