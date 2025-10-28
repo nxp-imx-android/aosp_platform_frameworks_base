@@ -167,7 +167,8 @@ class LinkCommand : public Command {
     AddOptionalSwitch(
         "--enable-sparse-encoding",
         "Enables encoding sparse entries using a binary search tree.\n"
-        "This decreases APK size at the cost of resource retrieval performance.\n"
+        "This leads to a reduction in APK size, memory usage, and startup latency, and a small "
+        "increase in individual resource lookup time after startup.\n"
         "Only applies sparse encoding if minSdk of the APK is >= 32",
         &options_.use_sparse_encoding);
     AddOptionalSwitch("--enable-compact-entries",
