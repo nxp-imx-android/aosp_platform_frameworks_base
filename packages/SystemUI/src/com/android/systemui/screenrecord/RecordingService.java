@@ -38,14 +38,12 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserHandle;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.Display;
 import android.widget.Toast;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.logging.UiEventLogger;
-import com.android.systemui.Flags;
 import com.android.systemui.dagger.qualifiers.LongRunning;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget;
@@ -100,8 +98,6 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
     protected final KeyguardDismissUtil mKeyguardDismissUtil;
     private final Handler mMainHandler;
     private ScreenRecordingAudioSource mAudioSource = ScreenRecordingAudioSource.NONE;
-    private boolean mShowTaps;
-    private boolean mOriginalShowTaps;
     private ScreenMediaRecorder mRecorder;
     private final ScreenRecordingStartTimeStore mScreenRecordingStartTimeStore;
     private final Executor mLongExecutor;
@@ -202,21 +198,14 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
                 mAudioSource = ScreenRecordingAudioSource
                         .values()[intent.getIntExtra(EXTRA_AUDIO_SOURCE, 0)];
                 Log.d(getTag(), "recording with audio source " + mAudioSource);
-                mShowTaps = intent.getBooleanExtra(EXTRA_SHOW_TAPS, false);
+                boolean showTaps = intent.getBooleanExtra(EXTRA_SHOW_TAPS, false);
                 MediaProjectionCaptureTarget captureTarget =
                         intent.getParcelableExtra(EXTRA_CAPTURE_TARGET,
                                 MediaProjectionCaptureTarget.class);
 
-                mOriginalShowTaps = Settings.System.getInt(
-                        getApplicationContext().getContentResolver(),
-                        Settings.System.SHOW_TOUCHES, 0) != 0;
                 int displayId = intent.getIntExtra(EXTRA_DISPLAY_ID, Display.DEFAULT_DISPLAY);
 
-                if (Flags.restoreShowTapsSetting()) {
-                    mRecordingPreferenceRepository.updateShowTaps(mShowTaps);
-                } else {
-                    setTapsVisible(mShowTaps);
-                }
+                mRecordingPreferenceRepository.updateShowTaps(showTaps);
 
                 mRecorder = new ScreenMediaRecorder(
                         mUserContextTracker.getUserContext(),
@@ -507,11 +496,7 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
         }
         UserHandle currentUser = new UserHandle(userId);
         Log.d(getTag(), "notifying for user " + userId);
-        if (Flags.restoreShowTapsSetting()) {
-            mRecordingPreferenceRepository.maybeRestoreShowTapsSetting();
-        } else {
-            setTapsVisible(mOriginalShowTaps);
-        }
+        mRecordingPreferenceRepository.maybeRestoreShowTapsSetting();
         try {
             if (getRecorder() != null) {
                 getRecorder().end(stopReason);
@@ -569,11 +554,6 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
             UserHandle currentUser) {
         mNotificationManager.notifyAsUser(null, mNotificationId,
                 createSaveNotification(savedRecording), currentUser);
-    }
-
-    private void setTapsVisible(boolean turnOn) {
-        int value = turnOn ? 1 : 0;
-        Settings.System.putInt(getContentResolver(), Settings.System.SHOW_TOUCHES, value);
     }
 
     protected String getTag() {

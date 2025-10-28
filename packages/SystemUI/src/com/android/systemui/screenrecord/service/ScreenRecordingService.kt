@@ -24,11 +24,9 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.Process
-import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.StringRes
-import com.android.systemui.Flags
 import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget
 import com.android.systemui.res.R
 import com.android.systemui.screenrecord.RecordingServiceStrings
@@ -125,11 +123,7 @@ protected constructor(
     override fun onBind(intent: Intent): IBinder = binder
 
     private fun RecordingContext.startRecording() {
-        if (Flags.restoreShowTapsSetting()) {
-            screenRecordingPreferenceRepository.updateShowTaps(shouldShowTaps)
-        } else {
-            setShouldShowTouches(shouldShowTaps)
-        }
+        screenRecordingPreferenceRepository.updateShowTaps(shouldShowTaps)
         try {
             Log.d(tag, "Starting screen recording user=$userId $this")
             recorder.start()
@@ -138,11 +132,7 @@ protected constructor(
                 audioSource = audioSource,
             )
         } catch (e: Exception) {
-            if (Flags.restoreShowTapsSetting()) {
-                screenRecordingPreferenceRepository.maybeRestoreShowTapsSetting()
-            } else {
-                setShouldShowTouches(originalShouldShowTouches)
-            }
+            screenRecordingPreferenceRepository.maybeRestoreShowTapsSetting()
             Log.e(tag, "Error starting screen recording", e)
             notificationInteractor.notifyErrorStarting(notificationId)
             showToast(R.string.screenrecord_start_error)
@@ -178,11 +168,7 @@ protected constructor(
         try {
             Log.d(tag, "Stopping screen recording reason=$reason")
             recordingContext = null
-            if (Flags.restoreShowTapsSetting()) {
-                screenRecordingPreferenceRepository.maybeRestoreShowTapsSetting()
-            } else {
-                setShouldShowTouches(originalShouldShowTouches)
-            }
+            screenRecordingPreferenceRepository.maybeRestoreShowTapsSetting()
             recorder.end(reason)
             coroutineScope.launch { saveRecording() }
         } catch (e: Exception) {
@@ -193,13 +179,6 @@ protected constructor(
             stopSelf() // only stop if there is an error. Otherwise leave it to saveRecording
         }
     }
-
-    private fun setShouldShowTouches(isOn: Boolean) {
-        Settings.System.putInt(contentResolver, Settings.System.SHOW_TOUCHES, if (isOn) 1 else 0)
-    }
-
-    private fun getShouldShowTouches(): Boolean =
-        Settings.System.getInt(contentResolver, Settings.System.SHOW_TOUCHES, 0) != 0
 
     private fun launchCallbackAction(action: IScreenRecordingServiceCallback.() -> Unit) {
         callback?.let { coroutineScope.launch(backgroundContext) { it.action() } }
@@ -216,21 +195,16 @@ protected constructor(
         }
 
         override fun updateParameters(parameters: ScreenRecordingParameters) {
-            if (Flags.restoreShowTapsSetting()) {
-                screenRecordingPreferenceRepository.updateShowTaps(
-                    showTaps = parameters.shouldShowTaps,
-                    rememberOriginal = false,
-                )
-            } else {
-                setShouldShowTouches(parameters.shouldShowTaps)
-            }
+            screenRecordingPreferenceRepository.updateShowTaps(
+                showTaps = parameters.shouldShowTaps,
+                rememberOriginal = false,
+            )
         }
 
         override fun startRecording(parameters: ScreenRecordingParameters) {
             val context =
                 RecordingContext(
                     notificationId = UUID.randomUUID().mostSignificantBits.toInt(),
-                    originalShouldShowTouches = getShouldShowTouches(),
                     captureTarget = parameters.captureTarget,
                     audioSource = parameters.audioSource,
                     displayId = parameters.displayId,
@@ -253,7 +227,6 @@ protected constructor(
 
     protected data class RecordingContext(
         val recorder: ScreenMediaRecorder,
-        val originalShouldShowTouches: Boolean,
         val captureTarget: MediaProjectionCaptureTarget?,
         val audioSource: ScreenRecordingAudioSource,
         val displayId: Int,
