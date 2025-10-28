@@ -37,68 +37,114 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Class responsible for managing allowlists associated with a {@code UserType}.
+ * Class responsible for managing activities allowlists associated with a user.
  *
  * <p>This class is thread safe.
  */
-public final class UserActivitiesAllowlist {
+public final class UserActivitiesAllowlist extends GenericAllowlist<ComponentName> {
 
-    private static final String TAG = UserActivitiesAllowlist.class.getSimpleName();
+    UserActivitiesAllowlist(String[] permanentActivities) {
+        super("activity", "activities", permanentActivities);
+    }
+
+    @Override
+    protected ComponentName fromNormalizedName(String name) {
+        return ComponentName.unflattenFromString(name);
+    }
+
+    @Override
+    protected String toNormalizedName(ComponentName element) {
+        return element.flattenToShortString();
+    }
+}
+
+// TODO(b/455912167): move to its own class (in a separate CL, so it's easy to diff what changed
+// when this class was created)
+/**
+ * Base class responsible for managing generic allowlists.
+ *
+ * <p>The allowlist is divided in 2 lists:
+ *
+ * <ol>
+ *   <li>A permanent allowlist (typically defined by an array config resource).
+ *   <li>A temporary allowlist (that can be set programmatically and lasts until reset or restart).
+ * </ol>
+ *
+ * <p>This class is thread safe.
+ *
+ * @param <E> type of the element being allowlisted.
+ */
+abstract class GenericAllowlist<E> {
+
+    private static final String TAG = GenericAllowlist.class.getSimpleName();
 
     @VisibleForTesting
     static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
-    // List of activities that are permanently allowed (i.e., they survive reboots).
-    // If empty, allowlist is disabled (and all activities are allowed).
+
+    // List of elements that are permanently allowed (i.e., they survive reboots).
+    // If empty, allowlist is disabled (and all elements are allowed).
     // NOTE: for now it's an array as they're just read from config, but should change to Set
     // once it supports APIs to change it (for example, from DPM).
     private final String[] mPermanentAllowlist;
 
-    // List of activities that are temporarily allowed (i.e., until reboot or set back to null)
-    // When set (i.e., not null), it will override the value of mPermanentActivitiesAllowlist.
-    // If empty, allowlist is disabled (and all activities are allowed).
+    // List of elements that are temporarily allowed (i.e., until reboot or set back to null)
+    // When set (i.e., not null), it will override the value of mPermanentAllowlist.
+    // If empty, allowlist is disabled (and all elements are allowed).
     @Nullable
-    private volatile CopyOnWriteArrayList<String> mTemporaryActivitiesAllowlist;
+    private volatile CopyOnWriteArrayList<String> mTemporaryAllowlist;
 
-    UserActivitiesAllowlist(String[] permanentActivities) {
-        mPermanentAllowlist = getValidComponentNames(permanentActivities);
+    private final String mSingularName;
+    private final String mPluralName;
+
+    protected GenericAllowlist(String singularName, String pluralName,
+            String[] permanentNormalizedNames) {
+        mSingularName = singularName;
+        mPluralName = pluralName;
+        mPermanentAllowlist = getValidElements(permanentNormalizedNames);
     }
 
+    /** Converts the given string to an element. */
+    protected abstract @Nullable E fromNormalizedName(String name);
+
+    /** Converts the given element to a String. */
+    protected abstract String toNormalizedName(E element);
+
     // NOTE: only called by 'cmd user' (which needs to "build" the temporary allowlist based on
-    // incremental actions, like add or remove an activity) and unit tests, so we don't have to
+    // incremental actions, like add or remove an element) and unit tests, so we don't have to
     // worry about performance (like caching the result or not using streams)
-    List<ComponentName> getEffectiveAllowlist() {
-        Stream<String> stream = mTemporaryActivitiesAllowlist != null
-                ? mTemporaryActivitiesAllowlist.stream()
+    final List<E> getEffectiveAllowlist() {
+        Stream<String> stream = mTemporaryAllowlist != null
+                ? mTemporaryAllowlist.stream()
                 : Arrays.stream(mPermanentAllowlist);
-        return stream.map(ComponentName::unflattenFromString)
+        return stream.map(e -> fromNormalizedName(e))
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
-    * Returns whether the given activity is allowed.
+    * Returns whether the given element is allowed.
     *
     * <p>It will check the temporary list first (if set), then the permanent one. If the checked
-    * list is empty, then allowlisting is disabled and all activities (except {@code null}) are
+    * list is empty, then allowlisting is disabled and all elements (except {@code null}) are
     * allowed.
     */
-    public boolean isAllowed(ComponentName activity) {
-        Objects.requireNonNull(activity, "activity cannot be null");
-        String normalizedName = activity.flattenToShortString();
+    public final boolean isAllowed(E element) {
+        Objects.requireNonNull(element, "element cannot be null");
+        String normalizedName = toNormalizedName(element);
 
         // Checks the temporary list first...
-        CopyOnWriteArrayList<String> temporaryList = mTemporaryActivitiesAllowlist;
+        CopyOnWriteArrayList<String> temporaryList = mTemporaryAllowlist;
         if (temporaryList != null) {
             if (temporaryList.isEmpty()) {
                 if (DEBUG) {
-                    Slogf.d(TAG, "isActivityAllowed(%s): returning true because temporary "
+                    Slogf.d(TAG, "isAllowed(%s): returning true because temporary "
                             + "allowlist overrides permanent allowlist and is empty, so any "
-                            + "activity is allowed", normalizedName);
+                            + "%s is allowed", normalizedName, mSingularName);
                 }
                 return true;
             }
             if (DEBUG) {
-                Slogf.d(TAG, "isActivityAllowed(%s): checking temporary list (%s)",
+                Slogf.d(TAG, "isAllowed(%s): checking temporary list (%s)",
                         normalizedName, temporaryList);
             }
             return temporaryList.contains(normalizedName);
@@ -107,58 +153,58 @@ public final class UserActivitiesAllowlist {
         // ...then the permanent one.
         if (mPermanentAllowlist.length == 0) {
             if (DEBUG) {
-                Slogf.d(TAG, "isActivityAllowed(%s): returning true because permanent allowlist"
-                        + "is empty, so any activity is allowed", normalizedName);
+                Slogf.d(TAG, "isAllowed(%s): returning true because permanent allowlist"
+                        + "is empty, so any %s is allowed", normalizedName, mSingularName);
             }
             return true;
         }
         if (DEBUG) {
-            Slogf.d(TAG, "isActivityAllowed(%s): checking permanent list (%s)", normalizedName,
+            Slogf.d(TAG, "isAllowed(%s): checking permanent list (%s)", normalizedName,
                     Arrays.toString(mPermanentAllowlist));
         }
         return ArrayUtils.contains(mPermanentAllowlist, normalizedName);
     }
 
     /** Sets the temporary allowlist (or resets it when passed with {@code null}. */
-    void setTemporaryAllowlist(@Nullable Collection<ComponentName> componentNames) {
+    final void setTemporaryAllowlist(@Nullable Collection<E> elements) {
         if (DEBUG) {
-            Slogf.d(TAG, "setTemporaryAllowList(%s)", componentNames);
+            Slogf.d(TAG, "setTemporaryAllowList(%s)", elements);
         }
-        if (componentNames == null) {
-            mTemporaryActivitiesAllowlist = null;
+        if (elements == null) {
+            mTemporaryAllowlist = null;
             return;
         }
-        List<String> tempList = new ArrayList<>(componentNames.size());
-        for (var component : componentNames) {
-            tempList.add(component.flattenToShortString());
+        List<String> tempList = new ArrayList<>(elements.size());
+        for (E element : elements) {
+            tempList.add(toNormalizedName(element));
         }
-        mTemporaryActivitiesAllowlist = new CopyOnWriteArrayList<>(tempList);
+        mTemporaryAllowlist = new CopyOnWriteArrayList<>(tempList);
 
         if (DEBUG) {
-            Slogf.d(TAG, "setTemporaryAllowList(): set as %s", mTemporaryActivitiesAllowlist);
+            Slogf.d(TAG, "setTemporaryAllowList(): set as %s", mTemporaryAllowlist);
         }
     }
 
-    void dump(PrintWriter writer, String prefix, String header) {
+    final void dump(PrintWriter writer, String prefix, String header) {
         dump(new IndentingPrintWriter(writer, /* singleIndent=*/ "  ", prefix), header);
     }
 
-    void dump(IndentingPrintWriter writer, String header) {
+    final void dump(IndentingPrintWriter writer, String header) {
         writer.printf("%s:\n", header);
         writer.increaseIndent();
 
         writer.printf("DEBUG: %b\n", DEBUG);
 
         dumpAllowlistStatus(writer);
-        dumpPermanentActivitiesAllowlist(writer);
-        dumpTemporaryActivitiesAllowlist(writer);
+        dumpPermanentAllowlist(writer);
+        dumpTemporaryAllowlist(writer);
 
         writer.decreaseIndent();
     }
 
     private void dumpAllowlistStatus(IndentingPrintWriter writer) {
-        writer.print("activities allowlist status: ");
-        CopyOnWriteArrayList<String> temporaryList = mTemporaryActivitiesAllowlist;
+        writer.printf("%s allowlist status: ", mPluralName);
+        CopyOnWriteArrayList<String> temporaryList = mTemporaryAllowlist;
         if (temporaryList != null) {
             if (temporaryList.isEmpty()) {
                 writer.println("allowlisting disabled");
@@ -174,13 +220,13 @@ public final class UserActivitiesAllowlist {
         }
     }
 
-    private void dumpPermanentActivitiesAllowlist(IndentingPrintWriter writer) {
+    private void dumpPermanentAllowlist(IndentingPrintWriter writer) {
         int size = mPermanentAllowlist.length;
 
-        // Header / number of activities
-        dumpActivitiesAllowlistSize(writer, "permanent", size);
+        // Header / number of elements
+        dumpAllowlistSize(writer, "permanent", size);
 
-        // Body / activity components
+        // Body / elements
         writer.increaseIndent();
         for (String item : mPermanentAllowlist) {
             writer.println(item);
@@ -188,18 +234,18 @@ public final class UserActivitiesAllowlist {
         writer.decreaseIndent();
     }
 
-    private void dumpTemporaryActivitiesAllowlist(IndentingPrintWriter writer) {
-        CopyOnWriteArrayList<String> temporaryList = mTemporaryActivitiesAllowlist;
+    private void dumpTemporaryAllowlist(IndentingPrintWriter writer) {
+        CopyOnWriteArrayList<String> temporaryList = mTemporaryAllowlist;
 
-        // Header / number of activities
+        // Header / number of elements
         if (temporaryList == null) {
-            writer.println("temporary activities allowlist is not set.");
+            writer.printf("temporary %s allowlist is not set.\n", mPluralName);
             return;
         }
         int size = temporaryList.size();
-        dumpActivitiesAllowlistSize(writer, "temporary", size);
+        dumpAllowlistSize(writer, "temporary", size);
 
-        // Body / activity components
+        // Body / elements
         writer.increaseIndent();
         for (int i = 0; i < size; i++) {
             writer.println(temporaryList.get(i));
@@ -207,38 +253,39 @@ public final class UserActivitiesAllowlist {
         writer.decreaseIndent();
     }
 
-    private static void dumpActivitiesAllowlistSize(IndentingPrintWriter writer, String name,
+    private void dumpAllowlistSize(IndentingPrintWriter writer, String name,
             int size) {
         if (size == 0) {
-            writer.printf("%s activities allowlist is empty.\n", name);
+            writer.printf("%s %s allowlist is empty.\n", name, mPluralName);
             return;
         }
-        String suffix = size > 1 ? "ies" : "y";
-        writer.printf("%s activities allowlist has %d activit%s:\n", name, size, suffix);
+        String suffix = size > 1 ? mPluralName : mSingularName;
+        writer.printf("%s %s allowlist has %d %s:\n", name, mPluralName, size, suffix);
     }
 
-    private static String[] getValidComponentNames(String[] componentNames) {
+    private String[] getValidElements(String[] elements) {
         // NOTE: must use LinkedHashSet to preserve order, otherwise test case would fail and dump()
         // wouldn't show the same order as the config.xml
-        LinkedHashSet<String> set = new LinkedHashSet<>(componentNames.length);
-        for (String componentName : componentNames) {
-            var validComponentName = ComponentName.unflattenFromString(componentName);
-            if (validComponentName == null) {
-                Slogf.w(TAG, "Invalid activity from config: %s", componentName);
+        LinkedHashSet<String> set = new LinkedHashSet<>(elements.length);
+        for (String element : elements) {
+            E validElement = fromNormalizedName(element);
+            if (validElement == null) {
+                Slogf.w(TAG, "Invalid %s from config: %s", mSingularName, element);
                 continue;
             }
             // Must "normalize" the component into the flattened format, as the class part could
             // have been expressed as FQCN (Fully-Qualified Class Name).
-            String normalizedName = validComponentName.flattenToShortString();
+            String normalizedName = toNormalizedName(validElement);
             if (set.contains(normalizedName)) {
-                Slogf.w(TAG, "Activity %s already added (as %s)", componentName, normalizedName);
+                Slogf.w(TAG, "%s %s already added (as %s)", mSingularName, element,
+                        normalizedName);
             }
             set.add(normalizedName);
         }
         String[] valid = new String[set.size()];
         set.toArray(valid);
         if (DEBUG) {
-            Slogf.d(TAG, "Valid activities from config: %s", Arrays.toString(valid));
+            Slogf.d(TAG, "Valid %s from config: %s", Arrays.toString(valid), mPluralName);
         }
         return valid;
     }
