@@ -474,6 +474,13 @@ flag {
 }
 
 flag {
+    namespace: "system_performance"
+    name: "native_looper_skip_epoll_wait_for_zero_timeout_holdback"
+    description: "Holdback for skipping epoll_wait if pollOnce is called with a timeout of 0."
+    bug: "448455908"
+}
+
+flag {
      namespace: "system_performance"
      name: "parcel_marshall_bytebuffer"
      is_exported: true
