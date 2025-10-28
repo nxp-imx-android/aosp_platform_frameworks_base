@@ -34,7 +34,10 @@ import android.hardware.display.DisplayManagerGlobal;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Binder;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.RemoteException;
+import android.util.Log;
 import android.util.Size;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -65,6 +68,8 @@ import java.util.concurrent.Executor;
  */
 public final class ComputerControlSession extends IComputerControlLifecycleCallback.Stub
         implements AutoCloseable {
+
+    private static final String TAG = ComputerControlSession.class.getSimpleName();
 
     /** @hide */
     public static final String ACTION_REQUEST_ACCESS =
@@ -187,6 +192,9 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     public @interface Action {
     }
 
+    /** Auxiliary thread for any client-side work related to the computer control session. */
+    private final HandlerThread mHandlerThread;
+    private final Handler mHandler;
     @NonNull
     private final IComputerControlSession mSession;
     @NonNull
@@ -225,6 +233,9 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
             @NonNull AccessibilityManager accessibilityManager,
             @NonNull Runnable onClosedRunnable,
             @NonNull DisplayManagerGlobal displayManagerGlobal) {
+        mHandlerThread = new HandlerThread("ComputerControlSession");
+        mHandlerThread.start();
+        mHandler = new Handler(mHandlerThread.getLooper());
         mSession = Objects.requireNonNull(session);
         mOnClosedRunnable = onClosedRunnable;
 
@@ -243,7 +254,7 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
             e.rethrowFromSystemServer();
         }
 
-        mAccessibilityProxy = new ComputerControlAccessibilityProxy(displayId);
+        mAccessibilityProxy = new ComputerControlAccessibilityProxy(displayId, mHandler);
         accessibilityManager.registerDisplayProxy(mAccessibilityProxy);
     }
 
@@ -311,9 +322,14 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
                 }
             }
         }
+        final Image image;
         synchronized (mImageReaderLock) {
-            return mImageReader == null ? null : mImageReader.acquireLatestImage();
+            image = mImageReader == null ? null : mImageReader.acquireLatestImage();
         }
+        if (image == null) {
+            Log.w(TAG, "getScreenshot: No new image available!");
+        }
+        return image;
     }
 
     /**
@@ -526,6 +542,7 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
             mLifecycle.onClosed(closeReason);
         }
         mOnClosedRunnable.run();
+        mHandlerThread.quitSafely();
     }
 
     /**
