@@ -708,7 +708,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
      * Whether mSleeping can quickly toggled between true/false without the device actually
      * display changing states is undefined.
      */
-    private volatile boolean mSleeping = true;
+    private volatile boolean mSleeping;
 
     /**
      * The mActiveDreamComponent state is set by the {@link DreamManagerService} when it receives a
