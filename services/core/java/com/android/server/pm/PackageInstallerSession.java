@@ -1161,7 +1161,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 android.Manifest.permission.INSTALL_DPC_PACKAGES, mInstallerUid)
                 == PackageManager.PERMISSION_GRANTED);
         boolean isInstallDependencyPackagesPermissionGranted = false;
-        if (Flags.sdkDependencyInstaller()) {
+        if (!Flags.sdkDependencyInstallerDeprecation()) {
             isInstallDependencyPackagesPermissionGranted = (snapshot.checkUidPermission(
                     android.Manifest.permission.INSTALL_DEPENDENCY_SHARED_LIBRARIES, mInstallerUid)
                     == PackageManager.PERMISSION_GRANTED);
@@ -4160,7 +4160,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             return;
         }
 
-        if (Flags.sdkDependencyInstaller()
+        if (!Flags.sdkDependencyInstallerDeprecation()
                 && params.isAutoInstallDependenciesEnabled
                 && !isMultiPackage()) {
             mDependencyInstallerEnabled.set(true);

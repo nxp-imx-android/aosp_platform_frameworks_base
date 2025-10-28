@@ -2644,7 +2644,7 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
                             }
                         }
 
-                        if (Flags.sdkDependencyInstaller()) {
+                        if (!Flags.sdkDependencyInstallerDeprecation()) {
                             mInstallDependencyHelper.notifySessionComplete(session.sessionId);
                         }
 
