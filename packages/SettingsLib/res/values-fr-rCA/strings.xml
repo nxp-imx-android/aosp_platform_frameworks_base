@@ -216,7 +216,7 @@
     <string name="launch_defaults_some" msgid="3631650616557252926">"Certaines préférences par défaut définies"</string>
     <string name="launch_defaults_none" msgid="8049374306261262709">"Aucune préférence par défaut définie"</string>
     <string name="tts_settings" msgid="8130616705989351312">"Paramètres de synthèse vocale"</string>
-    <string name="tts_settings_title" msgid="7602210956640483039">"Synthèse vocale"</string>
+    <string name="tts_settings_title" msgid="7602210956640483039">"Sortie de synthèse vocale"</string>
     <string name="tts_default_rate_title" msgid="3964187817364304022">"Débit"</string>
     <string name="tts_default_rate_summary" msgid="3781937042151716987">"Vitesse à laquelle le texte est énoncé"</string>
     <string name="tts_default_pitch_title" msgid="6988592215554485479">"Ton"</string>
@@ -547,7 +547,7 @@
     <string name="disabled_by_admin_summary_text" msgid="5343911767402923057">"Contrôlé par l\'administrateur"</string>
     <string name="disabled_by_app_ops_text" msgid="8373595926549098012">"Contrôlé par les paramètres restreints"</string>
     <string name="disabled_in_phone_call_text" msgid="6568931334337318320">"Indisponible pendant les appels"</string>
-    <string name="disabled" msgid="8017887509554714950">"Désactivée"</string>
+    <string name="disabled" msgid="8017887509554714950">"Désactivé"</string>
     <string name="enabled" msgid="3997122818554810678">"Activé"</string>
     <string name="external_source_trusted" msgid="1146522036773132905">"Autorisée"</string>
     <string name="external_source_untrusted" msgid="5037891688911672227">"Élément non autorisé"</string>

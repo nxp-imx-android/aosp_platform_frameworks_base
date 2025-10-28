@@ -176,7 +176,7 @@
     <string name="bluetooth_hid_profile_summary_use_for" msgid="4289460627406490952">"استفاده برای چاپ"</string>
     <string name="bluetooth_hearing_aid_profile_summary_use_for" msgid="3374057355721486932">"استفاده برای سمعک"</string>
     <string name="bluetooth_le_audio_profile_summary_use_for" msgid="2778318636027348572">"‏استفاده برای LE_AUDIO"</string>
-    <string name="bluetooth_pairing_accept" msgid="2054232610815498004">"مرتبط‌سازی"</string>
+    <string name="bluetooth_pairing_accept" msgid="2054232610815498004">"جفت کردن"</string>
     <string name="bluetooth_pairing_accept_all_caps" msgid="2734383073450506220">"مرتبط‌سازی"</string>
     <string name="bluetooth_pairing_decline" msgid="6483118841204885890">"لغو"</string>
     <string name="bluetooth_pairing_will_share_phonebook" msgid="3064334458659165176">"وقتی وصل باشید، مرتبط‌سازی اجازه دسترسی به مخاطبین و سابقه تماستان را فراهم می‌کند."</string>
@@ -549,8 +549,8 @@
     <string name="disabled_in_phone_call_text" msgid="6568931334337318320">"درطول تماس دردسترس نیست"</string>
     <string name="disabled" msgid="8017887509554714950">"غیر فعال شد"</string>
     <string name="enabled" msgid="3997122818554810678">"فعال"</string>
-    <string name="external_source_trusted" msgid="1146522036773132905">"مجاز بودن"</string>
-    <string name="external_source_untrusted" msgid="5037891688911672227">"مجاز نبودن"</string>
+    <string name="external_source_trusted" msgid="1146522036773132905">"اجازه داشتن"</string>
+    <string name="external_source_untrusted" msgid="5037891688911672227">"اجازه نداشتن"</string>
     <string name="install_other_apps" msgid="3232595082023199454">"نصب برنامه‌های ناشناس"</string>
     <string name="home" msgid="973834627243661438">"صفحه اصلی تنظیمات"</string>
   <string-array name="battery_labels">
