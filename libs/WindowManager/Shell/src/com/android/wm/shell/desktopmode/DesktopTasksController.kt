@@ -2606,11 +2606,7 @@ class DesktopTasksController(
     /** Move task to the next display which can host desktop tasks. */
     fun moveToNextDesktopDisplay(taskId: Int, userId: Int, enterReason: EnterReason) =
         moveToNextDisplay(taskId, enterReason) { displayId ->
-            if (
-                DesktopExperienceFlags.MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE.isTrue &&
-                    desktopState.isProjectedMode() &&
-                    displayId == DEFAULT_DISPLAY
-            ) {
+            if (desktopState.isProjectedMode() && displayId == DEFAULT_DISPLAY) {
                 logD("moveToNextDesktopDisplay: Moving to default display during projected mode.")
                 return@moveToNextDisplay true
             }
@@ -2778,11 +2774,7 @@ class DesktopTasksController(
         val activationRunnable: RunOnTransitStart?
         val deactivationRunnable: RunOnTransitStart?
 
-        if (
-            DesktopExperienceFlags.MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE.isTrue &&
-                desktopState.isProjectedMode() &&
-                displayId == DEFAULT_DISPLAY
-        ) {
+        if (desktopState.isProjectedMode() && displayId == DEFAULT_DISPLAY) {
             logV("moveToDisplay: moving task to default display during projected mode")
             activationRunnable = null
             deactivationRunnable =
@@ -5134,17 +5126,9 @@ class DesktopTasksController(
                 val cleanupDisplayId =
                     // A desk is getting deactivated, so use that desk's display id.
                     sourceDeskId?.let { repository.getDisplayForDesk(it) }
-                        ?: if (
-                            DesktopExperienceFlags.MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE
-                                .isTrue
-                        ) {
-                            // Use the source display ID for clean up when the bug fix flag is
-                            // enabled.
-                            sourceDisplayId
-                        } else {
-                            // Before the bug fix, display move is not considered.
-                            destinationDisplayId
-                        }
+                        // Use the source display ID for clean up when the bug fix flag is
+                        // enabled.
+                        ?: sourceDisplayId
                 val isLastTask =
                     sourceDeskId?.let { repository.isOnlyTaskInDesk(taskInfo.taskId, it) } ?: false
                 performDesktopExitCleanUp(
@@ -5155,16 +5139,8 @@ class DesktopTasksController(
                     willExitDesktop = true,
                     removingLastTaskId = if (isLastTask) taskInfo.taskId else null,
                     shouldEndUpAtHome =
-                        if (
-                            DesktopExperienceFlags.MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE
-                                .isTrue
-                        ) {
-                            // If the last task is moved from the display, it should go to home.
-                            destinationDisplayId != taskInfo.displayId
-                        } else {
-                            // Before the bug fix, display move is not considered.
-                            false
-                        },
+                        // If the last task is moved from the display, it should go to home.
+                        destinationDisplayId != taskInfo.displayId,
                     exitReason = exitReason,
                 )
             } else {
