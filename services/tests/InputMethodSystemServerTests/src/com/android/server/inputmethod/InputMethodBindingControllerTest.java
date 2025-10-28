@@ -16,8 +16,6 @@
 
 package com.android.server.inputmethod;
 
-import static android.view.Display.DEFAULT_DISPLAY;
-import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -26,6 +24,7 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
@@ -47,6 +46,7 @@ import android.os.UserHandle;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.view.Display;
 import android.view.inputmethod.Flags;
 import android.view.inputmethod.InputMethodInfo;
 
@@ -108,35 +108,34 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
     public void tearDown() {
         super.tearDown();
         synchronized (ImfLock.class) {
-            mBindingController.unbindCurrentMethod();
+            mBindingController.unbindIme();
         }
     }
 
     @Test
-    public void testBindCurrentMethod_noIme() {
+    public void testBindIme_selectedImeIdNull() {
         synchronized (ImfLock.class) {
-            mBindingController.setSelectedMethodId(null);
-            InputBindResult result = mBindingController.bindCurrentMethod();
-            assertThat(result).isEqualTo(InputBindResult.NO_IME);
+            mBindingController.setSelectedImeId(null /* imeId */);
+            assertThat(mBindingController.bindIme()).isEqualTo(InputBindResult.NO_IME);
         }
     }
 
     @Test
-    public void testBindCurrentMethod_unknownId() {
+    public void testBindIme_selectedImeIdUnknown() {
         synchronized (ImfLock.class) {
-            mBindingController.setSelectedMethodId("unknown ime id");
+            mBindingController.setSelectedImeId("unknown ime id");
         }
         assertThrows(IllegalArgumentException.class, () -> {
             synchronized (ImfLock.class) {
-                mBindingController.bindCurrentMethod();
+                mBindingController.bindIme();
             }
         });
     }
 
     @Test
-    public void testBindCurrentMethod_notConnected() {
+    public void testBindIme_notConnected() {
         synchronized (ImfLock.class) {
-            mBindingController.setSelectedMethodId(TEST_IME_ID);
+            mBindingController.setSelectedImeId(TEST_IME_ID);
             doReturn(false)
                     .when(mContext)
                     .bindServiceAsUser(
@@ -146,8 +145,7 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
                             any(UserHandle.class));
             doNothing().when(mContext).unbindService(any(ServiceConnection.class));
 
-            InputBindResult result = mBindingController.bindCurrentMethod();
-            assertThat(result).isEqualTo(InputBindResult.IME_NOT_CONNECTED);
+            assertThat(mBindingController.bindIme()).isEqualTo(InputBindResult.IME_NOT_CONNECTED);
             verify(mContext, times(1)).unbindService(any(ServiceConnection.class));
         }
     }
@@ -157,15 +155,15 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
      * unbinding both.
      */
     @Test
-    public void testBindAndUnbindMethod() throws Exception {
+    public void testBindImeAndUnbindIme() throws Exception {
         // Bind with main connection
-        testBindCurrentMethodWithMainConnection(false /* wasBound */);
+        testBindIme(false /* wasBound */);
 
         // Bind with visible connection
-        testBindCurrentMethodWithVisibleConnection();
+        testSetImeVisibleOrReconnect();
 
         // Unbind both main and visible connections
-        testUnbindCurrentMethod(true /* isVisible */);
+        testUnbindIme(true /* isVisible */);
     }
 
     /**
@@ -176,10 +174,10 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
     @Test
     public void testBindAndSetInactiveAndSetActive() throws Exception {
         // Bind with main connection
-        testBindCurrentMethodWithMainConnection(false /* wasBound */);
+        testBindIme(false /* wasBound */);
 
         // Bind with visible connection
-        testBindCurrentMethodWithVisibleConnection();
+        testSetImeVisibleOrReconnect();
 
         verifySetInactiveWhileBound(true /* isVisible */);
 
@@ -197,7 +195,7 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
 
         verifySetActiveWhileNotBound(false /* wasUnbound */);
 
-        testBindCurrentMethodWithMainConnection(false /* wasBound */);
+        testBindIme(false /* wasBound */);
     }
 
     /**
@@ -211,9 +209,9 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
 
         testBindWhileNotActive();
 
-        verifySetActiveWhileNotBound(false /* wasBoundBeforeInactive */);
+        verifySetActiveWhileNotBound(false /* wasUnbound */);
 
-        testBindCurrentMethodWithMainConnection(false /* wasBound */);
+        testBindIme(false /* wasBound */);
     }
 
     /**
@@ -224,15 +222,15 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
     @RequiresFlagsEnabled(Flags.FLAG_WARM_WORK_PROFILE_IME)
     @Test
     public void testBindAndSetInactiveAndUnbindAndSetActiveAndBind() throws Exception {
-        testBindCurrentMethodWithMainConnection(false /* wasBound */);
+        testBindIme(false /* wasBound */);
 
         verifySetInactiveWhileBound(false /* isVisible */);
 
-        testUnbindCurrentMethod(false /* isVisible */);
+        testUnbindIme(false /* isVisible */);
 
         verifySetActiveWhileNotBound(true /* wasUnbound */);
 
-        testBindCurrentMethodWithMainConnection(true /* wasBound */);
+        testBindIme(true /* wasBound */);
     }
 
     /**
@@ -251,20 +249,22 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
             // Set inactive but keep inactive binding.
             assertThat(mBindingController.hasBackgroundConnection()).isTrue();
             assertThat(mBindingController.hasMainConnection()).isFalse();
-            assertThat(mBindingController.isVisibleBound()).isFalse();
+            assertThat(mBindingController.hasVisibleConnection()).isFalse();
             assertThat(mBindingController.isActive()).isFalse();
+            assertThat(mBindingController.getCurToken()).isNotNull();
+            final int curDisplayId = mBindingController.getCurDisplayId();
+            assertThat(curDisplayId).isEqualTo(Display.DEFAULT_DISPLAY);
             // Unbind visible connection and main connection.
             if (isVisible) {
                 verify(mContext, times(2)).unbindService(any(ServiceConnection.class));
             } else {
                 verify(mContext, times(1)).unbindService(any(ServiceConnection.class));
             }
-            verify(mMockWindowManagerInternal, times(1)).setImeWindowToken(
-                    eq(null) /* token */, eq(mBindingController.getCurTokenDisplayId()));
-            assertThat(mBindingController.getCurToken()).isNotNull();
-            assertThat(mBindingController.getCurId()).isNotNull();
-            assertThat(mBindingController.getCurMethod()).isNotNull();
-            assertThat(mBindingController.getCurMethodUid()).isNotEqualTo(Process.INVALID_UID);
+            verify(mMockWindowManagerInternal, times(1)).setImeWindowToken(isNull() /* token */,
+                    eq(curDisplayId));
+            assertThat(mBindingController.getCurImeId()).isNotNull();
+            assertThat(mBindingController.getCurIme()).isNotNull();
+            assertThat(mBindingController.getCurImeUid()).isNotEqualTo(Process.INVALID_UID);
         }
     }
 
@@ -282,15 +282,15 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
         synchronized (ImfLock.class) {
             assertThat(mBindingController.hasBackgroundConnection()).isFalse();
             assertThat(mBindingController.hasMainConnection()).isFalse();
-            assertThat(mBindingController.isVisibleBound()).isFalse();
+            assertThat(mBindingController.hasVisibleConnection()).isFalse();
             assertThat(mBindingController.isActive()).isFalse();
             verify(mContext, never()).unbindService(any(ServiceConnection.class));
             verify(mMockWindowManagerInternal, never()).setImeWindowToken(
                     any(IBinder.class) /* token */, anyInt() /* displayId */);
             assertThat(mBindingController.getCurToken()).isNull();
-            assertThat(mBindingController.getCurId()).isNull();
-            assertThat(mBindingController.getCurMethod()).isNull();
-            assertThat(mBindingController.getCurMethodUid()).isEqualTo(Process.INVALID_UID);
+            assertThat(mBindingController.getCurImeId()).isNull();
+            assertThat(mBindingController.getCurIme()).isNull();
+            assertThat(mBindingController.getCurImeUid()).isEqualTo(Process.INVALID_UID);
         }
     }
 
@@ -310,7 +310,7 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
         synchronized (ImfLock.class) {
             assertThat(mBindingController.hasBackgroundConnection()).isTrue();
             assertThat(mBindingController.hasMainConnection()).isTrue();
-            assertThat(mBindingController.isVisibleBound()).isFalse();
+            assertThat(mBindingController.hasVisibleConnection()).isFalse();
             assertThat(mBindingController.isActive()).isTrue();
             if (wasBoundBeforeInactive) {
                 // No further unbinds (just two from previous setInactive).
@@ -322,7 +322,7 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
                 // ImeToken is first set when bound, and set again when made active.
                 verify(mMockWindowManagerInternal, times(2)).setImeWindowToken(
                         eq(mBindingController.getCurToken()),
-                        eq(mBindingController.getCurTokenDisplayId()));
+                        eq(mBindingController.getCurDisplayId()));
             } else {
                 verify(mContext, never()).unbindService(any(ServiceConnection.class));
                 // No further binds from setActive (just one from previous binding).
@@ -331,12 +331,12 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
                         eq(mImeConnectionBindFlags) /* flags */, any(UserHandle.class) /* user */);
                 verify(mMockWindowManagerInternal, times(1)).setImeWindowToken(
                         eq(mBindingController.getCurToken()),
-                        eq(mBindingController.getCurTokenDisplayId()));
+                        eq(mBindingController.getCurDisplayId()));
             }
             assertThat(mBindingController.getCurToken()).isNotNull();
-            assertThat(mBindingController.getCurId()).isNotNull();
-            assertThat(mBindingController.getCurMethod()).isNotNull();
-            assertThat(mBindingController.getCurMethodUid()).isNotEqualTo(Process.INVALID_UID);
+            assertThat(mBindingController.getCurImeId()).isNotNull();
+            assertThat(mBindingController.getCurIme()).isNotNull();
+            assertThat(mBindingController.getCurImeUid()).isNotEqualTo(Process.INVALID_UID);
         }
     }
 
@@ -356,7 +356,7 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
 
         synchronized (ImfLock.class) {
             assertThat(mBindingController.hasMainConnection()).isFalse();
-            assertThat(mBindingController.isVisibleBound()).isFalse();
+            assertThat(mBindingController.hasVisibleConnection()).isFalse();
             assertThat(mBindingController.isActive()).isTrue();
             if (wasUnbound) {
                 // Unbound main connection and background connection.
@@ -370,17 +370,17 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
                         any(IBinder.class) /* token */, anyInt() /* displayId */);
             }
             assertThat(mBindingController.getCurToken()).isNull();
-            assertThat(mBindingController.getCurId()).isNull();
-            assertThat(mBindingController.getCurMethod()).isNull();
-            assertThat(mBindingController.getCurMethodUid()).isEqualTo(Process.INVALID_UID);
+            assertThat(mBindingController.getCurImeId()).isNull();
+            assertThat(mBindingController.getCurIme()).isNull();
+            assertThat(mBindingController.getCurImeUid()).isEqualTo(Process.INVALID_UID);
         }
     }
 
-    private void testBindCurrentMethodWithMainConnection(boolean wasBound) throws Exception {
+    private void testBindIme(boolean wasBound) throws Exception {
         final InputMethodInfo info;
         synchronized (ImfLock.class) {
-            mBindingController.setDisplayIdToShowIme(DEFAULT_DISPLAY);
-            mBindingController.setSelectedMethodId(TEST_IME_ID);
+            mBindingController.setSelectedDisplayId(Display.DEFAULT_DISPLAY);
+            mBindingController.setSelectedImeId(TEST_IME_ID);
             info = InputMethodSettingsRepository.get(mUserId).getMethodMap().get(TEST_IME_ID);
         }
         assertThat(info).isNotNull();
@@ -393,41 +393,37 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
         InputBindResult result = callOnMainSync(() -> {
             synchronized (ImfLock.class) {
                 mBindingController.setLatchForTesting(latch);
-                return mBindingController.bindCurrentMethod();
+                return mBindingController.bindIme();
             }
         });
 
-        if (wasBound) {
-            verify(mContext, times(2)).bindServiceAsUser(
-                    any(Intent.class) /* service */, any(ServiceConnection.class) /* conn */,
-                    eq(mImeConnectionBindFlags) /* flags */, any(UserHandle.class) /* user */);
-        } else {
-            verify(mContext, times(1)).bindServiceAsUser(
-                    any(Intent.class) /* service */, any(ServiceConnection.class) /* conn */,
-                    eq(mImeConnectionBindFlags) /* flags */, any(UserHandle.class) /* user */);
-        }
+        final int numBinds = wasBound ? 2 : 1;
+        verify(mContext, times(numBinds)).bindServiceAsUser(any(Intent.class) /* service */,
+                any(ServiceConnection.class) /* conn */, eq(mImeConnectionBindFlags) /* flags */,
+                any(UserHandle.class) /* user */);
+        assertThat(result).isNotNull();
         assertThat(result.result).isEqualTo(InputBindResult.ResultCode.SUCCESS_WAITING_IME_BINDING);
         assertThat(result.id).isEqualTo(info.getId());
         synchronized (ImfLock.class) {
             if (mFlagsValueProvider.getBoolean(Flags.FLAG_WARM_WORK_PROFILE_IME)) {
                 assertThat(mBindingController.hasBackgroundConnection()).isTrue();
             }
+            assertThat(mBindingController.getCurImeIntent()).isNotNull();
             assertThat(mBindingController.hasMainConnection()).isTrue();
-            assertThat(mBindingController.getCurId()).isEqualTo(info.getId());
-            assertThat(mBindingController.getCurToken()).isNotNull();
-            assertThat(mBindingController.getCurTokenDisplayId()).isEqualTo(DEFAULT_DISPLAY);
+            assertThat(mBindingController.getCurImeId()).isEqualTo(info.getId());
+            final var curToken = mBindingController.getCurToken();
+            final int curDisplayId = mBindingController.getCurDisplayId();
+            assertThat(curToken).isNotNull();
+            assertThat(curDisplayId).isEqualTo(Display.DEFAULT_DISPLAY);
             if (mFlagsValueProvider.getBoolean(Flags.FLAG_WARM_WORK_PROFILE_IME)) {
-                verify(mMockWindowManagerInternal, times(1)).addImeWindowToken(
-                        eq(mBindingController.getCurToken()),
-                        eq(mBindingController.getCurTokenDisplayId()),
-                        eq(mBindingController.getUserId()), eq(null) /* options */);
-                verify(mMockWindowManagerInternal, times(1)).setImeWindowToken(
-                        eq(mBindingController.getCurToken()),
-                        eq(mBindingController.getCurTokenDisplayId()));
+                verify(mMockWindowManagerInternal, times(1)).addImeWindowToken(eq(curToken),
+                        eq(curDisplayId), eq(mBindingController.getUserId()),
+                        isNull() /* options */);
+                verify(mMockWindowManagerInternal, times(1)).setImeWindowToken(eq(curToken),
+                        eq(curDisplayId));
             } else {
-                verify(mMockWindowManagerInternal, times(1)).addWindowToken(
-                        eq(mBindingController.getCurToken()), eq(TYPE_INPUT_METHOD),
-                        eq(mBindingController.getCurTokenDisplayId()), eq(null) /* options */);
+                verify(mMockWindowManagerInternal, times(1)).addWindowToken(eq(curToken),
+                        eq(TYPE_INPUT_METHOD), eq(curDisplayId), isNull() /* options */);
             }
         }
         // Wait for onServiceConnected()
@@ -438,16 +434,16 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
 
         // Verify onServiceConnected() is called and bound successfully.
         synchronized (ImfLock.class) {
-            assertThat(mBindingController.getCurMethod()).isNotNull();
-            assertThat(mBindingController.getCurMethodUid()).isNotEqualTo(Process.INVALID_UID);
+            assertThat(mBindingController.getCurIme()).isNotNull();
+            assertThat(mBindingController.getCurImeUid()).isNotEqualTo(Process.INVALID_UID);
         }
     }
 
     private void testBindWhileNotActive() throws Exception {
         final InputMethodInfo info;
         synchronized (ImfLock.class) {
-            mBindingController.setDisplayIdToShowIme(DEFAULT_DISPLAY);
-            mBindingController.setSelectedMethodId(TEST_IME_ID);
+            mBindingController.setSelectedDisplayId(Display.DEFAULT_DISPLAY);
+            mBindingController.setSelectedImeId(TEST_IME_ID);
             info = InputMethodSettingsRepository.get(mUserId).getMethodMap().get(TEST_IME_ID);
         }
         assertThat(info).isNotNull();
@@ -460,7 +456,7 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
         InputBindResult result = callOnMainSync(() -> {
             synchronized (ImfLock.class) {
                 mBindingController.setLatchForTesting(latch);
-                return mBindingController.bindCurrentMethod();
+                return mBindingController.bindIme();
             }
         });
 
@@ -472,9 +468,9 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
         synchronized (ImfLock.class) {
             assertThat(mBindingController.hasBackgroundConnection()).isFalse();
             assertThat(mBindingController.hasMainConnection()).isFalse();
-            assertThat(mBindingController.getCurId()).isNull();
+            assertThat(mBindingController.getCurImeId()).isNull();
             assertThat(mBindingController.getCurToken()).isNull();
-            assertThat(mBindingController.getCurTokenDisplayId()).isEqualTo(INVALID_DISPLAY);
+            assertThat(mBindingController.getCurDisplayId()).isEqualTo(Display.INVALID_DISPLAY);
             verify(mMockWindowManagerInternal, never()).addWindowToken(
                     any(IBinder.class) /* token */, anyInt() /* type */, anyInt() /* displayId */,
                     any(Bundle.class) /* options */);
@@ -488,15 +484,15 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
         }
 
         synchronized (ImfLock.class) {
-            assertThat(mBindingController.getCurMethod()).isNull();
-            assertThat(mBindingController.getCurMethodUid()).isEqualTo(Process.INVALID_UID);
+            assertThat(mBindingController.getCurIme()).isNull();
+            assertThat(mBindingController.getCurImeUid()).isEqualTo(Process.INVALID_UID);
         }
     }
 
-    private void testBindCurrentMethodWithVisibleConnection() {
+    private void testSetImeVisibleOrReconnect() {
         mInstrumentation.runOnMainSync(() -> {
             synchronized (ImfLock.class) {
-                mBindingController.setCurrentMethodVisible();
+                mBindingController.setImeVisibleOrReconnect();
             }
         });
         // Bind input method with visible connection
@@ -505,16 +501,20 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
                 eq(InputMethodBindingController.IME_VISIBLE_BIND_FLAGS) /* flags */,
                 any(UserHandle.class) /* user */);
         synchronized (ImfLock.class) {
-            assertThat(mBindingController.isVisibleBound()).isTrue();
+            assertThat(mBindingController.hasVisibleConnection()).isTrue();
         }
     }
 
-    private void testUnbindCurrentMethod(boolean isVisible) {
-        final IBinder token = mBindingController.getCurToken();
-        final int tokenDisplayId = mBindingController.getCurTokenDisplayId();
+    private void testUnbindIme(boolean isVisible) {
+        final IBinder curToken;
+        final int curDisplayId;
+        synchronized (ImfLock.class) {
+            curToken = mBindingController.getCurToken();
+            curDisplayId = mBindingController.getCurDisplayId();
+        }
         mInstrumentation.runOnMainSync(() -> {
             synchronized (ImfLock.class) {
-                mBindingController.unbindCurrentMethod();
+                mBindingController.unbindIme();
             }
         });
 
@@ -524,7 +524,7 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
                 assertThat(mBindingController.hasBackgroundConnection()).isFalse();
             }
             assertThat(mBindingController.hasMainConnection()).isFalse();
-            assertThat(mBindingController.isVisibleBound()).isFalse();
+            assertThat(mBindingController.hasVisibleConnection()).isFalse();
             final int backgroundConnection =
                     mFlagsValueProvider.getBoolean(Flags.FLAG_WARM_WORK_PROFILE_IME) ? 1 : 0;
             if (isVisible) {
@@ -534,13 +534,13 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
                 verify(mContext, times(1 + backgroundConnection))
                         .unbindService(any(ServiceConnection.class));
             }
-            verify(mMockWindowManagerInternal, times(1)).removeWindowToken(eq(token),
-                    eq(true) /* removeWindows */, eq(false)/* animateExit */, eq(tokenDisplayId));
+            verify(mMockWindowManagerInternal, times(1)).removeWindowToken(eq(curToken),
+                    eq(true) /* removeWindows */, eq(false)/* animateExit */, eq(curDisplayId));
+            assertThat(mBindingController.getCurImeId()).isNull();
             assertThat(mBindingController.getCurToken()).isNull();
-            assertThat(mBindingController.getCurTokenDisplayId()).isEqualTo(INVALID_DISPLAY);
-            assertThat(mBindingController.getCurId()).isNull();
-            assertThat(mBindingController.getCurMethod()).isNull();
-            assertThat(mBindingController.getCurMethodUid()).isEqualTo(Process.INVALID_UID);
+            assertThat(mBindingController.getCurDisplayId()).isEqualTo(Display.INVALID_DISPLAY);
+            assertThat(mBindingController.getCurIme()).isNull();
+            assertThat(mBindingController.getCurImeUid()).isEqualTo(Process.INVALID_UID);
         }
     }
 
