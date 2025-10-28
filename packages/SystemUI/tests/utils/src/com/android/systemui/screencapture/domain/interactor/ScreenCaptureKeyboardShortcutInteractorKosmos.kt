@@ -19,12 +19,18 @@ package com.android.systemui.screencapture.domain.interactor
 import com.android.internal.logging.uiEventLogger
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.backgroundScope
+import com.android.systemui.user.data.repository.userRepository
+import com.android.systemui.user.domain.interactor.fakeHeadlessSystemUserMode
 
 val Kosmos.screenCaptureKeyboardShortcutInteractor: ScreenCaptureKeyboardShortcutInteractor by
     Kosmos.Fixture {
         ScreenCaptureKeyboardShortcutInteractor(
+            backgroundScope = backgroundScope,
             screenCaptureUiInteractor = screenCaptureUiInteractor,
             uiEventLogger = uiEventLogger,
             keyguardInteractor = keyguardInteractor,
+            userRepository = userRepository,
+            hsum = fakeHeadlessSystemUserMode,
         )
     }

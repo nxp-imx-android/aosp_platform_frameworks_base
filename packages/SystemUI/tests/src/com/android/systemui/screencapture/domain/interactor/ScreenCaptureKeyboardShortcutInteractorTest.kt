@@ -15,6 +15,7 @@
  */
 package com.android.systemui.screencapture.domain.interactor
 
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -31,13 +32,13 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiSta
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType as LargeScreenCaptureType
 import com.android.systemui.testKosmosNew
+import com.android.systemui.user.domain.interactor.fakeHeadlessSystemUserMode
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
 class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
 
@@ -46,7 +47,35 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun attemptPartialRegionScreenshot_keyguardShowing_doesNotShowScreenCaptureUi() =
+    @DisableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    fun attemptPartialRegionScreenshot_flagDisabled_doesNotShowUi() =
+        kosmos.runTest {
+            val uiState by
+                collectLastValue(screenCaptureUiInteractor.uiState(ScreenCaptureType.RECORD))
+            assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
+
+            underTest.attemptPartialRegionScreenshot()
+
+            assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    fun attemptPartialRegionScreenshot_headlessSystemUserIsCurrent_doesNotShowUi() =
+        kosmos.runTest {
+            val uiState by
+                collectLastValue(screenCaptureUiInteractor.uiState(ScreenCaptureType.RECORD))
+            assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
+
+            fakeHeadlessSystemUserMode.setIsHeadlessSystemUser(true)
+            underTest.attemptPartialRegionScreenshot()
+
+            assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    fun attemptPartialRegionScreenshot_keyguardShowing_doesNotShowUi() =
         kosmos.runTest {
             val uiState by
                 collectLastValue(screenCaptureUiInteractor.uiState(ScreenCaptureType.RECORD))
@@ -59,7 +88,8 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun attemptPartialRegionScreenshot_keyguardNotShowing_showsScreenCaptureUi() =
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    fun attemptPartialRegionScreenshot_keyguardNotShowing_showsUi() =
         kosmos.runTest {
             val uiState by
                 collectLastValue(screenCaptureUiInteractor.uiState(ScreenCaptureType.RECORD))
@@ -72,6 +102,7 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun attemptPartialRegionScreenshot_setsLargeScreenCaptureParameters() =
         kosmos.runTest {
             underTest.attemptPartialRegionScreenshot()
@@ -90,6 +121,7 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun attemptPartialRegionScreenshot_logsEvent() =
         kosmos.runTest {
             underTest.attemptPartialRegionScreenshot()
