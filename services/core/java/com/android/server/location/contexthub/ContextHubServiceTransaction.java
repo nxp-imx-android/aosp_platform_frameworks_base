@@ -157,11 +157,7 @@ abstract class ContextHubServiceTransaction {
      * @return A unique identifier for the entity owning this transaction.
      */
     long getOwnerId() {
-        if (Flags.offloadImplementation()) {
-            return ((long) mTransactionType << 32) | (0x00000000FFFFFFFFL & mOwnerId);
-        } else {
-            return mOwnerId;
-        }
+        return ((long) mTransactionType << 32) | (0x00000000FFFFFFFFL & mOwnerId);
     }
 
     /**

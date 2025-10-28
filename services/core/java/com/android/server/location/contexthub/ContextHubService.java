@@ -340,28 +340,22 @@ public class ContextHubService extends IContextHubService.Stub {
             return;
         }
 
-        if (Flags.offloadApi() && Flags.offloadImplementation()) {
-            HubInfoRegistry registry;
-            try {
-                registry = new HubInfoRegistry(mContext, mContextHubWrapper);
-                mEndpointManager =
-                        new ContextHubEndpointManager(
-                                mContext, mContextHubWrapper, registry, mTransactionManager);
-                mEndpointManager.init();
-                Log.d(TAG, "Enabling generic offload API");
-            } catch (InstantiationException | UnsupportedOperationException e) {
-                mEndpointManager = null;
-                registry = null;
-                if (e instanceof UnsupportedOperationException) {
-                    Log.d(TAG, "Generic offload API not supported by HAL");
-                }
-            }
-            mHubInfoRegistry = registry;
-        } else {
-            mHubInfoRegistry = null;
+        HubInfoRegistry registry;
+        try {
+            registry = new HubInfoRegistry(mContext, mContextHubWrapper);
+            mEndpointManager =
+                    new ContextHubEndpointManager(
+                            mContext, mContextHubWrapper, registry, mTransactionManager);
+            mEndpointManager.init();
+            Log.d(TAG, "Enabling generic offload API");
+        } catch (InstantiationException | UnsupportedOperationException e) {
             mEndpointManager = null;
-            Log.d(TAG, "Disabling generic offload API due to flag config");
+            registry = null;
+            if (e instanceof UnsupportedOperationException) {
+                Log.d(TAG, "Generic offload API not supported by HAL");
+            }
         }
+        mHubInfoRegistry = registry;
 
         initDefaultClientMap();
 
