@@ -19,9 +19,13 @@ package com.android.systemui.qs.ui.composable
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.WithDesktopTest
 import android.testing.TestableLooper
+import android.view.Display
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertHeightIsEqualTo
+import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onParent
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -31,6 +35,7 @@ import com.android.systemui.Flags.FLAG_EXPANDED_AUDIO_DETAILED_VIEW
 import com.android.systemui.Flags.FLAG_QS_TILE_DETAILED_VIEW
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.compose.modifiers.resIdToTestTag
+import com.android.systemui.display.data.repository.setDisplayType
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags.FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS
 import com.android.systemui.flags.fake
@@ -39,13 +44,11 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.qs.pipeline.domain.interactor.currentTilesInteractor
 import com.android.systemui.qs.pipeline.shared.TileSpec
-import com.android.systemui.res.R
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
 import com.android.systemui.util.FixedActivitySizeComposeTestRule
 import kotlin.test.Test
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.runner.RunWith
 import platform.test.screenshot.DeviceEmulationSpec
@@ -60,7 +63,9 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
     val rule = FixedActivitySizeComposeTestRule(
         DeviceEmulationSpec(
             // Use a large display size intentionally to verify the dimens tuned for large screens.
-            Displays.External1080p120dpi,
+            // Also, use a multiple of 160 as the display density to avoid the rounding errors
+            // triggered by the pixel-DP conversion.
+            Displays.Desktop,
             isLandscape = true,
         )
     )
@@ -70,7 +75,37 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
     private val kosmos = testKosmos().apply {
         useUnconfinedTestDispatcher()
         featureFlagsClassic.fake.apply { setDefault(FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS) }
+        setDisplayType(Display.DEFAULT_DISPLAY, Display.TYPE_INTERNAL)
     }
+
+    private fun ComposeContentTestRule.setQSShadeOverlay() {
+        setContent {
+            PlatformTheme {
+                WithStatusIconContext(kosmos.tintedIconManagerFactory) {
+                    with(kosmos.quickSettingsShadeOverlay) { TestContentScope { Content(Modifier) } }
+                }
+            }
+        }
+    }
+
+    @Test
+    @WithDesktopTest
+    fun testBrightnessSlider() =
+        kosmos.runTest {
+            composeTestRule.setQSShadeOverlay()
+            composeTestRule.waitForIdle()
+
+            composeTestRule.apply {
+                // Verify the brightness slider's height.
+                onNodeWithTag(resIdToTestTag("slider")).assertHeightIsEqualTo(52.dp)
+
+                // Verify the brightness slider's vertical padding.
+                val brightnessSliderNode = onNodeWithTag(resIdToTestTag("brightness_slider"))
+                val sliderBoundsInRoot = brightnessSliderNode.getBoundsInRoot()
+                val sliderContainerBoundsInRoot = brightnessSliderNode.onParent().getBoundsInRoot()
+                assert(sliderBoundsInRoot.top - sliderContainerBoundsInRoot.top == 6.dp)
+            }
+        }
 
     @Test
     @WithDesktopTest
@@ -81,16 +116,7 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
             )
         )
 
-        composeTestRule.setContent {
-            PlatformTheme {
-                WithStatusIconContext(kosmos.tintedIconManagerFactory) {
-                    with(quickSettingsShadeOverlay) {
-                        TestContentScope { Content(Modifier) }
-                    }
-                }
-            }
-        }
-
+        composeTestRule.setQSShadeOverlay()
         composeTestRule.waitForIdle()
 
         composeTestRule
@@ -105,16 +131,7 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
     @WithDesktopTest
     @EnableFlags(FLAG_QS_TILE_DETAILED_VIEW, FLAG_EXPANDED_AUDIO_DETAILED_VIEW)
     fun testVolumeSlider() = kosmos.runTest {
-        composeTestRule.setContent {
-            PlatformTheme {
-                WithStatusIconContext(kosmos.tintedIconManagerFactory) {
-                    with(quickSettingsShadeOverlay) {
-                        TestContentScope { Content(Modifier) }
-                    }
-                }
-            }
-        }
-
+        composeTestRule.setQSShadeOverlay()
         composeTestRule.waitForIdle()
 
         // Verify the slider's height. "Media" is the tag of the volume slider.
