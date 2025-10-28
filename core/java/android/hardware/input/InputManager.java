@@ -264,10 +264,10 @@ public final class InputManager {
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = {"CONTROLLER_BUTTON_"}, value = {
-            ControllerButton.CONTROLLER_BUTTON_SOUTH,
-            ControllerButton.CONTROLLER_BUTTON_EAST,
-            ControllerButton.CONTROLLER_BUTTON_NORTH,
-            ControllerButton.CONTROLLER_BUTTON_WEST,
+            ControllerButton.CONTROLLER_BUTTON_A,
+            ControllerButton.CONTROLLER_BUTTON_B,
+            ControllerButton.CONTROLLER_BUTTON_X,
+            ControllerButton.CONTROLLER_BUTTON_Y,
             ControllerButton.CONTROLLER_BUTTON_L1,
             ControllerButton.CONTROLLER_BUTTON_R1,
             ControllerButton.CONTROLLER_BUTTON_L2,
@@ -279,10 +279,10 @@ public final class InputManager {
             ControllerButton.CONTROLLER_BUTTON_THUMBSTICK_RIGHT,
     })
     public @interface ControllerButton {
-        int CONTROLLER_BUTTON_SOUTH = KeyEvent.KEYCODE_BUTTON_A;
-        int CONTROLLER_BUTTON_EAST = KeyEvent.KEYCODE_BUTTON_B;
-        int CONTROLLER_BUTTON_NORTH = KeyEvent.KEYCODE_BUTTON_X;
-        int CONTROLLER_BUTTON_WEST = KeyEvent.KEYCODE_BUTTON_Y;
+        int CONTROLLER_BUTTON_A = KeyEvent.KEYCODE_BUTTON_A;
+        int CONTROLLER_BUTTON_B = KeyEvent.KEYCODE_BUTTON_B;
+        int CONTROLLER_BUTTON_X = KeyEvent.KEYCODE_BUTTON_X;
+        int CONTROLLER_BUTTON_Y = KeyEvent.KEYCODE_BUTTON_Y;
         int CONTROLLER_BUTTON_L1 = KeyEvent.KEYCODE_BUTTON_L1;
         int CONTROLLER_BUTTON_R1 = KeyEvent.KEYCODE_BUTTON_R1;
         int CONTROLLER_BUTTON_L2 = KeyEvent.KEYCODE_BUTTON_L2;
