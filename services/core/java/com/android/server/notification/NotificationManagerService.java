@@ -4185,7 +4185,8 @@ public class NotificationManagerService extends SystemService {
 
             // If the display cannot host tasks (such as a display used for mirroring), show the
             // toast on default display instead.
-            if (DesktopExperienceFlags.ENABLE_MIRROR_DISPLAY_NO_ACTIVITY.isTrue()) {
+            if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()
+                    && DesktopExperienceFlags.ENABLE_MIRROR_DISPLAY_NO_ACTIVITY.isTrue()) {
                 Display display = mDisplayManager.getDisplay(displayId);
                 if (display != null && !display.canHostTasks()) {
                     if (DBG) {
