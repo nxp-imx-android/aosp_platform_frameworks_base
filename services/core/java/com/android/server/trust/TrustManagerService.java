@@ -209,7 +209,7 @@ public class TrustManagerService extends SystemService {
      * which are handled slightly differently:
      * <ul>
      *  <li> Users with real keyguard:
-     *  These are users who can be switched to ({@link UserInfo#supportsSwitchToByUser()}). Their
+     *  These are users who can be switched to ({@link UserInfo#supportsSwitchTo()}). Their
      *  locked state is derived by a combination of user secure state, keyguard state, trust agent
      *  decision and biometric authentication result. These are updated via
      *  {@link #refreshDeviceLockedForUser(int)} and result stored in {@link #mDeviceLockedForUser}.
@@ -808,7 +808,7 @@ public class TrustManagerService extends SystemService {
         for (UserInfo userInfo : userInfos) {
             if (userInfo == null || userInfo.partial || !userInfo.isEnabled()
                     || userInfo.guestToRemove) continue;
-            if (!userInfo.supportsSwitchToByUser()) {
+            if (!userInfo.supportsSwitchTo()) {
                 if (DEBUG) {
                     Slogf.d(
                             TAG,
@@ -1015,7 +1015,7 @@ public class TrustManagerService extends SystemService {
 
     /**
      * Update the user's locked state. Only applicable to users with a real keyguard
-     * ({@link UserInfo#supportsSwitchToByUser}) and unsecured profiles.
+     * ({@link UserInfo#supportsSwitchTo}) and unsecured profiles.
      *
      * If this is called due to an unlock operation set unlockedUser to prevent the lock from
      * being prematurely reset for that user while keyguard is still in the process of going away.
@@ -1046,7 +1046,7 @@ public class TrustManagerService extends SystemService {
             int id = info.id;
             boolean secure = mLockPatternUtils.isSecure(id);
 
-            if (!info.supportsSwitchToByUser()) {
+            if (!info.supportsSwitchTo()) {
                 if (info.isProfile() && !secure
                         && !mLockPatternUtils.isProfileWithUnifiedChallenge(id)) {
                     // Unsecured profiles need to be explicitly set to false.
@@ -1972,7 +1972,7 @@ public class TrustManagerService extends SystemService {
         private void dumpUser(PrintWriter fout, UserInfo user, boolean isCurrent) {
             fout.printf(" User \"%s\" (id=%d, flags=%#x)",
                     user.name, user.id, user.flags);
-            if (!user.supportsSwitchToByUser()) {
+            if (!user.supportsSwitchTo()) {
                 final boolean locked;
                 if (mLockPatternUtils.isProfileWithUnifiedChallenge(user.id)) {
                     fout.print(" (profile with unified challenge)");
