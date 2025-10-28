@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.collection.coordinator
 
+import android.app.INotificationManager
 import android.app.NotificationChannel
 import android.app.NotificationChannel.NEWS_ID
 import android.app.NotificationChannel.PROMOTIONS_ID
@@ -33,6 +34,7 @@ import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.currentValue
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
+import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.notification.OnboardingAffordanceManager
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
@@ -46,6 +48,8 @@ import com.android.systemui.statusbar.notification.row.data.model.AppData
 import com.android.systemui.statusbar.notification.row.data.repository.TEST_BUNDLE_SPEC
 import com.android.systemui.statusbar.notification.row.data.repository.TEST_BUNDLE_SPEC_2
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
+import com.android.systemui.util.concurrency.FakeExecutor
+import com.android.systemui.util.time.FakeSystemClock
 import com.android.systemui.util.time.SystemClock
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertEquals
@@ -77,6 +81,13 @@ class BundleCoordinatorTest : SysuiTestCase() {
     @Mock private lateinit var systemClock: SystemClock
     @Mock private lateinit var sectionHeaderVisProvider: SectionHeaderVisibilityProvider
 
+    @Mock private lateinit var notificationManager: INotificationManager
+
+    @Mock
+    private lateinit var userTracker: UserTracker
+
+    private var executor: FakeExecutor = FakeExecutor(FakeSystemClock())
+
     private val onboardingMgr by lazy {
         OnboardingAffordanceManager("test bundle onboarding", sectionHeaderVisProvider)
     }
@@ -102,6 +113,9 @@ class BundleCoordinatorTest : SysuiTestCase() {
                 systemClock,
                 TestScope(UnconfinedTestDispatcher()),
                 onboardingMgr,
+                notificationManager,
+                executor,
+                userTracker,
             )
     }
 

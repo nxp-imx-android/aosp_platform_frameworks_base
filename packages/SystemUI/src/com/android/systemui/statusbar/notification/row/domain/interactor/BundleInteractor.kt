@@ -57,6 +57,8 @@ constructor(
     val titleText: Int
         get() = repository.titleText
 
+    val summaryText: String? = repository.summaryText
+
     val numberOfChildren: Int?
         get() = repository.numberOfChildren
 

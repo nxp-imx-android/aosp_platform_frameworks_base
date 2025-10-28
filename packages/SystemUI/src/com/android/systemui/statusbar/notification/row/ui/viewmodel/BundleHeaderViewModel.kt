@@ -36,6 +36,8 @@ class BundleHeaderViewModel @AssistedInject constructor(private val interactor: 
     val titleText: Int
         get() = interactor.titleText
 
+    val summaryText: String? = interactor.summaryText
+
     val numberOfChildren: Int?
         get() = interactor.numberOfChildren
 

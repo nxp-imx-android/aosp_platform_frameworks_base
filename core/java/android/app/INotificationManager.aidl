@@ -191,7 +191,7 @@ interface INotificationManager
     void unsnoozeNotificationFromSystemListener(in INotificationListener token, String key);
     void createDynamicBundle(in INotificationListener token, int dynamicBundleId, String bundleName);
     void deleteDynamicBundle(in INotificationListener token, int dynamicBundleId);
-    List<DynamicBundle> getDynamicBundles(in INotificationListener token);
+    List<DynamicBundle> getDynamicBundles(in INotificationListener token, in UserHandle user);
 
     ComponentName getEffectsSuppressor();
     boolean matchesCallFilter(in Bundle extras);

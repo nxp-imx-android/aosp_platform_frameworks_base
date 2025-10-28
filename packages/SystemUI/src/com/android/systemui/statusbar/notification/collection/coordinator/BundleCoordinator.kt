@@ -20,11 +20,15 @@ import android.app.NotificationChannel.NEWS_ID
 import android.app.NotificationChannel.PROMOTIONS_ID
 import android.app.NotificationChannel.RECS_ID
 import android.app.NotificationChannel.SOCIAL_MEDIA_ID
+import android.app.INotificationManager
 import android.os.Build
 import android.os.SystemProperties
 import android.os.UserHandle
 import androidx.annotation.VisibleForTesting
+import com.android.internal.R
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.notification.Bundles
 import com.android.systemui.statusbar.notification.OnboardingAffordanceManager
 import com.android.systemui.statusbar.notification.collection.BundleEntry
@@ -48,6 +52,7 @@ import com.android.systemui.statusbar.notification.dagger.PromoHeader
 import com.android.systemui.statusbar.notification.dagger.RecsHeader
 import com.android.systemui.statusbar.notification.dagger.SocialHeader
 import com.android.systemui.statusbar.notification.row.data.model.AppData
+import com.android.systemui.statusbar.notification.shared.NmContextualDisplay
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.BUCKET_NEWS
 import com.android.systemui.statusbar.notification.stack.BUCKET_PROMO
@@ -57,6 +62,7 @@ import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.util.concurrent.Executor
 
 /** Coordinator for sections derived from NotificationAssistantService classification. */
 @CoordinatorScope
@@ -71,6 +77,9 @@ constructor(
     private val systemClock: SystemClock,
     @Application private val coroutineScope: CoroutineScope,
     @Bundles private val onboardingAffordanceManager: OnboardingAffordanceManager,
+    private val notificationManager: INotificationManager,
+    @Background private val backgroundExecutor: Executor,
+    private val userTracker: UserTracker,
 ) : Coordinator {
 
     val newsSectioner =
@@ -120,14 +129,14 @@ constructor(
     val bundler =
         object : NotifBundler("NotifBundler") {
             // Use list instead of set to keep fixed order
-            override val bundleSpecs: List<BundleSpec> = buildList {
-                add(BundleSpec.NEWS)
-                add(BundleSpec.SOCIAL_MEDIA)
-                add(BundleSpec.PROMOTIONS)
-                add(BundleSpec.RECOMMENDED)
-            }
+            override val bundleSpecs: MutableList<BundleSpec> = mutableListOf(
+                BundleSpec.NEWS,
+                BundleSpec.SOCIAL_MEDIA,
+                BundleSpec.PROMOTIONS,
+                BundleSpec.RECOMMENDED,
+            )
 
-            private val bundleIds = this.bundleSpecs.map { it.key }
+            private var bundleIds = this.bundleSpecs.map { it.key }
 
             /**
              * Return the id string of the bundle this ListEntry belongs in Or null if this
@@ -154,6 +163,27 @@ constructor(
 
             private fun getBundleIdForNotifEntry(notifEntry: NotificationEntry): String? {
                 return notifEntry.representativeEntry?.channel?.id?.takeIf { it in this.bundleIds }
+            }
+
+            init {
+                if (NmContextualDisplay.isEnabled) {
+                    backgroundExecutor.execute {
+                        val dynamicBundles = notificationManager.getDynamicBundles(
+                                null, userTracker.userHandle)
+                        for (dynamicBundle in dynamicBundles) {
+                            val bundleSpec = BundleSpec(key = dynamicBundle.dynamicBundleType.toString(),
+                                titleText = R.string.promotional_notification_channel_label,
+                                summaryText = dynamicBundle.bundleName,
+                                icon = com.android.settingslib.R.drawable.ic_dynamic_bundle,
+                                bucket = dynamicBundle.dynamicBundleType,
+                                bundleType = dynamicBundle.dynamicBundleType,)
+                            bundleSpecs.add(bundleSpec)
+                        }
+                        bundleIds = this.bundleSpecs.map { it.key }
+                        val invalidator = object : Invalidator("dynamic bundles") {}
+                        invalidator.invalidateList("dynamic bundles loaded")
+                    }
+                }
             }
         }
 
