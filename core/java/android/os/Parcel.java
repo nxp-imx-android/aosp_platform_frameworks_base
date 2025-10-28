@@ -32,7 +32,6 @@ import android.app.AppOpsManager;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodReplace;
-import android.ravenwood.annotation.RavenwoodThrow;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -1368,7 +1367,6 @@ public final class Parcel {
      * @hide
      */
     @UnsupportedAppUsage
-    @RavenwoodThrow(blockedBy = android.text.Spanned.class)
     public final void writeCharSequence(@Nullable CharSequence val) {
         TextUtils.writeToParcel(val, this, 0);
     }
