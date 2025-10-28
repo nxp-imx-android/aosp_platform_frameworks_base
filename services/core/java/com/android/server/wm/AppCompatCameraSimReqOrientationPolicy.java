@@ -140,7 +140,7 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
             @NonNull Configuration lastReportedConfig) {
         return (isCompatibilityTreatmentEnabledForActivity(activity,
                 /* checkOrientation= */ true)
-                || isExternalDisplaySandboxEnabledForActivity(activity))
+                || shouldSandboxExternalDisplayRotationForActivity(activity))
                 && haveCameraCompatAttributesChanged(newConfig, lastReportedConfig);
     }
 
@@ -175,7 +175,7 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
         // treatment to apps optimized for large screens.
         if (cameraActivity == null || (!isCompatibilityTreatmentEnabledForActivity(cameraActivity,
                 /* checkOrientation= */ false)
-                && !isExternalDisplaySandboxEnabledForActivity(cameraActivity))) {
+                && !shouldSandboxExternalDisplayRotationForActivity(cameraActivity))) {
             return;
         }
 
@@ -266,19 +266,31 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
         final CameraCompatibilityInfo.Builder cameraCompatibilityInfoBuilder =
                 new CameraCompatibilityInfo.Builder();
         if (activityRecord != null) {
+            // Check the full treatment eligibility first. If applicable, it covers the external
+            // display use-case too.
             if (isCompatibilityTreatmentEnabledForActivity(activityRecord,
                     /* checkOrientation= */ true)) {
-                // Full compatibility treatment will be applied: sandbox display rotation,
-                // rotate-and-crop the camera feed, and letterbox the app.
                 final int displayRotation = getDesiredDisplaySandboxForCompat(activityRecord);
-                cameraCompatibilityInfoBuilder
-                        .setDisplayRotationSandbox(displayRotation)
-                        .setShouldLetterboxForCameraCompat(displayRotation != ROTATION_UNDEFINED)
-                        .setRotateAndCropRotation(getCameraRotationFromSandboxedDisplayRotation(
-                                displayRotation))
-                        .setShouldOverrideSensorOrientation(shouldOverrideSensorOrientation())
-                        .setShouldAllowTransformInverseDisplay(false);
-            } else if (isExternalDisplaySandboxEnabledForActivity(activityRecord)) {
+                final int rotateAndCropRotation = getCameraRotationFromSandboxedDisplayRotation(
+                        displayRotation);
+                if (isRotateAndCropModeSupported(activityRecord, rotateAndCropRotation)) {
+                    // Full compatibility treatment will be applied: sandbox display rotation,
+                    // rotate-and-crop the camera feed, and letterbox the app.
+                    return cameraCompatibilityInfoBuilder
+                            .setDisplayRotationSandbox(displayRotation)
+                            .setShouldLetterboxForCameraCompat(
+                                    displayRotation != ROTATION_UNDEFINED)
+                            .setRotateAndCropRotation(rotateAndCropRotation)
+                            .setShouldOverrideSensorOrientation(shouldOverrideSensorOrientation())
+                            .setShouldAllowTransformInverseDisplay(false)
+                            .build();
+                }
+            }
+
+            // For responsive apps (not applicable for full treatment) and for fixed-orientation
+            // apps where the full required treatment is not supported on this device, check if
+            // a lighter treatment for external displays is applicable.
+            if (shouldSandboxExternalDisplayRotationForActivity(activityRecord)) {
                 // Sandbox only display rotation if needed, for external display.
                 cameraCompatibilityInfoBuilder.setDisplayRotationSandbox(
                                 mCameraDisplayRotationProvider.getCameraDeviceRotation())
@@ -333,6 +345,15 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
         // camera sensor sandboxing difference, in order to keep the preview upright.
         return getRotationDegreesToEnum((displayRotationInDegrees - realCameraRotationInDegrees
                 + sensorRotationOffset + 360) % 360);
+    }
+
+    private boolean isRotateAndCropModeSupported(@NonNull ActivityRecord activityRecord,
+            @Surface.Rotation int rotateAnCropRotation) {
+        if (rotateAnCropRotation == ROTATION_0 || rotateAnCropRotation == ROTATION_UNDEFINED) {
+            return true;
+        }
+        return mCameraStateMonitor.isRotateAndCropModeSupported(activityRecord,
+                rotateAnCropRotation);
     }
 
     private static int getRotationToDegrees(@Surface.Rotation int rotation) {
@@ -514,24 +535,20 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
      * @return false if the activity is opted-out, not on external display, or a full camera compat
      * treatment is more suitable (most likely if it is a fixed-orientation activity).
      */
-    boolean isExternalDisplaySandboxEnabledForActivity(@NonNull ActivityRecord activity) {
-        if (!Flags.enableCameraCompatSandboxDisplayRotationOnExternalDisplaysBugfix()
-                || !mCameraStateMonitor.isCameraRunningForActivity(activity)
-                // For compatibility apps (fixed-orientation), apply the full treatment: sandboxing
-                // display rotation to match app's requested orientation, letterboxing, and
-                // rotating-and-cropping the camera feed.
-                || isCompatibilityTreatmentEnabledForActivity(activity,
-                /* checkOrientation= */ true)) {
-            return false;
-        }
+    private boolean shouldSandboxExternalDisplayRotationForActivity(
+            @NonNull ActivityRecord activity) {
+        return Flags.enableCameraCompatSandboxDisplayRotationOnExternalDisplaysBugfix()
+                && mCameraStateMonitor.isCameraRunningForActivity(activity)
+                && isOnExternalDisplayWithDifferentOrientation(activity)
+                && isTreatmentAllowedViaConfig(activity);
+    }
 
+    private boolean isOnExternalDisplayWithDifferentOrientation(@NonNull ActivityRecord activity) {
         final boolean externalDisplay = activity.getDisplayContent().getDisplay().getType()
                 == TYPE_EXTERNAL;
         // If camera and external display rotations are the same, this treatment has no effect.
-        final boolean externalDisplayDifferentOrientation = externalDisplay
-                && (activity.getDisplayContent().getRotation()
+        return externalDisplay && (activity.getDisplayContent().getRotation()
                 != mCameraDisplayRotationProvider.getCameraDeviceRotation());
-        return externalDisplayDifferentOrientation && isTreatmentAllowedViaConfig(activity);
     }
 
     @Nullable
