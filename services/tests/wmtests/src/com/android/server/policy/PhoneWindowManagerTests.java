@@ -781,7 +781,6 @@ public class PhoneWindowManagerTests {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_LAUNCHER_HANDLE_GO_HOME_KEYBOARD_SHORTCUT)
     public void startDockOrHome_externalDisplay_flagEnabled_shouldHandleKeyGesture()
             throws Exception {
         mockStartDockOrHome(Display.TYPE_EXTERNAL);
@@ -798,47 +797,12 @@ public class PhoneWindowManagerTests {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_LAUNCHER_HANDLE_GO_HOME_KEYBOARD_SHORTCUT)
-    public void startDockOrHome_externalDisplay_flagDisabled_shouldStartHome() throws Exception {
-        mockStartDockOrHome(Display.TYPE_EXTERNAL);
-        doReturn(true).when(mPhoneWindowManager).isUserSetupComplete();
-
-        mPhoneWindowManager.startDockOrHome(
-                /* displayId= */ DEFAULT_DISPLAY, /* fromHomeKey= */ true, /* awakenFromDreams= */
-                false);
-
-        verify(mInputManagerInternal, never()).handleKeyGestureInKeyGestureController(
-                any(KeyGestureEvent.class));
-        verify(mAtmInternal).startHomeOnDisplay(/* userId= */ anyInt(), /* reason= */
-                anyString(), /* displayId= */ eq(DEFAULT_DISPLAY), /* allowInstrumenting= */
-                eq(true), /* fromHomeKey= */ eq(true));
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_LAUNCHER_HANDLE_GO_HOME_KEYBOARD_SHORTCUT)
     public void startDockOrHome_internalDisplay_flagEnabled_shouldStartHome() throws Exception {
         mockStartDockOrHome(Display.TYPE_INTERNAL);
         doReturn(true).when(mPhoneWindowManager).isUserSetupComplete();
 
         mPhoneWindowManager.startDockOrHome(
                 /* displayId= */DEFAULT_DISPLAY, /* fromHomeKey= */ true, /* awakenFromDreams= */
-                false);
-
-        verify(mInputManagerInternal, never()).handleKeyGestureInKeyGestureController(
-                any(KeyGestureEvent.class));
-        verify(mAtmInternal).startHomeOnDisplay(/* userId= */ anyInt(), /* reason= */
-                anyString(), /* displayId= */ eq(DEFAULT_DISPLAY), /* allowInstrumenting= */
-                eq(true), /* fromHomeKey= */ eq(true));
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_LAUNCHER_HANDLE_GO_HOME_KEYBOARD_SHORTCUT)
-    public void startDockOrHome_internalDisplay_flagDisabled_shouldStartHome() throws Exception {
-        mockStartDockOrHome(Display.TYPE_INTERNAL);
-        doReturn(true).when(mPhoneWindowManager).isUserSetupComplete();
-
-        mPhoneWindowManager.startDockOrHome(
-                /* displayId= */ DEFAULT_DISPLAY, /* fromHomeKey= */ true, /* awakenFromDreams= */
                 false);
 
         verify(mInputManagerInternal, never()).handleKeyGestureInKeyGestureController(
