@@ -18,7 +18,6 @@ package android.companion.virtual.computercontrol;
 
 import android.annotation.NonNull;
 import android.annotation.RequiresNoPermission;
-import android.companion.virtualdevice.flags.Flags;
 import android.os.RemoteException;
 import android.view.SurfaceControl;
 
@@ -67,10 +66,6 @@ public final class InteractiveMirror implements AutoCloseable {
     @RequiresNoPermission
     public void resize(int width, int height) {
         if (width <= 0 || height <= 0) {
-            return;
-        }
-
-        if (!Flags.computerControlShowTouches()) {
             return;
         }
 

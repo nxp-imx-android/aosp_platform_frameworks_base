@@ -619,7 +619,6 @@ public class VirtualDeviceManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
     public void allowedUsers_nearbyStreamingNotControlled_onlyAllowedUsers() {
         when(mUserManager.getAllProfiles()).thenReturn(
                 List.of(UserHandle.of(10), UserHandle.of(20), UserHandle.of(30)));
@@ -638,7 +637,6 @@ public class VirtualDeviceManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
     public void allowedUsers_nearbyStreamingSameManagedAccountOnly_onlyAllowedMatchingAccount() {
         when(mUserManager.getAllProfiles()).thenReturn(
                 List.of(UserHandle.of(10), UserHandle.of(20), UserHandle.of(30)));
@@ -659,32 +657,12 @@ public class VirtualDeviceManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
     public void allowedUsers_allowedUsersEmpty_allUsersAllowed() {
         when(mUserManager.getAllProfiles()).thenReturn(
                 List.of(UserHandle.of(10), UserHandle.of(20), UserHandle.of(30)));
         when(mDevicePolicyManagerMock.getNearbyAppStreamingPolicy(anyInt()))
                 .thenReturn(NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY);
         VirtualDeviceParams params = new VirtualDeviceParams.Builder().build();
-        mDeviceImpl.close();
-        mDeviceImpl = createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, params);
-        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
-
-        assertThat(isUserAllowed(DISPLAY_ID_1, 10)).isTrue();
-        assertThat(isUserAllowed(DISPLAY_ID_1, 20)).isTrue();
-        assertThat(isUserAllowed(DISPLAY_ID_1, 30)).isTrue();
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
-    public void allowedUsers_userRestrictionFlagDisabled_allUsersAllowed() {
-        when(mUserManager.getAllProfiles()).thenReturn(
-                List.of(UserHandle.of(10), UserHandle.of(20), UserHandle.of(30)));
-        when(mDevicePolicyManagerMock.getNearbyAppStreamingPolicy(anyInt()))
-                .thenReturn(NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY);
-        VirtualDeviceParams params = new VirtualDeviceParams.Builder()
-                .setAllowedUsers(Set.of(UserHandle.of(10))) // Ignored
-                .build();
         mDeviceImpl.close();
         mDeviceImpl = createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, params);
         addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);

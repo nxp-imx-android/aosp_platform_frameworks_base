@@ -23,7 +23,6 @@ import android.companion.virtual.computercontrol.IComputerControlLifecycleCallba
 import android.companion.virtual.computercontrol.LifecycleState;
 import android.companion.virtual.computercontrol.LifecycleState.Blocked;
 import android.companion.virtual.computercontrol.LifecycleStateTracker;
-import android.companion.virtualdevice.flags.Flags;
 import android.os.RemoteException;
 import android.util.Slog;
 
@@ -68,8 +67,7 @@ final class SessionLifecycle {
             if (mClosed != null) {
                 return mClosed;
             }
-            if (Flags.computerControlBlockedState()
-                    && (mBlockingActivityPackage != null || mSecureWindowPackage != null)) {
+            if (mBlockingActivityPackage != null || mSecureWindowPackage != null) {
                 return mBlockingActivityPackage != null
                         ? new Blocked(
                                 ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH,
