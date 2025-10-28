@@ -46,6 +46,7 @@ import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInter
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.function.Consumer
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
@@ -118,6 +119,7 @@ constructor(
 
     override suspend fun onActivated(): Nothing {
         coroutineScope {
+            launch { activateFlowDumper() }
             launch { hydrator.activate() }
 
             launch {
@@ -125,8 +127,8 @@ constructor(
                     .filter { it is ObservableTransitionState.Idle }
                     .collect { headsUpNotificationInteractor.onTransitionIdle() }
             }
+            awaitCancellation()
         }
-        activateFlowDumper()
     }
 
     /** Notifies that the bounds of the notification scrim have changed. */
