@@ -68,6 +68,7 @@ import com.android.systemui.dreams.complication.HideComplicationTouchHandler
 import com.android.systemui.dreams.complication.dagger.DreamComplicationComponent
 import com.android.systemui.dreams.dagger.DreamOverlayComponent
 import com.android.systemui.dreams.touch.CommunalTouchHandler
+import com.android.systemui.dreams.touch.DismissTouchHandler
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.gesture.domain.gestureInteractor
@@ -1660,6 +1661,40 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         verify(mAmbientTouchComponentFactory)
             .create(any(), mTouchHandlersCaptor.capture(), any(), any())
         assertThat(mTouchHandlersCaptor.firstValue).containsExactly(mHideComplicationTouchHandler)
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAM_OVERLAY_STARTED_FIX)
+    fun testRequestExit_notCalledWhenDreamEnded() {
+        // Start dream in preview mode
+        val client = client
+        client.startDream(
+            mWindowParams,
+            mDreamOverlayCallback,
+            DREAM_COMPONENT,
+            true /*isPreview*/,
+            false, /*shouldShowComplication*/
+        )
+        mMainExecutor.runAllReady()
+
+        // Capture the DismissTouchHandler, which is added for preview mode
+        verify(mAmbientTouchComponentFactory)
+            .create(any(), mTouchHandlersCaptor.capture(), any(), any())
+        val dismissTouchHandler = mTouchHandlersCaptor.firstValue
+            .filterIsInstance<DismissTouchHandler>().first()
+
+        // Simulate the dream ending on its own before any touch interaction
+        mService.onEndDream()
+        mMainExecutor.runAllReady()
+        clearInvocations(mDreamOverlayCallback)
+
+        // Now, simulate the touch event that triggers the dismiss callback
+        dismissTouchHandler.dismissCallback.onDismissed()
+        mMainExecutor.runAllReady()
+
+        // requestExit() should not be called because the dream has
+        // already ended.
+        verify(mDreamOverlayCallback, never()).onExitRequested()
     }
 
     internal class FakeLifecycleRegistry(provider: LifecycleOwner) : LifecycleRegistry(provider) {
