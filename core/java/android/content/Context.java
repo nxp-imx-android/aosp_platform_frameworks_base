@@ -7262,6 +7262,14 @@ public abstract class Context {
     public static final String DYNAMIC_INSTRUMENTATION_SERVICE = "dynamic_instrumentation";
 
     /**
+     * Bridge service used by uprobestats.
+     * @hide
+     */
+    @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+    @FlaggedApi(android.security.Flags.FLAG_UPROBESTATS_BRIDGE_SERVICE)
+    public static final String UPROBESTATS_BRIDGE_SERVICE = "uprobestats_bridge";
+
+    /**
      * Use with {@link #getSystemService(String)} to retrieve a
      * {@link android.service.chooser.ChooserManager}.
      *

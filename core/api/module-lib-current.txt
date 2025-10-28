@@ -104,6 +104,7 @@ package android.content {
     field @FlaggedApi("android.app.ondeviceintelligence.flags.enable_on_device_intelligence_module") public static final int BIND_FOREGROUND_SERVICE = 67108864; // 0x4000000
     field public static final String PAC_PROXY_SERVICE = "pac_proxy";
     field public static final String TEST_NETWORK_SERVICE = "test_network";
+    field @FlaggedApi("android.security.uprobestats_bridge_service") public static final String UPROBESTATS_BRIDGE_SERVICE = "uprobestats_bridge";
     field @FlaggedApi("android.os.mainline_vcn_platform_api") public static final String VCN_MANAGEMENT_SERVICE = "vcn_management";
     field @FlaggedApi("android.webkit.update_service_ipc_wrapper") public static final String WEBVIEW_UPDATE_SERVICE = "webviewupdate";
   }
