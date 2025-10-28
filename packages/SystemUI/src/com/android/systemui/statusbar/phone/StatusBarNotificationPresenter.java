@@ -67,7 +67,6 @@ import com.android.systemui.statusbar.notification.interruption.NotificationInte
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionCondition;
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider;
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionFilter;
-import com.android.systemui.statusbar.notification.interruption.VisualInterruptionRefactor;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.NotificationGutsManager;
 import com.android.systemui.statusbar.notification.row.NotificationGutsManager.OnSettingsClickListener;
@@ -183,14 +182,10 @@ class StatusBarNotificationPresenter implements NotificationPresenter, CommandQu
         initController.addPostInitTask(() -> {
             mNotifShadeEventSource.setShadeEmptiedCallback(this::maybeClosePanelForShadeEmptied);
             mNotifShadeEventSource.setNotifRemovedByUserCallback(this::maybeEndAmbientPulse);
-            if (VisualInterruptionRefactor.isEnabled()) {
-                visualInterruptionDecisionProvider.addCondition(mAlertsDisabledCondition);
-                visualInterruptionDecisionProvider.addCondition(mVrModeCondition);
-                visualInterruptionDecisionProvider.addFilter(mNeedsRedactionFilter);
-                visualInterruptionDecisionProvider.addCondition(mPanelsDisabledCondition);
-            } else {
-                visualInterruptionDecisionProvider.addLegacySuppressor(mInterruptSuppressor);
-            }
+            visualInterruptionDecisionProvider.addCondition(mAlertsDisabledCondition);
+            visualInterruptionDecisionProvider.addCondition(mVrModeCondition);
+            visualInterruptionDecisionProvider.addFilter(mNeedsRedactionFilter);
+            visualInterruptionDecisionProvider.addCondition(mPanelsDisabledCondition);
             mLockscreenUserManager.setUpWithPresenter(this);
             mGutsManager.setUpWithPresenter(
                     this, mNotifListContainer, mOnSettingsClickListener);

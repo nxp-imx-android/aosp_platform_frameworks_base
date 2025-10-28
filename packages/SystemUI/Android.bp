@@ -200,8 +200,6 @@ filegroup {
         "tests/src/**/systemui/statusbar/KeyboardShortcutsTest.java",
         "tests/src/**/systemui/statusbar/notification/collection/NotificationEntryTest.java",
         "tests/src/**/systemui/statusbar/notification/collection/ShadeListBuilderTest.java",
-        "tests/src/**/systemui/statusbar/notification/interruption/NotificationInterruptStateProviderImplTest.java",
-        "tests/src/**/systemui/statusbar/notification/interruption/NotificationInterruptStateProviderWrapperTest.kt",
         "tests/src/**/systemui/statusbar/notification/interruption/VisualInterruptionDecisionProviderImplTest.kt",
         "tests/src/**/systemui/statusbar/notification/logging/NotificationLoggerTest.java",
         "tests/src/**/systemui/statusbar/notification/row/ExpandableNotificationRowTest.java",

@@ -191,14 +191,6 @@ flag {
 }
 
 flag {
-    name: "visual_interruptions_refactor"
-    namespace: "systemui"
-    description: "Enables the refactored version of the code to decide when notifications "
-        "HUN, bubble, pulse, or FSI."
-    bug: "261728888"
-}
-
-flag {
    name: "no_expansion_on_overscroll"
    namespace: "systemui"
    description: "Enable the fix where QS Expansion is set to zero on overscroll. This should"
