@@ -25,16 +25,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
@@ -50,6 +48,15 @@ import com.android.systemui.volume.panel.component.volume.ui.composable.VolumeSl
 import com.android.systemui.volume.panel.ui.composable.ComposeVolumePanelUiComponent
 import com.android.systemui.volume.panel.ui.composable.VolumePanelComposeScope
 
+private val TILE_DETAILS_HORIZONTAL_PADDING = R.dimen.tile_details_horizontal_padding
+private val TILE_DETAILS_VERTICAL_PADDING = R.dimen.tile_details_vertical_padding
+private val TILE_DETAILS_BOTTOM_PADDING = R.dimen.tile_details_bottom_padding
+private val TILE_DETAILS_SECTION_TITLE_HORIZONTAL_PADDING =
+    R.dimen.tile_details_section_title_horizontal_padding
+private val TILE_DETAILS_SECTION_TITLE_VERTICAL_PADDING =
+    R.dimen.tile_details_section_title_vertical_padding
+private val TILE_DETAILS_ENTRY_HORIZONTAL_GAP = R.dimen.tile_details_entry_horizontal_gap
+
 @Composable
 fun AudioDetailsContent(audioDetailsViewModel: AudioDetailsViewModel) {
     LaunchedEffect(Unit) { audioDetailsViewModel.activate() }
@@ -57,13 +64,20 @@ fun AudioDetailsContent(audioDetailsViewModel: AudioDetailsViewModel) {
         is AudioDetailsDefaultPageViewModel -> {
             val accessibilityTitle = stringResource(R.string.accessibility_volume_settings)
             val volumePanelState = currentViewModel.volumePanelState
+            val tileDetailsHorizontalPadding = dimensionResource(TILE_DETAILS_HORIZONTAL_PADDING)
+            val tileDetailsVerticalPadding = dimensionResource(TILE_DETAILS_VERTICAL_PADDING)
+            val tileDetailsBottomPadding = dimensionResource(TILE_DETAILS_BOTTOM_PADDING)
 
             Box(
                 modifier =
                     Modifier.fillMaxWidth()
-                        .height(600.dp)
                         .semantics { paneTitle = accessibilityTitle }
-                        .padding(horizontal = 14.dp, vertical = 18.dp)
+                        .padding(
+                            start = tileDetailsHorizontalPadding,
+                            top = tileDetailsVerticalPadding,
+                            end = tileDetailsHorizontalPadding,
+                            bottom = tileDetailsBottomPadding,
+                        )
             ) {
                 if (volumePanelState != null) {
                     with(
@@ -93,8 +107,7 @@ fun VolumePanelComposeScope.AudioContentsDefaultPage(
 ) {
     val volumeComponentsFactory = viewModel.volumeComponentsFactory
     Column(
-        modifier = modifier.verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(TILE_DETAILS_VERTICAL_PADDING))
     ) {
         volumeComponentsFactory?.let { factory ->
             SectionTitle(R.string.quick_settings_audio_output_section_title)
@@ -140,7 +153,8 @@ fun VolumePanelComposeScope.AudioContentsDefaultPage(
             footerComponents?.let {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(28.dp),
+                    horizontalArrangement =
+                        Arrangement.spacedBy(dimensionResource(TILE_DETAILS_ENTRY_HORIZONTAL_GAP)),
                 ) {
                     val visibleComponentsCount =
                         footerComponents.fastSumBy { if (it.isVisible) 1 else 0 }
@@ -170,7 +184,13 @@ fun VolumePanelComposeScope.AudioContentsDefaultPage(
 @Composable
 private fun SectionTitle(textId: Int, modifier: Modifier = Modifier) {
     Text(
-        modifier = modifier.basicMarquee().padding(horizontal = 18.dp),
+        modifier =
+            modifier
+                .basicMarquee()
+                .padding(
+                    horizontal = dimensionResource(TILE_DETAILS_SECTION_TITLE_HORIZONTAL_PADDING),
+                    vertical = dimensionResource(TILE_DETAILS_SECTION_TITLE_VERTICAL_PADDING),
+                ),
         text = stringResource(textId),
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onSurface,
