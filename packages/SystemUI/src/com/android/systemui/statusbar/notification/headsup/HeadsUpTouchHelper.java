@@ -214,6 +214,14 @@ public class HeadsUpTouchHelper implements Gefingerpoken {
             final float x = event.getX(pointerIndex);
             final float y = event.getY(pointerIndex);
             switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    eventStr = "ACTION_DOWN";
+                    if (mTouchingHeadsUpView) {
+                        debugLog("Touch => " + eventStr + " => TRUE");
+                        return true;
+                    }
+                    break;
+
                 case MotionEvent.ACTION_POINTER_UP:
                     eventStr = "ACTION_POINTER_UP";
                     final int upPointer = event.getPointerId(event.getActionIndex());
