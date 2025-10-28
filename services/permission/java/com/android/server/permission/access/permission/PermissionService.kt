@@ -2569,6 +2569,7 @@ class PermissionService(private val service: AccessCheckingService) :
     private fun getBpfMapUidsPermissionBits(permissionNames: List<String>): SparseIntArray =
         service.getState {
             SparseIntArray().apply {
+                val allGrantedPermissionsBits = getAllGrantedPermissionsBits(permissionNames)
                 state.userStates.forEachIndexed { _, userId, userState ->
                     userState.appIdPermissionFlags.forEachIndexed { _, appId, _ ->
                         val permissionBits = getBpfMapPermissionBits(appId, userId, permissionNames)
@@ -2577,6 +2578,8 @@ class PermissionService(private val service: AccessCheckingService) :
                             this[uid] = permissionBits
                         }
                     }
+                    this[UserHandle.getUid(userId, Process.ROOT_UID)] = allGrantedPermissionsBits
+                    this[UserHandle.getUid(userId, Process.SYSTEM_UID)] = allGrantedPermissionsBits
                 }
             }
         }
@@ -2586,6 +2589,9 @@ class PermissionService(private val service: AccessCheckingService) :
         userId: Int,
         permissionNames: List<String>,
     ): Int {
+        if (isRootOrSystemAppId(appId)) {
+            return getAllGrantedPermissionsBits(permissionNames)
+        }
         var permissionBits = 0
         permissionNames.forEachIndexed { index, permissionName ->
             val flags = with(policy) { getPermissionFlags(appId, userId, permissionName) }
@@ -2595,6 +2601,10 @@ class PermissionService(private val service: AccessCheckingService) :
         }
         return permissionBits
     }
+
+    /** Generate a bitmap representing all permissions being granted. */
+    private fun getAllGrantedPermissionsBits(permissionNames: List<String>) =
+        ((1L shl permissionNames.size) - 1).toInt()
 
     fun unregisterBpfMap(bpfMap: PermissionBpfMap) {
         synchronized(bpfMapPermissionNamesLock) {
@@ -2612,8 +2622,11 @@ class PermissionService(private val service: AccessCheckingService) :
     }
 
     /** Check whether a UID is root or system UID. */
-    private fun isRootOrSystemUid(uid: Int) =
-        when (UserHandle.getAppId(uid)) {
+    private fun isRootOrSystemUid(uid: Int) = isRootOrSystemAppId(UserHandle.getAppId(uid))
+
+    /** Check whether an app ID is root or system app ID. */
+    private fun isRootOrSystemAppId(appId: Int) =
+        when (appId) {
             Process.ROOT_UID,
             Process.SYSTEM_UID -> true
             else -> false
@@ -2777,6 +2790,17 @@ class PermissionService(private val service: AccessCheckingService) :
                             UserHandle.getUid(userId, appId)
                     }
                 }
+            }
+        }
+
+        override fun onUserAdded(userId: Int) {
+            bpfMapPermissionNames.forEachIndexed { _, bpfMap, _ ->
+                permissionChangedBpfMapUids
+                    .getOrPut(bpfMap) { MutableIntSet() }
+                    .apply {
+                        this += UserHandle.getUid(userId, Process.ROOT_UID)
+                        this += UserHandle.getUid(userId, Process.SYSTEM_UID)
+                    }
             }
         }
 
@@ -3004,7 +3028,6 @@ class PermissionService(private val service: AccessCheckingService) :
                 this += Manifest.permission.ACCESS_LOCAL_NETWORK
                 this += Manifest.permission.UPDATE_DEVICE_STATS
             }
-
 
         private const val MAX_ALLOWED_BPF_PERMISSIONS = Int.SIZE_BITS
     }
