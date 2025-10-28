@@ -50,7 +50,7 @@ public abstract class ContextHint {
      * @hide
      */
     @IntDef(prefix = {"HINT_TYPE_"}, value = {HINT_TYPE_ERROR, HINT_TYPE_BUNDLE,
-            HINT_TYPE_NOTIFICATION, HINT_TYPE_TEXT_CLASSIFICATION})
+            HINT_TYPE_NOTIFICATION})
     @Retention(RetentionPolicy.SOURCE)
     public @interface HintType {
     }
@@ -72,11 +72,6 @@ public abstract class ContextHint {
      * Hint type for {@link NotificationHint}.
      */
     static final int HINT_TYPE_NOTIFICATION = 2;
-
-    /**
-     * Hint type for {@link TextClassificationHint}.
-     */
-    static final int HINT_TYPE_TEXT_CLASSIFICATION = 3;
 
     /**
      * Object returned when there is an unparceling error.
@@ -183,7 +178,6 @@ public abstract class ContextHint {
             return switch (bundle.getInt(KEY_HINT_TYPE, HINT_TYPE_ERROR)) {
                 case HINT_TYPE_BUNDLE -> new BundleHint(bundle);
                 case HINT_TYPE_NOTIFICATION -> new NotificationHint(bundle);
-                case HINT_TYPE_TEXT_CLASSIFICATION -> new TextClassificationHint(bundle);
                 default -> ERROR_HINT;
             };
         } catch (Exception e) {
