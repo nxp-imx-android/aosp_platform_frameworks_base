@@ -3342,7 +3342,7 @@ public class Activity extends ContextThemeWrapper
     public void requestFullscreenMode(@FullscreenModeRequest int request,
             @Nullable OutcomeReceiver<Void, Throwable> approvalCallback) {
         FullscreenRequestHandler.requestFullscreenMode(
-                request, approvalCallback, mCurrentConfig, getActivityToken());
+                request, approvalCallback, getActivityToken());
     }
 
     /**
