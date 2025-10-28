@@ -75,7 +75,7 @@ import kotlinx.coroutines.withTimeout
 open class SystemStatusAnimationSchedulerImpl
 @AssistedInject
 constructor(
-    private val coordinator: SystemEventCoordinator,
+    @Assisted private val coordinator: SystemEventCoordinator,
     private val chipAnimationController: SystemEventChipAnimationController,
     @Assisted private val displayId: Int,
     private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
@@ -88,6 +88,7 @@ constructor(
     @AssistedFactory
     interface Factory {
         fun create(
+            coordinator: SystemEventCoordinator,
             displayId: Int,
             coroutineScope: CoroutineScope,
         ): SystemStatusAnimationSchedulerImpl

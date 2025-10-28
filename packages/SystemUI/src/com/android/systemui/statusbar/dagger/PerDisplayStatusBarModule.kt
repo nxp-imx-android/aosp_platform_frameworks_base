@@ -39,6 +39,7 @@ import com.android.systemui.statusbar.disableflags.data.repository.DisableFlagsR
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractorImpl
+import com.android.systemui.statusbar.events.SystemEventCoordinator
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler
 import com.android.systemui.statusbar.events.SystemStatusAnimationSchedulerImpl
 import com.android.systemui.statusbar.events.data.repository.SystemStatusEventAnimationRepository
@@ -176,14 +177,31 @@ interface PerDisplayStatusBarModule {
         @DisplayAware
         fun systemStatusAnimationScheduler(
             factory: SystemStatusAnimationSchedulerImpl.Factory,
+            @DisplayAware coordinatorLazy: Lazy<SystemEventCoordinator>,
             @DisplayAware displayIdLazy: Lazy<Int>,
             @DisplayAware coroutineScopeLazy: Lazy<CoroutineScope>,
             @Default defaultSchedulerLazy: Lazy<SystemStatusAnimationScheduler>,
         ): SystemStatusAnimationScheduler {
             return if (Flags.systemStatusAnimationPerDisplay()) {
-                factory.create(displayIdLazy.get(), coroutineScopeLazy.get())
+                factory.create(coordinatorLazy.get(), displayIdLazy.get(), coroutineScopeLazy.get())
             } else {
                 defaultSchedulerLazy.get()
+            }
+        }
+
+        @Provides
+        @PerDisplaySingleton
+        @DisplayAware
+        fun systemEventCoordinator(
+            @Default defaultCoordinatorLazy: Lazy<SystemEventCoordinator>,
+            factory: SystemEventCoordinator.Factory,
+            @DisplayAware contextLazy: Lazy<Context>,
+            @DisplayAware scopeLazy: Lazy<CoroutineScope>,
+        ): SystemEventCoordinator {
+            return if (Flags.systemStatusAnimationPerDisplay()) {
+                factory.create(contextLazy.get(), scopeLazy.get())
+            } else {
+                defaultCoordinatorLazy.get()
             }
         }
 
