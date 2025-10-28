@@ -20,6 +20,7 @@ import android.app.Notification.GROUP_ALERT_SUMMARY
 import android.app.NotificationChannel
 import android.app.NotificationChannel.SYSTEM_RESERVED_IDS
 import android.app.NotificationManager.IMPORTANCE_LOW
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -29,6 +30,7 @@ import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.statusbar.NotificationRemoteInputManager
+import com.android.systemui.statusbar.SbnBuilder
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.uievents.statusBarChipsUiEventLogger
 import com.android.systemui.statusbar.notification.NotifPipelineFlags
@@ -58,6 +60,7 @@ import com.android.systemui.statusbar.notification.interruption.NotificationInte
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionLogger
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider
 import com.android.systemui.statusbar.notification.row.mockNotificationActionClickManager
+import com.android.systemui.statusbar.notification.shared.LaunchNewFsiOnUpdate
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.FakeExecutor
@@ -76,13 +79,13 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.BDDMockito.clearInvocations
 import org.mockito.BDDMockito.given
-import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -107,22 +110,17 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
     private lateinit var notifSectioner: NotifSectioner
     private lateinit var actionPressListener: Consumer<NotificationEntry>
 
-    private val notifPipeline: NotifPipeline = mock(NotifPipeline::class.java)
+    private val notifPipeline: NotifPipeline = mock()
     private val logger = HeadsUpCoordinatorLogger(logcatLogBuffer(), verbose = true)
-    private val interruptLogger: VisualInterruptionDecisionLogger =
-        mock(VisualInterruptionDecisionLogger::class.java)
+    private val interruptLogger: VisualInterruptionDecisionLogger = mock()
     private val headsUpManager = kosmos.mockHeadsUpManager
-    private val headsUpViewBinder: HeadsUpViewBinder = mock(HeadsUpViewBinder::class.java)
-    private val visualInterruptionDecisionProvider: VisualInterruptionDecisionProvider =
-        mock(VisualInterruptionDecisionProvider::class.java)
-    private val remoteInputManager: NotificationRemoteInputManager =
-        mock(NotificationRemoteInputManager::class.java)
-    private val endLifetimeExtension: OnEndLifetimeExtensionCallback =
-        mock(OnEndLifetimeExtensionCallback::class.java)
-    private val headerController: NodeController = mock(NodeController::class.java)
-    private val launchFullScreenIntentProvider: LaunchFullScreenIntentProvider =
-        mock(LaunchFullScreenIntentProvider::class.java)
-    private val flags: NotifPipelineFlags = mock(NotifPipelineFlags::class.java)
+    private val headsUpViewBinder: HeadsUpViewBinder = mock()
+    private val visualInterruptionDecisionProvider: VisualInterruptionDecisionProvider = mock()
+    private val remoteInputManager: NotificationRemoteInputManager = mock()
+    private val endLifetimeExtension: OnEndLifetimeExtensionCallback = mock()
+    private val headerController: NodeController = mock()
+    private val launchFullScreenIntentProvider: LaunchFullScreenIntentProvider = mock()
+    private val flags: NotifPipelineFlags = mock()
 
     private lateinit var entry: NotificationEntry
     private lateinit var groupSummary: NotificationEntry
@@ -1264,6 +1262,90 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
 
         // THEN it should still not full screen because it's too old
         verify(launchFullScreenIntentProvider, never()).launchFullScreenIntent(entry)
+    }
+
+    @Test
+    @EnableFlags(LaunchNewFsiOnUpdate.FLAG_NAME)
+    fun onEntryUpdated_withExistingUnlaunchedFsi_doesNotLaunch() {
+        // GIVEN A new notification with FSI that was not launched.
+        updateEntryWithFullScreenIntent()
+        setShouldFullScreen(entry, FullScreenIntentDecision.NO_FSI_NOT_IMPORTANT_ENOUGH)
+        collectionListener.onEntryAdded(entry)
+
+        // CHECK not launched on add
+        verify(launchFullScreenIntentProvider, never()).launchFullScreenIntent(entry)
+
+        // WHEN the notification now qualifies to launch its FSI
+        updateEntryWithFullScreenIntent() // Set a new SBN, also with an FSI.
+        setShouldFullScreen(entry, FullScreenIntentDecision.FSI_DEVICE_NOT_INTERACTIVE)
+        collectionListener.onEntryUpdated(entry)
+
+        // VERIFY that the FSI is not launched.
+        // An FSI needs to be NEWLY ADDED for it to be launched on update.
+        verify(launchFullScreenIntentProvider, never()).launchFullScreenIntent(entry)
+    }
+
+    @Test
+    @EnableFlags(LaunchNewFsiOnUpdate.FLAG_NAME)
+    fun onEntryUpdated_withNewFsi_doesLaunch() {
+        // GIVEN A new notification without an FSI.
+        setShouldFullScreen(entry, FullScreenIntentDecision.NO_FULL_SCREEN_INTENT)
+        collectionListener.onEntryAdded(entry)
+
+        // CHECK not launched on add
+        verify(launchFullScreenIntentProvider, never()).launchFullScreenIntent(entry)
+
+        // WHEN the notification is updated to have FSI
+        updateEntryWithFullScreenIntent()
+        setShouldFullScreen(entry, FullScreenIntentDecision.FSI_DEVICE_NOT_INTERACTIVE)
+        collectionListener.onEntryUpdated(entry)
+
+        // VERIFY that the FSI is launched
+        verify(launchFullScreenIntentProvider).launchFullScreenIntent(entry)
+    }
+
+    @Test
+    @DisableFlags(LaunchNewFsiOnUpdate.FLAG_NAME)
+    fun onEntryUpdated_withNewFsi_doesNotLaunch_withFlagDisabled() {
+        // GIVEN A new notification without an FSI.
+        setShouldFullScreen(entry, FullScreenIntentDecision.NO_FULL_SCREEN_INTENT)
+        collectionListener.onEntryAdded(entry)
+
+        // CHECK not launched on add
+        verify(launchFullScreenIntentProvider, never()).launchFullScreenIntent(entry)
+
+        // WHEN the notification is updated to have FSI
+        updateEntryWithFullScreenIntent()
+        setShouldFullScreen(entry, FullScreenIntentDecision.FSI_DEVICE_NOT_INTERACTIVE)
+        collectionListener.onEntryUpdated(entry)
+
+        // VERIFY that the FSI is not launched
+        verify(launchFullScreenIntentProvider, never()).launchFullScreenIntent(entry)
+    }
+
+    @Test
+    @EnableFlags(LaunchNewFsiOnUpdate.FLAG_NAME)
+    fun onEntryUpdated_withNewFsiBlockedOnlyByDnd_isCandidateForFSIReconsideration() {
+        // GIVEN A new notification without an FSI.
+        setShouldFullScreen(entry, FullScreenIntentDecision.NO_FULL_SCREEN_INTENT)
+        collectionListener.onEntryAdded(entry)
+
+        // CHECK not launched on add
+        verify(launchFullScreenIntentProvider, never()).launchFullScreenIntent(entry)
+        assertFalse(coordinator.isCandidateForFSIReconsideration(entry))
+
+        // WHEN the notification is updated to have FSI
+        updateEntryWithFullScreenIntent()
+        setShouldFullScreen(entry, FullScreenIntentDecision.NO_FSI_SUPPRESSED_ONLY_BY_DND)
+        collectionListener.onEntryUpdated(entry)
+
+        // VERIFY that the FSI is not launched, but is a candidate for FSI reconsideration
+        verify(launchFullScreenIntentProvider, never()).launchFullScreenIntent(entry)
+        assertTrue(coordinator.isCandidateForFSIReconsideration(entry))
+    }
+
+    private fun updateEntryWithFullScreenIntent() {
+        entry.sbn = SbnBuilder().build().apply { notification.fullScreenIntent = mock() }
     }
 
     private fun setDefaultShouldHeadsUp(should: Boolean) {

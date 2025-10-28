@@ -55,6 +55,7 @@ import com.android.systemui.statusbar.notification.interruption.VisualInterrupti
 import com.android.systemui.statusbar.notification.logKey
 import com.android.systemui.statusbar.notification.row.NotificationActionClickManager
 import com.android.systemui.statusbar.notification.shared.GroupHunAnimationFix
+import com.android.systemui.statusbar.notification.shared.LaunchNewFsiOnUpdate
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.BUCKET_HEADS_UP
 import com.android.systemui.util.concurrency.DelayableExecutor
@@ -556,6 +557,22 @@ constructor(
         mHeadsUpViewBinder.bindHeadsUpView(posted.entry, isPinnedByUser, this::onHeadsUpViewBound)
     }
 
+    private fun evaluateNewFullScreenIntent(entry: NotificationEntry) {
+        val fsiDecision =
+            mVisualInterruptionDecisionProvider.makeUnloggedFullScreenIntentDecision(entry)
+        mVisualInterruptionDecisionProvider.logFullScreenIntentDecision(fsiDecision)
+        if (fsiDecision.shouldInterrupt) {
+            mLaunchFullScreenIntentProvider.launchFullScreenIntent(entry)
+        } else if (fsiDecision.wouldInterruptWithoutDnd) {
+            // If DND was the only reason this entry was suppressed, note it for potential
+            // reconsideration on later ranking updates.
+            addForFSIReconsideration(entry, mSystemClock.currentTimeMillis())
+        }
+        if (LaunchNewFsiOnUpdate.isEnabled) {
+            entry.markFullScreenIntentEvaluated();
+        }
+    }
+
     private val mNotifCollectionListener =
         object : NotifCollectionListener {
             /**
@@ -565,16 +582,7 @@ constructor(
             override fun onEntryAdded(entry: NotificationEntry) {
                 // First check whether this notification should launch a full screen intent, and
                 // launch it if needed.
-                val fsiDecision =
-                    mVisualInterruptionDecisionProvider.makeUnloggedFullScreenIntentDecision(entry)
-                mVisualInterruptionDecisionProvider.logFullScreenIntentDecision(fsiDecision)
-                if (fsiDecision.shouldInterrupt) {
-                    mLaunchFullScreenIntentProvider.launchFullScreenIntent(entry)
-                } else if (fsiDecision.wouldInterruptWithoutDnd) {
-                    // If DND was the only reason this entry was suppressed, note it for potential
-                    // reconsideration on later ranking updates.
-                    addForFSIReconsideration(entry, mSystemClock.currentTimeMillis())
-                }
+                evaluateNewFullScreenIntent(entry);
 
                 // makeAndLogHeadsUpDecision includes check for whether this notification should be
                 // filtered
@@ -603,6 +611,11 @@ constructor(
              * heads up again.
              */
             override fun onEntryUpdated(entry: NotificationEntry) {
+                // First check whether this notification should launch a full screen intent, and
+                // launch it if needed.
+                if (LaunchNewFsiOnUpdate.isEnabled && entry.isFullScreenIntentNewlyAdded()) {
+                    evaluateNewFullScreenIntent(entry);
+                }
                 val shouldHeadsUpEver =
                     mVisualInterruptionDecisionProvider
                         .makeAndLogHeadsUpDecision(entry)
@@ -801,7 +814,8 @@ constructor(
      * The time window is the same as for ranking update, but this doesn't allow a potential update
      * to an entry with full screen intent to count for timing purposes.
      */
-    private fun isCandidateForFSIReconsideration(entry: NotificationEntry): Boolean {
+    @VisibleForTesting
+    fun isCandidateForFSIReconsideration(entry: NotificationEntry): Boolean {
         val addedTime = mFSIUpdateCandidates[entry.key] ?: return false
         return (mSystemClock.currentTimeMillis() - addedTime) <= MAX_RANKING_UPDATE_DELAY_MS
     }
