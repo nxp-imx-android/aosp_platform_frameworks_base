@@ -45,7 +45,7 @@ import com.android.systemui.headline.ui.viewmodel.fakeHeadlineItems
 
 @Composable
 @Preview
-fun HeadlinePreview() {
+private fun HeadlinePreview() {
     // TODO(b/449675581): Use PlatformTheme {} once it works with previews or provide a new
     // PlatformThemeForPreviews {} composable.
     MaterialTheme { HeadlineScreen() }
@@ -57,9 +57,7 @@ fun HeadlineScreen(items: List<HeadlineItem> = remember { fakeHeadlineItems() })
     fun rememberViewModel(
         currentItemIndex: Int? = 0,
         list: List<HeadlineItem> = items,
-    ): FakeHeadlineViewModel {
-        return remember(list) { FakeHeadlineViewModel(list, currentItemIndex?.let { list[it] }) }
-    }
+    ): FakeHeadlineViewModel = rememberViewModel(list, currentItemIndex)
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         // No item selected.
@@ -95,16 +93,32 @@ fun HeadlineScreen(items: List<HeadlineItem> = remember { fakeHeadlineItems() })
         FakeHeadline(rememberViewModel(list = rememberListWithLongItem()))
 
         // Empty item (has correct minimum size).
-        FakeHeadline(
-            rememberViewModel(
-                list = remember { listOf(FakeHeadlineItem("empty", emptyList(), emptyList())) }
-            )
+        val listWithEmptyItems = List(2) { FakeHeadlineItem("empty$it", emptyList(), emptyList()) }
+        FakeHeadline(rememberViewModel(list = remember { listWithEmptyItems }))
+
+        // Small item at 100% swipe distance, to make sure that the min content width is big enough
+        // that we don't have a weird overlap with the camera cutout.
+        HeadlineWithTransitionAtProgress(
+            items = listWithEmptyItems,
+            fromIndex = 0,
+            toIndex = 1,
+            progress = 0f,
+            previewProgress = 1f,
+            isInitiatedByUserInput = true,
         )
     }
 }
 
 @Composable
-private fun FakeHeadline(viewModel: FakeHeadlineViewModel, modifier: Modifier = Modifier) {
+internal fun rememberViewModel(
+    list: List<HeadlineItem>,
+    currentItemIndex: Int? = 0,
+): FakeHeadlineViewModel {
+    return remember(list) { FakeHeadlineViewModel(list, currentItemIndex?.let { list[it] }) }
+}
+
+@Composable
+fun FakeHeadline(viewModel: FakeHeadlineViewModel, modifier: Modifier = Modifier) {
     WithFakeCameraCutout(modifier) { Headline(viewModel, Modifier.height(36.dp)) }
 }
 
