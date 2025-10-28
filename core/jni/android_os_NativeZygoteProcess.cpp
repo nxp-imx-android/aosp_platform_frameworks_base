@@ -46,7 +46,8 @@ static std::optional<ScopedUtfChars> extract_jstring(JNIEnv* env, jstring manage
 
 static void CreateSpawnParcel(flatbuffers::FlatBufferBuilder& builder, JNIEnv* env, jint uid,
                               jint gid, const char* niceNameStr, bool is_child_zygote,
-                              SpawnPayload payload_type, flatbuffers::Offset<void> payload) {
+                              const char* seInfoStr, SpawnPayload payload_type,
+                              flatbuffers::Offset<void> payload) {
     int32_t priority_initial = -20;
     int32_t priority_final = 0;
     jintArray gids = nullptr;
@@ -60,10 +61,11 @@ static void CreateSpawnParcel(flatbuffers::FlatBufferBuilder& builder, JNIEnv* e
     uint64_t cap_inheritable = cap_permitted | cap_bound;
     std::vector<uint32_t> secondary_groups;
     std::vector<RLimitData> rlimits;
-    auto spawnCmd =
-            CreateSpawnDirect(builder, uid, gid, niceNameStr, priority_initial, priority_final,
-                              cap_effective, cap_permitted, cap_inheritable, cap_bound,
-                              &secondary_groups, &rlimits, payload_type, payload);
+    auto spawnCommon =
+            CreateSpawnCommonDirect(builder, uid, gid, niceNameStr, priority_initial,
+                                    priority_final, cap_effective, cap_permitted, cap_inheritable,
+                                    cap_bound, seInfoStr, &secondary_groups, &rlimits);
+    auto spawnCmd = CreateSpawn(builder, spawnCommon, payload_type, payload);
     auto parcel = CreateParcel(builder, Message_Spawn, spawnCmd.Union());
     builder.Finish(parcel);
 }
@@ -115,10 +117,10 @@ static jint android_os_NativeZygoteProcess_startNativeProcess(
 
     flatbuffers::FlatBufferBuilder builder;
     auto spawnAndroidNativeCmd =
-            CreateSpawnAndroidNativeDirect(builder, packageNamePtr, seInfoPtr, startSeq,
+            CreateSpawnAndroidNativeDirect(builder, packageNamePtr, startSeq,
                                            static_cast<unsigned>(runtimeFlags));
     bool is_child_zygote = startChildZygote == JNI_TRUE;
-    CreateSpawnParcel(builder, env, uid, gid, niceNamePtr, is_child_zygote,
+    CreateSpawnParcel(builder, env, uid, gid, niceNamePtr, is_child_zygote, seInfoPtr,
                       SpawnPayload_SpawnAndroidNative, spawnAndroidNativeCmd.Union());
     uint8_t* buf = builder.GetBufferPointer();
     ssize_t size = builder.GetSize();
