@@ -47644,15 +47644,34 @@ package android.telephony.data {
 
   public final class TrafficDescriptor implements android.os.Parcelable {
     method public int describeContents();
+    method @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public int getConnectionCapability();
     method @Nullable public String getDataNetworkName();
     method @Nullable public byte[] getOsAppId();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_BACKGROUND = 168; // 0xa8
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_DOWNLINK_STREAMING = 163; // 0xa3
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_IMS = 1; // 0x1
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_INTERNET = 8; // 0x8
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_IOT_DELAY_TOLERANT = 161; // 0xa1
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_IOT_NON_DELAY_TOLERANT = 162; // 0xa2
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_LCS_USER_PLANE_POSITIONING = 16; // 0x10
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_LOW_LATENCY_LOSS_TOLERANT_UNACK = 171; // 0xab
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_MISSION_CRITICAL_COMMUNICATIONS = 169; // 0xa9
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_MMS = 2; // 0x2
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_REAL_TIME_INTERACTIVE = 166; // 0xa6
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_SUPL = 4; // 0x4
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_TIME_CRITICAL_COMMUNICATIONS = 170; // 0xaa
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_UNIFIED_COMMUNICATIONS = 167; // 0xa7
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_UNKNOWN = 0; // 0x0
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_UPLINK_STREAMING = 164; // 0xa4
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") public static final int CONNECTION_CAPABILITY_VEHICULAR_COMMUNICATIONS = 165; // 0xa5
     field @NonNull public static final android.os.Parcelable.Creator<android.telephony.data.TrafficDescriptor> CREATOR;
   }
 
   public static final class TrafficDescriptor.Builder {
     ctor public TrafficDescriptor.Builder();
     method @NonNull public android.telephony.data.TrafficDescriptor build();
+    method @FlaggedApi("com.android.internal.telephony.flags.enable_traffic_descriptor_connection_capability") @NonNull public android.telephony.data.TrafficDescriptor.Builder setConnectionCapability(int);
     method @NonNull public android.telephony.data.TrafficDescriptor.Builder setDataNetworkName(@NonNull String);
     method @NonNull public android.telephony.data.TrafficDescriptor.Builder setOsAppId(@NonNull byte[]);
   }
