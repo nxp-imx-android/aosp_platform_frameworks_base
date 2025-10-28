@@ -49,15 +49,6 @@ flag {
   bug: "388472403"
 }
 
-flag {
-   name: "notification_row_is_removed_fix"
-   namespace: "systemui"
-   description: "Fix incorrect isRemoved value in ExpandableNotificationRow"
-   bug: "417457086"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
 
 flag {
    name: "notification_children_container_min_height"
