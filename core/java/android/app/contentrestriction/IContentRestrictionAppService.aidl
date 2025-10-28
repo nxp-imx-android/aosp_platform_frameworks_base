@@ -19,5 +19,6 @@ package android.app.contentrestriction;
 /**
  * @hide
  */
-interface IContentRestrictionAppService {
+oneway interface IContentRestrictionAppService {
+  oneway void onContentRestrictionEnabled(boolean enabled);
 }

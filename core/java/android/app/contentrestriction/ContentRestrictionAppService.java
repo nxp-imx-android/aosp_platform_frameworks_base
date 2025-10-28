@@ -46,6 +46,14 @@ public class ContentRestrictionAppService extends Service {
             "android.app.action.BIND_CONTENT_RESTRICTION_APP_SERVICE";
 
     private final IContentRestrictionAppService mBinder = new IContentRestrictionAppService.Stub() {
+        @Override
+        public void onContentRestrictionEnabled(boolean enabled) {
+            if (enabled) {
+                ContentRestrictionAppService.this.onContentRestrictionEnabled();
+            } else {
+                ContentRestrictionAppService.this.onContentRestrictionDisabled();
+            }
+        }
     };
 
     @Nullable
@@ -53,4 +61,20 @@ public class ContentRestrictionAppService extends Service {
     public final IBinder onBind(@Nullable Intent intent) {
         return mBinder.asBinder();
     }
+
+    /**
+     * Called when content restriction is enabled.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
+    public void onContentRestrictionEnabled() {}
+
+    /**
+     * Called when content restriction is disabled.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
+    public void onContentRestrictionDisabled() {}
 }
