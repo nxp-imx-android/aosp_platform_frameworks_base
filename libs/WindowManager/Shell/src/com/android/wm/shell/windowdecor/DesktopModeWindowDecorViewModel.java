@@ -1199,6 +1199,16 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
      */
     @Deprecated
     @Override
+    public boolean isFirstRunPromptShown(RunningTaskInfo taskInfo) {
+        return false;
+    }
+
+    /**
+     * @deprecated Actual implementation within {@link WindowDecoration}
+     * TODO: b/409648813 : to be removed when [WindowDecoration] is deprecated.
+     */
+    @Deprecated
+    @Override
     public void onFirstRunPromptShown(RunningTaskInfo taskInfo) {
     }
 
