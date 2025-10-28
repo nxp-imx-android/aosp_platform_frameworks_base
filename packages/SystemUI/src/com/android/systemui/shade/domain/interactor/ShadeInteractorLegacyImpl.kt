@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 
@@ -106,6 +107,10 @@ constructor(
             SharingStarted.Eagerly,
             false,
         )
+
+    @Deprecated("consider using isAnyExpanded instead")
+    override val isAnyExpansionGreaterThanZero: StateFlow<Boolean> =
+        anyExpansion.map { it > 0f }.stateIn(scope, SharingStarted.Eagerly, false)
 
     override val isUserInteractingWithShade: Flow<Boolean> =
         combine(
