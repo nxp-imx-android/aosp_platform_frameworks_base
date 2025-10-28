@@ -318,6 +318,8 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
 
         if (mResolutionData != null) {
             new ResolutionAnimator(mResolutionData, holder).startResolutionAnimation();
+        } else {
+            ResolutionAnimator.resetBannerState(holder);
         }
     }
 
