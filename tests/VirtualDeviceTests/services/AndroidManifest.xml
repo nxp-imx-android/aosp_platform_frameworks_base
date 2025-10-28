@@ -20,6 +20,8 @@
     <uses-sdk android:minSdkVersion="34"
          android:targetSdkVersion="36"/>
 
+    <uses-permission android:name="android.permission.WRITE_DEVICE_CONFIG"/>
+
     <application android:testOnly="true" android:debuggable="true"/>
 
     <instrumentation android:name="androidx.test.runner.AndroidJUnitRunner"

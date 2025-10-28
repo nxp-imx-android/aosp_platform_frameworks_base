@@ -23,6 +23,7 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -124,13 +125,14 @@ public class ComputerControlSessionProcessorTest {
     private AudioCapture mAudioCapture;
     @Mock
     private IComputerControlSessionCallback mComputerControlSessionCallback;
+    @Mock
+    private ComputerControlAllowlistController mAllowlistController;
     @Captor
     private ArgumentCaptor<Intent> mIntentArgumentCaptor;
     @Captor
     private ArgumentCaptor<IComputerControlSession> mSessionArgumentCaptor;
 
     private ComputerControlSessionProcessor mProcessor;
-
     private AutoCloseable mMockitoSession;
 
     @Before
@@ -178,9 +180,13 @@ public class ComputerControlSessionProcessorTest {
                 mVirtualAudioDevice);
         when(mVirtualAudioDevice.startAudioCapture(any())).thenReturn(mAudioCapture);
         when(mVirtualAudioDevice.startAudioInjection(any())).thenReturn(mAudioInjection);
+
         when(mComputerControlSessionCallback.asBinder()).thenReturn(new Binder());
+
+        when(mAllowlistController.isPackageAllowedToCreateSession(anyString())).thenReturn(true);
+
         mProcessor = new ComputerControlSessionProcessor(
-                context, mVirtualDeviceFactory, mPendingIntentFactory);
+                context, mVirtualDeviceFactory, mPendingIntentFactory, mAllowlistController);
     }
 
     @After
@@ -196,6 +202,15 @@ public class ComputerControlSessionProcessorTest {
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
                 .onSessionCreationFailed(ComputerControlSession.ERROR_DEVICE_LOCKED);
+    }
+
+    @Test
+    public void callerNotAllowListed_throwsException() throws Exception {
+        when(mAllowlistController.isPackageAllowedToCreateSession(anyString())).thenReturn(false);
+
+        assertThrows(SecurityException.class,
+                () -> mProcessor.processNewSessionRequest(
+                        ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback));
     }
 
     @Test
