@@ -2186,7 +2186,7 @@ public final class SystemServer implements Dumpable {
             mSystemServiceManager.startService(new FontManagerService.Lifecycle(context, safeMode));
             t.traceEnd();
 
-            if (!isWatch || !android.server.Flags.removeTextService()) {
+            if (!isWatch) {
                 t.traceBegin("StartTextServicesManager");
                 mSystemServiceManager.startService(TextServicesManagerService.Lifecycle.class);
                 t.traceEnd();

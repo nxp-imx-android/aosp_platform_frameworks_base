@@ -638,9 +638,8 @@ public final class SystemServiceRegistry {
             @Override
             public TextServicesManager createService(ContextImpl ctx)
                     throws ServiceNotFoundException {
-                 if (ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH)
-                        && ServiceManager.getService(Context.TEXT_SERVICES_MANAGER_SERVICE) == null
-                        && android.server.Flags.removeTextService()) {
+                if (ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH) &&
+                        ServiceManager.getService(Context.TEXT_SERVICES_MANAGER_SERVICE) == null) {
                     return null;
                 }
                 return TextServicesManager.createInstance(ctx);
@@ -2149,8 +2148,7 @@ public final class SystemServiceRegistry {
                     }
                     break;
                 case Context.TEXT_SERVICES_MANAGER_SERVICE:
-                    if (android.server.Flags.removeTextService()
-                            && hasSystemFeatureOpportunistic(ctx, PackageManager.FEATURE_WATCH)) {
+                    if (hasSystemFeatureOpportunistic(ctx, PackageManager.FEATURE_WATCH)) {
                         return null;
                     }
                     break;
