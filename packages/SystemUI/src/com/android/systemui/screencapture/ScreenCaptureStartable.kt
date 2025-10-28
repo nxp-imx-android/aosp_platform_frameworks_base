@@ -32,6 +32,7 @@ import com.android.systemui.screencapture.domain.interactor.ScreenCaptureCompone
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
+import com.android.systemui.screencapture.ui.PostRecordingShelf
 import com.android.systemui.screencapture.ui.ScreenCaptureUi
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
 import com.android.systemui.screenrecord.shared.model.ScreenRecording
@@ -39,6 +40,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
@@ -56,13 +58,15 @@ constructor(
     private val focusedDisplayRepository: FocusedDisplayRepository,
     private val displayRepository: DisplayRepository,
     private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
+    private val postRecordingShelfFactory: PostRecordingShelf.Factory,
     private val activityStarter: ActivityStarter,
 ) : CoreStartable {
 
     override fun start() {
         appScope.launch { screenCaptureComponentInteractor.initialize() }
         ScreenCaptureType.entries.forEach { observeUiState(it) }
-        setupPostRecordings()
+        setupSmallScreenPostRecordings()
+        setupLargeScreenPostRecordings()
     }
 
     private fun observeUiState(type: ScreenCaptureType) {
@@ -99,7 +103,7 @@ constructor(
             .launchIn(appScope)
     }
 
-    private fun setupPostRecordings() {
+    private fun setupSmallScreenPostRecordings() {
         if (!ScreenCaptureRecordFeaturesInteractor.isNewScreenRecordToolbarEnabled) return
 
         screenRecordingServiceInteractor.screenRecordings
@@ -114,6 +118,18 @@ constructor(
                     /* dismissShade = */ true,
                     /* customMessage = */ null,
                 )
+            }
+            .launchIn(appScope)
+    }
+
+    private fun setupLargeScreenPostRecordings() {
+        if (!ScreenCaptureRecordFeaturesInteractor.isLargeScreenRecordingEnabled) return
+
+        screenRecordingServiceInteractor.screenRecordings
+            .filterIsInstance<ScreenRecording.Saved>()
+            .onEach { recording ->
+                val shelf = postRecordingShelfFactory.create(recording.uri, recording.thumbnail)
+                shelf.show()
             }
             .launchIn(appScope)
     }
