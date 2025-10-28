@@ -83,8 +83,11 @@ constructor(
                 view
             },
             onRelease = { disposable?.dispose() },
-            modifier =
-                modifier.fillMaxSize().then(lockscreenElementContext?.burnInModifier ?: Modifier),
+            // lockscreenElementContext.burnInModifier is intentionally not used below;
+            // burn-in is directly applied in KeyguardIndicationAreaBinder/ViewModel
+            // since this UI has custom burn-in amounts that aren't the same as the burn-in
+            // offsets used for other LockscreenContent
+            modifier = modifier.fillMaxSize(),
         )
     }
 }
