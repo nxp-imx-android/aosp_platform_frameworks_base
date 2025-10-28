@@ -243,16 +243,6 @@ flag {
 }
 
 flag {
-    name: "enable_shell_restart_bubble_cleanup"
-    namespace: "multitasking"
-    description: "Convert bubbled tasks back to fullscreen when WMShell restarts."
-    bug: "425496840"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "fix_bubble_stack_view_expanded_when_added"
     namespace: "multitasking"
     description: "Set BubbleStackView as collapsed if it's expanded when trying to be added"
