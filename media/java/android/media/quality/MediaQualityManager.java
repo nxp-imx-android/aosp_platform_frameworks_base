@@ -627,6 +627,25 @@ public final class MediaQualityManager {
     }
 
     /**
+     * Get default sound profile
+     *
+     * @return SoundProfile the application default sound profile.
+     *
+     * @see SoundProfile
+     *
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.MANAGE_GLOBAL_SOUND_QUALITY_SERVICE)
+    @Nullable
+    public SoundProfile getDefaultSoundProfile() {
+        try {
+            return mService.getDefaultSoundProfile();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Sets preferred default sound profile.
      *
      * @param soundProfileId the ID of the default profile. {@code null} to unset the default
