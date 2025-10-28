@@ -3172,7 +3172,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
     @RequiresPermission(READ_PRIVILEGED_PHONE_STATE)
     public @NonNull Map<String, Boolean> getVoipCallLogIntegrationStatus() {
         ITelecomService service = getTelecomService();
@@ -3199,7 +3199,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
     @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
     public void setVoipCallLogIntegrationEnabled(@NonNull String packageName, boolean enabled) {
         ITelecomService service = getTelecomService();
