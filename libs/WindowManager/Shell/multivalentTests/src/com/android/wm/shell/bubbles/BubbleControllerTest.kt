@@ -74,6 +74,7 @@ import com.android.wm.shell.bubbles.logging.BubbleLogger.Event.BUBBLE_CREATED_FR
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
 import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository
+import com.android.wm.shell.bubbles.user.data.FakeBubbleUserResolver
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayImeController
 import com.android.wm.shell.common.DisplayInsetsController
@@ -161,6 +162,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     private lateinit var imeListener: ImeListener
     private lateinit var bubbleTransitions: BubbleTransitions
     private lateinit var sessionTracker: BubbleSessionTracker
+    private lateinit var bubbleViewInfoTaskFactory: FakeBubbleViewInfoTaskFactory
 
     private var isStayAwakeOnFold = false
 
@@ -227,6 +229,15 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 TestSyncExecutor(),
             )
 
+        bubbleViewInfoTaskFactory =
+            FakeBubbleViewInfoTaskFactory(
+                bubblePositioner,
+                bubbleAppInfoProvider,
+                mainExecutor,
+                bgExecutor,
+                FakeBubbleUserResolver()
+            )
+
         bubbleTransitions =
             BubbleTransitions(
                 context,
@@ -235,8 +246,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 mock<TaskViewRepository>(),
                 bubbleData,
                 taskViewTransitions,
-                bubbleAppInfoProvider,
-                TestSyncExecutor()
+                bubbleViewInfoTaskFactory
             )
 
         bubbleController =
@@ -1122,11 +1132,11 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 mock<IWindowManager>(),
                 resizeChecker,
                 HomeIntentProvider(context),
-                bubbleAppInfoProvider,
                 { Optional.of(splitScreenController) },
                 Optional.of(unfoldProgressProvider),
                 { isStayAwakeOnFold },
                 sessionTracker,
+                bubbleViewInfoTaskFactory,
             )
         bubbleController.setInflateSynchronously(true)
         bubbleController.onInit()

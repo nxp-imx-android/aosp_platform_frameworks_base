@@ -43,6 +43,7 @@ import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
 import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
 import com.android.wm.shell.bubbles.model.BubbleIcon
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository
+import com.android.wm.shell.bubbles.user.data.FakeBubbleUserResolver
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayImeController
 import com.android.wm.shell.common.DisplayInsetsController
@@ -86,6 +87,7 @@ class BubbleViewInfoTaskTest {
     private lateinit var expandedViewManager: BubbleExpandedViewManager
     private lateinit var appInfoProvider: FakeBubbleAppInfoProvider
     private lateinit var sessionTracker: BubbleSessionTracker
+    private lateinit var bubbleViewInfoTaskFactory: BubbleViewInfoTask.Factory
 
     private val bubbleTaskViewFactory = BubbleTaskViewFactory {
         BubbleTaskView(mock<TaskView>(), directExecutor(), bubbleController)
@@ -143,6 +145,14 @@ class BubbleViewInfoTaskTest {
             )
 
         appInfoProvider = FakeBubbleAppInfoProvider()
+        bubbleViewInfoTaskFactory =
+            FakeBubbleViewInfoTaskFactory(
+                bubblePositioner,
+                appInfoProvider,
+                mainExecutor,
+                bgExecutor,
+                FakeBubbleUserResolver()
+            )
 
         bubbleController =
             BubbleController(
@@ -177,11 +187,11 @@ class BubbleViewInfoTaskTest {
                 mock<IWindowManager>(),
                 BubbleResizabilityChecker(),
                 HomeIntentProvider(context),
-                appInfoProvider,
                 { Optional.empty() },
                 Optional.empty(),
                 { false },
                 sessionTracker,
+                bubbleViewInfoTaskFactory,
             )
 
         // TODO: (b/371829099) - when optional overflow is no longer flagged we can enable this
@@ -365,20 +375,16 @@ class BubbleViewInfoTaskTest {
         bubble: Bubble,
         callback: BubbleViewInfoTask.Callback? = null
     ): BubbleViewInfoTask {
-        return BubbleViewInfoTask(
+        return bubbleViewInfoTaskFactory.create(
             bubble,
             context,
             expandedViewManager,
             bubbleTaskViewFactory,
-            bubblePositioner,
             bubbleStackView,
             null /* layerView */,
             iconFactory,
-            appInfoProvider,
             false /* skipInflation */,
             callback,
-            mainExecutor,
-            bgExecutor
         )
     }
 }

@@ -32,6 +32,7 @@ import static com.android.wm.shell.transition.Transitions.TRANSIT_BUBBLE_CONVERT
 import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -53,6 +54,7 @@ import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
 import android.graphics.PointF;
@@ -67,6 +69,7 @@ import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
+import androidx.annotation.Nullable;
 import androidx.core.animation.AnimatorTestRule;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -80,11 +83,14 @@ import com.android.wm.shell.bubbles.BubbleTransitions.DraggedBubbleIconToFullscr
 import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
+import com.android.wm.shell.bubbles.user.data.BubbleUserResolver;
+import com.android.wm.shell.bubbles.user.model.BubbleUserInfo;
 import com.android.wm.shell.common.HomeIntentProvider;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
+import com.android.wm.shell.shared.bubbles.UserType;
 import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewRepository;
 import com.android.wm.shell.taskview.TaskViewTaskController;
@@ -161,12 +167,26 @@ public class BubbleTransitionsTest extends ShellTestCase {
         mRepository = new TaskViewRepository();
         final ShellExecutor syncExecutor = new TestSyncExecutor();
 
+        BubbleUserResolver bubbleUserResolver = userId -> new BubbleUserInfo(userId, UserType.MAIN);
+        BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory = new BubbleViewInfoTask.Factory() {
+            @Override
+            public BubbleViewInfoTask create(Bubble b, Context context,
+                    BubbleExpandedViewManager expandedViewManager,
+                    BubbleTaskViewFactory taskViewFactory, @Nullable BubbleStackView stackView,
+                    @Nullable BubbleBarLayerView layerView, BubbleIconFactory factory,
+                    boolean skipInflation, BubbleViewInfoTask.Callback c) {
+                return new BubbleViewInfoTask(b, context, expandedViewManager, taskViewFactory,
+                        stackView, layerView, factory, skipInflation, c, mBubblePositioner,
+                        new PackageManagerBubbleAppInfoProvider(), directExecutor(),
+                        directExecutor(), bubbleUserResolver);
+            }
+        };
+
         when(mTransitions.getMainExecutor()).thenReturn(syncExecutor);
         mTaskViewTransitions = new TaskViewTransitions(mTransitions, mRepository, mTaskOrganizer,
                 mSyncQueue);
         mBubbleTransitions = new BubbleTransitions(mContext, mTransitions, mTaskOrganizer,
-                mRepository, mBubbleData, mTaskViewTransitions,
-                new PackageManagerBubbleAppInfoProvider(), new TestSyncExecutor());
+                mRepository, mBubbleData, mTaskViewTransitions, bubbleViewInfoTaskFactory);
         mBubbleTransitions.setBubbleController(mBubbleController);
         mTaskViewFactory = () -> {
             TaskViewTaskController taskViewTaskController = new TaskViewTaskController(

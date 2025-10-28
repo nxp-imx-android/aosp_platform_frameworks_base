@@ -73,6 +73,7 @@ import com.android.wm.shell.bubbles.BubblePositioner;
 import com.android.wm.shell.bubbles.BubbleResizabilityChecker;
 import com.android.wm.shell.bubbles.BubbleTaskUnfoldTransitionMerger;
 import com.android.wm.shell.bubbles.BubbleTransitions;
+import com.android.wm.shell.bubbles.BubbleViewInfoTask;
 import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.DragToBubbleController;
@@ -82,6 +83,8 @@ import com.android.wm.shell.bubbles.logging.BubbleLogger;
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker;
 import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl;
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository;
+import com.android.wm.shell.bubbles.user.data.UserManagerBubbleUserResolver;
+import com.android.wm.shell.bubbles.user.data.BubbleUserResolver;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
@@ -308,11 +311,10 @@ public abstract class WMShellModule {
             @NonNull TaskViewRepository repository,
             @NonNull BubbleData bubbleData,
             @NonNull @Bubbles TaskViewTransitions taskViewTransitions,
-            @NonNull BubbleAppInfoProvider appInfoProvider,
-            @ShellBackgroundThread ShellExecutor bgExecutor
+            @NonNull BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory
     ) {
         return new BubbleTransitions(context, transitions, organizer, repository,
-                bubbleData, taskViewTransitions, appInfoProvider, bgExecutor);
+                bubbleData, taskViewTransitions, bubbleViewInfoTaskFactory);
     }
 
     @WMSingleton
@@ -353,6 +355,9 @@ public abstract class WMShellModule {
     @Binds
     abstract BubbleSessionTracker bindBubbleSessionTracker(BubbleSessionTrackerImpl impl);
 
+    @Binds
+    abstract BubbleUserResolver bindUserResolver(UserManagerBubbleUserResolver impl);
+
     // Note: Handler needed for LauncherApps.register
     @WMSingleton
     @Provides
@@ -385,11 +390,11 @@ public abstract class WMShellModule {
             SyncTransactionQueue syncQueue,
             IWindowManager wmService,
             HomeIntentProvider homeIntentProvider,
-            BubbleAppInfoProvider appInfoProvider,
             Lazy<Optional<SplitScreenController>> splitScreenController,
             @NonNull Optional<ShellUnfoldProgressProvider> unfoldProgressProvider,
             BubblesFoldLockSettingsObserver foldLockSettingsObserver,
-            BubbleSessionTracker sessionTracker) {
+            BubbleSessionTracker sessionTracker,
+            BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory) {
         final WindowManager wm = enableViewCaptureTracing()
                 ? ViewCaptureAwareWindowManagerFactory.getInstance(context)
                 : windowManager;
@@ -429,11 +434,11 @@ public abstract class WMShellModule {
                 wmService,
                 new BubbleResizabilityChecker(),
                 homeIntentProvider,
-                appInfoProvider,
                 splitScreenController,
                 unfoldProgressProvider,
                 foldLockSettingsObserver,
-                sessionTracker);
+                sessionTracker,
+                bubbleViewInfoTaskFactory);
     }
 
     //

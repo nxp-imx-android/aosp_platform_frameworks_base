@@ -49,6 +49,7 @@ import com.android.wm.shell.bubbles.animation.AnimatableScaleMatrix
 import com.android.wm.shell.bubbles.logging.BubbleLogger
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
 import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
+import com.android.wm.shell.bubbles.user.data.FakeBubbleUserResolver
 import com.android.wm.shell.common.FloatingContentCoordinator
 import com.android.wm.shell.common.TestShellExecutor
 import com.android.wm.shell.shared.animation.PhysicsAnimatorTestUtils
@@ -84,6 +85,7 @@ class BubbleStackViewTest {
 
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val uiEventLoggerFake = UiEventLoggerFake()
+
     private lateinit var positioner: BubblePositioner
     private lateinit var bubbleLogger: BubbleLogger
     private lateinit var iconFactory: BubbleIconFactory
@@ -96,6 +98,8 @@ class BubbleStackViewTest {
     private lateinit var bubbleStackViewManager: FakeBubbleStackViewManager
     private lateinit var surfaceSynchronizer: FakeSurfaceSynchronizer
     private lateinit var sessionTracker: BubbleSessionTracker
+    private lateinit var bubbleViewInfoTaskFactory: FakeBubbleViewInfoTaskFactory
+
     private val sysuiProxy = mock<SysuiProxy>()
 
     @Before
@@ -132,6 +136,15 @@ class BubbleStackViewTest {
         expandedViewManager = FakeBubbleExpandedViewManager()
         bubbleTaskViewFactory = FakeBubbleTaskViewFactory(context, shellExecutor)
         surfaceSynchronizer = FakeSurfaceSynchronizer()
+        bubbleViewInfoTaskFactory =
+            FakeBubbleViewInfoTaskFactory(
+                positioner,
+                FakeBubbleAppInfoProvider(),
+                directExecutor(),
+                directExecutor(),
+                FakeBubbleUserResolver()
+            )
+
         bubbleStackView =
             BubbleStackView(
                 context,
@@ -1494,14 +1507,11 @@ class BubbleStackViewTest {
             context,
             expandedViewManager,
             bubbleTaskViewFactory,
-            positioner,
             bubbleStackView,
             null,
             iconFactory,
-            FakeBubbleAppInfoProvider(),
             false,
-            directExecutor(),
-            directExecutor()
+            bubbleViewInfoTaskFactory
         )
 
         assertThat(semaphore.tryAcquire(5, TimeUnit.SECONDS)).isTrue()

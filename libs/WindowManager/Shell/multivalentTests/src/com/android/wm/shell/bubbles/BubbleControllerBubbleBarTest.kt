@@ -44,6 +44,7 @@ import com.android.wm.shell.bubbles.logging.BubbleLogger
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
 import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository
+import com.android.wm.shell.bubbles.user.data.FakeBubbleUserResolver
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayImeController
 import com.android.wm.shell.common.DisplayInsetsController
@@ -99,6 +100,7 @@ class BubbleControllerBubbleBarTest {
     private lateinit var mainExecutor: TestShellExecutor
     private lateinit var bgExecutor: TestShellExecutor
     private lateinit var sessionTracker: BubbleSessionTracker
+    private lateinit var bubbleViewInfoTaskFactory: BubbleViewInfoTask.Factory
 
     @Before
     fun setUp() {
@@ -138,6 +140,14 @@ class BubbleControllerBubbleBarTest {
             )
 
         val shellInit = ShellInit(mainExecutor)
+        bubbleViewInfoTaskFactory =
+            FakeBubbleViewInfoTaskFactory(
+                bubblePositioner,
+                FakeBubbleAppInfoProvider(),
+                mainExecutor,
+                bgExecutor,
+                FakeBubbleUserResolver()
+            )
 
         bubbleController =
             createBubbleController(
@@ -570,11 +580,11 @@ class BubbleControllerBubbleBarTest {
             mock<IWindowManager>(),
             BubbleResizabilityChecker(),
             HomeIntentProvider(context),
-            FakeBubbleAppInfoProvider(),
             { Optional.empty() },
             Optional.empty(),
             { false },
             sessionTracker,
+            bubbleViewInfoTaskFactory,
         )
     }
 
