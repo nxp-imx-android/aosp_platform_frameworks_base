@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -62,12 +63,18 @@ fun TopRowKeyTutorialDialogContent(onAddFeaturesClick: () -> Unit, onCancelClick
                 )
             },
             negativeButton = {
-                PlatformOutlinedButton(onClick = onCancelClick) {
+                PlatformOutlinedButton(
+                    onClick = onCancelClick,
+                    modifier = Modifier.testTag("cancel_button"),
+                ) {
                     Text(stringResource(android.R.string.cancel))
                 }
             },
             positiveButton = {
-                PlatformButton(onClick = onAddFeaturesClick) {
+                PlatformButton(
+                    onClick = onAddFeaturesClick,
+                    modifier = Modifier.testTag("add_features_button"),
+                ) {
                     Text(
                         stringResource(
                             R.string
