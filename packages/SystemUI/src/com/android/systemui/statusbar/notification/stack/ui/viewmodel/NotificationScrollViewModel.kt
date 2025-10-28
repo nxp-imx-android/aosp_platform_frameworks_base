@@ -148,9 +148,7 @@ constructor(
         return if (currentScene == Scenes.Lockscreen) {
             1f
         } else if (
-            transition.isTransitioningFromOrTo(Overlays.NotificationsShade) ||
-                transition.isTransitioningFromOrTo(Scenes.Shade)
-        ) {
+            transition.isTransitioningFromOrTo(Overlays.NotificationsShade)) {
             shadeExpansion
         } else if (Overlays.NotificationsShade in currentOverlays) {
             1f
