@@ -155,10 +155,10 @@ public class AppMemoryTest {
 
         // Send metrics to the automation system.
         Bundle stats = new Bundle();
-        String key = "PSize";
+        String key = "appmemorytest_app_heap_size_bytes";
         stats.putLong(key, profileAllocated);
         stats.putString(Instrumentation.REPORT_KEY_STREAMRESULT, key + ": " + profileAllocated);
-        key = "PCount";
+        key = "appmemorytest_app_heap_count";
         stats.putLong(key, profileCount);
         stats.putString(Instrumentation.REPORT_KEY_STREAMRESULT, key + ": " + profileCount);
         InstrumentationRegistry.getInstrumentation().sendStatus(Activity.RESULT_OK, stats);
