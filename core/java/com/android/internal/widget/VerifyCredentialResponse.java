@@ -85,8 +85,6 @@ public final class VerifyCredentialResponse implements Parcelable {
     @Retention(RetentionPolicy.SOURCE)
     @interface ResponseCode {}
 
-    private static final Duration MAX_INT_TIMEOUT = Duration.ofMillis(Integer.MAX_VALUE);
-
     public static final VerifyCredentialResponse OK = new VerifyCredentialResponse.Builder()
             .build();
     public static final VerifyCredentialResponse OTHER_ERROR = fromError(RESPONSE_OTHER_ERROR);
@@ -266,11 +264,11 @@ public final class VerifyCredentialResponse implements Parcelable {
      * <p>A negative timeout should never occur here, since the rate-limiters do not report negative
      *    timeouts. If a negative timeout is seen anyway, fail secure and treat it as possibly
      *    intended to be an unsigned value, i.e. MAX_VALUE rather than MIN_VALUE.
-     *
-     * @deprecated Use {@link #getTimeoutAsDuration()}, which can return larger timeout ranges.
      */
-    @Deprecated
     public Duration getTimeout() {
+        if (android.security.Flags.enableUnclampedLockouts()) {
+            return mTimeout;
+        }
         return Duration.ofMillis(clamp(mTimeout));
     }
 
