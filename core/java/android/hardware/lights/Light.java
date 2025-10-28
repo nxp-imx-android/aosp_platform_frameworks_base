@@ -150,24 +150,6 @@ public final class Light implements Parcelable {
      *
      * @hide
      */
-    public Light(int id, int ordinal, int type) {
-        this(id, "Light", ordinal, type, 0, null);
-    }
-
-    /**
-     * Creates a new light with the given data.
-     *
-     * @hide
-     */
-    public Light(int id, String name, int ordinal, int type, int capabilities) {
-        this(id, name, ordinal, type, capabilities, null, 0);
-    }
-
-    /**
-     * Creates a new light with the given data.
-     *
-     * @hide
-     */
     public Light(int id, String name, int ordinal, int type, int capabilities,
             @Nullable int[] preferredBrightnessLevels) {
         this(id, name, ordinal, type, capabilities, preferredBrightnessLevels, 0);
@@ -369,5 +351,95 @@ public final class Light implements Parcelable {
     @FlaggedApi(Flags.FLAG_ENABLE_LIGHT_ANIMATIONS)
     public int getMinUpdatePeriodMillis() {
         return mMinUpdatePeriodMillis;
+    }
+
+    /**
+     * Builder for creating light objects.
+     *
+     * @hide
+     */
+    public static final class Builder {
+        private int mId;
+        private String mName;
+        private int mOrdinal;
+        private @LightType int mType;
+        private @LightCapability int mCapabilities;
+        @Nullable private int[] mPreferredBrightnessLevels;
+        private int mMinUpdatePeriodMillis;
+
+        /**
+         * Creates a new {@link Light.Builder}.
+         * @hide
+         */
+        public Builder(int id, int ordinal, @LightType int type) {
+            mId = id;
+            mOrdinal = ordinal;
+            mType = type;
+            mName = "Light";
+            mCapabilities = 0;
+            mPreferredBrightnessLevels = null;
+            mMinUpdatePeriodMillis = 0;
+        }
+
+        /**
+         * Set the name of the light;
+         *
+         * @return the updated instance of the {@link Builder}.
+         * @hide
+         */
+        public Builder setName(String name) {
+            mName = name;
+            return this;
+        }
+
+        /**
+         * Set the capabilities associated with this light;
+         *
+         * @return the updated instance of the {@link Builder}.
+         * @hide
+         */
+        public Builder setCapabilities(@LightCapability int capabilities) {
+            mCapabilities = capabilities;
+            return this;
+        }
+
+        /**
+         * Sets the preferred brightess levels for the light.
+         *
+         * @return the updated instance of the {@link Builder}.
+         * @hide
+         */
+        public Builder setPreferredBrightnessLevels(@Nullable int[] preferredBrightnessLevels) {
+            mPreferredBrightnessLevels = preferredBrightnessLevels;
+            return this;
+        }
+
+        /**
+         * Sets the min update period for the light.
+         *
+         * @return the updated instance of the {@link Builder}.
+         * @hide
+         */
+        public Builder setMinUpdatePeriodMillis(int minUpdatePeriodMillis) {
+            mMinUpdatePeriodMillis = minUpdatePeriodMillis;
+            return this;
+        }
+
+        /**
+         * Build the light from the provided parameters.
+         *
+         * @return Light object configured to the parameters provided.
+         * @hide
+         */
+        public Light build() {
+            return new Light(
+                    mId,
+                    mName,
+                    mOrdinal,
+                    mType,
+                    mCapabilities,
+                    mPreferredBrightnessLevels,
+                    mMinUpdatePeriodMillis);
+        }
     }
 }
