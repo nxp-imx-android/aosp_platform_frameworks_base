@@ -165,6 +165,7 @@ cc_defaults {
         "libpsi",
         "libdataloader",
         "libincfs",
+        "libvibrationflinger",
         "android.hardware.audio.common@2.0",
         "android.media.audio.common.types-V5-ndk",
         "android.hardware.broadcastradio@1.0",
