@@ -556,7 +556,7 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
 
         // WHEN lockdown occurs for current user
         when(mSelectedUserInteractor.getSelectedUserId()).thenReturn(0);
-        when(mLockPatternUtils.isUserInLockdown(anyInt())).thenReturn(true);
+        when(mUpdateMonitor.isUserInLockdown(anyInt())).thenReturn(true);
         mKeyguardUpdateMonitorCallbackCaptor.getValue().onStrongAuthStateChanged(0);
 
         // THEN keyguard is shown
@@ -577,7 +577,7 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
         int currentUserId = 0;
         int otherUserId = 10;
         when(mSelectedUserInteractor.getSelectedUserId()).thenReturn(currentUserId);
-        when(mLockPatternUtils.isUserInLockdown(currentUserId)).thenReturn(true);
+        when(mUpdateMonitor.isUserInLockdown(currentUserId)).thenReturn(true);
 
         // WHEN a different user's strong auth changes
         mKeyguardUpdateMonitorCallbackCaptor.getValue().onStrongAuthStateChanged(otherUserId);
@@ -644,7 +644,7 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
         mViewMediator.setKeyguardEnabled(true);
         TestableLooper.get(this).processAllMessages();
         captureKeyguardUpdateMonitorCallback();
-        when(mLockPatternUtils.isUserInLockdown(anyInt())).thenReturn(true);
+        when(mUpdateMonitor.isUserInLockdown(anyInt())).thenReturn(true);
         mKeyguardUpdateMonitorCallbackCaptor.getValue().onStrongAuthStateChanged(0);
         assertTrue(mViewMediator.isShowingAndNotOccluded());
 
