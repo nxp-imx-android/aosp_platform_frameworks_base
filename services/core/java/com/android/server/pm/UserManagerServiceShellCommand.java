@@ -632,9 +632,9 @@ public class UserManagerServiceShellCommand extends ShellCommand {
             success = mService.revokeUserAdminInternal(userId);
         }
         if (success) {
-            return printSuccess();
+            return printAndReturnSuccess();
         } else {
-            return printFailed();
+            return printAndReturnFailed();
         }
     }
 
@@ -656,7 +656,7 @@ public class UserManagerServiceShellCommand extends ShellCommand {
             case "check" -> checkActivityAllowlisted(userType);
             case "reset" -> resetActivitiesAllowlist(userType);
             case "disable" -> disableActivitiesAllowlist(userType);
-            default -> printFailed("invalid action - %s", action);
+            default -> printAndReturnFailed("invalid action - %s", action);
         };
     }
 
@@ -696,13 +696,13 @@ public class UserManagerServiceShellCommand extends ShellCommand {
 
         List<ComponentName> allowlist = getEffectiveAllowlist(userType);
         if (allowlist.contains(activity)) {
-            return printFailed("activity %s already in the allowlist (%s)",
+            return printAndReturnFailed("activity %s already in the allowlist (%s)",
                     activity.flattenToShortString(), toShortString(allowlist));
         }
         allowlist.add(activity);
 
         setTemporaryActivitiesAllowlist(userType, allowlist);
-        return printSuccess();
+        return printAndReturnSuccess();
     }
 
     private int removeFromActivitiesAllowlist(String userType) {
@@ -711,23 +711,27 @@ public class UserManagerServiceShellCommand extends ShellCommand {
 
         List<ComponentName> allowlist = getEffectiveAllowlist(userType);
         if (!allowlist.contains(activity)) {
-            return printFailed("activity %s not in the allowlist (%s)",
+            return printAndReturnFailed("activity %s not in the allowlist (%s)",
                     activity.flattenToShortString(), toShortString(allowlist));
         }
         allowlist.remove(activity);
 
         setTemporaryActivitiesAllowlist(userType, allowlist);
-        return printSuccess();
+        return printAndReturnSuccess();
     }
 
     private int checkActivityAllowlisted(String userType) {
         ComponentName activity = getRequiredComponentNameNextArg();
         Slogf.i(LOG_TAG, "checkActivityAllowlisted(%s, %s)", userType, activity);
-
-        boolean allowed = mService.isActivityAllowlisted(userType, activity);
-        getOutPrintWriter().println(allowed);
-
-        return RESULT_SUCCESS;
+        boolean allowed = true;
+        final UserActivitiesAllowlist allowlist = mService.getActivitiesAllowlist(userType);
+        if (allowlist != null) {
+            allowed = allowlist.isAllowed(activity);
+        } else {
+            Slogf.d(LOG_TAG, "Returning %B because allowlist for type %s is not set", allowed,
+                    userType);
+        }
+        return printAndReturnSuccessfulMessage(Boolean.toString(allowed));
     }
 
     private int setActivitiesAllowlist(String userType) {
@@ -738,19 +742,19 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         }
         Slogf.i(LOG_TAG, "setActivitiesAllowlist(%s, %s)", userType, activities);
         setTemporaryActivitiesAllowlist(userType, activities);
-        return printSuccess();
+        return printAndReturnSuccess();
     }
 
     private int resetActivitiesAllowlist(String userType) {
         Slogf.i(LOG_TAG, "resetActivitiesAllowlist(%s)", userType);
         setTemporaryActivitiesAllowlist(userType, null);
-        return printSuccess();
+        return printAndReturnSuccess();
     }
 
     private int disableActivitiesAllowlist(String userType) {
         Slogf.i(LOG_TAG, "disableActivitiesAllowlist(%s)", userType);
         setTemporaryActivitiesAllowlist(userType, Collections.emptyList());
-        return printSuccess();
+        return printAndReturnSuccess();
     }
 
     @SuppressWarnings("AndroidFrameworkRequiresPermission")
@@ -851,21 +855,26 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         return componentName;
     }
 
-    private int printSuccess() {
-        getOutPrintWriter().println("Success");
+    private int printAndReturnSuccess() {
+        return printAndReturnSuccessfulMessage("Success");
+    }
+
+    private int printAndReturnSuccessfulMessage(String message) {
+        getOutPrintWriter().println(message);
         return RESULT_SUCCESS;
     }
 
-    private int printFailed() {
-        return printFailed(/* reason= */ null);
+    private int printAndReturnFailed() {
+        return printAndReturnFailed(/* reason= */ null);
     }
 
     @FormatMethod
-    private int printFailed(@FormatString String reasonFmt, @Nullable Object...reasonArgs) {
-        return printFailed(String.format(reasonFmt, reasonArgs));
+    private int printAndReturnFailed(@FormatString String reasonFmt,
+            @Nullable Object...reasonArgs) {
+        return printAndReturnFailed(String.format(reasonFmt, reasonArgs));
     }
 
-    private int printFailed(@Nullable String reason) {
+    private int printAndReturnFailed(@Nullable String reason) {
         PrintWriter pw = getOutPrintWriter();
         pw.print("Failed");
         if (reason != null) {

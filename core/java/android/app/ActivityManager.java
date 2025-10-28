@@ -558,11 +558,11 @@ public class ActivityManager {
     public static final int START_ASSISTANT_NOT_ACTIVE_SESSION = FIRST_START_FATAL_ERROR_CODE + 11;
 
     /**
-     * Result for IActivityManager.startAssistantActivity: activity is not allowed to be launched in
-     * the {@link android.os.UserManager#isHeadlessSystemUserMode() Headless System User}.
+     * Result for IActivityManager.startAssistantActivity: activity is not allowed to be launched
+     * for the given user.
      * @hide
      */
-    public static final int START_NOT_ALLOWED_FOR_HEADLESS_SYSTEM_USER =
+    public static final int START_NOT_ALLOWED_FOR_USER =
             FIRST_START_FATAL_ERROR_CODE + 12;
 
     /**
