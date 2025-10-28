@@ -183,6 +183,7 @@ fun Media(
     behavior: MediaUiBehavior,
     onDismissed: () -> Unit,
     modifier: Modifier = Modifier,
+    visible: () -> Boolean = { true },
 ) {
     val context = LocalContext.current
     val viewModel: MediaViewModel =
@@ -192,6 +193,8 @@ fun Media(
                 carouselVisibility = behavior.carouselVisibility,
             )
         }
+
+    LaunchedEffect(visible) { viewModel.setVisibility(visible) }
 
     CardCarousel(
         viewModel = viewModel,

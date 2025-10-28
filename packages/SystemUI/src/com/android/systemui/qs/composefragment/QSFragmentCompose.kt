@@ -717,21 +717,20 @@ constructor(
                         }
                         .padding(top = { qqsPadding }, bottom = { bottomPadding })
             ) {
+                // When always compose is false, this will always be true, and we'll be
+                // listening whenever this is composed. When always compose is true, we
+                // listen if we are visible and not fully expanded
+                val isListening: () -> Boolean =
+                    remember(viewModel) {
+                            derivedStateOf {
+                                viewModel.isQsVisibleAndAnyShadeExpanded &&
+                                    viewModel.expansionState.progress < 1f &&
+                                    !viewModel.isEditing
+                            }
+                        }
+                        .let { state -> { state.value } }
                 val Tiles =
                     @Composable {
-                        // When always compose is false, this will always be true, and we'll be
-                        // listening whenever this is composed. When always compose is true, we
-                        // listen if we are visible and not fully expanded
-                        val isListening: () -> Boolean =
-                            remember(viewModel) {
-                                    derivedStateOf {
-                                        viewModel.isQsVisibleAndAnyShadeExpanded &&
-                                            viewModel.expansionState.progress < 1f &&
-                                            !viewModel.isEditing
-                                    }
-                                }
-                                .let { state -> { state.value } }
-
                         QuickQuickSettings(
                             viewModel = viewModel.quickQuickSettingsViewModel,
                             listening = isListening,
@@ -757,6 +756,7 @@ constructor(
                                 onSwipeToDismiss = viewModel::onMediaSwipeToDismiss,
                                 mediaViewModelFactory = viewModel.mediaViewModelFactory,
                                 behavior = viewModel.qqsMediaUiBehavior,
+                                visible = isListening,
                             )
                         }
                     }
@@ -868,27 +868,25 @@ constructor(
                                     }
                                 }
                             }
+                        // When always compose is false, this will always be true, and
+                        // we'll be listening whenever this is composed. When always
+                        // compose is true, we look a the second condition and we'll
+                        // listen if QS is visible AND we are not fully collapsed.
+                        val isListening: () -> Boolean =
+                            remember(viewModel) {
+                                    derivedStateOf {
+                                        viewModel.isQsVisibleAndAnyShadeExpanded &&
+                                            viewModel.expansionState.progress >
+                                                QSFragmentComposeViewModel.QS_LISTENING_THRESHOLD &&
+                                            !viewModel.isEditing &&
+                                            !viewModel.isStackScrollerOverscrolling
+                                    }
+                                }
+                                .let { state -> { state.value } }
                         val TileGrid =
                             @Composable {
                                 Box {
                                     GridAnchor()
-
-                                    // When always compose is false, this will always be true, and
-                                    // we'll be listening whenever this is composed. When always
-                                    // compose is true, we look a the second condition and we'll
-                                    // listen if QS is visible AND we are not fully collapsed.
-                                    val isListening: () -> Boolean =
-                                        remember(viewModel) {
-                                                derivedStateOf {
-                                                    viewModel.isQsVisibleAndAnyShadeExpanded &&
-                                                        viewModel.expansionState.progress >
-                                                            QSFragmentComposeViewModel
-                                                                .QS_LISTENING_THRESHOLD &&
-                                                        !viewModel.isEditing &&
-                                                        !viewModel.isStackScrollerOverscrolling
-                                                }
-                                            }
-                                            .let { state -> { state.value } }
 
                                     TileGrid(
                                         viewModel = containerViewModel.tileGridViewModel,
@@ -907,6 +905,7 @@ constructor(
                                         mediaPresentationStyle = MediaPresentationStyle.Default,
                                         onSwipeToDismiss = viewModel::onMediaSwipeToDismiss,
                                         behavior = viewModel.qsMediaUiBehavior,
+                                        visible = isListening,
                                     )
                                 }
                             }
@@ -1377,6 +1376,7 @@ private fun ContentScope.MediaObject(
     mediaPresentationStyle: MediaPresentationStyle,
     onSwipeToDismiss: () -> Unit,
     behavior: MediaUiBehavior,
+    visible: () -> Boolean,
 ) {
     if (MediaControlsInComposeFlag.isEnabled) {
         Element(key = Media.Elements.mediaCarousel, modifier = modifier) {
@@ -1386,6 +1386,7 @@ private fun ContentScope.MediaObject(
                 behavior = behavior,
                 onDismissed = onSwipeToDismiss,
                 modifier = Modifier,
+                visible = visible,
             )
         }
     } else {
