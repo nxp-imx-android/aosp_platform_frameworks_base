@@ -16,10 +16,11 @@
 
 package com.android.systemui.keyguard.domain.interactor
 
+import android.platform.test.annotations.DisableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags
@@ -46,7 +47,6 @@ import com.android.systemui.statusbar.notification.data.repository.setActiveNoti
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -190,6 +190,7 @@ class KeyguardClockInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun clockShouldBeCentered_sceneContainerFlagOn_splitShade_hasPulsingNotifications_false() =
         kosmos.runTest {
             val value by collectLastValue(underTest.clockShouldBeCentered)
@@ -202,6 +203,7 @@ class KeyguardClockInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun clockShouldBeCentered_sceneContainerFlagOn_splitShade_onAod_true() =
         kosmos.runTest {
             val value by collectLastValue(underTest.clockShouldBeCentered)
@@ -216,6 +218,7 @@ class KeyguardClockInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun clockShouldBeCentered_sceneContainerFlagOn_splitShade_offAod_false() =
         kosmos.runTest {
             val value by collectLastValue(underTest.clockShouldBeCentered)
