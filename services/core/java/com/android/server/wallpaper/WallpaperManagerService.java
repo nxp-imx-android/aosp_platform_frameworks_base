@@ -20,7 +20,6 @@ import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.READ_WALLPAPER_INTERNAL;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
-import static android.app.Flags.alwaysRebindUserSetWallpaper;
 import static android.app.Flags.notifyKeyguardEvents;
 import static android.app.WallpaperManager.COMMAND_REAPPLY;
 import static android.app.WallpaperManager.FLAG_LOCK;
@@ -3264,8 +3263,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
     boolean setWallpaperDescription(WallpaperDescription description, String callingPackage,
             @SetWallpaperFlags int which, int userId) {
         boolean fromForeground = isFromForegroundApp(callingPackage);
-        return setWallpaperDescriptionInternal(description, which, userId,
-                alwaysRebindUserSetWallpaper(), fromForeground, null);
+        return setWallpaperDescriptionInternal(
+                description, which, userId, /* force= */ true, fromForeground, null);
     }
 
     private boolean setWallpaperDescriptionInternal(@NonNull WallpaperDescription description,
