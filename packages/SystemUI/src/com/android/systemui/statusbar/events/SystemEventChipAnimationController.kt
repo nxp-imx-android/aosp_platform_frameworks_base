@@ -76,7 +76,7 @@ class SystemEventChipAnimationControllerImpl
 @AssistedInject
 constructor(
     @Assisted private val context: Context,
-    @Assisted private val statusBarWindowController: StatusBarWindowController,
+    @Assisted private val statusBarWindowController: StatusBarWindowController?,
     @Assisted private val contentInsetsProvider: StatusBarContentInsetsProvider,
 ) : SystemEventChipAnimationController {
 
@@ -337,7 +337,7 @@ constructor(
         val height = themedContext.resources.getDimensionPixelSize(R.dimen.status_bar_height)
         val lp = FrameLayout.LayoutParams(MATCH_PARENT, height)
         lp.gravity = Gravity.END or Gravity.TOP
-        statusBarWindowController.addViewToWindow(animationWindowView, lp)
+        statusBarWindowController?.addViewToWindow(animationWindowView, lp)
         animationWindowView.clipToPadding = false
         animationWindowView.clipChildren = false
 
@@ -453,7 +453,7 @@ constructor(
     fun interface Factory {
         fun create(
             context: Context,
-            statusBarWindowController: StatusBarWindowController,
+            statusBarWindowController: StatusBarWindowController?,
             contentInsetsProvider: StatusBarContentInsetsProvider,
         ): SystemEventChipAnimationControllerImpl
     }

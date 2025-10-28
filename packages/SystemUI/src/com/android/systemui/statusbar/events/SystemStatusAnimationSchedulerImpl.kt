@@ -76,7 +76,7 @@ open class SystemStatusAnimationSchedulerImpl
 @AssistedInject
 constructor(
     @Assisted private val coordinator: SystemEventCoordinator,
-    private val chipAnimationController: SystemEventChipAnimationController,
+    @Assisted private val chipAnimationController: SystemEventChipAnimationController,
     @Assisted private val displayId: Int,
     private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     dumpManager: DumpManager,
@@ -89,6 +89,7 @@ constructor(
     interface Factory {
         fun create(
             coordinator: SystemEventCoordinator,
+            chipAnimationController: SystemEventChipAnimationController,
             displayId: Int,
             coroutineScope: CoroutineScope,
         ): SystemStatusAnimationSchedulerImpl

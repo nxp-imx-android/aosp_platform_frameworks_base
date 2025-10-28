@@ -52,9 +52,15 @@ interface StatusBarEventsModule {
         fun provideSystemStatusAnimationScheduler(
             factory: SystemStatusAnimationSchedulerImpl.Factory,
             @Default systemEventCoordinator: SystemEventCoordinator,
+            chipAnimationController: SystemEventChipAnimationController,
             @Application coroutineScope: CoroutineScope,
         ): SystemStatusAnimationScheduler {
-            return factory.create(systemEventCoordinator, Display.DEFAULT_DISPLAY, coroutineScope)
+            return factory.create(
+                systemEventCoordinator,
+                chipAnimationController,
+                Display.DEFAULT_DISPLAY,
+                coroutineScope,
+            )
         }
 
         @Provides
