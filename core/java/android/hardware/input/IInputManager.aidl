@@ -166,12 +166,12 @@ interface IInputManager {
     @EnforcePermission("CONTROLLER_REMAPPING")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.CONTROLLER_REMAPPING)")
-    void clearAllControllerButtonRemapping(int userId, in InputDeviceIdentifier identifier);
+    void clearAllControllerButtonRemappings(int userId, in InputDeviceIdentifier identifier);
 
     @EnforcePermission("CONTROLLER_REMAPPING")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.CONTROLLER_REMAPPING)")
-    Map getControllerButtonRemapping(int userId, in InputDeviceIdentifier identifier);
+    Map getControllerButtonRemappings(int userId, in InputDeviceIdentifier identifier);
 
     @EnforcePermission("CONTROLLER_REMAPPING")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
