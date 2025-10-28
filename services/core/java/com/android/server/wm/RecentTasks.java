@@ -84,6 +84,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.am.ActivityManagerService;
+import com.android.server.wm.utils.OptPropFactory;
 
 import com.google.android.collect.Sets;
 
@@ -169,6 +170,9 @@ class RecentTasks {
     private ComponentName mRecentsComponent = null;
     @Nullable
     private String mFeatureId;
+
+    @OptPropFactory.OptionalValue
+    private int mIsHomeRecents = OptPropFactory.VALUE_UNSET;
 
     /**
      * Mapping of user id -> whether recent tasks have been loaded for that user.
@@ -447,13 +451,29 @@ class RecentTasks {
     }
 
     /**
+     * This is only used to dump debugging information. It may not be 100% accurate with the cached
+     * value, but it should be enough for testing purposes.
+     *
      * @return whether the home app is also the active handler of recent tasks.
      */
-    boolean isRecentsComponentHomeActivity(int userId) {
+    boolean isRecentsComponentHomeActivity() {
+        if (mIsHomeRecents == OptPropFactory.VALUE_TRUE) {
+            return true;
+        }
+        if (mIsHomeRecents == OptPropFactory.VALUE_FALSE) {
+            return false;
+        }
         final ComponentName defaultHomeActivity = mService.getPackageManagerInternalLocked()
-                .getDefaultHomeActivity(userId);
-        return defaultHomeActivity != null && mRecentsComponent != null &&
-                defaultHomeActivity.getPackageName().equals(mRecentsComponent.getPackageName());
+                .getDefaultHomeActivity(mService.mRootWindowContainer.mCurrentUser);
+        final boolean isHomeRecents = defaultHomeActivity != null && mRecentsComponent != null
+                && defaultHomeActivity.getPackageName().equals(mRecentsComponent.getPackageName());
+        mIsHomeRecents = isHomeRecents ? OptPropFactory.VALUE_TRUE : OptPropFactory.VALUE_FALSE;
+        return isHomeRecents;
+    }
+
+    /** Called when default home package may be changed. */
+    void invalidateIsHomeRecents() {
+        mIsHomeRecents = OptPropFactory.VALUE_UNSET;
     }
 
     /**

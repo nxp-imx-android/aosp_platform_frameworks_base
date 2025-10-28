@@ -293,11 +293,6 @@ public abstract class ActivityTaskManagerInternal implements ActiveUids.Observer
     public abstract boolean isCallerRecents(int callingUid);
 
     /**
-     * Returns whether the recents component is the home activity for the given user.
-     */
-    public abstract boolean isRecentsComponentHomeActivity(int userId);
-
-    /**
      * Returns true if the app can close system dialogs. Otherwise it either throws a {@link
      * SecurityException} or returns false with a logcat message depending on whether the app
      * targets SDK level {@link android.os.Build.VERSION_CODES#S} or not.

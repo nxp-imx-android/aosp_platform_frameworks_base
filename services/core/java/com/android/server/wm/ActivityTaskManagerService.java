@@ -6956,11 +6956,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
 
         @Override
-        public boolean isRecentsComponentHomeActivity(int userId) {
-            return getRecentTasks().isRecentsComponentHomeActivity(userId);
-        }
-
-        @Override
         public boolean checkCanCloseSystemDialogs(int pid, int uid, @Nullable String packageName) {
             return ActivityTaskManagerService.this.checkCanCloseSystemDialogs(pid, uid,
                     packageName);
@@ -7068,6 +7063,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 if (proc == mHomeProcess) {
                     mHomeProcess = null;
                     mActivityStateUpdater.setHomeProcessAsync(null);
+                    mRecentTasks.invalidateIsHomeRecents();
                 }
                 if (proc == mPreviousProcess) {
                     mPreviousProcess = null;
@@ -7871,6 +7867,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         @Override
         public boolean switchUser(int userId, UserState userState) {
             synchronized (mGlobalLock) {
+                mRecentTasks.invalidateIsHomeRecents();
                 return mRootWindowContainer.switchUser(userId, userState);
             }
         }
