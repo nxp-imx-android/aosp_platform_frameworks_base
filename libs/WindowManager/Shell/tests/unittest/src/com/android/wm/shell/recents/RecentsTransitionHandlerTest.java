@@ -74,6 +74,7 @@ import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.os.IResultReceiver;
+import com.android.internal.policy.DesktopModeCompatPolicy;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
@@ -151,7 +152,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     @Mock private Context mConnectedDisplayContext;
     @Mock private Resources mConnectedDisplayResources;
     @Mock private BubbleController mBubbleController;
-
+    @Mock private DesktopModeCompatPolicy mDesktopModeCompatPolicy;
     private ShellTaskOrganizer mShellTaskOrganizer;
     private RecentTasksController mRecentTasksController;
     private RecentTasksController mRecentTasksControllerReal;
@@ -190,7 +191,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         mRecentTasksControllerReal = new RecentTasksController(mContext, mShellInit,
                 mShellController, mShellCommandHandler, mTaskStackListener, mActivityTaskManager,
                 Optional.of(mDesktopUserRepositories), mTaskStackTransitionObserver,
-                mMainExecutor, desktopState);
+                mMainExecutor, desktopState, mDesktopModeCompatPolicy);
         mRecentTasksController = spy(mRecentTasksControllerReal);
         mShellTaskOrganizer = new ShellTaskOrganizer(mShellInit, mShellCommandHandler,
                 mRootTaskDisplayAreaOrganizer, null /* sizeCompatUI */, Optional.empty(),
