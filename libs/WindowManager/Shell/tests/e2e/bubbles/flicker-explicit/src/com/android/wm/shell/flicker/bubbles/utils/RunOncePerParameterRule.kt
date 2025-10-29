@@ -17,31 +17,37 @@
 package com.android.wm.shell.flicker.bubbles.utils
 
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.reflect.KClass
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.Parameterized
 import org.junit.runners.model.Statement
 
 /**
- * A [TestRule] that executes a given [wrappedRule] only once per unique set of parameters.
+ * A [TestRule] that executes a given [wrappedRule] only once per unique set of parameters per test.
  *
  * This rule ensures the [wrappedRule] is evaluated only the *first* time a test is run
  * with a new set of [params]. Subsequent tests using the same parameters will bypass
  * the [wrappedRule]'s logic and execute the test statement directly. This is useful for
  * [Parameterized] tests which execute the whole class of tests with the same parameters.
  *
+ * @param testClass test class that this rule is executed in
  * @param wrappedRule the rule that we only want to apply once per test parameter change.
  * @param params the set of test parameters for the current execution. The [wrappedRule]
  * will be re-executed whenever this set changes from the previous test run.
  */
-class RunOncePerParameterRule(private val wrappedRule: TestRule, private vararg val params: Any) :
-    TestRule {
+class RunOncePerParameterRule(
+    private val testClass: KClass<out Any>,
+    private val wrappedRule: TestRule,
+    private vararg val params: Any,
+) : TestRule {
 
     override fun apply(base: Statement, description: Description) = object : Statement() {
         override fun evaluate() {
-            // Check if the parameters for this test run are new.
-            if (!params.contentEquals(sParams)) {
-                sParams = params
+            // Check if we are in a new test or the parameters for this test run are new.
+            if (testClass != prevTestClass || !params.contentEquals(prevParams)) {
+                prevTestClass = testClass
+                prevParams = params
                 isExecuted.set(false)
             }
 
@@ -63,6 +69,7 @@ class RunOncePerParameterRule(private val wrappedRule: TestRule, private vararg 
     companion object {
         // Static fields to track execution state across test methods.
         private val isExecuted = AtomicBoolean()
-        private var sParams: Array<out Any> = emptyArray()
+        private var prevTestClass: KClass<out Any> = Any::class
+        private var prevParams: Array<out Any> = emptyArray()
     }
 }

@@ -68,6 +68,7 @@ class EnterBubbleFromHomeScreenTest : BubbleFlickerTestBase(), EnterBubbleTestCa
 
     @get:Rule(order = 1)
     val setUpRule = RunOncePerParameterRule(
+        testClass = this::class,
         wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
     )
 

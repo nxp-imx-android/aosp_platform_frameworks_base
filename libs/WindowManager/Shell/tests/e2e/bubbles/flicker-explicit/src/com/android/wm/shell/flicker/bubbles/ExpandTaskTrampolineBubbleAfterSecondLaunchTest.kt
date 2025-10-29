@@ -111,7 +111,8 @@ class ExpandTaskTrampolineBubbleAfterSecondLaunchTest : BubbleFlickerTrampolineT
 
     @get:Rule(order = 1)
     val setUpRule = RunOncePerParameterRule(
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule)
+        testClass = this::class,
+        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
     )
 
     override val traceDataReader
