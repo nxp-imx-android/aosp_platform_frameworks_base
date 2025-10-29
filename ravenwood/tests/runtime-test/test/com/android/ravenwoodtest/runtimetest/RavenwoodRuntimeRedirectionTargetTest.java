@@ -35,11 +35,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Tests on ravenwood-runtime contents.
+ * Make sure all `@RavenwoodRedirect`s has valid target methods.
  */
-public class RuntimeIntegrityTest {
-    private static final String TAG = "RuntimeIntegrityTest";
-
+public class RavenwoodRuntimeRedirectionTargetTest {
+    private static final String TAG = "RavenwoodRuntimeRedirectionTargetTest";
 
     private static final Map<String, Class<?>> PRIMITIVE_TYPE_MAP = new HashMap<>();
     static {
