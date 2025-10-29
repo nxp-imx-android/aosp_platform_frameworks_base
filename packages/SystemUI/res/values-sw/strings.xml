@@ -424,7 +424,7 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Kifaa hakina jina"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Hakuna vifaa vilivyopatikana"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Hakuna Muunganisho wa Wi-Fi au ethaneti"</string>
-    <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Ondoa"</string>
+    <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Tenganisha"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Ung\'avu"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Ugeuzaji rangi"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Usahihishaji wa rangi"</string>
