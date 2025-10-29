@@ -17,6 +17,8 @@
 package com.android.systemui.screencapture.sharescreen.largescreen.ui.compose
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
 import com.android.systemui.screencapture.sharescreen.ui.viewmodel.ScreenCaptureShareScreenViewModel
@@ -30,10 +32,12 @@ constructor(
 
     @Composable
     override fun Content() {
+        val (thumbnailWidthPx, thumbnailHeightPx) =
+            with(LocalDensity.current) { 230.dp.toPx().toInt() to 140.dp.toPx().toInt() }
 
         val screenCaptureShareScreenViewModel: ScreenCaptureShareScreenViewModel =
             rememberViewModel("ScreenCaptureShareScreenViewModel") {
-                screenCaptureShareScreenViewModelFactory.create()
+                screenCaptureShareScreenViewModelFactory.create(thumbnailWidthPx, thumbnailHeightPx)
             }
 
         if (!screenCaptureShareScreenViewModel.isUiVisible) {
