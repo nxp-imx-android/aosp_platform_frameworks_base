@@ -547,7 +547,7 @@ public final class ThreadedRenderer extends HardwareRenderer {
 
     RectF setCornerRadius(CornerRadii radii) {
         mCornerRadii = radii;
-        if (radii == null) {
+        if (radii == null || radii.isEmpty()) {
             mRootNode.setClipToOutline(false);
             return new RectF(0, 0, 0, 0);
         }
