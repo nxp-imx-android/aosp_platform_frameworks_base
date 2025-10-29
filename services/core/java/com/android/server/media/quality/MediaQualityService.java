@@ -367,7 +367,8 @@ public class MediaQualityService extends SystemService {
 
                     if (dbId == null) {
                         mMqManagerNotifier.notifyOnPictureProfileError(
-                                id, PictureProfile.ERROR_INVALID_ARGUMENT, callingUid, callingPid);
+                                id, PictureProfile.ERROR_INVALID_ARGUMENT,
+                                callingUid, callingPid);
                         Slog.e(TAG, "updatePictureProfile: "
                                 + "dbId not found in mPictureProfileTempIdMap");
                         return;
@@ -375,7 +376,9 @@ public class MediaQualityService extends SystemService {
                     if (DEBUG) {
                         Slog.d(TAG, "the dbId associated with id is " + dbId);
                     }
-                    if (!hasPermissionToUpdatePictureProfile(dbId, pp, callingUid, callingPid)) {
+                    PictureProfile fromDb = mMqDatabaseUtils.getPictureProfile(dbId);
+                    if (!hasPermissionToUpdatePictureProfile(
+                            fromDb, pp, callingUid, callingPid)) {
                         mMqManagerNotifier.notifyOnPictureProfileError(
                                 id, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
                         Slog.e(TAG, "updatePictureProfile: "
@@ -384,16 +387,19 @@ public class MediaQualityService extends SystemService {
                     }
 
                     synchronized (mPictureProfileLock) {
+                        PictureProfile updatedProfile = new PictureProfile.Builder(fromDb)
+                        .setParameters(pp.getParameters())
+                        .build();
                         ContentValues values = MediaQualityUtils.getContentValues(dbId,
-                                pp.getProfileType(),
-                                pp.getName(),
-                                pp.getPackageName(),
-                                pp.getInputId(),
-                                pp.getParameters());
+                                updatedProfile.getProfileType(),
+                                updatedProfile.getName(),
+                                updatedProfile.getPackageName(),
+                                updatedProfile.getInputId(),
+                                updatedProfile.getParameters());
 
                         Slog.d(TAG, "update database");
                         updateDatabaseOnPictureProfileAndNotifyManager(
-                                values, pp.getParameters(), callingUid, callingPid, false);
+                                values, updatedProfile, callingUid, callingPid, false);
                         // Keep cache in sync with database, and check for profile id and handle
                         // of the updated picture profile, because user might call this with a
                         // picture profile without handle or profileId.
@@ -402,26 +408,28 @@ public class MediaQualityService extends SystemService {
                             PictureProfile cachedPp = mOriginalHandleToCurrentPictureProfile
                                     .get(originalHandle);
                             if (cachedPp != null) {
-                                if (pp.getProfileId() == null
-                                        || pp.getHandle() == PictureProfileHandle.NONE) {
+                                if (updatedProfile.getProfileId() == null
+                                    || updatedProfile.getHandle() == PictureProfileHandle.NONE) {
                                     cachedPp = new PictureProfile.Builder(cachedPp)
                                             .setProfileId(cachedPp.getProfileId())
-                                            .setParameters(pp.getParameters())
+                                            .setParameters(updatedProfile.getParameters())
                                             .build();
                                     mOriginalHandleToCurrentPictureProfile
                                             .put(originalHandle, cachedPp);
                                 } else {
-                                    mOriginalHandleToCurrentPictureProfile.put(originalHandle, pp);
+                                    mOriginalHandleToCurrentPictureProfile.put(
+                                            originalHandle, updatedProfile);
                                 }
                             }
                         }
 
-                        if (isPackageDefaultPictureProfile(pp)) {
+                        if (isPackageDefaultPictureProfile(updatedProfile)) {
                             if (DEBUG) {
                                 Slog.d(TAG, "updatePictureProfile: updated picture profile is "
                                         + "package default picture profile");
                             }
-                            mPackageDefaultPictureProfileHandleMap.put(pp.getPackageName(), dbId);
+                            mPackageDefaultPictureProfileHandleMap.put(
+                                     updatedProfile.getPackageName(), dbId);
                         }
                     }
                 };
@@ -431,8 +439,7 @@ public class MediaQualityService extends SystemService {
         }
 
         private boolean hasPermissionToUpdatePictureProfile(
-                Long dbId, PictureProfile toUpdate, int uid, int pid) {
-            PictureProfile fromDb = mMqDatabaseUtils.getPictureProfile(dbId);
+                PictureProfile fromDb, PictureProfile toUpdate, int uid, int pid) {
             if (fromDb == null) {
                 Slog.e(TAG, "Failed to get picture profile from db");
                 return false;
@@ -1817,6 +1824,22 @@ public class MediaQualityService extends SystemService {
                 mMqDatabaseUtils.getPictureProfile(dbId, true), uid, pid);
         if (notifyHal) {
             mHalNotifier.notifyHalOnPictureProfileChange(dbId, bundle);
+        }
+    }
+    /**
+     * An overloaded version that avoids a redundant database query by accepting an
+     * in-memory PictureProfile object for notifications.
+     */
+    public void updateDatabaseOnPictureProfileAndNotifyManager(
+            ContentValues values, PictureProfile profile, int uid, int pid, boolean notifyHal) {
+        SQLiteDatabase db = mMediaQualityDbHelper.getWritableDatabase();
+        db.replace(mMediaQualityDbHelper.PICTURE_QUALITY_TABLE_NAME,
+                null, values);
+        Long dbId = values.getAsLong(BaseParameters.PARAMETER_ID);
+        mMqManagerNotifier.notifyOnPictureProfileUpdated(mPictureProfileTempIdMap.getValue(dbId),
+                profile, uid, pid);
+        if (notifyHal) {
+            mHalNotifier.notifyHalOnPictureProfileChange(dbId, profile.getParameters());
         }
     }
 
