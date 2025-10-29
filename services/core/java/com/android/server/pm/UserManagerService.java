@@ -5304,6 +5304,7 @@ public class UserManagerService extends IUserManager.Stub {
                 updateUserIds();
                 upgradeIfNecessaryLP();
                 updateUsersWithFeatureFlags(guestRestrictionsArePresentOnUserListXml);
+                ensurePerfettoUserListExistsLP();
             } catch (Exception e) {
                 // Remove corrupted file and retry.
                 file.failRead(fin, e);
@@ -5732,6 +5733,33 @@ public class UserManagerService extends IUserManager.Stub {
         userInfo.profileBadge = getFreeProfileBadgeLU(userInfo.profileGroupId, userInfo.userType);
     }
 
+    /**
+     * Ensures the Perfetto user list file ({@code mPerfUserListFile}) exists.
+     *
+     * <p>If the file does not exist, this method creates it by calling
+     * {@link #writePerfettoUserListLP()}. This is necessary so Perfetto can read user types,
+     * for example, after a system upgrade when the file might not have been
+     * otherwise generated.
+     *
+     * <p>This method must be called while holding the {@code mPackagesLock}.
+     */
+    @GuardedBy({"mPackagesLock"})
+    private void ensurePerfettoUserListExistsLP() {
+        // force update if file does not exist and perfettoMultiuserTable Flag is on
+        // delete existing file if Flag is off
+        if (!mPerfUserListFile.exists()) {
+            writePerfettoUserListLP();
+        } else if (!android.multiuser.Flags.perfettoMultiuserTable()) {
+            try {
+                if (!mPerfUserListFile.delete()) {
+                    Slog.e(LOG_TAG, "Deleting the perfetto user list was unsuccessful");
+                }
+            } catch (SecurityException se) {
+                Slog.e(LOG_TAG, "Error deleting the perfetto user list", se);
+            }
+        }
+    }
+
     /** Returns the oldest Full Admin user, or null is if there none. */
     private @Nullable UserInfo getEarliestCreatedFullUser() {
         List<UserInfo> users;
@@ -6083,7 +6111,20 @@ public class UserManagerService extends IUserManager.Stub {
                 file.failWrite(fos);
             }
         }
+        writePerfettoUserListLP();
+    }
 
+    /*
+     * Writes the perfetto user list file in this format:
+     *
+     * user_type user_id
+     * android.os.usertype.system.HEADLESS 0
+     * android.os.usertype.full.SECONDARY 10
+     * android.os.usertype.full.GUEST 11
+     *
+     */
+    @GuardedBy({"mPackagesLock"})
+    private void writePerfettoUserListLP() {
         if (android.multiuser.Flags.perfettoMultiuserTable()) {
             try (ResilientAtomicFile file = getUserListFile(mPerfUserListFile)) {
                 FileOutputStream fos = null;
