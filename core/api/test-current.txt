@@ -1979,6 +1979,7 @@ package android.hardware.lights {
   }
 
   public abstract class LightsManager {
+    method @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") @Nullable public abstract android.hardware.lights.ColorSequence getLightSequence(@NonNull android.hardware.lights.Light);
     method @NonNull public abstract android.hardware.lights.LightsManager.LightsSession openSession(int);
   }
 

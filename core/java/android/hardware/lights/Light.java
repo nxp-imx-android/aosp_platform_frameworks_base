@@ -16,12 +16,15 @@
 
 package android.hardware.lights;
 
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.TestApi;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.android.server.lights.feature.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -43,6 +46,12 @@ public final class Light implements Parcelable {
      * @hide
      */
     public static final int LIGHT_TYPE_CAMERA = 9;
+
+    /**
+     * Type for lights that indicate application driven use cases.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_LIGHT_ANIMATIONS)
+    public static final int LIGHT_TYPE_APPLICATION = 10;
 
     // These enum values start from 10001 to avoid collision with expanding of HAL light types.
     /**
@@ -88,6 +97,12 @@ public final class Light implements Parcelable {
     public static final int LIGHT_CAPABILITY_COLOR_RGB = 1 << 1;
 
     /**
+     * Capability for lights that support animations and fast transitions.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_LIGHT_ANIMATIONS)
+    public static final int LIGHT_CAPABILITY_ANIMATION = 1 << 2;
+
+      /**
      * Capability for lights that have red, green and blue LEDs to control the light's color.
      *
      * @deprecated Wrong int based flag with value 0. Use capability flag {@code
@@ -106,6 +121,7 @@ public final class Light implements Parcelable {
             LIGHT_TYPE_KEYBOARD_BACKLIGHT,
             LIGHT_TYPE_KEYBOARD_MIC_MUTE,
             LIGHT_TYPE_KEYBOARD_VOLUME_MUTE,
+            LIGHT_TYPE_APPLICATION,
         })
     public @interface LightType {}
 
@@ -116,6 +132,7 @@ public final class Light implements Parcelable {
             LIGHT_CAPABILITY_BRIGHTNESS,
             LIGHT_CAPABILITY_COLOR_RGB,
             LIGHT_CAPABILITY_RGB,
+            LIGHT_CAPABILITY_ANIMATION,
         })
     public @interface LightCapability {}
 
@@ -126,6 +143,7 @@ public final class Light implements Parcelable {
     private final int mCapabilities;
     @Nullable
     private final int[] mPreferredBrightnessLevels;
+    private final int mMinUpdatePeriodMillis;
 
     /**
      * Creates a new light with the given data.
@@ -142,7 +160,7 @@ public final class Light implements Parcelable {
      * @hide
      */
     public Light(int id, String name, int ordinal, int type, int capabilities) {
-        this(id, name, ordinal, type, capabilities, null);
+        this(id, name, ordinal, type, capabilities, null, 0);
     }
 
     /**
@@ -152,12 +170,7 @@ public final class Light implements Parcelable {
      */
     public Light(int id, String name, int ordinal, int type, int capabilities,
             @Nullable int[] preferredBrightnessLevels) {
-        mId = id;
-        mName = name;
-        mOrdinal = ordinal;
-        mType = type;
-        mCapabilities = capabilities;
-        mPreferredBrightnessLevels = preferredBrightnessLevels;
+        this(id, name, ordinal, type, capabilities, preferredBrightnessLevels, 0);
     }
 
     private Light(@NonNull Parcel in) {
@@ -167,6 +180,31 @@ public final class Light implements Parcelable {
         mType = in.readInt();
         mCapabilities = in.readInt();
         mPreferredBrightnessLevels = in.createIntArray();
+        if (Flags.enableLightAnimations()) {
+            mMinUpdatePeriodMillis = in.readInt();
+        } else {
+            mMinUpdatePeriodMillis = 0;
+        }
+    }
+
+    /**
+     * Creates a new light with the given data.
+     *
+     * @hide
+     */
+    public Light(int id, String name, int ordinal, int type, int capabilities,
+            @Nullable int[] preferredBrightnessLevels, int minUpdatePeriodMillis) {
+        mId = id;
+        mName = name;
+        mOrdinal = ordinal;
+        mType = type;
+        mCapabilities = capabilities;
+        mPreferredBrightnessLevels = preferredBrightnessLevels;
+        if (Flags.enableLightAnimations()) {
+            mMinUpdatePeriodMillis = minUpdatePeriodMillis;
+        } else {
+            mMinUpdatePeriodMillis = 0;
+        }
     }
 
     /** Implement the Parcelable interface */
@@ -178,6 +216,9 @@ public final class Light implements Parcelable {
         dest.writeInt(mType);
         dest.writeInt(mCapabilities);
         dest.writeIntArray(mPreferredBrightnessLevels);
+        if (Flags.enableLightAnimations()) {
+            dest.writeInt(mMinUpdatePeriodMillis);
+        }
     }
 
     /** Implement the Parcelable interface */
@@ -215,8 +256,18 @@ public final class Light implements Parcelable {
 
     @Override
     public String toString() {
-        return "[Name=" + mName + " Id=" + mId + " Type=" + mType + " Capabilities="
-                + mCapabilities + " Ordinal=" + mOrdinal + "]";
+        if (Flags.enableLightAnimations()) {
+            return "[Name=" + mName
+                    + " Id=" + mId
+                    + " Type=" + mType
+                    + " Capabilities=" + mCapabilities
+                    + " Ordinal=" + mOrdinal
+                    + " MinUpdatePeriod=" + mMinUpdatePeriodMillis + "ms"
+                    + "]";
+        } else {
+            return "[Name=" + mName + " Id=" + mId + " Type=" + mType + " Capabilities="
+                    + mCapabilities + " Ordinal=" + mOrdinal + "]";
+        }
     }
 
     /**
@@ -282,6 +333,17 @@ public final class Light implements Parcelable {
     }
 
     /**
+     * Check whether the light has animation capabilities.
+     *
+     * @see MultiLightEffect for details on how to create an animation/effect.
+     * @return True if the hardware supports animations, otherwise false.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_LIGHT_ANIMATIONS)
+    public boolean hasAnimationControl() {
+        return (mCapabilities & LIGHT_CAPABILITY_ANIMATION) == LIGHT_CAPABILITY_ANIMATION;
+    }
+
+    /**
      * Returns preferred brightness levels for the light which will be used when user
      * increase/decrease brightness levels for the light (currently only used for Keyboard
      * backlight control using backlight up/down keys).
@@ -293,5 +355,19 @@ public final class Light implements Parcelable {
     @Nullable
     public int[] getPreferredBrightnessLevels() {
         return mPreferredBrightnessLevels;
+    }
+
+    /**
+     * Returns the minimum update period supported by the light. This corresponds to the inverse of
+     * the maximum supported fps for the light.
+     * <p>
+     * A value of 0  means that the light does not support animations and applications should not
+     * use effects on the light.
+     *
+     * @return the minimum period, in milliseconds, or 0 if the light does not support effects.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_LIGHT_ANIMATIONS)
+    public int getMinUpdatePeriodMillis() {
+        return mMinUpdatePeriodMillis;
     }
 }
