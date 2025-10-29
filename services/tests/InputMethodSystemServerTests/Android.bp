@@ -74,6 +74,7 @@ android_ravenwood_test {
         "androidx.annotation_annotation",
         "androidx.test.rules",
         "services.core",
+        "truth",
     ],
     libs: [
         "android.test.base.stubs.system",

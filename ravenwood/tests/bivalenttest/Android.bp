@@ -42,6 +42,7 @@ java_defaults {
         "androidx.test.ext.junit",
         "androidx.test.rules",
 
+        "flag-junit",
         "junit-params",
         "platform-compat-test-rules",
         "platform-parametric-runner-lib-no-robo",

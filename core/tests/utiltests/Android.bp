@@ -60,11 +60,12 @@ android_ravenwood_test {
         "android.test.mock.stubs.system",
     ],
     static_libs: [
-        "androidx.annotation_annotation",
         "androidx.test.rules",
+        "flag-junit",
         "frameworks-base-testutils",
-        "notification_flags_lib",
+        "truth",
         "servicestests-utils-ravenwood",
+        "notification_flags_lib",
         "testables",
     ],
     srcs: [

@@ -18,6 +18,7 @@ android_ravenwood_test {
         "hoststubgen-helper-runtime",
         "ow2-asm",
         "guava",
+        "truth",
     ],
     srcs: [
         "test/**/*.java",
