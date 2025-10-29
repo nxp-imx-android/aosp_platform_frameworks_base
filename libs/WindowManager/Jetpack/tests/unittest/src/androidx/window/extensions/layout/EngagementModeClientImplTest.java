@@ -336,6 +336,29 @@ public class EngagementModeClientImplTest {
         verify(mMockHandler, never()).postDelayed(any(Runnable.class), anyLong());
     }
 
+    @Test
+    public void testClient_unbindsOnConnect_ifListenersRemovedDuringBind() {
+        // Simulate that bindService succeeds and returns true
+        when(mMockContext.bindService(
+                any(), mServiceConnectionCaptor.capture(), anyInt())).thenReturn(true);
+        mClient = new EngagementModeClientImpl(mMockContext, mMockHandler);
+
+        // Add the listener, which triggers the bind
+        mClient.addUpdateCallback(mDirectExecutor, mMockConsumer);
+
+        // Capture the connection
+        ServiceConnection connection = mServiceConnectionCaptor.getValue();
+
+        // Remove the listener before the service connects
+        mClient.removeUpdateCallback(mMockConsumer);
+
+        // Simulate the service connecting (this is the race)
+        connection.onServiceConnected(new ComponentName(FAKE_PACKAGE_NAME, "Test"), mMockBinder);
+
+        // Verify that the client should immediately unbind to prevent a leak.
+        verify(mMockContext).unbindService(eq(connection));
+    }
+
     private void mockSystemAppVerification(boolean isSystemApp)
             throws PackageManager.NameNotFoundException {
         PackageInfo packageInfo = new PackageInfo();

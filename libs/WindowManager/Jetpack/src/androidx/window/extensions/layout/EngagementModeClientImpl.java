@@ -89,11 +89,16 @@ class EngagementModeClientImpl implements EngagementModeClient {
 
     @Override
     public void addUpdateCallback(@NonNull Executor executor, @NonNull Consumer<Integer> callback) {
+        boolean shouldConnect = false;
         synchronized (mLock) {
             final boolean wasEmpty = mUpdateCallbacks.isEmpty();
             if (mUpdateCallbacks.put(callback, executor) == null && wasEmpty) {
-                connectToService();
+                shouldConnect = true;
             }
+        }
+
+        if (shouldConnect) {
+            connectToService(); // Connect to service outside of lock to prevent deadlock
         }
     }
 
@@ -106,6 +111,7 @@ class EngagementModeClientImpl implements EngagementModeClient {
 
                 if (mIsBound) {
                     mContext.unbindService(mConnection);
+                    mService = null;
                     mIsBound = false;
                 }
                 // Reset to the default state. This prevents new listeners from getting a stale
@@ -142,8 +148,19 @@ class EngagementModeClientImpl implements EngagementModeClient {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             synchronized (mLock) {
+                // Check if all listeners were removed before binding is done. If so, unbind
+                // immediately and clean up to prevent a leak.
+                if (mUpdateCallbacks.isEmpty()) {
+                    mContext.unbindService(mConnection);
+                    mService = null;
+                    mIsBound = false;
+                    return;
+                }
+
+                // Set service as bound.
                 mService = IEngagementModeService.Stub.asInterface(service);
                 mIsBound = true;
+
                 // Reset the reconnect delay on a successful connection.
                 mReconnectDelayMs = INITIAL_RECONNECT_DELAY_MS;
 
