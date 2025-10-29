@@ -24,7 +24,6 @@ import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIB
 import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.NOT_FOREGROUND_SERVICE;
 import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.SHOW_IMMEDIATELY;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
-import static android.app.Flags.FLAG_API_RICH_ONGOING_PERMISSION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION_UI;
 import static android.app.Notification.EXTRA_ALLOW_DURING_SETUP;
@@ -304,6 +303,7 @@ import android.service.notification.NotificationStats;
 import android.service.notification.StatusBarNotification;
 import android.service.notification.ZenModeConfig;
 import android.service.notification.ZenPolicy;
+import android.service.personalcontext.hint.NotificationEvent;
 import android.telecom.TelecomManager;
 import android.testing.TestWithLooperRule;
 import android.testing.TestableContentResolver;
@@ -351,12 +351,11 @@ import com.android.server.job.JobSchedulerInternal;
 import com.android.server.lights.LightsManager;
 import com.android.server.lights.LogicalLight;
 import com.android.server.notification.GroupHelper.NotificationAttributes;
-import android.service.personalcontext.hint.NotificationEvent;
-import com.android.server.personalcontext.PersonalContextManagerInternal;
 import com.android.server.notification.NotificationManagerService.NotificationAssistants;
 import com.android.server.notification.NotificationManagerService.NotificationListeners;
 import com.android.server.notification.NotificationManagerService.PostNotificationTracker;
 import com.android.server.notification.NotificationManagerService.PostNotificationTrackerFactory;
+import com.android.server.personalcontext.PersonalContextManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.policy.PermissionPolicyInternal;
 import com.android.server.security.authenticationpolicy.SecureLockDeviceServiceInternal;
@@ -18978,15 +18977,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertThat(r2.getChannel().getId()).isEqualTo(NEWS_ID);
     }
 
-    @Test
-    @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
-    // TODO(b/450242013): change this test to work when the flag is *enabled*.
-    public void testSetCanBePromoted_granted_ui() throws Exception {
-        // UI flag includes permission enforcement via PermissionMgr/AppOps
-        preparePermissionManagerFake();
-        testSetCanBePromoted_granted();
-    }
-
     private void preparePermissionManagerFake() {
         when(mPermissionHelper.hasRequestedPermission(Manifest.permission.USE_FULL_SCREEN_INTENT,
                 mPkg, mUserId)).thenReturn(true);
@@ -19014,7 +19004,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                         });
     }
 
-    private void testSetCanBePromoted_granted() throws Exception {
+    @Test
+    public void testSetCanBePromoted_granted() throws Exception {
+        preparePermissionManagerFake();
         // qualifying posted notification
         Notification n = createPromotableNotification();
 
@@ -19074,15 +19066,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
-    // TODO(b/450242013): change this test to work when the flag is *enabled*.
-    public void testSetCanBePromoted_granted_onlyNotifiesOnce_ui() throws Exception {
-        // UI flag includes permission enforcement via PermissionMgr/AppOps
+    public void testSetCanBePromoted_granted_onlyNotifiesOnce() throws Exception {
         preparePermissionManagerFake();
-        testSetCanBePromoted_granted_onlyNotifiesOnce();
-    }
-
-    private void testSetCanBePromoted_granted_onlyNotifiesOnce() throws Exception {
         // qualifying posted notification
         Notification n = createPromotableNotification();
 
@@ -19203,7 +19188,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
     public void testPostPromotableNotification_noPermission_appOps() throws Exception {
         when(mPermissionManager.checkPermissionForPreflight(
                 eq(Manifest.permission.POST_PROMOTED_NOTIFICATIONS), any()))
