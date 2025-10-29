@@ -292,17 +292,32 @@ public class PersonalContextManagerService extends SystemService {
             return service;
         }
 
+        private void verifyUser(@UserIdInt int userId) {
+            final int callingUserId = UserHandle.getCallingUserId();
+            if (userId != callingUserId) {
+                getService()
+                        .getContext()
+                        .enforceCallingPermission(
+                                android.Manifest.permission.INTERACT_ACROSS_USERS,
+                                "Cross-user interaction requires INTERACT_ACROSS_USERS. userId="
+                                        + userId
+                                        + " callingUserId="
+                                        + callingUserId);
+            }
+        }
+
         @PermissionManuallyEnforced
         @Override
-        public void publishTriggeringHint(List<ContextHintWrapper> hints, RenderToken renderToken) {
-            final int callingUserId = Binder.getCallingUserHandle().getIdentifier();
+        public void publishTriggeringHint(
+                List<ContextHintWrapper> hints, RenderToken renderToken, int userId) {
+            verifyUser(userId);
 
             // TODO(b/450547433): Add security checks.
             Binder.withCleanCallingIdentity(
                     () -> {
                         getService()
                                 .startRefinerWorkflow(
-                                        callingUserId,
+                                        userId,
                                         ContextHintWrapper.unwrapInto(hints, new HashSet<>()),
                                         renderToken);
                     });
@@ -310,14 +325,15 @@ public class PersonalContextManagerService extends SystemService {
 
         @PermissionManuallyEnforced
         @Override
-        public void publishInsight(List<ContextInsightWrapper> insights) {
-            final int callingUserId = Binder.getCallingUserHandle().getIdentifier();
+        public void publishInsight(List<ContextInsightWrapper> insights, int userId) {
+            verifyUser(userId);
+
             // TODO(b/450547433): Add security checks.
             Binder.withCleanCallingIdentity(
                     () -> {
                         getService()
                                 .startInsightWorkflow(
-                                        callingUserId,
+                                        userId,
                                         ContextInsightWrapper.unwrapInto(
                                                 insights, new HashSet<>()));
                     });
