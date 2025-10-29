@@ -7380,13 +7380,14 @@ public class ActivityManagerService extends IActivityManager.Stub
     final ProcessRecord addAppLocked(ApplicationInfo info, String customProcess, boolean isolated,
             boolean disableHiddenApiChecks, String abiOverride, int zygotePolicyFlags) {
         return addAppLocked(info, customProcess, isolated, disableHiddenApiChecks,
-                false /* disableTestApiChecks */, abiOverride, zygotePolicyFlags);
+                false /* disableTestApiChecks */, false /* runInPccSandbox */,
+                abiOverride, zygotePolicyFlags);
     }
 
     // TODO: Move to ProcessList?
     @GuardedBy("this")
     final ProcessRecord addAppLocked(ApplicationInfo info, String customProcess, boolean isolated,
-            boolean disableHiddenApiChecks, boolean disableTestApiChecks,
+            boolean disableHiddenApiChecks, boolean disableTestApiChecks, boolean runInPccSandbox,
             String abiOverride, int zygotePolicyFlags) {
         return addAppLocked(
                 info,
@@ -7397,6 +7398,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 /* sdkSandboxClientAppPackage= */ null,
                 disableHiddenApiChecks,
                 disableTestApiChecks,
+                runInPccSandbox,
                 abiOverride,
                 zygotePolicyFlags);
     }
@@ -7410,12 +7412,13 @@ public class ActivityManagerService extends IActivityManager.Stub
             @Nullable String sdkSandboxClientAppPackage,
             boolean disableHiddenApiChecks,
             boolean disableTestApiChecks,
+            boolean runInPccSandbox,
             String abiOverride,
             int zygotePolicyFlags) {
         ProcessRecord app;
         if (!isolated) {
             app = getProcessRecordLocked(customProcess != null ? customProcess : info.processName,
-                    info.uid);
+                    runInPccSandbox ? info.pccUid : info.uid);
         } else {
             app = null;
         }
@@ -7430,7 +7433,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                     sdkSandboxUid,
                     sdkSandboxClientAppPackage,
                     new HostingRecord(HostingRecord.HOSTING_TYPE_ADDED_APPLICATION,
-                            customProcess != null ? customProcess : info.processName));
+                            customProcess != null ? customProcess : info.processName,
+                            runInPccSandbox));
             updateLruProcessLocked(app, false, null);
             updateOomAdjLocked(app, OOM_ADJ_REASON_PROCESS_BEGIN);
         }
@@ -14673,12 +14677,21 @@ public class ActivityManagerService extends IActivityManager.Stub
                             == PackageManager.PERMISSION_GRANTED;
             activeInstr.mNoRestart = noRestart;
 
+            final boolean runInPccSandbox = (flags & ActivityManager.INSTR_FLAG_RUN_IN_PCC) != 0;
+            final int uid = runInPccSandbox ? ai.pccUid : ai.uid;
+            if (runInPccSandbox && !Process.isPccUid(uid)) {
+                reportStartInstrumentationFailureLocked(watcher, className,
+                        "Instrumentation target " + ii.targetPackage
+                                + " does not have a valid PCC uid.");
+                return false;
+            }
+
             final long origId = Binder.clearCallingIdentity();
 
             ProcessRecord app;
             synchronized (mProcLock) {
                 if (noRestart) {
-                    app = getProcessRecordLocked(ai.processName, ai.uid);
+                    app = getProcessRecordLocked(ai.processName, uid);
                 } else {
                     // Instrumentation can kill and relaunch even persistent processes
                     forceStopPackageLocked(ii.targetPackage, -1, true, false, true, true, false,
@@ -14689,7 +14702,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                                 UsageEvents.Event.SYSTEM_INTERACTION);
                     }
                     app = addAppLocked(ai, defProcess, false, disableHiddenApiChecks,
-                            disableTestApiChecks, abiOverride, ZYGOTE_POLICY_FLAG_EMPTY);
+                            disableTestApiChecks, runInPccSandbox, abiOverride,
+                            ZYGOTE_POLICY_FLAG_EMPTY);
                     app.mProfile.addHostingComponentType(HOSTING_COMPONENT_TYPE_INSTRUMENTATION);
                 }
 
@@ -14705,13 +14719,13 @@ public class ActivityManagerService extends IActivityManager.Stub
             if ((flags & INSTR_FLAG_DISABLE_ISOLATED_STORAGE) != 0) {
                 // Allow OP_NO_ISOLATED_STORAGE app op for the package running instrumentation with
                 // --no-isolated-storage flag.
-                mAppOpsService.setMode(AppOpsManager.OP_NO_ISOLATED_STORAGE, ai.uid,
+                mAppOpsService.setMode(AppOpsManager.OP_NO_ISOLATED_STORAGE, uid,
                         ii.packageName, AppOpsManager.MODE_ALLOWED);
             }
             Binder.restoreCallingIdentity(origId);
 
             if (noRestart) {
-                instrumentWithoutRestart(activeInstr, ai);
+                instrumentWithoutRestart(activeInstr, ai, runInPccSandbox);
             }
         }
 
@@ -14836,6 +14850,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                         sdkSandboxClientAppInfo.packageName,
                         disableHiddenApiChecks,
                         disableTestApiChecks,
+                        /* runInPccSandbox= */ false,
                         abiOverride,
                         ZYGOTE_POLICY_FLAG_EMPTY);
 
@@ -14856,10 +14871,11 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     private void instrumentWithoutRestart(ActiveInstrumentation activeInstr,
-            ApplicationInfo targetInfo) {
+            ApplicationInfo targetInfo, boolean runInPccSandbox) {
         ProcessRecord pr;
         synchronized (this) {
-            pr = getProcessRecordLocked(targetInfo.processName, targetInfo.uid);
+            pr = getProcessRecordLocked(targetInfo.processName,
+                    runInPccSandbox ? targetInfo.pccUid : targetInfo.uid);
         }
 
         try {

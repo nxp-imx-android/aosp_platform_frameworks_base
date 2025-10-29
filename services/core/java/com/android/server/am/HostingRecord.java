@@ -147,6 +147,10 @@ public final class HostingRecord {
         this(hostingType, hostingName, REGULAR_ZYGOTE);
     }
 
+    public HostingRecord(@NonNull String hostingType, String hostingName, boolean isPcc) {
+        this(hostingType, hostingName, REGULAR_ZYGOTE, isPcc);
+    }
+
     private HostingRecord(@NonNull String hostingType, ComponentName hostingName,
             int hostingZygote) {
         this(hostingType, hostingName.toShortString(), hostingZygote);
@@ -156,6 +160,13 @@ public final class HostingRecord {
         this(hostingType, hostingName, hostingZygote, null /* definingPackageName */,
                 -1 /* mDefiningUid */, false /* isTopApp */, null /* definingProcessName */,
                 null /* action */, TRIGGER_TYPE_UNKNOWN, false /* isPcc */);
+    }
+
+    private HostingRecord(@NonNull String hostingType, String hostingName, int hostingZygote,
+            boolean isPcc) {
+        this(hostingType, hostingName, hostingZygote, null /* definingPackageName */,
+                -1 /* mDefiningUid */, false /* isTopApp */, null /* definingProcessName */,
+                null /* action */, TRIGGER_TYPE_UNKNOWN, isPcc);
     }
 
     private HostingRecord(@NonNull String hostingType, String hostingName, int hostingZygote,
