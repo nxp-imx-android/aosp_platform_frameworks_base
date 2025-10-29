@@ -70,14 +70,38 @@ public class PccClient {
     }
 
     /**
-     * Sends a Bundle of data to the connected PCC service.
+     * Sends a Bundle of data to the connected PCC service. The Bundle is sanitized to enforce
+     * one-way data flow if the caller isn't allowed two-way communication with PCC components.
      *
      * @param data The Bundle of data to send.
-     * @throws IllegalStateException if sendData is called after the service has been killed by the
-     *                               system
-     * @throws RuntimeException      if the PCC service is unavailable for any other reason.
-     * @throws SecurityException     if the packageName from the passed context does not match the
-     *                               actual package name of the app.
+     * @throws IllegalStateException    if sendData is called after the service has been killed by
+     *                                  the system
+     * @throws RuntimeException         if the PCC service is unavailable for any other reason.
+     * @throws SecurityException        if the packageName from the passed context does not match
+     *                                  the actual package name of the app.
+     * @throws IllegalArgumentException if the Bundle contains unsafe data types and the caller
+     *                                  isn't allowed two way communication with PCC components. To
+     *                                  enforce a strictly one-way data flow, the {@code Bundle} is
+     *                                  sanitized to prevent objects that can be used to establish a
+     *                                  two-way communication channel like IBinder, Messenger, etc.
+     *                                  <p>Allowed data types are:
+     *                                  <ul>
+     *                                    <li>Primitives and their arrays (e.g., int, char,
+     *                                    boolean, String, byte[])
+     *                                    <li>{@link android.os.PersistableBundle}
+     *                                    <li>Read-only {@link android.os.ParcelFileDescriptor}
+     *                                    <li>{@link android.os.SharedMemory}. If it has write
+     *                                    access, it will be silently restricted to read-only.
+     *                                    <li>{@link android.graphics.Bitmap}
+     *                                    <li>Custom {@link android.os.Parcelable} objects, must
+     *                                    be serialized as a {@code byte[]} if the bundle contains
+     *                                    any active objects like
+     *                                    {@link android.os.ParcelFileDescriptor} or
+     *                                    {@link android.os.SharedMemory}.
+     *                                    <li>Nested {@code Bundle} objects, which are
+     *                                    recursively sanitized. Throws {@code
+     *                                    IllegalArgumentException} if the depth exceeds 100.
+     *                                  </ul>
      */
     public void sendData(@NonNull Bundle data) {
         CompletableFuture<Void> future = new CompletableFuture<>();

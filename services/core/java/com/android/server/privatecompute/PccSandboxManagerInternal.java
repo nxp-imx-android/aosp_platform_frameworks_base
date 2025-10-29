@@ -24,9 +24,11 @@ import android.app.privatecompute.IResultCallback;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManagerInternal;
+import android.os.BadParcelableException;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.os.ParcelableException;
 import android.os.Process;
 import android.os.RemoteException;
@@ -38,6 +40,8 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -225,11 +229,15 @@ public final class PccSandboxManagerInternal {
                 if (mPackageManagerInternal.isSameApp(packageName, callingUid,
                         UserHandle.getUserId(callingUid))) {
                     try {
+                        PccBundleSanitizationUtil.sanitizeBundle(data);
                         realService.sendData(data, packageName, null);
-                    } catch (RemoteException e) {
+                    } catch (RemoteException | IllegalArgumentException e) {
                         callback.onFailure(new ParcelableException(e));
                         return;
+                    } finally {
+                        closeBundleResources(data);
                     }
+
                     callback.onSuccess();
                 } else {
                     callback.onFailure(new ParcelableException(new SecurityException(
@@ -256,6 +264,45 @@ public final class PccSandboxManagerInternal {
             return mRealBinder;
         }
     }
+
+    private static void closeBundleResources(Bundle bundle) {
+        if (bundle == null || !bundle.hasFileDescriptors()) {
+            return;
+        }
+
+        for (String key : bundle.keySet()) {
+            Object value;
+            try {
+                value = bundle.get(key);
+                if (value == null) {
+                    continue;
+                }
+            } catch (BadParcelableException e) {
+                continue;
+            }
+
+            switch (value) {
+                case Closeable closeable -> {
+                    try {
+                        closeable.close();
+                    } catch (IOException e) {
+                        Slog.e(TAG, "Failed to close resource for key: " + key, e);
+                    }
+                }
+                case Parcelable[] parcelables -> {
+                    for (Parcelable p : parcelables) {
+                        if (p instanceof Bundle b) {
+                            closeBundleResources(b);
+                        }
+                    }
+                }
+                case Bundle subBundle -> closeBundleResources(subBundle);
+                default -> {
+                }
+            }
+        }
+    }
+
 
     private record PccServiceConnectionInfo(ComponentName name, int userId,
                                             Intent.FilterComparison intentFilter) {

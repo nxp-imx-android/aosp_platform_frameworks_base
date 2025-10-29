@@ -107,6 +107,27 @@ public abstract class PccService extends Service {
      * via the sendData api, the service will receive that data in this endpoint and can
      * process it.
      *
+     * <p>The data Bundle is already sanitised by the system if sent from outside PCC
+     * sandbox. This sanitization process makes sure that any object to establish 2 way
+     * communication are not passed.
+     *
+     * <p>To enforce a strictly one-way data flow, if the caller isn't allowed two way communication
+     * with PCC components, the {@code Bundle} is sanitized to prevent objects that can be used to
+     * establish a two-way communication channel like IBinder, Messenger, etc.
+     * <p>Allowed data types are:
+     * <ul>
+     *    <li>Primitives and their arrays (e.g., int, char, boolean, String, byte[])
+     *    <li>{@link android.os.PersistableBundle}
+     *    <li>Read-only {@link android.os.ParcelFileDescriptor}
+     *    <li>{@link android.os.SharedMemory}. If it has write access, it will be silently
+     *    restricted to read-only.
+     *    <li>{@link android.graphics.Bitmap}
+     *    <li>Custom {@link android.os.Parcelable} objects, must be serialized as a
+     *    {@code byte []} if the bundle contains any active objects like
+     *    {@link android.os.ParcelFileDescriptor} or {@link android.os.SharedMemory}.
+     *    <li>Nested {@code Bundle} objects, which are recursively sanitized up to a depth of 100.
+     *  </ul>
+     *
      * @param data        A Bundle containing the data sent by the client.
      * @param packageName The package name for the app that calls sendData.
      */
