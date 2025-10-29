@@ -185,7 +185,6 @@ java_defaults {
 android_ravenwood_test {
     name: "FrameworksServicesTestsRavenwood_Uri",
     defaults: ["FrameworksServicesTestsRavenwood-defaults"],
-    team: "trendy_team_ravenwood",
     static_libs: [
         "services.core",
     ],
@@ -200,7 +199,6 @@ android_ravenwood_test {
 android_ravenwood_test {
     name: "FrameworksServicesTestsRavenwood_Compat",
     defaults: ["FrameworksServicesTestsRavenwood-defaults"],
-    team: "trendy_team_ravenwood",
     static_libs: [
         "services.core.ravenwood",
     ],
