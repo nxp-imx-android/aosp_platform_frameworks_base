@@ -42,6 +42,13 @@ flag {
 }
 
 flag {
+    name: "delegate_request_fullscreen_handling_to_shell"
+    namespace: "lse_desktop_experience"
+    description: "Fully migrates handling of client-requested fullscreen mode to Shell"
+    bug: "296268915"
+}
+
+flag {
     name: "dimming_wallpaper_for_maximized_and_tiled"
     namespace: "lse_desktop_experience"
     description: "Dim the wallpaper to make maximized and tiled window looks immersive."
