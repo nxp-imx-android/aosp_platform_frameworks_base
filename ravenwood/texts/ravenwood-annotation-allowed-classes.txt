@@ -552,6 +552,7 @@ android.util.SizeF
 android.util.Slog
 android.util.SparseArray
 android.util.SparseArrayMap
+android.util.CopyOnWriteSparseArray
 android.util.SparseBooleanArray
 android.util.SparseDoubleArray
 android.util.SparseIntArray

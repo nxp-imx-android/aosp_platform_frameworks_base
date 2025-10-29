@@ -31,6 +31,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManagerInternal;
 import android.util.ArraySet;
+import android.util.CopyOnWriteSparseArray;
 import android.util.DisplayMetrics;
 import android.util.IndentingPrintWriter;
 import android.util.Slog;
@@ -240,14 +241,18 @@ final class LogicalDisplay {
     private final boolean mSizeOverrideEnabled;
 
     private boolean mCanHostTasks;
+    private final CopyOnWriteSparseArray<CachedDisplayInfo> mDisplayInfoCache;
 
-    LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice) {
-        this(displayId, layerStack, primaryDisplayDevice, false, true, false);
+    LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice,
+            CopyOnWriteSparseArray<CachedDisplayInfo> displayInfoCache) {
+        this(displayId, layerStack, primaryDisplayDevice, false,
+                true, false, displayInfoCache);
     }
 
     LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice,
             boolean isSyncedResolutionSwitchEnabled, boolean syntheticModesV2Enabled,
-            boolean sizeOverrideEnabled) {
+            boolean sizeOverrideEnabled,
+            CopyOnWriteSparseArray<CachedDisplayInfo> displayInfoCache) {
         mDisplayId = displayId;
         mLayerStack = layerStack;
         mPrimaryDisplayDevice = primaryDisplayDevice;
@@ -261,6 +266,7 @@ final class LogicalDisplay {
         mSyncedResolutionSwitchEnabled = isSyncedResolutionSwitchEnabled;
         mSyntheticModesV2Enabled = syntheticModesV2Enabled;
         mSizeOverrideEnabled = sizeOverrideEnabled;
+        mDisplayInfoCache = displayInfoCache;
 
         mIsAnisotropicModesEnabled = Flags.enableAnisotropyCorrectedModes();
         // No need to initialize mCanHostTasks here; it's handled in
@@ -313,13 +319,16 @@ final class LogicalDisplay {
 
     /**
      * Computes the current display information based on the base and override info.
-     *
-     * Warning: this does not update the cache.
+     * <p>
+     * Warning: this updates cache on system server side.
      */
     private DisplayInfo computeCurrentDisplayInfoLocked() {
         DisplayInfo info = new DisplayInfo();
         copyDisplayInfoFields(info, mBaseDisplayInfo, mOverrideDisplayInfo,
                 WM_OVERRIDE_FIELDS);
+        if (Flags.displayInfoCopyOnWriteCacheEnabled() && info.supportedModes.length > 0) {
+            mDisplayInfoCache.put(info.displayId, new CachedDisplayInfo(info, mFrameRateOverrides));
+        }
         return info;
     }
 
@@ -1344,4 +1353,14 @@ final class LogicalDisplay {
         dumpLocked(new PrintWriter(sw));
         return sw.toString();
     }
+
+
+    /**
+     * A class that holds the display info and the frame rate overrides for a display.
+     * @hide
+     */
+    @SuppressWarnings("ArrayRecordComponent")
+    public record CachedDisplayInfo(
+            DisplayInfo info,
+            DisplayEventReceiver.FrameRateOverride[] frameRateOverrides) {}
 }
