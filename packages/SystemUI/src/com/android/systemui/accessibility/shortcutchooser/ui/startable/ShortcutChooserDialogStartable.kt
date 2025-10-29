@@ -96,6 +96,7 @@ constructor(
                 TAG,
                 "Dialog is not displayed because selected targets is empty and shortcut type is $shortcutType",
             )
+            return
         }
 
         val startScreen =

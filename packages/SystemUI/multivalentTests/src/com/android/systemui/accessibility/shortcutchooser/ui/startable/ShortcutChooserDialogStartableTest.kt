@@ -109,6 +109,16 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
+    fun createDialog_hardware_noSelectedTargets_noDialog() =
+        kosmos.runTest {
+            underTest.start()
+
+            sendIntentInMainThread(UserShortcutType.HARDWARE)
+
+            assertThat(underTest.currentDialog).isNull()
+        }
+
+    @Test
     fun createDialog_topRowKey_noSelectedTargets_andClickAddFeatureButton_showEditTargetsDialog() =
         kosmos.runTest {
             underTest.start()
@@ -184,6 +194,30 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             assertThat(underTest.currentDialog!!.isShowing).isTrue()
             assertThat(underTest.currentScreenState!!.value)
                 .isEqualTo(ShortcutChooserDialogStartable.DialogScreen.TOGGLE_TARGETS)
+        }
+
+    @Test
+    fun createDialog_hardware_oneSelectedTarget_noDialog() =
+        kosmos.runTest {
+            underTest.start()
+            // Assume there is only one feature selected before pressing the key.
+            setTalkBackSelected()
+
+            sendIntentInMainThread(UserShortcutType.HARDWARE)
+
+            assertThat(underTest.currentDialog).isNull()
+        }
+
+    @Test
+    fun createDialog_topRowKey_oneSelectedTarget_noDialog() =
+        kosmos.runTest {
+            underTest.start()
+            // Assume there is only one feature selected before pressing the key.
+            setTalkBackSelected()
+
+            sendIntentInMainThread(UserShortcutType.TOP_ROW_KEY)
+
+            assertThat(underTest.currentDialog).isNull()
         }
 
     @Test
