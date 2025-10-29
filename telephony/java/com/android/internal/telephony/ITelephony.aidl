@@ -3490,4 +3490,20 @@ interface ITelephony {
      * @return {@code true} if the value is set successfully, {@code false} otherwise.
      */
     boolean setSatelliteIgnorePlmnListFromStorage(in boolean enabled);
+
+    /**
+     * Get whether device is connected to satellite via carrier, either manually or automatically.
+     *
+     * In case of automatic connection, it checks if the device is connected to satellite within the
+     * {@link CarrierConfigManager#KEY_SATELLITE_CONNECTION_HYSTERESIS_SEC_INT} duration,
+     * {@code false} otherwise.
+     *
+     * @param subId The subscription ID of the carrier.
+     * @return {@code true} if the device is connected to satellite using the phone within the
+     *         {@link CarrierConfigManager#KEY_SATELLITE_CONNECTION_HYSTERESIS_SEC_INT} duration,
+     *         {@code false} otherwise.
+     */
+     @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
+                               + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+     boolean isInCarrierRoamingNtnMode(int subId);
 }

@@ -3871,6 +3871,46 @@ public final class SatelliteManager {
         return satelliteMode;
     }
 
+    /**
+     * Get whether device is connected to satellite via carrier, either manually or automatically.
+     *
+     * In order to monitor ongoing carrier roaming ntn mode changes, register to
+     * {@link TelephonyCallback.CarrierRoamingNtnListener} callback.
+     *
+     * @param subId The subscription ID of the carrier.
+     * @return {@code true} if the device is connected to satellite,
+     *         {@code false} otherwise.
+     *
+     * @throws IllegalArgumentException if the provided {@code subId} is not valid.
+     * @throws SecurityException if the caller doesn't have required permission.
+     * @throws IllegalStateException if the Telephony process is not currently available.
+     * @throws RuntimeException if an unexpected error occurs during the remote call to the
+     *         Telephony service.
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public boolean isInCarrierRoamingNtnMode(int subId) {
+        boolean isInCarrierRoamingNtnMode = false;
+        if (!SubscriptionManager.isValidSubscriptionId(subId)) {
+            throw new IllegalArgumentException("Invalid subscription ID");
+        }
+
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                isInCarrierRoamingNtnMode = telephony.isInCarrierRoamingNtnMode(subId);
+            } else {
+                throw new IllegalStateException("telephony service is null.");
+            }
+        } catch (RemoteException ex) {
+            loge("isInCarrierRoamingNtnMode() RemoteException:" + ex);
+            ex.rethrowAsRuntimeException();
+        }
+        return isInCarrierRoamingNtnMode;
+    }
+
     @Nullable
     private static ITelephony getITelephony() {
         ITelephony binder = ITelephony.Stub.asInterface(TelephonyFrameworkInitializer
