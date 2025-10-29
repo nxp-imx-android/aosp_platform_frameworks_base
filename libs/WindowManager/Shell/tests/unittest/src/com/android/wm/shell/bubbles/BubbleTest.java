@@ -70,8 +70,6 @@ public class BubbleTest extends ShellTestCase {
     private NotificationListenerService.Ranking mRanking;
     @Mock
     private ShellExecutor mMainExecutor;
-    @Mock
-    private ShellExecutor mBgExecutor;
 
     private Bundle mExtras;
 

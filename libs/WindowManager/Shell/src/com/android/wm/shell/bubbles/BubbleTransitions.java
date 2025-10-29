@@ -68,11 +68,9 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.ShellTaskOrganizer;
-import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.common.HomeIntentProvider;
-import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
@@ -104,11 +102,10 @@ public class BubbleTransitions {
     @NonNull final ShellTaskOrganizer mTaskOrganizer;
     @NonNull final TaskViewRepository mRepository;
     @NonNull final Executor mMainExecutor;
-    @NonNull final Executor mBackgroundExecutor;
     @NonNull final BubbleData mBubbleData;
     @NonNull final TaskViewTransitions mTaskViewTransitions;
     @NonNull final Context mContext;
-    @NonNull final BubbleAppInfoProvider mAppInfoProvider;
+    @NonNull final BubbleViewInfoTask.Factory mBubbleViewInfoTaskFactory;
 
     @VisibleForTesting
     // Map of a launch cookie (used to start an activity) to the associated transition handler
@@ -126,17 +123,15 @@ public class BubbleTransitions {
             @NonNull Transitions transitions, @NonNull ShellTaskOrganizer organizer,
             @NonNull TaskViewRepository repository, @NonNull BubbleData bubbleData,
             @NonNull TaskViewTransitions taskViewTransitions,
-            @NonNull BubbleAppInfoProvider appInfoProvider,
-            @NonNull ShellExecutor bgExecutor) {
+            @NonNull BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory) {
         mTransitions = transitions;
         mTaskOrganizer = organizer;
         mRepository = repository;
         mMainExecutor = transitions.getMainExecutor();
-        mBackgroundExecutor = bgExecutor;
         mBubbleData = bubbleData;
         mTaskViewTransitions = taskViewTransitions;
         mContext = context;
-        mAppInfoProvider = appInfoProvider;
+        mBubbleViewInfoTaskFactory = bubbleViewInfoTaskFactory;
     }
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
@@ -638,14 +633,11 @@ public class BubbleTransitions {
                     context,
                     expandedViewManager,
                     factory,
-                    positioner,
                     stackView,
                     layerView,
                     iconFactory,
-                    mAppInfoProvider,
                     false /* skipInflation */,
-                    mMainExecutor,
-                    mBackgroundExecutor);
+                    mBubbleViewInfoTaskFactory);
         }
 
         @VisibleForTesting
@@ -931,14 +923,11 @@ public class BubbleTransitions {
                     context,
                     expandedViewManager,
                     factory,
-                    positioner,
                     stackView,
                     layerView,
                     iconFactory,
-                    mAppInfoProvider,
                     false /* skipInflation */,
-                    mMainExecutor,
-                    mBackgroundExecutor);
+                    mBubbleViewInfoTaskFactory);
         }
 
         @VisibleForTesting
@@ -1196,14 +1185,11 @@ public class BubbleTransitions {
                     context,
                     expandedViewManager,
                     factory,
-                    positioner,
                     stackView,
                     layerView,
                     iconFactory,
-                    mAppInfoProvider,
                     false /* skipInflation */,
-                    mMainExecutor,
-                    mBackgroundExecutor);
+                    mBubbleViewInfoTaskFactory);
         }
 
         @VisibleForTesting
@@ -1600,14 +1586,11 @@ public class BubbleTransitions {
                     context,
                     expandedViewManager,
                     factory,
-                    positioner,
                     stackView,
                     layerView,
                     iconFactory,
-                    mAppInfoProvider,
                     false /* skipInflation */,
-                    mMainExecutor,
-                    mBackgroundExecutor);
+                    mBubbleViewInfoTaskFactory);
         }
 
         @VisibleForTesting

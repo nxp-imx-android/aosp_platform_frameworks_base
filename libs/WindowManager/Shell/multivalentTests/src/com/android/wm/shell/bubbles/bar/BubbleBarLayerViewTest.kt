@@ -55,12 +55,14 @@ import com.android.wm.shell.bubbles.FakeBubbleAppInfoProvider
 import com.android.wm.shell.bubbles.FakeBubbleExpandedViewManager
 import com.android.wm.shell.bubbles.FakeBubbleFactory
 import com.android.wm.shell.bubbles.FakeBubbleTaskViewFactory
+import com.android.wm.shell.bubbles.FakeBubbleViewInfoTaskFactory
 import com.android.wm.shell.bubbles.UiEventSubject.Companion.assertThat
 import com.android.wm.shell.bubbles.animation.AnimatableScaleMatrix
 import com.android.wm.shell.bubbles.logging.BubbleLogger
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
 import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository
+import com.android.wm.shell.bubbles.user.data.FakeBubbleUserResolver
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayImeController
 import com.android.wm.shell.common.DisplayInsetsController
@@ -120,6 +122,7 @@ class BubbleBarLayerViewTest {
     private lateinit var dragZoneFactory: DragZoneFactory
     private lateinit var sessionTracker: BubbleSessionTracker
     private lateinit var bubbleStateListener: FakeBubbleStateListener
+    private lateinit var bubbleViewInfoTaskFactory: FakeBubbleViewInfoTaskFactory
 
     @Before
     fun setUp() {
@@ -170,6 +173,15 @@ class BubbleBarLayerViewTest {
                 { SplitScreenMode.UNSUPPORTED },
                 { false },
                 bubbleBarPropertiesProvider
+            )
+
+        bubbleViewInfoTaskFactory =
+            FakeBubbleViewInfoTaskFactory(
+                bubblePositioner,
+                FakeBubbleAppInfoProvider(),
+                mainExecutor,
+                bgExecutor,
+                FakeBubbleUserResolver()
             )
 
         bubbleController =
@@ -261,11 +273,11 @@ class BubbleBarLayerViewTest {
             mock<IWindowManager>(),
             BubbleResizabilityChecker(),
             HomeIntentProvider(context),
-            FakeBubbleAppInfoProvider(),
             { Optional.empty() },
             Optional.empty(),
             { false },
             sessionTracker,
+            bubbleViewInfoTaskFactory,
         )
     }
 

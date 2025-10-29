@@ -39,7 +39,14 @@ import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.bubbles.model.BubbleIcon;
+import com.android.wm.shell.bubbles.user.data.BubbleUserResolver;
+import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
+import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
+
+import dagger.assisted.Assisted;
+import dagger.assisted.AssistedFactory;
+import dagger.assisted.AssistedInject;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.Executor;
@@ -74,28 +81,27 @@ public class BubbleViewInfoTask {
     private final Executor mMainExecutor;
     private final Executor mBgExecutor;
     private final BubbleAppInfoProvider mAppInfoProvider;
+    private final BubbleUserResolver mUserResolver;
 
     private final AtomicBoolean mStarted = new AtomicBoolean();
     private final AtomicBoolean mCancelled = new AtomicBoolean();
     private final AtomicBoolean mFinished = new AtomicBoolean();
 
-    /**
-     * Creates a task to load information for the provided {@link Bubble}. Once all info
-     * is loaded, {@link Callback} is notified.
-     */
-    BubbleViewInfoTask(Bubble b,
-            Context context,
-            BubbleExpandedViewManager expandedViewManager,
-            BubbleTaskViewFactory taskViewFactory,
+    @AssistedInject
+    public BubbleViewInfoTask(@Assisted Bubble b,
+            @Assisted Context context,
+            @Assisted BubbleExpandedViewManager expandedViewManager,
+            @Assisted BubbleTaskViewFactory taskViewFactory,
+            @Assisted @Nullable BubbleStackView stackView,
+            @Assisted @Nullable BubbleBarLayerView layerView,
+            @Assisted BubbleIconFactory factory,
+            @Assisted boolean skipInflation,
+            @Assisted Callback c,
             BubblePositioner positioner,
-            @Nullable BubbleStackView stackView,
-            @Nullable BubbleBarLayerView layerView,
-            BubbleIconFactory factory,
             BubbleAppInfoProvider appInfoProvider,
-            boolean skipInflation,
-            Callback c,
-            Executor mainExecutor,
-            Executor bgExecutor) {
+            @ShellMainThread Executor mainExecutor,
+            @ShellBackgroundThread Executor bgExecutor,
+            BubbleUserResolver userResolver) {
         mBubble = b;
         mContext = new WeakReference<>(context);
         mExpandedViewManager = new WeakReference<>(expandedViewManager);
@@ -109,6 +115,7 @@ public class BubbleViewInfoTask {
         mCallback = c;
         mMainExecutor = mainExecutor;
         mBgExecutor = bgExecutor;
+        mUserResolver = userResolver;
     }
 
     /**
@@ -399,5 +406,23 @@ public class BubbleViewInfoTask {
             }
             return new BubbleIcon.Custom(iconFactory.getBubbleBitmap(bubbleDrawable));
         }
+    }
+
+    @AssistedFactory
+    public interface Factory {
+
+        /**
+         * Creates a task to load information for the provided {@link Bubble}. Once all info
+         * is loaded, {@link Callback} is notified.
+         */
+        BubbleViewInfoTask create(Bubble b,
+                Context context,
+                BubbleExpandedViewManager expandedViewManager,
+                BubbleTaskViewFactory taskViewFactory,
+                @Nullable BubbleStackView stackView,
+                @Nullable BubbleBarLayerView layerView,
+                BubbleIconFactory factory,
+                boolean skipInflation,
+                Callback c);
     }
 }
