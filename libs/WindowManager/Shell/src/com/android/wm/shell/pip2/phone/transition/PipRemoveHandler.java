@@ -38,6 +38,7 @@ import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
+import com.android.wm.shell.pip2.phone.PipInteractionHandler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.transition.Transitions;
@@ -51,6 +52,8 @@ public class PipRemoveHandler implements Transitions.TransitionHandler,
     private final PipTransitionState mPipTransitionState;
     @NonNull
     private final PipSurfaceTransactionHelper mSurfaceTransactionHelper;
+    @NonNull
+    private final PipInteractionHandler mPipInteractionHandler;
 
     //
     // Local state and caches
@@ -63,12 +66,14 @@ public class PipRemoveHandler implements Transitions.TransitionHandler,
     public PipRemoveHandler(Context context,
             @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             PipBoundsState pipBoundsState,
-            PipTransitionState pipTransitionState) {
+            PipTransitionState pipTransitionState,
+            PipInteractionHandler pipInteractionHandler) {
         mContext = context;
         mSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mPipBoundsState = pipBoundsState;
         mPipTransitionState = pipTransitionState;
         mPipAlphaAnimatorSupplier = PipAlphaAnimator::new;
+        mPipInteractionHandler = pipInteractionHandler;
     }
 
     /** Called by [PipTransition#onDisplayIdChanged] when the display id changes. */
@@ -152,6 +157,9 @@ public class PipRemoveHandler implements Transitions.TransitionHandler,
             mPipBoundsState.setLastPipComponentName(null /* lastPipComponentName */);
         }
 
+        mPipInteractionHandler.begin(pipChange.getLeash(),
+                PipInteractionHandler.INTERACTION_REMOVE_PIP);
+
         final Rect startBounds = pipChange.getStartAbsBounds();
         startTransaction.setWindowCrop(pipChange.getLeash(),
                 startBounds.width(), startBounds.height());
@@ -161,12 +169,16 @@ public class PipRemoveHandler implements Transitions.TransitionHandler,
             PipAlphaAnimator animator = mPipAlphaAnimatorSupplier.get(
                     mContext, mSurfaceTransactionHelper, pipChange.getLeash(),
                     startTransaction, finishTransaction, PipAlphaAnimator.FADE_OUT);
-            animator.setAnimationEndCallback(finishCallback);
+            animator.setAnimationEndCallback(() -> {
+                mPipInteractionHandler.end();
+                finishCallback.run();
+            });
             animator.start();
         } else {
             // Jumpcut to a faded-out PiP if no fadeout animation was requested.
             startTransaction.setAlpha(pipChange.getLeash(), 0f);
             startTransaction.apply();
+            mPipInteractionHandler.end();
             finishCallback.run();
         }
         return true;
