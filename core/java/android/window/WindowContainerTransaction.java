@@ -738,7 +738,7 @@ public final class WindowContainerTransaction implements Parcelable {
             @Nullable WindowContainerToken newParent, @Nullable int[] windowingModes,
             @Nullable int[] activityTypes, boolean onTop, boolean reparentTopOnly) {
         return reparentTasks(currentParent, newParent, windowingModes, activityTypes, onTop,
-                onTop, false /* clearWindowingMode */);
+                reparentTopOnly, false /* clearWindowingMode */);
     }
 
 
