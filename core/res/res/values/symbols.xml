@@ -3812,6 +3812,7 @@
   <java-symbol type="array" name="config_convert_to_emergency_number_map" />
 
   <java-symbol type="array" name="config_priorityOnlyDndExemptPackages" />
+  <java-symbol type="array" name="config_listenerHintsExemptPackages" />
 
   <!-- Screen-size-dependent modes for picker dialogs. -->
   <java-symbol type="integer" name="time_picker_mode" />

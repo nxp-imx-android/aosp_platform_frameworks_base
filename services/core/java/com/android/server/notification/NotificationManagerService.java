@@ -123,6 +123,7 @@ import static android.service.notification.Adjustment.TYPE_NEWS;
 import static android.service.notification.Adjustment.TYPE_PROMOTION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT;
 import static android.service.notification.Flags.callstyleCallbackApi;
+import static android.service.notification.Flags.listenerHintExemptPackages;
 import static android.service.notification.Flags.notificationBitmapOffloading;
 import static android.service.notification.Flags.notificationRegroupOnClassification;
 import static android.service.notification.Flags.redactSensitiveNotificationsBigTextStyle;
@@ -2971,8 +2972,17 @@ public class NotificationManagerService extends SystemService {
         mIsTelevision = mPackageManagerClient.hasSystemFeature(FEATURE_LEANBACK)
                 || mPackageManagerClient.hasSystemFeature(FEATURE_TELEVISION);
 
-        mZenModeHelper.setPriorityOnlyDndExemptPackages(getContext().getResources().getStringArray(
-                com.android.internal.R.array.config_priorityOnlyDndExemptPackages));
+        if (listenerHintExemptPackages()) {
+            mZenModeHelper.setExemptPackages(
+                    getContext().getResources().getStringArray(
+                        com.android.internal.R.array.config_priorityOnlyDndExemptPackages),
+                    getContext().getResources().getStringArray(
+                        com.android.internal.R.array.config_listenerHintsExemptPackages));
+        } else {
+            mZenModeHelper.setPriorityOnlyDndExemptPackages(
+                    getContext().getResources().getStringArray(
+                        com.android.internal.R.array.config_priorityOnlyDndExemptPackages));
+        }
 
         mWarnRemoteViewsSizeBytes = getContext().getResources().getInteger(
                 com.android.internal.R.integer.config_notificationWarnRemoteViewSizeBytes);
