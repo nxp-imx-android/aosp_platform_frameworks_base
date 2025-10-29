@@ -51,10 +51,10 @@ import org.mockito.kotlin.mock
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
+@EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
 class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `Change without TaskInfo cannot create the event and returns null`() {
         runTestScenario { r ->
@@ -69,7 +69,6 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With TaskInfo for Bubble a bubble event is returned`() {
         runTestScenario { r ->
@@ -92,7 +91,6 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With TaskInfo taskBounds are calculated from endAbsBounds`() {
         runTestScenario { r ->
@@ -111,7 +109,6 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With TaskInfo letterboxBounds are null when Activity is not letterboxed`() {
         runTestScenario { r ->
@@ -133,7 +130,6 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With TaskInfo letterboxBounds from appCompatTaskInfo when Activity is letterboxed`() {
         runTestScenario { r ->
@@ -156,7 +152,6 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With TaskInfo leash from Change`() {
         runTestScenario { r ->
@@ -178,7 +173,6 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With TaskInfo token from TaskInfo`() {
         runTestScenario { r ->
@@ -202,10 +196,7 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_APP_COMPAT_REFACTORING,
-        Flags.FLAG_APP_COMPAT_REFACTORING_USE_ACTIVITY_LEASH_FOR_LETTERBOXING,
-    )
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_USE_ACTIVITY_LEASH_FOR_LETTERBOXING)
     @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `ActivityLeash from Change to Event`() {
         runTestScenario { r ->
@@ -231,7 +222,6 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `supportsInput comes from LetterboxDependencyHelper`() {
         runTestScenario { r ->
@@ -254,10 +244,7 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_APP_COMPAT_REFACTORING,
-        Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS,
-    )
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS)
     @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With TaskInfo token leash and configuration are persistend with no hierarchy flag`() {
         runTestScenario { r ->
@@ -292,10 +279,7 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_APP_COMPAT_REFACTORING,
-        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY,
-    )
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `Change without TaskInfo cannot create the event and returns null with task hierarchy`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
@@ -309,10 +293,7 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_APP_COMPAT_REFACTORING,
-        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY,
-    )
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With TaskInfo but for a not leaf Task event is null`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
@@ -335,10 +316,7 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_APP_COMPAT_REFACTORING,
-        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY,
-    )
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With TaskInfo for Bubble a bubble event is returned with task hierarchy enabled`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
@@ -365,10 +343,7 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_APP_COMPAT_REFACTORING,
-        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY,
-    )
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With TaskInfo taskBounds are calculated from endAbsBounds with task hierarchy enabled`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
@@ -393,10 +368,7 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_APP_COMPAT_REFACTORING,
-        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY,
-    )
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With TaskInfo letterboxBounds are null when not letterboxed and hierarchy flag enabled`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
@@ -422,10 +394,7 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_APP_COMPAT_REFACTORING,
-        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY,
-    )
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With letterboxBounds from appCompatTaskInfo when letterboxed with hierarchy flag`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
@@ -452,10 +421,7 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_APP_COMPAT_REFACTORING,
-        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY,
-    )
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `With TaskInfo leash and token from Repository when flag enabled and parentId is used`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
@@ -506,10 +472,7 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_APP_COMPAT_REFACTORING,
-        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY,
-    )
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `supportsInput comes from LetterboxDependencyHelper with hierarchy flag enabled`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
@@ -541,7 +504,6 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_APP_COMPAT_REFACTORING,
         Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS,
         Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY,
     )
