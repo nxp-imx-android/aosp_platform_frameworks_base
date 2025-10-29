@@ -1,4 +1,9 @@
 {
+  "imports": [
+    {
+      "path": "frameworks/base/ravenwood/test-mapping-frameworks"
+    }
+  ],
   "desktop-presubmit": [
     {
       "name": "CfVkmsCursorTest"
@@ -61,25 +66,6 @@
     },
     {
       "name": "CtsStrictJavaPackagesTestCases"
-    }
-  ],
-  // TODO(b/406842774) Change it to ravenwood-presubmit
-  "ravenwood-postsubmit": [
-    {
-      "name": "FrameworksCoreSystemPropertiesTestsRavenwood",
-      "host": true
-    },
-    {
-      "name": "FrameworksCoreTestsRavenwood",
-      "host": true
-    },
-    {
-      "name": "FrameworksUtilTestsRavenwood",
-      "host": true
-    },
-    {
-      "name": "InternalTestsRavenwood",
-      "host": true
     }
   ],
   "postsubmit-managedprofile-stress": [

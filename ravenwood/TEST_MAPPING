@@ -54,6 +54,7 @@
       ]
     }
   ],
+  // LINT.IfChange
   "ravenwood-presubmit": [
 // TODO(b/440069724) these tests didn't get to run on presubmit somehow
 //    {
@@ -237,6 +238,7 @@
     }
     // AUTO-GENERATED-END
   ],
+  // LINT.ThenChange(test-mapping-frameworks/TEST_MAPPING)
   "ravenwood-postsubmit": [
     // We haven't maintained SystemUiRavenTests, and as a result, it's been demoted already.
     // Disable it until we fix the issues: b/319647875
