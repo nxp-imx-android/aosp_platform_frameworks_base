@@ -562,10 +562,15 @@
 
     <!-- Declare that this application may use cleartext traffic, such as HTTP rather than HTTPS;
          WebSockets rather than WebSockets Secure; XMPP, IMAP, SMTP without STARTTLS or TLS.
-         Defaults to true. If set to false {@code false}, the application declares that it does not
-         intend to use cleartext network traffic, in which case platform components (e.g. HTTP
-         stacks, {@code DownloadManager}, {@code MediaPlayer}) will refuse applications's requests
+         Defaults to true. Defaults to true before API level 27, to false afterwards. If set to
+         false {@code false}, the application declares that it does not intend to use cleartext
+         network traffic, in which case platform components (e.g. HTTP stacks,
+         {@code DownloadManager}, {@code MediaPlayer}) will refuse applications's requests
          to use cleartext traffic. Third-party libraries are encouraged to honor this flag as well.
+         @deprecated This API will be deprecated in the future and will have no effect.
+         Specify a <a href="{@docRoot}privacy-and-security/security-config#manifest">
+         Network Security Config file</a> in addition to this API to prevent future breakage.
+         @FlaggedApi(android.security.Flags.FLAG_DEPRECATE_USES_CLEARTEXT_TRAFFIC)
          -->
     <attr name="usesCleartextTraffic" format="boolean" />
 
@@ -2137,13 +2142,6 @@
         <attr name="requiredAccountType" format="string"/>
         <!-- @deprecated replaced by setting appCategory attribute to "game" -->
         <attr name="isGame" />
-        <!-- Declare that this application may use cleartext traffic, such as HTTP rather than
-             HTTPS; WebSockets rather than WebSockets Secure; XMPP, IMAP, SMTP without STARTTLS or
-             TLS). Defaults to true. If set to false {@code false}, the application declares that it
-             does not intend to use cleartext network traffic, in which case platform components
-             (e.g. HTTP stacks, {@code DownloadManager}, {@code MediaPlayer}) will refuse
-             applications's requests to use cleartext traffic. Third-party libraries are encouraged
-             to honor this flag as well. -->
         <attr name="usesCleartextTraffic" />
         <attr name="multiArch" />
         <attr name="useEmbeddedDex" />
