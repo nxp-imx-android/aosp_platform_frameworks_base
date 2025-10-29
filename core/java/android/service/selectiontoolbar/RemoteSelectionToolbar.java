@@ -28,6 +28,7 @@ import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Size;
@@ -58,7 +59,6 @@ import android.window.InputTransferToken;
 import com.android.internal.R;
 import com.android.internal.util.Preconditions;
 import com.android.internal.widget.floatingtoolbar.FloatingToolbar;
-import com.android.server.FgThread;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -139,7 +139,7 @@ public final class RemoteSelectionToolbar {
     private List<ToolbarMenuItem> mMenuItems;
     private SurfaceControlViewHost mSurfaceControlViewHost;
     private SurfaceControlViewHost.SurfacePackage mSurfacePackage;
-    private final Handler mFgHandler;
+    private final Handler mHandler;
 
     /**
      * @see OverflowPanelViewHelper#preparePopupContent()
@@ -177,6 +177,12 @@ public final class RemoteSelectionToolbar {
             ShowInfo showInfo, SelectionToolbarRenderService.RemoteCallbackWrapper callbackWrapper,
             SelectionToolbarRenderService.TransferTouchListener transferTouchListener,
             SelectionToolbarRenderService.OnPasteActionCallback onPasteActionCallback) {
+        Looper looper = Looper.myLooper();
+        if (looper == null) {
+            throw new IllegalStateException(
+                    "RemoteSelectionToolbar must be created on a looper thread");
+        }
+        mHandler = new Handler(looper);
         mUid = uid;
         mContext = wrapContext(context, showInfo);
         mCallbackWrapper = callbackWrapper;
@@ -195,7 +201,6 @@ public final class RemoteSelectionToolbar {
                 .getDimensionPixelSize(R.dimen.floating_toolbar_height);
         mIconTextSpacing = mContext.getResources()
                 .getDimensionPixelSize(R.dimen.floating_toolbar_icon_text_spacing);
-        mFgHandler = FgThread.getHandler();
 
         // Interpolators
         mLogAccelerateInterpolator = new LogAccelerateInterpolator();
@@ -275,7 +280,7 @@ public final class RemoteSelectionToolbar {
         mMenuItemButtonOnClickListener = v -> {
             // Post the callback to fg thread because the onPasteAction() callback
             // needs to be synchronous but it shouldn't block the main thread.
-            mFgHandler.post(() -> {
+            mHandler.post(() -> {
                 Object tag = v.getTag();
                 if (tag instanceof ToolbarMenuItem toolbarMenuItem) {
                     if (toolbarMenuItem.itemId == R.id.paste
@@ -315,6 +320,12 @@ public final class RemoteSelectionToolbar {
 
     private SurfaceControlViewHost.SurfacePackage getSurfacePackage() {
         if (mSurfaceControlViewHost == null) {
+            if (mHandler.getLooper().getThread() != Thread.currentThread()) {
+                throw new IllegalStateException(
+                        "UI operations must be called on the same thread as the constructor."
+                                + "thisThread = " + Thread.currentThread()
+                                + " handlerThread = " + mHandler.getLooper().getThread());
+            }
             mSurfaceControlViewHost = new SurfaceControlViewHost(mContext, mContext.getDisplay(),
                     new InputTransferToken(mHostInputToken), "RemoteSelectionToolbar");
             mSurfaceControlViewHost.setView(mContentHolder, mPopupWidth, mPopupHeight);
