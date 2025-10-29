@@ -7988,9 +7988,6 @@ public class AudioService extends IAudioService.Stub
 
         final int uid = attributionSource.getUid();
         final int pid = attributionSource.getPid();
-        final int scoAudioMode =
-                (targetSdkVersion < Build.VERSION_CODES.JELLY_BEAN_MR2) ?
-                        BtHelper.SCO_MODE_VIRTUAL_CALL : BtHelper.SCO_MODE_UNDEFINED;
         final String eventSource = new StringBuilder("startBluetoothSco()")
                 .append(") from u/pid:").append(uid).append("/")
                 .append(pid).toString();
@@ -7999,10 +7996,9 @@ public class AudioService extends IAudioService.Stub
                 .setUid(uid)
                 .setPid(pid)
                 .set(MediaMetrics.Property.EVENT, "startBluetoothSco")
-                .set(MediaMetrics.Property.SCO_AUDIO_MODE,
-                        BtHelper.scoAudioModeToString(scoAudioMode))
+                .set(MediaMetrics.Property.SCO_AUDIO_MODE, "SCO_MODE_VIRTUAL_CALL")
                 .record();
-        startBluetoothScoInt(cb, attributionSource, scoAudioMode, eventSource);
+        startBluetoothScoInt(cb, attributionSource, eventSource);
 
     }
 
@@ -8026,18 +8022,16 @@ public class AudioService extends IAudioService.Stub
                 .setUid(uid)
                 .setPid(pid)
                 .set(MediaMetrics.Property.EVENT, "startBluetoothScoVirtualCall")
-                .set(MediaMetrics.Property.SCO_AUDIO_MODE,
-                        BtHelper.scoAudioModeToString(BtHelper.SCO_MODE_VIRTUAL_CALL))
+                .set(MediaMetrics.Property.SCO_AUDIO_MODE, "SCO_MODE_VIRTUAL_CALL")
                 .record();
-        startBluetoothScoInt(cb, attributionSource, BtHelper.SCO_MODE_VIRTUAL_CALL, eventSource);
+        startBluetoothScoInt(cb, attributionSource, eventSource);
     }
 
     void startBluetoothScoInt(IBinder cb, AttributionSource attributionSource,
-            int scoAudioMode, @NonNull String eventSource) {
+            @NonNull String eventSource) {
         MediaMetrics.Item mmi = new MediaMetrics.Item(MediaMetrics.Name.AUDIO_BLUETOOTH)
                 .set(MediaMetrics.Property.EVENT, "startBluetoothScoInt")
-                .set(MediaMetrics.Property.SCO_AUDIO_MODE,
-                        BtHelper.scoAudioModeToString(scoAudioMode));
+                .set(MediaMetrics.Property.SCO_AUDIO_MODE,"SCO_MODE_VIRTUAL_CALL");
 
         if (!checkAudioSettingsPermission("startBluetoothSco()") ||
                 !mSystemReady) {
@@ -8049,7 +8043,7 @@ public class AudioService extends IAudioService.Stub
         final long ident = Binder.clearCallingIdentity();
         try {
             mDeviceBroker.startBluetoothScoForClient(
-                    cb, attributionSource, scoAudioMode, isPrivileged, eventSource);
+                    cb, attributionSource, isPrivileged, eventSource);
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
@@ -8084,8 +8078,7 @@ public class AudioService extends IAudioService.Stub
                 .setUid(uid)
                 .setPid(pid)
                 .set(MediaMetrics.Property.EVENT, "stopBluetoothSco")
-                .set(MediaMetrics.Property.SCO_AUDIO_MODE,
-                        BtHelper.scoAudioModeToString(BtHelper.SCO_MODE_UNDEFINED))
+                .set(MediaMetrics.Property.SCO_AUDIO_MODE, "SCO_MODE_VIRTUAL_CALL")
                 .record();
     }
 
