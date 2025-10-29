@@ -75,19 +75,44 @@ public class PolicyDefinitionMap {
      * Create the PolicyDefinitionMap with all supported policy definitions.
      */
     PolicyDefinitionMap() {
-        mPolicyDefinitions = loadPolicyDefinitions();
-        mGenericPolicyDefinitions = loadGenericPolicies();
+        this(loadPolicyDefinitions(), loadGenericPolicies());
     }
 
     /**
-     * Allow overriding the policy definition for unit testing.
-     * Does not set any generic policy definitions.
+     * Allow overriding the policy definition for unit testing. Does not set any generic policy
+     * definitions.
+     */
+    PolicyDefinitionMap(Map<String, PolicyDefinition<?>> policyDefinitions) {
+        this(policyDefinitions, new HashSet<>());
+    }
+
+    /**
+     * Creates a PolicyDefinitionMap.
+     *
+     * @param policyDefinitions A map of all policy identifiers to their definitions.
+     * @param genericPolicyIdentifiers A set of policy identifiers that are considered generic.
+     *     Every key in {@code genericPolicyIdentifiers} must be present as a key in {@code
+     *     policyDefinitions}.
      */
     PolicyDefinitionMap(
-            Map<String, PolicyDefinition<?>> policyDefinitions
-    ) {
-        mPolicyDefinitions = policyDefinitions;
-        mGenericPolicyDefinitions = new HashSet<>();
+            Map<String, PolicyDefinition<?>> policyDefinitions,
+            Set<String> genericPolicyIdentifiers) {
+        mPolicyDefinitions = Collections.unmodifiableMap(policyDefinitions);
+
+        Set<PolicyDefinition<?>> genericPolicyDefinitions = new HashSet<>();
+        for (String identifier : genericPolicyIdentifiers) {
+            var definition = policyDefinitions.get(identifier);
+
+            if (definition == null) {
+                throw new IllegalArgumentException(
+                        "Every value of `genericPolicyIdentifiers` must be a identifier in "
+                                + "`policyDefinitions`, but \""
+                                + identifier
+                                + "\" was not found.");
+            }
+        }
+
+        mGenericPolicyDefinitions = Collections.unmodifiableSet(genericPolicyDefinitions);
     }
 
     // TODO(b/277218360): Revisit policies that should be marked as global-only.
@@ -95,58 +120,58 @@ public class PolicyDefinitionMap {
         Map<String, PolicyDefinition<?>> policyDefinitions = new HashMap<>();
 
         policyDefinitions.put(DevicePolicyIdentifiers.AUTO_TIMEZONE_POLICY, AUTO_TIME_ZONE);
-        policyDefinitions.put(DevicePolicyIdentifiers.PERMISSION_GRANT_POLICY,
-                GENERIC_PERMISSION_GRANT);
-        policyDefinitions.put(DevicePolicyIdentifiers.SECURITY_LOGGING_POLICY,
-                SECURITY_LOGGING);
-        policyDefinitions.put(DevicePolicyIdentifiers.AUDIT_LOGGING_POLICY,
-                AUDIT_LOGGING);
+        policyDefinitions.put(
+                DevicePolicyIdentifiers.PERMISSION_GRANT_POLICY, GENERIC_PERMISSION_GRANT);
+        policyDefinitions.put(DevicePolicyIdentifiers.SECURITY_LOGGING_POLICY, SECURITY_LOGGING);
+        policyDefinitions.put(DevicePolicyIdentifiers.AUDIT_LOGGING_POLICY, AUDIT_LOGGING);
         policyDefinitions.put(DevicePolicyIdentifiers.LOCK_TASK_POLICY, LOCK_TASK);
-        policyDefinitions.put(DevicePolicyIdentifiers.USER_CONTROL_DISABLED_PACKAGES_POLICY,
+        policyDefinitions.put(
+                DevicePolicyIdentifiers.USER_CONTROL_DISABLED_PACKAGES_POLICY,
                 USER_CONTROLLED_DISABLED_PACKAGES);
-        policyDefinitions.put(DevicePolicyIdentifiers.PERSISTENT_PREFERRED_ACTIVITY_POLICY,
+        policyDefinitions.put(
+                DevicePolicyIdentifiers.PERSISTENT_PREFERRED_ACTIVITY_POLICY,
                 GENERIC_PERSISTENT_PREFERRED_ACTIVITY);
-        policyDefinitions.put(DevicePolicyIdentifiers.PACKAGE_UNINSTALL_BLOCKED_POLICY,
+        policyDefinitions.put(
+                DevicePolicyIdentifiers.PACKAGE_UNINSTALL_BLOCKED_POLICY,
                 GENERIC_PACKAGE_UNINSTALL_BLOCKED);
-        policyDefinitions.put(DevicePolicyIdentifiers.APPLICATION_RESTRICTIONS_POLICY,
+        policyDefinitions.put(
+                DevicePolicyIdentifiers.APPLICATION_RESTRICTIONS_POLICY,
                 GENERIC_APPLICATION_RESTRICTIONS);
-        policyDefinitions.put(DevicePolicyIdentifiers.RESET_PASSWORD_TOKEN_POLICY,
-                RESET_PASSWORD_TOKEN);
-        policyDefinitions.put(DevicePolicyIdentifiers.KEYGUARD_DISABLED_FEATURES_POLICY,
+        policyDefinitions.put(
+                DevicePolicyIdentifiers.RESET_PASSWORD_TOKEN_POLICY, RESET_PASSWORD_TOKEN);
+        policyDefinitions.put(
+                DevicePolicyIdentifiers.KEYGUARD_DISABLED_FEATURES_POLICY,
                 KEYGUARD_DISABLED_FEATURES);
-        policyDefinitions.put(DevicePolicyIdentifiers.APPLICATION_HIDDEN_POLICY,
-                GENERIC_APPLICATION_HIDDEN);
-        policyDefinitions.put(DevicePolicyIdentifiers.ACCOUNT_MANAGEMENT_DISABLED_POLICY,
+        policyDefinitions.put(
+                DevicePolicyIdentifiers.APPLICATION_HIDDEN_POLICY, GENERIC_APPLICATION_HIDDEN);
+        policyDefinitions.put(
+                DevicePolicyIdentifiers.ACCOUNT_MANAGEMENT_DISABLED_POLICY,
                 GENERIC_ACCOUNT_MANAGEMENT_DISABLED);
-        policyDefinitions.put(DevicePolicyIdentifiers.PERMITTED_INPUT_METHODS_POLICY,
-                PERMITTED_INPUT_METHODS);
-        policyDefinitions.put(DevicePolicyIdentifiers.SCREEN_CAPTURE_DISABLED_POLICY,
-                SCREEN_CAPTURE_DISABLED);
-        policyDefinitions.put(DevicePolicyIdentifiers.PERSONAL_APPS_SUSPENDED_POLICY,
-                PERSONAL_APPS_SUSPENDED);
-        policyDefinitions.put(DevicePolicyIdentifiers.USB_DATA_SIGNALING_POLICY,
-                USB_DATA_SIGNALING);
-        policyDefinitions.put(DevicePolicyIdentifiers.CONTENT_PROTECTION_POLICY,
-                CONTENT_PROTECTION);
-        policyDefinitions.put(DevicePolicyIdentifiers.APP_FUNCTIONS_POLICY,
-                APP_FUNCTIONS);
+        policyDefinitions.put(
+                DevicePolicyIdentifiers.PERMITTED_INPUT_METHODS_POLICY, PERMITTED_INPUT_METHODS);
+        policyDefinitions.put(
+                DevicePolicyIdentifiers.SCREEN_CAPTURE_DISABLED_POLICY, SCREEN_CAPTURE_DISABLED);
+        policyDefinitions.put(
+                DevicePolicyIdentifiers.PERSONAL_APPS_SUSPENDED_POLICY, PERSONAL_APPS_SUSPENDED);
+        policyDefinitions.put(
+                DevicePolicyIdentifiers.USB_DATA_SIGNALING_POLICY, USB_DATA_SIGNALING);
+        policyDefinitions.put(
+                DevicePolicyIdentifiers.CONTENT_PROTECTION_POLICY, CONTENT_PROTECTION);
+        policyDefinitions.put(DevicePolicyIdentifiers.APP_FUNCTIONS_POLICY, APP_FUNCTIONS);
         // Intentionally not flagged since if the flag is flipped off on a device already
         // having PASSWORD_COMPLEXITY policy in the on-device XML, it will cause the
         // deserialization logic to break due to seeing an unknown tag.
-        policyDefinitions.put(DevicePolicyIdentifiers.PASSWORD_COMPLEXITY_POLICY,
-                PASSWORD_COMPLEXITY);
-        policyDefinitions.put(DevicePolicyIdentifiers.PACKAGES_SUSPENDED_POLICY,
-                PACKAGES_SUSPENDED);
-        policyDefinitions.put(DevicePolicyIdentifiers.MEMORY_TAGGING_POLICY,
-                MEMORY_TAGGING);
+        policyDefinitions.put(
+                DevicePolicyIdentifiers.PASSWORD_COMPLEXITY_POLICY, PASSWORD_COMPLEXITY);
+        policyDefinitions.put(
+                DevicePolicyIdentifiers.PACKAGES_SUSPENDED_POLICY, PACKAGES_SUSPENDED);
+        policyDefinitions.put(DevicePolicyIdentifiers.MEMORY_TAGGING_POLICY, MEMORY_TAGGING);
         policyDefinitions.put(DevicePolicyIdentifiers.AUTO_TIME_POLICY, AUTO_TIME);
         policyDefinitions.put(
                 DevicePolicyIdentifiers.CROSS_PROFILE_WIDGET_PROVIDER_POLICY,
                 CROSS_PROFILE_WIDGET_PROVIDER);
         policyDefinitions.put(
-                DevicePolicyIdentifiers.COMMON_CRITERIA_MODE_POLICY,
-                COMMON_CRITERIA_MODE
-        );
+                DevicePolicyIdentifiers.COMMON_CRITERIA_MODE_POLICY, COMMON_CRITERIA_MODE);
 
         // User Restriction Policies
         Map<String, Integer> userRestrictionFlags = new HashMap<>();
@@ -161,8 +186,7 @@ public class PolicyDefinitionMap {
         // TODO: set as global only once we get rid of the mapping
         userRestrictionFlags.put(
                 UserManager.DISALLOW_SHARING_ADMIN_CONFIGURED_WIFI, /* flags= */ 0);
-        userRestrictionFlags.put(
-                UserManager.DISALLOW_WIFI_DIRECT, POLICY_FLAG_GLOBAL_ONLY_POLICY);
+        userRestrictionFlags.put(UserManager.DISALLOW_WIFI_DIRECT, POLICY_FLAG_GLOBAL_ONLY_POLICY);
         userRestrictionFlags.put(
                 UserManager.DISALLOW_ADD_WIFI_CONFIG, POLICY_FLAG_GLOBAL_ONLY_POLICY);
         userRestrictionFlags.put(UserManager.DISALLOW_CONFIG_LOCALE, /* flags= */ 0);
@@ -175,15 +199,15 @@ public class PolicyDefinitionMap {
         userRestrictionFlags.put(UserManager.DISALLOW_AMBIENT_DISPLAY, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_CONFIG_SCREEN_TIMEOUT, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES, /* flags= */ 0);
-        userRestrictionFlags.put(UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY,
+        userRestrictionFlags.put(
+                UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY,
                 POLICY_FLAG_GLOBAL_ONLY_POLICY);
         userRestrictionFlags.put(UserManager.DISALLOW_CONFIG_BLUETOOTH, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_BLUETOOTH, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_BLUETOOTH_SHARING, /* flags= */ 0);
         // This effectively always applies globally, but it can be set on the profile
         // parent, check the javadocs on the restriction for more info.
-        userRestrictionFlags.put(
-                UserManager.DISALLOW_USB_FILE_TRANSFER, /* flags= */ 0);
+        userRestrictionFlags.put(UserManager.DISALLOW_USB_FILE_TRANSFER, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_CONFIG_CREDENTIALS, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_REMOVE_USER, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_REMOVE_MANAGED_PROFILE, /* flags= */ 0);
@@ -191,12 +215,10 @@ public class PolicyDefinitionMap {
         userRestrictionFlags.put(UserManager.DISALLOW_CONFIG_VPN, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_CONFIG_LOCATION, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_CONFIG_DATE_TIME, /* flags= */ 0);
-        userRestrictionFlags.put(
-                UserManager.DISALLOW_CONFIG_TETHERING, /* flags= */ 0);
+        userRestrictionFlags.put(UserManager.DISALLOW_CONFIG_TETHERING, /* flags= */ 0);
         // This effectively always applies globally, but it can be set on the profile
         // parent, check the javadocs on the restriction for more info.
-        userRestrictionFlags.put(
-                UserManager.DISALLOW_NETWORK_RESET, /* flags= */ 0);
+        userRestrictionFlags.put(UserManager.DISALLOW_NETWORK_RESET, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_FACTORY_RESET, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_ADD_USER, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_ADD_MANAGED_PROFILE, /* flags= */ 0);
@@ -234,8 +256,7 @@ public class PolicyDefinitionMap {
         userRestrictionFlags.put(UserManager.DISALLOW_AUTOFILL, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_CONTENT_CAPTURE, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_CONTENT_SUGGESTIONS, /* flags= */ 0);
-        userRestrictionFlags.put(
-                UserManager.DISALLOW_USER_SWITCH, POLICY_FLAG_GLOBAL_ONLY_POLICY);
+        userRestrictionFlags.put(UserManager.DISALLOW_USER_SWITCH, POLICY_FLAG_GLOBAL_ONLY_POLICY);
         userRestrictionFlags.put(UserManager.DISALLOW_SHARE_INTO_MANAGED_PROFILE, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_PRINTING, /* flags= */ 0);
         userRestrictionFlags.put(
@@ -246,54 +267,49 @@ public class PolicyDefinitionMap {
         // TODO: check if its global only
         userRestrictionFlags.put(UserManager.DISALLOW_BIOMETRIC, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_CONFIG_DEFAULT_APPS, /* flags= */ 0);
-        userRestrictionFlags.put(
-                UserManager.DISALLOW_CELLULAR_2G, POLICY_FLAG_GLOBAL_ONLY_POLICY);
+        userRestrictionFlags.put(UserManager.DISALLOW_CELLULAR_2G, POLICY_FLAG_GLOBAL_ONLY_POLICY);
         userRestrictionFlags.put(
                 UserManager.DISALLOW_ULTRA_WIDEBAND_RADIO, POLICY_FLAG_GLOBAL_ONLY_POLICY);
         userRestrictionFlags.put(
                 UserManager.DISALLOW_NEAR_FIELD_COMMUNICATION_RADIO,
                 POLICY_FLAG_GLOBAL_ONLY_POLICY);
-        userRestrictionFlags.put(
-                UserManager.DISALLOW_SIM_GLOBALLY,
-                POLICY_FLAG_GLOBAL_ONLY_POLICY);
+        userRestrictionFlags.put(UserManager.DISALLOW_SIM_GLOBALLY, POLICY_FLAG_GLOBAL_ONLY_POLICY);
         userRestrictionFlags.put(UserManager.DISALLOW_ASSIST_CONTENT, /* flags= */ 0);
-        userRestrictionFlags.put(UserManager.DISALLOW_CHANGE_NEAR_FIELD_COMMUNICATION_RADIO,
+        userRestrictionFlags.put(
+                UserManager.DISALLOW_CHANGE_NEAR_FIELD_COMMUNICATION_RADIO,
                 POLICY_FLAG_GLOBAL_ONLY_POLICY);
 
         if (com.android.net.thread.platform.flags.Flags.threadUserRestrictionEnabled()) {
             userRestrictionFlags.put(
                     UserManager.DISALLOW_THREAD_NETWORK, POLICY_FLAG_GLOBAL_ONLY_POLICY);
         }
-        userRestrictionFlags.forEach((restriction, flags) -> {
-            createAndAddUserRestrictionPolicyDefinition(
-                    policyDefinitions,
-                    restriction,
-                    flags
-            );
-        });
+        userRestrictionFlags.forEach(
+                (restriction, flags) -> {
+                    createAndAddUserRestrictionPolicyDefinition(
+                            policyDefinitions, restriction, flags);
+                });
 
         for (String legacyPolicy : LEGACY_POLICIES) {
             if (policyDefinitions.containsKey(legacyPolicy)) {
-                throw new IllegalStateException("Policy with identifier (" + legacyPolicy
-                        + ") is already defined as legacy policy. Remove it from LEGACY_POLICIES "
-                        + "before adding a definition.");
+                throw new IllegalStateException(
+                        "Policy with identifier ("
+                                + legacyPolicy
+                                + ") is already defined as legacy policy. Remove it from"
+                                + " LEGACY_POLICIES before adding a definition.");
             }
         }
 
-        return Collections.unmodifiableMap(policyDefinitions);
+        return policyDefinitions;
     }
 
-    private static Set<PolicyDefinition<?>> loadGenericPolicies() {
-        Set<PolicyDefinition<?>> genericPolicyDefinitions = new HashSet<>();
-
-        genericPolicyDefinitions.add(GENERIC_PERMISSION_GRANT);
-        genericPolicyDefinitions.add(GENERIC_PERSISTENT_PREFERRED_ACTIVITY);
-        genericPolicyDefinitions.add(GENERIC_PACKAGE_UNINSTALL_BLOCKED);
-        genericPolicyDefinitions.add(GENERIC_APPLICATION_RESTRICTIONS);
-        genericPolicyDefinitions.add(GENERIC_APPLICATION_HIDDEN);
-        genericPolicyDefinitions.add(GENERIC_ACCOUNT_MANAGEMENT_DISABLED);
-
-        return Collections.unmodifiableSet(genericPolicyDefinitions);
+    private static Set<String> loadGenericPolicies() {
+        return Set.of(
+                DevicePolicyIdentifiers.PERMISSION_GRANT_POLICY,
+                DevicePolicyIdentifiers.PERSISTENT_PREFERRED_ACTIVITY_POLICY,
+                DevicePolicyIdentifiers.PACKAGE_UNINSTALL_BLOCKED_POLICY,
+                DevicePolicyIdentifiers.APPLICATION_RESTRICTIONS_POLICY,
+                DevicePolicyIdentifiers.APPLICATION_HIDDEN_POLICY,
+                DevicePolicyIdentifiers.ACCOUNT_MANAGEMENT_DISABLED_POLICY);
     }
 
     private static void createAndAddUserRestrictionPolicyDefinition(
