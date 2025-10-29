@@ -108,6 +108,13 @@ public abstract class InputEventReceiver {
      * Must be called on the same Looper thread to which the receiver is attached.
      */
     public void dispose() {
+        if (mLooper == null) {
+            // dispose() should only be called once on each PointerEventDispatcher. For example,
+            // perhaps some code is expecting that the receiver is still alive, so it expects the
+            // events to continue to come in. And another piece of code disposes it. That would
+            // indicate a design problem in the system.
+            throw new IllegalStateException("dispose() called on an already-disposed receiver");
+        }
         if (Thread.currentThread() != mLooper.getThread()) {
             throw new IllegalStateException("Must call dispose() on the Looper thread");
         }
