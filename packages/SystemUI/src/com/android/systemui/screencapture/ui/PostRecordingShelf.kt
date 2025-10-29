@@ -40,6 +40,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,6 +63,8 @@ import com.android.systemui.statusbar.phone.create
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.delay
 
 class PostRecordingShelf
 @AssistedInject
@@ -110,6 +113,13 @@ constructor(
                 if (dialog.isShowing) {
                     dialog.dismiss()
                 }
+            }
+        }
+
+        LaunchedEffect(visibleState.targetState) {
+            if (visibleState.targetState) {
+                delay(DEFAULT_TIMEOUT)
+                hide()
             }
         }
 
@@ -221,5 +231,9 @@ constructor(
     @AssistedFactory
     interface Factory {
         fun create(uri: Uri, thumbnail: Icon?): PostRecordingShelf
+    }
+
+    companion object {
+        private val DEFAULT_TIMEOUT = 6.seconds
     }
 }
