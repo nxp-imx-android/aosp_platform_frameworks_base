@@ -537,10 +537,15 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             return;
         }
 
-        final ComplicationComponent complicationComponent = mComplicationComponentFactory.create(
-                mLifecycleOwner,
-                () -> mExecutor.execute(DreamOverlayService.this::requestExit),
-                new ViewModelStore(), mTouchInsetManager);
+        final ComplicationComponent complicationComponent =
+                mComplicationComponentFactory.create(
+                        mLifecycleOwner,
+                        () ->
+                                dreamScopedExecute(
+                                        DreamOverlayService.this::requestExit,
+                                        "exiting dream from complications"),
+                        new ViewModelStore(),
+                        mTouchInsetManager);
         final DreamComplicationComponent dreamComplicationComponent =
                 mDreamComplicationComponentFactory.create(
                         complicationComponent.getVisibilityController(), mTouchInsetManager);
@@ -560,7 +565,8 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             touchHandlers.add(new DismissTouchHandler(new DismissTouchHandler.DismissCallback() {
                 @Override
                 public void onDismissed() {
-                    mExecutor.execute(DreamOverlayService.this::requestExit);
+                    dreamScopedExecute(DreamOverlayService.this::requestExit,
+                            "exiting dream from dismiss touch on preview");
                 }
             }));
         }
