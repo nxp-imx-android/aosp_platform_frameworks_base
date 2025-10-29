@@ -718,7 +718,7 @@ public final class DisplayManagerService extends SystemService {
         mSystemReady = false;
         mConfigParameterProvider = new DeviceConfigParameterProvider(DeviceConfigInterface.REAL);
         mExtraDisplayLoggingPackageName = DisplayProperties.debug_vri_package().orElse(null);
-        mExtraDisplayEventLogging = !TextUtils.isEmpty(mExtraDisplayLoggingPackageName);
+        mExtraDisplayEventLogging = true; // see b/449949226
         mExternalDisplayStatsService = new ExternalDisplayStatsService(mContext, mHandler,
                 () -> !shouldMirrorBuiltInDisplay());
         mDisplayNotificationManager = new DisplayNotificationManager(mContext,
@@ -3839,7 +3839,7 @@ public final class DisplayManagerService extends SystemService {
     }
 
     private boolean extraLogging(String packageName) {
-        return mExtraDisplayEventLogging && mExtraDisplayLoggingPackageName.equals(packageName);
+        return true; // See b/449949226
     }
 
     // Runs on Handler thread.

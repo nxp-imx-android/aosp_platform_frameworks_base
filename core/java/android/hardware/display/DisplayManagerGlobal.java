@@ -95,7 +95,10 @@ public final class DisplayManagerGlobal {
 
     // To enable these logs, run:
     // 'adb shell setprop persist.log.tag.DisplayManager DEBUG && adb reboot'
-    private static final boolean DEBUG = DisplayManager.DEBUG || sExtraDisplayListenerLogging;
+    @SuppressWarnings("DebugTrue") // See b/449949226
+    private static final boolean DEBUG = true; // See b/449949226
+    private static final boolean DEBUG_2 = DisplayManager.DEBUG; // See b/449949226
+
 
     @IntDef(prefix = {"EVENT_DISPLAY_"}, flag = true, value = {
             EVENT_DISPLAY_CONNECTED,
@@ -274,7 +277,7 @@ public final class DisplayManagerGlobal {
 
         registerCallbackIfNeededLocked();
 
-        if (DEBUG) {
+        if (DEBUG_2) {
             Log.d(TAG, "getDisplayInfo: displayId=" + displayId + ", info=" + info);
         }
         return info;
@@ -1605,9 +1608,14 @@ public final class DisplayManagerGlobal {
 
         void sendDisplayEvents(int displayId, int eventMask, @Nullable DisplayInfo info,
                 boolean forceUpdate) {
-            if (extraLogging()) {
+            if (extraLogging() && (((eventMask & EVENT_DISPLAY_STATE_CHANGED) != 0) || (
+                    (eventMask & EVENT_DISPLAY_BASIC_CHANGED) != 0) || (
+                    (eventMask & EVENT_DISPLAY_COMMITTED_STATE_CHANGED) != 0))) {
                 Slog.i(TAG, "Sending Display Events: " + eventsToString(eventMask));
+                final String infoState = (info != null) ? String.valueOf(info.state) : "null";
+                Slog.d(TAG, "Display" + displayId + ": state changed to: " + infoState);
             }
+
             long generationId = this.mGenerationId.get();
             mExecutor.execute(() -> {
                 // If the generation id's don't match we were canceled
@@ -1656,13 +1664,14 @@ public final class DisplayManagerGlobal {
 
         private void handleDisplayEventInner(int displayId, @DisplayEvent int event,
                 @Nullable DisplayInfo info, boolean forceUpdate) {
-            if (extraLogging()) {
-                Slog.i(TAG, "DLD(" + eventToString(event)
-                        + ", display=" + displayId
-                        + ", mEventsMask=" + Long.toBinaryString(internalEventFlagsMask)
-                        + ", mPackageName=" + mPackageName
-                        + ", displayInfo=" + info
-                        + ", listener=" + mListener.getClass() + ")");
+            if (extraLogging() && (event == EVENT_DISPLAY_STATE_CHANGED
+                    || event == EVENT_DISPLAY_COMMITTED_STATE_CHANGED
+                    || event == EVENT_DISPLAY_BASIC_CHANGED)) {
+                Slog.i(TAG,
+                        "DLD(" + eventToString(event) + ", display=" + displayId + ", mEventsMask="
+                                + Long.toBinaryString(internalEventFlagsMask) + ", mPackageName="
+                                + mPackageName + ", displayInfo=" + info + ", listener="
+                                + mListener.getClass() + ")");
             }
             if (DEBUG) {
                 Trace.beginSection(
@@ -1746,7 +1755,8 @@ public final class DisplayManagerGlobal {
 
         @Override
         public String toString() {
-            return "flag: {" + internalEventFlagsMask + "}, for " + mListener.getClass();
+            return "flag: {" + internalEventFlagsMask + "}, for " + mListener.getClass()
+                    + " - mPackageName: " + mPackageName;
         }
     }
 
@@ -1936,11 +1946,11 @@ public final class DisplayManagerGlobal {
             sExtraDisplayListenerLogging = !TextUtils.isEmpty(EXTRA_LOGGING_PACKAGE_NAME)
                     && EXTRA_LOGGING_PACKAGE_NAME.equals(sCurrentPackageName);
         }
-        return sExtraDisplayListenerLogging;
+        return true; // See b/449949226
     }
 
     private static boolean extraLogging() {
-        return sExtraDisplayListenerLogging;
+        return true; // See b/449949226
     }
 
 
