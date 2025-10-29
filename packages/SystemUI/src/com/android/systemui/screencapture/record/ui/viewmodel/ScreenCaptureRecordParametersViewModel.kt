@@ -18,6 +18,7 @@ package com.android.systemui.screencapture.record.ui.viewmodel
 
 import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordParametersInteractor
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import dagger.assisted.AssistedFactory
@@ -83,6 +84,8 @@ constructor(private val interactor: ScreenCaptureRecordParametersInteractor) :
                 }
             }
         }
+
+    val canUseFrontCamera: Boolean = ScreenCaptureRecordFeaturesInteractor.isSelfieAvailable
 
     fun setAudioSource(audioSource: ScreenRecordingAudioSource) {
         interactor.setAudioSource(audioSource)
