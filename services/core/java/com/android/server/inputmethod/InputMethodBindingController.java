@@ -609,7 +609,14 @@ final class InputMethodBindingController {
             Slog.e(TAG, "--- bind failed: service = " + mCurIntent + ", conn = " + conn);
             return false;
         }
-        return mContext.bindServiceAsUser(mCurIntent, conn, flags, new UserHandle(mUserId));
+        final boolean hasBound = mContext.bindServiceAsUser(mCurIntent, conn, flags,
+                new UserHandle(mUserId));
+        if (!hasBound) {
+            Slog.e(TAG, "--- bind failed: service = " + mCurIntent + ", conn = " + conn);
+            // As per javadoc, unbind even if the binding failed.
+            mContext.unbindService(conn);
+        }
+        return hasBound;
     }
 
     @GuardedBy("ImfLock.class")
