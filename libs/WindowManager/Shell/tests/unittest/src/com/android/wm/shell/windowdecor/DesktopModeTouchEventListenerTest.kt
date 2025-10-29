@@ -149,8 +149,11 @@ class DesktopModeTouchEventListenerTest : ShellTestCase() {
                     decor.findViewById(com.android.wm.shell.R.id.close_window),
                     "Expected decoration to have a close button",
                 )
-            val x = TASK_BOUNDS.right - 1f
-            val y = TASK_BOUNDS.top + 1f
+
+            val closeBtnLocation = IntArray(2)
+            closeBtn.getLocationOnScreen(closeBtnLocation)
+            val x = closeBtnLocation[0].toFloat()
+            val y = closeBtnLocation[1].toFloat()
 
             val startTime = SystemClock.uptimeMillis()
             closeBtn.dispatchTouchEvent(
@@ -191,8 +194,11 @@ class DesktopModeTouchEventListenerTest : ShellTestCase() {
                     decor.findViewById(com.android.wm.shell.R.id.close_window),
                     "Expected decoration to have a close button",
                 )
-            val x = TASK_BOUNDS.right - 1f
-            val y = TASK_BOUNDS.top + 1f
+
+            val closeBtnLocation = IntArray(2)
+            closeBtn.getLocationOnScreen(closeBtnLocation)
+            val x = closeBtnLocation[0].toFloat()
+            val y = closeBtnLocation[1].toFloat()
 
             val startTime = SystemClock.uptimeMillis()
             closeBtn.dispatchTouchEvent(
