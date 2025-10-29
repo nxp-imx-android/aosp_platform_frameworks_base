@@ -2091,3 +2091,10 @@ flag {
     description: "Splits the 'Show passwords' setting into two new settings: one for touch inputs and one for physical inputs."
     bug: "417951523"
 }
+
+flag {
+    name: "enable_ambient_cue_with_ime_visible"
+    namespace: "ailabs"
+    description: "Enables showing Cue Bar while IME is visible"
+    bug: "451865977"
+}
