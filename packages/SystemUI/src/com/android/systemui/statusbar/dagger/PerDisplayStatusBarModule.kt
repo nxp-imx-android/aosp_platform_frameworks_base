@@ -39,6 +39,9 @@ import com.android.systemui.statusbar.disableflags.data.repository.DisableFlagsR
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractorImpl
+import com.android.systemui.statusbar.events.SystemEventChipAnimationController
+import com.android.systemui.statusbar.events.SystemEventChipAnimationControllerImpl
+import com.android.systemui.statusbar.events.SystemEventCoordinator
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler
 import com.android.systemui.statusbar.events.SystemStatusAnimationSchedulerImpl
 import com.android.systemui.statusbar.events.data.repository.SystemStatusEventAnimationRepository
@@ -50,6 +53,7 @@ import com.android.systemui.statusbar.layout.StatusBarContentInsetsProviderImpl
 import com.android.systemui.statusbar.phone.ConfigurationControllerImpl
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarInteractor
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import dagger.Binds
 import dagger.Lazy
@@ -176,14 +180,59 @@ interface PerDisplayStatusBarModule {
         @DisplayAware
         fun systemStatusAnimationScheduler(
             factory: SystemStatusAnimationSchedulerImpl.Factory,
+            @DisplayAware coordinatorLazy: Lazy<SystemEventCoordinator>,
+            @DisplayAware chipAnimationControllerLazy: Lazy<SystemEventChipAnimationController>,
             @DisplayAware displayIdLazy: Lazy<Int>,
             @DisplayAware coroutineScopeLazy: Lazy<CoroutineScope>,
             @Default defaultSchedulerLazy: Lazy<SystemStatusAnimationScheduler>,
         ): SystemStatusAnimationScheduler {
             return if (Flags.systemStatusAnimationPerDisplay()) {
-                factory.create(displayIdLazy.get(), coroutineScopeLazy.get())
+                factory.create(
+                    coordinatorLazy.get(),
+                    chipAnimationControllerLazy.get(),
+                    displayIdLazy.get(),
+                    coroutineScopeLazy.get(),
+                )
             } else {
                 defaultSchedulerLazy.get()
+            }
+        }
+
+        @Provides
+        @PerDisplaySingleton
+        @DisplayAware
+        fun systemEventCoordinator(
+            @Default defaultCoordinatorLazy: Lazy<SystemEventCoordinator>,
+            factory: SystemEventCoordinator.Factory,
+            @DisplayAware contextLazy: Lazy<Context>,
+            @DisplayAware scopeLazy: Lazy<CoroutineScope>,
+        ): SystemEventCoordinator {
+            return if (Flags.systemStatusAnimationPerDisplay()) {
+                factory.create(contextLazy.get(), scopeLazy.get())
+            } else {
+                defaultCoordinatorLazy.get()
+            }
+        }
+
+        @Provides
+        @PerDisplaySingleton
+        @DisplayAware
+        fun systemEventChipAnimationController(
+            defaultControllerLazy: Lazy<SystemEventChipAnimationController>,
+            factory: SystemEventChipAnimationControllerImpl.Factory,
+            @DisplayAware displayIdLazy: Lazy<Int>,
+            @DisplayAware contextLazy: Lazy<Context>,
+            statusBarWindowControllerStoreLazy: Lazy<StatusBarWindowControllerStore>,
+            @DisplayAware contentInsetsProviderLazy: Lazy<StatusBarContentInsetsProvider>,
+        ): SystemEventChipAnimationController {
+            return if (Flags.systemStatusAnimationPerDisplay()) {
+                factory.create(
+                    contextLazy.get(),
+                    statusBarWindowControllerStoreLazy.get().forDisplay(displayIdLazy.get()),
+                    contentInsetsProviderLazy.get(),
+                )
+            } else {
+                defaultControllerLazy.get()
             }
         }
 

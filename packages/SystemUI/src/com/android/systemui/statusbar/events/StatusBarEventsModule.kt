@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.events
 
+import android.content.Context
 import android.view.Display
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -50,9 +51,27 @@ interface StatusBarEventsModule {
         @SysUISingleton
         fun provideSystemStatusAnimationScheduler(
             factory: SystemStatusAnimationSchedulerImpl.Factory,
+            @Default systemEventCoordinator: SystemEventCoordinator,
+            chipAnimationController: SystemEventChipAnimationController,
             @Application coroutineScope: CoroutineScope,
         ): SystemStatusAnimationScheduler {
-            return factory.create(Display.DEFAULT_DISPLAY, coroutineScope)
+            return factory.create(
+                systemEventCoordinator,
+                chipAnimationController,
+                Display.DEFAULT_DISPLAY,
+                coroutineScope,
+            )
+        }
+
+        @Provides
+        @Default
+        @SysUISingleton
+        fun providesSystemEventCoordinator(
+            context: Context,
+            @Application applicationScope: CoroutineScope,
+            factory: SystemEventCoordinator.Factory,
+        ): SystemEventCoordinator {
+            return factory.create(context, applicationScope)
         }
     }
 }
