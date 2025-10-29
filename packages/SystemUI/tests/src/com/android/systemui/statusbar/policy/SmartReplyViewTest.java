@@ -615,14 +615,12 @@ public class SmartReplyViewTest extends SysuiTestCase {
         return new Notification.Action.Builder(mActionIcon, actionTitle, pendingIntent).build();
     }
 
-    private Notification.Action createAnimatedAction(String actionTitle,
-            String contentDescription) {
+    private Notification.Action createAnimatedAction(String actionTitle) {
         PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
                 new Intent(TEST_ACTION).setPackage(mContext.getPackageName()),
                 PendingIntent.FLAG_MUTABLE);
         Bundle extras = new Bundle();
         extras.putBoolean(Notification.Action.EXTRA_IS_ANIMATED, true);
-        extras.putString(Notification.Action.EXTRA_CONTENT_DESCRIPTION, contentDescription);
         return new Notification.Action.Builder(mActionIcon, actionTitle, pendingIntent)
                 .addExtras(extras)
                 .build();
@@ -1646,11 +1644,17 @@ public class SmartReplyViewTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(FLAG_NOTIFICATION_ANIMATED_ACTION_CONTENT_DESCRIPTION)
-    public void testInflateActionButton_contentDescriptionSetForAnimatedReply() {
-        String contentDescription = "content description";
+    public void testInflateActionButton_contentDescriptionSetForAnimatedAction() {
+        String animatedActionTitle = "animatedAction";
+        String smartActionTitle = "smartAction";
+        String contentDescription =
+                getContext()
+                        .getString(
+                                R.string.notification_animated_action_content_description,
+                                animatedActionTitle);
         List<Notification.Action> actions = List.of(
-                createAnimatedAction("action1", contentDescription),
-                createAction("action2")
+                createAnimatedAction(animatedActionTitle),
+                createAction(smartActionTitle)
         );
         SmartReplyView.SmartActions smartActions = new SmartReplyView.SmartActions(actions, true);
         List<Button> actionButtons = IntStream.range(0, smartActions.actions.size())

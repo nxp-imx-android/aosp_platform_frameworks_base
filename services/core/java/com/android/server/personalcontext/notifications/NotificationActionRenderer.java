@@ -175,11 +175,6 @@ public class NotificationActionRenderer implements Renderer {
                         user);
 
         final Bundle extras = new Bundle();
-        final CharSequence contentDescription = displayDetails.getContentDescription();
-        if (contentDescription != null) {
-            extras.putCharSequence(
-                    Notification.Action.EXTRA_CONTENT_DESCRIPTION, contentDescription);
-        }
         extras.putBoolean(Notification.Action.EXTRA_IS_ANIMATED, true);
 
         return new Notification.Action.Builder(icon, title, pendingIntent)
