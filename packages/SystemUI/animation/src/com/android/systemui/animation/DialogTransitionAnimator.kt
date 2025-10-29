@@ -118,12 +118,15 @@ constructor(
         val viewRoot: ViewRootImpl?
 
         /**
-         * The identity object of the source animated by this controller. This animator will ensure
-         * that 2 animations with the same source identity are not going to run at the same time, to
-         * avoid flickers when a dialog is shown from the same source more or less at the same time
-         * (for instance if the user clicks an expandable button twice).
+         * The identity object of the dialog animated by this controller. This animator will ensure
+         * that 2 animations animating same dialog are not going to run at the same time, to avoid
+         * flickers when a dialog is shown from similar sources more or less at the same time (for
+         * instance if the user clicks an expandable button twice).
+         *
+         * This identity would be passed to [AnimatedDialog], to allow for lookups before animation
+         * to avoid animating the same dialog again.
          */
-        val sourceIdentity: Any
+        val dialogIdentity: Any
 
         /** The CUJ associated to this controller. */
         val cuj: DialogCuj?
@@ -287,19 +290,64 @@ constructor(
             )
         }
 
+        return show(dialog, { controller }, controller.cuj, animateBackgroundBoundsChange)
+    }
+
+    /**
+     * Shows [dialog] by expanding it from a source determined by [resolveController].
+     *
+     * This method handles the orchestration of the expansion animation. If [resolveController]
+     * returns a valid [Controller], the dialog will perform a transform animation from the
+     * controller's source view. If it returns `null`, the dialog will be shown normally without an
+     * animation.
+     *
+     * If [animateBackgroundBoundsChange] is true, then the background of the dialog will be
+     * animated when the dialog bounds change.
+     *
+     * Note: The background of [view] should be a (rounded) rectangle so that it can be properly
+     * animated.
+     *
+     * Caveats: When calling this function and [dialog] is not a fullscreen dialog, then it will be
+     * made fullscreen and 2 views will be inserted between the dialog DecorView and its children.
+     *
+     * @return [Boolean] `true` if the dialog was successfully shown, `false` otherwise. The dialog
+     *   will not be shown if another instance with the same sourceIdentity is already in the
+     *   process of dismissing.
+     */
+    @JvmOverloads
+    fun show(
+        dialog: Dialog,
+        resolveController: (DialogCuj?) -> Controller?,
+        cuj: DialogCuj? = null,
+        animateBackgroundBoundsChange: Boolean = false,
+    ): Boolean {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            throw IllegalStateException(
+                "showFromView must be called from the main thread and dialog must be created in " +
+                    "the main thread"
+            )
+        }
+
+        val startController = resolveController(cuj)
+
+        if (startController == null) {
+            dialog.show()
+            return true
+        }
+
         // If the view we are launching from belongs to another dialog, then this means the caller
         // intent is to launch a dialog from another dialog.
         val animatedParent =
             openedDialogs.firstOrNull {
-                it.dialog.window?.decorView?.viewRootImpl == controller.viewRoot
+                it.dialog.window?.decorView?.viewRootImpl == startController.viewRoot
             }
         val controller =
             animatedParent?.dialogContentWithBackground?.let {
-                Controller.fromView(it, controller.cuj)
-            } ?: controller
+                Controller.fromView(it, startController.cuj)
+            } ?: startController
 
         val openedDialog =
-            openedDialogs.firstOrNull { it.controller.sourceIdentity == controller.sourceIdentity }
+            openedDialogs.firstOrNull { it.dialogIdentity == controller.dialogIdentity }
         // Make sure we don't run the launch animation from the same source twice at the same time.
         if (openedDialog != null) {
             Log.e(
@@ -321,7 +369,9 @@ constructor(
                 transitionAnimator = transitionAnimator,
                 callback = callback,
                 interactionJankMonitor = interactionJankMonitor,
-                controller = controller,
+                resolveController = resolveController,
+                cuj = controller.cuj,
+                dialogIdentity = controller.dialogIdentity,
                 onDialogDismissed = { openedDialogs.remove(it) },
                 dialog = dialog,
                 animateBackgroundBoundsChange = animateBackgroundBoundsChange,
@@ -544,10 +594,23 @@ private class AnimatedDialog(
     private val interactionJankMonitor: InteractionJankMonitor,
 
     /**
-     * The controller of the source that triggered the dialog and that will animate into/from the
+     * The lambda that finds the controller of the source dynamically and will animate into/from the
      * dialog.
      */
-    val controller: DialogTransitionAnimator.Controller,
+    var resolveController: (DialogCuj?) -> DialogTransitionAnimator.Controller?,
+
+    /**
+     * Unique identifier for the dialog. Used to prevent redundant animation triggered for the same
+     * dialog.
+     */
+    var dialogIdentity: Any,
+
+    /**
+     * The CUJ interaction associated with opening the dialog.
+     *
+     * The optional tag indicates the specific dialog being opened.
+     */
+    var cuj: DialogCuj?,
 
     /**
      * A callback that will be called with this [AnimatedDialog] after the dialog was dismissed and
@@ -620,10 +683,18 @@ private class AnimatedDialog(
 
     private var hasInstrumentedJank = false
 
+    private var startController: DialogTransitionAnimator.Controller? = null
+
     fun start() {
         // Create the dialog so that its onCreate() method is called, which usually sets the dialog
         // content.
         dialog.create()
+
+        startController = resolveController(cuj)
+        if (startController == null) {
+            dialog.show()
+            return
+        }
 
         val window = dialog.window!!
         val isWindowFullScreen =
@@ -733,7 +804,7 @@ private class AnimatedDialog(
                     dialogContentWithBackground.removeOnLayoutChangeListener(this)
 
                     isOriginalDialogViewLaidOut = true
-                    maybeStartLaunchAnimation()
+                    startController?.let { maybeStartLaunchAnimation(it) }
                 }
             }
         )
@@ -749,14 +820,14 @@ private class AnimatedDialog(
 
         // Show the dialog.
         dialog.show()
-        moveSourceDrawingToDialog()
+        startController?.let { moveSourceDrawingToDialog(it) }
     }
 
-    private fun moveSourceDrawingToDialog() {
+    private fun moveSourceDrawingToDialog(controller: DialogTransitionAnimator.Controller) {
         if (decorView.viewRootImpl == null) {
             // Make sure that we have access to the dialog view root to move the drawing to the
             // dialog overlay.
-            decorView.post(::moveSourceDrawingToDialog)
+            decorView.post { moveSourceDrawingToDialog(controller) }
             return
         }
 
@@ -765,10 +836,11 @@ private class AnimatedDialog(
         // windows.
         controller.startDrawingInOverlayOf(decorView)
         synchronizeNextDraw(
+            controller,
             then = {
                 isSourceDrawnInDialog = true
-                maybeStartLaunchAnimation()
-            }
+                maybeStartLaunchAnimation(controller)
+            },
         )
     }
 
@@ -778,7 +850,10 @@ private class AnimatedDialog(
      * drawn in the overlay at the same time as it is removed from its original position (or
      * inversely, removed from the overlay when the source is moved back to its original position).
      */
-    private fun synchronizeNextDraw(then: () -> Unit) {
+    private fun synchronizeNextDraw(
+        controller: DialogTransitionAnimator.Controller,
+        then: () -> Unit,
+    ) {
         val controllerRootView = controller.viewRoot?.view
         if (forceDisableSynchronization || controllerRootView == null) {
             // Don't synchronize when inside an automated test or if the controller root view is
@@ -811,7 +886,7 @@ private class AnimatedDialog(
         return null
     }
 
-    private fun maybeStartLaunchAnimation() {
+    private fun maybeStartLaunchAnimation(controller: DialogTransitionAnimator.Controller) {
         if (!isSourceDrawnInDialog || !isOriginalDialogViewLaidOut) {
             return
         }
@@ -828,6 +903,7 @@ private class AnimatedDialog(
         dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
 
         startAnimation(
+            controller = controller,
             isLaunching = true,
             onLaunchAnimationEnd = {
                 isLaunching = false
@@ -899,15 +975,26 @@ private class AnimatedDialog(
             decorView.removeOnLayoutChangeListener(decorViewLayoutListener)
         }
 
-        if (!shouldAnimateDialogIntoSource()) {
-            Log.i(TAG, "Skipping animation of dialog into the source")
-            controller.onExitAnimationCancelled()
+        // update the controller for dialog collapse animation
+        val endController = resolveController(cuj)
+
+        if (!shouldAnimateDialogIntoSource(endController) || endController == null) {
+            endController?.onExitAnimationCancelled()
+            if (endController == null) {
+                // If we couldn't resolve the end controller, we notify the start controller that
+                // the
+                // exit animation was cancelled so it can perform any necessary cleanup (e.g.
+                // showing
+                // the source view again).
+                startController?.onExitAnimationCancelled()
+            }
             onAnimationFinished(false /* instantDismiss */)
             onDialogDismissed(this@AnimatedDialog)
             return
         }
 
         startAnimation(
+            controller = endController,
             isLaunching = false,
             onLaunchAnimationStart = {
                 // Remove the dim background as soon as we start the animation.
@@ -927,8 +1014,8 @@ private class AnimatedDialog(
                     )
                 }
 
-                controller.stopDrawingInOverlay()
-                synchronizeNextDraw {
+                endController.stopDrawingInOverlay()
+                synchronizeNextDraw(endController) {
                     onAnimationFinished(true /* instantDismiss */)
                     onDialogDismissed(this@AnimatedDialog)
                 }
@@ -937,6 +1024,7 @@ private class AnimatedDialog(
     }
 
     private fun startAnimation(
+        controller: DialogTransitionAnimator.Controller,
         isLaunching: Boolean,
         onLaunchAnimationStart: () -> Unit = {},
         onLaunchAnimationEnd: () -> Unit = {},
@@ -1086,7 +1174,9 @@ private class AnimatedDialog(
         }
     }
 
-    private fun shouldAnimateDialogIntoSource(): Boolean {
+    private fun shouldAnimateDialogIntoSource(
+        controller: DialogTransitionAnimator.Controller?
+    ): Boolean {
         // Don't animate if the dialog was previously hidden using hide() or if we disabled the exit
         // animation.
         if (exitAnimationDisabled || !dialog.isShowing) {
@@ -1099,7 +1189,7 @@ private class AnimatedDialog(
             return false
         }
 
-        return controller.shouldAnimateExit()
+        return controller?.shouldAnimateExit() ?: false
     }
 
     /** A layout listener to animate the change of bounds of the dialog background. */

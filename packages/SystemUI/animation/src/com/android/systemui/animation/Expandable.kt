@@ -78,7 +78,11 @@ class Expandable(
      * currently not attached or visible).
      */
     fun dialogTransitionController(cuj: DialogCuj? = null): DialogTransitionAnimator.Controller? {
-        return requiredTransitionSource()?.dialogTransitionController(cuj)
+        val controller = requiredTransitionSource()?.dialogTransitionController(cuj) ?: return null
+        return object : DialogTransitionAnimator.Controller by controller {
+            override val dialogIdentity: Any
+                get() = this@Expandable
+        }
     }
 
     fun activityTransitionController(

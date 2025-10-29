@@ -59,6 +59,7 @@ import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import org.junit.Before
 import org.junit.runner.RunWith
+import org.mockito.Mockito.anyBoolean
 import org.mockito.Mockito.times
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
@@ -608,7 +609,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
                     as OngoingActivityChipModel.ClickBehavior.ExpandAction)
             expandAction.onClick(mockExpandable)
             verify(kosmos.mockDialogTransitionAnimator)
-                .show(eq(mockGenericShareDialog), any(), any())
+                .show(eq(mockGenericShareDialog), any(), anyBoolean())
         }
 
     @Test
@@ -623,7 +624,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
                     as OngoingActivityChipModel.ClickBehavior.ExpandAction)
             expandAction.onClick(mockExpandable)
             verify(kosmos.mockDialogTransitionAnimator)
-                .show(eq(mockScreenShareDialog), any(), any())
+                .show(eq(mockScreenShareDialog), any(), anyBoolean())
         }
 
     @Test
@@ -643,7 +644,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
             expandAction.onClick(mockExpandable)
 
             verify(kosmos.mockDialogTransitionAnimator)
-                .show(eq(mockScreenShareDialog), any(), any())
+                .show(eq(mockScreenShareDialog), any(), anyBoolean())
         }
 
     @Test
