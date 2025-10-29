@@ -1818,7 +1818,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Бір қолмен басқару режимі"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Экранды қарайту"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Есту аппараттары"</string>
-    <string name="autoclick_feature_name" msgid="4056260617171267864">"Автоматты басу (күту уақыты)"</string>
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"Автоматты түрде басу (кідіру уақыты)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Тінтуір пернелері"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Ажыратылды"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Қосылды"</string>
@@ -2286,7 +2286,7 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Сол жақ Dpad түймесі"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Оң жақ Dpad түймесі"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Ортаңғы Dpad түймесі"</string>
-    <string name="accessibility_autoclick_type_settings_panel_title" msgid="2153131135765368397">"\"Автоматты басу опциялары\" мәзірі"</string>
+    <string name="accessibility_autoclick_type_settings_panel_title" msgid="2153131135765368397">"\"Автоматты түрде басу опциялары\" мәзірі"</string>
     <string name="accessibility_autoclick_left_click" msgid="8241237237588793835">"Тінтуірдің сол жақ түймесін басу"</string>
     <string name="accessibility_autoclick_right_click" msgid="6208390123529830506">"Тінтуірдің оң жақ түймесін басу"</string>
     <string name="accessibility_autoclick_double_click" msgid="2800154470129612873">"Екі рет басу"</string>
