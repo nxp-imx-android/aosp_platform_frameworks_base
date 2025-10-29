@@ -7184,9 +7184,9 @@ public class AudioService extends IAudioService.Stub
         SetModeDeathHandler hdlr = getAudioModeOwnerHandler();
         if (hdlr != null) {
             return new AudioDeviceBroker.AudioModeInfo(
-                    hdlr.getMode(), hdlr.getPid(), hdlr.getUid());
+                    hdlr.getMode(), hdlr.getPid(), hdlr.getUid(), hdlr.getBinder());
         }
-        return new AudioDeviceBroker.AudioModeInfo(AudioSystem.MODE_NORMAL, 0 , 0);
+        return new AudioDeviceBroker.AudioModeInfo(AudioSystem.MODE_NORMAL, 0 , 0, null);
     }
 
     /**
@@ -7337,11 +7337,13 @@ public class AudioService extends IAudioService.Stub
         int mode = AudioSystem.MODE_NORMAL;
         int uid = 0;
         int pid = 0;
+        IBinder token = null;
         SetModeDeathHandler currentModeHandler = getAudioModeOwnerHandler();
         if (currentModeHandler != null) {
             mode = currentModeHandler.getMode();
             uid = currentModeHandler.getUid();
             pid = currentModeHandler.getPid();
+            token = currentModeHandler.getBinder();
         }
         if (DEBUG_MODE) {
             Log.v(TAG, "onUpdateAudioMode() new mode: " + mode + ", current mode: "
@@ -7395,7 +7397,7 @@ public class AudioService extends IAudioService.Stub
 
                 // when entering RINGTONE, IN_CALL or IN_COMMUNICATION mode, clear all SCO
                 // connections not started by the application changing the mode when pid changes
-                mDeviceBroker.postSetModeOwner(mode, pid, uid, signal);
+                mDeviceBroker.postSetModeOwner(mode, pid, uid, token, signal);
             } else {
                 // reset here to avoid sticky out of sync condition (would have been reset
                 // by AudioDeviceBroker processing MSG_L_SET_MODE_OWNER_SIGNAL message)
