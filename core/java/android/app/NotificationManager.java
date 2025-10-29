@@ -2280,6 +2280,7 @@ public class NotificationManager {
     }
 
     /**
+     * This can be an {@link Adjustment.Types} type or a {@link DynamicBundle} type.
      * @hide
      */
     @TestApi
@@ -2288,6 +2289,7 @@ public class NotificationManager {
     }
 
     /**
+     * This can be an {@link Adjustment.Types} type or a {@link DynamicBundle} type.
      * @hide
      */
     public void setAssistantClassificationTypeState(int type, boolean enabled) {
