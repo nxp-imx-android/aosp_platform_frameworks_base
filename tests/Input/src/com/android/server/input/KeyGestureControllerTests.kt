@@ -32,6 +32,8 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Process
 import android.os.SystemClock
+import android.os.UserHandle
+import android.os.UserManager
 import android.os.test.TestLooper
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -113,6 +115,8 @@ class KeyGestureControllerTests {
 
     companion object {
         const val DEVICE_ID = 1
+        const val USER_ID = 10
+        const val SECOND_USER_ID = 11
         val HOME_GESTURE_COMPLETE_EVENT =
             KeyGestureEvent.Builder()
                 .setDeviceId(DEVICE_ID)
@@ -179,6 +183,7 @@ class KeyGestureControllerTests {
     @Mock private lateinit var accessibilityShortcutController: AccessibilityShortcutController
     @Mock private lateinit var screenshotHelper: ScreenshotHelper
     @Mock private lateinit var windowManagerInternal: WindowManagerInternal
+    @Mock private lateinit var userManager: UserManager
 
     private var currentPid = 0
     private lateinit var testableResources: TestableResources
@@ -198,6 +203,9 @@ class KeyGestureControllerTests {
         ExtendedMockito.doReturn(windowManagerInternal).`when` {
             LocalServices.getService(ArgumentMatchers.eq(WindowManagerInternal::class.java))
         }
+        testableContext.addMockSystemService(Context.USER_SERVICE, userManager)
+        Mockito.`when`(userManager.getUserHandles(anyBoolean()))
+            .thenReturn(listOf(UserHandle(USER_ID), UserHandle(SECOND_USER_ID)))
     }
 
     private fun setupBehaviors() {
@@ -290,6 +298,7 @@ class KeyGestureControllerTests {
             keyGestureController.appLaunchBookmarks.map { bookmark -> InputGestureData(bookmark) }
         }
         keyGestureController.systemRunning()
+        keyGestureController.setCurrentUserId(USER_ID)
         testLooper.dispatchAll()
     }
 
@@ -378,7 +387,7 @@ class KeyGestureControllerTests {
             assertEquals(
                 "Can't set custom gesture trigger used by system gesture, $systemGesture",
                 InputManager.CUSTOM_INPUT_GESTURE_RESULT_ERROR_RESERVED_GESTURE,
-                keyGestureController.addCustomInputGesture(0, builder.build().aidlData),
+                keyGestureController.addCustomInputGesture(USER_ID, builder.build().aidlData),
             )
         }
     }
@@ -427,7 +436,7 @@ class KeyGestureControllerTests {
             assertEquals(
                 "Can't set custom gesture trigger used by a bookmark, $bookmark",
                 InputManager.CUSTOM_INPUT_GESTURE_RESULT_ERROR_RESERVED_GESTURE,
-                keyGestureController.addCustomInputGesture(0, builder.build().aidlData),
+                keyGestureController.addCustomInputGesture(USER_ID, builder.build().aidlData),
             )
         }
     }
@@ -662,12 +671,12 @@ class KeyGestureControllerTests {
         assertEquals(
             test.toString(),
             InputManager.CUSTOM_INPUT_GESTURE_RESULT_SUCCESS,
-            keyGestureController.addCustomInputGesture(0, builder.build().aidlData),
+            keyGestureController.addCustomInputGesture(USER_ID, builder.build().aidlData),
         )
         assertEquals(
             test.toString(),
             inputGestureData.aidlData,
-            keyGestureController.getInputGesture(0, trigger.aidlTrigger),
+            keyGestureController.getInputGesture(USER_ID, trigger.aidlTrigger),
         )
         testKeyGestureProduced(test, BLOCKING_APP)
     }
@@ -675,7 +684,6 @@ class KeyGestureControllerTests {
     @Test
     @Parameters(method = "customInputGesturesTestArguments")
     fun testCustomKeyGesturesSavedAndLoadedByController(test: KeyGestureData) {
-        val userId = 10
         setupKeyGestureController()
         val builder =
             InputGestureData.Builder()
@@ -690,34 +698,78 @@ class KeyGestureControllerTests {
             builder.setAppLaunchData(test.expectedAppLaunchData)
         }
         val inputGestureData = builder.build()
-
-        keyGestureController.setCurrentUserId(userId)
-        testLooper.dispatchAll()
-        keyGestureController.addCustomInputGesture(userId, inputGestureData.aidlData)
+        keyGestureController.addCustomInputGesture(USER_ID, inputGestureData.aidlData)
         testLooper.dispatchAll()
 
         // Reinitialize the gesture controller simulating a login/logout for the user.
         setupKeyGestureController()
-        keyGestureController.setCurrentUserId(userId)
         testLooper.dispatchAll()
 
-        val savedInputGestures = keyGestureController.getCustomInputGestures(userId, null)
+        // Test input gesture still produced with the new controller
+        testKeyGestureProduced(test, BLOCKING_APP)
+    }
+
+    @Test
+    @Parameters(method = "customInputGesturesTestArguments")
+    fun testCustomKeyGesturesNotProducedForOtherUser(test: KeyGestureData) {
+        setupKeyGestureController()
+        val builder =
+            InputGestureData.Builder()
+                .setKeyGestureType(test.expectedKeyGestureType)
+                .setTrigger(
+                    InputGestureData.createKeyTrigger(
+                        test.expectedKeys[0],
+                        test.expectedModifierState,
+                    )
+                )
+        if (test.expectedAppLaunchData != null) {
+            builder.setAppLaunchData(test.expectedAppLaunchData)
+        }
+        val inputGestureData = builder.build()
+        keyGestureController.addCustomInputGesture(USER_ID, inputGestureData.aidlData)
+        testLooper.dispatchAll()
+
+        keyGestureController.setCurrentUserId(SECOND_USER_ID)
+        testKeyGestureNotProduced(test, BLOCKING_APP)
+    }
+
+    @Test
+    fun testCustomKeyGesture_addedForNonCurrentUser_savedCorrectly() {
+        setupKeyGestureController()
+        val inputGestureData1 =
+            InputGestureData.Builder()
+                .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_HOME)
+                .setTrigger(
+                    InputGestureData.createKeyTrigger(KeyEvent.KEYCODE_H, KeyEvent.META_ALT_ON)
+                )
+                .build()
+        keyGestureController.addCustomInputGesture(SECOND_USER_ID, inputGestureData1.aidlData)
+        testLooper.dispatchAll()
+
+        // Re-initialize again with USER_ID as current user
+        setupKeyGestureController()
+        keyGestureController.setCurrentUserId(USER_ID)
+        testLooper.dispatchAll()
+
+        val inputGestureData2 =
+            InputGestureData.Builder()
+                .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL)
+                .setTrigger(
+                    InputGestureData.createKeyTrigger(KeyEvent.KEYCODE_N, KeyEvent.META_ALT_ON)
+                )
+                .build()
+        keyGestureController.addCustomInputGesture(SECOND_USER_ID, inputGestureData2.aidlData)
+
+        // Irrespective of the current user, the data for second user should be updated correctly
         assertEquals(
-            "Test: $test doesn't produce correct number of saved input gestures",
-            1,
-            savedInputGestures.size,
-        )
-        assertEquals(
-            "Test: $test doesn't produce correct input gesture data",
-            inputGestureData,
-            InputGestureData(savedInputGestures[0]),
+            2,
+            keyGestureController.getCustomInputGestures(SECOND_USER_ID, /* filter= */ null).size,
         )
     }
 
     @Test
     @Parameters(method = "customInputGesturesTestArguments")
     fun testCustomKeyGestureRestoredFromBackup(test: KeyGestureData) {
-        val userId = 10
         setupKeyGestureController()
         val builder =
             InputGestureData.Builder()
@@ -733,20 +785,20 @@ class KeyGestureControllerTests {
         }
         val inputGestureData = builder.build()
 
-        keyGestureController.setCurrentUserId(userId)
+        keyGestureController.setCurrentUserId(USER_ID)
         testLooper.dispatchAll()
-        keyGestureController.addCustomInputGesture(userId, inputGestureData.aidlData)
+        keyGestureController.addCustomInputGesture(USER_ID, inputGestureData.aidlData)
         testLooper.dispatchAll()
-        val backupData = keyGestureController.getInputGestureBackupPayload(userId)
+        val backupData = keyGestureController.getInputGestureBackupPayload(USER_ID)
 
         // Delete the old data and reinitialize the controller simulating a "fresh" install.
         testDataStore.clear()
         setupKeyGestureController()
-        keyGestureController.setCurrentUserId(userId)
+        keyGestureController.setCurrentUserId(USER_ID)
         testLooper.dispatchAll()
 
         // Initially there should be no gestures registered.
-        var savedInputGestures = keyGestureController.getCustomInputGestures(userId, null)
+        var savedInputGestures = keyGestureController.getCustomInputGestures(USER_ID, null)
         assertEquals(
             "Test: $test doesn't produce correct number of saved input gestures",
             0,
@@ -754,8 +806,8 @@ class KeyGestureControllerTests {
         )
 
         // After the restore, there should be the original gesture re-registered.
-        keyGestureController.applyInputGesturesBackupPayload(backupData, userId)
-        savedInputGestures = keyGestureController.getCustomInputGestures(userId, null)
+        keyGestureController.applyInputGesturesBackupPayload(backupData, USER_ID)
+        savedInputGestures = keyGestureController.getCustomInputGestures(USER_ID, null)
         assertEquals(
             "Test: $test doesn't produce correct number of saved input gestures",
             1,
@@ -810,7 +862,7 @@ class KeyGestureControllerTests {
         }
         val inputGestureData = builder.build()
 
-        keyGestureController.addCustomInputGesture(0, inputGestureData.aidlData)
+        keyGestureController.addCustomInputGesture(USER_ID, inputGestureData.aidlData)
 
         val handledEvents = mutableListOf<KeyGestureEvent>()
         val handler = KeyGestureHandler { event, _ -> handledEvents.add(KeyGestureEvent(event)) }
@@ -851,7 +903,6 @@ class KeyGestureControllerTests {
     @Test
     @Parameters(method = "customTouchpadGesturesTestArguments")
     fun testCustomTouchpadGesturesSavedAndLoadedByController(test: TouchpadTestData) {
-        val userId = 10
         setupKeyGestureController()
         val builder =
             InputGestureData.Builder()
@@ -861,17 +912,17 @@ class KeyGestureControllerTests {
             builder.setAppLaunchData(test.expectedAppLaunchData)
         }
         val inputGestureData = builder.build()
-        keyGestureController.setCurrentUserId(userId)
+        keyGestureController.setCurrentUserId(USER_ID)
         testLooper.dispatchAll()
-        keyGestureController.addCustomInputGesture(userId, inputGestureData.aidlData)
+        keyGestureController.addCustomInputGesture(USER_ID, inputGestureData.aidlData)
         testLooper.dispatchAll()
 
         // Reinitialize the gesture controller simulating a login/logout for the user.
         setupKeyGestureController()
-        keyGestureController.setCurrentUserId(userId)
+        keyGestureController.setCurrentUserId(USER_ID)
         testLooper.dispatchAll()
 
-        val savedInputGestures = keyGestureController.getCustomInputGestures(userId, null)
+        val savedInputGestures = keyGestureController.getCustomInputGestures(USER_ID, null)
         assertEquals(
             "Test: $test doesn't produce correct number of saved input gestures",
             1,
@@ -887,7 +938,6 @@ class KeyGestureControllerTests {
     @Test
     @Parameters(method = "customTouchpadGesturesTestArguments")
     fun testCustomTouchpadGesturesRestoredFromBackup(test: TouchpadTestData) {
-        val userId = 10
         setupKeyGestureController()
         val builder =
             InputGestureData.Builder()
@@ -897,20 +947,20 @@ class KeyGestureControllerTests {
             builder.setAppLaunchData(test.expectedAppLaunchData)
         }
         val inputGestureData = builder.build()
-        keyGestureController.setCurrentUserId(userId)
+        keyGestureController.setCurrentUserId(USER_ID)
         testLooper.dispatchAll()
-        keyGestureController.addCustomInputGesture(userId, inputGestureData.aidlData)
+        keyGestureController.addCustomInputGesture(USER_ID, inputGestureData.aidlData)
         testLooper.dispatchAll()
-        val backupData = keyGestureController.getInputGestureBackupPayload(userId)
+        val backupData = keyGestureController.getInputGestureBackupPayload(USER_ID)
 
         // Delete the old data and reinitialize the controller simulating a "fresh" install.
         testDataStore.clear()
         setupKeyGestureController()
-        keyGestureController.setCurrentUserId(userId)
+        keyGestureController.setCurrentUserId(USER_ID)
         testLooper.dispatchAll()
 
         // Initially there should be no gestures registered.
-        var savedInputGestures = keyGestureController.getCustomInputGestures(userId, null)
+        var savedInputGestures = keyGestureController.getCustomInputGestures(USER_ID, null)
         assertEquals(
             "Test: $test doesn't produce correct number of saved input gestures",
             0,
@@ -918,8 +968,8 @@ class KeyGestureControllerTests {
         )
 
         // After the restore, there should be the original gesture re-registered.
-        keyGestureController.applyInputGesturesBackupPayload(backupData, userId)
-        savedInputGestures = keyGestureController.getCustomInputGestures(userId, null)
+        keyGestureController.applyInputGesturesBackupPayload(backupData, USER_ID)
+        savedInputGestures = keyGestureController.getCustomInputGestures(USER_ID, null)
         assertEquals(
             "Test: $test doesn't produce correct number of saved input gestures",
             1,
