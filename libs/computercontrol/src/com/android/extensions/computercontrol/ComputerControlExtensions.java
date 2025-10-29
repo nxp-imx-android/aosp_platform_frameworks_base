@@ -84,7 +84,8 @@ public class ComputerControlExtensions {
      * @param executor An executor to run the callback on.
      * @param callback A callback to get notified about the result of this operation.
      */
-    @RequiresPermission(Manifest.permission.ACCESS_COMPUTER_CONTROL)
+    @RequiresPermission(allOf = {Manifest.permission.ACCESS_COMPUTER_CONTROL,
+            Manifest.permission.POST_NOTIFICATIONS})
     public void requestSession(@NonNull ComputerControlSession.Params params,
             @NonNull Executor executor, @NonNull ComputerControlSession.Callback callback) {
         Objects.requireNonNull(params, "Missing ComputerControlSession.Params");
