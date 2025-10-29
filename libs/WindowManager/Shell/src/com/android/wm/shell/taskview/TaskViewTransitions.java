@@ -1140,7 +1140,11 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             updateVisibilityState(taskView, false /* visible */);
             // listener callback is below
         }
-        if (newTask) {
+        // Intercepting back press should be handled by the root task. If this task is a child
+        // of another task (e.g. Bubbles), the root task is responsible for setting this.
+        // Modifying the child task can cause issues if the child is later reparented out of the
+        // task hierarchy (e.g. launching to fullscreen).
+        if (newTask && !taskInfo.hasParentTask()) {
             wct.setInterceptBackPressedOnTaskRoot(taskInfo.token, true /* intercept */);
         }
 

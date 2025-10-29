@@ -24,7 +24,10 @@ import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.FLAG_ENABLE_HANDLERS_DEBUGGING_MODE;
+import static com.android.window.flags.Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS;
+import static com.android.window.flags.Flags.FLAG_ROOT_TASK_FOR_BUBBLE;
 import static com.android.window.flags.Flags.enableHandlersDebuggingMode;
+import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
 import static com.android.wm.shell.Flags.FLAG_TASK_VIEW_TRANSITIONS_REFACTOR;
 import static com.android.wm.shell.Flags.taskViewTransitionsRefactor;
 import static com.android.wm.shell.transition.TransitionDispatchState.CAPTURED_UNRELATED_CHANGE;
@@ -93,15 +96,18 @@ import java.util.List;
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
-@UsesFlags(com.android.wm.shell.Flags.class)
+@UsesFlags({com.android.window.flags.Flags.class, com.android.wm.shell.Flags.class})
 public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
     private static final String TAG = "TVstartAnimTest";
     private static final Rect BOUNDS = new Rect(0, 0, 100, 100);
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(
-                FLAG_TASK_VIEW_TRANSITIONS_REFACTOR);
+        return FlagsParameterization.progressionOf(
+                FLAG_TASK_VIEW_TRANSITIONS_REFACTOR,
+                FLAG_ENABLE_CREATE_ANY_BUBBLE,
+                FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS,
+                FLAG_ROOT_TASK_FOR_BUBBLE);
     }
 
     @Mock
@@ -302,7 +308,28 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
                 ArgumentCaptor.forClass(WindowContainerTransaction.class);
         verify(mFinishCallback).onTransitionFinished(wctCaptor.capture());
         final WindowContainerTransaction wct = wctCaptor.getValue();
-        assertOpenAnimationPreparation(mTokenBinder, pending, wct, true /* newTask */);
+        assertOpenAnimationPreparation(mTokenBinder, pending, wct, true /* newTask */,
+                true /* shouldInterceptBack */, true /* shouldCorpWindow */);
+    }
+
+    @Test
+    public void openTaskView_withParentTask_doesNotInterceptBack() {
+        mTaskInfo.parentTaskId = 3;  // Simulate bubble root task
+        final TaskViewTransitions.PendingTransition pending =
+                setPendingTransaction(true /* visible*/, true /* opening */);
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TO_FRONT)
+                .addChange(getTaskView(TRANSIT_OPEN)).build();
+
+        mTaskViewTransitions.startAnimation(pending.mClaimed, info, mStartTransaction,
+                mFinishTransaction, mFinishCallback);
+
+        final ArgumentCaptor<WindowContainerTransaction> wctCaptor =
+                ArgumentCaptor.forClass(WindowContainerTransaction.class);
+        verify(mFinishCallback).onTransitionFinished(wctCaptor.capture());
+        final WindowContainerTransaction wct = wctCaptor.getValue();
+        assertOpenAnimationPreparation(mTokenBinder, pending, wct, true /* newTask */,
+                false /* shouldInterceptBack */,
+                !BubbleAnythingFlagHelper.enableRootTaskForBubble() /* shouldCorpWindow */);
     }
 
     @Test
@@ -336,7 +363,8 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
                 ArgumentCaptor.forClass(WindowContainerTransaction.class);
         verify(mFinishCallback).onTransitionFinished(wctCaptor.capture());
         final WindowContainerTransaction wct = wctCaptor.getValue();
-        assertOpenAnimationPreparation(mTokenBinder, pending, wct, false /* newTask */);
+        assertOpenAnimationPreparation(mTokenBinder, pending, wct, false /* newTask */,
+                false /* shouldInterceptBack */, true /* shouldCorpWindow */);
     }
 
     @Test
@@ -374,7 +402,30 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
                 ArgumentCaptor.forClass(WindowContainerTransaction.class);
         verify(mFinishCallback).onTransitionFinished(wctCaptor.capture());
         final WindowContainerTransaction wct = wctCaptor.getValue();
-        assertOpenAnimationPreparation(mUnregisteredTokenBinder, pending, wct, true /* newTask */);
+        assertOpenAnimationPreparation(mUnregisteredTokenBinder, pending, wct, true /* newTask */,
+                true /* shouldInterceptBack */, true /* shouldCorpWindow */);
+    }
+
+    @Test
+    public void taskToTaskView_withParentTask_doesNotInterceptBack() {
+        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble());
+
+        mTaskInfo.parentTaskId = 3;  // Simulate bubble root task
+        final TaskViewTransitions.PendingTransition pending =
+                setPendingTransaction(true /* visible*/, false /* opening */);
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TO_FRONT)
+                .addChange(getTask(TRANSIT_TO_FRONT, false /* register */)).build();
+
+        mTaskViewTransitions.startAnimation(pending.mClaimed, info, mStartTransaction,
+                mFinishTransaction, mFinishCallback);
+
+        final ArgumentCaptor<WindowContainerTransaction> wctCaptor =
+                ArgumentCaptor.forClass(WindowContainerTransaction.class);
+        verify(mFinishCallback).onTransitionFinished(wctCaptor.capture());
+        final WindowContainerTransaction wct = wctCaptor.getValue();
+        assertOpenAnimationPreparation(mUnregisteredTokenBinder, pending, wct, true /* newTask */,
+                false /* shouldInterceptBack */,
+                !BubbleAnythingFlagHelper.enableRootTaskForBubble() /* shouldCorpWindow */);
     }
 
     @Test
@@ -434,7 +485,8 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
                 ArgumentCaptor.forClass(WindowContainerTransaction.class);
         verify(mFinishCallback).onTransitionFinished(wctCaptor.capture());
         final WindowContainerTransaction wct = wctCaptor.getValue();
-        assertBoundsAndSurfaceTransactions(wct.getChanges().get(mTokenBinder));
+        assertBoundsAndSurfaceTransactions(wct.getChanges().get(mTokenBinder),
+                true /* shouldCorpWindow */);
     }
 
     @Test
@@ -568,10 +620,11 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
     // assertions to verify TaskViewTransitions.prepareOpenAnimation is called
     private void assertOpenAnimationPreparation(@NonNull IBinder binder,
             @NonNull TaskViewTransitions.PendingTransition pending,
-            @NonNull WindowContainerTransaction wct, boolean newTask) {
+            @NonNull WindowContainerTransaction wct, boolean newTask, boolean shouldInterceptBack,
+            boolean shouldCorpWindow) {
         final WindowContainerTransaction.Change change = wct.getChanges().get(binder);
-        assertBoundsAndSurfaceTransactions(change);
-        if (newTask) {
+        assertBoundsAndSurfaceTransactions(change, shouldCorpWindow);
+        if (shouldInterceptBack) {
             assertWithMessage("wct.setInterceptBackPressedOnTaskRoot(token, true) should be called")
                     .that(change.getInterceptBackPressed()).isTrue();
         }
@@ -583,7 +636,8 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
         verify(pending.mTaskView).notifyAppeared(eq(newTask));
     }
 
-    private void assertBoundsAndSurfaceTransactions(WindowContainerTransaction.Change change) {
+    private void assertBoundsAndSurfaceTransactions(WindowContainerTransaction.Change change,
+            boolean shouldCorpWindow) {
         assertThat(change).isNotNull();
         assertWithMessage("wct.setBounds(token, bounds) should be called")
                 .that(change.getConfiguration().windowConfiguration.getBounds()).isEqualTo(BOUNDS);
@@ -592,7 +646,9 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
         verify(mStartTransaction).show(eq(mTaskLeash));
         verify(mFinishTransaction).reparent(eq(mTaskLeash), eq(mSurfaceControl));
         verify(mFinishTransaction).setPosition(eq(mTaskLeash), eq(0.0f), eq(0.0f));
-        verify(mFinishTransaction).setWindowCrop(eq(mTaskLeash), eq(100), eq(100));
+        if (shouldCorpWindow) {
+            verify(mFinishTransaction).setWindowCrop(eq(mTaskLeash), eq(100), eq(100));
+        }
         verify(mTaskViewTaskController).applyCaptionInsetsIfNeeded();
     }
 }

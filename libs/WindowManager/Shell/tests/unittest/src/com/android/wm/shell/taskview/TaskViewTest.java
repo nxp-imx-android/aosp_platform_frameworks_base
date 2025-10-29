@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.taskview;
 
+import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_ADD_INSETS_FRAME_PROVIDER;
@@ -153,6 +154,7 @@ public class TaskViewTest extends ShellTestCase {
         doReturn(true).when(mViewLooper).isCurrentThread();
         mViewHandler = spy(new TestHandler(mViewLooper));
 
+        mTaskInfo.parentTaskId = INVALID_TASK_ID;
         mTaskInfo.token = mToken;
         mTaskInfo.taskId = 314;
         mTaskInfo.taskDescription = mock(ActivityManager.TaskDescription.class);
@@ -353,6 +355,16 @@ public class TaskViewTest extends ShellTestCase {
         final WindowContainerTransaction wct = prepareOpenAnimation(true /* newTask */);
 
         assertThat(wct.getChanges().get(mToken.asBinder()).getInterceptBackPressed()).isTrue();
+    }
+
+    @Test
+    public void testNoInterceptBackPressedOnChildTask() {
+        mTaskInfo.parentTaskId = 3;  // Simulate bubble root task
+        final WindowContainerTransaction wct = prepareOpenAnimation(true /* newTask */);
+
+        assertThrows("Intercept back should not be set for child tasks",
+                RuntimeException.class,
+                () -> wct.getChanges().get(mToken.asBinder()).getInterceptBackPressed());
     }
 
     @Test
