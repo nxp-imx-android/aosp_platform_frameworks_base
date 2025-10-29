@@ -4037,8 +4037,10 @@ public class BubbleStackView extends FrameLayout
             mSurfaceSynchronizer.syncSurfaceAndRun(() -> {
                 // Remove other bubbles from the container after the new bubble is ready, so
                 // that the focus won't fall into the non-bubbled activity behind.
-                mExpandedViewContainer.removeViews(
-                        0, mExpandedViewContainer.getChildCount() - 1);
+                if (mExpandedViewContainer.getChildCount() > 1) {
+                    mExpandedViewContainer.removeViews(
+                            0, mExpandedViewContainer.getChildCount() - 1);
+                }
                 mMainExecutor.execute(() -> animateSwitchBubbles(isJumpcutBubbleSwitching, onEnd));
             });
         }
