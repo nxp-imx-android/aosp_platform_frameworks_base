@@ -6628,6 +6628,26 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_PREVENT_DESKTOP_IN_LOCKTASKMODE_BUGFIX,
+    )
+    fun handleRequest_freeformTask_inLockTaskMode_moveToFullscreen() {
+        val deskId = 0
+        taskRepository.setDeskInactive(deskId)
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
+        val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
+        tda.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
+        whenever(lockTaskChangeListener.isTaskLocked).thenReturn(true)
+
+        val freeformTask = createFreeformTask(displayId = DEFAULT_DISPLAY)
+
+        val wct = controller.handleRequest(Binder(), createTransition(freeformTask))
+        assertThat(wct?.changes[freeformTask.token.asBinder()]?.windowingMode)
+            .isEqualTo(WINDOWING_MODE_FULLSCREEN)
+    }
+
+    @Test
     fun handleRequest_notOpenOrToFrontTransition_returnNull() {
         val task =
             TestRunningTaskInfoBuilder()

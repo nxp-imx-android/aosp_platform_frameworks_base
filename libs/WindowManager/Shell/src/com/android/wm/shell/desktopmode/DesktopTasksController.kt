@@ -4277,7 +4277,7 @@ class DesktopTasksController(
             "handleFreeformTaskPlacement taskId=%d sourceDisplayId=%d targetDisplayId=%d" +
                 " sourceDeskId=%d targetDeskId=%d anyDeskActive=%b isKnownDesktopTask=%b" +
                 " bringTaskToFront=%b shouldForceEnterDesktop=%b requestedTaskBounds=%s" +
-                " suggestedTargetDeskId=%d requestType=%s",
+                " suggestedTargetDeskId=%d requestType=%s isTaskLocked=%b",
             task.taskId,
             sourceDisplayId,
             targetDisplayId,
@@ -4290,6 +4290,7 @@ class DesktopTasksController(
             requestedTaskBounds,
             suggestedTargetDeskId,
             Transitions.transitTypeToString(requestType),
+            lockTaskChangeListener.isTaskLocked,
         )
 
         val placeAsDesktopTask =
@@ -4297,6 +4298,10 @@ class DesktopTasksController(
                 // If there is no desk on the target display, then it is not capable of handling
                 // desktop tasks.
                 targetDeskId == null -> false
+                // TODO: b/456091097 - Check if we can remove this by merging TO_FRONT and lock task
+                // transitions.
+                Flags.enablePreventDesktopInLocktaskmodeBugfix() &&
+                    lockTaskChangeListener.isTaskLocked -> false
                 // If there is an active desk on the target display, then it is already in desktop
                 // windowing so the new task should also be placed in desktop windowing.
                 anyDeskActive -> true
