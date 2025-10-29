@@ -1,0 +1,111 @@
+// Ravenwood presubmit TEST_MAPPING for "framework-ish" tests
+// Selected from f/b/r/TEST_MAPPING.
+{
+  "ravenwood-presubmit": [
+    // Critical CTS tests:
+    {
+      "name": "CtsAppTestCasesRavenwood",
+      "host": true
+    },
+    {
+      "name": "CtsContentTestCasesRavenwood",
+      "host": true
+    },
+    {
+      "name": "CtsDatabaseTestCasesRavenwood",
+      "host": true
+    },
+    {
+      "name": "CtsDeviceConfigTestCasesRavenwood",
+      "host": true
+    },
+    {
+      "name": "CtsGraphicsTestCasesRavenwood",
+      "host": true
+    },
+    {
+      "name": "CtsOsTestCasesRavenwood",
+      "host": true
+    },
+    {
+      "name": "CtsProtoTestCasesRavenwood",
+      "host": true
+    },
+    {
+      "name": "CtsResourcesTestCasesRavenwood",
+      "host": true
+    },
+    {
+      "name": "CtsTextTestCasesRavenwood",
+      "host": true
+    },
+    {
+      "name": "CtsUtilTestCasesRavenwood",
+      "host": true
+    },
+
+    // Framework unit tests:
+    {
+      "name": "FrameworksCoreSystemPropertiesTestsRavenwood",
+      "host": true
+    },
+    {
+      "name": "FrameworksCoreTestsRavenwood",
+      "host": true
+    },
+    {
+      "name": "FrameworksInputMethodSystemServerTestsRavenwood",
+      "host": true
+    },
+    {
+      "name": "FrameworksServicesTestsRavenwood_Compat",
+      "host": true
+    },
+    {
+      "name": "FrameworksServicesTestsRavenwood_ProcessStateController",
+      "host": true
+    },
+    {
+      "name": "FrameworksServicesTestsRavenwood_Uri",
+      "host": true
+    },
+    {
+      "name": "FrameworksUtilTestsRavenwood",
+      "host": true
+    },
+    {
+      "name": "InternalTestsRavenwood",
+      "host": true
+    },
+
+    // Core Ravenwood tests:
+    {
+      "name": "RavenwoodBivalentTest",
+      "host": true
+    },
+    {
+      "name": "RavenwoodCoreTest",
+      "host": true
+    },
+    {
+      "name": "RavenwoodMinimumTest",
+      "host": true
+    },
+    {
+      "name": "RavenwoodMockitoTest",
+      "host": true
+    },
+    {
+      "name": "RavenwoodResApkTest",
+      "host": true
+    },
+    {
+      "name": "RavenwoodRuntimeTest",
+      "host": true
+    },
+    {
+      "name": "RavenwoodServicesTest",
+      "host": true
+    }
+  ]
+}
