@@ -16871,12 +16871,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     result.putParcelable(DevicePolicyManager.EXTRA_DEVICE_ADMIN,
                             admin.info.getComponent());
                     return result;
-                } else if (android.security.Flags.aapmApi()) {
+                } else {
                     result = new Bundle();
                     result.putInt(Intent.EXTRA_USER_ID, userId);
                     return result;
                 }
-                return null;
             } finally {
                 mInjector.binderRestoreCallingIdentity(ident);
             }

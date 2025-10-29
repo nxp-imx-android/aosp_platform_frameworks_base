@@ -1849,8 +1849,7 @@ public final class SystemServer implements Dumpable {
                 t.traceEnd();
             }
 
-            if (!isWatch && !isTv && !isAutomotive
-                    && android.security.Flags.aapmApi()) {
+            if (!isWatch && !isTv && !isAutomotive) {
                 t.traceBegin("StartAdvancedProtectionService");
                 mSystemServiceManager.startService(AdvancedProtectionService.Lifecycle.class);
                 t.traceEnd();

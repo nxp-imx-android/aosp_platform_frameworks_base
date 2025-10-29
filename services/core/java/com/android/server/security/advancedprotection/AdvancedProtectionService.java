@@ -95,8 +95,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
     private final Handler mHandler;
     private final AdvancedProtectionStore mStore;
     private final UserManagerInternal mUserManager;
-    @Nullable
-    private final AdvancedProtectionConfigLoader mConfigLoader;
+    @Nullable private final AdvancedProtectionConfigLoader mConfigLoader;
 
     // Features living with the service - their code will be executed when state changes
     private final ArrayList<AdvancedProtectionHook> mHooks = new ArrayList<>();
@@ -115,26 +114,26 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         mHandler = new AdvancedProtectionHandler(FgThread.get().getLooper());
         mStore = new AdvancedProtectionStore(mContext);
         mUserManager = LocalServices.getService(UserManagerInternal.class);
-        mConfigLoader = android.security.Flags.aapmApiV2()
-                ? new AdvancedProtectionConfigLoader(new Injector()) : null;
+        mConfigLoader =
+                android.security.Flags.aapmApiV2()
+                        ? new AdvancedProtectionConfigLoader(new Injector())
+                        : null;
     }
 
     private void initFeatures(boolean enabled) {
-        if (android.security.Flags.aapmFeatureDisableInstallUnknownSources()) {
-            try {
-                if (android.security.Flags.aapmApiV2()) {
-                    if (isFeatureIdAvailableInConfig(
-                            FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES)) {
-                        mHooks.add(new DisallowInstallUnknownSourcesAdvancedProtectionHook(mContext,
-                                enabled));
-                    }
-                } else {
-                    mHooks.add(new DisallowInstallUnknownSourcesAdvancedProtectionHook(mContext,
-                            enabled));
+        try {
+            if (android.security.Flags.aapmApiV2()) {
+                if (isFeatureIdAvailableInConfig(FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES)) {
+                    mHooks.add(
+                            new DisallowInstallUnknownSourcesAdvancedProtectionHook(
+                                    mContext, enabled));
                 }
-            } catch (Exception e) {
-                Slog.e(TAG, "Failed to initialize DisallowInstallUnknownSources", e);
+            } else {
+                mHooks.add(
+                        new DisallowInstallUnknownSourcesAdvancedProtectionHook(mContext, enabled));
             }
+        } catch (Exception e) {
+            Slog.e(TAG, "Failed to initialize DisallowInstallUnknownSources", e);
         }
         try {
             if (android.security.Flags.aapmApiV2()) {
@@ -147,18 +146,16 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         } catch (Exception e) {
             Slog.e(TAG, "Failed to initialize MemoryTaggingExtension", e);
         }
-        if (android.security.Flags.aapmFeatureDisableCellular2g()) {
-            try {
-                if (android.security.Flags.aapmApiV2()) {
-                    if (isFeatureIdAvailableInConfig(FEATURE_ID_DISALLOW_CELLULAR_2G)) {
-                        mHooks.add(new DisallowCellular2GAdvancedProtectionHook(mContext, enabled));
-                    }
-                } else {
+        try {
+            if (android.security.Flags.aapmApiV2()) {
+                if (isFeatureIdAvailableInConfig(FEATURE_ID_DISALLOW_CELLULAR_2G)) {
                     mHooks.add(new DisallowCellular2GAdvancedProtectionHook(mContext, enabled));
                 }
-            } catch (Exception e) {
-                Slog.e(TAG, "Failed to initialize DisallowCellular2g", e);
+            } else {
+                mHooks.add(new DisallowCellular2GAdvancedProtectionHook(mContext, enabled));
             }
+        } catch (Exception e) {
+            Slog.e(TAG, "Failed to initialize DisallowCellular2g", e);
         }
         if (android.security.Flags.aapmFeatureUsbDataProtection()
                 // Usb data protection is enabled by default
@@ -207,8 +204,10 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         mStore = store;
         mUserManager = userManager;
         mHandler = new AdvancedProtectionHandler(looper);
-        mConfigLoader = android.security.Flags.aapmApiV2()
-                ? new AdvancedProtectionConfigLoader(injector) : null;
+        mConfigLoader =
+                android.security.Flags.aapmApiV2()
+                        ? new AdvancedProtectionConfigLoader(injector)
+                        : null;
 
         if (hook != null) {
             if (android.security.Flags.aapmApiV2()) {
@@ -289,8 +288,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
     }
 
     public void setUsbDataProtectionEnabled(boolean enabled) {
-        int value = enabled ? AdvancedProtectionStore.ON
-                : AdvancedProtectionStore.OFF;
+        int value = enabled ? AdvancedProtectionStore.ON : AdvancedProtectionStore.OFF;
         setAdvancedProtectionSubSettingInt(AAPM_USB_DATA_PROTECTION, value);
     }
 
@@ -310,7 +308,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         final long identity = Binder.clearCallingIdentity();
         try {
             return mStore.retrieveInt(AAPM_USB_DATA_PROTECTION, AdvancedProtectionStore.ON)
-                == AdvancedProtectionStore.ON;
+                    == AdvancedProtectionStore.ON;
         } finally {
             Binder.restoreCallingIdentity(identity);
         }
@@ -318,8 +316,8 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
 
     @Override
     @EnforcePermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
-    public void logDialogShown(@FeatureId int featureId, @SupportDialogType int type,
-            boolean learnMoreClicked) {
+    public void logDialogShown(
+            @FeatureId int featureId, @SupportDialogType int type, boolean learnMoreClicked) {
         logDialogShown_enforcePermission();
 
         if (!mEmitLogs) {
@@ -327,13 +325,15 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         }
 
         int hoursSinceEnabled = hoursSinceLastChange();
-        FrameworkStatsLog.write(FrameworkStatsLog.ADVANCED_PROTECTION_SUPPORT_DIALOG_DISPLAYED,
+        FrameworkStatsLog.write(
+                FrameworkStatsLog.ADVANCED_PROTECTION_SUPPORT_DIALOG_DISPLAYED,
                 /*feature_id*/ featureIdToLogEnum(featureId),
                 /*dialogue_type*/ dialogueTypeToLogEnum(type),
                 /*learn_more_clicked*/ learnMoreClicked,
                 /*hours_since_last_change*/ hoursSinceEnabled);
 
-        getSharedPreferences().edit()
+        getSharedPreferences()
+                .edit()
                 .putInt(LAST_DIALOG_FEATURE_ID, featureId)
                 .putInt(LAST_DIALOG_TYPE, type)
                 .putBoolean(LAST_DIALOG_LEARN_MORE_CLICKED, learnMoreClicked)
@@ -378,25 +378,24 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
 
         Slog.i(TAG, "Advanced protection has been " + (enabled ? "enabled" : "disabled"));
         SharedPreferences prefs = getSharedPreferences();
-        FrameworkStatsLog.write(FrameworkStatsLog.ADVANCED_PROTECTION_STATE_CHANGED,
+        FrameworkStatsLog.write(
+                FrameworkStatsLog.ADVANCED_PROTECTION_STATE_CHANGED,
                 /*enabled*/ enabled,
                 /*hours_since_enabled*/ hoursSinceLastChange(),
                 /*last_dialog_feature_id*/ featureIdToLogEnum(
-                    prefs.getInt(LAST_DIALOG_FEATURE_ID, -1)),
+                        prefs.getInt(LAST_DIALOG_FEATURE_ID, -1)),
                 /*_type*/ dialogueTypeToLogEnum(prefs.getInt(LAST_DIALOG_TYPE, -1)),
                 /*_learn_more_clicked*/ prefs.getBoolean(LAST_DIALOG_LEARN_MORE_CLICKED, false),
                 /*_hours_since_enabled*/ prefs.getInt(LAST_DIALOG_HOURS_SINCE_ENABLED, -1));
-        prefs.edit()
-                .putLong(ENABLED_CHANGE_TIME, System.currentTimeMillis())
-                .apply();
+        prefs.edit().putLong(ENABLED_CHANGE_TIME, System.currentTimeMillis()).apply();
     }
 
     private int hoursSinceLastChange() {
         int hoursSinceEnabled = -1;
         long lastChangeTimeMillis = getSharedPreferences().getLong(ENABLED_CHANGE_TIME, -1);
         if (lastChangeTimeMillis != -1) {
-            hoursSinceEnabled = (int)
-                    ((System.currentTimeMillis() - lastChangeTimeMillis) / MILLIS_PER_HOUR);
+            hoursSinceEnabled =
+                    (int) ((System.currentTimeMillis() - lastChangeTimeMillis) / MILLIS_PER_HOUR);
         }
         return hoursSinceEnabled;
     }
@@ -470,17 +469,29 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         writer.println("  mProviders.size(): " + mProviders.size());
 
         writer.println("Hooks: ");
-        mHooks.stream().forEach(hook -> {
-            writer.println("    " + hook.getClass().getSimpleName() +
-                                   " available: " + hook.isAvailable());
-        });
+        mHooks.stream()
+                .forEach(
+                        hook -> {
+                            writer.println(
+                                    "    "
+                                            + hook.getClass().getSimpleName()
+                                            + " available: "
+                                            + hook.isAvailable());
+                        });
         writer.println("  Providers: ");
-        mProviders.stream().forEach(provider -> {
-            writer.println("    " + provider.getClass().getSimpleName());
-            provider.getFeatures(mContext).stream().forEach(feature -> {
-                writer.println("      " + feature.getClass().getSimpleName());
-            });
-        });
+        mProviders.stream()
+                .forEach(
+                        provider -> {
+                            writer.println("    " + provider.getClass().getSimpleName());
+                            provider.getFeatures(mContext).stream()
+                                    .forEach(
+                                            feature -> {
+                                                writer.println(
+                                                        "      "
+                                                                + feature.getClass()
+                                                                        .getSimpleName());
+                                            });
+                        });
         writer.println("  mSharedPreferences: " + getSharedPreferences().getAll());
         if (android.security.Flags.aapmApiV2()) {
             if (mConfigLoader == null) {
@@ -497,7 +508,11 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
     }
 
     void sendCallbackAdded(boolean enabled, IAdvancedProtectionCallback callback) {
-        Message.obtain(mHandler, CALLBACK_ADDED, /*enabled*/ enabled ? 1 : 0, /*unused*/ -1,
+        Message.obtain(
+                        mHandler,
+                        CALLBACK_ADDED, /*enabled*/
+                        enabled ? 1 : 0, /*unused*/
+                        -1,
                         /*callback*/ callback)
                 .sendToTarget();
     }
@@ -513,8 +528,8 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         if (mSharedPreferences == null) {
             Context deviceContext = mContext.createDeviceProtectedStorageContext();
             File sharedPrefs = new File(Environment.getDataSystemDirectory(), PREFERENCE);
-            mSharedPreferences = deviceContext.getSharedPreferences(sharedPrefs,
-                    Context.MODE_PRIVATE);
+            mSharedPreferences =
+                    deviceContext.getSharedPreferences(sharedPrefs, Context.MODE_PRIVATE);
         }
     }
 
@@ -555,25 +570,30 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         }
 
         void storeAdvancedProtectionModeEnabled(boolean enabled) {
-            Settings.Secure.putIntForUser(mContext.getContentResolver(),
-                    ADVANCED_PROTECTION_MODE, enabled ? ON : OFF,
+            Settings.Secure.putIntForUser(
+                    mContext.getContentResolver(),
+                    ADVANCED_PROTECTION_MODE,
+                    enabled ? ON : OFF,
                     UserHandle.USER_SYSTEM);
         }
 
         boolean retrieveAdvancedProtectionModeEnabled() {
-            return Settings.Secure.getIntForUser(mContext.getContentResolver(),
-                    ADVANCED_PROTECTION_MODE, OFF, UserHandle.USER_SYSTEM) == ON;
+            return Settings.Secure.getIntForUser(
+                            mContext.getContentResolver(),
+                            ADVANCED_PROTECTION_MODE,
+                            OFF,
+                            UserHandle.USER_SYSTEM)
+                    == ON;
         }
 
         void storeInt(String key, int value) {
-            Settings.Secure.putIntForUser(mContext.getContentResolver(),
-                    key, value,
-                    UserHandle.USER_SYSTEM);
+            Settings.Secure.putIntForUser(
+                    mContext.getContentResolver(), key, value, UserHandle.USER_SYSTEM);
         }
 
         int retrieveInt(String key, int defaultValue) {
-            return Settings.Secure.getIntForUser(mContext.getContentResolver(),
-                    key, defaultValue, UserHandle.USER_SYSTEM);
+            return Settings.Secure.getIntForUser(
+                    mContext.getContentResolver(), key, defaultValue, UserHandle.USER_SYSTEM);
         }
     }
 
@@ -607,8 +627,10 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
                         feature.onAdvancedProtectionChanged(enabled);
                     }
                 } catch (Exception e) {
-                    Slog.e(TAG, "Failed to call hook for feature "
-                            + feature.getFeature().getId(), e);
+                    Slog.e(
+                            TAG,
+                            "Failed to call hook for feature " + feature.getFeature().getId(),
+                            e);
                 }
             }
             synchronized (mCallbacks) {

@@ -1921,23 +1921,22 @@ public final class SystemServiceRegistry {
                         return new SupervisionManager(ctx, service);
                     }
                 });
-        if (android.security.Flags.aapmApi()) {
-            registerService(Context.ADVANCED_PROTECTION_SERVICE, AdvancedProtectionManager.class,
-                    new CachedServiceFetcher<>() {
-                        @Override
-                        public AdvancedProtectionManager createService(ContextImpl ctx)
-                                throws ServiceNotFoundException {
-                            IBinder iBinder = ServiceManager.getService(
-                                    Context.ADVANCED_PROTECTION_SERVICE);
-                            IAdvancedProtectionService service =
-                                    IAdvancedProtectionService.Stub.asInterface(iBinder);
-                            if (service == null) {
-                                return null;
-                            }
-                            return new AdvancedProtectionManager(service);
+
+        registerService(Context.ADVANCED_PROTECTION_SERVICE, AdvancedProtectionManager.class,
+                new CachedServiceFetcher<>() {
+                    @Override
+                    public AdvancedProtectionManager createService(ContextImpl ctx)
+                            throws ServiceNotFoundException {
+                        IBinder iBinder = ServiceManager.getService(
+                                Context.ADVANCED_PROTECTION_SERVICE);
+                        IAdvancedProtectionService service =
+                                IAdvancedProtectionService.Stub.asInterface(iBinder);
+                        if (service == null) {
+                            return null;
                         }
-                    });
-        }
+                        return new AdvancedProtectionManager(service);
+                    }
+                });
 
         // DO NOT do a flag check like this unless the flag is read-only.
         // (because this code is executed during preload in zygote.)

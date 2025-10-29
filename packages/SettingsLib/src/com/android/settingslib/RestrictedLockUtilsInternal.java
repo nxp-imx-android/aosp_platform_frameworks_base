@@ -230,18 +230,16 @@ public class RestrictedLockUtilsInternal extends RestrictedLockUtils {
             return null;
         }
 
-        if (android.security.Flags.aapmApi()) {
-            EnforcingAdmin admin = dpm.getEnforcingAdmin(userId, userRestriction);
-            if (admin != null) {
-                return new EnforcedAdmin(admin.getComponentName(), userRestriction,
-                        admin.getUserHandle());
-            }
+        EnforcingAdmin enforcingAdmin = dpm.getEnforcingAdmin(userId, userRestriction);
+        if (enforcingAdmin != null) {
+            return new EnforcedAdmin(enforcingAdmin.getComponentName(), userRestriction,
+                    enforcingAdmin.getUserHandle());
         }
 
-        final EnforcedAdmin admin =
+        final EnforcedAdmin enforcedAdmin =
                 getProfileOrDeviceOwner(context, userRestriction, enforcingUser.getUserHandle());
-        if (admin != null) {
-            return admin;
+        if (enforcedAdmin != null) {
+            return enforcedAdmin;
         }
         return EnforcedAdmin.createDefaultEnforcedAdminWithRestriction(userRestriction);
     }
@@ -1066,7 +1064,6 @@ public class RestrictedLockUtilsInternal extends RestrictedLockUtils {
     @RequiresApi(Build.VERSION_CODES.BAKLAVA)
     public static boolean isPolicyEnforcedByAdvancedProtection(Context context, String identifier,
             int userId) {
-        if (!android.security.Flags.aapmApi()) return false;
         if (identifier == null) return false;
         EnforcingAdmin admin = context.getSystemService(DevicePolicyManager.class)
                 .getEnforcingAdmin(userId, identifier);

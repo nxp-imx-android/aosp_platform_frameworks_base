@@ -452,9 +452,7 @@ public class RestrictedPreferenceHelper {
             disabled = true;
             // Copy the received instance to prevent pass be reference being overwritten.
             mEnforcedAdmin = new EnforcedAdmin(admin);
-            if (android.security.Flags.aapmApi()) {
-                changed = previousAdmin == null || !previousAdmin.equals(admin);
-            }
+            changed = previousAdmin == null || !previousAdmin.equals(admin);
         }
 
         if (mDisabledByAdmin != disabled) {
@@ -539,7 +537,7 @@ public class RestrictedPreferenceHelper {
             ((PrimarySwitchPreference) mPreference).setSwitchEnabled(isEnabled);
         }
 
-        if (android.security.Flags.aapmApi() && mDisabledByAdmin) {
+        if (mDisabledByAdmin) {
             String summary = getDisabledByAdminSummaryString();
             if (summary != null) {
                 mPreference.setSummary(summary);

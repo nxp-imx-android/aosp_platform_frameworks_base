@@ -53,7 +53,6 @@ import java.util.concurrent.Executor;
  * <p>This class provides methods to query and control the advanced protection mode
  * for the device.
  */
-@FlaggedApi(Flags.FLAG_AAPM_API)
 @SystemService(Context.ADVANCED_PROTECTION_SERVICE)
 public final class AdvancedProtectionManager {
     private static final String TAG = "AdvancedProtectionMgr";
@@ -486,7 +485,6 @@ public final class AdvancedProtectionManager {
      * {@link AdvancedProtectionManager#registerAdvancedProtectionCallback(Executor, Callback)}.
      * Methods are called when the state changes, as well as once on initial registration.
      */
-    @FlaggedApi(Flags.FLAG_AAPM_API)
     public interface Callback {
         /**
          * Called when advanced protection state changes
