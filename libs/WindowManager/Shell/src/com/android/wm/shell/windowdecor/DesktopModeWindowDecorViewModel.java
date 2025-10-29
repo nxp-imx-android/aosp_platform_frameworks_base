@@ -1265,36 +1265,82 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     /**
+     * Closes a task (desktop or pinned).
+     *
+     * @param task Task to be closed.
+     *
+     * TODO(b/448484440): Make the method private.
+     */
+    public boolean closeTask(RunningTaskInfo task) {
+        return closeDesktopTask(task) || closePinnedTask(task);
+    }
+
+    /**
      * Closes a task.
      * This method requests DesktopTasksController to close a task and announce a new focus window
      * if it closes a desktop task.
      * Must call the method on the shell main executor.
      * @param task Task to be closed.
-     *
-     * TODO(b/448484440): Make the method private.
      */
-    public void closeTask(RunningTaskInfo task) {
+    private boolean closeDesktopTask(RunningTaskInfo task) {
         if (!DesktopExperienceFlags
                 .CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue()) {
             final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(task.taskId);
             if (decoration == null) {
                 ProtoLog.e(WM_SHELL_WINDOW_DECORATION,
-                        "%s: closeTask(taskId=%d): decoration is null, ignoring", TAG, task.taskId);
-                return;
+                        "%s: closeDesktopTask(taskId=%d): decoration is null, ignoring",
+                        TAG,
+                        task.taskId);
+                return false;
             }
         }
         final DesktopTasksController.CloseTaskResult result =
                 mDesktopTasksController.closeTask(task);
         if (result != DesktopTasksController.CloseTaskResult.CLOSED_DESKTOP) {
-            return;
+            return false;
         }
 
-        final int nextFocusedTaskId = mDesktopTasksController.getNextFocusedTask(task);
+        // TODO: b/448483994 - remove manual a11y announcement when it is handled by the decor
+        // internally.
+        final int nextFocusedTaskId =
+                mDesktopTasksController.getTopTask(
+                    task.getDisplayId(),
+                    task.userId,
+                    task.getTaskId());
         final WindowDecorationWrapper nextFocusedWindow =
                 mWindowDecorationFinder.apply(nextFocusedTaskId);
-        if (nextFocusedWindow == null) return;
-        nextFocusedWindow.a11yAnnounceNewFocusedWindow();
+        if (nextFocusedWindow != null) {
+            nextFocusedWindow.a11yAnnounceNewFocusedWindow();
+        }
 
+        return true;
+    }
+
+    /**
+     * Closes a pinned task and announces the new focused window if the task has been closed.
+     *
+     * @param task The pinned task to be closed.
+     */
+    private boolean closePinnedTask(RunningTaskInfo task) {
+        final boolean result = mPinnedLayerController.closeTask(task);
+        if (!result) {
+            return false;
+        }
+
+        // TODO: b/448483994 - remove manual a11y announcement when it is handled by the decor
+        // internally.
+        final int nextFocusedTaskId =
+                mDesktopTasksController.getTopTask(
+                    task.getDisplayId(),
+                    task.userId,
+                    /* excludingTaskId= */ null);
+        final WindowDecorationWrapper nextFocusedWindow =
+                mWindowDecorationFinder.apply(nextFocusedTaskId);
+        if (nextFocusedWindow != null) {
+            nextFocusedWindow.a11yAnnounceNewFocusedWindow();
+        }
+
+        return true;
     }
 
     /** Listener for caption touch events. */
@@ -2080,7 +2126,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
         @Override
         public void onMinimize(@NonNull RunningTaskInfo taskInfo) {
-            final int nextFocusedTaskId = mDesktopTasksController.getNextFocusedTask(taskInfo);
+            final int nextFocusedTaskId =
+                    mDesktopTasksController.getTopTask(
+                        taskInfo.getDisplayId(),
+                        taskInfo.userId,
+                        taskInfo.getTaskId());
             WindowDecorationWrapper nextFocusedWindow =
                     mViewModel.mWindowDecorByTaskId.get(nextFocusedTaskId);
             if (nextFocusedWindow != null) nextFocusedWindow.a11yAnnounceNewFocusedWindow();
@@ -2173,7 +2223,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             mViewModel.openHandleMenu(taskId);
         }
     }
-
 
     @VisibleForTesting
     static class TaskPositionerFactory {

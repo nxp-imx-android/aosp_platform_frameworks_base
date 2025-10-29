@@ -38,6 +38,7 @@ import android.window.TransitionInfo.FLAG_NONE
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
@@ -45,6 +46,7 @@ import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
+import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -55,9 +57,13 @@ import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.times
 
 /**
  * Unit tests against [PinnedLayerController]
@@ -484,6 +490,51 @@ class PinnedLayerControllerTests : ShellTestCase() {
         )
 
         assertTrue(pinnedLayerController.hasActivePinnedTask())
+    }
+
+    @Test
+    fun closeTask_taskNotPinned_returnsFalse() {
+        // This task should not be pinned as it hasn't been registered anywhere in the
+        // PinnedLayerController.
+        val taskInfo = RunningTaskInfo().apply {taskId = TASK_ID_0}
+
+        assertFalse(pinnedLayerController.closeTask(taskInfo))
+    }
+
+    @Test
+    fun closeTask_taskPinned_returnsTrueAndSendsTransition() {
+        val taskToken = MockToken.token()
+        val taskInfo = RunningTaskInfo().apply {
+            token = taskToken
+            taskId = TASK_ID_0
+        }
+
+        val transition = mock<IBinder>()
+        val callback = mock<IRemoteCallback>()
+        val requestInfo =
+            setupWindowingLayerTransition(
+                WINDOWING_LAYER_PINNED,
+                callback,
+                triggerTaskId = TASK_ID_0,
+                triggerTaskToken = taskToken,
+            )
+        val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
+        pinnedLayerController.handleRequest(transition, requestInfo)
+        pinnedLayerController.onTransitionReady(
+            transition,
+            transitionInfo,
+            startTransaction,
+            finishTransaction,
+        )
+        assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
+
+        assertTrue(pinnedLayerController.closeTask(taskInfo))
+
+        val wctCaptor = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
+        verify(transitions).startTransition(eq(TRANSIT_CLOSE), wctCaptor.capture(), anyOrNull())
+        assertThat(wctCaptor.value.hierarchyOps.any { hop ->
+            hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK && hop.container == taskToken.asBinder()
+        }).isTrue()
     }
 
     private fun verifyCallbackResult(callback: IRemoteCallback, expected: Int) {

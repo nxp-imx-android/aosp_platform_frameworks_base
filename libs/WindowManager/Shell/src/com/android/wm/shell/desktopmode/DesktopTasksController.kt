@@ -1752,20 +1752,24 @@ class DesktopTasksController(
     }
 
     /**
-     * Returns the task that will be focused next after the current task (the given [taskInfo]) is
-     * removed, due to being minimized or closed.
+     * Returns the topmost task from the active desk on display [displayId] for user [userId].
      *
-     * @param taskInfo the task that is being removed.
-     * @return the taskId of the next focused task, or [INVALID_TASK_ID] if no task is found.
+     * If the [excludingTaskId] parameter is not null, that task ID will never be returned --
+     * instead the ID of the second topmost task from the same desk or [INVALID_TASK_ID] will be
+     * returned.
+     *
+     * @param displayId the ID of a display.
+     * @param userId the ID of a user.
+     * @param excludingTaskId the ID of a task to exclude
+     * @return the task ID of the topmost desktop task, or [INVALID_TASK_ID] if no task is found,
+     *   minding optional omission of the task with ID [excludingTaskId].
      */
-    fun getNextFocusedTask(taskInfo: RunningTaskInfo): Int {
-        val deskId =
-            getOrCreateDefaultDeskId(taskInfo.displayId, taskInfo.userId) ?: return INVALID_TASK_ID
-        val repository = userRepositories.getProfile(taskInfo.userId)
+    fun getTopTask(displayId: Int, userId: Int, excludingTaskId: Int? = null): Int {
+        val repository = userRepositories.getProfile(userId)
+        val activeDesk = repository.getActiveDeskId(displayId) ?: return INVALID_TASK_ID
         return repository
-            .getExpandedTasksIdsInDeskOrdered(deskId)
-            // exclude current task since maximize/restore transition has not taken place yet.
-            .filterNot { it == taskInfo.taskId }
+            .getExpandedTasksIdsInDeskOrdered(activeDesk)
+            .filterNot { it == excludingTaskId }
             .firstOrNull { !repository.isClosingTask(it) } ?: INVALID_TASK_ID
     }
 

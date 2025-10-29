@@ -306,6 +306,24 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
      */
     fun isPinned(taskId: Int): Boolean = pinnedTasks.contains(taskId)
 
+    /**
+     * Closes a pinned task.
+     *
+     * @param taskInfo a [RunningTaskInfo] of the task to close
+     * @return `true` if the task closing transition has been started, `false` otherwise
+     */
+    fun closeTask(task: TaskInfo): Boolean {
+        if (isNotPinned(task.taskId)) {
+            Slog.w(TAG, "closeTask: the task in question is not pinned")
+            return false
+        }
+
+        val wct = WindowContainerTransaction()
+        wct.removeTask(task.token)
+        transitions.startTransition(TRANSIT_CLOSE, wct, /* handler= */ null)
+        return true
+    }
+
     private sealed class ActiveTransition {
         abstract val taskInfo: TaskInfo
 
