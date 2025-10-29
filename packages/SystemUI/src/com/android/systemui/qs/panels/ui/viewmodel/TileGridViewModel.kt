@@ -50,7 +50,7 @@ constructor(
         hydrator.hydratedStateOf(traceName = "tileModels", source = tilesInteractor.currentTiles)
 
     val tileViewModels: List<TileViewModel>
-        get() = tileModels.map { TileViewModel(it.tile, it.spec) }
+        get() = tileModels.map { TileViewModel(it.tile, it.spec, it.expandable) }
 
     override suspend fun onActivated(): Nothing {
         hydrator.activate()

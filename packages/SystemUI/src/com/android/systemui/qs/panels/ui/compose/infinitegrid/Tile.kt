@@ -87,6 +87,7 @@ import com.android.mechanics.compose.modifier.verticalTactileSurfaceReveal
 import com.android.mechanics.effects.VerticalTactileSurfaceRevealEffect
 import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
+import com.android.systemui.animation.TransitionAnimator.Companion.dynamicTargetResolutionEnabled
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.haptics.msdl.qs.TileHapticsViewModel
@@ -240,7 +241,12 @@ fun ContentScope.Tile(
             contentRevealModifier = Modifier
         }
 
+        val expandable =
+            if (dynamicTargetResolutionEnabled()) tile.expandable
+            else remember { Expandable(mutableSetOf()) }
+
         TileExpandable(
+            expandable = expandable,
             color = { animatedColor },
             shape = tileShape,
             squishiness = squishiness,
@@ -375,6 +381,7 @@ fun ContentScope.Tile(
 
 @Composable
 private fun TileExpandable(
+    expandable: Expandable,
     color: () -> Color,
     shape: Shape,
     squishiness: () -> Float,
@@ -383,6 +390,7 @@ private fun TileExpandable(
     content: @Composable (Expandable) -> Unit,
 ) {
     Expandable(
+        expandable = expandable,
         controller = rememberExpandableController(color = color, shape = shape),
         modifier =
             modifier
