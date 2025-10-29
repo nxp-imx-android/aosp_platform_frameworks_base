@@ -1107,6 +1107,11 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
                             .setDuration(NAV_BAR_CONTENT_FADE_DURATION)
                             .start());
         }
+
+        if (needsFullscreenBouncer()) {
+            showBouncerOrKeyguard(/* hideBouncerWhenShowing=*/false, /* isFalsingReset=*/false,
+                    "onStartedWakingUp");
+        }
     }
 
     @Override
