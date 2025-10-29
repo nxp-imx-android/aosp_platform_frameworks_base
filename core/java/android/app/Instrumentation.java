@@ -2479,6 +2479,11 @@ public class Instrumentation {
             case ActivityManager.START_CANCELED:
                 throw new AndroidRuntimeException("Activity could not be started for "
                         + intent);
+            case ActivityManager.START_NOT_ALLOWED_FOR_USER:
+                throw new AndroidRuntimeException(
+                        "Cannot start activity for " + intent + " for this user");
+            // NOTE: new cases should always throw AndroidRuntimeException, otherwise they could
+            // break existing apps.
             default:
                 throw new AndroidRuntimeException("Unknown error code "
                         + res + " when starting " + intent);
