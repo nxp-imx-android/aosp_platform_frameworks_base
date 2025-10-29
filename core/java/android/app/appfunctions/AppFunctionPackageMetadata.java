@@ -22,22 +22,38 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.app.appsearch.GenericDocument;
-
-import com.android.internal.annotations.VisibleForTesting;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.util.List;
 import java.util.Objects;
 
 /** Represents metadata about a package providing app functions. */
 @FlaggedApi(FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS)
-public class AppFunctionPackageMetadata implements AbstractAppFunctionMetadata {
+public final class AppFunctionPackageMetadata implements AbstractAppFunctionMetadata, Parcelable {
+
+    @NonNull
+    public static final Creator<AppFunctionPackageMetadata> CREATOR =
+            new Creator<AppFunctionPackageMetadata>() {
+                @Override
+                public AppFunctionPackageMetadata createFromParcel(Parcel in) {
+                    return new AppFunctionPackageMetadata(in);
+                }
+
+                @Override
+                public AppFunctionPackageMetadata[] newArray(int size) {
+                    return new AppFunctionPackageMetadata[size];
+                }
+            };
+
     /**
-     * The property name for the list of GenericDocuments comprising package-level documents
-     * in the database, excluding app functions.
+     * The property name for the list of GenericDocuments comprising package-level documents in the
+     * database, excluding app functions.
      *
      * <p>Used as the key to fetch the metadata list from {@link #getMetadataDocument}.
      */
     public static final String PROPERTY_TOP_LEVEL_DOCUMENTS = "topLevelMetadataDocuments";
+
     /**
      * The property name for the app function's package name.
      *
@@ -46,24 +62,27 @@ public class AppFunctionPackageMetadata implements AbstractAppFunctionMetadata {
     static final String PROPERTY_PACKAGE_NAME =
             AppFunctionStaticMetadataHelper.PROPERTY_PACKAGE_NAME;
 
-    @NonNull
-    private final String mPackageName;
-    @NonNull
-    private final GenericDocument mMetadataDocument;
+    @NonNull private final String mPackageName;
+    @NonNull private final GenericDocumentWrapper mMetadataDocumentWrapper;
 
-    private AppFunctionPackageMetadata(@NonNull String packageName,
-            @NonNull GenericDocument metadataDocument) {
-        this.mPackageName = requireNonNull(packageName);
-        this.mMetadataDocument = requireNonNull(metadataDocument);
+    private AppFunctionPackageMetadata(
+            @NonNull String packageName, @NonNull GenericDocument metadataDocument) {
+        mPackageName = requireNonNull(packageName);
+        mMetadataDocumentWrapper = new GenericDocumentWrapper(requireNonNull(metadataDocument));
+    }
+
+    private AppFunctionPackageMetadata(Parcel in) {
+        mPackageName = requireNonNull(in.readString8());
+        mMetadataDocumentWrapper =
+                requireNonNull(GenericDocumentWrapper.CREATOR.createFromParcel(in));
     }
 
     /**
-     * @param packageName               The name of the package.
+     * @param packageName The name of the package.
      * @param topLevelMetadataDocuments The list of GenericDocuments comprising package-level
-     *                                  documents in the database, excluding app functions.
+     *     documents in the database, excluding app functions.
      * @hide
      */
-    @VisibleForTesting
     public static AppFunctionPackageMetadata create(
             @NonNull String packageName, @NonNull List<GenericDocument> topLevelMetadataDocuments) {
         requireNonNull(packageName);
@@ -72,10 +91,10 @@ public class AppFunctionPackageMetadata implements AbstractAppFunctionMetadata {
                 packageName,
                 new GenericDocument.Builder<>("", "", "")
                         .setPropertyString(PROPERTY_PACKAGE_NAME, packageName)
-                        .setPropertyDocument(PROPERTY_TOP_LEVEL_DOCUMENTS,
+                        .setPropertyDocument(
+                                PROPERTY_TOP_LEVEL_DOCUMENTS,
                                 topLevelMetadataDocuments.toArray(new GenericDocument[0]))
-                        .build()
-        );
+                        .build());
     }
 
     /** The name of the package. */
@@ -87,16 +106,16 @@ public class AppFunctionPackageMetadata implements AbstractAppFunctionMetadata {
     /**
      * Returns the full package metadata as a {@link GenericDocument}.
      *
-     * <p>Client-defined properties can be retrieved using the {@link GenericDocument}
-     * property getters.
+     * <p>Client-defined properties can be retrieved using the {@link GenericDocument} property
+     * getters.
      *
-     * <p>Properties that are not defined in this class (see {@code PROPERTY_*} constants) are
-     * not guaranteed to be available or consistent across versions.
+     * <p>Properties that are not defined in this class (see {@code PROPERTY_*} constants) are not
+     * guaranteed to be available or consistent across versions.
      */
     @NonNull
     @Override
     public GenericDocument getMetadataDocument() {
-        return mMetadataDocument;
+        return mMetadataDocumentWrapper.getValue();
     }
 
     @Override
@@ -104,12 +123,12 @@ public class AppFunctionPackageMetadata implements AbstractAppFunctionMetadata {
         if (this == o) return true;
         if (!(o instanceof AppFunctionPackageMetadata that)) return false;
 
-        return mMetadataDocument.equals(that.mMetadataDocument);
+        return getMetadataDocument().equals(that.getMetadataDocument());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mMetadataDocument);
+        return Objects.hash(getMetadataDocument());
     }
 
     @Override
@@ -119,7 +138,18 @@ public class AppFunctionPackageMetadata implements AbstractAppFunctionMetadata {
                 + getPackageName()
                 + ", "
                 + "metadataDocument"
-                + mMetadataDocument
+                + mMetadataDocumentWrapper.getValue()
                 + ")";
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString8(mPackageName);
+        mMetadataDocumentWrapper.writeToParcel(dest, flags);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 }

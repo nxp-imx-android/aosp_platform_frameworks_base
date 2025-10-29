@@ -26,8 +26,8 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.appsearch.GenericDocument;
-
-import com.android.internal.annotations.VisibleForTesting;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.util.Objects;
 
@@ -38,13 +38,15 @@ import java.util.Objects;
  * for app functions on the device.
  *
  * <p>To make functions discoverable:
+ *
  * <ol>
- * <li>Define them in an XML file within the app's {@code assets/} directory.
- * <li>Reference the XML file in {@code AndroidManifest.xml} as a property of the corresponding
- * app function service.
+ *   <li>Define them in an XML file within the app's {@code assets/} directory.
+ *   <li>Reference the XML file in {@code AndroidManifest.xml} as a property of the corresponding
+ *       app function service.
  * </ol>
  *
  * <p><b>Example {@code AndroidManifest.xml} declaration:</b>
+ *
  * <pre>{@code
  *  <application>
  *      <service android:name=".MyAppFunctionService">
@@ -64,6 +66,7 @@ import java.util.Objects;
  * class.
  *
  * <p><b>Example {@code app_functions.xml} declaration:</b>
+ *
  * <pre>{@code
  * <appfunctions>
  *     <appfunction>
@@ -75,7 +78,7 @@ import java.util.Objects;
  * }</pre>
  */
 @FlaggedApi(FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS)
-public class AppFunctionMetadata implements AbstractAppFunctionMetadata {
+public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, Parcelable {
 
     /**
      * Property name for the app function's ID, which is used in an {@link
@@ -119,13 +122,23 @@ public class AppFunctionMetadata implements AbstractAppFunctionMetadata {
     public static final String PROPERTY_ENABLED_BY_DEFAULT = "enabledByDefault";
 
     @NonNull
-    private final GenericDocument mAppFunctionMetadataDocument;
-    @NonNull
-    private final AppFunctionName mAppFunctionName;
-    @Nullable
-    private final AppFunctionSchemaMetadata mAppFunctionSchemaMetadata;
-    @NonNull
-    private final AppFunctionPackageMetadata mAppFunctionPackageMetadata;
+    public static final Creator<AppFunctionMetadata> CREATOR =
+            new Creator<>() {
+                @Override
+                public AppFunctionMetadata createFromParcel(Parcel in) {
+                    return new AppFunctionMetadata(in);
+                }
+
+                @Override
+                public AppFunctionMetadata[] newArray(int size) {
+                    return new AppFunctionMetadata[size];
+                }
+            };
+
+    @NonNull private final GenericDocumentWrapper mAppFunctionMetadataDocumentWrapper;
+    @NonNull private final AppFunctionName mAppFunctionName;
+    @Nullable private final AppFunctionSchemaMetadata mAppFunctionSchemaMetadata;
+    @NonNull private final AppFunctionPackageMetadata mAppFunctionPackageMetadata;
     private final boolean mIsEnabled;
 
     private AppFunctionMetadata(
@@ -133,21 +146,32 @@ public class AppFunctionMetadata implements AbstractAppFunctionMetadata {
             @Nullable AppFunctionSchemaMetadata appFunctionSchemaMetadata,
             @NonNull AppFunctionPackageMetadata appFunctionPackageMetadata,
             @NonNull GenericDocument appFunctionMetadataDocument,
-            boolean isEnabled
-    ) {
-        this.mAppFunctionName = appFunctionName;
-        this.mAppFunctionSchemaMetadata = appFunctionSchemaMetadata;
-        this.mAppFunctionPackageMetadata = appFunctionPackageMetadata;
-        this.mAppFunctionMetadataDocument = appFunctionMetadataDocument;
-        this.mIsEnabled = isEnabled;
+            boolean isEnabled) {
+        mAppFunctionName = appFunctionName;
+        mAppFunctionSchemaMetadata = appFunctionSchemaMetadata;
+        mAppFunctionPackageMetadata = appFunctionPackageMetadata;
+        mAppFunctionMetadataDocumentWrapper =
+                new GenericDocumentWrapper(appFunctionMetadataDocument);
+        mIsEnabled = isEnabled;
+    }
+
+    private AppFunctionMetadata(Parcel in) {
+        mAppFunctionName = Objects.requireNonNull(AppFunctionName.CREATOR.createFromParcel(in));
+        mAppFunctionSchemaMetadata = in.readTypedObject(AppFunctionSchemaMetadata.CREATOR);
+        mAppFunctionPackageMetadata =
+                Objects.requireNonNull(AppFunctionPackageMetadata.CREATOR.createFromParcel(in));
+        mAppFunctionMetadataDocumentWrapper =
+                Objects.requireNonNull(GenericDocumentWrapper.CREATOR.createFromParcel(in));
+        mIsEnabled = in.readBoolean();
     }
 
     /**
      * Creates a new instance of AppFunctionMetadata using the given function and package metadata.
      *
+     * @throws IllegalArgumentException if the provided {@link GenericDocument}s are not in the
+     *     right format.
      * @hide
      */
-    @VisibleForTesting
     public static AppFunctionMetadata create(
             @NonNull GenericDocument appFunctionStaticMetadataDocument,
             @NonNull GenericDocument appFunctionRuntimeMetadataDocument,
@@ -157,28 +181,26 @@ public class AppFunctionMetadata implements AbstractAppFunctionMetadata {
         requireNonNull(appFunctionPackageMetadata);
         String qualifiedFunctionId = requireNonNull(appFunctionStaticMetadataDocument.getId());
         AppFunctionName appFunctionName =
-                new AppFunctionName(appFunctionPackageMetadata.getPackageName(),
+                new AppFunctionName(
+                        appFunctionPackageMetadata.getPackageName(),
                         qualifiedFunctionId.substring(qualifiedFunctionId.indexOf('/') + 1));
         AppFunctionSchemaMetadata schemaMetadata =
                 getAppFunctionSchemaMetadataOrNull(appFunctionStaticMetadataDocument);
-        boolean isEnabled = isEnabled(appFunctionStaticMetadataDocument,
-                appFunctionRuntimeMetadataDocument);
-
+        boolean isEnabled =
+                isEnabled(appFunctionStaticMetadataDocument, appFunctionRuntimeMetadataDocument);
         return new AppFunctionMetadata(
                 appFunctionName,
                 schemaMetadata,
                 appFunctionPackageMetadata,
                 appFunctionStaticMetadataDocument,
-                isEnabled
-        );
+                isEnabled);
     }
 
     /**
      * Returns the qualified name of the app function.
      *
      * <p>The {@link AppFunctionName} is composed of the app's package name and the function's ID.
-     * The ID is specified by the {@link PROPERTY_FUNCTION_ID} tag in the
-     * the app function XML.
+     * The ID is specified by the {@link PROPERTY_FUNCTION_ID} tag in the app function XML.
      */
     @NonNull
     public AppFunctionName getName() {
@@ -189,8 +211,8 @@ public class AppFunctionMetadata implements AbstractAppFunctionMetadata {
      * Returns the identifying info for a pre-defined schema which this app function implements.
      *
      * <p>The schema metadata properties are specified by the {@link PROPERTY_SCHEMA_CATEGORY},
-     * {@link PROPERTY_SCHEMA_NAME} and {@link PROPERTY_SCHEMA_VERSION} tags in the
-     * app function XML.
+     * {@link PROPERTY_SCHEMA_NAME} and {@link PROPERTY_SCHEMA_VERSION} tags in the app function
+     * XML.
      */
     @Nullable
     public AppFunctionSchemaMetadata getSchemaMetadata() {
@@ -206,9 +228,9 @@ public class AppFunctionMetadata implements AbstractAppFunctionMetadata {
     /**
      * Whether the app function is enabled.
      *
-     * <p>The default enabled status is specified by the {@link PROPERTY_ENABLED_BY_DEFAULT} tag
-     * in the app function XML. Apps can change this status at runtime using
-     * {@link AppFunctionManager#setAppFunctionEnabled}.
+     * <p>The default enabled status is specified by the {@link PROPERTY_ENABLED_BY_DEFAULT} tag in
+     * the app function XML. Apps can change this status at runtime using {@link
+     * AppFunctionManager#setAppFunctionEnabled}.
      */
     public boolean isEnabled() {
         return mIsEnabled;
@@ -217,28 +239,28 @@ public class AppFunctionMetadata implements AbstractAppFunctionMetadata {
     /**
      * Returns the app function's metadata as a {@link GenericDocument}.
      *
-     * <p>Client-defined properties can be retrieved using the {@link GenericDocument}
-     * property getters.
+     * <p>Client-defined properties can be retrieved using the {@link GenericDocument} property
+     * getters.
      *
-     * <p>Properties that are not defined in this class (see {@code PROPERTY_*} constants) are
-     * not guaranteed to be available or consistent across versions.
+     * <p>Properties that are not defined in this class (see {@code PROPERTY_*} constants) are not
+     * guaranteed to be available or consistent across versions.
      */
     @Override
     @NonNull
     public GenericDocument getMetadataDocument() {
-        return mAppFunctionMetadataDocument;
+        return mAppFunctionMetadataDocumentWrapper.getValue();
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AppFunctionMetadata that)) return false;
-        return mAppFunctionMetadataDocument.equals(that.mAppFunctionMetadataDocument);
+        return getMetadataDocument().equals(that.getMetadataDocument());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mAppFunctionMetadataDocument);
+        return Objects.hash(getMetadataDocument());
     }
 
     @Override
@@ -254,8 +276,23 @@ public class AppFunctionMetadata implements AbstractAppFunctionMetadata {
                 + getPackageMetadata()
                 + ", "
                 + "metadataDocument="
-                + mAppFunctionMetadataDocument
+                + mAppFunctionMetadataDocumentWrapper.getValue()
                 + ")";
+    }
+
+    // TODO(b/438413081): Avoid writing duplicate package GenericDocuments.
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        mAppFunctionName.writeToParcel(dest, flags);
+        dest.writeTypedObject(mAppFunctionSchemaMetadata, flags);
+        mAppFunctionPackageMetadata.writeToParcel(dest, flags);
+        mAppFunctionMetadataDocumentWrapper.writeToParcel(dest, flags);
+        dest.writeBoolean(mIsEnabled);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
     @Nullable
@@ -279,7 +316,6 @@ public class AppFunctionMetadata implements AbstractAppFunctionMetadata {
         if (enabled != APP_FUNCTION_STATE_DEFAULT) {
             return enabled == APP_FUNCTION_STATE_ENABLED;
         }
-        return appFunctionStaticMetadataDocument.getPropertyBoolean(
-                PROPERTY_ENABLED_BY_DEFAULT);
+        return appFunctionStaticMetadataDocument.getPropertyBoolean(PROPERTY_ENABLED_BY_DEFAULT);
     }
 }

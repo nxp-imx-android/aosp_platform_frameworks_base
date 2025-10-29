@@ -21,6 +21,8 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.util.Objects;
 
@@ -29,7 +31,21 @@ import java.util.Objects;
  * identify a unique app function.
  */
 @FlaggedApi(FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS)
-public class AppFunctionName {
+public final class AppFunctionName implements Parcelable {
+    @NonNull
+    public static final Creator<AppFunctionName> CREATOR =
+            new Creator<AppFunctionName>() {
+                @Override
+                public AppFunctionName createFromParcel(Parcel in) {
+                    return new AppFunctionName(in);
+                }
+
+                @Override
+                public AppFunctionName[] newArray(int size) {
+                    return new AppFunctionName[size];
+                }
+            };
+
     @NonNull private final String mPackageName;
     @NonNull private final String mFunctionId;
 
@@ -43,6 +59,11 @@ public class AppFunctionName {
     public AppFunctionName(@NonNull String packageName, @NonNull String functionId) {
         mPackageName = requireNonNull(packageName);
         mFunctionId = requireNonNull(functionId);
+    }
+
+    private AppFunctionName(Parcel in) {
+        mPackageName = requireNonNull(in.readString8());
+        mFunctionId = requireNonNull(in.readString8());
     }
 
     /** The package name of the Android app which contains the app function. */
@@ -78,5 +99,16 @@ public class AppFunctionName {
                 + "functionId="
                 + mFunctionId
                 + ")";
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString8(mPackageName);
+        dest.writeString8(mFunctionId);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 }
