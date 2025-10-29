@@ -129,7 +129,7 @@ flag {
   is_exported: false
   namespace: "supervision"
   description: "Flag that enables the confirmation dialog bypass"
-  bug: "415102122"
+  bug: "441475993"
 
   metadata {
     purpose: PURPOSE_BUGFIX
