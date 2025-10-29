@@ -449,6 +449,12 @@ constructor(
         bouncerInteractor.onDown()
     }
 
+    fun backgroundTap() {
+        if (!bouncerInteractor.isFalseBackgroundTap()) {
+            bouncerInteractor.onIntentionalUserInput()
+        }
+    }
+
     /**
      * Notifies that a key event has occurred.
      *

@@ -251,7 +251,12 @@ fun ContentScope.BouncerContentLayout(
     modifier: Modifier,
 ) {
     val scale by viewModel.scale.collectAsStateWithLifecycle()
-    Box(modifier = modifier.onKeyEvent(viewModel::onKeyEvent).scale(scale)) {
+    Box(
+        modifier =
+            modifier.onKeyEvent(viewModel::onKeyEvent).scale(scale).pointerInput(Unit) {
+                detectTapGestures { viewModel.backgroundTap() }
+            }
+    ) {
         when (layout) {
             BouncerOverlayLayout.STANDARD_BOUNCER -> StandardLayout(viewModel = viewModel)
             BouncerOverlayLayout.BESIDE_USER_SWITCHER ->
@@ -488,7 +493,8 @@ private fun ContentScope.BesideUserSwitcherLayout(
                             viewModel.onDoubleTap(
                                 wasEventOnNonInputHalfOfScreen(offset.x, size.width)
                             )
-                        }
+                        },
+                        onTap = { viewModel.backgroundTap() },
                     )
                 }
                 .pointerInput(isSwapped, isInputPreferredOnLeftSide) {
