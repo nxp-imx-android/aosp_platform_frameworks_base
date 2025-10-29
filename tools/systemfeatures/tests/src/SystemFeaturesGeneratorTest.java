@@ -61,6 +61,8 @@ public class SystemFeaturesGeneratorTest {
         assertThat(RwNoFeatures.maybeHasFeature(PackageManager.FEATURE_AUTO, 0)).isNull();
         assertThat(RwNoFeatures.maybeHasFeature("com.arbitrary.feature", 0)).isNull();
         assertThat(RwNoFeatures.getReadOnlySystemEnabledFeatures()).isEmpty();
+        assertThat(RwNoFeatures.maybeHasFeature("", 0)).isNull();
+        assertThat(RwNoFeatures.maybeHasFeature(null, 0)).isNull();
     }
 
     @Test
@@ -72,6 +74,8 @@ public class SystemFeaturesGeneratorTest {
         assertThat(RoNoFeatures.maybeHasFeature(PackageManager.FEATURE_VULKAN, 0)).isNull();
         assertThat(RoNoFeatures.maybeHasFeature(PackageManager.FEATURE_AUTO, 0)).isNull();
         assertThat(RoNoFeatures.maybeHasFeature("com.arbitrary.feature", 0)).isNull();
+        assertThat(RwNoFeatures.maybeHasFeature("", 0)).isNull();
+        assertThat(RwNoFeatures.maybeHasFeature(null, 0)).isNull();
         assertThat(RoNoFeatures.getReadOnlySystemEnabledFeatures()).isEmpty();
 
         // Also ensure we fall back to the PackageManager for feature APIs without an accompanying
@@ -162,6 +166,7 @@ public class SystemFeaturesGeneratorTest {
         assertThat(RoFeatures.maybeHasFeature("com.arbitrary.feature", 0)).isNull();
         assertThat(RoFeatures.maybeHasFeature("com.arbitrary.feature", 100)).isNull();
         assertThat(RoFeatures.maybeHasFeature("", 0)).isNull();
+        assertThat(RoFeatures.maybeHasFeature(null, 0)).isNull();
 
         Map<String, FeatureInfo> compiledFeatures = RoFeatures.getReadOnlySystemEnabledFeatures();
         assertThat(compiledFeatures.keySet())
@@ -244,6 +249,7 @@ public class SystemFeaturesGeneratorTest {
         assertThat(RoFeaturesFromXml.maybeHasFeature("com.arbitrary.feature", 0)).isNull();
         assertThat(RoFeaturesFromXml.maybeHasFeature("com.arbitrary.feature", 100)).isNull();
         assertThat(RoFeaturesFromXml.maybeHasFeature("", 0)).isNull();
+        assertThat(RoFeaturesFromXml.maybeHasFeature(null, 0)).isNull();
 
         Map<String, FeatureInfo> compiledFeatures =
                 RoFeaturesFromXml.getReadOnlySystemEnabledFeatures();
