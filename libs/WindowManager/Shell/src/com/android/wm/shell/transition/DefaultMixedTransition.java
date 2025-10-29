@@ -37,7 +37,7 @@ import com.android.wm.shell.activityembedding.ActivityEmbeddingController;
 import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
-import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.phone.transition.PipTransitionUtils;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
@@ -56,15 +56,15 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
     @Nullable
     private final DesktopTasksController mDesktopTasksController;
 
-    DefaultMixedTransition(int type, IBinder transition, Transitions player,
+    DefaultMixedTransition(@MixedTransitionType int type, IBinder transition, Transitions player,
             MixedTransitionHandler mixedHandler, PipTransitionController pipHandler,
             StageCoordinator splitHandler, KeyguardTransitionHandler keyguardHandler,
             UnfoldTransitionHandler unfoldHandler,
             ActivityEmbeddingController activityEmbeddingController,
             @Nullable DesktopTasksController desktopTasksController,
-            BubbleTransitions bubbleTransitions, PinnedLayerController pinnedLayerController) {
+            BubbleTransitions bubbleTransitions, PinnedLayerHandler pinnedLayerHandler) {
         super(type, transition, player, mixedHandler, pipHandler, splitHandler, keyguardHandler,
-                bubbleTransitions, pinnedLayerController);
+                bubbleTransitions, pinnedLayerHandler);
         mUnfoldHandler = unfoldHandler;
         mActivityEmbeddingController = activityEmbeddingController;
         mDesktopTasksController = desktopTasksController;
@@ -92,11 +92,11 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             case TYPE_ENTER_PIP_FROM_SPLIT ->
                     animateEnterPipFromSplit(this, info, startTransaction, finishTransaction,
                             finishCallback, mPlayer, mMixedHandler, mPipHandler, mSplitHandler,
-                            mPinnedLayerController, /*replacingPip*/ false);
+                            mPinnedLayerHandler, /*replacingPip*/ false);
             case TYPE_ENTER_PIP_REPLACE_FROM_SPLIT ->
                     animateEnterPipFromSplit(this, info, startTransaction, finishTransaction,
                             finishCallback, mPlayer, mMixedHandler, mPipHandler, mSplitHandler,
-                            mPinnedLayerController, /*replacingPip*/ true);
+                            mPinnedLayerHandler, /*replacingPip*/ true);
             case TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE ->
                     animateEnterBubbles(transition, info, startTransaction, finishTransaction,
                             finishCallback, mBubbleTransitions);
@@ -197,12 +197,12 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
 
         if (pipChange != null || pipActivityChange != null) {
             // in case this was a pip change, we need to make sure the pinned layer is aware of it
-            if (mPinnedLayerController != null
-                    && mPinnedLayerController.observes(mTransition)) {
+            if (mPinnedLayerHandler != null
+                    && mPinnedLayerHandler.observes(mTransition)) {
                 mInFlightSubAnimations++;
                 final TransitionInfo pinnedLayerInfo = removePinnedLayerTaskChangesFrom(info,
-                    mTransition);
-                mPinnedLayerController.startAnimation(mTransition, pinnedLayerInfo,
+                        mTransition);
+                mPinnedLayerHandler.startAnimation(mTransition, pinnedLayerInfo,
                         startTransaction, finishTransaction, finishCB);
             }
         }
@@ -285,16 +285,16 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             final boolean leftoverAnimation = mLeftoversHandler != null;
             // in case it's a pip change, we need to make sure the pinned layer is aware of it
             final boolean additionalPinnedLayerAnimation = hasPipChange
-                && PipFlags.isPip2ExperimentEnabled()
-                && mPinnedLayerController != null
-                && mPinnedLayerController.observes(mTransition);
+                    && PipFlags.isPip2ExperimentEnabled()
+                    && mPinnedLayerHandler != null
+                    && mPinnedLayerHandler.observes(mTransition);
 
             mInFlightSubAnimations = (leftoverAnimation ? 1 : 0)
                     + (additionalPinnedLayerAnimation ? 1 : 0);
             if (additionalPinnedLayerAnimation) {
                 final TransitionInfo pinnedLayerInfo = removePinnedLayerTaskChangesFrom(info,
                         mTransition);
-                mPinnedLayerController.startAnimation(mTransition, pinnedLayerInfo,
+                mPinnedLayerHandler.startAnimation(mTransition, pinnedLayerInfo,
                         startTransaction, finishTransaction, finishCB);
             }
             if (leftoverAnimation) {
@@ -312,13 +312,16 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             // we need a separate one to send over to launcher.
             SurfaceControl.Transaction otherStartT = new SurfaceControl.Transaction();
             if (PipFlags.isPip2ExperimentEnabled()) {
-                if (mPinnedLayerController != null
-                        && mPinnedLayerController.observes(mTransition)) {
+                if (mPinnedLayerHandler != null && mPinnedLayerHandler.observes(mTransition)) {
                     mInFlightSubAnimations++;
                     final TransitionInfo pinnedLayerInfo = removePinnedLayerTaskChangesFrom(info,
                             mTransition);
-                    mPinnedLayerController.startAnimation(mTransition, pinnedLayerInfo,
-                            startTransaction, finishTransaction, finishCB);
+                    mPinnedLayerHandler.startAnimation(
+                            mTransition,
+                            pinnedLayerInfo,
+                            startTransaction,
+                            finishTransaction,
+                            finishCB);
                 }
                 mPipHandler.startAnimation(mTransition, pipInfo, startTransaction,
                         finishTransaction, finishCB);
@@ -686,8 +689,8 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
 
         final TransitionInfo pinnedLayerInfo = removePinnedLayerTaskChangesFrom(info, transition);
         mPipHandler.startAnimation(transition, info, startTransaction, finishTransaction, finishCB);
-        mPinnedLayerController.startAnimation(transition, pinnedLayerInfo, startTransaction,
-            finishTransaction, finishCB);
+        mPinnedLayerHandler.startAnimation(transition, pinnedLayerInfo, startTransaction,
+                finishTransaction, finishCB);
 
         return true;
     }
@@ -697,7 +700,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             @NonNull IBinder transition) {
         // just forwards to the helper, just to improve readability in this class's calls.
         return MixedTransitionHelper.removePinnedLayerTaskChangesFrom(
-                mPinnedLayerController, outInfo, transition);
+                mPinnedLayerHandler, outInfo, transition);
     }
 
     @Override
@@ -762,8 +765,8 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                 return;
             case TYPE_ENTER_PIP_WITH_PINNED_LAYER_DISMISS:
                 mPipHandler.end();
-                mPinnedLayerController.mergeAnimation(transition, info, startT, finishT,
-                    mergeTarget, finishCallback);
+                mPinnedLayerHandler.mergeAnimation(transition, info, startT, finishT,
+                        mergeTarget, finishCallback);
                 return;
             default:
                 throw new IllegalStateException("Playing a default mixed transition with unknown or"

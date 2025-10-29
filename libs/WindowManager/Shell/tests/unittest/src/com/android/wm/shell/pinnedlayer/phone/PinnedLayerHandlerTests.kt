@@ -68,13 +68,13 @@ import org.mockito.kotlin.whenever
 /**
  * Unit tests against [PinnedLayerController]
  *
- * Build/Install/Run: atest WMShellUnitTests:PinnedLayerControllerTests
+ * Build/Install/Run: atest WMShellUnitTests:PinnedLayerHandlerTests
  */
 @SmallTest
 @TestableLooper.RunWithLooper
 @EnableFlags(Flags.FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE)
 @RunWith(AndroidJUnit4::class)
-class PinnedLayerControllerTests : ShellTestCase() {
+class PinnedLayerHandlerTests : ShellTestCase() {
 
     @Mock private lateinit var shellInit: ShellInit
     @Mock private lateinit var transitions: Transitions
@@ -83,15 +83,13 @@ class PinnedLayerControllerTests : ShellTestCase() {
     @Mock private lateinit var normalLayerHandler: NormalAppLayerHandler
 
     private lateinit var pinnedLayerController: PinnedLayerController
+    private lateinit var pinnedLayerHandler: PinnedLayerHandler
 
     @Before
     fun setup() {
-        pinnedLayerController =
-            PinnedLayerController(
-                shellInit,
-                transitions,
-                lazy(LazyThreadSafetyMode.NONE) { normalLayerHandler },
-            )
+        pinnedLayerController = PinnedLayerController(shellInit, transitions)
+        pinnedLayerHandler =
+            PinnedLayerHandler(shellInit, transitions, normalLayerHandler, pinnedLayerController)
     }
 
     @Test
@@ -106,7 +104,7 @@ class PinnedLayerControllerTests : ShellTestCase() {
             )
         val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
 
-        pinnedLayerController.handleRequest(transition, requestInfo)
+        pinnedLayerHandler.handleRequest(transition, requestInfo)
         pinnedLayerController.onTransitionReady(
             transition,
             transitionInfo,
@@ -150,7 +148,7 @@ class PinnedLayerControllerTests : ShellTestCase() {
             buildChange(TRANSIT_CHANGE, requireNotNull(requestInfo2.triggerTask))
         )
 
-        val wct1 = pinnedLayerController.handleRequest(transition1, requestInfo1)
+        val wct1 = pinnedLayerHandler.handleRequest(transition1, requestInfo1)
         pinnedLayerController.onTransitionReady(
             transition1,
             transitionInfo1,
@@ -158,14 +156,14 @@ class PinnedLayerControllerTests : ShellTestCase() {
             finishTransaction,
         )
 
-        val wct2 = pinnedLayerController.handleRequest(transition2, requestInfo2)
+        val wct2 = pinnedLayerHandler.handleRequest(transition2, requestInfo2)
         pinnedLayerController.onTransitionReady(
             transition2,
             transitionInfo2,
             startTransaction,
             finishTransaction,
         )
-        pinnedLayerController.onTransitionConsumed(transition2, /* aborted= */ true, null)
+        pinnedLayerHandler.onTransitionConsumed(transition2, /* aborted= */ true, null)
 
         assertNotNull(wct1)
         assertNotNull(wct2)
@@ -187,7 +185,7 @@ class PinnedLayerControllerTests : ShellTestCase() {
             )
         val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
 
-        pinnedLayerController.handleRequest(transition, requestInfo)
+        pinnedLayerHandler.handleRequest(transition, requestInfo)
         pinnedLayerController.onTransitionReady(
             transition,
             transitionInfo,
@@ -203,8 +201,16 @@ class PinnedLayerControllerTests : ShellTestCase() {
     @Test
     fun testObserveUnrelatedChangeRequest_doNothing() {
         val transition = mock<IBinder>()
+        val token = MockToken.token()
+        val requestInfo =
+            sendTransitionRequest(
+                TRANSIT_CHANGE,
+                triggerTaskId = TASK_ID_0,
+                triggerTaskToken = token,
+            )
         val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
 
+        pinnedLayerHandler.handleRequest(transition, requestInfo)
         pinnedLayerController.onTransitionReady(
             transition,
             transitionInfo,
@@ -241,14 +247,14 @@ class PinnedLayerControllerTests : ShellTestCase() {
             buildChange(TRANSIT_TO_BACK, requireNotNull(requestInfo1.triggerTask))
         )
 
-        pinnedLayerController.handleRequest(transition1, requestInfo1)
+        pinnedLayerHandler.handleRequest(transition1, requestInfo1)
         pinnedLayerController.onTransitionReady(
             transition1,
             transitionInfo1,
             startTransaction,
             finishTransaction,
         )
-        pinnedLayerController.handleRequest(transition2, requestInfo2)
+        pinnedLayerHandler.handleRequest(transition2, requestInfo2)
         pinnedLayerController.onTransitionReady(
             transition2,
             transitionInfo2,
@@ -289,14 +295,14 @@ class PinnedLayerControllerTests : ShellTestCase() {
             buildChange(TRANSIT_TO_BACK, requireNotNull(backRequestInfo.triggerTask))
         )
 
-        pinnedLayerController.handleRequest(pinTransition, pinRequestInfo)
+        pinnedLayerHandler.handleRequest(pinTransition, pinRequestInfo)
         pinnedLayerController.onTransitionReady(
             pinTransition,
             pinTransitionInfo,
             startTransaction,
             finishTransaction,
         )
-        pinnedLayerController.handleRequest(backTransition, backRequestInfo)
+        pinnedLayerHandler.handleRequest(backTransition, backRequestInfo)
         pinnedLayerController.onTransitionReady(
             backTransition,
             backTransitionInfo,
@@ -328,14 +334,14 @@ class PinnedLayerControllerTests : ShellTestCase() {
             buildChange(TRANSIT_CLOSE, requireNotNull(closeRequestInfo.triggerTask))
         )
 
-        pinnedLayerController.handleRequest(pinTransition, pinRequestInfo)
+        pinnedLayerHandler.handleRequest(pinTransition, pinRequestInfo)
         pinnedLayerController.onTransitionReady(
             pinTransition,
             pinTransitionInfo,
             startTransaction,
             finishTransaction,
         )
-        pinnedLayerController.handleRequest(closeTransition, closeRequestInfo)
+        pinnedLayerHandler.handleRequest(closeTransition, closeRequestInfo)
         pinnedLayerController.onTransitionReady(
             closeTransition,
             closeTransitionInfo,
@@ -386,14 +392,14 @@ class PinnedLayerControllerTests : ShellTestCase() {
             buildChange(TRANSIT_TO_FRONT, requireNotNull(frontRequestInfo.triggerTask))
         )
 
-        pinnedLayerController.handleRequest(pinTransition, pinRequestInfo)
+        pinnedLayerHandler.handleRequest(pinTransition, pinRequestInfo)
         pinnedLayerController.onTransitionReady(
             pinTransition,
             pinTransitionInfo,
             startTransaction,
             finishTransaction,
         )
-        pinnedLayerController.handleRequest(backTransition, backRequestInfo)
+        pinnedLayerHandler.handleRequest(backTransition, backRequestInfo)
         pinnedLayerController.onTransitionReady(
             backTransition,
             backTransitionInfo,
@@ -401,7 +407,7 @@ class PinnedLayerControllerTests : ShellTestCase() {
             finishTransaction,
         )
 
-        pinnedLayerController.handleRequest(frontTransition, frontRequestInfo)
+        pinnedLayerHandler.handleRequest(frontTransition, frontRequestInfo)
         pinnedLayerController.onTransitionReady(
             frontTransition,
             frontTransitionInfo,
@@ -427,20 +433,20 @@ class PinnedLayerControllerTests : ShellTestCase() {
         val pinTransitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
 
         // Pin the task
-        pinnedLayerController.handleRequest(pinTransition, pinRequestInfo)
+        pinnedLayerHandler.handleRequest(pinTransition, pinRequestInfo)
         pinnedLayerController.onTransitionReady(
             pinTransition,
             pinTransitionInfo,
             startTransaction,
             finishTransaction,
         )
-        assertTrue(pinnedLayerController.hasActivePinnedTask())
+        assertTrue(pinnedLayerHandler.hasActivePinnedTask())
 
         // Augment to dismiss the pin
         val dismissTransition = mock<IBinder>()
         val dismissRequestInfo = mock<TransitionRequestInfo>()
         val wct = WindowContainerTransaction()
-        pinnedLayerController.augmentRequestDismissPinnedTask(
+        pinnedLayerHandler.augmentRequestDismissPinnedTask(
             dismissTransition,
             dismissRequestInfo,
             wct,
@@ -459,7 +465,7 @@ class PinnedLayerControllerTests : ShellTestCase() {
             finishTransaction,
         )
 
-        assertFalse(pinnedLayerController.hasActivePinnedTask())
+        assertFalse(pinnedLayerHandler.hasActivePinnedTask())
     }
 
     @Test
@@ -497,7 +503,7 @@ class PinnedLayerControllerTests : ShellTestCase() {
             .thenReturn(WindowContainerTransaction())
 
         // Pin the task first
-        pinnedLayerController.handleRequest(pinTransition, pinRequestInfo)
+        pinnedLayerHandler.handleRequest(pinTransition, pinRequestInfo)
         pinnedLayerController.onTransitionReady(
             pinTransition,
             pinTransitionInfo,
@@ -506,7 +512,7 @@ class PinnedLayerControllerTests : ShellTestCase() {
         )
 
         // Then unpin it by switching layer
-        pinnedLayerController.handleRequest(normalLayerTransition, normalLayerRequestInfo)
+        pinnedLayerHandler.handleRequest(normalLayerTransition, normalLayerRequestInfo)
         pinnedLayerController.onTransitionReady(
             normalLayerTransition,
             normalLayerTransitionInfo,
@@ -523,7 +529,7 @@ class PinnedLayerControllerTests : ShellTestCase() {
     fun augmentToDismissPinnedTask_withoutPinnedTask_doesNothing() {
         val wct = WindowContainerTransaction()
 
-        pinnedLayerController.augmentRequestDismissPinnedTask(
+        pinnedLayerHandler.augmentRequestDismissPinnedTask(
             mock<IBinder>(),
             mock<TransitionRequestInfo>(),
             wct,
@@ -534,7 +540,7 @@ class PinnedLayerControllerTests : ShellTestCase() {
 
     @Test
     fun hasActivePinnedTask_withoutPinnedTask_returnsFalse() {
-        assertFalse(pinnedLayerController.hasActivePinnedTask())
+        assertFalse(pinnedLayerHandler.hasActivePinnedTask())
     }
 
     @Test
@@ -544,7 +550,7 @@ class PinnedLayerControllerTests : ShellTestCase() {
         val requestInfo = setupWindowingLayerTransition(WINDOWING_LAYER_PINNED, callback)
         val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
 
-        pinnedLayerController.handleRequest(transition, requestInfo)
+        pinnedLayerHandler.handleRequest(transition, requestInfo)
         pinnedLayerController.onTransitionReady(
             transition,
             transitionInfo,
@@ -552,7 +558,7 @@ class PinnedLayerControllerTests : ShellTestCase() {
             finishTransaction,
         )
 
-        assertTrue(pinnedLayerController.hasActivePinnedTask())
+        assertTrue(pinnedLayerHandler.hasActivePinnedTask())
     }
 
     @Test
@@ -583,15 +589,15 @@ class PinnedLayerControllerTests : ShellTestCase() {
                 triggerTaskToken = taskToken,
             )
         val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
-        pinnedLayerController.handleRequest(transition, requestInfo)
+        pinnedLayerHandler.handleRequest(transition, requestInfo)
         pinnedLayerController.onTransitionReady(
             transition,
             transitionInfo,
             startTransaction,
             finishTransaction,
         )
-        assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
 
+        assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
         assertTrue(pinnedLayerController.closeTask(taskInfo))
 
         val wctCaptor = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
