@@ -165,7 +165,8 @@ public class AndroidKeyStoreProvider extends Provider {
      * Gets the Android KeyStore operation handle corresponding to the provided JCA crypto
      * primitive.
      *
-     * <p>The following primitives are supported: {@link Cipher}, {@link Signature} and {@link Mac}.
+     * <p>The following primitives are supported: {@link Cipher}, {@link Signature}, {@link Mac},
+     * and {@link KeyAgreement}.
      *
      * @return Android KeyStore operation handle or {@code 0} if the provided primitive's Android
      *         KeyStore operation is not in progress.
@@ -190,7 +191,7 @@ public class AndroidKeyStoreProvider extends Provider {
             spi = ((KeyAgreement) cryptoPrimitive).getCurrentSpi();
         } else {
             throw new IllegalArgumentException("Unsupported crypto primitive: " + cryptoPrimitive
-                    + ". Supported: Signature, Mac, Cipher");
+                    + ". Supported: Signature, Mac, Cipher, KeyAgreement");
         }
         if (spi == null) {
             throw new IllegalStateException("Crypto primitive not initialized");
