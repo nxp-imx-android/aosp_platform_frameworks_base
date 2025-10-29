@@ -692,13 +692,15 @@ public class AppWidgetHost {
             return;
         }
 
-        List<AppWidgetEvent> eventList = new ArrayList<>();
+        SparseArray<AppWidgetHostListener> listeners;
         synchronized (mListeners) {
-            for (int i = 0; i < mListeners.size(); i++) {
-                AppWidgetEvent event = mListeners.valueAt(i).collectWidgetEvent();
-                if (event != null) {
-                    eventList.add(event);
-                }
+            listeners = mListeners.clone();
+        }
+        List<AppWidgetEvent> eventList = new ArrayList<>();
+        for (int i = 0; i < listeners.size(); i++) {
+            AppWidgetEvent event = listeners.valueAt(i).collectWidgetEvent();
+            if (event != null) {
+                eventList.add(event);
             }
         }
         if (eventList.isEmpty()) {

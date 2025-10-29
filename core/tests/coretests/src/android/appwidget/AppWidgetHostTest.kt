@@ -28,6 +28,7 @@ import org.mockito.AdditionalMatchers.aryEq
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -89,5 +90,50 @@ class AppWidgetHostTest {
     fun stopListening() {
         host.stopListening()
         verify(service).stopListening(context.packageName, 1234)
+    }
+
+    @Test
+    fun testReportAllWidgetEvents() {
+        val events = arrayOf(
+            AppWidgetEvent.Builder()
+                .setAppWidgetId(1)
+                .build(),
+            AppWidgetEvent.Builder()
+                .setAppWidgetId(2)
+                .build(),
+        )
+        val listeners = events.map { event ->
+            val listener = mock<AppWidgetHostListener>()
+            whenever(listener.collectWidgetEvent()).thenReturn(event)
+            host.setListener(event.appWidgetId, listener)
+            listener
+        }
+
+        host.reportAllWidgetEvents()
+
+        listeners.forEach { verify(it).collectWidgetEvent() }
+        verify(service).reportWidgetEvents(
+            eq(context.packageName),
+            argThat { contentEquals(events) }
+        )
+    }
+
+    @Test
+    fun testReportEventForWidget() {
+        val event =
+            AppWidgetEvent.Builder()
+                .setAppWidgetId(1)
+                .build()
+        val listener = mock<AppWidgetHostListener>()
+        whenever(listener.collectWidgetEvent()).thenReturn(event)
+
+        host.setListener(1, listener)
+        host.reportEventForWidget(1)
+
+        verify(listener).collectWidgetEvent()
+        verify(service).reportWidgetEvents(
+            eq(context.packageName),
+            argThat { contentEquals(arrayOf(event)) }
+        )
     }
 }
