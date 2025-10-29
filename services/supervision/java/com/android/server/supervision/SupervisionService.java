@@ -349,7 +349,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     @Override
     public List<Policy> getPolicies(@UserIdInt int userId) {
-        return (List<Policy>) mSupervisionSettings.getUserData(userId).policies.values();
+        return new ArrayList<>(mSupervisionSettings.getUserData(userId).policies.values());
     }
 
     @Override

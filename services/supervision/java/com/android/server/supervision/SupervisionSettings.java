@@ -36,6 +36,7 @@ import com.android.internal.util.XmlUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 
+import java.util.Collection;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.File;
@@ -222,7 +223,7 @@ public class SupervisionSettings {
 
                 // Add policies to the XML.
                 if (Flags.enableSupervisionManagerPolicyApis()) {
-                    addPolicyToXml(xml, (List<Policy>) data.policies.values());
+                    addPoliciesToXml(xml, new ArrayList<>(data.policies.values()));
                 }
 
                 if (data.supervisionLockScreenOptions != null) {
@@ -311,7 +312,7 @@ public class SupervisionSettings {
         }
     }
 
-    private void addPolicyToXml(TypedXmlSerializer xml, List<Policy> policies)
+    private void addPoliciesToXml(TypedXmlSerializer xml, List<Policy> policies)
             throws XmlPullParserException, IOException {
 
         if (policies == null || policies.isEmpty()) {
