@@ -964,16 +964,6 @@ flag {
 }
 
 flag {
-    name: "enable_freeform_display_launch_params"
-    namespace: "lse_desktop_experience"
-    description: "Enable only DesktopModeLaunchParamsModifier to resolve bounds for freeform display."
-    bug: "401564801"
-    metadata {
-       purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_full_screen_window_on_removing_split_screen_stage_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables clearing the windowing mode of a freeform window when removing the task from the split screen stage."
