@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Бөлүшүү үчүн колдонмону тандаңыз"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Чогуу угуу"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Колдонмонун терезесин бөлүшүү"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Бөлүшкөндө экраныңыздагы нерселер көрүнөт"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Терезенин скриншотун тартып алуу"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Терезени жаздырып алуу"</string>
@@ -1149,33 +1151,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Кубат баскычынын менюсу"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g> ичинен <xliff:g id="ID_1">%1$d</xliff:g>-бет"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> күйгүзүлсүнбү?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794"><annotation id="action_key_icon">"icon"</annotation>" аракет баскычы + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> – <xliff:g id="ID_3">^3</xliff:g> функциясын иштете турган баскычтардын айкалышы. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"<xliff:g id="ID_3">%3$s</xliff:g> функциясын иштетүү үчүн кайра Аракет баскычын + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> белгисин басыңыз"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> ыкчам баскычын күйгүзөсүзбү?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Күйгүзүлбөсүн"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Ыкчам баскычты иштетүү"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> үчүн ыкчам баскычтар иштетилди"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"icon"</annotation>" аракет баскычы + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> – <xliff:g id="ID_3">^3</xliff:g> функциясын иштете турган баскычтардын айкалышы, атайын мүмкүнчүлүк. Ал аркылуу экрандагы контентти тез жакындата аласыз. Чоңойтуу күйгүзүлгөндө чоңойтуп/кичирейтүү үчүн "<annotation id="action_key_icon">"icon"</annotation>" аракет баскычы + <xliff:g id="ID_4">^1</xliff:g> жана \"+\" же \"-\" баскычтарын басыңыз."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Ыкчам баскычты өчүрүү"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Өчүрүлбөсүн"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Иш-аракеттин"<annotation id="action_key_icon">"сүрөтчөсү"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> – <xliff:g id="ID_3">^3</xliff:g> функциясын иштете турган баскычтардын айкалышы. <xliff:g id="ID_4">^3</xliff:g> — элементтерди угуу мүмкүнчүлүгүн берген экрандагыны окугуч. Бул функция көздөрү начар көргөн адамдарга арналган. Бул түзмөгүңүздүн ишин өзгөртүшү мүмкүн."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Баскычтардын айкалышы күйгүзүү менен TalkBack\'ке түзмөгүңүздү толук көзөмөлдөөгө уруксат бересиз."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Толук көзөмөл атайын мүмкүнчүлүктөрдү иштеткен колдонмолорго керек, бирок көпчүлүгүнө кереги деле жок."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Экранды көрүп, көзөмөлдөө"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Кызмат экрандагы бардык нерселерди окуп, аларды башка колдонмолордун үстүнөн көрсөтө алат."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Аракеттерди көрүп, аткаруу"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Кызмат колдонмодо жасаган аракеттериңизге же аппараттык камсыздоонун сенсорлоруна көз салып, сиздин атыңыздан колдонмолорду иштетиши мүмкүн."</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Аракет "<annotation id="action_key_icon">"сүрөтчөсү"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> баскычтарын басканда <xliff:g id="ID_3">^3</xliff:g>, атайын мүмкүнчүлүктөр күйгүзүлөт. Ал аркылуу түзмөгүңүздү үн режиминде башкара аласыз."</string>
-    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
-    <skip />
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Атайын мүмкүнчүлүктөр"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Бүттү"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Кулпуланган экран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Өчүрүлүүдө…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Тейлөө кадамдарын көрүңүз"</string>
@@ -1742,4 +1741,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"кийинки баракка өтүү"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"автотолтуруу"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"жайып көрсөтүү"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>

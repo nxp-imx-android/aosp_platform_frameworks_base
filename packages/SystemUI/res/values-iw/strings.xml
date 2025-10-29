@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"בחירת אפליקציה לשיתוף"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"שיתוף האודיו"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"שיתוף החלון של האפליקציה"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"בזמן שיתוף, אחרים יכולים לראות את התוכן במסך שלך"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"צילום מסך של החלון"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"חלון ההקלטה"</string>
@@ -1149,27 +1151,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"תפריט הפעלה"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"דף <xliff:g id="ID_1">%1$d</xliff:g> מתוך <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"להפעיל את <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"מקש הפעולה "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> הוא מקש הקיצור לשימוש בתכונה \"<xliff:g id="ID_3">^3</xliff:g>\". <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"כדי להפעיל את <xliff:g id="ID_3">%3$s</xliff:g>, צריך ללחוץ שוב על מקש הפעולה + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"להפעיל את מקש הקיצור של <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"לא להפעיל"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"הפעלה של מקש הקיצור"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"מקש הקיצור <xliff:g id="ID_1">%1$s</xliff:g> הופעל"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"מקש הפעולה "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> הוא מקש הקיצור לשימוש בתכונה <xliff:g id="ID_3">^3</xliff:g>, תכונת נגישות. כך אפשר להגדיל את התצוגה במהירות כדי לראות טוב יותר את התוכן. כשההגדלה מופעלת, כדי לשנות את מרחק התצוגה, צריך ללחוץ על מקש הפעולה "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> ועל \"+\" או \"-\"."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"השבתת מקש הקיצור"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"לא, התחרטתי"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"‫<xliff:g id="ID_4">^3</xliff:g> יכול להקריא את מה שרואים על המסך, כדי לעזור לאנשים שמתקשים לראות. כדי להפעיל את <xliff:g id="ID_3">^3</xliff:g>, אפשר להשתמש במקשי הקיצור "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. מקש הקיצור יכול לגרום לשינוי באופן שבו המכשיר פועל."</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
+    <skip />
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"‏הפעלת מקש הקיצור תאפשר ל-TalkBack לקבל שליטה מלאה במכשיר."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"אפשרות השליטה מלאה מיועדת רק לאפליקציות שעוזרות עם צורכי הנגישות שלך, אבל לא לרוב האפליקציות."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"הצגת המסך ושליטה בו"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"זוהי אפשרות לקריאת כל התוכן במסך ולהצגת התוכן מעל אפליקציות אחרות."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"הצגה וביצוע של פעולות"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"התכונה תוכל לעקוב אחר הפעילות שלך באפליקציות או עם חיישני חומרה, ולבצע פעולות באפליקציות בשמך."</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"לחיצה על מקש הפעולה "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> מפעילה את <xliff:g id="ID_3">^3</xliff:g>, תכונת נגישות. הפעולה הזו מאפשרת לך לשלוט במכשיר באמצעות הקול."</string>
-    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
-    <skip />
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"נגישות"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"סיום"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"מסך נעילה"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"בתהליך כיבוי…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"לצפייה בשלבי הטיפול"</string>
@@ -1736,4 +1741,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"מעבר לדף הבא"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"מילוי אוטומטי"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"הרחבה"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>

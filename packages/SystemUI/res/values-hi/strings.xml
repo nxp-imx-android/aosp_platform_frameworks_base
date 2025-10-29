@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"शेयर करने के लिए कोई ऐप्लिकेशन चुनें"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ऑडियो शेयर करें"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ऐप्लिकेशन की विंडो शेयर करें"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"स्क्रीन शेयर करने पर, उस पर मौजूद कॉन्टेंट दिखता है"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"विंडो का स्क्रीनशॉट लें"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"विंडो को रिकॉर्ड करें"</string>
@@ -1012,7 +1014,7 @@
     <string name="keyboard_shortcut_a11y_filter_open_apps" msgid="6175417687221004059">"ऐसे शॉर्टकट दिखाए जा रहे हैं जिनसे ऐप्लिकेशन खोले जा सकें"</string>
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"मौजूदा ऐप्लिकेशन के लिए शॉर्टकट दिखाए जा रहे हैं"</string>
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"सूचनाएं देखने के लिए"</string>
-    <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"क्विक सेटिंग देखें"</string>
+    <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"क्विक सेटिंग देखने के लिए"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"स्क्रीनशॉट लेने के लिए"</string>
     <string name="group_system_partial_screenshot" msgid="2114314797127648010">"किसी खास हिस्से का स्क्रीनशॉट लें"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"शॉर्टकट देखने के लिए"</string>
@@ -1040,7 +1042,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"विंडो को दाईं ओर ले जाने के लिए"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"विंडो को बड़ा करने के लिए"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"विंडो को छोटा करने के लिए"</string>
-    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"मौजूदा विंडो बंद करें"</string>
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"मौजूदा विंडो बंद करने के लिए"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"अलग-अलग डेस्कटॉप के बीच स्विच करने के लिए"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"इनपुट"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"अगली भाषा पर स्विच करने के लिए"</string>
@@ -1149,33 +1151,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"पावर मेन्यू"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"पेज <xliff:g id="ID_2">%2$d</xliff:g> में से <xliff:g id="ID_1">%1$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"क्या <xliff:g id="ID_1">%1$s</xliff:g> को चालू करना है?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"<xliff:g id="ID_3">^3</xliff:g> इस्तेमाल करने के लिए कीबोर्ड शॉर्टकट, ऐक्शन "<annotation id="action_key_icon">"आइकॉन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> है. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"<xliff:g id="ID_3">%3$s</xliff:g> को चालू करने के लिए, ऐक्शन बटन + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> को फिर से दबाएं"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"क्या <xliff:g id="ID_1">%1$s</xliff:g> के लिए कीबोर्ड शॉर्टकट चालू करना है?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"नहीं"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"शॉर्टकट चालू करें"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> कीबोर्ड शॉर्टकट चालू किया गया"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"<xliff:g id="ID_3">^3</xliff:g> का इस्तेमाल करने के लिए कीबोर्ड शॉर्टकट, ऐक्शन "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> है. यह एक सुलभता सुविधा है. इससे आपको स्क्रीन पर मौजूद कॉन्टेंट को झटपट ज़ूम इन करने की सुविधा मिलती है, ताकि आप उसे बड़े साइज़ में देख सकें. ज़ूम करने की सुविधा चालू होने के बाद, ज़ूम को अडजस्ट करने के लिए, ऐक्शन "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> और \"+\" या \"-\" दबाएं."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"शॉर्टकट बंद करें"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"चालू रखें"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"<xliff:g id="ID_3">^3</xliff:g> का इस्तेमाल करने के लिए कीबोर्ड शॉर्टकट, ऐक्शन "<annotation id="action_key_icon">"आइकॉन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> है. <xliff:g id="ID_4">^3</xliff:g> एक स्क्रीन रीडर है. इससे स्क्रीन पर मौजूद आइटम के बारे में तेज़ आवाज़ में सुना जा सकता है. यह सुविधा ऐसे लोगों के लिए मददगार साबित हो सकती है जिन्हें स्क्रीन पर देखने में परेशानी होती है. इससे आपके डिवाइस के काम करने के तरीके में बदलाव हो सकता है."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"कीबोर्ड शॉर्टकट चालू करने पर, TalkBack को आपका डिवाइस पूरी तरह से कंट्रोल करने की अनुमति मिल जाएगी."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"डिवाइस को पूरी तरह से कंट्रोल करने की अनुमति उन ऐप्लिकेशन के लिए ठीक है जो सुलभता से जुड़ी ज़रूरतों के लिए बने हैं. हालांकि, ज़्यादातर ऐप्लिकेशन के लिए यह ठीक नहीं है."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"स्क्रीन देखने और उसे कंट्रोल करने की अनुमति"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"यह स्क्रीन पर दिखने वाले हर तरह के कॉन्टेंट को पढ़ सकता है और उसे दूसरे ऐप्लिकेशन पर दिखा सकता है."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"जानकारी देखने और कार्रवाई करने की अनुमति"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"यह आपके और किसी ऐप्लिकेशन या हार्डवेयर सेंसर के बीच होने वाले इंटरैक्शन को ट्रैक कर सकता है. साथ ही, आपकी ओर से ऐप्लिकेशन के साथ इंटरैक्ट कर सकता है."</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"ऐक्शन "<annotation id="action_key_icon">"आइकॉन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> दबाने पर, सुलभता सुविधा <xliff:g id="ID_3">^3</xliff:g> चालू हो जाती है. इसका इस्तेमाल करके, डिवाइस को बोलकर दिए जाने वाले निर्देशों के ज़रिए कंट्रोल किया जा सकता है."</string>
-    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
-    <skip />
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"सुलभता"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"हो गया"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"लॉक स्‍क्रीन"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"बंद हो रहा है…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"डिवाइस के रखरखाव के तरीके देखें"</string>
@@ -1742,4 +1741,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"अगले पेज पर जाएं"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ऑटोमैटिक भरने की सुविधा"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"बड़ा करें"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>
