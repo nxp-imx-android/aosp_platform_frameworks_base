@@ -641,10 +641,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"საშუალებას აძლევს აპს, განაცხადოს ახლომახლო Wi-Fi მოწყობილობების შესახებ, დაუკავშირდეს მათ და განსაზღვროს მათი შედარებითი პოზიცია"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"ადგილობრივ ქსელურ მოწყობილობებზე წვდომა"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"აპს საშუალებას აძლევს, წვდომა იქონიოს ადგილობრივ ქსელურ მოწყობილობებზე"</string>
-    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
-    <skip />
-    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
-    <skip />
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"უკუკავშირის ინტერფეისის გამოყენება"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"აპს საშუალებას აძლევს, დაუკავშირდეს სხვა აპებს უკუკავშირის ინტერფეისის მეშვეობით"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"ახლომახლო მოწყობილობებთან მიმართ. პოზიციის დადგენა"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"აპისთვის ახლომახლო მოწყობილობებთან მიმართებაში პოზიციის დადგენის ნების დართვა"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"უპირატესი NFC გადახდის სერვისის ინფორმაცია"</string>
