@@ -3690,10 +3690,7 @@ class DesktopTasksController(
     ): WindowContainerTransaction? {
         logV("handleRequest request=%s", request)
         val userChange = request.userChange
-        if (
-            DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue &&
-                userChange != null
-        ) {
+        if (userChange != null) {
             return handleUserChangeTransitionRequest(transition, request)
         }
         // Check if we should skip handling this transition

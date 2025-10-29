@@ -3,16 +3,6 @@ container: "system"
 
 # go/keep-sorted start block=yes newline_separated=yes
 flag {
-    name: "apply_desk_activation_on_user_switch"
-    namespace: "lse_desktop_experience"
-    description: "Fixes desk activation when switching users"
-    bug: "430988310"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "close_fullscreen_and_splitscreen_keyboard_shortcut"
     namespace: "lse_desktop_experience"
     description: "Enable keyboard shortcut to close fullscreen and split screen tasks"

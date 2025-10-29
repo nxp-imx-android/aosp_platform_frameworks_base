@@ -1670,7 +1670,6 @@ public abstract class WMShellModule {
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             @NonNull DesksOrganizer desksOrganizer,
             @NonNull Transitions transitions,
-            @NonNull ShellController shellController,
             @NonNull DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
             @NonNull @ShellMainThread CoroutineScope mainScope,
             DesktopState desktopState,
@@ -1679,8 +1678,8 @@ public abstract class WMShellModule {
         if (desktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.of(
                     new DesksTransitionObserver(desktopUserRepositories, desksOrganizer,
-                            transitions, shellController, desktopWallpaperActivityTokenProvider,
-                            mainScope, desktopModeEventLogger));
+                            transitions, desktopWallpaperActivityTokenProvider, mainScope,
+                            desktopModeEventLogger));
         }
         return Optional.empty();
     }

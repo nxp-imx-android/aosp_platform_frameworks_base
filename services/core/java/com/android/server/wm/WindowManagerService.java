@@ -3962,23 +3962,6 @@ public class WindowManagerService extends IWindowManager.Stub
                 confirm);
     }
 
-    /** Update the current user. */
-    public void setCurrentUser(@UserIdInt int newUserId) {
-        if (DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue()) return;
-        synchronized (mGlobalLock) {
-            final TransitionController controller = mAtmService.getTransitionController();
-            final ActionChain chain = mAtmService.mChainTracker.startTransit("setUser");
-            if (!chain.isCollecting() && controller.isShellTransitionsEnabled()) {
-                chain.attachTransition(controller.createTransition(TRANSIT_OPEN));
-                controller.requestStartTransition(chain.getTransition(),
-                        null /* trigger */, null /* remote */, null /* disp */);
-            }
-            prepareUserStart(newUserId);
-            switchUserInternal(newUserId);
-            mAtmService.mChainTracker.end();
-        }
-    }
-
     /**
      * Called when a new user is about to start.
      */
