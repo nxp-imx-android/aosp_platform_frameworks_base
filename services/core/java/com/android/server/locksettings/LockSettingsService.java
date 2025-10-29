@@ -447,8 +447,8 @@ public class LockSettingsService extends ILockSettings.Stub {
         if (!isCredentialShareableWithParent(profileUserId)) {
             return;
         }
-        // Do not tie profile when separate challenge is enabled
-        if (getSeparateProfileChallengeEnabledInternal(profileUserId)) {
+        // Only tie profile when it uses its parent's lock.
+        if (!isUseOneLockSettingEnabledInternal(profileUserId)) {
             return;
         }
         // Do not tie profile to parent when it's done already
@@ -1373,11 +1373,24 @@ public class LockSettingsService extends ILockSettings.Stub {
     }
 
     @Override
-    public boolean getSeparateProfileChallengeEnabled(int userId) {
+    public boolean isUseOneLockSettingEnabled(int userId) {
         checkDatabaseReadPermission(SEPARATE_PROFILE_CHALLENGE_KEY, userId);
-        return getSeparateProfileChallengeEnabledInternal(userId);
+        return isUseOneLockSettingEnabledInternal(userId);
     }
 
+    /**
+     * Answers whether the profile user is configured to use the same lock as the parent.
+     */
+    private boolean isUseOneLockSettingEnabledInternal(int userId) {
+        return !getSeparateProfileChallengeEnabledInternal(userId);
+    }
+
+    /**
+     * Queries the lockscreen.profilechallenge DB entry. Before Android 17, this determined whether
+     * a profile's credential should be tied to its parent's credential. From Android 17 onward,
+     * this is only used for NONE credentials, to determine whether the NONE is tied to a parent
+     * NONE.
+     */
     private boolean getSeparateProfileChallengeEnabledInternal(int userId) {
         synchronized (mSeparateChallengeLock) {
             return mStorage.getBoolean(SEPARATE_PROFILE_CHALLENGE_KEY, false, userId);
@@ -1748,7 +1761,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                 continue;
             }
             final int profileUserId = profile.id;
-            if (getSeparateProfileChallengeEnabledInternal(profileUserId)) {
+            if (!isUseOneLockSettingEnabledInternal(profileUserId)) {
                 continue;
             }
             try {
@@ -1789,7 +1802,7 @@ public class LockSettingsService extends ILockSettings.Stub {
             final UserInfo profile = profiles.get(i);
             final int profileUserId = profile.id;
             if (isCredentialShareableWithParent(profileUserId)) {
-                if (getSeparateProfileChallengeEnabledInternal(profileUserId)) {
+                if (!isUseOneLockSettingEnabledInternal(profileUserId)) {
                     continue;
                 }
                 if (isSecure) {
@@ -1829,7 +1842,7 @@ public class LockSettingsService extends ILockSettings.Stub {
      */
     private boolean isProfileWithTiedLock(int userId) {
         return isCredentialShareableWithParent(userId)
-                && !getSeparateProfileChallengeEnabledInternal(userId);
+                && isUseOneLockSettingEnabledInternal(userId);
     }
 
     /**
@@ -3195,7 +3208,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         activateEscrowTokens(sp, userId);
 
         if (isCredentialShareableWithParent(userId)) {
-            if (getSeparateProfileChallengeEnabledInternal(userId)) {
+            if (!isUseOneLockSettingEnabledInternal(userId)) {
                 setDeviceUnlockedForUser(userId);
             } else {
                 // Here only clear StrongAuthFlags for a profile that has a tied challenge.
@@ -3676,7 +3689,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                 pw.println("IsLockScreenDisabled: "
                         + getBoolean(LockPatternUtils.DISABLE_LOCKSCREEN_KEY, false, userId));
             }
-            pw.println("SeparateChallenge: " + getSeparateProfileChallengeEnabledInternal(userId));
+            pw.println("IsUseOneLockSettingEnabled: " + isUseOneLockSettingEnabledInternal(userId));
             pw.println(TextUtils.formatSimple("Metrics: %s",
                     getUserPasswordMetrics(userId) != null ? "known" : "unknown"));
             pw.decreaseIndent();
@@ -3894,7 +3907,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                 //  completion
                 unlockUser(userId);
                 if (isCredentialShareableWithParent(userId)
-                        && getSeparateProfileChallengeEnabledInternal(userId)) {
+                        && !isUseOneLockSettingEnabledInternal(userId)) {
                     setDeviceUnlockedForUser(userId);
                 }
             } else {

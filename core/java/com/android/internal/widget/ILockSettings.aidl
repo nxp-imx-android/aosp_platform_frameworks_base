@@ -62,7 +62,7 @@ interface ILockSettings {
     boolean refreshStoredPinLength(int userId);
     byte[] getHashFactor(in LockscreenCredential currentCredential, int userId);
     void setSeparateProfileChallengeEnabled(int userId, boolean enabled, in LockscreenCredential managedUserPassword);
-    boolean getSeparateProfileChallengeEnabled(int userId);
+    boolean isUseOneLockSettingEnabled(int userId);
     void registerStrongAuthTracker(in IStrongAuthTracker tracker);
     void unregisterStrongAuthTracker(in IStrongAuthTracker tracker);
     void requireStrongAuth(int strongAuthReason, int userId);
