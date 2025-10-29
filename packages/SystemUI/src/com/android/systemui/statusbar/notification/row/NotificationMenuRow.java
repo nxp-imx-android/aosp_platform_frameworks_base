@@ -293,8 +293,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
             mInfoItem = createPartialConversationItem(mContext);
         } else if (personNotifType >= PeopleNotificationIdentifier.TYPE_FULL_PERSON) {
             mInfoItem = createConversationItem(mContext);
-        } else if (Flags.permissionHelperUiRichOngoing()
-                && (sbn != null && sbn.getNotification().isPromotedOngoing())) {
+        } else if (sbn != null && sbn.getNotification().isPromotedOngoing()) {
             mInfoItem = createPromotedItem(mContext);
         } else if ((NotificationClassificationUiFlag.isEnabled()
                 || NotificationBundleUi.isEnabled()) && isBundled) {
