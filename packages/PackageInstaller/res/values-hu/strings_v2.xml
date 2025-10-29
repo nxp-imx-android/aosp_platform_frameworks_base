@@ -113,7 +113,7 @@
     <string name="update_without_verifying" msgid="2841466981431484179">"Frissítés ellenőrzés nélkül"</string>
     <string name="button_install" msgid="7434013176505680162">"Telepítés"</string>
     <string name="button_update" msgid="3046719350226327526">"Frissítés"</string>
-    <string name="button_update_anyway" msgid="6674207037708730779">"Frissítés mindenképp"</string>
+    <string name="button_update_anyway" msgid="6674207037708730779">"Frissítés mindenképpen"</string>
     <string name="button_done" msgid="3408025390982260629">"Kész"</string>
     <string name="button_open" msgid="6892684987374117955">"Megnyitás"</string>
     <string name="button_cancel" msgid="6690491435205617214">"Mégse"</string>

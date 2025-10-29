@@ -36,7 +36,7 @@
     <string name="title_install_failed_invalid_package" msgid="3390527559613519562">"ပက်ကေ့ဂျ်မမှန်ပါ"</string>
     <string name="title_install_failed_less_storage" msgid="4854855960405469248">"သိုလှောင်ခန်း မလုံလောက်ပါ"</string>
     <string name="title_install_failed_not_installed" msgid="8014023519071426269">"အက်ပ် ထည့်သွင်းမထားပါ"</string>
-    <string name="title_uninstall" msgid="428653424812685605">"ဤအက်ပ်ကို ဖြုတ်မလား။"</string>
+    <string name="title_uninstall" msgid="428653424812685605">"ဤအက်ပ်ကို ဖြုတ်မလား"</string>
     <string name="title_uninstall_clone" msgid="7974889929002929136">"ဤအက်ပ်ပုံတူပွားကို ဖျက်မလား။"</string>
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"အက်ပ်အပ်ဒိတ်များကို ဖြုတ်မလား။"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"အက်ပ်အပ်ဒိတ်များကို အသုံးပြုသူအားလုံးအတွက် ဖြုတ်မလား။"</string>

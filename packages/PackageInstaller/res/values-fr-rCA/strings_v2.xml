@@ -35,8 +35,8 @@
     <string name="title_install_failed_incompatible" msgid="9153043742028690470">"Appli non compatible"</string>
     <string name="title_install_failed_invalid_package" msgid="3390527559613519562">"Ensemble non valide"</string>
     <string name="title_install_failed_less_storage" msgid="4854855960405469248">"Espace de stockage insuffisant"</string>
-    <string name="title_install_failed_not_installed" msgid="8014023519071426269">"L\'appli n\'a pas été installée"</string>
-    <string name="title_uninstall" msgid="428653424812685605">"Voulez-vous désinstaller cette appli?"</string>
+    <string name="title_install_failed_not_installed" msgid="8014023519071426269">"Appli non installée"</string>
+    <string name="title_uninstall" msgid="428653424812685605">"Désinstaller cette appli?"</string>
     <string name="title_uninstall_clone" msgid="7974889929002929136">"Supprimer ce clone d\'appli?"</string>
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Désinstaller les mises à jour de l\'appli?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Désinstaller les mises à jour de l\'appli pour tous les utilisateurs?"</string>
@@ -75,7 +75,7 @@
     <string name="message_no_install_unknown_apps_restriction" msgid="6111967131011920924">"L\'installation d\'applis inconnues a été restreinte"</string>
     <string name="message_uninstall_with_clone_instance" msgid="12594156305221478">"Un clone de cette appli existe également et sera supprimé"</string>
     <string name="message_delete_clone_app" msgid="6632017049227330363">"Cette appli est un clone de <xliff:g id="APP_LABEL">%1$s</xliff:g>"</string>
-    <string name="message_uninstall_updates_system_app" msgid="1246198093614610171">"Cette appli sera remplacée par la version d\'usine. Toutes les données de l\'appli seront retirées."</string>
+    <string name="message_uninstall_updates_system_app" msgid="1246198093614610171">"Cette appli sera remplacée par la version par défaut. Toutes les données de l\'appli seront retirées."</string>
     <string name="message_uninstall_updates_system_app_all_users" msgid="1659615085602508659">"Cette appli sera remplacée par la version par défaut pour tous les utilisateurs de l\'appareil. Toutes les données de l\'appli seront retirées."</string>
     <string name="message_uninstall_work_profile" msgid="224587253086750763">"Cette appli sera désinstallée de votre profil professionnel"</string>
     <string name="message_uninstall_private_space" msgid="2815872500665141251">"Cette appli sera désinstallée de votre espace privé"</string>
