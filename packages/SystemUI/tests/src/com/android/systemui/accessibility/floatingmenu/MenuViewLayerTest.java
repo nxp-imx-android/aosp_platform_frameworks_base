@@ -60,6 +60,7 @@ import android.os.Build;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.util.ArraySet;
@@ -131,6 +132,8 @@ public class MenuViewLayerTest extends SysuiTestCase {
 
     @Rule
     public MockitoRule mockito = MockitoJUnit.rule();
+    @Rule
+    public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Spy
     private SysuiTestableContext mSpyContext = getContext();
@@ -399,6 +402,26 @@ public class MenuViewLayerTest extends SysuiTestCase {
         mMenuViewLayer.dispatchAccessibilityAction(R.id.action_edit);
 
         verify(mMenuView, times(1)).incrementTexMetric(eq(MenuViewLayer.TEX_METRIC_EDIT));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FLOATING_MENU_TUCK_SKIPS_TOOLTIP)
+    public void onMoveToTuckedChanged_updatesDockTooltipVisibility() {
+        mMenuViewModel.updateDockTooltipVisibility(false);
+
+        mMenuView.updateMenuMoveToTucked(/* isMoveToTucked= */ true);
+
+        assertThat(mMenuViewModel.getDockTooltipVisibilityData().getValue()).isTrue();
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_FLOATING_MENU_TUCK_SKIPS_TOOLTIP)
+    public void onMoveToTuckedChanged_doesNotUpdateDockTooltipVisibility() {
+        mMenuViewModel.updateDockTooltipVisibility(false);
+
+        mMenuView.updateMenuMoveToTucked(/* isMoveToTucked= */ true);
+
+        assertThat(mMenuViewModel.getDockTooltipVisibilityData().getValue()).isFalse();
     }
 
     /** Simplified AccessibilityTarget for testing MenuViewLayer. */
