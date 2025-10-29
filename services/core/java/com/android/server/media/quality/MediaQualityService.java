@@ -151,8 +151,9 @@ public class MediaQualityService extends SystemService {
             new HashMap<>();
     private final BiMap<Long, Long> mCurrentPictureHandleToOriginal = new BiMap<>();
     private final Set<Long> mPictureProfileForHal = new HashSet<>();
-    private final HashMap<String, Runnable> mPendingUpdates = new HashMap<>();
+    private final HashMap<String, PictureProfile> mPendingProfiles = new HashMap<>();
     private final HashMap<String, PictureProfile> mBaseProfiles = new HashMap<>();
+    private final HashMap<String, Runnable> mPendingUpdates = new HashMap<>();
     private static final int UPDATE_DELAY_MS = 1000; // Delay in milliseconds for debouncing
 
     public MediaQualityService(Context context) {
@@ -352,67 +353,132 @@ public class MediaQualityService extends SystemService {
             int callingUid = Binder.getCallingUid();
             int callingPid = Binder.getCallingPid();
             Long dbId = mPictureProfileTempIdMap.getKey(id);
-
+            if (dbId == null) {
+                mMqManagerNotifier.notifyOnPictureProfileError(
+                        id, PictureProfile.ERROR_INVALID_ARGUMENT, callingUid, callingPid);
+                Slog.e(TAG, "updatePictureProfile: "
+                        + "dbId not found in mPictureProfileTempIdMap");
+                return;
+            }
             synchronized (mPictureProfileLock) {
                 PictureProfile fromDb = mBaseProfiles.get(id);
-                if (dbId == null) {
-                    mMqManagerNotifier.notifyOnPictureProfileError(
-                            id, PictureProfile.ERROR_INVALID_ARGUMENT,
-                            callingUid, callingPid);
-                    Slog.e(TAG, "updatePictureProfile: "
-                            + "dbId not found in mPictureProfileTempIdMap");
-                    return;
-                }
                 if (fromDb == null) {
-                    fromDb = mMqDatabaseUtils.getPictureProfile(dbId);
+                    fromDb = mMqDatabaseUtils.getPictureProfile(dbId, true);
                     if (fromDb != null) {
                         mBaseProfiles.put(id, fromDb);
+                    } else {
+                        mMqManagerNotifier.notifyOnPictureProfileError(
+                                id, PictureProfile.ERROR_INVALID_ARGUMENT, callingUid, callingPid);
+                        Slog.e(TAG, "updatePictureProfile: Profile not found in database" + id);
+                        return;
                     }
                 }
-                final PictureProfile baseProfileForTask = fromDb;
-                if (baseProfileForTask == null || !hasPermissionToUpdatePictureProfile(
-                        baseProfileForTask, pp, callingUid, callingPid)) {
+                if (!hasPermissionToUpdatePictureProfile(fromDb, pp, callingUid, callingPid)) {
                     mMqManagerNotifier.notifyOnPictureProfileError(
                             id, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
-                    Slog.e(TAG, "updatePictureProfile: "
-                            + "no permission to update picture profile or profile not found");
-                    if (baseProfileForTask != null) {
-                        mBaseProfiles.remove(id);
-                    }
+                    Slog.e(TAG, "updatePictureProfile: no permission to update picture profile");
+                    mBaseProfiles.remove(id);
                     return;
-                }
-                if (mPictureProfileForHal.contains(dbId)) {
-                    mHalNotifier.notifyHalOnPictureProfileChange(dbId, pp.getParameters());
                 }
 
                 Runnable oldTask = mPendingUpdates.remove(id);
                 if (oldTask != null) {
                     mHandler.removeCallbacks(oldTask);
                 }
+                PictureProfile pendingProfile = mPendingProfiles.get(id);
+                PictureProfile baseProfile = fromDb;
+                final PictureProfile finalProfile;
+
+                if (pendingProfile == null) {
+                    if (baseProfile == null) {
+                        baseProfile = mMqDatabaseUtils.getPictureProfile(dbId, true);
+                        mBaseProfiles.put(id, baseProfile);
+                    }
+
+                    PersistableBundle dbParams =
+                            (baseProfile != null && baseProfile.getParameters() != null)
+                                    ? baseProfile.getParameters() : new PersistableBundle();
+                    PersistableBundle mergedParams = new PersistableBundle(dbParams);
+
+                    if (pp.getParameters() != null) {
+                        mergedParams.putAll(pp.getParameters());
+                    }
+                    finalProfile = new PictureProfile.Builder(pp)
+                            .setParameters(mergedParams).build();
+                } else {
+                    PersistableBundle dbParams =
+                            (baseProfile != null && baseProfile.getParameters() != null)
+                                    ? baseProfile.getParameters() : new PersistableBundle();
+                    PersistableBundle mergedParams =
+                            new PersistableBundle(pendingProfile.getParameters());
+                    PersistableBundle newParamsFromUI = pp.getParameters();
+
+                    if (newParamsFromUI != null) {
+                        for (String key : newParamsFromUI.keySet()) {
+                            Object newValue = newParamsFromUI.get(key);
+                            Object dbValue = dbParams.get(key);
+                            Object pendingValue = mergedParams.get(key);
+
+                            if (newValue != null && !newValue.equals(dbValue)) {
+                                if (newValue instanceof Integer) {
+                                    mergedParams.putInt(key, (Integer) newValue);
+                                } else if (newValue instanceof Long) {
+                                    mergedParams.putLong(key, (Long) newValue);
+                                } else if (newValue instanceof Double) {
+                                    mergedParams.putDouble(key, (Double) newValue);
+                                } else if (newValue instanceof String) {
+                                    mergedParams.putString(key, (String) newValue);
+                                } else if (newValue instanceof boolean[]) {
+                                    mergedParams.putBooleanArray(key, (boolean[]) newValue);
+                                } else if (newValue instanceof double[]) {
+                                    mergedParams.putDoubleArray(key, (double[]) newValue);
+                                } else if (newValue instanceof int[]) {
+                                    mergedParams.putIntArray(key, (int[]) newValue);
+                                } else if (newValue instanceof long[]) {
+                                    mergedParams.putLongArray(key, (long[]) newValue);
+                                } else if (newValue instanceof String[]) {
+                                    mergedParams.putStringArray(key, (String[]) newValue);
+                                }
+                            } else {
+                                Slog.d(TAG, "[COMPARE] - NO REAL CHANGE for key '" + key + "'. "
+                                        + "UI value is same as DB or null.");
+                            }
+                        }
+                    }
+                    finalProfile = new PictureProfile.Builder(pendingProfile)
+                            .setParameters(mergedParams).build();
+                }
+                mPendingProfiles.put(id, finalProfile);
+
+                if (mPictureProfileForHal.contains(dbId)) {
+                    mHalNotifier.notifyHalOnPictureProfileChange(dbId,
+                            finalProfile.getParameters());
+                }
 
                 Runnable newTask = () -> {
+                    if (DEBUG) {
+                        Slog.d(TAG, "Executing update for PictureProfile ID: " + id);
+                    }
                     synchronized (mPictureProfileLock) {
-                        mPendingUpdates.remove(id);
+                        mPendingProfiles.remove(id);
                         mBaseProfiles.remove(id);
+                        mPendingUpdates.remove(id);
                     }
                     if (DEBUG) {
                         Slog.d(TAG, "the dbId associated with id is " + dbId);
                     }
                     synchronized (mPictureProfileLock) {
-                        PictureProfile updatedProfile =
-                                new PictureProfile.Builder(baseProfileForTask)
-                        .setParameters(pp.getParameters())
-                        .build();
                         ContentValues values = MediaQualityUtils.getContentValues(dbId,
-                                updatedProfile.getProfileType(),
-                                updatedProfile.getName(),
-                                updatedProfile.getPackageName(),
-                                updatedProfile.getInputId(),
-                                updatedProfile.getParameters());
+                                finalProfile.getProfileType(),
+                                finalProfile.getName(),
+                                finalProfile.getPackageName(),
+                                finalProfile.getInputId(),
+                                finalProfile.getParameters());
 
                         Slog.d(TAG, "update database");
                         updateDatabaseOnPictureProfileAndNotifyManager(
-                                values, updatedProfile, callingUid, callingPid, false);
+                                values, finalProfile, callingUid, callingPid,
+                                false);
                         // Keep cache in sync with database, and check for profile id and handle
                         // of the updated picture profile, because user might call this with a
                         // picture profile without handle or profileId.
@@ -421,28 +487,28 @@ public class MediaQualityService extends SystemService {
                             PictureProfile cachedPp = mOriginalHandleToCurrentPictureProfile
                                     .get(originalHandle);
                             if (cachedPp != null) {
-                                if (updatedProfile.getProfileId() == null
-                                    || updatedProfile.getHandle() == PictureProfileHandle.NONE) {
+                                if (finalProfile.getProfileId() == null
+                                        || finalProfile.getHandle() == PictureProfileHandle.NONE) {
                                     cachedPp = new PictureProfile.Builder(cachedPp)
                                             .setProfileId(cachedPp.getProfileId())
-                                            .setParameters(updatedProfile.getParameters())
+                                            .setParameters(finalProfile.getParameters())
                                             .build();
                                     mOriginalHandleToCurrentPictureProfile
                                             .put(originalHandle, cachedPp);
                                 } else {
-                                    mOriginalHandleToCurrentPictureProfile.put(
-                                            originalHandle, updatedProfile);
+                                    mOriginalHandleToCurrentPictureProfile.put(originalHandle,
+                                            finalProfile);
                                 }
                             }
                         }
 
-                        if (isPackageDefaultPictureProfile(updatedProfile)) {
+                        if (isPackageDefaultPictureProfile(finalProfile)) {
                             if (DEBUG) {
                                 Slog.d(TAG, "updatePictureProfile: updated picture profile is "
                                         + "package default picture profile");
                             }
                             mPackageDefaultPictureProfileHandleMap.put(
-                                     updatedProfile.getPackageName(), dbId);
+                                    finalProfile.getPackageName(), dbId);
                         }
                     }
                 };
