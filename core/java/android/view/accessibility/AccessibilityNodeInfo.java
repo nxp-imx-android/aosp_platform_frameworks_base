@@ -5478,13 +5478,6 @@ public class AccessibilityNodeInfo implements Parcelable {
         mSealed = sealed;
     }
 
-    /**
-     * Clears the state of this instance.
-     */
-    private void clear() {
-        init(DEFAULT);
-    }
-
     private static boolean isDefaultStandardAction(AccessibilityAction action) {
         return (action.mSerializationFlag != -1L) && TextUtils.isEmpty(action.getLabel());
     }
@@ -7083,13 +7076,6 @@ public class AccessibilityNodeInfo implements Parcelable {
          */
         @Deprecated
         void recycle() {}
-
-        private void clear() {
-            mType = 0;
-            mMin = 0;
-            mMax = 0;
-            mCurrent = 0;
-        }
     }
 
     /**
@@ -7312,15 +7298,6 @@ public class AccessibilityNodeInfo implements Parcelable {
          */
         @Deprecated
         void recycle() {}
-
-        private void clear() {
-            mRowCount = 0;
-            mColumnCount = 0;
-            mHierarchical = false;
-            mSelectionMode = SELECTION_MODE_NONE;
-            mItemCount = UNDEFINED;
-            mImportantForAccessibilityItemCount = UNDEFINED;
-        }
 
         /**
          * The builder for CollectionInfo.
@@ -7783,21 +7760,6 @@ public class AccessibilityNodeInfo implements Parcelable {
          */
         @Deprecated
         void recycle() {}
-
-        private void clear() {
-            mColumnIndex = 0;
-            mColumnSpan = 0;
-            mRowIndex = 0;
-            mRowSpan = 0;
-            mHeading = false;
-            mSelected = false;
-            mRowTitle = null;
-            mColumnTitle = null;
-
-            if (Flags.a11ySortDirectionApi()) {
-                mSortDirection = SORT_DIRECTION_NONE;
-            }
-        }
 
         /**
          * Builder for creating {@link CollectionItemInfo} objects.
@@ -8280,12 +8242,6 @@ public class AccessibilityNodeInfo implements Parcelable {
          */
         @Deprecated
         void recycle() {}
-
-        private void clear() {
-            mLayoutSize = null;
-            mTextSizeInPx = UNDEFINED_VALUE;
-            mTextSizeUnit = UNDEFINED_VALUE;
-        }
     }
 
     /**
