@@ -37,12 +37,14 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import android.graphics.Rect;
 import android.os.Message;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.DisplayInfo;
 import android.window.ITransitionPlayer;
+import android.window.TransitionRequestInfo;
 
 import androidx.test.filters.SmallTest;
 
@@ -58,8 +60,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-
-import java.util.function.Predicate;
 
 /**
  * Tests for the {@link DisplayContent} class when FLAG_DEFER_DISPLAY_UPDATES is enabled.
@@ -130,12 +130,19 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
         assertThat(mDisplayContent.getDisplayInfo().uniqueId).isEqualTo("new");
         clearInvocations(mDisplayContent.mTransitionController, onUpdated);
 
+        SizeCompatTests.rotateDisplay(mDisplayContent, (mDisplayContent.getRotation() + 1) % 4);
+        final Rect displayBounds = new Rect(mDisplayContent.getBounds());
         mLogicalDensityDpi += 100;
         mDisplayContent.requestDisplayUpdate(onUpdated);
         captureStartTransitionCollection().getValue().onCollectStarted(/* deferred= */ true);
         verify(onUpdated).run();
+        final ArgumentCaptor<TransitionRequestInfo.DisplayChange> displayChangeCaptor =
+                ArgumentCaptor.forClass(TransitionRequestInfo.DisplayChange.class);
         verify(mDisplayContent.mTransitionController).requestStartTransition(
-                any(), any(), any(), any());
+                any(), any(), any(), displayChangeCaptor.capture());
+        final TransitionRequestInfo.DisplayChange displayChange = displayChangeCaptor.getValue();
+        assertThat(displayChange.getStartAbsBounds()).isEqualTo(displayBounds);
+        assertThat(displayChange.getEndAbsBounds()).isEqualTo(displayBounds);
     }
 
     @Test
