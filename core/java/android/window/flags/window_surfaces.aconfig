@@ -138,3 +138,11 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "mirror_surface_api"
+    namespace: "window_surfaces"
+    description: "Gate the api that allows apps to get mirrored surface control of its own window."
+    bug: "437391557"
+    is_exported: true
+}
