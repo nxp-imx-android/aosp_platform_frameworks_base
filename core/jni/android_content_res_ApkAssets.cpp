@@ -146,68 +146,68 @@ class LoaderAssetsProvider : public AssetsProvider {
   }
 
  protected:
-  std::unique_ptr<Asset> OpenInternal(const std::string& path,
-                                      Asset::AccessMode mode,
-                                      bool* file_exists) const override {
-    const auto env = AndroidRuntime::getJNIEnv();
-    CHECK(env != nullptr) << "Current thread not attached to a Java VM."
-                          << " ResourcesProvider assets cannot be retrieved on current thread.";
+     std::unique_ptr<Asset> OpenInternal(const std::string& path, Asset::AccessMode mode,
+                                         bool* file_exists, off64_t max_size) const override {
+         const auto env = AndroidRuntime::getJNIEnv();
+         CHECK(env != nullptr)
+                 << "Current thread not attached to a Java VM."
+                 << " ResourcesProvider assets cannot be retrieved on current thread.";
 
-    jstring java_string = env->NewStringUTF(path.c_str());
-    if (env->ExceptionCheck()) {
-      env->ExceptionDescribe();
-      env->ExceptionClear();
-      return nullptr;
-    }
+         jstring java_string = env->NewStringUTF(path.c_str());
+         if (env->ExceptionCheck()) {
+             env->ExceptionDescribe();
+             env->ExceptionClear();
+             return nullptr;
+         }
 
-    // Check if the AssetsProvider provides a value for the path.
-    jobject asset_fd = env->CallObjectMethod(assets_provider_,
-                                             gAssetsProviderOffsets.loadAssetFd,
-                                             java_string, static_cast<jint>(mode));
-    env->DeleteLocalRef(java_string);
-    if (env->ExceptionCheck()) {
-      env->ExceptionDescribe();
-      env->ExceptionClear();
-      return nullptr;
-    }
+         // Check if the AssetsProvider provides a value for the path.
+         jobject asset_fd =
+                 env->CallObjectMethod(assets_provider_, gAssetsProviderOffsets.loadAssetFd,
+                                       java_string, static_cast<jint>(mode));
+         env->DeleteLocalRef(java_string);
+         if (env->ExceptionCheck()) {
+             env->ExceptionDescribe();
+             env->ExceptionClear();
+             return nullptr;
+         }
 
-    if (!asset_fd) {
-      if (file_exists) {
-        *file_exists = false;
-      }
-      return nullptr;
-    }
+         if (!asset_fd) {
+             if (file_exists) {
+                 *file_exists = false;
+             }
+             return nullptr;
+         }
 
-    const jlong mOffset = env->GetLongField(asset_fd, gAssetFileDescriptorOffsets.mStartOffset);
-    const jlong mLength = env->GetLongField(asset_fd, gAssetFileDescriptorOffsets.mLength);
-    jobject mFd = env->GetObjectField(asset_fd, gAssetFileDescriptorOffsets.mFd);
-    env->DeleteLocalRef(asset_fd);
+         const jlong mOffset =
+                 env->GetLongField(asset_fd, gAssetFileDescriptorOffsets.mStartOffset);
+         const jlong mLength = env->GetLongField(asset_fd, gAssetFileDescriptorOffsets.mLength);
+         jobject mFd = env->GetObjectField(asset_fd, gAssetFileDescriptorOffsets.mFd);
+         env->DeleteLocalRef(asset_fd);
 
-    if (!mFd) {
-      jniThrowException(env, "java/lang/NullPointerException", nullptr);
-      env->ExceptionDescribe();
-      env->ExceptionClear();
-      return nullptr;
-    }
+         if (!mFd) {
+             jniThrowException(env, "java/lang/NullPointerException", nullptr);
+             env->ExceptionDescribe();
+             env->ExceptionClear();
+             return nullptr;
+         }
 
-    // Gain ownership of the file descriptor.
-    const jint fd = env->CallIntMethod(mFd, gParcelFileDescriptorOffsets.detachFd);
-    env->DeleteLocalRef(mFd);
-    if (env->ExceptionCheck()) {
-      env->ExceptionDescribe();
-      env->ExceptionClear();
-      return nullptr;
-    }
+         // Gain ownership of the file descriptor.
+         const jint fd = env->CallIntMethod(mFd, gParcelFileDescriptorOffsets.detachFd);
+         env->DeleteLocalRef(mFd);
+         if (env->ExceptionCheck()) {
+             env->ExceptionDescribe();
+             env->ExceptionClear();
+             return nullptr;
+         }
 
-    if (file_exists) {
-      *file_exists = true;
-    }
+         if (file_exists) {
+             *file_exists = true;
+         }
 
-    return AssetsProvider::CreateAssetFromFd(base::unique_fd(fd),
-                                             nullptr /* path */,
-                                             static_cast<off64_t>(mOffset),
-                                             static_cast<off64_t>(mLength));
-  }
+         return AssetsProvider::CreateAssetFromFd(base::unique_fd(fd), nullptr /* path */,
+                                                  static_cast<off64_t>(mOffset),
+                                                  static_cast<off64_t>(mLength), max_size);
+     }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoaderAssetsProvider);
@@ -517,8 +517,9 @@ static jlong NativeOpenXml(JNIEnv* env, jclass /*clazz*/, jlong ptr, jstring fil
 
   auto scoped_apk_assets = ScopedLock(ApkAssetsFromLong(ptr));
   auto apk_assets = scoped_apk_assets->get();
-  std::unique_ptr<Asset> asset = apk_assets->GetAssetsProvider()->Open(
-      path_utf8.c_str(),Asset::AccessMode::ACCESS_RANDOM);
+  std::unique_ptr<Asset> asset =
+          apk_assets->GetAssetsProvider()->Open(path_utf8.c_str(), Asset::AccessMode::ACCESS_RANDOM,
+                                                nullptr, kMaxXmlAssetSize);
   if (asset == nullptr) {
     jniThrowException(env, "java/io/FileNotFoundException", path_utf8.c_str());
     return 0;

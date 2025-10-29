@@ -221,6 +221,16 @@ flag {
 }
 
 flag {
+    name: "xml_file_size_limit"
+    namespace: "resource_manager"
+    description: "Only allow reading xml resources under the set size limit"
+    bug: "443273051"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "overlay_constraint_aware_asset_path_changes"
     namespace: "resource_manager"
     description: "Consider resource overlay constraints during configuration change based on asset path changes"
