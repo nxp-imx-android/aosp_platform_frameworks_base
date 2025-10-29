@@ -188,13 +188,15 @@ public class ComputerControlSessionProcessor {
             // Ensure all packages the ComputerControl session should be able to launch are:
             // 1) Applications with a valid launcher Intent
             // 2) NOT PermissionController
+            // 3) Allowlisted in DeviceConfig
             for (int i = 0; i < params.getTargetPackageNames().size(); i++) {
-                String packageName = params.getTargetPackageNames().get(i);
+                final String packageName = params.getTargetPackageNames().get(i);
 
                 if (packageName == null
                         || packageName.isEmpty()
                         || mPackageManager.getPermissionControllerPackageName().equals(packageName)
-                        || mPackageManager.getLaunchIntentForPackage(packageName) == null) {
+                        || mPackageManager.getLaunchIntentForPackage(packageName) == null
+                        || !mAllowlistController.isPackageAutomatable(packageName)) {
                     throw new IllegalArgumentException(
                             "Invalid target package for ComputerControl: " + packageName);
                 }
@@ -238,8 +240,8 @@ public class ComputerControlSessionProcessor {
             }
             Slog.d(TAG, "Creating ComputerControlSession " + params.getName());
             session = new ComputerControlSessionImpl(
-                    mContext, callback.asBinder(), params, attributionSource, mVirtualDeviceFactory,
-                    (closedSession) -> {
+                    mContext, mAllowlistController, callback.asBinder(), params, attributionSource,
+                    mVirtualDeviceFactory, (closedSession) -> {
                 synchronized (mSessions) {
                     mSessions.remove(closedSession);
                 }

@@ -184,6 +184,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final long mGlobalSessionTimeoutDurationMs;
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
     private final ImageReader mBlockedStateImageReader;
+    private final ComputerControlAllowlistController mAllowlistController;
 
     @GuardedBy("mAllowlistedPackages")
     private final Set<String> mAllowlistedPackages = new ArraySet<>();
@@ -226,17 +227,20 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @Nullable
     private Surface mClientSurface;
 
-    ComputerControlSessionImpl(Context context, IBinder appToken,
+    ComputerControlSessionImpl(Context context,
+            ComputerControlAllowlistController allowlistController, IBinder appToken,
             ComputerControlSessionParams params, AttributionSource attributionSource,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
             Consumer<ComputerControlSessionImpl> onClosedListener) {
-        this(context, DisplayManagerGlobal.getInstance(), ViewConfiguration.get(context),
-                DEFAULT_GLOBAL_SESSION_TIMEOUT_DURATION_MS, SurfaceControl.Transaction::new,
-                appToken, params, attributionSource, virtualDeviceFactory, onClosedListener);
+        this(context, DisplayManagerGlobal.getInstance(), allowlistController,
+                ViewConfiguration.get(context), DEFAULT_GLOBAL_SESSION_TIMEOUT_DURATION_MS,
+                SurfaceControl.Transaction::new, appToken, params, attributionSource,
+                virtualDeviceFactory, onClosedListener);
     }
 
     @VisibleForTesting
     ComputerControlSessionImpl(Context context, DisplayManagerGlobal displayManagerGlobal,
+            ComputerControlAllowlistController allowlistController,
             ViewConfiguration viewConfiguration, long globalSessionTimeoutDurationMs,
             Supplier<SurfaceControl.Transaction> transactionSupplier, IBinder appToken,
             ComputerControlSessionParams params, AttributionSource attributionSource,
@@ -248,6 +252,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mTransactionSupplier = transactionSupplier;
         mAppToken = appToken;
         mParams = params;
+        mAllowlistController = allowlistController;
 
         mOwnerUser = UserHandle.getUserHandleForUid(attributionSource.getUid());
         mOwnerContext = context.createContextAsUser(mOwnerUser, /* flags = */ 0);
@@ -416,6 +421,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             throw new IllegalArgumentException(
                     "Could not find launcher activity for " + packageName + "/" + className);
         }
+        if (!mAllowlistController.isPackageAutomatable(packageName)) {
+            throw new IllegalArgumentException(
+                    "Trying to launch " + packageName + " which is not allowlisted");
+        }
+
         // TODO(b/444600407): Remove this once the consent model is per-target app. While the
         // consent is general, the caller can extend the list of target packages dynamically.
         if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {

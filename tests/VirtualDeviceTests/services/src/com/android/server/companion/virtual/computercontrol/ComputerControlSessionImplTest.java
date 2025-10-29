@@ -42,6 +42,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -218,6 +219,8 @@ public class ComputerControlSessionImplTest {
     private UserHandle mUserHandle;
     @Mock
     private IntentSender mIntentSender;
+    @Mock
+    private ComputerControlAllowlistController mAllowlistController;
 
     @Captor
     private ArgumentCaptor<Intent> mIntentArgumentCaptor;
@@ -299,6 +302,7 @@ public class ComputerControlSessionImplTest {
                 mVirtualAudioDevice);
         when(mVirtualAudioDevice.startAudioCapture(any())).thenReturn(mAudioCapture);
         when(mVirtualAudioDevice.startAudioInjection(any())).thenReturn(mAudioInjection);
+        when(mAllowlistController.isPackageAutomatable(anyString())).thenReturn(true);
     }
 
     @After
@@ -479,6 +483,17 @@ public class ComputerControlSessionImplTest {
     public void launchApplication_noLaunchIntent_throws() throws RemoteException {
         createComputerControlSession(mDefaultParams);
         when(mOwnerPackageManager.queryIntentActivities(any(), any())).thenReturn(List.of());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> mSession.launchApplication(TARGET_PACKAGE_1, TARGET_CLASS));
+    }
+
+    @Test
+    public void launchApplication_packageNotAllowlisted_throws() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        when(mOwnerPackageManager.queryIntentActivities(any(), any()))
+                .thenReturn(List.of(new ResolveInfo()));
+        when(mAllowlistController.isPackageAutomatable(anyString())).thenReturn(false);
 
         assertThrows(IllegalArgumentException.class,
                 () -> mSession.launchApplication(TARGET_PACKAGE_1, TARGET_CLASS));
@@ -972,8 +987,8 @@ public class ComputerControlSessionImplTest {
         DisplayManagerGlobal displayManagerGlobal = new DisplayManagerGlobal(mDisplayManager);
         displayManagerGlobal.disableLocalDisplayInfoCaches();
         mSession = new ComputerControlSessionImpl(
-                mContext, displayManagerGlobal, mViewConfiguration, globalSessionTimeoutDurationMs,
-                () -> mTransaction, mAppToken, params,
+                mContext, displayManagerGlobal, mAllowlistController, mViewConfiguration,
+                globalSessionTimeoutDurationMs, () -> mTransaction, mAppToken, params,
                 new AttributionSource(UserHandle.getUid(USER_ID, 0), "com.package", "tag"),
                 mVirtualDeviceFactory, mOnClosedListener);
     }
