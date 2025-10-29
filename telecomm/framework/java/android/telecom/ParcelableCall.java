@@ -630,7 +630,7 @@ public final class ParcelableCall implements Parcelable {
      * ATIS-1000082.
      * @return the verification status.
      */
-    public @Connection.VerificationStatus int getCallerNumberVerificationStatus() {
+    public @Annotation.VerificationStatus int getCallerNumberVerificationStatus() {
         return mCallerNumberVerificationStatus;
     }
 

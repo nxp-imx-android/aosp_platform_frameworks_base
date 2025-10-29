@@ -827,7 +827,7 @@ public final class Call {
         private final long mCreationTimeMillis;
         private final String mContactDisplayName;
         private final @CallDirection int mCallDirection;
-        private final @Connection.VerificationStatus int mCallerNumberVerificationStatus;
+        private final @Annotation.VerificationStatus int mCallerNumberVerificationStatus;
         private final Uri mContactPhotoUri;
         private final UserHandle mAssociatedUser;
 
@@ -1236,7 +1236,7 @@ public final class Call {
          * potentially impersonated numbers.
          * @return the verification status.
          */
-        public @Connection.VerificationStatus int getCallerNumberVerificationStatus() {
+        public @Annotation.VerificationStatus int getCallerNumberVerificationStatus() {
             return mCallerNumberVerificationStatus;
         }
 
