@@ -156,6 +156,9 @@ constructor(
             override val subtitle: String
                 get() = dataModel.subtitle
 
+            override val isExplicit: Boolean
+                get() = dataModel.isExplicit
+
             override val onClick: (Expandable) -> Unit
                 get() = { expandable ->
                     dataModel.clickIntent?.let { startClickIntent(expandable, it) }

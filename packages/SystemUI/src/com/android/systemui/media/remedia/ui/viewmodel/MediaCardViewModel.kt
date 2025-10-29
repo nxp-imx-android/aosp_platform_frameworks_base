@@ -41,6 +41,8 @@ interface MediaCardViewModel {
 
     val subtitle: String
 
+    val isExplicit: Boolean
+
     val actionButtonLayout: MediaCardActionButtonLayout
 
     val playPauseAction: MediaPlayPauseActionViewModel?

@@ -91,6 +91,7 @@ constructor(
 
                 override val title = session.title
                 override val subtitle = session.subtitle
+                override val isExplicit = session.isExplicit
                 override val actionButtonLayout = session.actionButtonLayout
                 override val playPauseAction =
                     session.playPauseAction.toPlayPauseActionViewModel(session.state)

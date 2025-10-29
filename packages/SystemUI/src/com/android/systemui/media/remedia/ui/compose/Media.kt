@@ -164,6 +164,7 @@ import com.android.systemui.media.remedia.ui.viewmodel.MediaPlayPauseActionViewM
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSecondaryActionViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSettingsButtonViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
+import com.android.systemui.res.R
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -619,6 +620,7 @@ private fun ContentScope.CardForegroundContent(
                 Metadata(
                     title = viewModel.title,
                     subtitle = viewModel.subtitle,
+                    isExplicit = viewModel.isExplicit,
                     color = Color.White,
                     modifier = Modifier.weight(1f).padding(end = 8.dp),
                 )
@@ -673,6 +675,7 @@ private fun ContentScope.CardForegroundContent(
                 Metadata(
                     title = viewModel.title,
                     subtitle = viewModel.subtitle,
+                    isExplicit = viewModel.isExplicit,
                     color = Color.White,
                     modifier = Modifier.weight(1f).padding(end = 8.dp),
                 )
@@ -750,6 +753,7 @@ private fun ContentScope.CompactCardForeground(
         Metadata(
             title = viewModel.title,
             subtitle = viewModel.subtitle,
+            isExplicit = viewModel.isExplicit,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f),
         )
@@ -1163,6 +1167,7 @@ private fun CardGuts(
 private fun ContentScope.Metadata(
     title: String,
     subtitle: String,
+    isExplicit: Boolean,
     color: Color,
     modifier: Modifier = Modifier,
 ) {
@@ -1181,14 +1186,31 @@ private fun ContentScope.Metadata(
                     overflow = TextOverflow.Ellipsis,
                 )
 
-                Text(
-                    text = subtitle,
-                    modifier = Modifier.sysuiResTag(MediaRes.ARTIST),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = color,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (isExplicit) {
+                        Icon(
+                            icon =
+                                Icon.Resource(
+                                    resId = R.drawable.ic_media_explicit_indicator,
+                                    contentDescription = null,
+                                ),
+                            modifier =
+                                Modifier.sysuiResTag(MediaRes.EXPLICIT_INDICATOR)
+                                    .padding(end = 8.dp)
+                                    .size(13.dp),
+                            tint = color,
+                        )
+                    }
+
+                    Text(
+                        text = subtitle,
+                        modifier = Modifier.sysuiResTag(MediaRes.ARTIST),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = color,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
     }
@@ -1507,6 +1529,7 @@ private object MediaRes {
     const val SUGGESTED_DEVICE_CHIP = "device_suggestion_button"
     const val TITLE = "header_title"
     const val ARTIST = "header_artist"
+    const val EXPLICIT_INDICATOR = "media_explicit_indicator"
     const val HIDE_BTN = "dismiss"
 }
 
