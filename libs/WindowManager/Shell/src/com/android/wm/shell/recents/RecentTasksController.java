@@ -502,9 +502,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
     }
 
     private boolean shouldEnableRunningTasksForDesktopMode() {
-        return mPcFeatureEnabled
-                || (mDesktopState.canEnterDesktopMode()
-                && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS.isTrue());
+        return mPcFeatureEnabled|| mDesktopState.canEnterDesktopMode();
     }
 
     @VisibleForTesting
