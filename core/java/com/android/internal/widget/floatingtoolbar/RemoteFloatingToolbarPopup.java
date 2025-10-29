@@ -189,13 +189,13 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
     private boolean isLatestPendingOrCurrent(List<MenuItem> menuItems, Rect contentRect) {
         if (mPendingMenuItems.size() == 0) {
             return Objects.equals(contentRect, mContentRect)
-                    && MenuItemRepr.reprEquals(menuItems, mMenuItems);
+                    && areMenuItemsEqual(menuItems, mMenuItems);
         }
         int lastPendingIndex = mPendingMenuItems.size() - 1;
         List<MenuItem> latestPendingMenuItems = mPendingMenuItems.valueAt(lastPendingIndex);
         Rect latestPendingContentRect = mPendingShowInfos.valueAt(lastPendingIndex).contentRect;
         return Objects.equals(contentRect, latestPendingContentRect)
-                && MenuItemRepr.reprEquals(menuItems, latestPendingMenuItems);
+                && areMenuItemsEqual(menuItems, latestPendingMenuItems);
     }
 
     @UiThread
@@ -560,88 +560,30 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
     }
 
     /**
-     * Represents the identity of a MenuItem that is rendered in a FloatingToolbarPopup.
+     * Returns true if the two menu item collections consist of equal items in the same order.
      */
-    static final class MenuItemRepr {
-
-        public final int mItemId;
-        public final int mGroupId;
-        @Nullable
-        public final String mTitle;
-        @Nullable
-        private final Drawable mIcon;
-
-        private MenuItemRepr(
-                int itemId, int groupId, @Nullable CharSequence title,
-                @Nullable Drawable icon) {
-            mItemId = itemId;
-            mGroupId = groupId;
-            mTitle = (title == null) ? null : title.toString();
-            mIcon = icon;
-        }
-
-        /**
-         * Creates an instance of MenuItemRepr for the specified menu item.
-         */
-        public static MenuItemRepr of(MenuItem menuItem) {
-            return new MenuItemRepr(
-                    menuItem.getItemId(),
-                    menuItem.getGroupId(),
-                    menuItem.getTitle(),
-                    menuItem.getIcon());
-        }
-
-        /**
-         * Returns this object's hashcode.
-         */
-        @Override
-        public int hashCode() {
-            return Objects.hash(mItemId, mGroupId, mTitle, mIcon);
-        }
-
-        /**
-         * Returns true if this object is the same as the specified object.
-         */
-        @Override
-        public boolean equals(Object o) {
-            if (o == this) {
-                return true;
-            }
-            if (!(o instanceof MenuItemRepr other)) {
-                return false;
-            }
-            return mItemId == other.mItemId
-                    && mGroupId == other.mGroupId
-                    && TextUtils.equals(mTitle, other.mTitle)
-                    // Many Drawables (icons) do not implement equals(). Using equals() here instead
-                    // of reference comparisons in case a Drawable subclass implements equals().
-                    && Objects.equals(mIcon, other.mIcon);
-        }
-
-        /**
-         * Returns true if the two menu item collections are the same based on MenuItemRepr.
-         */
-        public static boolean reprEquals(
-                Collection<MenuItem> menuItems1, Collection<MenuItem> menuItems2) {
-            if (menuItems1 == menuItems2) {
-                return true;
-            }
-            if (menuItems1 == null || menuItems2 == null) {
-                return false;
-            }
-            if (menuItems1.size() != menuItems2.size()) {
-                return false;
-            }
-
-            final Iterator<MenuItem> menuItems2Iter = menuItems2.iterator();
-            for (MenuItem menuItem1 : menuItems1) {
-                final MenuItem menuItem2 = menuItems2Iter.next();
-                if (!MenuItemRepr.of(menuItem1).equals(
-                        MenuItemRepr.of(menuItem2))) {
-                    return false;
-                }
-            }
+    public static boolean areMenuItemsEqual(
+            Collection<MenuItem> menuItems1, Collection<MenuItem> menuItems2) {
+        if (menuItems1 == menuItems2) {
             return true;
         }
+        if (menuItems1 == null || menuItems2 == null) {
+            return false;
+        }
+        if (menuItems1.size() != menuItems2.size()) {
+            return false;
+        }
+
+        final Iterator<MenuItem> menuItems2Iter = menuItems2.iterator();
+        for (MenuItem menuItem1 : menuItems1) {
+            final MenuItem menuItem2 = menuItems2Iter.next();
+            if (menuItem1.getItemId() != menuItem2.getItemId()
+                    || menuItem1.getGroupId() != menuItem2.getGroupId()
+                    || !TextUtils.equals(menuItem1.getTitle(), menuItem2.getTitle())
+                    || !Objects.equals(menuItem1.getIcon(), menuItem2.getIcon())) {
+                return false;
+            }
+        }
+        return true;
     }
 }
