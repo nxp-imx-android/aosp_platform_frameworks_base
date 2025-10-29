@@ -866,6 +866,14 @@ public final class UsageEvents implements Parcelable {
     }
 
     /**
+     * Returns the number of events.
+     * @hide
+     */
+    public int getEventCount() {
+        return mEventCount;
+    }
+
+    /**
      * Returns whether or not there are more events to read using
      * {@link #getNextEvent(android.app.usage.UsageEvents.Event)}.
      *
