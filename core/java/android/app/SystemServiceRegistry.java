@@ -1747,7 +1747,7 @@ public final class SystemServiceRegistry {
                                     Context.PERSONAL_CONTEXT_SERVICE);
                             IPersonalContextManager service =
                                     IPersonalContextManager.Stub.asInterface(iBinder);
-                            return new PersonalContextManager(service);
+                            return new PersonalContextManager(ctx, service);
                         }
                     });
         }
