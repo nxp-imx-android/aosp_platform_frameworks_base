@@ -88,10 +88,8 @@
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"Agjenti i besimit nuk ofrohet"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"Shumë përpjekje me kod PIN të pasaktë"</string>
     <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"E provove tashmë atë kod PIN. Provo një tjetër."</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
-    <skip />
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="3827593245962385968">"E provove tashmë atë motiv. Provo një tjetër."</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"E provove tashmë atë fjalëkalim. Provo një tjetër."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Shumë përpjekje me motiv të pasaktë"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Shumë përpjekje me fjalëkalim të pasaktë"</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"Shumë përpjekje me kod PIN të pasaktë\nMëso më shumë në <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
