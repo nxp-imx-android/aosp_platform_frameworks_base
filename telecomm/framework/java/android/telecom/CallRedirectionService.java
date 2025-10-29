@@ -209,7 +209,7 @@ public abstract class CallRedirectionService extends Service {
      *                     response was sent with a true flag of allowInteractiveResponse via
      *                     {@link #onPlaceCall(Uri, PhoneAccountHandle, boolean)}
      */
-    @FlaggedApi(Flags.FLAG_PLACE_CALL_TO_ALTERNATE_NUMBER)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_PLACE_CALL_TO_ALTERNATE_NUMBER)
     public final void placeCallToAlternateNumber(@NonNull Uri alternateUri,
                                                  @NonNull PhoneAccountHandle targetPhoneAccount,
                                                  boolean confirmFirst) {
