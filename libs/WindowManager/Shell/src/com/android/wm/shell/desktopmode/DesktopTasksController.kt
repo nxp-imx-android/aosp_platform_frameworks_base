@@ -2636,15 +2636,26 @@ class DesktopTasksController(
         repository: DesktopRepository,
         componentName: ComponentName?,
         displayLayout: DisplayLayout,
+        taskInfo: TaskInfo?,
     ): Rect? {
         if (!Flags.enableRememberedBounds()) {
+            return null
+        }
+        if (taskInfo?.leafTaskBoundsFromOptions == true) {
+            // ActivityOptions have a higher priority.
             return null
         }
         val packageName = componentName?.packageName ?: return null
         // TODO: b/452162812 - Support collision avoidance. Maybe we can merge it with
         // cascadeWindow?
-        // TODO: b/452162813 - Do not use remembered bounds when another instance of the same
-        // package is active.
+        if (
+            shellTaskOrganizer.runningTasks.any {
+                it.baseActivity?.packageName == packageName && it.taskId != taskInfo?.taskId
+            }
+        ) {
+            // Do not use remembered bounds when another instance of the same package is active.
+            return null
+        }
         val ratio = repository.getRememberedBoundsRatio(packageName) ?: return null
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
         return Rect().apply {
@@ -2693,6 +2704,7 @@ class DesktopTasksController(
                     userProfileContexts.getOrCreate(userId).packageManager
                 ),
                 displayLayout,
+                /* taskInfo= */ null,
             )
         val bounds = rememberedBounds ?: calculateDefaultDesktopTaskBounds(displayLayout)
         val deskId = getOrCreateDefaultDeskId(displayId, userId) ?: return
@@ -4223,6 +4235,7 @@ class DesktopTasksController(
                         userRepositories.getProfile(task.userId),
                         task.baseActivity,
                         displayLayout,
+                        task,
                     )
                 },
             requestType = requestType,
@@ -5022,7 +5035,7 @@ class DesktopTasksController(
                 0
             }
         val rememberedBounds =
-            calculateRememberedBounds(repository, taskInfo.baseActivity, displayLayout)
+            calculateRememberedBounds(repository, taskInfo.baseActivity, displayLayout, taskInfo)
         val bounds =
             rememberedBounds
                 ?: calculateInitialBounds(displayLayout, taskInfo, captionInsets = captionInsets)
