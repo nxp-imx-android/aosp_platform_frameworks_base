@@ -27,10 +27,15 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Process
+import android.os.UserHandle
+import android.os.UserManager
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableContext
 import androidx.test.filters.SmallTest
+import com.android.dx.mockito.inline.extended.ExtendedMockito
+import com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession
+import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import com.android.internal.R
 import com.android.internal.policy.DesktopModeCompatPolicy
 import com.android.window.flags.Flags
@@ -42,6 +47,7 @@ import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges
 import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -56,6 +62,7 @@ import org.mockito.kotlin.spy
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.mockito.quality.Strictness
 
 /**
  * Tests for [@link DesktopModeCompatPolicy].
@@ -66,6 +73,7 @@ import org.mockito.kotlin.whenever
 @SmallTest
 class DesktopModeCompatPolicyTest : ShellTestCase() {
     @get:Rule val compatRule = PlatformCompatChangeRule()
+    private lateinit var mockitoSession: StaticMockitoSession
     private lateinit var mockContext: TestableContext
     private lateinit var desktopModeCompatPolicy: DesktopModeCompatPolicy
     private val packageManager: PackageManager = mock()
@@ -77,6 +85,11 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
 
     @Before
     fun setUp() {
+        mockitoSession =
+            mockitoSession()
+                .strictness(Strictness.LENIENT)
+                .spyStatic(UserManager::class.java)
+                .startMocking()
         mockContext = spy(mContext)
         val resources = spy(mockContext.resources)
         doReturn(configExemptPackageList).`when`(resources)
@@ -86,6 +99,11 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
         mContext.addMockSystemService(RoleManager::class.java, roleManager)
         doReturn(HOME_LAUNCHER_PACKAGE_NAME).`when`(desktopModeCompatPolicy).getDefaultHomePackage(any())
         mockContext.setMockPackageManager(packageManager)
+    }
+
+    @After
+    fun tearDown() {
+        mockitoSession.finishMocking()
     }
 
     @Test
@@ -308,6 +326,34 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
                 .apply {
                     baseActivity = baseActivityTest
                     topActivityType = ACTIVITY_TYPE_DREAM
+                }))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_SYS_USER_HSUM_BUGFIX)
+    fun testIsTopActivityExemptFromDesktopWindowing_headlessSystemUser() {
+        ExtendedMockito.doReturn(false).`when` { UserManager.isHeadlessSystemUserMode() }
+        assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+            createFreeformTask()
+                .apply {
+                    userId = UserHandle.USER_SYSTEM
+                }))
+        assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+            createFreeformTask()
+                .apply {
+                    userId = UserHandle.USER_SYSTEM + 1
+                }))
+
+        ExtendedMockito.doReturn(true).`when` { UserManager.isHeadlessSystemUserMode() }
+        assertTrue(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+            createFreeformTask()
+                .apply {
+                    userId = UserHandle.USER_SYSTEM
+                }))
+        assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+            createFreeformTask()
+                .apply {
+                    userId = UserHandle.USER_SYSTEM + 1
                 }))
     }
 
