@@ -260,7 +260,6 @@ public class MediaOutputDialog extends SystemUIDialog
         mMediaSwitchingController.setRefreshing(true);
         // Update header icon
         final IconCompat headerIcon = mMediaSwitchingController.getHeaderIcon();
-        final IconCompat appSourceIcon = mMediaSwitchingController.getNotificationSmallIcon();
         boolean colorSetUpdated = false;
         if (headerIcon != null) {
             Icon icon = headerIcon.toIcon(mContext);
@@ -291,15 +290,12 @@ public class MediaOutputDialog extends SystemUIDialog
 
         if (!mIncludePlaybackAndAppMetadata) {
             mAppResourceIcon.setVisibility(View.GONE);
-        } else if (appSourceIcon != null) {
-            Icon appIcon = appSourceIcon.toIcon(mContext);
-            mAppResourceIcon.setColorFilter(
-                    mMediaSwitchingController.getColorScheme().getSecondary());
-            mAppResourceIcon.setImageIcon(appIcon);
         } else {
-            Drawable appIconDrawable = mMediaSwitchingController.getAppSourceIconFromPackage();
-            if (appIconDrawable != null) {
-                mAppResourceIcon.setImageDrawable(appIconDrawable);
+            Drawable appIcon = mMediaSwitchingController.getAppIcon();
+            if (appIcon != null) {
+                mAppResourceIcon.setColorFilter(
+                        mMediaSwitchingController.getColorScheme().getSecondary());
+                mAppResourceIcon.setImageDrawable(appIcon);
             } else {
                 mAppResourceIcon.setVisibility(View.GONE);
             }
