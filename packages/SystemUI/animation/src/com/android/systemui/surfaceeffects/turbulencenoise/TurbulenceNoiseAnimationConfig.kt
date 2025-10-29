@@ -56,8 +56,8 @@ data class TurbulenceNoiseAnimationConfig(
     val width: Float = 0f,
     val height: Float = 0f,
     val maxDuration: Float = DEFAULT_MAX_DURATION_IN_MILLIS,
-    val easeInDuration: Float = DEFAULT_EASING_DURATION_IN_MILLIS,
-    val easeOutDuration: Float = DEFAULT_EASING_DURATION_IN_MILLIS,
+    val fadeInDuration: Float = DEFAULT_FADING_DURATION_IN_MILLIS,
+    val fadeOutDuration: Float = DEFAULT_FADING_DURATION_IN_MILLIS,
     val pixelDensity: Float = 1f,
     /**
      * Variants in noise. Higher number means more contrast; lower number means less contrast but
@@ -76,7 +76,7 @@ data class TurbulenceNoiseAnimationConfig(
 ) {
     companion object {
         const val DEFAULT_MAX_DURATION_IN_MILLIS = 30_000f // Max 30 sec
-        const val DEFAULT_EASING_DURATION_IN_MILLIS = 750f
+        const val DEFAULT_FADING_DURATION_IN_MILLIS = 750f
         const val DEFAULT_LUMINOSITY_MULTIPLIER = 1f
         const val DEFAULT_NOISE_GRID_COUNT = 1.2f
         const val DEFAULT_NOISE_SPEED_Z = 0.3f

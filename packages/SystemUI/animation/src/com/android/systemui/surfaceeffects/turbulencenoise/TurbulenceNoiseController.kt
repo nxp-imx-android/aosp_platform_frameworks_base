@@ -18,21 +18,21 @@ package com.android.systemui.surfaceeffects.turbulencenoise
 import android.view.View
 import androidx.annotation.VisibleForTesting
 
-/** Plays [TurbulenceNoiseView] in ease-in, main (no easing), and ease-out order. */
+/** Plays [TurbulenceNoiseView] in fade-in, main (no fading), and fade-out order. */
 class TurbulenceNoiseController(private val turbulenceNoiseView: TurbulenceNoiseView) {
 
     companion object {
         /**
          * States of the turbulence noise animation.
          *
-         * <p>The state is designed to be follow the order below: [AnimationState.EASE_IN],
-         * [AnimationState.MAIN], [AnimationState.EASE_OUT].
+         * <p>The state is designed to be follow the order below: [AnimationState.FADE_IN],
+         * [AnimationState.MAIN], [AnimationState.FADE_OUT].
          */
         enum class AnimationState {
-            EASE_IN,
+            FADE_IN,
             MAIN,
-            EASE_OUT,
-            NOT_PLAYING
+            FADE_OUT,
+            NOT_PLAYING,
         }
     }
 
@@ -64,52 +64,52 @@ class TurbulenceNoiseController(private val turbulenceNoiseView: TurbulenceNoise
     /**
      * Plays [TurbulenceNoiseView] with the given config.
      *
-     * <p>It plays ease-in, main, and ease-out animations in sequence.
+     * <p>It plays fade-in, main, and fade-out animations in sequence.
      */
     fun play(
         baseType: TurbulenceNoiseShader.Companion.Type,
-        config: TurbulenceNoiseAnimationConfig
+        config: TurbulenceNoiseAnimationConfig,
     ) {
         if (state != AnimationState.NOT_PLAYING) {
             return // Ignore if any of the animation is playing.
         }
 
         turbulenceNoiseView.initShader(baseType, config)
-        playEaseInAnimation()
+        playFadeInAnimation()
     }
 
     // TODO(b/237282226): Support force finish.
-    /** Finishes the main animation, which triggers the ease-out animation. */
+    /** Finishes the main animation, which triggers the fade-out animation. */
     fun finish() {
         if (state == AnimationState.MAIN) {
-            turbulenceNoiseView.finish(nextAnimation = this::playEaseOutAnimation)
+            turbulenceNoiseView.finish(nextAnimation = this::playFadeOutAnimation)
         }
     }
 
-    private fun playEaseInAnimation() {
+    private fun playFadeInAnimation() {
         if (state != AnimationState.NOT_PLAYING) {
             return
         }
-        state = AnimationState.EASE_IN
+        state = AnimationState.FADE_IN
 
-        turbulenceNoiseView.playEaseIn(this::playMainAnimation)
+        turbulenceNoiseView.playFadeIn(this::playMainAnimation)
     }
 
     private fun playMainAnimation() {
-        if (state != AnimationState.EASE_IN) {
+        if (state != AnimationState.FADE_IN) {
             return
         }
         state = AnimationState.MAIN
 
-        turbulenceNoiseView.play(this::playEaseOutAnimation)
+        turbulenceNoiseView.play(this::playFadeOutAnimation)
     }
 
-    private fun playEaseOutAnimation() {
+    private fun playFadeOutAnimation() {
         if (state != AnimationState.MAIN) {
             return
         }
-        state = AnimationState.EASE_OUT
+        state = AnimationState.FADE_OUT
 
-        turbulenceNoiseView.playEaseOut(onAnimationEnd = { state = AnimationState.NOT_PLAYING })
+        turbulenceNoiseView.playFadeOut(onAnimationEnd = { state = AnimationState.NOT_PLAYING })
     }
 }
