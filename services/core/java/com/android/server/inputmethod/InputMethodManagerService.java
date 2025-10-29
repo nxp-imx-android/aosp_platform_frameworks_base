@@ -2521,34 +2521,29 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     @GuardedBy("ImfLock.class")
-    void clearClientSessionsLocked(@NonNull InputMethodBindingController bindingController) {
-        final int userId = bindingController.getUserId();
-        final var userData = getUserData(userId);
-        if (bindingController.getCurMethod() != null) {
-            // TODO(b/324907325): Remove the suppress warnings once b/324907325 is fixed.
-            @SuppressWarnings("GuardedBy") Consumer<ClientState> clearClientSession = c -> {
-                // TODO(b/305849394): Figure out what we should do for single user IME mode.
-                final boolean shouldClearClientSession =
-                        !mConcurrentMultiUserModeEnabled
-                                || UserHandle.getUserId(c.mUid) == userId;
-                if (shouldClearClientSession) {
-                    clearClientSessionLocked(c);
-                    clearClientSessionForAccessibilityLocked(c);
-                }
-            };
-            mClientController.forAllClients(clearClientSession);
-
-            finishSessionLocked(userData.mEnabledSession);
-            for (int i = 0; i < userData.mEnabledAccessibilitySessions.size(); i++) {
-                finishSessionForAccessibilityLocked(
-                        userData.mEnabledAccessibilitySessions.valueAt(i));
+    void clearClientSessionsLocked(@UserIdInt int userId) {
+        // TODO(b/324907325): Remove the suppress warnings once b/324907325 is fixed.
+        @SuppressWarnings("GuardedBy") Consumer<ClientState> clearClientSession = c -> {
+            // TODO(b/305849394): Figure out what we should do for single user IME mode.
+            final boolean shouldClearClientSession =
+                    !mConcurrentMultiUserModeEnabled || UserHandle.getUserId(c.mUid) == userId;
+            if (shouldClearClientSession) {
+                clearClientSessionLocked(c);
+                clearClientSessionForAccessibilityLocked(c);
             }
-            userData.mEnabledSession = null;
-            userData.mEnabledAccessibilitySessions.clear();
-            scheduleNotifyImeUidToAudioService(Process.INVALID_UID);
+        };
+        mClientController.forAllClients(clearClientSession);
+
+        final var userData = getUserData(userId);
+        finishSessionLocked(userData.mEnabledSession);
+        userData.mEnabledSession = null;
+        for (int i = 0; i < userData.mEnabledAccessibilitySessions.size(); i++) {
+            finishSessionForAccessibilityLocked(userData.mEnabledAccessibilitySessions.valueAt(i));
         }
+        userData.mEnabledAccessibilitySessions.clear();
+        scheduleNotifyImeUidToAudioService(Process.INVALID_UID);
         hideStatusBarIconLocked(userId);
-        getUserData(userId).mInFullscreenMode = false;
+        userData.mInFullscreenMode = false;
         mWindowManagerInternal.setDismissImeOnBackKeyPressed(false);
         scheduleResetStylusHandwriting();
     }

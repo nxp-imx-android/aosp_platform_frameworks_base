@@ -524,7 +524,7 @@ final class InputMethodBindingController {
             final var userData = mService.getUserData(mUserId);
             userData.mVisibilityStateComputer.setInputShown(false);
         }
-        mService.clearClientSessionsLocked(this);
+        mService.clearClientSessionsLocked(mUserId);
         mCurMethod = null;
         mCurMethodUid = Process.INVALID_UID;
     }
