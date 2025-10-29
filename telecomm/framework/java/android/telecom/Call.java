@@ -415,7 +415,7 @@ public final class Call {
      * {@link Connection#putExtras(Bundle)} should be used to notify
      * Telecom this extra has been set.
      */
-    @FlaggedApi(Flags.FLAG_IS_USING_VIDEO_RINGBACK)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_VIDEO_RINGBACK)
     public static final String EXTRA_IS_USING_VIDEO_RINGBACK =
             "android.telecom.extra.IS_USING_VIDEO_RINGBACK";
 
