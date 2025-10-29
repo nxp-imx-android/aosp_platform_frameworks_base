@@ -89,6 +89,7 @@ class RelaunchSplitScreenToBubbleTest : BubbleFlickerTestBase(), EnterBubbleTest
 
     @get:Rule(order = 1)
     val setUpRule = RunOncePerParameterRule(
+        testClass = this::class,
         wrappedRule = testSetupRule(NavBar.MODE_GESTURAL).around(recordTraceWithTransitionRule),
     )
 

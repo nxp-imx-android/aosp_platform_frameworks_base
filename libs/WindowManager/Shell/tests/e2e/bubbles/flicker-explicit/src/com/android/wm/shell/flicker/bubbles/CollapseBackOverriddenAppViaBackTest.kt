@@ -88,6 +88,7 @@ class CollapseBackOverriddenAppViaBackTest(navBar: NavBar) : BubbleFlickerTestBa
 
     @get:Rule(order = 1)
     val setUpRule = RunOncePerParameterRule(
+        testClass = this::class,
         wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
         params = arrayOf(navBar),
     )
