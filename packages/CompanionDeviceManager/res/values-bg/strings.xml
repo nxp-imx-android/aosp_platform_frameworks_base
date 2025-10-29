@@ -31,7 +31,7 @@
     <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"фитнес тракер"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Разрешавате ли на &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; да управлява устройството &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"устройство"</string>
-    <string name="summary_glasses" msgid="5469208629679579157">"Това приложение ще има достъп до следните разрешения за вашите <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <string name="summary_glasses" msgid="5469208629679579157">"Това приложение ще има достъп до следните разрешения за вашия <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="profile_name_medical" msgid="5617160509499466400">"медицинско изделие"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Да се разреши ли на &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; да предава поточно приложения и системни функции между вашия <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> и &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"На <xliff:g id="APP_NAME">%1$s</xliff:g> ще бъдат предоставени следните разрешения:"</string>
@@ -73,7 +73,7 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Поточно предаване към <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Дублиране на екрана ви"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Поточно предаване на прилож."</string>
-    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Будилници/напомняния: Задаване"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Задаване на будилници/напомняния"</string>
     <string name="permission_bypass_dnd" msgid="1241123166903040347">"Заобикаляне на „Не безпокойте“"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Извършване и управление на телефонни обаждания"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Четене и запис на списъка с обажданията"</string>

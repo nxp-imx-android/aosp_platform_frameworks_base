@@ -92,7 +92,7 @@
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Hozzáférhet a rendelkezésre álló eszközök listájához, és szabályozhatja, hogy melyik streamelhet vagy küldhet át hang- vagy videotartalmat más alkalmazásokból"</string>
     <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
     <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
-    <string name="device_type" product="default" msgid="8268703872070046263">"telefonján"</string>
+    <string name="device_type" product="default" msgid="8268703872070046263">"az Ön telefonján"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"táblagépén"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"tévé"</string>
     <string name="device_type" product="device" msgid="1526125965802507189">"eszköz"</string>

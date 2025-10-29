@@ -73,8 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"તમારા <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> પર ડેટા સ્ટ્રીમ કરો"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"તમારી સ્ક્રીન મિરર કરો"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"ઍપ સ્ટ્રીમ કરો"</string>
-    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"અલાર્મ અને રિમાઇન્ડર સેટ કરો"</string>
-    <string name="permission_bypass_dnd" msgid="1241123166903040347">"ખલેલ પાડશો નહીં સેટિંગને બાયપાસ કરો"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"અલાર્મ અને રિમાઇન્ડર સેટ કરવા"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"ખલેલ પાડશો નહીં સેટિંગને બાયપાસ કરવાની"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"ફોન કૉલ કરવાની અને મેનેજ કરવાની"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"ફોન કૉલ લૉગ વાંચવાની અને લખવાની"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"SMS મેસેજ મોકલવાની અને જોવાની"</string>

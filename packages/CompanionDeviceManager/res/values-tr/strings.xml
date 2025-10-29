@@ -73,8 +73,8 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Verileri <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> cihazınıza yayınlayın"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Ekranınızı yansıtın"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Uygulamaları yayınla"</string>
-    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Alarm ve hatırlatıcı ayarla"</string>
-    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Rahatsız Etmeyin ayarını atla"</string>
+    <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Alarm ve hatırlatıcı ayarlama"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Rahatsız Etmeyin ayarını atlama"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Telefon aramaları yapma ve yönetme"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Telefon arama kaydını okuma ve yazma"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"SMS mesajları gönderme ve görüntüleme"</string>
@@ -85,7 +85,7 @@
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Kişiler, mesajlar ve fotoğraflar da dahil olmak üzere tüm bildirimleri okuma"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Kişiler, mesajlar ve fotoğraflar gibi bilgiler dahil tüm bildirimleri okuma&lt;br/&gt;• Bildirim gönderme&lt;br/&gt;&lt;br/&gt;Dilediğiniz zaman bu uygulamanın bildirim okuma ve gönderme iznini Ayarlar &gt; Bildirimler bölümünden yönetebilirsiniz."</string>
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>
-    <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Size bildirim gönderir"</string>
+    <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Size bildirim gönderme"</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; cihazındaki mikrofon, kamera ve diğer sensör verilerini <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> cihazınıza yayınlayın."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> cihazınızın ekranını &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; cihazına kaydedin, yayınlayın veya paylaşın.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>; ses, fotoğraflar, ödeme bilgileri, şifreler ve mesajlar da dahil olmak üzere <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> cihazınızda görünen veya oynatılan her şeye erişebilecek."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> cihazınızdaki uygulamaları &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; cihazına yayınlayın.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>; <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> kilitliyken bile ses, fotoğraflar, ödeme bilgileri, şifreler ve mesajlar da dahil olmak üzere <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> cihazında görünen veya oynatılan her şeye erişebilecek."</string>

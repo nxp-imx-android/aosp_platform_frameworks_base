@@ -31,7 +31,7 @@
     <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"bracelet d\'activité sport"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Autoriser &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; à gérer &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; ?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"appareil"</string>
-    <string name="summary_glasses" msgid="5469208629679579157">"Cette appli sera autorisée à accéder à ces autorisations sur votre <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <string name="summary_glasses" msgid="5469208629679579157">"Cette appli bénéficiera de ces autorisations sur votre <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="profile_name_medical" msgid="5617160509499466400">"dispositif médical"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Autoriser &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; à caster des applis et des fonctionnalités système entre votre <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> et &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> bénéficiera des autorisations suivantes :"</string>
