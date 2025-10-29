@@ -200,7 +200,9 @@ import java.util.stream.Stream;
                     var currentProxyRecord = existingSessionRecord.getProxyRecord();
                     if (currentProxyRecord != null) {
                         currentProxyRecord.releaseSession(
-                                requestId, existingSession.getOriginalId());
+                                requestId,
+                                existingSession.getOriginalId(),
+                                /* retainFocus= */ true);
                         existingSessionRecord.removeSelfFromSessionMaps();
                     }
                 }
@@ -371,7 +373,13 @@ import java.util.stream.Stream;
                 sessionRecord.removeSelfFromSessionMaps();
                 var proxyRecord = sessionRecord.getProxyRecord();
                 if (proxyRecord != null) {
-                    proxyRecord.releaseSession(requestId, sessionRecord.getServiceSessionId());
+                    // We don't attempt to retain focus because this is a session release, not a
+                    // transfer. This happens, for example, when the user presses "stop casting" in
+                    // the output switcher.
+                    proxyRecord.releaseSession(
+                            requestId,
+                            sessionRecord.getServiceSessionId(),
+                            /* retainFocus= */ false);
                 }
                 updateSessionInfo();
                 return;
@@ -731,8 +739,14 @@ import java.util.stream.Stream;
             }
         }
 
-        public void releaseSession(long requestId, String originalSessionId) {
-            mProxy.releaseSession(requestId, originalSessionId);
+        /**
+         * Releases the corresponding session while optionally attempting to retain audio focus.
+         *
+         * <p>Audio focus retention is useful when transferring playback from the remote device to
+         * the sender while continuing playback.
+         */
+        public void releaseSession(long requestId, String originalSessionId, boolean retainFocus) {
+            mProxy.releaseSession(requestId, originalSessionId, retainFocus);
         }
 
         /**

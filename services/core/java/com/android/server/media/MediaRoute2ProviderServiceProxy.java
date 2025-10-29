@@ -154,13 +154,17 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
 
     @Override
     public void releaseSession(long requestId, String sessionId) {
+        this.releaseSession(requestId, sessionId, /* shouldRetainFocus= */ false);
+    }
+
+    public void releaseSession(long requestId, String sessionId, boolean shouldRetainFocus) {
         if (mConnectionReady) {
             if (Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
                 synchronized (mLock) {
                     mSessionOriginalIdToTransferRequest.remove(sessionId);
                 }
             }
-            mActiveConnection.releaseSession(requestId, sessionId);
+            mActiveConnection.releaseSession(requestId, sessionId, shouldRetainFocus);
             updateBinding();
         }
     }
@@ -890,9 +894,9 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
             return false;
         }
 
-        public void releaseSession(long requestId, String sessionId) {
+        public void releaseSession(long requestId, String sessionId, boolean shouldRetainFocus) {
             try {
-                mService.releaseSession(requestId, sessionId);
+                mService.releaseSession(requestId, sessionId, shouldRetainFocus);
             } catch (RemoteException ex) {
                 Slog.e(TAG, "releaseSession: Failed to deliver request.");
             }
