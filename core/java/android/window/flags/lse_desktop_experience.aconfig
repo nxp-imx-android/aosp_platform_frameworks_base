@@ -737,13 +737,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_windowing_quick_switch"
-    namespace: "lse_desktop_experience"
-    description: "Enables quick switch for desktop mode"
-    bug: "338066529"
-}
-
-flag {
     name: "enable_desktop_windowing_scvh_cache_bug_fix"
     namespace: "lse_desktop_experience"
     description: "Enables a SurfaceControlViewHost cache for window decorations"
