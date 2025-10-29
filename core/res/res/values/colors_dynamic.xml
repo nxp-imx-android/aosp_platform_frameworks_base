@@ -130,7 +130,6 @@
     <color name="materialColorSecondary">@color/system_secondary_light</color>
     <color name="materialColorSecondaryContainer">@color/system_secondary_container_light</color>
     <color name="materialColorSecondaryDim">@color/system_secondary_dim_light</color>
-    <color name="materialColorSemanticRedContainerHigh">@color/system_semantic_red_container_high_light</color>
     <color name="materialColorShadow">@color/system_shadow_light</color>
     <color name="materialColorSurface">@color/system_surface_light</color>
     <color name="materialColorSurfaceBright">@color/system_surface_bright_light</color>
@@ -178,10 +177,18 @@
     <color name="customColorShadeActive">@color/system_shade_active_light</color>
     <color name="customColorShadeDisabled">@color/system_shade_disabled_light</color>
     <color name="customColorShadeInactive">@color/system_shade_inactive_light</color>
+    <color name="customColorSurfaceEffect0">@color/system_surface_effect_0_light</color>
+    <color name="customColorSurfaceEffect0Fallback">@color/system_surface_effect_0_fallback_light</color>
+    <color name="customColorSurfaceEffect1">@color/system_surface_effect_1_light</color>
+    <color name="customColorSurfaceEffect2">@color/system_surface_effect_2_light</color>
+    <color name="customColorSurfaceEffect3">@color/system_surface_effect_3_light</color>
     <color name="customColorThemeApp">@color/system_theme_app_light</color>
     <color name="customColorThemeAppRing">@color/system_theme_app_ring_light</color>
     <color name="customColorThemeNotif">@color/system_theme_notif_light</color>
     <color name="customColorUnderSurface">@color/system_under_surface_light</color>
     <color name="customColorWeatherTemp">@color/system_weather_temp_light</color>
     <color name="customColorWidgetBackground">@color/system_widget_background_light</color>
+
+    <!--Manually added materialColor* tokens-->
+    <color name="materialColorSemanticRedContainerHigh">@color/system_semantic_red_container_high_light</color>
 </resources>

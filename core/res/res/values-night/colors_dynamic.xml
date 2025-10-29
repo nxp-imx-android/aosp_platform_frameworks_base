@@ -130,7 +130,6 @@
     <color name="materialColorSecondary">@color/system_secondary_dark</color>
     <color name="materialColorSecondaryContainer">@color/system_secondary_container_dark</color>
     <color name="materialColorSecondaryDim">@color/system_secondary_dim_dark</color>
-    <color name="materialColorSemanticRedContainerHigh">@color/system_semantic_red_container_high_dark</color>
     <color name="materialColorShadow">@color/system_shadow_dark</color>
     <color name="materialColorSurface">@color/system_surface_dark</color>
     <color name="materialColorSurfaceBright">@color/system_surface_bright_dark</color>
@@ -178,10 +177,18 @@
     <color name="customColorShadeActive">@color/system_shade_active_dark</color>
     <color name="customColorShadeDisabled">@color/system_shade_disabled_dark</color>
     <color name="customColorShadeInactive">@color/system_shade_inactive_dark</color>
+    <color name="customColorSurfaceEffect0">@color/system_surface_effect_0_dark</color>
+    <color name="customColorSurfaceEffect0Fallback">@color/system_surface_effect_0_fallback_dark</color>
+    <color name="customColorSurfaceEffect1">@color/system_surface_effect_1_dark</color>
+    <color name="customColorSurfaceEffect2">@color/system_surface_effect_2_dark</color>
+    <color name="customColorSurfaceEffect3">@color/system_surface_effect_3_dark</color>
     <color name="customColorThemeApp">@color/system_theme_app_dark</color>
     <color name="customColorThemeAppRing">@color/system_theme_app_ring_dark</color>
     <color name="customColorThemeNotif">@color/system_theme_notif_dark</color>
     <color name="customColorUnderSurface">@color/system_under_surface_dark</color>
     <color name="customColorWeatherTemp">@color/system_weather_temp_dark</color>
     <color name="customColorWidgetBackground">@color/system_widget_background_dark</color>
+
+    <!--Manually added materialColor* tokens-->
+    <color name="materialColorSemanticRedContainerHigh">@color/system_semantic_red_container_high_dark</color>
 </resources>
