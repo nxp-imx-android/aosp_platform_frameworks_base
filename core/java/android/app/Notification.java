@@ -877,7 +877,9 @@ public class Notification implements Parcelable
             FLAG_NO_DISMISS,
             FLAG_FSI_REQUESTED_BUT_DENIED,
             FLAG_USER_INITIATED_JOB,
-            FLAG_SILENT
+            FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY,
+            FLAG_SILENT,
+            FLAG_PROMOTED_ONGOING
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface NotificationFlags{};
