@@ -522,8 +522,8 @@ public class EditorInfoTest {
                 + "prefix: supportedHandwritingGestureTypes=(none)\n"
                 + "prefix: supportedHandwritingGesturePreviewTypes=(none)\n"
                 + "prefix: isStylusHandwritingEnabled=false\n"
-                + "prefix: contentMimeTypes=null\n"
-                + "prefix: writingToolsEnabled=true\n");
+                + "prefix: writingToolsEnabled=true\n"
+                + "prefix: contentMimeTypes=null\n");
     }
 
     @Test
@@ -571,9 +571,9 @@ public class EditorInfoTest {
                         + "prefix2: supportedHandwritingGestureTypes=SELECT\n"
                         + "prefix2: supportedHandwritingGesturePreviewTypes=SELECT\n"
                         + "prefix2: isStylusHandwritingEnabled=" + isStylusHandwritingEnabled + "\n"
+                        + "prefix2: writingToolsEnabled=false\n"
                         + "prefix2: contentMimeTypes=[image/png]\n"
-                        + "prefix2: targetInputMethodUserId=10\n"
-                        + "prefix2: writingToolsEnabled=false\n");
+                        + "prefix2: targetInputMethodUserId=10\n");
     }
 
     @Test
@@ -594,8 +594,8 @@ public class EditorInfoTest {
                         + "prefix: supportedHandwritingGestureTypes=(none)\n"
                         + "prefix: supportedHandwritingGesturePreviewTypes=(none)\n"
                         + "prefix: isStylusHandwritingEnabled=false\n"
-                        + "prefix: contentMimeTypes=null\n"
-                        + "prefix: writingToolsEnabled=true\n");
+                        + "prefix: writingToolsEnabled=true\n"
+                        + "prefix: contentMimeTypes=null\n");
     }
 
     @Test
