@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.server.am;
+package com.android.server.am.psc;
 
 import android.app.StackTrace;
 import android.util.Slog;
 import android.util.SparseBooleanArray;
 
+import com.android.server.am.EventLogTags;
+
 /**
  * Helper for writing debug log about proc/uid state changes.
  */
-class OomAdjusterDebugLogger {
+public class OomAdjusterDebugLogger {
     // Use the "am_" tag to make it similar to event logs.
     private static final String STACK_TRACE_TAG = "am_stack";
 
@@ -41,7 +43,8 @@ class OomAdjusterDebugLogger {
         mOomConstants = oomConstants;
     }
 
-    boolean shouldLog(int uid) {
+    /** Checks if detailed process/UID state change logging is enabled for the specified UID. */
+    public boolean shouldLog(int uid) {
         final SparseBooleanArray ar = mOomConstants.mProcStateDebugUids;
         final int size = ar.size();
         if (size == 0) { // Most common case.
@@ -96,22 +99,29 @@ class OomAdjusterDebugLogger {
         maybeSleep(mOomConstants.mProcStateDebugSetProcStateDelay);
     }
 
-    void logScheduleUidIdle1(int uid, long delay) {
+    /** Logs the scheduling of a UID to enter the idle state after a specified delay. */
+    public void logScheduleUidIdle1(int uid, long delay) {
         EventLogTags.writeAmOomAdjMisc(MISC_SCHEDULE_IDLE_UIDS_MSG_1,
                 uid, 0, mOomAdjuster.mAdjSeq, (int) delay, 0, "");
     }
 
-    void logScheduleUidIdle2(int uid, int pid, long delay) {
+    /**
+     * Logs the scheduling of a specific process (UID/PID pair) to enter the idle state after a
+     * specified delay.
+     */
+    public void logScheduleUidIdle2(int uid, int pid, long delay) {
         EventLogTags.writeAmOomAdjMisc(MISC_SCHEDULE_IDLE_UIDS_MSG_2,
                 uid, pid, mOomAdjuster.mAdjSeq, (int) delay, 0, "");
     }
 
-    void logScheduleUidIdle3(long delay) {
+    /** Logs a generic scheduling event for UIDs to enter the idle state after a specified delay. */
+    public void logScheduleUidIdle3(long delay) {
         EventLogTags.writeAmOomAdjMisc(MISC_SCHEDULE_IDLE_UIDS_MSG_3,
                 0, 0, mOomAdjuster.mAdjSeq, (int) delay, 0, "");
     }
 
-    void logSetLastBackgroundTime(int uid, long time) {
+    /** Logs the event of setting the last background timestamp for a UID. */
+    public void logSetLastBackgroundTime(int uid, long time) {
         EventLogTags.writeAmOomAdjMisc(MISC_SET_LAST_BG_TIME,
                 uid, 0, mOomAdjuster.mAdjSeq, (int) time, 0,
                 OomAdjuster.oomAdjReasonToString(mOomAdjuster.mLastReason));

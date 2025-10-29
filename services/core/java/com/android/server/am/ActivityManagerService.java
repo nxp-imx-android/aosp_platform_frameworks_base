@@ -488,6 +488,8 @@ import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.LowMemDetector.MemFactor;
 import com.android.server.am.psc.ActiveUidsInternal;
+import com.android.server.am.psc.OomAdjuster;
+import com.android.server.am.psc.OomAdjusterDebugLogger;
 import com.android.server.am.psc.ProcessListInternal.ProcessChangeItem;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.UidRecordInternal;
@@ -577,19 +579,19 @@ public class ActivityManagerService extends IActivityManager.Stub
             "persist.sys.device_provisioned";
 
     static final String TAG = TAG_WITH_CLASS_NAME ? "ActivityManagerService" : TAG_AM;
-    static final String TAG_BACKUP = TAG + POSTFIX_BACKUP;
+    public static final String TAG_BACKUP = TAG + POSTFIX_BACKUP;
     private static final String TAG_CLEANUP = TAG + POSTFIX_CLEANUP;
     private static final String TAG_CONFIGURATION = TAG + POSTFIX_CONFIGURATION;
     private static final String TAG_LOCKTASK = TAG + POSTFIX_LOCKTASK;
-    static final String TAG_LRU = TAG + POSTFIX_LRU;
+    public static final String TAG_LRU = TAG + POSTFIX_LRU;
     static final String TAG_MU = TAG + POSTFIX_MU;
     static final String TAG_NETWORK = TAG + POSTFIX_NETWORK;
-    static final String TAG_OOM_ADJ = TAG + POSTFIX_OOM_ADJ;
+    public static final String TAG_OOM_ADJ = TAG + POSTFIX_OOM_ADJ;
     private static final String TAG_POWER = TAG + POSTFIX_POWER;
     static final String TAG_PROCESSES = TAG + POSTFIX_PROCESSES;
     private static final String TAG_SERVICE = TAG + POSTFIX_SERVICE;
     private static final String TAG_SWITCH = TAG + POSTFIX_SWITCH;
-    static final String TAG_UID_OBSERVERS = TAG + POSTFIX_UID_OBSERVERS;
+    public static final String TAG_UID_OBSERVERS = TAG + POSTFIX_UID_OBSERVERS;
 
     // Mock "pretend we're idle now" broadcast action to the job scheduler; declared
     // here so that while the job scheduler can depend on AMS, the other way around

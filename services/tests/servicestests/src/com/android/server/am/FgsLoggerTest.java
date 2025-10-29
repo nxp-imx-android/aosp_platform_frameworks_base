@@ -41,6 +41,8 @@ import android.platform.test.annotations.Presubmit;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.server.am.psc.OomAdjuster;
+
 import org.junit.Before;
 import org.junit.Test;
 

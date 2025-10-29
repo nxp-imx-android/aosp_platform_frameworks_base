@@ -47,6 +47,8 @@ import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.AsyncBatchSession;
 import com.android.server.am.psc.BoundServiceSession;
 import com.android.server.am.psc.ConnectionRecordInternal;
+import com.android.server.am.psc.OomAdjuster;
+import com.android.server.am.psc.OomAdjusterImpl;
 import com.android.server.am.psc.ProcessListInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ServiceRecordInternal;
@@ -113,8 +115,9 @@ public class ProcessStateController {
             }
         };
         mOomConstants = oomConstants;
-        mOomAdjuster = new OomAdjusterImpl(ams, processList, activeUids, handlerThread,
-                mOomConstants, mGlobalState, oomAdjInjector, callback, stateGetter, updateHandler);
+        mOomAdjuster = new OomAdjusterImpl(ams, ams.mProcLock, processList, activeUids,
+                handlerThread, mOomConstants, mGlobalState, oomAdjInjector, callback, stateGetter,
+                updateHandler);
         mTopChangeCallback = topChangeCallback;
         mProcessLruUpdater = lruUpdater;
         final Handler serviceHandler = new Handler(handlerThread.getLooper());

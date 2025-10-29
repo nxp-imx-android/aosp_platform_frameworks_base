@@ -33,15 +33,15 @@ import static android.os.Process.myUid;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.platform.test.flag.junit.SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT;
 
-import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_NONE;
-import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_OTHER;
-import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_NONE;
-import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_OTHER;
 import static com.android.server.am.ProcessCachedOptimizerRecord.SHOULD_NOT_FREEZE_REASON_NONE;
 import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
 import static com.android.server.am.psc.Constants.HOME_APP_ADJ;
 import static com.android.server.am.psc.Constants.PERCEPTIBLE_APP_ADJ;
 import static com.android.server.am.psc.Constants.SERVICE_ADJ;
+import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_NONE;
+import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_OTHER;
+import static com.android.server.am.psc.OomAdjuster.IMPLICIT_CPU_TIME_REASON_NONE;
+import static com.android.server.am.psc.OomAdjuster.IMPLICIT_CPU_TIME_REASON_OTHER;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -84,6 +84,7 @@ import com.android.server.DropBoxManagerInternal;
 import com.android.server.LocalServices;
 import com.android.server.am.ActivityManagerService.Injector;
 import com.android.server.am.ApplicationExitInfoTest.ServiceThreadRule;
+import com.android.server.am.psc.OomAdjuster;
 import com.android.server.appop.AppOpsService;
 import com.android.server.firewall.IntentFirewall;
 import com.android.server.wm.ActivityTaskManagerService;

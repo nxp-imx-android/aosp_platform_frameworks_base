@@ -20,14 +20,14 @@ import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
 import static android.app.ActivityManager.PROCESS_STATE_CACHED_EMPTY;
 import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 
-import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_NONE;
-import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_NONE;
-import static com.android.server.am.OomAdjusterImpl.ProcessRecordNode.NUM_NODE_TYPE;
 import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
 import static com.android.server.am.psc.Constants.INVALID_ADJ;
 import static com.android.server.am.psc.Constants.SCHED_GROUP_BACKGROUND;
 import static com.android.server.am.psc.Constants.SERVICE_B_ADJ;
 import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
+import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_NONE;
+import static com.android.server.am.psc.OomAdjuster.IMPLICIT_CPU_TIME_REASON_NONE;
+import static com.android.server.am.psc.OomAdjusterImpl.ProcessRecordNode.NUM_NODE_TYPE;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_VISIBLE;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER;
 
@@ -43,8 +43,6 @@ import android.util.TimeUtils;
 
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
-import com.android.server.am.OomAdjuster;
-import com.android.server.am.OomAdjusterImpl;
 import com.android.server.am.ProcessCachedOptimizerRecord.ShouldNotFreezeReason;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 
