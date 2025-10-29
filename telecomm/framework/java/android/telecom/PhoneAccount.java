@@ -263,7 +263,7 @@ public final class PhoneAccount implements Parcelable {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
     @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
     public static final String EXTRA_LOCAL_VOICEMAIL_MINIMUM_TIMEOUT_MILLIS =
             "android.telecom.extra.LOCAL_VOICEMAIL_MINIMUM_TIMEOUT_MILLIS";
@@ -282,7 +282,7 @@ public final class PhoneAccount implements Parcelable {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
     @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
     public static final String EXTRA_LOCAL_VOICEMAIL_MAXIMUM_TIMEOUT_MILLIS =
             "android.telecom.extra.LOCAL_VOICEMAIL_MAXIMUM_TIMEOUT_MILLIS";
