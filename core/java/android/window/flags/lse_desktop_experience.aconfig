@@ -1269,6 +1269,16 @@ flag {
 }
 
 flag {
+    name: "enable_prevent_desktop_in_locktaskmode_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fix the bug to unexpectedly enter desktop mode when in lock task mode."
+    bug: "448763429"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_projected_display_desktop_mode"
     namespace: "lse_desktop_experience"
     description: "Enable Desktop Mode on Projected Mode devices but constrained to the external display."
