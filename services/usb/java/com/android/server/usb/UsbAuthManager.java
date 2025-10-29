@@ -18,25 +18,20 @@ package com.android.server.usb;
 
 import android.annotation.UserIdInt;
 import android.content.Context;
+import android.content.pm.UserInfo;
 import android.hardware.usb.IUsbAuthManager;
-import android.hardware.usb.UsbAuthDeviceInfo;
-import android.hardware.usb.UsbAuthorizationStatus;
 import android.hardware.usb.UsbAuthorizationSystemState;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
-import android.os.UserHandle;
 import android.os.UserManager;
 import android.util.Slog;
-import android.content.pm.UserInfo;
+import android.util.SparseBooleanArray;
+
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.FgThread;
-import com.android.server.SystemService;
 import com.android.server.SystemServerInitThreadPool;
-import android.util.SparseBooleanArray;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 public class UsbAuthManager implements IBinder.DeathRecipient {
     private static final String TAG = "UsbAuthManager";
@@ -172,9 +167,8 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                 return;
             }
             // Update mFullUsersLoggedIn map
-            if (userInfo.isFull() || userInfo.isAdmin()) {
-                // If the user is a full user or an admin, add or remove them from the map based on
-                // the loggedIn state.
+            if (userInfo.isFull() && !userInfo.isGuest()) {
+                // Update the logged-in status for any full user, excluding guests.
                 if (loggedIn) {
                     mFullUsersLoggedIn.put(userId, true);
                 } else {
