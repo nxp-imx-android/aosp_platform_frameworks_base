@@ -31,7 +31,6 @@ import static androidx.lifecycle.Lifecycle.State.RESUMED;
 
 import static com.android.systemui.Dependency.TIME_TICK_HANDLER_NAME;
 import static com.android.systemui.charging.WirelessChargingAnimation.UNKNOWN_BATTERY_LEVEL;
-import static com.android.systemui.flags.Flags.SHORTCUT_LIST_SEARCH_LAYOUT;
 import static com.android.systemui.statusbar.StatusBarState.SHADE;
 
 import android.annotation.Nullable;
@@ -172,13 +171,10 @@ import com.android.systemui.shade.ShadeLogger;
 import com.android.systemui.shade.ShadeSurface;
 import com.android.systemui.shade.ShadeViewController;
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
-import com.android.systemui.shared.recents.utilities.Utilities;
 import com.android.systemui.shared.statusbar.phone.BarTransitions;
 import com.android.systemui.statusbar.AutoHideUiElement;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.GestureRecorder;
-import com.android.systemui.statusbar.KeyboardShortcutListSearch;
-import com.android.systemui.statusbar.KeyboardShortcuts;
 import com.android.systemui.statusbar.KeyguardIndicationController;
 import com.android.systemui.statusbar.LightRevealScrim;
 import com.android.systemui.statusbar.LockscreenShadeTransitionController;
@@ -2789,27 +2785,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 e.printStackTrace();
             }
         });
-    }
-
-    protected void toggleKeyboardShortcuts(int deviceId) {
-        if (shouldUseTabletKeyboardShortcuts()) {
-            KeyboardShortcutListSearch.toggle(mContext, deviceId, mWindowManagerProvider);
-        } else {
-            KeyboardShortcuts.toggle(mContext, deviceId, mWindowManagerProvider);
-        }
-    }
-
-    protected void dismissKeyboardShortcuts() {
-        if (shouldUseTabletKeyboardShortcuts()) {
-            KeyboardShortcutListSearch.dismiss();
-        } else {
-            KeyboardShortcuts.dismiss();
-        }
-    }
-
-    private boolean shouldUseTabletKeyboardShortcuts() {
-        return mFeatureFlags.isEnabled(SHORTCUT_LIST_SEARCH_LAYOUT)
-                && Utilities.isLargeScreen(mWindowManager, mContext.getResources());
     }
 
     private void clearNotificationEffects() {
