@@ -1597,12 +1597,6 @@ public class NotificationManagerService extends SystemService {
                         // Report to usage stats that notification was made visible
                         if (DBG) Slog.d(TAG, "Marking notification as visible " + nv.key);
                         reportSeen(r);
-
-                        // Also report to UserManagerService if this notification was shown on HSU
-                        // (headless system user)
-                        if (shouldLogHsuNotification(r)) {
-                            mUmInternal.logShownHsuNotification(r.getSbn());
-                        }
                     }
                     r.setVisibility(true, nv.rank, nv.count, mNotificationRecordLogger);
                     mAssistants.notifyAssistantVisibilityChangedLocked(r, true);
@@ -10338,6 +10332,11 @@ public class NotificationManagerService extends SystemService {
                                         getGroupInstanceId(r.getSbn().getGroupKey()));
                         notifyListenersPostedAndLogLocked(r, old, mTracker, maybeReport);
                         posted = true;
+                        // Also report to UserManagerService if this notification was shown on HSU
+                        // (headless system user)
+                        if (shouldLogHsuNotification(r)) {
+                            mUmInternal.logShownHsuNotification(r.getSbn());
+                        }
                     } else {
                         Slog.e(TAG, "Not posting notification without small icon: " + notification);
                         if (old != null && !old.isCanceled) {
