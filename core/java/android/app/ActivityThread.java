@@ -329,6 +329,14 @@ public final class ActivityThread extends ClientTransactionHandler
 
     /** @hide */
     public static final String TAG = "ActivityThread";
+
+    // TODO(b/303199244): This is a temporary allowlist for early field data collection.
+    // It will be replaced by a sharding config in the future.
+    private static final Set<String> PERFETTO_TRACING_ALLOWLIST = new ArraySet<>(Arrays.asList(
+            "com.google.android.youtube",
+            "com.whatsapp"
+    ));
+
     static final boolean localLOGV = false;
     static final boolean DEBUG_MESSAGES = false;
     /** @hide */
@@ -1460,6 +1468,19 @@ public final class ActivityThread extends ClientTransactionHandler
             ApplicationSharedMemory.setInstance(instance);
 
             setCoreSettings(coreSettings);
+
+            // Register the app for tracing as early as possible
+            if (android.os.Flags.perfettoSdkTracingEnableAppRegistration()) {
+                // TODO(b/303199244): This is a temporary solution for Perfetto SDK tracing rollout.
+                // Tracing is enabled only for apps in a specific allowlist. The sharding can be
+                // disabled for local debugging via the
+                // 'perfetto_sdk_tracing_disable_app_registration_sharding' flag, allowing all apps
+                // to register. This flag will never be enabled in the field.
+                if (android.os.Flags.perfettoSdkTracingDisableAppRegistrationSharding() ||
+                    PERFETTO_TRACING_ALLOWLIST.contains(appInfo.packageName)) {
+                    Trace.registerWithPerfetto();
+                }
+            }
 
             AppBindData data = new AppBindData();
             data.processName = processName;
