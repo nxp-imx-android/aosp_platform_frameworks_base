@@ -47,6 +47,9 @@ per-file *Alarm* = file:/apex/jobscheduler/OWNERS
 # AppOps
 per-file *AppOp* = file:/core/java/android/permission/OWNERS
 
+# Background Starts
+per-file BackgroundStartPrivileges.java = file:/BAL_OWNERS
+
 # Backup and Restore
 per-file IBackupAgent.aidl = file:/services/backup/OWNERS
 
