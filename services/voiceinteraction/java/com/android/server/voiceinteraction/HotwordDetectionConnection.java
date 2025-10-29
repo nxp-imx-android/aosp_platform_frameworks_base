@@ -26,6 +26,8 @@ import static com.android.internal.util.FrameworkStatsLog.HOTWORD_DETECTOR_KEYPH
 import static com.android.internal.util.FrameworkStatsLog.HOTWORD_DETECTOR_KEYPHRASE_TRIGGERED__DETECTOR_TYPE__TRUSTED_DETECTOR_DSP;
 import static com.android.internal.util.FrameworkStatsLog.HOTWORD_DETECTOR_KEYPHRASE_TRIGGERED__RESULT__KEYPHRASE_TRIGGER;
 import static com.android.internal.util.FrameworkStatsLog.HOTWORD_DETECTOR_KEYPHRASE_TRIGGERED__RESULT__SERVICE_CRASH;
+import static com.android.server.voiceinteraction.VoiceInteractionManagerServiceImpl.SERVICE_TYPE_ISOLATED;
+import static com.android.server.voiceinteraction.VoiceInteractionManagerServiceImpl.SERVICE_TYPE_PCC;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -80,6 +82,7 @@ import com.android.internal.infra.ServiceConnector;
 import com.android.server.LocalServices;
 import com.android.server.pm.permission.PermissionManagerServiceInternal;
 import com.android.server.voiceinteraction.VoiceInteractionManagerServiceImpl.DetectorRemoteExceptionListener;
+import com.android.server.voiceinteraction.VoiceInteractionManagerServiceImpl.ServiceType;
 
 import java.io.PrintWriter;
 import java.time.Instant;
@@ -132,6 +135,7 @@ final class HotwordDetectionConnection {
     @NonNull private final ServiceConnectionFactory mHotwordDetectionServiceConnectionFactory;
     @NonNull private final ServiceConnectionFactory mVisualQueryDetectionServiceConnectionFactory;
     private int mDetectorType;
+    @ServiceType private int mServiceType;
 
     /**
      * Time after which each HotwordDetectionService process is stopped and replaced by a new one. 0
@@ -239,7 +243,8 @@ final class HotwordDetectionConnection {
             int userId,
             boolean bindInstantServiceAllowed,
             int detectorType,
-            DetectorRemoteExceptionListener listener) {
+            DetectorRemoteExceptionListener listener,
+            @ServiceType int serviceType) {
         mLock = lock;
         mContext = context;
         mVoiceInteractionServiceUid = voiceInteractionServiceUid;
@@ -253,6 +258,7 @@ final class HotwordDetectionConnection {
                 DeviceConfig.getInt(
                         DeviceConfig.NAMESPACE_VOICE_INTERACTION, KEY_RESTART_PERIOD_IN_SECONDS, 0);
         mAccessibilitySettingsListener = new AccessibilitySettingsListener();
+        mServiceType = serviceType;
 
         final Intent hotwordDetectionServiceIntent =
                 new Intent(HotwordDetectionService.SERVICE_INTERFACE);
@@ -996,15 +1002,29 @@ final class HotwordDetectionConnection {
                             HOTWORD_DETECTOR_EVENTS__EVENT__REQUEST_BIND_SERVICE,
                             mVoiceInteractionServiceUid);
                 }
-                boolean bindResult =
-                        mContext.bindIsolatedService(
-                                mIntent,
-                                Context.BIND_AUTO_CREATE
-                                        | Context.BIND_FOREGROUND_SERVICE
-                                        | mBindingFlags,
-                                "hotword_detector_" + mInstanceNumber,
-                                mExecutor,
-                                serviceConnection);
+                boolean bindResult = false;
+
+                // ServiceType will not be SERVICE_TYPE_UNRESTRICTED at this stage due to checks in
+                // {@link VoiceInteractionManagerServiceImpl}
+                if (mServiceType == SERVICE_TYPE_PCC) {
+                    bindResult =
+                            mContext.bindService(
+                                    mIntent,
+                                    serviceConnection,
+                                    Context.BIND_AUTO_CREATE
+                                            | Context.BIND_FOREGROUND_SERVICE
+                                            | mBindingFlags);
+                } else if (mServiceType == SERVICE_TYPE_ISOLATED) {
+                    bindResult =
+                            mContext.bindIsolatedService(
+                                    mIntent,
+                                    Context.BIND_AUTO_CREATE
+                                            | Context.BIND_FOREGROUND_SERVICE
+                                            | mBindingFlags,
+                                    "hotword_detector_" + mInstanceNumber,
+                                    mExecutor,
+                                    serviceConnection);
+                }
                 if (!bindResult) {
                     Slog.w(
                             TAG,
@@ -1019,6 +1039,7 @@ final class HotwordDetectionConnection {
                                 mVoiceInteractionServiceUid);
                     }
                 }
+
                 return bindResult;
             } catch (IllegalArgumentException e) {
                 if (mDetectionServiceType != DETECTION_SERVICE_TYPE_VISUAL_QUERY) {
