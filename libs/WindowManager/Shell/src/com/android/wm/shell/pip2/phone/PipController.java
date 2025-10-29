@@ -464,7 +464,8 @@ public class PipController implements ConfigurationChangeListener,
             // Skip the PiP-relevant updates if we aren't in a valid PiP state.
             if (mPipTransitionState.isInFixedRotation()) {
                 ProtoLog.e(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
-                        "Fixed rotation flag shouldn't be set while in an invalid PiP state");
+                        "Invalid PiP state, reset the fixed rotation flag");
+                mPipTransitionState.setInFixedRotation(false);
             }
             return;
         }
@@ -475,6 +476,8 @@ public class PipController implements ConfigurationChangeListener,
             // Do not change the bounds when in fixed rotation, but do update the movement bounds
             // based on the current bounds state and potentially new display layout.
             mPipTouchHandler.updateMovementBounds();
+            ProtoLog.d(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                    "Reset the fixed rotation flag on display change");
             mPipTransitionState.setInFixedRotation(false);
         } else {
             updateBoundsOnDisplayChange(snapFraction);
