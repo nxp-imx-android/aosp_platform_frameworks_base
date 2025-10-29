@@ -100,7 +100,7 @@ fun CaptureSettingsMenu(viewModel: PreCaptureToolbarViewModel, screenRecordingSe
                 leadingIcon = { icons?.frontCamera?.let { Icon(icon = it) } },
                 checked = recordParameters.shouldShowFrontCamera ?: false,
                 onCheckedChange = { recordParameters.setShouldShowFrontCamera(it) },
-                enabled = true,
+                enabled = screenRecordingSelected,
             )
 
             // TODO (b/444278100) - Implement UI provided by designer, this is a placeholder
