@@ -17,6 +17,7 @@
 package com.android.server.wm;
 
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_ASSISTANT;
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_DREAM;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED;
@@ -207,6 +208,31 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         assertEquals(RESULT_DONE,
                 new CalculateRequestBuilder().setTask(task).setOptions(options).calculate());
+        assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS)
+    public void testDreamActivitiesForcedToFullscreenWithoutTask() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchWindowingMode(WINDOWING_MODE_FREEFORM);
+        mActivity.setActivityType(ACTIVITY_TYPE_DREAM);
+
+        assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(null).setOptions(options)
+                .calculate());
+        assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+    }
+
+    @Test
+    public void testDreamActivitiesForcedToFullscreen() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final Task task = new TaskBuilder(mSupervisor).build();
+        mActivity.setActivityType(ACTIVITY_TYPE_DREAM);
+
+        assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(task).calculate());
         assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
     }
 
