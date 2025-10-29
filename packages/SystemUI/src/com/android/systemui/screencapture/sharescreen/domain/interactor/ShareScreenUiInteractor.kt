@@ -19,7 +19,7 @@ package com.android.systemui.screencapture.sharescreen.domain.interactor
 import android.app.ActivityOptions
 import android.app.ActivityTaskManager
 import android.media.projection.IMediaProjection
-import android.media.projection.ReviewGrantedConsentResult.RECORD_CONTENT_TASK
+import android.media.projection.ReviewGrantedConsentResult
 import android.os.UserHandle
 import android.util.Log
 import com.android.systemui.mediaprojection.MediaProjectionServiceHelper
@@ -37,39 +37,52 @@ constructor(
     private val asyncActivityLauncher: AsyncActivityLauncher,
 ) {
 
-    enum class SharingState {
-        NotStarted,
-        Approved,
-        Denied,
+    sealed class SharingState {
+        object NotStarted : SharingState()
+
+        data class Approved(val projection: IMediaProjection) : SharingState()
+
+        object Denied : SharingState()
     }
 
-    private val _sharingState = MutableStateFlow(SharingState.NotStarted)
+    private val _sharingState = MutableStateFlow<SharingState>(SharingState.NotStarted)
     val sharingState = _sharingState.asStateFlow()
 
-    private var mediaProjection: IMediaProjection? = null
     private var reviewGrantedConsentRequired: Boolean = false
     private lateinit var hostUserHandle: UserHandle
+    private var uid: Int = -1
+    private lateinit var packageName: String
+    private var initialDisplayId: Int = -1
 
     fun initialize(
-        mediaProjection: IMediaProjection?,
         reviewGrantedConsentRequired: Boolean,
         hostUserHandle: UserHandle,
+        uid: Int,
+        packageName: String,
+        initialDisplayId: Int,
     ) {
-        this.mediaProjection = mediaProjection
         this.reviewGrantedConsentRequired = reviewGrantedConsentRequired
         this.hostUserHandle = hostUserHandle
+        this.uid = uid
+        this.packageName = packageName
+        this.initialDisplayId = initialDisplayId
     }
 
-    fun onScreenSharingApproved(taskId: Int) {
-        val projection = mediaProjection
-        if (projection == null) {
-            Log.e(TAG, "Media projection is null")
-            _sharingState.value = SharingState.Denied
-            return
-        }
+    fun onAppContentSharingApproved(contentId: Int) {
+        // TODO(b/423708479) Finish the flow to support app content sharing.
+    }
 
+    fun onAppSharingApproved(taskId: Int) {
         try {
-            // TODO(b/423708481) Check whether [ScreenCaptureRecentTaskInteractor] can be used
+            val projection =
+                MediaProjectionServiceHelper.createOrReuseProjection(
+                    uid,
+                    packageName,
+                    reviewGrantedConsentRequired,
+                    initialDisplayId,
+                )
+
+            // TODO(b/455916256) Check whether [ScreenCaptureRecentTaskInteractor] can be used
             // instead.
             // Get the task info for the selected task.
             val recentTasks = activityTaskManager.getTasks(RUNNING_TASKS_NUM_MAX)
@@ -100,11 +113,11 @@ constructor(
                     projection.setLaunchCookie(launchCookie)
                     projection.taskId = taskId
                     MediaProjectionServiceHelper.setReviewedConsentIfNeeded(
-                        RECORD_CONTENT_TASK,
+                        ReviewGrantedConsentResult.RECORD_CONTENT_TASK,
                         reviewGrantedConsentRequired,
                         projection,
                     )
-                    _sharingState.value = SharingState.Approved
+                    _sharingState.value = SharingState.Approved(projection)
                 } catch (e: Exception) {
                     Log.e(TAG, "Error granting projection permission for task", e)
                     _sharingState.value = SharingState.Denied
@@ -114,6 +127,17 @@ constructor(
             Log.e(TAG, "Error granting projection permission for task", e)
             _sharingState.value = SharingState.Denied
         }
+    }
+
+    fun onDisplaySharingApproved(displayId: Int) {
+        val projection =
+            MediaProjectionServiceHelper.createOrReuseProjection(
+                uid,
+                packageName,
+                reviewGrantedConsentRequired,
+                displayId,
+            )
+        _sharingState.value = SharingState.Approved(projection)
     }
 
     fun onClose() {

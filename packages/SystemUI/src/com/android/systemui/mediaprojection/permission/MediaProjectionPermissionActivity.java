@@ -28,7 +28,6 @@ import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTE
 
 import static com.android.systemui.mediaprojection.permission.ScreenShareOptionKt.ENTIRE_SCREEN;
 import static com.android.systemui.mediaprojection.permission.ScreenShareOptionKt.ENTIRE_SCREEN_EXTERNAL;
-import static com.android.systemui.mediaprojection.permission.ScreenShareOptionKt.NOT_SELECTED;
 import static com.android.systemui.mediaprojection.permission.ScreenShareOptionKt.SINGLE_APP;
 
 import android.annotation.Nullable;
@@ -209,15 +208,7 @@ public class MediaProjectionPermissionActivity extends Activity {
                         .INSTANCE.isLargeScreenSharingEnabled();
         final Runnable screenShareDialogRunnable;
         if (showLargeScreenShareDialog) {
-            screenShareDialogRunnable = () -> grantMediaProjectionPermission(
-                    // The screen share mode will be determined by user's selection later
-                    // on large screen. Check [PreShareUI] and [ScreenCaptureShareScreenViewModel]
-                    // for more details.
-                    /* screenShareMode= */ NOT_SELECTED,
-                    /* hasCastingCapabilities= */ false,
-                    /* displayId = */ getDisplay().getDisplayId(),
-                    /* isLargeScreen = */ true
-            );
+            screenShareDialogRunnable = this::grantMediaProjectionPermissionForLargeScreen;
         } else {
             // Using application context for the dialog, instead of the activity context, so we get
             // the correct screen width when in split screen.
@@ -301,7 +292,7 @@ public class MediaProjectionPermissionActivity extends Activity {
                     grantMediaProjectionPermission(
                             selectedOption.getMode(),
                             hasCastingCapabilities,
-                            selectedOption.getDisplayId(), /* isLargeScreen = */ false);
+                            selectedOption.getDisplayId());
                 };
         Runnable onCancelClicked = () -> finish(RECORD_CANCEL, /* projection= */ null);
         if (hasCastingCapabilities) {
@@ -390,7 +381,7 @@ public class MediaProjectionPermissionActivity extends Activity {
 
     private void grantMediaProjectionPermission(
             int screenShareMode, boolean hasCastingCapabilities,
-            int displayId, boolean isLargeScreen) {
+            int displayId) {
         try {
             IMediaProjection projection =
                     MediaProjectionServiceHelper.createOrReuseProjection(
@@ -400,19 +391,13 @@ public class MediaProjectionPermissionActivity extends Activity {
                 setCommonIntentExtras(intent, hasCastingCapabilities, projection);
                 setResult(RESULT_OK, intent);
                 finish(RECORD_CONTENT_DISPLAY, projection);
-            } else if (screenShareMode == SINGLE_APP || isLargeScreen) {
-                final Intent intent = new Intent(this, isLargeScreen
-                        ? ShareScreenActivity.class
-                        : MediaProjectionAppSelectorActivity.class);
+            } else if (screenShareMode == SINGLE_APP) {
+                final Intent intent =
+                        new Intent(this, MediaProjectionAppSelectorActivity.class);
                 setCommonIntentExtras(intent, hasCastingCapabilities, projection);
-                intent.putExtra(isLargeScreen ? ShareScreenActivity.EXTRA_HOST_APP_USER_HANDLE
-                                : MediaProjectionAppSelectorActivity.EXTRA_HOST_APP_USER_HANDLE,
+                intent.putExtra(MediaProjectionAppSelectorActivity.EXTRA_HOST_APP_USER_HANDLE,
                         getHostUserHandle());
-                if (isLargeScreen) {
-                    intent.putExtra(ShareScreenActivity.EXTRA_PACKAGE_NAME, mPackageName);
-                }
-                intent.putExtra(isLargeScreen ? ShareScreenActivity.EXTRA_HOST_APP_UID
-                                : MediaProjectionAppSelectorActivity.EXTRA_HOST_APP_UID,
+                intent.putExtra(MediaProjectionAppSelectorActivity.EXTRA_HOST_APP_UID,
                         getLaunchedFromUid());
                 intent.putExtra(EXTRA_USER_REVIEW_GRANTED_CONSENT, mReviewGrantedConsentRequired);
                 intent.setFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
@@ -421,12 +406,7 @@ public class MediaProjectionPermissionActivity extends Activity {
                 // avoid creating a separate SystemUI process without access to recent tasks
                 // because it won't have WM Shell running inside.
                 mUserSelectingTask = true;
-                if (isLargeScreen) {
-                    startActivityAsUser(intent,
-                            UserHandle.getUserHandleForUid(getLaunchedFromUid()));
-                } else {
-                    startActivityAsUser(intent, UserHandle.of(USER_SYSTEM));
-                }
+                startActivityAsUser(intent, UserHandle.of(USER_SYSTEM));
                 // close shade if it's open
                 mStatusBarManager.collapsePanels();
             }
@@ -434,10 +414,24 @@ public class MediaProjectionPermissionActivity extends Activity {
             Log.e(TAG, "Error granting projection permission", e);
             finishAsCancelled();
         } finally {
-            if (!isLargeScreen && mDialog != null) {
+            if (mDialog != null) {
                 mDialog.dismiss();
             }
         }
+    }
+
+    private void grantMediaProjectionPermissionForLargeScreen() {
+        final Intent intent = new Intent(this, ShareScreenActivity.class);
+        intent.putExtra(ShareScreenActivity.EXTRA_HOST_APP_USER_HANDLE, getHostUserHandle());
+        intent.putExtra(ShareScreenActivity.EXTRA_PACKAGE_NAME, mPackageName);
+        intent.putExtra(ShareScreenActivity.EXTRA_HOST_APP_UID, getLaunchedFromUid());
+        intent.putExtra(EXTRA_USER_REVIEW_GRANTED_CONSENT, mReviewGrantedConsentRequired);
+        intent.setFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
+
+        mUserSelectingTask = true;
+        startActivityAsUser(intent, UserHandle.getUserHandleForUid(getLaunchedFromUid()));
+        // close shade if it's open
+        mStatusBarManager.collapsePanels();
     }
 
     private void setCommonIntentExtras(

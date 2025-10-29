@@ -63,8 +63,6 @@ constructor(
         val reviewGrantedConsentRequired =
             intent.getBooleanExtra(EXTRA_USER_REVIEW_GRANTED_CONSENT, false)
         val hostUserHandle: UserHandle? = intent.getParcelableExtra(EXTRA_HOST_APP_USER_HANDLE)
-        val mediaProjectionBinder = intent.getIBinderExtra(EXTRA_MEDIA_PROJECTION)
-        val projection = IMediaProjection.Stub.asInterface(mediaProjectionBinder)
 
         if (uid == -1 || hostUserHandle == null || packageName == null) {
             Log.d(
@@ -94,33 +92,31 @@ constructor(
                                     ?.build() as ScreenCaptureShareScreenUiComponent)
                                 .apply {
                                     shareScreenUiInteractor.initialize(
-                                        projection,
                                         reviewGrantedConsentRequired,
                                         hostUserHandle,
+                                        uid,
+                                        packageName,
+                                        display!!.displayId,
                                     )
                                 }
                         ui
                     }
 
                 val shareScreenUiInteractor = uiComponent.shareScreenUiInteractor
-                LaunchedEffect(shareScreenUiInteractor, projection) {
+                LaunchedEffect(shareScreenUiInteractor) {
                     shareScreenUiInteractor.sharingState
                         .onEach { state ->
                             when (state) {
-                                ShareScreenUiInteractor.SharingState.Approved -> {
-                                    var extras = Bundle()
-                                    extras.putBinder(EXTRA_MEDIA_PROJECTION, projection.asBinder())
-                                    val intent = Intent()
-                                    intent.putExtras(extras)
-                                    setResult(RESULT_OK, intent)
+                                is ShareScreenUiInteractor.SharingState.Approved -> {
+                                    setResult(RESULT_OK, createSuccessIntent(state.projection))
                                     setForceSendResultForMediaProjection()
                                     finish()
                                 }
-                                ShareScreenUiInteractor.SharingState.Denied -> {
+                                is ShareScreenUiInteractor.SharingState.Denied -> {
                                     setResult(RESULT_CANCELED)
                                     finish()
                                 }
-                                ShareScreenUiInteractor.SharingState.NotStarted -> {
+                                is ShareScreenUiInteractor.SharingState.NotStarted -> {
                                     // Do nothing
                                 }
                             }
@@ -133,6 +129,14 @@ constructor(
                 }
             }
         }
+    }
+
+    private fun createSuccessIntent(projection: IMediaProjection): Intent {
+        val extras = Bundle()
+        extras.putBinder(EXTRA_MEDIA_PROJECTION, projection.asBinder())
+        val intent = Intent()
+        intent.putExtras(extras)
+        return intent
     }
 
     companion object {
