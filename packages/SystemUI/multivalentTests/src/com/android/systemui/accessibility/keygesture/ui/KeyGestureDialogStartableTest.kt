@@ -40,7 +40,6 @@ import com.android.systemui.statusbar.phone.systemUIDialogFactory
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -259,9 +258,6 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
-    @Ignore(
-        "b/432568819 - Add this unittest after ag/35100568, because we need to wait for the main thread idle to dismiss dialog"
-    )
     fun start_screenReaderDialog_dismissDialog() =
         kosmos.runTest {
             underTest.start()
