@@ -14,3 +14,10 @@ winsonc@google.com
 tigerhuang@google.com
 lihongyu@google.com
 mariiasand@google.com
+
+# Files related to background activity launches
+per-file Background*Start* = set noparent
+per-file Background*Start* = file:/BAL_OWNERS
+per-file Background*Start* = ogunwale@google.com, louischang@google.com
+per-file BackgroundLaunchProcessController*.java = file:/BAL_OWNERS
+

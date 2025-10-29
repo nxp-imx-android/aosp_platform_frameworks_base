@@ -4,3 +4,7 @@ per-file Window*.java = file:/services/core/java/com/android/server/wm/OWNERS
 per-file *Notification* = file:/packages/SystemUI/OWNERS
 per-file *Zen* = file:/packages/SystemUI/OWNERS
 per-file *StatusBar* = file:/packages/SystemUI/OWNERS
+
+# Files related to background activity launches
+per-file Background*Start* = file:/BAL_OWNERS
+
