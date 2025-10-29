@@ -113,8 +113,6 @@ public enum DesktopModeFlags {
     ENABLE_THEMED_APP_HEADERS(Flags::enableThemedAppHeaders, true),
     ENABLE_TOP_VISIBLE_ROOT_TASK_PER_USER_TRACKING(Flags::enableTopVisibleRootTaskPerUserTracking,
             true),
-    ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX(
-            Flags::enableVisualIndicatorInTransitionBugfix, true),
     ENABLE_WINDOWING_EDGE_DRAG_RESIZE(Flags::enableWindowingEdgeDragResize, true),
     ENABLE_WINDOWING_SCALED_RESIZING(Flags::enableWindowingScaledResizing, true),
     IGNORE_ASPECT_RATIO_RESTRICTIONS_FOR_RESIZEABLE_FREEFORM_ACTIVITIES(

@@ -1454,16 +1454,6 @@ flag {
 }
 
 flag {
-    name: "enable_visual_indicator_in_transition_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enables bugfix to move visual drop-zone indicator to transition root, so it can't be shown after the transition."
-    bug: "392826275"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_window_context_resources_update_on_config_change"
     namespace: "lse_desktop_experience"
     description: "Updates window context resources before the view receives the config change callback."
