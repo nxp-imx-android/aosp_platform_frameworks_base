@@ -193,7 +193,7 @@ public class DisplayController {
      */
     public boolean isAnimationsDisabled(int displayId) {
         final DisplayRecord r = mDisplays.get(displayId);
-        return r == null || r.mAnimationsDisabled;
+        return r != null && r.mAnimationsDisabled;
     }
 
     /**
