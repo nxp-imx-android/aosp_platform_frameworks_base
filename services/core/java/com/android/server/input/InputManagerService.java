@@ -4371,10 +4371,10 @@ public class InputManagerService extends IInputManager.Stub
 
     private boolean isControllerButton(int locationCode) {
         return switch (locationCode) {
-            case InputManager.ControllerButton.CONTROLLER_BUTTON_SOUTH,
-                 InputManager.ControllerButton.CONTROLLER_BUTTON_EAST,
-                 InputManager.ControllerButton.CONTROLLER_BUTTON_NORTH,
-                 InputManager.ControllerButton.CONTROLLER_BUTTON_WEST,
+            case InputManager.ControllerButton.CONTROLLER_BUTTON_A,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_B,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_X,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_Y,
                  InputManager.ControllerButton.CONTROLLER_BUTTON_L1,
                  InputManager.ControllerButton.CONTROLLER_BUTTON_R1,
                  InputManager.ControllerButton.CONTROLLER_BUTTON_L2,
