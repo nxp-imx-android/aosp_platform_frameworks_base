@@ -1178,4 +1178,7 @@
     name is this string, an icon is shown on the status bar for quick access.
     -->
     <string name="config_statusBarAssistantPackage" translatable="false" />
+
+    <!-- Whether to enable Bouncer containerization at a lower - large width breakpoint -->
+    <bool name="config_lowerBouncerContainerizationBreakpointToLargeWidth">false</bool>
 </resources>
