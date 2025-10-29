@@ -35,7 +35,9 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Debug;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.DisplayCutout;
+import android.view.InsetsState;
 import android.view.SurfaceControl;
 import android.window.DesktopExperienceFlags;
 import android.window.DisplayAreaInfo;
@@ -132,6 +134,10 @@ public class PipController implements ConfigurationChangeListener,
     private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
 
     private boolean mWaitingToPlayDisplayChangeBoundsUpdate;
+
+    @VisibleForTesting
+    final SparseArray<List<DisplayInsetsController.OnInsetsChangedListener>> mListenersPerDisplay =
+            new SparseArray<>();
 
     @VisibleForTesting
     interface PipAnimationListener {
@@ -251,7 +257,8 @@ public class PipController implements ConfigurationChangeListener,
         return mImpl;
     }
 
-    private void onInit() {
+    @VisibleForTesting
+    void onInit() {
         mShellCommandHandler.addDumpCallback(this::dump, this);
         // Ensure that we have the display info in case we get calls to update the bounds before the
         // listener calls back
@@ -261,20 +268,46 @@ public class PipController implements ConfigurationChangeListener,
 
         mDisplayController.addDisplayChangingController(this);
         mDisplayController.addDisplayWindowListener(this);
-        mDisplayInsetsController.addInsetsChangedListener(mPipDisplayLayoutState.getDisplayId(),
-                new ImeListener(mDisplayController, mPipDisplayLayoutState.getDisplayId()) {
+        mDisplayInsetsController.addGlobalInsetsChangedListener(
+                new DisplayInsetsController.OnInsetsChangedListener() {
                     @Override
-                    public void onImeVisibilityChanged(boolean imeVisible, int imeHeight) {
-                        mPipTouchHandler.onImeVisibilityChanged(imeVisible, imeHeight);
-                    }
-                });
-        mDisplayInsetsController.addInsetsChangedListener(mPipDisplayLayoutState.getDisplayId(),
-                new NavigationBarsListener(mDisplayController,
-                        mPipDisplayLayoutState.getDisplayId()) {
-                    @Override
-                    protected void onNavigationBarsVisibilityChanged(
-                            @NonNull Insets insets) {
-                        mPipDisplayLayoutState.setNavigationBarsInsets(insets);
+                    public void insetsChanged(int displayId, InsetsState insetsState) {
+                        // ImeListeners and NavigationBarsListener have to be registered per-display
+                        // so we keep track of the listeners and dispatch insetsChanged to the
+                        // appropriate listeners
+                        if (mListenersPerDisplay.contains(displayId)) {
+                            mListenersPerDisplay.get(displayId).forEach(
+                                    l -> l.insetsChanged(insetsState));
+                        } else {
+                            final ImeListener imeListener =
+                                    new ImeListener(mDisplayController, displayId) {
+                                        @Override
+                                        public void onImeVisibilityChanged(boolean imeVisible,
+                                                int imeHeight) {
+                                            if (displayId
+                                                    == mPipDisplayLayoutState.getDisplayId()) {
+                                                mPipTouchHandler.onImeVisibilityChanged(imeVisible,
+                                                        imeHeight);
+                                            }
+                                        }
+                                    };
+                            final NavigationBarsListener navBarsListener =
+                                    new NavigationBarsListener(mDisplayController, displayId) {
+                                        @Override
+                                        protected void onNavigationBarsVisibilityChanged(
+                                                @NonNull Insets insets) {
+                                            if (displayId
+                                                    == mPipDisplayLayoutState.getDisplayId()) {
+                                                mPipDisplayLayoutState.setNavigationBarsInsets(
+                                                        insets);
+                                            }
+                                        }
+                                    };
+                            mListenersPerDisplay.put(displayId,
+                                    List.of(imeListener, navBarsListener));
+                            imeListener.insetsChanged(insetsState);
+                            navBarsListener.insetsChanged(insetsState);
+                        }
                     }
                 });
 
