@@ -1751,6 +1751,10 @@ package android.hardware.camera2.params {
     method @NonNull public java.util.Map<android.graphics.ColorSpace.Named,java.util.Map<java.lang.Integer,java.util.Set<java.lang.Long>>> getProfileMap();
   }
 
+  public final class DynamicRangeProfiles {
+    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long CURRENT_MAX = 33554432L; // 0x2000000L
+  }
+
   public final class OutputConfiguration implements android.os.Parcelable {
     method public void clearColorSpace();
     method @Nullable public android.graphics.ColorSpace getColorSpace();
