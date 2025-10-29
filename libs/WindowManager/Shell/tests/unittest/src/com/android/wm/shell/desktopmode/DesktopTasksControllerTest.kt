@@ -184,6 +184,7 @@ import com.android.wm.shell.shared.split.SplitScreenConstants
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_INDEX_UNDEFINED
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
+import com.android.wm.shell.splitscreen.SplitMultiDisplayProvider
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
@@ -277,6 +278,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock
     lateinit var clientFullscreenRequestTransitionHandler: ClientFullscreenRequestTransitionHandler
     @Mock lateinit var splitScreenController: SplitScreenController
+    @Mock lateinit var splitMultiDisplayProvider: SplitMultiDisplayProvider
     @Mock lateinit var recentsTransitionHandler: RecentsTransitionHandler
     @Mock lateinit var dragAndDropController: DragAndDropController
     @Mock lateinit var multiInstanceHelper: MultiInstanceHelper
@@ -491,6 +493,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(rootTaskDisplayAreaOrganizer.displayIds)
             .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECONDARY_DISPLAY_ID))
         whenever(transactionPool.acquire()).thenReturn(surfaceControlTransaction)
+        whenever(splitScreenController.multiDisplayProvider).thenReturn(splitMultiDisplayProvider)
 
         controller = createController()
         controller.setSplitScreenController(splitScreenController)
