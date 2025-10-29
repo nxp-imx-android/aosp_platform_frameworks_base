@@ -1453,6 +1453,11 @@ static jint android_media_AudioTrack_setStartThresholdInFrames(JNIEnv *env, jobj
     return (jint)result; // this should be a positive value.
 }
 
+static jlong android_media_AudioTrack_flushFromFrame(JNIEnv * /*env*/, jobject /*thiz*/,
+                                                     jint /*accuracy*/, jlong positionInFrames) {
+    return positionInFrames;
+}
+
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 static const JNINativeMethod gMethods[] = {
@@ -1538,6 +1543,7 @@ static const JNINativeMethod gMethods[] = {
          (void *)android_media_AudioTrack_setStartThresholdInFrames},
         {"native_getStartThresholdInFrames", "()I",
          (void *)android_media_AudioTrack_getStartThresholdInFrames},
+        {"native_flushFromFrame", "(IJ)J", (void *)android_media_AudioTrack_flushFromFrame},
 };
 
 // field names found in android/media/AudioTrack.java

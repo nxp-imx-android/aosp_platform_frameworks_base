@@ -22989,6 +22989,7 @@ package android.media {
     method @NonNull public android.media.VolumeShaper createVolumeShaper(@NonNull android.media.VolumeShaper.Configuration);
     method protected void finalize();
     method public void flush();
+    method @FlaggedApi("android.media.audio.partial_flush_for_pcm_offload") @CheckResult public long flushFromFrame(long, int);
     method @NonNull public android.media.AudioAttributes getAudioAttributes();
     method public float getAudioDescriptionMixLeveldB();
     method public int getAudioFormat();
@@ -23077,6 +23078,8 @@ package android.media {
     field public static final int ERROR_BAD_VALUE = -2; // 0xfffffffe
     field public static final int ERROR_DEAD_OBJECT = -6; // 0xfffffffa
     field public static final int ERROR_INVALID_OPERATION = -3; // 0xfffffffd
+    field @FlaggedApi("android.media.audio.partial_flush_for_pcm_offload") public static final int FLUSH_FROM_ACCURACY_BEST_EFFORT = 0; // 0x0
+    field @FlaggedApi("android.media.audio.partial_flush_for_pcm_offload") public static final int FLUSH_FROM_ACCURACY_EXACT = 1; // 0x1
     field public static final int MODE_STATIC = 0; // 0x0
     field public static final int MODE_STREAM = 1; // 0x1
     field public static final int PERFORMANCE_MODE_LOW_LATENCY = 1; // 0x1
