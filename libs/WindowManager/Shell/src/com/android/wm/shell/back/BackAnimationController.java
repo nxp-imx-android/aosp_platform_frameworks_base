@@ -30,6 +30,7 @@ import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 import static android.window.TransitionInfo.FLAG_SHOW_WALLPAPER;
 
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_PREDICTIVE_BACK_HOME;
+import static com.android.window.flags.Flags.predictiveBackQuickDoubleBackSwipes;
 import static com.android.window.flags.Flags.predictiveBackStopKeycodeBackForwarding;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BACK_PREVIEW;
 
@@ -610,9 +611,16 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
 
     private void startBackNavigation(@NonNull BackTouchTracker touchTracker) {
         if (touchTracker != mCurrentTracker) {
-            // Only start the back navigation if no other gesture is being processed. Otherwise,
-            // the back navigation will fall back to legacy back event injection.
-            return;
+            if (predictiveBackQuickDoubleBackSwipes()) {
+                // Another back transition is still ongoing. Let's schedule the transition idle
+                // runner to wait for it to finish.
+                scheduleTransitionIdleRunner();
+                return;
+            } else {
+                // Only start the back navigation if no other gesture is being processed. Otherwise,
+                // the back navigation will fall back to legacy back event injection.
+                return;
+            }
         }
         try {
             startLatencyTracking();
@@ -663,11 +671,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         }
         final int backType = backNavigationInfo.getType();
         if (backType == BackNavigationInfo.TYPE_IN_TRANSITION) {
-            mBackNavigationInfo = null;
-            tryPilferPointers();
-            mTransitionIdleRunner.mRequestCount++;
-            mTransitions.runOnIdle(() -> mShellExecutor.executeDelayed(
-                    mTransitionIdleRunner, 0));
+            scheduleTransitionIdleRunner();
             return;
         }
         final boolean shouldDispatchToAnimator = shouldDispatchToAnimator();
@@ -682,6 +686,14 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                 tryPilferPointers();
             }
         }
+    }
+
+    private void scheduleTransitionIdleRunner() {
+        mBackNavigationInfo = null;
+        tryPilferPointers();
+        mTransitionIdleRunner.mRequestCount++;
+        mTransitions.runOnIdle(() -> mShellExecutor.executeDelayed(
+                mTransitionIdleRunner, 0));
     }
 
     private void onMove(@BackEvent.SwipeEdge int swipeEdge) {
@@ -1054,7 +1066,9 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         mActiveCallback = null;
         mApps = null;
         mOnBackStartDispatched = false;
-        mThresholdCrossed = false;
+        if (!predictiveBackQuickDoubleBackSwipes()) {
+            mThresholdCrossed = false;
+        }
         mPointersPilfered = false;
         mBackAnimationTriggered = false;
         mShellBackAnimationRegistry.resetDefaultCrossActivity();

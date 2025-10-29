@@ -37,6 +37,7 @@ import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFI
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_BACK_PREVIEW;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_PREDICT_BACK;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
+import static com.android.window.flags.Flags.predictiveBackQuickDoubleBackSwipes;
 
 import android.annotation.BinderThread;
 import android.annotation.NonNull;
@@ -180,8 +181,13 @@ class BackNavigationController {
         synchronized (wmService.mGlobalLock) {
             if (isMonitoringFinishTransition()) {
                 Slog.w(TAG, "Previous animation hasn't finish, status: " + mAnimationHandler);
-                // Don't start any animation for it.
-                return null;
+                if (predictiveBackQuickDoubleBackSwipes()) {
+                    infoBuilder.setType(BackNavigationInfo.TYPE_IN_TRANSITION);
+                    return infoBuilder.build();
+                } else {
+                    // Don't start any animation for it.
+                    return null;
+                }
             }
 
             // In projected mode, main device remains unchanged when connected to external display.
