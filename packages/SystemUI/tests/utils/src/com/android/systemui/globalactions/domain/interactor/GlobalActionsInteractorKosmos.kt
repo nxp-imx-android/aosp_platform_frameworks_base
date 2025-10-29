@@ -16,8 +16,20 @@
 
 package com.android.systemui.globalactions.domain.interactor
 
+import android.os.userManager
 import com.android.systemui.globalactions.data.repository.globalActionsRepository
+import com.android.systemui.globalactions.globalActionsManager
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.user.data.repository.fakeUserRepository
 
 val Kosmos.globalActionsInteractor by
-    Kosmos.Fixture { GlobalActionsInteractor(globalActionsRepository) }
+    Kosmos.Fixture {
+        GlobalActionsInteractor(
+            repository = globalActionsRepository,
+            globalActionsManager = globalActionsManager,
+            userManager = userManager,
+            userRepository = fakeUserRepository,
+            bgDispatcher = testDispatcher,
+        )
+    }
