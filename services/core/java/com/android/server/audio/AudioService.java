@@ -1468,7 +1468,7 @@ public class AudioService extends IAudioService.Stub
             mAudioPolicy.setEnableHardening(mShouldEnableAllHardening.get());
         });
         if (!mAudioPolicy.isServiceAvailable()) {
-            Log.wtf(TAG, "AudioPolicy not available on AudioService start!");
+            Log.e(TAG, "AudioPolicy not available on AudioService start!");
         }
 
         mPlatformType = AudioSystem.getPlatformType(context);
@@ -1928,7 +1928,7 @@ public class AudioService extends IAudioService.Stub
                 SubscriptionManager.class);
         if (subscriptionManager == null) {
             Log.e(TAG, "initExternalEventReceivers cannot create SubscriptionManager!");
-        } else {
+        } else if (android.os.Process.myUid() == 1000) {
             subscriptionManager.addOnSubscriptionsChangedListener(mSubscriptionChangedListener);
         }
 
