@@ -60,7 +60,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.Icon
@@ -478,9 +477,6 @@ fun RegionBox(
             }
         }
 
-        // The width of the border stroke around the region box.
-        val borderStrokeWidth = 2.dp
-
         state.rect?.let { currentRect ->
             // A parent container for the region box and its associated UI. By applying the
             // graphicsLayer modifier here, all children will be moved together as a single unit,
@@ -531,7 +527,7 @@ fun RegionBox(
                                             pillInnerPlaceable.width,
                                             pillInnerPlaceable.height,
                                         ) {
-                                            pillInnerPlaceable.placeRelative(
+                                            pillInnerPlaceable.place(
                                                 pillX.roundToInt(),
                                                 pillY.roundToInt(),
                                             )
@@ -698,79 +694,59 @@ fun RegionBox(
                             .first()
                             .measure(constraints)
 
-                    // Finally, measure the selection box itself.
                     val selectionBoxPlaceable =
                         subcompose("selectionBox") {
                                 Box(
                                     modifier =
                                         Modifier.size(boxWidthDp, boxHeightDp)
                                             .border(
-                                                borderStrokeWidth,
-                                                MaterialTheme.colorScheme.primary,
+                                                width = 2.dp,
+                                                color = MaterialTheme.colorScheme.primary,
                                             )
                                 )
                             }
                             .first()
                             .measure(constraints)
 
+                    val (topLeftHandle, topRightHandle, bottomLeftHandle, bottomRightHandle) =
+                        subcompose("resizeHandles") {
+                                val handleSize = 20.dp
+                                ResizeHandle(rotation = 0f, size = handleSize) // Top left
+                                ResizeHandle(rotation = 90f, size = handleSize) // Top right
+                                ResizeHandle(rotation = 270f, size = handleSize) // Bottom left
+                                ResizeHandle(rotation = 180f, size = handleSize) // Bottom right
+                            }
+                            .map { it.measure(constraints) }
+
                     layout(constraints.maxWidth, constraints.maxHeight) {
-                        // Place all placeables at (0,0) within the SubcomposeLayout.
-                        // Their final positions are determined by other modifiers:
-                        // - selectionBoxPlaceable: Placed at (0,0) and sized to the selection.
+                        // Place the following placeables at (0,0) within the SubcomposeLayout.
+                        // Their final positions are determined by their respective modifiers:
+                        // - selectionBoxPlaceable: Sized to the region box bounds.
                         // - dimensionPillPlaceable: Positioned via its own Modifier.layout.
                         // - captureButtonPlaceable: Positioned via its graphicsLayer translations.
                         // The parent Box's graphicsLayer then translates this entire
                         // SubcomposeLayout to the correct on-screen position, ensuring all
                         // elements move as a single, synchronized unit.
-                        selectionBoxPlaceable.placeRelative(0, 0)
-                        dimensionPillPlaceable?.placeRelative(0, 0)
-                        captureButtonPlaceable.placeRelative(0, 0)
-                    }
-                }
+                        selectionBoxPlaceable.place(0, 0)
+                        captureButtonPlaceable.place(0, 0)
+                        dimensionPillPlaceable?.place(0, 0)
 
-                // Draw the 4 resize knobs at the 4 corners of the region box.
-                val handleSize = 20.dp
-                val handleSizePx = with(density) { handleSize.toPx() }.roundToInt()
-                if (state.dragMode != DragMode.MOVING && state.dragMode != DragMode.RESIZING) {
-                    Box {
-                        ResizeHandle(
-                            modifier = Modifier.offset { IntOffset(x = 0, y = 0) },
-                            rotation = 0f,
-                            size = handleSize,
-                        )
-                        ResizeHandle(
-                            modifier =
-                                Modifier.offset {
-                                    IntOffset(
-                                        x = currentRect.width.roundToInt() - handleSizePx,
-                                        y = 0,
-                                    )
-                                },
-                            rotation = 90f,
-                            size = handleSize,
-                        )
-                        ResizeHandle(
-                            modifier =
-                                Modifier.offset {
-                                    IntOffset(
-                                        x = 0,
-                                        y = currentRect.height.roundToInt() - handleSizePx,
-                                    )
-                                },
-                            rotation = 270f,
-                            size = handleSize,
-                        )
-                        ResizeHandle(
-                            modifier =
-                                Modifier.offset {
-                                    IntOffset(
-                                        x = currentRect.width.roundToInt() - handleSizePx,
-                                        y = currentRect.height.roundToInt() - handleSizePx,
-                                    )
-                                },
-                            rotation = 180f,
-                            size = handleSize,
-                        )
+                        // Show resize handles only when not interacting with the box.
+                        if (state.dragMode == DragMode.NONE) {
+                            topLeftHandle.place(0, 0)
+                            topRightHandle.place(
+                                selectionBoxPlaceable.width - topRightHandle.width,
+                                0,
+                            )
+                            bottomLeftHandle.place(
+                                0,
+                                selectionBoxPlaceable.height - bottomLeftHandle.height,
+                            )
+                            bottomRightHandle.place(
+                                selectionBoxPlaceable.width - bottomRightHandle.width,
+                                selectionBoxPlaceable.height - bottomRightHandle.height,
+                            )
+                        }
                     }
                 }
             }
