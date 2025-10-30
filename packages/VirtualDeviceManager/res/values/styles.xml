@@ -64,6 +64,7 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">28dp</item>
+        <item name="android:layout_marginBottom">@dimen/settingslib_expressive_space_extrasmall4</item>
         <item name="android:minHeight">@dimen/settingslib_expressive_space_medium3</item>
         <item name="android:background">@drawable/settingslib_expressive_button_background_filled</item>
         <item name="android:textAppearance">@style/TextAppearance.SettingsLib.LabelLarge</item>
