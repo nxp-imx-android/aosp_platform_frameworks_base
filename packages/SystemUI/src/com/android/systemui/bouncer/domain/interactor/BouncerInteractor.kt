@@ -39,6 +39,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.ActiveUnlockInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor
 import com.android.systemui.log.SessionTracker
+import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
@@ -206,6 +207,10 @@ constructor(
     /** Notifies that the user has places down a pointer, not necessarily dragging just yet. */
     fun onDown() {
         falsingInteractor.avoidGesture()
+    }
+
+    fun isFalseBackgroundTap(): Boolean {
+        return falsingInteractor.isFalseTap(FalsingManager.MODERATE_PENALTY)
     }
 
     /**
