@@ -1847,7 +1847,7 @@ class UserController implements Handler.Callback {
 
         UserInfo userInfo = getUserInfo(oldUserId);
         if (userInfo.isEphemeral()) {
-            LocalServices.getService(UserManagerInternal.class).onEphemeralUserStop(oldUserId);
+            mInjector.getUserManagerInternal().onEphemeralUserStop(oldUserId);
         }
         if (userInfo.isGuest() || userInfo.isEphemeral()) {
             // This is a user to be stopped.
