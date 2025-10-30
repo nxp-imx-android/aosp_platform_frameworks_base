@@ -38,6 +38,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.settings.brightness.domain.interactor.brightnessMirrorShowingInteractor
 import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
+import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.statusbar.notification.data.repository.UnconfinedFakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
@@ -266,6 +267,68 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
 
             // THEN allowScrimClipping is false
             assertThat(allowScrimClipping).isFalse()
+        }
+
+    @Test
+    fun expandOccluded_toNotifStack() =
+        kosmos.runTest {
+            val expectedFraction: Float = 0.5f
+            val expandFraction by collectLastValue(underTest.expandFraction)
+
+            enableSingleShade()
+            runCurrent()
+
+            // GIVEN a transition from Occluded to Shade scene
+            sceneContainerRepository.setTransitionState(
+                flowOf(
+                    Transition.ChangeScene(
+                        fromScene = Scenes.Occluded,
+                        toScene = Scenes.Shade,
+                        currentScene = flowOf(Scenes.Occluded),
+                        currentOverlays = emptySet(),
+                        progress = MutableStateFlow(expectedFraction),
+                        isInitiatedByUserInput = true,
+                        isUserInputOngoing = flowOf(true),
+                        previewProgress = flowOf(0f),
+                        isInPreviewStage = flowOf(false),
+                    )
+                )
+            )
+            runCurrent()
+
+            // THEN expandFraction is expectedFraction
+            assertThat(expandFraction).isEqualTo(expectedFraction)
+        }
+
+    @Test
+    fun expandNotifStack_toOccluded() =
+        kosmos.runTest {
+            val expectedFraction: Float = 0.5f
+            val expandFraction by collectLastValue(underTest.expandFraction)
+
+            enableSingleShade()
+            runCurrent()
+
+            // GIVEN a transition from Shade scene to Occluded
+            sceneContainerRepository.setTransitionState(
+                flowOf(
+                    Transition.ChangeScene(
+                        fromScene = Scenes.Shade,
+                        toScene = Scenes.Occluded,
+                        currentScene = flowOf(Scenes.Shade),
+                        currentOverlays = emptySet(),
+                        progress = MutableStateFlow(expectedFraction),
+                        isInitiatedByUserInput = true,
+                        isUserInputOngoing = flowOf(true),
+                        previewProgress = flowOf(0f),
+                        isInPreviewStage = flowOf(false),
+                    )
+                )
+            )
+            runCurrent()
+
+            // THEN expandFraction is expectedFraction
+            assertThat(expandFraction).isEqualTo(expectedFraction)
         }
 
     private fun Kosmos.setBlur(isBlurred: Boolean) {

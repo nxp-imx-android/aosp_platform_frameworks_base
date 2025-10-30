@@ -131,7 +131,8 @@ constructor(
             flowOf(1f)
         } else if (
             transitionState.isTransitioningBetween(Scenes.Gone, Scenes.Shade) ||
-                transitionState.isTransitioning(from = Scenes.Shade, to = Scenes.Lockscreen)
+                transitionState.isTransitioning(from = Scenes.Shade, to = Scenes.Lockscreen) ||
+                transitionState.isTransitioningBetween(Scenes.Occluded, Scenes.Shade)
         ) {
             shadeInteractor.shadeExpansion
         } else if (transitionState.isTransitioningBetween(Scenes.Gone, Scenes.QuickSettings)) {
