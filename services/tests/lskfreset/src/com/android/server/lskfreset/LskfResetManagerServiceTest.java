@@ -168,4 +168,14 @@ public class LskfResetManagerServiceTest {
         assertEquals(successCount.get(), 1);
         assertEquals(failureCount.get(), numThreads - 1);
     }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_LSKF_RESET_MANAGER)
+    public void testSessionDeath() throws Exception {
+        ILskfResetManager manager = mService.getBinderService();
+        ILskfResetSession session = manager.createLskfResetSession(TEST_USER_0);
+        assertTrue(mService.isSessionActive(session));
+        mService.killSession(session);
+        assertFalse(mService.isSessionActive(session));
+    }
 }

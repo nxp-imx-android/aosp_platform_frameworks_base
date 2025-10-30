@@ -62,6 +62,25 @@ public class LskfResetManagerService extends SystemService {
         return mActiveSessions.containsKey(session.asBinder());
     }
 
+    /**
+     * Forcibly terminate the given session. This is intended to simulate what would happen if the
+     * remote client holding the session died and the linkToDeath operation was triggered. This will
+     * fail if the session is not currently alive and open.
+     */
+    @VisibleForTesting
+    void killSession(ILskfResetSession session) {
+        IBinder sessionBinder = session.asBinder();
+        LskfResetSessionImpl sessionImpl = mActiveSessions.get(sessionBinder);
+        if (sessionImpl == null) {
+            throw new IllegalStateException("Cannot kill session that is not active");
+        }
+        boolean isAlive = sessionBinder.unlinkToDeath(sessionImpl, 0);
+        if (!isAlive) {
+            throw new IllegalStateException("Cannot kill session that is not alive");
+        }
+        sessionImpl.binderDied();
+    }
+
     @Override
     public void onStart() {
         if (enableLskfResetManager()) {
@@ -93,17 +112,10 @@ public class LskfResetManagerService extends SystemService {
             mActiveSessions.put(sessionBinder, session);
 
             try {
-                sessionBinder.linkToDeath(
-                        () -> {
-                            Slog.w(
-                                    STUB_TAG,
-                                    "Client for session died, cleaning up for user: " + user);
-                            session.closeSession(null);
-                        },
-                        0);
+                sessionBinder.linkToDeath(session, 0);
             } catch (RemoteException e) {
                 Slog.e(STUB_TAG, "Failed to link to death for session, cleaning up", e);
-                session.closeSession(null);
+                session.binderDied();
                 return null;
             }
 
@@ -112,7 +124,8 @@ public class LskfResetManagerService extends SystemService {
         }
     }
 
-    private class LskfResetSessionImpl extends ILskfResetSession.Stub {
+    private class LskfResetSessionImpl extends ILskfResetSession.Stub
+            implements IBinder.DeathRecipient {
         private static final String SESSION_TAG = "LskfResetSessionImpl";
 
         private final UserHandle mUser;
@@ -123,8 +136,10 @@ public class LskfResetManagerService extends SystemService {
         @GuardedBy("mOpenSession")
         private boolean mClosed;
 
-        // Implements the actual underlying session operations with the assumption that the session
-        // has not been closed and will not be close while this is active.
+        /**
+         * Implements the actual underlying session operations with the assumption that the session
+         * has not been closed and will not be close while this is active.
+         */
         private class OpenSession {
             public void saveEscrowToken(@NonNull EscrowToken escrowToken) {
                 // TODO: Validate token
@@ -144,10 +159,12 @@ public class LskfResetManagerService extends SystemService {
             return mSessionId;
         }
 
-        // Close the underlying session if it is not closed already. Accepts an optional runnable
-        // that will be executed if the caller is trying to close an already-closed session. This is
-        // used to treat a double-close as a failure in certain contexts.
-        void closeSession(Runnable runOnAlreadyClosed) {
+        /**
+         * Close the underlying session if it is not closed already. Accepts an optional runnable
+         * that will be executed if the caller is trying to close an already-closed session. This is
+         * used to treat a double-close as a failure in certain contexts.
+         */
+        private void closeSession(Runnable runOnAlreadyClosed) {
             synchronized (mOpenSession) {
                 if (mClosed) {
                     if (runOnAlreadyClosed != null) runOnAlreadyClosed.run();
@@ -161,6 +178,12 @@ public class LskfResetManagerService extends SystemService {
                 }
                 mClosed = true;
             }
+        }
+
+        @Override
+        public void binderDied() {
+            Slog.w(SESSION_TAG, "Client for session died, cleaning up for user: " + mUser);
+            closeSession(null);
         }
 
         @Override
