@@ -115,7 +115,6 @@ import com.android.systemui.scene.shared.model.SceneContainerConfig;
 import com.android.systemui.scene.shared.model.SceneDataSource;
 import com.android.systemui.scene.shared.model.SceneDataSourceDelegator;
 import com.android.systemui.scene.ui.view.WindowRootViewComponent;
-import com.android.systemui.screencapture.common.ScreenCaptureModule;
 import com.android.systemui.screenrecord.ScreenRecordModule;
 import com.android.systemui.screenshot.dagger.ScreenshotModule;
 import com.android.systemui.securelockdevice.dagger.SecureLockDeviceModule;
@@ -284,7 +283,6 @@ import javax.inject.Named;
         SecureLockDeviceModule.class,
         SensorModule.class,
         SecurityRepositoryModule.class,
-        ScreenCaptureModule.class,
         ScreenRecordModule.class,
         SettingsUtilModule.class,
         SmartRepliesInflationModule.class,
