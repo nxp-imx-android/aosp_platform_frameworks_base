@@ -28,6 +28,8 @@ import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConf
 import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import org.mockito.Mockito.mock
 
 class FakeAccessibilityShortcutsRepository(
@@ -151,6 +153,12 @@ class FakeAccessibilityShortcutsRepository(
                 isToggleOn = false,
             ),
         )
+    }
+
+    override fun getAllAccessibilityTargets(
+        @UserShortcutType shortcutType: Int
+    ): Flow<List<AccessibilityTargetModel>> = flow {
+        emit(getAllAccessibilityTargetsInfo(shortcutType))
     }
 
     override fun getSelectedAccessibilityTargetsInfo(
