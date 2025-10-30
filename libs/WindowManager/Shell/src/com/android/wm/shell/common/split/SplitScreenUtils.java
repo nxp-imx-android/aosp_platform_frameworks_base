@@ -43,10 +43,10 @@ import com.android.wm.shell.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.shared.split.SplitScreenConstants;
-import com.android.wm.shell.splitscreen.StageTaskListener;
-import com.android.wm.shell.splitscreen.LayoutNode;
 import com.android.wm.shell.splitscreen.BranchNode;
+import com.android.wm.shell.splitscreen.LayoutNode;
 import com.android.wm.shell.splitscreen.LeafNode;
+import com.android.wm.shell.splitscreen.StageTaskListener;
 
 /** Helper utility class for split screen components to use. */
 public class SplitScreenUtils {
@@ -154,7 +154,7 @@ public class SplitScreenUtils {
             boolean isLargeScreen, boolean isLandscape, int displayId) {
         if (allowLeftRightSplitInPortrait && isLargeScreen) {
             if (displayId == DEFAULT_DISPLAY
-                    || !DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue()) {
+                    || !DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue()) {
                 return !isLandscape;
             } else {
                 // If split is started in external display and the non_default_display_split_bugfix
@@ -224,14 +224,14 @@ public class SplitScreenUtils {
      * @param stage The StageTaskListener representing the current stage.
      * @param rootTDAOrganizer The RootTaskDisplayAreaOrganizer to query for DisplayAreaInfo.
      * @return The WindowContainerToken of the parent display area if
-     *         DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT is true and a valid
+     *         DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX is true and a valid
      *         DisplayAreaInfo is found for the main stage's display; otherwise, returns null.
      */
     @Nullable
     public static WindowContainerToken getNewParentTokenForStage(
             @Nullable StageTaskListener stage,
             @NonNull RootTaskDisplayAreaOrganizer rootTDAOrganizer) {
-        if (!DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue()
+        if (!DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue()
                 || stage == null || stage.getRunningTaskInfo() == null) {
             return null;
         }
@@ -252,7 +252,7 @@ public class SplitScreenUtils {
             @NonNull RootTaskDisplayAreaOrganizer rootTDAOrganizer,
             int displayId,
             @Nullable SplitLayout splitLayout) {
-        if (!DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue()) {
+        if (!DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue()) {
             return;
         }
 

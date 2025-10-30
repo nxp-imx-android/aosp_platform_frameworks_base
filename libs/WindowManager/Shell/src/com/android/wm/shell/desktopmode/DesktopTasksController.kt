@@ -72,7 +72,7 @@ import android.widget.Toast
 import android.window.DesktopExperienceFlags
 import android.window.DesktopExperienceFlags.DesktopExperienceFlag
 import android.window.DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY
-import android.window.DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT
+import android.window.DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX
 import android.window.DesktopExperienceFlags.ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY
 import android.window.DesktopModeFlags
 import android.window.DesktopModeFlags.ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER
@@ -2926,7 +2926,7 @@ class DesktopTasksController(
      */
     private fun moveSplitPairToDisplay(task: RunningTaskInfo, displayId: Int) {
         if (
-            !ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue ||
+            !ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue ||
                 !DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue
         ) {
             return
@@ -4026,7 +4026,7 @@ class DesktopTasksController(
                     wct,
                     /* forceLaunchNewTask= */ true,
                     splitIndex,
-                    if (ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue) callingTaskInfo.displayId
+                    if (ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue) callingTaskInfo.displayId
                     else DEFAULT_DISPLAY,
                 )
             }

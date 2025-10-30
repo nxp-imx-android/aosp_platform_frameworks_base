@@ -316,7 +316,7 @@ public class DesktopModeVisualIndicator {
         final int captionHeight = getDesktopViewAppHeaderHeightPx(mContext);
         final int transitionAreaTop = getTransitionAreaTop(captionHeight);
         if (isSplitAllowedOnDisplay()) {
-            // For task in DEFAULT_DISPLAY, or when NON_DEFAULT_DISPLAY_SPLIT is enabled,
+            // For task in DEFAULT_DISPLAY, or when NON_DEFAULT_DISPLAY_SPLIT_BUGFIX is enabled,
             // Perform a quick check first: any input off the left edge of the display should be
             // split left, and split right for the right edge. This is universal across all drag
             // event types.

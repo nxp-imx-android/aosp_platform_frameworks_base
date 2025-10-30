@@ -939,7 +939,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT)
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
     public void startIntent_onNonDefaultDisplay_updatesSplitLayoutConfiguration() {
         // Setup: Define a non-default display and its configuration.
         final int nonDefaultDisplayId = DEFAULT_DISPLAY + 1;

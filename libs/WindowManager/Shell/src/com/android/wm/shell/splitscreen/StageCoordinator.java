@@ -35,7 +35,7 @@ import static android.window.TransitionInfo.FLAG_IS_DISPLAY;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER;
 
 import static com.android.window.flags.Flags.enableFullScreenWindowOnRemovingSplitScreenStageBugfix;
-import static com.android.window.flags.Flags.enableNonDefaultDisplaySplit;
+import static com.android.window.flags.Flags.enableNonDefaultDisplaySplitBugfix;
 import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.Flags.enableFlexibleTwoAppSplit;
 import static com.android.wm.shell.Flags.splitToFullSetWindowMode;
@@ -320,7 +320,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
     @Override
     public void addMoveSplitPairToDisplayChanges(int oldDisplayId, int destinationDisplayId,
             @NonNull WindowContainerTransaction wct, boolean onTop) {
-        if (!DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue()
+        if (!DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue()
                 || !DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue()) {
             return;
         }
@@ -886,7 +886,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             wct.reorder(hideTaskToken, false /* onTop */);
         }
         // For now, the only CUJ that can use this is LaunchAdjacent while on non-default displays.
-        if (enableNonDefaultDisplaySplit()) {
+        if (enableNonDefaultDisplaySplitBugfix()) {
             updateSplitLayoutConfig(mRootTDAOrganizer, displayId, mSplitLayout);
             prepareMovingSplitScreenRoot(wct, displayId);
         }
@@ -936,7 +936,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         // split root to the default display if the app pair is clicked on default display.
         // TODO(b/393217881): cover more cases and extract this to a new method when split screen
         //  in connected display is fully supported.
-        if (DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue()) {
+        if (DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue()) {
             DisplayAreaInfo displayAreaInfo = mRootTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY);
             RunningTaskInfo taskInfo1 = mTaskOrganizer.getRunningTaskInfo(taskId1);
             RunningTaskInfo taskInfo2 = mTaskOrganizer.getRunningTaskInfo(taskId2);
@@ -1989,7 +1989,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         }
 
         // Reparent root task to default display if non default display split is enabled.
-        if (DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue()
+        if (DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue()
                 && mSplitRootTaskInfo.displayId != DEFAULT_DISPLAY) {
             DisplayAreaInfo displayAreaInfo = mRootTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY);
             if (displayAreaInfo != null) {
@@ -3040,7 +3040,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
     public void onDisplayChange(int displayId, int fromRotation, int toRotation,
             @Nullable DisplayAreaInfo newDisplayAreaInfo, WindowContainerTransaction wct) {
         boolean splitDisplayRotationAllowed =
-                !enableNonDefaultDisplaySplit() || mSplitRootTaskInfo.displayId == displayId;
+                !enableNonDefaultDisplaySplitBugfix() || mSplitRootTaskInfo.displayId == displayId;
         if (displayId != DEFAULT_DISPLAY || !isSplitActive() || !splitDisplayRotationAllowed) {
             return;
         }
@@ -3168,7 +3168,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             @Nullable TransitionRequestInfo request) {
         final RunningTaskInfo triggerTask = request.getTriggerTask();
         if (triggerTask == null) {
-            boolean splitDisplayRotationAllowed = !enableNonDefaultDisplaySplit()
+            boolean splitDisplayRotationAllowed = !enableNonDefaultDisplaySplitBugfix()
                     || (mSplitRootTaskInfo != null &&
                     mSplitRootTaskInfo.displayId == DEFAULT_DISPLAY);
             if (isSplitActive() && splitDisplayRotationAllowed) {
