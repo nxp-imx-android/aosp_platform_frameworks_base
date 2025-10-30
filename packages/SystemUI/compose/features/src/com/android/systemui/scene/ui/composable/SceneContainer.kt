@@ -39,9 +39,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.OverlayKey
+import com.android.compose.animation.scene.PassthroughSwipeDetector
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.animation.scene.SceneTransitionLayoutState
@@ -96,6 +99,7 @@ fun SceneContainer(
     dataSourceDelegator: SceneDataSourceDelegator,
     sceneJankMonitorFactory: SceneJankMonitor.Factory,
     modifier: Modifier = Modifier,
+    swipeVelocityThreshold: Dp = SceneContainerDefaults.SwipeVelocityThreshold,
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -220,6 +224,8 @@ fun SceneContainer(
             state = state,
             modifier = Modifier.fillMaxSize(),
             swipeSourceDetector = viewModel.swipeSourceDetector,
+            swipeDetector =
+                remember { PassthroughSwipeDetector(velocityThreshold = swipeVelocityThreshold) },
         ) {
             sceneByKey.forEach { (sceneKey, scene) ->
                 scene(
@@ -278,4 +284,8 @@ private fun WindowBackgroundBlur(
     val transitionState = state.transitionState
     val progress = (state.transitionState as? TransitionState.Transition)?.progress ?: 1.0f
     SideEffect { viewModel.requestWindowBackgroundBlur(transitionState, progress) }
+}
+
+object SceneContainerDefaults {
+    val SwipeVelocityThreshold = 250.dp
 }
