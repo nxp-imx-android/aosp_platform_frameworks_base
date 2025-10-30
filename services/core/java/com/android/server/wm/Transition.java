@@ -886,7 +886,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         info.mFlags |= ChangeInfo.FLAG_TRANSIENT_HIDE;
     }
 
-    private boolean isLaunchingRecents(@NonNull WindowContainer<?> wc) {
+    boolean isLaunchingRecents(@NonNull WindowContainer<?> wc) {
         if (mParallelCollectType != PARALLEL_TYPE_RECENTS || mTransientLaunches == null) {
             return false;
         }
