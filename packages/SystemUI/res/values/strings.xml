@@ -4617,7 +4617,4 @@
 
     <!-- Description for the Ambient Cue accessibility action label for expanding. [CHAR LIMIT=NONE] -->
     <string name="ambient_cue_expand_action">expand</string>
-
-    <!-- Content Description prefix for the notification animated action. [CHAR LIMIT=NONE] -->
-    <string name="notification_animated_action_content_description">Magic Cue %1$s</string>
 </resources>
