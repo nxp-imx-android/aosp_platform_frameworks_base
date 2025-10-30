@@ -2214,6 +2214,31 @@ public final class CameraManager {
         }
     }
 
+
+    /**
+     * Send a hint to the camera sub-system to warm up the given camera id in expectation
+     * of an imminent {@link CameraManager#openCamera} call.
+     *
+     * This call is only legal to call from a client with system uid.
+     *
+     * @param cameraId       The camera id of client to inject session params into.
+     *                       If no such client exists for cameraId, no warm up hint is sent.
+     *
+     * @throws CameraAccessException    {@link CameraAccessException#CAMERA_DISCONNECTED} will be
+     *                                  thrown if camera service is not available. Further, if
+     *                                  if no such client exists for cameraId,
+     *                                  {@link CameraAccessException#CAMERA_ERROR} will be thrown.
+     * @throws SecurityException        If the caller does not have permission to send
+     *                                  the warm up hint.
+     * @hide
+     */
+    public void warmUp(@NonNull String cameraId)
+            throws CameraAccessException, SecurityException {
+        CameraManagerGlobal.get().warmUp(cameraId,
+                getClientAttribution(),
+                getDevicePolicyFromContext(mContext));
+    }
+
     /**
      * Injects session params into existing clients in the CameraService.
      *
@@ -2489,6 +2514,33 @@ public final class CameraManager {
                         e);
             } catch (RemoteException e) {
                 // Camera service died in all probability
+            }
+        }
+
+        /** Sends notification to warm up camera pipelines for cameraId. */
+        public void warmUp(@NonNull String cameraId,
+                AttributionSourceState clientAttribution,
+                int devicePolicy)
+                throws CameraAccessException, SecurityException {
+            synchronized (mLock) {
+                ICameraService cameraService = getCameraService();
+                if (cameraService == null) {
+                    throw new CameraAccessException(
+                            CameraAccessException.CAMERA_DISCONNECTED,
+                            "Camera service is currently unavailable.");
+                }
+
+                try {
+                    // Virtual camera warm ups not allowed, cameraserver verifies
+                    // for cameraId -> default device id mapping
+                    cameraService.warmUp(cameraId, clientAttribution, devicePolicy);
+                } catch (ServiceSpecificException e) {
+                    throw ExceptionUtils.throwAsPublicException(e);
+                } catch (RemoteException e) {
+                    throw new CameraAccessException(
+                            CameraAccessException.CAMERA_DISCONNECTED,
+                            "Camera service is currently unavailable.");
+                }
             }
         }
 
