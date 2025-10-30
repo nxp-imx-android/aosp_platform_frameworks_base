@@ -60,7 +60,7 @@ object Bouncer {
     }
 
     object TestTags {
-        const val Root = "bouncer_root"
+        const val ROOT = "bouncer_root"
     }
 }
 
@@ -147,7 +147,7 @@ private fun ContentScope.BouncerOverlay(
                     // TODO(b/393516240): Use the same sysuiResTag() as views instead.
                     .testTag(Bouncer.Elements.Content.testTag)
                     .overscroll(verticalOverscrollEffect)
-                    .sysuiResTag(Bouncer.TestTags.Root)
+                    .sysuiResTag(Bouncer.TestTags.ROOT)
                     .fillMaxSize(),
             )
         }

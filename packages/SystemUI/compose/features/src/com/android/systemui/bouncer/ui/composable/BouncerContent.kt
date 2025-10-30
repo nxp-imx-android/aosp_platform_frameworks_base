@@ -126,7 +126,6 @@ import com.android.systemui.fold.ui.helper.FoldPosture
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.ui.composable.transitions.BOUNCER_INITIAL_TRANSLATION
-import com.android.wm.shell.common.split.SplitLayout
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.pow
@@ -200,8 +199,8 @@ fun ContentScope.BouncerContent(
             BOUNCER_CONTENTS_PASSIVE_AUTH_DELAY.takeIf { viewModel.shouldDelayBouncerContent() }
                 ?: 0
 
-        // evaluate once when BouncerContent first shows; we don't animate if the
-        // bouncer showing was initiated from a drag/fling
+        // Evaluate once when BouncerContent first shows; we don't animate if the bouncer showing
+        // was initiated from a drag/fling.
         appearAnimationDuration =
             if (!isDraggingToBouncer()) BOUNCER_CONTENTS_ALPHA_IN_ANIMATION_DURATION else 0
 
@@ -443,7 +442,7 @@ private fun ContentScope.BesideUserSwitcherLayout(
     val isLeftToRight = LocalLayoutDirection.current == LayoutDirection.Ltr
     val isInputPreferredOnLeftSide by
         viewModel.isInputPreferredOnLeftSide.collectAsStateWithLifecycle()
-    // Swaps the order of user switcher and bouncer input area
+    // Swaps the order of user switcher and bouncer input area.
     // Default layout is assumed as user switcher followed by bouncer input area in the direction
     // of layout.
     val isSwapped = isLeftToRight == isInputPreferredOnLeftSide
@@ -465,8 +464,8 @@ private fun ContentScope.BesideUserSwitcherLayout(
     var swapAnimationEnd by remember { mutableStateOf(false) }
 
     fun wasEventOnNonInputHalfOfScreen(x: Float, totalWidth: Int): Boolean {
-        // Default layout is assumed as user switcher followed by bouncer input area in
-        // the direction of layout. Swapped layout means that bouncer input area is first, followed
+        // Default layout is assumed as user switcher followed by bouncer input area in the
+        // direction of layout. Swapped layout means that bouncer input area is first, followed
         // by user switcher in the direction of layout.
         val halfWidth = totalWidth / 2
         return if (x > halfWidth) {
@@ -528,15 +527,15 @@ private fun ContentScope.BesideUserSwitcherLayout(
                 swapAnimationEnd = true
             }
 
-        fun Modifier.swappable(inversed: Boolean = false): Modifier {
+        fun Modifier.swappable(inverted: Boolean = false): Modifier {
             return graphicsLayer {
                     translationX =
                         size.width *
                             animatedOffset *
-                            if (inversed) {
+                            if (inverted) {
                                 // A negative sign is used to make sure this is offset in the
-                                // direction that's opposite to the direction that the user
-                                // switcher is pushed in.
+                                // direction that's opposite to the direction that the user switcher
+                                // is pushed in.
                                 -1
                             } else {
                                 1
@@ -552,7 +551,7 @@ private fun ContentScope.BesideUserSwitcherLayout(
         )
 
         FoldAware(
-            modifier = Modifier.weight(1f).swappable(inversed = true).testTag("FoldAware"),
+            modifier = Modifier.weight(1f).swappable(inverted = true).testTag("FoldAware"),
             viewModel = viewModel,
             aboveFold = {
                 Column(
