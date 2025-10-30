@@ -435,11 +435,15 @@ public final class RemoteSelectionToolbar {
     }
 
     private void refreshCoordinatesAndOverflowDirection(Rect contentRectOnScreen) {
-        // Initialize x ensuring that the toolbar isn't rendered behind the nav bar in
-        // landscape.
-        final int x = Math.min(
-                contentRectOnScreen.centerX() - mPopupWidth / 2,
-                mViewPortOnScreen.right - mPopupWidth);
+        final int x;
+        if (mPopupWidth > mViewPortOnScreen.width()) {
+            // Not enough space - prefer to position as far left as possible
+            x = mViewPortOnScreen.left;
+        } else {
+            // Initialize x ensuring that the toolbar isn't rendered behind the system bar insets
+            x = Math.clamp(contentRectOnScreen.centerX() - mPopupWidth / 2,
+                    mViewPortOnScreen.left, mViewPortOnScreen.right - mPopupWidth);
+        }
 
         final int y;
 
