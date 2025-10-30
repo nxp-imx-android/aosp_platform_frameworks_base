@@ -20,5 +20,5 @@ import com.android.systemui.communal.posturing.shared.model.ConfidenceLevel
 
 data class PositionState(
     val stationary: ConfidenceLevel = ConfidenceLevel.Unknown,
-    val orientation: ConfidenceLevel = ConfidenceLevel.Unknown,
+    val postured: ConfidenceLevel = ConfidenceLevel.Unknown,
 )

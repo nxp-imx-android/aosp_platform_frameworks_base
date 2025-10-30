@@ -138,7 +138,7 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
             posturingRepository.fake.emitPositionState(
                 PositionState(
                     stationary = ConfidenceLevel.Positive(confidence = 1f),
-                    orientation = ConfidenceLevel.Negative(confidence = 1f),
+                    postured = ConfidenceLevel.Negative(confidence = 1f),
                 )
             )
 
@@ -152,7 +152,7 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
             posturingRepository.fake.emitPositionState(
                 PositionState(
                     stationary = ConfidenceLevel.Positive(confidence = 1f),
-                    orientation = ConfidenceLevel.Positive(confidence = 1f),
+                    postured = ConfidenceLevel.Positive(confidence = 1f),
                 )
             )
             advanceTimeBySlidingWindowAndRun()
