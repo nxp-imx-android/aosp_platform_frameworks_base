@@ -1659,11 +1659,11 @@ public final class NotificationChannel implements Parcelable {
 
     /**
      * Get the reserved bundle channel ID for an Adjustment type
-     * @param the Adjustment type
+     * @param type the Adjustment type
      * @return the channel ID, or null if type is invalid
      * @hide
      */
-    public static @Nullable String getChannelIdForBundleType(@Adjustment.Types int type) {
+    public static @Nullable String getChannelIdForBundleType(int type) {
         switch (type) {
             case TYPE_CONTENT_RECOMMENDATION:
                 return RECS_ID;
@@ -1673,6 +1673,9 @@ public final class NotificationChannel implements Parcelable {
                 return PROMOTIONS_ID;
             case TYPE_SOCIAL_MEDIA:
                 return SOCIAL_MEDIA_ID;
+        }
+        if (Flags.nmContextualDisplay()) {
+            return String.valueOf(type);
         }
         return null;
     }

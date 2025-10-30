@@ -36,6 +36,7 @@ import static android.app.NotificationManager.IMPORTANCE_NONE;
 import static android.app.NotificationManager.IMPORTANCE_UNSPECIFIED;
 import static android.os.Process.INVALID_UID;
 import static android.os.UserHandle.USER_SYSTEM;
+import static android.service.notification.Adjustment.TYPE_OTHER;
 
 import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_CHANNEL_GROUP_PREFERENCES;
 import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_CHANNEL_PREFERENCES;
@@ -678,22 +679,8 @@ public class PreferencesHelper implements RankingConfig {
     }
 
     @GuardedBy("mLock")
-    private NotificationChannel addReservedChannelLocked(PackagePreferences p, String channelId) {
-        String label = "";
-        switch (channelId) {
-            case PROMOTIONS_ID:
-                label = mContext.getString(R.string.promotional_notification_channel_label);
-                break;
-            case RECS_ID:
-                label = mContext.getString(R.string.recs_notification_channel_label);
-                break;
-            case NEWS_ID:
-                label = mContext.getString(R.string.news_notification_channel_label);
-                break;
-            case SOCIAL_MEDIA_ID:
-                label = mContext.getString(R.string.social_notification_channel_label);
-                break;
-        }
+    private NotificationChannel addReservedChannelLocked(PackagePreferences p, String channelId,
+            String label) {
         NotificationChannel channel = new NotificationChannel(channelId, label, IMPORTANCE_LOW);
         if (android.app.Flags.nmContextualDisplay()) {
             channel.setIsBundleChannel(true);
@@ -1443,7 +1430,7 @@ public class PreferencesHelper implements RankingConfig {
         return channel;
     }
 
-    public NotificationChannel createReservedChannel(String pkg, int uid, int type) {
+    public NotificationChannel createReservedChannel(String pkg, int uid, int type, String label) {
         Objects.requireNonNull(pkg);
         synchronized (mLock) {
             PackagePreferences r = getOrCreatePackagePreferencesLocked(pkg, uid);
@@ -1451,7 +1438,7 @@ public class PreferencesHelper implements RankingConfig {
             if (channelId == null) {
                 return null;
             }
-            return addReservedChannelLocked(r, channelId);
+            return addReservedChannelLocked(r, channelId, label);
         }
     }
 

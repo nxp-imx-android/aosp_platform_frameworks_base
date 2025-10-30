@@ -53,7 +53,11 @@ import static android.app.Notification.FLAG_ONGOING_EVENT;
 import static android.app.Notification.FLAG_ONLY_ALERT_ONCE;
 import static android.app.Notification.FLAG_PROMOTED_ONGOING;
 import static android.app.Notification.FLAG_USER_INITIATED_JOB;
+import static android.app.NotificationChannel.NEWS_ID;
 import static android.app.NotificationChannel.OLD_CONVERSATION_CHANNEL_ID_FORMAT;
+import static android.app.NotificationChannel.PROMOTIONS_ID;
+import static android.app.NotificationChannel.RECS_ID;
+import static android.app.NotificationChannel.SOCIAL_MEDIA_ID;
 import static android.app.NotificationManager.ACTION_APP_BLOCK_STATE_CHANGED;
 import static android.app.NotificationManager.ACTION_AUTOMATIC_ZEN_RULE_STATUS_CHANGED;
 import static android.app.NotificationManager.ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED;
@@ -121,6 +125,7 @@ import static android.service.notification.Adjustment.KEY_UNCLASSIFY;
 import static android.service.notification.Adjustment.TYPE_CONTENT_RECOMMENDATION;
 import static android.service.notification.Adjustment.TYPE_NEWS;
 import static android.service.notification.Adjustment.TYPE_PROMOTION;
+import static android.service.notification.Adjustment.TYPE_SOCIAL_MEDIA;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT;
 import static android.service.notification.Flags.callstyleCallbackApi;
 import static android.service.notification.Flags.listenerHintExemptPackages;
@@ -7288,6 +7293,8 @@ public class NotificationManagerService extends SystemService {
                 boolean existed = mAssistants.deleteDynamicBundle(
                         Binder.getCallingUserHandle().getIdentifier(), dynamicBundleId);
                 if (existed) {
+                    setAssistantClassificationTypeState(dynamicBundleId, false);
+
                     // TODO (b/452679429): Add event log?
                     handleSavePolicyFile();
                 }
@@ -7804,17 +7811,42 @@ public class NotificationManagerService extends SystemService {
     private NotificationChannel getClassificationChannelLocked(NotificationRecord r,
             Bundle adjustments) {
         int type = adjustments.getInt(KEY_TYPE);
-        if (type >= TYPE_PROMOTION && type <= TYPE_CONTENT_RECOMMENDATION) {
+        if ((type >= TYPE_PROMOTION && type <= TYPE_CONTENT_RECOMMENDATION)
+                || android.app.Flags.nmContextualDisplay()) {
             NotificationChannel channel = mPreferencesHelper.getReservedChannel(
                     r.getSbn().getPackageName(), r.getUid(), type);
             if (channel == null) {
-                channel = mPreferencesHelper.createReservedChannel(
-                        r.getSbn().getPackageName(), r.getUid(), type);
-                handleSavePolicyFile();
+                String label = getClassificationChannelName(r.getUserId(), type);
+                if (!TextUtils.isEmpty(label)) {
+                    channel = mPreferencesHelper.createReservedChannel(
+                            r.getSbn().getPackageName(), r.getUid(), type, label);
+                    handleSavePolicyFile();
+                }
             }
             return channel;
         }
         return null;
+    }
+
+    private String getClassificationChannelName(@UserIdInt int userId, int type) {
+        String label;
+        switch (type) {
+            case TYPE_PROMOTION:
+                label = getContext().getString(R.string.promotional_notification_channel_label);
+                break;
+            case TYPE_CONTENT_RECOMMENDATION:
+                label = getContext().getString(R.string.recs_notification_channel_label);
+                break;
+            case TYPE_NEWS:
+                label = getContext().getString(R.string.news_notification_channel_label);
+                break;
+            case TYPE_SOCIAL_MEDIA:
+                label = getContext().getString(R.string.social_notification_channel_label);
+                break;
+            default:
+                label = mAssistants.getDynamicBundleName(userId, type);
+        }
+        return label;
     }
 
     @SuppressWarnings("GuardedBy")
@@ -12984,7 +13016,35 @@ public class NotificationManagerService extends SystemService {
             synchronized (mLock) {
                 mDynamicBundleMap.putIfAbsent(userId, new ArraySet<>());
                 DynamicBundle db = new DynamicBundle(dynamicBundleType, bundleName);
-                return mDynamicBundleMap.get(userId).add(db);
+                boolean added = mDynamicBundleMap.get(userId).add(db);
+                if (added) {
+                    setAdjustmentTypeSupportedState(userId, KEY_TYPE, true);
+                    setAssistantClassificationTypeState(userId, dynamicBundleType, true);
+                }
+                return added;
+            }
+        }
+
+        protected @Nullable String getDynamicBundleName(int userId, int dynamicBundleType) {
+            if (!android.app.Flags.nmContextualDisplay()) {
+                return null;
+            }
+            // profile users share dynamic bundles with their parent user
+            userId = getUserProfiles().getProfileParentId(userId, getContext());
+            synchronized (mLock) {
+                Set<DynamicBundle> dbs = mDynamicBundleMap.get(userId);
+                if (dbs == null) {
+                    return null;
+                } else {
+                    String name = null;
+                    for (DynamicBundle db : dbs) {
+                        if (dynamicBundleType == db.getDynamicBundleType()) {
+                            name = db.getBundleName();
+                            break;
+                        }
+                    }
+                    return name;
+                }
             }
         }
 
