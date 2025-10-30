@@ -23,6 +23,8 @@ import static com.android.internal.widget.LockPatternUtils.PIN_LENGTH_UNAVAILABL
 import static com.android.internal.widget.LockPatternUtils.USER_FRP;
 import static com.android.internal.widget.LockPatternUtils.USER_REPAIR_MODE;
 import static com.android.internal.widget.LockPatternUtils.pinOrPasswordQualityToCredentialType;
+import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.encryptProfilePassword;
+import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.removeKeystoreProfileKey;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -121,6 +123,12 @@ import java.util.Set;
  *         <li>PASSWORD_DATA_NAME: Data used for LSKF verification, such as the scrypt salt and
  *             parameters. Only exists for LSKF-based protectors. Doesn't exist when the LSKF is
  *             empty, except in old protectors.
+ *         <li>PROFILE_PASSWORD_NAME: The LSKF for a profile with a unified password, encrypted by a
+ *             key bound to the parent sid. Only exists for LSKF-based protectors tied to the
+ *             parent. Doesn't exist when the LSKF is empty. Not used before Android 17. Replaces
+ *             <code>/data/system/users/${userId}/gatekeeper.profile.key</code> from Android 17
+ *             onward, migrating as necessary on the first unlock of the parent user if
+ *             <code>gatekeeper.profile.key</code> exists.
  *         <li>PASSWORD_METRICS_NAME: Metrics about the LSKF, encrypted by a key derived from the
  *             SP. Only exists for LSKF-based protectors. Doesn't exist when the LSKF is empty,
  *             except in old protectors.
@@ -145,6 +153,7 @@ class SyntheticPasswordManager {
     private static final String SECDISCARDABLE_NAME = "secdis";
     private static final int SECDISCARDABLE_LENGTH = 16 * 1024;
     private static final String PASSWORD_DATA_NAME = "pwd";
+    private static final String PROFILE_PASSWORD_NAME = "profile_pwd";
     private static final String WEAVER_SLOT_NAME = "weaver";
     private static final String PASSWORD_METRICS_NAME = "metrics";
     private static final String VENDOR_AUTH_SECRET_NAME = "vendor_auth_secret";
@@ -1140,6 +1149,34 @@ class SyntheticPasswordManager {
         return protectorId;
     }
 
+    void tieProtectorToParent(
+            IGateKeeperService gatekeeper,
+            int profileUserId,
+            long protectorId,
+            int parentUserId,
+            LockscreenCredential password) {
+        Slogf.i(
+                TAG,
+                "Tying protector %016x of profile user %d to parent user %d",
+                protectorId,
+                profileUserId,
+                parentUserId);
+        final long parentSid;
+        try {
+            parentSid = gatekeeper.getSecureUserId(parentUserId);
+        } catch (RemoteException e) {
+            throw new IllegalStateException("Failed to talk to GateKeeper service", e);
+        }
+        encryptAndSaveProfilePassword(profileUserId, protectorId, parentSid, password);
+    }
+
+    void encryptAndSaveProfilePassword(
+            int userId, long protectorId, long parentSid, LockscreenCredential password) {
+        byte[] encryptedPassword =
+                encryptProfilePassword(mKeyStore, userId, protectorId, parentSid, password);
+        saveProfilePassword(userId, protectorId, encryptedPassword);
+    }
+
     private int derivePinLength(int sizeOfCredential, boolean isPinCredential, int userId) {
         if (!isPinCredential
                 || !mStorage.isAutoPinConfirmSettingEnabled(userId)
@@ -1850,6 +1887,10 @@ class SyntheticPasswordManager {
         destroyState(PASSWORD_DATA_NAME, protectorId, userId);
         destroyState(PASSWORD_METRICS_NAME, protectorId, userId);
         destroyState(FAILURE_COUNTER_NAME, protectorId, userId);
+        if (hasProfilePassword(userId, protectorId)) {
+            destroyState(PROFILE_PASSWORD_NAME, protectorId, userId);
+            removeKeystoreProfileKey(mKeyStore, userId, protectorId);
+        }
     }
 
     private void destroyProtectorCommon(long protectorId, int userId) {
@@ -2229,5 +2270,23 @@ class SyntheticPasswordManager {
             return FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__WEAVER;
         }
         return FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__GATEKEEPER;
+    }
+
+    public byte[] loadProfilePassword(int profileUserId, long protectorId) {
+        return loadState(PROFILE_PASSWORD_NAME, protectorId, profileUserId);
+    }
+
+    /**
+     * Writes the profile_pwd file for the given protector. {@link #syncState(int)} must be called
+     * afterward.
+     */
+    private void saveProfilePassword(
+            int profileUserId, long protectorId, byte[] encryptedPassword) {
+        saveState(PROFILE_PASSWORD_NAME, encryptedPassword, protectorId, profileUserId);
+    }
+
+    public boolean hasProfilePassword(int profileUserId, long protectorId) {
+        byte[] profilePassword = loadProfilePassword(profileUserId, protectorId);
+        return profilePassword != null;
     }
 }
