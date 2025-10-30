@@ -28,6 +28,7 @@ import android.content.ComponentName;
 import android.stats.devicepolicy.DevicePolicyEnums;
 
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Params required to provision a multi-user managed device, see {@link
@@ -206,5 +207,27 @@ public final class MultiUserDeviceProvisioningParams {
         public MultiUserDeviceProvisioningParams build() {
             return new MultiUserDeviceProvisioningParams(mTransportParams);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof MultiUserDeviceProvisioningParams other)) {
+            return false;
+        }
+        return getDeviceAdminComponentName().equals(other.getDeviceAdminComponentName())
+                && isLeaveAllSystemAppsEnabled() == other.isLeaveAllSystemAppsEnabled()
+                && Objects.equals(getTimeZone(), other.getTimeZone())
+                && getLocalTime() == other.getLocalTime()
+                && Objects.equals(getLocale(), other.getLocale());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                getDeviceAdminComponentName(),
+                isLeaveAllSystemAppsEnabled(),
+                getTimeZone(),
+                getLocalTime(),
+                getLocale());
     }
 }
