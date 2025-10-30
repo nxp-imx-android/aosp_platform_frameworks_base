@@ -1451,7 +1451,11 @@ private fun RevealedContent(
             Icon(
                 icon = viewModel.icon,
                 modifier =
-                    Modifier.layoutId(Media.LayoutId.CardRevealedContent)
+                    Modifier.background(
+                            color = MaterialTheme.colorScheme.surface,
+                            shape = CircleShape,
+                        )
+                        .layoutId(Media.LayoutId.CardRevealedContent)
                         .size(48.dp)
                         .padding(12.dp)
                         .graphicsLayer {
@@ -1459,6 +1463,7 @@ private fun RevealedContent(
                             rotationZ = revealAmount() * 90
                         }
                         .clickable { viewModel.onClick() },
+                tint = MaterialTheme.colorScheme.onSurface,
             )
         },
         modifier = modifier,

@@ -313,7 +313,7 @@ constructor(
         MediaSettingsButtonViewModel(
             icon =
                 Icon.Resource(
-                    resId = R.drawable.ic_settings,
+                    resId = R.drawable.ic_media_settings,
                     contentDescription =
                         ContentDescription.Resource(res = R.string.controls_media_settings_button),
                 ),
