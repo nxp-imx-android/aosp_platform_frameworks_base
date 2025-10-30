@@ -2069,7 +2069,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         if (shouldPreventImeStartupLocked(selectedImeId, startInputFlags,
                 unverifiedTargetSdkVersion, userId)) {
             ProtoLog.v(IMMS_DEBUG, "Avoiding IME startup and unbinding current input method.");
-            bindingController.invalidateAutofillSession();
             bindingController.unbindIme();
             unbindCurrentClientLocked(UnbindReason.DISCONNECT_IME, userId);
             return InputBindResult.NO_EDITOR;
@@ -2335,7 +2334,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     @AnyThread
-    void scheduleNotifyImeUidToAudioService(int uid) {
+    private void scheduleNotifyImeUidToAudioService(int uid) {
         mHandler.removeMessages(MSG_NOTIFY_IME_UID_TO_AUDIO_SERVICE);
         mHandler.obtainMessage(MSG_NOTIFY_IME_UID_TO_AUDIO_SERVICE, uid, 0 /* unused */)
                 .sendToTarget();
@@ -2402,23 +2401,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         // Callback before clean-up binding states.
         bindingController.unbindIme();
         unbindCurrentClientLocked(reason, userId);
-    }
-
-    /**
-     * Re-requests an IME session for the current IME client of the given user. This will first
-     * finish and clear any existing IME sessions on the IME client.
-     *
-     * @param userId the ID of the user whose current IME client to re-request an IME session for.
-     */
-    @GuardedBy("ImfLock.class")
-    void reRequestCurrentClientSessionLocked(@UserIdInt int userId) {
-        final var userData = getUserData(userId);
-        if (userData.mCurClient != null) {
-            clearClientSessionLocked(userData.mCurClient);
-            clearClientSessionForAccessibilityLocked(userData.mCurClient);
-            requestClientSessionLocked(userData.mCurClient, userId);
-            requestClientSessionForAccessibilityLocked(userData.mCurClient);
-        }
     }
 
     /**
@@ -2572,6 +2554,32 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     /**
+     * Called when the IME of the given user has connected.
+     *
+     * <p>This will first finish and clear any existing IME sessions on the current IME client of
+     * the given user. Then it will re-request IME sessions on the client, for the newly connected
+     * IME.
+     *
+     * @param imeUid the UID of the IME that has connected.
+     * @param userId the ID of the user whose IME has connected.
+     */
+    @GuardedBy("ImfLock.class")
+    void onImeConnected(int imeUid, @UserIdInt int userId) {
+        final var userData = getUserData(userId);
+        if (userData.mCurClient != null) {
+            clearClientSessionLocked(userData.mCurClient);
+            clearClientSessionForAccessibilityLocked(userData.mCurClient);
+            requestClientSessionLocked(userData.mCurClient, userId);
+            requestClientSessionForAccessibilityLocked(userData.mCurClient);
+        }
+
+        scheduleNotifyImeUidToAudioService(imeUid);
+        // Reset Handwriting event receiver. Always call this as it handles changes in the newly
+        // connected IME supporting Stylus Handwriting. If unchanged, this is a no-op.
+        scheduleResetStylusHandwriting();
+    }
+
+    /**
      * Called when the IME of the given user has disconnected, either due to a service
      * disconnection, or due to an explicit IME unbind.
      *
@@ -2607,6 +2615,11 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         scheduleNotifyImeUidToAudioService(Process.INVALID_UID);
         hideStatusBarIconLocked(userId);
         userData.mInFullscreenMode = false;
+        userData.mVisibilityStateComputer.setInputShown(false);
+        // Reset IME window status when unbinding.
+        userData.mBindingController.setImeWindowVis(0 /* vis */);
+        userData.mBindingController.setBackDisposition(InputMethodService.BACK_DISPOSITION_DEFAULT);
+        updateSystemUiLocked(userId);
         mWindowManagerInternal.setDismissImeOnBackKeyPressed(false);
         scheduleResetStylusHandwriting();
     }
@@ -2819,14 +2832,14 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
     // Caution! This method is called in this class. Handle multi-user carefully
     @GuardedBy("ImfLock.class")
-    void updateSystemUiLocked(@UserIdInt int userId) {
+    private void updateSystemUiLocked(@UserIdInt int userId) {
         final var bindingController = getInputMethodBindingController(userId);
         updateSystemUiLocked(bindingController.getImeWindowVis(),
                 bindingController.getBackDisposition(), userId);
     }
 
     @GuardedBy("ImfLock.class")
-    void updateSystemUiLocked(@ImeWindowVisibility int vis,
+    private void updateSystemUiLocked(@ImeWindowVisibility int vis,
             @BackDispositionMode int backDisposition, @UserIdInt int userId) {
         // To minimize app compat risk, ignore background users' request for single-user mode.
         // TODO(b/357178609): generalize the logic and remove this special rule.
@@ -3541,7 +3554,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         } else {
             ImeTracker.forLogging().onCancelled(statsToken, ImeTracker.PHASE_SERVER_SHOULD_HIDE);
         }
-        bindingController.setImeNotVisible();
+        bindingController.unbindVisibleConnection();
         visibilityStateComputer.setInputShown(false);
         // Cancel existing statsToken for show IME as we got a hide request.
         ImeTracker.forLogging().onCancelled(userData.mCurStatsToken,

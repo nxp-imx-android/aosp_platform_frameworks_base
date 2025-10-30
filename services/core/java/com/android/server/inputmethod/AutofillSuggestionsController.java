@@ -83,14 +83,6 @@ final class AutofillSuggestionsController {
     }
 
     /**
-     * Clears the host input token of the IME that is currently associated with this controller.
-     */
-    @GuardedBy("ImfLock.class")
-    void clearHostInputToken() {
-        mCurHostInputToken = null;
-    }
-
-    /**
      * Returns the host input token of the IME that is currently associated with this controller.
      */
     @Nullable
@@ -164,11 +156,16 @@ final class AutofillSuggestionsController {
                 || imi.supportsInlineSuggestionsWithTouchExploration());
     }
 
+    /**
+     * Invalidates the autofill session, if it exists, and clears the host input token of the IME
+     * that is currently associated with this controller
+     */
     @GuardedBy("ImfLock.class")
     void invalidateAutofillSession() {
         if (mInlineSuggestionsRequestCallback != null) {
             mInlineSuggestionsRequestCallback.onInlineSuggestionsSessionInvalidated();
         }
+        mCurHostInputToken = null;
     }
 
     /**

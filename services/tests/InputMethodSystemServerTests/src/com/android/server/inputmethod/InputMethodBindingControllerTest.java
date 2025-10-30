@@ -265,6 +265,7 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
             assertThat(mBindingController.getCurImeId()).isNotNull();
             assertThat(mBindingController.getCurIme()).isNotNull();
             assertThat(mBindingController.getCurImeUid()).isNotEqualTo(Process.INVALID_UID);
+            verify(mInputMethodManagerService).onImeDisconnected(eq(mUserId));
         }
     }
 
@@ -291,6 +292,7 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
             assertThat(mBindingController.getCurImeId()).isNull();
             assertThat(mBindingController.getCurIme()).isNull();
             assertThat(mBindingController.getCurImeUid()).isEqualTo(Process.INVALID_UID);
+            verify(mInputMethodManagerService, never()).onImeDisconnected(eq(mUserId));
         }
     }
 
@@ -336,7 +338,9 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
             assertThat(mBindingController.getCurToken()).isNotNull();
             assertThat(mBindingController.getCurImeId()).isNotNull();
             assertThat(mBindingController.getCurIme()).isNotNull();
-            assertThat(mBindingController.getCurImeUid()).isNotEqualTo(Process.INVALID_UID);
+            final int curImeUid = mBindingController.getCurImeUid();
+            assertThat(curImeUid).isNotEqualTo(Process.INVALID_UID);
+            verify(mInputMethodManagerService, times(2)).onImeConnected(eq(curImeUid), eq(mUserId));
         }
     }
 
@@ -373,6 +377,9 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
             assertThat(mBindingController.getCurImeId()).isNull();
             assertThat(mBindingController.getCurIme()).isNull();
             assertThat(mBindingController.getCurImeUid()).isEqualTo(Process.INVALID_UID);
+            final int numConnect = wasUnbound ? 1 : 0;
+            verify(mInputMethodManagerService, times(numConnect)).onImeConnected(
+                    anyInt() /* imeUid */, anyInt() /* userId */);
         }
     }
 
@@ -435,7 +442,10 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
         // Verify onServiceConnected() is called and bound successfully.
         synchronized (ImfLock.class) {
             assertThat(mBindingController.getCurIme()).isNotNull();
-            assertThat(mBindingController.getCurImeUid()).isNotEqualTo(Process.INVALID_UID);
+            final int curImeUid = mBindingController.getCurImeUid();
+            assertThat(curImeUid).isNotEqualTo(Process.INVALID_UID);
+            verify(mInputMethodManagerService, times(numBinds)).onImeConnected(eq(curImeUid),
+                    eq(mUserId));
         }
     }
 
@@ -485,7 +495,10 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
 
         synchronized (ImfLock.class) {
             assertThat(mBindingController.getCurIme()).isNull();
-            assertThat(mBindingController.getCurImeUid()).isEqualTo(Process.INVALID_UID);
+            final int curImeUid = mBindingController.getCurImeUid();
+            assertThat(curImeUid).isEqualTo(Process.INVALID_UID);
+            verify(mInputMethodManagerService, never()).onImeConnected(anyInt() /* imeUid */,
+                    anyInt() /* userId */);
         }
     }
 
@@ -536,11 +549,13 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
             }
             verify(mMockWindowManagerInternal, times(1)).removeWindowToken(eq(curToken),
                     eq(true) /* removeWindows */, eq(false)/* animateExit */, eq(curDisplayId));
+            assertThat(mBindingController.getCurImeIntent()).isNull();
             assertThat(mBindingController.getCurImeId()).isNull();
             assertThat(mBindingController.getCurToken()).isNull();
             assertThat(mBindingController.getCurDisplayId()).isEqualTo(Display.INVALID_DISPLAY);
             assertThat(mBindingController.getCurIme()).isNull();
             assertThat(mBindingController.getCurImeUid()).isEqualTo(Process.INVALID_UID);
+            verify(mInputMethodManagerService).onImeDisconnected(eq(mUserId));
         }
     }
 
