@@ -2771,8 +2771,14 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
 
             builder.addResolution(new Resolution("PDF resolution", "PDF resolution", 300, 300),
                     true);
-            builder.setColorModes(PrintAttributes.COLOR_MODE_COLOR
-                    | PrintAttributes.COLOR_MODE_MONOCHROME, PrintAttributes.COLOR_MODE_COLOR);
+            if (Flags.grayscalePreview()) {
+                builder.setColorModes(
+                        PrintAttributes.COLOR_MODE_COLOR, PrintAttributes.COLOR_MODE_COLOR);
+            } else {
+                builder.setColorModes(
+                        PrintAttributes.COLOR_MODE_COLOR | PrintAttributes.COLOR_MODE_MONOCHROME,
+                        PrintAttributes.COLOR_MODE_COLOR);
+            }
 
             return new PrinterInfo.Builder(printerId, getString(R.string.save_as_pdf),
                     PrinterInfo.STATUS_IDLE).setCapabilities(builder.build()).build();
