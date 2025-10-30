@@ -848,6 +848,9 @@
   <java-symbol type="string" name="lockscreen_emergency_call" />
   <java-symbol type="string" name="lockscreen_return_to_call" />
   <java-symbol type="string" name="long_press_power_to_turn_off_tv_toast" />
+  <java-symbol type="string" name="supervision_blocked_app_title" />
+  <java-symbol type="string" name="supervision_blocked_app_content" />
+  <java-symbol type="string" name="supervision_unblocked_app_content" />
   <java-symbol type="string" name="tv_watchdog_notification_channel_name" />
   <java-symbol type="string" name="tv_watchdog_notification_title" />
   <java-symbol type="string" name="tv_watchdog_notification_content" />
@@ -1578,6 +1581,7 @@
   <java-symbol type="drawable" name="ic_feedback_downrank" />
 
   <java-symbol type="drawable" name="ic_account_circle" />
+  <java-symbol type="drawable" name="ic_account_child_invert" />
   <java-symbol type="drawable" name="material_ic_account_circle" />
   <java-symbol type="drawable" name="ic_dual_screen" />
   <java-symbol type="drawable" name="ic_thermostat" />
