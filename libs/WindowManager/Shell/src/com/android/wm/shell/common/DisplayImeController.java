@@ -34,6 +34,7 @@ import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.EventLog;
 import android.util.Slog;
@@ -230,9 +231,11 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
         PerDisplay pd = mImePerDisplay.get(displayId);
         InsetsSourceControl imeSourceControl = pd.getImeSourceControl();
         if (imeSourceControl != null) {
+            // TODO (b/459507475): find correct userId argument for onStart
             final var statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_HIDE,
                     ImeTracker.ORIGIN_WM_SHELL,
-                    SoftInputShowHideReason.HIDE_FOR_BUBBLES_WHEN_LOCKED, false /* fromUser */);
+                    SoftInputShowHideReason.HIDE_FOR_BUBBLES_WHEN_LOCKED, false /* fromUser */,
+                    UserHandle.USER_NULL, displayId);
             pd.setImeInputTargetRequestedVisibility(false, statsToken);
         }
     }
@@ -505,9 +508,11 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
             if (mImeSourceControl.getImeStatsToken() != null) {
                 statsToken = mImeSourceControl.getImeStatsToken();
             } else {
+                // TODO (b/459507475): find correct userId argument for onStart
                 statsToken = ImeTracker.forLogging().onStart(
                         show ? ImeTracker.TYPE_SHOW : ImeTracker.TYPE_HIDE,
-                        ImeTracker.ORIGIN_WM_SHELL, reason, false /* fromUser */);
+                        ImeTracker.ORIGIN_WM_SHELL, reason, false /* fromUser */,
+                        UserHandle.USER_NULL, mDisplayId);
             }
             startAnimation(show, forceRestart, statsToken);
         }

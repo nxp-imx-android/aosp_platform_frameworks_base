@@ -178,9 +178,11 @@ public final class ImeVisibilityStateComputer {
         if (mHasVisibleImeLayeringOverlay
                 && mCurVisibleImeInputTarget == imeInputTarget) {
             final int reason = SoftInputShowHideReason.HIDE_WHEN_INPUT_TARGET_INVISIBLE;
-            final var statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_HIDE,
-                    ImeTracker.ORIGIN_SERVER, reason, false /* fromUser */);
             final var userData = mService.getUserData(mUserId);
+            final var client = userData.mImeBindingState.mFocusedWindowClient;
+            final var statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_HIDE,
+                    ImeTracker.ORIGIN_SERVER, reason, false /* fromUser */, mUserId,
+                    client != null ? client.mSelfReportedDisplayId : INVALID_DISPLAY);
             mService.setImeVisibilityOnFocusedWindowClient(false /* visible */, userData,
                     statsToken);
         }
