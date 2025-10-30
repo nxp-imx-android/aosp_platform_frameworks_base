@@ -516,7 +516,8 @@ public class VirtualDeviceManagerService extends SystemService {
                     }
                 };
 
-        @EnforcePermission(android.Manifest.permission.ACCESS_COMPUTER_CONTROL)
+        @EnforcePermission(allOf = {android.Manifest.permission.ACCESS_COMPUTER_CONTROL,
+                android.Manifest.permission.POST_NOTIFICATIONS})
         @Override // Binder call
         public void requestComputerControlSession(
                 @NonNull AttributionSource attributionSource,

@@ -241,7 +241,8 @@ public final class VirtualDeviceManager {
      *
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.ACCESS_COMPUTER_CONTROL)
+    @RequiresPermission(allOf = {Manifest.permission.ACCESS_COMPUTER_CONTROL,
+            Manifest.permission.POST_NOTIFICATIONS})
     public void requestComputerControlSession(
             @NonNull ComputerControlSessionParams params,
             @NonNull @CallbackExecutor Executor executor,
