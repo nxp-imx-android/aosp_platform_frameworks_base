@@ -1257,6 +1257,9 @@ public class TelecomManager {
      * </ul>
      * <p>
      * If no {@link PhoneAccount} fits the criteria above, this method will return {@code null}.
+     * <p>
+     * For callers only interested in finding the default SIM for voice calls, it is recommended
+     * to use {@link SubscriptionManager#getDefaultVoiceSubscriptionId()} instead.
      *
      * @param uriScheme The URI scheme.
      * @return The {@link PhoneAccountHandle} corresponding to the account to be used.
@@ -1440,6 +1443,9 @@ public class TelecomManager {
      * Returns a list of {@link PhoneAccountHandle}s which can be used to make and receive phone
      * calls. The returned list includes only those accounts which have been explicitly enabled
      * by the user.
+     * <p>
+     * For callers only interested in finding all SIMs for voice calls, it is recommended
+     * to use {@link SubscriptionManager#getActiveSubscriptionInfoList()} instead.
      *
      * @see #EXTRA_PHONE_ACCOUNT_HANDLE
      * @return A list of {@code PhoneAccountHandle} objects.
