@@ -29660,8 +29660,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         Point shadowTouchPoint = new Point();
         shadowBuilder.onProvideShadowMetrics(shadowSize, shadowTouchPoint);
 
-        if ((shadowSize.x < 0) || (shadowSize.y < 0)
-                || (shadowTouchPoint.x < 0) || (shadowTouchPoint.y < 0)) {
+        if ((shadowSize.x < 0) || (shadowSize.y < 0)) {
             throw new IllegalStateException("Drag shadow dimensions must not be negative");
         }
         final float overrideInvScale = CompatibilityInfo.getOverrideInvertedScale();
