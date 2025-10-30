@@ -250,4 +250,23 @@ class SafetyCenterUiDataTest {
         val issues = testSafetyCenterUiData.getDismissedIssuesForSources(listOf("s1"))
         assertThat(issues).isEmpty()
     }
+
+    @Test
+    fun resolvedIssues_byDefault_isEmpty() {
+        assertThat(testSafetyCenterUiData.resolvedIssues).isEmpty()
+    }
+
+    @Test
+    fun copyWithResolvedIssues_createsCopyAndUpdatesResolvedIssues() {
+        val resolved = mapOf("issue_id_1" to "action_id_1", "issue_id_2" to "action_id_2")
+
+        val updatedUiData = testSafetyCenterUiData.copyWithResolvedIssues(resolved)
+
+        assertThat(testSafetyCenterUiData.resolvedIssues).isEmpty()
+        assertThat(updatedUiData).isNotSameInstanceAs(testSafetyCenterUiData)
+        assertThat(updatedUiData.resolvedIssues).isEqualTo(resolved)
+
+        val expectedUiData = testSafetyCenterUiData.copy(resolvedIssues = resolved)
+        assertThat(updatedUiData).isEqualTo(expectedUiData)
+    }
 }
