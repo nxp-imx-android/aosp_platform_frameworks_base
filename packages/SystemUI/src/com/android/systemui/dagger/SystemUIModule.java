@@ -73,6 +73,7 @@ import com.android.systemui.dreams.dagger.DreamModule;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.flags.FlagDependenciesModule;
 import com.android.systemui.flags.FlagsModule;
+import com.android.systemui.globalactions.GlobalActionsModule;
 import com.android.systemui.growth.dagger.GrowthModule;
 import com.android.systemui.haptics.msdl.dagger.MSDLModule;
 import com.android.systemui.inputdevice.InputDeviceModule;
@@ -256,6 +257,7 @@ import javax.inject.Named;
         FooterActionsModule.class,
         KairosCoreStartableModule.class,
         GestureModule.class,
+        GlobalActionsModule.class,
         GrowthModule.class,
         InputMethodModule.class,
         KeyEventRepositoryModule.class,
