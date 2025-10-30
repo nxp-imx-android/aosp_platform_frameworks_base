@@ -4474,11 +4474,36 @@ public class AppOpsService extends IAppOpsService.Stub {
             return attributedOp;
         }
 
-        // We failed to find a trusted in progress event that matches the clientId. Assume it was
-        // an untrusted event, with the null attribution tag
-        return op.mDeviceAttributedOps.getOrDefault(
+        // We failed to find a trusted in progress event that matches the clientId. Check if the
+        // tag is valid in the package, and look for an untrusted access matching that tag, if so
+        boolean tagValid = false;
+        try {
+            tagValid = verifyAndGetBypass(op.uid, op.packageName, attributionTag)
+                    .isAttributionTagValid;
+        } catch (SecurityException e) {
+            // assume tag is invalid
+        }
+        if (tagValid) {
+            boolean hasUntrustedInProgressEvent = attributedOp != null
+                    && attributedOp.hasInProgressEvent((event -> event.getClientId() == clientId
+                    && (event.getFlags() & OP_FLAG_UNTRUSTED_PROXIED) != 0));
+            if (hasUntrustedInProgressEvent) {
+                return attributedOp;
+            }
+        }
+
+        // The tag was not valid, or we failed to find an untrusted event. Look for an untrusted
+        // event with the null attribution tag
+        attributedOp = op.mDeviceAttributedOps.getOrDefault(
                         getPersistentDeviceIdForOp(virtualDeviceId, op.op),
                         new ArrayMap<>()).get(null);
+        boolean hasUntrustedNullEvent = attributedOp != null
+                && attributedOp.hasInProgressEvent((event -> event.getClientId() == clientId
+                        && (event.getFlags() & OP_FLAG_UNTRUSTED_PROXIED) != 0));
+        if (hasUntrustedNullEvent) {
+            return attributedOp;
+        }
+        return null;
     }
 
     void scheduleOpActiveChangedIfNeededLocked(int code, int uid, @NonNull
