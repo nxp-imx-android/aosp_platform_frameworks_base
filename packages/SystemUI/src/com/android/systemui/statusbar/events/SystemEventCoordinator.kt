@@ -221,38 +221,29 @@ constructor(
             private fun filterOutExemptItems(items: List<PrivacyItem>): List<PrivacyItem> {
                 val now = systemClock.elapsedRealtime()
 
-                val cameraMicExemption = Flags.statusBarPrivacyChipAnimationExemption()
                 val locationFlagEnabled = locationIndicatorsEnabled()
 
-                if (!cameraMicExemption && !locationFlagEnabled) {
-                    return items
-                }
-
-                // First, filter out camera/mic exemptions if the flag is enabled
+                // First, filter out camera/mic exemptions
                 val afterCameraMicFilter =
-                    if (cameraMicExemption) {
-                        items.filterNot { item ->
-                            val isCameraMicExempt =
-                                isCameraOrMicrophoneRequest(item) &&
-                                    item.application.packageName == defaultCameraPackageName
-                            if (isCameraMicExempt) {
-                                logBuffer.log(
-                                    tag,
-                                    LogLevel.DEBUG,
-                                    {
-                                        str1 = item.application.packageName
-                                        str2 = item.privacyType.permGroupName
-                                    },
-                                    {
-                                        "Privacy item from default camera ($str1) is exempt " +
-                                            "from chip animation. Permission group=$str2"
-                                    },
-                                )
-                            }
-                            isCameraMicExempt
+                    items.filterNot { item ->
+                        val isCameraMicExempt =
+                            isCameraOrMicrophoneRequest(item) &&
+                                item.application.packageName == defaultCameraPackageName
+                        if (isCameraMicExempt) {
+                            logBuffer.log(
+                                tag,
+                                LogLevel.DEBUG,
+                                {
+                                    str1 = item.application.packageName
+                                    str2 = item.privacyType.permGroupName
+                                },
+                                {
+                                    "Privacy item from default camera ($str1) is exempt " +
+                                        "from chip animation. Permission group=$str2"
+                                },
+                            )
                         }
-                    } else {
-                        items
+                        isCameraMicExempt
                     }
 
                 // Now, if the location flag is enabled and only location items remain,
