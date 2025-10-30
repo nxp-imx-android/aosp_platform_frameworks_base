@@ -114,7 +114,7 @@
     <!-- Color of border for keyguard password input when focused -->
     <color name="bouncer_password_focus_color">@*android:color/system_secondary_dark</color>
     <!-- BG color for confirm and backspace button in non-auto confirm PIN bouncer.   -->
-    <color name="pin_bouncer_action_button_bg">@androidprv:color/customColorSurfaceEffect3</color>
+    <color name="pin_bouncer_action_button_bg">@androidprv:color/surface_effect_3</color>
     <!-- Bouncer background when blur is not enabled.   -->
     <color name="bouncer_fallback_bg">@android:color/system_accent1_800</color>
 
