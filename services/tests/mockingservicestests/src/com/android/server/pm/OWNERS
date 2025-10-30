@@ -4,3 +4,4 @@ per-file StagingManagerTest.java = dariofreni@google.com, ioffe@google.com, olil
 per-file ApexManagerTest.java = dariofreni@google.com, ioffe@google.com, olilan@google.com
 per-file UserManagerServiceMockedTest.java = file:/MULTIUSER_OWNERS
 per-file AppLockPackageHelperTest.kt = file:/core/java/android/content/pm/APP_LOCK_OWNERS
+per-file LauncherAppsServiceTest.java = file:/services/core/java/com/android/server/pm/LAUNCHER_OWNERS
