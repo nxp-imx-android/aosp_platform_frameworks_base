@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.chips.screenrecord.ui.viewmodel
 
 import android.app.ActivityManager
 import android.content.Context
-import android.view.View
 import androidx.annotation.DrawableRes
 import com.android.internal.jank.Cuj
 import com.android.systemui.animation.DialogCuj
@@ -119,8 +118,7 @@ constructor(
                             clickBehavior =
                                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
                                     if (
-                                        ScreenCaptureRecordFeaturesInteractor
-                                            .isNewScreenRecordToolbarEnabled
+                                        ScreenCaptureRecordFeaturesInteractor.shouldShowNewToolbar
                                     ) {
                                         { showScreenRecordingToolbar() }
                                     } else {
