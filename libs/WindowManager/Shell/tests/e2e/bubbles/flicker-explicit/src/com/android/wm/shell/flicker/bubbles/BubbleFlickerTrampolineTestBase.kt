@@ -18,7 +18,7 @@ package com.android.wm.shell.flicker.bubbles
 
 import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.traces.parsers.toFlickerComponent
-import com.android.server.wm.flicker.helpers.SimpleAppHelper
+import com.android.server.wm.flicker.helpers.LaunchViaTrampolineAppHelper
 import com.android.server.wm.flicker.testapp.ActivityOptions
 
 /**
@@ -33,20 +33,19 @@ abstract class BubbleFlickerTrampolineTestBase : BubbleFlickerTestBase() {
          * Entry point for the app that is launching via trampoline
          */
         val trampolineApp: StandardAppHelper =
-            SimpleAppHelper(
+            StandardAppHelper(
                 instrumentation,
-                launcherName = ActivityOptions.TrampolineStartActivity.LABEL,
-                component = ActivityOptions.TrampolineStartActivity.COMPONENT.toFlickerComponent(),
+                appName = ActivityOptions.TrampolineStartActivity.LABEL,
+                componentMatcher = ActivityOptions.TrampolineStartActivity.COMPONENT.toFlickerComponent(),
             )
 
         /**
          * App that will actually be running after the trampoline finishes
          */
-        val runningApp: StandardAppHelper =
-            SimpleAppHelper(
+        val runningApp: LaunchViaTrampolineAppHelper =
+            LaunchViaTrampolineAppHelper(
                 instrumentation,
-                launcherName = ActivityOptions.TrampolineFinishActivity.LABEL,
-                component = ActivityOptions.TrampolineFinishActivity.COMPONENT.toFlickerComponent(),
+                trampolineApp = trampolineApp,
             )
     }
 }
