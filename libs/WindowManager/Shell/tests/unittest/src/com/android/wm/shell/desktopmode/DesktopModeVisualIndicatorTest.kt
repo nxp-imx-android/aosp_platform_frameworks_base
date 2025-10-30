@@ -30,7 +30,6 @@ import androidx.test.filters.SmallTest
 import com.android.internal.policy.SystemBarUtils
 import com.android.window.flags.Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
-import com.android.window.flags.Flags.FLAG_ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -499,15 +498,6 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(FLAG_ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX)
-    fun createIndicator_inTransitionFlagDisabled_isAttachedToDisplayArea() {
-        createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FULLSCREEN)
-
-        verify(taskDisplayAreaOrganizer).attachToDisplayArea(anyInt(), any())
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX)
     fun createIndicator_fromFreeform_inTransitionFlagEnabled_isAttachedToDisplayArea() {
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FREEFORM)
 
@@ -515,7 +505,6 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX)
     fun createIndicator_fromFullscreen_inTransitionFlagEnabled_notAttachedToDisplayArea() {
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FULLSCREEN)
 
@@ -523,7 +512,6 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX)
     fun createIndicator_fromSplit_inTransitionFlagEnabled_notAttachedToDisplayArea() {
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_SPLIT)
 

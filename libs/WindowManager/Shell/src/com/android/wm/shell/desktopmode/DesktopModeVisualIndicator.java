@@ -169,8 +169,7 @@ public class DesktopModeVisualIndicator {
             boolean useSmallTabletRegions,
             boolean isLeftRightSplit) {
         SurfaceControl.Builder builder = new SurfaceControl.Builder();
-        if (!DragStartState.isDragToDesktopStartState(dragStartState)
-                || !DesktopModeFlags.ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX.isTrue()) {
+        if (!DragStartState.isDragToDesktopStartState(dragStartState)) {
             // In the DragToDesktop transition we attach the indicator to the transition root once
             // that is available - for all other cases attach the indicator here.
             taskDisplayAreaOrganizer.attachToDisplayArea(taskInfo.displayId, builder);

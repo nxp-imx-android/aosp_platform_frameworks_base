@@ -547,9 +547,7 @@ sealed class DragToDesktopTransitionHandler(
         val taskChange = state.draggedTaskChange ?: error("Expected non-null task change.")
         val taskInfo = taskChange.taskInfo ?: error("Expected non-null task info.")
 
-        if (DesktopModeFlags.ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX.isTrue) {
-            attachIndicatorToTransitionRoot(state, info, taskInfo, startTransaction)
-        }
+        attachIndicatorToTransitionRoot(state, info, taskInfo, startTransaction)
         startTransaction.apply()
 
         if (state.cancelState == CancelState.NO_CANCEL) {
