@@ -1048,6 +1048,13 @@ flag {
 }
 
 flag {
+  name: "aosp_posture_detection"
+  namespace: "systemui"
+  description: "Enables an AOSP-based posture detection algorithm using device accelerometer data"
+  bug: "456482519"
+}
+
+flag {
   name: "app_clips_backlinks"
   namespace: "systemui"
   description: "Enables Backlinks improvement feature in App Clips"

@@ -518,6 +518,14 @@ abstract class LogModule {
             return factory.create("CommunalTableLog", 250)
         }
 
+        /** Provides a [LogBuffer] for posture detection related logs. */
+        @Provides
+        @SysUISingleton
+        @PostureDetectionLog
+        fun providePostureDetectionLogBuffer(factory: LogBufferFactory): LogBuffer {
+            return factory.create("PostureDetectionLog", 500)
+        }
+
         /** Provides a [LogBuffer] for display metrics related logs. */
         @Provides
         @SysUISingleton
