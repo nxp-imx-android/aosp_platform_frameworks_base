@@ -16,9 +16,11 @@
 package com.android.systemui.statusbar.notification.stack
 
 import android.annotation.ColorInt
+import android.annotation.MainThread
 import android.util.Log
 import android.view.View
 import com.android.internal.annotations.VisibleForTesting
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.media.controls.ui.controller.KeyguardMediaController
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
@@ -36,6 +38,7 @@ import com.android.systemui.statusbar.notification.dagger.SilentHeader
 import com.android.systemui.statusbar.notification.dagger.SocialHeader
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
+import com.android.systemui.statusbar.notification.shared.NmContextualDisplay
 import com.android.systemui.statusbar.notification.shared.NmHighlights
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationSummarizationOnboardingUi
@@ -44,11 +47,9 @@ import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.util.foldToSparseArray
 import javax.inject.Inject
 
-/**
- * Manages section headers in the NSSL.
- *
- * TODO: Move remaining sections logic from NSSL into this class.
- */
+/** Manages section headers in the NSSL. */
+@MainThread
+@SysUISingleton
 class NotificationSectionsManager
 @Inject
 internal constructor(
@@ -76,6 +77,8 @@ internal constructor(
 
     private lateinit var parent: NotificationStackScrollLayout
     private var initialized = false
+
+    private lateinit var sections: MutableList<NotificationSection>
 
     @VisibleForTesting
     val silentHeaderView: SectionHeaderView?
@@ -120,14 +123,32 @@ internal constructor(
     /** Must be called before use. */
     fun initialize(parent: NotificationStackScrollLayout) {
         check(!initialized) { "NotificationSectionsManager already initialized" }
+
+        createSectionsForBuckets()
+
         initialized = true
         this.parent = parent
         reinflateViews()
         configurationController.addCallback(configurationListener)
     }
 
-    fun createSectionsForBuckets(): Array<NotificationSection> =
-        PriorityBucket.getAllInOrder().map { NotificationSection(it) }.toTypedArray()
+    fun createSectionsForBuckets() {
+        sections = PriorityBucket.getAllInOrder().map { NotificationSection(it) }.toMutableList()
+    }
+
+    fun addSection(sectionType: Int) {
+        if (!NmContextualDisplay.isEnabled) {
+            return
+        }
+        sections.add(NotificationSection(sectionType))
+    }
+
+    fun removeSection(sectionType: Int) {
+        if (!NmContextualDisplay.isEnabled) {
+            return
+        }
+        sections.removeIf { it.bucket == sectionType }
+    }
 
     /** Reinflates the entire notification header, including all decoration views. */
     fun reinflateViews() {
@@ -223,10 +244,7 @@ internal constructor(
      *
      * @return `true` If the last view in the top section changed (so we need to animate).
      */
-    fun updateFirstAndLastViewsForAllSections(
-        sections: Array<NotificationSection>,
-        children: List<ExpandableView>,
-    ): Boolean {
+    fun updateFirstAndLastViewsForAllSections(children: List<ExpandableView>): Boolean {
         // Create mapping of bucket to section
         val sectionBounds =
             children
@@ -290,7 +308,7 @@ internal constructor(
         return changed
     }
 
-    private fun logSections(sections: Array<NotificationSection>) {
+    private fun logSections(sections: List<NotificationSection>) {
         for (i in sections.indices) {
             val s = sections[i]
             val fs =
@@ -323,6 +341,25 @@ internal constructor(
         if (NmHighlights.isEnabled) {
             highlightsHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
         }
+    }
+
+    fun getFirstVisibleSection(): NotificationSection? {
+        for (section in sections) {
+            if (section.getFirstVisibleChild() != null) {
+                return section
+            }
+        }
+        return null
+    }
+
+    fun getLastVisibleSection(): NotificationSection? {
+        for (i in sections.indices.reversed()) {
+            val section: NotificationSection = sections[i]
+            if (section.getLastVisibleChild() != null) {
+                return section
+            }
+        }
+        return null
     }
 
     companion object {

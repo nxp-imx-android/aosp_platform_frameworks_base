@@ -208,11 +208,6 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         mDependency.injectTestDependency(
                 ScreenOffAnimationController.class, mScreenOffAnimationController);
 
-        when(mNotificationSectionsManager.createSectionsForBuckets()).thenReturn(
-                new NotificationSection[]{
-                        mNotificationSection
-                });
-
         // The actual class under test.  You may need to work with this class directly when
         // testing anonymous class members of mStackScroller, like mMenuEventListener,
         // which refer to members of NotificationStackScrollLayout. The spy
