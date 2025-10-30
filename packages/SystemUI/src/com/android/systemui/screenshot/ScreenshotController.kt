@@ -123,7 +123,7 @@ internal constructor(
         window = screenshotWindowFactory.create(display)
         context = window.getContext()
 
-        viewProxy = viewProxyFactory.getProxy(context, display.displayId)
+        viewProxy = viewProxyFactory.getProxy(window, display.displayId)
 
         screenshotHandler.setOnTimeoutRunnable {
             if (LogConfig.DEBUG_UI) {
@@ -362,7 +362,7 @@ internal constructor(
                                 { requestScrollCapture(requestId, owner) },
                                 150,
                             )
-                            viewProxy.updateInsets(window.getWindowInsets())
+                            viewProxy.updateInsets()
                             // Screenshot animation calculations won't be valid anymore, so just end
                             screenshotAnimation?.let { currentAnimation ->
                                 if (currentAnimation.isRunning) {
