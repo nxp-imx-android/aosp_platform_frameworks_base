@@ -63,7 +63,7 @@ final class UserHelper {
      *
      * @return {@code START_SUCCESS} is valid, or specific error code if it isn't.
      */
-    public int checkRequest(Request request) {
+    public int checkRequest(Request request, int displayId) {
         ActivityInfo aInfo = request.activityInfo;
         if (aInfo == null) {
             // The caller should have checked before, but it doesn't hurt to double check...
@@ -84,10 +84,31 @@ final class UserHelper {
         int userId = getUserId(aInfo);
         boolean showForAllUsers = (aInfo.flags & ActivityInfo.FLAG_SHOW_FOR_ALL_USERS) != 0;
         if (showForAllUsers) {
-            if (DEBUG_USER_VISIBILITY && intent.getComponent() != null) {
+            if (DEBUG_USER_VISIBILITY) {
                 Slogf.d(TAG, "Not checking if activity %s is allowlisted for user %d because "
                         + "its marked as 'showForAllUsers' (currentUserId=%d)",
                         intent.getComponent().flattenToShortString(), userId,
+                        ActivityManager.getCurrentUser());
+            }
+            return START_SUCCESS;
+        }
+
+        // The goal of the allowlist is to avoid activities being shown when they shouldn't (for
+        // example, in a login screen that's displayed when user 0 is the current user), but
+        // there might be cases where the activity is being launched on a different user, which is
+        // not visible (for example, when the current user is user 10 and this activity is being
+        // launched by the SystemUI on user 0). Hence, this mechanism should be ignored when the
+        // user is not visible (in the target display)
+        // TODO(b/456300837): rather than checking if the user is visible, we should instead get all
+        // users visible in the display and check that the activity is allowlisted on all of them.
+        // But that will be done in a future CL, for 2 reasons:
+        // - There is no UMI.getVisibleUsers(displayId) yet
+        // - Such logic is more complicated and will require more unit tests
+        if (mUmi.isUserVisible(userId, displayId)) {
+            if (DEBUG_USER_VISIBILITY) {
+                Slogf.d(TAG, "Not checking if activity %s is allowlisted for user %d because "
+                        + "it's visible on display %d (currentUserId=%d)",
+                        intent.getComponent().flattenToShortString(), userId, displayId,
                         ActivityManager.getCurrentUser());
             }
             return START_SUCCESS;

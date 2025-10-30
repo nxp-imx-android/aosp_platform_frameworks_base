@@ -20,6 +20,7 @@ import static android.app.ActivityManager.START_NOT_ALLOWED_FOR_USER;
 import static android.app.ActivityManager.START_SUCCESS;
 import static android.content.pm.ActivityInfo.FLAG_SHOW_FOR_ALL_USERS;
 import static android.os.UserHandle.USER_SYSTEM;
+import static android.view.Display.DEFAULT_DISPLAY;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -96,7 +97,8 @@ public final class UserHelperTest {
     public void testCheckRequest_nullInfo_failure() {
         mRequest.activityInfo = null;
 
-        expect.withMessage("checkRequest()").that(mUserHelper.checkRequest(mRequest))
+        expect.withMessage("checkRequest()")
+                .that(mUserHelper.checkRequest(mRequest, DEFAULT_DISPLAY))
                 .isEqualTo(START_CLASS_NOT_FOUND);
 
         verifyUmiNotNotifiedActivityBlockedOnHsu();
@@ -106,7 +108,8 @@ public final class UserHelperTest {
     public void testCheckRequest_nullComponentName_success() {
         mRequest.intent = new Intent();
 
-        expect.withMessage("checkRequest()").that(mUserHelper.checkRequest(mRequest))
+        expect.withMessage("checkRequest()")
+                .that(mUserHelper.checkRequest(mRequest, DEFAULT_DISPLAY))
                 .isEqualTo(START_SUCCESS);
 
         verifyUmiNotNotifiedActivityBlockedOnHsu();
@@ -116,7 +119,8 @@ public final class UserHelperTest {
     public void testCheckRequest_allowListIsNull_success() {
         mockNoActivitiesAllowlist(USER_SYSTEM);
 
-        expect.withMessage("checkRequest()").that(mUserHelper.checkRequest(mRequest))
+        expect.withMessage("checkRequest()")
+                .that(mUserHelper.checkRequest(mRequest, DEFAULT_DISPLAY))
                 .isEqualTo(START_SUCCESS);
 
         verifyUmiNotNotifiedActivityBlockedOnHsu();
@@ -126,7 +130,19 @@ public final class UserHelperTest {
     public void testCheckRequest_notAllowlistedButShowForAll_success() {
         mRequest.activityInfo.flags = FLAG_SHOW_FOR_ALL_USERS;
 
-        expect.withMessage("checkRequest()").that(mUserHelper.checkRequest(mRequest))
+        expect.withMessage("checkRequest()")
+                .that(mUserHelper.checkRequest(mRequest, DEFAULT_DISPLAY))
+                .isEqualTo(START_SUCCESS);
+
+        verifyUmiNotNotifiedActivityBlockedOnHsu();
+    }
+
+    @Test
+    public void testCheckRequest_notAllowlistedButVisible_success() {
+        mockIsUserVisible(USER_SYSTEM, DEFAULT_DISPLAY, true);
+
+        expect.withMessage("checkRequest()")
+                .that(mUserHelper.checkRequest(mRequest, DEFAULT_DISPLAY))
                 .isEqualTo(START_SUCCESS);
 
         verifyUmiNotNotifiedActivityBlockedOnHsu();
@@ -134,7 +150,8 @@ public final class UserHelperTest {
 
     @Test
     public void testCheckRequest_notAllowlisted_failure() {
-        expect.withMessage("checkRequest()").that(mUserHelper.checkRequest(mRequest))
+        expect.withMessage("checkRequest()")
+                .that(mUserHelper.checkRequest(mRequest, DEFAULT_DISPLAY))
                 .isEqualTo(START_NOT_ALLOWED_FOR_USER);
 
         verifyUmiNotifiedActivityBlockedOnHsu();
@@ -144,7 +161,8 @@ public final class UserHelperTest {
     public void testCheckRequest_notAllowlisted_failureButDontLogWhenDeviceIsNotHsum() {
         var userHelper = createUserHelper(/*hsum= */ false);
 
-        expect.withMessage("checkRequest()").that(userHelper.checkRequest(mRequest))
+        expect.withMessage("checkRequest()")
+                .that(userHelper.checkRequest(mRequest, DEFAULT_DISPLAY))
                 .isEqualTo(START_NOT_ALLOWED_FOR_USER);
 
         verifyUmiNotNotifiedActivityBlockedOnHsu();
@@ -155,7 +173,8 @@ public final class UserHelperTest {
         setUserIdOnRequest(USER_ID);
         mockActivityAllowlisted(USER_ID, false);
 
-        expect.withMessage("checkRequest()").that(mUserHelper.checkRequest(mRequest))
+        expect.withMessage("checkRequest()")
+                .that(mUserHelper.checkRequest(mRequest, DEFAULT_DISPLAY))
                 .isEqualTo(START_NOT_ALLOWED_FOR_USER);
 
         verifyUmiNotNotifiedActivityBlockedOnHsu();
@@ -165,7 +184,8 @@ public final class UserHelperTest {
     public void testCheckRequest_allowlisted_success() {
         mockHsuActivityAllowlisted(true);
 
-        expect.withMessage("checkRequest()").that(mUserHelper.checkRequest(mRequest))
+        expect.withMessage("checkRequest()")
+                .that(mUserHelper.checkRequest(mRequest, DEFAULT_DISPLAY))
                 .isEqualTo(START_SUCCESS);
 
         verifyUmiNotNotifiedActivityBlockedOnHsu();
@@ -273,6 +293,10 @@ public final class UserHelperTest {
 
     private void mockHsuActivityAllowlisted(boolean value) {
         mockActivityAllowlisted(USER_SYSTEM, value);
+    }
+
+    private void mockIsUserVisible(@UserIdInt int userId, int displayId, boolean visible) {
+        when(mMockUmi.isUserVisible(userId, displayId)).thenReturn(visible);
     }
 
     private void verifyUmiNotifiedActivityBlockedOnHsu() {

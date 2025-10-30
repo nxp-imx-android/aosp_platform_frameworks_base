@@ -72,6 +72,7 @@ import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_PERMISSIONS_REVIEW;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_RESULTS;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_USER_LEAVING;
+import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_USER_VISIBILITY;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_CONFIGURATION;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_FOCUS;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_RESULTS;
@@ -148,6 +149,7 @@ import com.android.server.pm.PackageArchiver;
 import com.android.server.power.ShutdownCheckPoints;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.uri.NeededUriGrants;
+import com.android.server.utils.Slogf;
 import com.android.server.wm.ActivityMetricsLogger.LaunchingState;
 import com.android.server.wm.BackgroundActivityStartController.BalVerdict;
 import com.android.server.wm.LaunchParamsController.LaunchParams;
@@ -1203,9 +1205,21 @@ class ActivityStarter {
             }
         }
 
+        // Merge the two options bundles, while realCallerOptions takes precedence.
+        ActivityOptions checkedOptions = options != null
+                ? options.getOptions(intent, aInfo, callerApp, mSupervisor) : null;
+        final TaskDisplayArea suggestedLaunchDisplayArea =
+                computeSuggestedLaunchDisplayArea(inTask, sourceRecord, checkedOptions);
+
         // TODO(b/412177078): remove null check once hsuAllowlistActivities() is gone
         if (err == START_SUCCESS && mUserHelper != null) {
-            err = mUserHelper.checkRequest(request);
+            int displayId = suggestedLaunchDisplayArea.getDisplayId();
+            if (DEBUG_USER_VISIBILITY) {
+                Slogf.d(TAG, "using display (%d) from request when checking visibility of user "
+                        + "%d",  displayId, userId);
+            }
+
+            err = mUserHelper.checkRequest(request, displayId);
         }
 
         final Task resultRootTask = resultRecord == null
@@ -1289,10 +1303,6 @@ class ActivityStarter {
         }
         intent.removeCreatorToken();
 
-        // Merge the two options bundles, while realCallerOptions takes precedence.
-        ActivityOptions checkedOptions = options != null
-                ? options.getOptions(intent, aInfo, callerApp, mSupervisor) : null;
-
         final BalVerdict balVerdict;
         if (!abort) {
             try {
@@ -1339,8 +1349,6 @@ class ActivityStarter {
             }
         }
 
-        final TaskDisplayArea suggestedLaunchDisplayArea =
-                computeSuggestedLaunchDisplayArea(inTask, sourceRecord, checkedOptions);
         final int sourceDisplayId =
                 sourceRecord != null ? sourceRecord.getDisplayId() : INVALID_DISPLAY;
         mInterceptor.setStates(userId, realCallingPid, realCallingUid, startFlags,
