@@ -77,6 +77,11 @@ private fun TransitionSource.stateAwareTransitionSource(
 
     val source = this
     return object : TransitionSource {
+
+        override var isSourceVisible: Boolean = source.isSourceVisible
+
+        override var onSourceVisibilityChanged: (Boolean) -> Unit = source.onSourceVisibilityChanged
+
         override fun dialogTransitionController(
             cuj: DialogCuj?
         ): DialogTransitionAnimator.Controller? {

@@ -39,6 +39,14 @@ class Expandable(
         transitionSources.add(transitionSource)
     }
 
+    // Hide the source if the associated launch is visible
+    private var isSourceVisible: Boolean = true
+
+    private fun updateSourceVisibility(sourceVisible: Boolean) {
+        isSourceVisible = sourceVisible
+        transitionSources.forEach { source -> source.isSourceVisible = sourceVisible }
+    }
+
     /**
      * Registers a [TransitionSource] with this coordinator. This should be called when the source
      * UI component becomes active (e.g., attached to window, composed, placed).
@@ -46,6 +54,8 @@ class Expandable(
      * @param source The [TransitionSource] to add.
      */
     fun addSource(source: TransitionSource) {
+        source.isSourceVisible = isSourceVisible
+        source.onSourceVisibilityChanged = this::updateSourceVisibility
         transitionSources.add(source)
     }
 

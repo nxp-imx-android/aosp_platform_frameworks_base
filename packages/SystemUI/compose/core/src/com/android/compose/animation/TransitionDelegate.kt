@@ -64,6 +64,11 @@ class TransitionDelegate(
 
     private val transitionSource: TransitionSource by lazy {
         object : TransitionSource {
+
+            override var isSourceVisible: Boolean = true
+
+            override var onSourceVisibilityChanged: (Boolean) -> Unit = {}
+
             override fun activityTransitionController(
                 launchCujType: Int?,
                 cookie: ActivityTransitionAnimator.TransitionCookie?,

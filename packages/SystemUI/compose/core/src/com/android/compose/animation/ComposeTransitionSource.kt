@@ -49,9 +49,17 @@ class ComposeTransitionSource(
     private val isComposed: () -> Boolean,
 ) : TransitionSource, ExpandableController {
 
+    override var isSourceVisible: Boolean = true
+        set(value) {
+            this@ComposeTransitionSource.isDialogShowing = !value
+            field = value
+        }
+
+    override var onSourceVisibilityChanged: (Boolean) -> Unit = {}
+
     override var animatorState by mutableStateOf<TransitionAnimator.State?>(null)
 
-    override var isDialogShowing by mutableStateOf(false)
+    override var isDialogShowing by mutableStateOf(!isSourceVisible)
 
     override var overlay by mutableStateOf<ViewGroupOverlay?>(null)
 
@@ -75,6 +83,7 @@ class ComposeTransitionSource(
                 get() = this@ComposeTransitionSource.isDialogShowing
                 set(value) {
                     this@ComposeTransitionSource.isDialogShowing = value
+                    onSourceVisibilityChanged(!value)
                 }
 
             override var overlay: ViewGroupOverlay?
