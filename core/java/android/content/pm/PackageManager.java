@@ -12267,4 +12267,17 @@ public abstract class PackageManager {
     public static int maybeGetSdkFeatureIndex(String featureName) {
         return com.android.internal.pm.SystemFeaturesMetadata.maybeGetSdkFeatureIndex(featureName);
     }
+
+    /**
+     * Maps a Private Compute Core (PCC) UID to its corresponding application UID.
+     *
+     * @param pccUid The PCC UID to map.
+     * @return The corresponding application UID, or {@link Process#INVALID_UID} if the
+     *         provided UID is not a valid PCC UID or no mapping exists.
+     * @hide
+     */
+    public int getAppUidForPccUid(int pccUid) {
+        throw new UnsupportedOperationException(
+                "getAppUidForPccUid not implemented in subclass");
+    }
 }
