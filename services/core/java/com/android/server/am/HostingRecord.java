@@ -137,10 +137,14 @@ public final class HostingRecord {
     }
 
     public HostingRecord(@NonNull String hostingType, ComponentName hostingName, boolean isTopApp) {
+        this(hostingType, hostingName, isTopApp, false /* isPcc */);
+    }
+
+    public HostingRecord(@NonNull String hostingType, ComponentName hostingName,
+            boolean isTopApp, boolean isPcc) {
         this(hostingType, hostingName.toShortString(), REGULAR_ZYGOTE,
                 null /* definingPackageName */, -1 /* mDefiningUid */, isTopApp /* isTopApp */,
-                null /* definingProcessName */, null /* action */, TRIGGER_TYPE_UNKNOWN,
-                false /* isPcc */);
+                null /* definingProcessName */, null /* action */, TRIGGER_TYPE_UNKNOWN, isPcc);
     }
 
     public HostingRecord(@NonNull String hostingType, String hostingName) {
