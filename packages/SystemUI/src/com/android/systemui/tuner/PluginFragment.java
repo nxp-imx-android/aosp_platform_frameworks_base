@@ -79,7 +79,7 @@ public class PluginFragment extends PreferenceFragment {
     }
 
     private void loadPrefs() {
-        PluginManager manager = Dependency.get(PluginManager.class);
+        PluginManager.Config pluginConfig = Dependency.get(PluginManager.Config.class);
         PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(getContext());
         screen.setOrderingAsAdded(false);
         Context prefContext = getPreferenceManager().getContext();
@@ -106,7 +106,7 @@ public class PluginFragment extends PreferenceFragment {
                 PackageManager.MATCH_DISABLED_COMPONENTS | PackageManager.GET_SERVICES);
         apps.forEach(app -> {
             if (!plugins.containsKey(app.packageName)) return;
-            if (manager.getConfig().isPackagePrivileged(app.packageName)) {
+            if (pluginConfig.isPackagePrivileged(app.packageName)) {
                 // Don't manage privileged plugins, they are part of the OS.
                 return;
             }

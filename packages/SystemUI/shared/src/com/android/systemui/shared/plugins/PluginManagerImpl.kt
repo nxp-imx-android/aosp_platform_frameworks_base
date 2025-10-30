@@ -33,6 +33,7 @@ import com.android.systemui.plugins.PluginManager
 import com.android.systemui.shared.plugins.PluginEnabler.DisableReason
 import com.android.systemui.shared.system.UncaughtExceptionPreHandlerManager
 import java.io.PrintWriter
+import java.util.concurrent.Executor
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -45,7 +46,7 @@ constructor(
     preHandlerManager: UncaughtExceptionPreHandlerManager?,
     private val pluginEnabler: PluginEnabler,
     private val pluginPrefs: PluginPrefs,
-    override val config: PluginManager.Config,
+    private val config: PluginManager.Config,
 ) : BroadcastReceiver(), PluginManager, Dumpable {
     private val pluginMap = mutableMapOf<PluginListener<*>, PluginActionManager<*>>()
     private val logger = Logger(DEFAULT_LOGBUFFER, TAG)
@@ -248,5 +249,43 @@ constructor(
 
         private val TAG: String = PluginManagerImpl::class.java.simpleName
         const val DISABLE_PLUGIN: String = "com.android.systemui.action.DISABLE_PLUGIN"
+
+        @JvmStatic
+        /** This is provided for ease of use */
+        fun create(
+            context: Context,
+            privilegedPlugins: List<String>,
+            pluginEnabler: PluginEnabler,
+            bgExecutor: Executor,
+            preHandlerManager: UncaughtExceptionPreHandlerManager?,
+        ): PluginManagerImpl {
+            val pluginPrefs = PluginPrefs(context)
+            val config = PluginManager.Config(privilegedPlugins)
+
+            val instanceFactory =
+                PluginInstance.Factory(VersionCheckerImpl(), this::class.java.classLoader!!, config)
+
+            val pluginActionManagerFactory =
+                PluginActionManager.Factory(
+                    context,
+                    context.packageManager,
+                    context.mainExecutor,
+                    bgExecutor,
+                    context.getSystemService(NotificationManager::class.java),
+                    pluginEnabler,
+                    config,
+                    instanceFactory,
+                    pluginPrefs,
+                )
+
+            return PluginManagerImpl(
+                context,
+                pluginActionManagerFactory,
+                preHandlerManager,
+                pluginEnabler,
+                pluginPrefs,
+                config,
+            )
+        }
     }
 }

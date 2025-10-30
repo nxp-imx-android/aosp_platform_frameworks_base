@@ -18,8 +18,6 @@ import android.text.TextUtils
 import com.android.systemui.plugins.annotations.ProvidesInterface
 
 interface PluginManager {
-    val config: Config
-
     fun <T : Plugin> addPluginListener(
         listener: PluginListener<T>,
         cls: Class<T>,
