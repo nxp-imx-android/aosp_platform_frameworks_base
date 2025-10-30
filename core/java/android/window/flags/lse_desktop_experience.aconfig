@@ -116,6 +116,13 @@ flag {
 }
 
 flag {
+    name: "enable_app_restart_after_update"
+    namespace: "lse_desktop_experience"
+    description: "Enables the app restart after update feature."
+    bug: "448577499"
+}
+
+flag {
     name: "enable_app_to_web_education_animation"
     namespace: "lse_desktop_experience"
     description: "Show the App-to-web education animation."
