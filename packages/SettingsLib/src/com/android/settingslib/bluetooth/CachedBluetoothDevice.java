@@ -377,7 +377,12 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         if (Flags.enableBluetoothDiagnosis() && !isBusy()) {
             if (isProfileConnectedFail()) {
                 mConnectionFailureTimeMillis = SystemClock.elapsedRealtime();
-                Log.d(TAG, "Detect connection failure at " + mConnectionFailureTimeMillis);
+                Log.d(
+                        TAG,
+                        "Detect connection failure for device "
+                                + getAddress()
+                                + " at "
+                                + mConnectionFailureTimeMillis);
                 dispatchAttributesChanged();
                 cancelFailureScheduledFutureIfNeeded();
                 mBluetoothFailureFuture =
@@ -386,7 +391,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                                 BluetoothUtils.CAN_NOT_CONNECT_TIME_OUT_MILLS,
                                 TimeUnit.MILLISECONDS);
             } else if (mConnectionFailureTimeMillis > -1) {
-                Log.d(TAG, "Connection failure timestamp cleared");
+                Log.d(TAG, "Connection failure timestamp cleared for device " + getAddress());
                 mConnectionFailureTimeMillis = -1;
                 dispatchAttributesChanged();
                 cancelFailureScheduledFutureIfNeeded();
@@ -1154,7 +1159,12 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             if (Flags.enableBluetoothDiagnosis()) {
                 if (prevBondState == BluetoothDevice.BOND_BONDING) {
                     mBondFailureTimeMillis = SystemClock.elapsedRealtime();
-                    Log.d(TAG, "Detect bonding failure at " + mBondFailureTimeMillis);
+                    Log.d(
+                            TAG,
+                            "Detect bonding failure for device "
+                                    + getAddress()
+                                    + " at "
+                                    + mBondFailureTimeMillis);
                     cancelFailureScheduledFutureIfNeeded();
                     mBluetoothFailureFuture =
                             mBluetoothFailureTimerScheduler.schedule(
@@ -1182,7 +1192,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
 
             if (Flags.enableBluetoothDiagnosis()) {
                 mBondFailureTimeMillis = -1;
-                Log.d(TAG, "Bond success");
+                Log.d(TAG, "Bond success for device " + getAddress());
                 cancelFailureScheduledFutureIfNeeded();
             }
         }
