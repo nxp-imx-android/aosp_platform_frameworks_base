@@ -235,11 +235,14 @@ class ThemeSettingsManager {
         }
         JSONObject json = new JSONObject(jsonString);
 
-        if (!json.has(TIMESTAMP)) {
-            Log.w(TAG, "JSON missing timestamp");
+        Instant timestamp;
+        if (json.has(TIMESTAMP)) {
+            timestamp = Instant.ofEpochMilli(json.getLong(TIMESTAMP));
+        } else {
+            Log.w(TAG, "JSON missing timestamp, using current time as fallback.");
+            timestamp = Instant.EPOCH;
         }
 
-        Instant timestamp = Instant.ofEpochMilli(json.getLong(TIMESTAMP));
         int themeStyle = parseAndValidate(json, OVERLAY_CATEGORY_THEME_STYLE,
                 ThemeStyle.TONAL_SPOT);
         String colorSource = parseAndValidate(json, OVERLAY_COLOR_SOURCE, VALUE_HOME_WALLPAPER);

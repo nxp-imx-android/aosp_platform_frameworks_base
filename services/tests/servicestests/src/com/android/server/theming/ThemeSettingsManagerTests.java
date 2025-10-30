@@ -34,8 +34,6 @@ import android.provider.Settings;
 import android.testing.TestableContext;
 import android.testing.TestableResources;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.R;
@@ -49,6 +47,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.Instant;
+
 @RunWith(AndroidJUnit4.class)
 public class ThemeSettingsManagerTests {
     private final int mUserId = 0;
@@ -58,14 +58,6 @@ public class ThemeSettingsManagerTests {
 
     @Mock
     private WallpaperManagerInternal mMockWmi;
-
-    private final SystemPropertiesReader mSystemPropertiesReader = new SystemPropertiesReader() {
-        @NonNull
-        @Override
-        public String get(@NonNull String key, @Nullable String def) {
-            return mHardwareColorRule.color;
-        }
-    };
 
     @Rule
     public final TestableContext mContext = new TestableContext(
@@ -249,7 +241,7 @@ public class ThemeSettingsManagerTests {
     })
     public void createDefaultThemeSettings_matchesHardwareColor() {
         ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(
-                mContext.getResources(), mSystemPropertiesReader, mUserId);
+                mContext.getResources(), mHardwareColorRule.sysPropReader, mUserId);
 
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.VIBRANT);
@@ -264,7 +256,7 @@ public class ThemeSettingsManagerTests {
     })
     public void createDefaultThemeSettings_usesWildcardFallback_preset() {
         ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(
-                mContext.getResources(), mSystemPropertiesReader, mUserId);
+                mContext.getResources(), mHardwareColorRule.sysPropReader, mUserId);
 
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.TONAL_SPOT);
@@ -283,7 +275,7 @@ public class ThemeSettingsManagerTests {
         when(mMockWmi.getWallpaperColors(anyInt(), anyInt())).thenReturn(wallpaperColors);
 
         ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(
-                mContext.getResources(), mSystemPropertiesReader, mUserId);
+                mContext.getResources(), mHardwareColorRule.sysPropReader, mUserId);
 
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_HOME_WALLPAPER);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.EXPRESSIVE);
@@ -299,7 +291,7 @@ public class ThemeSettingsManagerTests {
         when(mMockWmi.getWallpaperColors(anyInt(), anyInt())).thenReturn(null);
 
         ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(
-                mContext.getResources(), mSystemPropertiesReader, mUserId);
+                mContext.getResources(), mHardwareColorRule.sysPropReader, mUserId);
 
         // Since the primary source (wallpaper) failed, it should fall back to the wildcard,
         // which is also wallpaper. Since that will also fail, it uses the hardcoded fallback.
@@ -316,7 +308,7 @@ public class ThemeSettingsManagerTests {
     public void createDefaultThemeSettings_noWildcard_throwsException() {
         assertThrows(IllegalStateException.class,
                 () -> mManager.createDefaultThemeSettings(
-                        mContext.getResources(), mSystemPropertiesReader, mUserId));
+                        mContext.getResources(), mHardwareColorRule.sysPropReader, mUserId));
     }
 
     @Test
@@ -325,9 +317,28 @@ public class ThemeSettingsManagerTests {
     })
     public void createDefaultThemeSettings_malformedColor_fallsBackToHardcoded() {
         ThemeSettings defaultSettings = mManager.createDefaultThemeSettings(
-                mContext.getResources(), mSystemPropertiesReader, mUserId);
+                mContext.getResources(), mHardwareColorRule.sysPropReader, mUserId);
         assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
         assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.TONAL_SPOT);
         assertThat(defaultSettings.systemPalette()).isEqualTo(Color.valueOf(0xFF1b6ef3));
+    }
+
+    @Test
+    public void loadSettings_missingTimestamp_returnsSettingsWithCurrentTimestamp() {
+        String jsonWithoutTimestamp = "{"
+                + "\"android.theme.customization.color_source\":\"preset\","
+                + "\"android.theme.customization.theme_style\":\"TONAL_SPOT\","
+                + "\"android.theme.customization.system_palette\":\"FF1A73E8\""
+                + "}";
+        Settings.Secure.putStringForUser(mContentResolver,
+                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, jsonWithoutTimestamp,
+                mUserId);
+
+        ThemeSettings settings = mManager.readSettings(mUserId, mContentResolver);
+
+        assertThat(settings).isNotNull();
+        assertThat(settings.timeStamp().toEpochMilli()).isAtLeast(Instant.EPOCH.toEpochMilli());
+        assertThat(settings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
+        assertThat(settings.themeStyle()).isEqualTo(ThemeStyle.TONAL_SPOT);
     }
 }

@@ -34,25 +34,30 @@ import android.os.FabricatedOverlayInternal;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.testing.TestableContext;
+import android.testing.TestableResources;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.internal.R;
 import com.android.server.LocalServices;
 import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 @RunWith(AndroidJUnit4.class)
+@HardwareColors(color = "", options = {"*|TONAL_SPOT|#00FF00"})
 public class ThemeManagerInternalTests {
+    @Rule
+    public final HardwareColorRule mHardwareColorRule = new HardwareColorRule();
+
     private final IThemeSettingsCallback mCallback = new IThemeSettingsCallback.Stub() {
         @Override
         public void onSettingsChanged(ThemeSettings oldSettings, ThemeSettings newSettings) {
@@ -62,7 +67,6 @@ public class ThemeManagerInternalTests {
     private final int mUserId = 0;
     private ThemeManagerInternal mUnderTest;
     private TestableContext mContext;
-    private SystemPropertiesReader mSystemPropertiesReader;
     private ThemeSettingsManager mThemeSettingsManager;
 
     private static final int TEST_SEED_COLOR = Color.BLUE;
@@ -92,6 +96,8 @@ public class ThemeManagerInternalTests {
         LocalServices.addService(WallpaperManagerInternal.class, mWallpaperManagerInternal);
 
         mContext = new TestableContext(InstrumentationRegistry.getTargetContext(), null);
+        TestableResources testableResources = mContext.getOrCreateTestableResources();
+        testableResources.addOverride(R.array.theming_defaults, mHardwareColorRule.options);
 
         Settings.Secure.putStringForUser(mContext.getContentResolver(),
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, null, mUserId);
@@ -99,17 +105,10 @@ public class ThemeManagerInternalTests {
         when(mUserManager.getProfileParentId(eq(mUserId))).thenReturn(mUserId);
 
         mThemeSettingsManager = new ThemeSettingsManager(mWallpaperManagerInternal);
-        mSystemPropertiesReader = new SystemPropertiesReader() {
-            @NonNull
-            @Override
-            public String get(@NonNull String key, @Nullable String def) {
-                return "";
-            }
-        };
         mSchedulerExecutor = new FakeScheduledExecutorService();
         mStateManager = new ThemeStateManager(mContext, mSchedulerExecutor);
         mUnderTest = new ThemeManagerInternal(mContext, mThemeSettingsManager,
-                mSystemPropertiesReader, mStateManager);
+                mHardwareColorRule.sysPropReader, mStateManager);
         mStateManager.onServicesReady();
     }
 
@@ -261,7 +260,7 @@ public class ThemeManagerInternalTests {
                 .thenReturn(wallpaperColors);
 
         ThemeSettings expectedDefault = mThemeSettingsManager.createDefaultThemeSettings(
-                mContext.getResources(), mSystemPropertiesReader, mUserId);
+                mContext.getResources(), mHardwareColorRule.sysPropReader, mUserId);
         ThemeSettings settings = mUnderTest.getThemeSettingsOrDefault(mUserId);
 
         assertThat(settings.themeStyle()).isEqualTo(expectedDefault.themeStyle());
