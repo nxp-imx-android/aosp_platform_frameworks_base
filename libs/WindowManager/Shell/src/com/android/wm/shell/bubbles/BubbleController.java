@@ -1462,10 +1462,8 @@ public class BubbleController implements ConfigurationChangeListener,
 
     private void setSysuiProxy(Bubbles.SysuiProxy proxy) {
         mSysuiProxy = proxy;
-        if (Flags.fixBubblesExpandedSysuiFlag()) {
-            // In case we crashed inform system that bubble bar is collapsed.
-            mSysuiProxy.onStackExpandChanged(/* shouldExpand = */ false);
-        }
+        // In case we crashed inform system that bubble bar is collapsed.
+        mSysuiProxy.onStackExpandChanged(/* shouldExpand = */ false);
     }
 
     @VisibleForTesting
