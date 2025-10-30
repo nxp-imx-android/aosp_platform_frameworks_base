@@ -30,11 +30,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource.Companion.UserInput
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.compose.animation.scene.TestOverlays.OverlayA
 import com.android.compose.animation.scene.TestOverlays.OverlayB
@@ -118,6 +121,7 @@ class DraggableHandlerTest {
             overlay(key = OverlayB) { Text("OverlayB") }
         }
 
+        var velocityThresholdInDp: Dp = SwipeDetectorDefaults.VelocityThreshold
         val transitionInterceptionThreshold = 0.05f
         val directionChangeSlop = 10f
 
@@ -128,7 +132,13 @@ class DraggableHandlerTest {
                     density = density,
                     layoutDirection = LayoutDirection.Ltr,
                     swipeSourceDetector = DefaultEdgeDetector,
-                    swipeDetector = DefaultSwipeDetector,
+                    swipeDetector =
+                        object : SwipeDetector {
+                            override fun detectSwipe(change: PointerInputChange) = true
+
+                            override val velocityThreshold: Dp
+                                get() = velocityThresholdInDp
+                        },
                     transitionInterceptionThreshold = transitionInterceptionThreshold,
                     decayAnimationSpec =
                         SplineBasedFloatDecayAnimationSpec(density).generateDecayAnimationSpec(),
@@ -144,7 +154,11 @@ class DraggableHandlerTest {
 
         val draggableHandler = layoutImpl.verticalDraggableHandler
         val horizontalDraggableHandler = layoutImpl.horizontalDraggableHandler
-        val velocityThreshold = draggableHandler.velocityThreshold
+        val velocityThreshold
+            get() = draggableHandler.velocityThreshold
+
+        val positionalThreshold
+            get() = draggableHandler.positionalThreshold
 
         fun down(fractionOfScreen: Float) =
             if (fractionOfScreen < 0f) error("use up()") else SCREEN_SIZE * fractionOfScreen
@@ -341,6 +355,14 @@ class DraggableHandlerTest {
 
         dragController.onDragDelta(pixels = down(fractionOfScreen = 0.1f))
         assertThat(progress).isEqualTo(0.2f)
+    }
+
+    @Test
+    fun configurableThresholdsInSwipeDetector() = runGestureTest {
+        assertThat(velocityThresholdInDp).isEqualTo(SwipeDetectorDefaults.VelocityThreshold)
+        val velocityThresholdInPixel = velocityThreshold
+        velocityThresholdInDp = SwipeDetectorDefaults.VelocityThreshold + 100.dp
+        assertThat(velocityThreshold).isNotEqualTo(velocityThresholdInPixel)
     }
 
     @Test
