@@ -23,37 +23,48 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.ResolveInfo
 import android.content.pm.ServiceInfo
 import android.content.res.mainResources
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.hardware.input.KeyGestureEvent
+import android.os.Build
 import android.os.fakeExecutorHandler
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
+import android.provider.Settings
 import android.text.Annotation
 import android.text.Spanned
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityManager
+import android.view.accessibility.accessibilityManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.hardware.input.Flags
 import com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME
 import com.android.internal.accessibility.common.ShortcutConstants
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
+import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.settings.userTracker
-import com.android.systemui.testKosmos
+import com.android.systemui.testKosmosNew
+import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
-import org.mockito.Mockito.mock
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.spy
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -61,16 +72,15 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
+    private val kosmos = testKosmosNew()
+    private val accessibilityManager = kosmos.accessibilityManager
     private val packageManager = kosmos.packageManager
     private val userTracker = kosmos.userTracker
+    private val secureSettings = kosmos.fakeSettings
     private val resources = kosmos.mainResources
     private val testScope = kosmos.testScope
 
     @get:Rule val setFlagsRule = SetFlagsRule()
-
-    // mocks
-    private val accessibilityManager: AccessibilityManager = mock(AccessibilityManager::class.java)
 
     private lateinit var underTest: AccessibilityShortcutsRepositoryImpl
 
@@ -78,14 +88,20 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
     fun setUp() {
         underTest =
             AccessibilityShortcutsRepositoryImpl(
-                context,
+                context.apply {
+                    addMockSystemService(AccessibilityManager::class.java, accessibilityManager)
+                },
                 accessibilityManager,
                 packageManager,
                 userTracker,
+                secureSettings,
                 resources,
                 kosmos.testDispatcher,
                 kosmos.fakeExecutorHandler,
             )
+
+        whenever(packageManager.getDrawable(anyString(), anyInt(), any()))
+            .thenReturn(ColorDrawable(Color.RED))
     }
 
     @Test
@@ -380,25 +396,132 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             )
     }
 
+    @Test
+    fun getAllAccessibilityTargets_returnsAccessibilityTargetModels() {
+        testScope.runTest {
+            whenever(accessibilityManager.getInstalledAccessibilityServiceList())
+                .thenReturn(listOf(getMockAccessibilityServiceInfo("Test Service")))
+
+            val targets =
+                underTest
+                    .getAllAccessibilityTargets(ShortcutConstants.UserShortcutType.HARDWARE)
+                    .first()
+
+            assertThat(targets.any { it.featureName == "Test Service" }).isTrue()
+            assertThat(targets.any { it.featureName == "Magnification" }).isTrue()
+            assertThat(targets.any { it.featureName == "Mouse keys" }).isTrue()
+        }
+    }
+
+    @Test
+    fun getAllAccessibilityTargets_whenAccessibilityServiceStateChanges_emitsUpdatedList() {
+        testScope.runTest {
+            val serviceName = "Test Service"
+            val a11yServices = listOf(getMockAccessibilityServiceInfo(serviceName))
+            whenever(accessibilityManager.getInstalledAccessibilityServiceList())
+                .thenReturn(a11yServices)
+
+            val emissions = mutableListOf<List<AccessibilityTargetModel>>()
+            val job = launch {
+                underTest
+                    .getAllAccessibilityTargets(ShortcutConstants.UserShortcutType.HARDWARE)
+                    .collect { emissions.add(it) }
+            }
+            testScheduler.advanceUntilIdle()
+
+            val listenerCaptor =
+                argumentCaptor<AccessibilityManager.AccessibilityServicesStateChangeListener>()
+            verify(accessibilityManager)
+                .addAccessibilityServicesStateChangeListener(listenerCaptor.capture())
+
+            assertThat(emissions).hasSize(1)
+            assertThat(emissions.last().any { it.featureName == serviceName && !it.isToggleOn })
+                .isTrue()
+
+            // Simulate a service state change.
+            whenever(accessibilityManager.getEnabledAccessibilityServiceList(anyInt()))
+                .thenReturn(a11yServices)
+            listenerCaptor.firstValue.onAccessibilityServicesStateChanged(accessibilityManager)
+            testScheduler.advanceUntilIdle()
+
+            assertThat(emissions).hasSize(2)
+            assertThat(emissions.last().any { it.featureName == serviceName && it.isToggleOn })
+                .isTrue()
+
+            job.cancel()
+
+            verify(accessibilityManager)
+                .removeAccessibilityServicesStateChangeListener(listenerCaptor.firstValue)
+        }
+    }
+
+    @Test
+    fun getAllAccessibilityTargets_whenSystemFeatureStateChanges_emitsUpdatedList() {
+        testScope.runTest {
+            val mouseKeysSettingsKey = Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_ENABLED
+            val mouseKeysFeatureName = "Mouse keys"
+            val getContentObservers = {
+                secureSettings.getContentObservers(
+                    secureSettings.getUriFor(mouseKeysSettingsKey),
+                    secureSettings.userId,
+                )
+            }
+
+            assertThat(getContentObservers()).isEmpty()
+
+            val emissions = mutableListOf<List<AccessibilityTargetModel>>()
+            val job = launch {
+                underTest
+                    .getAllAccessibilityTargets(ShortcutConstants.UserShortcutType.HARDWARE)
+                    .collect { emissions.add(it) }
+            }
+            testScheduler.advanceUntilIdle()
+
+            assertThat(emissions).hasSize(1)
+            assertThat(emissions.last().any { it.featureName == mouseKeysFeatureName }).isTrue()
+            assertThat(getContentObservers()).hasSize(1)
+
+            // Simulate a settings change.
+            secureSettings.putBool(mouseKeysSettingsKey, true)
+            kosmos.fakeExecutor.runAllReady()
+            testScheduler.advanceUntilIdle()
+
+            assertThat(emissions).hasSize(2)
+            assertThat(emissions.last().any { it.featureName == mouseKeysFeatureName }).isTrue()
+
+            job.cancel()
+
+            assertThat(getContentObservers()).isEmpty()
+        }
+    }
+
     private fun getMockAccessibilityServiceInfo(featureName: String): AccessibilityServiceInfo {
         val packageName = "com.android.test"
-        val componentName = ComponentName(packageName, "$packageName.test_a11y_service")
+        val className = featureName.replace(" ", "")
+        val componentName = ComponentName(packageName, "$packageName.$className")
+        val iconResId = 1
 
-        val applicationInfo = mock(ApplicationInfo::class.java)
-        applicationInfo.packageName = componentName.packageName
-
-        val serviceInfo = spy(ServiceInfo())
-        serviceInfo.packageName = componentName.packageName
-        serviceInfo.name = componentName.className
-        serviceInfo.applicationInfo = applicationInfo
-
-        val resolveInfo = mock(ResolveInfo::class.java)
-        resolveInfo.serviceInfo = serviceInfo
-        whenever(resolveInfo.loadLabel(any())).thenReturn(featureName)
-
-        val a11yServiceInfo = AccessibilityServiceInfo(resolveInfo, context)
-        a11yServiceInfo.componentName = componentName
-        return a11yServiceInfo
+        return AccessibilityServiceInfo().apply {
+            this.componentName = componentName
+            this.resolveInfo =
+                ResolveInfo().apply {
+                    this.serviceInfo =
+                        ServiceInfo().apply {
+                            this.applicationInfo =
+                                ApplicationInfo().apply {
+                                    this.packageName = packageName
+                                    this.icon = iconResId
+                                    this.targetSdkVersion = Build.VERSION_CODES.BAKLAVA
+                                }
+                            this.name = className
+                            this.packageName = packageName
+                            this.icon = iconResId
+                        }
+                    this.nonLocalizedLabel = featureName
+                    this.icon = iconResId
+                    this.iconResourceId = iconResId
+                }
+        }
     }
 
     private fun getTargetNameByType(keyGestureType: Int): String {
