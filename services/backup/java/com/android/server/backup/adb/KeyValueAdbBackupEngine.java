@@ -1,4 +1,20 @@
-package com.android.server.backup;
+/*
+ * Copyright (C) 2017 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License
+ */
+
+package com.android.server.backup.adb;
 
 import static android.os.ParcelFileDescriptor.MODE_CREATE;
 import static android.os.ParcelFileDescriptor.MODE_READ_ONLY;
@@ -21,8 +37,10 @@ import android.os.RemoteException;
 import android.os.SELinux;
 import android.util.Slog;
 
+import com.android.server.backup.BackupAgentTimeoutParameters;
 import com.android.server.backup.OperationStorage.OpType;
-import com.android.server.backup.fullbackup.AppMetadataBackupWriter;
+import com.android.server.backup.UserBackupManagerService;
+import com.android.server.backup.adb.AppMetadataAdbBackupWriter;
 import com.android.server.backup.remote.ServiceBackupCallback;
 import com.android.server.backup.utils.FullBackupUtils;
 
@@ -205,8 +223,8 @@ public class KeyValueAdbBackupEngine {
         public void run() {
             try {
                 FullBackupDataOutput output = new FullBackupDataOutput(mPipe);
-                AppMetadataBackupWriter writer =
-                        new AppMetadataBackupWriter(output, mPackageManager);
+                AppMetadataAdbBackupWriter writer =
+                        new AppMetadataAdbBackupWriter(output, mPackageManager);
 
                 Slog.d(TAG, "Writing manifest for " + mPackage.packageName);
 

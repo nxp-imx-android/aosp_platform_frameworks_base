@@ -659,7 +659,6 @@ public class KeyValueBackupTask implements BackupRestoreTask, Runnable {
                 mBackupManagerService,
                 mOperationStorage,
                 mTransportConnection,
-                /* fullBackupRestoreObserver */ null,
                 packages.toArray(new String[packages.size()]),
                 /* updateSchedule */ false,
                 /* runningJob */ null,

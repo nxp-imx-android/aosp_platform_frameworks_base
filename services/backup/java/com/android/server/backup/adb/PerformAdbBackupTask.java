@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package com.android.server.backup.fullbackup;
+package com.android.server.backup.adb;
 
 import static com.android.server.backup.BackupManagerService.DEBUG;
 import static com.android.server.backup.BackupManagerService.TAG;
@@ -35,7 +35,6 @@ import android.util.Slog;
 
 import com.android.server.AppWidgetBackupBridge;
 import com.android.server.backup.BackupRestoreTask;
-import com.android.server.backup.KeyValueAdbBackupEngine;
 import com.android.server.backup.OperationStorage;
 import com.android.server.backup.UserBackupManagerService;
 import com.android.server.backup.utils.BackupEligibilityRules;
@@ -65,7 +64,7 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * Full backup task variant used for adb backup.
  */
-public class PerformAdbBackupTask extends FullBackupTask implements BackupRestoreTask {
+public class PerformAdbBackupTask implements BackupRestoreTask, Runnable {
 
     private final UserBackupManagerService mUserBackupManagerService;
     private final OperationStorage mOperationStorage;
@@ -86,6 +85,7 @@ public class PerformAdbBackupTask extends FullBackupTask implements BackupRestor
     private final String mEncryptPassword;
     private final int mCurrentOpToken;
     private final BackupEligibilityRules mBackupEligibilityRules;
+    private IFullBackupRestoreObserver mObserver;
 
     public PerformAdbBackupTask(
             UserBackupManagerService backupManagerService, OperationStorage operationStorage,
@@ -94,7 +94,7 @@ public class PerformAdbBackupTask extends FullBackupTask implements BackupRestor
             String curPassword, String encryptPassword, boolean doAllApps, boolean doSystem,
             boolean doCompress, boolean doKeyValue, String[] packages, AtomicBoolean latch,
             BackupEligibilityRules backupEligibilityRules) {
-        super(observer);
+        mObserver = observer;
         mUserBackupManagerService = backupManagerService;
         mOperationStorage = operationStorage;
         mCurrentOpToken = backupManagerService.generateRandomIntegerToken();
@@ -237,7 +237,7 @@ public class PerformAdbBackupTask extends FullBackupTask implements BackupRestor
         Slog.i(TAG, "--- Performing adb backup" + includeKeyValue + " ---");
 
         TreeMap<String, PackageInfo> packagesToBackup = new TreeMap<>();
-        FullBackupObbConnection obbConnection = new FullBackupObbConnection(
+        FullAdbBackupObbConnection obbConnection = new FullAdbBackupObbConnection(
                 mUserBackupManagerService);
         obbConnection.establish();  // we'll want this later
 
@@ -402,19 +402,15 @@ public class PerformAdbBackupTask extends FullBackupTask implements BackupRestor
                         pkg.packageName.equals(
                                 SHARED_BACKUP_AGENT_PACKAGE);
 
-                FullBackupEngine mBackupEngine =
-                        new FullBackupEngine(
+                FullAdbBackupEngine mBackupEngine =
+                        new FullAdbBackupEngine(
                                 mUserBackupManagerService,
                                 out,
-                                null,
                                 pkg,
                                 mIncludeApks,
                                 this,
-                                Long.MAX_VALUE,
                                 mCurrentOpToken,
-                                /*transportFlags=*/ 0,
-                                mBackupEligibilityRules,
-                                new BackupManagerMonitorEventSender(null));
+                                mBackupEligibilityRules);
                 sendOnBackupPackage(isSharedStorage ? "Shared storage" : pkg.packageName);
 
                 // Don't need to check preflight result as there is no preflight hook.
@@ -493,5 +489,39 @@ public class PerformAdbBackupTask extends FullBackupTask implements BackupRestor
                     target.applicationInfo, /* allowKill= */ true);
         }
         mOperationStorage.removeOperation(mCurrentOpToken);
+    }
+
+    private void sendStartBackup() {
+        if (mObserver != null) {
+            try {
+                mObserver.onStartBackup();
+            } catch (RemoteException e) {
+                Slog.w(TAG, "full backup observer went away: startBackup");
+                mObserver = null;
+            }
+        }
+    }
+
+    private void sendOnBackupPackage(String name) {
+        if (mObserver != null) {
+            try {
+                // TODO: use a more user-friendly name string
+                mObserver.onBackupPackage(name);
+            } catch (RemoteException e) {
+                Slog.w(TAG, "full backup observer went away: backupPackage");
+                mObserver = null;
+            }
+        }
+    }
+
+    private void sendEndBackup() {
+        if (mObserver != null) {
+            try {
+                mObserver.onEndBackup();
+            } catch (RemoteException e) {
+                Slog.w(TAG, "full backup observer went away: endBackup");
+                mObserver = null;
+            }
+        }
     }
 }

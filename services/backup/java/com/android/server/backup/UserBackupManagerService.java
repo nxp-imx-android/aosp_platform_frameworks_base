@@ -2188,7 +2188,6 @@ public class UserBackupManagerService {
                             PerformFullTransportBackupTask.newWithCurrentTransport(
                                     this,
                                     mOperationStorage,
-                                    /* observer */ null,
                                     pkg,
                                     /* updateSchedule */ true,
                                     scheduledJob,
@@ -2690,7 +2689,6 @@ public class UserBackupManagerService {
                         PerformFullTransportBackupTask.newWithCurrentTransport(
                                 this,
                                 mOperationStorage,
-                                /* observer */ null,
                                 pkgNames,
                                 /* updateSchedule */ false,
                                 /* runningJob */ null,

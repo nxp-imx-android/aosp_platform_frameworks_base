@@ -62,7 +62,7 @@ import com.android.server.backup.OperationStorage;
 import com.android.server.backup.OperationStorage.OpType;
 import com.android.server.backup.UserBackupManagerService;
 import com.android.server.backup.crossplatform.CrossPlatformManifest;
-import com.android.server.backup.fullbackup.FullBackupObbConnection;
+import com.android.server.backup.adb.FullAdbBackupObbConnection;
 import com.android.server.backup.utils.BackupEligibilityRules;
 import com.android.server.backup.utils.BackupManagerMonitorEventSender;
 import com.android.server.backup.utils.BytesReadListener;
@@ -112,7 +112,7 @@ public class FullRestoreEngine extends RestoreEngine {
     private ApplicationInfo mTargetApp;
 
     // Machinery for restoring OBBs
-    private FullBackupObbConnection mObbConnection = null;
+    private FullAdbBackupObbConnection mObbConnection = null;
 
     // possible handling states for a given package in the restore dataset
     private final HashMap<String, RestorePolicy> mPackagePolicies = new HashMap<>();

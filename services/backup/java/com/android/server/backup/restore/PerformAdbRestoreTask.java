@@ -33,7 +33,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 import com.android.server.backup.OperationStorage;
 import com.android.server.backup.UserBackupManagerService;
-import com.android.server.backup.fullbackup.FullBackupObbConnection;
+import com.android.server.backup.adb.FullAdbBackupObbConnection;
 import com.android.server.backup.utils.BackupEligibilityRules;
 import com.android.server.backup.utils.FullBackupRestoreObserverUtils;
 import com.android.server.backup.utils.PasswordUtils;
@@ -65,7 +65,7 @@ public class PerformAdbRestoreTask implements Runnable {
     private final String mCurrentPassword;
     private final String mDecryptPassword;
     private final AtomicBoolean mLatchObject;
-    private final FullBackupObbConnection mObbConnection;
+    private final FullAdbBackupObbConnection mObbConnection;
 
     private IFullBackupRestoreObserver mObserver;
 
@@ -80,7 +80,7 @@ public class PerformAdbRestoreTask implements Runnable {
         mDecryptPassword = decryptPassword;
         mObserver = observer;
         mLatchObject = latch;
-        mObbConnection = new FullBackupObbConnection(backupManagerService);
+        mObbConnection = new FullAdbBackupObbConnection(backupManagerService);
     }
 
     @Override
