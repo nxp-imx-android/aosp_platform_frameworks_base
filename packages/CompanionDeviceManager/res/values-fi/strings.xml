@@ -31,7 +31,7 @@
     <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"aktiivisuusranneke"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Salli, että &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; saa ylläpitää laitetta: &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"laite"</string>
-    <string name="summary_glasses" msgid="5469208629679579157">"Sovellus saa käyttää näitä lupia <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <string name="summary_glasses" msgid="5469208629679579157">"Sovellus saa käyttää näitä lupia: <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="profile_name_medical" msgid="5617160509499466400">"lääkinnällinen laite"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Saako &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; striimata sovelluksia ja järjestelmän ominaisuuksia laitteiden <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ja &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; välillä?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> saa seuraavat luvat:"</string>
@@ -81,7 +81,7 @@
     <string name="permission_contacts_summary" msgid="2840800622763086808">"käyttää yhteystietoja"</string>
     <string name="permission_calendar_summary" msgid="8430353935747336165">"käyttää kalenteria"</string>
     <string name="permission_microphone_summary" msgid="4862628553869973259">"tallentaa audiota"</string>
-    <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"löytää lähellä olevia laitteita, muodostaa niihin yhteyden ja määrittää niiden suhteellisen sijainnin"</string>
+    <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Löytää lähellä olevia laitteita, muodostaa niihin yhteyden ja määrittää niiden suhteellisen sijainnin"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"lukea kaikkia ilmoituksia, esim. yhteystietoihin, viesteihin ja kuviin liittyviä tietoja"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• lukea kaikkia ilmoituksia, esim. yhteystietoihin, viesteihin ja kuviin liittyviä tietoja&lt;br/&gt;• lähettää ilmoituksia.&lt;br/&gt;&lt;br/&gt;Voit milloin tahansa valita, saako sovellus lukea ja lähettää ilmoituksia, avaamalla Asetukset &gt; Ilmoitukset."</string>
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>

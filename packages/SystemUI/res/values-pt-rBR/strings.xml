@@ -339,8 +339,8 @@
     <!-- no translation found for accessibility_casting (8708751252897282313) -->
     <skip />
     <string name="accessibility_desc_notification_shade" msgid="5355229129428759989">"Aba de notificações."</string>
-    <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"Configurações rápidas."</string>
-    <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"Configurações rápidas e aba de notificações."</string>
+    <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"Configurações Rápidas."</string>
+    <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"Configurações Rápidas e aba de notificações."</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"Tela de bloqueio"</string>
     <string name="accessibility_desc_customize_lock_screen" msgid="4550916007565771199">"Tela de bloqueio. Toque duas vezes e mantenha para personalizar."</string>
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"Tela de bloqueio de trabalho"</string>
@@ -1051,7 +1051,7 @@
     <string name="group_accessibility_toggle_voice_access" msgid="5436708239015479017">"Ativar/desativar Voice Access"</string>
     <string name="group_accessibility_toggle_talkback" msgid="5017967056006325713">"Ativar/desativar TalkBack"</string>
     <string name="group_accessibility_toggle_magnification" msgid="3892267763383743128">"Ativar/desativar ampliação"</string>
-    <string name="group_accessibility_activate_select_to_speak" msgid="9157775915495428592">"Ativar o Selecionar para Ouvir"</string>
+    <string name="group_accessibility_activate_select_to_speak" msgid="9157775915495428592">"Ativar o app Selecionar para Ouvir"</string>
     <string name="volume_and_do_not_disturb" msgid="502044092739382832">"Não perturbe"</string>
     <string name="volume_dnd_silent" msgid="4154597281458298093">"Atalho de botões de volume"</string>
     <string name="battery" msgid="769686279459897127">"Bateria"</string>
@@ -1102,7 +1102,7 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"É preciso haver pelo menos <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> blocos"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Editar"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Editar blocos"</string>
-    <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Redimensionar blocos \"Configurações rápidas\""</string>
+    <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Redimensionar blocos \"Configurações Rápidas\""</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"Configurações"</string>
     <string name="qs_edit_menu_content_description" msgid="4420651071119623791">"Opções"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Horas"</string>
@@ -1143,7 +1143,7 @@
     <string name="accessibility_quick_settings_choose_user_action" msgid="4554388498186576087">"escolher o usuário"</string>
     <string name="data_connection_no_internet" msgid="691058178914184544">"Sem Internet"</string>
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"Abrir configurações de <xliff:g id="ID_1">%s</xliff:g>."</string>
-    <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Editar a ordem das Configurações rápidas."</string>
+    <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Editar a ordem das Configurações Rápidas."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menu liga/desliga"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Página <xliff:g id="ID_1">%1$d</xliff:g> de <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Ativar <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
@@ -1475,7 +1475,7 @@
     <string name="to_switch_networks_disconnect_ethernet" msgid="6698111101156951955">"Para mudar de rede, desconecte o cabo Ethernet"</string>
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"Para melhorar a experiência no dispositivo, os apps e serviços ainda podem procurar redes Wi-Fi a qualquer momento, mesmo quando o Wi-Fi estiver desativado. Você pode mudar essa opção nas configurações de busca por Wi-Fi. "<annotation id="link">"Mudar"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Desativar modo avião"</string>
-    <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"O app <xliff:g id="APPNAME">%1$s</xliff:g> quer adicionar o bloco a seguir às Configurações rápidas"</string>
+    <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"O app <xliff:g id="APPNAME">%1$s</xliff:g> quer adicionar o bloco a seguir às Configurações Rápidas"</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Adicionar bloco"</string>
     <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"Não adicionar bloco"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Selecionar usuário"</string>
@@ -1708,7 +1708,7 @@
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Exibição"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Desconhecidos"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Redefinir todos os blocos?"</string>
-    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Todos os blocos \"Configurações rápidas\" serão redefinidos para as configurações originais do dispositivo"</string>
+    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Todos os blocos \"Configurações Rápidas\" serão redefinidos para as configurações originais do dispositivo"</string>
     <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"Receba sugestões úteis"</string>
     <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"Usamos IA para sugerir proativamente informações e ações relevantes para o que você está fazendo na tela"</string>
     <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"Ícone"</string>

@@ -107,7 +107,7 @@
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"പരിശോധിച്ചുറപ്പിക്കാതെ ഇൻസ്റ്റാൾ ചെയ്യുകയാണെങ്കിൽ, പരിശോധിച്ചുറപ്പിക്കാത്ത ഡെവലപ്പർമാരിൽ നിന്നുള്ള ആപ്പുകൾ നിങ്ങളുടെ ഉപകരണത്തെയും ഡാറ്റയെയും അപകടത്തിലാക്കിയേക്കാമെന്ന കാര്യം ഓർമ്മിക്കുക."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"പരിശോധിച്ചുറപ്പിക്കാതെ അപ്‌ഡേറ്റ് ചെയ്യുകയാണെങ്കിൽ, പരിശോധിച്ചുറപ്പിക്കാത്ത ഡെവലപ്പർമാരിൽ നിന്നുള്ള അപ്‌ഡേറ്റുകൾ നിങ്ങളുടെ ഉപകരണത്തെയും ഡാറ്റയെയും അപകടത്തിലാക്കിയേക്കാമെന്ന കാര്യം ഓർമ്മിക്കുക."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"ആപ്പ് ഡെവലപ്പർ പരിശോധിച്ചുറപ്പിച്ചിട്ടില്ല"</string>
-    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"ഇന്റർനെറ്റ് ഇല്ല, ആപ്പ് ഡെവലപ്പറെ പരിശോധിക്കാനാകില്ല."</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"ഇന്റർനെറ്റ് ഇല്ല, ആപ്പ് ഡെവലപ്പറെ പരിശോധിച്ചുറപ്പിക്കാനാകില്ല"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"ആപ്പ് ഡെവലപ്പറെ പരിശോധിച്ചുറപ്പിക്കാനാകുന്നില്ല"</string>
     <string name="install_without_verifying" msgid="5359680595440741626">"പരിശോധിച്ചുറപ്പിക്കാതെ ഇൻസ്റ്റാൾ ചെയ്യൂ"</string>
     <string name="update_without_verifying" msgid="2841466981431484179">"പരിശോധിച്ചുറപ്പിക്കാതെ അപ്‌ഡേറ്റ് ചെയ്യൂ"</string>

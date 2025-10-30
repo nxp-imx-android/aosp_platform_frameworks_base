@@ -159,7 +159,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Duraklat"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Sesi kapat"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Sesi aç"</string>
-    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Tüm ekranın görüntüsünü al"</string>
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Tüm ekranın ekran görüntüsünü al"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Tüm ekranı kaydet"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Seçili alanın ekran görüntüsünü al"</string>
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Seçili alanı kaydet"</string>
@@ -172,7 +172,7 @@
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Pencereyi kaydet"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Seçili alanın ekran görüntüsünü al"</string>
     <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"Seçili alanı kaydet"</string>
-    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Tüm ekranın görüntüsünü al"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Tüm ekranın ekran görüntüsünü al"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Tüm ekranı kaydet"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Ekran görüntüsü ayarları"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Tıklamaları ve tuşları göster"</string>

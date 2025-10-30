@@ -1723,7 +1723,7 @@
     <string name="default_audio_route_name_analog" msgid="7781645558035374980">"አናሎግ"</string>
     <string name="default_audio_route_name_digital" msgid="6959855552809654826">"ዲጂታል"</string>
     <string name="default_audio_route_name_aux" msgid="7432808125413299672">"ተጨማሪ"</string>
-    <string name="default_audio_route_category_name" msgid="5241740395748134483">"ስርዓት"</string>
+    <string name="default_audio_route_category_name" msgid="5241740395748134483">"ሥርዓት"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"የብሉቱዝ ድምፅ"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"ገመድ አልባ ማሳያ"</string>
     <string name="media_route_button_content_description" msgid="2299223698196869956">"Cast"</string>

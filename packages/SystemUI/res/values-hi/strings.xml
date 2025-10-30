@@ -1000,7 +1000,7 @@
     <string name="keyboard_shortcut_a11y_filter_open_apps" msgid="6175417687221004059">"ऐसे शॉर्टकट दिखाए जा रहे हैं जिनसे ऐप्लिकेशन खोले जा सकें"</string>
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"मौजूदा ऐप्लिकेशन के लिए शॉर्टकट दिखाए जा रहे हैं"</string>
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"सूचनाएं देखने के लिए"</string>
-    <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"क्विक सेटिंग देखें"</string>
+    <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"क्विक सेटिंग देखने के लिए"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"स्क्रीनशॉट लेने के लिए"</string>
     <string name="group_system_partial_screenshot" msgid="2114314797127648010">"किसी खास हिस्से का स्क्रीनशॉट लें"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"शॉर्टकट देखने के लिए"</string>
@@ -1027,7 +1027,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"विंडो को दाईं ओर ले जाने के लिए"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"विंडो को बड़ा करने के लिए"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"विंडो को छोटा करने के लिए"</string>
-    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"मौजूदा विंडो बंद करें"</string>
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"मौजूदा विंडो बंद करने के लिए"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"अलग-अलग डेस्कटॉप के बीच स्विच करने के लिए"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"इनपुट"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"अगली भाषा पर स्विच करने के लिए"</string>
