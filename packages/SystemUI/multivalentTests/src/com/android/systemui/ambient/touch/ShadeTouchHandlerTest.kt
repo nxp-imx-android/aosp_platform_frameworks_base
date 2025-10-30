@@ -114,22 +114,9 @@ class ShadeTouchHandlerTest(flags: FlagsParameterization) : SysuiTestCase() {
         assertThat(captured).isFalse()
     }
 
-    // Verifies that a swipe down forwards captured touches to central surfaces for handling.
-    @Test
-    @DisableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_RESTRICT_COMMUNAL_SHADE_TO_WHEN_IDLE)
-    @EnableFlags(Flags.FLAG_COMMUNAL_HUB)
-    fun testSwipeDown_communalEnabled_sentToCentralSurfaces() {
-        kosmos.fakeFeatureFlagsClassic.set(COMMUNAL_SERVICE_ENABLED, true)
-
-        swipe(Direction.DOWN)
-
-        // Both motion events are sent for central surfaces to process.
-        verify(mCentralSurfaces, times(2)).handleExternalShadeWindowTouch(any())
-    }
-
     @Test
     @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
-    @EnableFlags(Flags.FLAG_COMMUNAL_HUB, Flags.FLAG_RESTRICT_COMMUNAL_SHADE_TO_WHEN_IDLE)
+    @EnableFlags(Flags.FLAG_COMMUNAL_HUB)
     fun testSwipeDown_communalEnabled_restrictToIdleOnCommunal_sentToCentralSurfaces() {
         kosmos.fakeFeatureFlagsClassic.set(COMMUNAL_SERVICE_ENABLED, true)
 
@@ -141,7 +128,7 @@ class ShadeTouchHandlerTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
-    @EnableFlags(Flags.FLAG_COMMUNAL_HUB, Flags.FLAG_RESTRICT_COMMUNAL_SHADE_TO_WHEN_IDLE)
+    @EnableFlags(Flags.FLAG_COMMUNAL_HUB)
     fun testSwipeDown_communalEnabled_idleOnCommunal_sentToCentralSurfaces() {
         kosmos.communalSceneInteractor.snapToScene(CommunalScenes.Communal, "test")
         kosmos.fakeFeatureFlagsClassic.set(COMMUNAL_SERVICE_ENABLED, true)
@@ -317,10 +304,7 @@ class ShadeTouchHandlerTest(flags: FlagsParameterization) : SysuiTestCase() {
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(
-                    Flags.FLAG_RESTRICT_COMMUNAL_SHADE_TO_WHEN_IDLE
-                )
-                .andSceneContainer()
+            return FlagsParameterization.allCombinationsOf().andSceneContainer()
         }
     }
 }
