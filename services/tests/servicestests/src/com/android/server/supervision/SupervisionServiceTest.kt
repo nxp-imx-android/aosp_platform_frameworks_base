@@ -995,6 +995,63 @@ class SupervisionServiceTest {
         verifySetPackagePolicy(false)
     }
 
+    @Test
+    fun hasValidRecoveryMethod_noVerifiedEmailAndAlternativeRecoveryMethods_returnsFalse() {
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf(),
+        )
+        setSupervisionRecoveryInfo(state = STATE_PENDING)
+        assertThat(service.hasValidRecoveryMethod(USER_ID)).isFalse()
+    }
+
+    @Test
+    fun hasValidRecoveryMethod_hasVerifiedEmailButNoAlternativeRecoveryMethods_returnsTrue() {
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf(),
+        )
+        setSupervisionRecoveryInfo(state = STATE_VERIFIED)
+        assertThat(service.hasValidRecoveryMethod(USER_ID)).isTrue()
+    }
+
+    @Test
+    fun hasValidRecoveryMethod_noVerifiedEmailButHasAlternativeRecoveryMethods_returnsTrue() {
+        val supervisionPackage = "com.example.supervisionapp"
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf(supervisionPackage),
+        )
+        val activityInfo =
+            ActivityInfo().apply {
+                packageName = supervisionPackage
+                name = "Activity"
+                applicationInfo = ApplicationInfo()
+            }
+        val resolveInfo =
+            ResolveInfo().apply {
+                this.activityInfo = activityInfo
+                nonLocalizedLabel = "Use supervision app"
+            }
+        whenever(
+                mockPackageManager.queryIntentActivities(
+                    argThat { intent: Intent ->
+                        intent.action == SupervisionManager.ACTION_CONFIRM_SUPERVISION_APPROVAL &&
+                            intent.`package` == supervisionPackage
+                    },
+                    any<Int>(),
+                )
+            )
+            .thenReturn(listOf(resolveInfo))
+        whenever(mockPackageManager.getComponentEnabledSetting(any()))
+            .thenReturn(PackageManager.COMPONENT_ENABLED_STATE_ENABLED)
+        setSupervisionRecoveryInfo(state = STATE_PENDING)
+        assertThat(service.hasValidRecoveryMethod(USER_ID)).isTrue()
+    }
+
     private fun verifySetPackagePolicy(enabled: Boolean) {
         val policy =
             PackagePolicy(
