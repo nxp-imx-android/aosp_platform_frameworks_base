@@ -14077,10 +14077,22 @@ package android.service.notification {
     field public static final int TYPE_SOCIAL_MEDIA = 2; // 0x2
   }
 
+  @FlaggedApi("android.app.nm_contextual_display") public final class DynamicBundle implements android.os.Parcelable {
+    ctor public DynamicBundle(int, @NonNull String);
+    method public int describeContents();
+    method @NonNull public String getBundleName();
+    method public int getDynamicBundleType();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.notification.DynamicBundle> CREATOR;
+  }
+
   public abstract class NotificationAssistantService extends android.service.notification.NotificationListenerService {
     ctor public NotificationAssistantService();
     method public final void adjustNotification(@NonNull android.service.notification.Adjustment);
     method public final void adjustNotifications(@NonNull java.util.List<android.service.notification.Adjustment>);
+    method @FlaggedApi("android.app.nm_contextual_display") public final void createDynamicBundle(@IntRange(from=100, to=200) int, @NonNull CharSequence);
+    method @FlaggedApi("android.app.nm_contextual_display") public final void deleteDynamicBundle(@IntRange(from=100, to=200) int);
+    method @FlaggedApi("android.app.nm_contextual_display") @NonNull public java.util.Set<android.service.notification.DynamicBundle> getDynamicBundles();
     method public void onActionInvoked(@NonNull String, @NonNull android.app.Notification.Action, int);
     method public void onAllowedAdjustmentsChanged();
     method @NonNull public final android.os.IBinder onBind(@Nullable android.content.Intent);

@@ -314,10 +314,10 @@ import android.permission.PermissionManager;
 import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.service.notification.Adjustment;
-import android.service.notification.Adjustment.Types;
 import android.service.notification.Condition;
 import android.service.notification.ConversationChannelWrapper;
 import android.service.notification.DeviceEffectsApplier;
+import android.service.notification.DynamicBundle;
 import android.service.notification.IConditionProvider;
 import android.service.notification.IDispatchCompletionListener;
 import android.service.notification.INotificationListener;
@@ -1949,25 +1949,8 @@ public class NotificationManagerService extends SystemService {
                 notificationUpdate);
     }
 
-    private void applyNotificationUpdateForUserAndChannelType(final int userId,
-            final @Types int bundleType, NotificationUpdate notificationUpdate) {
-        final String bundleChannelId = NotificationChannel.getChannelIdForBundleType(bundleType);
-        applyUpdateForNotificationsFiltered((r) ->
-                r.getUserId() == userId
-                && r.getChannel() != null
-                && Objects.equals(bundleChannelId, r.getChannel().getId()),
-                notificationUpdate);
-    }
-
-    private void applyNotificationUpdateForUserAndType(final int userId,
-            final @Types int bundleType, NotificationUpdate notificationUpdate) {
-        applyUpdateForNotificationsFiltered(
-                (r) -> r.getUserId() == userId && r.getBundleType() == bundleType,
-                notificationUpdate);
-    }
-
     private void applyNotificationUpdateForUserProfilesAndChannelType(final int userId,
-            final @Types int bundleType, NotificationUpdate notificationUpdate) {
+            final int bundleType, NotificationUpdate notificationUpdate) {
         final String bundleChannelId = NotificationChannel.getChannelIdForBundleType(bundleType);
         applyUpdateForNotificationsFiltered(
                 (r) -> isSameUserOrProfile(r.getUserId(), userId)
@@ -1977,7 +1960,7 @@ public class NotificationManagerService extends SystemService {
     }
 
     private void applyNotificationUpdateForUserProfilesAndType(final int userId,
-            final @Types int bundleType, NotificationUpdate notificationUpdate) {
+            final int bundleType, NotificationUpdate notificationUpdate) {
         applyUpdateForNotificationsFiltered(
                 (r) -> isSameUserOrProfile(r.getUserId(), userId)
                         && r.getBundleType() == bundleType,
@@ -7278,6 +7261,70 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
+        public List<DynamicBundle> getDynamicBundles(INotificationListener token) {
+            if (token == null) {
+                checkCallerIsSystemOrSystemUiOrShell();
+            } else {
+                final long identity = Binder.clearCallingIdentity();
+                try {
+                    synchronized (mNotificationLock) {
+                        mAssistants.checkServiceTokenLocked(token);
+                    }
+                } finally {
+                    Binder.restoreCallingIdentity(identity);
+                }
+            }
+            return new ArrayList<>(mAssistants.getDynamicBundles(
+                    Binder.getCallingUserHandle().getIdentifier()));
+        }
+
+        @Override
+        public void deleteDynamicBundle(INotificationListener token, int dynamicBundleId) {
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                synchronized (mNotificationLock) {
+                    mAssistants.checkServiceTokenLocked(token);
+                }
+                boolean existed = mAssistants.deleteDynamicBundle(
+                        Binder.getCallingUserHandle().getIdentifier(), dynamicBundleId);
+                if (existed) {
+                    // TODO (b/452679429): Add event log?
+                    handleSavePolicyFile();
+                }
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+
+        @Override
+        public void createDynamicBundle(INotificationListener token, int dynamicBundleId,
+                String bundleName) {
+            Preconditions.checkStringNotEmpty(bundleName);
+            Preconditions.checkArgumentInRange(
+                    dynamicBundleId, 100, 200, "Provided id outside of allowed range");
+
+            // limit length for legibility in the UI
+            if (bundleName.length() > 25) {
+                bundleName = bundleName.substring(0, 25);
+            }
+
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                synchronized (mNotificationLock) {
+                    mAssistants.checkServiceTokenLocked(token);
+                }
+                boolean created = mAssistants.createDynamicBundle(
+                        Binder.getCallingUserHandle().getIdentifier(), dynamicBundleId, bundleName);
+                if (created) {
+                    // TODO (b/452679429): Add event log?
+                    handleSavePolicyFile();
+                }
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+
+        @Override
         public void applyEnqueuedAdjustmentFromAssistant(INotificationListener token,
                 Adjustment adjustment) {
             final long identity = Binder.clearCallingIdentity();
@@ -12530,6 +12577,9 @@ public class NotificationManagerService extends SystemService {
         // for classification only, but named a bit more generally in case this ever gets expanded
         private static final String TAG_SET_BY_USERS = "adjustment_pref_set_by_users";
         private static final String ATT_USER_LIST = "users";
+        private static final String TAG_BUNDLE = "bundle";
+        private static final String ATT_TYPE = "type";
+        private static final String ATT_NAME = "name";
 
         private final Object mLock = new Object();
 
@@ -12561,6 +12611,11 @@ public class NotificationManagerService extends SystemService {
                 new ArrayMap<>();
 
         protected ComponentName mDefaultFromConfig = null;
+
+        // Map of user Id -> set of dynamic bundles created for that user. User profiles share
+        // values with their parent user.
+        @GuardedBy("mLock")
+        private Map<Integer, ArraySet<DynamicBundle>> mDynamicBundleMap = new ArrayMap<>();
 
         @Override
         protected void loadDefaultsFromConfig() {
@@ -12701,6 +12756,13 @@ public class NotificationManagerService extends SystemService {
                 pw.println("      user " + userId + ": " + deniedAdjustmentsForUser(userId));
             }
 
+            if (android.app.Flags.nmContextualDisplay()) {
+                pw.println("    Dynamic bundle types: ");
+                for (int userId : mDynamicBundleMap.keySet()) {
+                    pw.println("      user " + userId + ": " + mDynamicBundleMap.get(userId));
+                }
+            }
+
             pw.println("    Allowed bundle types: ");
             for (int userId : mAllowedClassificationTypes.keySet()) {
                 pw.println("      user " + userId + ": " + mAllowedClassificationTypes.get(userId));
@@ -12793,8 +12855,7 @@ public class NotificationManagerService extends SystemService {
             }
         }
 
-        protected boolean isClassificationTypeAllowed(@UserIdInt int userId,
-                @Adjustment.Types int type) {
+        protected boolean isClassificationTypeAllowed(@UserIdInt int userId, int type) {
             synchronized (mLock) {
                 return allowedClassificationTypesForUser(userId, false).contains(type);
             }
@@ -12814,7 +12875,7 @@ public class NotificationManagerService extends SystemService {
         }
 
         public void setAssistantClassificationTypeState(@UserIdInt int userId,
-                @Adjustment.Types int type, boolean enabled) {
+                int type, boolean enabled) {
             synchronized (mLock) {
                 if (enabled) {
                     allowedClassificationTypesForUser(userId, true).add(type);
@@ -12886,6 +12947,56 @@ public class NotificationManagerService extends SystemService {
                 }
             }
             return out;
+        }
+
+        protected boolean deleteDynamicBundle(int userId, int dynamicBundleType) {
+            if (!android.app.Flags.nmContextualDisplay()) {
+                return false;
+            }
+            // profile users share dynamic bundles with their parent user
+            userId = getUserProfiles().getProfileParentId(userId, getContext());
+            synchronized (mLock) {
+                mDynamicBundleMap.putIfAbsent(userId, new ArraySet<>());
+                ArraySet<DynamicBundle> dbSet = mDynamicBundleMap.get(userId);
+                DynamicBundle foundDb = null;
+                for (int i = dbSet.size() - 1; i >= 0; i--) {
+                    DynamicBundle db = dbSet.valueAt(i);
+                    if (db.getDynamicBundleType() == dynamicBundleType) {
+                        foundDb = db;
+                        break;
+                    }
+                }
+                if (foundDb != null) {
+                    dbSet.remove(foundDb);
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        protected boolean createDynamicBundle(int userId, int dynamicBundleType,
+                String bundleName) {
+            if (!android.app.Flags.nmContextualDisplay()) {
+                return false;
+            }
+            // profile users share dynamic bundles with their parent user
+            userId = getUserProfiles().getProfileParentId(userId, getContext());
+            synchronized (mLock) {
+                mDynamicBundleMap.putIfAbsent(userId, new ArraySet<>());
+                DynamicBundle db = new DynamicBundle(dynamicBundleType, bundleName);
+                return mDynamicBundleMap.get(userId).add(db);
+            }
+        }
+
+        protected Set<DynamicBundle> getDynamicBundles(int userId) {
+            if (!android.app.Flags.nmContextualDisplay()) {
+                return new ArraySet<>();
+            }
+            // profile users share dynamic bundles with their parent user
+            userId = getUserProfiles().getProfileParentId(userId, getContext());
+            synchronized (mLock) {
+                return mDynamicBundleMap.getOrDefault(userId, new ArraySet<>());
+            }
         }
 
         protected void onNotificationsSeenLocked(ArrayList<NotificationRecord> records) {
@@ -13418,6 +13529,18 @@ public class NotificationManagerService extends SystemService {
                     out.endTag(null, TAG_ENABLED_TYPES);
                 }
 
+                if (android.app.Flags.nmContextualDisplay()) {
+                    for (int user : mDynamicBundleMap.keySet()) {
+                        for (DynamicBundle db : mDynamicBundleMap.get(user)) {
+                            out.startTag(null, TAG_BUNDLE);
+                            out.attributeInt(null, ATT_USER_ID, user);
+                            out.attributeInt(null, ATT_TYPE, db.getDynamicBundleType());
+                            out.attribute(null, ATT_NAME, db.getBundleName());
+                            out.endTag(null, TAG_BUNDLE);
+                        }
+                    }
+                }
+
                 out.startTag(null, TAG_SET_BY_USERS);
                 out.attribute(null, ATT_USER_LIST,
                         TextUtils.join(",", mClassificationPrefSetByUsers));
@@ -13492,6 +13615,11 @@ public class NotificationManagerService extends SystemService {
                         }
                     }
                 }
+            } else if (android.app.Flags.nmContextualDisplay() && TAG_BUNDLE.equals(tag)) {
+                int user = XmlUtils.readIntAttribute(parser, ATT_USER_ID, USER_SYSTEM);
+                int type = XmlUtils.readIntAttribute(parser, ATT_TYPE);
+                String bundleName = XmlUtils.readStringAttribute(parser, ATT_NAME);
+                createDynamicBundle(user, type, bundleName);
             }
         }
 
