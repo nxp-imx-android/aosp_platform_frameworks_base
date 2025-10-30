@@ -39,6 +39,7 @@ import android.content.pm.PackageManagerInternal;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.SystemClock;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -126,6 +127,17 @@ public final class ServiceTimeoutTest {
     @SuppressWarnings("GuardedBy")
     @Test
     public void testServiceTimeoutAndProcessKill() throws Exception {
+        testServiceTimeoutAndProcessKillVariant(/*isNativeService=*/ false);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
+    @Test
+    public void testServiceTimeoutAndProcessKillNative() throws Exception {
+        testServiceTimeoutAndProcessKillVariant(/*isNativeService=*/ true);
+    }
+
+    private void testServiceTimeoutAndProcessKillVariant(boolean isNativeService) throws Exception {
         final int pid = 12345;
         final int uid = 10123;
         final String name = "com.example.foo";
@@ -140,7 +152,8 @@ public final class ServiceTimeoutTest {
                 0,                     // rss
                 name,                  // processName
                 name,                  // packageName
-                mAms);
+                mAms,
+                isNativeService);
         app.makeActive(mock(ApplicationThreadDeferred.class), mAms.mProcessStats);
         mProcessList.updateLruProcessLocked(app, false, null);
 
