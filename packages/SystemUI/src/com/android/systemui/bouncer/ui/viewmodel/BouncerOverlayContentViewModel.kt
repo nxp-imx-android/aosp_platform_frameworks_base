@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.core.graphics.drawable.toBitmap
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.coroutines.traceCoroutine
@@ -40,6 +41,7 @@ import com.android.systemui.bouncer.ui.helper.BouncerHapticPlayer
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.shared.model.Text
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardDismissActionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardMediaKeyInteractor
 import com.android.systemui.lifecycle.HydratedActivatable
@@ -80,6 +82,7 @@ constructor(
     private val keyguardDismissActionInteractor: KeyguardDismissActionInteractor,
     private val sceneInteractor: SceneInteractor,
     private val windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
+    private val faceAuthInteractor: DeviceEntryFaceAuthInteractor,
 ) : HydratedActivatable() {
     private val _selectedUserImage = MutableStateFlow<Bitmap?>(null)
     val selectedUserImage: StateFlow<Bitmap?> = _selectedUserImage.asStateFlow()
@@ -157,6 +160,18 @@ constructor(
     val showAccessibilityButton =
         Flags.bouncerAccessibilityButtonForDesktop() &&
             bouncerInteractor.isShowAccessibilityButtonOnBouncerEnabled
+
+    val accessibilityActions: List<CustomAccessibilityAction>
+        get() = buildList {
+            if (faceAuthInteractor.canFaceAuthRun()) {
+                add(
+                    CustomAccessibilityAction(applicationContext.getString(R.string.retry_face)) {
+                        faceAuthInteractor.onAccessibilityAction()
+                        true
+                    }
+                )
+            }
+        }
 
     private val _isInputPreferredOnLeftSide = MutableStateFlow(false)
     val isInputPreferredOnLeftSide = _isInputPreferredOnLeftSide.asStateFlow()

@@ -31,9 +31,11 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Sim
 import com.android.systemui.bouncer.domain.interactor.bouncerInteractor
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.deviceentry.shared.FaceAuthUiEvent
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
+import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFaceAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.shared.model.DismissAction
 import com.android.systemui.keyguard.shared.model.KeyguardDone
@@ -272,6 +274,25 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(underTest.backgroundColor.alpha).isLessThan(1.0f)
+        }
+
+    @Test
+    fun accessibilityActions_offersFaceAuthRetry() =
+        kosmos.runTest {
+            // Disable face auth
+            fakeDeviceEntryFaceAuthRepository.canRunFaceAuth.value = false
+            assertThat(underTest.accessibilityActions).isEmpty()
+
+            // Enable face auth
+            fakeDeviceEntryFaceAuthRepository.canRunFaceAuth.value = true
+            assertThat(underTest.accessibilityActions).hasSize(1)
+            assertThat(underTest.accessibilityActions[0].label)
+                .isEqualTo(context.getString(R.string.retry_face))
+
+            // Try face auth using a11y action
+            underTest.accessibilityActions[0].action()
+            assertThat(fakeDeviceEntryFaceAuthRepository.runningAuthRequest.value)
+                .isEqualTo(FaceAuthUiEvent.FACE_AUTH_ACCESSIBILITY_ACTION to false)
         }
 
     private fun authMethodsToTest(): List<AuthenticationMethodModel> {

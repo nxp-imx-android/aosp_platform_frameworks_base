@@ -25,6 +25,7 @@ import com.android.systemui.bouncer.domain.interactor.bouncerActionButtonInterac
 import com.android.systemui.bouncer.domain.interactor.bouncerInteractor
 import com.android.systemui.bouncer.domain.interactor.simBouncerInteractor
 import com.android.systemui.bouncer.ui.helper.BouncerHapticPlayer
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryFaceAuthInteractor
 import com.android.systemui.haptics.msdl.bouncerHapticPlayer
 import com.android.systemui.inputmethod.domain.interactor.inputMethodInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardDismissActionInteractor
@@ -65,6 +66,7 @@ val Kosmos.bouncerOverlayContentViewModel by Fixture {
         keyguardDismissActionInteractor = keyguardDismissActionInteractor,
         sceneInteractor = sceneInteractor,
         windowRootViewBlurInteractor = windowRootViewBlurInteractor,
+        faceAuthInteractor = deviceEntryFaceAuthInteractor,
     )
 }
 

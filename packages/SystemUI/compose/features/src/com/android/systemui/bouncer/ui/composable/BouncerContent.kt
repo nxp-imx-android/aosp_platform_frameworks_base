@@ -86,6 +86,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -252,9 +253,11 @@ fun ContentScope.BouncerContentLayout(
     val scale by viewModel.scale.collectAsStateWithLifecycle()
     Box(
         modifier =
-            modifier.onKeyEvent(viewModel::onKeyEvent).scale(scale).pointerInput(Unit) {
-                detectTapGestures { viewModel.backgroundTap() }
-            }
+            modifier
+                .onKeyEvent(viewModel::onKeyEvent)
+                .semantics { customActions = viewModel.accessibilityActions }
+                .scale(scale)
+                .pointerInput(Unit) { detectTapGestures { viewModel.backgroundTap() } }
     ) {
         when (layout) {
             BouncerOverlayLayout.STANDARD_BOUNCER -> StandardLayout(viewModel = viewModel)
