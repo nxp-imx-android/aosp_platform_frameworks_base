@@ -66,6 +66,12 @@ class BulletPreference @JvmOverloads constructor(
         setupLearnMoreView(learnMoreTextView, learnMore)
     }
 
+    /**
+     * Set selectable to false to ensure that the BulletPreference works correctly with Talk Back,
+     * Voice access and Switch Access. This will ensure it's selectable, but not tappable.
+     */
+    override fun isSelectable(): Boolean = false
+
     private fun setupLearnMoreView(textView: TextView, learnMore: LearnMore?) {
         if (learnMore == null) {
             textView.isGone = true
