@@ -167,24 +167,51 @@ constructor(
     val qsExpandFraction: Flow<Float> =
         shadeInteractor.qsExpansion.dumpWhileCollecting("qsExpandFraction")
 
+    /**
+     * Level of height suppression state. Higher suppressionLevel number represents stricter
+     * suppression rule.
+     */
+    enum class HeightSuppressionState(private val suppressionLevel: Int) {
+        /** No height updates suppressed. */
+        None(0),
+
+        /**
+         * Only suppress the stack end height update. This replaces the pre-flexi version of
+         * getQsExpansionFraction() <= 0 check in NotificationStackScrollLayout.
+         */
+        EndHeightOnly(1),
+
+        /** Suppress all height updates. */
+        All(2);
+
+        /**
+         * When changing from a stricter suppress state to a looser suppress state, force an update.
+         */
+        fun forceUpdateWhenChangeTo(newState: HeightSuppressionState): Boolean {
+            return newState.suppressionLevel < suppressionLevel
+        }
+    }
+
     /** Are notification stack height updates suppressed? */
-    val suppressHeightUpdates: Flow<Boolean> =
+    val suppressHeightUpdates: Flow<HeightSuppressionState> =
         sceneInteractor.transitionState
             .map { state: ObservableTransitionState ->
                 when (state) {
                     is Idle -> {
-                        false
+                        if (state.currentScene == Scenes.QuickSettings) {
+                            HeightSuppressionState.EndHeightOnly
+                        } else HeightSuppressionState.None
                     }
-
                     is Transition -> {
-                        state.isTransitioningBetween(Scenes.Shade, Scenes.QuickSettings) ||
-                            state.isTransitioning(
-                                from = Scenes.QuickSettings,
-                                to = Scenes.Lockscreen,
-                            ) ||
+                        if (
                             state.fromContent == Scenes.Lockscreen &&
                                 (state.toContent == Overlays.Bouncer ||
                                     state.toContent == Scenes.Gone)
+                        ) {
+                            HeightSuppressionState.All
+                        } else if (state.isTransitioningFromOrTo(Scenes.QuickSettings)) {
+                            HeightSuppressionState.EndHeightOnly
+                        } else HeightSuppressionState.None
                     }
                 }
             }

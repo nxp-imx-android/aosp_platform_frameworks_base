@@ -36,6 +36,7 @@ import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -100,6 +101,7 @@ import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds;
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape;
+import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationScrollViewModel.HeightSuppressionState;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
 import com.android.systemui.statusbar.phone.ScreenOffAnimationController;
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
@@ -255,13 +257,13 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
     @Test
     @EnableSceneContainer
-    public void updateInterpolatedStackHeight_qsExpanded_shouldSkipUpdateStackEndHeight() {
+    public void updateInterpolatedStackHeight_suppressEndHeight_shouldSkipUpdateStackEndHeight() {
         // Before: QS is fully expanded
         final float expansionFraction = 0.2f;
         final float endHeight = 200f;
 
         mStackScroller.setQsExpandFraction(1f);
-        mStackScroller.suppressHeightUpdates(true);
+        mStackScroller.suppressHeightUpdates(HeightSuppressionState.EndHeightOnly);
         mAmbientState.setExpansionFraction(expansionFraction);
         mAmbientState.setStackEndHeight(endHeight);
 
@@ -283,7 +285,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         final float endHeight = 200f;
 
         mStackScroller.setQsExpandFraction(0f);
-        mStackScroller.suppressHeightUpdates(false);
+        mStackScroller.suppressHeightUpdates(HeightSuppressionState.None);
         mStackScroller.setMaxDisplayedNotifications(2);
         mAmbientState.setExpansionFraction(expansionFraction);
         mAmbientState.setStackEndHeight(endHeight);
@@ -307,7 +309,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         final float endHeight = 200f;
 
         mStackScroller.setQsExpandFraction(0f);
-        mStackScroller.suppressHeightUpdates(false);
+        mStackScroller.suppressHeightUpdates(HeightSuppressionState.None);
         mStackScroller.setMaxDisplayedNotifications(-1);
         mAmbientState.setExpansionFraction(expansionFraction);
         mAmbientState.setStackEndHeight(endHeight);
@@ -326,22 +328,60 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
     @Test
     @EnableSceneContainer
-    public void updateSuppressHeightUpdate_shouldUpdateStackEndHeight() {
+    public void updateSuppressHeightStateFromAllToNone_shouldUpdateStackEndHeight() {
         final float expansionFraction = 1.0f;
 
         mStackScroller.setMaxDisplayedNotifications(-1);
         reset(mStackScroller);
 
-        // Set stack expand fraction while height update is suppressed
+        // Set stack expand fraction while height update is suppressed: All
         mStackScroller.setQsExpandFraction(0f);
-        mStackScroller.suppressHeightUpdates(true);
+        mStackScroller.suppressHeightUpdates(HeightSuppressionState.All);
         mStackScroller.setExpandFraction(expansionFraction);
         verify(mStackScroller, never()).updateStackEndHeightAndStackHeight(anyFloat());
 
         // Check that the height update is triggered when the suppression is disabled
         reset(mStackScroller);
-        mStackScroller.suppressHeightUpdates(false);
+        mStackScroller.suppressHeightUpdates(HeightSuppressionState.None);
         verify(mStackScroller, times(1)).updateStackEndHeightAndStackHeight(eq(expansionFraction));
+    }
+
+    @Test
+    @EnableSceneContainer
+    public void updateSuppressHeightStateEndHeightOnly_shouldSkipStackEndHeightOnly() {
+        final float expansionFraction = 1.0f;
+
+        mStackScroller.setMaxDisplayedNotifications(-1);
+        reset(mStackScroller);
+
+        // Set stack expand fraction while height update is suppressed: endHeightOnly
+        mStackScroller.setQsExpandFraction(0f);
+        mStackScroller.suppressHeightUpdates(HeightSuppressionState.EndHeightOnly);
+        mStackScroller.setExpandFraction(expansionFraction);
+
+        // The endHeight should not be updated, but updateStackEndHeightAndStackHeight,
+        // and updateExpandedHeight are called
+        verify(mStackScroller, atLeast(1)).updateStackEndHeightAndStackHeight(anyFloat());
+        verify(mStackScroller, atLeast(1)).updateExpandedHeight(anyFloat());
+        verify(mStackScroller, never()).updateStackEndHeight();
+    }
+
+    @Test
+    @EnableSceneContainer
+    public void updateSuppressHeightStateFromEndHeightOnlyToNone_shouldUpdateStackEndHeight() {
+        final float expansionFraction = 1.0f;
+
+        mStackScroller.setMaxDisplayedNotifications(-1);
+        reset(mStackScroller);
+
+        // Set height update is suppressed: endHeightOnly
+        mStackScroller.setQsExpandFraction(0f);
+        mStackScroller.suppressHeightUpdates(HeightSuppressionState.EndHeightOnly);
+
+        // Check that the height update is triggered when the suppression is disabled
+        reset(mStackScroller);
+        mStackScroller.suppressHeightUpdates(HeightSuppressionState.None);
+        verify(mStackScroller, times(1)).updateStackEndHeight();
     }
 
     @Test
@@ -476,6 +516,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @EnableSceneContainer
     public void updateStackEndHeightAndStackHeight_maxNotificationsSet_withSceneContainer() {
         float stackHeight = 300f;
+        mStackScroller.suppressHeightUpdates(HeightSuppressionState.None);
         when(mStackSizeCalculator.computeHeight(eq(mStackScroller), anyInt(), anyFloat(), any()))
                 .thenReturn(stackHeight);
         mStackScroller.setMaxDisplayedNotifications(3); // any non-zero amount
@@ -1217,6 +1258,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @Test
     @EnableSceneContainer
     public void testDispatchTouchEvent_sceneContainerEnabled() {
+        mStackScroller.setIsBeingDragged(false);
         mStackScroller.setIsBeingDragged(true);
 
         long downTime = SystemClock.uptimeMillis() - 100;
