@@ -88,6 +88,10 @@ public class BinderStatsConsumerServiceTest {
         builder.writeLong(stat.durationSumMicros);
         builder.writeLong(stat.secondsWithAtLeast10Calls);
         builder.writeLong(stat.secondsWithAtLeast50Calls);
+        builder.writeLong(stat.callDurationSumSquaredMicros);
+        builder.writeLong(stat.cpuTimeCount);
+        builder.writeLong(stat.cpuTimeSumMicros);
+        builder.writeLong(stat.cpuTimeSumSquaredMicros);
         return builder.usePooledBuffer().build();
     }
 
@@ -112,6 +116,10 @@ public class BinderStatsConsumerServiceTest {
         stats[0].durationSumMicros = 100;
         stats[0].secondsWithAtLeast10Calls = 1;
         stats[0].secondsWithAtLeast50Calls = 0;
+        stats[0].callDurationSumSquaredMicros = 112;
+        stats[0].cpuTimeCount = 5;
+        stats[0].cpuTimeSumMicros = 50;
+        stats[0].cpuTimeSumSquaredMicros = 250;
         StatsEvent expectedEvent = buildBinderCallsStats(stats[0]);
 
         mService.reportCallStats(stats);
@@ -177,6 +185,10 @@ public class BinderStatsConsumerServiceTest {
         stats[0].durationSumMicros = 100;
         stats[0].secondsWithAtLeast10Calls = 1;
         stats[0].secondsWithAtLeast50Calls = 0;
+        stats[0].callDurationSumSquaredMicros = 112;
+        stats[0].cpuTimeCount = 5;
+        stats[0].cpuTimeSumMicros = 50;
+        stats[0].cpuTimeSumSquaredMicros = 250;
 
         stats[1] = new BinderCallsStats();
         stats[1].clientUid = 1001;
@@ -186,6 +198,10 @@ public class BinderStatsConsumerServiceTest {
         stats[1].durationSumMicros = 200;
         stats[1].secondsWithAtLeast10Calls = 2;
         stats[1].secondsWithAtLeast50Calls = 1;
+        stats[1].callDurationSumSquaredMicros = 145;
+        stats[1].cpuTimeCount = 8;
+        stats[1].cpuTimeSumMicros = 74;
+        stats[1].cpuTimeSumSquaredMicros = 932;
 
         StatsEvent expectedEvent1 = buildBinderCallsStats(stats[0]);
         StatsEvent expectedEvent2 = buildBinderCallsStats(stats[1]);

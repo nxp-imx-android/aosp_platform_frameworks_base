@@ -66,7 +66,9 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
             FrameworkStatsLog.write(FrameworkStatsLog.BINDER_CALLS_REPORTED, callStats.clientUid,
                     callingUid, callStats.interfaceDescriptor, callStats.aidlMethod,
                     callStats.callCount, callStats.durationSumMicros,
-                    callStats.secondsWithAtLeast10Calls, callStats.secondsWithAtLeast50Calls);
+                    callStats.secondsWithAtLeast10Calls, callStats.secondsWithAtLeast50Calls,
+                    callStats.callDurationSumSquaredMicros, callStats.cpuTimeCount,
+                    callStats.cpuTimeSumMicros, callStats.cpuTimeSumSquaredMicros);
         }
     }
 
