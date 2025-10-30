@@ -262,6 +262,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
     @Test
     fun lifecycle_startedAfterFlowsUpdate() =
         kosmos.runTest {
+            testableLooper.processAllMessages()
             // Flows start collecting due to test setup, causing the state to advance to STARTED.
             assertThat(underTest.lifecycle.currentState).isEqualTo(Lifecycle.State.STARTED)
         }
