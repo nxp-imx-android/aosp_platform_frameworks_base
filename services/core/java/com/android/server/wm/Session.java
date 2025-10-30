@@ -307,11 +307,28 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     }
 
     @Override
+    public int relayout2(@NonNull IWindow window, @Nullable WindowManager.LayoutParams attrs,
+            int requestedWidth, int requestedHeight, int viewFlags, int flags, int seq,
+            int syncSeqId, @Nullable SurfaceControl surface,
+            @Nullable WindowRelayoutResult outRelayoutResult) {
+        return relayout(window, attrs, requestedWidth, requestedHeight, viewFlags, flags, seq,
+                syncSeqId, outRelayoutResult, surface);
+    }
+
+    @Override
     public void relayoutAsync(IWindow window, WindowManager.LayoutParams attrs,
             int requestedWidth, int requestedHeight, int viewFlags, int flags, int seq,
             int lastSyncSeqId) {
         relayout(window, attrs, requestedWidth, requestedHeight, viewFlags, flags, seq,
                 lastSyncSeqId, null /* outRelayoutResult */, null /* outSurface */);
+    }
+
+    @Override
+    public void relayoutAsync2(@NonNull IWindow window, @Nullable WindowManager.LayoutParams attrs,
+            int requestedWidth, int requestedHeight, int viewFlags, int flags, int seq,
+            int lastSyncSeqId, @Nullable SurfaceControl surface) {
+        relayout(window, attrs, requestedWidth, requestedHeight, viewFlags, flags, seq,
+                lastSyncSeqId, null /* outRelayoutResult */, surface);
     }
 
     @Override

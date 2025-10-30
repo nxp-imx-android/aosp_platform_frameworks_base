@@ -2608,7 +2608,8 @@ public class WindowManagerService extends IWindowManager.Stub
                 Slog.v(TAG_WM, "Relayout " + win + ": viewVisibility=" + viewVisibility
                         + " req=" + requestedWidth + "x" + requestedHeight + " " + win.mAttrs);
             }
-            if ((attrChanges & WindowManager.LayoutParams.ALPHA_CHANGED) != 0) {
+            if (!WindowManager.useClientSurface()
+                    && (attrChanges & WindowManager.LayoutParams.ALPHA_CHANGED) != 0) {
                 winAnimator.mAlpha = attrs.alpha;
             }
             if ((attrChanges & WindowManager.LayoutParams.TITLE_CHANGED) != 0) {
@@ -2617,10 +2618,11 @@ public class WindowManagerService extends IWindowManager.Stub
             }
             win.setWindowScale(win.mRequestedWidth, win.mRequestedHeight);
 
-            if (win.mAttrs.surfaceInsets.left != 0
+            if (!WindowManager.useClientSurface()
+                    && (win.mAttrs.surfaceInsets.left != 0
                     || win.mAttrs.surfaceInsets.top != 0
                     || win.mAttrs.surfaceInsets.right != 0
-                    || win.mAttrs.surfaceInsets.bottom != 0) {
+                    || win.mAttrs.surfaceInsets.bottom != 0)) {
                 winAnimator.setOpaqueLocked(false);
             }
 
@@ -2654,6 +2656,10 @@ public class WindowManagerService extends IWindowManager.Stub
                     viewVisibility);
             if (becameVisible) {
                 onWindowVisible(win);
+            }
+            if (WindowManager.useClientSurface() && viewVisibility == View.VISIBLE
+                    && outSurfaceControl != null) {
+                win.setClientSurface(outSurfaceControl);
             }
 
             win.setDisplayLayoutNeeded();
@@ -2690,7 +2696,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
             // Create surfaceControl before surface placement otherwise layout will be skipped
             // (because WS.isGoneForLayout() is true when there is no surface.
-            if (shouldRelayout && outSurfaceControl != null) {
+            if (shouldRelayout && outSurfaceControl != null && !WindowManager.useClientSurface()) {
                 try {
                     result = createSurfaceControl(outSurfaceControl, result, win, winAnimator);
                 } catch (Exception e) {
@@ -2737,7 +2743,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 winAnimator.mEnterAnimationPending = false;
                 winAnimator.mEnteringAnimation = false;
 
-                if (outSurfaceControl != null) {
+                if (outSurfaceControl != null && !WindowManager.useClientSurface()) {
                     if (viewVisibility == View.VISIBLE && winAnimator.hasSurface()) {
                         // We already told the client to go invisible, but the message may not be
                         // handled yet, or it might want to draw a last frame. If we already have a

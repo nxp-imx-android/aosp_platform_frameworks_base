@@ -160,6 +160,9 @@ class WindowStateAnimator {
         mSession = win.mSession;
         mAttrType = win.mAttrs.type;
         mWallpaperControllerLocked = win.getDisplayContent().mWallpaperController;
+        if (WindowManager.useClientSurface()) {
+            mLastHidden = true;
+        }
     }
 
     void onAnimationFinished() {
@@ -202,7 +205,9 @@ class WindowStateAnimator {
         ProtoLog.i(WM_SHOW_TRANSACTIONS, "SURFACE HIDE ( %s ): %s", reason, mTitle);
 
         setShown(false);
-        transaction.hide(mSurfaceControl);
+        final SurfaceControl sc =
+                WindowManager.useClientSurface() ? mWin.mSurfaceControl : mSurfaceControl;
+        transaction.hide(sc);
         if (mWin.mIsWallpaper) {
             final DisplayContent dc = mWin.getDisplayContent();
             EventLog.writeEvent(EventLogTags.WM_WALLPAPER_SURFACE,
@@ -279,6 +284,10 @@ class WindowStateAnimator {
     }
 
     SurfaceControl createSurfaceLocked() {
+        if (WindowManager.useClientSurface()) {
+            Slog.e(TAG, "No longer create client surfaces on the server side", new Throwable());
+            return null;
+        }
         final WindowState w = mWin;
 
         if (mSurfaceControl != null) {
@@ -436,7 +445,9 @@ class WindowStateAnimator {
         ProtoLog.i(WM_SHOW_TRANSACTIONS, "SURFACE SHOW (performLayout): %s", mTitle);
         if (DEBUG_VISIBILITY) Slog.v(TAG, "Showing " + this + " during relayout");
         setShown(true);
-        t.show(mSurfaceControl);
+        final SurfaceControl sc =
+                WindowManager.useClientSurface() ? mWin.mSurfaceControl : mSurfaceControl;
+        t.show(sc);
         if (mWin.mIsWallpaper) {
             final DisplayContent dc = mWin.mDisplayContent;
             EventLog.writeEvent(EventLogTags.WM_WALLPAPER_SURFACE,
@@ -639,5 +650,8 @@ class WindowStateAnimator {
         mSurfaceControl = null;
         mWin.setHasSurface(false);
         mDrawState = NO_SURFACE;
+        if (WindowManager.useClientSurface()) {
+            mLastHidden = true;
+        }
     }
 }

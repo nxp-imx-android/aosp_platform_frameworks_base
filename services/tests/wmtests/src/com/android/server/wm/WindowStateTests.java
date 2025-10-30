@@ -1778,7 +1778,8 @@ public class WindowStateTests extends WindowTestsBase {
         final Session session = getTestSession();
         final ClientWindowFrames outFrames = new ClientWindowFrames();
         final MergedConfiguration outConfig = new MergedConfiguration();
-        final SurfaceControl outSurfaceControl = new SurfaceControl();
+        final SurfaceControl clientSurfaceControl = WindowManager.useClientSurface()
+                ? mWm.mSurfaceControlFactory.get().build() : new SurfaceControl();
         final InsetsState outInsetsState = new InsetsState();
         final InsetsSourceControl.Array outControls = new InsetsSourceControl.Array();
         final WindowRelayoutResult outRelayoutResult = new WindowRelayoutResult(outFrames,
@@ -1793,7 +1794,7 @@ public class WindowStateTests extends WindowTestsBase {
                 0 /* userUd */, WindowInsets.Type.defaultVisible(), null,
                 new WindowRelayoutResult());
         mWm.relayoutWindow(session, client, params, 100, 200, View.VISIBLE, 0, 0, 0,
-                outRelayoutResult, outSurfaceControl);
+                outRelayoutResult, clientSurfaceControl);
         waitHandlerIdle(mWm.mH);
 
         final WindowState imeLayeringTargetOverlay = mDisplayContent.getWindow(
@@ -1806,7 +1807,7 @@ public class WindowStateTests extends WindowTestsBase {
 
         // Scenario 2: test relayoutWindow to let the Ime layering target overlay window invisible.
         mWm.relayoutWindow(session, client, params, 100, 200, View.GONE, 0, 0, 0,
-                outRelayoutResult, outSurfaceControl);
+                outRelayoutResult, clientSurfaceControl);
         waitHandlerIdle(mWm.mH);
 
         assertThat(imeLayeringTargetOverlay.isVisible()).isFalse();

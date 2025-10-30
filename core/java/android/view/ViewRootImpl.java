@@ -113,6 +113,7 @@ import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.WindowManager.LayoutParams.TYPE_VOLUME_OVERLAY;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_SANDBOXING_VIEW_BOUNDS_APIS;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_CANCEL_AND_REDRAW;
+import static android.view.WindowManagerGlobal.RELAYOUT_RES_FIRST_TIME;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_SURFACE_CHANGED;
 import static android.view.accessibility.Flags.a11ySequentialFocusStartingPoint;
 import static android.view.accessibility.Flags.forceInvertColor;
@@ -848,7 +849,8 @@ public final class ViewRootImpl implements ViewParent,
     // Surface can never be reassigned or cleared (use Surface.clear()).
     @UnsupportedAppUsage
     public final Surface mSurface = new Surface();
-    private final SurfaceControl mSurfaceControl = new SurfaceControl();
+    @NonNull
+    private SurfaceControl mSurfaceControl = new SurfaceControl();
 
     private BLASTBufferQueue mBlastBufferQueue;
     private IBinder mBbqApplyToken = new Binder();
@@ -9634,16 +9636,57 @@ public final class ViewRootImpl implements ViewParent,
         return mAccessibilityInteractionController;
     }
 
+    @NonNull
+    private SurfaceControl createSurfaceControl() {
+        // The surface is visible by default (replace default HIDDEN flag).
+        int surfaceFlags = SurfaceControl.NOT_ADD_TO_ROOT;
+        if ((mWindowAttributes.privateFlags
+                & WindowManager.LayoutParams.PRIVATE_FLAG_IS_ROUNDED_CORNERS_OVERLAY) != 0) {
+            surfaceFlags |= SurfaceControl.SKIP_SCREENSHOT;
+        }
+        return new SurfaceControl.Builder()
+                .setCallsite("ViewRootImpl.createSurfaceControl")
+                .setName("VRI-" + getTitle())
+                .setFlags(surfaceFlags)
+                .setFormat((mWindowAttributes.flags
+                        & WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED) != 0
+                        ? PixelFormat.TRANSLUCENT : mWindowAttributes.format)
+                .setMetadata(SurfaceControl.METADATA_WINDOW_TYPE, mWindowAttributes.type)
+                .setBLASTLayer().build();
+    }
+
+    private int updateSurfaceControl(int viewVisibility) {
+        int relayoutResult = 0;
+        if (viewVisibility == View.VISIBLE) {
+            if (!mSurfaceControl.isValid()) {
+                Trace.traceBegin(Trace.TRACE_TAG_VIEW, "createSurfaceControl");
+                mSurfaceControl = createSurfaceControl();
+                Trace.traceEnd(Trace.TRACE_TAG_VIEW);
+                relayoutResult |= RELAYOUT_RES_SURFACE_CHANGED | RELAYOUT_RES_FIRST_TIME;
+            }
+        } else if (mSurfaceControl.isValid()) {
+            mSurfaceControl.release();
+        }
+        return relayoutResult;
+    }
+
     private int relayoutWindow(WindowManager.LayoutParams params, int viewVisibility,
             boolean insetsPending) throws RemoteException {
+        int relayoutResult = 0;
+        if (WindowManager.useClientSurface()) {
+            relayoutResult = updateSurfaceControl(viewVisibility);
+        }
+
         final WindowConfiguration winConfigFromAm = getConfiguration().windowConfiguration;
         final WindowConfiguration winConfigFromWm =
                 mLastReportedMergedConfiguration.getMergedConfiguration().windowConfiguration;
         final WindowConfiguration winConfig = getCompatWindowConfiguration();
         final int measuredWidth = mMeasuredWidth;
         final int measuredHeight = mMeasuredHeight;
+        final boolean viewVisibilityChanged =
+                (mViewFrameInfo.flags & FrameInfo.FLAG_WINDOW_VISIBILITY_CHANGED) != 0;
         final boolean relayoutAsync;
-        if ((mViewFrameInfo.flags & FrameInfo.FLAG_WINDOW_VISIBILITY_CHANGED) == 0
+        if ((!viewVisibilityChanged || WindowManager.useClientSurface())
                 && mWindowAttributes.type != TYPE_APPLICATION_STARTING
                 && mSyncSeqId <= mLastSyncSeqId
                 && (!NoPreloadHolder.sAlwaysSeqId
@@ -9683,7 +9726,7 @@ public final class ViewRootImpl implements ViewParent,
             relayoutAsync = false;
             if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
                 Trace.instant(Trace.TRACE_TAG_VIEW, "relayoutSync visChange="
-                        + ((mViewFrameInfo.flags & FrameInfo.FLAG_WINDOW_VISIBILITY_CHANGED) != 0)
+                        + viewVisibilityChanged
                         + " starting=" + (mWindowAttributes.type == TYPE_APPLICATION_STARTING)
                         + " bufferId=" + mSyncSeqId + ">" + mLastSyncSeqId
                         + " seqId=" + mSeqId + ">" + mLastSeqId
@@ -9716,19 +9759,39 @@ public final class ViewRootImpl implements ViewParent,
 
         final int requestedWidth = (int) (measuredWidth * appScale + 0.5f);
         final int requestedHeight = (int) (measuredHeight * appScale + 0.5f);
-        int relayoutResult = 0;
         mRelayoutSeq++;
         final int seqId = NoPreloadHolder.sAlwaysSeqId ? mSeqId : mLastSyncSeqId;
         if (relayoutAsync) {
-            mWindowSession.relayoutAsync(mWindow, params,
-                    requestedWidth, requestedHeight, viewVisibility,
-                    insetsPending ? WindowManagerGlobal.RELAYOUT_INSETS_PENDING : 0, mRelayoutSeq,
-                    seqId);
+            if (WindowManager.useClientSurface()) {
+                final SurfaceControl surfaceControl = viewVisibility == View.VISIBLE
+                        && mSurfaceControl.isValid() ? mSurfaceControl : null;
+                mWindowSession.relayoutAsync2(mWindow, params,
+                        requestedWidth, requestedHeight, viewVisibility,
+                        insetsPending ? WindowManagerGlobal.RELAYOUT_INSETS_PENDING : 0,
+                        mRelayoutSeq, seqId, surfaceControl);
+                if (surfaceControl != null && viewVisibilityChanged) {
+                    relayoutResult |= RELAYOUT_RES_FIRST_TIME;
+                }
+            } else {
+                mWindowSession.relayoutAsync(mWindow, params,
+                        requestedWidth, requestedHeight, viewVisibility,
+                        insetsPending ? WindowManagerGlobal.RELAYOUT_INSETS_PENDING : 0,
+                        mRelayoutSeq, seqId);
+            }
         } else {
-            relayoutResult = mWindowSession.relayout(mWindow, params,
-                    requestedWidth, requestedHeight, viewVisibility,
-                    insetsPending ? WindowManagerGlobal.RELAYOUT_INSETS_PENDING : 0,
-                    mRelayoutSeq, seqId, mRelayoutResult, mSurfaceControl);
+            if (WindowManager.useClientSurface()) {
+                final SurfaceControl surfaceControl = viewVisibility == View.VISIBLE
+                        && mSurfaceControl.isValid() ? mSurfaceControl : null;
+                relayoutResult |= mWindowSession.relayout2(mWindow, params,
+                        requestedWidth, requestedHeight, viewVisibility,
+                        insetsPending ? WindowManagerGlobal.RELAYOUT_INSETS_PENDING : 0,
+                        mRelayoutSeq, seqId, surfaceControl, mRelayoutResult);
+            } else {
+                relayoutResult |= mWindowSession.relayout(mWindow, params,
+                        requestedWidth, requestedHeight, viewVisibility,
+                        insetsPending ? WindowManagerGlobal.RELAYOUT_INSETS_PENDING : 0,
+                        mRelayoutSeq, seqId, mRelayoutResult, mSurfaceControl);
+            }
             mRelayoutRequested = true;
 
             onClientWindowFramesChanged(mTmpFrames);

@@ -508,6 +508,24 @@ public class WindowlessWindowManager implements IWindowSession {
     }
 
     @Override
+    public int relayout2(IWindow window, WindowManager.LayoutParams inAttrs,
+            int requestedWidth, int requestedHeight, int viewFlags, int flags, int seq,
+            int lastSyncSeqId, SurfaceControl surface, WindowRelayoutResult outRelayoutResult) {
+        return relayout(window, inAttrs, requestedWidth, requestedHeight, viewFlags, flags, seq,
+                lastSyncSeqId, outRelayoutResult, surface);
+    }
+
+    @Override
+    public void relayoutAsync2(IWindow window, WindowManager.LayoutParams inAttrs,
+            int requestedWidth, int requestedHeight, int viewFlags, int flags, int seq,
+            int lastSyncSeqId, SurfaceControl surfaceControl) {
+        relayoutInner(window, inAttrs, requestedWidth, requestedHeight, viewFlags, flags, seq,
+                lastSyncSeqId, null /* outFrames */, null /* outMergedConfiguration */,
+                null /* outSurfaceControl */, null /* outInsetsState */,
+                null /* outActiveControls */);
+    }
+
+    @Override
     public boolean outOfMemory(android.view.IWindow window) {
         return false;
     }
