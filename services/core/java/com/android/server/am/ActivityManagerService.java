@@ -36,8 +36,10 @@ import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_STATE_BOUND_TOP;
+import static android.app.ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND;
 import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
+import static android.app.ActivityManager.PROCESS_STATE_SERVICE;
 import static android.app.ActivityManager.PROCESS_STATE_TOP;
 import static android.app.ActivityManager.RESTRICTION_LEVEL_FORCE_STOPPED;
 import static android.app.ActivityManager.RESTRICTION_REASON_DEFAULT;
@@ -156,6 +158,7 @@ import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_POWER;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PROCESSES;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PROCESS_OBSERVERS;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_SERVICE;
+import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_USAGE_STATS;
 import static com.android.server.am.ActivityManagerDebugConfig.LOG_WRITER_INFO;
 import static com.android.server.am.ActivityManagerDebugConfig.POSTFIX_BACKUP;
 import static com.android.server.am.ActivityManagerDebugConfig.POSTFIX_CLEANUP;
@@ -195,6 +198,7 @@ import static com.android.server.am.psc.Constants.SERVICE_B_ADJ;
 import static com.android.server.am.psc.Constants.SYSTEM_ADJ;
 import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
 import static com.android.server.am.psc.Constants.VISIBLE_APP_ADJ;
+import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME;
 import static com.android.server.flags.Flags.disableSystemCompaction;
 import static com.android.server.net.NetworkPolicyManagerInternal.updateBlockedReasonsWithProcState;
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
@@ -19569,8 +19573,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         @Override
-        public void onProcStateUpdated(ProcessRecordInternal appInternal, long now,
-                boolean forceUpdatePssTime, boolean doingAll) {
+        public void onProcStateUpdated(ProcessRecordInternal appInternal, long now, long nowElapsed,
+                boolean forceUpdatePssTime, boolean doingAll, boolean reportDebugMsgs) {
             final ProcessRecord app = (ProcessRecord) appInternal;
 
             synchronized (mAppProfiler.mProfilerLock) {
@@ -19582,6 +19586,49 @@ public class ActivityManagerService extends IActivityManager.Stub
             if (!doingAll && app.getSetProcState() != app.getCurProcState()) {
                 synchronized (mProcessStats.mLock) {
                     setProcessTrackerStateLOSP(app, mProcessStats.getMemFactorLocked());
+                }
+            }
+
+            if (app.getSetProcState() != app.getCurProcState()) {
+                if (reportDebugMsgs) {
+                    String msg = "Proc state change of " + app.processName
+                            + " to " + ProcessList.makeProcStateString(app.getCurProcState())
+                            + " (" + app.getCurProcState() + ")" + ": " + app.getAdjType();
+                    Slog.d(TAG_OOM_ADJ, msg);
+                    reportOomAdjMessageLocked(msg);
+                }
+
+                final boolean setImportant = app.getSetProcState() < PROCESS_STATE_SERVICE;
+                final boolean curImportant = app.getCurProcState() < PROCESS_STATE_SERVICE;
+                if (setImportant && !curImportant) {
+                    // This app is no longer something we consider important enough to allow to use
+                    // arbitrary amounts of battery power. Note its current CPU time to later know
+                    // to kill it if it is not behaving well.
+                    app.setWhenUnimportant(now);
+                    app.setLastCpuTime(0);
+                }
+
+                // Inform UsageStats of important process state change
+                // Must be called before updating setProcState
+                maybeUpdateUsageStatsLSP(app, nowElapsed);
+            } else {
+                final boolean fgsInteractionChangeEnabled = app.getCachedCompatChange(
+                        CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME);
+                final long interactionThreshold = fgsInteractionChangeEnabled
+                        ? mConstants.USAGE_STATS_INTERACTION_INTERVAL_POST_S
+                        : mConstants.USAGE_STATS_INTERACTION_INTERVAL_PRE_S;
+                if (app.getHasReportedInteraction()) {
+                    // For apps that sit around for a long time in the interactive state, we need
+                    // to report this at least once a day so they don't go idle.
+                    if ((nowElapsed - app.getInteractionEventTime()) > interactionThreshold) {
+                        maybeUpdateUsageStatsLSP(app, nowElapsed);
+                    }
+                } else {
+                    // For foreground services that sit around for a long time but are not
+                    // interacted with.
+                    if ((nowElapsed - app.getFgInteractionTime()) > interactionThreshold) {
+                        maybeUpdateUsageStatsLSP(app, nowElapsed);
+                    }
                 }
             }
         }
@@ -19684,6 +19731,61 @@ public class ActivityManagerService extends IActivityManager.Stub
         @Override
         public void onReportOomAdjMessage(String msg) {
             reportOomAdjMessageLocked(msg);
+        }
+    }
+
+    @VisibleForTesting
+    @GuardedBy({"this", "mProcLock"})
+    void maybeUpdateUsageStatsLSP(ProcessRecord app, long nowElapsed) {
+        if (DEBUG_USAGE_STATS) {
+            Slog.d(TAG, "Checking proc [" + Arrays.toString(app.getProcessPackageNames())
+                    + "] state changes: old = " + app.getSetProcState() + ", new = "
+                    + app.getCurProcState());
+        }
+        if (mUsageStatsService == null) {
+            return;
+        }
+        final boolean fgsInteractionChangeEnabled = app.getCachedCompatChange(
+                CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME);
+        boolean isInteraction;
+        // To avoid some abuse patterns, we are going to be careful about what we consider
+        // to be an app interaction.  Being the top activity doesn't count while the display
+        // is sleeping, nor do short foreground services.
+        if (ActivityManager.isProcStateConsideredInteraction(app.getCurProcState())) {
+            isInteraction = true;
+            app.setFgInteractionTime(0);
+        } else if (app.getCurProcState() <= PROCESS_STATE_FOREGROUND_SERVICE) {
+            if (app.getFgInteractionTime() == 0) {
+                app.setFgInteractionTime(nowElapsed);
+                isInteraction = false;
+            } else {
+                final long interactionTime = fgsInteractionChangeEnabled
+                        ? mConstants.SERVICE_USAGE_INTERACTION_TIME_POST_S
+                        : mConstants.SERVICE_USAGE_INTERACTION_TIME_PRE_S;
+                isInteraction = nowElapsed > app.getFgInteractionTime() + interactionTime;
+            }
+        } else {
+            isInteraction = app.getCurProcState() <= PROCESS_STATE_IMPORTANT_FOREGROUND;
+            app.setFgInteractionTime(0);
+        }
+        final long interactionThreshold = fgsInteractionChangeEnabled
+                ? mConstants.USAGE_STATS_INTERACTION_INTERVAL_POST_S
+                : mConstants.USAGE_STATS_INTERACTION_INTERVAL_PRE_S;
+        if (isInteraction
+                && (!app.getHasReportedInteraction()
+                || (nowElapsed - app.getInteractionEventTime()) > interactionThreshold)) {
+            app.setInteractionEventTime(nowElapsed);
+            final String[] packages = app.getProcessPackageNames();
+            if (packages != null) {
+                for (int i = 0; i < packages.length; i++) {
+                    mUsageStatsService.reportEvent(packages[i], app.userId,
+                            UsageEvents.Event.SYSTEM_INTERACTION);
+                }
+            }
+        }
+        app.setHasReportedInteraction(isInteraction);
+        if (!isInteraction) {
+            app.setInteractionEventTime(0);
         }
     }
 

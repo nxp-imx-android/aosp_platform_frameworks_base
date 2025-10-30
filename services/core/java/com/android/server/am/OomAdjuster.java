@@ -29,12 +29,10 @@ import static android.app.ActivityManager.PROCESS_STATE_CACHED_ACTIVITY;
 import static android.app.ActivityManager.PROCESS_STATE_CACHED_EMPTY;
 import static android.app.ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.PROCESS_STATE_IMPORTANT_BACKGROUND;
-import static android.app.ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND;
 import static android.app.ActivityManager.PROCESS_STATE_LAST_ACTIVITY;
 import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 import static android.app.ActivityManager.PROCESS_STATE_PERSISTENT;
 import static android.app.ActivityManager.PROCESS_STATE_PERSISTENT_UI;
-import static android.app.ActivityManager.PROCESS_STATE_SERVICE;
 import static android.app.ActivityManager.PROCESS_STATE_TOP;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ALLOWLIST;
@@ -77,7 +75,6 @@ import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_LRU;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_OOM_ADJ;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PSS;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_UID_OBSERVERS;
-import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_USAGE_STATS;
 import static com.android.server.am.ActivityManagerService.FOLLOW_UP_OOMADJUSTER_UPDATE_MSG;
 import static com.android.server.am.ActivityManagerService.TAG_LRU;
 import static com.android.server.am.ActivityManagerService.TAG_OOM_ADJ;
@@ -107,7 +104,6 @@ import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
 import static com.android.server.am.psc.Constants.VISIBLE_APP_ADJ;
 import static com.android.server.am.psc.Constants.VISIBLE_APP_LAYER_MAX;
 import static com.android.server.am.psc.Constants.VISIBLE_APP_MAX_ADJ;
-import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_SWITCH;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_PAUSING_OR_PAUSED;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_STOPPING;
@@ -122,7 +118,6 @@ import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal.OomAdjReason;
 import android.app.ApplicationExitInfo;
-import android.app.usage.UsageEvents;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ServiceInfo;
@@ -411,8 +406,8 @@ public abstract class OomAdjuster {
                 boolean shouldNotFreezeChanged);
 
         /** Notifies the client component when a process's process state is updated. */
-        void onProcStateUpdated(ProcessRecordInternal app, long now,
-                boolean forceUpdatePssTime, boolean doingAll);
+        void onProcStateUpdated(ProcessRecordInternal app, long now, long nowElapsed,
+                boolean forceUpdatePssTime, boolean doingAll, boolean reportDebugMsgs);
 
         /** Notifies when the process group for an application process has been updated. */
         void onProcessGroupUpdated(ProcessRecordInternal app, int group);
@@ -2238,53 +2233,13 @@ public abstract class OomAdjuster {
                         + (state.getNextPssTime() - now) + ": " + state);
             }
         }
-        mCallback.onProcStateUpdated(state, now, forceUpdatePssTime, doingAll);
+        mCallback.onProcStateUpdated(state, now, nowElapsed, forceUpdatePssTime, doingAll,
+                reportDebugMsgs);
 
         int oldProcState = state.getSetProcState();
         if (state.getSetProcState() != state.getCurProcState()) {
-            if (reportDebugMsgs) {
-                String msg = "Proc state change of " + state.processName
-                        + " to " + ProcessList.makeProcStateString(state.getCurProcState())
-                        + " (" + state.getCurProcState() + ")" + ": " + state.getAdjType();
-                reportOomAdjMessageLocked(TAG_OOM_ADJ, msg);
-            }
-            boolean setImportant = state.getSetProcState() < PROCESS_STATE_SERVICE;
-            boolean curImportant = state.getCurProcState() < PROCESS_STATE_SERVICE;
-            if (setImportant && !curImportant) {
-                // This app is no longer something we consider important enough to allow to use
-                // arbitrary amounts of battery power. Note its current CPU time to later know to
-                // kill it if it is not behaving well.
-                state.setWhenUnimportant(now);
-                state.setLastCpuTime(0);
-            }
-            // Inform UsageStats of important process state change
-            // Must be called before updating setProcState
-            maybeUpdateUsageStatsLSP(state, nowElapsed);
-
             maybeUpdateLastTopTime(state, now);
-
             state.setSetProcState(state.getCurProcState());
-        } else if (state.getHasReportedInteraction()) {
-            final boolean fgsInteractionChangeEnabled = state.getCachedCompatChange(
-                    CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME);
-            final long interactionThreshold = fgsInteractionChangeEnabled
-                    ? mConstants.USAGE_STATS_INTERACTION_INTERVAL_POST_S
-                    : mConstants.USAGE_STATS_INTERACTION_INTERVAL_PRE_S;
-            // For apps that sit around for a long time in the interactive state, we need
-            // to report this at least once a day so they don't go idle.
-            if ((nowElapsed - state.getInteractionEventTime()) > interactionThreshold) {
-                maybeUpdateUsageStatsLSP(state, nowElapsed);
-            }
-        } else {
-            final boolean fgsInteractionChangeEnabled = state.getCachedCompatChange(
-                    CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME);
-            final long interactionThreshold = fgsInteractionChangeEnabled
-                    ? mConstants.SERVICE_USAGE_INTERACTION_TIME_POST_S
-                    : mConstants.SERVICE_USAGE_INTERACTION_TIME_PRE_S;
-            // For foreground services that sit around for a long time but are not interacted with.
-            if ((nowElapsed - state.getFgInteractionTime()) > interactionThreshold) {
-                maybeUpdateUsageStatsLSP(state, nowElapsed);
-            }
         }
 
         if (state.getCurCapability() != state.getSetCapability()) {
@@ -2369,71 +2324,6 @@ public abstract class OomAdjuster {
 
         onProcessStateChanged(app, prevProcState);
         onProcessOomAdjChanged(app, prevAdj);
-    }
-
-    // ONLY used for unit testing in OomAdjusterTests.java
-    @VisibleForTesting
-    void maybeUpdateUsageStats(ProcessRecordInternal app, long nowElapsed) {
-        synchronized (mService) {
-            synchronized (mProcLock) {
-                maybeUpdateUsageStatsLSP(app, nowElapsed);
-            }
-        }
-    }
-
-    @GuardedBy({"mService", "mProcLock"})
-    private void maybeUpdateUsageStatsLSP(ProcessRecordInternal app, long nowElapsed) {
-        if (DEBUG_USAGE_STATS) {
-            Slog.d(TAG, "Checking proc [" + Arrays.toString(app.getProcessPackageNames())
-                    + "] state changes: old = " + app.getSetProcState() + ", new = "
-                    + app.getCurProcState());
-        }
-        if (mService.mUsageStatsService == null) {
-            return;
-        }
-        final boolean fgsInteractionChangeEnabled = app.getCachedCompatChange(
-                CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME);
-        boolean isInteraction;
-        // To avoid some abuse patterns, we are going to be careful about what we consider
-        // to be an app interaction.  Being the top activity doesn't count while the display
-        // is sleeping, nor do short foreground services.
-        if (ActivityManager.isProcStateConsideredInteraction(app.getCurProcState())) {
-            isInteraction = true;
-            app.setFgInteractionTime(0);
-        } else if (app.getCurProcState() <= PROCESS_STATE_FOREGROUND_SERVICE) {
-            if (app.getFgInteractionTime() == 0) {
-                app.setFgInteractionTime(nowElapsed);
-                isInteraction = false;
-            } else {
-                final long interactionTime = fgsInteractionChangeEnabled
-                        ? mConstants.SERVICE_USAGE_INTERACTION_TIME_POST_S
-                        : mConstants.SERVICE_USAGE_INTERACTION_TIME_PRE_S;
-                isInteraction = nowElapsed > app.getFgInteractionTime() + interactionTime;
-            }
-        } else {
-            isInteraction =
-                    app.getCurProcState() <= PROCESS_STATE_IMPORTANT_FOREGROUND;
-            app.setFgInteractionTime(0);
-        }
-        final long interactionThreshold = fgsInteractionChangeEnabled
-                ? mConstants.USAGE_STATS_INTERACTION_INTERVAL_POST_S
-                : mConstants.USAGE_STATS_INTERACTION_INTERVAL_PRE_S;
-        if (isInteraction
-                && (!app.getHasReportedInteraction()
-                    || (nowElapsed - app.getInteractionEventTime()) > interactionThreshold)) {
-            app.setInteractionEventTime(nowElapsed);
-            final String[] packages = app.getProcessPackageNames();
-            if (packages != null) {
-                for (int i = 0; i < packages.length; i++) {
-                    mService.mUsageStatsService.reportEvent(packages[i], app.userId,
-                            UsageEvents.Event.SYSTEM_INTERACTION);
-                }
-            }
-        }
-        app.setHasReportedInteraction(isInteraction);
-        if (!isInteraction) {
-            app.setInteractionEventTime(0);
-        }
     }
 
     private void maybeUpdateLastTopTime(ProcessRecordInternal state, long nowUptime) {
