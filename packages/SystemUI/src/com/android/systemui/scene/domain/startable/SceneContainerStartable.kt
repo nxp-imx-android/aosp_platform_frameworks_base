@@ -547,9 +547,10 @@ constructor(
                                             HideOverlayCommand.HideAll
                                         },
                                     loggingReason = loggingReason,
-                                    // Only snap instantly if we don't need to run the transition
-                                    // for the dismiss animation.
-                                    instantlySnapScenes = !willAnimateDismissAction,
+                                    // Only snap instantly if we're staying on shade. Otherwise, we
+                                    // want to run the unlock animation, which is tied to the
+                                    // transition.
+                                    instantlySnapScenes = leaveShadeOpen,
                                 )
                             } else if (targetScene == Scenes.Shade && willAnimateDismissAction) {
                                 SwitchSceneCommand.SwitchToScene(
