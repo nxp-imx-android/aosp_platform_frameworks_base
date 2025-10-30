@@ -108,7 +108,7 @@ public class IntrusionDetectionEventTransportConnection implements ServiceConnec
      * @return Whether the data is added to the binder service.
      */
     public boolean addData(List<IntrusionDetectionEvent> data) {
-        // Try initialize once more if the service on gmscore is disconnected.
+        // Try initialize once more if the bound service is disconnected.
         if (mService == null) {
             Slog.d(TAG, "try initialize once more");
             if (!initialize()) {
@@ -136,7 +136,7 @@ public class IntrusionDetectionEventTransportConnection implements ServiceConnec
         } catch (RemoteException e) {
             Slog.e(TAG, "Remote Exception", e);
         } catch (NullPointerException e) {
-            Slog.e(TAG, "The service on gmscore side was disconnected");
+            Slog.e(TAG, "The bound service was disconnected before the release call");
         } finally {
             unbindService();
         }
