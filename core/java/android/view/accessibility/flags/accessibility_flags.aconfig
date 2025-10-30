@@ -249,6 +249,13 @@ flag {
 }
 
 flag {
+    name: "request_rectangle_deprecate_legacy_apis"
+    namespace: "accessibility"
+    description: "Deprecate legacy requestRectangleOnScreen APIs that do not pass the source parameter"
+    bug: "455950272"
+}
+
+flag {
     name: "request_rectangle_with_source"
     namespace: "accessibility"
     description: "Request rectangle on screen with source parameter"
