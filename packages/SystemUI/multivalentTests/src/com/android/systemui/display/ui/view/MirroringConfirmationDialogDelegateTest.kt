@@ -18,7 +18,6 @@ package com.android.systemui.display.ui.view
 
 import android.app.Dialog
 import android.graphics.Insets
-import android.platform.test.annotations.RequiresFlagsDisabled
 import android.testing.TestableLooper
 import android.view.LayoutInflater
 import android.view.View
@@ -34,7 +33,6 @@ import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.capture
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
-import com.android.window.flags.Flags.FLAG_ENABLE_UPDATED_DISPLAY_CONNECTION_DIALOG
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -44,7 +42,6 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 
 @SmallTest
-@RequiresFlagsDisabled(FLAG_ENABLE_UPDATED_DISPLAY_CONNECTION_DIALOG)
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 class MirroringConfirmationDialogDelegateTest : SysuiTestCase() {

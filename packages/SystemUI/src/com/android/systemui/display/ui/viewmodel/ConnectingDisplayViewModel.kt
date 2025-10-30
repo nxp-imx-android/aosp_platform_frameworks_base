@@ -30,7 +30,6 @@ import com.android.app.displaylib.ExternalDisplayConnectionType.DESKTOP
 import com.android.app.displaylib.ExternalDisplayConnectionType.MIRROR
 import com.android.app.displaylib.ExternalDisplayConnectionType.NOT_SPECIFIED
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.server.policy.feature.flags.Flags
 import com.android.systemui.CoreStartable
 import com.android.systemui.biometrics.Utils
 import com.android.systemui.biometrics.Utils.getInsetsOf
@@ -59,7 +58,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.withContext
 
@@ -92,7 +90,7 @@ constructor(
         val pendingDisplayFlow = connectedDisplayInteractor.pendingDisplay
         val kioskModeFlow = kioskModeRepository.isInKioskMode
         val concurrentDisplaysInProgressFlow =
-                connectedDisplayInteractor.concurrentDisplaysInProgress
+            connectedDisplayInteractor.concurrentDisplaysInProgress
 
         // Let's debounce for 2 reasons:
         // - prevent fast dialog flashes where pending displays are available for just a few millis
@@ -174,9 +172,7 @@ constructor(
         isInKioskMode: Boolean,
         concurrentDisplaysInProgress: Boolean,
     ) {
-        val useNewDialog =
-            DesktopExperienceFlags.ENABLE_UPDATED_DISPLAY_CONNECTION_DIALOG.isTrue &&
-                DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue
+        val useNewDialog = DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue
         if (!useNewDialog) {
             showMirroringDialog(pendingDisplay, concurrentDisplaysInProgress)
             return

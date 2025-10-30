@@ -285,8 +285,6 @@ public enum DesktopExperienceFlags {
     ENABLE_TASK_MOVE_ALLOWED_LISTENER_API(Flags::enableTaskMoveAllowedListenerApi, false,
             Flags.FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API),
     ENABLE_TILE_RESIZING(Flags::enableTileResizing, true, Flags.FLAG_ENABLE_TILE_RESIZING),
-    ENABLE_UPDATED_DISPLAY_CONNECTION_DIALOG(Flags::enableUpdatedDisplayConnectionDialog, false,
-            Flags.FLAG_ENABLE_UPDATED_DISPLAY_CONNECTION_DIALOG),
     ENABLE_UPSCALING_SIZE_COMPAT_ON_EXITING_DESKTOP_BUGFIX(
             Flags::enableUpscalingSizeCompatOnExitingDesktopBugfix, false,
             Flags.FLAG_ENABLE_UPSCALING_SIZE_COMPAT_ON_EXITING_DESKTOP_BUGFIX),
