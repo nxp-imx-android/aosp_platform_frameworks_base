@@ -12071,7 +12071,7 @@ public class BatteryStatsImpl extends BatteryStats {
                 }
                 // Converting uWs to mAms.
                 // Conversion: (uWs * (1000ms / 1s) * (1mW / 1000uW)) / mV = mAms
-                long monitoredRailChargeConsumedMaMs = mTmpRailStats != null
+                long monitoredRailChargeConsumedMaMs = mTmpRailStats != null && opVolt != 0
                         ? (long) (mTmpRailStats.getWifiTotalEnergyUseduWs() / opVolt)
                         : 0L;
                 mWifiActivity.getMonitoredRailChargeConsumedMaMs().addCountLocked(
