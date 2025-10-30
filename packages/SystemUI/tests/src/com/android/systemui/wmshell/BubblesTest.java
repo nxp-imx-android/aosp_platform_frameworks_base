@@ -374,6 +374,7 @@ public class BubblesTest extends SysuiTestCase {
     private TaskViewRepository mTaskViewRepository;
     private TaskViewTransitions mTaskViewTransitions;
     private PackageManagerBubbleAppInfoProvider mAppInfoProvider;
+    private BubbleUserResolver mBubbleUserResolver;
 
     private TestableBubblePositioner mPositioner;
 
@@ -523,7 +524,7 @@ public class BubblesTest extends SysuiTestCase {
         mTaskViewTransitions = new TaskViewTransitions(mTransitions, mTaskViewRepository,
                 mShellTaskOrganizer, mSyncQueue);
         mAppInfoProvider = new PackageManagerBubbleAppInfoProvider();
-        BubbleUserResolver bubbleUserResolver = userId -> new BubbleUserInfo(userId, UserType.MAIN);
+        mBubbleUserResolver = userId -> new BubbleUserInfo(userId, UserType.MAIN);
         BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory = new BubbleViewInfoTask.Factory() {
             @Override
             public BubbleViewInfoTask create(Bubble b, Context context,
@@ -533,7 +534,7 @@ public class BubblesTest extends SysuiTestCase {
                     boolean skipInflation, @Nullable BubbleViewInfoTask.Callback c) {
                 return new BubbleViewInfoTask(b, context, expandedViewManager, taskViewFactory,
                         stackView, layerView, factory, skipInflation, c, mPositioner,
-                        mAppInfoProvider, syncExecutor, syncExecutor, bubbleUserResolver);
+                        mAppInfoProvider, syncExecutor, syncExecutor, mBubbleUserResolver);
             }
         };
 
@@ -1721,7 +1722,8 @@ public class BubblesTest extends SysuiTestCase {
                                 com.android.internal.R.dimen.importance_ring_stroke_width)),
                 bubble,
                 mAppInfoProvider,
-                true /* skipInflation */);
+                true /* skipInflation */,
+                mBubbleUserResolver);
         verify(userContext, times(1)).getPackageManager();
         verify(context, times(1)).createPackageContextAsUser(eq(workPkg),
                 eq(Context.CONTEXT_RESTRICTED),

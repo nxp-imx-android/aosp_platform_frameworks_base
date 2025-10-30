@@ -51,11 +51,12 @@ public class BubbleInfo implements Parcelable {
     @Nullable
     private final ParcelableFlyoutMessage mParcelableFlyoutMessage;
     private final boolean mIsApp;
+    private final UserType mUserType;
 
     public BubbleInfo(String key, int flags, @Nullable String shortcutId, @Nullable Icon icon,
             int userId, String packageName, @Nullable String title, @Nullable String appName,
             boolean isImportantConversation, @Nullable ParcelableFlyoutMessage flyoutMessage,
-            boolean isApp) {
+            boolean isApp, UserType userType) {
         mKey = key;
         mFlags = flags;
         mShortcutId = shortcutId;
@@ -67,6 +68,7 @@ public class BubbleInfo implements Parcelable {
         mIsImportantConversation = isImportantConversation;
         mParcelableFlyoutMessage = flyoutMessage;
         mIsApp = isApp;
+        mUserType = userType;
     }
 
     private BubbleInfo(Parcel source) {
@@ -82,6 +84,7 @@ public class BubbleInfo implements Parcelable {
         mParcelableFlyoutMessage = source.readParcelable(
                 ParcelableFlyoutMessage.class.getClassLoader(), ParcelableFlyoutMessage.class);
         mIsApp = source.readBoolean();
+        mUserType = source.readParcelable(UserType.class.getClassLoader(), UserType.class);
     }
 
     public String getKey() {
@@ -131,6 +134,10 @@ public class BubbleInfo implements Parcelable {
 
     public boolean isApp() {
         return mIsApp;
+    }
+
+    public UserType getUserType() {
+        return mUserType;
     }
 
     /**
@@ -192,6 +199,7 @@ public class BubbleInfo implements Parcelable {
         parcel.writeBoolean(mIsImportantConversation);
         parcel.writeParcelable(mParcelableFlyoutMessage, flags);
         parcel.writeBoolean(mIsApp);
+        parcel.writeParcelable(mUserType, flags);
     }
 
     @NonNull

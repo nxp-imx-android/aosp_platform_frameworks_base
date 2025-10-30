@@ -50,6 +50,7 @@ class BubbleInfoTest : ShellTestCase() {
                     "message"
                 ),
                 false,
+                UserType.MAIN
             )
         val parcel = Parcel.obtain()
         bubbleInfo.writeToParcel(parcel, PARCELABLE_WRITE_RETURN_VALUE)
@@ -73,5 +74,6 @@ class BubbleInfoTest : ShellTestCase() {
             assertThat(message).isEqualTo("message")
         }
         assertThat(bubbleInfo.isApp).isFalse()
+        assertThat(bubbleInfo.userType).isEqualTo(UserType.MAIN)
     }
 }
