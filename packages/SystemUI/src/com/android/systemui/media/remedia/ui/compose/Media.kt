@@ -615,7 +615,7 @@ private fun ContentScope.CardForegroundContent(
             // Second row.
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp),
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp).heightIn(min = 48.dp),
             ) {
                 Metadata(
                     title = viewModel.title,
@@ -854,11 +854,15 @@ private fun ContentScope.Navigation(
                 modifier = modifier,
             ) {
                 if (areActionsVisible) {
-                    SecondaryAction(
-                        viewModel = viewModel.left,
-                        modifier = Modifier.sysuiResTag(MediaRes.PREV_BTN),
-                        element = Media.Elements.PrevButton,
-                    )
+                    if (viewModel.left is MediaSecondaryActionViewModel.None) {
+                        Spacer(Modifier.size(width = 16.dp, height = 48.dp))
+                    } else {
+                        SecondaryAction(
+                            viewModel = viewModel.left,
+                            modifier = Modifier.sysuiResTag(MediaRes.PREV_BTN),
+                            element = Media.Elements.PrevButton,
+                        )
+                    }
                 }
 
                 val interactionSource = remember { MutableInteractionSource() }
@@ -940,16 +944,22 @@ private fun ContentScope.Navigation(
                 }
 
                 if (areActionsVisible) {
-                    SecondaryAction(
-                        viewModel = viewModel.right,
-                        modifier = Modifier.sysuiResTag(MediaRes.NEXT_BTN),
-                        element = Media.Elements.NextButton,
-                    )
+                    if (viewModel.right is MediaSecondaryActionViewModel.None) {
+                        Spacer(Modifier.size(width = 16.dp, height = 48.dp))
+                    } else {
+                        SecondaryAction(
+                            viewModel = viewModel.right,
+                            modifier = Modifier.sysuiResTag(MediaRes.NEXT_BTN),
+                            element = Media.Elements.NextButton,
+                        )
+                    }
                 }
             }
         }
 
-        is MediaNavigationViewModel.Hidden -> Unit
+        is MediaNavigationViewModel.Hidden -> {
+            Spacer(Modifier.size(48.dp))
+        }
     }
 }
 
