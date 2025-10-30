@@ -105,27 +105,6 @@ public abstract class ProcessRecordInternal {
          * @param hasOverlayUi The new mHasOverlayUi value.
          */
         void onHasOverlayUiChanged(boolean hasOverlayUi);
-
-        /**
-         * Called when mInteractionEventTime changes.
-         *
-         * @param interactionEventTime The new mInteractionEventTime value.
-         */
-        void onInteractionEventTimeChanged(long interactionEventTime);
-
-        /**
-         * Called when mFgInteractionTime changes.
-         *
-         * @param fgInteractionTime The new mFgInteractionTime value.
-         */
-        void onFgInteractionTimeChanged(long fgInteractionTime);
-
-        /**
-         * Called when mWhenUnimportant changes.
-         *
-         * @param whenUnimportant The new mWhenUnimportant value.
-         */
-        void onWhenUnimportantChanged(long whenUnimportant);
     }
 
     /**
@@ -233,9 +212,6 @@ public abstract class ProcessRecordInternal {
 
     /** Returns the next scheduled time for PSS collection for this process. */
     public abstract long getNextPssTime();
-
-    /** Sets the last recorded CPU time for this process. */
-    public abstract void setLastCpuTime(long time);
 
     /**
      * Kills the process with the given reason code, using the provided reason string
@@ -554,24 +530,6 @@ public abstract class ProcessRecordInternal {
     private boolean mRunningRemoteAnimation;
 
     /**
-     * Whether we have told usage stats about it being an interaction.
-     */
-    @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private boolean mHasReportedInteraction;
-
-    /**
-     * The time we sent the last interaction event.
-     */
-    @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private long mInteractionEventTime;
-
-    /**
-     * When we became foreground for interaction purposes.
-     */
-    @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private long mFgInteractionTime;
-
-    /**
      * Token that is forcing this process to be important.
      */
     @GuardedBy("mServiceLock")
@@ -594,12 +552,6 @@ public abstract class ProcessRecordInternal {
      */
     @GuardedBy("mServiceLock")
     private int mLruSeq;
-
-    /**
-     * When (uptime) the process last became unimportant.
-     */
-    @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private long mWhenUnimportant;
 
     /**
      * The last time the process was in the TOP state or greater.
@@ -1188,43 +1140,6 @@ public abstract class ProcessRecordInternal {
         mRunningRemoteAnimation = runningRemoteAnimation;
     }
 
-    @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setHasReportedInteraction(boolean hasReportedInteraction) {
-        mHasReportedInteraction = hasReportedInteraction;
-    }
-
-    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    public boolean getHasReportedInteraction() {
-        return mHasReportedInteraction;
-    }
-
-    /** Sets the time the last interaction event was sent, and notifies the observer. */
-    @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setInteractionEventTime(long interactionEventTime) {
-        mInteractionEventTime = interactionEventTime;
-        mObserver.onInteractionEventTimeChanged(mInteractionEventTime);
-    }
-
-    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    public long getInteractionEventTime() {
-        return mInteractionEventTime;
-    }
-
-    /**
-     * Sets the time the process became foreground for interaction purposes, and notifies the
-     * observer.
-     */
-    @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setFgInteractionTime(long fgInteractionTime) {
-        mFgInteractionTime = fgInteractionTime;
-        mObserver.onFgInteractionTimeChanged(mFgInteractionTime);
-    }
-
-    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    public long getFgInteractionTime() {
-        return mFgInteractionTime;
-    }
-
     @GuardedBy("mServiceLock")
     public void setForcingToImportant(Object forcingToImportant) {
         mForcingToImportant = forcingToImportant;
@@ -1263,21 +1178,6 @@ public abstract class ProcessRecordInternal {
     @GuardedBy("mServiceLock")
     public void setLruSeq(int lruSeq) {
         mLruSeq = lruSeq;
-    }
-
-    /**
-     * Sets the uptime in milliseconds when the process last became unimportant, and notifies the
-     * observer.
-     */
-    @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setWhenUnimportant(long whenUnimportant) {
-        mWhenUnimportant = whenUnimportant;
-        mObserver.onWhenUnimportantChanged(mWhenUnimportant);
-    }
-
-    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    public long getWhenUnimportant() {
-        return mWhenUnimportant;
     }
 
     @GuardedBy("mServiceLock")
@@ -1689,19 +1589,6 @@ public abstract class ProcessRecordInternal {
      */
     @GuardedBy({"mServiceLock", "mProcLock"})
     public void dump(PrintWriter pw, String prefix, long nowUptime) {
-        if (mHasReportedInteraction || mFgInteractionTime != 0) {
-            pw.print(prefix); pw.print("reportedInteraction=");
-            pw.print(mHasReportedInteraction);
-            if (mInteractionEventTime != 0) {
-                pw.print(" time=");
-                TimeUtils.formatDuration(mInteractionEventTime, SystemClock.elapsedRealtime(), pw);
-            }
-            if (mFgInteractionTime != 0) {
-                pw.print(" fgInteractionTime=");
-                TimeUtils.formatDuration(mFgInteractionTime, SystemClock.elapsedRealtime(), pw);
-            }
-            pw.println();
-        }
         pw.print(prefix); pw.print("adjSeq="); pw.print(mAdjSeq);
         pw.print(" lruSeq="); pw.println(mLruSeq);
         pw.print(prefix); pw.print("oom adj: max="); pw.print(mMaxAdj);
@@ -1758,12 +1645,6 @@ public abstract class ProcessRecordInternal {
             pw.print(prefix);
             pw.print("foregroundActivities="); pw.print(mHasForegroundActivities);
             pw.print(" (rep="); pw.print(mRepForegroundActivities); pw.println(")");
-        }
-        if (mSetProcState > ActivityManager.PROCESS_STATE_SERVICE) {
-            pw.print(prefix);
-            pw.print("whenUnimportant=");
-            TimeUtils.formatDuration(mWhenUnimportant - nowUptime, pw);
-            pw.println();
         }
         if (mLastTopTime > 0) {
             pw.print(prefix); pw.print("lastTopTime=");
