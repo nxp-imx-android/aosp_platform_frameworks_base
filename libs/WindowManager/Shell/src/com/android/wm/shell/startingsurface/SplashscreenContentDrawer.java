@@ -116,6 +116,7 @@ public class SplashscreenContentDrawer {
      * to show before the icon animation finishes.
      */
     static final long MAX_ANIMATION_DURATION = MINIMAL_ANIMATION_DURATION + TIME_WINDOW_DURATION;
+    private final long mMinimumIconShowDuration;
 
     private final Context mContext;
     private final HighResIconProvider mHighResIconProvider;
@@ -140,10 +141,12 @@ public class SplashscreenContentDrawer {
 
     private UiModeManager mUiModeManager = null;
 
-    SplashscreenContentDrawer(Context context, IconProvider iconProvider, TransactionPool pool) {
+    SplashscreenContentDrawer(Context context, IconProvider iconProvider, TransactionPool pool,
+            long minimumIconShowDuration) {
         mContext = context;
         mHighResIconProvider = new HighResIconProvider(mContext, iconProvider);
         mTransactionPool = pool;
+        mMinimumIconShowDuration = minimumIconShowDuration;
 
         // Initialize Splashscreen worker thread
         // TODO(b/185288910) move it into WMShellConcurrencyModule and provide an executor to make
@@ -546,20 +549,20 @@ public class SplashscreenContentDrawer {
     }
 
     /**
-     * Get an optimal animation duration to keep the splash screen from showing.
+     * Get the optimal duration for showing the splash screen.
      *
-     * @param animationDuration The animation duration defined from app.
+     * @param iconShowDuration The icon duration defined from app or system.
      * @param appReadyDuration The real duration from the starting the app to the first app window
      *                         drawn.
      */
     @VisibleForTesting
-    static long getShowingDuration(long animationDuration, long appReadyDuration) {
-        if (animationDuration <= appReadyDuration) {
+    static long getShowingDuration(long iconShowDuration, long appReadyDuration) {
+        if (iconShowDuration <= appReadyDuration) {
             // app window ready took longer time than animation, it can be removed ASAP.
             return appReadyDuration;
         }
         if (appReadyDuration < MAX_ANIMATION_DURATION) {
-            if (animationDuration > MAX_ANIMATION_DURATION
+            if (iconShowDuration > MAX_ANIMATION_DURATION
                     || appReadyDuration < MINIMAL_ANIMATION_DURATION) {
                 // animation is too long or too short, cut off with minimal duration
                 return MINIMAL_ANIMATION_DURATION;
@@ -1229,9 +1232,9 @@ public class SplashscreenContentDrawer {
             return;
         }
         final long appReadyDuration = SystemClock.uptimeMillis() - createTime;
-        final long animDuration = view.getIconAnimationDuration() != null
-                ? view.getIconAnimationDuration().toMillis() : 0;
-        final long minimumShowingDuration = getShowingDuration(animDuration, appReadyDuration);
+        final long iconShowDuration = view.getIconAnimationDuration() != null
+                ? view.getIconAnimationDuration().toMillis() : mMinimumIconShowDuration;
+        final long minimumShowingDuration = getShowingDuration(iconShowDuration, appReadyDuration);
         final long delayed = minimumShowingDuration - appReadyDuration;
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_STARTING_WINDOW,
                 "applyExitAnimation delayed: %s", delayed);
