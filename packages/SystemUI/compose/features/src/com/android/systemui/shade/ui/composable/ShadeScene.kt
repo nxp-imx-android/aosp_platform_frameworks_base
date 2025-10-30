@@ -107,6 +107,7 @@ import kotlinx.coroutines.flow.Flow
 
 object Shade {
     object Elements {
+        val ShadeElement = ElementKey("ShadeElement")
         val BackgroundScrim =
             ElementKey("ShadeBackgroundScrim", contentPicker = LowestZIndexContentPicker)
     }
@@ -157,6 +158,7 @@ constructor(
             }
         val isShadeBlurred = viewModel.isShadeBlurred
         val shadeBlurRadius = with(LocalDensity.current) { viewModel.shadeBlurRadius.toDp() }
+        modifier.element(Shade.Elements.ShadeElement)
         ShadeScene(
             notificationStackScrollView.get(),
             viewModel = viewModel,
