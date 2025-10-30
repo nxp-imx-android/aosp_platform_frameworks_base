@@ -838,6 +838,61 @@ public class SystemConfigTest {
         assertThat(blocklist).doesNotContain("com.sony.product2.app");
     }
 
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    public void testAppLockExemptPackages_flagDisabled() throws Exception {
+        final String appLockExempt =
+                "<config>\n"
+                        + "    <app-lock-exempt package=\"com.product1.app\"/>\n"
+                        + "    <app-lock-exempt package=\"com.product2.app\"/>\n"
+                        + "</config>\n";
+        final File folder = createTempSubfolder("folder");
+        createTempFile(folder, "app_lock_exempt.xml", appLockExempt);
+
+        readPermissions(folder, /* Grant all permission flags */ ~0);
+
+        // When the flag is disabled, the config should not be parsed.
+        assertThat(mSysConfig.getAppLockExemptPackages()).isEmpty();
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    public void testAppLockExemptPackages() throws Exception {
+        final String appLockExempt =
+                "<config>\n"
+                        + "    <app-lock-exempt package=\"com.product1.app\"/>\n"
+                        + "    <app-lock-exempt package=\"com.product2.app\"/>\n"
+                        + "</config>\n";
+        final File folder = createTempSubfolder("folder");
+        createTempFile(folder, "app_lock_exempt.xml", appLockExempt);
+
+        readPermissions(folder, /* Grant all permission flags */ ~0);
+
+        assertThat(mSysConfig.getAppLockExemptPackages()).contains("com.product1.app");
+        assertThat(mSysConfig.getAppLockExemptPackages()).contains("com.product2.app");
+        assertThat(mSysConfig.getAppLockExemptPackages()).doesNotContain("com.product3.app");
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    public void testAppLockExemptPackages_incorrectElement() throws Exception {
+        final String appLockExempt =
+                "<config>\n"
+                        + "    <app-lock-exempt package=\"com.product1.app\"/>\n"
+                        // Misspelled tag
+                        + "    <app-lock-exempted package=\"com.product2.app\"/>\n"
+                        // Misspelled attribute
+                        + "    <app-lock-exempt pakage=\"com.product3.app\"/>\n"
+                        + "    <app-lock-exempt />\n" // Missing attribute
+                        + "</config>\n";
+        final File folder = createTempSubfolder("folder");
+        createTempFile(folder, "app_lock_exempt.xml", appLockExempt);
+
+        readPermissions(folder, /* Grant all permission flags */ ~0);
+
+        assertThat(mSysConfig.getAppLockExemptPackages()).containsExactly("com.product1.app");
+    }
+
     /**
      * Tests that readPermissions works correctly for the tag: {@code strict-signature-required}.
      * when the verified dexopt aconfig flag is enabled.
