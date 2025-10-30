@@ -360,6 +360,15 @@ public class PackageStateMutator {
 
             @NonNull
             @Override
+            public PackageUserStateWrite setAppLockEnabled(boolean enabled) {
+                if (mUserState != null) {
+                    mUserState.setAppLockEnabled(enabled);
+                }
+                return this;
+            }
+
+            @NonNull
+            @Override
             public PackageUserStateWrite putSuspendParams(@NonNull UserPackage suspendingPackage,
                     @Nullable SuspendParams suspendParams) {
                 if (mUserState != null) {

@@ -209,6 +209,13 @@ public interface PackageUserState {
     boolean isSuspended();
 
     /**
+     * Query whether App Lock has been enabled.
+     *
+     * @hide
+     */
+    boolean isAppLockEnabled();
+
+    /**
      * @return whether the package was installed as a virtual preload, which may be done as part
      * of device infrastructure auto installation outside of the initial device image
      * @hide

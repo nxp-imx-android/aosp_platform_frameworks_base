@@ -36,7 +36,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PathPermission;
 import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
-import android.content.pm.UsesPermissionPurposeInfo;
 import android.content.pm.ProcessInfo;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ServiceInfo;
@@ -44,6 +43,7 @@ import android.content.pm.SharedLibraryInfo;
 import android.content.pm.Signature;
 import android.content.pm.SigningDetails;
 import android.content.pm.SigningInfo;
+import android.content.pm.UsesPermissionPurposeInfo;
 import android.content.pm.ValidGeneralPurposeInfo;
 import android.content.pm.ValidPurposeInfo;
 import android.content.pm.overlay.OverlayPaths;
@@ -446,6 +446,9 @@ public class PackageInfoUtils {
         if (!state.isInstalled() && !state.dataExists()) {
             // The data dir has been deleted
             ai.dataDir = null;
+        }
+        if ((flags & PackageManager.GET_APP_LOCK_INFO) != 0) {
+            ai.isAppLockEnabled = state.isAppLockEnabled();
         }
     }
 

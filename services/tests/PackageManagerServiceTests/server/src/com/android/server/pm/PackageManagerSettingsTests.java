@@ -59,6 +59,8 @@ import android.os.Message;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -618,6 +620,80 @@ public class PackageManagerSettingsTests {
     public void testPackageRestrictionsSuspendedDefault() {
         final PackageSetting defaultSetting = createPackageSetting(PACKAGE_NAME_1);
         assertThat(defaultSetting.getUserStateOrDefault(0).isSuspended(), is(false));
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    public void testPackageRestrictions_appLockDefaultStateIsSet() {
+        final PackageSetting packageSetting = createPackageSetting(PACKAGE_NAME_1);
+
+        Truth.assertThat(packageSetting.getUserStateOrDefault(0).isAppLockEnabled()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    public void testPackageRestrictions_writeAppLockGetsRead() {
+        final PackageSetting packageSetting = createPackageSetting(PACKAGE_NAME_1);
+        packageSetting.modifyUserState(0).setAppLockEnabled(true);
+
+        Truth.assertThat(packageSetting.getUserStateOrDefault(0).isAppLockEnabled()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    public void testPackageRestrictions_appLockPersistsAfterBoot() {
+        Settings settings = makeSettings();
+        final PackageSetting packageSettings = createPackageSetting(PACKAGE_NAME_1);
+        packageSettings.setAppId(Process.FIRST_APPLICATION_UID);
+        packageSettings.setPkg(PackageImpl.forTesting(PACKAGE_NAME_1).hideAsParsed().setUid(
+                packageSettings.getAppId()).hideAsFinal());
+        packageSettings.modifyUserState(0).setAppLockEnabled(true);
+        settings.mPackages.put(PACKAGE_NAME_1, packageSettings);
+        settings.writeLPr(computer, /*sync=*/ true);
+
+        // Reboot simulation
+        settings.mPackages.clear();
+
+        Truth.assertThat(settings.readLPw(computer, createFakeUsers())).isTrue();
+        Truth.assertThat(settings.getPackageLPr(PACKAGE_NAME_1).isAppLockEnabled(0)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    public void testPackageRestrictions_appLockStateFalseAfterUninstallAndReinstall() {
+        Settings settings = makeSettings();
+        final PackageSetting packageSettings = createPackageSetting(PACKAGE_NAME_1);
+        packageSettings.setAppId(Process.FIRST_APPLICATION_UID);
+        packageSettings.setPkg(PackageImpl.forTesting(PACKAGE_NAME_1).hideAsParsed().setUid(
+                packageSettings.getAppId()).hideAsFinal());
+        packageSettings.modifyUserState(0).setAppLockEnabled(true);
+        settings.mPackages.put(PACKAGE_NAME_1, packageSettings);
+        settings.writeLPr(computer, /*sync=*/ true);
+        Truth.assertThat(settings.getPackageLPr(PACKAGE_NAME_1).isAppLockEnabled(0)).isTrue();
+
+        // uninstall
+        settings.mPackages.remove(PACKAGE_NAME_1, packageSettings);
+        settings.writeLPr(computer, /*sync=*/ true);
+
+        // Reboot simulation
+        settings.mPackages.clear();
+
+        // Reinstall
+        settings.mPackages.put(PACKAGE_NAME_1, createPackageSetting(PACKAGE_NAME_1));
+        settings.writeLPr(computer, /*sync=*/ true);
+
+        Truth.assertThat(settings.readLPw(computer, createFakeUsers())).isTrue();
+        Truth.assertThat(settings.getPackageLPr(PACKAGE_NAME_1).isAppLockEnabled(0)).isFalse();
+    }
+
+    @Test
+    @DisableFlags({android.security.Flags.FLAG_APP_LOCK_APIS})
+    public void testPackageRestrictions_appLockNotSet_whenFeatureDisabled() {
+        final PackageSetting packageSetting = createPackageSetting(PACKAGE_NAME_1);
+        packageSetting.modifyUserState(0).setAppLockEnabled(true);
+
+        // Verify that App Lock remains disabled, because the feature flag is disabled
+        Truth.assertThat(packageSetting.getUserStateOrDefault(0).isAppLockEnabled()).isFalse();
     }
 
     private void populateDefaultSettings(Settings settings) {
@@ -1469,7 +1545,8 @@ public class PackageManagerSettingsTests {
         origPkgSetting01.setUserState(0, 100, 100, 1, true, false, false, false, 0, null, false,
                 false, "lastDisabledCaller", new ArraySet<>(new String[]{"enabledComponent1"}),
                 new ArraySet<>(new String[]{"disabledComponent1"}), 0, 0, "harmfulAppWarning",
-                "splashScreenTheme", 1000L, PackageManager.USER_MIN_ASPECT_RATIO_UNSET, null);
+                "splashScreenTheme", 1000L, PackageManager.USER_MIN_ASPECT_RATIO_UNSET, null,
+                false);
         final PersistableBundle appExtras1 = createPersistableBundle(
                 PACKAGE_NAME_1, 1L, 0.01, true, "appString1");
         final PersistableBundle launcherExtras1 = createPersistableBundle(
@@ -2304,6 +2381,7 @@ public class PackageManagerSettingsTests {
                 && userState.isStopped() == oldUserState.isStopped()
                 && userState.isInstalled() == oldUserState.isInstalled()
                 && userState.isSuspended() == oldUserState.isSuspended()
+                && userState.isAppLockEnabled() == oldUserState.isAppLockEnabled()
                 && userState.isNotLaunched() == oldUserState.isNotLaunched()
                 && userState.isInstantApp() == oldUserState.isInstantApp()
                 && userState.isVirtualPreload() == oldUserState.isVirtualPreload()
