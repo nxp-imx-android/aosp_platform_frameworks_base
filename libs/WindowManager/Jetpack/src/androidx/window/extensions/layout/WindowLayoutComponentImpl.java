@@ -24,6 +24,8 @@ import static androidx.window.common.ExtensionHelper.rotateRectToDisplayRotation
 import static androidx.window.common.ExtensionHelper.transformToWindowSpaceRect;
 import static androidx.window.common.layout.CommonFoldingFeature.COMMON_STATE_FLAT;
 import static androidx.window.common.layout.CommonFoldingFeature.COMMON_STATE_HALF_OPENED;
+import static androidx.window.extensions.layout.UiContextUtils.assertUiContext;
+import static androidx.window.extensions.layout.UiContextUtils.dumpAllBaseContextToString;
 
 import android.app.Activity;
 import android.app.ActivityThread;
@@ -31,24 +33,17 @@ import android.app.Application;
 import android.app.WindowConfiguration;
 import android.content.ComponentCallbacks;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.res.Configuration;
 import android.graphics.Rect;
-import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.StrictMode;
-import android.os.Trace;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
-import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
-import android.view.WindowManager;
 
 import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
@@ -68,8 +63,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 /**
  * Reference implementation of androidx.window.extensions.layout OEM interface for use with
@@ -160,11 +153,8 @@ public class WindowLayoutComponentImpl implements WindowLayoutComponent {
         if (injectedEngagementModeListener != null) {
             mEngagementModeListener = injectedEngagementModeListener;
         } else {
-            if (com.android.window.flags.Flags.deviceEngagementMode()) {
-                mEngagementModeListener = new SystemApiEngagementModeListener(context);
-            } else {
-                mEngagementModeListener = new SideChannelEngagementModeListener(context);
-            }
+            mEngagementModeListener = EngagementModeUpdateListener.create(
+                    context, this::onEngagementModeChanged, this::getActiveValidDisplayIds);
         }
     }
 
@@ -238,30 +228,7 @@ public class WindowLayoutComponentImpl implements WindowLayoutComponent {
         }
     }
 
-    @NonNull
-    @UiContext
-    private Context getOrCreateUiContext(Context context) {
-        if (context.isUiContext()) {
-            return context;
-        }
-        final int displayId = context.getDisplayId();
-        final Display display = context.getSystemService(DisplayManager.class)
-                .getDisplay(displayId);
-        Log.w(TAG, "Requested context is a non-UI Context. Creating a UI-Context with display: "
-                + displayId + ". Context: " + dumpAllBaseContextToString(context));
-        return context.createWindowContext(
-                display, WindowManager.LayoutParams.TYPE_APPLICATION, null /* options */);
-    }
 
-    @NonNull
-    private String dumpAllBaseContextToString(@NonNull Context context) {
-        final StringBuilder builder = new StringBuilder("Context=" + context);
-        while ((context instanceof ContextWrapper wrapper) && wrapper.getBaseContext() != null) {
-            context = wrapper.getBaseContext();
-            builder.append(", of which baseContext=").append(context);
-        }
-        return builder.toString();
-    }
 
     @Override
     public void removeWindowLayoutInfoListener(
@@ -350,6 +317,19 @@ public class WindowLayoutComponentImpl implements WindowLayoutComponent {
             }
         }
         return false;
+    }
+
+    private Set<Integer> getActiveValidDisplayIds() {
+        final Set<Integer> displayIds = new ArraySet<>();
+        synchronized (mLock) {
+            for (final Context c : getContextsListeningForLayoutChanges()) {
+                final int contextDisplayId = c.getAssociatedDisplayId();
+                if (contextDisplayId != INVALID_DISPLAY) {
+                    displayIds.add(contextDisplayId);
+                }
+            }
+        }
+        return displayIds;
     }
 
     /**
@@ -511,25 +491,6 @@ public class WindowLayoutComponentImpl implements WindowLayoutComponent {
     @NonNull
     public SupportedWindowFeatures getSupportedWindowFeatures() {
         return mSupportedWindowFeatures;
-    }
-
-    private void assertUiContext(@NonNull Context context) {
-        final IllegalArgumentException exception = new IllegalArgumentException(
-                "Context must be a UI Context with display association, which should be "
-                        + "an Activity, WindowContext or InputMethodService");
-        if (!context.isUiContext()) {
-            throw exception;
-        }
-        if (context.getAssociatedDisplayId() == INVALID_DISPLAY) {
-            // This is to identify if #isUiContext of a non-UI Context is overridden.
-            // #isUiContext is more likely to be overridden than #getAssociatedDisplayId
-            // since #isUiContext is a public API.
-            StrictMode.onIncorrectContextUsed("The given context is a UI context, "
-                    + "but it is not associated with any display. "
-                    + "This context may not receive WindowLayoutInfo updates and "
-                    + "may get an empty WindowLayoutInfo return value. "
-                    + dumpAllBaseContextToString(context), exception);
-        }
     }
 
     /** @see #getWindowLayoutInfo(Context, List) */
@@ -715,128 +676,7 @@ public class WindowLayoutComponentImpl implements WindowLayoutComponent {
         }
     }
 
-    @VisibleForTesting
-    interface EngagementModeUpdateListener {
-        void register(int displayId);
-        void unregister();
-    }
 
-    private class SystemApiEngagementModeListener implements EngagementModeUpdateListener {
-        private final WindowManager mWindowManager;
-        private final java.util.function.Consumer<WindowManager.DisplayEngagementModeState>
-                mCallback;
-        private final Executor mMainExecutor;
-        private final Executor mBackgroundExecutor;
-        private boolean mIsRegistered = false;
-
-        SystemApiEngagementModeListener(@NonNull Context context) {
-            final Context uiContext = getOrCreateUiContext(context);
-            assertUiContext(uiContext);
-            // WindowManager and its APIs should be only be accessed from UI Context.
-            mWindowManager = uiContext.getSystemService(WindowManager.class);
-            mMainExecutor = uiContext.getMainExecutor();
-            mBackgroundExecutor = Executors.newSingleThreadExecutor();
-            mCallback = state -> onEngagementModeChanged(state.getDisplayId(),
-                    state.getEngagementModeFlags());
-        }
-
-        @Override
-        public void register(int displayId) {
-            mBackgroundExecutor.execute(() -> {
-                Trace.beginSection("WindowManager#registerDisplayEngagementModeCallback");
-                try {
-                    if (!mIsRegistered) {
-                        // The callback will be executed on the main thread.
-                        mWindowManager.registerDisplayEngagementModeCallback(mMainExecutor,
-                                mCallback);
-                        mIsRegistered = true;
-                    }
-                } finally {
-                    Trace.endSection();
-                }
-
-                Trace.beginSection("WindowManager#getDisplayEngagementMode");
-                try {
-                    final int currentMode = mWindowManager.getDisplayEngagementMode(displayId);
-                    // Trigger an initial update of the engagement mode on the main thread.
-                    mMainExecutor.execute(() -> {
-                        onEngagementModeChanged(displayId, currentMode);
-                    });
-                } finally {
-                    Trace.endSection();
-                }
-            });
-        }
-
-        @Override
-        public void unregister() {
-            if (!mIsRegistered) return;
-            mBackgroundExecutor.execute(() -> {
-                Trace.beginSection("WindowManager#unregisterDisplayEngagementModeCallback");
-                try {
-                    mWindowManager.unregisterDisplayEngagementModeCallback(mCallback);
-                    mIsRegistered = false;
-                } finally {
-                    Trace.endSection();
-                }
-            });
-        }
-    }
-
-    private class SideChannelEngagementModeListener implements EngagementModeUpdateListener {
-        private final EngagementModeClient mClient;
-        private java.util.function.Consumer<Integer> mCallback;
-        private boolean mIsRegistered = false;
-
-        SideChannelEngagementModeListener(@NonNull Context context) {
-            if (com.android.window.flags.Flags.deviceEngagementMode()) {
-                final Context uiContext = getOrCreateUiContext(context);
-                assertUiContext(uiContext);
-                // Side channel engagement mode should be accessed from UI Context.
-                mClient = new EngagementModeClientImpl(
-                        uiContext, new Handler(Looper.getMainLooper()));
-            } else {
-                mClient = new NoOpEngagementModeClient();
-            }
-        }
-
-        @Override
-        public void register(int displayId) {
-            if (!mIsRegistered) {
-                mCallback = mode -> {
-                    final Set<Integer> displayIds = new ArraySet<>();
-                    synchronized (mLock) {
-                        for (final Context c : getContextsListeningForLayoutChanges()) {
-                            final int contextDisplayId = c.getAssociatedDisplayId();
-                            if (contextDisplayId != INVALID_DISPLAY) {
-                                displayIds.add(contextDisplayId);
-                            }
-                        }
-                    }
-                    // The engagement mode callback in the side-channel case is global, so all
-                    // displays should be updated.
-                    for (final Integer id : displayIds) {
-                        onEngagementModeChanged(id, mode);
-                    }
-                };
-                mClient.addUpdateCallback(Runnable::run, mCallback);
-                mIsRegistered = true;
-            }
-            synchronized (mLock) {
-                mLastReportedEngagementModes.put(displayId, mClient.getEngagementModeFlags());
-            }
-        }
-
-        @Override
-        public void unregister() {
-            if (!mIsRegistered) return;
-            if (mCallback != null) {
-                mClient.removeUpdateCallback(mCallback);
-                mCallback = null;
-            }
-            mIsRegistered = false;
-        }
-    }
 
     @VisibleForTesting
     interface DisplayStateProvider {

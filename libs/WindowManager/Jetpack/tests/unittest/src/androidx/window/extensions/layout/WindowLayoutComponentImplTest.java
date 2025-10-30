@@ -19,7 +19,6 @@ package androidx.window.extensions.layout;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -91,7 +90,7 @@ public class WindowLayoutComponentImplTest {
     private Activity mMockActivity;
 
     @Mock
-    private WindowLayoutComponentImpl.EngagementModeUpdateListener mMockEngagementModeListener;
+    private EngagementModeUpdateListener mMockEngagementModeListener;
 
     @Before
     public void setUp() {
@@ -286,7 +285,7 @@ public class WindowLayoutComponentImplTest {
         // Trigger the callback to simulate an engagement mode change from the system.
         callbackCaptor.getValue().accept(state);
 
-        verify(consumer, atLeastOnce()).accept(layoutInfoCaptor.capture());
+        verify(consumer, timeout(TIMEOUT_MS).atLeastOnce()).accept(layoutInfoCaptor.capture());
         final WindowLayoutInfo lastLayoutInfo =
                 layoutInfoCaptor.getValue();
         assertThat(lastLayoutInfo.getEngagementModeFlags()).isEqualTo(expectedMode);
@@ -360,19 +359,25 @@ public class WindowLayoutComponentImplTest {
     private static class TestUiContext extends ContextWrapper {
 
         private final WindowManager mWindowManager;
+        private final int mDisplayId;
 
         TestUiContext(Context base) {
-            this(base, null);
+            this(base, null, Display.DEFAULT_DISPLAY);
         }
 
         TestUiContext(Context base, WindowManager windowManager) {
+            this(base, windowManager, Display.DEFAULT_DISPLAY);
+        }
+
+        TestUiContext(Context base, WindowManager windowManager, int displayId) {
             super(base);
             mWindowManager = windowManager;
+            mDisplayId = displayId;
         }
 
         @Override
         public int getAssociatedDisplayId() {
-            return Display.DEFAULT_DISPLAY;
+            return mDisplayId;
         }
 
         @Override
