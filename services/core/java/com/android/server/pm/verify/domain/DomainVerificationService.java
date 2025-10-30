@@ -862,7 +862,8 @@ public class DomainVerificationService extends SystemService
     }
 
     @NonNull
-    public List<DomainOwner> getOwnersForDomain(@NonNull String domain, @UserIdInt int userId) {
+    public List<DomainOwner> getOwnersForDomain(@NonNull String domain, @UserIdInt int userId,
+            boolean includeUnverifiedOwners) {
         Objects.requireNonNull(domain);
         mEnforcer.assertOwnerQuerent(mConnection.getCallingUid(), mConnection.getCallingUserId(),
                 userId);
@@ -878,6 +879,12 @@ public class DomainVerificationService extends SystemService
         int size = levelToPackages.size();
         for (int index = 0; index < size; index++) {
             int level = levelToPackages.keyAt(index);
+            if (android.content.pm.Flags.enableQueryDomainVerification()
+                    && !includeUnverifiedOwners
+                    && level != APPROVAL_LEVEL_VERIFIED) {
+                // We only want to include verified owners, hence skipping otherwise.
+                continue;
+            }
             boolean overrideable = level <= APPROVAL_LEVEL_SELECTION;
             List<String> packages = levelToPackages.valueAt(index);
             int packagesSize = packages.size();
