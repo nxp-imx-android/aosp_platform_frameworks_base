@@ -609,9 +609,10 @@ public class OomAdjusterImpl extends OomAdjuster {
 
     OomAdjusterImpl(ActivityManagerService service, ProcessListInternal processList,
             ActiveUidsInternal activeUids, ServiceThread adjusterThread, Constants oomConstants,
-            GlobalState globalState, Injector injector, Callback callback) {
+            GlobalState globalState, Injector injector, Callback callback,
+            StateGetter stateGetter) {
         super(service, processList, activeUids, adjusterThread, oomConstants, globalState, injector,
-                callback);
+                callback, stateGetter);
     }
 
     private final ProcessRecordNodes mProcessRecordProcStateNodes = new ProcessRecordNodes(

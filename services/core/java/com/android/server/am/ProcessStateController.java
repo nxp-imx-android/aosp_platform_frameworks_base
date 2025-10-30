@@ -88,10 +88,11 @@ public class ProcessStateController {
             ActiveUidsInternal activeUids, ServiceThread handlerThread,
             Object lock, Object procLock, Consumer<ProcessRecord> topChangeCallback,
             ProcessLruUpdater lruUpdater, OomAdjuster.Injector oomAdjInjector,
-            OomAdjuster.Constants oomConstants, OomAdjuster.Callback callback) {
+            OomAdjuster.Constants oomConstants, OomAdjuster.Callback callback,
+            OomAdjuster.StateGetter stateGetter) {
         mOomConstants = oomConstants;
         mOomAdjuster = new OomAdjusterImpl(ams, processList, activeUids, handlerThread,
-                mOomConstants, mGlobalState, oomAdjInjector, callback);
+                mOomConstants, mGlobalState, oomAdjInjector, callback, stateGetter);
 
         mLock = lock;
         mProcLock = procLock;
@@ -1177,6 +1178,7 @@ public class ProcessStateController {
         private final ActiveUidsInternal mActiveUids;
         private final OomAdjuster.Constants mOomConstants;
         private final OomAdjuster.Callback mOomAdjCallback;
+        private final OomAdjuster.StateGetter mOomAdjStateGetter;
 
         private ServiceThread mHandlerThread = null;
         private Object mLock = null;
@@ -1186,12 +1188,13 @@ public class ProcessStateController {
 
         public Builder(ActivityManagerService ams, ProcessListInternal processList,
                 ActiveUidsInternal activeUids, OomAdjuster.Constants oomConstants,
-                OomAdjuster.Callback oomAdjCallback) {
+                OomAdjuster.Callback oomAdjCallback, OomAdjuster.StateGetter oomAdjStateGetter) {
             mAms = ams;
             mProcessList = processList;
             mActiveUids = activeUids;
             mOomConstants = oomConstants;
             mOomAdjCallback = oomAdjCallback;
+            mOomAdjStateGetter = oomAdjStateGetter;
         }
 
         /**
@@ -1220,7 +1223,7 @@ public class ProcessStateController {
             }
             return new ProcessStateController(mAms, mProcessList, mActiveUids, mHandlerThread,
                     mLock, mAms.mProcLock, mTopChangeCallback, mProcessLruUpdater, mOomAdjInjector,
-                    mOomConstants, mOomAdjCallback);
+                    mOomConstants, mOomAdjCallback, mOomAdjStateGetter);
         }
 
         /**

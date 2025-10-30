@@ -128,7 +128,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.ServiceInfo;
 import android.net.NetworkPolicyManager;
 import android.os.Handler;
-import android.os.PowerManagerInternal;
 import android.os.Process;
 import android.os.SystemClock;
 import android.util.ArraySet;
@@ -318,6 +317,7 @@ public abstract class OomAdjuster {
     protected final int[] mTmpSchedGroup = new int[1];
 
     final Callback mCallback;
+    final StateGetter mStateGetter;
     final ActivityManagerService mService;
     final Injector mInjector;
     protected final Constants mOomConstants;
@@ -443,6 +443,16 @@ public abstract class OomAdjuster {
          */
         void onOomAdjUpdated(int adjSeq);
 
+        /**
+         * Notifies after OOM adjustment values are updated for all processes and memory trimming
+         * has been performed.
+         *
+         * @param numCached The number of processes in a cached state.
+         * @param numEmpty The number of empty processes.
+         * @param now The uptime timestamp of this event.
+         */
+        void onProcessUpdatedAndTrimmed(int numCached, int numEmpty, long now);
+
         /** Notifies when a process becomes effectively background restricted. */
         void onProcessBackgroundRestricted(ProcessRecordInternal app);
 
@@ -451,6 +461,19 @@ public abstract class OomAdjuster {
 
         /** Notifies when a debugging message related to OOM adjustments is reported. */
         void onReportOomAdjMessage(String msg);
+    }
+
+    /**
+     * An interface for providing global state information required by the OomAdjuster.
+     * TODO: b/302575389 - Remove it after the pushGlobalStateToOomadjuster flag is migrated.
+     */
+    public interface StateGetter {
+        /** Checks if the device is fully awake (not sleeping or dozing). */
+        boolean isDeviceFullyAwake();
+        /** Checks if the given application process is the current target for backup operations. */
+        boolean isBackupProcess(ProcessRecordInternal app);
+        /** Checks if the last reported memory pressure level was normal. */
+        boolean isLastMemoryLevelNormal();
     }
 
     @VisibleForTesting
@@ -570,7 +593,8 @@ public abstract class OomAdjuster {
 
     OomAdjuster(ActivityManagerService service, ProcessListInternal processList,
             ActiveUidsInternal activeUids, ServiceThread adjusterThread, Constants oomConstants,
-            GlobalState globalState, Injector injector, Callback callback) {
+            GlobalState globalState, Injector injector, Callback callback,
+            StateGetter stateGetter) {
         mCallback = callback;
         mService = service;
         mOomConstants = oomConstants;
@@ -579,6 +603,7 @@ public abstract class OomAdjuster {
         mProcessList = processList;
         mProcLock = service.mProcLock;
         mActiveUids = activeUids;
+        mStateGetter = stateGetter;
 
         mConstants = mService.mConstants;
 
@@ -1301,7 +1326,7 @@ public abstract class OomAdjuster {
 
         mLastFreeSwapPercent = freeSwapPercent;
 
-        mService.mAppProfiler.updateLowMemStateLSP(numCached, numEmpty, numTrimming, now);
+        mCallback.onProcessUpdatedAndTrimmed(numCached, numEmpty, now);
     }
 
     @GuardedBy({"mService", "mProcLock"})
@@ -1713,7 +1738,7 @@ public abstract class OomAdjuster {
         if (Flags.pushGlobalStateToOomadjuster()) {
             return mGlobalState.isAwake();
         } else {
-            return mService.mWakefulness.get() == PowerManagerInternal.WAKEFULNESS_AWAKE;
+            return mStateGetter.isDeviceFullyAwake();
         }
     }
 
@@ -1725,11 +1750,7 @@ public abstract class OomAdjuster {
         if (Flags.pushGlobalStateToOomadjuster()) {
             return app == mGlobalState.getBackupTarget(app.userId);
         } else {
-            final BackupRecord backupTarget = mService.mBackupTargets.get(app.userId);
-            if (backupTarget == null) {
-                return false;
-            }
-            return app == backupTarget.app;
+            return mStateGetter.isBackupProcess(app);
         }
     }
 
@@ -1737,7 +1758,7 @@ public abstract class OomAdjuster {
         if (Flags.pushGlobalStateToOomadjuster()) {
             return mGlobalState.isLastMemoryLevelNormal();
         } else {
-            return mService.mAppProfiler.isLastMemoryLevelNormal();
+            return mStateGetter.isLastMemoryLevelNormal();
         }
     }
 

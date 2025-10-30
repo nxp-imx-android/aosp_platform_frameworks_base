@@ -1339,7 +1339,7 @@ public class AppProfiler {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    void updateLowMemStateLSP(int numCached, int numEmpty, int numTrimming, long now) {
+    void updateLowMemStateLSP(int numCached, int numEmpty, long now) {
         int memFactor;
         if (mLowMemDetector != null && mLowMemDetector.isAvailable()) {
             memFactor = mLowMemDetector.getMemFactor();
@@ -1393,24 +1393,19 @@ public class AppProfiler {
 
         mCachedAppsWatermarkData.updateCachedAppsHighWatermarkIfNecessaryLocked(
                 numCached + numEmpty, now);
-        boolean allChanged;
-        int trackerMemFactor;
         synchronized (mService.mProcessStats.mLock) {
-            allChanged = mService.mProcessStats.setMemFactorLocked(memFactor,
+            mService.mProcessStats.setMemFactorLocked(memFactor,
                     mService.mAtmInternal == null || !mService.mAtmInternal.isSleeping(),
                     SystemClock.uptimeMillis() /* re-acquire the time within the lock */);
-            trackerMemFactor = mService.mProcessStats.getMemFactorLocked();
         }
 
         mLastMemoryLevel = memFactor;
-        mService.mProcessStateController.setIsLastMemoryLevelNormal(isLastMemoryLevelNormal());
         mLastNumProcesses = mService.mProcessList.getLruSizeLOSP();
 
         // Dispatch UI_HIDDEN to processes that need it
         mService.mProcessList.forEachLruProcessesLOSP(
                 true,
                 app -> {
-                    final ProcessProfileRecord profile = app.mProfile;
                     final IApplicationThread thread;
                     int procState = app.getCurProcState();
                     if (((procState >= ActivityManager.PROCESS_STATE_IMPORTANT_BACKGROUND
