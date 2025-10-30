@@ -26,6 +26,7 @@ import static com.android.internal.jank.InteractionJankMonitor.CUJ_SPLIT_SCREEN_
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_SPLIT_SCREEN_RESIZE;
 import static com.android.window.flags.Flags.enableNonDefaultDisplaySplit;
 import static com.android.wm.shell.common.split.DividerSnapAlgorithm.SNAP_FLEXIBLE_HYBRID;
+import static com.android.wm.shell.common.split.SplitScreenUtils.isFoldable;
 import static com.android.wm.shell.shared.animation.Interpolators.EMPHASIZED;
 import static com.android.wm.shell.shared.animation.Interpolators.FAST_OUT_SLOW_IN;
 import static com.android.wm.shell.shared.animation.Interpolators.LINEAR;
@@ -536,15 +537,16 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         mRotation = rotation;
         mDensity = density;
         mUiMode = uiMode;
-        mIsLargeScreen = configuration.smallestScreenWidthDp >= 600;
+        mIsLargeScreen = SplitScreenUtils.isLargeScreen(configuration);
         mIsLeftRightSplit = SplitScreenUtils.isLeftRightSplit(mAllowLeftRightSplitInPortrait,
                 configuration, displayId);
         mStatusBarHider.onLeftRightSplitUpdated(mIsLeftRightSplit);
+        mStatusBarHider.onFoldStateChanged(isFoldable(mContext.getResources()) &&
+                !mIsLargeScreen);
         updateLayouts();
         updateDividerConfig(mContext);
         initDividerPosition(mTempRect, wasLeftRightSplit);
         updateInvisibleRect();
-
         return true;
     }
 

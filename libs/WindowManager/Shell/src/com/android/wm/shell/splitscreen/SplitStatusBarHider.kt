@@ -72,11 +72,13 @@ class SplitStatusBarHider(
      * The height of the status bar, in pixels, in the current configuration.
      */
     private var statusBarHeight = 0
+    /** True if the device is both a foldable AND currently folded. */
+    private var isDeviceFolded = false
 
     private lateinit var displayToken: WindowContainerToken
     private val splitStateListener: SplitState.SplitStateChangeListener =
         SplitState.SplitStateChangeListener {
-            updateStatusBarBehavior(it, isLeftRightSplit, isSplitVisible)
+            updateStatusBarBehavior(it, isLeftRightSplit, isSplitVisible, isDeviceFolded)
         }
     private val systemBarOwner = Binder()
 
@@ -94,12 +96,20 @@ class SplitStatusBarHider(
      * behavior overrides to let other apps resume control.
      */
     fun onSplitVisibilityChanged(splitVisible: Boolean) {
-        updateStatusBarBehavior(currentSplitState, isLeftRightSplit, splitVisible)
+        updateStatusBarBehavior(currentSplitState, isLeftRightSplit, splitVisible, isDeviceFolded)
     }
 
     /** Call when leftRight split changes (device rotation, unfold, etc) */
     fun onLeftRightSplitUpdated(leftRightSplit: Boolean) {
-        updateStatusBarBehavior(currentSplitState, leftRightSplit, isSplitVisible)
+        updateStatusBarBehavior(currentSplitState, leftRightSplit, isSplitVisible, isDeviceFolded)
+    }
+
+    /**
+     * Call when device's fold state changes. If device is not a foldable this should not be
+     * called with true.
+     */
+    fun onFoldStateChanged(isFolded: Boolean) {
+        updateStatusBarBehavior(currentSplitState, isLeftRightSplit, isSplitVisible, isFolded)
     }
 
     fun onInsetsChanged(insetsState: InsetsState, rootBounds: Rect) {
@@ -118,10 +128,21 @@ class SplitStatusBarHider(
      *
      * Currently we request status bar overrides to hide whenever we're in leftRight split and in
      * 10:90/90:10 flexible split
+     *
+     * If [com.android.window.flags.Flags.showAppHandleLargeScreens()] is true, then we only use
+     * [splitVisible] and [isFolded].
+     * If it's not enabled, then all args except [isFolded] are used.
      */
     private fun updateStatusBarBehavior(splitState: Int, leftRightSplit: Boolean,
-                                        splitVisible: Boolean) {
+                                        splitVisible: Boolean, isFolded: Boolean) {
         if (!enableFlexibleTwoAppSplit()) {
+            return
+        }
+
+        // If appHandles are enabled, we want to always hide status bar when in an unfolded
+        // state. Moving towards a split screen default immersive on large screen world
+        if (com.android.window.flags.Flags.showAppHandleLargeScreens()) {
+            updateStatusBarForAppHandle(isFolded, splitVisible)
             return
         }
 
@@ -152,6 +173,40 @@ class SplitStatusBarHider(
         } else {
             ProtoLog.d(ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN,
                 "Updating status bar override to %s", shouldPutStatusBarInImmersive)
+            setStatusBarVisibilityOverride(shouldPutStatusBarInImmersive)
+        }
+    }
+
+    /**
+     * Similar to [updateStatusBarBehavior], except this should only run if the
+     * showAppHandleLargeScreens() flag is enabled. Will throw otherwise.
+     *
+     * Puts device into immersive mode when split is visible and device is unfolded.
+     */
+    private fun updateStatusBarForAppHandle(isFolded: Boolean, splitVisible: Boolean) {
+        if (!com.android.window.flags.Flags.showAppHandleLargeScreens()) {
+            throw IllegalStateException("showAppHandleLargeScreens() should be enabled")
+        }
+
+        val shouldPutStatusBarInImmersive = !isFolded && splitVisible
+
+        if (isFolded == isDeviceFolded &&
+            splitVisible == isSplitVisible &&
+            shouldPutStatusBarInImmersive == statusBarImmersiveForSplit) {
+            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN,
+                "Updating status bar for split, no change in state. AppHandle block")
+            return
+        }
+        isSplitVisible = splitVisible
+        isDeviceFolded = isFolded
+
+        if (shouldPutStatusBarInImmersive == statusBarImmersiveForSplit) {
+            // No change in override state
+            ProtoLog.d(ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN,
+                "No change in status bar override state. AppHandle block")
+        } else {
+            ProtoLog.d(ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN,
+                "Updating status bar override to %s AppHandle block", shouldPutStatusBarInImmersive)
             setStatusBarVisibilityOverride(shouldPutStatusBarInImmersive)
         }
     }
