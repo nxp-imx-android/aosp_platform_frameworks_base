@@ -35,9 +35,11 @@ import com.android.internal.annotations.VisibleForTesting;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -54,12 +56,8 @@ public abstract class ContextInsight {
     private static final String KEY_INSIGHT_ID = "key_insight_id";
     private static final String KEY_INSIGHT_TYPE = "key_insight_type";
     private static final String KEY_ORIGIN_HINTS = "key_origin_hints";
-
-    /**
-     * Bundle key used to store the data from the insight implementation, retrieved through
-     * {@link #toBundleImpl()}.
-     */
-    static final String KEY_INSIGHT_DATA = "key_insight_data";
+    private static final String KEY_TAGS = "key_tags";
+    private static final String KEY_INSIGHT_DATA = "key_insight_data";
 
     /**
      * Enumeration of insight types.
@@ -91,7 +89,8 @@ public abstract class ContextInsight {
      * @hide
      */
     @NonNull
-    private static final ContextInsight ERROR_INSIGHT = new ContextInsight() {
+    private static final ContextInsight ERROR_INSIGHT = new ContextInsight(
+            new ConstructorParams(Collections.emptySet(), Collections.emptySet())) {
         @Override
         @InsightType public int getInsightType() {
             return INSIGHT_TYPE_ERROR;
@@ -105,37 +104,19 @@ public abstract class ContextInsight {
     };
 
     private final UUID mId;
-    private final List<ContextHintWithSignature> mOriginHints;
+    private final Set<ContextHintWithSignature> mOriginHints;
+    private final Set<String> mTags;
 
     /**
-     * Internal constructor only for use by {@link #createInsightFromBundle(Bundle)}. This should be
-     * called by subclasses in their private constructors used for
-     * {@link #createInsightFromBundle(Bundle)}.
+     * Internal constructor for insights. This should be called by subclasses in their public
+     * constructors.
      *
      * @hide
      */
-    ContextInsight(@NonNull Bundle b) {
-        mId = UUID.fromString(Objects.requireNonNull(b.getString(KEY_INSIGHT_ID)));
-        mOriginHints = Collections.unmodifiableList(
-                Objects.requireNonNull(b.getParcelableArrayList(
-                        KEY_ORIGIN_HINTS, ContextHintWithSignature.class)));
-    }
-
-    /**
-     * Internal constructor for generating a new insight. This should be called by subclasses in
-     * their public constructors.
-     *
-     * @hide
-     */
-    ContextInsight(@NonNull List<ContextHintWithSignature> originHints) {
-        mId = UUID.randomUUID();
-        mOriginHints = Collections.unmodifiableList(Objects.requireNonNull(originHints));
-    }
-
-    /** Internal constructor for error insights. */
-    private ContextInsight() {
-        mId = UUID.randomUUID();
-        mOriginHints = Collections.emptyList();
+    ContextInsight(@NonNull ConstructorParams params) {
+        mId = params.mId;
+        mOriginHints = Collections.unmodifiableSet(new HashSet<>(params.mOriginHints));
+        mTags = Collections.unmodifiableSet(new HashSet<>(params.mTags));
     }
 
     /**
@@ -154,11 +135,9 @@ public abstract class ContextInsight {
         return mId;
     }
 
-    /**
-     * Returns the list of {@link ContextHint}s that were used to generate this insight.
-     */
+    /** Returns the set of {@link ContextHint}s that were used to generate this insight. */
     @NonNull
-    public final List<ContextHintWithSignature> getOriginHints() {
+    public final Set<ContextHintWithSignature> getOriginHints() {
         return mOriginHints;
     }
 
@@ -186,6 +165,12 @@ public abstract class ContextInsight {
         return renderTokenHint != null ? renderTokenHint.getRenderToken() : null;
     }
 
+    /** Returns the set of tags that were added to this insight. */
+    @NonNull
+    public final Set<String> getTags() {
+        return mTags;
+    }
+
     @NonNull abstract Bundle toBundleImpl();
 
     /**
@@ -199,6 +184,7 @@ public abstract class ContextInsight {
         b.putInt(KEY_INSIGHT_TYPE, getInsightType());
         b.putString(KEY_INSIGHT_ID, mId.toString());
         b.putParcelableArrayList(KEY_ORIGIN_HINTS, new ArrayList<>(mOriginHints));
+        b.putStringArrayList(KEY_TAGS, new ArrayList<>(mTags));
         b.putBundle(KEY_INSIGHT_DATA, toBundleImpl());
         return b;
     }
@@ -228,16 +214,79 @@ public abstract class ContextInsight {
         if (bundle == null) {
             return ERROR_INSIGHT;
         }
+
         final int type = bundle.getInt(KEY_INSIGHT_TYPE, INSIGHT_TYPE_ERROR);
+        final Bundle data = bundle.getBundle(KEY_INSIGHT_DATA);
+        final ConstructorParams constructorParams = new ConstructorParams(
+                UUID.fromString(bundle.getString(KEY_INSIGHT_ID)),
+                bundle.getParcelableArrayList(KEY_ORIGIN_HINTS, ContextHintWithSignature.class),
+                bundle.getStringArrayList(KEY_TAGS));
+
         try {
             return switch (type) {
-                case INSIGHT_TYPE_BUNDLE -> new BundleInsight(bundle);
-                case INSIGHT_TYPE_ACTIONABLE -> new ActionableInsight(bundle);
+                case INSIGHT_TYPE_BUNDLE -> new BundleInsight(constructorParams, data);
+                case INSIGHT_TYPE_ACTIONABLE -> new ActionableInsight(constructorParams, data);
                 default -> ERROR_INSIGHT;
             };
         } catch (Exception e) {
             Log.e(TAG, "Error creating insight", e);
             return ERROR_INSIGHT;
+        }
+    }
+
+    /**
+     * Parameters used to create a new {@link ContextInsight}.
+     *
+     * @hide
+     */
+    static class ConstructorParams {
+        private final UUID mId;
+        private final Collection<ContextHintWithSignature> mOriginHints;
+        private final Collection<String> mTags;
+
+        private ConstructorParams(
+                Collection<ContextHintWithSignature> originHints, Collection<String> tags) {
+            this(UUID.randomUUID(), originHints, tags);
+        }
+
+        private ConstructorParams(
+                UUID id,
+                Collection<ContextHintWithSignature> originHints,
+                Collection<String> tags) {
+            mId = id;
+            mOriginHints = originHints;
+            mTags = tags;
+        }
+
+        static final class Builder {
+            private final Set<ContextHintWithSignature> mOriginHints = new HashSet<>();
+            private final Set<String> mTags = new HashSet<>();
+
+            /**
+             * Adds an origin {@link ContextHint} to the resulting {@link BundleInsight}.
+             *
+             * @param hint the origin {@link ContextHint} to add
+             */
+            @NonNull
+            Builder addOriginHint(@NonNull ContextHintWithSignature hint) {
+                mOriginHints.add(hint);
+                return this;
+            }
+
+            /**
+             * Adds a tag to the resulting {@link ContextInsight}.
+             *
+             * @param tag the tag to add
+             */
+            @NonNull
+            Builder addTag(@NonNull String tag) {
+                mTags.add(tag);
+                return this;
+            }
+
+            ConstructorParams build() {
+                return new ConstructorParams(mOriginHints, mTags);
+            }
         }
     }
 }
