@@ -220,3 +220,13 @@ flag {
     bug: "415167460"
     is_exported: true
 }
+
+flag {
+    name: "enable_atomic_child_profile_lskf"
+    namespace: "security"
+    description: "Enable atomic cutover for child profile LSKF in LockSettingsService"
+    bug: "412331826"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
