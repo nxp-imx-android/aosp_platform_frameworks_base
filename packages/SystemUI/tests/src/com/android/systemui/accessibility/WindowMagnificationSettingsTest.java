@@ -70,6 +70,8 @@ import androidx.test.filters.SmallTest;
 import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.graphics.SfVsyncFrameCallbackProvider;
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.accessibility.AccessibilityLogger.MagnificationSettingsEvent;
+import com.android.systemui.accessibility.WindowMagnificationSettings.MagnificationSize;
 import com.android.systemui.common.ui.view.SeekBarWithIconButtonsView;
 import com.android.systemui.common.ui.view.SeekBarWithIconButtonsView.OnSeekBarWithIconButtonsChangeListener;
 import com.android.systemui.res.R;
@@ -108,6 +110,8 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     @Mock
     private WindowMagnificationSettingsCallback mWindowMagnificationSettingsCallback;
     private TestableWindowManager mWindowManager;
+    @Mock
+    private AccessibilityLogger mA11yLogger;
     private WindowMagnificationSettings mWindowMagnificationSettings;
     private MotionEventHelper mMotionEventHelper = new MotionEventHelper();
     private ArgumentCaptor<Float> mCallbackMagnifierScaleCaptor;
@@ -130,7 +134,7 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
 
         mWindowMagnificationSettings = new WindowMagnificationSettings(mContext,
                 mWindowMagnificationSettingsCallback, mSfVsyncFrameProvider,
-                mSecureSettings, mWindowManager);
+                mSecureSettings, mWindowManager, mA11yLogger);
 
         mSettingView = mWindowMagnificationSettings.getSettingView();
         mZoomSeekbar = mSettingView.findViewById(R.id.magnifier_zoom_slider);
@@ -310,6 +314,9 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
         verify(mWindowMagnificationSettingsCallback).onSetMagnifierSize(expectedSizeIndex);
         verify(mWindowMagnificationSettingsCallback)
                 .onModeSwitch(ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
+        verify(mA11yLogger).logWithPosition(
+                eq(MagnificationSettingsEvent.MAGNIFICATION_SETTINGS_WINDOW_SIZE_SELECTED),
+                eq(expectedSizeIndex));
     }
 
 
@@ -328,6 +335,9 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
 
         verify(mWindowMagnificationSettingsCallback)
                 .onModeSwitch(Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
+        verify(mA11yLogger).logWithPosition(
+                eq(MagnificationSettingsEvent.MAGNIFICATION_SETTINGS_WINDOW_SIZE_SELECTED),
+                eq(MagnificationSize.FULLSCREEN));
     }
 
     @Test
@@ -344,6 +354,9 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
 
         verify(mWindowMagnificationSettingsCallback).onEditMagnifierSizeMode(true);
         verify(mWindowManager).removeView(mSettingView);
+        verify(mA11yLogger).logWithPosition(
+                eq(MagnificationSettingsEvent.MAGNIFICATION_SETTINGS_WINDOW_SIZE_SELECTED),
+                eq(MagnificationSize.CUSTOM));
     }
 
     @Test
