@@ -22,9 +22,9 @@ import com.android.systemui.lifecycle.Activatable
 import com.android.systemui.screencapture.common.domain.model.TargetModel
 
 /** A view model for capture targets. */
-interface TargetViewModel<T : TargetModel> : Activatable {
+interface TargetViewModel : Activatable {
     /** The model that this view model is backed by */
-    val model: T
+    val model: TargetModel
     /** The icon associated with the target, if any. */
     val icon: Result<Bitmap>?
     /** The label associated with the target, if any. */

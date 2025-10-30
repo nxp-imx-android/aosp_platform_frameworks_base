@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureDisplayInteractor
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureDisplay
+import com.android.systemui.screencapture.common.domain.model.TargetModel
 import javax.inject.Inject
 
 /**
@@ -51,7 +52,12 @@ import javax.inject.Inject
  * }
  * ```
  */
-interface DisplaysViewModel : TargetsViewModel<ScreenCaptureDisplay>
+interface DisplaysViewModel : TargetsViewModel {
+    override val targets: State<List<ScreenCaptureDisplay>?>
+    override val selectedTarget: State<DisplayViewModel?>
+
+    override fun createViewModelFor(target: TargetModel): DisplayViewModel
+}
 
 /** The default implementation of [DisplaysViewModel]. */
 class DisplaysViewModelImpl
@@ -69,14 +75,13 @@ constructor(
 
     override val targets = interactor.displays.hydratedStateOf("DisplaysViewModel#displays", null)
 
-    private val _selectedTarget = mutableStateOf<TargetViewModel<ScreenCaptureDisplay>?>(null)
-    override val selectedTarget: State<TargetViewModel<ScreenCaptureDisplay>?> = _selectedTarget
+    private val _selectedTarget = mutableStateOf<DisplayViewModel?>(null)
+    override val selectedTarget: State<DisplayViewModel?> = _selectedTarget
 
-    override fun setSelectedTarget(target: TargetViewModel<ScreenCaptureDisplay>?) {
-        _selectedTarget.value = target
+    override fun setSelectedTarget(target: TargetViewModel?) {
+        _selectedTarget.value = target as DisplayViewModel?
     }
 
-    override fun createViewModelFor(
-        target: ScreenCaptureDisplay
-    ): TargetViewModel<ScreenCaptureDisplay> = displayViewModelFactory.create(target)
+    override fun createViewModelFor(target: TargetModel): DisplayViewModel =
+        displayViewModelFactory.create(target as ScreenCaptureDisplay)
 }

@@ -19,6 +19,7 @@ package com.android.systemui.screencapture.common.ui.viewmodel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
+import com.android.systemui.screencapture.common.domain.model.TargetModel
 import kotlinx.coroutines.awaitCancellation
 
 class FakeRecentTasksViewModel(
@@ -34,16 +35,15 @@ class FakeRecentTasksViewModel(
 
     override val targets: State<List<ScreenCaptureRecentTask>?> = _targets
 
-    private val _selectedTarget = mutableStateOf<TargetViewModel<ScreenCaptureRecentTask>?>(null)
-    override val selectedTarget: State<TargetViewModel<ScreenCaptureRecentTask>?> = _selectedTarget
+    private val _selectedTarget = mutableStateOf<RecentTaskViewModel?>(null)
+    override val selectedTarget: State<RecentTaskViewModel?> = _selectedTarget
 
-    override fun setSelectedTarget(target: TargetViewModel<ScreenCaptureRecentTask>?) {
-        _selectedTarget.value = target
+    override fun setSelectedTarget(target: TargetViewModel?) {
+        _selectedTarget.value = target as RecentTaskViewModel?
     }
 
-    override fun createViewModelFor(
-        target: ScreenCaptureRecentTask
-    ): TargetViewModel<ScreenCaptureRecentTask> = fakeViewModelFactory.create(target)
+    override fun createViewModelFor(target: TargetModel): RecentTaskViewModel =
+        fakeViewModelFactory.create(target as ScreenCaptureRecentTask)
 
     fun setTargets(tasks: List<ScreenCaptureRecentTask>?) {
         _targets.value = tasks

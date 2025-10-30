@@ -40,7 +40,7 @@ constructor(
     private val iconInteractor: ScreenCaptureIconInteractor,
     private val labelInteractor: ScreenCaptureLabelInteractor,
     private val thumbnailInteractor: ScreenCaptureThumbnailInteractor,
-) : TargetViewModel<ScreenCaptureRecentTask>, HydratedActivatable() {
+) : TargetViewModel, HydratedActivatable() {
 
     override var icon by mutableStateOf<Result<Bitmap>?>(null)
         private set

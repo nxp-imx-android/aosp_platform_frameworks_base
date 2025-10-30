@@ -36,7 +36,7 @@ class DisplayViewModel
 constructor(
     @Assisted override val model: ScreenCaptureDisplay,
     private val thumbnailInteractor: ScreenCaptureThumbnailInteractor,
-) : TargetViewModel<ScreenCaptureDisplay>, HydratedActivatable() {
+) : TargetViewModel, HydratedActivatable() {
 
     override val icon: Result<Bitmap>? =
         Result.failure(IllegalArgumentException("Displays do not support icons"))
