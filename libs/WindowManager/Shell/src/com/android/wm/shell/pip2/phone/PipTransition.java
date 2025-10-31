@@ -199,7 +199,7 @@ public class PipTransition extends PipTransitionController implements
                 pipTransitionState, pipDisplayLayoutState, pipDesktopState, pipInteractionHandler,
                 pipScheduler, splitScreenControllerOptional, displayController);
         mRemoveHandler = new PipRemoveHandler(mContext, mPipSurfaceTransactionHelper,
-                pipBoundsState, pipTransitionState);
+                pipBoundsState, pipTransitionState, pipInteractionHandler);
         mContentPipHandler = new ContentPipHandler(mContext, mPipSurfaceTransactionHelper,
                 pipTransitionState);
         mPipDisplayChangeObserver = new PipDisplayChangeObserver(pipTransitionState,
