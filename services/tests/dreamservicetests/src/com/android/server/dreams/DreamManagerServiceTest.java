@@ -41,6 +41,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import android.Manifest;
+import android.annotation.UserIdInt;
 import android.app.ActivityManagerInternal;
 import android.app.UiModeManager;
 import android.content.BroadcastReceiver;
@@ -131,6 +132,7 @@ public class DreamManagerServiceTest {
 
     private TestHandler mTestHandler;
     private TestableResources mResources;
+    private UserHandle mCurrentUser = UserHandle.of(0);
 
     @Before
     public void setUp() throws Exception {
@@ -168,6 +170,7 @@ public class DreamManagerServiceTest {
                 0);
 
         when(mPowerManagerMock.newWakeLock(anyInt(), any())).thenReturn(mWakeLockMock);
+        when(mUserManagerInternalMock.getMainUserId()).thenReturn(mCurrentUser.getIdentifier());
 
         doReturn(mContextSpy).when(mContextSpy).createContextAsUser(any(), anyInt());
         doReturn(mResources.getResources()).when(mContextSpy).getResources();
@@ -188,7 +191,12 @@ public class DreamManagerServiceTest {
 
     private DreamManagerService createService() {
         return new DreamManagerService(
-                new TestInjector(mContextSpy, mTestHandler, mDreamControllerMock, mDozeConfigMock));
+                new TestInjector(
+                        mContextSpy,
+                        mTestHandler,
+                        mDreamControllerMock,
+                        mDozeConfigMock,
+                        mCurrentUser.getIdentifier()));
     }
 
     /**
@@ -257,7 +265,7 @@ public class DreamManagerServiceTest {
                 Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1, UserHandle.USER_CURRENT);
 
         // Set up preconditions.
-        when(mUserManagerMock.isUserUnlocked()).thenReturn(true);
+        when(mUserManagerMock.isUserUnlocked(anyInt())).thenReturn(true);
 
         // Device is charging.
         when(mBatteryManagerInternal.isPowered(eq(BatteryManager.BATTERY_PLUGGED_ANY)))
@@ -314,7 +322,7 @@ public class DreamManagerServiceTest {
         // Set up preconditions.
         ServiceInfo dozeServiceInfo = new ServiceInfo();
         dozeServiceInfo.applicationInfo = new ApplicationInfo();
-        when(mUserManagerMock.isUserUnlocked()).thenReturn(true);
+        when(mUserManagerMock.isUserUnlocked(anyInt())).thenReturn(true);
         when(mDozeConfigMock.enabled(anyInt())).thenReturn(true);
         when(mPackageManagerMock.getServiceInfo(any(), anyInt())).thenReturn(dozeServiceInfo);
 
@@ -533,13 +541,15 @@ public class DreamManagerServiceTest {
         private final Handler mHandler;
         private final DreamController mDreamController;
         private final AmbientDisplayConfiguration mDozeConfig;
+        private final int mCurrentUser;
 
         TestInjector(Context context, Handler handler, DreamController dreamController,
-                AmbientDisplayConfiguration dozeConfig) {
+                AmbientDisplayConfiguration dozeConfig, @UserIdInt int currentUser) {
             mContext = context;
             mHandler = handler;
             mDreamController = dreamController;
             mDozeConfig = dozeConfig;
+            mCurrentUser = currentUser;
         }
 
         @Override
@@ -560,6 +570,11 @@ public class DreamManagerServiceTest {
         @Override
         public DreamController getDreamController(DreamController.Listener controllerListener) {
             return mDreamController;
+        }
+
+        @Override
+        public int getCurrentUser() {
+            return mCurrentUser;
         }
     }
 }
