@@ -30,21 +30,16 @@ import android.util.AtomicFile;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.Xml;
-
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.XmlUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
-
-import java.util.Collection;
-import org.xmlpull.v1.XmlPullParserException;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * Provides storage and retrieval of device supervision recovery information and user data.
@@ -223,7 +218,7 @@ public class SupervisionSettings {
 
                 // Add policies to the XML.
                 if (Flags.enableSupervisionManagerPolicyApis()) {
-                    addPoliciesToXml(xml, new ArrayList<>(data.policies.values()));
+                    addPoliciesToXml(xml, data.policies.getPolicies());
                 }
 
                 if (data.supervisionLockScreenOptions != null) {

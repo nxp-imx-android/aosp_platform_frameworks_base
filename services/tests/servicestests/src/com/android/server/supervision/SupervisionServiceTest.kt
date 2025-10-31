@@ -27,6 +27,7 @@ import android.app.role.OnRoleHoldersChangedListener
 import android.app.role.RoleManager
 import android.app.supervision.ISupervisionListener
 import android.app.supervision.PackagePolicy
+import android.app.supervision.Policy
 import android.app.supervision.SupervisionManager
 import android.app.supervision.SupervisionRecoveryInfo
 import android.app.supervision.SupervisionRecoveryInfo.STATE_PENDING
@@ -78,6 +79,7 @@ import com.android.server.appbinding.AppServiceConnection
 import com.android.server.appbinding.finders.SupervisionAppServiceFinder
 import com.android.server.pm.UserManagerInternal
 import com.android.server.supervision.SupervisionService.ACTION_CONFIRM_SUPERVISION_CREDENTIALS
+import com.android.server.supervision.SupervisionUserData.PolicyData
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import java.nio.file.Files
@@ -1021,6 +1023,25 @@ class SupervisionServiceTest {
     }
 
     @Test
+    fun setPolicy_packagePolicyBlocked_noPendingNotification_doesNotSendNotification() {
+        // The app will be hidden after the policy is set.
+        setApplicationHiddenSetting(PACKAGE_NAME, hidden = true)
+
+        // The policy is set to blocked.
+        val policy = setAndVerifyPackageBlockedPolicy(enabled = true)
+        // Verify that hasPendingNotification is true, then manually set it to false.
+        val policyData = getPolicyData(policy)
+        assertThat(policyData?.hasPendingNotification).isTrue()
+        policyData?.hasPendingNotification = false
+        // After the policy is set, the app is hidden.
+        simulatePackageDisappeared(PACKAGE_NAME, USER_ID)
+
+        // No notification is sent.
+        verify(mockNotificationManager, never())
+            .notifyAsUser(any(), any<Int>(), any<Notification>(), eq(UserHandle.of(USER_ID)))
+    }
+
+    @Test
     fun setPolicy_packagePolicyUnblocked_sendsNotification() {
         // The app will not be hidden after the policy is set.
         setApplicationHiddenSetting(PACKAGE_NAME, hidden = false)
@@ -1130,7 +1151,7 @@ class SupervisionServiceTest {
         assertThat(service.hasValidRecoveryMethod(USER_ID)).isTrue()
     }
 
-    private fun setAndVerifyPackageBlockedPolicy(enabled: Boolean) {
+    private fun setAndVerifyPackageBlockedPolicy(enabled: Boolean): PackagePolicy {
         val policy =
             PackagePolicy(
                 /*version=*/ 0,
@@ -1153,6 +1174,7 @@ class SupervisionServiceTest {
             // Supervision apps are notified of the policy change.
             verify(it).onPolicyChanged(eq(policy))
         }
+        return policy
     }
 
     private fun verifyApplicationHiddenNotification(packageName: String, hidden: Boolean) {
@@ -1363,6 +1385,10 @@ class SupervisionServiceTest {
 
     private fun getSecureSetting(name: String): Int {
         return Settings.Secure.getIntForUser(context.contentResolver, name, USER_ID)
+    }
+
+    private fun getPolicyData(policy: Policy): PolicyData? {
+        return service.getUserDataLocked(USER_ID).policies[policy.policyKey]
     }
 
     private companion object {
