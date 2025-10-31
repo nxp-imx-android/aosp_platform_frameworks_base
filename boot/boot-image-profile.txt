@@ -169,6 +169,7 @@ HSPLandroid/animation/Animator;->appendChangingConfigurations(I)V
 HSPLandroid/animation/Animator;->callOnList(Ljava/util/ArrayList;Landroid/animation/Animator$AnimatorCaller;Ljava/lang/Object;Z)V
 HSPLandroid/animation/Animator;->clone()Landroid/animation/Animator;
 HSPLandroid/animation/Animator;->completeEndAnimation(ZLjava/lang/String;)V
+HSPLandroid/animation/Animator;->consumePendingEndListeners(Z)Z+]Landroid/animation/AnimationHandler;Landroid/animation/AnimationHandler;]Landroid/animation/Animator;Landroid/animation/ObjectAnimator;,Landroid/animation/ValueAnimator;
 HSPLandroid/animation/Animator;->createConstantState()Landroid/content/res/ConstantState;
 HSPLandroid/animation/Animator;->getBackgroundPauseDelay()J
 HSPLandroid/animation/Animator;->getChangingConfigurations()I
@@ -587,6 +588,7 @@ HSPLandroid/app/Activity;->getNextAutofillId()I
 HSPLandroid/app/Activity;->getOnBackInvokedDispatcher()Landroid/window/OnBackInvokedDispatcher;
 HSPLandroid/app/Activity;->getReferrer()Landroid/net/Uri;
 HSPLandroid/app/Activity;->getRequestedOrientation()I
+SPLandroid/app/Activity;->getSceneTransitionInfo()Landroid/app/ActivityOptions$SceneTransitionInfo;
 HSPLandroid/app/Activity;->getSystemService(Ljava/lang/String;)Ljava/lang/Object;
 HSPLandroid/app/Activity;->getTaskId()I
 HSPLandroid/app/Activity;->getTitle()Ljava/lang/CharSequence;
@@ -675,10 +677,12 @@ HSPLandroid/app/Activity;->setTaskDescription(Landroid/app/ActivityManager$TaskD
 HSPLandroid/app/Activity;->setTheme(I)V
 HSPLandroid/app/Activity;->setTitle(Ljava/lang/CharSequence;)V
 HSPLandroid/app/Activity;->setVolumeControlStream(I)V
+HSPLandroid/app/Activity;->shouldStartAppJankTracking()Z
 HSPLandroid/app/Activity;->startActivity(Landroid/content/Intent;)V
 HSPLandroid/app/Activity;->startActivity(Landroid/content/Intent;Landroid/os/Bundle;)V
 HSPLandroid/app/Activity;->startActivityForResult(Landroid/content/Intent;I)V
 HSPLandroid/app/Activity;->startActivityForResult(Landroid/content/Intent;ILandroid/os/Bundle;)V
+HSPLandroid/app/Activity;->startAppJankTracking()V
 HSPLandroid/app/Activity;->transferSpringboardActivityOptions(Landroid/os/Bundle;)Landroid/os/Bundle;
 HSPLandroid/app/Activity;->unregisterComponentCallbacks(Landroid/content/ComponentCallbacks;)V
 HSPLandroid/app/ActivityClient$1;-><init>()V
@@ -705,8 +709,8 @@ HSPLandroid/app/ActivityClient;->setActivityClientController(Landroid/app/IActiv
 HSPLandroid/app/ActivityClient;->setRequestedOrientation(Landroid/os/IBinder;I)V
 HSPLandroid/app/ActivityClient;->setTaskDescription(Landroid/os/IBinder;Landroid/app/ActivityManager$TaskDescription;)V
 HSPLandroid/app/ActivityManager$$ExternalSyntheticLambda1;->fetchValue()Ljava/lang/Object;
-SPLandroid/app/ActivityManager$$ExternalSyntheticLambda3;-><init>()V
-SPLandroid/app/ActivityManager$$ExternalSyntheticLambda3;->fetchValue()Ljava/lang/Object;
+HSPLandroid/app/ActivityManager$$ExternalSyntheticLambda3;-><init>()V
+HSPLandroid/app/ActivityManager$$ExternalSyntheticLambda3;->fetchValue()Ljava/lang/Object;
 HSPLandroid/app/ActivityManager$$ExternalSyntheticLambda4;-><init>()V
 HSPLandroid/app/ActivityManager$$ExternalSyntheticLambda4;->fetchValue()Ljava/lang/Object;
 HSPLandroid/app/ActivityManager$2;-><init>(Landroid/app/ActivityManager;)V
@@ -794,7 +798,7 @@ HSPLandroid/app/ActivityManager;->isRunningInUserTestHarness()Z
 HSPLandroid/app/ActivityManager;->isStartResultFatalError(I)Z
 HSPLandroid/app/ActivityManager;->isUserAMonkey()Z
 HSPLandroid/app/ActivityManager;->isUserRunning(I)Z
-SPLandroid/app/ActivityManager;->lambda$getMyMemoryState$5()Landroid/app/ActivityManager$RunningAppProcessInfo;
+HSPLandroid/app/ActivityManager;->lambda$getMyMemoryState$5()Landroid/app/ActivityManager$RunningAppProcessInfo;
 HSPLandroid/app/ActivityManager;->lambda$getRunningAppProcesses$4()Ljava/util/List;+]Landroid/app/IActivityManager;Landroid/app/IActivityManager$Stub$Proxy;
 HSPLandroid/app/ActivityManager;->staticGetLargeMemoryClass()I
 HSPLandroid/app/ActivityManager;->staticGetMemoryClass()I
@@ -829,6 +833,8 @@ HSPLandroid/app/ActivityThread$5;->setContentCaptureOptions(Landroid/content/Con
 HSPLandroid/app/ActivityThread$6;-><init>(Landroid/app/ActivityThread;)V
 HSPLandroid/app/ActivityThread$6;->run()V
 HSPLandroid/app/ActivityThread$ActivityClientRecord$1;-><init>(Landroid/app/ActivityThread$ActivityClientRecord;)V
+SPLandroid/app/ActivityThread$ActivityClientRecord;->-$$Nest$fgetmActivityWindowInfo(Landroid/app/ActivityThread$ActivityClientRecord;)Landroid/window/ActivityWindowInfo;
+SPLandroid/app/ActivityThread$ActivityClientRecord;->-$$Nest$fgetmLastReportedActivityWindowInfo(Landroid/app/ActivityThread$ActivityClientRecord;)Landroid/window/ActivityWindowInfo;
 HSPLandroid/app/ActivityThread$ActivityClientRecord;->-$$Nest$misPreHoneycomb(Landroid/app/ActivityThread$ActivityClientRecord;)Z
 HSPLandroid/app/ActivityThread$ActivityClientRecord;-><init>(Landroid/os/IBinder;Landroid/content/Intent;ILandroid/content/pm/ActivityInfo;Landroid/content/res/Configuration;Ljava/lang/String;Lcom/android/internal/app/IVoiceInteractor;Landroid/os/Bundle;Landroid/os/PersistableBundle;Ljava/util/List;Ljava/util/List;Landroid/app/ActivityOptions$SceneTransitionInfo;ZLandroid/app/ProfilerInfo;Landroid/app/ClientTransactionHandler;Landroid/os/IBinder;Landroid/os/IBinder;ZLandroid/os/IBinder;Landroid/os/IBinder;Landroid/window/ActivityWindowInfo;)V
 HSPLandroid/app/ActivityThread$ActivityClientRecord;->getLifecycleState()I
@@ -973,6 +979,7 @@ HSPLandroid/app/ActivityThread;->getStringCoreSetting(Ljava/lang/String;Ljava/la
 HSPLandroid/app/ActivityThread;->getSystemContext()Landroid/app/ContextImpl;
 SPLandroid/app/ActivityThread;->getSystemUiContextNoCreate()Landroid/content/Context;
 HSPLandroid/app/ActivityThread;->getTopLevelResources(Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;Landroid/app/LoadedApk;Landroid/content/res/Configuration;)Landroid/content/res/Resources;
+SPLandroid/app/ActivityThread;->handleActivityWindowInfoChanged(Landroid/app/ActivityThread$ActivityClientRecord;)V
 HSPLandroid/app/ActivityThread;->handleApplicationInfoChanged(Landroid/content/pm/ApplicationInfo;)V
 HSPLandroid/app/ActivityThread;->handleBindApplication(Landroid/app/ActivityThread$AppBindData;)V
 HSPLandroid/app/ActivityThread;->handleBindService(Landroid/app/ActivityThread$BindServiceData;)V
@@ -998,6 +1005,7 @@ HSPLandroid/app/ActivityThread;->handleSendResult(Landroid/app/ActivityThread$Ac
 HSPLandroid/app/ActivityThread;->handleServiceArgs(Landroid/app/ActivityThread$ServiceArgsData;)V
 HSPLandroid/app/ActivityThread;->handleSetContentCaptureOptionsCallback(Ljava/lang/String;)V
 HSPLandroid/app/ActivityThread;->handleSetCoreSettings(Landroid/os/Bundle;)V
+HSPLandroid/app/ActivityThread;->handleStartActivity(Landroid/app/ActivityThread$ActivityClientRecord;Landroid/app/servertransaction/PendingTransactionActions;Landroid/app/ActivityOptions$SceneTransitionInfo;)V
 HSPLandroid/app/ActivityThread;->handleStopService(Landroid/os/IBinder;)V
 HSPLandroid/app/ActivityThread;->handleTopResumedActivityChanged(Landroid/app/ActivityThread$ActivityClientRecord;ZLjava/lang/String;)V
 HSPLandroid/app/ActivityThread;->handleTrimMemory(I)V
@@ -1060,6 +1068,7 @@ HSPLandroid/app/ActivityTransitionState;->readState(Landroid/os/Bundle;)V
 HSPLandroid/app/ActivityTransitionState;->restoreExitedViews()V
 HSPLandroid/app/ActivityTransitionState;->restoreReenteringViews()V
 HSPLandroid/app/ActivityTransitionState;->saveState(Landroid/os/Bundle;)V
+HSPLandroid/app/ActivityTransitionState;->setEnterSceneTransitionInfo(Landroid/app/Activity;Landroid/app/ActivityOptions$SceneTransitionInfo;)V
 HSPLandroid/app/ActivityTransitionState;->startExitBackTransition(Landroid/app/Activity;)Z
 HSPLandroid/app/ActivityTransitionState;->startExitOutTransition(Landroid/app/Activity;Landroid/os/Bundle;)V
 HSPLandroid/app/AlarmManager$AlarmClockInfo$1;->createFromParcel(Landroid/os/Parcel;)Landroid/app/AlarmManager$AlarmClockInfo;
@@ -1109,10 +1118,13 @@ HSPLandroid/app/AppGlobals;->getPackageManager()Landroid/content/pm/IPackageMana
 HSPLandroid/app/AppOpsManager$1;->onNoted(Landroid/app/SyncNotedAppOp;)V
 HSPLandroid/app/AppOpsManager$1;->onSelfNoted(Landroid/app/SyncNotedAppOp;)V
 HSPLandroid/app/AppOpsManager$1;->reportStackTraceIfNeeded(Landroid/app/SyncNotedAppOp;)V
+HSPLandroid/app/AppOpsManager$2;->apply(Landroid/app/AppOpsManager$AppOpModeQuery;)Ljava/lang/Integer;
+HSPLandroid/app/AppOpsManager$2;->apply(Ljava/lang/Object;)Ljava/lang/Object;+]Landroid/app/AppOpsManager$2;Landroid/app/AppOpsManager$2;
 HSPLandroid/app/AppOpsManager$3;->apply(Landroid/app/AppOpsManager$CheckPackageQuery;)Ljava/lang/Integer;
 HSPLandroid/app/AppOpsManager$3;->apply(Ljava/lang/Object;)Ljava/lang/Object;+]Landroid/app/AppOpsManager$3;Landroid/app/AppOpsManager$3;
 HSPLandroid/app/AppOpsManager$3;->shouldBypassCache(Landroid/app/AppOpsManager$CheckPackageQuery;)Z
 HSPLandroid/app/AppOpsManager$3;->shouldBypassCache(Ljava/lang/Object;)Z+]Landroid/app/AppOpsManager$3;Landroid/app/AppOpsManager$3;
+HSPLandroid/app/AppOpsManager$AppOpModeQuery;-><init>(IILjava/lang/String;ILjava/lang/String;Ljava/lang/String;)V
 HSPLandroid/app/AppOpsManager$AttributedOpEntry;->getLastAccessEvent(III)Landroid/app/AppOpsManager$NoteOpEvent;
 HSPLandroid/app/AppOpsManager$AttributedOpEntry;->getLastRejectEvent(III)Landroid/app/AppOpsManager$NoteOpEvent;
 HSPLandroid/app/AppOpsManager$CheckPackageQuery$$ExternalSyntheticRecord0;->m(ILjava/lang/Object;)I
@@ -1154,6 +1166,7 @@ HSPLandroid/app/AppOpsManager;->getNotedOpCollectionMode(ILjava/lang/String;I)I
 HSPLandroid/app/AppOpsManager;->getPackagesForOps([I)Ljava/util/List;
 HSPLandroid/app/AppOpsManager;->getService()Lcom/android/internal/app/IAppOpsService;
 HSPLandroid/app/AppOpsManager;->getToken(Lcom/android/internal/app/IAppOpsService;)Landroid/os/IBinder;
+HSPLandroid/app/AppOpsManager;->isAppOpModeCachingEnabled(I)Z+]Landroid/util/SparseBooleanArray;Landroid/util/SparseBooleanArray;
 HSPLandroid/app/AppOpsManager;->isCollectingStackTraces()Z
 HSPLandroid/app/AppOpsManager;->isListeningForOpNoted()Z
 HSPLandroid/app/AppOpsManager;->lambda$new$0(Landroid/provider/DeviceConfig$Properties;)V
@@ -1498,6 +1511,7 @@ HSPLandroid/app/ContextImpl;->createConfigurationContext(Landroid/content/res/Co
 HSPLandroid/app/ContextImpl;->createContext(Landroid/content/ContextParams;)Landroid/content/Context;
 HSPLandroid/app/ContextImpl;->createContextAsUser(Landroid/os/UserHandle;I)Landroid/content/Context;
 HSPLandroid/app/ContextImpl;->createCredentialProtectedStorageContext()Landroid/content/Context;
+HSPLandroid/app/ContextImpl;->createDeviceContext(I)Landroid/content/Context;
 HSPLandroid/app/ContextImpl;->createDeviceProtectedStorageContext()Landroid/content/Context;
 HSPLandroid/app/ContextImpl;->createDisplayContext(Landroid/view/Display;)Landroid/content/Context;
 HSPLandroid/app/ContextImpl;->createPackageContext(Ljava/lang/String;I)Landroid/content/Context;
@@ -2060,6 +2074,7 @@ HSPLandroid/app/Instrumentation;->callActivityOnUserLeaving(Landroid/app/Activit
 HSPLandroid/app/Instrumentation;->callApplicationOnCreate(Landroid/app/Application;)V
 HSPLandroid/app/Instrumentation;->checkStartActivityResult(ILjava/lang/Object;)V
 HSPLandroid/app/Instrumentation;->execStartActivity(Landroid/content/Context;Landroid/os/IBinder;Landroid/os/IBinder;Landroid/app/Activity;Landroid/content/Intent;ILandroid/os/Bundle;)Landroid/app/Instrumentation$ActivityResult;
+SPLandroid/app/Instrumentation;->getContext()Landroid/content/Context;
 HSPLandroid/app/Instrumentation;->getFactory(Ljava/lang/String;)Landroid/app/AppComponentFactory;
 HSPLandroid/app/Instrumentation;->isInstrumenting()Z
 HSPLandroid/app/Instrumentation;->newActivity(Ljava/lang/ClassLoader;Ljava/lang/String;Landroid/content/Intent;)Landroid/app/Activity;
@@ -2411,7 +2426,7 @@ SPLandroid/app/NotificationChannel;->setOriginalImportance(I)V
 HSPLandroid/app/NotificationChannel;->setShowBadge(Z)V
 HSPLandroid/app/NotificationChannel;->setSound(Landroid/net/Uri;Landroid/media/AudioAttributes;)V
 SPLandroid/app/NotificationChannel;->setUserVisibleTaskShown(Z)V
-SPLandroid/app/NotificationChannel;->setVibrationEffect(Landroid/os/VibrationEffect;)V
+HSPLandroid/app/NotificationChannel;->setVibrationEffect(Landroid/os/VibrationEffect;)V
 HSPLandroid/app/NotificationChannel;->setVibrationPattern([J)V
 HSPLandroid/app/NotificationChannel;->shouldShowLights()Z
 HSPLandroid/app/NotificationChannel;->shouldVibrate()Z
@@ -2438,10 +2453,10 @@ HSPLandroid/app/NotificationManager$1;->shouldBypassCache(Ljava/lang/Object;)Z+]
 HSPLandroid/app/NotificationManager$2;-><init>(Landroid/app/NotificationManager;)V
 SPLandroid/app/NotificationManager$2;->apply(Ljava/lang/Object;)Ljava/lang/Object;
 SPLandroid/app/NotificationManager$2;->apply(Ljava/lang/String;)Ljava/util/Map;
-SPLandroid/app/NotificationManager$2;->shouldBypassCache(Ljava/lang/Object;)Z
+HSPLandroid/app/NotificationManager$2;->shouldBypassCache(Ljava/lang/Object;)Z
 SPLandroid/app/NotificationManager$2;->shouldBypassCache(Ljava/lang/String;)Z
-SPLandroid/app/NotificationManager$KnownNotification;-><init>(ILjava/util/OptionalInt;)V
-SPLandroid/app/NotificationManager$KnownNotification;-><init>(ILjava/util/OptionalInt;Landroid/app/NotificationManager-IA;)V
+HSPLandroid/app/NotificationManager$KnownNotification;-><init>(ILjava/util/OptionalInt;)V
+HSPLandroid/app/NotificationManager$KnownNotification;-><init>(ILjava/util/OptionalInt;Landroid/app/NotificationManager-IA;)V
 HSPLandroid/app/NotificationManager$NotificationChannelQuery$$ExternalSyntheticRecord0;->m(ILjava/lang/Object;Ljava/lang/Object;)I
 HSPLandroid/app/NotificationManager$NotificationChannelQuery;->$record$equals(Ljava/lang/Object;)Z
 SPLandroid/app/NotificationManager$NotificationChannelQuery;->-$$Nest$fgetcallingPkg(Landroid/app/NotificationManager$NotificationChannelQuery;)Ljava/lang/String;
@@ -2450,7 +2465,7 @@ SPLandroid/app/NotificationManager$NotificationChannelQuery;->-$$Nest$fgetuserId
 HSPLandroid/app/NotificationManager$NotificationChannelQuery;->equals(Ljava/lang/Object;)Z
 HSPLandroid/app/NotificationManager$NotificationChannelQuery;->hashCode()I
 HSPLandroid/app/NotificationManager$NotificationKey$$ExternalSyntheticRecord0;->m(ILjava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)I
-SPLandroid/app/NotificationManager$NotificationKey;->hashCode()I
+HSPLandroid/app/NotificationManager$NotificationKey;->hashCode()I
 HSPLandroid/app/NotificationManager$Policy$1;->createFromParcel(Landroid/os/Parcel;)Landroid/app/NotificationManager$Policy;
 HSPLandroid/app/NotificationManager$Policy$1;->createFromParcel(Landroid/os/Parcel;)Ljava/lang/Object;
 HSPLandroid/app/NotificationManager$Policy;-><init>(IIIIII)V
@@ -2474,6 +2489,7 @@ HSPLandroid/app/NotificationManager;->fixLegacySmallIcon(Landroid/app/Notificati
 HSPLandroid/app/NotificationManager;->fixNotification(Landroid/app/Notification;)Landroid/app/Notification;
 HSPLandroid/app/NotificationManager;->getActiveNotifications()[Landroid/service/notification/StatusBarNotification;
 HSPLandroid/app/NotificationManager;->getAutomaticZenRules()Ljava/util/Map;
+HSPLandroid/app/NotificationManager;->getChannelFromList(Ljava/lang/String;Ljava/util/List;)Landroid/app/NotificationChannel;+]Ljava/util/Iterator;Ljava/util/ArrayList$Itr;]Ljava/util/List;Ljava/util/ArrayList;
 HSPLandroid/app/NotificationManager;->getConsolidatedNotificationPolicy()Landroid/app/NotificationManager$Policy;
 HSPLandroid/app/NotificationManager;->getCurrentInterruptionFilter()I
 HSPLandroid/app/NotificationManager;->getNotificationChannel(Ljava/lang/String;)Landroid/app/NotificationChannel;
@@ -2660,6 +2676,7 @@ HSPLandroid/app/RemoteInput;->getAllowFreeFormInput()Z
 HSPLandroid/app/RemoteInput;->getChoices()[Ljava/lang/CharSequence;
 HSPLandroid/app/RemoteInput;->getEditChoicesBeforeSending()I
 HSPLandroid/app/RemoteInput;->writeToParcel(Landroid/os/Parcel;I)V
+HSPLandroid/app/ResourcesManager$$ExternalSyntheticLambda1;->test(Ljava/lang/Object;)Z
 HSPLandroid/app/ResourcesManager$ActivityResource;-><init>()V
 HSPLandroid/app/ResourcesManager$ActivityResources;-><init>()V
 HSPLandroid/app/ResourcesManager$ActivityResources;-><init>(Landroid/app/ResourcesManager-IA;)V
@@ -2873,15 +2890,14 @@ HSPLandroid/app/SystemServiceRegistry$12;->createService(Landroid/app/ContextImp
 HSPLandroid/app/SystemServiceRegistry$12;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
 HSPLandroid/app/SystemServiceRegistry$130;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
 HSPLandroid/app/SystemServiceRegistry$131;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
-SPLandroid/app/SystemServiceRegistry$137;->createService(Landroid/app/ContextImpl;)Landroid/hardware/devicestate/DeviceStateManager;
-SPLandroid/app/SystemServiceRegistry$137;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
 HSPLandroid/app/SystemServiceRegistry$138;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
 HSPLandroid/app/SystemServiceRegistry$13;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
 HSPLandroid/app/SystemServiceRegistry$14;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
 HSPLandroid/app/SystemServiceRegistry$151;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
 HSPLandroid/app/SystemServiceRegistry$152;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
-HSPLandroid/app/SystemServiceRegistry$157;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
-SPLandroid/app/SystemServiceRegistry$158;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
+HSPLandroid/app/SystemServiceRegistry$157;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;+]Landroid/app/SystemServiceRegistry$ContextAwareServiceProducerWithBinder;megamorphic_types
+HSPLandroid/app/SystemServiceRegistry$158;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
+SPLandroid/app/SystemServiceRegistry$15;->createService(Landroid/app/ContextImpl;)Landroid/content/ClipboardManager;
 HSPLandroid/app/SystemServiceRegistry$15;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
 HSPLandroid/app/SystemServiceRegistry$18;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
 HSPLandroid/app/SystemServiceRegistry$1;->createService(Landroid/app/ContextImpl;)Landroid/view/accessibility/AccessibilityManager;
@@ -2951,7 +2967,7 @@ SPLandroid/app/SystemServiceRegistry$62;->createService(Landroid/app/ContextImpl
 HSPLandroid/app/SystemServiceRegistry$62;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
 HSPLandroid/app/SystemServiceRegistry$63;->createService(Landroid/app/ContextImpl;)Landroid/os/UserManager;
 HSPLandroid/app/SystemServiceRegistry$63;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
-SPLandroid/app/SystemServiceRegistry$64;->createService(Landroid/app/ContextImpl;)Landroid/app/AppOpsManager;
+HSPLandroid/app/SystemServiceRegistry$64;->createService(Landroid/app/ContextImpl;)Landroid/app/AppOpsManager;
 HSPLandroid/app/SystemServiceRegistry$64;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
 HSPLandroid/app/SystemServiceRegistry$65;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
 HSPLandroid/app/SystemServiceRegistry$66;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
@@ -2966,7 +2982,6 @@ HSPLandroid/app/SystemServiceRegistry$81;->createService(Landroid/app/ContextImp
 HSPLandroid/app/SystemServiceRegistry$82;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
 HSPLandroid/app/SystemServiceRegistry$85;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
 HSPLandroid/app/SystemServiceRegistry$88;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
-SPLandroid/app/SystemServiceRegistry$89;->createService(Landroid/app/ContextImpl;)Landroid/appwidget/AppWidgetManager;
 HSPLandroid/app/SystemServiceRegistry$89;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
 HSPLandroid/app/SystemServiceRegistry$8;->createService(Landroid/app/ContextImpl;)Landroid/media/AudioManager;
 HSPLandroid/app/SystemServiceRegistry$8;->createService(Landroid/app/ContextImpl;)Ljava/lang/Object;
@@ -3012,7 +3027,7 @@ SPLandroid/app/UiModeManager$Globals;->-$$Nest$mgetForceInvertState(Landroid/app
 HSPLandroid/app/UiModeManager$Globals;-><init>(Landroid/app/IUiModeManager;)V
 HSPLandroid/app/UiModeManager$Globals;->addForceInvertStateChangeListener(Landroid/app/UiModeManager$ForceInvertStateChangeListener;Ljava/util/concurrent/Executor;I)V
 HSPLandroid/app/UiModeManager$Globals;->getForceInvertState(I)I
-SPLandroid/app/UiModeManager$Globals;->getUserCallbackOrCreate(I)Landroid/app/UiModeManager$UserCallback;
+HSPLandroid/app/UiModeManager$Globals;->getUserCallbackOrCreate(I)Landroid/app/UiModeManager$UserCallback;
 HSPLandroid/app/UiModeManager$OnProjectionStateChangedListenerResourceManager;-><init>()V
 SPLandroid/app/UiModeManager$UserCallback;->-$$Nest$fgetmForceInvertStateChangeListeners(Landroid/app/UiModeManager$UserCallback;)Landroid/util/ArrayMap;
 SPLandroid/app/UiModeManager$UserCallback;-><init>(I)V
@@ -3052,6 +3067,7 @@ HSPLandroid/app/WindowConfiguration;->areConfigurationsEqualForDisplay(Landroid/
 HSPLandroid/app/WindowConfiguration;->canReceiveKeys()Z
 HSPLandroid/app/WindowConfiguration;->compareTo(Landroid/app/WindowConfiguration;)I
 HSPLandroid/app/WindowConfiguration;->diff(Landroid/app/WindowConfiguration;Z)J
+HSPLandroid/app/WindowConfiguration;->diffToString(J)Ljava/lang/String;
 HSPLandroid/app/WindowConfiguration;->equals(Ljava/lang/Object;)Z
 HSPLandroid/app/WindowConfiguration;->getActivityType()I
 HSPLandroid/app/WindowConfiguration;->getAppBounds()Landroid/graphics/Rect;
@@ -3459,6 +3475,8 @@ HSPLandroid/app/servertransaction/ActivityResultItem$1;->createFromParcel(Landro
 HSPLandroid/app/servertransaction/ActivityResultItem$1;->createFromParcel(Landroid/os/Parcel;)Ljava/lang/Object;
 HSPLandroid/app/servertransaction/ActivityResultItem;->execute(Landroid/app/ClientTransactionHandler;Landroid/app/ActivityThread$ActivityClientRecord;Landroid/app/servertransaction/PendingTransactionActions;)V
 HSPLandroid/app/servertransaction/ActivityResultItem;->getPostExecutionState()I
+HSPLandroid/app/servertransaction/ActivityTransactionItem;->execute(Landroid/app/ClientTransactionHandler;Landroid/app/servertransaction/PendingTransactionActions;)V
+HSPLandroid/app/servertransaction/ActivityTransactionItem;->getActivityClientRecord(Landroid/app/ClientTransactionHandler;)Landroid/app/ActivityThread$ActivityClientRecord;+]Landroid/app/ClientTransactionHandler;Landroid/app/ActivityThread;]Landroid/app/servertransaction/ActivityTransactionItem;megamorphic_types
 HSPLandroid/app/servertransaction/ActivityTransactionItem;->getActivityToken()Landroid/os/IBinder;
 HSPLandroid/app/servertransaction/BaseClientRequest;->postExecute(Landroid/app/ClientTransactionHandler;Landroid/app/servertransaction/PendingTransactionActions;)V
 HSPLandroid/app/servertransaction/BaseClientRequest;->preExecute(Landroid/app/ClientTransactionHandler;)V
@@ -3477,6 +3495,7 @@ HSPLandroid/app/servertransaction/ClientTransactionItem;->isActivityLifecycleIte
 HSPLandroid/app/servertransaction/ClientTransactionItem;->shouldHaveDefinedPreExecutionState()Z
 HSPLandroid/app/servertransaction/ClientTransactionListenerController;-><init>(Landroid/hardware/display/DisplayManagerGlobal;)V
 HSPLandroid/app/servertransaction/ClientTransactionListenerController;->getInstance()Landroid/app/servertransaction/ClientTransactionListenerController;
+SPLandroid/app/servertransaction/ClientTransactionListenerController;->onActivityWindowInfoChanged(Landroid/os/IBinder;Landroid/window/ActivityWindowInfo;)V
 HSPLandroid/app/servertransaction/ClientTransactionListenerController;->onClientTransactionFinished()V
 HSPLandroid/app/servertransaction/ClientTransactionListenerController;->onClientTransactionStarted()V
 HSPLandroid/app/servertransaction/ClientTransactionListenerController;->onContextConfigurationPostChanged(Landroid/content/Context;)V
@@ -3494,7 +3513,10 @@ HSPLandroid/app/servertransaction/LaunchActivityItem$1;->createFromParcel(Landro
 HSPLandroid/app/servertransaction/LaunchActivityItem$1;->createFromParcel(Landroid/os/Parcel;)Ljava/lang/Object;
 SPLandroid/app/servertransaction/LaunchActivityItem;-><init>(Landroid/os/IBinder;ILandroid/content/res/Configuration;Landroid/content/res/Configuration;ILjava/lang/String;Lcom/android/internal/app/IVoiceInteractor;ILandroid/os/Bundle;Landroid/os/PersistableBundle;Ljava/util/List;Ljava/util/List;Landroid/app/ActivityOptions$SceneTransitionInfo;ZLandroid/app/ProfilerInfo;Landroid/os/IBinder;Landroid/app/IActivityClientController;Landroid/os/IBinder;ZLandroid/os/IBinder;Landroid/os/IBinder;Landroid/window/ActivityWindowInfo;I)V
 HSPLandroid/app/servertransaction/LaunchActivityItem;-><init>(Landroid/os/Parcel;)V
+SPLandroid/app/servertransaction/LaunchActivityItem;->execute(Landroid/app/ClientTransactionHandler;Landroid/app/servertransaction/PendingTransactionActions;)V
 HSPLandroid/app/servertransaction/LaunchActivityItem;->getActivityToken()Landroid/os/IBinder;
+SPLandroid/app/servertransaction/LaunchActivityItem;->postExecute(Landroid/app/ClientTransactionHandler;Landroid/app/servertransaction/PendingTransactionActions;)V
+SPLandroid/app/servertransaction/LaunchActivityItem;->preExecute(Landroid/app/ClientTransactionHandler;)V
 HSPLandroid/app/servertransaction/NewIntentItem$1;->createFromParcel(Landroid/os/Parcel;)Landroid/app/servertransaction/NewIntentItem;
 HSPLandroid/app/servertransaction/NewIntentItem$1;->createFromParcel(Landroid/os/Parcel;)Ljava/lang/Object;
 HSPLandroid/app/servertransaction/NewIntentItem;->execute(Landroid/app/ClientTransactionHandler;Landroid/app/ActivityThread$ActivityClientRecord;Landroid/app/servertransaction/PendingTransactionActions;)V
@@ -3525,6 +3547,8 @@ HSPLandroid/app/servertransaction/ResumeActivityItem$1;->createFromParcel(Landro
 HSPLandroid/app/servertransaction/ResumeActivityItem;-><init>(Landroid/os/Parcel;)V
 HSPLandroid/app/servertransaction/ResumeActivityItem;->execute(Landroid/app/ClientTransactionHandler;Landroid/app/ActivityThread$ActivityClientRecord;Landroid/app/servertransaction/PendingTransactionActions;)V
 HSPLandroid/app/servertransaction/ResumeActivityItem;->getTargetState()I
+HSPLandroid/app/servertransaction/ResumeActivityItem;->postExecute(Landroid/app/ClientTransactionHandler;Landroid/app/servertransaction/PendingTransactionActions;)V
+SPLandroid/app/servertransaction/ResumeActivityItem;->preExecute(Landroid/app/ClientTransactionHandler;)V
 HSPLandroid/app/servertransaction/StartActivityItem$1;->createFromParcel(Landroid/os/Parcel;)Landroid/app/servertransaction/StartActivityItem;
 HSPLandroid/app/servertransaction/StartActivityItem$1;->createFromParcel(Landroid/os/Parcel;)Ljava/lang/Object;
 HSPLandroid/app/servertransaction/StartActivityItem;->execute(Landroid/app/ClientTransactionHandler;Landroid/app/ActivityThread$ActivityClientRecord;Landroid/app/servertransaction/PendingTransactionActions;)V
@@ -3537,6 +3561,7 @@ HSPLandroid/app/servertransaction/TopResumedActivityChangeItem$1;->createFromPar
 HSPLandroid/app/servertransaction/TopResumedActivityChangeItem$1;->createFromParcel(Landroid/os/Parcel;)Ljava/lang/Object;
 HSPLandroid/app/servertransaction/TopResumedActivityChangeItem;-><init>(Landroid/os/Parcel;)V
 HSPLandroid/app/servertransaction/TopResumedActivityChangeItem;->execute(Landroid/app/ClientTransactionHandler;Landroid/app/ActivityThread$ActivityClientRecord;Landroid/app/servertransaction/PendingTransactionActions;)V
+SPLandroid/app/servertransaction/TopResumedActivityChangeItem;->postExecute(Landroid/app/ClientTransactionHandler;Landroid/app/servertransaction/PendingTransactionActions;)V
 HSPLandroid/app/servertransaction/TransactionExecutor;-><init>(Landroid/app/ClientTransactionHandler;)V
 HSPLandroid/app/servertransaction/TransactionExecutor;->cycleToPath(Landroid/app/ActivityThread$ActivityClientRecord;ILandroid/app/servertransaction/ClientTransaction;)V
 HSPLandroid/app/servertransaction/TransactionExecutor;->cycleToPath(Landroid/app/ActivityThread$ActivityClientRecord;IZLandroid/app/servertransaction/ClientTransaction;)V
@@ -3653,6 +3678,7 @@ HSPLandroid/app/usage/UsageStatsManager;->queryEvents(JJ)Landroid/app/usage/Usag
 HSPLandroid/app/usage/UsageStatsManager;->queryUsageStats(IJJ)Ljava/util/List;
 HSPLandroid/appwidget/AppWidgetManager$$ExternalSyntheticLambda3;-><init>()V
 HSPLandroid/appwidget/AppWidgetManager$$ExternalSyntheticLambda5;-><init>()V
+SPLandroid/appwidget/AppWidgetManager$$ExternalSyntheticLambda7;->apply(I)Ljava/lang/Object;
 SPLandroid/appwidget/AppWidgetManager$$ExternalSyntheticLambda9;->run()V
 HSPLandroid/appwidget/AppWidgetManager$ServiceCollectionCache;-><init>(Landroid/content/Context;J)V
 HSPLandroid/appwidget/AppWidgetManager;->$r8$lambda$WKLPyaeqLNLNb3560d7QJuq2DwQ(Landroid/appwidget/AppWidgetManager;)V
@@ -4115,7 +4141,7 @@ HSPLandroid/content/ContextParams;->shouldRegisterAttributionSource()Z
 HSPLandroid/content/ContextWrapper;-><init>(Landroid/content/Context;)V
 HSPLandroid/content/ContextWrapper;->attachBaseContext(Landroid/content/Context;)V
 HSPLandroid/content/ContextWrapper;->bindIsolatedService(Landroid/content/Intent;ILjava/lang/String;Ljava/util/concurrent/Executor;Landroid/content/ServiceConnection;)Z
-SPLandroid/content/ContextWrapper;->bindService(Landroid/content/Intent;ILjava/util/concurrent/Executor;Landroid/content/ServiceConnection;)Z
+HSPLandroid/content/ContextWrapper;->bindService(Landroid/content/Intent;ILjava/util/concurrent/Executor;Landroid/content/ServiceConnection;)Z+]Landroid/content/Context;missing_types
 HSPLandroid/content/ContextWrapper;->bindService(Landroid/content/Intent;Landroid/content/ServiceConnection;I)Z
 HSPLandroid/content/ContextWrapper;->bindServiceAsUser(Landroid/content/Intent;Landroid/content/ServiceConnection;ILandroid/os/UserHandle;)Z
 HSPLandroid/content/ContextWrapper;->canLoadUnsafeResources()Z
@@ -4662,6 +4688,7 @@ HSPLandroid/content/pm/IPackageManager$Stub$Proxy;->getPackagesForUid(I)[Ljava/l
 HSPLandroid/content/pm/IPackageManager$Stub$Proxy;->getPermissionControllerPackageName()Ljava/lang/String;
 HSPLandroid/content/pm/IPackageManager$Stub$Proxy;->getProviderInfo(Landroid/content/ComponentName;JI)Landroid/content/pm/ProviderInfo;
 HSPLandroid/content/pm/IPackageManager$Stub$Proxy;->getReceiverInfo(Landroid/content/ComponentName;JI)Landroid/content/pm/ActivityInfo;
+SPLandroid/content/pm/IPackageManager$Stub$Proxy;->getSdkSandboxPackageName()Ljava/lang/String;
 HSPLandroid/content/pm/IPackageManager$Stub$Proxy;->getServiceInfo(Landroid/content/ComponentName;JI)Landroid/content/pm/ServiceInfo;
 HSPLandroid/content/pm/IPackageManager$Stub$Proxy;->getSystemAvailableFeatures()Landroid/content/pm/ParceledListSlice;
 HSPLandroid/content/pm/IPackageManager$Stub$Proxy;->getSystemSharedLibraryNames()[Ljava/lang/String;
@@ -5195,7 +5222,7 @@ SPLandroid/content/res/CameraCompatibilityInfo$Builder;->-$$Nest$fgetmShouldAllo
 SPLandroid/content/res/CameraCompatibilityInfo$Builder;->-$$Nest$fgetmShouldLetterboxForCameraCompat(Landroid/content/res/CameraCompatibilityInfo$Builder;)Z
 SPLandroid/content/res/CameraCompatibilityInfo$Builder;->-$$Nest$fgetmShouldOverrideSensorOrientation(Landroid/content/res/CameraCompatibilityInfo$Builder;)Z
 HSPLandroid/content/res/CameraCompatibilityInfo$Builder;-><init>()V
-SPLandroid/content/res/CameraCompatibilityInfo$Builder;->build()Landroid/content/res/CameraCompatibilityInfo;
+HSPLandroid/content/res/CameraCompatibilityInfo$Builder;->build()Landroid/content/res/CameraCompatibilityInfo;
 HSPLandroid/content/res/CameraCompatibilityInfo;-><init>(Landroid/content/res/CameraCompatibilityInfo$Builder;)V
 SPLandroid/content/res/CameraCompatibilityInfo;-><init>(Landroid/content/res/CameraCompatibilityInfo$Builder;Landroid/content/res/CameraCompatibilityInfo-IA;)V
 SPLandroid/content/res/CameraCompatibilityInfo;-><init>(Landroid/os/Parcel;)V
@@ -8401,6 +8428,8 @@ HSPLandroid/hardware/camera2/utils/TypeReference;->getRawType()Ljava/lang/Class;
 HSPLandroid/hardware/camera2/utils/TypeReference;->getRawType(Ljava/lang/reflect/Type;)Ljava/lang/Class;
 HSPLandroid/hardware/camera2/utils/TypeReference;->getType()Ljava/lang/reflect/Type;
 HSPLandroid/hardware/camera2/utils/TypeReference;->hashCode()I
+SPLandroid/hardware/devicestate/DeviceState$Configuration$1;->createFromParcel(Landroid/os/Parcel;)Landroid/hardware/devicestate/DeviceState$Configuration;
+SPLandroid/hardware/devicestate/DeviceState$Configuration$1;->createFromParcel(Landroid/os/Parcel;)Ljava/lang/Object;
 HSPLandroid/hardware/devicestate/DeviceState$Configuration;-><init>(ILjava/lang/String;Landroid/util/ArraySet;Landroid/util/ArraySet;)V
 HSPLandroid/hardware/devicestate/DeviceState$Configuration;-><init>(ILjava/lang/String;Landroid/util/ArraySet;Landroid/util/ArraySet;Landroid/hardware/devicestate/DeviceState-IA;)V
 HSPLandroid/hardware/devicestate/DeviceState$Configuration;->getIdentifier()I
@@ -8409,6 +8438,7 @@ HSPLandroid/hardware/devicestate/DeviceState;->getIdentifier()I
 HSPLandroid/hardware/devicestate/DeviceStateInfo$1;-><init>()V
 HSPLandroid/hardware/devicestate/DeviceStateInfo$1;->createFromParcel(Landroid/os/Parcel;)Landroid/hardware/devicestate/DeviceStateInfo;
 HSPLandroid/hardware/devicestate/DeviceStateInfo$1;->createFromParcel(Landroid/os/Parcel;)Ljava/lang/Object;
+SPLandroid/hardware/devicestate/DeviceStateInfo;-><init>(Landroid/os/Parcel;)V
 HSPLandroid/hardware/devicestate/DeviceStateManager;-><init>()V
 HSPLandroid/hardware/devicestate/DeviceStateManager;->getSupportedDeviceStates()Ljava/util/List;
 HSPLandroid/hardware/devicestate/DeviceStateManager;->registerCallback(Ljava/util/concurrent/Executor;Landroid/hardware/devicestate/DeviceStateManager$DeviceStateCallback;)V
@@ -8429,6 +8459,7 @@ HSPLandroid/hardware/devicestate/DeviceStateManagerGlobal;->registerCallbackLock
 HSPLandroid/hardware/devicestate/DeviceStateManagerGlobal;->registerDeviceStateCallback(Landroid/hardware/devicestate/DeviceStateManager$DeviceStateCallback;Ljava/util/concurrent/Executor;)V
 HSPLandroid/hardware/devicestate/IDeviceStateManager$Stub$Proxy;-><init>(Landroid/os/IBinder;)V
 HSPLandroid/hardware/devicestate/IDeviceStateManager$Stub$Proxy;->asBinder()Landroid/os/IBinder;
+SPLandroid/hardware/devicestate/IDeviceStateManager$Stub$Proxy;->registerCallback(Landroid/hardware/devicestate/IDeviceStateManagerCallback;)Landroid/hardware/devicestate/DeviceStateInfo;
 HSPLandroid/hardware/devicestate/IDeviceStateManager$Stub;->asInterface(Landroid/os/IBinder;)Landroid/hardware/devicestate/IDeviceStateManager;
 HSPLandroid/hardware/devicestate/IDeviceStateManagerCallback$Stub;-><init>()V
 HSPLandroid/hardware/devicestate/IDeviceStateManagerCallback$Stub;->asBinder()Landroid/os/IBinder;
@@ -8460,7 +8491,7 @@ HSPLandroid/hardware/display/DeviceProductInfo$1;->createFromParcel(Landroid/os/
 HSPLandroid/hardware/display/DeviceProductInfo$EdidStructureMetadata$1;->createFromParcel(Landroid/os/Parcel;)Landroid/hardware/display/DeviceProductInfo$EdidStructureMetadata;
 HSPLandroid/hardware/display/DeviceProductInfo$EdidStructureMetadata$1;->createFromParcel(Landroid/os/Parcel;)Ljava/lang/Object;+]Landroid/hardware/display/DeviceProductInfo$EdidStructureMetadata$1;Landroid/hardware/display/DeviceProductInfo$EdidStructureMetadata$1;
 HSPLandroid/hardware/display/DeviceProductInfo$EdidStructureMetadata;-><init>(Landroid/os/Parcel;)V
-SPLandroid/hardware/display/DeviceProductInfo$EdidStructureMetadata;-><init>(Landroid/os/Parcel;Landroid/hardware/display/DeviceProductInfo-IA;)V
+HSPLandroid/hardware/display/DeviceProductInfo$EdidStructureMetadata;-><init>(Landroid/os/Parcel;Landroid/hardware/display/DeviceProductInfo-IA;)V
 HSPLandroid/hardware/display/DeviceProductInfo$ManufactureDate$1;->createFromParcel(Landroid/os/Parcel;)Landroid/hardware/display/DeviceProductInfo$ManufactureDate;
 HSPLandroid/hardware/display/DeviceProductInfo$ManufactureDate$1;->createFromParcel(Landroid/os/Parcel;)Ljava/lang/Object;
 HSPLandroid/hardware/display/DeviceProductInfo$ManufactureDate;-><init>(Landroid/os/Parcel;)V
@@ -8499,7 +8530,7 @@ HSPLandroid/hardware/display/DisplayManagerGlobal$DisplayManagerCallback;-><init
 HSPLandroid/hardware/display/DisplayManagerGlobal$DisplayManagerCallback;-><init>(Landroid/hardware/display/DisplayManagerGlobal;Landroid/hardware/display/DisplayManagerGlobal-IA;)V
 HSPLandroid/hardware/display/DisplayManagerGlobal$DisplayManagerCallback;->onDisplayEvent(II)V
 HSPLandroid/hardware/display/DisplayManagerGlobal;->-$$Nest$fgetmDm(Landroid/hardware/display/DisplayManagerGlobal;)Landroid/hardware/display/IDisplayManager;
-SPLandroid/hardware/display/DisplayManagerGlobal;->-$$Nest$smextraLogging()Z
+HSPLandroid/hardware/display/DisplayManagerGlobal;->-$$Nest$smextraLogging()Z
 HSPLandroid/hardware/display/DisplayManagerGlobal;-><init>(Landroid/hardware/display/IDisplayManager;)V
 HSPLandroid/hardware/display/DisplayManagerGlobal;->calculateEventsMaskLocked()J
 HSPLandroid/hardware/display/DisplayManagerGlobal;->extraLogging()Z
@@ -12063,7 +12094,7 @@ HSPLandroid/os/BluetoothServiceManager;-><init>()V
 HSPLandroid/os/BluetoothServiceManager;->getBluetoothManagerServiceRegisterer()Landroid/os/BluetoothServiceManager$ServiceRegisterer;
 HSPLandroid/os/Build$$ExternalSyntheticLambda0;->apply(Ljava/lang/Object;)Ljava/lang/Object;
 HSPLandroid/os/Build;->getMajorSdkVersion(I)I
-SPLandroid/os/Build;->getMinorSdkVersion(I)I
+HSPLandroid/os/Build;->getMinorSdkVersion(I)I
 HSPLandroid/os/Build;->getRadioVersion()Ljava/lang/String;
 HSPLandroid/os/Build;->getSerial()Ljava/lang/String;
 HSPLandroid/os/Build;->isDebuggable()Z
@@ -12807,6 +12838,7 @@ HSPLandroid/os/Parcel;->createStringArrayList()Ljava/util/ArrayList;
 HSPLandroid/os/Parcel;->createTypedArray(Landroid/os/Parcelable$Creator;)[Ljava/lang/Object;
 HSPLandroid/os/Parcel;->createTypedArrayList(Landroid/os/Parcelable$Creator;)Ljava/util/ArrayList;
 HSPLandroid/os/Parcel;->dataAvail()I
+HSPLandroid/os/Parcel;->dataCapacity()I
 HSPLandroid/os/Parcel;->dataPosition()I
 HSPLandroid/os/Parcel;->dataSize()I
 HSPLandroid/os/Parcel;->destroy()V
@@ -14183,6 +14215,7 @@ HSPLandroid/security/net/config/ApplicationConfig;->hasPerDomainConfigs()Z
 HSPLandroid/security/net/config/ApplicationConfig;->isCleartextTrafficPermitted()Z
 HSPLandroid/security/net/config/ApplicationConfig;->isCleartextTrafficPermitted(Ljava/lang/String;)Z
 HSPLandroid/security/net/config/ApplicationConfig;->setDefaultInstance(Landroid/security/net/config/ApplicationConfig;)V
+SPLandroid/security/net/config/CertificatesEntryRef;-><init>(Landroid/security/net/config/CertificateSource;ZZ)V
 HSPLandroid/security/net/config/CertificatesEntryRef;->disableCT()Z
 HSPLandroid/security/net/config/CertificatesEntryRef;->findAllCertificatesByIssuerAndSignature(Ljava/security/cert/X509Certificate;)Ljava/util/Set;
 HSPLandroid/security/net/config/CertificatesEntryRef;->findBySubjectAndPublicKey(Ljava/security/cert/X509Certificate;)Landroid/security/net/config/TrustAnchor;
@@ -18295,6 +18328,7 @@ HSPLandroid/view/View;->stopNestedScroll()V
 HSPLandroid/view/View;->switchDefaultFocusHighlight()V
 HSPLandroid/view/View;->toString()Ljava/lang/String;
 HSPLandroid/view/View;->transformFromViewToWindowSpace([I)V
+HSPLandroid/view/View;->transformMatrixToGlobal(Landroid/graphics/Matrix;)V+]Landroid/graphics/Matrix;Landroid/graphics/Matrix;]Landroid/view/View;missing_types
 HSPLandroid/view/View;->unFocus(Landroid/view/View;)V
 HSPLandroid/view/View;->unscheduleDrawable(Landroid/graphics/drawable/Drawable;)V
 HSPLandroid/view/View;->unscheduleDrawable(Landroid/graphics/drawable/Drawable;Ljava/lang/Runnable;)V
@@ -18344,6 +18378,7 @@ HSPLandroid/view/ViewConfiguration;->getScaledWindowTouchSlop()I
 HSPLandroid/view/ViewConfiguration;->getScrollBarFadeDuration()I
 HSPLandroid/view/ViewConfiguration;->getScrollDefaultDelay()I
 HSPLandroid/view/ViewConfiguration;->getScrollFriction()F
+SPLandroid/view/ViewConfiguration;->getScrollFrictionAmount()F
 HSPLandroid/view/ViewConfiguration;->getSettingValue(Ljava/lang/String;I)I
 HSPLandroid/view/ViewConfiguration;->getTapTimeout()I
 SPLandroid/view/ViewConfiguration;->getTapTimeoutMillis()I
@@ -18654,14 +18689,14 @@ HSPLandroid/view/ViewRootImpl$$ExternalSyntheticLambda22;-><init>(Landroid/view/
 SPLandroid/view/ViewRootImpl$$ExternalSyntheticLambda22;->execute(Ljava/lang/Runnable;)V
 HSPLandroid/view/ViewRootImpl$$ExternalSyntheticLambda23;-><init>(Landroid/view/ViewRootImpl;)V
 HSPLandroid/view/ViewRootImpl$$ExternalSyntheticLambda23;->run()V
-SPLandroid/view/ViewRootImpl$$ExternalSyntheticLambda24;->run()V
+HSPLandroid/view/ViewRootImpl$$ExternalSyntheticLambda24;->run()V
 HSPLandroid/view/ViewRootImpl$$ExternalSyntheticLambda3;->run()V
 HSPLandroid/view/ViewRootImpl$$ExternalSyntheticLambda6;->accept(Ljava/lang/Object;)V
 HSPLandroid/view/ViewRootImpl$10;->run()V
 SPLandroid/view/ViewRootImpl$11$$ExternalSyntheticLambda3;-><init>(Landroid/view/ViewRootImpl$11;JLandroid/window/SurfaceSyncGroup;Z)V
 SPLandroid/view/ViewRootImpl$11$$ExternalSyntheticLambda3;->onFrameCommit(Z)V
 SPLandroid/view/ViewRootImpl$11;->$r8$lambda$lOIKKNnrcWn9ZndeJebfX4H5mOg(Landroid/view/ViewRootImpl$11;JLandroid/window/SurfaceSyncGroup;ZZ)V
-SPLandroid/view/ViewRootImpl$11;-><init>(Landroid/view/ViewRootImpl;Landroid/view/SurfaceControl$Transaction;Landroid/window/SurfaceSyncGroup;Z)V
+HSPLandroid/view/ViewRootImpl$11;-><init>(Landroid/view/ViewRootImpl;Landroid/view/SurfaceControl$Transaction;Landroid/window/SurfaceSyncGroup;Z)V
 SPLandroid/view/ViewRootImpl$11;->lambda$onFrameDraw$3(JLandroid/window/SurfaceSyncGroup;ZZ)V
 HSPLandroid/view/ViewRootImpl$11;->onFrameDraw(IJ)Landroid/graphics/HardwareRenderer$FrameCommitCallback;
 SPLandroid/view/ViewRootImpl$2;-><init>(Landroid/view/ViewRootImpl;)V
@@ -19173,6 +19208,7 @@ HSPLandroid/view/WindowInsets;->insetUnchecked(IIII)Landroid/view/WindowInsets;
 HSPLandroid/view/WindowInsets;->isConsumed()Z
 HSPLandroid/view/WindowInsets;->isRound()Z
 HSPLandroid/view/WindowInsets;->replaceSystemWindowInsets(IIII)Landroid/view/WindowInsets;
+HSPLandroid/view/WindowInsets;->toDiffString(Landroid/view/WindowInsets;)Ljava/lang/String;
 HSPLandroid/view/WindowInsetsAnimation$Bounds;-><init>(Landroid/graphics/Insets;Landroid/graphics/Insets;)V
 HSPLandroid/view/WindowInsetsAnimation$Callback;-><init>(I)V
 HSPLandroid/view/WindowInsetsAnimation;-><init>(ILandroid/view/animation/Interpolator;J)V
@@ -19470,9 +19506,11 @@ HSPLandroid/view/autofill/AutofillClientController;->autofillClientRequestHideFi
 HSPLandroid/view/autofill/AutofillClientController;->autofillClientResetableStateAvailable()V
 HSPLandroid/view/autofill/AutofillClientController;->autofillClientRunOnUiThread(Ljava/lang/Runnable;)V
 HSPLandroid/view/autofill/AutofillClientController;->enableAutofillCompatibilityIfNeeded()V
+HSPLandroid/view/autofill/AutofillClientController;->forResume()V
 HSPLandroid/view/autofill/AutofillClientController;->getAutofillManager()Landroid/view/autofill/AutofillManager;
 HSPLandroid/view/autofill/AutofillClientController;->getNextAutofillId()I
 HSPLandroid/view/autofill/AutofillClientController;->isDisablingEnterExitEventForAutofill()Z
+HSPLandroid/view/autofill/AutofillClientController;->isRelayoutFixEnabled()Z
 HSPLandroid/view/autofill/AutofillClientController;->onActivityAttached(Landroid/app/Application;)V
 HSPLandroid/view/autofill/AutofillClientController;->onActivityCreated(Landroid/os/Bundle;)V
 HSPLandroid/view/autofill/AutofillClientController;->onActivityDestroyed()V
@@ -19537,8 +19575,10 @@ HSPLandroid/view/autofill/AutofillManager;->getClient()Landroid/view/autofill/Au
 HSPLandroid/view/autofill/AutofillManager;->hasAutofillFeature()Z
 HSPLandroid/view/autofill/AutofillManager;->hasFillDialogUiFeature()Z
 HSPLandroid/view/autofill/AutofillManager;->isActiveLocked()Z
+SPLandroid/view/autofill/AutofillManager;->isAuthenticationPending()Z
 HSPLandroid/view/autofill/AutofillManager;->isDisabledByServiceLocked()Z
 HSPLandroid/view/autofill/AutofillManager;->isEnabled()Z
+SPLandroid/view/autofill/AutofillManager;->isRelayoutFixEnabled()Z
 HSPLandroid/view/autofill/AutofillManager;->notifyValueChanged(Landroid/view/View;)V
 HSPLandroid/view/autofill/AutofillManager;->notifyViewEntered(Landroid/view/View;I)V
 HSPLandroid/view/autofill/AutofillManager;->notifyViewEnteredForAugmentedAutofill(Landroid/view/View;)V
@@ -19557,6 +19597,7 @@ HSPLandroid/view/autofill/AutofillManager;->resetSessionLocked(Z)V
 HSPLandroid/view/autofill/AutofillManager;->setSessionFinished(ILjava/util/List;)V
 HSPLandroid/view/autofill/AutofillManager;->setState(I)V
 HSPLandroid/view/autofill/AutofillManager;->shouldIgnoreViewEnteredLocked(Landroid/view/autofill/AutofillId;I)Z
+SPLandroid/view/autofill/AutofillManager;->shouldRetryFill()Z
 HSPLandroid/view/autofill/AutofillManager;->startAutofillIfNeededLocked(Landroid/view/View;)Z
 HSPLandroid/view/autofill/AutofillManager;->startSessionLocked(Landroid/view/autofill/AutofillId;Landroid/graphics/Rect;Landroid/view/autofill/AutofillValue;I)V
 HSPLandroid/view/autofill/AutofillManager;->tryAddServiceClientIfNeededLocked()Z
@@ -22298,6 +22339,7 @@ HSPLcom/android/internal/graphics/drawable/BackgroundBlurDrawable$Aggregator;->h
 HSPLcom/android/internal/graphics/drawable/BackgroundBlurDrawable$Aggregator;->hasUpdates()Z
 SPLcom/android/internal/hidden_from_bootclasspath/android/adpf/FeatureFlagsImpl;->adpfViewrootimplActionDownBoost()Z
 SPLcom/android/internal/hidden_from_bootclasspath/android/adpf/Flags;->adpfViewrootimplActionDownBoost()Z
+SPLcom/android/internal/hidden_from_bootclasspath/android/app/FeatureFlagsImpl;->earlyRenderThreadPriorityBoost()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/app/FeatureFlagsImpl;->fixContrastAndForceInvertStateForMultiUser()Z
 SPLcom/android/internal/hidden_from_bootclasspath/android/app/FeatureFlagsImpl;->getOptimizationInfoFromAppProcess()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/app/FeatureFlagsImpl;->jankPerceptibleNarrow()Z
@@ -22312,15 +22354,22 @@ HSPLcom/android/internal/hidden_from_bootclasspath/android/app/FeatureFlagsImpl;
 HSPLcom/android/internal/hidden_from_bootclasspath/android/app/FeatureFlagsImpl;->useStickyBcastCache()Z
 SPLcom/android/internal/hidden_from_bootclasspath/android/app/Flags;->fixContrastAndForceInvertStateForMultiUser()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/app/Flags;->nmBinderPerfCacheChannels()Z+]Lcom/android/internal/hidden_from_bootclasspath/android/app/FeatureFlags;Lcom/android/internal/hidden_from_bootclasspath/android/app/FeatureFlagsImpl;
-SPLcom/android/internal/hidden_from_bootclasspath/android/app/Flags;->notificationChannelVibrationEffectApi()Z
+HSPLcom/android/internal/hidden_from_bootclasspath/android/app/Flags;->notificationChannelVibrationEffectApi()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/app/Flags;->reportPostgcMemoryMetrics()Z
-SPLcom/android/internal/hidden_from_bootclasspath/android/app/Flags;->sharedpreferencesSkipFsync()Z
+HSPLcom/android/internal/hidden_from_bootclasspath/android/app/Flags;->sharedpreferencesSkipFsync()Z+]Lcom/android/internal/hidden_from_bootclasspath/android/app/FeatureFlags;Lcom/android/internal/hidden_from_bootclasspath/android/app/FeatureFlagsImpl;
 HSPLcom/android/internal/hidden_from_bootclasspath/android/app/Flags;->useStickyBcastCache()Z
+SPLcom/android/internal/hidden_from_bootclasspath/android/app/jank/FeatureFlagsImpl;->detailedAppJankMetricsApi()Z
+SPLcom/android/internal/hidden_from_bootclasspath/android/app/jank/FeatureFlagsImpl;->detailedAppJankMetricsLoggingEnabled()Z
+SPLcom/android/internal/hidden_from_bootclasspath/android/app/jank/FeatureFlagsImpl;->disableUserBuildJankMetrics()Z
+SPLcom/android/internal/hidden_from_bootclasspath/android/app/jank/Flags;->detailedAppJankMetricsLoggingEnabled()Z
+SPLcom/android/internal/hidden_from_bootclasspath/android/app/jank/Flags;->disableUserBuildJankMetrics()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/app/job/FeatureFlagsImpl;->handleAbandonedJobs()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/app/job/FeatureFlagsImpl;->ignoreImportantWhileForeground()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/app/job/Flags;->handleAbandonedJobs()Z
+HSPLcom/android/internal/hidden_from_bootclasspath/android/appwidget/flags/FeatureFlagsImpl;->generatedPreviews()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/companion/virtualdevice/flags/FeatureFlagsImpl;-><init>()V
 HSPLcom/android/internal/hidden_from_bootclasspath/android/companion/virtualdevice/flags/FeatureFlagsImpl;->deviceAwareSettingsOverride()Z
+HSPLcom/android/internal/hidden_from_bootclasspath/android/companion/virtualdevice/flags/FeatureFlagsImpl;->deviceAwareUiMode()Z
 SPLcom/android/internal/hidden_from_bootclasspath/android/companion/virtualdevice/flags/FeatureFlagsImpl;->migrateViewconfigurationConstantsToResources()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/companion/virtualdevice/flags/FeatureFlagsImpl;->viewconfigurationApis()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/companion/virtualdevice/flags/Flags;->deviceAwareSettingsOverride()Z
@@ -22350,8 +22399,11 @@ SPLcom/android/internal/hidden_from_bootclasspath/android/os/Flags;->enableAngle
 SPLcom/android/internal/hidden_from_bootclasspath/android/os/Flags;->perfettoSdkTracingV3()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/os/Flags;->useConcurrentMessageQueueInApps()Z
 SPLcom/android/internal/hidden_from_bootclasspath/android/os/Flags;->useQueryAngleChoice()Z
+HSPLcom/android/internal/hidden_from_bootclasspath/android/permission/flags/FeatureFlagsImpl;->appopModeCachingEnabled()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/permission/flags/FeatureFlagsImpl;->checkPackageCachingEnabled()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/permission/flags/FeatureFlagsImpl;->deviceAwarePermissionApisEnabled()Z
+HSPLcom/android/internal/hidden_from_bootclasspath/android/permission/flags/FeatureFlagsImpl;->enforceDefaultDeviceIdInMyAttributionSource()Z
+HSPLcom/android/internal/hidden_from_bootclasspath/android/permission/flags/Flags;->appopModeCachingEnabled()Z+]Lcom/android/internal/hidden_from_bootclasspath/android/permission/flags/FeatureFlags;Lcom/android/internal/hidden_from_bootclasspath/android/permission/flags/FeatureFlagsImpl;
 HSPLcom/android/internal/hidden_from_bootclasspath/android/permission/flags/Flags;->checkPackageCachingEnabled()Z+]Lcom/android/internal/hidden_from_bootclasspath/android/permission/flags/FeatureFlags;Lcom/android/internal/hidden_from_bootclasspath/android/permission/flags/FeatureFlagsImpl;
 HSPLcom/android/internal/hidden_from_bootclasspath/android/security/FeatureFlagsImpl;->certificateTransparencyConfiguration()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/security/FeatureFlagsImpl;->checkApplicationThreadCalledBySystem()Z
@@ -22367,7 +22419,9 @@ SPLcom/android/internal/hidden_from_bootclasspath/android/service/autofill/Featu
 SPLcom/android/internal/hidden_from_bootclasspath/android/service/autofill/Flags;->autofillCredmanIntegration()Z
 SPLcom/android/internal/hidden_from_bootclasspath/android/service/autofill/Flags;->improveFillDialogAconfig()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/service/notification/FeatureFlagsImpl;->notificationClassification()Z
+SPLcom/android/internal/hidden_from_bootclasspath/android/tracing/FeatureFlagsImpl;->imetrackerProtolog()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/tracing/FeatureFlagsImpl;->protologAutoClearIncrementalState()Z
+SPLcom/android/internal/hidden_from_bootclasspath/android/tracing/Flags;->imetrackerProtolog()Z
 SPLcom/android/internal/hidden_from_bootclasspath/android/view/accessibility/FeatureFlagsImpl;->forceInvertColor()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/android/view/accessibility/FeatureFlagsImpl;->supplementalDescription()Z
 SPLcom/android/internal/hidden_from_bootclasspath/android/view/accessibility/Flags;->forceInvertColor()Z
@@ -22381,11 +22435,13 @@ HSPLcom/android/internal/hidden_from_bootclasspath/android/view/flags/FeatureFla
 SPLcom/android/internal/hidden_from_bootclasspath/android/view/flags/FeatureFlagsImpl;->viewVelocityApi()Z
 SPLcom/android/internal/hidden_from_bootclasspath/android/view/flags/Flags;->disableDrawWakeLock()Z
 SPLcom/android/internal/hidden_from_bootclasspath/android/view/flags/Flags;->sensitiveContentAppProtection()Z
+SPLcom/android/internal/hidden_from_bootclasspath/android/view/inputmethod/FeatureFlagsImpl;->editorinfoHandwritingEnabled()Z
 SPLcom/android/internal/hidden_from_bootclasspath/android/view/inputmethod/FeatureFlagsImpl;->initiationWithoutInputConnection()Z
 SPLcom/android/internal/hidden_from_bootclasspath/android/view/inputmethod/FeatureFlagsImpl;->reportAnimatingInsetsTypes()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/graphics/flags/FeatureFlagsImpl;->useResourcesFromContextToCreateDrawableIcons()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/graphics/flags/Flags;->useResourcesFromContextToCreateDrawableIcons()Z+]Lcom/android/internal/hidden_from_bootclasspath/com/android/graphics/flags/FeatureFlags;Lcom/android/internal/hidden_from_bootclasspath/com/android/graphics/flags/FeatureFlagsImpl;
 SPLcom/android/internal/hidden_from_bootclasspath/com/android/graphics/hwui/flags/FeatureFlagsImpl;->earlyPreinitBufferAllocator()Z
+HSPLcom/android/internal/hidden_from_bootclasspath/com/android/graphics/hwui/flags/FeatureFlagsImpl;->highContrastTextSmallTextRect()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/graphics/hwui/flags/FeatureFlagsImpl;->runtimeColorFiltersBlenders()Z
 SPLcom/android/internal/hidden_from_bootclasspath/com/android/graphics/hwui/flags/Flags;->earlyPreinitBufferAllocator()Z
 SPLcom/android/internal/hidden_from_bootclasspath/com/android/graphics/surfaceflinger/flags/FeatureFlagsImpl;-><init>()V
@@ -22397,8 +22453,8 @@ SPLcom/android/internal/hidden_from_bootclasspath/com/android/hardware/input/Fla
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/internal/compat/flags/FeatureFlagsImpl;-><init>()V
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/internal/compat/flags/FeatureFlagsImpl;->skipOldAndDisabledCompatLogging()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/internal/compat/flags/Flags;->skipOldAndDisabledCompatLogging()Z
-SPLcom/android/internal/hidden_from_bootclasspath/com/android/internal/os/FeatureFlagsImpl;->zygoteEarlyFifoBoost()Z
-SPLcom/android/internal/hidden_from_bootclasspath/com/android/internal/os/Flags;->zygoteEarlyFifoBoost()Z
+HSPLcom/android/internal/hidden_from_bootclasspath/com/android/internal/os/FeatureFlagsImpl;->zygoteEarlyFifoBoost()Z
+HSPLcom/android/internal/hidden_from_bootclasspath/com/android/internal/os/Flags;->zygoteEarlyFifoBoost()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/libcore/readonly/FeatureFlagsImpl;-><init>()V
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/libcore/readonly/FeatureFlagsImpl;->nativeMetrics()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/libcore/readonly/FeatureFlagsImpl;->postCleanupApis()Z
@@ -22410,6 +22466,7 @@ HSPLcom/android/internal/hidden_from_bootclasspath/com/android/org/conscrypt/net
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/org/conscrypt/net/flags/FeatureFlagsImpl;->init()V
 SPLcom/android/internal/hidden_from_bootclasspath/com/android/org/conscrypt/net/flags/FeatureFlagsImpl;->networkSecurityConfigLocalhost()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/org/conscrypt/net/flags/Flags;->certificateTransparencyDefaultEnabled()Z
+SPLcom/android/internal/hidden_from_bootclasspath/com/android/org/conscrypt/net/flags/Flags;->networkSecurityConfigLocalhost()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/server/display/feature/flags/FeatureFlagsImpl;->committedStateSeparateEvent()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/server/display/feature/flags/FeatureFlagsImpl;->delayImplicitRrRegistrationUntilRrAccessed()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/server/display/feature/flags/FeatureFlagsImpl;->displayCategoryBuiltIn()Z
@@ -22419,6 +22476,8 @@ SPLcom/android/internal/hidden_from_bootclasspath/com/android/server/display/fea
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/server/display/feature/flags/Flags;->enableDisplayContentModeManagement()Z
 SPLcom/android/internal/hidden_from_bootclasspath/com/android/server/display/feature/flags/Flags;->subscribeGranularDisplayEvents()Z
 SPLcom/android/internal/hidden_from_bootclasspath/com/android/text/flags/FeatureFlagsImpl;->doNotOverwriteStaticFinalField()Z
+HSPLcom/android/internal/hidden_from_bootclasspath/com/android/text/flags/FeatureFlagsImpl;->fixLineHeightForLocale()Z
+HSPLcom/android/internal/hidden_from_bootclasspath/com/android/text/flags/FeatureFlagsImpl;->fixShiftDrawingAmount()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/text/flags/FeatureFlagsImpl;->insertModeNotUpdateSelection()Z
 SPLcom/android/internal/hidden_from_bootclasspath/com/android/window/flags/FeatureFlagsImpl;->alwaysSeqIdLayout()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/window/flags/FeatureFlagsImpl;->currentAnimatorScaleUsesSharedMemory()Z
@@ -22427,6 +22486,7 @@ HSPLcom/android/internal/hidden_from_bootclasspath/com/android/window/flags/Feat
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/window/flags/FeatureFlagsImpl;->enableDesktopWindowingMode()Z
 SPLcom/android/internal/hidden_from_bootclasspath/com/android/window/flags/FeatureFlagsImpl;->multipleSystemNavigationObserverCallbacks()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/window/flags/FeatureFlagsImpl;->predictiveBackPrioritySystemNavigationObserver()Z
+SPLcom/android/internal/hidden_from_bootclasspath/com/android/window/flags/FeatureFlagsImpl;->predictiveBackStopKeycodeBackForwarding()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/window/flags/FeatureFlagsImpl;->predictiveBackSystemOverrideCallback()Z
 SPLcom/android/internal/hidden_from_bootclasspath/com/android/window/flags/FeatureFlagsImpl;->relativeInsets()Z
 HSPLcom/android/internal/hidden_from_bootclasspath/com/android/window/flags/FeatureFlagsImpl;->scrollingFromLetterbox()Z
@@ -22965,6 +23025,9 @@ HSPLcom/android/internal/protolog/PerfettoProtoLogImpl$$ExternalSyntheticLambda3
 SPLcom/android/internal/protolog/PerfettoProtoLogImpl$$ExternalSyntheticLambda7;->run()V
 HSPLcom/android/internal/protolog/PerfettoProtoLogImpl$$ExternalSyntheticLambda8;-><init>(Lcom/android/internal/protolog/PerfettoProtoLogImpl;Lcom/android/internal/protolog/common/IProtoLogGroup;Lcom/android/internal/protolog/common/LogLevel;[Ljava/lang/Object;Lcom/android/internal/protolog/PerfettoProtoLogImpl$Message;Ljava/lang/String;J)V
 HSPLcom/android/internal/protolog/PerfettoProtoLogImpl$$ExternalSyntheticLambda8;->trace(Landroid/tracing/perfetto/TracingContext;)V
+HSPLcom/android/internal/protolog/PerfettoProtoLogImpl$Message;-><init>(Ljava/lang/String;)V
+HSPLcom/android/internal/protolog/PerfettoProtoLogImpl$Message;-><init>(Ljava/lang/String;Lcom/android/internal/protolog/PerfettoProtoLogImpl-IA;)V
+SPLcom/android/internal/protolog/PerfettoProtoLogImpl$Message;->getMessage()Ljava/lang/String;
 SPLcom/android/internal/protolog/PerfettoProtoLogImpl;->$r8$lambda$7eDAMlUtiSwW17D4A0Lbox9NhrY(Lcom/android/internal/protolog/PerfettoProtoLogImpl;[Lcom/android/internal/protolog/common/IProtoLogGroup;)V
 HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;->$r8$lambda$ZcyRTWB_Eb9kujcilMqAipXZ-ks(Lcom/android/internal/protolog/PerfettoProtoLogImpl;Lcom/android/internal/protolog/common/IProtoLogGroup;Lcom/android/internal/protolog/common/LogLevel;[Ljava/lang/Object;Lcom/android/internal/protolog/PerfettoProtoLogImpl$Message;Ljava/lang/String;JLandroid/tracing/perfetto/TracingContext;)V
 SPLcom/android/internal/protolog/PerfettoProtoLogImpl;->$r8$lambda$rDTRem6OeVKDGh4ARgWHrwqJk90(Lcom/android/internal/protolog/PerfettoProtoLogImpl;I)V
@@ -22972,6 +23035,7 @@ HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;->$r8$lambda$sDQA9bRkQzHa
 HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;-><init>(Lcom/android/internal/protolog/ProtoLogDataSource;Lcom/android/internal/protolog/ProtoLogCacheUpdater;[Lcom/android/internal/protolog/common/IProtoLogGroup;)V
 HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;-><init>(Lcom/android/internal/protolog/ProtoLogDataSource;Lcom/android/internal/protolog/ProtoLogCacheUpdater;[Lcom/android/internal/protolog/common/IProtoLogGroup;Lcom/android/internal/protolog/IProtoLogConfigurationService;)V
 HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;->enable()V
+HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;->internProtoMessage(Landroid/tracing/perfetto/TracingContext;Lcom/android/internal/protolog/common/LogLevel;Lcom/android/internal/protolog/common/IProtoLogGroup;Ljava/lang/String;)J+]Landroid/tracing/perfetto/TracingContext;Landroid/tracing/perfetto/TracingContext;]Lcom/android/internal/protolog/common/IProtoLogGroup;missing_types]Ljava/util/Set;Ljava/util/HashSet;
 HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;->isEnabled(Lcom/android/internal/protolog/common/IProtoLogGroup;Lcom/android/internal/protolog/common/LogLevel;)Z+]Lcom/android/internal/protolog/common/IProtoLogGroup;missing_types]Ljava/util/Map;Landroid/util/ArrayMap;]Ljava/util/concurrent/locks/Lock;Ljava/util/concurrent/locks/ReentrantReadWriteLock$ReadLock;]Ljava/util/concurrent/locks/ReadWriteLock;Ljava/util/concurrent/locks/ReentrantReadWriteLock;
 HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;->isProtoEnabled()Z
 SPLcom/android/internal/protolog/PerfettoProtoLogImpl;->lambda$connectToConfigurationServiceAsync$1([Lcom/android/internal/protolog/common/IProtoLogGroup;)V
@@ -22981,6 +23045,7 @@ SPLcom/android/internal/protolog/PerfettoProtoLogImpl;->lambda$new$0(Ljava/lang/
 SPLcom/android/internal/protolog/PerfettoProtoLogImpl;->lambda$queueTracingInstanceAddition$8(I)V
 SPLcom/android/internal/protolog/PerfettoProtoLogImpl;->lambda$registerGroupsLocally$5(I)[Lcom/android/internal/protolog/common/IProtoLogGroup;
 HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;->log(Lcom/android/internal/protolog/common/LogLevel;Lcom/android/internal/protolog/common/IProtoLogGroup;Lcom/android/internal/protolog/PerfettoProtoLogImpl$Message;[Ljava/lang/Object;)V+]Lcom/android/internal/protolog/PerfettoProtoLogImpl;Lcom/android/internal/protolog/ProcessedPerfettoProtoLogImpl;,Lcom/android/internal/protolog/UnprocessedPerfettoProtoLogImpl;]Lcom/android/internal/protolog/common/IProtoLogGroup;missing_types]Ljava/util/Map;Landroid/util/ArrayMap;]Ljava/util/concurrent/ExecutorService;Ljava/util/concurrent/Executors$AutoShutdownDelegatedExecutorService;
+HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;->log(Lcom/android/internal/protolog/common/LogLevel;Lcom/android/internal/protolog/common/IProtoLogGroup;Ljava/lang/String;[Ljava/lang/Object;)V
 HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;->logToLogcat(Ljava/lang/String;Lcom/android/internal/protolog/common/LogLevel;Lcom/android/internal/protolog/PerfettoProtoLogImpl$Message;[Ljava/lang/Object;)V+]Lcom/android/internal/protolog/PerfettoProtoLogImpl;Lcom/android/internal/protolog/ProcessedPerfettoProtoLogImpl;,Lcom/android/internal/protolog/UnprocessedPerfettoProtoLogImpl;
 HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;->logToLogcat(Ljava/lang/String;Lcom/android/internal/protolog/common/LogLevel;Ljava/lang/String;[Ljava/lang/Object;)V+]Lcom/android/internal/protolog/PerfettoProtoLogImpl;Lcom/android/internal/protolog/ProcessedPerfettoProtoLogImpl;,Lcom/android/internal/protolog/UnprocessedPerfettoProtoLogImpl;
 HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;->logToProto(Lcom/android/internal/protolog/common/LogLevel;Lcom/android/internal/protolog/common/IProtoLogGroup;Lcom/android/internal/protolog/PerfettoProtoLogImpl$Message;[Ljava/lang/Object;JLjava/lang/String;)V
@@ -22991,9 +23056,11 @@ HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;->readyToLogToLogcat()V
 HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;->registerGroupsLocally([Lcom/android/internal/protolog/common/IProtoLogGroup;)V
 HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;->snapshotMutableArgsToStringInPlace([Ljava/lang/Object;)V+]Ljava/lang/Object;megamorphic_types
 HSPLcom/android/internal/protolog/PerfettoProtoLogImpl;->verifyNoCollisionsOrDuplicates([Lcom/android/internal/protolog/common/IProtoLogGroup;)V
+HSPLcom/android/internal/protolog/ProtoLog;->d(Lcom/android/internal/protolog/common/IProtoLogGroup;Ljava/lang/String;[Ljava/lang/Object;)V
 HSPLcom/android/internal/protolog/ProtoLog;->getSharedSingleInstanceDataSource()Lcom/android/internal/protolog/ProtoLogDataSource;
 HSPLcom/android/internal/protolog/ProtoLog;->init([Lcom/android/internal/protolog/common/IProtoLogGroup;)V
 SPLcom/android/internal/protolog/ProtoLog;->logOnlyToLogcat()Z
+HSPLcom/android/internal/protolog/ProtoLog;->logStringMessage(Lcom/android/internal/protolog/common/LogLevel;Lcom/android/internal/protolog/common/IProtoLogGroup;Ljava/lang/String;[Ljava/lang/Object;)V+]Lcom/android/internal/protolog/common/IProtoLog;Lcom/android/internal/protolog/UnprocessedPerfettoProtoLogImpl;
 SPLcom/android/internal/protolog/ProtoLogController$$ExternalSyntheticLambda0;-><init>()V
 SPLcom/android/internal/protolog/ProtoLogController$$ExternalSyntheticLambda0;->test(Ljava/lang/Object;)Z
 SPLcom/android/internal/protolog/ProtoLogController$$ExternalSyntheticLambda1;-><init>(Lcom/android/internal/protolog/ProtoLogController;)V
@@ -23010,6 +23077,7 @@ SPLcom/android/internal/protolog/ProtoLogDataSource$$ExternalSyntheticLambda0;->
 HSPLcom/android/internal/protolog/ProtoLogDataSource$$ExternalSyntheticLambda1;-><init>(Lcom/android/internal/protolog/ProtoLogDataSource;)V
 HSPLcom/android/internal/protolog/ProtoLogDataSource$$ExternalSyntheticLambda2;-><init>(Lcom/android/internal/protolog/ProtoLogDataSource;)V
 HSPLcom/android/internal/protolog/ProtoLogDataSource$GroupConfig;-><init>(Lcom/android/internal/protolog/common/LogLevel;Z)V
+HSPLcom/android/internal/protolog/ProtoLogDataSource$IncrementalState;-><init>()V
 HSPLcom/android/internal/protolog/ProtoLogDataSource$Instance;->onStart(Landroid/tracing/perfetto/StartCallbackArguments;)V
 HSPLcom/android/internal/protolog/ProtoLogDataSource$ProtoLogConfig;-><init>(Lcom/android/internal/protolog/common/LogLevel;Ljava/util/Map;)V
 HSPLcom/android/internal/protolog/ProtoLogDataSource$ProtoLogConfig;-><init>(Lcom/android/internal/protolog/common/LogLevel;Ljava/util/Map;Lcom/android/internal/protolog/ProtoLogDataSource-IA;)V
@@ -23036,7 +23104,10 @@ HSPLcom/android/internal/protolog/UnprocessedPerfettoProtoLogImpl$$ExternalSynth
 HSPLcom/android/internal/protolog/UnprocessedPerfettoProtoLogImpl$$ExternalSyntheticLambda0;->update(Lcom/android/internal/protolog/common/IProtoLog;)V
 HSPLcom/android/internal/protolog/UnprocessedPerfettoProtoLogImpl;-><init>(Lcom/android/internal/protolog/ProtoLogDataSource;[Lcom/android/internal/protolog/common/IProtoLogGroup;)V
 SPLcom/android/internal/protolog/UnprocessedPerfettoProtoLogImpl;->createConfigurationServiceRegisterClientArgs()Lcom/android/internal/protolog/IProtoLogConfigurationService$RegisterClientArgs;
+HSPLcom/android/internal/protolog/UnprocessedPerfettoProtoLogImpl;->getLogcatMessageString(Lcom/android/internal/protolog/PerfettoProtoLogImpl$Message;)Ljava/lang/String;+]Lcom/android/internal/protolog/PerfettoProtoLogImpl$Message;Lcom/android/internal/protolog/PerfettoProtoLogImpl$Message;
 HSPLcom/android/internal/protolog/UnprocessedPerfettoProtoLogImpl;->lambda$new$0(Lcom/android/internal/protolog/common/IProtoLog;)V
+HSPLcom/android/internal/protolog/common/LogDataType;->logDataTypesToBitMask(Ljava/util/List;)I+]Ljava/util/List;Ljava/util/ArrayList;
+HSPLcom/android/internal/protolog/common/LogDataType;->parseFormatString(Ljava/lang/String;)Ljava/util/List;
 HSPLcom/android/internal/protolog/common/LogLevel;->$values()[Lcom/android/internal/protolog/common/LogLevel;
 HSPLcom/android/internal/protolog/common/LogLevel;-><init>(Ljava/lang/String;ILjava/lang/String;I)V
 HSPLcom/android/internal/protolog/common/LogLevel;->values()[Lcom/android/internal/protolog/common/LogLevel;
@@ -23536,8 +23607,8 @@ HSPLcom/android/modules/utils/TypedXmlPullParser;->getAttributeBoolean(Ljava/lan
 HSPLcom/android/modules/utils/TypedXmlPullParser;->getAttributeFloat(Ljava/lang/String;Ljava/lang/String;)F
 HSPLcom/android/modules/utils/TypedXmlPullParser;->getAttributeIndex(Ljava/lang/String;Ljava/lang/String;)I+]Lcom/android/modules/utils/TypedXmlPullParser;Lcom/android/internal/util/XmlUtils$ForcedTypedXmlPullParser;
 HSPLcom/android/modules/utils/TypedXmlPullParser;->getAttributeIndexOrThrow(Ljava/lang/String;Ljava/lang/String;)I+]Lcom/android/modules/utils/TypedXmlPullParser;Lcom/android/internal/util/XmlUtils$ForcedTypedXmlPullParser;
-HSPLcom/android/modules/utils/TypedXmlPullParser;->getAttributeInt(Ljava/lang/String;Ljava/lang/String;)I
-HSPLcom/android/modules/utils/TypedXmlPullParser;->getAttributeLong(Ljava/lang/String;Ljava/lang/String;)J
+HSPLcom/android/modules/utils/TypedXmlPullParser;->getAttributeInt(Ljava/lang/String;Ljava/lang/String;)I+]Lcom/android/modules/utils/TypedXmlPullParser;Lcom/android/internal/util/XmlUtils$ForcedTypedXmlPullParser;
+HSPLcom/android/modules/utils/TypedXmlPullParser;->getAttributeLong(Ljava/lang/String;Ljava/lang/String;)J+]Lcom/android/modules/utils/TypedXmlPullParser;Lcom/android/internal/util/XmlUtils$ForcedTypedXmlPullParser;
 HSPLcom/android/net/module/util/LinkPropertiesUtils;->isIdenticalAddresses(Landroid/net/LinkProperties;Landroid/net/LinkProperties;)Z
 HSPLcom/android/net/module/util/LinkPropertiesUtils;->isIdenticalDnses(Landroid/net/LinkProperties;Landroid/net/LinkProperties;)Z
 HSPLcom/android/net/module/util/LinkPropertiesUtils;->isIdenticalHttpProxy(Landroid/net/LinkProperties;Landroid/net/LinkProperties;)Z
@@ -38519,6 +38590,7 @@ Ljava/util/Collections$UnmodifiableMap$UnmodifiableEntrySet;
 Ljava/util/Collections$UnmodifiableMap;
 Ljava/util/Collections$UnmodifiableRandomAccessList;
 Ljava/util/Collections$UnmodifiableSet;
+Ljava/util/Collections$UnmodifiableSortedSet;
 Ljava/util/HashMap$EntryIterator;
 Ljava/util/HashMap$EntrySet;
 Ljava/util/HashMap$KeyIterator;
@@ -38539,20 +38611,26 @@ Ljava/util/LinkedHashMap$LinkedEntryIterator;
 Ljava/util/LinkedHashMap$LinkedEntrySet;
 Ljava/util/LinkedHashMap$LinkedKeyIterator;
 Ljava/util/LinkedHashMap$LinkedKeySet;
+Ljava/util/LinkedHashMap$LinkedValueIterator;
 Ljava/util/LinkedHashMap$LinkedValues;
 Ljava/util/LinkedList$ListItr;
 Ljava/util/RegularEnumSet$EnumSetIterator;
 Ljava/util/RegularEnumSet;
+Ljava/util/TreeMap$EntryIterator;
+Ljava/util/TreeMap$EntrySet;
 Ljava/util/TreeMap$KeyIterator;
+Ljava/util/TreeMap$TreeMapEntry;
 Ljava/util/concurrent/ConcurrentHashMap$EntryIterator;
 Ljava/util/concurrent/ConcurrentHashMap$EntrySetView;
 Ljava/util/concurrent/ConcurrentHashMap$MapEntry;
 Ljava/util/concurrent/ConcurrentHashMap$ValuesView;
 Ljava/util/concurrent/ConcurrentLinkedDeque;
+Ljava/util/concurrent/ConcurrentLinkedQueue$Itr;
 Ljava/util/concurrent/CopyOnWriteArrayList$COWIterator;
 Ljava/util/concurrent/Executors$AutoShutdownDelegatedExecutorService;
 Ljava/util/concurrent/locks/ReentrantReadWriteLock$ReadLock;
 Ljava/util/function/DoubleUnaryOperator$$ExternalSyntheticLambda2;
+Ljava/util/stream/DistinctOps$1;
 Ljava/util/stream/IntPipeline$10;
 Ljava/util/stream/IntPipeline$1;
 Ljava/util/stream/IntPipeline$4;
