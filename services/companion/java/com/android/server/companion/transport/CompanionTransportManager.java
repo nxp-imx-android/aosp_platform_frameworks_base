@@ -231,6 +231,11 @@ public class CompanionTransportManager {
         }
 
         Slog.i(TAG, "Transport attached.");
+
+        AssociationInfo updatedAssociation = new AssociationInfo.Builder(association)
+                .setTransportAttached(true)
+                .build();
+        mAssociationStore.updateAssociation(updatedAssociation);
     }
 
     /**
@@ -239,7 +244,8 @@ public class CompanionTransportManager {
     public void detachSystemDataTransport(int associationId) {
         Slog.i(TAG, "Detaching transport for association id=[" + associationId + "]...");
 
-        mAssociationStore.getAssociationWithCallerChecks(associationId);
+        AssociationInfo association =
+                mAssociationStore.getAssociationWithCallerChecks(associationId);
 
         synchronized (mTransports) {
             final Transport transport = mTransports.removeReturnOld(associationId);
@@ -248,10 +254,16 @@ public class CompanionTransportManager {
             }
 
             transport.close();
+
             notifyOnTransportsChanged();
         }
 
         Slog.i(TAG, "Transport detached.");
+
+        AssociationInfo updatedAssociation = new AssociationInfo.Builder(association)
+                .setTransportAttached(false)
+                .build();
+        mAssociationStore.updateAssociation(updatedAssociation);
     }
 
     /**

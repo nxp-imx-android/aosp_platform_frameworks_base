@@ -10374,6 +10374,22 @@ package android.companion {
     field public static final int REQUEST_TRANSPORT = 2; // 0x2
   }
 
+  @FlaggedApi("android.companion.enable_data_sync") public final class ActionResult implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getAction();
+    method public int getResultCode();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.companion.ActionResult> CREATOR;
+    field public static final int RESULT_ACTIVATED = 0; // 0x0
+    field public static final int RESULT_DEACTIVATED = 2; // 0x2
+    field public static final int RESULT_FAILED_TO_ACTIVATE = 1; // 0x1
+  }
+
+  public static final class ActionResult.Builder {
+    ctor public ActionResult.Builder(int, int);
+    method @NonNull public android.companion.ActionResult build();
+  }
+
   public final class AssociatedDevice implements android.os.Parcelable {
     method public int describeContents();
     method @Nullable public android.bluetooth.le.ScanResult getBleDevice();
@@ -10395,6 +10411,7 @@ package android.companion {
     method public int getId();
     method public int getSystemDataSyncFlags();
     method public boolean isSelfManaged();
+    method @FlaggedApi("android.companion.enable_data_sync") public boolean isTransportAttached();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.AssociationInfo> CREATOR;
   }
@@ -10482,6 +10499,7 @@ package android.companion {
     method @NonNull public java.util.List<android.companion.AssociationInfo> getMyAssociations();
     method @Deprecated public boolean hasNotificationAccess(android.content.ComponentName);
     method @FlaggedApi("android.companion.perm_sync_user_consent") public boolean isPermissionTransferUserConsented(int);
+    method @FlaggedApi("android.companion.enable_data_sync") public void notifyActionResult(int, @NonNull android.companion.ActionResult);
     method @FlaggedApi("android.companion.unpair_associated_device") @RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT) public boolean removeBond(int);
     method public void requestNotificationAccess(android.content.ComponentName);
     method @Deprecated @FlaggedApi("android.companion.association_verification") public void setDeviceId(int, @Nullable android.companion.DeviceId);
