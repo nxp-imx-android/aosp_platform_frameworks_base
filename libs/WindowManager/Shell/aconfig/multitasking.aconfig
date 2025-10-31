@@ -315,3 +315,13 @@ flag {
     description: "Add one-off leashes to non-Shell handlers (Remote, Recents, etc.) when starting or taking over an animation."
     bug: "403529740"
 }
+
+flag {
+    name: "fix_bubble_swipe_up_dismiss_bubble_bar"
+    namespace: "multitasking"
+    description: "Allows you to swipe up to dismiss a bubble in bubble bar"
+    bug: "399910368"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
