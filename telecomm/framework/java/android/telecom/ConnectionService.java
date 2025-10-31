@@ -101,6 +101,11 @@ import java.util.concurrent.Executor;
  * When there are no more live calls, telecom will unbind from the {@link ConnectionService}.
  * <p>
  * <h1>Self-Managed Connection Services</h1>
+ * NOTE: VoIP applications that want to integrate with the Telecom framework should transition to
+ * the new Telecom VoIP APIs which are wrapped by the
+ * <a href="https://developer.android.com/reference/androidx/core/telecom/CallsManager>Core
+ * Telecom</a> Jetpack library.
+ * <p>
  * A VoIP app can implement a {@link ConnectionService} to ensure that its calls are integrated
  * into the Android platform.  There are numerous benefits to using the Telecom APIs for a VoIP app:
  * <ul>

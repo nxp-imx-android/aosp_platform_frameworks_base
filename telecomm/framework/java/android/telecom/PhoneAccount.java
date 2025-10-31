@@ -425,7 +425,14 @@ public final class PhoneAccount implements Parcelable {
      * its {@link Connection}s.
      * <p>
      * Self-managed {@link Connection}s will, however, be displayed on connected Bluetooth devices.
+     *
+     * @deprecated VoIP applications that want to integrate with the Telecom framework should
+     * transition to the new Telecom VoIP APIs which are wrapped by the
+     * <a href="https://developer.android.com/reference/androidx/core/telecom/CallsManager>Core
+     * Telecom</a> Jetpack Library.
      */
+    @Deprecated
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_DEPRECATE_SELF_MANAGED_CS)
     public static final int CAPABILITY_SELF_MANAGED = 0x800;
 
     /**
