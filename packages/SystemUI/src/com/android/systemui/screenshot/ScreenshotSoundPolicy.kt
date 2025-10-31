@@ -18,7 +18,6 @@ package com.android.systemui.screenshot
 
 import android.hardware.camera2.CameraManager
 import android.media.MediaActionSound
-import com.android.systemui.Flags.screenshotForceShutterSound
 import com.android.systemui.dagger.qualifiers.Main
 import java.util.concurrent.Executor
 import javax.inject.Inject
@@ -34,24 +33,22 @@ constructor(
     private var cameraOpen: Boolean = false
 
     init {
-        if (screenshotForceShutterSound()) {
-            cameraManager.registerAvailabilityCallback(
-                mainExecutor,
-                object : CameraManager.AvailabilityCallback() {
-                    override fun onCameraOpened(cameraId: String, packageId: String) {
-                        cameraOpen = true
-                    }
+        cameraManager.registerAvailabilityCallback(
+            mainExecutor,
+            object : CameraManager.AvailabilityCallback() {
+                override fun onCameraOpened(cameraId: String, packageId: String) {
+                    cameraOpen = true
+                }
 
-                    override fun onCameraClosed(cameraId: String) {
-                        cameraOpen = false
-                    }
-                },
-            )
-        }
+                override fun onCameraClosed(cameraId: String) {
+                    cameraOpen = false
+                }
+            },
+        )
     }
 
     fun shouldForceShutterSound(): Boolean {
-        return screenshotForceShutterSound() && shutterPolicy.mustPlayShutterSound() && cameraOpen
+        return shutterPolicy.mustPlayShutterSound() && cameraOpen
     }
 }
 

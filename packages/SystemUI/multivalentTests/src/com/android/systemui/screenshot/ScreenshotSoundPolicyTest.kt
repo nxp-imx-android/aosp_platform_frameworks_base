@@ -17,11 +17,8 @@
 package com.android.systemui.screenshot
 
 import android.hardware.camera2.CameraManager
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.Executor
@@ -30,8 +27,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @SmallTest
@@ -60,16 +55,6 @@ class ScreenshotSoundPolicyTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_SCREENSHOT_FORCE_SHUTTER_SOUND)
-    fun flagOff_shouldNotForce() {
-        whenever(shutterSoundPolicy.mustPlayShutterSound()).thenReturn(true)
-        verify(cameraManager, never()).registerAvailabilityCallback(any<Executor>(), any())
-
-        assertThat(screenshotSoundPolicy.shouldForceShutterSound()).isFalse()
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_SCREENSHOT_FORCE_SHUTTER_SOUND)
     fun cameraOff_shouldNotForce() {
         whenever(shutterSoundPolicy.mustPlayShutterSound()).thenReturn(true)
         cameraAvailabilityCallback.onCameraOpened("testCameraId", "testPackageId")
@@ -79,7 +64,6 @@ class ScreenshotSoundPolicyTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SCREENSHOT_FORCE_SHUTTER_SOUND)
     fun shutterNotForced_shouldNotForce() {
         whenever(shutterSoundPolicy.mustPlayShutterSound()).thenReturn(false)
         cameraAvailabilityCallback.onCameraOpened("testCameraId", "testPackageId")
@@ -88,7 +72,6 @@ class ScreenshotSoundPolicyTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SCREENSHOT_FORCE_SHUTTER_SOUND)
     fun shutterForcedAndCameraOpen_shouldForce() {
         whenever(shutterSoundPolicy.mustPlayShutterSound()).thenReturn(true)
         cameraAvailabilityCallback.onCameraOpened("testCameraId", "testPackageId")
