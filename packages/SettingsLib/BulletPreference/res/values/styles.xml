@@ -16,6 +16,16 @@
   -->
 
 <resources>
+    <style name="TextAppearance.SettingsLib.Bullet.Title"
+        parent="@style/TextAppearance.SettingsLib.BodyLarge.Emphasized">
+        <item name="android:textColor">@color/settingslib_materialColorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.SettingsLib.Bullet.Summary"
+        parent="@style/TextAppearance.SettingsLib.BodyMedium">
+        <item name="android:textColor">@color/settingslib_materialColorOnSurfaceVariant</item>
+    </style>
+
     <style name="TextAppearance.SettingsLib.Bullet.LearnMore"
         parent="@style/TextAppearance.SettingsLib.TitleSmall">
         <item name="android:textColor">@color/settingslib_materialColorPrimary</item>

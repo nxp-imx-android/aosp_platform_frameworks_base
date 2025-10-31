@@ -64,13 +64,11 @@ class BulletPreference @JvmOverloads constructor(
         val learnMoreTextView = holder.findViewById(R.id.settingslib_learn_more) as TextView
 
         setupLearnMoreView(learnMoreTextView, learnMore)
-    }
 
-    /**
-     * Set selectable to false to ensure that the BulletPreference works correctly with Talk Back,
-     * Voice access and Switch Access. This will ensure it's selectable, but not tappable.
-     */
-    override fun isSelectable(): Boolean = false
+        // Set clickable to false to ensure that the BulletPreference works correctly with TalkBack,
+        // Voice access and Switch Access. This will ensure it's selectable, but not tappable.
+        holder.itemView.isClickable = false
+    }
 
     private fun setupLearnMoreView(textView: TextView, learnMore: LearnMore?) {
         if (learnMore == null) {
