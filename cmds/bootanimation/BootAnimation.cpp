@@ -1426,9 +1426,7 @@ bool BootAnimation::movie() {
         }
     }
 
-    if (com::android::graphics::bootanimation::flags::rgb565()) {
-        mDecodeOpaqueImageTo565 = android::base::GetBoolProperty(DECODE_RGB565_PROP_NAME, false);
-    }
+    mDecodeOpaqueImageTo565 = android::base::GetBoolProperty(DECODE_RGB565_PROP_NAME, false);
 
     // Blend required to draw time on top of animation frames.
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
