@@ -235,6 +235,13 @@ flag {
 }
 
 flag {
+    name: "quick_access_shortcut_type"
+    namespace: "accessibility"
+    description: "Add a new QUICK_ACCESS accessibility shortcut type used by the Quick Access dialog"
+    bug: "455679688"
+}
+
+flag {
     name: "reduce_window_content_changed_event_throttle"
     namespace: "accessibility"
     description: "Reduces the throttle of AccessibilityEvent of TYPE_WINDOW_CONTENT_CHANGED"
