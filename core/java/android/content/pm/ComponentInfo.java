@@ -185,6 +185,25 @@ public class ComponentInfo extends PackageItemInfo {
         return banner != 0 ? banner : applicationInfo.banner;
     }
 
+    /**
+     * Return the uid to use for this component based on whether it should run in pcc or not.
+     * @hide
+     */
+    public final int getUid() {
+        return shouldRunInPccSandbox() ? applicationInfo.pccUid : applicationInfo.uid;
+    }
+
+    /**
+     * Return whether this component should run in PCC sandbox or not.
+     * This method should be overridden by concrete application components
+     * ({@link ActivityInfo}, {@link ServiceInfo}, {@link ProviderInfo}) that can make use
+     * of their flags.
+     * @hide
+     */
+    public boolean shouldRunInPccSandbox() {
+        return false;
+    }
+
     /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public ComponentName getComponentName() {
