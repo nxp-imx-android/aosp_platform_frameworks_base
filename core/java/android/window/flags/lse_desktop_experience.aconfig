@@ -594,16 +594,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_system_dialogs_transitions"
-    namespace: "lse_desktop_experience"
-    description: "Enables custom transitions for system dialogs in Desktop Mode."
-    bug: "335638193"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_tab_tearing_launch_animation"
     namespace: "lse_desktop_experience"
     description: "Enables the animation that occurs when a new window is opened via tab tearing."

@@ -19,7 +19,6 @@ package com.android.wm.shell.dagger;
 import static android.window.DesktopExperienceFlags.ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP;
 import static android.window.DesktopExperienceFlags.ENABLE_MULTI_DISPLAY_HOME_FOCUS_BUG_FIX;
 import static android.window.DesktopExperienceFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS;
-import static android.window.DesktopModeFlags.ENABLE_DESKTOP_SYSTEM_DIALOGS_TRANSITIONS;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS_BUGFIX;
 
 import static com.android.systemui.Flags.enableViewCaptureTracing;
@@ -1473,8 +1472,7 @@ public abstract class WMShellModule {
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopState desktopState) {
-        if (!desktopState.canEnterDesktopMode()
-                || !ENABLE_DESKTOP_SYSTEM_DIALOGS_TRANSITIONS.isTrue()) {
+        if (!desktopState.canEnterDesktopMode()) {
             return Optional.empty();
         }
         return Optional.of(
