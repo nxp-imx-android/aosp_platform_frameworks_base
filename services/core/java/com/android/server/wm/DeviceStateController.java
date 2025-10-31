@@ -25,6 +25,8 @@ import static android.hardware.devicestate.DeviceState.PROPERTY_LAPTOP_HARDWARE_
 import static android.hardware.devicestate.DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_CLOSED;
 import static android.hardware.devicestate.DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_OPEN;
 import static android.hardware.devicestate.DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_SLATE;
+import static android.hardware.devicestate.feature.flags.Flags.desktopDeviceStatePropertyApi;
+import static android.hardware.devicestate.feature.flags.Flags.deviceStatePropertyMigration;
 
 import android.annotation.CallbackExecutor;
 import android.annotation.NonNull;
@@ -32,8 +34,6 @@ import android.annotation.Nullable;
 import android.content.Context;
 import android.hardware.devicestate.DeviceState;
 import android.hardware.devicestate.DeviceStateManager;
-import android.hardware.devicestate.feature.flags.FeatureFlags;
-import android.hardware.devicestate.feature.flags.FeatureFlagsImpl;
 import android.util.ArrayMap;
 import android.util.IntArray;
 import android.util.Pair;
@@ -106,8 +106,7 @@ final class DeviceStateController {
     DeviceStateController(@NonNull Context context, @NonNull WindowManagerGlobalLock wmLock) {
         mWmLock = wmLock;
 
-        final FeatureFlags deviceStateManagerFlags = new FeatureFlagsImpl();
-        if (deviceStateManagerFlags.deviceStatePropertyMigration()) {
+        if (deviceStatePropertyMigration()) {
             mOpenDeviceStates = new ArrayList<>();
             mHalfFoldedDeviceStates = new ArrayList<>();
             mFoldedDeviceStates = new ArrayList<>();
@@ -141,7 +140,7 @@ final class DeviceStateController {
                     }
                 }
 
-                if (deviceStateManagerFlags.desktopDeviceStatePropertyApi()) {
+                if (desktopDeviceStatePropertyApi()) {
                     if (state.hasProperty(PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_CLOSED)) {
                         mLidClosedDeviceStates.add(state.getIdentifier());
                     } else if (state.hasProperty(PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_OPEN)) {
