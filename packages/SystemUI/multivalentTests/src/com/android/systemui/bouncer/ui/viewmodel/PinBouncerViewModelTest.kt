@@ -542,6 +542,20 @@ class PinBouncerViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun readyToTryAuthenticate() =
+        kosmos.runTest {
+            val readyToTryAuthenticate by collectLastValue(underTest.readyToTryAuthenticate)
+            lockDeviceAndOpenPinBouncer()
+            assertThat(readyToTryAuthenticate).isFalse()
+
+            underTest.onPinButtonClicked(1)
+            assertThat(readyToTryAuthenticate).isTrue()
+
+            underTest.onBackspaceButtonClicked()
+            assertThat(readyToTryAuthenticate).isFalse()
+        }
+
+    @Test
     @EnableFlags(Flags.FLAG_MSDL_FEEDBACK)
     fun onDigiButtonDown_deliversKeyStandardToken() =
         kosmos.runTest {

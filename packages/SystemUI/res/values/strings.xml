@@ -4606,6 +4606,9 @@
     <!-- Content of button shown on the bouncer screen to navigate back to keyguard. [CHAR LIMIT=NONE] -->
     <string name="back_button_on_bouncer">Back</string>
 
+    <!-- Content of button shown on the bouncer screen to attempt to unlock using the entered password / pattern. [CHAR LIMIT=NONE] -->
+    <string name="sign_in_button_on_bouncer">Sign in</string>
+
     <!-- Content description of a button shown on the bouncer screen with an accessibility icon to open an accessibility dialog. [CHAR LIMIT=NONE] -->
     <string name="accessibility_button_on_bouncer_description">Accessibility</string>
 

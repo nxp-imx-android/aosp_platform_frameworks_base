@@ -53,6 +53,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessibilityNew
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -250,6 +252,7 @@ fun ContentScope.BouncerContentLayout(
     modifier: Modifier,
 ) {
     val scale by viewModel.scale.collectAsStateWithLifecycle()
+    val showSignInButton by viewModel.showSignInButton.collectAsStateWithLifecycle()
     Box(
         modifier =
             modifier.onKeyEvent(viewModel::onKeyEvent).scale(scale).pointerInput(Unit) {
@@ -272,6 +275,16 @@ fun ContentScope.BouncerContentLayout(
                 onClick = viewModel::navigateBack,
                 text = stringResource(R.string.back_button_on_bouncer),
                 modifier = Modifier.align(Alignment.BottomStart).testTag("BackButton"),
+            )
+        }
+        if (showSignInButton) {
+            val isSignInButtonEnabled by
+                viewModel.isSignInButtonEnabled.collectAsStateWithLifecycle()
+            FilledTextButton(
+                onClick = viewModel::onSignIn,
+                text = stringResource(R.string.sign_in_button_on_bouncer),
+                modifier = Modifier.align(Alignment.BottomEnd).testTag("SignInButton"),
+                enabled = isSignInButtonEnabled,
             )
         }
         if (viewModel.showAccessibilityButton) {
@@ -1068,7 +1081,19 @@ private fun UserSwitcherDropdownMenu(
 
 @Composable
 private fun TextButton(onClick: () -> Unit, text: String, modifier: Modifier = Modifier) {
-    Button(onClick = onClick, modifier = modifier) {
+    BouncerOutlinedButton(onClick = onClick, modifier = modifier) {
+        Text(text = text, style = MaterialTheme.typography.titleMedium)
+    }
+}
+
+@Composable
+private fun FilledTextButton(
+    onClick: () -> Unit,
+    text: String,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    BouncerFilledButton(onClick = onClick, modifier = modifier, enabled = enabled) {
         Text(text = text, style = MaterialTheme.typography.titleMedium)
     }
 }
@@ -1080,7 +1105,7 @@ private fun IconButton(
     contentDescription: String,
     modifier: Modifier = Modifier,
 ) {
-    Button(onClick = onClick, modifier = modifier) {
+    BouncerOutlinedButton(onClick = onClick, modifier = modifier) {
         Icon(
             imageVector = imageVector,
             contentDescription = contentDescription,
@@ -1090,7 +1115,7 @@ private fun IconButton(
 }
 
 @Composable
-private fun Button(
+private fun BouncerOutlinedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit,
@@ -1103,6 +1128,32 @@ private fun Button(
         colors =
             ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
         content = content,
+    )
+}
+
+@Composable
+private fun BouncerFilledButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    content: @Composable RowScope.() -> Unit,
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier.padding(24.dp),
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+        colors = filledButtonColors(),
+        enabled = enabled,
+        content = content,
+    )
+}
+
+@Composable
+private fun filledButtonColors(): ButtonColors {
+    val colors = MaterialTheme.colorScheme
+    return ButtonDefaults.buttonColors(
+        containerColor = colors.primary,
+        contentColor = colors.onPrimary,
     )
 }
 

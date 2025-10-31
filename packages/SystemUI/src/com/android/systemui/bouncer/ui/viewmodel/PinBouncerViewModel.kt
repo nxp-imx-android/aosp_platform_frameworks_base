@@ -105,6 +105,8 @@ constructor(
     val confirmButtonAppearance: StateFlow<ActionButtonAppearance> =
         _confirmButtonAppearance.asStateFlow()
 
+    override val _readyToTryAuthenticate = MutableStateFlow(false)
+
     override val lockoutMessageId = R.string.kg_too_many_failed_pin_attempts_dialog_message
 
     private val requests = Channel<Request>(Channel.BUFFERED)
@@ -147,6 +149,7 @@ constructor(
                     }
                     .collect { _backspaceButtonAppearance.value = it }
             }
+            launch { mutablePinInput.collect { _readyToTryAuthenticate.value = !it.isEmpty() } }
             launch {
                 interactor.isAutoConfirmEnabled
                     .map { if (it) ActionButtonAppearance.Hidden else ActionButtonAppearance.Shown }
