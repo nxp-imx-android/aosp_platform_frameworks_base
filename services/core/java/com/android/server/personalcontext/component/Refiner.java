@@ -17,7 +17,9 @@
 package com.android.server.personalcontext.component;
 
 import android.annotation.Nullable;
+import android.content.ComponentName;
 import android.service.personalcontext.hint.ContextHint;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 
 import androidx.annotation.NonNull;
 
@@ -31,15 +33,21 @@ import java.util.function.Consumer;
  * @hide
  */
 public interface Refiner extends Component {
+    /** Gets the ComponentName that this component represents. */
+    @Nullable
+    default ComponentName getComponentName() {
+        return null;
+    }
+
     /** Gets a grouping of hints the refiner is interested in. */
     @Nullable
-    Set<Set<ContextHint>> getInterestedHintClusters(
-            @NonNull Set<ContextHint> allContextHints,
+    Set<Set<ContextHintWithSignature>> getInterestedHintClusters(
+            @NonNull Set<ContextHintWithSignature> allContextHints,
             @NonNull Set<UUID> seenIDs,
             boolean isFirstRun);
 
     /** Refines hints into more hints. */
     void refine(
-            @NonNull Set<ContextHint> inputHints,
+            @NonNull Set<ContextHintWithSignature> inputHints,
             @NonNull Consumer<Set<ContextHint>> callback);
 }

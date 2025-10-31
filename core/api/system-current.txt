@@ -14256,7 +14256,7 @@ package android.service.personalcontext.hint {
     method public int describeContents();
     method @NonNull public java.util.List<android.service.personalcontext.hint.ContextHintWithSignature> getAttributionHints();
     method @NonNull public android.service.personalcontext.hint.ContextHint getContextHint();
-    method @NonNull public String getOriginatingPackage();
+    method @Nullable public String getOriginatingPackage();
     method @Nullable public android.service.personalcontext.RenderToken getRenderToken();
     method @NonNull public static <T extends java.util.Collection<android.service.personalcontext.hint.ContextHint>> T unwrapInto(@NonNull java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignature>, @NonNull T);
     method @NonNull public static java.util.List<android.service.personalcontext.hint.ContextHint> unwrapList(@NonNull java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignature>);

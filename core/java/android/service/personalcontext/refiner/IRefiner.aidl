@@ -17,7 +17,7 @@
 package android.service.personalcontext.refiner;
 
 import android.os.ParcelUuid;
-import android.service.personalcontext.hint.ContextHintWrapper;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.refiner.IRefineCallback;
 
 /**
@@ -34,5 +34,5 @@ interface IRefiner {
      * hints that this refiner hasn't seen before. The callback may be called exactly once,
      * with a new set of hints.
      */
-    oneway void refine(in List<ContextHintWrapper> inputHints, in IRefineCallback callback);
+    oneway void refine(in List<ContextHintWithSignature> inputHints, in IRefineCallback callback);
 }

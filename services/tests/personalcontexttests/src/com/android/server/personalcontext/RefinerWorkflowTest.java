@@ -29,6 +29,8 @@ import static org.mockito.Mockito.verify;
 
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHint;
+import android.service.personalcontext.hint.ContextHintTestUtils;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -62,11 +64,11 @@ public class RefinerWorkflowTest {
         Refiner refiner = mock(Refiner.class);
 
         doAnswer(invocation -> {
-            final Set<ContextHint> hints = invocation.getArgument(0, Set.class);
+            final Set<ContextHintWithSignature> hints = invocation.getArgument(0, Set.class);
             final Set<UUID> seenIds = invocation.getArgument(1, Set.class);
-            final Set<Set<ContextHint>> result = new HashSet<>();
-            for (ContextHint hint : hints) {
-                if (!seenIds.contains((hint).getHintId())) {
+            final Set<Set<ContextHintWithSignature>> result = new HashSet<>();
+            for (ContextHintWithSignature hint : hints) {
+                if (!seenIds.contains(hint.getContextHint().getHintId())) {
                     result.add(Set.of(hint));
                 }
             }
@@ -81,11 +83,11 @@ public class RefinerWorkflowTest {
         Refiner refiner = mock(Refiner.class);
 
         doAnswer(invocation -> {
-            final Set<ContextHint> hints = invocation.getArgument(0, Set.class);
+            final Set<ContextHintWithSignature> hints = invocation.getArgument(0, Set.class);
             final Set<UUID> seenIds = invocation.getArgument(1, Set.class);
-            final Set<ContextHint> result = new HashSet<>();
-            for (ContextHint hint : hints) {
-                if (!seenIds.contains((hint).getHintId())) {
+            final Set<ContextHintWithSignature> result = new HashSet<>();
+            for (ContextHintWithSignature hint : hints) {
+                if (!seenIds.contains(hint.getContextHint().getHintId())) {
                     result.add(hint);
                 }
             }
@@ -112,11 +114,13 @@ public class RefinerWorkflowTest {
                 provider,
                 Set.of(new BundleHint(), new BundleHint()),
                 /* renderToken= */ null,
+                ContextHintTestUtils.generateSignedHintKey(),
                 listener,
                 INLINE_EXECUTOR);
 
         verify(listener).onRefinerWorkflowStarted(anyLong(), any());
         verify(listener).onRefinerWorkflowFinished(anyLong());
+        verify(listener, never()).onRefinerWorkflowError(anyLong(), any());
     }
 
     @Test
@@ -137,12 +141,14 @@ public class RefinerWorkflowTest {
                 provider,
                 Set.of(new BundleHint(), new BundleHint()),
                 /* renderToken= */ null,
+                ContextHintTestUtils.generateSignedHintKey(),
                 listener,
                 INLINE_EXECUTOR);
 
         verify(listener).onRefinerWorkflowStarted(anyLong(), any());
         verify(listener).onHintsSentToRefiner(anyLong(), any(), eq(refiner));
         verify(listener).onRefinerWorkflowFinished(anyLong());
+        verify(listener, never()).onRefinerWorkflowError(anyLong(), any());
     }
 
     @Test
@@ -163,12 +169,14 @@ public class RefinerWorkflowTest {
                 provider,
                 Set.of(new BundleHint(), new BundleHint()),
                 /* renderToken= */ null,
+                ContextHintTestUtils.generateSignedHintKey(),
                 listener,
                 INLINE_EXECUTOR);
 
         verify(listener).onRefinerWorkflowStarted(anyLong(), any());
         verify(listener, times(2)).onHintsSentToRefiner(anyLong(), any(), eq(refiner));
         verify(listener).onRefinerWorkflowFinished(anyLong());
+        verify(listener, never()).onRefinerWorkflowError(anyLong(), any());
     }
 
     @Test
@@ -184,19 +192,22 @@ public class RefinerWorkflowTest {
         final Refiner refiner2 = mock(Refiner.class);
 
         doAnswer(invocation -> {
-            final Set<ContextHint> hints = invocation.getArgument(0, Set.class);
+            final Set<ContextHint> hints = ContextHintWithSignature.unwrapInto(
+                    invocation.getArgument(0, Set.class), new HashSet<>());
             final Consumer<Set<ContextHint>> callback = invocation.getArgument(1, Consumer.class);
             if (hints.contains(hint2)) {
                 callback.accept(Collections.emptySet());
             } else if (hints.contains(hint1)) {
                 callback.accept(Set.of(hint2));
+            } else {
+                throw new RuntimeException("Unexpected situation: " + hints);
             }
             return null;
         })
                 .when(refiner1).refine(any(), any());
 
         doAnswer(invocation -> {
-            final Set<ContextHint> hints = invocation.getArgument(0, Set.class);
+            final Set<ContextHintWithSignature> hints = invocation.getArgument(0, Set.class);
             final Set<UUID> seenIds = invocation.getArgument(1, Set.class);
             if (hints.size() == 2 && seenIds.isEmpty()) {
                 return Set.of(hints);
@@ -219,6 +230,7 @@ public class RefinerWorkflowTest {
                 provider,
                 Set.of(hint1),
                 /* renderToken= */ null,
+                ContextHintTestUtils.generateSignedHintKey(),
                 listener,
                 INLINE_EXECUTOR);
 
@@ -227,6 +239,7 @@ public class RefinerWorkflowTest {
         verify(listener).onHintsSentToRefiner(anyLong(), any(), eq(refiner2));
         verify(listener).onHintsReceivedFromRefiner(anyLong(), any(), eq(refiner1));
         verify(listener).onRefinerWorkflowFinished(anyLong());
+        verify(listener, never()).onRefinerWorkflowError(anyLong(), any());
     }
 
     @Test
@@ -244,6 +257,7 @@ public class RefinerWorkflowTest {
                 provider,
                 Set.of(new BundleHint(), new BundleHint()),
                 /* renderToken= */ null,
+                ContextHintTestUtils.generateSignedHintKey(),
                 listener,
                 INLINE_EXECUTOR);
 
@@ -255,5 +269,6 @@ public class RefinerWorkflowTest {
         // Now expire the workflow and make sure it's been marked as finished.
         workflow.expire();
         verify(listener).onRefinerWorkflowFinished(anyLong());
+        verify(listener, never()).onRefinerWorkflowError(anyLong(), any());
     }
 }
