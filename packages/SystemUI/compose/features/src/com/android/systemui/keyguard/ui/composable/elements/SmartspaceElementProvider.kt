@@ -72,7 +72,7 @@ constructor(
 
         @Composable
         override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {
-            if (!keyguardSmartspaceViewModel.isDateWeatherDecoupled) {
+            if (!keyguardSmartspaceViewModel.isSmartspaceEnabled) {
                 return
             }
 
@@ -99,7 +99,7 @@ constructor(
 
         @Composable
         override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {
-            if (!keyguardSmartspaceViewModel.isDateWeatherDecoupled) {
+            if (!keyguardSmartspaceViewModel.isSmartspaceEnabled) {
                 return
             }
 

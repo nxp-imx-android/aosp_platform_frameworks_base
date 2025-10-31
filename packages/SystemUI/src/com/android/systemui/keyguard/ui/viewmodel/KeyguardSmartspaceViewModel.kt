@@ -48,9 +48,6 @@ constructor(
     /** Whether the weather area is available and enabled. */
     val isWeatherEnabled: Flow<Boolean> = smartspaceInteractor.isWeatherEnabled
 
-    /** Whether the data and weather areas are decoupled in the build. */
-    val isDateWeatherDecoupled: Boolean = smartspaceController.isDateWeatherDecoupled
-
     @Deprecated("Remove after flexiglass ships")
     /** Whether the date area should be visible. */
     val isDateVisible: StateFlow<Boolean> =
