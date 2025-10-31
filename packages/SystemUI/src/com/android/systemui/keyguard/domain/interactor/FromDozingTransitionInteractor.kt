@@ -43,6 +43,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 
 @SysUISingleton
@@ -153,8 +154,17 @@ constructor(
                 .filterRelevantKeyguardStateAnd { wakefulness -> wakefulness.isAwakeForAnimations() }
                 .sample(communalInteractor.isCommunalAvailable, ::Pair)
                 .collect { (_, isCommunalAvailable) ->
-                    val isKeyguardOccludedLegacy = keyguardInteractor.isKeyguardOccluded.value
+
+                    val biometricUnlockState = keyguardInteractor.biometricUnlockState.value
+
+                    // Do not transition to LOCKSCREEN if we are waking and unlocking.
+                    // That transition is handled by listenForWakeFromDozing.
+                    if (isWakeAndUnlock(biometricUnlockState.mode)) {
+                       return@collect
+                    }
+
                     val primaryBouncerShowing = keyguardInteractor.primaryBouncerShowing.value
+                    val isKeyguardOccludedLegacy = keyguardInteractor.isKeyguardOccluded.value
 
                     if (!deviceEntryInteractor.isLockscreenEnabled() && canDismissLockscreen()) {
                         if (!SceneContainerFlag.isEnabled) {
