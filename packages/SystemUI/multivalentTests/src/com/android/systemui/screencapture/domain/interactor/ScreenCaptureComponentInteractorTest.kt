@@ -22,6 +22,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -104,19 +105,22 @@ class ScreenCaptureComponentInteractorTest : SysuiTestCase() {
         assertThat(component).isNotNull()
 
         screenCaptureUiInteractor.hide(screenCaptureType)
+        advanceTimeBy(16)
         assertThat(component).isNull()
 
         screenCaptureUiInteractor.show(parameters)
+        val capturingComponent = component
+        assertThat(component).isNotNull()
         startCapture()
         screenCaptureUiInteractor.hide(screenCaptureType)
-        val capturingComponent = component
-        assertThat(capturingComponent).isNotNull()
+        assertThat(component).isNotNull()
 
         screenCaptureUiInteractor.show(parameters)
         assertThat(component).isSameInstanceAs(capturingComponent)
 
         screenCaptureUiInteractor.hide(screenCaptureType)
         stopCapture()
+        advanceTimeBy(16)
         assertThat(component).isNull()
     }
 }

@@ -18,13 +18,26 @@ package com.android.systemui.screencapture.domain.interactor
 
 import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureMarkupInteractor
+import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordParametersInteractor
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 @ScreenCaptureScope
 class ScreenCaptureOverlayStateInteractor
 @Inject
-constructor(markupInteractor: ScreenCaptureMarkupInteractor) {
+constructor(
+    markupInteractor: ScreenCaptureMarkupInteractor,
+    parametersInteractor: ScreenCaptureRecordParametersInteractor,
+) {
 
-    val isVisible: Flow<Boolean> = markupInteractor.enabled
+    val isVisible: Flow<Boolean> =
+        combine(
+            markupInteractor.enabled,
+            parametersInteractor.parameters.map { it.shouldShowFrontCamera }.distinctUntilChanged(),
+        ) { markupEnabled, cameraEnabled ->
+            markupEnabled || cameraEnabled
+        }
 }
