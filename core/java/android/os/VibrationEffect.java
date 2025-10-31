@@ -1719,6 +1719,40 @@ public abstract class VibrationEffect implements Parcelable {
             return addSegment(primitive);
         }
 
+        /**
+         * Adds a waveform envelope to the end of this composition.
+         *
+         * <p>The envelope will be built by this method, which can throw an exception if it fails to
+         * build.
+         *
+         * @param builder The {@link WaveformEnvelopeBuilder} to add.
+         * @return This {@link Composition} object.
+         * @throws IllegalStateException if the builder fails to build the effect. See
+         * {@link WaveformEnvelopeBuilder#build()}.
+         */
+        @FlaggedApi(Flags.FLAG_COMPOSITION_PWLE_APIS)
+        @NonNull
+        public Composition addEnvelope(@NonNull WaveformEnvelopeBuilder builder) {
+             return addSegments(builder.build());
+        }
+
+        /**
+         * Adds a basic envelope to the end of this composition.
+         *
+         * <p>The envelope will be built by this method, which can throw an exception if it fails to
+         * build.
+         *
+         * @param builder The {@link BasicEnvelopeBuilder} to add.
+         * @return This {@link Composition} object.
+         * @throws IllegalStateException if the builder fails to build the effect. See
+         * {@link BasicEnvelopeBuilder#build()}.
+         */
+        @FlaggedApi(Flags.FLAG_COMPOSITION_PWLE_APIS)
+        @NonNull
+        public Composition addEnvelope(@NonNull BasicEnvelopeBuilder builder) {
+             return addSegments(builder.build());
+        }
+
         private Composition addSegment(VibrationEffectSegment segment) {
             if (mRepeatIndex >= 0) {
                 throw new IllegalStateException("Can't add effects after a repeating effect.");
