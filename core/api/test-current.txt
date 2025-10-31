@@ -414,7 +414,7 @@ package android.app {
     method public void clickNotification(@Nullable String, int, int, boolean);
     method @RequiresPermission(android.Manifest.permission.STATUS_BAR) public void collapsePanels();
     method public void expandNotificationsPanel();
-    method @FlaggedApi("com.android.server.telecom.flags.resolve_hidden_dependencies_two") @DrawableRes @RequiresPermission(android.Manifest.permission.STATUS_BAR) public int getIcon(@NonNull String);
+    method @FlaggedApi("android.telecom.flags.release_icon_as_api") @DrawableRes @RequiresPermission(android.Manifest.permission.STATUS_BAR) public int getIcon(@NonNull String);
     method @RequiresPermission(android.Manifest.permission.STATUS_BAR) public int getLastSystemKey();
     method @RequiresPermission(android.Manifest.permission.STATUS_BAR) public void handleSystemKey(@NonNull android.view.KeyEvent);
     method public void sendNotificationFeedback(@Nullable String, @Nullable android.os.Bundle);

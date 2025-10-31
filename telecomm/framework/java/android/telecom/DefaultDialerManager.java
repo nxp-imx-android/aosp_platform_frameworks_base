@@ -60,12 +60,7 @@ public class DefaultDialerManager {
      * @hide
      * */
     public static boolean setDefaultDialerApplication(Context context, String packageName) {
-        if (Flags.resolveHiddenDependenciesTwo()) {
-            return setDefaultDialerApplication(context, packageName, Binder.getCallingUserHandle());
-        } else {
-            return setDefaultDialerApplicationLegacy(context, packageName,
-                    ActivityManager.getCurrentUser());
-        }
+        return setDefaultDialerApplication(context, packageName, Binder.getCallingUserHandle());
     }
 
     /**
@@ -152,11 +147,7 @@ public class DefaultDialerManager {
      * @hide
      * */
     public static String getDefaultDialerApplication(Context context) {
-        if (Flags.resolveHiddenDependenciesTwo()) {
-            return getDefaultDialerApplication(context, context.getUser());
-        } else {
-            return getDefaultDialerApplicationLegacy(context, context.getUserId());
-        }
+        return getDefaultDialerApplication(context, context.getUser());
     }
 
     /**
