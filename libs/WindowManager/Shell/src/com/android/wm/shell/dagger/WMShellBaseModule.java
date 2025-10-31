@@ -141,6 +141,7 @@ import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.HomeTransitionObserver;
 import com.android.wm.shell.transition.MixedTransitionHandler;
+import com.android.wm.shell.transition.TransitionLeashManager;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.unfold.ShellUnfoldProgressProvider;
 import com.android.wm.shell.unfold.UnfoldAnimationController;
@@ -810,13 +811,20 @@ public abstract class WMShellBaseModule {
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread Handler mainHandler,
             @ShellAnimationThread ShellExecutor animExecutor,
+            TransitionLeashManager transitionLeashManager,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             HomeTransitionObserver homeTransitionObserver,
             FocusTransitionObserver focusTransitionObserver) {
         return new Transitions(context, shellInit, shellCommandHandler, shellController, organizer,
                 pool, displayController, displayInsetsController, mainExecutor, mainHandler,
-                animExecutor, rootTaskDisplayAreaOrganizer, homeTransitionObserver,
-                focusTransitionObserver);
+                animExecutor, transitionLeashManager, rootTaskDisplayAreaOrganizer,
+                homeTransitionObserver, focusTransitionObserver);
+    }
+
+    @WMSingleton
+    @Provides
+    static TransitionLeashManager provideTransitionsLeashManager() {
+        return new TransitionLeashManager();
     }
 
     @WMSingleton

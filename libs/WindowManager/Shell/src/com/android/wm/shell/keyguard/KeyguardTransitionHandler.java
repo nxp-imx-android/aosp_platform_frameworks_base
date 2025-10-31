@@ -33,6 +33,8 @@ import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.wm.shell.shared.TransitionUtil.isOpeningType;
+import static com.android.wm.shell.Flags.addOneOffHandlerLeashes;
+
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -245,6 +247,21 @@ public class KeyguardTransitionHandler
 
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
                 "start keyguard %s transition, info = %s", description, info);
+
+        final Transitions.TransitionFinishCallback wrappedCallback;
+        if (addOneOffHandlerLeashes()) {
+            // Provide handler-specific leashes to make sure that animations remain contained to the
+            // scope of ownership of the handler. This is only necessary because we are handing the
+            // animation off to a remote, over which we have no control.
+            mTransitions.getLeashManager().setUpLeashes(transition, info, startTransaction);
+            wrappedCallback = wct -> {
+                finishCallback.onTransitionFinished(wct);
+                mTransitions.getLeashManager().cleanUp(transition);
+            };
+        } else {
+            wrappedCallback = finishCallback;
+        }
+
         try {
             mStartedTransitions.put(transition,
                     new StartedTransition(info, finishTransaction, remoteHandler));
@@ -265,7 +282,7 @@ public class KeyguardTransitionHandler
                             // Post our finish callback to let startAnimation finish first.
                             mMainExecutor.executeDelayed(() -> {
                                 mStartedTransitions.remove(transition);
-                                finishCallback.onTransitionFinished(mergedWct);
+                                wrappedCallback.onTransitionFinished(mergedWct);
                             }, 0);
                         }
                     });

@@ -36,8 +36,9 @@ interface RemoteTransitionHelper {
     }
 
     /**
-     * Applies transactions common to all remote transitions, such as setting up the alpha and
-     * rotation of various changes. Invoked before the animation starts.
+     * Queues up transactions common to all remote transitions, such as setting up the alpha and
+     * rotation of various changes. Invoked before the animation starts. Note: caller must make sure
+     * that the transaction is applied, as this method does not guarantee it.
      */
     fun setUpAnimation(
         token: IBinder,

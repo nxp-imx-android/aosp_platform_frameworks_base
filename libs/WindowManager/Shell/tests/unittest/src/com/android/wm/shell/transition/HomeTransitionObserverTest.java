@@ -109,8 +109,8 @@ public class HomeTransitionObserverTest extends ShellTestCase {
                 mDisplayInsetsController, mock(ShellInit.class));
         mTransition = new Transitions(mContext, mock(ShellInit.class), mock(ShellController.class),
                 mOrganizer, mTransactionPool, mDisplayController, mDisplayInsetsController,
-                mMainExecutor, mMainHandler, mAnimExecutor, mHomeTransitionObserver,
-                mock(FocusTransitionObserver.class));
+                mMainExecutor, mMainHandler, mAnimExecutor, mock(TransitionLeashManager.class),
+                mHomeTransitionObserver, mock(FocusTransitionObserver.class));
         mHomeTransitionObserver.setHomeTransitionListener(mTransition, mListener, TEST_USER);
     }
 

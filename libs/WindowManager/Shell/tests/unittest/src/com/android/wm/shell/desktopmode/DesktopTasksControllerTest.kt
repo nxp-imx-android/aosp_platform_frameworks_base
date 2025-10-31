@@ -191,6 +191,7 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.OneShotRemoteHandler
 import com.android.wm.shell.transition.TestRemoteTransition
+import com.android.wm.shell.transition.TransitionLeashManager
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionHandler
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModelTestsBase.Companion.HOME_LAUNCHER_PACKAGE_NAME
@@ -263,6 +264,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock lateinit var syncQueue: SyncTransactionQueue
     @Mock lateinit var rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
     @Mock lateinit var transitions: Transitions
+    @Mock lateinit var transitionsLeashManager: TransitionLeashManager
     @Mock lateinit var keyguardManager: KeyguardManager
     @Mock lateinit var mReturnToDragStartAnimator: ReturnToDragStartAnimator
     @Mock lateinit var desktopMixedTransitionHandler: DesktopMixedTransitionHandler
@@ -421,6 +423,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         whenever(shellTaskOrganizer.getRunningTasks(anyInt())).thenAnswer { runningTasks }
         whenever(shellTaskOrganizer.getRunningTasks()).thenAnswer { runningTasks }
+        whenever(transitions.leashManager).thenReturn(transitionsLeashManager)
         whenever(transitions.startTransition(anyInt(), any(), anyOrNull())).thenAnswer { Binder() }
         whenever(enterDesktopTransitionHandler.moveToDesktop(any(), any())).thenAnswer { Binder() }
         whenever(exitDesktopTransitionHandler.startTransition(any(), any(), any(), any()))

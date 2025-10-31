@@ -308,3 +308,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "add_one_off_handler_leashes"
+    namespace: "multitasking"
+    description: "Add one-off leashes to non-Shell handlers (Remote, Recents, etc.) when starting or taking over an animation."
+    bug: "403529740"
+}
