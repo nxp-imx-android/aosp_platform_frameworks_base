@@ -36,6 +36,7 @@ import com.android.systemui.Flags.FLAG_QS_TILE_DETAILED_VIEW
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.display.data.repository.setDisplayType
+import com.android.systemui.flags.DesktopSizing
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags.FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS
 import com.android.systemui.flags.fake
@@ -48,6 +49,7 @@ import com.android.systemui.shade.ui.composable.WithStatusIconContext
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
 import com.android.systemui.util.FixedActivitySizeComposeTestRule
+import junit.framework.TestCase.assertEquals
 import kotlin.test.Test
 import org.junit.Rule
 import org.junit.runner.RunWith
@@ -97,13 +99,15 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
 
             composeTestRule.apply {
                 // Verify the brightness slider's height.
-                onNodeWithTag(resIdToTestTag("slider")).assertHeightIsEqualTo(52.dp)
+                onNodeWithTag(resIdToTestTag("slider"))
+                    .assertHeightIsEqualTo(if (DesktopSizing.isEnabled) 48.dp else 52.dp)
 
                 // Verify the brightness slider's vertical padding.
                 val brightnessSliderNode = onNodeWithTag(resIdToTestTag("brightness_slider"))
                 val sliderBoundsInRoot = brightnessSliderNode.getBoundsInRoot()
                 val sliderContainerBoundsInRoot = brightnessSliderNode.onParent().getBoundsInRoot()
-                assert(sliderBoundsInRoot.top - sliderContainerBoundsInRoot.top == 6.dp)
+                val expectValue = if (DesktopSizing.isEnabled) 0.dp else 6.dp
+                assertEquals(expectValue, sliderBoundsInRoot.top - sliderContainerBoundsInRoot.top)
             }
         }
 
@@ -137,6 +141,6 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
         // Verify the slider's height. "Media" is the tag of the volume slider.
         composeTestRule
             .onNodeWithTag(resIdToTestTag("Media"))
-            .assertHeightIsEqualTo(52.dp)
+            .assertHeightIsEqualTo(if (DesktopSizing.isEnabled) 48.dp else 52.dp)
     }
 }

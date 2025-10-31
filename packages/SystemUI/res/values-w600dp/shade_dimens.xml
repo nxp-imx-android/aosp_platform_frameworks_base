@@ -15,8 +15,22 @@
   ~ limitations under the License.
   -->
 
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
     <dimen name="shade_panel_width">412dp</dimen>
 
     <dimen name="shade_panel_margin_horizontal">24dp</dimen>
+
+    <!-- QS shade overlay brightness bar -->
+    <dimen
+        name="overlay_qs_layout_brightness_thumb_height"
+        android:featureFlag="com.android.systemui.desktop_sizing">40dp</dimen>
+    <dimen
+        name="overlay_qs_layout_brightness_thumb_width"
+        android:featureFlag="com.android.systemui.desktop_sizing">3dp</dimen>
+    <dimen
+        name="overlay_qs_layout_brightness_track_height"
+        android:featureFlag="com.android.systemui.desktop_sizing">32dp</dimen>
+    <dimen
+        name="overlay_qs_layout_brightness_vertical_padding"
+        android:featureFlag="com.android.systemui.desktop_sizing">0dp</dimen>
 </resources>
