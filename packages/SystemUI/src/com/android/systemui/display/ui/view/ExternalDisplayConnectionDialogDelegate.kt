@@ -43,8 +43,6 @@ import kotlin.math.max
  *
  * [onCancelClickListener] is called **only** if either desktop mode didn't start, mirroring didn't
  * start, or when the dismiss button is pressed.
- *
- * This is a new version of the old [MirroringConfirmationDialogDelegate].
  */
 class ExternalDisplayConnectionDialogDelegate
 @VisibleForTesting
