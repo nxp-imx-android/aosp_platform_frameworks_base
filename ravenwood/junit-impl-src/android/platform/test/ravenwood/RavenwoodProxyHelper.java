@@ -20,6 +20,8 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.util.Log;
 
+import org.objectweb.asm.Type;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -48,7 +50,15 @@ public class RavenwoodProxyHelper {
      * Creates a new Proxy object for a IInterface type, which also logs all called method names.
      */
     public static <T extends IInterface> T newProxy(Class<T> clazz, InvocationHandler ih) {
-        return newProxy(clazz, getAidlDescriptor(clazz), ih);
+        return newProxy(clazz, getAidlDescriptor(clazz), ih, false);
+    }
+
+    /**
+     * Creates a new Proxy object for a IInterface type, which also logs all called method names.
+     */
+    public static <T extends IInterface> T newExperimentalProxy(
+            Class<T> clazz, InvocationHandler ih) {
+        return newProxy(clazz, getAidlDescriptor(clazz), ih, true);
     }
 
     /**
@@ -56,8 +66,8 @@ public class RavenwoodProxyHelper {
      */
     @SuppressWarnings("unchecked")
     public static <T extends IInterface> T newProxy(
-            Class<T> clazz, String descriptor, InvocationHandler ih) {
-        var handler = new IInterfaceInvocationWrapper(ih);
+            Class<T> clazz, String descriptor, InvocationHandler ih, boolean isExperimental) {
+        var handler = new IInterfaceInvocationWrapper(ih, isExperimental);
         T proxy = (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[]{clazz}, handler);
         handler.setBinder(new Binder() {
             @Override
@@ -91,10 +101,12 @@ public class RavenwoodProxyHelper {
     private static class IInterfaceInvocationWrapper implements InvocationHandler {
 
         private final LoggingInvocationWrapper mInner;
+        private final boolean mIsExperimental;
         private IBinder mBinder;
 
-        private IInterfaceInvocationWrapper(InvocationHandler inner) {
+        private IInterfaceInvocationWrapper(InvocationHandler inner, boolean isExperimental) {
             mInner = new LoggingInvocationWrapper(inner);
+            mIsExperimental = isExperimental;
         }
 
         private void setBinder(IBinder binder) {
@@ -106,6 +118,11 @@ public class RavenwoodProxyHelper {
             if (method.getDeclaringClass() == IInterface.class
                     && method.getName().equals("asBinder")) {
                 return mBinder;
+            }
+            if (mIsExperimental) {
+                RavenwoodExperimentalApiChecker.onExperimentalApiCalled(
+                        method.getDeclaringClass(), method.getName(),
+                        Type.getMethodDescriptor(method));
             }
             return mInner.invoke(proxy, method, args);
         }
