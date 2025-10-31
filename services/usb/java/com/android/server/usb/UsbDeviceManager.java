@@ -193,6 +193,7 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
     private static final int MSG_UPDATE_USB_SPEED = 22;
     private static final int MSG_UPDATE_HAL_VERSION = 23;
     private static final int MSG_USER_UNLOCKED_AFTER_BOOT = 24;
+    private static final long FUNCTION_CTRL = 1 << 8;
 
     // Delay for debouncing USB disconnects.
     // We often get rapid connect/disconnect events when enabling USB functions,
@@ -2425,6 +2426,11 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
                         Slog.i(TAG, "updating mCurrentFunctions");
                         // Mask out adb, since it is stored in mAdbEnabled
                         mCurrentFunctions = ((Long) msg.obj) & ~UsbManager.FUNCTION_ADB;
+                        if (mUsbDeviceManager.mEnableAoaUserspaceImplementation) {
+                            // Mask out ctrl, since it is always applied
+                            if (DEBUG) Slog.d(TAG, "Masking out CTRL in mCurrentFunctions");
+                            mCurrentFunctions = mCurrentFunctions & ~FUNCTION_CTRL;
+                        }
                         Slog.i(TAG,
                                 "mCurrentFunctions:" + mCurrentFunctions + "applied:" + msg.arg1);
                         mCurrentFunctionsApplied = msg.arg1 == 1;
@@ -2602,6 +2608,10 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
                 boolean chargingFunctions = functions == UsbManager.FUNCTION_NONE;
                 functions = getAppliedFunctions(functions);
 
+                if (mUsbDeviceManager.mEnableAoaUserspaceImplementation) {
+                    // Always add CTRL if userspace aoa is enabled
+                    functions = functions | FUNCTION_CTRL;
+                }
                 // Set the new USB configuration.
                 setUsbConfig(functions, chargingFunctions, operationId);
 
