@@ -56,7 +56,6 @@ import com.android.systemui.screencapture.ui.viewmodel.ScreenCaptureUiViewModel
 import com.android.systemui.statusbar.phone.EdgeToEdgeDialogDelegate
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import com.android.systemui.statusbar.phone.create
-import dagger.Lazy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -78,7 +77,6 @@ constructor(
             @JvmSuppressWildcards
             ScreenCaptureUiComponent.Builder,
         >,
-    private val defaultBuilder: Lazy<ScreenCaptureUiComponent.Builder>,
     dialogFactory: SystemUIDialogFactory,
 ) {
 
@@ -165,7 +163,7 @@ constructor(
                 },
         ) {
             val builder: ScreenCaptureUiComponent.Builder =
-                componentBuilders[parameters.screenCaptureType] ?: defaultBuilder.get()
+                componentBuilders.getValue(parameters.screenCaptureType)
             val coroutineScope = rememberCoroutineScope()
             val component =
                 remember(parameters, coroutineScope) {
