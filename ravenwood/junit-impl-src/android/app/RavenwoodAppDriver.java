@@ -180,7 +180,7 @@ public final class RavenwoodAppDriver {
                 (proxy, method, args) -> switch (method.getName()) {
                     case "call" -> Bundle.EMPTY;
                     default -> sNotImplementedHandler.invoke(proxy, method, args);
-                });
+                }, true);
         synchronized (mProviders) {
             mProviders.put(Settings.AUTHORITY, mockSettings);
         }

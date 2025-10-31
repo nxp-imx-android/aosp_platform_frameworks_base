@@ -17,6 +17,11 @@ package android.platform.test.ravenwood;
 
 import com.android.internal.annotations.GuardedBy;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
+
 public class RavenwoodExperimentalApiChecker {
     private RavenwoodExperimentalApiChecker() {
     }
@@ -28,6 +33,27 @@ public class RavenwoodExperimentalApiChecker {
 
     @GuardedBy("sLock")
     private static boolean sExperimentalApiEnabled;
+
+    /**
+     * A map with key = "method info", value = "number of times the method was called".
+     */
+    @GuardedBy("sLock")
+    private static final Map<MethodInfo, IntRef> sStats = new HashMap<>();
+
+    private record MethodInfo(Class<?> clazz, String name, String desc) {
+        MethodInfo(StackWalker.StackFrame frame) {
+            this(frame.getDeclaringClass(), frame.getMethodName(), frame.getDescriptor());
+        }
+
+        @Override
+        public String toString() {
+            return clazz.getName() + "#" + name + desc;
+        }
+    }
+
+    private static class IntRef {
+        int i = 0;
+    }
 
     public static boolean isExperimentalApiEnabled() {
         synchronized (sLock) {
@@ -45,13 +71,16 @@ public class RavenwoodExperimentalApiChecker {
      * {@link RavenwoodUnsupportedApiException}.
      */
     public static boolean onExperimentalApiCalled(Class<?> clazz, String method, String desc) {
+        synchronized (sLock) {
+            sStats.computeIfAbsent(new MethodInfo(clazz, method, desc), k -> new IntRef()).i += 1;
+        }
         // Even when experimental APIs are disabled, we don't want to throw from <clinit>.
         // because that'd make the class unloadable. Instead, we return false to skip the rest of
         // the code.
         if ("<clinit>".equals(method)) {
             return isExperimentalApiEnabled();
         }
-        onExperimentalApiCalled(2);
+        onExperimentalApiCalledInner(2);
         return true;
     }
 
@@ -59,16 +88,40 @@ public class RavenwoodExperimentalApiChecker {
      * Check if experimental APIs are enabled, and if not, throws
      * {@link RavenwoodUnsupportedApiException}.
      *
-     * @param skipStackTraces the thrown {@link RavenwoodUnsupportedApiException} will skip
-     * this many stack frames to make it look like it's thrown from the "real" missing API.
+     * @param skipStackTraces the number of stack frames to skip to traverse back to
+     *                        the "actual" experimental API.
      */
     public static void onExperimentalApiCalled(int skipStackTraces) {
-        if (isExperimentalApiEnabled()) {
-            return;
+        var walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+        var frame = walker.walk(s -> s.skip(skipStackTraces).findFirst().get());
+        synchronized (sLock) {
+            sStats.computeIfAbsent(new MethodInfo(frame), k -> new IntRef()).i += 1;
         }
-        throw new RavenwoodUnsupportedApiException().skipStackTracesForReason(skipStackTraces);
+        onExperimentalApiCalledInner(skipStackTraces + 1);
     }
 
+    private static void onExperimentalApiCalledInner(int skipStackTraces) {
+        if (!isExperimentalApiEnabled()) {
+            throw new RavenwoodUnsupportedApiException().skipStackTracesForReason(skipStackTraces);
+        }
+    }
+
+    /**
+     * Print all experimental method call stats.
+     */
+    public static void dumpExperimentalApiUsage() {
+        final String module = RavenwoodEnvironment.getInstance().getTestModuleName();
+        final String file = "/tmp/ravenwood-experimental-api-" + module + "-stats.txt";
+        try (PrintWriter stats = new PrintWriter(file)) {
+            synchronized (sLock) {
+                sStats.entrySet().stream()
+                        .sorted((a, b) -> b.getValue().i - a.getValue().i)
+                        .forEach(e -> stats.printf("%s %d\n", e.getKey(), e.getValue().i));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create file=" + file, e);
+        }
+    }
 
     private static void ensureCoreTest() {
         if (RavenwoodEnvironment.getInstance().getTestModuleName().equals("RavenwoodCoreTest")) {
