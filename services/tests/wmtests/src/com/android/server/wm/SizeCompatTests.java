@@ -179,6 +179,8 @@ public class SizeCompatTests extends WindowTestsBase {
 
     private ActivityRecord setUpApp(DisplayContent display, ActivityBuilder aBuilder,
             TaskBuilder tBuilder) {
+        // Skip WAKE transition when adding a task to the empty display.
+        display.setIsSleeping(false);
         // Use the real package name (com.android.frameworks.wmtests) so that
         // EnableCompatChanges/DisableCompatChanges can take effect.
         // Otherwise the fake WindowTestsBase.DEFAULT_COMPONENT_PACKAGE_NAME will make
@@ -191,8 +193,6 @@ public class SizeCompatTests extends WindowTestsBase {
         final ActivityBuilder appBuilder = aBuilder != null ? aBuilder : new ActivityBuilder(mAtm);
         mActivity = appBuilder.setTask(mTask).setComponent(componentName).build();
         doReturn(false).when(mActivity).isImmersiveMode(any());
-        // adding task to empty display may wakes it up, so finish that transition
-        waitHandlerIdle(mAtm.mH);
         return mActivity;
     }
 
