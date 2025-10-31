@@ -763,6 +763,9 @@ public class PipTransition extends PipTransitionController implements
         }
 
         // This is used by display change listeners to respond properly to fixed rotation.
+        ProtoLog.d(WM_SHELL_PICTURE_IN_PICTURE,
+                "Set fixed rotation with startRotation=%d endRotation=%d fixedRotationChange=%s",
+                startRotation, endRotation, fixedRotationChange);
         mPipTransitionState.setInFixedRotation(true);
 
         // If we are running a fixed rotation bounds enter PiP animation,
