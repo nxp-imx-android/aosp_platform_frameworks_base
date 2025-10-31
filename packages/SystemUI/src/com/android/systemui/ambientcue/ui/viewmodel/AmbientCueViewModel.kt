@@ -16,51 +16,38 @@
 
 package com.android.systemui.ambientcue.ui.viewmodel
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toComposeRect
-import androidx.core.content.edit
 import com.android.app.tracing.coroutines.coroutineScopeTraced
 import com.android.systemui.Dumpable
 import com.android.systemui.ambientcue.domain.interactor.AmbientCueInteractor
+import com.android.systemui.ambientcue.domain.interactor.AmbientCueInteractor.Companion.KEY_FIRST_TIME_ONBOARDING_SHOWN_AT
+import com.android.systemui.ambientcue.domain.interactor.AmbientCueInteractor.Companion.KEY_SHOW_LONG_PRESS_ONBOARDING
 import com.android.systemui.ambientcue.shared.flag.AmbientCueFlag
 import com.android.systemui.ambientcue.shared.logger.AmbientCueLogger
-import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.domain.interactor.SharedPreferencesInteractor
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
-import com.android.systemui.util.kotlin.SharedPreferencesExt.observeBoolean
-import com.android.systemui.util.kotlin.SharedPreferencesExt.observeLong
 import com.android.systemui.util.kotlin.launchAndDispose
 import com.android.systemui.util.time.SystemClock
-import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.io.PrintWriter
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class AmbientCueViewModel
@@ -69,9 +56,7 @@ constructor(
     private val ambientCueInteractor: AmbientCueInteractor,
     private val systemClock: SystemClock,
     private val dumpManager: DumpManager,
-    private val sharedPreferencesInteractor: SharedPreferencesInteractor,
     private val ambientCueLogger: AmbientCueLogger,
-    @Application scope: CoroutineScope,
 ) : ExclusiveActivatable(), Dumpable {
 
     private val hydrator = Hydrator("AmbientCueViewModel.hydrator")
@@ -114,31 +99,10 @@ constructor(
     var isExpanded: Boolean by mutableStateOf(false)
         private set
 
-    private val sharedPreferences: StateFlow<SharedPreferences?> =
-        sharedPreferencesInteractor
-            .sharedPreferences(SHARED_PREFERENCES_FILE_NAME, Context.MODE_PRIVATE)
-            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
-
-    private val firstTimeEducationShownAt: Flow<Long?> =
-        sharedPreferences
-            .flatMapLatestConflated { prefs ->
-                // If the shared preference is not initialized, set the default value to 0L to avoid
-                // showing the first time education.
-                prefs?.observeLong(KEY_FIRST_TIME_ONBOARDING_SHOWN_AT, -1L) ?: flowOf(0L)
-            }
-            .map { if (it == -1L) null else it }
-            .distinctUntilChanged()
-    private val shouldShowLongPressEducation: Flow<Boolean> =
-        sharedPreferences
-            .flatMapLatestConflated { prefs ->
-                prefs?.observeBoolean(KEY_SHOW_LONG_PRESS_ONBOARDING, true) ?: flowOf(false)
-            }
-            .distinctUntilChanged()
-
     val showFirstTimeEducation: Boolean by
         hydrator.hydratedStateOf(
             traceName = "showFirstTimeEducation",
-            source = firstTimeEducationShownAt.map { it == null },
+            source = ambientCueInteractor.firstTimeEducationShownAt.map { it == null },
             initialValue = false,
         )
 
@@ -148,8 +112,8 @@ constructor(
             initialValue = false,
             source =
                 combine(
-                    shouldShowLongPressEducation,
-                    firstTimeEducationShownAt,
+                    ambientCueInteractor.shouldShowLongPressEducation,
+                    ambientCueInteractor.firstTimeEducationShownAt,
                     ambientCueInteractor.isRootViewAttached,
                 ) { shouldShowLongPressEducation, firstTimeEducationShownAt, _ ->
                     Log.i(
@@ -218,9 +182,10 @@ constructor(
                                     // user discovers the gesture on their own. For this reason, we
                                     // don't check if the tooltip is visible before updating the
                                     // shared preference.
-                                    sharedPreferences.value?.edit {
-                                        putBoolean(KEY_SHOW_LONG_PRESS_ONBOARDING, false)
-                                    }
+                                    ambientCueInteractor.putSharedPrefsBoolean(
+                                        KEY_SHOW_LONG_PRESS_ONBOARDING,
+                                        false,
+                                    )
                                 },
                                 actionType =
                                     when (action.actionType) {
@@ -295,19 +260,18 @@ constructor(
 
     fun disableFirstTimeHint() {
         if (showFirstTimeEducation) {
-            sharedPreferences.value?.edit {
-                Log.i(TAG, "suppressing first time tooltip")
-                putLong(KEY_FIRST_TIME_ONBOARDING_SHOWN_AT, systemClock.currentTimeMillis())
-            }
+            Log.i(TAG, "suppressing first time tooltip")
+            ambientCueInteractor.putSharedPrefsLong(
+                KEY_FIRST_TIME_ONBOARDING_SHOWN_AT,
+                systemClock.currentTimeMillis(),
+            )
         }
     }
 
     private fun disableLongPressHint() {
         if (showLongPressEducation) {
-            sharedPreferences.value?.edit {
-                Log.i(TAG, "suppressing long press tooltip")
-                putBoolean(KEY_SHOW_LONG_PRESS_ONBOARDING, false)
-            }
+            Log.i(TAG, "suppressing long press tooltip")
+            ambientCueInteractor.putSharedPrefsBoolean(KEY_SHOW_LONG_PRESS_ONBOARDING, false)
         }
     }
 
