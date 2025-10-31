@@ -62,6 +62,7 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.headsup.OnHeadsUpChangedListener;
 import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
+import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.util.Assert;
 import com.android.systemui.util.CopyOnLoopListenerSet;
 import com.android.systemui.util.IListenerSet;
@@ -128,6 +129,7 @@ public final class DozeServiceHost implements DozeHost {
     private final Context mContext;
     private final AmbientDisplayConfiguration mAmbientDisplayConfiguration;
     private final AodDimInteractor mAodDimInteractor;
+    private final SelectedUserInteractor mSelectedUserInteractor;
 
     @Inject
     public DozeServiceHost(DozeLog dozeLog, PowerManager powerManager,
@@ -149,7 +151,8 @@ public final class DozeServiceHost implements DozeHost {
             @Application CoroutineScope scope,
             Context context,
             AmbientDisplayConfiguration ambientDisplayConfiguration,
-            AodDimInteractor aodDimInteractor) {
+            AodDimInteractor aodDimInteractor,
+            SelectedUserInteractor selectedUserInteractor) {
         super();
         mDozeLog = dozeLog;
         mPowerManager = powerManager;
@@ -175,6 +178,7 @@ public final class DozeServiceHost implements DozeHost {
         mContext = context;
         mAmbientDisplayConfiguration = ambientDisplayConfiguration;
         mAodDimInteractor = aodDimInteractor;
+        mSelectedUserInteractor = selectedUserInteractor;
     }
 
     // TODO: we should try to not pass status bar in here if we can avoid it.
@@ -596,8 +600,10 @@ public final class DozeServiceHost implements DozeHost {
 
     private boolean listenForScreenOffFingerprintPulseEvents() {
         return mDeviceEntryFingerprintAuthInteractor.isSensorUnderDisplay().getValue()
-                && mAmbientDisplayConfiguration.screenOffUdfpsEnabled(mContext.getUserId())
-                && (!mAmbientDisplayConfiguration.alwaysOnEnabled(mContext.getUserId())
+                && mAmbientDisplayConfiguration.screenOffUdfpsEnabled(
+                        mSelectedUserInteractor.getSelectedUserId())
+                && (!mAmbientDisplayConfiguration.alwaysOnEnabled(
+                        mSelectedUserInteractor.getSelectedUserId())
                 || isPowerSaveActive());
     }
 

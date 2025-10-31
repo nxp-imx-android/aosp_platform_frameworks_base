@@ -39,6 +39,7 @@ import android.view.View;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
+
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.assist.AssistManager;
@@ -61,6 +62,7 @@ import com.android.systemui.statusbar.notification.NotificationWakeUpCoordinator
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
+import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -106,6 +108,7 @@ public class DozeServiceHostTest extends SysuiTestCase {
     @Mock private AmbientDisplayConfiguration mAmbientDisplayConfiguration;
     @Mock private AodDimInteractor mAodDimInteractor;
     @Mock private Display mDisplay;
+    @Mock private SelectedUserInteractor mSelectedUserInteractor;
 
     private Context mContextSpy;
     private KosmosJavaAdapter mKosmos;
@@ -126,7 +129,7 @@ public class DozeServiceHostTest extends SysuiTestCase {
                 mShadeLockscreenInteractor, mDozeInteractor,
                 mKosmos.getDeviceEntryFingerprintAuthInteractor(),
                 mKosmos.getTestScope(), mContextSpy, mAmbientDisplayConfiguration,
-                mAodDimInteractor);
+                mAodDimInteractor, mSelectedUserInteractor);
 
         mDozeServiceHost.initialize(
                 mCentralSurfaces,
