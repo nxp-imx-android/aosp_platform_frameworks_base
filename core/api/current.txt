@@ -35774,6 +35774,7 @@ package android.os {
     method @NonNull public android.os.StrictMode.VmPolicy.Builder detectCredentialProtectedWhileLocked();
     method @NonNull public android.os.StrictMode.VmPolicy.Builder detectFileUriExposure();
     method @NonNull public android.os.StrictMode.VmPolicy.Builder detectImplicitDirectBoot();
+    method @FlaggedApi("android.security.strict_mode_violation_for_implicit_uri_grants_enabled") @NonNull public android.os.StrictMode.VmPolicy.Builder detectImplicitUriPermissionGrant();
     method @NonNull public android.os.StrictMode.VmPolicy.Builder detectIncorrectContextUse();
     method @NonNull public android.os.StrictMode.VmPolicy.Builder detectLeakedClosableObjects();
     method @NonNull public android.os.StrictMode.VmPolicy.Builder detectLeakedRegistrationObjects();
@@ -35788,6 +35789,7 @@ package android.os {
     method @NonNull public android.os.StrictMode.VmPolicy.Builder penaltyDropBox();
     method @NonNull public android.os.StrictMode.VmPolicy.Builder penaltyListener(@NonNull java.util.concurrent.Executor, @NonNull android.os.StrictMode.OnVmViolationListener);
     method @NonNull public android.os.StrictMode.VmPolicy.Builder penaltyLog();
+    method @FlaggedApi("android.security.strict_mode_violation_for_implicit_uri_grants_enabled") @NonNull public android.os.StrictMode.VmPolicy.Builder permitImplicitUriPermissionGrant();
     method @NonNull public android.os.StrictMode.VmPolicy.Builder permitNonSdkApiUsage();
     method @NonNull public android.os.StrictMode.VmPolicy.Builder permitUnsafeIntentLaunch();
     method @NonNull public android.os.StrictMode.VmPolicy.Builder setClassInstanceLimit(Class, int);
