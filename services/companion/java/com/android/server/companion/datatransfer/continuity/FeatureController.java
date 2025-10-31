@@ -19,18 +19,15 @@ package com.android.server.companion.datatransfer.continuity;
 import android.annotation.NonNull;
 import android.companion.AssociationInfo;
 import android.util.Slog;
-
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
+import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
+import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
-import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
-import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
-
-import java.util.Collection;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import java.util.Objects;
 
 /**
@@ -44,7 +41,7 @@ public abstract class FeatureController implements TaskContinuityMessenger.Liste
 
     protected final int mUserId;
 
-    private final TaskContinuityMessenger mTaskContinuityMessenger;
+    protected final TaskContinuityMessenger mTaskContinuityMessenger;
 
     protected FeatureController(
             int userId, @NonNull TaskContinuityMessenger taskContinuityMessenger) {
@@ -170,8 +167,7 @@ public abstract class FeatureController implements TaskContinuityMessenger.Liste
      * @param connectedAssociations The list of all connected devices.
      */
     @Override
-    public void onAssociationDisconnected(
-            int associationId, @NonNull Collection<AssociationInfo> connectedAssociations) {}
+    public void onAssociationDisconnected(int associationId) {}
 
     @Override
     public void onMessageReceived(

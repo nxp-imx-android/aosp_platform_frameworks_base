@@ -18,21 +18,21 @@ package com.android.server.companion.datatransfer.continuity.tasks;
 
 import android.annotation.NonNull;
 import android.app.ActivityTaskManager;
-import android.companion.datatransfer.continuity.IRemoteTaskListener;
 import android.companion.AssociationInfo;
+import android.companion.datatransfer.continuity.IRemoteTaskListener;
+import android.companion.datatransfer.continuity.RemoteTask;
 import android.util.Slog;
-
-import com.android.server.LocalServices;
-import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.companion.datatransfer.continuity.FeatureController;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
-
-import java.util.Objects;
+import com.android.server.wm.ActivityTaskManagerInternal;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Controller for task synchronization.
@@ -40,10 +40,11 @@ import java.util.Collection;
  * <p>This class is responsible for broadcasting task changes to connected devices and maintaining a
  * local store of tasks from connected devices.
  */
-public class TaskSyncController extends FeatureController {
+public class TaskSyncController extends FeatureController implements RemoteTaskStore.Listener {
 
     private final TaskBroadcaster mTaskBroadcaster;
     private final RemoteTaskStore mRemoteTaskStore;
+    private final RemoteTaskListenerHolder mRemoteTaskListenerHolder;
     private final ActivityTaskManager mActivityTaskManager;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
 
@@ -52,23 +53,25 @@ public class TaskSyncController extends FeatureController {
             @NonNull TaskContinuityMessenger messenger,
             @NonNull TaskBroadcaster taskBroadcaster,
             @NonNull RemoteTaskStore remoteTaskStore,
+            @NonNull RemoteTaskListenerHolder remoteTaskListenerHolder,
             @NonNull ActivityTaskManager activityTaskManager,
             @NonNull ActivityTaskManagerInternal activityTaskManagerInternal) {
         super(userId, Objects.requireNonNull(messenger));
         mTaskBroadcaster = Objects.requireNonNull(taskBroadcaster);
         mRemoteTaskStore = Objects.requireNonNull(remoteTaskStore);
+        mRemoteTaskListenerHolder = Objects.requireNonNull(remoteTaskListenerHolder);
         mActivityTaskManager = Objects.requireNonNull(activityTaskManager);
         mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
     }
 
     public void registerTaskListener(@NonNull IRemoteTaskListener listener) {
         Slog.v(getTag(), "Registering task listener");
-        mRemoteTaskStore.addListener(Objects.requireNonNull(listener));
+        mRemoteTaskListenerHolder.addListener(Objects.requireNonNull(listener));
     }
 
     public void unregisterTaskListener(@NonNull IRemoteTaskListener listener) {
         Slog.v(getTag(), "Unregistering task listener");
-        mRemoteTaskStore.removeListener(Objects.requireNonNull(listener));
+        mRemoteTaskListenerHolder.removeListener(Objects.requireNonNull(listener));
     }
 
     public void removeTask(int associationId, int taskId) {
@@ -78,7 +81,7 @@ public class TaskSyncController extends FeatureController {
 
     @Override
     protected String getTag() {
-        return "TaskSyncController";
+        return TaskSyncController.class.getSimpleName();
     }
 
     @Override
@@ -86,6 +89,7 @@ public class TaskSyncController extends FeatureController {
         Slog.v(getTag(), "Registering listeners from ActivityTaskManager");
         mActivityTaskManager.registerTaskStackListener(mTaskBroadcaster);
         mActivityTaskManagerInternal.registerHandoffEnablementListener(mTaskBroadcaster);
+        mRemoteTaskStore.addListener(this);
     }
 
     @Override
@@ -93,6 +97,7 @@ public class TaskSyncController extends FeatureController {
         Slog.v(getTag(), "Unregistering listeners from ActivityTaskManager");
         mActivityTaskManager.unregisterTaskStackListener(mTaskBroadcaster);
         mActivityTaskManagerInternal.unregisterHandoffEnablementListener(mTaskBroadcaster);
+        mRemoteTaskStore.removeListener(this);
 
         Slog.v(getTag(), "Clearing all tasks from RemoteTaskStore");
         mRemoteTaskStore.clear();
@@ -100,21 +105,15 @@ public class TaskSyncController extends FeatureController {
 
     @Override
     public void onAssociationConnected(@NonNull AssociationInfo associationInfo) {
-        Slog.v(getTag(), "Association connected: " + associationInfo.getId());
-        Objects.requireNonNull(associationInfo);
-
-        mTaskBroadcaster.onDeviceConnected(associationInfo.getId());
-        mRemoteTaskStore.addDevice(
-                associationInfo.getId(), associationInfo.getDisplayName().toString());
+        int associationId = Objects.requireNonNull(associationInfo).getId();
+        Slog.v(getTag(), "Association connected: " + associationId);
+        mTaskBroadcaster.onDeviceConnected(associationId);
     }
 
     @Override
-    public void onAssociationDisconnected(
-            int associationId, @NonNull Collection<AssociationInfo> connectedAssociations) {
+    public void onAssociationDisconnected(int associationId) {
         Slog.v(getTag(), "Association disconnected: " + associationId);
-        Objects.requireNonNull(connectedAssociations);
-
-        mRemoteTaskStore.removeDevice(associationId);
+        mRemoteTaskStore.removeAssociation(associationId);
     }
 
     @Override
@@ -134,7 +133,7 @@ public class TaskSyncController extends FeatureController {
                         + remoteTaskAddedMessage.task().id()
                         + " on association "
                         + associationId);
-        mRemoteTaskStore.addTask(
+        mRemoteTaskStore.upsertTask(
                 associationId, Objects.requireNonNull(remoteTaskAddedMessage).task());
     }
 
@@ -160,7 +159,25 @@ public class TaskSyncController extends FeatureController {
                         + remoteTaskUpdatedMessage.task().id()
                         + " on association "
                         + associationId);
-        mRemoteTaskStore.updateTask(
+        mRemoteTaskStore.upsertTask(
                 associationId, Objects.requireNonNull(remoteTaskUpdatedMessage).task());
+    }
+
+    @Override
+    public void onRemoteTasksChanged(@NonNull Collection<RemoteTaskStore.Task> tasks) {
+        List<RemoteTask> remoteTasks = new ArrayList<>();
+        for (RemoteTaskStore.Task task : Objects.requireNonNull(tasks)) {
+            AssociationInfo associationInfo =
+                    mTaskContinuityMessenger.getAssociationInfo(task.associationId());
+            if (associationInfo != null) {
+                remoteTasks.add(
+                        task.taskInfo()
+                                .toRemoteTask(
+                                        associationInfo.getId(),
+                                        associationInfo.getDisplayName().toString()));
+            }
+        }
+
+        mRemoteTaskListenerHolder.notifyListeners(remoteTasks);
     }
 }

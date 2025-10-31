@@ -20,12 +20,10 @@ import android.annotation.NonNull;
 import android.app.ActivityTaskManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
-
 import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.MultiUserResourceCache;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.wm.ActivityTaskManagerInternal;
-
 import java.util.Objects;
 
 public class TaskSyncControllerCache extends MultiUserResourceCache<TaskSyncController> {
@@ -60,6 +58,7 @@ public class TaskSyncControllerCache extends MultiUserResourceCache<TaskSyncCont
                                 mActivityTaskManagerInternal,
                                 mPackageManager)),
                 new RemoteTaskStore(),
+                new RemoteTaskListenerHolder(),
                 mActivityTaskManager,
                 mActivityTaskManagerInternal);
     }
