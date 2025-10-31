@@ -24,6 +24,8 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.ScreenCaptureEvent
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureParametersInteractor
 import com.android.systemui.screencapture.record.largescreen.ui.DirectoryPickerActivity
@@ -45,6 +47,7 @@ constructor(
     private val uiEventLogger: UiEventLogger,
     private val userTracker: UserTracker,
     private val iconProvider: ScreenCaptureIconProvider,
+    private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     featuresInteractor: LargeScreenCaptureFeaturesInteractor,
     recordParametersViewModelFactory: ScreenCaptureRecordParametersViewModel.Factory,
     largeScreenCaptureParametersInteractor: LargeScreenCaptureParametersInteractor,
@@ -108,6 +111,8 @@ constructor(
     }
 
     fun requestLaunchDirectoryPicker() {
+        screenCaptureUiInteractor.hide(ScreenCaptureType.RECORD)
+
         val intent = Intent(context, DirectoryPickerActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivityAsUser(intent, userTracker.userHandle)
