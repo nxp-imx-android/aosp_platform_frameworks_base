@@ -36,7 +36,31 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public class DefaultSurfaceAnimator {
+public class DefaultSurfaceAnimator implements Runnable {
+
+    private static final ThreadLocal<DefaultSurfaceAnimator> sSurfaceAnimator =
+            ThreadLocal.withInitial(DefaultSurfaceAnimator::new);
+
+    private final Choreographer mChoreographer = Choreographer.getInstance();
+    private SurfaceControl.Transaction mTransaction;
+    private boolean mScheduled;
+
+    private DefaultSurfaceAnimator() {
+    }
+
+    void schedule() {
+        if (!mScheduled) {
+            mChoreographer.postCallback(Choreographer.CALLBACK_TRAVERSAL, this, null /* token */);
+            mScheduled = true;
+        }
+    }
+
+    @Override
+    public void run() {
+        mScheduled = false;
+        mTransaction.setFrameTimelineVsync(mChoreographer.getVsyncId());
+        mTransaction.apply();
+    }
 
     /** Builds an animator for the surface and adds it to the `animations` list. */
     static void buildSurfaceAnimation(@NonNull ArrayList<Animator> animations,
@@ -55,14 +79,24 @@ public class DefaultSurfaceAnimator {
             @NonNull Animation anim, @NonNull Runnable finishCallback,
             @NonNull TransactionPool pool, @NonNull ShellExecutor mainExecutor,
             @NonNull AnimationAdapter updateListener) {
-        final SurfaceControl.Transaction transaction = pool.acquire();
-        updateListener.setTransaction(transaction);
+        final SurfaceControl.Transaction transaction;
+        if (com.android.window.flags.Flags.defaultAnimatorSingleTransaction()) {
+            transaction = null;
+            updateListener.mTransactionPool = pool;
+        } else {
+            transaction = pool.acquire();
+            updateListener.setTransaction(transaction);
+        }
         final ValueAnimator va = ValueAnimator.ofFloat(0f, 1f);
         // Animation length is already expected to be scaled.
         va.overrideDurationScale(1.0f);
         va.setDuration(anim.computeDurationHint());
         setupValueAnimator(va, updateListener, (vanim) -> {
-            pool.release(transaction);
+            if (com.android.window.flags.Flags.defaultAnimatorSingleTransaction()) {
+                updateListener.releaseTransactionIfNeeded();
+            } else {
+                pool.release(transaction);
+            }
             mainExecutor.execute(() -> {
                 animations.remove(vanim);
                 finishCallback.run();
@@ -76,6 +110,8 @@ public class DefaultSurfaceAnimator {
         @NonNull final SurfaceControl mLeash;
         @NonNull SurfaceControl.Transaction mTransaction;
         private Choreographer mChoreographer;
+        private TransactionPool mTransactionPool;
+        private DefaultSurfaceAnimator mSurfaceAnimator;
 
         AnimationAdapter(@NonNull SurfaceControl leash) {
             mLeash = Objects.requireNonNull(leash, "leash is null in AnimationAdapter constructor");
@@ -83,6 +119,25 @@ public class DefaultSurfaceAnimator {
 
         void setTransaction(@NonNull SurfaceControl.Transaction transaction) {
             mTransaction = transaction;
+        }
+
+        /** This method can only be called from onAnimationStart. */
+        void setSurfaceAnimator() {
+            mSurfaceAnimator = sSurfaceAnimator.get();
+            if (mSurfaceAnimator.mTransaction != null) {
+                mTransaction = mSurfaceAnimator.mTransaction;
+            } else {
+                mTransaction = mSurfaceAnimator.mTransaction = mTransactionPool.acquire();
+            }
+        }
+
+        /** This method can only be called from onAnimationEnd. */
+        void releaseTransactionIfNeeded() {
+            if (mSurfaceAnimator.mScheduled || mSurfaceAnimator.mTransaction == null) {
+                return;
+            }
+            mTransactionPool.release(mSurfaceAnimator.mTransaction);
+            mSurfaceAnimator.mTransaction = null;
         }
 
         @Override
@@ -93,6 +148,10 @@ public class DefaultSurfaceAnimator {
                     ? animator.getDuration()
                     : Math.min(animator.getDuration(), animator.getCurrentPlayTime());
             applyTransformation(animator, currentPlayTime);
+            if (com.android.window.flags.Flags.defaultAnimatorSingleTransaction()) {
+                mSurfaceAnimator.schedule();
+                return;
+            }
             if (mChoreographer == null) {
                 mChoreographer = Choreographer.getInstance();
             }
@@ -192,6 +251,10 @@ public class DefaultSurfaceAnimator {
 
             @Override
             public void onAnimationStart(Animator animation) {
+                if (com.android.window.flags.Flags.defaultAnimatorSingleTransaction()
+                        && updateListener instanceof AnimationAdapter animationAdapter) {
+                    animationAdapter.setSurfaceAnimator();
+                }
             }
 
             @Override
