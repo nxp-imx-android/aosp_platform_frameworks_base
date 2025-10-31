@@ -18,6 +18,7 @@ package com.android.wm.shell.pip;
 
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
+import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.TRANSIT_PIP;
 
 import static com.android.wm.shell.pip.PipAnimationController.TRANSITION_DIRECTION_REMOVE_STACK;
@@ -227,7 +228,7 @@ public abstract class PipTransitionController implements Transitions.TransitionH
                 ActivityTaskManager.getService().onPictureInPictureUiStateChanged(
                         new PictureInPictureUiState.Builder()
                                 .setTransitioningToPip(true)
-                                .build());
+                                .build(), DEFAULT_DISPLAY);
             } catch (RemoteException | IllegalStateException e) {
                 ProtoLog.e(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                         "Failed to set alert PiP state change.");
@@ -263,7 +264,7 @@ public abstract class PipTransitionController implements Transitions.TransitionH
                 ActivityTaskManager.getService().onPictureInPictureUiStateChanged(
                         new PictureInPictureUiState.Builder()
                                 .setTransitioningToPip(true)
-                                .build());
+                                .build(), DEFAULT_DISPLAY);
             } catch (RemoteException | IllegalStateException e) {
                 ProtoLog.e(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                         "Failed to set alert PiP state change.");
@@ -285,7 +286,7 @@ public abstract class PipTransitionController implements Transitions.TransitionH
                 ActivityTaskManager.getService().onPictureInPictureUiStateChanged(
                         new PictureInPictureUiState.Builder()
                                 .setTransitioningToPip(false)
-                                .build());
+                                .build(), DEFAULT_DISPLAY);
             } catch (RemoteException | IllegalStateException e) {
                 ProtoLog.e(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                         "Failed to set alert PiP state change.");

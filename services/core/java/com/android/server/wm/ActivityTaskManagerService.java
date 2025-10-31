@@ -4970,17 +4970,26 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     }
 
     @Override
-    public void onPictureInPictureUiStateChanged(PictureInPictureUiState pipState) {
+    public void onPictureInPictureUiStateChanged(PictureInPictureUiState pipState, int displayId) {
         enforceTaskPermission("onPictureInPictureUiStateChanged");
         synchronized (mGlobalLock) {
+            TaskDisplayArea tda = mRootWindowContainer.getDefaultTaskDisplayArea();
+            // If the PiP is on a non-default display
+            if (com.android.window.flags.Flags.enablePipUiStateChangeCallbackForConnectedDisplays()
+                    && displayId != DEFAULT_DISPLAY) {
+                DisplayContent dc = mRootWindowContainer.getDisplayContent(displayId);
+                if (dc != null) {
+                    tda = dc.getDefaultTaskDisplayArea();
+                }
+            }
+
             // The PictureInPictureUiState is sent to current pip task if there is any
             // -or- the top standard task (state like entering PiP does not require a pinned task).
             final Task task;
-            if (mRootWindowContainer.getDefaultTaskDisplayArea().hasPinnedTask()) {
-                task = mRootWindowContainer.getDefaultTaskDisplayArea().getRootPinnedTask();
+            if (tda.hasPinnedTask()) {
+                task = tda.getRootPinnedTask();
             } else {
-                task = mRootWindowContainer.getDefaultTaskDisplayArea().getRootTask(
-                        t -> t.isActivityTypeStandard());
+                task = tda.getRootTask(t -> t.isActivityTypeStandard());
             }
             final ActivityRecord topActivity = task != null
                     ? task.getTopMostActivity()
