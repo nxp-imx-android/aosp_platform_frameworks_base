@@ -9152,12 +9152,15 @@ package android.app.appfunctions {
     field public static final int APP_FUNCTION_STATE_ENABLED = 1; // 0x1
   }
 
-  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public class AppFunctionMetadata {
+  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public final class AppFunctionMetadata implements android.os.Parcelable {
+    method public int describeContents();
     method @NonNull public android.app.appsearch.GenericDocument getMetadataDocument();
     method @NonNull public android.app.appfunctions.AppFunctionName getName();
     method @NonNull public android.app.appfunctions.AppFunctionPackageMetadata getPackageMetadata();
     method @Nullable public android.app.appfunctions.AppFunctionSchemaMetadata getSchemaMetadata();
     method public boolean isEnabled();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionMetadata> CREATOR;
     field public static final String PROPERTY_ENABLED_BY_DEFAULT = "enabledByDefault";
     field public static final String PROPERTY_FUNCTION_ID = "id";
     field public static final String PROPERTY_SCHEMA_CATEGORY = "schemaCategory";
@@ -9165,15 +9168,21 @@ package android.app.appfunctions {
     field public static final String PROPERTY_SCHEMA_VERSION = "schemaVersion";
   }
 
-  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public class AppFunctionName {
+  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public final class AppFunctionName implements android.os.Parcelable {
     ctor public AppFunctionName(@NonNull String, @NonNull String);
+    method public int describeContents();
     method @NonNull public String getFunctionId();
     method @NonNull public String getPackageName();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionName> CREATOR;
   }
 
-  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public class AppFunctionPackageMetadata {
+  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public final class AppFunctionPackageMetadata implements android.os.Parcelable {
+    method public int describeContents();
     method @NonNull public android.app.appsearch.GenericDocument getMetadataDocument();
     method @NonNull public String getPackageName();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionPackageMetadata> CREATOR;
     field public static final String PROPERTY_TOP_LEVEL_DOCUMENTS = "topLevelMetadataDocuments";
   }
 
@@ -9181,11 +9190,14 @@ package android.app.appfunctions {
     method public void unregister();
   }
 
-  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public class AppFunctionSchemaMetadata {
+  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public final class AppFunctionSchemaMetadata implements android.os.Parcelable {
     ctor public AppFunctionSchemaMetadata(@NonNull String, @NonNull String, long);
+    method public int describeContents();
     method @NonNull public String getCategory();
     method @NonNull public String getName();
     method public long getVersion();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionSchemaMetadata> CREATOR;
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public abstract class AppFunctionService extends android.app.Service {
