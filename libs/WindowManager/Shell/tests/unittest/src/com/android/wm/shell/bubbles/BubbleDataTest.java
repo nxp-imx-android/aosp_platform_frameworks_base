@@ -18,6 +18,7 @@ package com.android.wm.shell.bubbles;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_OPTIONAL_BUBBLE_OVERFLOW;
+import static com.android.wm.shell.Flags.FLAG_REMOVE_APP_BUBBLE_OVERFLOW_DUPES;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -34,8 +35,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import android.annotation.Nullable;
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.app.TaskInfo;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.LocusId;
 import android.graphics.drawable.Icon;
@@ -1554,6 +1559,172 @@ public class BubbleDataTest extends ShellTestCase {
         assertThat(bubbleA2.showFlyout()).isTrue();
     }
 
+    @Test
+    public void testOverflowAppBubble() {
+        mBubbleData.setListener(mListener);
+
+        // Add it
+        Bubble appBubble = createAppBubble(null /* defaultIntent */);
+        mBubbleData.notificationEntryUpdated(appBubble, true /* suppressFlyout*/,
+                false /* showInShade */);
+        verifyUpdateReceived();
+        assertBubbleAdded(appBubble);
+
+        // Overflow it
+        mBubbleData.dismissBubbleWithKey(appBubble.getKey(), Bubbles.DISMISS_USER_GESTURE, 0);
+        verifyUpdateReceived();
+
+        assertBubbleRemoved(appBubble, Bubbles.DISMISS_USER_GESTURE);
+        assertOverflowChangedTo(ImmutableList.of(appBubble));
+    }
+
+    @EnableFlags(FLAG_REMOVE_APP_BUBBLE_OVERFLOW_DUPES)
+    @Test
+    public void testOverflowAppDupes_bothLauncherCategory() {
+        mBubbleData.setListener(mListener);
+
+        Intent launchIntent1 = new Intent(mContext, BubblesTestActivity.class);
+        launchIntent1.addCategory(Intent.CATEGORY_LAUNCHER);
+        Bubble appBubble1 = createAppBubble(launchIntent1);
+        assertThat(appBubble1.isHasLauncherCategory()).isTrue();
+
+        mBubbleData.notificationEntryUpdated(appBubble1, true /* suppressFlyout*/,
+                false /* showInShade */);
+        verifyUpdateReceived();
+        assertBubbleAdded(appBubble1);
+
+        mBubbleData.dismissAll(Bubbles.DISMISS_USER_GESTURE);
+        verifyUpdateReceived();
+        assertBubbleRemoved(appBubble1, Bubbles.DISMISS_USER_GESTURE);
+        assertOverflowAdded(appBubble1);
+
+        Intent launchIntent2 = new Intent(mContext, BubblesTestActivity.class);
+        launchIntent2.addCategory(Intent.CATEGORY_LAUNCHER);
+        TaskInfo info = createTaskInfo();
+        info.baseIntent = launchIntent2;
+        assertThat(info.baseIntent.hasCategory(Intent.CATEGORY_LAUNCHER)).isTrue();
+        Bubble appBubble2 = createTaskBubble(info); // using task bubble gives it a different key
+        assertThat(appBubble2.isHasLauncherCategory()).isTrue();
+
+        mBubbleData.notificationEntryUpdated(appBubble2, true /* suppressFlyout*/,
+                false /* showInShade */);
+        verifyUpdateReceived();
+        assertBubbleAdded(appBubble2);
+
+        mBubbleData.dismissAll(Bubbles.DISMISS_USER_GESTURE);
+        verifyUpdateReceived();
+
+        // Most recent app with launch category remains in the overflow
+        assertBubbleRemoved(appBubble2, Bubbles.DISMISS_USER_GESTURE);
+        assertOverflowRemoved(appBubble1);
+        assertOverflowAdded(appBubble2);
+    }
+
+    @EnableFlags(FLAG_REMOVE_APP_BUBBLE_OVERFLOW_DUPES)
+    @Test
+    public void testOverflowAppDupes_newIsLauncherCategory() {
+        mBubbleData.setListener(mListener);
+
+        // Overflow a task bubble (not launcher category)
+        Bubble taskBubble = createTaskBubble(createTaskInfo());
+        mBubbleData.notificationEntryUpdated(taskBubble, true /* suppressFlyout*/,
+                false /* showInShade */);
+        verifyUpdateReceived();
+
+        mBubbleData.dismissAll(Bubbles.DISMISS_USER_GESTURE);
+        verifyUpdateReceived();
+
+        assertBubbleRemoved(taskBubble, Bubbles.DISMISS_USER_GESTURE);
+        assertOverflowAdded(taskBubble);
+
+        // Overflow a launcher bubble
+        Intent launchIntent = new Intent(mContext, BubblesTestActivity.class);
+        launchIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        Bubble launcherBubble = createAppBubble(launchIntent);
+        mBubbleData.notificationEntryUpdated(launcherBubble, true /* suppressFlyout*/,
+                false /* showInShade */);
+        verifyUpdateReceived();
+
+        mBubbleData.dismissAll(Bubbles.DISMISS_USER_GESTURE);
+        verifyUpdateReceived();
+
+        assertBubbleRemoved(launcherBubble, Bubbles.DISMISS_USER_GESTURE);
+        assertOverflowAdded(launcherBubble);
+        assertOverflowRemoved(taskBubble);
+    }
+
+    @EnableFlags(FLAG_REMOVE_APP_BUBBLE_OVERFLOW_DUPES)
+    @Test
+    public void testOverflowAppDupes_oldIsLauncherCategory() {
+        mBubbleData.setListener(mListener);
+
+        // Overflow a launcher bubble
+        Intent launchIntent = new Intent(mContext, BubblesTestActivity.class);
+        launchIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        Bubble launcherBubble = createAppBubble(launchIntent);
+        mBubbleData.notificationEntryUpdated(launcherBubble, true /* suppressFlyout*/,
+                false /* showInShade */);
+        verifyUpdateReceived();
+
+        mBubbleData.dismissAll(Bubbles.DISMISS_USER_GESTURE);
+        verifyUpdateReceived();
+
+        assertBubbleRemoved(launcherBubble, Bubbles.DISMISS_USER_GESTURE);
+        assertOverflowAdded(launcherBubble);
+
+        // Overflow a task bubble (not launcher category)
+        Bubble taskBubble = createTaskBubble(createTaskInfo());
+        mBubbleData.notificationEntryUpdated(taskBubble, true /* suppressFlyout*/,
+                false /* showInShade */);
+        verifyUpdateReceived();
+
+        mBubbleData.dismissAll(Bubbles.DISMISS_USER_GESTURE);
+        verifyUpdateReceived();
+
+        // It should be removed
+        assertBubbleRemoved(taskBubble, Bubbles.DISMISS_USER_GESTURE);
+        // And overflow list should just be the launcher category bubble
+        assertOverflowChangedTo(ImmutableList.of(launcherBubble));
+    }
+
+    @EnableFlags(FLAG_REMOVE_APP_BUBBLE_OVERFLOW_DUPES)
+    @Test
+    public void testOverflowAppDupes_neitherIsLauncherCategory() {
+        mBubbleData.setListener(mListener);
+
+        // Overflow a task bubble (not launcher category)
+        TaskInfo info1 = createTaskInfo();
+        info1.taskId = 1;
+        Bubble taskBubble1 = createTaskBubble(info1);
+        mBubbleData.notificationEntryUpdated(taskBubble1, true /* suppressFlyout*/,
+                false /* showInShade */);
+        verifyUpdateReceived();
+
+        mBubbleData.dismissAll(Bubbles.DISMISS_USER_GESTURE);
+        verifyUpdateReceived();
+
+        // It should be removed
+        assertBubbleRemoved(taskBubble1, Bubbles.DISMISS_USER_GESTURE);
+
+        // Overflow a task bubble (not launcher category)
+        TaskInfo info2 = createTaskInfo();
+        info2.taskId = 2;
+        Bubble taskBubble2 = createTaskBubble(info2);
+        mBubbleData.notificationEntryUpdated(taskBubble2, true /* suppressFlyout*/,
+                false /* showInShade */);
+        verifyUpdateReceived();
+
+        mBubbleData.dismissAll(Bubbles.DISMISS_USER_GESTURE);
+        verifyUpdateReceived();
+
+        // It should be removed
+        assertBubbleRemoved(taskBubble2, Bubbles.DISMISS_USER_GESTURE);
+
+        // Most recent one gets added to overflow and old one is removed
+        assertOverflowAdded(taskBubble2);
+        assertOverflowRemoved(taskBubble1);
+    }
+
     private void verifyUpdateReceived() {
         verify(mListener).applyUpdate(mUpdateCaptor.capture());
         reset(mListener);
@@ -1608,6 +1779,16 @@ public class BubbleDataTest extends ShellTestCase {
     private void assertOverflowChangedTo(ImmutableList<Bubble> bubbles) {
         BubbleData.Update update = mUpdateCaptor.getValue();
         assertThat(update.overflowBubbles).isEqualTo(bubbles);
+    }
+
+    private void assertOverflowRemoved(Bubble bubble) {
+        BubbleData.Update update = mUpdateCaptor.getValue();
+        assertThat(update.removedOverflowBubble).isEqualTo(bubble);
+    }
+
+    private void assertOverflowAdded(Bubble bubble) {
+        BubbleData.Update update = mUpdateCaptor.getValue();
+        assertThat(update.addedOverflowBubble).isEqualTo(bubble);
     }
 
     private void assertBubbleListContains(Bubble... bubbles) {
@@ -1699,5 +1880,40 @@ public class BubbleDataTest extends ShellTestCase {
     private void changeExpandedStateAtTime(boolean shouldBeExpanded, long time) {
         setCurrentTime(time);
         mBubbleData.setExpanded(shouldBeExpanded);
+    }
+
+    private Bubble createAppBubble(@Nullable Intent intent) {
+        if (intent == null) {
+            intent = new Intent(mContext, BubblesTestActivity.class);
+        }
+        intent.setPackage(mContext.getPackageName());
+        return Bubble.createAppBubble(
+                intent,
+                new UserHandle(1),
+                mock(Icon.class));
+    }
+
+
+    private Bubble createTaskBubble(@Nullable TaskInfo info) {
+        Intent intent = new Intent(mContext, BubblesTestActivity.class);
+        if (info == null) {
+            info = new ActivityManager.RunningTaskInfo();
+            info.taskId = 99;
+            info.baseIntent = intent;
+            info.baseActivity = new ComponentName(mContext, BubblesTestActivity.class);
+        }
+        return Bubble.createTaskBubble(info,
+                new UserHandle(1),
+                mock(Icon.class));
+    }
+
+    private TaskInfo createTaskInfo() {
+        TaskInfo info = new ActivityManager.RunningTaskInfo();
+        Intent intent = new Intent(mContext, BubblesTestActivity.class);
+        intent.setPackage(mContext.getPackageName());
+        info.taskId = 99;
+        info.baseIntent = intent;
+        info.baseActivity = new ComponentName(mContext, BubblesTestActivity.class);
+        return info;
     }
 }
