@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,23 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package com.android.wm.shell.functional.maximize
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.UnminimizeAppFromAllApps
+import com.android.wm.shell.scenarios.UnmaximizeAppWindow
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [OpenAppsInDesktopMode]. */
+/**
+ * Functional test for [UnmaximizeAppWindow].
+ *
+ * To unmaximize a desktop window means to move it from the maximized state back
+ * to a regular non-maximized state.
+ */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class UnminimizeAppFromAllAppsTest : UnminimizeAppFromAllApps()
+class UnmaximizeAppWindowTest : UnmaximizeAppWindow()
