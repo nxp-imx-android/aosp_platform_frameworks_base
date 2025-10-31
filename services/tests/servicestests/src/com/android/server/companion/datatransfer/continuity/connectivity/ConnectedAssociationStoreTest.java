@@ -19,11 +19,9 @@ package com.android.server.companion.datatransfer.continuity.connectivity;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
@@ -34,21 +32,16 @@ import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
-
 import androidx.test.platform.app.InstrumentationRegistry;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
@@ -110,7 +103,7 @@ public class ConnectedAssociationStoreTest {
         mConnectedAssociationStore.onTransportsChanged(Collections.emptyList());
 
         // Verify the observer is notified of the disconnection.
-        verify(mMockListener).onTransportDisconnected(eq(associationInfo.getId()), any());
+        verify(mMockListener).onTransportDisconnected(eq(associationInfo.getId()));
     }
 
     @Test
@@ -124,7 +117,7 @@ public class ConnectedAssociationStoreTest {
 
         // Verify the observer is only notified once for the initial connection.
         verify(mMockListener, times(1)).onTransportConnected(eq(associationInfo));
-        verify(mMockListener, never()).onTransportDisconnected(eq(associationInfo.getId()), any());
+        verify(mMockListener, never()).onTransportDisconnected(eq(associationInfo.getId()));
     }
 
     @Test
@@ -140,7 +133,7 @@ public class ConnectedAssociationStoreTest {
 
         // Verify the observer is only notified once for the initial connection.
         verify(mMockListener, times(1)).onTransportConnected(eq(associationInfo));
-        verify(mMockListener, times(1)).onTransportDisconnected(eq(associationInfo.getId()), any());
+        verify(mMockListener, times(1)).onTransportDisconnected(eq(associationInfo.getId()));
     }
 
     @Test
@@ -156,7 +149,7 @@ public class ConnectedAssociationStoreTest {
 
         // Verify the observer is only notified once for the initial connection.
         verify(mMockListener, times(1)).onTransportConnected(eq(associationInfo2));
-        verify(mMockListener, never()).onTransportDisconnected(eq(associationInfo.getId()), any());
+        verify(mMockListener, never()).onTransportDisconnected(eq(associationInfo.getId()));
     }
 
     @Test
