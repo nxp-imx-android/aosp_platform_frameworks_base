@@ -147,6 +147,13 @@ constructor(
                     }
             }
 
+            override fun onBindingDied(name: ComponentName?) {
+                val errMsg = "Binding died for $name"
+                Log.w(TAG, errMsg)
+                onAppContents(Result.failure(IllegalStateException(errMsg)))
+                context.unbindService(this)
+            }
+
             override fun onServiceDisconnected(name: ComponentName?) {
                 callback?.let {
                     scope.launch(bgContext) {
