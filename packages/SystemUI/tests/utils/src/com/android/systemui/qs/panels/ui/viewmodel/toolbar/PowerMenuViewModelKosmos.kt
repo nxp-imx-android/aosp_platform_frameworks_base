@@ -18,6 +18,7 @@ package com.android.systemui.qs.panels.ui.viewmodel.toolbar
 
 import com.android.systemui.globalactions.domain.interactor.globalActionsInteractor
 import com.android.systemui.globalactions.ui.viewmodel.lockGlobalActionViewModelFactory
+import com.android.systemui.globalactions.ui.viewmodel.logoutGlobalActionViewModelFactory
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.log.logcatLogBuffer
 
@@ -29,6 +30,7 @@ val Kosmos.powerMenuViewModelFactory by
                     interactor = globalActionsInteractor,
                     logBuffer = logcatLogBuffer("PowerMenuViewModel"),
                     lockFactory = lockGlobalActionViewModelFactory,
+                    logoutFactory = logoutGlobalActionViewModelFactory,
                 )
         }
     }

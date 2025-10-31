@@ -35,6 +35,7 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvisioningRepository
 import com.android.systemui.testKosmosNew
+import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
@@ -110,6 +111,17 @@ class PowerMenuViewModelTest : SysuiTestCase() {
 
             // THEN LOCK item is removed again
             assertThat(underTest.items.map { it.key }).doesNotContain(GlobalActionType.LOCK)
+        }
+
+    @Test
+    fun items_logoutEnabled_containsLogoutAction() =
+        kosmos.runTest {
+            // GIVEN logout is possible AND enabled by user manager
+            globalActionsRepository.possibleGlobalActions = listOf(GlobalActionType.LOGOUT)
+            fakeUserRepository.setUserManagerLogoutEnabled(true)
+
+            // THEN items contains the logout action
+            assertThat(underTest.items.map { it.key }).contains(GlobalActionType.LOGOUT)
         }
 
     private fun Kosmos.setUnlocked(isUnlocked: Boolean) {

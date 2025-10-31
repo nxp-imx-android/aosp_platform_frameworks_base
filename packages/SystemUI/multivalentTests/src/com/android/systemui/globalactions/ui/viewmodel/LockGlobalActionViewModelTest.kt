@@ -75,20 +75,25 @@ class LockGlobalActionViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onClick_triggersAction_andLogsUiEvent() =
+    fun onClick_locksDevice() =
         kosmos.runTest {
-            // GIVEN visible state
+            fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
+            val state = underTest.state as GlobalActionUiState.Visible
+            val isUnlocked by collectLastValue(deviceEntryInteractor.isUnlocked)
+
+            state.onClick()
+
+            assertThat(isUnlocked).isFalse()
+        }
+
+    @Test
+    fun onClick_logsUiEvent() =
+        kosmos.runTest {
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
             val state = underTest.state as GlobalActionUiState.Visible
 
-            val isUnlocked by collectLastValue(deviceEntryInteractor.isUnlocked)
-
-            // WHEN onClick is invoked
             state.onClick()
 
-            // THEN the device is locked
-            assertThat(isUnlocked).isFalse()
-            // AND the event is logged to UiEventLogger
             assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
             assertThat(uiEventLoggerFake.eventId(0)).isEqualTo(GlobalActionsEvent.GA_LOCK_PRESS.id)
         }
