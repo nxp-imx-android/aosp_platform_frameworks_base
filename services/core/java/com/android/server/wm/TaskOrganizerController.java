@@ -782,7 +782,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         return task.mTaskId;
     }
 
-    void removeWindowlessStartingSurface(int taskId, boolean immediately) {
+    void removeWindowlessStartingSurface(int taskId, boolean immediately, boolean hasImeSurface) {
         final ITaskOrganizer lastOrganizer = mTaskOrganizers.peekLast();
         if (lastOrganizer == null || taskId == 0) {
             return;
@@ -791,7 +791,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         removalInfo.taskId = taskId;
         removalInfo.windowlessSurface = true;
         removalInfo.removeImmediately = immediately;
-        removalInfo.deferRemoveMode = DEFER_MODE_NONE;
+        removalInfo.deferRemoveMode = hasImeSurface ? DEFER_MODE_NORMAL : DEFER_MODE_NONE;
         try {
             lastOrganizer.removeStartingWindow(removalInfo);
         } catch (RemoteException e) {

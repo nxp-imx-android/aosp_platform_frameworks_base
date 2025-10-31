@@ -4905,7 +4905,17 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         // has been settled down after IME control target changed.
         final boolean imeControlChanged = prevImeControlTarget != mImeControlTarget;
         if (imeControlChanged || forceUpdateImeParent) {
+            final WindowContainer originalParent = mImeParent;
             updateImeParent();
+            final ImeInsetsSourceProvider imeInsetsSourceProvider =
+                    mInsetsStateController.getImeSourceProvider();
+            // Report ImeDrawn to Shell when the visible IME is reparented, allowing Shell to
+            // proceed with starting window removal after a task or activity switch.
+            if (Flags.deferSnapshotRemovalForPredictiveBackWithIme()
+                    && mImeControlTarget != null && originalParent != mImeParent
+                    && imeInsetsSourceProvider.getSource().isVisible()) {
+                imeInsetsSourceProvider.reportImeDrawnForOrganizerIfNeeded(mImeControlTarget);
+            }
         }
 
         final WindowState win = InsetsControlTarget.asWindowOrNull(mImeControlTarget);
