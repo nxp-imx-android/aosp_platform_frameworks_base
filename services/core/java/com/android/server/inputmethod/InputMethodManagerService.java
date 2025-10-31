@@ -1486,7 +1486,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         mWindowManagerInternal.setOnImeRequestedChangedListener(
                 (windowToken, imeVisible, statsToken) -> {
                     if (imeVisible) {
-                        showCurrentInputInternal(windowToken, statsToken);
+                        showCurrentInputInternal(windowToken, statsToken, false /* forceShow */);
                     } else {
                         hideCurrentInputInternal(windowToken, statsToken);
                     }
@@ -1908,7 +1908,13 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     : createStatsTokenForFocusedClient(true /* show */,
                             SoftInputShowHideReason.ATTACH_NEW_INPUT, userId);
             userData.mCurStatsToken = null;
-            showCurrentInputInternal(focusedWindow, statsToken);
+            // If the screen was turned off and configuration change (device was previously in
+            // landscape) happened, the IME was not redrawn. Therefore, we need to dispatch
+            // another show request. As the IME is still visible from IMMS's perspective, we
+            // need to enforce it, otherwise it would early return.
+            final boolean imeBound = Flags.reportAnimatingInsetsTypes()
+                    && userData.mBindingController.getCurMethod() != null;
+            showCurrentInputInternal(focusedWindow, statsToken, imeBound /* forceShow */);
         }
 
         final var curId = bindingController.getCurId();
@@ -2995,8 +3001,18 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
     }
 
+    /**
+     * Shows the current bound IME on the current IME client of the user of the given windowToken.
+     *
+     * @param windowToken the token of the IME client window.
+     * @param statsToken  the token tracking the current IME request.
+     * @param forceShow   whether to send a show request even if
+     * {@link ImeVisibilityStateComputer#isInputShown} is {@code true}.
+     * @return            {@code true} if the request was sent to the IME, {@code false} otherwise.
+     */
     // TODO(b/353463205) check callers to see if we can make statsToken @NonNull
-    boolean showCurrentInputInternal(IBinder windowToken, @NonNull ImeTracker.Token statsToken) {
+    boolean showCurrentInputInternal(IBinder windowToken, @NonNull ImeTracker.Token statsToken,
+            boolean forceShow) {
         Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "IMMS.showCurrentInputInternal");
         ImeTracing.getInstance().triggerManagerServiceDump(
                 "InputMethodManagerService#showSoftInput", mDumper);
@@ -3006,7 +3022,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             try {
                 ProtoLog.v(IMMS_DEBUG, "Client requesting input be shown");
                 return showCurrentInputLocked(windowToken, statsToken,
-                        SoftInputShowHideReason.SHOW_SOFT_INPUT, userId);
+                        SoftInputShowHideReason.SHOW_SOFT_INPUT, userId, forceShow);
             } finally {
                 Binder.restoreCallingIdentity(ident);
                 Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
@@ -3293,10 +3309,21 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         });
     }
 
+    /**
+     * Shows the currently bound IME on the current IME client of the given user.
+     *
+     * @param windowToken the token of the IME client window.
+     * @param statsToken  the token tracking the current IME request.
+     * @param reason      the reason for requesting to show the IME.
+     * @param userId      the ID of the user to show the IME for.
+     * @param forceShow   whether to send a show request even if
+     * {@link ImeVisibilityStateComputer#isInputShown} is {@code true}.
+     * @return            {@code true} if the request was sent to the IME, {@code false} otherwise.
+     */
     @GuardedBy("ImfLock.class")
     private boolean showCurrentInputLocked(IBinder windowToken,
             @NonNull ImeTracker.Token statsToken, @SoftInputShowHideReason int reason,
-            @UserIdInt int userId) {
+            @UserIdInt int userId, boolean forceShow) {
         final var userData = getUserData(userId);
         final var visibilityStateComputer = userData.mVisibilityStateComputer;
         if (!visibilityStateComputer.isAllowedByAccessibilityAndDisplayPolicy()) {
@@ -3310,7 +3337,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
         ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_SERVER_SYSTEM_READY);
 
-        if (Flags.reportAnimatingInsetsTypes() && visibilityStateComputer.isInputShown()) {
+        if (Flags.reportAnimatingInsetsTypes() && visibilityStateComputer.isInputShown()
+                && !forceShow) {
             // We already called showSoftInput on the IME, no need to dispatch a new show request.
             ImeTracker.forLogging().onCancelled(statsToken,
                     ImeTracker.PHASE_SERVER_ALREADY_VISIBLE);
