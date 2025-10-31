@@ -471,21 +471,18 @@
     {
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeUnfocusedAppWindowTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-maximize-UnmaximizeAppWindowTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
@@ -520,42 +517,36 @@
     {
       "name": "FunctionalTestsDesktopMode-minimize-MinimizeAppWindowsTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-minimize-MinimizeAutoPipAppWindowTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-minimize-MinimizeWindowOnAppOpenTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-minimize-MinimizeWindowOnAppOpenViaIntentTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-minimize-UnminimizeAppFromAllAppsTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-minimize-UnminimizeAppFromTaskbarTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
