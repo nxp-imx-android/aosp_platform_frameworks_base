@@ -824,13 +824,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_windowing_taskbar_running_apps"
-    namespace: "lse_desktop_experience"
-    description: "Shows running apps in Desktop Mode Taskbar"
-    bug: "332504528"
-}
-
-flag {
     name: "enable_desktop_windowing_transitions"
     namespace: "lse_desktop_experience"
     description: "Enables desktop windowing transition & motion polish changes"

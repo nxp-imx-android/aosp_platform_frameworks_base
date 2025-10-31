@@ -87,8 +87,6 @@ public enum DesktopModeFlags {
     ENABLE_DESKTOP_WINDOWING_QUICK_SWITCH(Flags::enableDesktopWindowingQuickSwitch, true),
     ENABLE_DESKTOP_WINDOWING_SCVH_CACHE(Flags::enableDesktopWindowingScvhCacheBugFix, true),
     ENABLE_DESKTOP_WINDOWING_SIZE_CONSTRAINTS(Flags::enableDesktopWindowingSizeConstraints, true),
-    ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS(Flags::enableDesktopWindowingTaskbarRunningApps,
-            true),
     ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY(Flags::enableDesktopWindowingWallpaperActivity,
             true),
     ENABLE_DRAG_RESIZE_SET_UP_IN_BG_THREAD(Flags::enableDragResizeSetUpInBgThread, true),

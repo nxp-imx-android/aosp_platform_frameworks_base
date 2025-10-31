@@ -577,8 +577,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void onTaskAdded_desktopModeRunningAppsEnabled_triggersOnRunningTaskAppeared()
             throws Exception {
         mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
@@ -591,20 +590,6 @@ public class RecentTasksControllerTest extends ShellTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS)
-    public void onTaskAdded_desktopModeRunningAppsDisabled_doesNotTriggerOnRunningTaskAppeared()
-            throws Exception {
-        mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
-        RunningTaskInfo taskInfo = makeRunningTaskInfo(/* taskId= */10);
-
-        mRecentTasksControllerReal.onTaskAdded(taskInfo);
-
-        verify(mRecentTasksListener, never()).onRunningTaskAppeared(any());
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS})
     public void onTaskAdded_orDesktopWallpaperActivity_doesNotTriggerOnRunningTaskAppeared()
             throws Exception {
         RunningTaskInfo taskInfo = makeDesktopWallpaperActivityTaskInfo(/* taskId= */10);
@@ -616,8 +601,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void taskWindowingModeChanged_desktopRunningAppsEnabled_triggersOnRunningTaskChanged()
             throws Exception {
         mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
@@ -629,8 +613,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void taskInfoChanged_forDesktopWallpaperActivity_doesNotTriggerOnRunningTaskChanged()
             throws Exception {
         RunningTaskInfo taskInfo = makeDesktopWallpaperActivityTaskInfo(/* taskId= */10);
@@ -643,21 +626,6 @@ public class RecentTasksControllerTest extends ShellTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS)
-    public void
-            taskWindowingModeChanged_desktopRunningAppsDisabled_doesNotTriggerOnRunningTaskChanged()
-            throws Exception {
-        mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
-        RunningTaskInfo taskInfo = makeRunningTaskInfo(/* taskId= */10);
-
-        mRecentTasksControllerReal.onTaskRunningInfoChanged(taskInfo);
-
-        verify(mRecentTasksListener, never()).onRunningTaskChanged(any());
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS})
     public void onTaskRemoved_desktopModeRunningAppsEnabled_triggersOnRunningTaskVanished()
             throws Exception {
         mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
@@ -670,25 +638,11 @@ public class RecentTasksControllerTest extends ShellTestCase {
 
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void onTaskRemoved_forDesktopWallpaperActivity_doesNotTriggerOnRunningTaskVanished()
             throws Exception {
         RunningTaskInfo taskInfo = makeDesktopWallpaperActivityTaskInfo(/* taskId= */10);
         mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
-
-        mRecentTasksControllerReal.onTaskRemoved(taskInfo);
-
-        verify(mRecentTasksListener, never()).onRunningTaskVanished(any());
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS)
-    public void onTaskRemoved_desktopModeRunningAppsDisabled_doesNotTriggerOnRunningTaskVanished()
-            throws Exception {
-        mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
-        RunningTaskInfo taskInfo = makeRunningTaskInfo(/* taskId= */10);
 
         mRecentTasksControllerReal.onTaskRemoved(taskInfo);
 
