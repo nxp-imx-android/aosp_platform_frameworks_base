@@ -2214,6 +2214,15 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
                 && (privateFlags & PRIVATE_FLAG_ENABLE_ON_BACK_INVOKED_CALLBACK) != 0;
     }
 
+    /**
+     * Returns whether the activity should run in PCC sandbox.
+     * @hide
+     */
+    @Override
+    public boolean shouldRunInPccSandbox() {
+        return (flags & FLAG_RUN_IN_PCC_SANDBOX) != 0;
+    }
+
     public void dump(Printer pw, String prefix) {
         dump(pw, prefix, DUMP_FLAG_ALL);
     }
