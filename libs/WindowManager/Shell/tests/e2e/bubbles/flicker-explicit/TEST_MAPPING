@@ -115,6 +115,14 @@
       "keywords": ["device"]
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-RelaunchFullscreenToBubbleTest",
+      "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-RelaunchFullscreenToBubbleTrampolineTest",
+      "keywords": ["device"]
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-RelaunchSplitScreenToBubbleTest",
       "keywords": ["device"]
     },
