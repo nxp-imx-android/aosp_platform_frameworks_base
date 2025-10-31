@@ -1297,7 +1297,8 @@ class ActivityClientController extends IActivityClientController.Stub {
                 com.android.internal.R.bool.config_fullscreenRequestSupported)) {
             return RESULT_FAILED_NOT_SUPPORTED;
         }
-        if (requesterActivity.getWindowingMode() == WINDOWING_MODE_PINNED) {
+        if (fullscreenRequest == FULLSCREEN_MODE_REQUEST_ENTER
+                && requesterActivity.getWindowingMode() == WINDOWING_MODE_PINNED) {
             return RESULT_APPROVED;
         }
         // If this is not coming from the currently top-most activity, reject the request.

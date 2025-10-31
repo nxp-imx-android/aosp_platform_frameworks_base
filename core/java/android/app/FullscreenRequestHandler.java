@@ -16,19 +16,13 @@
 
 package android.app;
 
-import static android.app.Activity.FULLSCREEN_MODE_REQUEST_EXIT;
-import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
-import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
-
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.IRemoteCallback;
 import android.os.OutcomeReceiver;
-import android.window.DesktopModeFlags;
 
 /**
  * @hide
@@ -52,16 +46,7 @@ public class FullscreenRequestHandler {
     public static final String REMOTE_CALLBACK_RESULT_KEY = "result";
 
     static void requestFullscreenMode(@NonNull @Activity.FullscreenModeRequest int request,
-            @Nullable OutcomeReceiver<Void, Throwable> approvalCallback, Configuration config,
-            IBinder token) {
-        int earlyCheck = earlyCheckRequestMatchesWindowingMode(
-                request, config.windowConfiguration.getWindowingMode());
-        if (earlyCheck != RESULT_APPROVED) {
-            if (approvalCallback != null) {
-                notifyFullscreenRequestResult(approvalCallback, earlyCheck);
-            }
-            return;
-        }
+            @Nullable OutcomeReceiver<Void, Throwable> approvalCallback, IBinder token) {
         try {
             if (approvalCallback != null) {
                 ActivityClient.getInstance().requestMultiwindowFullscreen(token, request,
@@ -107,23 +92,5 @@ public class FullscreenRequestHandler {
         if (e != null) {
             callback.onError(e);
         }
-    }
-
-    private static int earlyCheckRequestMatchesWindowingMode(int request, int windowingMode) {
-        if (request == FULLSCREEN_MODE_REQUEST_EXIT) {
-            if (windowingMode != WINDOWING_MODE_FULLSCREEN) {
-                return RESULT_FAILED_NOT_IN_FULLSCREEN_WITH_HISTORY;
-            }
-            return RESULT_APPROVED;
-        }
-        if (DesktopModeFlags.ENABLE_REQUEST_FULLSCREEN_BUGFIX.isTrue()) {
-            if (windowingMode == WINDOWING_MODE_FULLSCREEN) {
-                return RESULT_FAILED_ALREADY_FULLY_EXPANDED;
-            }
-            if ( windowingMode == WINDOWING_MODE_MULTI_WINDOW) {
-                return RESULT_FAILED_NOT_SUPPORTED;
-            }
-        }
-        return RESULT_APPROVED;
     }
 }
