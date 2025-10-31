@@ -340,7 +340,7 @@
     <string name="permgroupdesc_contacts" msgid="2001771388402758264">"zure kontaktuak erabiltzeko baimena izan eta gailuan kontaktuak gorde ditzaketen kontuen zerrenda ikusi"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Kokapena"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"atzitu gailuaren kokapena"</string>
-    <string name="permgrouplab_calendar" msgid="6426860926123033230">"Calendar"</string>
+    <string name="permgrouplab_calendar" msgid="6426860926123033230">"Egutegia"</string>
     <string name="permgroupdesc_calendar" msgid="6762751063361489379">"atzitu egutegia"</string>
     <string name="permgrouplab_sms" msgid="795737735126084874">"SMSak"</string>
     <string name="permgroupdesc_sms" msgid="5726462398070064542">"bidali eta ikusi SMS mezuak"</string>
@@ -1280,8 +1280,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Osatu ekintza"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Ireki honekin"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Irekin %1$s aplikazioarekin"</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"Ireki <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Ireki"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Ireki <xliff:g id="HOST">%1$s</xliff:g> ostalariko estekak honekin:"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Ireki estekak honekin:"</string>

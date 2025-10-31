@@ -642,10 +642,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Permite que a app anuncie, estabeleça ligação e determine a posição relativa de dispositivos Wi‑Fi próximos"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"aceder a dispositivos de rede local"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Permite que a app aceda aos dispositivos da rede local"</string>
-    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
-    <skip />
-    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
-    <skip />
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"usar interface de loopback"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Permite que a app interaja com outras apps através da interface de loopback"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"determinar a posição relativa entre disp. próximos"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Permita que a app determine a posição relativa entre os dispositivos próximos"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Informações de serviços de pagamento com NFC preferenciais"</string>

@@ -642,10 +642,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Дозвољава апликацији да се оглашава, повезује и утврђује релативну позицију WiFi уређаја у близини"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"приступ уређајима на локалној мрежи"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Дозвољава апликацији да приступа уређајима на локалној мрежи"</string>
-    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
-    <skip />
-    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
-    <skip />
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"коришћење интерфејса повратне петље"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Дозвољава апликацији да остварује интеракцију са другим апликацијама преко интерфејса повратне петље"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"одређивање раздаљине између уређаја у близини"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Дозволите апликацији да одређује релативну раздаљину између уређаја у близини"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Информације о жељеној NFC услузи за плаћање"</string>
@@ -1736,7 +1734,7 @@
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"Систем"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"Bluetooth аудио"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"Бежични екран"</string>
-    <string name="media_route_button_content_description" msgid="2299223698196869956">"Пребацуј"</string>
+    <string name="media_route_button_content_description" msgid="2299223698196869956">"Пребаци"</string>
     <string name="media_route_chooser_title" msgid="6646594924991269208">"Повежите са уређајем"</string>
     <string name="media_route_chooser_title_for_remote_display" msgid="3105906508794326446">"Пребаците екран на уређај"</string>
     <string name="media_route_chooser_searching" msgid="6119673534251329535">"Тражење уређаја…"</string>
@@ -2486,7 +2484,7 @@
     <string name="vdm_camera_access_denied" product="tablet" msgid="6895968310395249076">"Не може да се приступи камери таблета са <xliff:g id="DEVICE">%1$s</xliff:g> уређаја"</string>
     <string name="vdm_secure_window" msgid="161700398158812314">"Овом не можете да приступате током стримовања. Пробајте на телефону."</string>
     <string name="vdm_pip_blocked" msgid="4036107522497281397">"Не можете да гледате слику у слици при стримовању"</string>
-    <string name="system_locale_title" msgid="711882686834677268">"Подразумевани системски"</string>
+    <string name="system_locale_title" msgid="711882686834677268">"Подразумевано за систем"</string>
     <string name="default_card_name" msgid="9198284935962911468">"КАРТИЦА <xliff:g id="CARDNUMBER">%d</xliff:g>"</string>
     <string name="permlab_companionProfileWatch" msgid="2457738382085872542">"Дозвола за профил пратећег сата за управљање сатовима"</string>
     <string name="permdesc_companionProfileWatch" msgid="5655698581110449397">"Дозвољава пратећој апликацији да управља сатовима."</string>

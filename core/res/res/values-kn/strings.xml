@@ -641,10 +641,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"ಹತ್ತಿರದ ವೈ -ಫೈ ಸಾಧನಗಳ ಸಂಬಂಧಿತ ಸ್ಥಾನವನ್ನು ಸೂಚಿಸಲು, ಕನೆಕ್ಟ್ ಮಾಡಲು ಮತ್ತು ನಿರ್ಧರಿಸಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"ಸ್ಥಳೀಯ ನೆಟ್‌ವರ್ಕ್ ಸಾಧನಗಳನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡುತ್ತದೆ"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"ಸ್ಥಳೀಯ ನೆಟ್‌ವರ್ಕ್ ಸಾಧನಗಳನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ"</string>
-    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
-    <skip />
-    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
-    <skip />
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"ಲೂಪ್‌ಬ್ಯಾಕ್ ಇಂಟರ್‌ಫೇಸ್ ಅನ್ನು ಬಳಸಿ"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"ಲೂಪ್‌ಬ್ಯಾಕ್ ಇಂಟರ್‌ಫೇಸ್ ಮೂಲಕ ಇತರ ಆ್ಯಪ್‌ಗಳ ಜೊತೆ ಸಂವಹನ ನಡೆಸಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"ಸಮೀಪದ ಸಾಧನಗಳ ನಡುವಿನ ಸಂಬಂಧಿತ ಸ್ಥಾನವನ್ನು ನಿರ್ಧರಿಸಿ"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"ಸಮೀಪದಲ್ಲಿರುವ ಸಾಧನಗಳ ನಡುವಿನ ಸಂಬಂಧಿತ ಸ್ಥಾನವನ್ನು ನಿರ್ಧರಿಸಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸಿ"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"ಆದ್ಯತೆಯ NFC ಪಾವತಿ ಸೇವಾ ಮಾಹಿತಿ"</string>

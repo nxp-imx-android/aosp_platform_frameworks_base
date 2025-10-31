@@ -340,7 +340,7 @@
     <string name="permgroupdesc_contacts" msgid="2001771388402758264">"আপনার পরিচিতি অ্যাক্সেস করুন এবং আপনার যেসব অ্যাকাউন্ট এই ডিভাইসে পরিচিতি সেভ করতে পারে সেগুলির তালিকা দেখুন"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"লোকেশন"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"এই ডিভাইসের লোকেশন অ্যাক্সেস"</string>
-    <string name="permgrouplab_calendar" msgid="6426860926123033230">"Calendar"</string>
+    <string name="permgrouplab_calendar" msgid="6426860926123033230">"ক্যালেন্ডার"</string>
     <string name="permgroupdesc_calendar" msgid="6762751063361489379">"আপনার ক্যালেন্ডারে অ্যাক্সেস"</string>
     <string name="permgrouplab_sms" msgid="795737735126084874">"SMS"</string>
     <string name="permgroupdesc_sms" msgid="5726462398070064542">"এসএমএসগুলি পাঠাতে এবং দেখতে"</string>
@@ -1280,8 +1280,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"ক্রিয়াকলাপ সম্পূর্ণ করুন"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"এর মাধ্যমে খুলুন"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"%1$s দিয়ে খুলুন"</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"<xliff:g id="APP_NAME">%1$s</xliff:g> খুলুন"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"খুলুন"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"এই ব্রাউজারে <xliff:g id="HOST">%1$s</xliff:g> লিঙ্কটি খুলুন"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"এই ব্রাউজারে লিঙ্কটি খুলুন"</string>
