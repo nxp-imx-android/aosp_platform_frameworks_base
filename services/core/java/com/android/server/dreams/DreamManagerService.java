@@ -33,6 +33,7 @@ import static com.android.server.wm.ActivityInterceptorCallback.DREAM_MANAGER_OR
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.UserIdInt;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.IAppTask;
@@ -138,6 +139,7 @@ public final class DreamManagerService extends SystemService {
     private final Context mContext;
     private final Handler mHandler;
     private final DreamController mController;
+    private final Injector mInjector;
     private final PowerManager mPowerManager;
     private final UiModeManager mUiModeManager;
     private final PowerManagerInternal mPowerManagerInternal;
@@ -278,6 +280,7 @@ public final class DreamManagerService extends SystemService {
         mContext = injector.getContext();
         mHandler = injector.getHandler();
         mController = injector.getDreamController(mControllerListener);
+        mInjector = injector;
 
         mPowerManager = mContext.getSystemService(PowerManager.class);
         mPowerManagerInternal = getLocalService(PowerManagerInternal.class);
@@ -628,11 +631,13 @@ public final class DreamManagerService extends SystemService {
                 return false;
             }
 
-            if (!dreamsEnabledForUser(ActivityManager.getCurrentUser())) {
+            final int userId = mInjector.getCurrentUser();
+
+            if (!dreamsEnabledForUser(userId)) {
                 return false;
             }
 
-            if (!mUserManager.isUserUnlocked()) {
+            if (!mUserManager.isUserUnlocked(userId)) {
                 return false;
             }
 
@@ -710,7 +715,7 @@ public final class DreamManagerService extends SystemService {
 
     @VisibleForTesting
     void startDreamInternal(boolean doze, String reason) {
-        final int userId = ActivityManager.getCurrentUser();
+        final int userId = mInjector.getCurrentUser();
         final ComponentName dream = chooseDreamForUser(doze, userId);
         if (dream != null) {
             synchronized (mLock) {
@@ -917,7 +922,7 @@ public final class DreamManagerService extends SystemService {
     }
 
     private ComponentName getDozeComponent() {
-        return getDozeComponent(ActivityManager.getCurrentUser());
+        return getDozeComponent(mInjector.getCurrentUser());
     }
 
     private ComponentName getDozeComponent(int userId) {
@@ -1038,7 +1043,7 @@ public final class DreamManagerService extends SystemService {
 
     private void writePulseGestureEnabled() {
         ComponentName name = getDozeComponent();
-        boolean dozeEnabled = validateDream(name, ActivityManager.getCurrentUser());
+        boolean dozeEnabled = validateDream(name, mInjector.getCurrentUser());
         LocalServices.getService(InputManagerInternal.class).setPulseGestureEnabled(dozeEnabled);
     }
 
@@ -1110,6 +1115,7 @@ public final class DreamManagerService extends SystemService {
         Handler getHandler();
         AmbientDisplayConfiguration getDozeConfig();
         DreamController getDreamController(DreamController.Listener controllerListener);
+        @UserIdInt int getCurrentUser();
     }
 
     private static final class DefaultInjector implements Injector {
@@ -1139,6 +1145,11 @@ public final class DreamManagerService extends SystemService {
         @Override
         public DreamController getDreamController(DreamController.Listener controllerListener) {
             return new DreamController(mContext, mHandler, controllerListener);
+        }
+
+        @Override
+        public @UserIdInt int getCurrentUser() {
+            return ActivityManager.getCurrentUser();
         }
     }
 
@@ -1311,7 +1322,7 @@ public final class DreamManagerService extends SystemService {
             userId = ActivityManager.handleIncomingUser(Binder.getCallingPid(),
                     Binder.getCallingUid(), userId, false, true, "testDream", null);
 
-            final int currentUserId = ActivityManager.getCurrentUser();
+            final int currentUserId = mInjector.getCurrentUser();
             if (userId != currentUserId) {
                 // This check is inherently prone to races but at least it's something.
                 Slog.w(TAG, "Aborted attempt to start a test dream while a different "
