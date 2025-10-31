@@ -88,10 +88,8 @@
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"विश्वसनीय एजंट उपलब्ध नाही"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"चुकीचा पिन वापरून खूप जास्त प्रयत्न केले"</string>
     <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"तो पिन आधीच वापरून पाहिला आहे. दुसरा वापरून पहा."</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
-    <skip />
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="3827593245962385968">"तो पॅटर्न आधीच वापरून पाहिला आहे. दुसरा वापरून पहा."</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"तो पासवर्ड आधीच वापरून पाहिला आहे. दुसरा वापरून पहा."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"चुकीचा पॅटर्न वापरून खूप जास्त प्रयत्न केले"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"चुकीचा पासवर्ड वापरून खूप जास्त प्रयत्न केले"</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"चुकीचा पिन वापरून खूप जास्त प्रयत्न केले\n <xliff:g id="SHORTLINK">{shortlink}</xliff:g> यावर अधिक जाणून घ्या"</string>

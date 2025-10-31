@@ -88,10 +88,8 @@
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"ភ្នាក់ងារទុកចិត្តមិនទំនេរទេ"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"ព្យាយាមដោយប្រើកូដ PIN មិនត្រឹមត្រូវច្រើនដងពេក"</string>
     <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"បានព្យាយាមប្រើកូដ PIN នោះរួចហើយ។ សូម​សាកល្បងកូដ PIN ​ផ្សេង។"</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
-    <skip />
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="3827593245962385968">"បានសាកល្បងប្រើលំនាំនោះរួចហើយ។ សូមសាកល្បងប្រើលំនាំផ្សេង។"</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"បានសាកល្បងប្រើពាក្យ​សម្ងាត់នោះរួចហើយ។ សូមសាកល្បងប្រើពាក្យសម្ងាត់ផ្សេង។"</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"ព្យាយាមដោយប្រើលំនាំមិនត្រឹមត្រូវច្រើនដងពេក"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"ព្យាយាមដោយប្រើពាក្យសម្ងាត់មិនត្រឹមត្រូវច្រើនដងពេក"</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"ព្យាយាមប្រើកូដ PIN មិនត្រឹមត្រូវច្រើនដងពេក\nស្វែងយល់បន្ថែមតាមរយៈ <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
