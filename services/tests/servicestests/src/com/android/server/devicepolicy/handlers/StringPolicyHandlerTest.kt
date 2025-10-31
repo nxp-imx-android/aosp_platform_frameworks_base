@@ -42,10 +42,11 @@ import org.mockito.kotlin.verify
 @RunWith(AndroidJUnit4::class)
 class StringPolicyHandlerTest {
 
-    val mockDelegate: PolicyHandler.Delegate = mock<PolicyHandler.Delegate> {
-        on { getDpcType(any()) } doReturn NOT_A_DPC
-        on { getPermissionChecker() } doReturn mock<IPermissionChecker> {}
-    }
+    val mockDelegate: PolicyHandler.Delegate =
+        mock<PolicyHandler.Delegate> {
+            on { getDpcType(any()) } doReturn NOT_A_DPC
+            on { getPermissionChecker() } doReturn mock<IPermissionChecker> {}
+        }
 
     // A sample string policy that can be used in the tests.
     object Policy {
@@ -54,12 +55,12 @@ class StringPolicyHandlerTest {
         val metadata =
             StringPolicyMetadata(
                 key,
-                /*allowedScopes=*/setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
-                /*affectedResource=*/RESOURCE_PER_USER,
-                /*requiredPermission=*/null,
-                /*requiredCrossUserPermission=*/null,
-                /*allowedDpcTypes=*/setOf(),
-                /*emptyStringAllowed=*/false,
+                /*allowedScopes=*/ setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
+                /*affectedResource=*/ RESOURCE_PER_USER,
+                /*requiredPermission=*/ null,
+                /*requiredCrossUserPermission=*/ null,
+                /*allowedDpcTypes=*/ setOf(),
+                /*emptyStringAllowed=*/ false,
             )
         val anyTransportValue: PolicyValueTransport =
             PolicyValueTransport.stringField("a string value")
@@ -81,18 +82,16 @@ class StringPolicyHandlerTest {
         delegate: PolicyHandler.Delegate = this.mockDelegate,
     ) = PolicyHandler<String>(key, metadata, definition, delegate)
 
-    fun copyOf(
-        source: StringPolicyMetadata,
-        emptyStringAllowed: Boolean? = null,
-    ) = StringPolicyMetadata(
-        source.id,
-        source.allowedScopes,
-        source.affectedResource,
-        source.requiredPermission,
-        source.requiredCrossUserPermission,
-        source.allowedDpcTypes,
-        emptyStringAllowed ?: source.isEmptyStringAllowed
-    )
+    fun copyOf(source: StringPolicyMetadata, emptyStringAllowed: Boolean? = null) =
+        StringPolicyMetadata(
+            source.id,
+            source.allowedScopes,
+            source.affectedResource,
+            source.requiredPermission,
+            source.requiredCrossUserPermission,
+            source.allowedDpcTypes,
+            emptyStringAllowed ?: source.isEmptyStringAllowed,
+        )
 
     @Test
     fun setPolicy_shouldAcceptNull() {
@@ -108,9 +107,10 @@ class StringPolicyHandlerTest {
     fun setPolicy_shouldRejectValueOfWrongType() {
         val handler = createHandler()
 
-        val exception = assertFailsWith<IllegalArgumentException> {
-            handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.booleanField(true))
-        }
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.booleanField(true))
+            }
 
         assertThat(exception.message).contains("is not a string")
     }
@@ -130,10 +130,12 @@ class StringPolicyHandlerTest {
         val metadataBlockingEmptyString = copyOf(Policy.metadata, emptyStringAllowed = false)
         val handler = createHandler(metadata = metadataBlockingEmptyString)
 
-        val exception = assertFailsWith<IllegalArgumentException> {
-            handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.stringField(""))
-        }
-        assertThat(exception.message).contains("Unsupported value \"\" for policy ${Policy.key}")
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.stringField(""))
+            }
+        assertThat(exception.message)
+            .contains("Empty string is not allowed for policy ${Policy.key}")
     }
 
     @Test
