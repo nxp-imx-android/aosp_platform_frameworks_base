@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -53,8 +54,10 @@ import androidx.compose.ui.unit.dp
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.ActionButtonGroupItem
+import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.PostCaptureToastBar
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
+import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingViewModel
 import com.android.systemui.statusbar.phone.EdgeToEdgeDialogDelegate
 import com.android.systemui.statusbar.phone.SystemUIDialog
@@ -181,6 +184,7 @@ constructor(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     PostRecordingThumbnail(
+                        viewmodel = postRecordingViewModel,
                         preview = thumbnail?.bitmap?.asImageBitmap(),
                         modifier =
                             Modifier.clip(RoundedCornerShape(12.dp))
@@ -211,18 +215,31 @@ constructor(
     }
 
     @Composable
-    private fun PostRecordingThumbnail(preview: ImageBitmap?, modifier: Modifier = Modifier) {
+    private fun PostRecordingThumbnail(
+        viewmodel: DrawableLoaderViewModel,
+        preview: ImageBitmap?,
+        modifier: Modifier = Modifier,
+    ) {
         Box(
             modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center,
         ) {
-            // TODO(b/456204074): Add a emergency preview if there is no thumbnail for some reason.
             if (preview != null) {
                 Image(
                     bitmap = preview,
                     contentDescription = null,
                     modifier = Modifier.matchParentSize(),
                     contentScale = ContentScale.Fit,
+                )
+            } else {
+                LoadingIcon(
+                    loadIcon(
+                            viewModel = viewmodel,
+                            resId = R.drawable.ic_screen_capture_movie,
+                            contentDescription = null,
+                        )
+                        .value,
+                    modifier = Modifier.size(24.dp),
                 )
             }
         }
