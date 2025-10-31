@@ -182,13 +182,12 @@ fun PatternBouncer(
                     // objects have changed.
                     scope.launch {
                         if (dot == currentDot) {
-                            // Reset the fade-out animation for the current dot. When the
-                            // current dot is switched, this entire code block runs again for
-                            // the newly selected dot.
+                            // Reset the fade-out animation for the current dot. When the current
+                            // dot is switched, this entire code block runs again for the newly
+                            // selected dot.
                             line.snapTo(1f)
                         } else {
-                            // For all non-current dots, make sure that the lines are fading
-                            // out.
+                            // For all non-current dots, make sure that the lines are fading out.
                             line.animateTo(
                                 targetValue = 0f,
                                 animationSpec =
