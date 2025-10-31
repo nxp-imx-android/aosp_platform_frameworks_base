@@ -35,6 +35,11 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
+import static android.hardware.camera2.CameraMetadata.SCALER_ROTATE_AND_CROP_180;
+import static android.hardware.camera2.CameraMetadata.SCALER_ROTATE_AND_CROP_270;
+import static android.hardware.camera2.CameraMetadata.SCALER_ROTATE_AND_CROP_90;
+import static android.hardware.camera2.CameraMetadata.SCALER_ROTATE_AND_CROP_AUTO;
+import static android.hardware.camera2.CameraMetadata.SCALER_ROTATE_AND_CROP_NONE;
 import static android.view.Display.TYPE_EXTERNAL;
 import static android.view.Display.TYPE_INTERNAL;
 import static android.view.Surface.ROTATION_0;
@@ -54,11 +59,13 @@ import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKT
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_SANDBOX_DISPLAY_ROTATION_ON_EXTERNAL_DISPLAYS_BUGFIX;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -75,6 +82,7 @@ import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import android.content.res.Configuration.Orientation;
 import android.graphics.Rect;
+import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.os.Handler;
 import android.os.RemoteException;
@@ -666,6 +674,59 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
     @Test
     @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            FLAG_CAMERA_COMPAT_LANDSCAPE_CAMERA_SUPPORT})
+    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
+    public void testOnCameraOpened_neededRotateAndCropNotSupported_noCameraCompatMode() {
+        runTestScenario((robot) -> {
+            robot.configureActivityAndDisplay(SCREEN_ORIENTATION_PORTRAIT, ORIENTATION_LANDSCAPE,
+                    WINDOWING_MODE_FREEFORM);
+            robot.setupSupportedRotateAndCropModes(new int[]{SCALER_ROTATE_AND_CROP_NONE,
+                    SCALER_ROTATE_AND_CROP_AUTO});
+            robot.conf().enableCameraCompatLandscapeToPortraitTreatment(true);
+            robot.activity().rotateDisplayForTopActivity(ROTATION_0);
+
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+            // Treatment are not activated as it cannot be fully executed.
+            robot.assertCompatibilityInfoNoCameraCompatMode();
+        });
+    }
+
+    @Test
+    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX,
+            FLAG_ENABLE_CAMERA_COMPAT_SANDBOX_DISPLAY_ROTATION_ON_EXTERNAL_DISPLAYS_BUGFIX})
+    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
+    public void testOnCameraOpened_fixedOrientExtDisplRotateAndCropNotSupported_sandbDispRotOnly() {
+        runTestScenario((robot) -> {
+            // Setup default display.
+            robot.activity().createNewDisplay();
+            robot.makeCurrentDisplayDefault();
+            // Setup external display and the activity on it.
+            robot.configureActivityAndDisplay(SCREEN_ORIENTATION_PORTRAIT, ORIENTATION_LANDSCAPE,
+                    WINDOWING_MODE_FREEFORM, TYPE_EXTERNAL);
+            robot.setupSupportedRotateAndCropModes(new int[]{SCALER_ROTATE_AND_CROP_NONE,
+                    SCALER_ROTATE_AND_CROP_AUTO});
+            // Sensor rotation is continuous, and counted in the opposite direction from display
+            // rotation: 360 - 100 = 260, and 260 is closest to ROTATION_270.
+            robot.setSensorOrientation(100);
+
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+            // Display rotation should be the same as the camera rotation (see comment above), if
+            // required rotate and crop is not available.
+            robot.assertCompatibilityInfoSentWithDisplayRotation(ROTATION_270);
+            // Default is true, and should be disabled (false) for camera compat.
+            robot.assertCompatibilityInfoSentWithInverseTransformAllowed(false);
+            // The other parts of the treatment are not activated.
+            robot.assertCompatibilityInfoSentWithSensorOverride(false);
+            robot.assertCompatibilityInfoSentWithLetterbox(false);
+            robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_UNDEFINED);
+        });
+    }
+
+    @Test
+    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
             FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX,
             FLAG_ENABLE_CAMERA_COMPAT_SANDBOX_DISPLAY_ROTATION_ON_EXTERNAL_DISPLAYS_BUGFIX})
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
@@ -728,6 +789,8 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
         private CameraManager.AvailabilityCallback mCameraAvailabilityCallback;
 
+        private final CameraManager mMockCameraManager = mock(CameraManager.class);
+
         AppCompatCameraSimReqOrientationPolicyRobotTests(@NonNull WindowTestsBase windowTestsBase) {
             super(windowTestsBase);
             mWindowTestsBase = windowTestsBase;
@@ -785,15 +848,33 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         }
 
         private void setupCameraManager() {
-            final CameraManager mockCameraManager = mock(CameraManager.class);
             doAnswer(invocation -> {
                 mCameraAvailabilityCallback = invocation.getArgument(1);
                 return null;
-            }).when(mockCameraManager).registerAvailabilityCallback(
+            }).when(mMockCameraManager).registerAvailabilityCallback(
                     any(Executor.class), any(CameraManager.AvailabilityCallback.class));
 
-            doReturn(mockCameraManager).when(mWindowTestsBase.mWm.mContext).getSystemService(
+            doReturn(mMockCameraManager).when(mWindowTestsBase.mWm.mContext).getSystemService(
                     CameraManager.class);
+
+            setupSupportedRotateAndCropModes(new int[]{
+                    SCALER_ROTATE_AND_CROP_NONE,
+                    SCALER_ROTATE_AND_CROP_90,
+                    SCALER_ROTATE_AND_CROP_180,
+                    SCALER_ROTATE_AND_CROP_270,
+                    SCALER_ROTATE_AND_CROP_AUTO});
+        }
+
+        private void setupSupportedRotateAndCropModes(int[] rotateAndCropModes) {
+            final CameraCharacteristics cameraCharacteristics = mock(CameraCharacteristics.class);
+            doReturn(rotateAndCropModes).when(cameraCharacteristics).get(
+                    CameraCharacteristics.SCALER_AVAILABLE_ROTATE_AND_CROP_MODES);
+            try {
+                doReturn(cameraCharacteristics).when(mMockCameraManager)
+                        .getCameraCharacteristics(anyString());
+            } catch (Exception e) {
+                throw new AssertionError("Unable to setup supported camera compat modes.", e);
+            }
         }
 
         private void setupHandler() {
@@ -970,6 +1051,11 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
             assertTrue(compatInfo.isOverrideCameraCompatibilityInfoRequired());
             assertEquals(allowed,
                     compatInfo.cameraCompatibilityInfo.shouldAllowTransformInverseDisplay());
+        }
+
+        void assertCompatibilityInfoNoCameraCompatMode() {
+            final CompatibilityInfo compatInfo = gerCompatibilityInfo();
+            assertFalse(compatInfo.isOverrideCameraCompatibilityInfoRequired());
         }
 
         private CompatibilityInfo gerCompatibilityInfo() {

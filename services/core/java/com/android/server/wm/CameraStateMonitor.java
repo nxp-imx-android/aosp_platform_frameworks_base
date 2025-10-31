@@ -21,11 +21,17 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.os.Handler;
+import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Class that listens to camera open/closed signals, keeps track of the current apps using camera,
@@ -60,6 +66,10 @@ class CameraStateMonitor {
     final AppCompatCameraStateStrategyForTask mAppCompatCameraStateStrategy;
     @VisibleForTesting
     final AppCompatCameraStatePolicy mAppCompatCameraStatePolicy;
+
+    /** Available rotateAndCropModes per cameraId. */
+    private final HashMap<String, ArrayList<Integer>> mAvailableRotateAndCropModesForCamera =
+            new HashMap<>();
 
     /**
      * Value toggled on {@link #startListeningToCameraState()} to {@code true} and on {@link
@@ -187,6 +197,46 @@ class CameraStateMonitor {
             // Try again later.
             scheduleRemoveCameraId(cameraAppInfo.mCameraId);
         }
+    }
+
+    /**
+     * Checks whether the rotate-and-crop mode - a certain number of degrees - is supported on
+     * Camera HAL.
+     *
+     * <p>This method with find which camera does the current activity use, and check supported
+     * rotate-and-crop degrees.
+     */
+    boolean isRotateAndCropModeSupported(@NonNull ActivityRecord activity, int rotateAndCropMode) {
+        final String cameraId = mAppCompatCameraStateStrategy.getActiveCameraId(activity);
+        return cameraId != null && isRotateAndCropModeSupported(cameraId, rotateAndCropMode);
+    }
+
+    private boolean isRotateAndCropModeSupported(@NonNull String cameraId, int rotateAndCropMode) {
+        if (!fetchAvailableRotateAndCropModes(cameraId)) {
+            return false;
+        }
+
+        return mAvailableRotateAndCropModesForCamera.get(cameraId).contains(rotateAndCropMode);
+    }
+
+    private boolean fetchAvailableRotateAndCropModes(@NonNull String cameraId) {
+        if (!mAvailableRotateAndCropModesForCamera.containsKey(cameraId)) {
+            try {
+                final int[] availableRotateAndCropModes = mCameraManager
+                        .getCameraCharacteristics(cameraId)
+                        .get(CameraCharacteristics.SCALER_AVAILABLE_ROTATE_AND_CROP_MODES);
+                final ArrayList<Integer> modes = new ArrayList<>();
+                for (int i = 0; i < availableRotateAndCropModes.length; i++) {
+                    modes.add(availableRotateAndCropModes[i]);
+                }
+                mAvailableRotateAndCropModesForCamera.put(cameraId, modes);
+            } catch (IllegalArgumentException | CameraAccessException e) {
+                Slog.w(TAG, "Unable to access camera to check available rotate-and-crop modes.");
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @NonNull

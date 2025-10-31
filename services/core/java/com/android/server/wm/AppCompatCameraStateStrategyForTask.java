@@ -77,7 +77,8 @@ class AppCompatCameraStateStrategyForTask {
     /**
      * Processes camera opened signal, and if the change is relevant for {@link
      * AppCompatCameraStatePolicy} calls {@link AppCompatCameraStatePolicy#onCameraOpened}.
-     */    public void notifyPolicyCameraOpenedIfNeeded(@NonNull CameraAppInfo cameraAppInfo,
+     */
+    public void notifyPolicyCameraOpenedIfNeeded(@NonNull CameraAppInfo cameraAppInfo,
             @NonNull AppCompatCameraStatePolicy policy) {
         if (!mPendingCameraUpdateRepository.removePendingCameraOpen(cameraAppInfo)) {
             // Camera compat mode update has happened already or was cancelled
@@ -185,6 +186,14 @@ class AppCompatCameraStateStrategyForTask {
         }
 
         return canClose;
+    }
+
+    @Nullable
+    String getActiveCameraId(@NonNull ActivityRecord activity) {
+        if (activity.getTask() == null) {
+            return null;
+        }
+        return mCameraAppInfoSet.getCameraIdForTaskId(activity.getTask().mTaskId);
     }
 
     /** Returns whether a given activity holds any camera opened. */
