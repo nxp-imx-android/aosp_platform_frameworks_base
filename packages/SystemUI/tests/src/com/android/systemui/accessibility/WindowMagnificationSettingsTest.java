@@ -282,6 +282,16 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
+    public void showSettingPanel_fullScreenMode_fullScreenButtonIsSelected() {
+        setupMagnificationCapabilityAndMode(
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
+                /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
+        mWindowMagnificationSettings.updateSelectedButton(MAGNIFICATION_SIZE_MEDIUM);
+        mWindowMagnificationSettings.showSettingPanel();
+        assertThat(getInternalView(R.id.magnifier_full_button).isSelected()).isTrue();
+    }
+
+    @Test
     public void performClick_smallSizeButton_changeMagnifierSizeSmallAndSwitchToWindowMode() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW,
