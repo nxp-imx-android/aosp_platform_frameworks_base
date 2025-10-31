@@ -2962,10 +2962,27 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             }
 
             boolean shouldStartActivity = false;
+            final Task attachedTask =
+                    mRootWindowContainer.anyTaskForId(taskId, MATCH_ATTACHED_TASK_OR_RECENT_TASKS);
+            // TODO(b/456665032): more cleanly hook into ActivityStartInterceptor.
+            boolean shouldIntercept =
+                    android.companion.virtualdevice.flags.Flags.automatedAppLaunchInterception()
+                    && attachedTask != null
+                    && ActivityStartInterceptor.shouldInterceptStartActivityFromRecents(
+                            this,
+                            attachedTask.getTaskInfo(),
+                            attachedTask.mCallingPackage,
+                            activityOptions);
             mService.deferWindowLayout();
             try {
-                task = mRootWindowContainer.anyTaskForId(taskId,
+                if (shouldIntercept) {
+                    // anyTaskForId with activityOptions might move the task to a different display.
+                    // If we already know we'll intercept, prevent the task move / restore here.
+                    task = attachedTask;
+                } else {
+                    task = mRootWindowContainer.anyTaskForId(taskId,
                         MATCH_ATTACHED_TASK_OR_RECENT_TASKS_AND_RESTORE, activityOptions, ON_TOP);
+                }
                 if (task == null) {
                     mWindowManager.executeAppTransition();
                     throw new IllegalArgumentException(
@@ -2988,10 +3005,13 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 }
 
                 // If the user must confirm credentials (e.g. when first launching a work
-                // app and the Work Challenge is present) let startActivityInPackage handle
-                // the intercepting.
+                // app and the Work Challenge is present), or we know ActivityStartInterceptor will
+                // intercept the launch, let startActivityInPackage handle the intercepting.
+                // TODO(b/456665032): Make this generic to all ActivityStartInterceptor
+                // interceptions, and optimize so we don't have to run the interception again.
                 if (!mService.mAmInternal.shouldConfirmCredentials(task.mUserId)
-                        && task.getRootActivity() != null) {
+                        && task.getRootActivity() != null
+                        && !shouldIntercept) {
                     final ActivityRecord targetActivity = task.getTopNonFinishingActivity();
 
                     mRootWindowContainer.startPowerModeLaunchIfNeeded(

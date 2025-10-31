@@ -570,6 +570,45 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
         verify(fullscreenRootTask.getDisplayArea()).moveHomeRootTaskToFront(any());
     }
 
+    /**
+     * Verifies that launch from recents doesn't reparent an automated task to the default display
+     * and instead falls back to startActivity (where the ActivityStartInterceptor can intercept).
+     */
+    @Test
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_AUTOMATED_APP_LAUNCH_INTERCEPTION)
+    public void testStartActivityFromRecents_automatedTask_launchesWarning() {
+        final DisplayContent newDisplay = addNewDisplayContentAt(DisplayContent.POSITION_TOP);
+        final Task stack = new TaskBuilder(mSupervisor)
+                .setDisplay(newDisplay).setCreateActivity(true).build();
+        final ActivityRecord activity = stack.getTopNonFinishingActivity();
+        final Task task = activity.getTask();
+        final ActivityStartController startController = mAtm.getActivityStartController();
+        spyOn(startController);
+        doNothing().when(mSupervisor.mService).moveTaskToFrontLocked(eq(null), eq(null), anyInt(),
+                anyInt(), any());
+        doReturn(0).when(startController).startActivityInPackage(anyInt(),
+                    anyInt(), anyInt(), any(), any(), any(), any(), any(),
+                    any(), anyInt(), anyInt(), any(), anyInt(), any(), any(),
+                    anyBoolean(), any(), anyBoolean());
+
+        doReturn(new Intent()).when(mSupervisor)
+                .createAutomatedAppLaunchWarningIntent(any(), anyInt(), any(), anyInt());
+
+        SafeActivityOptions safeOptions = SafeActivityOptions.fromBundle(
+                ActivityOptions.makeBasic()
+                        .setLaunchDisplayId(mDisplayContent.getDisplayId()).toBundle(),
+                Binder.getCallingPid(), Binder.getCallingUid());
+
+        mSupervisor.startActivityFromRecents(DEFAULT_CALLING_PID, DEFAULT_CALLING_UID,
+                activity.getRootTaskId(), safeOptions);
+
+        assertThat(task.getDisplayContent()).isEqualTo(newDisplay);
+        verify(startController).startActivityInPackage(anyInt(),
+                    anyInt(), anyInt(), any(), any(), eq(task.intent), any(), any(),
+                    any(), anyInt(), anyInt(), any(), anyInt(), any(),
+                    eq("startActivityFromRecents"), anyBoolean(), any(), anyBoolean());
+    }
+
     @Test
     public void testOpaque_leafTask_occludingActivity_isOpaque() {
         final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
