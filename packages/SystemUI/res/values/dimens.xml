@@ -2235,10 +2235,13 @@
     <dimen name="tile_details_title_row_button_size">48dp</dimen>
     <dimen name="tile_details_title_row_start">2dp</dimen>
     <dimen name="tile_details_title_row_end">8dp</dimen>
+    <dimen name="tile_details_section_title_horizontal_padding">18dp</dimen>
+    <dimen name="tile_details_section_title_vertical_padding">10dp</dimen>
     <!-- Tile Details end -->
 
     <!-- Tile Details entry start -->
     <dimen name="tile_details_entry_gap">2dp</dimen>
+    <dimen name="tile_details_entry_horizontal_gap">6dp</dimen>
     <dimen name="tile_details_entry_height">72dp</dimen>
     <dimen name="tile_details_entry_horizontal_margin">16dp</dimen>
     <dimen name="tile_details_entry_icon_size">24dp</dimen>
