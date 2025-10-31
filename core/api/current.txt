@@ -43280,8 +43280,8 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.NotificationEvent getNotificationEvent();
   }
 
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class NotificationHint.NotificationHintBuilder {
-    ctor public NotificationHint.NotificationHintBuilder(@NonNull android.service.personalcontext.hint.NotificationEvent);
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class NotificationHint.Builder {
+    ctor public NotificationHint.Builder(@NonNull android.service.personalcontext.hint.NotificationEvent);
     method @NonNull public android.service.personalcontext.hint.NotificationHint build();
   }
 

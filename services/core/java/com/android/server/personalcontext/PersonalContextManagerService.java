@@ -101,7 +101,7 @@ public class PersonalContextManagerService extends SystemService {
                 @Override
                 public void onNotificationEvent(@NonNull NotificationEvent event) {
                     final Set<ContextHint> hints =
-                            Set.of(new NotificationHint.NotificationHintBuilder(event).build());
+                            Set.of(new NotificationHint.Builder(event).build());
 
                     final StatusBarNotification sbn = getSbnFromNotificationEvent(event);
                     if (sbn == null) {

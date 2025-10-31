@@ -50,8 +50,7 @@ public class NotificationHintTest {
     public void testNotificationHint_enqueuedEvent_parcelUnparcel() {
         final NotificationEnqueuedEvent enqueuedEvent = new NotificationEnqueuedEvent(
                 STATUS_BAR_NOTIFICATION, NOTIFICATION_CHANNEL, RANKING_MAP);
-        final NotificationHint hint = new NotificationHint.NotificationHintBuilder(
-                enqueuedEvent).build();
+        final NotificationHint hint = new NotificationHint.Builder(enqueuedEvent).build();
 
         final ContextHint outputHint = assertParcelUnparcel(hint);
         assertThat(outputHint).isInstanceOf(NotificationHint.class);
@@ -74,8 +73,7 @@ public class NotificationHintTest {
         final int reason = NotificationListenerService.REASON_LISTENER_CANCEL;
         final NotificationRemovedEvent removedEvent = new NotificationRemovedEvent(
                 STATUS_BAR_NOTIFICATION, RANKING_MAP, reason);
-        final NotificationHint hint = new NotificationHint.NotificationHintBuilder(
-                removedEvent).build();
+        final NotificationHint hint = new NotificationHint.Builder(removedEvent).build();
 
         final ContextHint outputHint = assertParcelUnparcel(hint);
         assertThat(outputHint).isInstanceOf(NotificationHint.class);

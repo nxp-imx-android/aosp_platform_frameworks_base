@@ -77,14 +77,14 @@ public final class NotificationHint extends ContextHint {
      * Builder used to create a {@link NotificationHint}.
      */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
-    public static final class NotificationHintBuilder {
+    public static final class Builder {
         private NotificationEvent mNotificationEvent;
 
         /**
-         * Creates an instance of {@link NotificationHintBuilder} with the
-         * {@link NotificationEvent} contained in the hint.
+         * Creates an instance of {@link Builder} with the {@link NotificationEvent} contained in
+         * the hint.
          */
-        public NotificationHintBuilder(@NonNull NotificationEvent notificationEvent) {
+        public Builder(@NonNull NotificationEvent notificationEvent) {
             requireNonNull(notificationEvent, "NotificationEvent must be provided");
             mNotificationEvent = notificationEvent;
         }
