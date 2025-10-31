@@ -292,11 +292,10 @@ public class PipController implements ConfigurationChangeListener,
                                 + "pipDisplayLayoutState#displayId=%s",
                         task.topActivity, wasVisible, task.displayId,
                         mPipDisplayLayoutState.getDisplayId());
-                boolean keepPipFromLockscreen = !wasVisible && !Flags.dismissPipFromLockscreen();
                 boolean isPipLaunchingOnDifferentDisplay =
                         DesktopExperienceFlags.ENABLE_CROSS_DISPLAYS_PIP_TASK_LAUNCH.isTrue()
                                 && task.displayId != mPipDisplayLayoutState.getDisplayId();
-                if (task.getWindowingMode() != WINDOWING_MODE_PINNED || keepPipFromLockscreen
+                if (task.getWindowingMode() != WINDOWING_MODE_PINNED
                         || isPipLaunchingOnDifferentDisplay) {
                     return;
                 }
