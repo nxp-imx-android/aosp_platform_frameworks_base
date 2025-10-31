@@ -700,6 +700,10 @@ class TransitionController {
         return false;
     }
 
+    boolean isLaunchingRecents(@NonNull WindowContainer<?> wc) {
+        return mCollectingTransition != null && mCollectingTransition.isLaunchingRecents(wc);
+    }
+
     /**
      * @return {@code true} if {@param ar} is part of a transient-launch activity in the
      * collecting transition.
