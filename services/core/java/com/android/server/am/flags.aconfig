@@ -303,3 +303,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fgs_delegate_system_api"
+    namespace: "backstage_power"
+    description: "Whether to use new System APIs to start and stop FGS delegation."
+    bug: "303241170"
+}
