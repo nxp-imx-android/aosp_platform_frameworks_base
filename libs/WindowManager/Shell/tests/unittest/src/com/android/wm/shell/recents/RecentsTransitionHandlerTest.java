@@ -26,7 +26,6 @@ import static android.view.WindowManager.TRANSIT_SLEEP;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
-import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX;
 import static com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_PIP2;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING;
@@ -370,7 +369,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX)
     public void testMerge_openingTasks_callsOnTasksAppeared() throws Exception {
         final IRecentsAnimationRunner animationRunner = mock(IRecentsAnimationRunner.class);
         TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_OPEN)
@@ -454,7 +452,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX)
     public void testMergeAndFinish_openingFreeformTasks_setsCornerRadius() {
         ActivityManager.RunningTaskInfo freeformTask =
                 new TestRunningTaskInfoBuilder().setWindowingMode(WINDOWING_MODE_FREEFORM).build();
@@ -482,7 +479,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX)
     public void testFinish_returningToFreeformTasks_setsCornerRadius() {
         ActivityManager.RunningTaskInfo freeformTask =
                 new TestRunningTaskInfoBuilder().setWindowingMode(WINDOWING_MODE_FREEFORM).build();
@@ -507,7 +503,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX)
     public void testFinish_returningToFreeformTasks_setsCornerRadiusOnConnectedDisplay() {
         ActivityManager.RunningTaskInfo freeformTask =
                 new TestRunningTaskInfoBuilder().setWindowingMode(

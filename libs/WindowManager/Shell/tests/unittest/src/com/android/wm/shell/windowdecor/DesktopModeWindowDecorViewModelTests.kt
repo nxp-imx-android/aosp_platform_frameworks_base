@@ -1245,7 +1245,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX)
     fun testRecentsTransitionStateListener_requestedState_setsTransitionRunning() {
         val task = createTask(windowingMode = WINDOWING_MODE_FREEFORM)
         val decoration = setUpMockDecorationForTask(task)
@@ -1259,7 +1258,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX)
     fun testRecentsTransitionStateListener_nonRunningState_setsTransitionNotRunning() {
         val task = createTask(windowingMode = WINDOWING_MODE_FREEFORM)
         val decoration = setUpMockDecorationForTask(task)
@@ -1276,7 +1274,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX)
     fun testRecentsTransitionStateListener_requestedAndAnimating_setsTransitionRunningOnce() {
         val task = createTask(windowingMode = WINDOWING_MODE_FREEFORM)
         val decoration = setUpMockDecorationForTask(task)

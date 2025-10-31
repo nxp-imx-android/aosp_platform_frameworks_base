@@ -380,8 +380,7 @@ constructor(
                     shouldSetTaskVisibilityPositionAndCrop,
                     hasGlobalFocus,
                     displayExclusionRegion,
-                    /* shouldIgnoreCornerRadius= */ isRecentsTransitionRunning &&
-                        DesktopModeFlags.ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue,
+                    /* shouldIgnoreCornerRadius= */ isRecentsTransitionRunning,
                     desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo),
                     desktopConfig,
                     inSyncWithTransition,
@@ -813,9 +812,7 @@ constructor(
     }
 
     private fun getCornerRadius(): Int {
-        val shouldIgnoreCornerRadius =
-            isRecentsTransitionRunning &&
-                DesktopModeFlags.ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue
+        val shouldIgnoreCornerRadius =isRecentsTransitionRunning
         return decorWindowContext.resources.getDimensionPixelSize(
             getCornerRadiusId(captionType, shouldIgnoreCornerRadius),
             defaultValue = 0,
