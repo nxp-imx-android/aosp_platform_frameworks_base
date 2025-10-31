@@ -21,7 +21,6 @@ import android.provider.Settings
 import android.testing.TestableContext
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.SmallTest
 import com.android.compatibility.common.util.ShellIdentityUtils
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
@@ -30,11 +29,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 private const val BLOCKED_PACKAGE = "blocked.package"
+private const val BLOCKED_PACKAGE_2 = "blocked.package2"
 private const val ENABLED_PACKAGE = "enabled.package"
 private const val DISABLED_PACKAGE = "disabled.package"
 private const val OTHER_PACKAGE = "other.package"
 
-@SmallTest
 @RunWith(AndroidJUnit4::class)
 class ForceInvertOverrideStateTest {
 
@@ -116,6 +115,19 @@ class ForceInvertOverrideStateTest {
 
         assertThat(state.getStateForPackage(BLOCKED_PACKAGE))
             .isEqualTo(UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_ENABLE)
+    }
+
+    @Test
+    fun setAppAlwaysDisable_returnsTrueAndAddsToBlockedList() {
+        val state = ForceInvertOverrideState.loadFrom(context, context.userId)
+        assertThat(state.allForceInvertAlwaysDisableApps).doesNotContain(BLOCKED_PACKAGE_2)
+
+        val result = state.setForceInvertOverrideStateForPackage(
+            context.contentResolver, BLOCKED_PACKAGE_2,
+            UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_DISABLE, context.userId)
+
+        assertThat(result).isTrue()
+        assertThat(state.allForceInvertAlwaysDisableApps).contains(BLOCKED_PACKAGE_2)
     }
 
     @Test

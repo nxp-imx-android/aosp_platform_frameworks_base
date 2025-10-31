@@ -31,6 +31,7 @@ import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
+import android.annotation.UserIdInt;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -738,6 +739,29 @@ public class UiModeManager {
                 }
             }
         }
+
+        private List<String> getAllForceInvertAlwaysDisableApps(@UserIdInt int userId) {
+            synchronized (mGlobalsLock) {
+                // This is such an infrequent operation, we don't worry about caching.
+                try {
+                    return mService.getAllForceInvertAlwaysDisableApps(userId);
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+            }
+        }
+
+        @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS)
+        private boolean setForceInvertOverrideState(@UserIdInt int userId, String packageName,
+                @ForceInvertPackageOverrideState int newState) {
+            synchronized (mGlobalsLock) {
+                try {
+                    return mService.setForceInvertOverrideState(userId, packageName, newState);
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+            }
+        }
     }
 
     /** Global class storing all listeners and cached values for a specific user id. */
@@ -896,7 +920,7 @@ public class UiModeManager {
     }
 
     @UnsupportedAppUsage
-    /*package*/ UiModeManager() throws ServiceNotFoundException {
+        /*package*/ UiModeManager() throws ServiceNotFoundException {
         this(null /* context */);
     }
 
@@ -1904,6 +1928,31 @@ public class UiModeManager {
             return FORCE_INVERT_PACKAGE_ALLOWED;
         }
         return sGlobals.getForceInvertOverrideState(getUserId(), mContext.getOpPackageName());
+    }
+
+    /**
+     * Returns the list of force invert always disable apps.
+     *
+     * @hide
+     */
+    public List<String> getAllForceInvertAlwaysDisableApps() {
+        return sGlobals.getAllForceInvertAlwaysDisableApps(getUserId());
+    }
+
+    /**
+     * Sets the ForceInvertOverrideState for a specific package..
+     *
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS)
+    public boolean setForceInvertOverrideStateForApp(
+            String packageName, @ForceInvertPackageOverrideState int newState) {
+        if (mContext == null) {
+            // This shouldn't really happen in practice because ViewRootImpl uses the
+            // proper constructor that fills out the context.
+            return false;
+        }
+        return sGlobals.setForceInvertOverrideState(getUserId(), packageName, newState);
     }
 
     /**
