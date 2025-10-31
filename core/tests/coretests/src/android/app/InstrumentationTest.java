@@ -22,6 +22,7 @@ import static android.app.ActivityManager.START_CANCELED;
 import static android.app.ActivityManager.START_CLASS_NOT_FOUND;
 import static android.app.ActivityManager.START_FORWARD_AND_REQUEST_CONFLICT;
 import static android.app.ActivityManager.START_INTENT_NOT_RESOLVED;
+import static android.app.ActivityManager.START_NOT_ALLOWED_FOR_USER;
 import static android.app.ActivityManager.START_NOT_ACTIVITY;
 import static android.app.ActivityManager.START_NOT_VOICE_COMPATIBLE;
 import static android.app.ActivityManager.START_PERMISSION_DENIED;
@@ -205,6 +206,14 @@ public final class InstrumentationTest {
                 () -> checkStartActivityResult(START_CANCELED, mIntent));
 
         assertMessage(thrown, "Activity could not be started for %s", mIntent);
+    }
+
+    @Test
+    public void testCheckStartActivityResult_startNotAllowedForUser() {
+        var thrown = assertThrows(AndroidRuntimeException.class,
+                () -> checkStartActivityResult(START_NOT_ALLOWED_FOR_USER, mIntent));
+
+        assertMessage(thrown, "Cannot start activity for %s for this user", mIntent);
     }
 
     @Test
