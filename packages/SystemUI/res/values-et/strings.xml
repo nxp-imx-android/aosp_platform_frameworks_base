@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Jagamiseks valige rakendus."</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Heli jagamine"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Rakenduse jagamise aken"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Jagamisel on teie ekraani sisu nähtav."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Tee aknast ekraanipilt"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Salvesta akent"</string>
@@ -1149,33 +1151,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Toitemenüü"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Leht <xliff:g id="ID_1">%1$d</xliff:g>/<xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Kas lülitada <xliff:g id="ID_1">%1$s</xliff:g> sisse?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Toiming "<annotation id="action_key_icon">"ikoon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> on klaviatuuri otsetee funktsiooni <xliff:g id="ID_3">^3</xliff:g> kasutamiseks. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"Funktsiooni <xliff:g id="ID_3">%3$s</xliff:g> lubamiseks vajutage uuesti klahvikombinatsiooni Toiming + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g>."</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Kas soovite rakenduse <xliff:g id="ID_1">%1$s</xliff:g> klaviatuuri otsetee sisse lülitada?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ära lülita sisse"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Lülita otsetee sisse"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Funktsiooni <xliff:g id="ID_1">%1$s</xliff:g> klaviatuuri otsetee on sisse lülitatud"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Toimingu "<annotation id="action_key_icon">"ikoon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> on klaviatuuri otsetee funktsiooni <xliff:g id="ID_3">^3</xliff:g>, juurdepääsetavuse funktsiooni kasutamiseks. See võimaldab teil kiiresti sisse suumida, et muuta ekraanil kuvatav sisu suuremaks. Kui suurendus on sisse lülitatud, vajutage suumi reguleerimiseks järgmist klahvikombinatsiooni: toimingu "<annotation id="action_key_icon">"ikoon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> ja „+“ või „-“."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Lülita otsetee välja"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Hoia sisselülitatuna"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Toimingu "<annotation id="action_key_icon">"ikoon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> on klaviatuuri otsetee funktsiooni <xliff:g id="ID_3">^3</xliff:g> kasutamiseks. <xliff:g id="ID_4">^3</xliff:g> on ekraanilugeja, mis loeb ekraanielemente häälega. See on abiks neile, kellel on reklaami nägemisega raskusi. See võib seadme funktsionaalsust mõjutada."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Klaviatuuri otsetee sisselülitamisega annate TalkBackile oma seadme üle täieliku kontrolli."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Täielik haldusõigus sobib rakendustele, mis pakuvad juurdepääsufunktsioone. Enamiku rakenduste puhul seda ei soovitata."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Ekraanikuva vaatamine ja haldamine"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"See saab lugeda kogu ekraanil kuvatud sisu ja kuvada sisu rakenduste peal."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Toimingute vaatamine ja tegemine"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"See saab jälgida teie suhtlust rakenduse või riistvaraanduriga ja teie eest rakendustega suhelda."</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Kui vajutate klahve Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, lülitatakse sisse juurdepääsetavuse funktsioon <xliff:g id="ID_3">^3</xliff:g>. See võimaldab teil seadet juhtida käsi kasutamata."</string>
-    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
-    <skip />
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Juurdepääsetavus"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Valmis"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Lukustuskuva"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Väljalülitamine …"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Vaadake hooldusjuhiseid"</string>
@@ -1742,4 +1741,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navigeerige järgmisele lehele"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"automaattäide"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"laiendamine"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>

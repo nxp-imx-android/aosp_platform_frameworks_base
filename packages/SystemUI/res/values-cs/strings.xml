@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Vyberte aplikaci ke sdílení"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Sdílení zvuku"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Sdílení okna aplikace"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Při sdílení je vidět obsah vaší obrazovky"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Pořídit snímek obrazovky okna"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Zaznamenat okno"</string>
@@ -1151,33 +1153,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Nabídka vypínače"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Stránka <xliff:g id="ID_1">%1$d</xliff:g> z <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Zapnout operátora <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Akční klávesa "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> je klávesová zkratka k použití funkce <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"Pokud chcete aktivovat <xliff:g id="ID_3">%3$s</xliff:g>, znovu stiskněte Akce + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Zapnout klávesovou zkratku <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Nezapínat"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Zapnout zkratku"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Klávesová zkratka <xliff:g id="ID_1">%1$s</xliff:g> je zapnutá"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Akční klávesa "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> je klávesová zkratka k použití funkce <xliff:g id="ID_3">^3</xliff:g>, což je funkce pro usnadnění přístupu. Umožňuje rychle přiblížit obrazovku a zvětšit tak obsah. Po zapnutí zvětšení můžete stisknutím akční klávesy "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> a „+“ nebo „-“ upravovat přiblížení."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Vypnout zkratku"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Ponechat zapnutou"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Akční klávesa "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> je klávesová zkratka k použití funkce <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> je čtečka obrazovky, která umožňuje nechat si hlasově oznamovat položky. Je užitečná pro lidi, kteří nevidí na displej. Tato funkce může změnit fungování zařízení."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Zapnutím klávesové zkratky umožníte aplikaci TalkBack získat plnou kontrolu nad svým zařízením."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Plná kontrola je vhodná u aplikací, které vám pomáhají s usnadněním přístupu, nikoli u většiny aplikací."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Čtení a ovládání obrazovky"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Může číst veškerý obsah obrazovky a zobrazovat obsah přes ostatní aplikace."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Čtení a provádění akcí"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Může sledovat vaše interakce s aplikací nebo hardwarovým senzorem a komunikovat s aplikacemi místo vás."</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Stisknutím kláves Akce "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> zapnete <xliff:g id="ID_3">^3</xliff:g>, funkci pro usnadnění přístupu Umožňuje ovládat zařízení handsfree."</string>
-    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
-    <skip />
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Přístupnost"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Hotovo"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Obrazovka uzamčení"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Vypínání…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Zobrazit pokyny, co dělat"</string>
@@ -1744,4 +1743,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"přejdete na další stránku"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"automatické vyplňování"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"rozbalit"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>

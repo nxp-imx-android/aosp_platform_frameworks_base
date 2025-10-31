@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Pumili ng app na ise-share"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"I-share ang audio"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"I-share ang window ng app"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Kapag nagse-share, nakikita ang laman ng iyong screen"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Kunan ng screenshot ang window"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"I-record ang window"</string>
@@ -1149,33 +1151,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Power menu"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Page <xliff:g id="ID_1">%1$d</xliff:g> ng <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"I-on ang <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794"><annotation id="action_key_icon">"Icon"</annotation>" ng Action + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ay ang keyboard shortcut na gagamitin sa <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"Pindutin ang Action + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> ulit para i-enable <xliff:g id="ID_3">%3$s</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"I-on ang keyboard shortcut ng <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Huwag i-on"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"I-on ang shortcut"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Naka-on ang keyboard shortcut na <xliff:g id="ID_1">%1$s</xliff:g>"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ang keyboard shortcut para gamitin ang <xliff:g id="ID_3">^3</xliff:g>, isang feature ng accessibilty. Nagbibigay-daan ito sa iyo na mabilis na mag-zoom in sa screen para palakihin ang content. Kapag naka-on na ang pag-magnify, pindutin ang Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> at \"+\" o \"-\" para i-adjust ang zoom."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"I-off ang shortcut"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Panatilihing naka-on"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Ang "<annotation id="action_key_icon">"icon"</annotation>" ng Action + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ang keyboard shortcut na gagamitin sa <xliff:g id="ID_3">^3</xliff:g>. Screen reader ang <xliff:g id="ID_4">^3</xliff:g> na nagbibigay-daan sa iyong marinig ang mga item na binibigkas nang malakas. Makakatulong ito sa mga taong nahihirapang makita ang screen. Posibleng mabago nito ang paggana ng iyong device."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Sa pamamagitan ng pag-on sa keyboard shortcut, papayagan mong magkaroon ng ganap na kontrol sa iyong device ang TalkBack."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Naaangkop ang ganap na kontrol sa mga app na tumutulong sa iyo sa mga pangangailangan sa accessibility, pero hindi sa karamihan ng mga app."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Tingnan at kontrolin ang screen"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Mababasa nito ang lahat ng content na nasa screen at makakapagpakita ito ng content sa iba pang app."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Tumingin at magsagawa ng mga aksyon"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Masusubaybayan nito ang iyong mga interaction sa isang app o hardware na sensor, at puwede itong makipag-interact sa mga app para sa iyo."</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Kapag pinindot ang "<annotation id="action_key_icon">"icon"</annotation>" na Aksyon + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, mao-on ang <xliff:g id="ID_3">^3</xliff:g>, na isang feature ng accessibility. Nagbibigay-daan ito sa iyo na kontrolin ang device mo nang hands-free."</string>
-    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
-    <skip />
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Accessibility"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Tapos na"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Lock screen"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Nagsa-shut down…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Tingnan ang mga hakbang sa pangangalaga"</string>
@@ -1742,4 +1741,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"mag-navigate sa susunod na page"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"autofill"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"i-expand"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>

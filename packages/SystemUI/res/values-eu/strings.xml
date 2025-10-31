@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Hautatu partekatzeko aplikazio bat"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Partekatu audioa"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Partekatu aplikazioaren leihoa"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Partekatzean, pantailaren edukia ikusgai egongo da"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Atera leihoaren pantaila-argazkia"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Grabatu leihoa"</string>
@@ -1149,33 +1151,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Itzaltzeko menua"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_1">%1$d</xliff:g>/<xliff:g id="ID_2">%2$d</xliff:g> orria"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> aktibatu nahi duzu?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794"><annotation id="action_key_icon">"ikonoa"</annotation>" ekintza + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> da <xliff:g id="ID_3">^3</xliff:g> erabiltzeko lasterbidea. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"Sakatu ekintza-botoia + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> berriro <xliff:g id="ID_3">%3$s</xliff:g> gaitzeko"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> lasterbidea aktibatu nahi duzu?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ez aktibatu"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Aktibatu lasterbidea"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> erabiltzeko lasterbidea aktibatuta dago"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"Ekintza-ikonoa"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> <xliff:g id="ID_3">^3</xliff:g> erabilerraztasun-eginbidea erabiltzeko lasterbidea da. Horri esker, bizkor handitu ahalko duzu pantaila, edukia hobeto ikusteko. Lupa aktibatu ondoren, sakatu "<annotation id="action_key_icon">"ekintza-ikonoa"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> eta \"+\" edo \"-\" zooma doitzeko."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Desaktibatu lasterbidea"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Mantendu aktibatuta"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Ekintzaren "<annotation id="action_key_icon">"ikonoa"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> da <xliff:g id="ID_3">^3</xliff:g> erabiltzeko lasterbidea. Elementuak ozen irakurrita entzuteko aukera ematen dizun pantaila-irakurgailu bat da <xliff:g id="ID_4">^3</xliff:g>. Pantaila ikusteko zailtasuna duten pertsonentzat da lagungarria. Baliteke hura erabiliz gero gailuaren funtzionamendua aldatzea."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Teklatuko lasterbidea aktibatuz gero, gailua guztiz kontrolatzeko baimena emango diozu TalkBack-i."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Erabilerraztasun-beharrak asetzen dituzten aplikazioetan da egokia kontrol osoa, baina ez aplikazio gehienetan."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Ikusi eta kontrolatu pantaila"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Pantailako eduki guztia irakur dezake, eta beste aplikazioen gainean edukia bistaratu."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Ikusi eta gauzatu ekintzak"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Aplikazioekin edo hardware-sentsoreekin dituzun interakzioen jarraipena egin dezake, eta zure izenean beste aplikazio batzuekin interakzioan jardun."</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870"><annotation id="action_key_icon">"Ekintza-ikonoa"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> sakatuta, <xliff:g id="ID_3">^3</xliff:g> erabilerraztasun-eginbidea aktibatzen da. Hura erabilita, eskurik erabili gabe kontrola dezakezu gailua."</string>
-    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
-    <skip />
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Erabilerraztasuna"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Eginda"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Pantaila blokeatua"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Itzaltzen…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Ikusi zaintzeko urratsak"</string>
@@ -1488,17 +1487,12 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"Gailuaren funtzionamendua hobetzeko, aplikazioek eta zerbitzuek wifi-sareak bilatzen jarraituko dute, baita wifi-konexioa desaktibatuta dagoenean ere. Aukera hori aldatzeko, joan wifi-sareak bilatzeko eginbidearen ezarpenetara. "<annotation id="link">"Aldatu"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Desaktibatu hegaldi modua"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g> aplikazioak lauza hau gehitu nahi du Ezarpen bizkorrak menuan:"</string>
-    <!-- no translation found for qs_tile_request_dialog_text_with_size (732578771040573291) -->
-    <skip />
+    <string name="qs_tile_request_dialog_text_with_size" msgid="732578771040573291">"<xliff:g id="APPNAME">%1$s</xliff:g> aplikazioak lauza bat gehitu nahi du Ezarpen bizkorrak menuan. Aurrera egiteko, hautatu lauzaren tamaina."</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Gehitu lauza"</string>
-    <!-- no translation found for qs_tile_request_dialog_not_add (8375425041428574394) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_title (5654666862347548966) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_small_format_content_description (5429197059724172135) -->
-    <skip />
-    <!-- no translation found for qs_tile_request_dialog_large_format_content_description (67983044110405787) -->
-    <skip />
+    <string name="qs_tile_request_dialog_not_add" msgid="8375425041428574394">"Ez gehitu lauza"</string>
+    <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Gehitu lauza Ezarpen bizkorrak menuan"</string>
+    <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Formatu txikia"</string>
+    <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Formatu handia"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Hautatu erabiltzaile bat"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# aplikazio aktibo dago}other{# aplikazio aktibo daude}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Informazio berria"</string>
@@ -1747,4 +1741,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"joan hurrengo orrira"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"bete automatikoki"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"zabaldu"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>

@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Vælg en app, du vil dele."</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Del lyd"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Del appvindue"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Når du deler, er indholdet på din skærm synligt"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Tag et screenshot af vinduet"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Optag vinduet"</string>
@@ -1149,33 +1151,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menu for afbryderknappen"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Side <xliff:g id="ID_1">%1$d</xliff:g> af <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Vil du aktivere <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Handling "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> er tastaturgenvejen til <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"Tryk på Handling + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> igen for at aktivere <xliff:g id="ID_3">%3$s</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Vil du aktivere tastaturgenvejen <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Aktivér ikke"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Aktivér genvej"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Tastaturgenvejen <xliff:g id="ID_1">%1$s</xliff:g> er aktiveret"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Handlings"<annotation id="action_key_icon">"ikonet"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> er tastaturgenvejen til at bruge hjælpefunktionen <xliff:g id="ID_3">^3</xliff:g>. Dette giver dig mulighed for hurtigt at zoome ind på skærmen for at forstørre indhold. Når forstørrelse er aktiveret, skal du trykke på handlings"<annotation id="action_key_icon">"ikonet"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> og \"+\" eller \"-\" for at justere zoom."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Deaktiver genvej"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Bevar aktivering"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Handlings"<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> er tastaturgenvejen til <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> er en skærmlæser, der giver dig mulighed for at få elementer læst højt. Den kan være en hjælp for brugere, der har svært ved at se skærmen. Dette kan ændre, hvordan din enhed fungerer."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Når du aktiverer tastaturgenvejen, giver du TalkBack fuld kontrol over din enhed."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Fuld kontrol er velegnet til apps, der hjælper dig med hjælpefunktioner, men ikke de fleste apps."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Se og styr skærmen"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Den kan læse alt indhold på skærmen og vise indhold oven på andre apps."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Se og udfør handlinger"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Den kan spore dine interaktioner med en app eller en hardwaresensor og interagere med apps på dine vegne."</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Når du trykker på "<annotation id="action_key_icon">"handlingsikonet"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, aktiveres hjælpefunktionen <xliff:g id="ID_3">^3</xliff:g>. Dette giver dig mulighed for at styre din enhed med stemmen."</string>
-    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
-    <skip />
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Hjælpefunktioner"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Udfør"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Låseskærm"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Lukker ned…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Se håndteringsvejledning"</string>
@@ -1742,4 +1741,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navigere til næste side"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"autofyld"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"udvid"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>

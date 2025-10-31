@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"പങ്കിടാൻ ഒരു ആപ്പ് തിരഞ്ഞെടുക്കുക"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ഓഡിയോ പങ്കിടുക"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ആപ്പ് വിൻഡോ പങ്കിടുക"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"പങ്കിടുമ്പോൾ, നിങ്ങളുടെ സ്ക്രീനിലെ ഉള്ളടക്കം ദൃശ്യമാകും"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"വിൻഡോയുടെ സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"വിൻഡോ റെക്കോർഡ് ചെയ്യുക"</string>
@@ -1149,33 +1151,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"പവർ മെനു"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"പേജ് <xliff:g id="ID_1">%1$d</xliff:g> / <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> ഓണാക്കണോ?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ആണ് <xliff:g id="ID_3">^3</xliff:g> ഉപയോഗിക്കുന്നതിനുള്ള കീബോഡ് കുറുക്കുവഴി. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"<xliff:g id="ID_3">%3$s</xliff:g> പ്രവർത്തനക്ഷമമാക്കാൻ, ആക്ഷൻ + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> വീണ്ടും അമർത്തുക"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> കീബോർഡ് കുറുക്കുവഴി ഓണാക്കണോ?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ഓണാക്കരുത്"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"കുറുക്കുവഴി ഓണാക്കുക"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> കീബോർഡ് കുറുക്കുവഴി ഓണാക്കി"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"പ്രവർത്തന "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ആണ് ഉപയോഗസഹായി ഫീച്ചറായ <xliff:g id="ID_3">^3</xliff:g> ഉപയോഗിക്കുന്നതിനുള്ള കീബോഡ് കുറുക്കുവഴി. ഉള്ളടക്കം വലുതാക്കുന്നതിനായി വേഗത്തിൽ സ്ക്രീനിൽ സൂം ഇൻ ചെയ്യാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു. മാഗ്നിഫിക്കേഷൻ ഓണായാൽ, സൂം ക്രമീകരിക്കാൻ പ്രവർത്തന "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> ഒപ്പം \"+\" അല്ലെങ്കിൽ \"-\" അമർത്തുക."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"കുറുക്കുവഴി ഓഫാക്കുക"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ഓണാക്കി നിർത്തുക"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"പ്രവർത്തന "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ആണ് <xliff:g id="ID_3">^3</xliff:g> ഉപയോഗിക്കുന്നതിനുള്ള കീബോഡ് കുറുക്കുവഴി. സ്ക്രീനിലുള്ള കാര്യങ്ങൾ ഉറക്കെ വായിച്ചുകേൾക്കാൻ അനുവദിക്കുന്ന സ്ക്രീൻ റീഡറാണ് <xliff:g id="ID_4">^3</xliff:g>. സ്‌ക്രീൻ കാണാൻ ബുദ്ധിമുട്ടുള്ള ആളുകൾക്ക് ഇത് സഹായകരമായേക്കാം. നിങ്ങളുടെ ഉപകരണം പ്രവർത്തിക്കുന്ന രീതി ഇത് മാറ്റിയേക്കാം."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"കീബോർഡ് കുറുക്കുവഴി ഓണാക്കുന്നതിലൂടെ, നിങ്ങളുടെ ഉപകരണത്തിന്റെ പൂർണ്ണ നിയന്ത്രണം TalkBack-ന് ലഭിക്കാൻ നിങ്ങൾ അനുവദിക്കും."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"ഉപയോഗസഹായി ആവശ്യങ്ങൾക്കായി നിങ്ങളെ സഹായിക്കുന്ന ആപ്പുകൾക്ക് പൂർണ്ണ നിയന്ത്രണം അനുയോജ്യമാണ്, എന്നാൽ മിക്ക ആപ്പുകൾക്കും അത് അനുയോജ്യമല്ല."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"സ്‌ക്രീൻ കാണുക, നിയന്ത്രിക്കുക"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"ഇതിന് സ്‌ക്രീനിലെ എല്ലാ ഉള്ളടക്കവും വായിക്കാനും മറ്റ് ആപ്പുകളിൽ ഉള്ളടക്കം പ്രദർശിപ്പിക്കാനുമാകും."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"കാണുക, പ്രവർത്തനങ്ങൾ നിർവഹിക്കുക"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"ഇതിന് ഒരു ആപ്പുമായോ ഹാർഡ്‌വെയർ സെൻസറുമായോ ഉള്ള നിങ്ങളുടെ ആശയവിനിമയങ്ങൾ ട്രാക്ക് ചെയ്യാനും നിങ്ങളുടെ പേരിൽ ആശയവിനിമയം നടത്താനും കഴിയും."</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"പ്രവൃത്തി "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> അമർത്തുന്നതിലൂടെ ഉപയോഗസഹായി ഫീച്ചറായ <xliff:g id="ID_3">^3</xliff:g> ഓണാകുന്നു. ഉപകരണം ഹാൻഡ്‌സ്-ഫ്രീ ആയി നിയന്ത്രിക്കാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു."</string>
-    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
-    <skip />
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ഉപയോഗസഹായി"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"പൂർത്തിയായി"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ലോക്ക് സ്‌ക്രീൻ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ഷട്ട്‌ഡൗൺ ചെയ്യുന്നു…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"പരിപാലന നിർദ്ദേശങ്ങൾ കാണുക"</string>
@@ -1742,4 +1741,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"അടുത്ത പേജിലേക്ക് നാവിഗേറ്റ് ചെയ്യുക"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"സ്വയമേവ പൂരിപ്പിക്കൽ"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"വികസിപ്പിക്കുക"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>

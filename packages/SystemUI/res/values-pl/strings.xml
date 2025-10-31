@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Wybierz aplikację do udostępniania"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Udostępnij dźwięk"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Udostępnij okno aplikacji"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Podczas udostępniania widoczna jest zawartość ekranu"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Zrób zrzut okna"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Nagrywaj okno"</string>
@@ -1149,33 +1151,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menu zasilania"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Strona <xliff:g id="ID_1">%1$d</xliff:g> z <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Włączyć <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Klawisz działania "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> to skrót klawiszowy, który włącza <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"Aby włączyć <xliff:g id="ID_3">%3$s</xliff:g>, naciśnij ponownie klawisz działania + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Włączyć skrót klawiszowy <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Nie włączaj"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Włącz skrót"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Włączono skrót klawiszowy <xliff:g id="ID_1">%1$s</xliff:g>"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Klawisz działania "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> to skrót klawiszowy do włączania funkcji ułatwień dostępu <xliff:g id="ID_3">^3</xliff:g>. Możesz w ten sposób szybko powiększać zawartość ekranu. Gdy powiększenie jest włączone, naciśnij klawisz działania "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> i „+” lub „–”, aby dostosować powiększenie."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Wyłącz skrót"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Nie wyłączaj"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Klawisz działania "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> to skrót klawiszowy, który włącza <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> to czytnik ekranu umożliwiający odczytywanie na głos opisów wyświetlanych elementów. Funkcja ta może być przydatna dla osób mających trudności z czytaniem treści na ekranie. Może ona zmienić sposób działania urządzenia."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Jeśli włączysz skrót klawiszowy, TalkBack będzie mieć pełną kontrolę nad Twoim urządzeniem."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Pełna kontrola jest odpowiednia w przypadku aplikacji ułatwiających dostęp, ale nie należy jej przyznawać wszystkim aplikacjom."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Wyświetlanie i obsługa ekranu"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Umożliwia odczytywanie całej zawartości ekranu i wyświetlanie jej nad innymi aplikacjami."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Wyświetlanie i wykonywanie działań"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Umożliwia śledzenie Twoich interakcji z aplikacjami lub czujnikiem sprzętowym, a także obsługiwanie aplikacji za Ciebie."</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Naciśnięcie klawisza działania "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> włącza <xliff:g id="ID_3">^3</xliff:g>, funkcję ułatwień dostępu. Umożliwia ona obsługę urządzenia bez użycia rąk."</string>
-    <!-- no translation found for accessibility_quick_access_dialog_title (8792322423145117379) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_access_dialog_done_button_text (8013849920696848138) -->
-    <skip />
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Ułatwienia dostępu"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Gotowe"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ekran blokady"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Wyłączam…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Zobacz instrukcję postępowania"</string>
@@ -1742,4 +1741,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"przejść do następnej strony"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"autouzupełnianie"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"rozwinięcie"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>
