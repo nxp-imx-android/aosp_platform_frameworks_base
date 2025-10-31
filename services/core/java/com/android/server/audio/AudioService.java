@@ -5809,10 +5809,8 @@ public class AudioService extends IAudioService.Stub
                     // ada is non-null when called from setDeviceVolume,
                     // which shouldn't update the mute state
                     // full volume device shouldn't update the mute state
-                    // Platform PC should not unmute with setVolume alone
                     /* canChangeMute= */ canChangeMuteAndUpdateController
-                            && !isFullVolumeDevice(deviceType)
-                            && !isPlatformPc());
+                            && !isFullVolumeDevice(deviceType));
         }
         index = streamState.getIndex(deviceType);
 
