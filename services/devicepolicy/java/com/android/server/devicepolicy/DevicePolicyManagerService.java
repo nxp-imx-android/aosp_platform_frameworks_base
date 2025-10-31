@@ -25378,6 +25378,29 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     throw new IllegalArgumentException("Invalid scope " + scope);
             }
         }
+
+        @Override
+        @Nullable
+        public <T> T getPolicySetByAdmin(
+                @NonNull CallerIdentity caller,
+                @NonNull PolicyDefinition<T> key,
+                @PolicyScope int scope) {
+            EnforcingAdmin admin = getEnforcingAdmin(caller);
+
+            Slogf.d(LOG_TAG, "Retrieving policy %s with scope %d from policy engine", key, scope);
+            switch (scope) {
+                case POLICY_SCOPE_DEVICE:
+                    return mDevicePolicyEngine.getGlobalPolicySetByAdmin(key, admin);
+                case POLICY_SCOPE_USER:
+                    return mDevicePolicyEngine.getLocalPolicySetByAdmin(
+                            key, admin, caller.getUserId());
+                case POLICY_SCOPE_PARENT_USER:
+                    return mDevicePolicyEngine.getLocalPolicySetByAdmin(
+                            key, admin, getProfileParentId(caller.getUserId()));
+                default:
+                    throw new IllegalArgumentException("Invalid scope " + scope);
+            }
+        }
     }
 
     @Override
@@ -25409,4 +25432,35 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             handler.setPolicy(caller, scope, value);
         });
     }
+
+    @Override
+    public @Nullable PolicyValueTransport getPolicy(
+            String callerPackageName, String id, int scope) {
+        if (!mHasFeature) {
+            return null;
+        }
+        if (!Flags.policyStreamlining()) {
+            throw new UnsupportedOperationException("Policy streamlining is not enabled");
+        }
+
+        return getPolicy(getCallerIdentity(callerPackageName), id, scope);
+    }
+
+    private @Nullable PolicyValueTransport getPolicy(CallerIdentity caller, String id, int scope)
+    {
+        Slogf.d(LOG_TAG, "Retrieving policy %s with scope %d through generic API", id, scope);
+        requirePolicyScopeIsOneOf(scope, POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE,
+                POLICY_SCOPE_PARENT_USER);
+
+        maybeInitializePolicyHandlers();
+        PolicyHandler<?> handler = mPolicyHandlers.get(id);
+        if (handler == null) {
+            throw new IllegalArgumentException("Unknown policy " + id);
+        }
+
+        return Binder.withCleanCallingIdentity(() -> {
+            return handler.getPolicy(caller, scope);
+        });
+    }
+
 }

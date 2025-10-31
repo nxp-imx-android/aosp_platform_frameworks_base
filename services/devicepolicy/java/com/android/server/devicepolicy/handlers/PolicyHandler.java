@@ -111,9 +111,11 @@ public class PolicyHandler<T> {
                         if (value == null || value == PolicyIdentifier.SCREEN_CAPTURE_ALLOWED) {
                             clearPolicy(caller, PolicyDefinition.SCREEN_CAPTURE_DISABLED, scope);
                         } else {
-                            storePolicy(caller, PolicyDefinition.SCREEN_CAPTURE_DISABLED,
+                            storePolicy(
+                                    caller,
+                                    PolicyDefinition.SCREEN_CAPTURE_DISABLED,
                                     scope,
-                                    /*isScreenCaptureDisabled=*/new BooleanPolicyValue(true));
+                                    /* isScreenCaptureDisabled= */ new BooleanPolicyValue(true));
                         }
                     }
                 });
@@ -212,6 +214,18 @@ public class PolicyHandler<T> {
         storePolicyValue(caller, scope, value);
     }
 
+    /** Performs every step required to retrieve the policy. */
+    public @Nullable PolicyValueTransport getPolicy(
+            @NonNull CallerIdentity caller, @PolicyScope int scope) {
+        validateScope(scope);
+
+        checkPermissions(caller, scope);
+
+        T value = getPolicyValue(caller, scope);
+
+        return convertValue(caller, value);
+    }
+
     /**
      * Validates if the {@link PolicyScope} can be used for this policy.
      *
@@ -240,6 +254,15 @@ public class PolicyHandler<T> {
             return null;
         }
         return getTransportValueConvertor().fromTransport(transportValue);
+    }
+
+    /** Converts the given value to the corresponding {@link PolicyValueTransport}. */
+    @Nullable
+    protected PolicyValueTransport convertValue(@NonNull CallerIdentity caller, @Nullable T value) {
+        if (value == null) {
+            return null;
+        }
+        return getTransportValueConvertor().toTransport(value);
     }
 
     /**
@@ -293,6 +316,15 @@ public class PolicyHandler<T> {
         } else {
             clearPolicy(caller, key, scope);
         }
+    }
+
+    /**
+     * Retrieves the policy value from the {@code DevicePolicyEngine}.
+     *
+     * <p>Can be overridden to retrieve the value from somewhere else instead.
+     */
+    protected @Nullable T getPolicyValue(@NonNull CallerIdentity caller, @PolicyScope int scope) {
+        return getPolicySetByAdmin(caller, getPolicyDefinition(), scope);
     }
 
     /******************************************************************************************
@@ -365,6 +397,13 @@ public class PolicyHandler<T> {
         getDelegate().clearPolicy(caller, key, scope);
     }
 
+    protected final <StoredType> @Nullable StoredType getPolicySetByAdmin(
+            @NonNull CallerIdentity caller,
+            @NonNull PolicyDefinition<StoredType> key,
+            @PolicyScope int scope) {
+        return getDelegate().getPolicySetByAdmin(caller, key, scope);
+    }
+
     /** Helper class that provides access to helper methods used while processing policies. */
     public interface Delegate {
         /** Returns the DPC type of the given caller. */
@@ -395,6 +434,23 @@ public class PolicyHandler<T> {
          * local on parent of the user).
          */
         <StoredType> void clearPolicy(
+                @NonNull CallerIdentity caller,
+                @NonNull PolicyDefinition<StoredType> key,
+                @PolicyScope int scope);
+
+        /**
+         * Helper method to retrieve the policy value stored by the caller in the {@code
+         * DevicePolicyEngine}, or null if no value is stored. Invoked from {@link
+         * PolicyHandler.getPolicyValue}.
+         *
+         * <p>Will use {@link scope} to decide on the correct storage (global vs local on user vs
+         * local on parent of the user).
+         *
+         * <p>Note this does not return the resolved policy value, but the value stored by the
+         * caller.
+         */
+        @Nullable
+        <StoredType> StoredType getPolicySetByAdmin(
                 @NonNull CallerIdentity caller,
                 @NonNull PolicyDefinition<StoredType> key,
                 @PolicyScope int scope);

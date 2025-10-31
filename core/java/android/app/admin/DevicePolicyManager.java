@@ -18796,7 +18796,6 @@ public class DevicePolicyManager {
      * documentation of individual identifiers for more details.
      */
     @FlaggedApi(FLAG_POLICY_STREAMLINING)
-    @UserHandleAware
     public <T> void setPolicy(
             @NonNull PolicyIdentifier<T> id,
             @PolicyScope int scope,
@@ -18812,16 +18811,52 @@ public class DevicePolicyManager {
         }
     }
 
+    /**
+     * Gets the value of the given policy, as it was set by the caller.
+     *
+     * <p>This does not return the effective policy value used on the device. Instead, this returns
+     * the value set by the caller.
+     *
+     * @param id The policy identifier to retrieve. It must be one of the values inside {@link
+     *     DevicePolicyIdentifier}.
+     * @param scope The scope with which the policy was set.
+     * @throws SecurityException If the caller does not have sufficient permissions to get the
+     *     specified id. Check the documentation of individual identifiers for more details.
+     * @return The value of the policy, or null if the caller didn't set the policy for the given
+     *     scope.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING)
+    public <T> @Nullable T getPolicy(@NonNull PolicyIdentifier<T> id, @PolicyScope int scope) {
+        throwIfParentInstance("getPolicy");
+        if (mService == null) {
+            return null;
+        }
+        try {
+            var value = mService.getPolicy(mContext.getPackageName(), id.getId(), scope);
+            return policyValueFromTransport(id, value);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     @Nullable
     private static <T> PolicyValueTransport policyValueToTransport(
-            @NonNull PolicyIdentifier<T> id,
-            @Nullable T value
-    ) {
+            @NonNull PolicyIdentifier<T> id, @Nullable T value) {
         if (value == null) {
             return null;
         }
 
         return PolicyTransportValueConvertor.getInstance(id).toTransport(value);
+    }
+
+    @Nullable
+    private static <T> T policyValueFromTransport(
+            @NonNull PolicyIdentifier<T> id, @Nullable PolicyValueTransport value) {
+        if (value == null) {
+            return null;
+        }
+
+        return PolicyTransportValueConvertor.getInstance(id).fromTransport(value);
     }
 
     /**
@@ -18867,5 +18902,21 @@ public class DevicePolicyManager {
             int value) {
         // TODO(b/434920631): Remove this method and use {@link #setPolicy} in tests directly.
         setPolicy(new PolicyIdentifier<Integer>(key), scope, Integer.valueOf(value));
+    }
+
+    /**
+     * Template free version of getPolicy for integers.
+     * Returns '-1' if the policy is not set.
+     *
+     * @hide
+     */
+    @TestApi
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
+    public int getIntegerPolicy(
+            @NonNull String key,
+            @PolicyScope int scope) {
+        // TODO(b/434920631): Remove this method and use {@link #getPolicy} in tests directly.
+        var result = getPolicy(new PolicyIdentifier<Integer>(key), scope);
+        return result == null ? -1 : result;
     }
 }
