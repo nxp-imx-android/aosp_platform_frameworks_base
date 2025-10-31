@@ -170,6 +170,7 @@ constructor(
                         },
                     ),
                 onDismissed = { mediaCarouselInteractor.onSwipeToDismiss() },
+                visible = { isMediaVisibleOnLockscreen },
             )
         }
     }

@@ -183,6 +183,7 @@ fun Media(
     behavior: MediaUiBehavior,
     onDismissed: () -> Unit,
     modifier: Modifier = Modifier,
+    visible: () -> Boolean = { true },
 ) {
     val context = LocalContext.current
     val viewModel: MediaViewModel =
@@ -192,6 +193,8 @@ fun Media(
                 carouselVisibility = behavior.carouselVisibility,
             )
         }
+
+    LaunchedEffect(visible) { viewModel.setVisibility(visible) }
 
     CardCarousel(
         viewModel = viewModel,
@@ -1458,7 +1461,11 @@ private fun RevealedContent(
             Icon(
                 icon = viewModel.icon,
                 modifier =
-                    Modifier.layoutId(Media.LayoutId.CardRevealedContent)
+                    Modifier.background(
+                            color = MaterialTheme.colorScheme.surface,
+                            shape = CircleShape,
+                        )
+                        .layoutId(Media.LayoutId.CardRevealedContent)
                         .size(48.dp)
                         .padding(12.dp)
                         .graphicsLayer {
@@ -1466,6 +1473,7 @@ private fun RevealedContent(
                             rotationZ = revealAmount() * 90
                         }
                         .clickable { viewModel.onClick() },
+                tint = MaterialTheme.colorScheme.onSurface,
             )
         },
         modifier = modifier,
