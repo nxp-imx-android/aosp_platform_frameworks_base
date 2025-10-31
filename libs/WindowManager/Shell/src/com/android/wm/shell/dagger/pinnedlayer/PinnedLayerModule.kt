@@ -18,10 +18,12 @@ package com.android.wm.shell.dagger.pinnedlayer
 
 import com.android.wm.shell.dagger.WMShellBaseModule
 import com.android.wm.shell.dagger.WMSingleton
+import com.android.wm.shell.desktopmode.NormalAppLayerHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
+import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import java.util.Optional
@@ -31,16 +33,22 @@ object PinnedLayerModule {
 
     @WMSingleton
     @Provides
+    // TODO(b/449681882): Remove Lazy from normal layer when PinnedLayerRepository is added.
     fun providePinnedLayerController(
         shellInit: ShellInit,
         transitions: Transitions,
+        normalAppLayerHandler: Lazy<Optional<NormalAppLayerHandler>>,
     ): Optional<PinnedLayerController> {
-        return Optional.ofNullable(
-            if (PinnedLayerFlags.isPinnedLayerEnabled()) {
-                PinnedLayerController(shellInit = shellInit, transitions = transitions)
-            } else {
-                null
-            }
-        )
+        if (PinnedLayerFlags.isPinnedLayerEnabled()) {
+            return Optional.of(
+                PinnedLayerController(
+                    shellInit = shellInit,
+                    transitions = transitions,
+                    normalAppLayerHandler =
+                        lazy(LazyThreadSafetyMode.NONE) { normalAppLayerHandler.get().get() },
+                )
+            )
+        }
+        return Optional.empty()
     }
 }

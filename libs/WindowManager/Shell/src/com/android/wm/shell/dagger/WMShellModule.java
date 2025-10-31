@@ -81,8 +81,8 @@ import com.android.wm.shell.bubbles.logging.BubbleLogger;
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker;
 import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl;
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository;
-import com.android.wm.shell.bubbles.user.data.UserManagerBubbleUserResolver;
 import com.android.wm.shell.bubbles.user.data.BubbleUserResolver;
+import com.android.wm.shell.bubbles.user.data.UserManagerBubbleUserResolver;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
@@ -139,6 +139,7 @@ import com.android.wm.shell.desktopmode.DisplayFocusResolver;
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.EnterDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler;
+import com.android.wm.shell.desktopmode.NormalAppLayerHandler;
 import com.android.wm.shell.desktopmode.OverviewToDesktopTransitionObserver;
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator;
 import com.android.wm.shell.desktopmode.ShellDesktopState;
@@ -178,6 +179,7 @@ import com.android.wm.shell.freeform.TaskChangeListener;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.onehanded.OneHandedController;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.phone.PipScheduler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
@@ -1635,11 +1637,11 @@ public abstract class WMShellModule {
                 && ENABLE_MULTI_DISPLAY_HOME_FOCUS_BUG_FIX.isTrue()) {
             return Optional.of(
                     new DisplayFocusResolver(
-                        transitions,
-                        shellTaskOrganizer,
-                        focusTransitionObserver,
-                        desktopUserRepositories.get(),
-                        desktopTasksController.get()));
+                            transitions,
+                            shellTaskOrganizer,
+                            focusTransitionObserver,
+                            desktopUserRepositories.get(),
+                            desktopTasksController.get()));
         }
         return Optional.empty();
     }
@@ -2040,6 +2042,20 @@ public abstract class WMShellModule {
             DisplayController displayController) {
         return new VisualIndicatorUpdateScheduler(shellInit, mainDispatcher, bgScope,
                 displayController);
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<NormalAppLayerHandler> provideNormalAppLayerHandler(
+            Optional<DesktopTasksController> desktopTasksControllerOptional,
+            Optional<DesktopUserRepositories> desktopUserRepositoriesOptional) {
+        if (PinnedLayerFlags.isPinnedLayerEnabled()) {
+            return Optional.of(
+                    new NormalAppLayerHandler(
+                            desktopUserRepositoriesOptional.get(),
+                            desktopTasksControllerOptional.get()));
+        }
+        return Optional.empty();
     }
 
     //
