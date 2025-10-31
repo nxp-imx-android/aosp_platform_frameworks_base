@@ -592,3 +592,11 @@ flag {
   description: "Add a generic provisioning error for forward compatibility."
   bug: "458352522"
 }
+
+flag {
+  name: "multi_user_management_user_provisioning"
+  is_exported: true
+  namespace: "enterprise"
+  description: "Enable the multi user management user provisioning APIs."
+  bug: "425840472"
+}
