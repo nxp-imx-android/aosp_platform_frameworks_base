@@ -380,16 +380,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_app_launch_alttab_transitions_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enables custom transitions for alt-tab app launches in Desktop Mode."
-    bug: "380225486"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_app_launch_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enabling an umbrella flag for various bugfixes related to app launch transitions."
