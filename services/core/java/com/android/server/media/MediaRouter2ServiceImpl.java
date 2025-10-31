@@ -2314,9 +2314,10 @@ class MediaRouter2ServiceImpl {
         Slog.i(
                 TAG,
                 TextUtils.formatSimple(
-                        "setDeviceSuggestions | manager: %d, suggestingPackageName: %d suggestion:"
-                            + " %d",
+                        "setDeviceSuggestions | manager: %d, target: %s, "
+                                + "suggestingPackageName: %s suggestion: %s",
                         managerRecord.mManagerId,
+                        managerRecord.mTargetPackageName,
                         managerRecord.mOwnerPackageName,
                         suggestedDeviceInfo));
 
