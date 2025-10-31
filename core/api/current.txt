@@ -1248,6 +1248,7 @@ package android {
     field public static final int multiprocess = 16842771; // 0x1010013
     field public static final int name = 16842755; // 0x1010003
     field public static final int nativeHeapZeroInitialized = 16844325; // 0x1010625
+    field @FlaggedApi("android.os.native_framework_prototype") public static final int nativeService;
     field @Deprecated public static final int navigationBarColor = 16843858; // 0x1010452
     field @Deprecated public static final int navigationBarDividerColor = 16844141; // 0x101056d
     field public static final int navigationContentDescription = 16843969; // 0x10104c1
@@ -14075,6 +14076,8 @@ package android.content.pm {
     field public static final int PERMISSION_GRANTED = 0; // 0x0
     field public static final String PROPERTY_COMPAT_OVERRIDE_LANDSCAPE_TO_PORTRAIT = "android.camera.PROPERTY_COMPAT_OVERRIDE_LANDSCAPE_TO_PORTRAIT";
     field public static final String PROPERTY_MEDIA_CAPABILITIES = "android.media.PROPERTY_MEDIA_CAPABILITIES";
+    field @FlaggedApi("android.os.native_framework_prototype") public static final String PROPERTY_NATIVE_SERVICE_FUNC_NAME = "android.app.PROPERTY_NATIVE_SERVICE_FUNC_NAME";
+    field @FlaggedApi("android.os.native_framework_prototype") public static final String PROPERTY_NATIVE_SERVICE_LIB_NAME = "android.app.PROPERTY_NATIVE_SERVICE_LIB_NAME";
     field public static final String PROPERTY_SELF_CERTIFIED_NETWORK_CAPABILITIES = "android.net.PROPERTY_SELF_CERTIFIED_NETWORK_CAPABILITIES";
     field public static final String PROPERTY_SPECIAL_USE_FGS_SUBTYPE = "android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE";
     field @FlaggedApi("com.android.server.backup.enable_restricted_mode_changes") public static final String PROPERTY_USE_RESTRICTED_BACKUP_MODE = "android.app.backup.PROPERTY_USE_RESTRICTED_BACKUP_MODE";
@@ -14289,6 +14292,7 @@ package android.content.pm {
     field public static final int FLAG_ALLOW_SHARED_ISOLATED_PROCESS = 16; // 0x10
     field public static final int FLAG_EXTERNAL_SERVICE = 4; // 0x4
     field public static final int FLAG_ISOLATED_PROCESS = 2; // 0x2
+    field @FlaggedApi("android.os.native_framework_prototype") public static final int FLAG_NATIVE_SERVICE = 32; // 0x20
     field public static final int FLAG_SINGLE_USER = 1073741824; // 0x40000000
     field public static final int FLAG_STOP_WITH_TASK = 1; // 0x1
     field public static final int FLAG_USE_APP_ZYGOTE = 8; // 0x8

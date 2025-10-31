@@ -337,6 +337,44 @@ public abstract class PackageManager {
             "android.content.PROPERTY_ANDROID_SAFETY_LABEL";
 
     /**
+     * Service level {@link android.content.pm.PackageManager.Property} tag for native services
+     * specifying the name of the library to be loaded to the process that hosts the service.
+     * If not specified, the system tries to load {@code libmain.so}.
+     *
+     * <p>Example:
+     * <pre>
+     * &lt;service android:isolatedProcess="true"
+                   android:nativeService="true"&gt;
+     *   &lt;property
+     *     android:name="android.app.PROPERTY_NATIVE_SERVICE_LIB_NAME"
+     *     android:value="libnativeservice.so"/&gt;
+     * &lt;/service&gt;
+     * </pre>
+     */
+    @FlaggedApi(android.os.Flags.FLAG_NATIVE_FRAMEWORK_PROTOTYPE)
+    public static final String PROPERTY_NATIVE_SERVICE_LIB_NAME =
+            "android.app.PROPERTY_NATIVE_SERVICE_LIB_NAME";
+
+    /**
+     * Service level {@link android.content.pm.PackageManager.Property} tag for native services
+     * specifying the symbol name of the entry point function for the service. If not specified,
+     * the system executes {@code ANativeService_onCreate}.
+     *
+     * <p>Example:
+     * <pre>
+     * &lt;service android:isolatedProcess="true"
+                   android:nativeService="true"&gt;
+     *   &lt;property
+     *     android:name="android.app.PROPERTY_NATIVE_SERVICE_FUNC_NAME"
+     *     android:value="native_service_createService"/&gt;
+     * &lt;/service&gt;
+     * </pre>
+     */
+    @FlaggedApi(android.os.Flags.FLAG_NATIVE_FRAMEWORK_PROTOTYPE)
+    public static final String PROPERTY_NATIVE_SERVICE_FUNC_NAME =
+            "android.app.PROPERTY_NATIVE_SERVICE_FUNC_NAME";
+
+    /**
      * A property value set within the manifest.
      * <p>
      * The value of a property will only have a single type, as defined by

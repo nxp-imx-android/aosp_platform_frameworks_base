@@ -56,7 +56,6 @@ import android.os.SharedMemory;
 import android.os.UserHandle;
 import android.os.instrumentation.IOffsetCallback;
 import android.os.instrumentation.MethodDescriptor;
-import android.text.TextUtils;
 import android.util.Slog;
 import android.view.autofill.AutofillId;
 import android.view.translation.TranslationSpec;
@@ -83,23 +82,11 @@ import java.util.Map;
 public class NativeApplicationThreadWrapper implements IApplicationThread {
     static final String TAG = TAG_WITH_CLASS_NAME ? "ActivityManagerService" : TAG_AM;
 
-    /** The default name of the native library that will be loaded in the native process. */
-    static final String LIB_NAME_BODY_DEFAULT = "main";
+    /** The default name of the library that will be loaded to the native process. */
+    static final String LIB_NAME_DEFAULT = "libmain.so";
 
     /** The default name of the entrypoint function that will run after the library is loaded. */
     static final String FUNC_NAME_DEFAULT = "ANativeService_onCreate";
-
-    /**
-     * Optional meta-data that can be in the manifest for this component, specifying the name of the
-     * native shared library to load.
-     */
-    static final String META_DATA_LIB_NAME = "android.app.lib_name";
-
-    /**
-     * Optional meta-data that can be in the manifest for this component, specifying the name of the
-     * main entry point for this native service in the loaded library.
-     */
-    static final String META_DATA_FUNC_NAME = "android.app.func_name";
 
     private INativeApplicationThread mNativeThread;
     private ActivityManagerService mMgr;
@@ -157,26 +144,33 @@ public class NativeApplicationThreadWrapper implements IApplicationThread {
     public final void scheduleCreateService(
             IBinder token, ServiceInfo info, CompatibilityInfo compatInfo, int processState)
             throws RemoteException {
-        String libNameBody = LIB_NAME_BODY_DEFAULT;
-        String funcName = FUNC_NAME_DEFAULT;
-        // Get ServiceInfo with meta-data since `info` doesn't have it.
-        int userId = UserHandle.getUserId(mUid);
-        ServiceInfo infoWithMeta =
-                mMgr.getPackageManager()
-                        .getServiceInfo(
-                                info.getComponentName(), PackageManager.GET_META_DATA, userId);
-        if (infoWithMeta.metaData != null) {
-            String ln = infoWithMeta.metaData.getString(META_DATA_LIB_NAME);
-            if (!TextUtils.isEmpty(ln)) libNameBody = ln;
-            String fn = infoWithMeta.metaData.getString(META_DATA_FUNC_NAME);
-            if (!TextUtils.isEmpty(fn)) funcName = fn;
-        }
-        String libName = "lib" + libNameBody + ".so";
-
         if (!(token instanceof ServiceRecord)) {
             Slog.e(TAG, "NativeApplicationThreadWrapper: token is not a ServiceRecord");
             return;
         }
+
+        String libName = LIB_NAME_DEFAULT;
+        String funcName = FUNC_NAME_DEFAULT;
+        int userId = UserHandle.getUserId(mUid);
+
+        PackageManager.Property libNameProperty =
+                mMgr.getPackageManager()
+                        .getPropertyAsUser(
+                                PackageManager.PROPERTY_NATIVE_SERVICE_LIB_NAME,
+                                info.packageName,
+                                info.getComponentName().getClassName(),
+                                userId);
+        if (libNameProperty != null) libName = libNameProperty.getString();
+
+        PackageManager.Property funcNameProperty =
+                mMgr.getPackageManager()
+                        .getPropertyAsUser(
+                                PackageManager.PROPERTY_NATIVE_SERVICE_FUNC_NAME,
+                                info.packageName,
+                                info.getComponentName().getClassName(),
+                                userId);
+        if (funcNameProperty != null) funcName = funcNameProperty.getString();
+
         ServiceRecord r = (ServiceRecord) token;
         List<String> zipPaths = new ArrayList(10);
         List<String> libPaths = new ArrayList(10);

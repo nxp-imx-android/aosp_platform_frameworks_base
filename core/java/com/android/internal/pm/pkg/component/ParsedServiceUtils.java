@@ -107,7 +107,9 @@ public class ParsedServiceUtils {
                             | flag(ServiceInfo.FLAG_ALLOW_SHARED_ISOLATED_PROCESS,
                             R.styleable.AndroidManifestService_allowSharedIsolatedProcess, sa)
                             | flag(ServiceInfo.FLAG_SINGLE_USER,
-                            R.styleable.AndroidManifestService_singleUser, sa)));
+                            R.styleable.AndroidManifestService_singleUser, sa)
+                            | flag(ServiceInfo.FLAG_NATIVE_SERVICE,
+                            R.styleable.AndroidManifestService_nativeService, sa)));
 
             if (runInPccSandbox) {
                 service.setFlags(service.getFlags() | ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX);

@@ -120,6 +120,8 @@
     <public name="removed_runInPccSandbox"/>
     <!-- @FlaggedApi(android.service.dreams.Flags.FLAG_USER_SELECTABLE_METADATA) -->
     <public name="userSelectable"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_NATIVE_FRAMEWORK_PROTOTYPE) -->
+    <public name="nativeService"/>
   </staging-public-group>
 
   <staging-public-group type="id" first-id="0x01a10000">

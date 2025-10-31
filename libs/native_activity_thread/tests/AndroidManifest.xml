@@ -19,14 +19,14 @@
     <uses-sdk android:minSdkVersion="36" android:targetSdkVersion="36" />
     <application>
         <uses-library android:name="android.test.runner" />
-        <!-- TODO(b/431902161): Add android:nativeService tag once ag/32845642 is merged -->
         <service android:name=".NativeService"
             android:exported="false"
             android:process=":NTS_native_process"
+            android:nativeService="true"
             android:isolatedProcess="true">
-          <meta-data android:name="android.app.lib_name"
-                     android:value="samplenativeservicetest" />
-          <meta-data android:name="android.app.func_name"
+          <property android:name="android.app.PROPERTY_NATIVE_SERVICE_LIB_NAME"
+                     android:value="libsamplenativeservicetest.so" />
+          <property android:name="android.app.PROPERTY_NATIVE_SERVICE_FUNC_NAME"
                      android:value="native_service_createService" />
         </service>
     </application>
