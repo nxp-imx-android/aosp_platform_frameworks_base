@@ -45,6 +45,7 @@ import com.android.internal.policy.DesktopModeCompatPolicy;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.protolog.WmProtoLogGroups;
 import com.android.server.wm.LaunchParamsController.LaunchParamsModifier;
+import com.android.window.flags.Flags;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -216,6 +217,11 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             // Don't explicitly set to freeform if task is launching in full-screen in desktop-first
             // container, as it should already inherit freeform by default if undefined.
             requestFullscreen |= task.getWindowingMode() == WINDOWING_MODE_FULLSCREEN;
+            if (Flags.enableDesktopFirstExemptedSourceBugfix() && hasLaunchWindowingMode
+                    && outParams.mWindowingMode != WINDOWING_MODE_FULLSCREEN) {
+                // The windowing mode is already resolved to non-fullscreen by other policy.
+                requestFullscreen = false;
+            }
             isFullscreenInDeskTask = inDesktopFirstContainer && requestFullscreen;
             if (isEnteringDesktopMode(
                     sourceTask,
@@ -396,9 +402,24 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                 && source.getTask().getWindowingMode() == WINDOWING_MODE_FULLSCREEN
                 && source.getTask() == task;
         if (isFullscreenRelaunch) {
-            // Fullscreen relaunch is not a target of desktop-first policy.
-            appendLog("desktop-first-but-fullscreen-relaunch");
-            return WINDOWING_MODE_FULLSCREEN;
+            if (Flags.enableDesktopFirstExemptedSourceBugfix()) {
+                final boolean isSourceExempt = mDesktopModeCompatPolicy
+                        .isTopActivityExemptFromDesktopWindowing(source.mActivityComponent,
+                                source.isNoDisplay(), !source.occludesParent(),
+                                task.getNonFinishingActivityCount(), source.mUserId, source.info,
+                                source.getActivityType());
+                if (!isSourceExempt) {
+                    // Fullscreen relaunch is not a target of desktop-first policy.
+                    appendLog("desktop-first-but-fullscreen-relaunch");
+                    return WINDOWING_MODE_FULLSCREEN;
+                }
+                // Fullscreen relaunch but the source activity was exempted from desktop, so we
+                // continue to evaluate the desktop-first policy.
+            } else {
+                // Fullscreen relaunch is not a target of desktop-first policy.
+                appendLog("desktop-first-but-fullscreen-relaunch");
+                return WINDOWING_MODE_FULLSCREEN;
+            }
         }
 
         if (DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX.isTrue()) {
