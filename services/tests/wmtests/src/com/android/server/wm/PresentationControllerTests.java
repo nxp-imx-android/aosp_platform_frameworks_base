@@ -393,6 +393,28 @@ public class PresentationControllerTests extends WindowTestsBase {
 
     @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
     @Test
+    public void testPrivatePresentationCanCoverHostTask() {
+        // This test verifies that a private presentation can be shown on the same display as its
+        // host task, because host task policies do not apply to private displays.
+        final int uid = Binder.getCallingUid();
+        final DisplayContent privateDisplay = createPrivatePresentationDisplay();
+        final Task task = createTask(privateDisplay);
+        task.effectiveUid = uid;
+        final ActivityRecord activity = createActivityRecord(task);
+        assertTrue(activity.isVisible());
+        // Finish WAKE transition (adding task to empty display wakes it up)
+        mPlayer.flush();
+
+        // Adding a private presentation window over its host task must succeed because host task
+        // policies are ignored for private displays.
+        final WindowState window = addPrivatePresentationWindow(uid, privateDisplay.getDisplayId());
+        final Transition addTransition = window.mTransitionController.getCollectingTransition();
+        completeTransition(addTransition, /*abortSync=*/ true);
+        assertTrue(window.isVisible());
+    }
+
+    @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
+    @Test
     public void testNewPresentationCannotShowOnPresentingDesk() {
         forceAllowPresentationsOnDefaultDisplay();
 
