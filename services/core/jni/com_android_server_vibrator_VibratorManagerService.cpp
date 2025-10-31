@@ -206,8 +206,10 @@ public:
         if (!status.isOk()) {
             ALOGE("%s: %s", logLabel, status.getDescription().c_str());
             if (status.getExceptionCode() == EX_TRANSACTION_FAILED) {
-                ALOGE("%s: Resetting vibrator manager provider", logLabel);
-                mManagerHalProvider->clear();
+                ALOGE("%s: Resetting vibrator manager", logLabel);
+                if (mManagerHalProvider) {
+                    mManagerHalProvider->clear();
+                }
             }
         }
     }
@@ -217,7 +219,10 @@ public:
         if (!status.isOk()) {
             ALOGE("%s: %s", logLabel, status.getDescription().c_str());
             if (status.getExceptionCode() == EX_TRANSACTION_FAILED) {
-                ALOGE("%s: Resetting vibrator %d provider", logLabel, vibratorId);
+                ALOGE("%s: Resetting vibrator manager and vibrator id %d", logLabel, vibratorId);
+                if (mManagerHalProvider) {
+                    mManagerHalProvider->clear();
+                }
                 if (mVibratorHalProviders[vibratorId]) {
                     mVibratorHalProviders[vibratorId]->clear();
                 }
