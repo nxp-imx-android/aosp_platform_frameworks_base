@@ -51,6 +51,7 @@ import android.os.ServiceManager;
 import android.os.ShellCommand;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.tracing.perfetto.DataSourceParams;
 import android.tracing.perfetto.InitArguments;
 import android.tracing.perfetto.Producer;
 import android.tracing.perfetto.TracingContext;
@@ -75,7 +76,6 @@ import com.android.internal.protolog.common.LogLevel;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -101,6 +101,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     @VisibleForTesting
     public static int MAX_INTERNED_STRINGS_SIZE_BYTES_BEFORE_RESET = 4 * 1024 * 1024; // 4MB
     private final AtomicInteger mTracingInstances = new AtomicInteger();
+    private volatile boolean mAsyncInitInProgress = false;
 
     @NonNull
     protected final ProtoLogDataSource mDataSource;
@@ -179,7 +180,24 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
      * the expected ProtoLog components.
      */
     public void enable() {
-        Producer.init(InitArguments.DEFAULTS);
+        if (android.tracing.Flags.protologAsyncInit()) {
+            mAsyncInitInProgress = true;
+        }
+
+        mSingleThreadedExecutor.execute(() -> {
+            if (android.tracing.Flags.protologAsyncInit()) {
+                Producer.init(InitArguments.DEFAULTS);
+                DataSourceParams params =
+                        new DataSourceParams.Builder()
+                                .setBufferExhaustedPolicy(
+                                        DataSourceParams
+                                                .PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_STALL_AND_DROP)
+                                .build();
+                mDataSource.register(params);
+
+                mAsyncInitInProgress = false;
+            }
+        });
 
         if (mConfigurationService != null) {
             synchronized (mLogGroupsLock) {
@@ -393,6 +411,15 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
 
     @Override
     public boolean isEnabled(@NonNull IProtoLogGroup group, @NonNull LogLevel level) {
+        if (mAsyncInitInProgress) {
+            // Post everything to the background thread to be traced if we are in the
+            // mAsyncInitInProgress state. This means we might capture more data than intended but
+            // at least we will not lose anything. It's only the case we will have more data if we
+            // start a tracing instance between the time we call ProtoLog.init() and the time the
+            // datasource is registered in the background handler thread.
+            return true;
+        }
+
         var readLock = mConfigUpdaterLock.readLock();
         readLock.lock();
         try {
@@ -458,7 +485,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
 
     private void log(@NonNull LogLevel logLevel, @NonNull IProtoLogGroup group,
             @NonNull Message message, @Nullable Object[] args) {
-        if (isProtoEnabled()) {
+        if (isProtoEnabled() || mAsyncInitInProgress) {
             long tsNanos = SystemClock.elapsedRealtimeNanos();
             final String stacktrace;
             if (logLevel == LogLevel.WTF

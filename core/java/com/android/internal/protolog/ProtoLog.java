@@ -23,7 +23,6 @@ import android.ravenwood.annotation.RavenwoodReplace;
 import android.tracing.perfetto.DataSourceParams;
 import android.tracing.perfetto.InitArguments;
 import android.tracing.perfetto.Producer;
-
 import android.util.Log;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -95,6 +94,19 @@ public class ProtoLog {
      * <p>
      * This method MUST be called before any protologging is performed in this process.
      * Ensure that all groups that will be used for protologging are registered.
+     * <p>
+     * <strong>Note on asynchronous initialization:</strong> To avoid blocking the calling thread,
+     * particularly during application startup, the initialization of the Perfetto producer and the
+     * registration of the data source are performed on a background thread. This means the
+     * {@code init} method returns immediately.
+     * <p>
+     * There is a brief time window between when this method is called and when the background
+     * initialization completes. If a Perfetto trace is started during this window, ProtoLog
+     * messages may not be captured because the data source has not yet been registered with
+     * Perfetto. This is an intentional trade-off for improved startup performance. For most use
+     * cases, this window is negligible. When the {@code android.tracing.protolog_async_init} flag
+     * is enabled, messages logged during this window are buffered and traced once the data source
+     * is registered, ensuring no messages are lost.
      */
     public static void init(@NonNull IProtoLogGroup... groups) {
         sController.init(groups);
@@ -222,6 +234,12 @@ public class ProtoLog {
     public static ProtoLogDataSource getSharedSingleInstanceDataSource() {
         synchronized (sDataSourceLock) {
             if (sDataSource == null) {
+                sDataSource = new ProtoLogDataSource();
+
+                if (android.tracing.Flags.protologAsyncInit()) {
+                    return sDataSource;
+                }
+
                 Producer.init(InitArguments.DEFAULTS);
                 sDataSource = new ProtoLogDataSource();
                 DataSourceParams params =
@@ -232,6 +250,7 @@ public class ProtoLog {
                                 .build();
                 sDataSource.register(params);
             }
+
             return sDataSource;
         }
     }
