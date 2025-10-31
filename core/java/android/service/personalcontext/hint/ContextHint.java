@@ -59,7 +59,8 @@ public abstract class ContextHint {
                 HINT_TYPE_TEXT_CLASSIFICATION,
                 HINT_TYPE_CONVERSATION,
                 HINT_TYPE_RECENT_VIEW,
-                HINT_TYPE_USER_INPUT
+                HINT_TYPE_USER_INPUT,
+                HINT_TYPE_AUTOFILL_INLINE_REQUEST
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface HintType {}
@@ -88,6 +89,11 @@ public abstract class ContextHint {
 
     /** Hint type for {@link UserInputHint}. */
     static final int HINT_TYPE_USER_INPUT = 6;
+
+    /**
+     * Hint type for {@link AutofillInlineRequestHint}.
+     */
+    static final int HINT_TYPE_AUTOFILL_INLINE_REQUEST = 7;
 
     /**
      * Object returned when there is an unparceling error.
@@ -209,6 +215,7 @@ public abstract class ContextHint {
                 case HINT_TYPE_CONVERSATION -> new ConversationHint(bundle);
                 case HINT_TYPE_RECENT_VIEW -> new RecentViewHint(bundle);
                 case HINT_TYPE_USER_INPUT -> new UserInputHint(bundle);
+                case HINT_TYPE_AUTOFILL_INLINE_REQUEST -> new AutofillInlineRequestHint(bundle);
                 default -> ERROR_HINT;
             };
         } catch (Exception e) {
