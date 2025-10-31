@@ -6834,10 +6834,10 @@ public abstract class Context {
     public static final String REMOTE_PROVISIONING_SERVICE = "remote_provisioning";
 
     /**
-     * Binder service for {@link com.android.server.privatecompute.PccSandboxManagerService}.
-     *
-     * @hide
+     * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.app.privatecompute.PccSandboxManager}.
      */
+    @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public static final String PCC_SANDBOX_SERVICE = "pcc_sandbox";
 
     /**

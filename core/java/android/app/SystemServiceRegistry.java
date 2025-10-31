@@ -18,6 +18,7 @@ package android.app;
 
 import static android.app.appfunctions.flags.Flags.enableAppFunctionManager;
 import static android.app.lskfreset.flags.Flags.enableLskfResetManager;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.hardware.serial.flags.Flags.enableWiredSerialApi;
 import static android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled;
 import static android.provider.flags.Flags.newStoragePublicApi;
@@ -53,6 +54,8 @@ import android.app.lskfreset.LskfResetManager;
 import android.app.ondeviceintelligence.OnDeviceIntelligenceFrameworkInitializer;
 import android.app.people.PeopleManager;
 import android.app.prediction.AppPredictionManager;
+import android.app.privatecompute.IPccSandboxManager;
+import android.app.privatecompute.PccSandboxManager;
 import android.app.role.RoleFrameworkInitializer;
 import android.app.sdksandbox.SdkSandboxManagerFrameworkInitializer;
 import android.app.search.SearchUiManager;
@@ -1729,6 +1732,21 @@ public final class SystemServiceRegistry {
                         IBinder b = ServiceManager.getService(Context.APP_HIBERNATION_SERVICE);
                         return b == null ? null : new AppHibernationManager(ctx);
                     }});
+
+        if (enablePccFrameworkSupport()) {
+            registerService(Context.PCC_SANDBOX_SERVICE, PccSandboxManager.class,
+                    new CachedServiceFetcher<PccSandboxManager>() {
+                        @Override
+                        public PccSandboxManager createService(ContextImpl ctx)
+                                throws ServiceNotFoundException {
+                            IPccSandboxManager service;
+                            service = IPccSandboxManager.Stub.asInterface(
+                                    ServiceManager.getServiceOrThrow(Context.PCC_SANDBOX_SERVICE));
+                            return new PccSandboxManager(service, ctx.getOuterContext());
+                        }
+                    });
+        }
+
         registerService(Context.DREAM_SERVICE, DreamManager.class,
                 new CachedServiceFetcher<DreamManager>() {
                     @Override
