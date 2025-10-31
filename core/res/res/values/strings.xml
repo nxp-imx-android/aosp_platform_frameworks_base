@@ -6994,4 +6994,9 @@
     <string name="tv_watchdog_notification_channel_name">System Resource Alerts</string>
     <string name="tv_watchdog_notification_title">Resource Overuse</string>
     <string name="tv_watchdog_notification_content">"App '<xliff:g id="app_name">%1$s</xliff:g>' is using too many resources."</string>
+
+    <!-- Supervision strings -->
+    <string name="supervision_blocked_app_title">Update from your parent</string>
+    <string name="supervision_blocked_app_content"><xliff:g id="app_name" example="YouTube">%1$s</xliff:g> was removed for now</string>
+    <string name="supervision_unblocked_app_content"><xliff:g id="app_name" example="YouTube">%1$s</xliff:g> is now available</string>
 </resources>
