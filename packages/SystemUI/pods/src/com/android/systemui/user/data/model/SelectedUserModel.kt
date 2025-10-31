@@ -19,15 +19,15 @@ package com.android.systemui.user.data.model
 import android.content.pm.UserInfo
 
 /** A model for the currently selected user. */
-data class SelectedUserModel(
+public data class SelectedUserModel(
     /** Information about the user. */
-    val userInfo: UserInfo,
+    public val userInfo: UserInfo,
     /** The current status of the selection. */
-    val selectionStatus: SelectionStatus,
+    public val selectionStatus: SelectionStatus,
 )
 
 /** The current status of the selection. */
-enum class SelectionStatus {
+public enum class SelectionStatus {
     /** This user has started being selected but the selection hasn't completed. */
     SELECTION_IN_PROGRESS,
     /** The selection of this user has completed. */

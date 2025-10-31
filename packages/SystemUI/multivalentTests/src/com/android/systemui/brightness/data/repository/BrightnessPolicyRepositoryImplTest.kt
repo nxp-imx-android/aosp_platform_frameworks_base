@@ -28,8 +28,8 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.user.data.repository.userRepository
-import com.android.systemui.utils.PolicyRestriction
-import com.android.systemui.utils.UserRestrictionChecker
+import com.android.systemui.util.policy.PolicyRestriction
+import com.android.systemui.util.policy.UserRestrictionChecker
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.Test

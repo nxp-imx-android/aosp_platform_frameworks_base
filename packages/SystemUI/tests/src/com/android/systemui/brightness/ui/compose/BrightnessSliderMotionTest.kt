@@ -33,7 +33,7 @@ import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.haptics.slider.sliderHapticsViewModelFactory
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
 import com.android.systemui.testKosmos
-import com.android.systemui.utils.PolicyRestriction
+import com.android.systemui.util.policy.PolicyRestriction
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.async

@@ -654,13 +654,30 @@ java_library {
 }
 
 filegroup {
-    name: "SystemUI-tests-utils",
+    name: "SystemUI-tests-utils-pods",
+    srcs: [
+        "pods/testFixtures/src/**/*.kt",
+        "pods/testFixtures/src/**/*.java",
+    ],
+    path: "pods/testFixtures/src",
+}
+
+filegroup {
+    name: "SystemUI-tests-utils-monolith",
     srcs: [
         "tests/utils/src/**/*.java",
         "tests/utils/src/**/*.kt",
-        ":kosmos-src",
     ],
     path: "tests/utils",
+}
+
+filegroup {
+    name: "SystemUI-tests-utils",
+    srcs: [
+        ":SystemUI-tests-utils-monolith",
+        ":SystemUI-tests-utils-pods",
+        ":kosmos-src",
+    ],
 }
 
 filegroup {

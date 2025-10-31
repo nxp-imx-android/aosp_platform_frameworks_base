@@ -25,7 +25,7 @@ import com.android.settingslib.RestrictedLockUtils.EnforcedAdmin
 import com.android.systemui.res.R
 import com.android.systemui.user.data.source.UserRecord
 import com.android.systemui.user.shared.model.UserActionModel
-import com.android.systemui.utils.UserRestrictionChecker
+import com.android.systemui.util.policy.UserRestrictionChecker
 
 /**
  * Defines utility functions for helping with legacy data code for users.

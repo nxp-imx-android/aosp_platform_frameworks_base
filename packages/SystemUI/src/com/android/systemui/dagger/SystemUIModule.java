@@ -49,6 +49,7 @@ import com.android.systemui.bouncer.data.repository.BouncerRepositoryModule;
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractorModule;
 import com.android.systemui.bouncer.ui.BouncerViewModule;
 import com.android.systemui.brightness.dagger.ScreenBrightnessModule;
+import com.android.systemui.brightness.impl.BrightnessModule;
 import com.android.systemui.classifier.FalsingModule;
 import com.android.systemui.clipboardoverlay.dagger.ClipboardOverlayModule;
 import com.android.systemui.common.data.CommonDataLayerModule;
@@ -181,6 +182,7 @@ import com.android.systemui.util.EventLogModule;
 import com.android.systemui.util.concurrency.SysUIConcurrencyModule;
 import com.android.systemui.util.dagger.UtilModule;
 import com.android.systemui.util.kotlin.SysUICoroutinesModule;
+import com.android.systemui.util.policy.impl.PolicyRestrictionModule;
 import com.android.systemui.util.reference.ReferenceModule;
 import com.android.systemui.util.sensors.SensorModule;
 import com.android.systemui.util.settings.SettingsProxy;
@@ -231,6 +233,7 @@ import javax.inject.Named;
         BouncerInteractorModule.class,
         BouncerRepositoryModule.class,
         BouncerViewModule.class,
+        BrightnessModule.class,
         CameraProtectionModule.class,
         ClipboardOverlayModule.class,
         ClockRegistryModule.class,
@@ -275,6 +278,7 @@ import javax.inject.Named;
         PeopleModule.class,
         PluginModule.class,
         PolicyModule.class,
+        PolicyRestrictionModule.class,
         PrivacyModule.class,
         QRCodeScannerModule.class,
         RecordIssueModule.class,

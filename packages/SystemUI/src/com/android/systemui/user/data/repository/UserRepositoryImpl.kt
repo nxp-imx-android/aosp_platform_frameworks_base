@@ -18,7 +18,6 @@
 package com.android.systemui.user.data.repository
 
 import android.annotation.SuppressLint
-import android.annotation.UserIdInt
 import android.app.ActivityManager
 import android.app.admin.DevicePolicyManager
 import android.content.Context
@@ -68,98 +67,6 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 
-/**
- * Acts as source of truth for user related data.
- *
- * Abstracts-away data sources and their schemas so the rest of the app doesn't need to worry about
- * upstream changes.
- */
-interface UserRepository {
-    /** User switcher related settings. */
-    val userSwitcherSettings: Flow<UserSwitcherSettingsModel>
-
-    /** List of all users on the device. */
-    val userInfos: Flow<List<UserInfo>>
-
-    /** Information about the currently-selected user, including [UserInfo] and other details. */
-    val selectedUser: StateFlow<SelectedUserModel>
-
-    /** [UserInfo] of the currently-selected user. */
-    val selectedUserInfo: Flow<UserInfo>
-
-    /** Tracks whether the main user is unlocked. */
-    fun isUserUnlocked(userHandle: UserHandle?): Flow<Boolean>
-
-    /** User ID of the main user. */
-    val mainUserId: Int
-
-    /** User ID of the last non-guest selected user. */
-    val lastSelectedNonGuestUserId: Int
-
-    /** Whether the device is configured to always have a guest user available. */
-    val isGuestUserAutoCreated: Boolean
-
-    /** Whether the guest user is currently being reset. */
-    var isGuestUserResetting: Boolean
-
-    /** Whether we've scheduled the creation of a guest user. */
-    val isGuestUserCreationScheduled: AtomicBoolean
-
-    /** Whether to enable the status bar user chip (which launches the user switcher) */
-    val isStatusBarUserChipEnabled: Boolean
-
-    /** The user of the secondary service. */
-    var secondaryUserId: Int
-
-    /** Whether refresh users should be paused. */
-    var isRefreshUsersPaused: Boolean
-
-    /**
-     * Whether logout back to primary user can be performed by the device Policy Manager for the
-     * secondary account. See
-     * https://developer.android.com/work/dpc/dedicated-devices/multiple-users#logout for more
-     * details.
-     */
-    val isPolicyManagerLogoutEnabled: StateFlow<Boolean>
-
-    /**
-     * Whether logout can be performed by the UserManager, to support desktop-style logout into the
-     * neutral login space.
-     */
-    val isUserManagerLogoutEnabled: StateFlow<Boolean>
-
-    /** Asynchronously refresh the list of users. This will cause [userInfos] to be updated. */
-    fun refreshUsers()
-
-    fun getSelectedUserInfo(): UserInfo
-
-    fun isSimpleUserSwitcher(): Boolean
-
-    fun isUserSwitcherEnabled(): Boolean
-
-    /** Performs logout from secondary user into primary user via DevicePolicyManager. */
-    suspend fun logOutWithPolicyManager()
-
-    /** Performs logout into the system user via UserManager. */
-    suspend fun logOutWithUserManager()
-
-    /**
-     * Returns the user ID of the "main user" of the device. This user may have access to certain
-     * features which are limited to at most one user. There will never be more than one main user
-     * on a device.
-     *
-     * <p>Currently, on most form factors the first human user on the device will be the main user;
-     * in the future, the concept may be transferable, so a different user (or even no user at all)
-     * may be designated the main user instead. On other form factors there might not be a main
-     * user.
-     *
-     * <p> When the device doesn't have a main user, this will return {@code null}.
-     *
-     * @see [UserManager.getMainUser]
-     */
-    @UserIdInt suspend fun getMainUserId(): Int?
-}
-
 @SysUISingleton
 class UserRepositoryImpl
 @Inject
@@ -193,11 +100,12 @@ constructor(
             .stateIn(
                 scope = applicationScope,
                 started = SharingStarted.Eagerly,
-                initialValue = if (Flags.doNotUseRunBlocking()) {
-                    UserSwitcherSettingsModel()
-                } else {
-                    runBlocking { getSettings() }
-                },
+                initialValue =
+                    if (Flags.doNotUseRunBlocking()) {
+                        UserSwitcherSettingsModel()
+                    } else {
+                        runBlocking { getSettings() }
+                    },
             )
     override val userSwitcherSettings: Flow<UserSwitcherSettingsModel> = _userSwitcherSettings
 

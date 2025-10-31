@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,14 +12,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-package com.android.systemui.user.data.model
+package com.android.systemui.util.policy
 
-/** Encapsulates the state of settings related to user switching. */
-data class UserSwitcherSettingsModel(
-    val isSimpleUserSwitcher: Boolean = false,
-    val isAddUsersFromLockscreen: Boolean = false,
-    val isUserSwitcherEnabled: Boolean = false,
-)
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.util.policy.impl.UserRestrictionCheckerImpl
+
+val Kosmos.userRestrictionChecker by Kosmos.Fixture { UserRestrictionCheckerImpl() }

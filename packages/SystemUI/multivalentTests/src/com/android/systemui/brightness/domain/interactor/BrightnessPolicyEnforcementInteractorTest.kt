@@ -34,7 +34,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.argumentCaptor
 import com.android.systemui.util.mockito.capture
 import com.android.systemui.util.mockito.eq
-import com.android.systemui.utils.PolicyRestriction
+import com.android.systemui.util.policy.PolicyRestriction
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -51,10 +51,7 @@ class BrightnessPolicyEnforcementInteractorTest : SysuiTestCase() {
 
     private val underTest =
         with(kosmos) {
-            BrightnessPolicyEnforcementInteractor(
-                brightnessPolicyRepository,
-                activityStarter,
-            )
+            BrightnessPolicyEnforcementInteractor(brightnessPolicyRepository, activityStarter)
         }
 
     @Test
@@ -104,10 +101,7 @@ class BrightnessPolicyEnforcementInteractorTest : SysuiTestCase() {
                 val intentCaptor = argumentCaptor<Intent>()
 
                 verify(mockActivityStarter)
-                    .postStartActivityDismissingKeyguard(
-                        capture(intentCaptor),
-                        eq(0),
-                    )
+                    .postStartActivityDismissingKeyguard(capture(intentCaptor), eq(0))
 
                 val expectedIntent =
                     RestrictedLockUtils.getShowAdminSupportDetailsIntent(enforcedAdmin)

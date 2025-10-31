@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.systemui.utils
+package com.android.systemui.brightness.shared
 
-import com.android.systemui.kosmos.Kosmos
+import javax.inject.Qualifier
 
-val Kosmos.userRestrictionChecker by Kosmos.Fixture { UserRestrictionChecker() }
+@Qualifier
+@MustBeDocumented
+@Retention(AnnotationRetention.RUNTIME)
+public annotation class BrightnessLog
