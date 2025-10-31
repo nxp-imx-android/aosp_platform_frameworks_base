@@ -7516,6 +7516,49 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
 
         @Override
+        public void stopAndKillAppForUpdate(String packageName, @UserIdInt int userId, int appId) {
+            if (!com.android.window.flags.Flags.enableAppRestartAfterUpdate()) {
+                Slog.e(TAG,
+                        "Cannot use stopAndKillApp when enableAppRestartAfterUpdate flag is "
+                                + "disabled");
+                return;
+            }
+            if (packageName == null) {
+                return;
+            }
+
+            // Make sure the uid is valid.
+            if (appId < 0) {
+                Slog.w(TAG, "Invalid appid specified for pkg : " + packageName);
+                return;
+            }
+
+            // Only the system server can initiate stop and kill.
+            int callerUid = Binder.getCallingUid();
+            if (UserHandle.getAppId(callerUid) != SYSTEM_UID) {
+                Slog.e(TAG, "Only the system server can initiate stop and kill");
+                return;
+            }
+            synchronized (mGlobalLock) {
+                final SparseArray<WindowProcessController> pidMap = mProcessMap.getPidMap();
+                for (int i = 0; i < pidMap.size(); i++) {
+                    final int pid = pidMap.keyAt(i);
+                    final WindowProcessController proc = pidMap.get(pid);
+                    if (proc.containsPackage(packageName) && proc.hasActivities()) {
+                        Slog.d(TAG, "Found a process belonging to package: " + packageName
+                                + ", going ahead with stop and kill.");
+                        // TODO: b/455568345 - Implement the stop and kill mechanism for a
+                        //  process. Also keep track of them.
+                    }
+                }
+                // Add process that we are waiting on for package to a map. When all
+                // processes call
+                // "ready', we will kill the whole app using the map.
+            }
+
+        }
+
+        @Override
         public void resumeTopActivities(boolean scheduleIdle) {
             synchronized (mGlobalLock) {
                 mRootWindowContainer.resumeFocusedTasksTopActivities();
