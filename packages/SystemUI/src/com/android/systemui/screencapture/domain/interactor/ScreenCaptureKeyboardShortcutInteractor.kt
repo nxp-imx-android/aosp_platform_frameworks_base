@@ -22,10 +22,11 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.screencapture.ScreenCaptureEvent
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters.Record.LargeScreenCaptureUiParameters
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
-import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion as LargeScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType as LargeScreenCaptureType
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
@@ -49,19 +50,24 @@ constructor(
         backgroundScope.launch {
             launchPreCaptureUi(
                 defaultCaptureType = LargeScreenCaptureType.SCREENSHOT,
-                defaultCaptureRegion = ScreenCaptureRegion.PARTIAL,
+                defaultCaptureRegion = LargeScreenCaptureRegion.PARTIAL,
             )
         }
     }
 
     private suspend fun launchPreCaptureUi(
         defaultCaptureType: LargeScreenCaptureType,
-        defaultCaptureRegion: ScreenCaptureRegion,
+        defaultCaptureRegion: LargeScreenCaptureRegion,
     ) {
         // TODO(b/420714826) Check if the large-screen screen capture UI is supported on this device
         // device's display (i.e. the focused display or external display). If not supported,
         // default to taking a fullscreen screenshot.
         if (!ScreenCaptureRecordFeaturesInteractor.isLargeScreenScreencaptureEnabled) {
+            return
+        }
+
+        if (screenCaptureUiInteractor.isVisible(ScreenCaptureType.RECORD)) {
+            Log.i(TAG, "Screen capture UI is already visible.")
             return
         }
 

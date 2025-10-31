@@ -57,6 +57,27 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
             underTest.attemptPartialRegionScreenshot()
 
             assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
+
+            // Nothing is logged.
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(0)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    fun attemptPartialRegionScreenshot_whenUiVisibleAlready_doesNothing() =
+        kosmos.runTest {
+            screenCaptureUiInteractor.show(ScreenCaptureUiParameters.Record())
+
+            val uiState by
+                collectLastValue(screenCaptureUiInteractor.uiState(ScreenCaptureType.RECORD))
+            assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Visible::class.java)
+
+            underTest.attemptPartialRegionScreenshot()
+
+            assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Visible::class.java)
+
+            // Nothing is logged.
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(0)
         }
 
     @Test
@@ -71,6 +92,9 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
             underTest.attemptPartialRegionScreenshot()
 
             assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
+
+            // Nothing is logged.
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(0)
         }
 
     @Test
@@ -85,6 +109,9 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
             underTest.attemptPartialRegionScreenshot()
 
             assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
+
+            // Nothing is logged.
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(0)
         }
 
     @Test
