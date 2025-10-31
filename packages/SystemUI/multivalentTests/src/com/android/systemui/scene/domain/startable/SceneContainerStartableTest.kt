@@ -743,7 +743,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
-    fun stayOnCurrentSceneWhenDeviceIsUnlockedAndUserIsNotOnLockscreen() =
+    fun enterDeviceWhileInShadeWhenDeviceIsUnlockedViaFingerPrint() =
         kosmos.runTest {
             enableSingleShade()
             val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
@@ -763,7 +763,9 @@ class SceneContainerStartableTest : SysuiTestCase() {
             updateFingerprintAuthStatus(isSuccess = true)
             runCurrent()
 
-            assertThat(currentSceneKey).isEqualTo(Scenes.Shade)
+            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
+            assertThat(fakeMSDLPlayer.latestTokenPlayed).isEqualTo(MSDLToken.UNLOCK)
+            assertThat(fakeMSDLPlayer.latestPropertiesPlayed).isEqualTo(authInteractionProperties)
         }
 
     @Test
