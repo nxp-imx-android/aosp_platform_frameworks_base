@@ -597,7 +597,7 @@ final class InstallPackageHelper {
             Slog.i(PackageManagerService.TAG,
                     "Update" + (pkgSetting.isSystem() ? " system" : "")
                             + " package " + pkgName
-                            + " code path from " + pkgSetting.getPathString()
+                            + " code path from " + oldPkgSetting.getPathString()
                             + " to " + pkgSetting.getPathString()
                             + "; Retain data and using new");
         }
