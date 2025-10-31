@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.ui.viewmodel
 
+import android.util.Log
 import android.view.Surface
 import com.android.systemui.lifecycle.HydratedActivatable
 import dagger.assisted.AssistedFactory
@@ -29,6 +30,11 @@ class ScreenCaptureCameraViewModel @AssistedInject constructor() : HydratedActiv
 
     fun onSurfaceDestroyed() {
         // TODO(b/441486122): wire this to camera
+    }
+
+    fun onSurfaceClicked() {
+        // TODO(b/441486122): wire this to camera
+        Log.d("ScreenCaptureCameraViewModel", "Surface clicked")
     }
 
     @AssistedFactory

@@ -23,6 +23,7 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.compose.foundation.AndroidEmbeddedExternalSurface
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
@@ -129,6 +130,7 @@ constructor(
                             scaleY = scale
                             rotationZ = rotation
                         }
+                        .clickable { viewModel.onSurfaceClicked() }
                         .aspectRatio(2f)
             ) {
                 onSurface { surface, width, height ->
