@@ -51,6 +51,23 @@ constructor(@param:Application private val context: Context) : GlobalActionsRepo
             actionType
         }
 
+    /** Actions not available when device is unprovisioned */
+    override val unprovisionedDeviceStateBlockList: List<GlobalActionType> =
+        listOf(
+            GlobalActionType.AIRPLANE,
+            GlobalActionType.BUGREPORT,
+            GlobalActionType.SILENT,
+            GlobalActionType.USERS,
+            GlobalActionType.LOCKDOWN,
+            GlobalActionType.LOCK,
+            GlobalActionType.SCREENSHOT,
+            GlobalActionType.LOGOUT,
+            GlobalActionType.SYSTEM_UPDATE,
+        )
+
+    /** Actions not available when device is locked. */
+    override val lockedDeviceStateBlockList: List<GlobalActionType> = listOf(GlobalActionType.LOCK)
+
     companion object {
         private const val TAG = "GlobalActionsRepositoryImpl"
     }

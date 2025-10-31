@@ -33,4 +33,10 @@ interface GlobalActionsRepository {
      * displayed are determined by device state.
      */
     val possibleGlobalActions: List<GlobalActionType>
+
+    /** The list of global actions that should be blocked when the device is not yet provisioned. */
+    val unprovisionedDeviceStateBlockList: List<GlobalActionType>
+
+    /** The list of global actions that should be blocked when the device is locked. */
+    val lockedDeviceStateBlockList: List<GlobalActionType>
 }

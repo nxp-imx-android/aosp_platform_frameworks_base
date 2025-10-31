@@ -27,6 +27,12 @@ class FakeGlobalActionsRepository : GlobalActionsRepository {
         this.isVisible.value = isVisible
     }
 
-    /** The list of available global actions. */
+    /** The list of possible global actions. */
     override var possibleGlobalActions: List<GlobalActionType> = emptyList()
+
+    /** Actions to block when the device is unprovisioned. */
+    override var unprovisionedDeviceStateBlockList: List<GlobalActionType> = emptyList()
+
+    /** Actions to block when the device is locked. */
+    override var lockedDeviceStateBlockList: List<GlobalActionType> = emptyList()
 }
