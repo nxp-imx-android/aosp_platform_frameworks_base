@@ -19,6 +19,9 @@ package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.core.net.toUri
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -33,6 +36,7 @@ import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecor
 import com.android.systemui.settings.UserTracker
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlin.text.split
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,9 +52,9 @@ constructor(
     private val userTracker: UserTracker,
     private val iconProvider: ScreenCaptureIconProvider,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
+    private val largeScreenCaptureParametersInteractor: LargeScreenCaptureParametersInteractor,
     featuresInteractor: LargeScreenCaptureFeaturesInteractor,
     recordParametersViewModelFactory: ScreenCaptureRecordParametersViewModel.Factory,
-    largeScreenCaptureParametersInteractor: LargeScreenCaptureParametersInteractor,
 ) : HydratedActivatable() {
     private val toolbarBoundsSource = MutableStateFlow(Rect())
     private val toolbarOpacitySource = MutableStateFlow(1f)
@@ -76,6 +80,29 @@ constructor(
         largeScreenCaptureParametersInteractor.isCustomSaveLocationActive.hydratedStateOf(
             initialValue = false
         )
+
+    val customSaveLocationDisplayName: String? by derivedStateOf {
+        if (customSaveLocationUriString.isEmpty()) {
+            null
+        } else {
+            customSaveLocationUriString
+                .toUri()
+                .lastPathSegment
+                ?.split(":")
+                ?.last()
+                ?.split("/")
+                ?.last()
+        }
+    }
+
+    val currentSaveLocation: String by derivedStateOf {
+        // TODO(b/444278100): Localize default save location string (Screenshots).
+        if (!isCustomSaveLocationActive) {
+            "Screenshots"
+        } else {
+            customSaveLocationDisplayName ?: "Screenshots"
+        }
+    }
 
     val toolbarOpacity: Float by toolbarOpacitySource.hydratedStateOf()
 
@@ -116,6 +143,14 @@ constructor(
         val intent = Intent(context, DirectoryPickerActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivityAsUser(intent, userTracker.userHandle)
+    }
+
+    fun setCustomSaveLocationActiveStatus(activeStatus: Boolean) {
+        backgroundScope.launch {
+            if (isCustomSaveLocationActive != activeStatus) {
+                largeScreenCaptureParametersInteractor.setIsCustomSaveLocationActive(activeStatus)
+            }
+        }
     }
 
     fun recordClose() {
