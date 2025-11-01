@@ -69,7 +69,7 @@ public class SplitScreenUtilsTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT)
+    @DisableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
     public void testIsLeftRightSplit_flagDisabled() {
         Configuration portraitTablet = new Configuration();
         portraitTablet.smallestScreenWidthDp = 720;
@@ -106,7 +106,7 @@ public class SplitScreenUtilsTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT)
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
     public void testIsLeftRightSplit_flagEnabled() {
         assertFalse(SplitScreenUtils.isLeftRightSplit(
                 true /* allowLeftRightSplitInPortrait */,
@@ -134,7 +134,7 @@ public class SplitScreenUtilsTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT)
+    @DisableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
     public void updateSplitLayoutConfig_flagDisabled_returnsEarly() {
         SplitScreenUtils.updateSplitLayoutConfig(
                 mMockRootTDAOrganizer,
@@ -146,7 +146,7 @@ public class SplitScreenUtilsTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT)
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
     public void updateSplitLayoutConfig_flagEnabled_validDisplayAreaInfo_updatesSplitLayout() {
         when(mMockRootTDAOrganizer.getDisplayAreaInfo(TEST_DISPLAY_ID))
                 .thenReturn(mMockDisplayAreaInfo);
@@ -160,7 +160,7 @@ public class SplitScreenUtilsTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT)
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
     public void updateSplitLayoutConfig_flagEnabled_nullDisplayAreaInfo_returnsEarly() {
         when(mMockRootTDAOrganizer.getDisplayAreaInfo(TEST_DISPLAY_ID)).thenReturn(null);
 
@@ -174,7 +174,7 @@ public class SplitScreenUtilsTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT)
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
     public void updateSplitLayoutConfig_flagEnabled_validDisplayAreaInfo_nullSplitLayout_noError() {
         when(mMockRootTDAOrganizer.getDisplayAreaInfo(TEST_DISPLAY_ID))
                 .thenReturn(mMockDisplayAreaInfo);

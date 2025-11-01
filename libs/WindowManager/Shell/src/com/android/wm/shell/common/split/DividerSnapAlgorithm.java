@@ -162,10 +162,10 @@ public class DividerSnapAlgorithm {
         mDockSide = dockSide;
         mInsets.set(insets);
         mPinnedTaskbarInsets.set(pinnedTaskbarInsets);
-        final boolean enableNonDefaultDisplaySplit =
-                DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue();
+        final boolean enableNonDefaultDisplaySplitBugfix =
+                DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue();
         if (Flags.enableFlexibleTwoAppSplit()
-                && (!enableNonDefaultDisplaySplit || displayId == DEFAULT_DISPLAY)) {
+                && (!enableNonDefaultDisplaySplitBugfix || displayId == DEFAULT_DISPLAY)) {
             mSnapMode = SNAP_FLEXIBLE_HYBRID;
         } else {
             // Set SNAP_MODE_MINIMIZED, SNAP_MODE_16_9, or SNAP_FIXED_RATIO depending on config
