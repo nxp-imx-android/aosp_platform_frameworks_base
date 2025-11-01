@@ -138,7 +138,10 @@ constructor(
                                 contentDescription = null,
                             )
                             .value,
-                    onClick = {},
+                    onClick = {
+                        postRecordingViewModel.share()
+                        hide()
+                    },
                 ),
                 ActionButtonGroupItem(
                     icon =
