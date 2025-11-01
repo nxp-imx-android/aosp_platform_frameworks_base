@@ -1667,16 +1667,6 @@ flag {
 }
 
 flag {
-    name: "taskbar_running_tasks_in_splitscreen_select"
-    namespace: "lse_desktop_experience"
-    description: "Enables bugfix to fix recent task icons behavior in taskbar during split screen selection."
-    bug: "393513479"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "toggle_fullscreen_state_via_fullscreen_key"
     namespace: "lse_desktop_experience"
     description: "Toggles the focused task's fullscreen state when the fullscreen key is pressed."
