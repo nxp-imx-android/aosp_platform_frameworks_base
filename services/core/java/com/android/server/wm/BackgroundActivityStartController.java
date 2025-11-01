@@ -159,9 +159,13 @@ public class BackgroundActivityStartController {
     private final ActivityTaskManagerService mService;
 
     private final ActivityTaskSupervisor mSupervisor;
+
+    record StrictModeCallback(IBackgroundActivityLaunchCallback callback,
+                              IBinder.DeathRecipient deathRecipient) {}
+
     @GuardedBy("mStrictModeBalCallbacks")
-    private final SparseArray<ArrayMap<IBinder, IBackgroundActivityLaunchCallback>>
-            mStrictModeBalCallbacks = new SparseArray<>();
+    private final SparseArray<ArrayMap<IBinder, StrictModeCallback>> mStrictModeBalCallbacks =
+            new SparseArray<>();
 
 
     // TODO(b/263368846) Rename when ASM logic is moved in
@@ -1018,11 +1022,9 @@ public class BackgroundActivityStartController {
      * @return the callback if it exists, returns <code>null</code> otherwise.
      */
     @Nullable
-    Map<IBinder, IBackgroundActivityLaunchCallback> getStrictModeBalCallbacks(int uid) {
-        ArrayMap<IBinder, IBackgroundActivityLaunchCallback> callbackMap;
+    Map<IBinder, StrictModeCallback> getStrictModeBalCallbacks(int uid) {
         synchronized (mStrictModeBalCallbacks) {
-            callbackMap =
-                    mStrictModeBalCallbacks.get(uid);
+            ArrayMap<IBinder, StrictModeCallback> callbackMap = mStrictModeBalCallbacks.get(uid);
             if (callbackMap == null) {
                 return null;
             }
@@ -1039,22 +1041,26 @@ public class BackgroundActivityStartController {
      * @return {@code true} if the callback has been successfully added.
      */
     boolean addStrictModeCallback(int uid, IBinder callback) {
+        if (callback == null) {
+            return false;
+        }
         IBackgroundActivityLaunchCallback balCallback =
                 IBackgroundActivityLaunchCallback.Stub.asInterface(callback);
+        IBinder.DeathRecipient deathRecipient = () -> removeStrictModeCallback(uid, callback);
         synchronized (mStrictModeBalCallbacks) {
-            ArrayMap<IBinder, IBackgroundActivityLaunchCallback> callbackMap =
-                    mStrictModeBalCallbacks.get(uid);
+            ArrayMap<IBinder, StrictModeCallback> callbackMap = mStrictModeBalCallbacks.get(uid);
             if (callbackMap == null) {
                 callbackMap = new ArrayMap<>();
                 mStrictModeBalCallbacks.put(uid, callbackMap);
+            } else {
+                if (callbackMap.containsKey(callback)) {
+                    return false;
+                }
             }
-            if (callbackMap.containsKey(callback)) {
-                return false;
-            }
-            callbackMap.put(callback, balCallback);
+            callbackMap.put(callback, new StrictModeCallback(balCallback, deathRecipient));
         }
         try {
-            callback.linkToDeath(() -> removeStrictModeCallback(uid, callback), 0);
+            callback.linkToDeath(deathRecipient, 0);
         } catch (RemoteException e) {
             removeStrictModeCallback(uid, callback);
         }
@@ -1069,29 +1075,35 @@ public class BackgroundActivityStartController {
      *                 blocked.
      */
     void removeStrictModeCallback(int uid, IBinder callback) {
+        if (callback == null) {
+            return;
+        }
+        StrictModeCallback removed;
         synchronized (mStrictModeBalCallbacks) {
-            Map<IBinder, IBackgroundActivityLaunchCallback> callbackMap =
-                    mStrictModeBalCallbacks.get(uid);
-            if (callback == null || !callbackMap.containsKey(callback)) {
+            ArrayMap<IBinder, StrictModeCallback> callbackMap = mStrictModeBalCallbacks.get(uid);
+            if (callbackMap == null || !callbackMap.containsKey(callback)) {
                 return;
             }
-            callbackMap.remove(callback);
+            removed = callbackMap.remove(callback);
             if (callbackMap.isEmpty()) {
                 mStrictModeBalCallbacks.remove(uid);
             }
         }
+        if (removed != null) {
+            callback.unlinkToDeath(removed.deathRecipient, 0);
+        }
     }
 
     private void strictModeLaunchAborted(int callingUid, String message) {
-        Map<IBinder, IBackgroundActivityLaunchCallback> strictModeBalCallbacks =
+        Map<IBinder, StrictModeCallback> strictModeBalCallbacks =
                 getStrictModeBalCallbacks(callingUid);
         if (strictModeBalCallbacks == null) {
             return;
         }
-        for (Map.Entry<IBinder, IBackgroundActivityLaunchCallback> callbackEntry :
+        for (Map.Entry<IBinder, StrictModeCallback> callbackEntry :
                 strictModeBalCallbacks.entrySet()) {
             try {
-                callbackEntry.getValue().onBackgroundActivityLaunchAborted(message);
+                callbackEntry.getValue().callback.onBackgroundActivityLaunchAborted(message);
             } catch (RemoteException e) {
                 removeStrictModeCallback(callingUid, callbackEntry.getKey());
             }
