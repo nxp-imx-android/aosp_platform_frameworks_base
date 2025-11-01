@@ -780,6 +780,7 @@ java_aconfig_library {
 
 cc_aconfig_library {
     name: "aconfig_hardware_flags_c_lib",
+    host_supported: true,
     aconfig_declarations: "android.hardware.flags-aconfig",
 }
 
@@ -1121,6 +1122,7 @@ java_aconfig_library {
 
 cc_aconfig_library {
     name: "android.server.display.flags-aconfig-cc",
+    host_supported: true,
     aconfig_declarations: "display_flags",
 }
 
