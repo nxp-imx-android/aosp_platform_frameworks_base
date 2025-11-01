@@ -31,6 +31,7 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.GESTURE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.HARDWARE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.KEY_GESTURE;
+import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_ACCESS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_SETTINGS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TOP_ROW_KEY;
@@ -223,6 +224,7 @@ public class AccessibilityUserState {
         mShortcutTargets.put(QUICK_SETTINGS, new ArraySet<>());
         mShortcutTargets.put(KEY_GESTURE, new ArraySet<>());
         mShortcutTargets.put(TOP_ROW_KEY, new ArraySet<>());
+        mShortcutTargets.put(QUICK_ACCESS, new ArraySet<>());
     }
 
     boolean isHandlingAccessibilityEventsLocked() {
@@ -612,6 +614,7 @@ public class AccessibilityUserState {
         pw.append("     a11y tiles in QS panel:").append(mA11yTilesInQsPanel.toString());
         pw.println();
         dumpShortcutTargets(pw, TOP_ROW_KEY, "top row key");
+        dumpShortcutTargets(pw, QUICK_ACCESS, "quick access dialog");
         pw.append("     Bound services:{");
         final int serviceCount = mBoundServices.size();
         for (int j = 0; j < serviceCount; j++) {

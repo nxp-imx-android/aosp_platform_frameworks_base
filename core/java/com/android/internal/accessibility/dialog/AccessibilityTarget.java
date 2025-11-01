@@ -18,6 +18,7 @@ package com.android.internal.accessibility.dialog;
 
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.GESTURE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.HARDWARE;
+import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_ACCESS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
 
 import android.annotation.NonNull;
@@ -202,12 +203,13 @@ public abstract class AccessibilityTarget implements TargetOperations, OnTargetS
 
     /**
      * Determines if the provided shortcut type is valid for use with AccessibilityTargets.
+     *
      * @param shortcutType shortcut type to check.
      * @return {@code true} if the shortcut type can be used, {@code false} otherwise.
      */
     @VisibleForTesting
     public static boolean isRecognizedShortcutType(@UserShortcutType int shortcutType) {
-        int mask = SOFTWARE | HARDWARE | GESTURE;
+        int mask = SOFTWARE | HARDWARE | GESTURE | QUICK_ACCESS;
         return (shortcutType != 0 && (shortcutType & mask) == shortcutType);
     }
 }

@@ -66,6 +66,8 @@ public final class ShortcutConstants {
      * choose Quick Settings as preferred shortcut.
      * {@code KEY_GESTURE} for shortcuts which are directly from key gestures and should be
      * activated always.
+     * {@code TOP_ROW_KEY} for shortcuts accessed through the accessibility top row key.
+     * {@code QUICK_ACCESS} for shortcuts activated through the accessibility quick access dialog.
      */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({
@@ -78,6 +80,7 @@ public final class ShortcutConstants {
             UserShortcutType.GESTURE,
             UserShortcutType.KEY_GESTURE,
             UserShortcutType.TOP_ROW_KEY,
+            UserShortcutType.QUICK_ACCESS,
             UserShortcutType.ALL
     })
     public @interface UserShortcutType {
@@ -91,9 +94,10 @@ public final class ShortcutConstants {
         int GESTURE = 1 << 5;
         int KEY_GESTURE = 1 << 6;
         int TOP_ROW_KEY = 1 << 7;
+        int QUICK_ACCESS = 1 << 8;
         // LINT.ThenChange(:shortcut_type_array)
         int ALL = SOFTWARE | HARDWARE | TRIPLETAP | TWOFINGER_DOUBLETAP | QUICK_SETTINGS | GESTURE
-                | KEY_GESTURE | TOP_ROW_KEY;
+                | KEY_GESTURE | TOP_ROW_KEY | QUICK_ACCESS;
     }
 
     /**
@@ -110,6 +114,7 @@ public final class ShortcutConstants {
             UserShortcutType.GESTURE,
             UserShortcutType.KEY_GESTURE,
             UserShortcutType.TOP_ROW_KEY,
+            UserShortcutType.QUICK_ACCESS,
             // LINT.ThenChange(:shortcut_type_intdef)
     };
 
@@ -122,6 +127,7 @@ public final class ShortcutConstants {
             Settings.Secure.ACCESSIBILITY_QS_TARGETS,
             Settings.Secure.ACCESSIBILITY_GESTURE_TARGETS,
             Settings.Secure.ACCESSIBILITY_TOP_ROW_KEY_TARGETS,
+            Settings.Secure.ACCESSIBILITY_QUICK_ACCESS_TARGETS,
     };
 
     /**
@@ -134,6 +140,7 @@ public final class ShortcutConstants {
             Settings.Secure.ACCESSIBILITY_DISPLAY_MAGNIFICATION_ENABLED,
             Settings.Secure.ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED,
             Settings.Secure.ACCESSIBILITY_TOP_ROW_KEY_TARGETS,
+            Settings.Secure.ACCESSIBILITY_QUICK_ACCESS_TARGETS,
     };
 
     /**
