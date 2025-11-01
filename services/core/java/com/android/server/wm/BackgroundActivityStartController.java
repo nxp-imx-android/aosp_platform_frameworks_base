@@ -61,6 +61,7 @@ import android.app.IBackgroundActivityLaunchCallback;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
+import android.compat.annotation.Overridable;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -148,6 +149,7 @@ public class BackgroundActivityStartController {
     /**  Feature flag for go/activity-security rules */
     @ChangeId
     @EnabledAfter(targetSdkVersion = BAKLAVA)
+    @Overridable
     static final long ASM_RESTRICTIONS = 230590090L;
     public static final ActivityOptions ACTIVITY_OPTIONS_SYSTEM_DEFINED =
             ActivityOptions.makeBasic()
