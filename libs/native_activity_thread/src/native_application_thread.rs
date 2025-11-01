@@ -23,7 +23,7 @@ use crate::utils::reset_time_zone;
 
 pub struct CreateServiceRequest {
     pub service_token: SpIBinder,
-    pub library_paths: Vec<String>,
+    pub library_paths: String,
     pub permitted_libs_dir: String,
     pub library_name: String,
     pub base_symbol_name: String,
@@ -39,7 +39,7 @@ impl CreateServiceRequest {
     /// function named `base_symbol_name` with the type signature `ANativeService_createFunc`.
     unsafe fn new(
         service_token: SpIBinder,
-        library_paths: Vec<String>,
+        library_paths: String,
         permitted_libs_dir: String,
         library_name: String,
         base_symbol_name: String,
@@ -106,7 +106,7 @@ impl INativeApplicationThread for NativeApplicationThread {
     fn scheduleCreateService(
         &self,
         service_token: &SpIBinder,
-        library_paths: &[String],
+        library_paths: &str,
         permitted_libs_dir: &str,
         library_name: &str,
         base_symbol_name: &str,
@@ -120,7 +120,7 @@ impl INativeApplicationThread for NativeApplicationThread {
         let req = unsafe {
             CreateServiceRequest::new(
                 service_token.clone(),
-                library_paths.to_vec(),
+                library_paths.to_string(),
                 permitted_libs_dir.to_string(),
                 library_name.to_string(),
                 base_symbol_name.to_string(),

@@ -479,6 +479,43 @@ public final class LoadedApk {
         mDataDir = mDataDirFile.getAbsolutePath();
     }
 
+    /**
+     * Holds necessary parameters for creating a linker namespace. Instances of this class are
+     * created by the {@code createLinkerNamespaceParams()} method below.
+     */
+    public static final class LinkerNamespaceParams {
+        /**
+         * Value to be passed to {@code android_create_namespace} as {@code ld_library_path},
+         * corresponding to the library search path.
+         */
+        public final String libPath;
+
+        /**
+         * Value to be passed to {@code android_create_namespace} as
+         * {@code permitted_when_isolated_path}, corresponding to the namespace to be created.
+         */
+        public final String permittedLibsDir;
+
+        LinkerNamespaceParams(String libPath, String permittedLibsDir) {
+            this.libPath = libPath;
+            this.permittedLibsDir = permittedLibsDir;
+        }
+    }
+
+    /**
+     * Obtain parameters passed to {@code android_create_namespace} directly from the specified
+     * ApplicationInfo. This is useful when loading native libraries without an associated
+     * ClassLoader.
+     *
+     * @param aInfo The dataDir member contains the permitted library directory.
+     */
+    public static LinkerNamespaceParams createLinkerNamespaceParams(ApplicationInfo aInfo) {
+        List<String> outZipPaths = new ArrayList();
+        List<String> outLibPaths = new ArrayList();
+        makePaths(null, false, aInfo, outZipPaths, outLibPaths);
+        return new LinkerNamespaceParams(String.join(":", outLibPaths), aInfo.dataDir);
+    }
+
     public static void makePaths(ActivityThread activityThread,
                                  ApplicationInfo aInfo,
                                  List<String> outZipPaths) {

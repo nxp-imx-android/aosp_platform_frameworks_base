@@ -68,7 +68,6 @@ import com.android.internal.app.IVoiceInteractor;
 import dalvik.annotation.optimization.NeverCompile;
 
 import java.io.FileDescriptor;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -172,14 +171,7 @@ public class NativeApplicationThreadWrapper implements IApplicationThread {
         if (funcNameProperty != null) funcName = funcNameProperty.getString();
 
         ServiceRecord r = (ServiceRecord) token;
-        List<String> zipPaths = new ArrayList(10);
-        List<String> libPaths = new ArrayList(10);
-        LoadedApk.makePaths(
-                null /* activityThread, used for instrumentation */,
-                false /* isBundledApp */,
-                r.appInfo,
-                zipPaths,
-                libPaths);
+        LoadedApk.LinkerNamespaceParams params = LoadedApk.createLinkerNamespaceParams(r.appInfo);
 
         Slog.i(
                 TAG,
@@ -189,12 +181,10 @@ public class NativeApplicationThreadWrapper implements IApplicationThread {
                         + funcName
                         + ", nativeLibraryDir: "
                         + r.appInfo.nativeLibraryDir);
-        for (String libPath : libPaths) {
-            Slog.i(TAG, "libPath: " + libPath);
-        }
+        Slog.i(TAG, "libPath: " + params.libPath);
 
         mNativeThread.scheduleCreateService(
-                r, libPaths, r.appInfo.dataDir, libName, funcName, processState);
+                r, params.libPath, params.permittedLibsDir, libName, funcName, processState);
     }
 
     @Override
