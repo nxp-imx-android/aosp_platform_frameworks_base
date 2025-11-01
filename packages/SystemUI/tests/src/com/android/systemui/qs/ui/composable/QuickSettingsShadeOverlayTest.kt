@@ -63,29 +63,33 @@ import platform.test.screenshot.Displays
 @EnableSceneContainer
 class QuickSettingsShadeOverlayTest : SysuiTestCase() {
     @get:Rule
-    val rule = FixedActivitySizeComposeTestRule(
-        DeviceEmulationSpec(
-            // Use a large display size intentionally to verify the dimens tuned for large screens.
-            // Also, use 160dpi as the display density to avoid the rounding errors triggered by the
-            // pixel-DP conversion.
-            Displays.Desktop160dpi,
-            isLandscape = true,
+    val rule =
+        FixedActivitySizeComposeTestRule(
+            DeviceEmulationSpec(
+                // Use a large display size intentionally to verify the dimens for large screens.
+                // Also, use 160dpi as the display density to avoid the rounding errors triggered by
+                // the pixel-DP conversion.
+                Displays.Desktop160dpi,
+                isLandscape = true,
+            )
         )
-    )
 
     val composeTestRule = rule.composeTestRule
 
-    private val kosmos = testKosmos().apply {
-        useUnconfinedTestDispatcher()
-        featureFlagsClassic.fake.apply { setDefault(FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS) }
-        setDisplayType(Display.DEFAULT_DISPLAY, Display.TYPE_INTERNAL)
-    }
+    private val kosmos =
+        testKosmos().apply {
+            useUnconfinedTestDispatcher()
+            featureFlagsClassic.fake.apply { setDefault(FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS) }
+            setDisplayType(Display.DEFAULT_DISPLAY, Display.TYPE_INTERNAL)
+        }
 
     private fun ComposeContentTestRule.setQSShadeOverlay() {
         setContent {
             PlatformTheme {
                 WithStatusIconContext(kosmos.tintedIconManagerFactory) {
-                    with(kosmos.quickSettingsShadeOverlay) { TestContentScope { Content(Modifier) } }
+                    with(kosmos.quickSettingsShadeOverlay) {
+                        TestContentScope { Content(Modifier) }
+                    }
                 }
             }
         }
@@ -114,38 +118,38 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
 
     @Test
     @WithDesktopTest
-    fun testCommonTileSize() = kosmos.runTest {
-        currentTilesInteractor.setTiles(
-            listOf(
-                TileSpec.create("airplane"),
-            )
-        )
+    fun testCommonTileSize() =
+        kosmos.runTest {
+            currentTilesInteractor.setTiles(listOf(TileSpec.create("airplane")))
 
-        composeTestRule.setQSShadeOverlay()
-        composeTestRule.waitForIdle()
+            composeTestRule.setQSShadeOverlay()
+            composeTestRule.waitForIdle()
 
-        composeTestRule
-            .onNodeWithTag("element:airplane")
-            .assertHeightIsEqualTo(if (DesktopSizing.isEnabled) 56.dp else 72.dp)
+            composeTestRule
+                .onNodeWithTag("element:airplane")
+                .assertHeightIsEqualTo(if (DesktopSizing.isEnabled) 56.dp else 72.dp)
 
-        composeTestRule.onNodeWithTag(resIdToTestTag("qs_tile_icon"), useUnmergedTree = true)
-            .assertHeightIsEqualTo(if (DesktopSizing.isEnabled) 20.dp else 32.dp)
+            composeTestRule
+                .onNodeWithTag(resIdToTestTag("qs_tile_icon"), useUnmergedTree = true)
+                .assertHeightIsEqualTo(if (DesktopSizing.isEnabled) 20.dp else 32.dp)
 
-        // Verify the QS shade overlay's width.
-        composeTestRule.onNodeWithTag(resIdToTestTag("quick_settings_panel"))
-            .assertWidthIsEqualTo(if (DesktopSizing.isEnabled) 376.dp else 474.dp)
-    }
+            // Verify the QS shade overlay's width.
+            composeTestRule
+                .onNodeWithTag(resIdToTestTag("quick_settings_panel"))
+                .assertWidthIsEqualTo(if (DesktopSizing.isEnabled) 376.dp else 474.dp)
+        }
 
     @Test
     @WithDesktopTest
     @EnableFlags(FLAG_QS_TILE_DETAILED_VIEW, FLAG_EXPANDED_AUDIO_DETAILED_VIEW)
-    fun testVolumeSlider() = kosmos.runTest {
-        composeTestRule.setQSShadeOverlay()
-        composeTestRule.waitForIdle()
+    fun testVolumeSlider() =
+        kosmos.runTest {
+            composeTestRule.setQSShadeOverlay()
+            composeTestRule.waitForIdle()
 
-        // Verify the slider's height. "Media" is the tag of the volume slider.
-        composeTestRule
-            .onNodeWithTag(resIdToTestTag("Media"))
-            .assertHeightIsEqualTo(if (DesktopSizing.isEnabled) 48.dp else 52.dp)
-    }
+            // Verify the slider's height. "Media" is the tag of the volume slider.
+            composeTestRule
+                .onNodeWithTag(resIdToTestTag("Media"))
+                .assertHeightIsEqualTo(if (DesktopSizing.isEnabled) 48.dp else 52.dp)
+        }
 }
