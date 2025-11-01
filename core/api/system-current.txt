@@ -23,6 +23,7 @@ package android {
     field public static final String ACCESS_MTP = "android.permission.ACCESS_MTP";
     field public static final String ACCESS_NETWORK_CONDITIONS = "android.permission.ACCESS_NETWORK_CONDITIONS";
     field public static final String ACCESS_NOTIFICATIONS = "android.permission.ACCESS_NOTIFICATIONS";
+    field @FlaggedApi("com.android.npumanager.npumanager_enabled") public static final String ACCESS_NPU_MODEL_MANAGER_API = "android.permission.ACCESS_NPU_MODEL_MANAGER_API";
     field public static final String ACCESS_PDB_STATE = "android.permission.ACCESS_PDB_STATE";
     field public static final String ACCESS_RCS_USER_CAPABILITY_EXCHANGE = "android.permission.ACCESS_RCS_USER_CAPABILITY_EXCHANGE";
     field public static final String ACCESS_SHARED_LIBRARIES = "android.permission.ACCESS_SHARED_LIBRARIES";
