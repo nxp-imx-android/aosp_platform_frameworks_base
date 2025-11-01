@@ -41,7 +41,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.screencapture.common.domain.model.TargetModel
 import com.android.systemui.screencapture.common.ui.viewmodel.TargetViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.TargetsViewModel
 
@@ -52,10 +51,7 @@ import com.android.systemui.screencapture.common.ui.viewmodel.TargetsViewModel
  * @param viewModel The ViewModel that provides the list of tasks and manages selection state.
  */
 @Composable
-fun <T : TargetModel> ShareContentList(
-    modifier: Modifier = Modifier,
-    viewModel: TargetsViewModel<T>,
-) {
+fun ShareContentList(modifier: Modifier = Modifier, viewModel: TargetsViewModel) {
     val targets by viewModel.targets
     Surface(
         shape = RoundedCornerShape(20.dp),
@@ -92,8 +88,8 @@ fun <T : TargetModel> ShareContentList(
  * @param onItemSelected The callback to be invoked when this item is clicked.
  */
 @Composable
-private fun <T : TargetModel> SelectorItem(
-    targetViewModel: TargetViewModel<T>,
+private fun SelectorItem(
+    targetViewModel: TargetViewModel,
     isSelected: Boolean,
     onItemSelected: () -> Unit,
 ) {

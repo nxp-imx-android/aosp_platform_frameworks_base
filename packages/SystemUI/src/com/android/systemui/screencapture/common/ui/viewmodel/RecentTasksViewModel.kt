@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureRecentTaskInteractor
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
+import com.android.systemui.screencapture.common.domain.model.TargetModel
 import javax.inject.Inject
 
 /**
@@ -51,7 +52,12 @@ import javax.inject.Inject
  * }
  * ```
  */
-interface RecentTasksViewModel : TargetsViewModel<ScreenCaptureRecentTask>
+interface RecentTasksViewModel : TargetsViewModel {
+    override val targets: State<List<ScreenCaptureRecentTask>?>
+    override val selectedTarget: State<RecentTaskViewModel?>
+
+    override fun createViewModelFor(target: TargetModel): RecentTaskViewModel
+}
 
 /** The default implementation of [RecentTasksViewModel]. */
 class RecentTasksViewModelImpl
@@ -70,14 +76,13 @@ constructor(
     override val targets: State<List<ScreenCaptureRecentTask>?> =
         interactor.recentTasks.hydratedStateOf("RecentTasksViewModel#recentTasks", null)
 
-    private val _selectedTarget = mutableStateOf<TargetViewModel<ScreenCaptureRecentTask>?>(null)
-    override val selectedTarget: State<TargetViewModel<ScreenCaptureRecentTask>?> = _selectedTarget
+    private val _selectedTarget = mutableStateOf<RecentTaskViewModel?>(null)
+    override val selectedTarget: State<RecentTaskViewModel?> = _selectedTarget
 
-    override fun setSelectedTarget(target: TargetViewModel<ScreenCaptureRecentTask>?) {
-        _selectedTarget.value = target
+    override fun setSelectedTarget(target: TargetViewModel?) {
+        _selectedTarget.value = target as RecentTaskViewModel?
     }
 
-    override fun createViewModelFor(
-        target: ScreenCaptureRecentTask
-    ): TargetViewModel<ScreenCaptureRecentTask> = recentTaskViewModelFactory.create(target)
+    override fun createViewModelFor(target: TargetModel): RecentTaskViewModel =
+        recentTaskViewModelFactory.create(target as ScreenCaptureRecentTask)
 }

@@ -47,7 +47,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.systemui.res.R
-import com.android.systemui.screencapture.common.domain.model.TargetModel
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
@@ -55,7 +54,7 @@ import com.android.systemui.screencapture.common.ui.viewmodel.TargetViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.TargetsViewModel
 
 @Composable
-fun <T : TargetModel> ShareContentSelector(targetsViewModel: TargetsViewModel<T>) {
+fun ShareContentSelector(targetsViewModel: TargetsViewModel) {
     Surface(color = MaterialTheme.colorScheme.surfaceBright, shape = RoundedCornerShape(20.dp)) {
         Column(
             modifier =
@@ -135,9 +134,9 @@ private fun DisclaimerText() {
 }
 
 @Composable
-private fun <T : TargetModel> AudioSwitch(
-    targetsViewModel: TargetsViewModel<T>,
-    selectedTargetViewModel: TargetViewModel<T>?,
+private fun AudioSwitch(
+    targetsViewModel: TargetsViewModel,
+    selectedTargetViewModel: TargetViewModel?,
 ) {
     val checked by targetsViewModel.captureAudio
 

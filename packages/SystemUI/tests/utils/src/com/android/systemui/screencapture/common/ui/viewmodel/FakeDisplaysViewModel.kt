@@ -19,6 +19,7 @@ package com.android.systemui.screencapture.common.ui.viewmodel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureDisplay
+import com.android.systemui.screencapture.common.domain.model.TargetModel
 import kotlinx.coroutines.awaitCancellation
 
 class FakeDisplaysViewModel(
@@ -32,16 +33,15 @@ class FakeDisplaysViewModel(
     private val fakeDisplays = mutableStateOf<List<ScreenCaptureDisplay>?>(null)
     override val targets: State<List<ScreenCaptureDisplay>?> = fakeDisplays
 
-    private val _selectedTarget = mutableStateOf<TargetViewModel<ScreenCaptureDisplay>?>(null)
-    override val selectedTarget: State<TargetViewModel<ScreenCaptureDisplay>?> = _selectedTarget
+    private val _selectedTarget = mutableStateOf<DisplayViewModel?>(null)
+    override val selectedTarget: State<DisplayViewModel?> = _selectedTarget
 
-    override fun setSelectedTarget(target: TargetViewModel<ScreenCaptureDisplay>?) {
-        _selectedTarget.value = target
+    override fun setSelectedTarget(target: TargetViewModel?) {
+        _selectedTarget.value = target as DisplayViewModel?
     }
 
-    override fun createViewModelFor(
-        target: ScreenCaptureDisplay
-    ): TargetViewModel<ScreenCaptureDisplay> = fakeViewModelFactory.create(target)
+    override fun createViewModelFor(target: TargetModel): DisplayViewModel =
+        fakeViewModelFactory.create(target as ScreenCaptureDisplay)
 
     fun setDisplays(displays: List<ScreenCaptureDisplay>?) {
         fakeDisplays.value = displays

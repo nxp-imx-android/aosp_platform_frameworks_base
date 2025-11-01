@@ -21,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
-import com.android.systemui.screencapture.common.domain.model.TargetModel
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
@@ -50,8 +49,7 @@ constructor(
     private val appContentsViewModel =
         appContentsViewModelFactory.create(thumbnailWidthPx, thumbnailHeightPx)
 
-    var currentTargetsModel by
-        mutableStateOf<TargetsViewModel<out TargetModel>>(appContentsViewModel)
+    var currentTargetsModel by mutableStateOf<TargetsViewModel>(appContentsViewModel)
         private set
 
     var isUiVisible by mutableStateOf(true)
