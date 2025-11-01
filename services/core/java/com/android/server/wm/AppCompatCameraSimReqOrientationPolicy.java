@@ -74,6 +74,14 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
 
     private final SparseArray<CameraCompatibilityInfo> mActiveCameraCompat = new SparseArray<>();
 
+    /**
+     * Last display rotation that this policy reacted to.
+     *
+     * <p>{@link ROTATION_UNDEFINED} if not tracking camera changes.
+     */
+    @Surface.Rotation
+    private int mDisplayRotation = ROTATION_UNDEFINED;
+
     AppCompatCameraSimReqOrientationPolicy(@NonNull DisplayContent displayContent,
             @NonNull CameraStateMonitor cameraStateMonitor,
             @NonNull AppCompatCameraStateSource cameraStateNotifier,
@@ -119,6 +127,11 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     public void onCameraOpened(@NonNull CameraAppInfo cameraAppInfo,
             @NonNull WindowProcessController appProcess,
             @NonNull Task cameraTask) {
+        // App might be forced to fullscreen, but the app might have requested fixed orientation,
+        // in which case camera compat might still be applicable. Recompute configuration with the
+        // possibility of camera compat dictating app orientation and min aspect ratio.
+        // Note: if the app targets SDK 36+, orientation and min aspect ratio requests might be
+        // ignored. Camera compatibility will not be applied in that case.
         ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
                 "%s: Policy is notified that Camera %s is opened for package: %s.",
                 TAG_CAMERA_COMPAT, cameraAppInfo.mCameraId, cameraAppInfo.mPackageName);
@@ -139,7 +152,8 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
             return;
         }
 
-        updateAndDispatchCameraConfiguration(cameraAppInfo, appProcess, cameraActivity);
+        mDisplayRotation = cameraTask.mDisplayContent.getRotation();
+        updateAndDispatchCameraConfiguration(cameraAppInfo.mTaskId, appProcess, cameraActivity);
     }
 
     @Override
@@ -168,12 +182,13 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     @Override
     public void onCameraClosed(@NonNull CameraAppInfo cameraAppInfo,
             @Nullable WindowProcessController appProcess, @Nullable Task task) {
+        mDisplayRotation = ROTATION_UNDEFINED;
         // Top activity in the same task as the camera activity, or `null` if the task is
         // closed.
         final ActivityRecord topActivity = getTopActivityFromCameraTask(task);
         // `onCameraClosed` is only received when camera is actually closed, and not on activity
         // refresh or when switching cameras. Proceed to revert camera compat mode.
-        updateAndDispatchCameraConfiguration(cameraAppInfo, appProcess, topActivity);
+        updateAndDispatchCameraConfiguration(cameraAppInfo.mTaskId, appProcess, topActivity);
     }
 
     boolean shouldIgnoreReqOrientationForCameraCompat(@NonNull ActivityRecord activity) {
@@ -181,14 +196,37 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
         return isCameraCompatModeActive(cameraCompatInfo);
     }
 
-    private void updateAndDispatchCameraConfiguration(@NonNull CameraAppInfo cameraAppInfo,
+    void onDisplayRotationChanged(@NonNull ActivityRecord activity, @Surface.Rotation int
+            newDisplayRotation) {
+        final Task task = activity.getTask();
+        if (task == null) {
+            return;
+        }
+        // If mDisplayRotation is undefined, the treatment is not active, so there is nothing to
+        // update.
+        if (mDisplayRotation != ROTATION_UNDEFINED && newDisplayRotation != mDisplayRotation) {
+            mDisplayRotation = newDisplayRotation;
+            // Camera compat should already be running, so any camera-compat-induced config
+            // changes to the app orientation and aspect ratio should remain the same.
+            ProtoLog.d(WM_DEBUG_CAMERA_COMPAT, "%s: Updating camera compat after rotation: %s",
+                    TAG_CAMERA_COMPAT, mActiveCameraCompat);
+            updateAndDispatchCameraConfiguration(task.mTaskId, activity.app, activity);
+        }
+    }
+
+    /**
+     *
+     * @param taskId - task that opened the camera. If camera is closing, this task might not exist,
+     *               but it should still be passed so the camera treatment can be properly reverted.
+     */
+    private void updateAndDispatchCameraConfiguration(int taskId,
             @Nullable WindowProcessController app,
             @Nullable ActivityRecord activity) {
         // Put a placeholder before the activity configuration is recomputed, to make sure the
         // CameraCompatibilityInfo is up to date when queried by other policies, and to skip
         // computation for any app that doesn't have camera opened (i.e. if there are no entries in
         // mActiveCameraCompat with queried activitiy/task/packageName, return early).
-        mActiveCameraCompat.put(cameraAppInfo.mTaskId, null);
+        mActiveCameraCompat.put(taskId, null);
         if (activity != null) {
             activity.recomputeConfiguration();
         }
@@ -200,15 +238,15 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
             final boolean updateSuccessful = updateCompatibilityInfo(app, cameraCompatInfo);
             final boolean isCameraCompatActive = isCameraCompatModeActive(cameraCompatInfo);
             if (isCameraCompatActive) {
-                mActiveCameraCompat.put(cameraAppInfo.mTaskId, cameraCompatInfo);
+                mActiveCameraCompat.put(taskId, cameraCompatInfo);
             } else {
-                mActiveCameraCompat.remove(cameraAppInfo.mTaskId);
+                mActiveCameraCompat.remove(taskId);
             }
             if (activity != null && updateSuccessful && isCameraCompatActive) {
                 mActivityRefresher.requestRefresh(activity);
             }
         } else {
-            mActiveCameraCompat.remove(cameraAppInfo.mTaskId);
+            mActiveCameraCompat.remove(taskId);
         }
 
         if (activity != null) {
@@ -526,9 +564,11 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     private boolean isOnExternalDisplayWithDifferentOrientation(@NonNull ActivityRecord activity) {
         final boolean externalDisplay = activity.getDisplayContent().getDisplay().getType()
                 == TYPE_EXTERNAL;
+        final int displayRotation = activity.getConfiguration().windowConfiguration
+                .getDisplayRotation();
         // If camera and external display rotations are the same, this treatment has no effect.
-        return externalDisplay && (activity.getDisplayContent().getRotation()
-                != mCameraDisplayRotationProvider.getCameraDeviceRotation());
+        return externalDisplay && (displayRotation != mCameraDisplayRotationProvider
+                .getCameraDeviceRotation());
     }
 
     @Nullable
