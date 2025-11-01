@@ -78,6 +78,7 @@ import com.android.internal.pm.pkg.parsing.ParsingUtils;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.CollectionUtils;
 import com.android.server.SystemConfig;
+import com.android.server.pm.AppLockPackageHelper;
 import com.android.server.pm.PackageArchiver;
 import com.android.server.pm.parsing.pkg.AndroidPackageUtils;
 import com.android.server.pm.pkg.AndroidPackage;
@@ -397,7 +398,7 @@ public class PackageInfoUtils {
     }
 
     private static void updateApplicationInfo(ApplicationInfo ai, long flags,
-            PackageUserState state) {
+            PackageUserState state, AndroidPackage pkg, int userId) {
         if ((flags & PackageManager.GET_META_DATA) == 0) {
             ai.metaData = null;
         }
@@ -448,6 +449,12 @@ public class PackageInfoUtils {
             ai.dataDir = null;
         }
         if ((flags & PackageManager.GET_APP_LOCK_INFO) != 0) {
+            if (pkg != null) {
+                ai.isAppLockSupported = AppLockPackageHelper.isAppLockSupported(
+                        pkg.getPackageName(),
+                        userId,
+                        pkg.getActivities());
+            }
             ai.isAppLockEnabled = state.isAppLockEnabled();
         }
     }
@@ -464,7 +471,7 @@ public class PackageInfoUtils {
         ai.initForUser(userId);
         ai.icon = (ParsingPackageUtils.sUseRoundIcon && ai.roundIconRes != 0) ? ai.roundIconRes
                 : ai.iconRes;
-        updateApplicationInfo(ai, flags, state);
+        updateApplicationInfo(ai, flags, state, /* pkg= */ null, userId);
         return ai;
     }
 
@@ -489,7 +496,7 @@ public class PackageInfoUtils {
         // Make shallow copy so we can store the metadata/libraries safely
         ApplicationInfo info = AndroidPackageUtils.generateAppInfoWithoutState(pkg);
 
-        updateApplicationInfo(info, flags, state);
+        updateApplicationInfo(info, flags, state, pkg, userId);
 
         initForUser(info, pkg, pkgSetting, userId, state);
 
