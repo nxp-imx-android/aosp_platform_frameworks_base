@@ -57,10 +57,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_ENABLE_POWER_THROTTLING_CLAMPER,
             Flags::enablePowerThrottlingClamper);
 
-    private final FlagState mSmallAreaDetectionFlagState = new FlagState(
-            com.android.graphics.surfaceflinger.flags.Flags.FLAG_ENABLE_SMALL_AREA_DETECTION,
-            com.android.graphics.surfaceflinger.flags.Flags::enableSmallAreaDetection);
-
     private final FlagState mSyncedResolutionSwitch = new FlagState(
             com.android.graphics.surfaceflinger.flags.Flags.FLAG_SYNCED_RESOLUTION_SWITCH,
             com.android.graphics.surfaceflinger.flags.Flags::syncedResolutionSwitch
@@ -228,10 +224,6 @@ public class DisplayManagerFlags {
     /** Returns whether displayoffload is enabled on not */
     public boolean isDisplayOffloadEnabled() {
         return mDisplayOffloadFlagState.isEnabled();
-    }
-
-    public boolean isSmallAreaDetectionEnabled() {
-        return mSmallAreaDetectionFlagState.isEnabled();
     }
 
     public boolean isSyncedResolutionSwitchEnabled() {
@@ -425,7 +417,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mDisplayTopology);
         pw.println(" " + mDisplayTopologyApi);
         pw.println(" " + mPowerThrottlingClamperFlagState);
-        pw.println(" " + mSmallAreaDetectionFlagState);
         pw.println(" " + mSyncedResolutionSwitch);
         pw.println(" " + mFastHdrTransitions);
         pw.println(" " + mSensorBasedBrightnessThrottling);

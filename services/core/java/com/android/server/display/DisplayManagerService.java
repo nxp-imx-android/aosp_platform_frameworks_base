@@ -944,8 +944,7 @@ public final class DisplayManagerService extends SystemService {
             mContext.registerReceiver(mResolutionRestoreReceiver, restoreFilter);
         }
 
-        mSmallAreaDetectionController = (mFlags.isSmallAreaDetectionEnabled())
-                ? SmallAreaDetectionController.create(mContext) : null;
+        mSmallAreaDetectionController = SmallAreaDetectionController.create(mContext);
 
         scheduleTopologiesReload(mCurrentUserId, /*isUserSwitching=*/ false);
     }
