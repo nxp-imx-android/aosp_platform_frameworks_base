@@ -107,8 +107,6 @@ final class ProcessProfileRecord implements ProcessRecordInternal.StartedService
 
     /**
      * Last computed rss when in cached state.
-     *
-     * This value is not set or retrieved unless Flags.removeAppProfilerPssCollection() is true.
      */
     @GuardedBy("mProfilerLock")
     private long mLastCachedRss;

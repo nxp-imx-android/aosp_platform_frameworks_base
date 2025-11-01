@@ -76,7 +76,6 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Debug;
-import android.os.Flags;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -742,14 +741,11 @@ public class AppProfiler {
     }
 
     boolean isProfilingPss() {
-        return !Flags.removeAppProfilerPssCollection()
-                || mService.mConstants.mForceEnablePssProfiling;
+        return mService.mConstants.mForceEnablePssProfiling;
     }
 
-    // This method is analogous to collectPssInBackground() and is intended to be used as a
-    // replacement if Flags.removeAppProfilerPssCollection() is enabled. References to PSS in
-    // methods outside of AppProfiler have generally been kept where a new RSS equivalent is not
-    // technically necessary. These can be updated once the flag is completely rolled out.
+    // This method is analogous to collectPssInBackground() and is used by default, if PSS
+    // collection hasn't been manually enabled.
     private void collectRssInBackground() {
         long start = SystemClock.uptimeMillis();
         MemInfoReader memInfo = null;
@@ -955,9 +951,9 @@ public class AppProfiler {
     /**
      * Record new RSS sample for a process.
      *
-     * This method is analogous to recordPssSampleLPf() and is intended to be used as a replacement
-     * if Flags.removeAppProfilerPssCollection() is enabled. Functionally, this differs in that PSS,
-     * SwapPss, and USS are no longer collected and reported.
+     * This method is analogous to recordPssSampleLPf() and is used by default, as long as PSS
+     * collection isn't manually enabled. Functionally, this differs in that PSS, SwapPss, and USS
+     * are no longer collected and reported.
      *
      * This method will also poll PSS if the app has requested that a heap dump be taken if its PSS
      * reaches some threshold set with ActivityManager.setWatchHeapLimit().
