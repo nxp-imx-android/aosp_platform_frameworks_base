@@ -19,6 +19,26 @@
     <dimen name="shade_panel_width"
            android:featureFlag="com.android.systemui.desktop_sizing">376dp</dimen>
 
+    <!-- QS shade overlay common tiles -->
+    <dimen
+        name="common_tile_default_icon_size"
+        android:featureFlag="com.android.systemui.desktop_sizing">20dp</dimen>
+    <dimen
+        name="common_tile_default_inactive_corner_radius"
+        android:featureFlag="com.android.systemui.desktop_sizing">28dp</dimen>
+    <dimen
+        name="common_tile_default_large_tile_icon_size"
+        android:featureFlag="com.android.systemui.desktop_sizing">24dp</dimen>
+    <dimen
+        name="common_tile_default_start_padding"
+        android:featureFlag="com.android.systemui.desktop_sizing">6dp</dimen>
+    <dimen
+        name="common_tile_default_tile_height"
+        android:featureFlag="com.android.systemui.desktop_sizing">56dp</dimen>
+    <dimen
+        name="common_tile_default_toggle_target_size"
+        android:featureFlag="com.android.systemui.desktop_sizing">44dp</dimen>
+
     <!-- QS shade overlay brightness bar -->
     <dimen
         name="overlay_qs_layout_brightness_thumb_height"

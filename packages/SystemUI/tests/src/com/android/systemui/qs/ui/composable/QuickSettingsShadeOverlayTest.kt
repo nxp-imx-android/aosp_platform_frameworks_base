@@ -126,10 +126,10 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
 
         composeTestRule
             .onNodeWithTag("element:airplane")
-            .assertHeightIsEqualTo(72.dp)
+            .assertHeightIsEqualTo(if (DesktopSizing.isEnabled) 56.dp else 72.dp)
 
         composeTestRule.onNodeWithTag(resIdToTestTag("qs_tile_icon"), useUnmergedTree = true)
-            .assertHeightIsEqualTo(32.dp)
+            .assertHeightIsEqualTo(if (DesktopSizing.isEnabled) 20.dp else 32.dp)
 
         // Verify the QS shade overlay's width.
         composeTestRule.onNodeWithTag(resIdToTestTag("quick_settings_panel"))
