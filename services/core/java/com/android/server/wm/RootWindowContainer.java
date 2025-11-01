@@ -2771,15 +2771,15 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 final Transition transition = new Transition(TRANSIT_CLOSE,
                         TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION, mTransitionController,
                         mWmService.mSyncEngine);
+                final int disconnectReparentDisplay =
+                        mWindowManager.mUmInternal.getMainDisplayAssignedToUser(mCurrentUser);
+                transition.addDisconnectReparentDisplay(disconnectReparentDisplay);
                 mTransitionController.startCollectOrQueue(transition, (deferred) -> {
                     transition.collectExistenceChange(displayContent);
                     transition.setAllReady();
                     TransitionRequestInfo.DisplayChange displayChange =
                             new TransitionRequestInfo.DisplayChange(displayId);
-                    final int disconnectReparentDisplay =
-                            mWindowManager.mUmInternal.getMainDisplayAssignedToUser(mCurrentUser);
                     displayChange.setDisconnectReparentDisplay(disconnectReparentDisplay);
-                    transition.addDisconnectReparentDisplay(disconnectReparentDisplay);
 
                     mTransitionController.requestStartTransition(transition, null /* startTask */,
                             null /* remoteTransition */, displayChange);
