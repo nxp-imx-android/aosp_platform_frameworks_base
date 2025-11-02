@@ -37,7 +37,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -50,7 +49,6 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onInterceptKeyBeforeSoftKeyboard
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -60,7 +58,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.PlatformIconButton
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.bouncer.ui.viewmodel.PasswordBouncerViewModel
 import com.android.systemui.common.ui.compose.SelectedUserAwareInputConnection
 import com.android.systemui.common.ui.compose.SelectedUserAwareLocalContext
@@ -99,8 +96,6 @@ internal fun ContentScope.PasswordBouncer(
     }
 
     val color = MaterialTheme.colorScheme.onSurfaceVariant
-
-    ResetFocusIfNeeded(layoutState.transitionState, viewModel)
 
     SelectedUserAwareInputConnection(selectedUserId) {
         SelectedUserAwareLocalContext(selectedUserId) {
@@ -203,17 +198,4 @@ private fun ImeSwitcherButton(viewModel: PasswordBouncerViewModel, color: Color)
                 containerColor = Color.Transparent,
             ),
     )
-}
-
-@Composable
-private fun ResetFocusIfNeeded(
-    transitionState: TransitionState,
-    viewModel: PasswordBouncerViewModel,
-) {
-    val focusManager = LocalFocusManager.current
-    SideEffect {
-        if (viewModel.shouldResetFocus(transitionState)) {
-            focusManager.clearFocus()
-        }
-    }
 }

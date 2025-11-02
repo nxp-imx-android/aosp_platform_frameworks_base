@@ -18,7 +18,6 @@ package com.android.systemui.shade.ui.viewmodel
 
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
-import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
@@ -38,12 +37,9 @@ import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.Transition
 import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.data.repository.setTransition
-import com.android.systemui.scene.domain.interactor.sceneInteractor
-import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -319,26 +315,13 @@ class NotificationShadeWindowModelTest(flags: FlagsParameterization) : SysuiTest
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
                 AuthenticationMethodModel.Pin
             )
-
-            val transitionState =
-                MutableStateFlow<ObservableTransitionState>(
-                    ObservableTransitionState.Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer))
-                )
-            kosmos.sceneInteractor.setTransitionState(transitionState)
             runCurrent()
             assertThat(bouncerRequiresIme).isFalse()
-
-            // go back to lockscreen
-            transitionState.value = ObservableTransitionState.Idle(Scenes.Lockscreen)
-            runCurrent()
 
             // change auth method
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
                 AuthenticationMethodModel.Password
             )
-            // go back to bouncer
-            transitionState.value =
-                ObservableTransitionState.Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer))
             runCurrent()
             assertThat(bouncerRequiresIme).isTrue()
         }
